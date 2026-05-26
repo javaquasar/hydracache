@@ -2,8 +2,6 @@
 members = [
     "crates/hydracache",
     "crates/hydracache-core",
-    "crates/hydracache-macros",
-    "crates/hydracache-sqlx",
 ]
 resolver = "2"
 
