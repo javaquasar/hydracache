@@ -1,0 +1,30 @@
+[workspace]
+members = [
+    "crates/hydracache",
+    "crates/hydracache-core",
+    "crates/hydracache-macros",
+    "crates/hydracache-sqlx",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "Apache-2.0"
+authors = ["HydraCache Contributors"]
+repository = "https://github.com/example/hydracache"
+homepage = "https://github.com/example/hydracache"
+readme = "README.md"
+keywords = ["cache", "caching", "async", "runtime"]
+categories = ["caching", "asynchronous"]
+
+[workspace.dependencies]
+async-trait = "0.1"
+bytes = "1"
+hydracache-core = { path = "crates/hydracache-core", version = "0.1.0" }
+moka = { version = "0.12", features = ["future"] }
+postcard = { version = "1", features = ["alloc"] }
+serde = { version = "1", features = ["derive"] }
+thiserror = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }

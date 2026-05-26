@@ -1,0 +1,19 @@
+[package]
+name = "hydracache-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Core runtime types and traits for HydraCache."
+
+[dependencies]
+async-trait.workspace = true
+bytes.workspace = true
+postcard.workspace = true
+serde.workspace = true
+thiserror.workspace = true
