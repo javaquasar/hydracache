@@ -19,3 +19,6 @@ hydracache-core.workspace = true
 moka.workspace = true
 serde.workspace = true
 tokio.workspace = true
+
+[dev-dependencies]
+loom.workspace = true
