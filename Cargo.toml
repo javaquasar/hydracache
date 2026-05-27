@@ -6,7 +6,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.75"
 license = "Apache-2.0"
@@ -20,7 +20,7 @@ categories = ["caching", "asynchronous"]
 [workspace.dependencies]
 async-trait = "0.1"
 bytes = "1"
-hydracache-core = { path = "crates/hydracache-core", version = "0.1.0" }
+hydracache-core = { path = "crates/hydracache-core", version = "0.1.1" }
 moka = { version = "0.12", features = ["future"] }
 postcard = { version = "1", features = ["alloc"] }
 serde = { version = "1", features = ["derive"] }

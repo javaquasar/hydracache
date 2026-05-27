@@ -75,6 +75,12 @@ impl CacheOptions {
         self
     }
 
+    /// Attach one tag used by `invalidate_tag`.
+    pub fn tag(mut self, tag: impl Into<String>) -> Self {
+        self.tags.push(tag.into());
+        self
+    }
+
     /// Attach tags used by `invalidate_tag`.
     pub fn tags<I, S>(mut self, tags: I) -> Self
     where

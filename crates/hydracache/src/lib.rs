@@ -203,6 +203,13 @@ where
 
     /// Remove one key from the cache.
     pub async fn invalidate_key(&self, key: &str) -> Result<bool> {
+        self.remove(key).await
+    }
+
+    /// Remove one key from the cache.
+    ///
+    /// This is an alias for `invalidate_key` with a shorter name for local-cache use.
+    pub async fn remove(&self, key: &str) -> Result<bool> {
         let Some(entry) = self.inner.store.get(key).await else {
             return Ok(false);
         };
@@ -213,6 +220,20 @@ where
             .invalidations
             .fetch_add(1, Ordering::Relaxed);
         Ok(true)
+    }
+
+    /// Return whether the key currently maps to a usable value.
+    ///
+    /// Expired entries are removed and reported as absent.
+    pub async fn contains_key(&self, key: &str) -> bool {
+        match self.inner.store.get(key).await {
+            Some(entry) if entry.is_expired() => {
+                self.remove_entry(key, &entry).await;
+                false
+            }
+            Some(_) => true,
+            None => false,
+        }
     }
 
     /// Remove all entries currently associated with a tag.
@@ -471,6 +492,35 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn remove_is_alias_for_key_invalidation() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("user:1", user(1), CacheOptions::new())
+            .await
+            .unwrap();
+
+        assert!(cache.remove("user:1").await.unwrap());
+        assert!(!cache.remove("user:1").await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn contains_key_tracks_present_and_expired_entries() {
+        let cache = HydraCache::local().build();
+        cache
+            .put(
+                "user:1",
+                user(1),
+                CacheOptions::new().ttl(Duration::from_millis(20)),
+            )
+            .await
+            .unwrap();
+
+        assert!(cache.contains_key("user:1").await);
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert!(!cache.contains_key("user:1").await);
+    }
+
+    #[tokio::test]
     async fn invalidate_tag_removes_all_tagged() {
         let cache = HydraCache::local().build();
         let tagged = CacheOptions::new().tags(["users"]);
@@ -490,6 +540,69 @@ mod tests {
         assert_eq!(user_1, None);
         assert_eq!(user_2, None);
         assert_eq!(order_1, Some(user(3)));
+    }
+
+    #[tokio::test]
+    async fn single_tag_option_registers_tag() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("user:1", user(1), CacheOptions::new().tag("users"))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 1);
+        let cached: Option<User> = cache.get("user:1").await.unwrap();
+        assert_eq!(cached, None);
+    }
+
+    #[tokio::test]
+    async fn overwriting_entry_removes_old_tag_mapping() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("user:1", user(1), CacheOptions::new().tag("old"))
+            .await
+            .unwrap();
+        cache
+            .put("user:1", user(2), CacheOptions::new().tag("new"))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.invalidate_tag("old").await.unwrap(), 0);
+        assert!(cache.contains_key("user:1").await);
+        assert_eq!(cache.invalidate_tag("new").await.unwrap(), 1);
+    }
+
+    #[tokio::test]
+    async fn per_entry_ttl_overrides_default_ttl() {
+        let cache = HydraCache::local()
+            .default_ttl(Duration::from_millis(20))
+            .build();
+
+        cache
+            .put(
+                "user:1",
+                user(1),
+                CacheOptions::new().ttl(Duration::from_millis(120)),
+            )
+            .await
+            .unwrap();
+
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        assert!(cache.contains_key("user:1").await);
+    }
+
+    #[tokio::test]
+    async fn cloned_cache_handles_share_state() {
+        let cache = HydraCache::local().build();
+        let clone = cache.clone();
+
+        cache
+            .put("user:1", user(1), CacheOptions::new())
+            .await
+            .unwrap();
+
+        let cached: Option<User> = clone.get("user:1").await.unwrap();
+        assert_eq!(cached, Some(user(1)));
     }
 
     #[tokio::test]

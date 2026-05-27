@@ -66,6 +66,11 @@ crate version first, for example to `0.1.1`.
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
 
+cargo fmt --all -- --check
+cargo check --workspace --all-targets --locked
+cargo test --workspace --locked
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
 cargo test
 cargo package -p hydracache-core
 cargo publish -p hydracache-core

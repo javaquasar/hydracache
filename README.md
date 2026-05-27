@@ -15,9 +15,11 @@ The first version includes:
 - `get`
 - `put`
 - `get_or_load`
+- `contains_key`
 - per-entry TTL and default TTL
 - tag-aware invalidation
 - key invalidation
+- `remove` as a local-cache alias for key invalidation
 - `flush`
 - `postcard` codec over `Bytes`
 - lightweight stats
@@ -81,7 +83,13 @@ cache.invalidate_tag("user:42").await?;
 
 `get_or_load` runs the loader on a miss and stores the loaded value with the provided `CacheOptions`.
 
+`contains_key` checks whether a key currently maps to a usable value. Expired entries are removed and reported as absent.
+
+`remove` and `invalidate_key` both remove one key. `remove` is the shorter local-cache spelling; `invalidate_key` is kept for consistency with tag invalidation.
+
 `invalidate_tag` removes all entries currently associated with the tag.
+
+Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "user:42"])` for multiple tags.
 
 `stats` returns lightweight counters for hits, misses, loads, invalidations, and evictions. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
 
