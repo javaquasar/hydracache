@@ -7,11 +7,13 @@
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::future::Future;
+use std::pin::Pin;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use bytes::Bytes;
+use futures_util::future::{FutureExt, Shared};
 use hydracache_core::{CacheCodec, CacheOptions, CacheStats, Result};
 pub use hydracache_core::{CacheError, CacheKey, PostcardCodec};
 use moka::future::Cache;
@@ -34,6 +36,7 @@ where
 {
     store: Cache<String, CacheEntry>,
     tag_index: TagIndex,
+    in_flight: InFlightMap,
     codec: C,
     default_ttl: Duration,
     stats: StatsCounters,
@@ -45,6 +48,10 @@ struct CacheEntry {
     tags: Vec<String>,
     expires_at: Option<Instant>,
 }
+
+type BoxedLoadFuture = Pin<Box<dyn Future<Output = LoadResult> + Send + 'static>>;
+type SharedLoadFuture = Shared<BoxedLoadFuture>;
+type LoadResult = std::result::Result<Bytes, Arc<CacheError>>;
 
 /// Builder for a local HydraCache instance.
 #[derive(Debug, Clone)]
@@ -114,6 +121,7 @@ where
             inner: Arc::new(HydraCacheInner {
                 store,
                 tag_index: TagIndex::default(),
+                in_flight: InFlightMap::default(),
                 codec: self.codec,
                 default_ttl: self.default_ttl,
                 stats: StatsCounters::default(),
@@ -188,17 +196,24 @@ where
     where
         T: Serialize + DeserializeOwned,
         E: Error + Send + Sync + 'static,
-        F: FnOnce() -> Fut,
-        Fut: Future<Output = std::result::Result<T, E>>,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
     {
         if let Some(value) = self.get(key).await? {
             return Ok(value);
         }
 
-        self.inner.stats.loads.fetch_add(1, Ordering::Relaxed);
-        let value = loader().await.map_err(CacheError::loader)?;
-        self.put(key, &value, options).await?;
-        Ok(value)
+        let shared = self
+            .shared_load(key, options, move |cache| async move {
+                cache.inner.stats.loads.fetch_add(1, Ordering::Relaxed);
+                let value = loader().await.map_err(CacheError::loader)?;
+                let bytes = cache.inner.codec.encode(&value)?;
+                Ok(bytes)
+            })
+            .await;
+
+        let bytes = shared.await.map_err(|error| (*error).clone())?;
+        self.inner.codec.decode(&bytes)
     }
 
     /// Remove one key from the cache.
@@ -288,6 +303,42 @@ where
         Ok(())
     }
 
+    async fn shared_load<F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+    ) -> SharedLoadFuture
+    where
+        F: FnOnce(Self) -> Fut + Send + 'static,
+        Fut: Future<Output = Result<Bytes>> + Send + 'static,
+    {
+        if let Some(shared) = self.inner.in_flight.get(key).await {
+            return shared;
+        }
+
+        let key_owned = key.to_owned();
+        let cache = self.clone();
+        let load_key = key_owned.clone();
+        let shared = async move {
+            let result = async {
+                let bytes = loader(cache.clone()).await?;
+                cache.put_bytes(&load_key, bytes.clone(), options).await?;
+                Ok(bytes)
+            }
+            .await
+            .map_err(Arc::new);
+
+            cache.inner.in_flight.remove(&load_key).await;
+            result
+        }
+        .boxed()
+        .shared();
+
+        self.inner.in_flight.insert(key_owned, shared.clone()).await;
+        shared
+    }
+
     async fn remove_expired(&self, key: &str, entry: &CacheEntry) {
         self.remove_entry(key, entry).await;
     }
@@ -354,6 +405,25 @@ impl TagIndex {
 }
 
 #[derive(Debug, Default)]
+struct InFlightMap {
+    loads: RwLock<HashMap<String, SharedLoadFuture>>,
+}
+
+impl InFlightMap {
+    async fn get(&self, key: &str) -> Option<SharedLoadFuture> {
+        self.loads.read().await.get(key).cloned()
+    }
+
+    async fn insert(&self, key: String, load: SharedLoadFuture) {
+        self.loads.write().await.insert(key, load);
+    }
+
+    async fn remove(&self, key: &str) {
+        self.loads.write().await.remove(key);
+    }
+}
+
+#[derive(Debug, Default)]
 struct StatsCounters {
     hits: AtomicU64,
     misses: AtomicU64,
@@ -381,6 +451,7 @@ mod tests {
     use super::*;
     use serde::{Deserialize, Serialize};
     use std::fmt;
+    use std::sync::atomic::AtomicUsize;
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
     struct User {
@@ -459,6 +530,148 @@ mod tests {
 
         assert_eq!(loaded, user(1));
         assert_eq!(cache.stats().loads, 0);
+    }
+
+    #[tokio::test]
+    async fn concurrent_misses_share_one_loader_execution() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut tasks = Vec::new();
+
+        for _ in 0..8 {
+            let cache = cache.clone();
+            let calls = calls.clone();
+            tasks.push(tokio::spawn(async move {
+                cache
+                    .get_or_load("user:shared", CacheOptions::new(), move || {
+                        let calls = calls.clone();
+                        async move {
+                            calls.fetch_add(1, Ordering::SeqCst);
+                            tokio::time::sleep(Duration::from_millis(25)).await;
+                            Ok::<_, LoaderError>(user(7))
+                        }
+                    })
+                    .await
+                    .unwrap()
+            }));
+        }
+
+        for task in tasks {
+            assert_eq!(task.await.unwrap(), user(7));
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(cache.stats().loads, 1);
+    }
+
+    #[tokio::test]
+    async fn cached_hit_bypasses_single_flight_loader() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+        cache
+            .put("user:1", user(1), CacheOptions::new())
+            .await
+            .unwrap();
+
+        let calls_for_loader = calls.clone();
+        let loaded = cache
+            .get_or_load("user:1", CacheOptions::new(), move || async move {
+                calls_for_loader.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoaderError>(user(2))
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(loaded, user(1));
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn concurrent_loader_errors_are_shared() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut tasks = Vec::new();
+
+        for _ in 0..6 {
+            let cache = cache.clone();
+            let calls = calls.clone();
+            tasks.push(tokio::spawn(async move {
+                cache
+                    .get_or_load("user:error", CacheOptions::new(), move || {
+                        let calls = calls.clone();
+                        async move {
+                            calls.fetch_add(1, Ordering::SeqCst);
+                            tokio::time::sleep(Duration::from_millis(20)).await;
+                            Err::<User, _>(LoaderError)
+                        }
+                    })
+                    .await
+            }));
+        }
+
+        for task in tasks {
+            assert!(matches!(task.await.unwrap(), Err(CacheError::Loader(_))));
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(cache.stats().loads, 1);
+    }
+
+    #[tokio::test]
+    async fn in_flight_entry_is_cleaned_after_error_and_can_retry() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+
+        let first_calls = calls.clone();
+        let first = cache
+            .get_or_load("user:retry", CacheOptions::new(), move || async move {
+                first_calls.fetch_add(1, Ordering::SeqCst);
+                Err::<User, _>(LoaderError)
+            })
+            .await;
+        assert!(matches!(first, Err(CacheError::Loader(_))));
+
+        let second_calls = calls.clone();
+        let second = cache
+            .get_or_load("user:retry", CacheOptions::new(), move || async move {
+                second_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoaderError>(user(9))
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(second, user(9));
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn different_keys_run_different_loaders() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut tasks = Vec::new();
+
+        for id in 0..4 {
+            let cache = cache.clone();
+            let calls = calls.clone();
+            tasks.push(tokio::spawn(async move {
+                cache
+                    .get_or_load(&format!("user:{id}"), CacheOptions::new(), move || {
+                        let calls = calls.clone();
+                        async move {
+                            calls.fetch_add(1, Ordering::SeqCst);
+                            Ok::<_, LoaderError>(user(id))
+                        }
+                    })
+                    .await
+                    .unwrap()
+            }));
+        }
+
+        for task in tasks {
+            task.await.unwrap();
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 4);
     }
 
     #[tokio::test]

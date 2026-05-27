@@ -14,6 +14,7 @@ description = "User-facing HydraCache runtime crate."
 [dependencies]
 async-trait.workspace = true
 bytes.workspace = true
+futures-util.workspace = true
 hydracache-core.workspace = true
 moka.workspace = true
 serde.workspace = true

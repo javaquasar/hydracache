@@ -15,6 +15,7 @@ The first version includes:
 - `get`
 - `put`
 - `get_or_load`
+- local single-flight miss deduplication
 - `contains_key`
 - per-entry TTL and default TTL
 - tag-aware invalidation
@@ -31,7 +32,6 @@ Out of scope for v0:
 - proc macros
 - distributed invalidation
 - cluster roles
-- single-flight
 - generation counters
 - persistence
 
@@ -82,6 +82,8 @@ cache.invalidate_tag("user:42").await?;
 `get` returns `Ok(None)` when the key is missing or expired.
 
 `get_or_load` runs the loader on a miss and stores the loaded value with the provided `CacheOptions`.
+
+Concurrent `get_or_load` calls for the same missing key share one loader execution. Cache hits bypass single-flight entirely.
 
 `contains_key` checks whether a key currently maps to a usable value. Expired entries are removed and reported as absent.
 

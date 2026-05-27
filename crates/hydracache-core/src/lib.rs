@@ -155,7 +155,7 @@ impl CacheCodec for PostcardCodec {
 }
 
 /// Errors returned by HydraCache.
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum CacheError {
     /// Failed to encode a value before storing it.
     #[error("cache encode error: {0}")]
@@ -167,7 +167,7 @@ pub enum CacheError {
 
     /// Loader returned an error.
     #[error("cache loader error: {0}")]
-    Loader(#[source] Box<dyn Error + Send + Sync>),
+    Loader(String),
 
     /// Backend or internal error.
     #[error("cache backend error: {0}")]
@@ -180,6 +180,6 @@ impl CacheError {
     where
         E: Error + Send + Sync + 'static,
     {
-        Self::Loader(Box::new(source))
+        Self::Loader(source.to_string())
     }
 }
