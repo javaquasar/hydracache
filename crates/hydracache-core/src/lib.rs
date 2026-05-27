@@ -111,6 +111,8 @@ pub struct CacheStats {
     pub misses: u64,
     /// Loader closures executed by `get_or_load`.
     pub loads: u64,
+    /// Calls that joined an already running single-flight load.
+    pub single_flight_joins: u64,
     /// Entries removed by invalidation APIs.
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.

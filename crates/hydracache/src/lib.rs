@@ -1,8 +1,8 @@
 //! User-facing HydraCache local runtime.
 //!
 //! v0 is intentionally local-only: no SQLx adapter, no distributed coordination,
-//! and no single-flight. The goal is a small async cache with TTL, tags, and
-//! pleasant `get_or_load` ergonomics.
+//! and no cluster membership. The goal is a small async cache with TTL, tags,
+//! local single-flight, and pleasant loader ergonomics.
 
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
@@ -185,8 +185,7 @@ where
 
     /// Get a value, or run the loader and cache its result on miss.
     ///
-    /// v0 does not deduplicate concurrent misses. If multiple callers miss the
-    /// same key at the same time, each caller may run its own loader.
+    /// Concurrent misses for the same key share one loader execution.
     pub async fn get_or_load<T, E, F, Fut>(
         &self,
         key: &str,
@@ -214,6 +213,47 @@ where
 
         let bytes = shared.await.map_err(|error| (*error).clone())?;
         self.inner.codec.decode(&bytes)
+    }
+
+    /// Get a value, or compute and cache it with an infallible async loader.
+    ///
+    /// This is the most ergonomic local-cache spelling for loaders that cannot
+    /// fail in application terms. Fallible loaders should use `try_get_or_insert_with`
+    /// or `get_or_load`.
+    pub async fn get_or_insert_with<T, F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+    ) -> Result<T>
+    where
+        T: Serialize + DeserializeOwned,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = T> + Send + 'static,
+    {
+        self.get_or_load(key, options, move || async move {
+            Ok::<_, std::convert::Infallible>(loader().await)
+        })
+        .await
+    }
+
+    /// Get a value, or run a fallible async loader and cache its result on miss.
+    ///
+    /// This is an alias for `get_or_load` with a name that mirrors common
+    /// cache-map APIs.
+    pub async fn try_get_or_insert_with<T, E, F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+    ) -> Result<T>
+    where
+        T: Serialize + DeserializeOwned,
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        self.get_or_load(key, options, loader).await
     }
 
     /// Remove one key from the cache.
@@ -314,6 +354,10 @@ where
         Fut: Future<Output = Result<Bytes>> + Send + 'static,
     {
         if let Some(shared) = self.inner.in_flight.get(key).await {
+            self.inner
+                .stats
+                .single_flight_joins
+                .fetch_add(1, Ordering::Relaxed);
             return shared;
         }
 
@@ -335,7 +379,14 @@ where
         .boxed()
         .shared();
 
-        self.inner.in_flight.insert(key_owned, shared.clone()).await;
+        let (shared, inserted) = self.inner.in_flight.insert_or_get(key_owned, shared).await;
+        if !inserted {
+            self.inner
+                .stats
+                .single_flight_joins
+                .fetch_add(1, Ordering::Relaxed);
+        }
+
         shared
     }
 
@@ -414,8 +465,14 @@ impl InFlightMap {
         self.loads.read().await.get(key).cloned()
     }
 
-    async fn insert(&self, key: String, load: SharedLoadFuture) {
-        self.loads.write().await.insert(key, load);
+    async fn insert_or_get(&self, key: String, load: SharedLoadFuture) -> (SharedLoadFuture, bool) {
+        let mut guard = self.loads.write().await;
+        if let Some(existing) = guard.get(&key) {
+            return (existing.clone(), false);
+        }
+
+        guard.insert(key, load.clone());
+        (load, true)
     }
 
     async fn remove(&self, key: &str) {
@@ -428,6 +485,7 @@ struct StatsCounters {
     hits: AtomicU64,
     misses: AtomicU64,
     loads: AtomicU64,
+    single_flight_joins: AtomicU64,
     invalidations: AtomicU64,
     evictions: AtomicU64,
 }
@@ -438,6 +496,7 @@ impl StatsCounters {
             hits: self.hits.load(Ordering::Relaxed),
             misses: self.misses.load(Ordering::Relaxed),
             loads: self.loads.load(Ordering::Relaxed),
+            single_flight_joins: self.single_flight_joins.load(Ordering::Relaxed),
             invalidations: self.invalidations.load(Ordering::Relaxed),
             evictions: self.evictions.load(Ordering::Relaxed),
         }
@@ -533,6 +592,33 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get_or_insert_with_loads_infallible_value_on_miss() {
+        let cache = HydraCache::local().build();
+
+        let loaded = cache
+            .get_or_insert_with("user:1", CacheOptions::new(), || async { user(1) })
+            .await
+            .unwrap();
+
+        assert_eq!(loaded, user(1));
+        assert_eq!(cache.stats().loads, 1);
+    }
+
+    #[tokio::test]
+    async fn try_get_or_insert_with_returns_loader_error() {
+        let cache = HydraCache::local().build();
+
+        let result = cache
+            .try_get_or_insert_with("user:1", CacheOptions::new(), || async {
+                Err::<User, _>(LoaderError)
+            })
+            .await;
+
+        assert!(matches!(result, Err(CacheError::Loader(_))));
+        assert_eq!(cache.stats().loads, 1);
+    }
+
+    #[tokio::test]
     async fn concurrent_misses_share_one_loader_execution() {
         let cache = HydraCache::local().build();
         let calls = Arc::new(AtomicUsize::new(0));
@@ -562,6 +648,7 @@ mod tests {
 
         assert_eq!(calls.load(Ordering::SeqCst), 1);
         assert_eq!(cache.stats().loads, 1);
+        assert_eq!(cache.stats().single_flight_joins, 7);
     }
 
     #[tokio::test]
@@ -584,6 +671,7 @@ mod tests {
 
         assert_eq!(loaded, user(1));
         assert_eq!(calls.load(Ordering::SeqCst), 0);
+        assert_eq!(cache.stats().single_flight_joins, 0);
     }
 
     #[tokio::test]
@@ -615,6 +703,7 @@ mod tests {
 
         assert_eq!(calls.load(Ordering::SeqCst), 1);
         assert_eq!(cache.stats().loads, 1);
+        assert_eq!(cache.stats().single_flight_joins, 5);
     }
 
     #[tokio::test]
@@ -848,6 +937,7 @@ mod tests {
         let stats = cache.stats();
         assert_eq!(stats.misses, 2);
         assert_eq!(stats.loads, 1);
+        assert_eq!(stats.single_flight_joins, 0);
         assert_eq!(stats.hits, 1);
         assert_eq!(stats.invalidations, 1);
     }
