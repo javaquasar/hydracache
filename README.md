@@ -53,6 +53,7 @@ The first version includes:
 - `postcard` codec over `Bytes`
 - lightweight stats
 - single-flight join stats
+- tag-generation invalidation safety
 - Moka-backed local storage
 
 Out of scope for v0:
@@ -118,6 +119,10 @@ cache.invalidate_tag("user:42").await?;
 
 Concurrent `get_or_load` calls for the same missing key share one loader execution. Cache hits bypass single-flight entirely.
 
+If a tag is invalidated while a tagged loader is still running, HydraCache skips
+storing that stale loader result. Callers after the invalidation start or join a
+fresh in-flight load instead of joining the stale one.
+
 `contains_key` checks whether a key currently maps to a usable value. Expired entries are removed and reported as absent.
 
 `remove` and `invalidate_key` both remove one key. `remove` is the shorter local-cache spelling; `invalidate_key` is kept for consistency with tag invalidation.
@@ -126,7 +131,7 @@ Concurrent `get_or_load` calls for the same missing key share one loader executi
 
 Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "user:42"])` for multiple tags.
 
-`stats` returns lightweight counters for hits, misses, loads, single-flight joins, invalidations, and evictions. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
+`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, and evictions. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
 
 ## Release Plan
 

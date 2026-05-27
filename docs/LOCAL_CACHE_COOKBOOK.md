@@ -77,6 +77,13 @@ cache.invalidate_tag("user:42").await?;
 Tags are explicit application-level invalidation groups. They are the intended
 Phase 0 and Phase 1 mechanism for database-result cache freshness.
 
+HydraCache tracks tag generations. If a tagged loader starts, then the tag is
+invalidated before the loader finishes, the loader result is returned to that
+caller but is not stored back into the cache.
+
+Callers that arrive after the invalidation do not join the stale in-flight load.
+They start or join a fresh load under the new tag generation.
+
 ## Remove One Key
 
 ```rust

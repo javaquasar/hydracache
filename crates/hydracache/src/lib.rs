@@ -326,6 +326,15 @@ where
     }
 
     async fn put_bytes(&self, key: &str, value: Bytes, options: CacheOptions) -> Result<()> {
+        self.put_bytes_unchecked(key, value, options).await
+    }
+
+    async fn put_bytes_unchecked(
+        &self,
+        key: &str,
+        value: Bytes,
+        options: CacheOptions,
+    ) -> Result<()> {
         let ttl = options.ttl_value().unwrap_or(self.inner.default_ttl);
         let tags = options.tags_value().to_vec();
         let entry = CacheEntry {
@@ -343,6 +352,25 @@ where
         Ok(())
     }
 
+    async fn put_bytes_if_fresh(
+        &self,
+        key: &str,
+        value: Bytes,
+        options: CacheOptions,
+        generation: &LoadGenerationSnapshot,
+    ) -> Result<bool> {
+        if !self.inner.tag_index.is_current(generation).await {
+            self.inner
+                .stats
+                .stale_load_discards
+                .fetch_add(1, Ordering::Relaxed);
+            return Ok(false);
+        }
+
+        self.put_bytes_unchecked(key, value, options).await?;
+        Ok(true)
+    }
+
     async fn shared_load<F, Fut>(
         &self,
         key: &str,
@@ -353,7 +381,9 @@ where
         F: FnOnce(Self) -> Fut + Send + 'static,
         Fut: Future<Output = Result<Bytes>> + Send + 'static,
     {
-        if let Some(shared) = self.inner.in_flight.get(key).await {
+        let generation = self.inner.tag_index.snapshot(options.tags_value()).await;
+
+        if let Some(shared) = self.inner.in_flight.get_current(key, &generation).await {
             self.inner
                 .stats
                 .single_flight_joins
@@ -364,22 +394,33 @@ where
         let key_owned = key.to_owned();
         let cache = self.clone();
         let load_key = key_owned.clone();
+        let load_generation = generation.clone();
         let shared = async move {
             let result = async {
                 let bytes = loader(cache.clone()).await?;
-                cache.put_bytes(&load_key, bytes.clone(), options).await?;
+                cache
+                    .put_bytes_if_fresh(&load_key, bytes.clone(), options, &load_generation)
+                    .await?;
                 Ok(bytes)
             }
             .await
             .map_err(Arc::new);
 
-            cache.inner.in_flight.remove(&load_key).await;
+            cache
+                .inner
+                .in_flight
+                .remove_if_generation_matches(&load_key, &load_generation)
+                .await;
             result
         }
         .boxed()
         .shared();
 
-        let (shared, inserted) = self.inner.in_flight.insert_or_get(key_owned, shared).await;
+        let (shared, inserted) = self
+            .inner
+            .in_flight
+            .insert_or_get_current(key_owned, shared, generation)
+            .await;
         if !inserted {
             self.inner
                 .stats
@@ -408,9 +449,22 @@ impl CacheEntry {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LoadGenerationSnapshot {
+    global: u64,
+    tags: Vec<(String, u64)>,
+}
+
 #[derive(Debug, Default)]
 struct TagIndex {
-    tags: RwLock<HashMap<String, HashSet<String>>>,
+    state: RwLock<TagIndexState>,
+}
+
+#[derive(Debug, Default)]
+struct TagIndexState {
+    keys_by_tag: HashMap<String, HashSet<String>>,
+    generations: HashMap<String, u64>,
+    global_generation: u64,
 }
 
 impl TagIndex {
@@ -419,9 +473,13 @@ impl TagIndex {
             return;
         }
 
-        let mut guard = self.tags.write().await;
+        let mut guard = self.state.write().await;
         for tag in tags {
-            guard.entry(tag.clone()).or_default().insert(key.to_owned());
+            guard
+                .keys_by_tag
+                .entry(tag.clone())
+                .or_default()
+                .insert(key.to_owned());
         }
     }
 
@@ -430,53 +488,117 @@ impl TagIndex {
             return;
         }
 
-        let mut guard = self.tags.write().await;
+        let mut guard = self.state.write().await;
         for tag in tags {
-            if let Some(keys) = guard.get_mut(tag) {
+            if let Some(keys) = guard.keys_by_tag.get_mut(tag) {
                 keys.remove(key);
                 if keys.is_empty() {
-                    guard.remove(tag);
+                    guard.keys_by_tag.remove(tag);
                 }
             }
         }
     }
 
     async fn take_tag(&self, tag: &str) -> Vec<String> {
-        self.tags
-            .write()
-            .await
+        let mut guard = self.state.write().await;
+        let generation = guard.generations.entry(tag.to_owned()).or_default();
+        *generation = generation.wrapping_add(1);
+
+        guard
+            .keys_by_tag
             .remove(tag)
             .map(|keys| keys.into_iter().collect())
             .unwrap_or_default()
     }
 
+    async fn snapshot(&self, tags: &[String]) -> LoadGenerationSnapshot {
+        let guard = self.state.read().await;
+        LoadGenerationSnapshot {
+            global: guard.global_generation,
+            tags: tags
+                .iter()
+                .map(|tag| {
+                    (
+                        tag.clone(),
+                        guard.generations.get(tag).copied().unwrap_or(0),
+                    )
+                })
+                .collect(),
+        }
+    }
+
+    async fn is_current(&self, snapshot: &LoadGenerationSnapshot) -> bool {
+        let guard = self.state.read().await;
+        guard.global_generation == snapshot.global
+            && snapshot.tags.iter().all(|(tag, generation)| {
+                guard.generations.get(tag).copied().unwrap_or(0) == *generation
+            })
+    }
+
     async fn clear(&self) {
-        self.tags.write().await.clear();
+        let mut guard = self.state.write().await;
+        guard.keys_by_tag.clear();
+        guard.global_generation = guard.global_generation.wrapping_add(1);
     }
 }
 
 #[derive(Debug, Default)]
 struct InFlightMap {
-    loads: RwLock<HashMap<String, SharedLoadFuture>>,
+    loads: RwLock<HashMap<String, InFlightEntry>>,
+}
+
+#[derive(Debug, Clone)]
+struct InFlightEntry {
+    load: SharedLoadFuture,
+    generation: LoadGenerationSnapshot,
 }
 
 impl InFlightMap {
-    async fn get(&self, key: &str) -> Option<SharedLoadFuture> {
-        self.loads.read().await.get(key).cloned()
+    async fn get_current(
+        &self,
+        key: &str,
+        generation: &LoadGenerationSnapshot,
+    ) -> Option<SharedLoadFuture> {
+        self.loads
+            .read()
+            .await
+            .get(key)
+            .filter(|entry| &entry.generation == generation)
+            .map(|entry| entry.load.clone())
     }
 
-    async fn insert_or_get(&self, key: String, load: SharedLoadFuture) -> (SharedLoadFuture, bool) {
+    async fn insert_or_get_current(
+        &self,
+        key: String,
+        load: SharedLoadFuture,
+        generation: LoadGenerationSnapshot,
+    ) -> (SharedLoadFuture, bool) {
         let mut guard = self.loads.write().await;
         if let Some(existing) = guard.get(&key) {
-            return (existing.clone(), false);
+            if existing.generation == generation {
+                return (existing.load.clone(), false);
+            }
         }
 
-        guard.insert(key, load.clone());
+        guard.insert(
+            key,
+            InFlightEntry {
+                load: load.clone(),
+                generation,
+            },
+        );
         (load, true)
     }
 
-    async fn remove(&self, key: &str) {
-        self.loads.write().await.remove(key);
+    async fn remove_if_generation_matches(&self, key: &str, generation: &LoadGenerationSnapshot) {
+        let mut guard = self.loads.write().await;
+        if guard
+            .get(key)
+            .map(|entry| &entry.generation == generation)
+            .unwrap_or(false)
+        {
+            guard.remove(key);
+        }
     }
 }
 
@@ -486,6 +608,7 @@ struct StatsCounters {
     misses: AtomicU64,
     loads: AtomicU64,
     single_flight_joins: AtomicU64,
+    stale_load_discards: AtomicU64,
     invalidations: AtomicU64,
     evictions: AtomicU64,
 }
@@ -497,6 +620,7 @@ impl StatsCounters {
             misses: self.misses.load(Ordering::Relaxed),
             loads: self.loads.load(Ordering::Relaxed),
             single_flight_joins: self.single_flight_joins.load(Ordering::Relaxed),
+            stale_load_discards: self.stale_load_discards.load(Ordering::Relaxed),
             invalidations: self.invalidations.load(Ordering::Relaxed),
             evictions: self.evictions.load(Ordering::Relaxed),
         }
@@ -511,6 +635,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use std::fmt;
     use std::sync::atomic::AtomicUsize;
+    use tokio::sync::oneshot;
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
     struct User {
@@ -704,6 +829,423 @@ mod tests {
         assert_eq!(calls.load(Ordering::SeqCst), 1);
         assert_eq!(cache.stats().loads, 1);
         assert_eq!(cache.stats().single_flight_joins, 5);
+    }
+
+    #[tokio::test]
+    async fn invalidating_tag_during_load_discards_stale_store() {
+        let cache = HydraCache::local().build();
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let load_cache = cache.clone();
+
+        let task = tokio::spawn(async move {
+            load_cache
+                .get_or_load(
+                    "user:stale",
+                    CacheOptions::new().tag("users"),
+                    move || async move {
+                        started_tx.send(()).unwrap();
+                        release_rx.await.unwrap();
+                        Ok::<_, LoaderError>(user(1))
+                    },
+                )
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 0);
+        release_tx.send(()).unwrap();
+
+        assert_eq!(task.await.unwrap(), user(1));
+
+        let cached: Option<User> = cache.get("user:stale").await.unwrap();
+        assert_eq!(cached, None);
+        assert_eq!(cache.stats().stale_load_discards, 1);
+    }
+
+    #[tokio::test]
+    async fn caller_after_invalidation_starts_fresh_load_instead_of_joining_stale_one() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let stale_cache = cache.clone();
+        let stale_calls = calls.clone();
+
+        let stale_task = tokio::spawn(async move {
+            stale_cache
+                .get_or_load(
+                    "user:race",
+                    CacheOptions::new().tag("users"),
+                    move || async move {
+                        stale_calls.fetch_add(1, Ordering::SeqCst);
+                        started_tx.send(()).unwrap();
+                        release_rx.await.unwrap();
+                        Ok::<_, LoaderError>(user(1))
+                    },
+                )
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 0);
+
+        let fresh_calls = calls.clone();
+        let fresh = cache
+            .get_or_load(
+                "user:race",
+                CacheOptions::new().tag("users"),
+                move || async move {
+                    fresh_calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, LoaderError>(user(2))
+                },
+            )
+            .await
+            .unwrap();
+
+        release_tx.send(()).unwrap();
+
+        assert_eq!(fresh, user(2));
+        assert_eq!(stale_task.await.unwrap(), user(1));
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        assert_eq!(cache.stats().stale_load_discards, 1);
+
+        let cached: Option<User> = cache.get("user:race").await.unwrap();
+        assert_eq!(cached, Some(user(2)));
+    }
+
+    #[tokio::test]
+    async fn flush_during_tagged_load_discards_stale_store() {
+        let cache = HydraCache::local().build();
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let load_cache = cache.clone();
+
+        let task = tokio::spawn(async move {
+            load_cache
+                .get_or_load(
+                    "user:flush",
+                    CacheOptions::new().tag("users"),
+                    move || async move {
+                        started_tx.send(()).unwrap();
+                        release_rx.await.unwrap();
+                        Ok::<_, LoaderError>(user(1))
+                    },
+                )
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        cache.flush().await.unwrap();
+        release_tx.send(()).unwrap();
+
+        assert_eq!(task.await.unwrap(), user(1));
+
+        let cached: Option<User> = cache.get("user:flush").await.unwrap();
+        assert_eq!(cached, None);
+        assert_eq!(cache.stats().stale_load_discards, 1);
+    }
+
+    #[tokio::test]
+    async fn invalidating_any_tag_in_multi_tag_load_discards_stale_store() {
+        let cache = HydraCache::local().build();
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let load_cache = cache.clone();
+
+        let task = tokio::spawn(async move {
+            load_cache
+                .get_or_load(
+                    "user:multi-tag",
+                    CacheOptions::new().tags(["users", "tenant:1"]),
+                    move || async move {
+                        started_tx.send(()).unwrap();
+                        release_rx.await.unwrap();
+                        Ok::<_, LoaderError>(user(1))
+                    },
+                )
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(cache.invalidate_tag("tenant:1").await.unwrap(), 0);
+        release_tx.send(()).unwrap();
+
+        assert_eq!(task.await.unwrap(), user(1));
+
+        let cached: Option<User> = cache.get("user:multi-tag").await.unwrap();
+        assert_eq!(cached, None);
+        assert_eq!(cache.stats().stale_load_discards, 1);
+    }
+
+    #[tokio::test]
+    async fn untagged_load_is_not_guarded_by_tag_generation() {
+        let cache = HydraCache::local().build();
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let load_cache = cache.clone();
+
+        let task = tokio::spawn(async move {
+            load_cache
+                .get_or_load("user:untagged", CacheOptions::new(), move || async move {
+                    started_tx.send(()).unwrap();
+                    release_rx.await.unwrap();
+                    Ok::<_, LoaderError>(user(1))
+                })
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 0);
+        release_tx.send(()).unwrap();
+
+        assert_eq!(task.await.unwrap(), user(1));
+
+        let cached: Option<User> = cache.get("user:untagged").await.unwrap();
+        assert_eq!(cached, Some(user(1)));
+        assert_eq!(cache.stats().stale_load_discards, 0);
+    }
+
+    #[tokio::test]
+    async fn stale_load_does_not_overwrite_fresh_value() {
+        let cache = HydraCache::local().build();
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let stale_cache = cache.clone();
+
+        let stale_task = tokio::spawn(async move {
+            stale_cache
+                .get_or_load(
+                    "user:overwrite",
+                    CacheOptions::new().tag("users"),
+                    move || async move {
+                        started_tx.send(()).unwrap();
+                        release_rx.await.unwrap();
+                        Ok::<_, LoaderError>(user(1))
+                    },
+                )
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 0);
+
+        let fresh = cache
+            .get_or_load(
+                "user:overwrite",
+                CacheOptions::new().tag("users"),
+                || async { Ok::<_, LoaderError>(user(2)) },
+            )
+            .await
+            .unwrap();
+        assert_eq!(fresh, user(2));
+
+        release_tx.send(()).unwrap();
+        assert_eq!(stale_task.await.unwrap(), user(1));
+
+        let cached: Option<User> = cache.get("user:overwrite").await.unwrap();
+        assert_eq!(cached, Some(user(2)));
+        assert_eq!(cache.stats().stale_load_discards, 1);
+    }
+
+    #[tokio::test]
+    async fn manual_put_after_invalidate_stores_new_value() {
+        let cache = HydraCache::local().build();
+
+        cache
+            .put("user:manual", user(1), CacheOptions::new().tag("users"))
+            .await
+            .unwrap();
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 1);
+
+        cache
+            .put("user:manual", user(2), CacheOptions::new().tag("users"))
+            .await
+            .unwrap();
+
+        let cached: Option<User> = cache.get("user:manual").await.unwrap();
+        assert_eq!(cached, Some(user(2)));
+        assert_eq!(cache.stats().stale_load_discards, 0);
+    }
+
+    #[tokio::test]
+    async fn invalidation_without_in_flight_loader_does_not_increment_stale_discards() {
+        let cache = HydraCache::local().build();
+
+        cache
+            .put("user:stats", user(1), CacheOptions::new().tag("users"))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.invalidate_tag("users").await.unwrap(), 1);
+
+        let stats = cache.stats();
+        assert_eq!(stats.invalidations, 1);
+        assert_eq!(stats.stale_load_discards, 0);
+    }
+
+    #[tokio::test]
+    async fn stress_concurrent_single_flight_same_key() {
+        let cache = HydraCache::local().build();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut tasks = Vec::new();
+
+        for _ in 0..64 {
+            let cache = cache.clone();
+            let calls = calls.clone();
+            tasks.push(tokio::spawn(async move {
+                for _ in 0..8 {
+                    let value = cache
+                        .get_or_load("user:stress", CacheOptions::new().tag("users"), {
+                            let calls = calls.clone();
+                            move || async move {
+                                calls.fetch_add(1, Ordering::SeqCst);
+                                tokio::time::sleep(Duration::from_millis(1)).await;
+                                Ok::<_, LoaderError>(user(42))
+                            }
+                        })
+                        .await
+                        .unwrap();
+                    assert_eq!(value, user(42));
+                }
+            }));
+        }
+
+        for task in tasks {
+            task.await.unwrap();
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert!(cache.stats().single_flight_joins > 0);
+        let cached: Option<User> = cache.get("user:stress").await.unwrap();
+        assert_eq!(cached, Some(user(42)));
+    }
+
+    #[tokio::test]
+    async fn stress_concurrent_loads_and_invalidations_do_not_panic_or_store_wrong_tagged_value() {
+        let cache = HydraCache::local().build();
+        let loads = Arc::new(AtomicUsize::new(0));
+        let mut tasks = Vec::new();
+
+        for worker in 0..24 {
+            let cache = cache.clone();
+            let loads = loads.clone();
+            tasks.push(tokio::spawn(async move {
+                for step in 0..20 {
+                    let key = format!("user:{}", step % 4);
+                    let expected = user((worker * 100 + step) as u64);
+
+                    let loaded = cache
+                        .get_or_load(
+                            &key,
+                            CacheOptions::new().tags(["users", "tenant:stress"]),
+                            {
+                                let loads = loads.clone();
+                                let expected = expected.clone();
+                                move || async move {
+                                    loads.fetch_add(1, Ordering::SeqCst);
+                                    tokio::task::yield_now().await;
+                                    Ok::<_, LoaderError>(expected)
+                                }
+                            },
+                        )
+                        .await
+                        .unwrap();
+
+                    assert!(loaded.name.starts_with("user-"));
+
+                    if step % 5 == 0 {
+                        cache.invalidate_tag("users").await.unwrap();
+                    }
+
+                    if step % 11 == 0 {
+                        cache.invalidate_tag("tenant:stress").await.unwrap();
+                    }
+                }
+            }));
+        }
+
+        for task in tasks {
+            task.await.unwrap();
+        }
+
+        assert!(loads.load(Ordering::SeqCst) > 0);
+        let stats = cache.stats();
+        assert!(stats.loads > 0);
+        assert!(stats.invalidations > 0);
+    }
+
+    #[tokio::test]
+    async fn stress_concurrent_put_remove_flush_and_load_stays_usable() {
+        let cache = HydraCache::local()
+            .default_ttl(Duration::from_millis(250))
+            .build();
+        let mut tasks = Vec::new();
+
+        for worker in 0..16 {
+            let cache = cache.clone();
+            tasks.push(tokio::spawn(async move {
+                for step in 0..40 {
+                    let key = format!("mixed:{}", step % 8);
+                    match (worker + step) % 5 {
+                        0 => {
+                            cache
+                                .put(
+                                    &key,
+                                    user((worker * 1000 + step) as u64),
+                                    CacheOptions::new().tag("mixed"),
+                                )
+                                .await
+                                .unwrap();
+                        }
+                        1 => {
+                            let _: Option<User> = cache.get(&key).await.unwrap();
+                        }
+                        2 => {
+                            cache.remove(&key).await.unwrap();
+                        }
+                        3 => {
+                            let value = user((worker * 1000 + step) as u64);
+                            let loaded = cache
+                                .get_or_load(&key, CacheOptions::new().tag("mixed"), move || {
+                                    let value = value.clone();
+                                    async move {
+                                        tokio::task::yield_now().await;
+                                        Ok::<_, LoaderError>(value)
+                                    }
+                                })
+                                .await
+                                .unwrap();
+                            assert!(loaded.name.starts_with("user-"));
+                        }
+                        _ => {
+                            if step % 2 == 0 {
+                                cache.invalidate_tag("mixed").await.unwrap();
+                            } else {
+                                cache.flush().await.unwrap();
+                            }
+                        }
+                    }
+                }
+            }));
+        }
+
+        for task in tasks {
+            task.await.unwrap();
+        }
+
+        cache
+            .put("mixed:final", user(999), CacheOptions::new().tag("mixed"))
+            .await
+            .unwrap();
+        let cached: Option<User> = cache.get("mixed:final").await.unwrap();
+        assert_eq!(cached, Some(user(999)));
     }
 
     #[tokio::test]
@@ -938,6 +1480,7 @@ mod tests {
         assert_eq!(stats.misses, 2);
         assert_eq!(stats.loads, 1);
         assert_eq!(stats.single_flight_joins, 0);
+        assert_eq!(stats.stale_load_discards, 0);
         assert_eq!(stats.hits, 1);
         assert_eq!(stats.invalidations, 1);
     }

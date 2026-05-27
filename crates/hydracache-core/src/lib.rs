@@ -113,6 +113,8 @@ pub struct CacheStats {
     pub loads: u64,
     /// Calls that joined an already running single-flight load.
     pub single_flight_joins: u64,
+    /// Loader results skipped because their invalidation generation became stale.
+    pub stale_load_discards: u64,
     /// Entries removed by invalidation APIs.
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
