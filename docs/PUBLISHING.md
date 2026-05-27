@@ -51,6 +51,13 @@ If `hydracache` cannot find `hydracache-core`, wait a little longer and retry:
 cargo publish -p hydracache
 ```
 
+After both crates are published, create and push a Git tag for the release:
+
+```powershell
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
 ## Publishing an update
 
 Published versions cannot be overwritten. For any fix after `0.1.0`, bump the
@@ -67,9 +74,31 @@ cargo package -p hydracache
 cargo publish -p hydracache
 ```
 
+Then tag and push the new version:
+
+```powershell
+git tag -a v0.1.1 -m "Release v0.1.1"
+git push origin v0.1.1
+```
+
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is
 not required.
+
+## Git Tags
+
+Use one annotated Git tag per published release:
+
+```powershell
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+To check existing tags before creating a new one:
+
+```powershell
+git tag --sort=-creatordate
+```
 
 ## Not published yet
 
@@ -77,4 +106,3 @@ These crates are intentionally not published while they are placeholders:
 
 - `hydracache-macros`
 - `hydracache-sqlx`
-
