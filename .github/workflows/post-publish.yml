@@ -39,6 +39,7 @@ jobs:
           cat > src/lib.rs <<'RS'
           use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
           use hydracache_db::DbCache;
+          use hydracache_sqlx::SqlxCache;
           use serde::{Deserialize, Serialize};
 
           #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -101,6 +102,27 @@ jobs:
                   .await?;
 
               assert_eq!(user.name, "Ada");
+
+              Ok(())
+          }
+
+          #[tokio::test]
+          async fn published_sqlx_alias_smoke_test() -> hydracache_sqlx::Result<()> {
+              let cache = HydraCache::local().build();
+              let queries = SqlxCache::new(cache, "sqlx");
+
+              let user = queries
+                  .cached::<User>()
+                  .key("user:7")
+                  .fetch_with(|| async {
+                      Ok::<_, std::io::Error>(User {
+                          id: 7,
+                          name: "Grace".to_owned(),
+                      })
+                  })
+                  .await?;
+
+              assert_eq!(user.id, 7);
 
               Ok(())
           }

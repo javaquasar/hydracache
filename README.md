@@ -213,6 +213,13 @@ behind another query API. That lets applications keep `sqlx::query!`,
 `named::<T>("load-user")` when you want a diagnostic label; otherwise
 `cached::<T>()` derives diagnostics from the namespace/key context.
 
+## Which Crate Should I Use?
+
+- `hydracache` - use this for the local async cache, typed cache, TTLs, tags, single-flight, and stats.
+- `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
+- `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and future SQLx-specific helpers.
+- `hydracache-core` - use this only if you need core shared types without the runtime.
+
 ## Release Plan
 
 The v0 release plan is maintained here:
