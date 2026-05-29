@@ -9,7 +9,7 @@
 //!
 //! ```rust
 //! use hydracache::HydraCache;
-//! use hydracache_sqlx::SqlxCache;
+//! use hydracache_sqlx::DbCache;
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -21,13 +21,21 @@
 //! # #[tokio::main]
 //! # async fn main() -> hydracache_sqlx::Result<()> {
 //! let local = HydraCache::local().build();
-//! let queries = SqlxCache::new(local, "db");
+//!
+//! // The adapter wraps the local HydraCache instance. The namespace becomes
+//! // part of the physical cache key, so key("user:42") is stored as
+//! // "db:user:42".
+//! let queries = DbCache::new(local, "db");
 //!
 //! let user = queries
-//!     .query_as::<User>("select id, name from users where id = $1")
+//!     .cached::<User>()
+//!     // Explicit key: where this one query result is stored.
 //!     .key("user:42")
+//!     // Explicit tag: how related query results can be invalidated together.
 //!     .tag("user:42")
 //!     .fetch_with(|| async {
+//!         // This loader runs only on a cache miss. On a cache hit, HydraCache
+//!         // returns the cached User and this SQLx code is not executed.
 //!         Ok::<_, std::io::Error>(User {
 //!             id: 42,
 //!             name: "Ada".to_owned(),
@@ -44,7 +52,7 @@ mod error;
 mod query;
 
 pub use error::{Result, SqlxCacheError};
-pub use query::{SqlxCache, SqlxQuery};
+pub use query::{DbCache, DbQuery, SqlxCache, SqlxQuery};
 
 /// Re-export the SQLx crate used by this adapter.
 ///

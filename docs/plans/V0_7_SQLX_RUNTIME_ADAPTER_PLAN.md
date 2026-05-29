@@ -16,8 +16,9 @@ SQLx owns database access. HydraCache owns the cache boundary.
 
 - Add a real `hydracache-sqlx` workspace crate.
 - Publish it as a normal crate, not a placeholder.
-- Provide `SqlxCache` as a namespaced adapter over `HydraCache`.
-- Provide `SqlxQuery<T>` as an explicit query result-cache descriptor.
+- Provide `DbCache` as a namespaced adapter over `HydraCache`.
+- Provide `DbQuery<T>` as an explicit query result-cache descriptor.
+- Keep `SqlxCache` and `SqlxQuery` as SQLx-specific aliases, not as the core conceptual names.
 - Require explicit cache keys for the first adapter version.
 - Support tags, tag sets, and per-query TTL.
 - Use `fetch_with` as the first runtime integration point.
@@ -53,7 +54,7 @@ The application still writes the SQLx code directly:
 
 ```rust
 let user = queries
-    .query_as::<User>("select id, name from users where id = $1")
+    .cached::<User>()
     .key("user:42")
     .tag("user:42")
     .fetch_with(|| async {

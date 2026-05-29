@@ -4,8 +4,8 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum SqlxCacheError {
     /// A cached query cannot run without an explicit cache key.
-    #[error("SQLx cache query `{sql}` is missing an explicit cache key")]
-    MissingKey { sql: String },
+    #[error("SQLx cached operation `{operation}` is missing an explicit cache key")]
+    MissingKey { operation: String },
 
     /// The underlying HydraCache operation failed.
     #[error(transparent)]

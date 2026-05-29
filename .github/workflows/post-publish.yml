@@ -37,7 +37,7 @@ jobs:
         run: |
           cat > src/lib.rs <<'RS'
           use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
-          use hydracache_sqlx::SqlxCache;
+          use hydracache_sqlx::DbCache;
           use serde::{Deserialize, Serialize};
 
           #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -85,10 +85,10 @@ jobs:
           #[tokio::test]
           async fn published_sqlx_adapter_smoke_test() -> hydracache_sqlx::Result<()> {
               let cache = HydraCache::local().build();
-              let queries = SqlxCache::new(cache, "db");
+              let queries = DbCache::new(cache, "db");
 
               let user = queries
-                  .query_as::<User>("select id, name from users where id = $1")
+                  .cached::<User>()
                   .key("user:42")
                   .tag("user:42")
                   .fetch_with(|| async {

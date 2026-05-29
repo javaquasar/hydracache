@@ -9,12 +9,55 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{Result, SqlxCacheError};
 
-/// A SQLx-oriented view over a [`HydraCache`] instance.
+/// A database-oriented view over a [`HydraCache`] instance.
 ///
-/// `SqlxCache` groups query result keys under a namespace while keeping all
+/// `DbCache` groups query result keys under a namespace while keeping all
 /// cache storage, single-flight, tags, TTL, and stats in the shared local cache.
+///
+/// # Example
+///
+/// ```rust
+/// use std::time::Duration;
+///
+/// use hydracache::HydraCache;
+/// use hydracache_sqlx::DbCache;
+/// use serde::{Deserialize, Serialize};
+///
+/// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// struct User {
+///     id: i64,
+///     name: String,
+/// }
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache_sqlx::Result<()> {
+/// let local = HydraCache::local().build();
+/// let queries = DbCache::new(local, "db");
+///
+/// let user = queries
+///     .cached::<User>()
+///     // Physical cache key: "db:user:42".
+///     .key("user:42")
+///     // Later, invalidate_tag("user:42") removes this result.
+///     .tag("user:42")
+///     .ttl(Duration::from_secs(60))
+///     .fetch_with(|| async {
+///         // Replace this block with sqlx::query_as!(...).fetch_one(&pool).
+///         // It is called only when the cache does not already contain
+///         // "db:user:42" or when the cached value has expired.
+///         Ok::<_, std::io::Error>(User {
+///             id: 42,
+///             name: "Ada".to_owned(),
+///         })
+///     })
+///     .await?;
+///
+/// assert_eq!(user.id, 42);
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone)]
-pub struct SqlxCache<C = PostcardCodec>
+pub struct DbCache<C = PostcardCodec>
 where
     C: CacheCodec,
 {
@@ -22,11 +65,11 @@ where
     namespace: String,
 }
 
-impl<C> SqlxCache<C>
+impl<C> DbCache<C>
 where
     C: CacheCodec,
 {
-    /// Create a SQLx query cache adapter over an existing local cache.
+    /// Create a database query cache adapter over an existing local cache.
     pub fn new(cache: HydraCache<C>, namespace: impl Into<String>) -> Self {
         Self {
             cache,
@@ -44,46 +87,74 @@ where
         &self.cache
     }
 
-    /// Start describing a cacheable SQL query result.
-    pub fn query_as<T>(&self, sql: impl Into<String>) -> SqlxQuery<T, C> {
-        SqlxQuery {
+    /// Start describing a cacheable SQLx-loaded value.
+    ///
+    /// This is the preferred entry point when the SQL is already visible inside
+    /// the `fetch_with` loader through `sqlx::query!`, `sqlx::query_as!`, or a
+    /// repository method.
+    pub fn cached<T>(&self) -> DbQuery<T, C> {
+        self.named("unnamed")
+    }
+
+    /// Start describing a cacheable SQLx-loaded value with a diagnostic name.
+    pub fn named<T>(&self, name: impl Into<String>) -> DbQuery<T, C> {
+        DbQuery {
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
-            sql: sql.into(),
+            name: Some(name.into()),
             key: None,
             tags: TagSet::new(),
             ttl: None,
             value: PhantomData,
         }
     }
+
+    /// Start describing a cacheable SQL query result.
+    ///
+    /// Prefer [`SqlxCache::cached`] or [`SqlxCache::named`] when writing new
+    /// code. This method remains useful if you want the SQL text itself to be
+    /// the diagnostic label for errors and logs.
+    pub fn query_as<T>(&self, sql: impl Into<String>) -> DbQuery<T, C> {
+        self.named(sql)
+    }
 }
+
+/// Backward-compatible SQLx-specific name for [`DbCache`].
+pub type SqlxCache<C = PostcardCodec> = DbCache<C>;
 
 /// A cacheable SQL query descriptor.
 ///
-/// The descriptor is deliberately explicit: callers provide the SQL text for
-/// diagnostics, then choose the key, tags, and TTL that match their freshness
-/// model. `fetch_with` executes the supplied SQLx loader only on a cache miss.
+/// The descriptor is deliberately explicit: callers choose the key, tags, and
+/// TTL that match their freshness model. An operation name is optional and used
+/// only for diagnostics. `fetch_with` executes the supplied SQLx loader only on
+/// a cache miss.
 #[derive(Debug, Clone)]
-pub struct SqlxQuery<T, C = PostcardCodec>
+pub struct DbQuery<T, C = PostcardCodec>
 where
     C: CacheCodec,
 {
     cache: HydraCache<C>,
     namespace: String,
-    sql: String,
+    name: Option<String>,
     key: Option<String>,
     tags: TagSet,
     ttl: Option<Duration>,
     value: PhantomData<fn() -> T>,
 }
 
-impl<T, C> SqlxQuery<T, C>
+impl<T, C> DbQuery<T, C>
 where
     C: CacheCodec,
 {
-    /// Return the SQL text associated with this cached query.
-    pub fn sql(&self) -> &str {
-        &self.sql
+    /// Return the optional diagnostic operation name.
+    pub fn name(&self) -> Option<&str> {
+        self.name.as_deref()
+    }
+
+    /// Set or replace the diagnostic operation name.
+    pub fn with_name(mut self, name: impl Into<String>) -> Self {
+        self.name = Some(name.into());
+        self
     }
 
     /// Return the namespace used for physical cache keys.
@@ -165,7 +236,9 @@ where
         Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
     {
         let Some(key) = self.physical_key() else {
-            return Err(SqlxCacheError::MissingKey { sql: self.sql });
+            return Err(SqlxCacheError::MissingKey {
+                operation: self.operation_label(),
+            });
         };
 
         self.cache
@@ -181,7 +254,20 @@ where
         }
         options
     }
+
+    fn operation_label(&self) -> String {
+        match (&self.name, &self.key) {
+            (Some(name), _) => name.clone(),
+            (None, Some(key)) if self.namespace.is_empty() => key.clone(),
+            (None, Some(key)) => physical_key(&self.namespace, key),
+            (None, None) if self.namespace.is_empty() => "unnamed".to_owned(),
+            (None, None) => format!("{}:unnamed", self.namespace),
+        }
+    }
 }
+
+/// Backward-compatible SQLx-specific name for [`DbQuery`].
+pub type SqlxQuery<T, C = PostcardCodec> = DbQuery<T, C>;
 
 fn physical_key(namespace: &str, key: &str) -> String {
     if namespace.is_empty() {

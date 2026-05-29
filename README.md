@@ -175,7 +175,7 @@ storage.
 
 ```rust
 use hydracache::HydraCache;
-use hydracache_sqlx::SqlxCache;
+use hydracache_sqlx::DbCache;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -186,10 +186,10 @@ struct User {
 
 # async fn example() -> hydracache_sqlx::Result<()> {
 let local = HydraCache::local().build();
-let queries = SqlxCache::new(local, "db");
+let queries = DbCache::new(local, "db");
 
 let user = queries
-    .query_as::<User>("select id, name from users where id = $1")
+    .cached::<User>()
     .key("user:42")
     .tag("user:42")
     .fetch_with(|| async {
@@ -205,7 +205,9 @@ let user = queries
 
 The first adapter layer intentionally uses `fetch_with` instead of hiding SQLx
 behind another query API. That lets applications keep `sqlx::query!`,
-`sqlx::query_as!`, transactions, and pool choices at the call site.
+`sqlx::query_as!`, transactions, and pool choices at the call site. Use
+`named::<T>("load-user")` when you want a diagnostic label; otherwise
+`cached::<T>()` derives diagnostics from the namespace/key context.
 
 ## Release Plan
 
