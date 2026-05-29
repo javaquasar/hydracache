@@ -7,7 +7,7 @@ use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, PostcardCodec, TagSe
 use hydracache_core::CacheCodec;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{Result, SqlxCacheError};
+use crate::{DbCacheError, Result};
 
 /// A database-oriented view over a [`HydraCache`] instance.
 ///
@@ -20,7 +20,7 @@ use crate::{Result, SqlxCacheError};
 /// use std::time::Duration;
 ///
 /// use hydracache::HydraCache;
-/// use hydracache_sqlx::DbCache;
+/// use hydracache_db::DbCache;
 /// use serde::{Deserialize, Serialize};
 ///
 /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,7 +30,7 @@ use crate::{Result, SqlxCacheError};
 /// }
 ///
 /// # #[tokio::main]
-/// # async fn main() -> hydracache_sqlx::Result<()> {
+/// # async fn main() -> hydracache_db::Result<()> {
 /// let local = HydraCache::local().build();
 /// let queries = DbCache::new(local, "db");
 ///
@@ -42,9 +42,9 @@ use crate::{Result, SqlxCacheError};
 ///     .tag("user:42")
 ///     .ttl(Duration::from_secs(60))
 ///     .fetch_with(|| async {
-///         // Replace this block with sqlx::query_as!(...).fetch_one(&pool).
-///         // It is called only when the cache does not already contain
-///         // "db:user:42" or when the cached value has expired.
+///         // Replace this block with code from sqlx, diesel, sea-orm, or any
+///         // other database client. It is called only when the cache does not
+///         // already contain "db:user:42" or when the cached value has expired.
 ///         Ok::<_, std::io::Error>(User {
 ///             id: 42,
 ///             name: "Ada".to_owned(),
@@ -87,16 +87,16 @@ where
         &self.cache
     }
 
-    /// Start describing a cacheable SQLx-loaded value.
+    /// Start describing a cacheable database-loaded value.
     ///
-    /// This is the preferred entry point when the SQL is already visible inside
-    /// the `fetch_with` loader through `sqlx::query!`, `sqlx::query_as!`, or a
+    /// This is the preferred entry point when the query is already visible
+    /// inside the `fetch_with` loader through a database client, ORM, or
     /// repository method.
     pub fn cached<T>(&self) -> DbQuery<T, C> {
         self.named("unnamed")
     }
 
-    /// Start describing a cacheable SQLx-loaded value with a diagnostic name.
+    /// Start describing a cacheable database-loaded value with a diagnostic name.
     pub fn named<T>(&self, name: impl Into<String>) -> DbQuery<T, C> {
         DbQuery {
             cache: self.cache.clone(),
@@ -111,23 +111,20 @@ where
 
     /// Start describing a cacheable SQL query result.
     ///
-    /// Prefer [`SqlxCache::cached`] or [`SqlxCache::named`] when writing new
-    /// code. This method remains useful if you want the SQL text itself to be
-    /// the diagnostic label for errors and logs.
+    /// Prefer [`DbCache::cached`] or [`DbCache::named`] when writing new code.
+    /// This method remains useful if you want the SQL text itself to be the
+    /// diagnostic label for errors and logs.
     pub fn query_as<T>(&self, sql: impl Into<String>) -> DbQuery<T, C> {
         self.named(sql)
     }
 }
 
-/// Backward-compatible SQLx-specific name for [`DbCache`].
-pub type SqlxCache<C = PostcardCodec> = DbCache<C>;
-
-/// A cacheable SQL query descriptor.
+/// A cacheable database query descriptor.
 ///
 /// The descriptor is deliberately explicit: callers choose the key, tags, and
 /// TTL that match their freshness model. An operation name is optional and used
-/// only for diagnostics. `fetch_with` executes the supplied SQLx loader only on
-/// a cache miss.
+/// only for diagnostics. `fetch_with` executes the supplied loader only on a
+/// cache miss.
 #[derive(Debug, Clone)]
 pub struct DbQuery<T, C = PostcardCodec>
 where
@@ -223,11 +220,11 @@ where
         self
     }
 
-    /// Fetch a cached value or run the supplied SQLx loader on miss.
+    /// Fetch a cached value or run the supplied database loader on miss.
     ///
-    /// The loader is intentionally caller-supplied so SQLx remains responsible
-    /// for connection pools, transactions, compile-time checked macros, and row
-    /// mapping. HydraCache owns only the cache boundary.
+    /// The loader is intentionally caller-supplied so the database library
+    /// remains responsible for pools, transactions, compile-time checked
+    /// queries, and row mapping. HydraCache owns only the cache boundary.
     pub async fn fetch_with<E, F, Fut>(self, loader: F) -> Result<T>
     where
         T: Serialize + DeserializeOwned + Send + 'static,
@@ -236,7 +233,7 @@ where
         Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
     {
         let Some(key) = self.physical_key() else {
-            return Err(SqlxCacheError::MissingKey {
+            return Err(DbCacheError::MissingKey {
                 operation: self.operation_label(),
             });
         };
@@ -244,7 +241,7 @@ where
         self.cache
             .get_or_load(&key, self.options(), loader)
             .await
-            .map_err(SqlxCacheError::from)
+            .map_err(DbCacheError::from)
     }
 
     fn options(&self) -> CacheOptions {
@@ -265,9 +262,6 @@ where
         }
     }
 }
-
-/// Backward-compatible SQLx-specific name for [`DbQuery`].
-pub type SqlxQuery<T, C = PostcardCodec> = DbQuery<T, C>;
 
 fn physical_key(namespace: &str, key: &str) -> String {
     if namespace.is_empty() {

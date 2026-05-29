@@ -1,9 +1,8 @@
-//! SQLx-oriented query result caching helpers for HydraCache.
+//! SQLx-facing integration crate for HydraCache database result caching.
 //!
-//! This crate is intentionally a thin runtime adapter. It does not replace
-//! SQLx compile-time checking and it does not derive cache keys from SQL
-//! automatically. Callers keep SQLx as the database authority and provide an
-//! explicit cache key, tags, and TTL around the query they want to cache.
+//! The database-neutral query cache API lives in `hydracache-db`. This crate
+//! keeps SQLx users on a convenient import path while avoiding a hard conceptual
+//! dependency between the generic adapter and SQLx itself.
 //!
 //! # Example
 //!
@@ -22,16 +21,13 @@
 //! # async fn main() -> hydracache_sqlx::Result<()> {
 //! let local = HydraCache::local().build();
 //!
-//! // The adapter wraps the local HydraCache instance. The namespace becomes
-//! // part of the physical cache key, so key("user:42") is stored as
-//! // "db:user:42".
+//! // SQLx users may import DbCache from this crate, but the type itself is
+//! // database-neutral and comes from hydracache-db.
 //! let queries = DbCache::new(local, "db");
 //!
 //! let user = queries
 //!     .cached::<User>()
-//!     // Explicit key: where this one query result is stored.
 //!     .key("user:42")
-//!     // Explicit tag: how related query results can be invalidated together.
 //!     .tag("user:42")
 //!     .fetch_with(|| async {
 //!         // This loader runs only on a cache miss. On a cache hit, HydraCache
@@ -48,11 +44,16 @@
 //! # }
 //! ```
 
-mod error;
-mod query;
+pub use hydracache_db::{DbCache, DbCacheError, DbQuery, Result};
 
-pub use error::{Result, SqlxCacheError};
-pub use query::{DbCache, DbQuery, SqlxCache, SqlxQuery};
+/// SQLx-specific compatibility name for [`DbCache`].
+pub type SqlxCache<C = hydracache::PostcardCodec> = DbCache<C>;
+
+/// SQLx-specific compatibility name for [`DbQuery`].
+pub type SqlxQuery<T, C = hydracache::PostcardCodec> = DbQuery<T, C>;
+
+/// SQLx-specific compatibility name for [`DbCacheError`].
+pub type SqlxCacheError = DbCacheError;
 
 /// Re-export the SQLx crate used by this adapter.
 ///
@@ -61,4 +62,32 @@ pub use query::{DbCache, DbQuery, SqlxCache, SqlxQuery};
 pub use sqlx;
 
 #[cfg(test)]
-mod tests;
+mod tests {
+    use hydracache::HydraCache;
+    use serde::{Deserialize, Serialize};
+
+    use crate::{DbCache, SqlxCache};
+
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    struct User {
+        id: u64,
+    }
+
+    #[tokio::test]
+    async fn sqlx_cache_alias_matches_database_cache_api() {
+        let query = SqlxCache::new(HydraCache::local().build(), "sqlx")
+            .cached::<User>()
+            .key("user:1");
+
+        assert_eq!(query.physical_key(), Some("sqlx:user:1".to_owned()));
+    }
+
+    #[tokio::test]
+    async fn db_cache_reexport_is_available_from_sqlx_crate() {
+        let query = DbCache::new(HydraCache::local().build(), "db")
+            .cached::<User>()
+            .key("user:1");
+
+        assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
+    }
+}

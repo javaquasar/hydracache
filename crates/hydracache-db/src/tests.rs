@@ -5,7 +5,7 @@ use std::time::Duration;
 use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
-use crate::{DbCache, SqlxCache, SqlxCacheError};
+use crate::{DbCache, DbCacheError};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct User {
@@ -25,7 +25,7 @@ impl std::fmt::Display for LoadError {
 impl std::error::Error for LoadError {}
 
 fn adapter() -> DbCache {
-    DbCache::new(HydraCache::local().build(), "sql")
+    DbCache::new(HydraCache::local().build(), "db")
 }
 
 #[tokio::test]
@@ -37,7 +37,7 @@ async fn fetch_with_requires_explicit_key() {
 
     assert!(matches!(
         result,
-        Err(SqlxCacheError::MissingKey { operation }) if operation == "unnamed"
+        Err(DbCacheError::MissingKey { operation }) if operation == "unnamed"
     ));
 }
 
@@ -50,13 +50,10 @@ async fn query_builder_exposes_metadata() {
         .tags(["user:42", "tenant:7"])
         .ttl(Duration::from_secs(30));
 
-    assert_eq!(query.namespace(), "sql");
+    assert_eq!(query.namespace(), "db");
     assert_eq!(query.name(), Some("load-user"));
     assert_eq!(query.key_value(), Some("tenant:7:user:42"));
-    assert_eq!(
-        query.physical_key(),
-        Some("sql:tenant:7:user:42".to_owned())
-    );
+    assert_eq!(query.physical_key(), Some("db:tenant:7:user:42".to_owned()));
     assert_eq!(
         query.tags_value(),
         &[
@@ -130,20 +127,11 @@ async fn tag_invalidation_removes_cached_query_result() {
 
 #[tokio::test]
 async fn empty_namespace_uses_logical_key_as_physical_key() {
-    let query = SqlxCache::new(HydraCache::local().build(), "")
+    let query = DbCache::new(HydraCache::local().build(), "")
         .cached::<User>()
         .key("one");
 
     assert_eq!(query.physical_key(), Some("one".to_owned()));
-}
-
-#[tokio::test]
-async fn sqlx_cache_alias_matches_database_cache_api() {
-    let query = SqlxCache::new(HydraCache::local().build(), "sqlx")
-        .cached::<User>()
-        .key("user:1");
-
-    assert_eq!(query.physical_key(), Some("sqlx:user:1".to_owned()));
 }
 
 #[tokio::test]
@@ -164,7 +152,7 @@ async fn missing_key_error_uses_available_context() {
 
     assert!(matches!(
         result,
-        Err(SqlxCacheError::MissingKey { operation }) if operation == "load-profile"
+        Err(DbCacheError::MissingKey { operation }) if operation == "load-profile"
     ));
 }
 

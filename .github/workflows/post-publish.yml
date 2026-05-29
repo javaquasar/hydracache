@@ -28,6 +28,7 @@ jobs:
         run: |
           cargo add hydracache@${{ inputs.version }}
           cargo add hydracache-core@${{ inputs.version }}
+          cargo add hydracache-db@${{ inputs.version }}
           cargo add hydracache-sqlx@${{ inputs.version }}
           cargo add serde --features derive
           cargo add tokio --features macros,rt-multi-thread
@@ -37,7 +38,7 @@ jobs:
         run: |
           cat > src/lib.rs <<'RS'
           use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
-          use hydracache_sqlx::DbCache;
+          use hydracache_db::DbCache;
           use serde::{Deserialize, Serialize};
 
           #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

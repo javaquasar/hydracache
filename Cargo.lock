@@ -471,14 +471,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "hydracache-sqlx"
+name = "hydracache-db"
 version = "0.7.0"
 dependencies = [
  "hydracache",
  "hydracache-core",
  "serde",
- "sqlx",
  "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "hydracache-sqlx"
+version = "0.7.0"
+dependencies = [
+ "hydracache",
+ "hydracache-db",
+ "serde",
+ "sqlx",
  "tokio",
 ]
 

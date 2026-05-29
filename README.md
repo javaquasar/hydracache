@@ -168,14 +168,18 @@ Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "
 
 ## SQLx Adapter
 
-`hydracache-sqlx` is the first database result-cache adapter crate. It keeps
-SQLx responsible for pools, transactions, macros, and row mapping, while
-HydraCache owns the explicit cache boundary: key, tags, TTL, single-flight, and
-storage.
+`hydracache-db` provides the database-neutral result-cache adapter API. It keeps
+your database client responsible for pools, transactions, queries, and row
+mapping, while HydraCache owns the explicit cache boundary: key, tags, TTL,
+single-flight, and storage.
+
+`hydracache-sqlx` re-exports the same API for SQLx users and keeps SQLx as an
+adapter dependency instead of making the generic database cache API depend on
+SQLx.
 
 ```rust
 use hydracache::HydraCache;
-use hydracache_sqlx::DbCache;
+use hydracache_db::DbCache;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -221,8 +225,9 @@ The v0 release plan is maintained here:
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, codec, errors
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, and stats
+- `crates/hydracache-db` - database-neutral query result-cache adapter API
 - `crates/hydracache-macros` - future macro ergonomics
-- `crates/hydracache-sqlx` - SQLx-oriented result-cache adapter helpers
+- `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports
 
 ## Crate Layout
 

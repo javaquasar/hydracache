@@ -27,8 +27,9 @@ homepage = "https://github.com/javaquasar/hydracache"
 ## First publish
 
 Publish workspace crates in dependency order. `hydracache` depends on
-`hydracache-core`, and adapter crates such as `hydracache-sqlx` depend on both
-the core/runtime crates and external integrations.
+`hydracache-core`, `hydracache-db` depends on the runtime crate, and concrete
+adapter crates such as `hydracache-sqlx` depend on the database-neutral adapter
+plus external integrations.
 
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
@@ -49,6 +50,9 @@ cargo publish -p hydracache
 Adapter crates are published after the runtime crate they depend on:
 
 ```powershell
+cargo package -p hydracache-db
+cargo publish -p hydracache-db
+
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
@@ -94,6 +98,9 @@ cargo publish -p hydracache-core
 cargo package -p hydracache
 cargo publish -p hydracache
 
+cargo package -p hydracache-db
+cargo publish -p hydracache-db
+
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
@@ -110,9 +117,10 @@ with the same version, for example `0.7.0`.
 
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is
-not required. If an adapter crate version depends on a freshly published
-runtime version, publish the runtime first and wait for the crates.io index to
-update before publishing the adapter.
+not required. If `hydracache-db` depends on a freshly published runtime version,
+publish the runtime first and wait for the crates.io index to update before
+publishing `hydracache-db`. Concrete adapters such as `hydracache-sqlx` are
+published last.
 
 ## MSRV and Dependency Updates
 

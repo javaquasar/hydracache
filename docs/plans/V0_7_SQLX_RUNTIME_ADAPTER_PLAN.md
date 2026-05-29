@@ -5,8 +5,11 @@
 Start the database result-cache direction without turning HydraCache into an
 ORM or SQL engine.
 
-`hydracache-sqlx` should make SQL result caching pleasant while preserving the
-core design rule:
+`hydracache-db` should provide the database-neutral result-cache API, while
+`hydracache-sqlx` should make SQLx usage pleasant without making SQLx the core
+conceptual dependency.
+
+Core design rule:
 
 ```text
 SQLx owns database access. HydraCache owns the cache boundary.
@@ -14,8 +17,9 @@ SQLx owns database access. HydraCache owns the cache boundary.
 
 ## Scope
 
-- Add a real `hydracache-sqlx` workspace crate.
-- Publish it as a normal crate, not a placeholder.
+- Add a real `hydracache-db` workspace crate.
+- Add a real `hydracache-sqlx` integration crate over `hydracache-db`.
+- Publish them as normal crates, not placeholders.
 - Provide `DbCache` as a namespaced adapter over `HydraCache`.
 - Provide `DbQuery<T>` as an explicit query result-cache descriptor.
 - Keep `SqlxCache` and `SqlxQuery` as SQLx-specific aliases, not as the core conceptual names.
@@ -72,7 +76,7 @@ let user = queries
 - `cargo test --workspace --locked` passes.
 - `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` passes.
 - `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --locked` passes.
-- Post-publish verification installs `hydracache-sqlx` from crates.io and runs a smoke test.
+- Post-publish verification installs `hydracache-db` and `hydracache-sqlx` from crates.io and runs a smoke test.
 
 ## Follow-Up Ideas
 
