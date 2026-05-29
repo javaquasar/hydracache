@@ -85,6 +85,9 @@ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --doc --workspace --locked
 Set-Item -Path Env:RUSTDOCFLAGS -Value '-D warnings'; cargo doc --workspace --no-deps --locked
 
+cargo +1.85.0 check --workspace --all-targets --locked
+cargo +1.85.0 test --workspace --locked
+
 cargo package -p hydracache-core
 cargo publish -p hydracache-core
 
@@ -110,6 +113,19 @@ dependency versions still exist on crates.io, publishing `hydracache-core` is
 not required. If an adapter crate version depends on a freshly published
 runtime version, publish the runtime first and wait for the crates.io index to
 update before publishing the adapter.
+
+## MSRV and Dependency Updates
+
+The workspace MSRV is Rust `1.85`. Before publishing, run the MSRV commands in
+the update checklist above, not only the stable toolchain commands.
+
+`hydracache-sqlx` currently depends on `sqlx 0.8`, whose URL/IDNA/ICU
+transitive dependency chain can select newer ICU releases that require Rust
+`1.86`. If `cargo update` changes those packages, verify MSRV before committing
+the lockfile.
+
+The current intentional pin is documented in
+[TD-0001](technical-debt/TD-0001-msrv-pinned-sqlx-transitive-dependencies.md).
 
 ## Git Tags
 
