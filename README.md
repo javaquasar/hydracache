@@ -43,6 +43,7 @@ The first version includes:
 - `get_or_load`
 - `get_or_insert_with`
 - `try_get_or_insert_with`
+- `TypedCache<T>` namespaced typed view
 - local single-flight miss deduplication
 - `contains_key`
 - per-entry TTL and default TTL
@@ -103,6 +104,16 @@ let user = cache
     .await?;
 
 cache.invalidate_tag("user:42").await?;
+
+let users = cache.typed::<User>("users");
+let typed_user = users
+    .get_or_insert_with("42", CacheOptions::new().tag("user:42"), || async {
+        User {
+            id: 42,
+            name: "typed-user".to_owned(),
+        }
+    })
+    .await?;
 # Ok(())
 # }
 ```
@@ -116,6 +127,11 @@ cache.invalidate_tag("user:42").await?;
 `get_or_insert_with` is the short local-cache spelling for infallible async loaders.
 
 `try_get_or_insert_with` is the fallible-loader spelling. It behaves the same as `get_or_load`.
+
+`typed::<T>("namespace")` creates a typed, namespaced view over the same cache. It
+keeps the shared storage, stats, single-flight, tags, and invalidation safety,
+but removes repeated type annotations at call sites and prefixes keys as
+`namespace:key`.
 
 Concurrent `get_or_load` calls for the same missing key share one loader execution. Cache hits bypass single-flight entirely.
 

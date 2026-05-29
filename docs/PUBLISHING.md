@@ -70,6 +70,7 @@ cargo fmt --all -- --check
 cargo check --workspace --all-targets --locked
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo test --doc --workspace --locked
 
 cargo test
 cargo package -p hydracache-core
@@ -82,8 +83,8 @@ cargo publish -p hydracache
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.4.1 -m "Release v0.4.1"
-git push origin v0.4.1
+git tag -a v0.5.0 -m "Release v0.5.0"
+git push origin v0.5.0
 ```
 
 Only publish crates that changed. If only `hydracache` changed and its

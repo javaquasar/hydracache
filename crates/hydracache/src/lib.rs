@@ -3,10 +3,81 @@
 //! v0 is intentionally local-only: no SQLx adapter, no distributed coordination,
 //! and no cluster membership. The goal is a small async cache with TTL, tags,
 //! local single-flight, and pleasant loader ergonomics.
+//!
+//! # Quick start
+//!
+//! ```rust
+//! use std::time::Duration;
+//!
+//! use hydracache::{CacheOptions, HydraCache};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+//! struct User {
+//!     id: u64,
+//!     name: String,
+//! }
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local()
+//!     .default_ttl(Duration::from_secs(300))
+//!     .max_capacity(10_000)
+//!     .build();
+//!
+//! let user = cache
+//!     .get_or_insert_with("user:42", CacheOptions::new().tag("user:42"), || async {
+//!         User {
+//!             id: 42,
+//!             name: "Ada".to_owned(),
+//!         }
+//!     })
+//!     .await?;
+//!
+//! assert_eq!(user.id, 42);
+//! cache.invalidate_tag("user:42").await?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! # Typed local cache
+//!
+//! ```rust
+//! use hydracache::{CacheOptions, HydraCache};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+//! struct User {
+//!     id: u64,
+//!     name: String,
+//! }
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//! let users = cache.typed::<User>("users");
+//!
+//! users
+//!     .put(
+//!         "42",
+//!         User {
+//!             id: 42,
+//!             name: "Ada".to_owned(),
+//!         },
+//!         CacheOptions::new(),
+//!     )
+//!     .await?;
+//!
+//! let cached = users.get("42").await?;
+//! assert_eq!(cached.map(|user| user.id), Some(42));
+//! # Ok(())
+//! # }
+//! ```
 
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::future::Future;
+use std::marker::PhantomData;
 use std::pin::Pin;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -14,19 +85,85 @@ use std::time::{Duration, Instant};
 
 use bytes::Bytes;
 use futures_util::future::{FutureExt, Shared};
-use hydracache_core::{CacheCodec, CacheOptions, CacheStats, Result};
-pub use hydracache_core::{CacheError, CacheKey, PostcardCodec};
+use hydracache_core::{CacheCodec, Result};
+pub use hydracache_core::{CacheError, CacheKey, CacheOptions, CacheStats, PostcardCodec};
 use moka::future::Cache;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::sync::RwLock;
 
 /// Local async cache runtime.
+///
+/// `HydraCache` stores encoded values in a local Moka-backed cache and exposes
+/// async helpers for loader-based caching, TTLs, tags, explicit invalidation,
+/// local single-flight, and lightweight stats.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache::{CacheOptions, HydraCache};
+/// use serde::{Deserialize, Serialize};
+///
+/// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// struct User {
+///     id: u64,
+/// }
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let cache = HydraCache::local().build();
+///
+/// cache.put("user:1", User { id: 1 }, CacheOptions::new()).await?;
+/// let cached: Option<User> = cache.get("user:1").await?;
+///
+/// assert_eq!(cached, Some(User { id: 1 }));
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone)]
 pub struct HydraCache<C = PostcardCodec>
 where
     C: CacheCodec,
 {
     inner: Arc<HydraCacheInner<C>>,
+}
+
+/// A typed, namespaced view over a [`HydraCache`].
+///
+/// `TypedCache` does not create a separate storage backend. It prefixes keys and
+/// delegates to the same underlying cache, preserving single-flight, TTL, tags,
+/// stats, and invalidation safety.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache::{CacheOptions, HydraCache};
+/// use serde::{Deserialize, Serialize};
+///
+/// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// struct User {
+///     id: u64,
+/// }
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let cache = HydraCache::local().build();
+/// let users = cache.typed::<User>("users");
+///
+/// users.put("1", User { id: 1 }, CacheOptions::new()).await?;
+///
+/// assert_eq!(users.key("1"), "users:1");
+/// assert_eq!(users.get("1").await?, Some(User { id: 1 }));
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug, Clone)]
+pub struct TypedCache<T, C = PostcardCodec>
+where
+    C: CacheCodec,
+{
+    cache: HydraCache<C>,
+    namespace: String,
+    _value: PhantomData<fn() -> T>,
 }
 
 #[derive(Debug)]
@@ -53,7 +190,22 @@ type BoxedLoadFuture = Pin<Box<dyn Future<Output = LoadResult> + Send + 'static>
 type SharedLoadFuture = Shared<BoxedLoadFuture>;
 type LoadResult = std::result::Result<Bytes, Arc<CacheError>>;
 
-/// Builder for a local HydraCache instance.
+/// Builder for a local [`HydraCache`] instance.
+///
+/// Use [`HydraCache::local`] to create a builder with sensible defaults.
+///
+/// # Example
+///
+/// ```rust
+/// use std::time::Duration;
+///
+/// use hydracache::HydraCache;
+///
+/// let cache = HydraCache::local()
+///     .max_capacity(50_000)
+///     .default_ttl(Duration::from_secs(60))
+///     .build();
+/// ```
 #[derive(Debug, Clone)]
 pub struct HydraCacheBuilder<C = PostcardCodec>
 where
@@ -67,6 +219,14 @@ where
 
 impl HydraCache<PostcardCodec> {
     /// Start building a local cache.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    ///
+    /// let cache = HydraCache::local().build();
+    /// ```
     pub fn local() -> HydraCacheBuilder<PostcardCodec> {
         HydraCacheBuilder::default()
     }
@@ -77,6 +237,9 @@ where
     C: CacheCodec,
 {
     /// Set the maximum weighted capacity used by the Moka backend.
+    ///
+    /// Entry weight is based on encoded byte length and is capped by
+    /// `max_entry_bytes`.
     pub fn max_capacity(mut self, max_capacity: u64) -> Self {
         self.max_capacity = max_capacity.max(1);
         self
@@ -88,13 +251,15 @@ where
         self
     }
 
-    /// Set the default TTL used when `CacheOptions` does not specify one.
+    /// Set the default TTL used when [`CacheOptions`] does not specify one.
     pub fn default_ttl(mut self, default_ttl: Duration) -> Self {
         self.default_ttl = default_ttl;
         self
     }
 
     /// Replace the default codec.
+    ///
+    /// Most applications can use the default [`PostcardCodec`].
     pub fn codec<Next>(self, codec: Next) -> HydraCacheBuilder<Next>
     where
         Next: CacheCodec,
@@ -145,7 +310,44 @@ impl<C> HydraCache<C>
 where
     C: CacheCodec,
 {
+    /// Create a typed, namespaced view over this cache.
+    ///
+    /// The typed view prefixes physical keys as `namespace:key` while sharing
+    /// the same storage, stats, single-flight map, tags, and invalidation
+    /// generations.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: u64,
+    /// }
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    /// let users = cache.typed::<User>("users");
+    ///
+    /// users.put("1", User { id: 1 }, CacheOptions::new()).await?;
+    /// assert_eq!(users.get("1").await?, Some(User { id: 1 }));
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn typed<T>(&self, namespace: impl Into<String>) -> TypedCache<T, C> {
+        TypedCache {
+            cache: self.clone(),
+            namespace: namespace.into(),
+            _value: PhantomData,
+        }
+    }
+
     /// Get and decode a cached value.
+    ///
+    /// Returns `Ok(None)` when the key is missing or expired.
     pub async fn get<T>(&self, key: &str) -> Result<Option<T>>
     where
         T: DeserializeOwned,
@@ -175,6 +377,27 @@ where
     }
 
     /// Encode and store a value.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: u64,
+    /// }
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// cache.put("user:1", User { id: 1 }, CacheOptions::new()).await?;
+    /// assert_eq!(cache.get::<User>("user:1").await?, Some(User { id: 1 }));
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn put<T>(&self, key: &str, value: T, options: CacheOptions) -> Result<()>
     where
         T: Serialize,
@@ -186,6 +409,43 @@ where
     /// Get a value, or run the loader and cache its result on miss.
     ///
     /// Concurrent misses for the same key share one loader execution.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: u64,
+    /// }
+    ///
+    /// #[derive(Debug)]
+    /// struct LoaderError;
+    ///
+    /// impl std::fmt::Display for LoaderError {
+    ///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    ///         f.write_str("loader failed")
+    ///     }
+    /// }
+    ///
+    /// impl std::error::Error for LoaderError {}
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// let user = cache
+    ///     .get_or_load("user:1", CacheOptions::new(), || async {
+    ///         Ok::<_, LoaderError>(User { id: 1 })
+    ///     })
+    ///     .await?;
+    ///
+    /// assert_eq!(user, User { id: 1 });
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_or_load<T, E, F, Fut>(
         &self,
         key: &str,
@@ -220,6 +480,30 @@ where
     /// This is the most ergonomic local-cache spelling for loaders that cannot
     /// fail in application terms. Fallible loaders should use `try_get_or_insert_with`
     /// or `get_or_load`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: u64,
+    /// }
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// let user = cache
+    ///     .get_or_insert_with("user:1", CacheOptions::new(), || async { User { id: 1 } })
+    ///     .await?;
+    ///
+    /// assert_eq!(user, User { id: 1 });
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn get_or_insert_with<T, F, Fut>(
         &self,
         key: &str,
@@ -292,6 +576,10 @@ where
     }
 
     /// Remove all entries currently associated with a tag.
+    ///
+    /// Tag invalidation also advances the tag generation. Tagged loaders that
+    /// started before the invalidation will return to their caller but skip
+    /// storing stale values back into the cache.
     pub async fn invalidate_tag(&self, tag: &str) -> Result<u64> {
         let keys = self.inner.tag_index.take_tag(tag).await;
         let mut removed = 0;
@@ -438,6 +726,112 @@ where
     async fn remove_entry(&self, key: &str, entry: &CacheEntry) {
         self.inner.store.invalidate(key).await;
         self.inner.tag_index.unregister(key, &entry.tags).await;
+    }
+}
+
+impl<T, C> TypedCache<T, C>
+where
+    T: Serialize + DeserializeOwned,
+    C: CacheCodec,
+{
+    /// Return this typed cache namespace.
+    pub fn namespace(&self) -> &str {
+        &self.namespace
+    }
+
+    /// Build the physical key used by the shared underlying cache.
+    pub fn key(&self, key: &str) -> String {
+        format!("{}:{key}", self.namespace)
+    }
+
+    /// Get and decode a typed cached value.
+    pub async fn get(&self, key: &str) -> Result<Option<T>> {
+        self.cache.get(&self.key(key)).await
+    }
+
+    /// Encode and store a typed value.
+    pub async fn put(&self, key: &str, value: T, options: CacheOptions) -> Result<()> {
+        self.cache.put(&self.key(key), value, options).await
+    }
+
+    /// Get a typed value, or run the loader and cache its result on miss.
+    pub async fn get_or_load<E, F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+    ) -> Result<T>
+    where
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        self.cache
+            .get_or_load(&self.key(key), options, loader)
+            .await
+    }
+
+    /// Get a typed value, or compute and cache it with an infallible async loader.
+    pub async fn get_or_insert_with<F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+    ) -> Result<T>
+    where
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = T> + Send + 'static,
+    {
+        self.cache
+            .get_or_insert_with(&self.key(key), options, loader)
+            .await
+    }
+
+    /// Get a typed value, or run a fallible async loader and cache its result on miss.
+    pub async fn try_get_or_insert_with<E, F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+    ) -> Result<T>
+    where
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        self.cache
+            .try_get_or_insert_with(&self.key(key), options, loader)
+            .await
+    }
+
+    /// Remove one typed key from the cache.
+    pub async fn remove(&self, key: &str) -> Result<bool> {
+        self.cache.remove(&self.key(key)).await
+    }
+
+    /// Remove one typed key from the cache.
+    pub async fn invalidate_key(&self, key: &str) -> Result<bool> {
+        self.remove(key).await
+    }
+
+    /// Return whether the typed key currently maps to a usable value.
+    pub async fn contains_key(&self, key: &str) -> bool {
+        self.cache.contains_key(&self.key(key)).await
+    }
+
+    /// Remove all entries currently associated with a tag.
+    pub async fn invalidate_tag(&self, tag: &str) -> Result<u64> {
+        self.cache.invalidate_tag(tag).await
+    }
+
+    /// Remove all cached entries and tag mappings from the shared cache.
+    pub async fn flush(&self) -> Result<()> {
+        self.cache.flush().await
+    }
+
+    /// Return a snapshot of shared cache counters.
+    pub fn stats(&self) -> CacheStats {
+        self.cache.stats()
     }
 }
 
@@ -741,6 +1135,299 @@ mod tests {
 
         assert!(matches!(result, Err(CacheError::Loader(_))));
         assert_eq!(cache.stats().loads, 1);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_puts_and_gets_without_call_site_type_annotation() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+
+        let cached = users.get("1").await.unwrap();
+        assert_eq!(cached, Some(user(1)));
+        assert_eq!(users.namespace(), "users");
+        assert_eq!(users.key("1"), "users:1");
+    }
+
+    #[tokio::test]
+    async fn typed_cache_namespaces_keys() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let admins = cache.typed::<User>("admins");
+
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+        admins.put("1", user(2), CacheOptions::new()).await.unwrap();
+
+        assert_eq!(users.get("1").await.unwrap(), Some(user(1)));
+        assert_eq!(admins.get("1").await.unwrap(), Some(user(2)));
+        assert!(cache.contains_key("users:1").await);
+        assert!(cache.contains_key("admins:1").await);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_remove_only_removes_namespaced_key() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let admins = cache.typed::<User>("admins");
+
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+        admins.put("1", user(2), CacheOptions::new()).await.unwrap();
+
+        assert!(users.remove("1").await.unwrap());
+
+        assert_eq!(users.get("1").await.unwrap(), None);
+        assert_eq!(admins.get("1").await.unwrap(), Some(user(2)));
+    }
+
+    #[tokio::test]
+    async fn typed_cache_loader_helpers_work() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        let infallible = users
+            .get_or_insert_with("1", CacheOptions::new(), || async { user(1) })
+            .await
+            .unwrap();
+        let fallible = users
+            .try_get_or_insert_with("2", CacheOptions::new(), || async {
+                Ok::<_, LoaderError>(user(2))
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(infallible, user(1));
+        assert_eq!(fallible, user(2));
+        assert_eq!(users.stats().loads, 2);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_single_flight_uses_namespaced_key() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut tasks = Vec::new();
+
+        for _ in 0..8 {
+            let users = users.clone();
+            let calls = calls.clone();
+            tasks.push(tokio::spawn(async move {
+                users
+                    .get_or_load("1", CacheOptions::new(), move || {
+                        let calls = calls.clone();
+                        async move {
+                            calls.fetch_add(1, Ordering::SeqCst);
+                            tokio::time::sleep(Duration::from_millis(10)).await;
+                            Ok::<_, LoaderError>(user(1))
+                        }
+                    })
+                    .await
+                    .unwrap()
+            }));
+        }
+
+        for task in tasks {
+            assert_eq!(task.await.unwrap(), user(1));
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(users.stats().single_flight_joins, 7);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_tag_invalidation_delegates_to_shared_cache() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let admins = cache.typed::<User>("admins");
+
+        users
+            .put("1", user(1), CacheOptions::new().tag("people"))
+            .await
+            .unwrap();
+        admins
+            .put("1", user(2), CacheOptions::new().tag("people"))
+            .await
+            .unwrap();
+
+        assert_eq!(users.invalidate_tag("people").await.unwrap(), 2);
+        assert_eq!(users.get("1").await.unwrap(), None);
+        assert_eq!(admins.get("1").await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_contains_key_tracks_namespaced_key() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        assert!(!users.contains_key("1").await);
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+
+        assert!(users.contains_key("1").await);
+        assert!(cache.contains_key("users:1").await);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_ttl_expiration_uses_shared_runtime() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        users
+            .put(
+                "1",
+                user(1),
+                CacheOptions::new().ttl(Duration::from_millis(20)),
+            )
+            .await
+            .unwrap();
+
+        tokio::time::sleep(Duration::from_millis(40)).await;
+
+        assert_eq!(users.get("1").await.unwrap(), None);
+        assert!(!users.contains_key("1").await);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_flush_clears_shared_cache() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let admins = cache.typed::<User>("admins");
+
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+        admins.put("1", user(2), CacheOptions::new()).await.unwrap();
+
+        users.flush().await.unwrap();
+
+        assert_eq!(users.get("1").await.unwrap(), None);
+        assert_eq!(admins.get("1").await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_stats_are_shared_with_underlying_cache() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        let _: Option<User> = users.get("1").await.unwrap();
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+        let _: Option<User> = users.get("1").await.unwrap();
+
+        assert_eq!(users.stats(), cache.stats());
+        assert_eq!(users.stats().misses, 1);
+        assert_eq!(users.stats().hits, 1);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_loader_error_is_returned() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        let result = users
+            .try_get_or_insert_with("1", CacheOptions::new(), || async {
+                Err::<User, _>(LoaderError)
+            })
+            .await;
+
+        assert!(matches!(result, Err(CacheError::Loader(_))));
+        assert!(!users.contains_key("1").await);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_raw_key_collision_is_explicitly_namespaced() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        cache.put("1", user(10), CacheOptions::new()).await.unwrap();
+        users.put("1", user(1), CacheOptions::new()).await.unwrap();
+
+        let raw: Option<User> = cache.get("1").await.unwrap();
+        let typed = users.get("1").await.unwrap();
+
+        assert_eq!(raw, Some(user(10)));
+        assert_eq!(typed, Some(user(1)));
+    }
+
+    #[tokio::test]
+    async fn typed_cache_namespace_can_be_nested() {
+        let cache = HydraCache::local().build();
+        let tenant_users = cache.typed::<User>("tenant:7:users");
+
+        tenant_users
+            .put("42", user(42), CacheOptions::new())
+            .await
+            .unwrap();
+
+        assert_eq!(tenant_users.key("42"), "tenant:7:users:42");
+        assert_eq!(tenant_users.get("42").await.unwrap(), Some(user(42)));
+        assert!(cache.contains_key("tenant:7:users:42").await);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_invalidation_during_load_discards_stale_store() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let load_users = users.clone();
+
+        let task = tokio::spawn(async move {
+            load_users
+                .get_or_load("1", CacheOptions::new().tag("users"), move || async move {
+                    started_tx.send(()).unwrap();
+                    release_rx.await.unwrap();
+                    Ok::<_, LoaderError>(user(1))
+                })
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(users.invalidate_tag("users").await.unwrap(), 0);
+        release_tx.send(()).unwrap();
+
+        assert_eq!(task.await.unwrap(), user(1));
+        assert_eq!(users.get("1").await.unwrap(), None);
+        assert_eq!(users.stats().stale_load_discards, 1);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_post_invalidation_caller_starts_fresh_load() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let calls = Arc::new(AtomicUsize::new(0));
+        let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
+        let stale_users = users.clone();
+        let stale_calls = calls.clone();
+
+        let stale_task = tokio::spawn(async move {
+            stale_users
+                .get_or_load("1", CacheOptions::new().tag("users"), move || async move {
+                    stale_calls.fetch_add(1, Ordering::SeqCst);
+                    started_tx.send(()).unwrap();
+                    release_rx.await.unwrap();
+                    Ok::<_, LoaderError>(user(1))
+                })
+                .await
+                .unwrap()
+        });
+
+        started_rx.await.unwrap();
+        assert_eq!(users.invalidate_tag("users").await.unwrap(), 0);
+
+        let fresh_calls = calls.clone();
+        let fresh = users
+            .get_or_load("1", CacheOptions::new().tag("users"), move || async move {
+                fresh_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoaderError>(user(2))
+            })
+            .await
+            .unwrap();
+
+        release_tx.send(()).unwrap();
+
+        assert_eq!(fresh, user(2));
+        assert_eq!(stale_task.await.unwrap(), user(1));
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        assert_eq!(users.get("1").await.unwrap(), Some(user(2)));
     }
 
     #[tokio::test]

@@ -18,6 +18,15 @@ pub type Result<T> = std::result::Result<T, CacheError>;
 ///
 /// v0 treats keys as application-provided strings. Query adapters may later derive
 /// these keys from SQL text and typed arguments.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache_core::CacheKey;
+///
+/// let key = CacheKey::new("users:42");
+/// assert_eq!(key.as_str(), "users:42");
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CacheKey<'a>(Cow<'a, str>);
 
@@ -57,6 +66,23 @@ impl fmt::Display for CacheKey<'_> {
 }
 
 /// Per-entry cache behavior.
+///
+/// Options are passed to `put`, `get_or_load`, and loader helper methods.
+///
+/// # Example
+///
+/// ```rust
+/// use std::time::Duration;
+///
+/// use hydracache_core::CacheOptions;
+///
+/// let options = CacheOptions::new()
+///     .ttl(Duration::from_secs(60))
+///     .tags(["users", "user:42"]);
+///
+/// assert_eq!(options.ttl_value(), Some(Duration::from_secs(60)));
+/// assert_eq!(options.tags_value(), &["users".to_owned(), "user:42".to_owned()]);
+/// ```
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CacheOptions {
     ttl: Option<Duration>,
@@ -103,6 +129,19 @@ impl CacheOptions {
 }
 
 /// Snapshot of lightweight cache counters.
+///
+/// The counters are intentionally lightweight and approximate enough for local
+/// observability. They are not intended to be a durable metrics store.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache_core::CacheStats;
+///
+/// let stats = CacheStats::default();
+/// assert_eq!(stats.hits, 0);
+/// assert_eq!(stats.single_flight_joins, 0);
+/// ```
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct CacheStats {
     /// Successful cache lookups.
@@ -124,6 +163,26 @@ pub struct CacheStats {
 }
 
 /// Serialization boundary for cached values.
+///
+/// Implement this trait to replace the default [`PostcardCodec`].
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache_core::{CacheCodec, PostcardCodec};
+/// use serde::{Deserialize, Serialize};
+///
+/// #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+/// struct User {
+///     id: u64,
+/// }
+///
+/// let codec = PostcardCodec;
+/// let bytes = codec.encode(&User { id: 1 }).unwrap();
+/// let decoded: User = codec.decode(&bytes).unwrap();
+///
+/// assert_eq!(decoded, User { id: 1 });
+/// ```
 pub trait CacheCodec: Clone + Send + Sync + 'static {
     /// Encode a typed value into bytes.
     fn encode<T>(&self, value: &T) -> Result<Bytes>
@@ -137,6 +196,9 @@ pub trait CacheCodec: Clone + Send + Sync + 'static {
 }
 
 /// Default compact binary codec for v0.
+///
+/// `PostcardCodec` is compact and works well for local cache values that derive
+/// `serde::Serialize` and `serde::Deserialize`.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct PostcardCodec;
 
@@ -159,6 +221,15 @@ impl CacheCodec for PostcardCodec {
 }
 
 /// Errors returned by HydraCache.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache_core::CacheError;
+///
+/// let error = CacheError::Backend("store unavailable".to_owned());
+/// assert_eq!(error.to_string(), "cache backend error: store unavailable");
+/// ```
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum CacheError {
     /// Failed to encode a value before storing it.

@@ -55,6 +55,37 @@ let user = cache
     .await?;
 ```
 
+## Use A Typed Namespace
+
+Use `typed::<T>("namespace")` when a part of your application repeatedly caches
+one value type.
+
+```rust
+let users = cache.typed::<User>("users");
+
+users
+    .put("42", user, CacheOptions::new().tag("user:42"))
+    .await?;
+
+let cached = users.get("42").await?;
+```
+
+The physical key is namespaced as `users:42`, but the typed view keeps the
+call-site focused on `User` values.
+
+Typed caches share the same underlying storage and stats:
+
+```rust
+let users = cache.typed::<User>("users");
+let admins = cache.typed::<User>("admins");
+
+users.put("42", user, CacheOptions::new()).await?;
+admins.put("42", admin, CacheOptions::new()).await?;
+```
+
+These entries are stored under different physical keys: `users:42` and
+`admins:42`.
+
 ## Use TTLs
 
 ```rust
