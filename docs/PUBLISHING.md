@@ -71,8 +71,8 @@ cargo check --workspace --all-targets --locked
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --doc --workspace --locked
+Set-Item -Path Env:RUSTDOCFLAGS -Value '-D warnings'; cargo doc --workspace --no-deps --locked
 
-cargo test
 cargo package -p hydracache-core
 cargo publish -p hydracache-core
 

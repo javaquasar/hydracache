@@ -36,6 +36,11 @@ jobs:
       - name: Test
         run: cargo test --workspace --locked
 
+      - name: Documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --workspace --no-deps --locked
+
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 

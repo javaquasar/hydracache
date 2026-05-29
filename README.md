@@ -176,7 +176,30 @@ The v0 release plan is maintained here:
 
 ## Workspace
 
-- `crates/hydracache-core` - core public types, codec, options, errors, stats
-- `crates/hydracache` - user-facing local cache runtime
+- `crates/hydracache-core` - core public types: keys, tags, options, stats, codec, errors
+- `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, and stats
 - `crates/hydracache-macros` - future macro ergonomics
 - `crates/hydracache-sqlx` - future SQLx-first adapter layer
+
+## Crate Layout
+
+`hydracache` keeps public API re-exports in `src/lib.rs` and splits runtime code
+into focused modules:
+
+- `cache.rs` - `HydraCache` runtime API
+- `builder.rs` - local cache builder
+- `typed.rs` - `TypedCache<T>` namespaced view
+- `entry.rs` - encoded cache entries and TTL expiration
+- `inflight.rs` - local single-flight in-flight load tracking
+- `tag_index.rs` - tag index and generation freshness checks
+- `stats.rs` - internal stats counters
+
+`hydracache-core` keeps public API re-exports in `src/lib.rs` and splits shared
+types into:
+
+- `key.rs` - `CacheKey` and `CacheKeyBuilder`
+- `tags.rs` - `TagSet`
+- `options.rs` - `CacheOptions`
+- `stats.rs` - `CacheStats`
+- `codec.rs` - `CacheCodec` and `PostcardCodec`
+- `error.rs` - `CacheError`
