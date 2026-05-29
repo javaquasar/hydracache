@@ -58,6 +58,10 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
+Then run the `Post Publish Verification` GitHub Actions workflow manually with
+the published version. It creates a fresh consumer crate and installs
+`hydracache` and `hydracache-core` from crates.io.
+
 ## Publishing an update
 
 Published versions cannot be overwritten. For any fix after `0.1.0`, bump the
@@ -86,6 +90,9 @@ Then tag and push the new version:
 git tag -a v0.6.0 -m "Release v0.6.0"
 git push origin v0.6.0
 ```
+
+After the tag is pushed, run the `Post Publish Verification` workflow manually
+with the same version, for example `0.6.0`.
 
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is

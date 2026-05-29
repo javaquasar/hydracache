@@ -1,0 +1,96 @@
+name: Post Publish Verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published HydraCache version to verify
+        required: true
+        default: 0.6.0
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify published crates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Create consumer project
+        run: cargo new hydracache-consumer --lib
+
+      - name: Add published dependencies
+        working-directory: hydracache-consumer
+        run: |
+          cargo add hydracache@${{ inputs.version }}
+          cargo add hydracache-core@${{ inputs.version }}
+          cargo add serde --features derive
+          cargo add tokio --features macros,rt-multi-thread
+
+      - name: Add smoke test
+        working-directory: hydracache-consumer
+        run: |
+          cat > src/lib.rs <<'RS'
+          use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
+          use serde::{Deserialize, Serialize};
+
+          #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+          struct User {
+              id: u64,
+              name: String,
+          }
+
+          #[tokio::test]
+          async fn published_crate_smoke_test() -> hydracache::CacheResult<()> {
+              let cache = HydraCache::local().build();
+              let users = cache.typed::<User>("users");
+
+              let key = CacheKeyBuilder::new()
+                  .tenant(7)
+                  .entity("user", 42)
+                  .build_string();
+
+              let tags = TagSet::new()
+                  .tenant(7)
+                  .entity("user", 42);
+
+              let user = users
+                  .get_or_insert_with(
+                      &key,
+                      CacheOptions::new().tag_set(tags),
+                      || async {
+                          User {
+                              id: 42,
+                              name: "Ada".to_owned(),
+                          }
+                      },
+                  )
+                  .await?;
+
+              assert_eq!(user.id, 42);
+              assert!(users.contains_key(&key).await);
+
+              assert_eq!(users.invalidate_tag("user:42").await?, 1);
+              assert_eq!(users.get(&key).await?, None);
+
+              Ok(())
+          }
+          RS
+
+      - name: Check published consumer
+        working-directory: hydracache-consumer
+        run: cargo check
+
+      - name: Test published consumer
+        working-directory: hydracache-consumer
+        run: cargo test
+
+      - name: Build published docs
+        working-directory: hydracache-consumer
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps
