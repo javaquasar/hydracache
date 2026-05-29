@@ -1,0 +1,20 @@
+[package]
+name = "hydracache-sqlx"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+description = "SQLx adapter helpers for HydraCache query result caching."
+
+[dependencies]
+hydracache.workspace = true
+hydracache-core.workspace = true
+serde.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

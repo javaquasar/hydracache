@@ -27,7 +27,8 @@ homepage = "https://github.com/javaquasar/hydracache"
 ## First publish
 
 Publish workspace crates in dependency order. `hydracache` depends on
-`hydracache-core`, so `hydracache-core` must be published first.
+`hydracache-core`, and adapter crates such as `hydracache-sqlx` depend on both
+the core/runtime crates and external integrations.
 
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
@@ -45,6 +46,13 @@ cargo package -p hydracache
 cargo publish -p hydracache
 ```
 
+Adapter crates are published after the runtime crate they depend on:
+
+```powershell
+cargo package -p hydracache-sqlx
+cargo publish -p hydracache-sqlx
+```
+
 If `hydracache` cannot find `hydracache-core`, wait a little longer and retry:
 
 ```powershell
@@ -60,7 +68,7 @@ git push origin v0.1.0
 
 Then run the `Post Publish Verification` GitHub Actions workflow manually with
 the published version. It creates a fresh consumer crate and installs
-`hydracache` and `hydracache-core` from crates.io.
+`hydracache`, `hydracache-core`, and published adapter crates from crates.io.
 
 ## Publishing an update
 
@@ -82,21 +90,26 @@ cargo publish -p hydracache-core
 
 cargo package -p hydracache
 cargo publish -p hydracache
+
+cargo package -p hydracache-sqlx
+cargo publish -p hydracache-sqlx
 ```
 
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.6.0 -m "Release v0.6.0"
-git push origin v0.6.0
+git tag -a v0.7.0 -m "Release v0.7.0"
+git push origin v0.7.0
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually
-with the same version, for example `0.6.0`.
+with the same version, for example `0.7.0`.
 
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is
-not required.
+not required. If an adapter crate version depends on a freshly published
+runtime version, publish the runtime first and wait for the crates.io index to
+update before publishing the adapter.
 
 ## Git Tags
 
@@ -118,4 +131,3 @@ git tag --sort=-creatordate
 These crates are intentionally not published while they are placeholders:
 
 - `hydracache-macros`
-- `hydracache-sqlx`

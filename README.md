@@ -61,7 +61,6 @@ The first version includes:
 
 Out of scope for v0:
 
-- SQLx adapter
 - proc macros
 - distributed invalidation
 - cluster roles
@@ -167,19 +166,61 @@ Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "
 
 `stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, and evictions. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
 
+## SQLx Adapter
+
+`hydracache-sqlx` is the first database result-cache adapter crate. It keeps
+SQLx responsible for pools, transactions, macros, and row mapping, while
+HydraCache owns the explicit cache boundary: key, tags, TTL, single-flight, and
+storage.
+
+```rust
+use hydracache::HydraCache;
+use hydracache_sqlx::SqlxCache;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct User {
+    id: i64,
+    name: String,
+}
+
+# async fn example() -> hydracache_sqlx::Result<()> {
+let local = HydraCache::local().build();
+let queries = SqlxCache::new(local, "db");
+
+let user = queries
+    .query_as::<User>("select id, name from users where id = $1")
+    .key("user:42")
+    .tag("user:42")
+    .fetch_with(|| async {
+        Ok::<_, std::io::Error>(User {
+            id: 42,
+            name: "Ada".to_owned(),
+        })
+    })
+    .await?;
+# Ok(())
+# }
+```
+
+The first adapter layer intentionally uses `fetch_with` instead of hiding SQLx
+behind another query API. That lets applications keep `sqlx::query!`,
+`sqlx::query_as!`, transactions, and pool choices at the call site.
+
 ## Release Plan
 
 The v0 release plan is maintained here:
 
 - [docs/plans/V0_RELEASE_PLAN.md](docs/plans/V0_RELEASE_PLAN.md)
 - [docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md](docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md)
+- [docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md](docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md)
 
 ## Workspace
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, codec, errors
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, and stats
 - `crates/hydracache-macros` - future macro ergonomics
-- `crates/hydracache-sqlx` - future SQLx-first adapter layer
+- `crates/hydracache-sqlx` - SQLx-oriented result-cache adapter helpers
 
 ## Crate Layout
 
