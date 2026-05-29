@@ -86,6 +86,56 @@ admins.put("42", admin, CacheOptions::new()).await?;
 These entries are stored under different physical keys: `users:42` and
 `admins:42`.
 
+## Build Keys From Segments
+
+Use `CacheKeyBuilder` when keys have multiple logical parts:
+
+```rust
+use hydracache::CacheKeyBuilder;
+
+let key = CacheKeyBuilder::new()
+    .tenant(7)
+    .entity("user", 42)
+    .build_string();
+
+assert_eq!(key, "tenant:7:user:42");
+```
+
+Segments are escaped. A segment such as `tenant:7` remains one logical segment:
+
+```rust
+let key = CacheKeyBuilder::new()
+    .segment("tenant:7")
+    .segment("users")
+    .build_string();
+
+assert_eq!(key, "tenant%3A7:users");
+```
+
+Typed caches can build physical namespaced keys from a builder:
+
+```rust
+let users = cache.typed::<User>("users");
+let key = users.key_from(CacheKeyBuilder::new().tenant(7).entity("user", 42));
+
+assert_eq!(key, "users:tenant:7:user:42");
+```
+
+## Build Tag Sets
+
+Use `TagSet` when multiple operations should share the same invalidation groups:
+
+```rust
+use hydracache::{CacheOptions, TagSet};
+
+let tags = TagSet::new()
+    .tag("users")
+    .tenant(7)
+    .entity("user", 42);
+
+let options = CacheOptions::new().tag_set(tags);
+```
+
 ## Use TTLs
 
 ```rust

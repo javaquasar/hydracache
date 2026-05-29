@@ -86,7 +86,9 @@ use std::time::{Duration, Instant};
 use bytes::Bytes;
 use futures_util::future::{FutureExt, Shared};
 use hydracache_core::{CacheCodec, Result};
-pub use hydracache_core::{CacheError, CacheKey, CacheOptions, CacheStats, PostcardCodec};
+pub use hydracache_core::{
+    CacheError, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, TagSet,
+};
 use moka::future::Cache;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::sync::RwLock;
@@ -744,6 +746,16 @@ where
         format!("{}:{key}", self.namespace)
     }
 
+    /// Build a physical key from escaped key segments inside this namespace.
+    pub fn key_from(&self, builder: CacheKeyBuilder) -> String {
+        let key = builder.build_string();
+        if key.is_empty() {
+            self.namespace.clone()
+        } else {
+            format!("{}:{key}", self.namespace)
+        }
+    }
+
     /// Get and decode a typed cached value.
     pub async fn get(&self, key: &str) -> Result<Option<T>> {
         self.cache.get(&self.key(key)).await
@@ -1358,6 +1370,59 @@ mod tests {
         assert_eq!(tenant_users.key("42"), "tenant:7:users:42");
         assert_eq!(tenant_users.get("42").await.unwrap(), Some(user(42)));
         assert!(cache.contains_key("tenant:7:users:42").await);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_key_from_uses_escaped_builder_segments() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        let key = users.key_from(
+            CacheKeyBuilder::new()
+                .tenant("tenant:7")
+                .entity("user:type", "42%beta"),
+        );
+
+        assert_eq!(key, "users:tenant:tenant%3A7:user%3Atype:42%25beta");
+    }
+
+    #[tokio::test]
+    async fn typed_cache_can_store_using_key_builder_output() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let key = CacheKeyBuilder::new().tenant(7).entity("user", 42);
+        let physical_key = users.key_from(key);
+
+        cache
+            .put(&physical_key, user(42), CacheOptions::new())
+            .await
+            .unwrap();
+
+        let cached: Option<User> = cache.get("users:tenant:7:user:42").await.unwrap();
+        assert_eq!(cached, Some(user(42)));
+    }
+
+    #[tokio::test]
+    async fn cache_options_tag_set_works_with_runtime_invalidation() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+        let tags = TagSet::new().tag("users").entity("user", 42).tenant(7);
+
+        users
+            .put("42", user(42), CacheOptions::new().tag_set(tags))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.invalidate_tag("user:42").await.unwrap(), 1);
+        assert_eq!(users.get("42").await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn typed_cache_empty_key_builder_maps_to_namespace_key() {
+        let cache = HydraCache::local().build();
+        let users = cache.typed::<User>("users");
+
+        assert_eq!(users.key_from(CacheKeyBuilder::new()), "users");
     }
 
     #[tokio::test]

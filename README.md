@@ -44,6 +44,8 @@ The first version includes:
 - `get_or_insert_with`
 - `try_get_or_insert_with`
 - `TypedCache<T>` namespaced typed view
+- `CacheKeyBuilder` for escaped segmented keys
+- `TagSet` for reusable invalidation tag groups
 - local single-flight miss deduplication
 - `contains_key`
 - per-entry TTL and default TTL
@@ -106,13 +108,25 @@ let user = cache
 cache.invalidate_tag("user:42").await?;
 
 let users = cache.typed::<User>("users");
+let user_key = hydracache::CacheKeyBuilder::new()
+    .tenant(7)
+    .entity("user", 42);
+
 let typed_user = users
-    .get_or_insert_with("42", CacheOptions::new().tag("user:42"), || async {
-        User {
-            id: 42,
-            name: "typed-user".to_owned(),
-        }
-    })
+    .get_or_insert_with(
+        &user_key.build_string(),
+        CacheOptions::new().tag_set(
+            hydracache::TagSet::new()
+                .tenant(7)
+                .entity("user", 42),
+        ),
+        || async {
+            User {
+                id: 42,
+                name: "typed-user".to_owned(),
+            }
+        },
+    )
     .await?;
 # Ok(())
 # }
@@ -132,6 +146,10 @@ let typed_user = users
 keeps the shared storage, stats, single-flight, tags, and invalidation safety,
 but removes repeated type annotations at call sites and prefixes keys as
 `namespace:key`.
+
+`CacheKeyBuilder` builds escaped `:`-separated keys from segments. `TagSet`
+collects reusable invalidation tags and can be attached with
+`CacheOptions::tag_set`.
 
 Concurrent `get_or_load` calls for the same missing key share one loader execution. Cache hits bypass single-flight entirely.
 
