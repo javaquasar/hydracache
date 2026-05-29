@@ -83,8 +83,8 @@ cargo publish -p hydracache
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.5.0 -m "Release v0.5.0"
-git push origin v0.5.0
+git tag -a v0.6.0 -m "Release v0.6.0"
+git push origin v0.6.0
 ```
 
 Only publish crates that changed. If only `hydracache` changed and its
