@@ -11,4 +11,4 @@ Each item should explain:
 
 ## Open Items
 
-- [TD-0001: MSRV-pinned SQLx transitive dependencies](TD-0001-msrv-pinned-sqlx-transitive-dependencies.md)
+- [TD-0001: Historical MSRV-pinned SQLx/testcontainers transitive dependencies](TD-0001-msrv-pinned-sqlx-transitive-dependencies.md)
