@@ -4,7 +4,9 @@ HydraCache is a Rust-native local async cache that is designed to grow toward da
 
 ## Status
 
-HydraCache is in early development. The current implementation targets the first local-cache release.
+HydraCache is in early development. The current implementation provides the
+local async cache runtime plus the first database result-cache adapters:
+`hydracache-db` and `hydracache-sqlx`.
 
 ## Why HydraCache?
 
@@ -58,13 +60,15 @@ The first version includes:
 - single-flight join stats
 - tag-generation invalidation safety
 - Moka-backed local storage
+- database-neutral query result-cache descriptors
+- SQLx helper methods: `fetch_one`, `fetch_optional`, and `fetch_all`
 
 Out of scope for v0:
 
 - proc macros
 - distributed invalidation
 - cluster roles
-- generation counters
+- public generation-counter APIs
 - persistence
 
 ## Example
@@ -218,6 +222,23 @@ build.
 Testing and coverage commands are documented in
 [docs/TESTING.md](docs/TESTING.md).
 
+## Quality Gate
+
+The main local verification commands are:
+
+```powershell
+cargo fmt --all -- --check
+cargo check --workspace --all-targets --locked
+cargo test --workspace --all-targets --locked
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+cargo test --doc --workspace --locked
+cargo llvm-cov --workspace --all-targets --locked --summary-only
+```
+
+Coverage is tracked with `cargo-llvm-cov`. The current target is `100%`
+function coverage and `99%+` total line coverage, with visible uncovered source
+lines investigated before release.
+
 ## Which Crate Should I Use?
 
 - `hydracache` - use this for the local async cache, typed cache, TTLs, tags, single-flight, and stats.
@@ -232,6 +253,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_RELEASE_PLAN.md](docs/plans/V0_RELEASE_PLAN.md)
 - [docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md](docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md)
 - [docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md](docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md)
+- [docs/plans/V0_8_SQLX_HELPERS_PLAN.md](docs/plans/V0_8_SQLX_HELPERS_PLAN.md)
 
 ## Workspace
 
