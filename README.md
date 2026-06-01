@@ -213,6 +213,12 @@ behind another query API. That lets applications keep `sqlx::query!`,
 `named::<T>("load-user")` when you want a diagnostic label; otherwise
 `cached::<T>()` derives diagnostics from the namespace/key context.
 
+`hydracache-sqlx` includes a Postgres integration test backed by
+testcontainers. When Docker is available, it verifies cache hits, tag
+invalidation, and reloads against a real database. When Docker is unavailable,
+the test logs a skip message and exits successfully instead of failing the
+build.
+
 ## Which Crate Should I Use?
 
 - `hydracache` - use this for the local async cache, typed cache, TTLs, tags, single-flight, and stats.
