@@ -88,6 +88,7 @@ cargo test --workspace --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --doc --workspace --locked
 Set-Item -Path Env:RUSTDOCFLAGS -Value '-D warnings'; cargo doc --workspace --no-deps --locked
+cargo llvm-cov --workspace --all-targets --locked --summary-only
 
 cargo +1.88.0 check --workspace --all-targets --locked
 cargo +1.88.0 test --workspace --locked
@@ -108,12 +109,12 @@ cargo publish -p hydracache-sqlx
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.7.0 -m "Release v0.7.0"
-git push origin v0.7.0
+git tag -a v0.8.0 -m "Release v0.8.0"
+git push origin v0.8.0
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually
-with the same version, for example `0.7.0`.
+with the same version, for example `0.8.0`.
 
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is
@@ -130,6 +131,11 @@ the update checklist above, not only the stable toolchain commands.
 `hydracache-sqlx` uses SQLx and testcontainers dev dependencies, so dependency
 updates can move the practical Rust floor. If `cargo update` changes those
 packages, verify MSRV before committing the lockfile.
+
+Coverage setup and report commands are documented in
+[TESTING.md](TESTING.md). The release checklist uses stable `cargo-llvm-cov`
+coverage; doctest coverage through `cargo llvm-cov --doctests` requires nightly
+Rust and is not part of the stable release gate.
 
 The previous Rust `1.85` dependency pins are documented historically in
 [TD-0001](technical-debt/TD-0001-msrv-pinned-sqlx-transitive-dependencies.md).

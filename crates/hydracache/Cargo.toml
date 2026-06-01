@@ -22,3 +22,6 @@ tokio.workspace = true
 
 [dev-dependencies]
 loom.workspace = true
+
+[lints]
+workspace = true

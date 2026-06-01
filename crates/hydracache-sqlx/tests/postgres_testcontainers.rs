@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 use hydracache::HydraCache;
-use hydracache_sqlx::SqlxCache;
+use hydracache_sqlx::{SqlxCache, SqlxQueryExt};
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use testcontainers_modules::{
@@ -39,6 +39,11 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .bind("Ada")
         .execute(&pool)
         .await?;
+    sqlx::query("insert into users (id, name) values ($1, $2)")
+        .bind(7_i64)
+        .bind("Linus")
+        .execute(&pool)
+        .await?;
 
     let cache = HydraCache::local().build();
     let queries = SqlxCache::new(cache, "postgres");
@@ -63,6 +68,126 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
     let reloaded = load_user(&queries, &pool, &loader_calls).await?;
     assert_eq!(reloaded.name, "Grace");
     assert_eq!(loader_calls.load(Ordering::SeqCst), 2);
+
+    let helper_first = queries
+        .cached::<(i64, String)>()
+        .key("helper:user:42")
+        .tag("user:42")
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(helper_first, (42, "Grace".to_owned()));
+
+    sqlx::query("update users set name = $1 where id = $2")
+        .bind("Katherine")
+        .bind(42_i64)
+        .execute(&pool)
+        .await?;
+
+    let helper_cached = queries
+        .cached::<(i64, String)>()
+        .key("helper:user:42")
+        .tag("user:42")
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(helper_cached, (42, "Grace".to_owned()));
+
+    let missing = queries
+        .cached::<(i64, String)>()
+        .key("helper:user:missing")
+        .tag("user:missing")
+        .fetch_optional(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(999_i64),
+        )
+        .await?;
+    assert_eq!(missing, None);
+
+    let optional_user = queries
+        .cached::<(i64, String)>()
+        .key("helper:user:7")
+        .tag("user:7")
+        .fetch_optional(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(7_i64),
+        )
+        .await?;
+    assert_eq!(optional_user, Some((7, "Linus".to_owned())));
+
+    sqlx::query("update users set name = $1 where id = $2")
+        .bind("Barbara")
+        .bind(7_i64)
+        .execute(&pool)
+        .await?;
+
+    let optional_cached = queries
+        .cached::<(i64, String)>()
+        .key("helper:user:7")
+        .tag("user:7")
+        .fetch_optional(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(7_i64),
+        )
+        .await?;
+    assert_eq!(optional_cached, Some((7, "Linus".to_owned())));
+
+    let all_users = queries
+        .cached::<(i64, String)>()
+        .key("helper:users:all")
+        .tag("users")
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users order by id"),
+        )
+        .await?;
+    assert_eq!(
+        all_users,
+        vec![(7, "Barbara".to_owned()), (42, "Katherine".to_owned())]
+    );
+
+    let no_users = queries
+        .cached::<(i64, String)>()
+        .key("helper:users:none")
+        .tag("users:none")
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id < $1 order by id").bind(0_i64),
+        )
+        .await?;
+    assert!(no_users.is_empty());
+
+    sqlx::query("insert into users (id, name) values ($1, $2)")
+        .bind(-1_i64)
+        .bind("Negative")
+        .execute(&pool)
+        .await?;
+
+    let no_users_cached = queries
+        .cached::<(i64, String)>()
+        .key("helper:users:none")
+        .tag("users:none")
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id < $1 order by id").bind(0_i64),
+        )
+        .await?;
+    assert!(no_users_cached.is_empty());
+
+    let failed = queries
+        .cached::<(i64, String)>()
+        .key("helper:broken")
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, missing_column from users where id = $1").bind(42_i64),
+        )
+        .await;
+    assert!(failed.is_err());
+    assert!(!queries.cache().contains_key("postgres:helper:broken").await);
 
     Ok(())
 }
@@ -106,4 +231,5 @@ async fn load_user(
             Ok::<_, sqlx::Error>(User { id, name })
         })
         .await
+        .map_err(Into::into)
 }

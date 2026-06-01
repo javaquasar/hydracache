@@ -179,39 +179,35 @@ SQLx.
 
 ```rust
 use hydracache::HydraCache;
-use hydracache_db::DbCache;
-use serde::{Deserialize, Serialize};
+use hydracache_sqlx::{DbCache, SqlxQueryExt};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct User {
-    id: i64,
-    name: String,
-}
-
-# async fn example() -> hydracache_sqlx::Result<()> {
+# async fn example(pool: sqlx::PgPool) -> hydracache_sqlx::Result<()> {
 let local = HydraCache::local().build();
 let queries = DbCache::new(local, "db");
 
-let user = queries
-    .cached::<User>()
+let (id, name): (i64, String) = queries
+    .cached::<(i64, String)>()
     .key("user:42")
     .tag("user:42")
-    .fetch_with(|| async {
-        Ok::<_, std::io::Error>(User {
-            id: 42,
-            name: "Ada".to_owned(),
-        })
-    })
+    .fetch_one(
+        pool.clone(),
+        sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+    )
     .await?;
+
+assert_eq!(id, 42);
+assert!(!name.is_empty());
 # Ok(())
 # }
 ```
 
-The first adapter layer intentionally uses `fetch_with` instead of hiding SQLx
-behind another query API. That lets applications keep `sqlx::query!`,
-`sqlx::query_as!`, transactions, and pool choices at the call site. Use
-`named::<T>("load-user")` when you want a diagnostic label; otherwise
-`cached::<T>()` derives diagnostics from the namespace/key context.
+`SqlxQueryExt` adds `fetch_one`, `fetch_optional`, and `fetch_all` for common
+pool-backed reads. `fetch_optional` caches `None`, and `fetch_all` caches empty
+vectors, so repeated misses do not keep hitting the database. Use `fetch_with`
+when you need `sqlx::query!`, `sqlx::query_as!`, transactions, or repository
+methods at the call site. Use `named::<T>("load-user")` when you want a
+diagnostic label; otherwise `cached::<T>()` derives diagnostics from the
+namespace/key context.
 
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. When Docker is available, it verifies cache hits, tag
@@ -219,11 +215,14 @@ invalidation, and reloads against a real database. When Docker is unavailable,
 the test logs a skip message and exits successfully instead of failing the
 build.
 
+Testing and coverage commands are documented in
+[docs/TESTING.md](docs/TESTING.md).
+
 ## Which Crate Should I Use?
 
 - `hydracache` - use this for the local async cache, typed cache, TTLs, tags, single-flight, and stats.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
-- `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and future SQLx-specific helpers.
+- `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
 
 ## Release Plan

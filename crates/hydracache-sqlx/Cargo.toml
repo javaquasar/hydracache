@@ -10,12 +10,15 @@ readme.workspace = true
 description = "SQLx adapter helpers for HydraCache query result caching."
 
 [dependencies]
+async-trait.workspace = true
 hydracache.workspace = true
+hydracache-core.workspace = true
 hydracache-db.workspace = true
+serde.workspace = true
 sqlx.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
-serde.workspace = true
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls"] }
 testcontainers-modules.workspace = true
 tokio.workspace = true

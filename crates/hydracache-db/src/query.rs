@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt;
 use std::future::Future;
 use std::marker::PhantomData;
 use std::time::Duration;
@@ -56,13 +57,36 @@ use crate::{DbCacheError, Result};
 /// # Ok(())
 /// # }
 /// ```
-#[derive(Debug, Clone)]
 pub struct DbCache<C = PostcardCodec>
 where
     C: CacheCodec,
 {
     cache: HydraCache<C>,
     namespace: String,
+}
+
+impl<C> Clone for DbCache<C>
+where
+    C: CacheCodec,
+{
+    fn clone(&self) -> Self {
+        Self {
+            cache: self.cache.clone(),
+            namespace: self.namespace.clone(),
+        }
+    }
+}
+
+impl<C> fmt::Debug for DbCache<C>
+where
+    C: CacheCodec,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DbCache")
+            .field("namespace", &self.namespace)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<C> DbCache<C>
@@ -93,7 +117,15 @@ where
     /// inside the `fetch_with` loader through a database client, ORM, or
     /// repository method.
     pub fn cached<T>(&self) -> DbQuery<T, C> {
-        self.named("unnamed")
+        DbQuery {
+            cache: self.cache.clone(),
+            namespace: self.namespace.clone(),
+            name: None,
+            key: None,
+            tags: TagSet::new(),
+            ttl: None,
+            value: PhantomData,
+        }
     }
 
     /// Start describing a cacheable database-loaded value with a diagnostic name.
@@ -125,7 +157,6 @@ where
 /// TTL that match their freshness model. An operation name is optional and used
 /// only for diagnostics. `fetch_with` executes the supplied loader only on a
 /// cache miss.
-#[derive(Debug, Clone)]
 pub struct DbQuery<T, C = PostcardCodec>
 where
     C: CacheCodec,
@@ -137,6 +168,39 @@ where
     tags: TagSet,
     ttl: Option<Duration>,
     value: PhantomData<fn() -> T>,
+}
+
+impl<T, C> Clone for DbQuery<T, C>
+where
+    C: CacheCodec,
+{
+    fn clone(&self) -> Self {
+        Self {
+            cache: self.cache.clone(),
+            namespace: self.namespace.clone(),
+            name: self.name.clone(),
+            key: self.key.clone(),
+            tags: self.tags.clone(),
+            ttl: self.ttl,
+            value: PhantomData,
+        }
+    }
+}
+
+impl<T, C> fmt::Debug for DbQuery<T, C>
+where
+    C: CacheCodec,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("DbQuery")
+            .field("namespace", &self.namespace)
+            .field("name", &self.name)
+            .field("key", &self.key)
+            .field("tags", &self.tags)
+            .field("ttl", &self.ttl)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<T, C> DbQuery<T, C>
@@ -232,6 +296,21 @@ where
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
     {
+        self.fetch_value_with(loader).await
+    }
+
+    /// Fetch a cached value with an output type chosen by an adapter.
+    ///
+    /// Most application code should use [`DbQuery::fetch_with`]. This method is
+    /// intended for adapter crates that keep the descriptor type focused on a
+    /// database row while caching shapes such as `Option<T>` or `Vec<T>`.
+    pub async fn fetch_value_with<U, E, F, Fut>(self, loader: F) -> Result<U>
+    where
+        U: Serialize + DeserializeOwned + Send + 'static,
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<U, E>> + Send + 'static,
+    {
         let Some(key) = self.physical_key() else {
             return Err(DbCacheError::MissingKey {
                 operation: self.operation_label(),
@@ -253,12 +332,10 @@ where
     }
 
     fn operation_label(&self) -> String {
-        match (&self.name, &self.key) {
-            (Some(name), _) => name.clone(),
-            (None, Some(key)) if self.namespace.is_empty() => key.clone(),
-            (None, Some(key)) => physical_key(&self.namespace, key),
-            (None, None) if self.namespace.is_empty() => "unnamed".to_owned(),
-            (None, None) => format!("{}:unnamed", self.namespace),
+        match &self.name {
+            Some(name) => name.clone(),
+            None if self.namespace.is_empty() => "unnamed".to_owned(),
+            None => format!("{}:unnamed", self.namespace),
         }
     }
 }

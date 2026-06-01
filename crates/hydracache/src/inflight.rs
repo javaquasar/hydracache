@@ -77,3 +77,43 @@ impl InFlightMap {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use bytes::Bytes;
+    use futures_util::FutureExt;
+
+    use super::*;
+
+    fn snapshot(global: u64) -> LoadGenerationSnapshot {
+        LoadGenerationSnapshot {
+            global,
+            tags: Vec::new(),
+        }
+    }
+
+    fn shared_bytes(value: &'static [u8]) -> SharedLoadFuture {
+        async move { Ok(Bytes::from_static(value)) }
+            .boxed()
+            .shared()
+    }
+
+    #[tokio::test]
+    async fn insert_or_get_current_returns_existing_load_for_same_generation() {
+        let map = InFlightMap::default();
+        let generation = snapshot(1);
+        let first = shared_bytes(b"first");
+        let second = shared_bytes(b"second");
+
+        let (_, inserted) = map
+            .insert_or_get_current("key".to_owned(), first.clone(), generation.clone())
+            .await;
+        let (existing, inserted_again) = map
+            .insert_or_get_current("key".to_owned(), second, generation)
+            .await;
+
+        assert!(inserted);
+        assert!(!inserted_again);
+        assert_eq!(existing.await.unwrap(), Bytes::from_static(b"first"));
+    }
+}

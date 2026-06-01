@@ -45,6 +45,7 @@ async fn typed_cache_remove_contains_ttl_and_flush_delegate_to_shared_cache() {
     tokio::time::sleep(Duration::from_millis(40)).await;
     assert!(!users.contains_key("1").await);
     assert!(admins.remove("1").await.unwrap());
+    assert!(!admins.invalidate_key("1").await.unwrap());
 
     users.put("2", user(2), CacheOptions::new()).await.unwrap();
     admins.put("2", user(3), CacheOptions::new()).await.unwrap();

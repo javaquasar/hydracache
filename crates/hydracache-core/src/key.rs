@@ -219,4 +219,15 @@ mod tests {
         assert_eq!(key.as_str(), "user:42");
         assert_eq!(key.to_string(), "user:42");
     }
+
+    #[test]
+    fn cache_key_conversions_preserve_owned_and_borrowed_values() {
+        let borrowed = CacheKey::from("users:1");
+        let owned = CacheKey::from(String::from("users:2"));
+        let promoted = borrowed.clone().into_owned();
+
+        assert_eq!(borrowed.as_str(), "users:1");
+        assert_eq!(owned.as_str(), "users:2");
+        assert_eq!(promoted.as_str(), "users:1");
+    }
 }

@@ -23,10 +23,58 @@ async fn put_then_get() {
 }
 
 #[tokio::test]
+async fn builder_options_accept_small_limits_and_custom_codec() {
+    let cache = HydraCache::local()
+        .max_capacity(0)
+        .max_entry_bytes(0)
+        .default_ttl(Duration::from_millis(20))
+        .codec(hydracache_core::PostcardCodec)
+        .build();
+
+    cache
+        .put("user:1", user(1), CacheOptions::new())
+        .await
+        .unwrap();
+
+    let cached: Option<User> = cache.get("user:1").await.unwrap();
+    assert_eq!(cached, Some(user(1)));
+}
+
+#[tokio::test]
+async fn cache_and_builder_derived_impls_are_usable() {
+    let builder = HydraCache::local();
+    let builder_clone = builder.clone();
+    let cache = builder_clone.build();
+
+    assert!(format!("{builder:?}").contains("HydraCacheBuilder"));
+    assert!(format!("{cache:?}").contains("HydraCache"));
+}
+
+#[tokio::test]
 async fn get_missing_returns_none() {
     let cache = HydraCache::local().build();
     let cached: Option<User> = cache.get("missing").await.unwrap();
     assert_eq!(cached, None);
+}
+
+#[tokio::test]
+async fn get_removes_expired_entry() {
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:expired",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(20)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    let cached: Option<User> = cache.get("user:expired").await.unwrap();
+    assert_eq!(cached, None);
+    assert!(!cache.contains_key("user:expired").await);
 }
 
 #[tokio::test]
@@ -130,6 +178,29 @@ async fn remove_invalidate_tag_and_flush_clear_expected_entries() {
     cache.flush().await.unwrap();
     let user_3: Option<User> = cache.get("user:3").await.unwrap();
     assert_eq!(user_3, None);
+}
+
+#[tokio::test]
+async fn invalidate_key_alias_removes_one_entry() {
+    let cache = HydraCache::local().build();
+
+    cache
+        .put("user:1", user(1), CacheOptions::new())
+        .await
+        .unwrap();
+
+    assert!(cache.invalidate_key("user:1").await.unwrap());
+    assert!(!cache.invalidate_key("user:1").await.unwrap());
+}
+
+#[tokio::test]
+async fn invalidate_tag_ignores_stale_tag_index_entries() {
+    let cache = HydraCache::local().build();
+    let tags = vec!["ghosts".to_owned()];
+
+    cache.inner.tag_index.register("missing:key", &tags).await;
+
+    assert_eq!(cache.invalidate_tag("ghosts").await.unwrap(), 0);
 }
 
 #[tokio::test]

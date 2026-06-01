@@ -60,3 +60,36 @@ impl CacheCodec for PostcardCodec {
         postcard::from_bytes(bytes).map_err(|source| CacheError::Decode(source.to_string()))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serde::ser::{Serialize, Serializer};
+
+    use super::*;
+
+    struct FailingSerialize;
+
+    impl Serialize for FailingSerialize {
+        fn serialize<S>(&self, _serializer: S) -> std::result::Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            Err(serde::ser::Error::custom("intentional encode failure"))
+        }
+    }
+
+    #[test]
+    fn postcard_codec_reports_encode_errors() {
+        let error = PostcardCodec.encode(&FailingSerialize).unwrap_err();
+
+        assert!(matches!(error, CacheError::Encode(_)));
+    }
+
+    #[test]
+    fn postcard_codec_default_is_available() {
+        let codec = PostcardCodec;
+        let default_codec = PostcardCodec::default();
+
+        assert_eq!(format!("{codec:?}"), format!("{default_codec:?}"));
+    }
+}

@@ -455,6 +455,12 @@ where
             return shared;
         }
 
+        // Coverage builds get one cooperative scheduling point here so tests can
+        // deterministically exercise the defensive "insert_or_get_current lost
+        // the race" branch below. Normal builds do not yield on this path.
+        #[cfg(coverage)]
+        tokio::task::yield_now().await;
+
         let key_owned = key.to_owned();
         let cache = self.clone();
         let load_key = key_owned.clone();

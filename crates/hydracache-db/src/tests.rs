@@ -37,7 +37,7 @@ async fn fetch_with_requires_explicit_key() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "unnamed"
+        Err(DbCacheError::MissingKey { operation }) if operation == "db:unnamed"
     ));
 }
 
@@ -63,6 +63,28 @@ async fn query_builder_exposes_metadata() {
         ]
     );
     assert_eq!(query.ttl_value(), Some(Duration::from_secs(30)));
+}
+
+#[tokio::test]
+async fn query_builder_with_name_replaces_diagnostic_label() {
+    let query = adapter()
+        .cached::<User>()
+        .with_name("load-user")
+        .key("user:1");
+
+    assert_eq!(adapter().namespace(), "db");
+    assert_eq!(query.name(), Some("load-user"));
+}
+
+#[tokio::test]
+async fn adapter_and_query_derived_impls_are_usable() {
+    let cache = adapter();
+    let cache_clone = cache.clone();
+    let query = cache.cached::<User>().key("user:1").clone();
+
+    assert_eq!(cache_clone.namespace(), "db");
+    assert!(format!("{cache:?}").contains("DbCache"));
+    assert!(format!("{query:?}").contains("DbQuery"));
 }
 
 #[tokio::test]
@@ -126,6 +148,30 @@ async fn tag_invalidation_removes_cached_query_result() {
 }
 
 #[tokio::test]
+async fn per_query_ttl_expires_cached_query_result() {
+    let cache = adapter();
+
+    cache
+        .cached::<User>()
+        .key("user:ttl")
+        .ttl(Duration::from_millis(20))
+        .fetch_with(|| async { Ok::<_, LoadError>(user(1)) })
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    let reloaded = cache
+        .cached::<User>()
+        .key("user:ttl")
+        .fetch_with(|| async { Ok::<_, LoadError>(user(2)) })
+        .await
+        .unwrap();
+
+    assert_eq!(reloaded, user(2));
+}
+
+#[tokio::test]
 async fn empty_namespace_uses_logical_key_as_physical_key() {
     let query = DbCache::new(HydraCache::local().build(), "")
         .cached::<User>()
@@ -153,6 +199,115 @@ async fn missing_key_error_uses_available_context() {
     assert!(matches!(
         result,
         Err(DbCacheError::MissingKey { operation }) if operation == "load-profile"
+    ));
+}
+
+#[tokio::test]
+async fn missing_key_error_uses_key_context_for_unnamed_queries() {
+    let result = DbCache::new(HydraCache::local().build(), "")
+        .cached::<User>()
+        .fetch_with(|| async { Ok::<_, LoadError>(user(1)) })
+        .await;
+
+    assert!(matches!(
+        result,
+        Err(DbCacheError::MissingKey { operation }) if operation == "unnamed"
+    ));
+
+    let result = DbCache::new(HydraCache::local().build(), "db")
+        .cached::<User>()
+        .with_name("")
+        .fetch_with(|| async { Ok::<_, LoadError>(user(1)) })
+        .await;
+
+    assert!(matches!(
+        result,
+        Err(DbCacheError::MissingKey { operation }) if operation.is_empty()
+    ));
+}
+
+#[tokio::test]
+async fn fetch_value_with_caches_adapter_chosen_output_type() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+
+    let first: Option<User> = cache
+        .cached::<User>()
+        .key("maybe-user:1")
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(Some(user(1)))
+            }
+        })
+        .await
+        .unwrap();
+
+    let second: Option<User> = cache
+        .cached::<User>()
+        .key("maybe-user:1")
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(Some(user(2)))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, Some(user(1)));
+    assert_eq!(second, Some(user(1)));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn fetch_value_with_caches_empty_vectors() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+
+    let first: Vec<User> = cache
+        .cached::<User>()
+        .key("users:none")
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(Vec::new())
+            }
+        })
+        .await
+        .unwrap();
+
+    let second: Vec<User> = cache
+        .cached::<User>()
+        .key("users:none")
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(vec![user(2)])
+            }
+        })
+        .await
+        .unwrap();
+
+    assert!(first.is_empty());
+    assert!(second.is_empty());
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn fetch_value_with_requires_explicit_key() {
+    let result: crate::Result<Option<User>> = adapter()
+        .cached::<User>()
+        .fetch_value_with(|| async { Ok::<_, LoadError>(None) })
+        .await;
+
+    assert!(matches!(
+        result,
+        Err(DbCacheError::MissingKey { operation }) if operation == "db:unnamed"
     ));
 }
 
