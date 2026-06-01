@@ -107,6 +107,18 @@ async fn for_entity_replaces_key_and_preserves_existing_tags() {
 }
 
 #[tokio::test]
+async fn collection_tag_escapes_collection_segment() {
+    let query = adapter()
+        .entity::<User>("user", 42)
+        .collection_tag("users:active");
+
+    assert_eq!(
+        query.tags_value(),
+        &["user:42".to_owned(), "users%3Aactive".to_owned()]
+    );
+}
+
+#[tokio::test]
 async fn explicit_key_can_override_generated_entity_key() {
     let query = adapter().entity::<User>("user", 42).key("custom:user:42");
 

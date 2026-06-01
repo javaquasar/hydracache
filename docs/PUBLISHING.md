@@ -116,6 +116,24 @@ git push origin v0.9.0
 After the tag is pushed, run the `Post Publish Verification` workflow manually
 with the same version, for example `0.9.0`.
 
+For `0.9.0` and later, the post-publish smoke crate should also exercise the
+database query ergonomics added on top of `hydracache-db`:
+
+```rust
+let entity_query = queries
+    .entity::<(i64, String)>("user", 42)
+    .collection_tag("users");
+assert_eq!(entity_query.key_value(), Some("user:42"));
+assert_eq!(
+    entity_query.tags_value(),
+    &["user:42".to_owned(), "users".to_owned()]
+);
+
+let collection_query = queries.collection::<(i64, String)>("users");
+assert_eq!(collection_query.key_value(), Some("users"));
+assert_eq!(collection_query.tags_value(), &["users".to_owned()]);
+```
+
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is
 not required. If `hydracache-db` depends on a freshly published runtime version,

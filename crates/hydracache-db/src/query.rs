@@ -132,6 +132,26 @@ where
     /// logical key and the entity invalidation tag from escaped key segments.
     /// For example, `entity::<User>("user", 42)` creates key `user:42` and tag
     /// `user:42`; with namespace `db`, the physical cache key is `db:user:42`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    /// use hydracache_db::DbCache;
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: i64,
+    /// }
+    ///
+    /// let queries = DbCache::new(HydraCache::local().build(), "db");
+    /// let query = queries.entity::<User>("user", 42);
+    ///
+    /// assert_eq!(query.key_value(), Some("user:42"));
+    /// assert_eq!(query.tags_value(), &["user:42".to_owned()]);
+    /// assert_eq!(query.physical_key(), Some("db:user:42".to_owned()));
+    /// ```
     pub fn entity<T>(&self, kind: impl ToString, id: impl ToString) -> DbQuery<T, C> {
         self.cached::<T>().for_entity(kind, id)
     }
@@ -141,6 +161,26 @@ where
     /// This sets both the logical key and the collection invalidation tag to
     /// the escaped collection name. For example, `collection::<User>("users")`
     /// creates key `users` and tag `users`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    /// use hydracache_db::DbCache;
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: i64,
+    /// }
+    ///
+    /// let queries = DbCache::new(HydraCache::local().build(), "db");
+    /// let query = queries.collection::<User>("users:active");
+    ///
+    /// assert_eq!(query.key_value(), Some("users%3Aactive"));
+    /// assert_eq!(query.tags_value(), &["users%3Aactive".to_owned()]);
+    /// assert_eq!(query.physical_key(), Some("db:users%3Aactive".to_owned()));
+    /// ```
     pub fn collection<T>(&self, name: impl ToString) -> DbQuery<T, C> {
         let tag = collection_tag(name);
         self.cached::<T>().key(tag.clone()).tag(tag)
@@ -279,6 +319,31 @@ where
     /// `for_entity("user", 42)` sets the key to `user:42` and adds the tag
     /// `user:42`. Both segments are escaped with [`CacheKeyBuilder`], so `:` and
     /// `%` inside one segment cannot accidentally create extra key segments.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    /// use hydracache_db::DbCache;
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: i64,
+    /// }
+    ///
+    /// let queries = DbCache::new(HydraCache::local().build(), "db");
+    /// let query = queries
+    ///     .cached::<User>()
+    ///     .tag("users")
+    ///     .for_entity("user", 42);
+    ///
+    /// assert_eq!(query.key_value(), Some("user:42"));
+    /// assert_eq!(
+    ///     query.tags_value(),
+    ///     &["users".to_owned(), "user:42".to_owned()]
+    /// );
+    /// ```
     pub fn for_entity(mut self, kind: impl ToString, id: impl ToString) -> Self {
         let key = entity_key(kind, id);
         self.key = Some(key.clone());
@@ -296,6 +361,29 @@ where
     ///
     /// Use this with [`DbCache::entity`] or [`DbQuery::for_entity`] when one
     /// entity result also belongs to a broader list or query group.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    /// use hydracache_db::DbCache;
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: i64,
+    /// }
+    ///
+    /// let queries = DbCache::new(HydraCache::local().build(), "db");
+    /// let query = queries
+    ///     .entity::<User>("user", 42)
+    ///     .collection_tag("users:active");
+    ///
+    /// assert_eq!(
+    ///     query.tags_value(),
+    ///     &["user:42".to_owned(), "users%3Aactive".to_owned()]
+    /// );
+    /// ```
     pub fn collection_tag(mut self, name: impl ToString) -> Self {
         self.tags = self.tags.tag(collection_tag(name));
         self

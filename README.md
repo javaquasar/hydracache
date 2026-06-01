@@ -202,6 +202,16 @@ let (id, name): (i64, String) = queries
 
 assert_eq!(id, 42);
 assert!(!name.is_empty());
+
+let users: Vec<(i64, String)> = queries
+    .collection::<(i64, String)>("users")
+    .fetch_all(
+        pool.clone(),
+        sqlx::query_as("select id, name from users order by id"),
+    )
+    .await?;
+
+assert!(!users.is_empty());
 # Ok(())
 # }
 ```
@@ -219,6 +229,10 @@ entity. It generates logical key `user:42` and tag `user:42`. Use
 `collection::<T>("users")` when a cached result represents a whole list or
 group. Use `collection_tag("users")` when an entity result should also be
 invalidated together with a broader collection.
+
+The older `.cached::<T>().key(...).tag(...)` style remains available and is the
+full-control API. The ergonomic helpers only generate common keys and tags on
+top of the same descriptor model.
 
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. When Docker is available, it verifies cache hits, tag
