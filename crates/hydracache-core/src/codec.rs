@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn postcard_codec_default_is_available() {
         let codec = PostcardCodec;
-        let default_codec = PostcardCodec::default();
+        let default_codec = PostcardCodec;
 
         assert_eq!(format!("{codec:?}"), format!("{default_codec:?}"));
     }
