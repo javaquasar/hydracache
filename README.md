@@ -62,6 +62,8 @@ The first version includes:
 - Moka-backed local storage
 - database-neutral query result-cache descriptors
 - SQLx helper methods: `fetch_one`, `fetch_optional`, and `fetch_all`
+- database query ergonomics: `entity`, `collection`, `for_entity`, and
+  `collection_tag`
 
 Out of scope for v0:
 
@@ -190,9 +192,8 @@ let local = HydraCache::local().build();
 let queries = DbCache::new(local, "db");
 
 let (id, name): (i64, String) = queries
-    .cached::<(i64, String)>()
-    .key("user:42")
-    .tag("user:42")
+    .entity::<(i64, String)>("user", 42)
+    .collection_tag("users")
     .fetch_one(
         pool.clone(),
         sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
@@ -212,6 +213,12 @@ when you need `sqlx::query!`, `sqlx::query_as!`, transactions, or repository
 methods at the call site. Use `named::<T>("load-user")` when you want a
 diagnostic label; otherwise `cached::<T>()` derives diagnostics from the
 namespace/key context.
+
+Use `entity::<T>("user", 42)` when one cached result belongs to one domain
+entity. It generates logical key `user:42` and tag `user:42`. Use
+`collection::<T>("users")` when a cached result represents a whole list or
+group. Use `collection_tag("users")` when an entity result should also be
+invalidated together with a broader collection.
 
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. When Docker is available, it verifies cache hits, tag
@@ -254,6 +261,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md](docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md)
 - [docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md](docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md)
 - [docs/plans/V0_8_SQLX_HELPERS_PLAN.md](docs/plans/V0_8_SQLX_HELPERS_PLAN.md)
+- [docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md](docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md)
 
 ## Workspace
 

@@ -97,6 +97,44 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .await?;
     assert_eq!(helper_cached, (42, "Grace".to_owned()));
 
+    let entity_helper_first = queries
+        .entity::<(i64, String)>("helper-user", 42)
+        .collection_tag("helper-users")
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(entity_helper_first, (42, "Katherine".to_owned()));
+
+    sqlx::query("update users set name = $1 where id = $2")
+        .bind("Margaret")
+        .bind(42_i64)
+        .execute(&pool)
+        .await?;
+
+    let entity_helper_cached = queries
+        .entity::<(i64, String)>("helper-user", 42)
+        .collection_tag("helper-users")
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(entity_helper_cached, (42, "Katherine".to_owned()));
+
+    assert_eq!(queries.cache().invalidate_tag("helper-user:42").await?, 1);
+
+    let entity_helper_reloaded = queries
+        .entity::<(i64, String)>("helper-user", 42)
+        .collection_tag("helper-users")
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(entity_helper_reloaded, (42, "Margaret".to_owned()));
+
     let missing = queries
         .cached::<(i64, String)>()
         .key("helper:user:missing")
@@ -147,7 +185,58 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .await?;
     assert_eq!(
         all_users,
-        vec![(7, "Barbara".to_owned()), (42, "Katherine".to_owned())]
+        vec![(7, "Barbara".to_owned()), (42, "Margaret".to_owned())]
+    );
+
+    let collection_helper_first = queries
+        .collection::<(i64, String)>("helper-users:all")
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users order by id"),
+        )
+        .await?;
+    assert_eq!(
+        collection_helper_first,
+        vec![(7, "Barbara".to_owned()), (42, "Margaret".to_owned())]
+    );
+
+    sqlx::query("insert into users (id, name) values ($1, $2)")
+        .bind(99_i64)
+        .bind("New")
+        .execute(&pool)
+        .await?;
+
+    let collection_helper_cached = queries
+        .collection::<(i64, String)>("helper-users:all")
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users order by id"),
+        )
+        .await?;
+    assert_eq!(
+        collection_helper_cached,
+        vec![(7, "Barbara".to_owned()), (42, "Margaret".to_owned())]
+    );
+
+    assert_eq!(
+        queries.cache().invalidate_tag("helper-users%3Aall").await?,
+        1
+    );
+
+    let collection_helper_reloaded = queries
+        .collection::<(i64, String)>("helper-users:all")
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users order by id"),
+        )
+        .await?;
+    assert_eq!(
+        collection_helper_reloaded,
+        vec![
+            (7, "Barbara".to_owned()),
+            (42, "Margaret".to_owned()),
+            (99, "New".to_owned())
+        ]
     );
 
     let no_users = queries

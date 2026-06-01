@@ -66,6 +66,138 @@ async fn query_builder_exposes_metadata() {
 }
 
 #[tokio::test]
+async fn entity_helper_sets_escaped_key_and_entity_tag() {
+    let query = adapter().entity::<User>("user:type", "42%beta");
+
+    assert_eq!(query.key_value(), Some("user%3Atype:42%25beta"));
+    assert_eq!(
+        query.physical_key(),
+        Some("db:user%3Atype:42%25beta".to_owned())
+    );
+    assert_eq!(query.tags_value(), &["user%3Atype:42%25beta".to_owned()]);
+}
+
+#[tokio::test]
+async fn collection_helper_sets_escaped_key_and_collection_tag() {
+    let query = adapter().collection::<User>("users:active");
+
+    assert_eq!(query.key_value(), Some("users%3Aactive"));
+    assert_eq!(query.physical_key(), Some("db:users%3Aactive".to_owned()));
+    assert_eq!(query.tags_value(), &["users%3Aactive".to_owned()]);
+}
+
+#[tokio::test]
+async fn for_entity_replaces_key_and_preserves_existing_tags() {
+    let query = adapter()
+        .cached::<User>()
+        .key("old")
+        .tag("existing")
+        .for_entity("user", 42)
+        .collection_tag("users");
+
+    assert_eq!(query.key_value(), Some("user:42"));
+    assert_eq!(
+        query.tags_value(),
+        &[
+            "existing".to_owned(),
+            "user:42".to_owned(),
+            "users".to_owned()
+        ]
+    );
+}
+
+#[tokio::test]
+async fn explicit_key_can_override_generated_entity_key() {
+    let query = adapter().entity::<User>("user", 42).key("custom:user:42");
+
+    assert_eq!(query.key_value(), Some("custom:user:42"));
+    assert_eq!(query.physical_key(), Some("db:custom:user:42".to_owned()));
+    assert_eq!(query.tags_value(), &["user:42".to_owned()]);
+}
+
+#[tokio::test]
+async fn entity_helper_caches_loaded_value_and_uses_generated_tag() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+
+    let first = cache
+        .entity::<User>("user", 1)
+        .collection_tag("users")
+        .fetch_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(1))
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached = cache
+        .entity::<User>("user", 1)
+        .collection_tag("users")
+        .fetch_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(2))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, user(1));
+    assert_eq!(cached, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    assert_eq!(cache.cache().invalidate_tag("user:1").await.unwrap(), 1);
+
+    let reloaded = cache
+        .entity::<User>("user", 1)
+        .fetch_with(|| async { Ok::<_, LoadError>(user(2)) })
+        .await
+        .unwrap();
+
+    assert_eq!(reloaded, user(2));
+}
+
+#[tokio::test]
+async fn collection_helper_caches_adapter_chosen_output_type() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+
+    let first: Vec<User> = cache
+        .collection::<User>("users")
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(vec![user(1)])
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached: Vec<User> = cache
+        .collection::<User>("users")
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(vec![user(2)])
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, vec![user(1)]);
+    assert_eq!(cached, vec![user(1)]);
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    assert_eq!(cache.cache().invalidate_tag("users").await.unwrap(), 1);
+}
+
+#[tokio::test]
 async fn query_builder_with_name_replaces_diagnostic_label() {
     let query = adapter()
         .cached::<User>()

@@ -1,6 +1,6 @@
 # HydraCache 0.9.0 Query API Ergonomics Plan
 
-Status: draft.
+Status: implemented in `0.9.0`.
 
 ## Goal
 
@@ -177,10 +177,10 @@ enough.
 
 Implement the smallest useful layer:
 
-- `DbCache::entity<T>(kind, id) -> DbQuery<T, C>`
-- `DbCache::collection<T>(name) -> DbQuery<T, C>`
-- `DbQuery::for_entity(kind, id) -> Self`
-- `DbQuery::collection_tag(name) -> Self`
+- `DbCache::entity<T>(kind, id) -> DbQuery<T, C>` - implemented.
+- `DbCache::collection<T>(name) -> DbQuery<T, C>` - implemented.
+- `DbQuery::for_entity(kind, id) -> Self` - implemented.
+- `DbQuery::collection_tag(name) -> Self` - implemented.
 - Tests for generated keys, generated tags, explicit override behavior, and
   SQLx helper compatibility.
 

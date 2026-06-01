@@ -109,12 +109,12 @@ cargo publish -p hydracache-sqlx
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.8.0 -m "Release v0.8.0"
-git push origin v0.8.0
+git tag -a v0.9.0 -m "Release v0.9.0"
+git push origin v0.9.0
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually
-with the same version, for example `0.8.0`.
+with the same version, for example `0.9.0`.
 
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is

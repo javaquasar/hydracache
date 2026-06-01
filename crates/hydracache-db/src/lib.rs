@@ -28,11 +28,10 @@
 //! let queries = DbCache::new(local, "db");
 //!
 //! let user = queries
-//!     .cached::<User>()
-//!     // Explicit key: where this one query result is stored.
-//!     .key("user:42")
-//!     // Explicit tag: how related query results can be invalidated together.
-//!     .tag("user:42")
+//!     // Entity helper: key "user:42" and tag "user:42".
+//!     .entity::<User>("user", 42)
+//!     // Collection tag: invalidate this together with broader user lists.
+//!     .collection_tag("users")
 //!     .fetch_with(|| async {
 //!         // This loader runs only on a cache miss. On a cache hit, HydraCache
 //!         // returns the cached User and this database code is not executed.

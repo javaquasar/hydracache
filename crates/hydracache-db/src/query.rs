@@ -36,11 +36,9 @@ use crate::{DbCacheError, Result};
 /// let queries = DbCache::new(local, "db");
 ///
 /// let user = queries
-///     .cached::<User>()
-///     // Physical cache key: "db:user:42".
-///     .key("user:42")
+///     .entity::<User>("user", 42)
 ///     // Later, invalidate_tag("user:42") removes this result.
-///     .tag("user:42")
+///     .collection_tag("users")
 ///     .ttl(Duration::from_secs(60))
 ///     .fetch_with(|| async {
 ///         // Replace this block with code from sqlx, diesel, sea-orm, or any
@@ -126,6 +124,26 @@ where
             ttl: None,
             value: PhantomData,
         }
+    }
+
+    /// Start describing an entity-shaped cached value.
+    ///
+    /// This is a convenience layer over [`DbCache::cached`] that sets both the
+    /// logical key and the entity invalidation tag from escaped key segments.
+    /// For example, `entity::<User>("user", 42)` creates key `user:42` and tag
+    /// `user:42`; with namespace `db`, the physical cache key is `db:user:42`.
+    pub fn entity<T>(&self, kind: impl ToString, id: impl ToString) -> DbQuery<T, C> {
+        self.cached::<T>().for_entity(kind, id)
+    }
+
+    /// Start describing a collection-shaped cached value.
+    ///
+    /// This sets both the logical key and the collection invalidation tag to
+    /// the escaped collection name. For example, `collection::<User>("users")`
+    /// creates key `users` and tag `users`.
+    pub fn collection<T>(&self, name: impl ToString) -> DbQuery<T, C> {
+        let tag = collection_tag(name);
+        self.cached::<T>().key(tag.clone()).tag(tag)
     }
 
     /// Start describing a cacheable database-loaded value with a diagnostic name.
@@ -256,9 +274,30 @@ where
         self.key(key.build_string())
     }
 
+    /// Set the logical key and add an entity invalidation tag.
+    ///
+    /// `for_entity("user", 42)` sets the key to `user:42` and adds the tag
+    /// `user:42`. Both segments are escaped with [`CacheKeyBuilder`], so `:` and
+    /// `%` inside one segment cannot accidentally create extra key segments.
+    pub fn for_entity(mut self, kind: impl ToString, id: impl ToString) -> Self {
+        let key = entity_key(kind, id);
+        self.key = Some(key.clone());
+        self.tags = self.tags.tag(key);
+        self
+    }
+
     /// Add one invalidation tag.
     pub fn tag(mut self, tag: impl Into<String>) -> Self {
         self.tags = self.tags.tag(tag);
+        self
+    }
+
+    /// Add a collection invalidation tag from one escaped key segment.
+    ///
+    /// Use this with [`DbCache::entity`] or [`DbQuery::for_entity`] when one
+    /// entity result also belongs to a broader list or query group.
+    pub fn collection_tag(mut self, name: impl ToString) -> Self {
+        self.tags = self.tags.tag(collection_tag(name));
         self
     }
 
@@ -338,6 +377,14 @@ where
             None => format!("{}:unnamed", self.namespace),
         }
     }
+}
+
+fn entity_key(kind: impl ToString, id: impl ToString) -> String {
+    CacheKeyBuilder::new().entity(kind, id).build_string()
+}
+
+fn collection_tag(name: impl ToString) -> String {
+    CacheKeyBuilder::from_segment(name).build_string()
 }
 
 fn physical_key(namespace: &str, key: &str) -> String {
