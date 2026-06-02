@@ -8,8 +8,10 @@
 //! # Example
 //!
 //! ```rust
+//! use std::time::Duration;
+//!
 //! use hydracache::HydraCache;
-//! use hydracache_db::{DbCache, HydraCacheEntity};
+//! use hydracache_db::{DbCache, HydraCacheEntity, QueryCachePolicy};
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -28,10 +30,14 @@
 //! // "db:user:42".
 //! let queries = DbCache::new(local, "db");
 //!
-//! let user = queries
+//! let policy = QueryCachePolicy::new()
 //!     // Metadata helper: key "user:42", tag "user:42", and tag "users".
-//!     .for_entity::<User>(42)
-//!     .fetch_with(|| async {
+//!     .for_cache_entity::<User>(42)
+//!     .ttl(Duration::from_secs(60));
+//!
+//! let user = queries
+//!     .cached_with::<User>(policy)
+//!     .load(|| async {
 //!         // This loader runs only on a cache miss. On a cache hit, HydraCache
 //!         // returns the cached User and this database code is not executed.
 //!         Ok::<_, std::io::Error>(User {
@@ -50,11 +56,13 @@ extern crate self as hydracache_db;
 
 mod entity;
 mod error;
+mod policy;
 mod query;
 
 pub use entity::CacheEntity;
 pub use error::{DbCacheError, Result};
 pub use hydracache_macros::HydraCacheEntity;
+pub use policy::QueryCachePolicy;
 pub use query::{DbCache, DbQuery};
 
 #[cfg(test)]

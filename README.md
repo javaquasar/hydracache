@@ -272,6 +272,31 @@ The older `.cached::<T>().key(...).tag(...)` style remains available and is the
 full-control API. The ergonomic helpers only generate common keys and tags on
 top of the same descriptor model.
 
+For repository-style code or future ORM adapters, move the cache metadata into
+a reusable `QueryCachePolicy` and keep the loader itself fully under your
+control:
+
+```rust
+use std::time::Duration;
+
+use hydracache_db::QueryCachePolicy;
+
+let policy = QueryCachePolicy::named("load-user")
+    .for_cache_entity::<User>(42)
+    .ttl(Duration::from_secs(60));
+
+let user = queries
+    .cached_with::<User>(policy)
+    .load(move || async move {
+        // This can call SQLx, Diesel, SeaORM, or a repository method.
+        Ok::<_, std::io::Error>(User {
+            id: 42,
+            name: "Ada".to_owned(),
+        })
+    })
+    .await?;
+```
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. When Docker is available, it verifies cache hits, tag
 invalidation, and reloads against a real database. When Docker is unavailable,

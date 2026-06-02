@@ -45,6 +45,9 @@
 //!
 //! Use [`DbQuery::fetch_with`] when you need SQLx macros, transactions, or a
 //! repository function instead of a pool-like executor.
+//!
+//! [`QueryCachePolicy`] is also re-exported for SQLx users, but the policy type
+//! is database-neutral and lives in `hydracache-db`.
 
 extern crate self as hydracache_sqlx;
 
@@ -53,7 +56,8 @@ mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
-    CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity, Result as DbResult,
+    CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity, QueryCachePolicy,
+    Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 
@@ -75,7 +79,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use sqlx::postgres::PgPoolOptions;
 
-    use crate::{DbCache, SqlxCache, SqlxQueryExt};
+    use crate::{DbCache, QueryCachePolicy, SqlxCache, SqlxQueryExt};
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
     struct User {
@@ -98,6 +102,15 @@ mod tests {
             .key("user:1");
 
         assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
+    }
+
+    #[tokio::test]
+    async fn query_cache_policy_reexport_is_available_from_sqlx_crate() {
+        let policy = QueryCachePolicy::new().key("user:1").tag("user:1");
+        let query = DbCache::new(HydraCache::local().build(), "db").cached_with::<User>(policy);
+
+        assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
+        assert_eq!(query.tags_value(), &["user:1".to_owned()]);
     }
 
     #[tokio::test]

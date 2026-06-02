@@ -8,7 +8,7 @@ use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, PostcardCodec, TagSe
 use hydracache_core::CacheCodec;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{CacheEntity, DbCacheError, Result};
+use crate::{CacheEntity, DbCacheError, QueryCachePolicy, Result};
 
 /// A database-oriented view over a [`HydraCache`] instance.
 ///
@@ -118,12 +118,18 @@ where
         DbQuery {
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
-            name: None,
-            key: None,
-            tags: TagSet::new(),
-            ttl: None,
+            policy: QueryCachePolicy::new(),
             value: PhantomData,
         }
+    }
+
+    /// Start describing a cacheable database-loaded value with a reusable
+    /// [`QueryCachePolicy`].
+    ///
+    /// This is useful when the same key/tag/TTL pattern is shared by a
+    /// repository method, a SQLx call site, and a future ORM adapter.
+    pub fn cached_with<T>(&self, policy: QueryCachePolicy) -> DbQuery<T, C> {
+        self.cached::<T>().with_policy(policy)
     }
 
     /// Start describing an entity-shaped cached value.
@@ -224,8 +230,7 @@ where
     /// assert_eq!(query.physical_key(), Some("db:users%3Aactive".to_owned()));
     /// ```
     pub fn collection<T>(&self, name: impl ToString) -> DbQuery<T, C> {
-        let tag = collection_tag(name);
-        self.cached::<T>().key(tag.clone()).tag(tag)
+        self.cached::<T>().collection(name)
     }
 
     /// Start describing a cacheable database-loaded value with a diagnostic name.
@@ -233,10 +238,7 @@ where
         DbQuery {
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
-            name: Some(name.into()),
-            key: None,
-            tags: TagSet::new(),
-            ttl: None,
+            policy: QueryCachePolicy::named(name),
             value: PhantomData,
         }
     }
@@ -263,10 +265,7 @@ where
 {
     cache: HydraCache<C>,
     namespace: String,
-    name: Option<String>,
-    key: Option<String>,
-    tags: TagSet,
-    ttl: Option<Duration>,
+    policy: QueryCachePolicy,
     value: PhantomData<fn() -> T>,
 }
 
@@ -278,10 +277,7 @@ where
         Self {
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
-            name: self.name.clone(),
-            key: self.key.clone(),
-            tags: self.tags.clone(),
-            ttl: self.ttl,
+            policy: self.policy.clone(),
             value: PhantomData,
         }
     }
@@ -295,10 +291,7 @@ where
         formatter
             .debug_struct("DbQuery")
             .field("namespace", &self.namespace)
-            .field("name", &self.name)
-            .field("key", &self.key)
-            .field("tags", &self.tags)
-            .field("ttl", &self.ttl)
+            .field("policy", &self.policy)
             .finish_non_exhaustive()
     }
 }
@@ -309,12 +302,27 @@ where
 {
     /// Return the optional diagnostic operation name.
     pub fn name(&self) -> Option<&str> {
-        self.name.as_deref()
+        self.policy.name()
     }
 
     /// Set or replace the diagnostic operation name.
     pub fn with_name(mut self, name: impl Into<String>) -> Self {
-        self.name = Some(name.into());
+        self.policy = self.policy.with_name(name);
+        self
+    }
+
+    /// Return the reusable cache policy backing this descriptor.
+    pub fn cache_policy(&self) -> &QueryCachePolicy {
+        &self.policy
+    }
+
+    /// Replace the current cache policy.
+    ///
+    /// This is the lowest-friction way to reuse one policy across SQLx,
+    /// Diesel, SeaORM, or repository-style call sites while keeping the loader
+    /// itself fully caller-controlled.
+    pub fn with_policy(mut self, policy: QueryCachePolicy) -> Self {
+        self.policy = policy;
         self
     }
 
@@ -325,28 +333,28 @@ where
 
     /// Return the logical key, if one has been configured.
     pub fn key_value(&self) -> Option<&str> {
-        self.key.as_deref()
+        self.policy.key_value()
     }
 
     /// Return the physical cache key, including the adapter namespace.
     pub fn physical_key(&self) -> Option<String> {
-        let key = self.key.as_deref()?;
+        let key = self.key_value()?;
         Some(physical_key(&self.namespace, key))
     }
 
     /// Return the configured tags.
     pub fn tags_value(&self) -> &[String] {
-        self.tags.as_slice()
+        self.policy.tags_value()
     }
 
     /// Return the configured per-entry TTL.
     pub fn ttl_value(&self) -> Option<Duration> {
-        self.ttl
+        self.policy.ttl_value()
     }
 
     /// Set the logical cache key for this query result.
     pub fn key(mut self, key: impl Into<String>) -> Self {
-        self.key = Some(key.into());
+        self.policy = self.policy.key(key);
         self
     }
 
@@ -386,9 +394,7 @@ where
     /// );
     /// ```
     pub fn for_entity(mut self, kind: impl ToString, id: impl ToString) -> Self {
-        let key = entity_key(kind, id);
-        self.key = Some(key.clone());
-        self.tags = self.tags.tag(key);
+        self.policy = self.policy.for_entity(kind, id);
         self
     }
 
@@ -437,16 +443,19 @@ where
     where
         T: CacheEntity,
     {
-        let key = T::cache_key_for(&id);
-        self.key = Some(key);
-        self.tags = self.tags.tag(T::entity_tag_for(&id));
-        self.tags = append_optional_tag(self.tags, T::collection_tag());
+        self.policy = self.policy.for_cache_entity::<T>(id);
+        self
+    }
+
+    /// Set the logical key and invalidation tag for a collection result.
+    pub fn collection(mut self, name: impl ToString) -> Self {
+        self.policy = self.policy.collection(name);
         self
     }
 
     /// Add one invalidation tag.
     pub fn tag(mut self, tag: impl Into<String>) -> Self {
-        self.tags = self.tags.tag(tag);
+        self.policy = self.policy.tag(tag);
         self
     }
 
@@ -478,7 +487,7 @@ where
     /// );
     /// ```
     pub fn collection_tag(mut self, name: impl ToString) -> Self {
-        self.tags = self.tags.tag(collection_tag(name));
+        self.policy = self.policy.collection_tag(name);
         self
     }
 
@@ -488,20 +497,36 @@ where
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        self.tags = self.tags.tags(tags);
+        self.policy = self.policy.tags(tags);
         self
     }
 
     /// Replace invalidation tags from a reusable [`TagSet`].
     pub fn tag_set(mut self, tags: TagSet) -> Self {
-        self.tags = tags;
+        self.policy = self.policy.tag_set(tags);
         self
     }
 
     /// Set a per-entry TTL for this query result.
     pub fn ttl(mut self, ttl: Duration) -> Self {
-        self.ttl = Some(ttl);
+        self.policy = self.policy.ttl(ttl);
         self
+    }
+
+    /// Fetch a cached value or run the supplied repository/database loader on
+    /// miss.
+    ///
+    /// This is a short alias for [`DbQuery::fetch_with`]. It reads more
+    /// naturally when a call site is wrapping a repository method rather than a
+    /// raw SQL query.
+    pub async fn load<E, F, Fut>(self, loader: F) -> Result<T>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        self.fetch_with(loader).await
     }
 
     /// Fetch a cached value or run the supplied database loader on miss.
@@ -540,11 +565,7 @@ where
     }
 
     fn options(&self) -> CacheOptions {
-        let mut options = CacheOptions::new().tag_set(self.tags.clone());
-        if let Some(ttl) = self.ttl {
-            options = options.ttl(ttl);
-        }
-        options
+        self.policy.cache_options()
     }
 
     fn required_physical_key(&self) -> Result<String> {
@@ -554,24 +575,9 @@ where
     }
 
     fn operation_label(&self) -> String {
-        self.name
-            .clone()
+        self.name()
+            .map(str::to_owned)
             .unwrap_or_else(|| default_operation_label(&self.namespace))
-    }
-}
-
-fn entity_key(kind: impl ToString, id: impl ToString) -> String {
-    CacheKeyBuilder::new().entity(kind, id).build_string()
-}
-
-fn collection_tag(name: impl ToString) -> String {
-    CacheKeyBuilder::from_segment(name).build_string()
-}
-
-fn append_optional_tag(tags: TagSet, tag: Option<String>) -> TagSet {
-    match tag {
-        Some(tag) => tags.tag(tag),
-        None => tags,
     }
 }
 

@@ -5,7 +5,7 @@ use std::time::Duration;
 use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
-use crate::{CacheEntity, DbCache, DbCacheError, HydraCacheEntity};
+use crate::{CacheEntity, DbCache, DbCacheError, HydraCacheEntity, QueryCachePolicy};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
 #[hydracache(entity = "user", collection = "users", id = u64)]
@@ -83,6 +83,70 @@ async fn query_builder_exposes_metadata() {
 }
 
 #[tokio::test]
+async fn query_cache_policy_exposes_reusable_metadata() {
+    let policy = QueryCachePolicy::named("load-user")
+        .key_builder(CacheKeyBuilder::new().tenant(7).entity("user", 42))
+        .tag("users")
+        .tags(["user:42", "tenant:7"])
+        .ttl(Duration::from_secs(30));
+
+    assert_eq!(policy.name(), Some("load-user"));
+    assert_eq!(policy.key_value(), Some("tenant:7:user:42"));
+    assert_eq!(
+        policy.tags_value(),
+        &[
+            "users".to_owned(),
+            "user:42".to_owned(),
+            "tenant:7".to_owned()
+        ]
+    );
+    assert_eq!(policy.ttl_value(), Some(Duration::from_secs(30)));
+}
+
+#[tokio::test]
+async fn cached_with_applies_reusable_query_cache_policy() {
+    let policy = QueryCachePolicy::named("load-user")
+        .for_cache_entity::<User>(42)
+        .ttl(Duration::from_secs(30));
+
+    let first = adapter().cached_with::<User>(policy.clone());
+    let second = adapter().cached_with::<User>(policy);
+
+    assert_eq!(first.name(), Some("load-user"));
+    assert_eq!(first.key_value(), Some("user:42"));
+    assert_eq!(
+        first.tags_value(),
+        &["user:42".to_owned(), "users".to_owned()]
+    );
+    assert_eq!(first.ttl_value(), Some(Duration::from_secs(30)));
+    assert_eq!(second.physical_key(), Some("db:user:42".to_owned()));
+}
+
+#[tokio::test]
+async fn with_policy_replaces_existing_descriptor_policy() {
+    let policy = QueryCachePolicy::new().key("new").tag("new-tag");
+    let query = adapter()
+        .cached::<User>()
+        .key("old")
+        .tag("old-tag")
+        .with_policy(policy);
+
+    assert_eq!(query.key_value(), Some("new"));
+    assert_eq!(query.tags_value(), &["new-tag".to_owned()]);
+    assert_eq!(query.cache_policy().key_value(), Some("new"));
+}
+
+#[tokio::test]
+async fn query_cache_policy_collection_sets_key_and_tag() {
+    let policy = QueryCachePolicy::new().collection("users:active");
+    let query = adapter().cached_with::<Vec<User>>(policy);
+
+    assert_eq!(query.key_value(), Some("users%3Aactive"));
+    assert_eq!(query.physical_key(), Some("db:users%3Aactive".to_owned()));
+    assert_eq!(query.tags_value(), &["users%3Aactive".to_owned()]);
+}
+
+#[tokio::test]
 async fn entity_helper_sets_escaped_key_and_entity_tag() {
     let query = adapter().entity::<User>("user:type", "42%beta");
 
@@ -97,6 +161,15 @@ async fn entity_helper_sets_escaped_key_and_entity_tag() {
 #[tokio::test]
 async fn collection_helper_sets_escaped_key_and_collection_tag() {
     let query = adapter().collection::<User>("users:active");
+
+    assert_eq!(query.key_value(), Some("users%3Aactive"));
+    assert_eq!(query.physical_key(), Some("db:users%3Aactive".to_owned()));
+    assert_eq!(query.tags_value(), &["users%3Aactive".to_owned()]);
+}
+
+#[tokio::test]
+async fn descriptor_collection_method_sets_escaped_key_and_collection_tag() {
+    let query = adapter().cached::<User>().collection("users:active");
 
     assert_eq!(query.key_value(), Some("users%3Aactive"));
     assert_eq!(query.physical_key(), Some("db:users%3Aactive".to_owned()));
@@ -384,6 +457,40 @@ async fn fetch_with_caches_loaded_value() {
 
     assert_eq!(first, user(1));
     assert_eq!(second, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn load_alias_caches_repository_result() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+
+    let first = cache
+        .for_entity::<User>(1)
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(1))
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached = cache
+        .for_entity::<User>(1)
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(2))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, user(1));
+    assert_eq!(cached, user(1));
     assert_eq!(calls.load(Ordering::SeqCst), 1);
 }
 
