@@ -233,10 +233,13 @@ group. Use `collection_tag("users")` when an entity result should also be
 invalidated together with a broader collection.
 
 When the same entity metadata is used in several places, derive or implement
-`CacheEntity` once and use `for_entity::<T>(id)`:
+`CacheEntity` once and use `for_entity::<T>(id)`. `CacheEntity` and
+`HydraCacheEntity` live in `hydracache-db`; `hydracache-sqlx` only re-exports
+them as an adapter convenience.
 
 ```rust
-use hydracache_sqlx::{CacheEntity, DbCache, HydraCacheEntity};
+use hydracache_db::{CacheEntity, HydraCacheEntity};
+use hydracache_sqlx::DbCache;
 
 #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
 #[hydracache(entity = "user", collection = "users", id = i64)]

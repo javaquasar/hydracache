@@ -141,7 +141,9 @@ assert_eq!(collection_query.tags_value(), &["users".to_owned()]);
 ```
 
 For `0.10.0` and later, the smoke crate should also verify `CacheEntity`
-metadata:
+metadata. This smoke example intentionally imports through `hydracache-sqlx`
+to verify the adapter re-export; canonical documentation should import
+`CacheEntity` and `HydraCacheEntity` from `hydracache-db`.
 
 ```rust
 use hydracache_sqlx::{CacheEntity, HydraCacheEntity};
