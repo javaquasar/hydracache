@@ -48,6 +48,7 @@
 //!
 //! [`QueryCachePolicy`] is also re-exported for SQLx users, but the policy type
 //! is database-neutral and lives in `hydracache-db`.
+//! [`query_cache_policy!`] is re-exported for the same convenience.
 
 extern crate self as hydracache_sqlx;
 
@@ -56,8 +57,8 @@ mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
-    CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity, QueryCachePolicy,
-    Result as DbResult,
+    query_cache_policy, CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity,
+    QueryCachePolicy, Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 

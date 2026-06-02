@@ -31,7 +31,8 @@ testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
 
 `hydracache-db` also runs `trybuild` compile-pass and compile-fail tests for
-`#[derive(HydraCacheEntity)]`. To run only the macro UI tests:
+`#[derive(HydraCacheEntity)]` and `query_cache_policy!(...)`. To run only the
+macro UI tests:
 
 ```powershell
 cargo test -p hydracache-db --test derive_ui --locked
@@ -39,7 +40,8 @@ cargo test -p hydracache-db --test derive_ui --locked
 
 When intentionally changing macro diagnostics, rerun this test, inspect the
 generated `wip/*.stderr` output, and update the matching files under
-`crates/hydracache-db/tests/derive/`.
+`crates/hydracache-db/tests/derive/` or
+`crates/hydracache-db/tests/policy/`.
 
 ## Procedural Macro Tests
 
@@ -105,6 +107,11 @@ fn derive_macro_compile_tests() {
     tests.compile_fail("tests/derive/fail_missing_entity.rs");
     tests.compile_fail("tests/derive/fail_missing_id.rs");
     tests.compile_fail("tests/derive/fail_unknown_option.rs");
+    tests.pass("tests/policy/pass_entity_policy.rs");
+    tests.pass("tests/policy/pass_key_policy.rs");
+    tests.compile_fail("tests/policy/fail_conflicting_key_sources.rs");
+    tests.compile_fail("tests/policy/fail_entity_missing_id.rs");
+    tests.compile_fail("tests/policy/fail_missing_key_source.rs");
 }
 ```
 
@@ -135,7 +142,7 @@ struct User;
 fn main() {}
 ```
 
-The expected error is stored beside the fixture:
+The expected error is stored beside the fixture in a `.stderr` file:
 
 ```text
 error: missing #[hydracache(entity = "...")]
@@ -145,6 +152,14 @@ error: missing #[hydracache(entity = "...")]
   |        ^^^^
 ```
 
+For example, `tests/policy/fail_entity_missing_id.rs` intentionally misuses
+`query_cache_policy!(entity = User)` without an `id = ...` option. The adjacent
+`tests/policy/fail_entity_missing_id.stderr` file records the exact diagnostic
+that should be produced. These `.stderr` files are not logs; they are committed
+test snapshots. If they are missing, `trybuild` writes fresh output under
+`crates/hydracache-db/wip/` and fails the test until the output is reviewed and
+accepted.
+
 When diagnostics intentionally change, run:
 
 ```powershell
@@ -152,7 +167,9 @@ cargo test -p hydracache-db --test derive_ui --locked
 ```
 
 `trybuild` writes new output under `crates/hydracache-db/wip/`. Review it, then
-move the accepted `.stderr` files into `crates/hydracache-db/tests/derive/`.
+move the accepted `.stderr` files next to the matching compile-fail fixture
+under `crates/hydracache-db/tests/derive/` or
+`crates/hydracache-db/tests/policy/`.
 
 ## Coverage Summary
 

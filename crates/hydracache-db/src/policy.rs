@@ -28,6 +28,9 @@ use crate::CacheEntity;
 /// assert_eq!(policy.tags_value(), &["user:42".to_owned()]);
 /// assert_eq!(policy.ttl_value(), Some(Duration::from_secs(60)));
 /// ```
+///
+/// The [`query_cache_policy!`](crate::query_cache_policy) macro provides a
+/// shorter declarative form when the policy is known at the call site.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct QueryCachePolicy {
     name: Option<String>,

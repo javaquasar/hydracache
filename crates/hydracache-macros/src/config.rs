@@ -149,10 +149,9 @@ mod tests {
             struct User;
         };
 
-        let error = match parse_config(input) {
-            Ok(_) => panic!("duplicate entity option should fail"),
-            Err(error) => error,
-        };
+        let result = parse_config(input);
+        assert!(result.is_err());
+        let error = result.err().unwrap();
 
         assert!(error
             .to_string()
@@ -166,10 +165,9 @@ mod tests {
             struct User;
         };
 
-        let error = match parse_config(input) {
-            Ok(_) => panic!("unknown option should fail"),
-            Err(error) => error,
-        };
+        let result = parse_config(input);
+        assert!(result.is_err());
+        let error = result.err().unwrap();
 
         assert!(error.to_string().contains("unsupported hydracache option"));
     }

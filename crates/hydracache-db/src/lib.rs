@@ -51,6 +51,32 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! For compact policy construction, use [`query_cache_policy!`]:
+//!
+//! ```rust
+//! use hydracache_db::{query_cache_policy, CacheEntity};
+//!
+//! struct User;
+//!
+//! impl CacheEntity for User {
+//!     type Id = i64;
+//!
+//!     const ENTITY: &'static str = "user";
+//!     const COLLECTION: Option<&'static str> = Some("users");
+//! }
+//!
+//! let user_id = 42_i64;
+//! let policy = query_cache_policy!(
+//!     name = "load-user",
+//!     entity = User,
+//!     id = user_id,
+//!     ttl_secs = 60,
+//! );
+//!
+//! assert_eq!(policy.name(), Some("load-user"));
+//! assert_eq!(policy.key_value(), Some("user:42"));
+//! ```
 
 extern crate self as hydracache_db;
 
@@ -61,7 +87,7 @@ mod query;
 
 pub use entity::CacheEntity;
 pub use error::{DbCacheError, Result};
-pub use hydracache_macros::HydraCacheEntity;
+pub use hydracache_macros::{query_cache_policy, HydraCacheEntity};
 pub use policy::QueryCachePolicy;
 pub use query::{DbCache, DbQuery};
 

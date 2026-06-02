@@ -297,6 +297,32 @@ let user = queries
     .await?;
 ```
 
+When the policy is mostly declarative, `query_cache_policy!` can generate it
+from compact metadata:
+
+```rust
+use hydracache_db::query_cache_policy;
+
+let user_id = 42_i64;
+let policy = query_cache_policy!(
+    name = "load-user",
+    entity = User,
+    id = user_id,
+    tag = "tenant:7",
+    ttl_secs = 60,
+);
+
+let user = queries
+    .cached_with::<User>(policy)
+    .load(move || async move {
+        Ok::<_, std::io::Error>(User {
+            id: user_id,
+            name: "Ada".to_owned(),
+        })
+    })
+    .await?;
+```
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. When Docker is available, it verifies cache hits, tag
 invalidation, and reloads against a real database. When Docker is unavailable,

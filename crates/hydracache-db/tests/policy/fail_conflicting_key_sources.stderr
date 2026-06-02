@@ -1,0 +1,11 @@
+error: query_cache_policy accepts only one key source: key, collection, or entity + id
+ --> tests/policy/fail_conflicting_key_sources.rs:4:19
+  |
+4 |       let _policy = query_cache_policy!(
+  |  ___________________^
+5 | |         key = "user:1",
+6 | |         collection = "users",
+7 | |     );
+  | |_____^
+  |
+  = note: this error originates in the macro `query_cache_policy` (in Nightly builds, run with -Z macro-backtrace for more info)
