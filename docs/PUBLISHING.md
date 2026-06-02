@@ -109,14 +109,14 @@ cargo publish -p hydracache-sqlx
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.9.0 -m "Release v0.9.0"
-git push origin v0.9.0
+git tag -a v0.10.0 -m "Release v0.10.0"
+git push origin v0.10.0
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually
-with the same version, for example `0.9.0`.
+with the same version, for example `0.10.0`.
 
-For `0.9.0` and later, the post-publish smoke crate should also exercise the
+For `0.10.0` and later, the post-publish smoke crate should also exercise the
 database query ergonomics added on top of `hydracache-db`:
 
 ```rust
@@ -132,6 +132,29 @@ assert_eq!(
 let collection_query = queries.collection::<(i64, String)>("users");
 assert_eq!(collection_query.key_value(), Some("users"));
 assert_eq!(collection_query.tags_value(), &["users".to_owned()]);
+```
+
+For `0.10.0` and later, the smoke crate should also verify `CacheEntity`
+metadata:
+
+```rust
+use hydracache_sqlx::CacheEntity;
+
+struct SmokeUser;
+
+impl CacheEntity for SmokeUser {
+    type Id = i64;
+
+    const ENTITY: &'static str = "user";
+    const COLLECTION: Option<&'static str> = Some("users");
+}
+
+let metadata_query = queries.for_entity::<SmokeUser>(42);
+assert_eq!(metadata_query.key_value(), Some("user:42"));
+assert_eq!(
+    metadata_query.tags_value(),
+    &["user:42".to_owned(), "users".to_owned()]
+);
 ```
 
 Only publish crates that changed. If only `hydracache` changed and its

@@ -64,6 +64,7 @@ The first version includes:
 - SQLx helper methods: `fetch_one`, `fetch_optional`, and `fetch_all`
 - database query ergonomics: `entity`, `collection`, `for_entity`, and
   `collection_tag`
+- `CacheEntity` metadata for domain-shaped database cache descriptors
 
 Out of scope for v0:
 
@@ -230,6 +231,41 @@ entity. It generates logical key `user:42` and tag `user:42`. Use
 group. Use `collection_tag("users")` when an entity result should also be
 invalidated together with a broader collection.
 
+When the same entity metadata is used in several places, implement
+`CacheEntity` once and use `for_entity::<T>(id)`:
+
+```rust
+use hydracache_sqlx::{CacheEntity, DbCache};
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct User {
+    id: i64,
+    name: String,
+}
+
+impl CacheEntity for User {
+    type Id = i64;
+
+    const ENTITY: &'static str = "user";
+    const COLLECTION: Option<&'static str> = Some("users");
+}
+
+# async fn example(queries: DbCache) -> hydracache_sqlx::Result<()> {
+let user = queries
+    .for_entity::<User>(42)
+    .fetch_with(|| async {
+        Ok::<_, std::io::Error>(User {
+            id: 42,
+            name: "Ada".to_owned(),
+        })
+    })
+    .await?;
+
+assert_eq!(user.id, 42);
+# Ok(())
+# }
+```
+
 The older `.cached::<T>().key(...).tag(...)` style remains available and is the
 full-control API. The ergonomic helpers only generate common keys and tags on
 top of the same descriptor model.
@@ -276,6 +312,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md](docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md)
 - [docs/plans/V0_8_SQLX_HELPERS_PLAN.md](docs/plans/V0_8_SQLX_HELPERS_PLAN.md)
 - [docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md](docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md)
+- [docs/plans/V0_10_CACHE_ENTITY_PLAN.md](docs/plans/V0_10_CACHE_ENTITY_PLAN.md)
 
 ## Workspace
 

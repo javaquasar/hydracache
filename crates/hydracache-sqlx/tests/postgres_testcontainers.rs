@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 use hydracache::HydraCache;
-use hydracache_sqlx::{SqlxCache, SqlxQueryExt};
+use hydracache_sqlx::{CacheEntity, SqlxCache, SqlxQueryExt};
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use testcontainers_modules::{
@@ -14,6 +14,13 @@ use testcontainers_modules::{
 struct User {
     id: i64,
     name: String,
+}
+
+impl CacheEntity for User {
+    type Id = i64;
+
+    const ENTITY: &'static str = "cache-entity-user";
+    const COLLECTION: Option<&'static str> = Some("cache-entity-users");
 }
 
 #[tokio::test]
@@ -239,6 +246,26 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         ]
     );
 
+    let cache_entity_first = load_user_with_cache_entity(&queries, &pool).await?;
+    assert_eq!(cache_entity_first.name, "Margaret");
+
+    sqlx::query("update users set name = $1 where id = $2")
+        .bind("Rosalind")
+        .bind(42_i64)
+        .execute(&pool)
+        .await?;
+
+    let cache_entity_cached = load_user_with_cache_entity(&queries, &pool).await?;
+    assert_eq!(cache_entity_cached.name, "Margaret");
+
+    assert_eq!(
+        queries.cache().invalidate_tag("cache-entity-users").await?,
+        1
+    );
+
+    let cache_entity_reloaded = load_user_with_cache_entity(&queries, &pool).await?;
+    assert_eq!(cache_entity_reloaded.name, "Rosalind");
+
     let no_users = queries
         .cached::<(i64, String)>()
         .key("helper:users:none")
@@ -312,6 +339,26 @@ async fn load_user(
         .tag("user:42")
         .fetch_with(move || async move {
             loader_calls.fetch_add(1, Ordering::SeqCst);
+            let (id, name): (i64, String) =
+                sqlx::query_as("select id, name from users where id = $1")
+                    .bind(42_i64)
+                    .fetch_one(&pool)
+                    .await?;
+            Ok::<_, sqlx::Error>(User { id, name })
+        })
+        .await
+        .map_err(Into::into)
+}
+
+async fn load_user_with_cache_entity(
+    queries: &SqlxCache,
+    pool: &sqlx::PgPool,
+) -> hydracache_sqlx::Result<User> {
+    let pool = pool.clone();
+
+    queries
+        .for_entity::<User>(42)
+        .fetch_with(move || async move {
             let (id, name): (i64, String) =
                 sqlx::query_as("select id, name from users where id = $1")
                     .bind(42_i64)

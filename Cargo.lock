@@ -961,7 +961,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hydracache"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -975,7 +975,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -986,7 +986,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "hydracache",
  "hydracache-core",
@@ -997,7 +997,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "async-trait",
  "hydracache",

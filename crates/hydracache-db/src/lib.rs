@@ -18,6 +18,13 @@
 //!     name: String,
 //! }
 //!
+//! impl hydracache_db::CacheEntity for User {
+//!     type Id = i64;
+//!
+//!     const ENTITY: &'static str = "user";
+//!     const COLLECTION: Option<&'static str> = Some("users");
+//! }
+//!
 //! # #[tokio::main]
 //! # async fn main() -> hydracache_db::Result<()> {
 //! let local = HydraCache::local().build();
@@ -28,10 +35,8 @@
 //! let queries = DbCache::new(local, "db");
 //!
 //! let user = queries
-//!     // Entity helper: key "user:42" and tag "user:42".
-//!     .entity::<User>("user", 42)
-//!     // Collection tag: invalidate this together with broader user lists.
-//!     .collection_tag("users")
+//!     // Metadata helper: key "user:42", tag "user:42", and tag "users".
+//!     .for_entity::<User>(42)
 //!     .fetch_with(|| async {
 //!         // This loader runs only on a cache miss. On a cache hit, HydraCache
 //!         // returns the cached User and this database code is not executed.
@@ -47,9 +52,11 @@
 //! # }
 //! ```
 
+mod entity;
 mod error;
 mod query;
 
+pub use entity::CacheEntity;
 pub use error::{DbCacheError, Result};
 pub use query::{DbCache, DbQuery};
 

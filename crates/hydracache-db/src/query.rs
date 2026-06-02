@@ -8,7 +8,7 @@ use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, PostcardCodec, TagSe
 use hydracache_core::CacheCodec;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{DbCacheError, Result};
+use crate::{CacheEntity, DbCacheError, Result};
 
 /// A database-oriented view over a [`HydraCache`] instance.
 ///
@@ -156,6 +156,48 @@ where
         self.cached::<T>().for_entity(kind, id)
     }
 
+    /// Start describing an entity-shaped cached value from [`CacheEntity`]
+    /// metadata.
+    ///
+    /// This helper removes repeated entity and collection literals from call
+    /// sites. It sets the logical key, entity tag, and optional collection tag
+    /// defined by `T`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    /// use hydracache_db::{CacheEntity, DbCache};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: i64,
+    /// }
+    ///
+    /// impl CacheEntity for User {
+    ///     type Id = i64;
+    ///
+    ///     const ENTITY: &'static str = "user";
+    ///     const COLLECTION: Option<&'static str> = Some("users");
+    /// }
+    ///
+    /// let queries = DbCache::new(HydraCache::local().build(), "db");
+    /// let query = queries.for_entity::<User>(42);
+    ///
+    /// assert_eq!(query.key_value(), Some("user:42"));
+    /// assert_eq!(
+    ///     query.tags_value(),
+    ///     &["user:42".to_owned(), "users".to_owned()]
+    /// );
+    /// ```
+    pub fn for_entity<T>(&self, id: T::Id) -> DbQuery<T, C>
+    where
+        T: CacheEntity,
+    {
+        self.cached::<T>().for_cache_entity(id)
+    }
+
     /// Start describing a collection-shaped cached value.
     ///
     /// This sets both the logical key and the collection invalidation tag to
@@ -288,9 +330,8 @@ where
 
     /// Return the physical cache key, including the adapter namespace.
     pub fn physical_key(&self) -> Option<String> {
-        self.key
-            .as_deref()
-            .map(|key| physical_key(&self.namespace, key))
+        let key = self.key.as_deref()?;
+        Some(physical_key(&self.namespace, key))
     }
 
     /// Return the configured tags.
@@ -348,6 +389,58 @@ where
         let key = entity_key(kind, id);
         self.key = Some(key.clone());
         self.tags = self.tags.tag(key);
+        self
+    }
+
+    /// Set the logical key and tags from [`CacheEntity`] metadata.
+    ///
+    /// This is the metadata-driven equivalent of [`DbQuery::for_entity`]. It
+    /// preserves any existing tags, then adds the entity tag and optional
+    /// collection tag defined by `T`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::HydraCache;
+    /// use hydracache_db::{CacheEntity, DbCache};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: i64,
+    /// }
+    ///
+    /// impl CacheEntity for User {
+    ///     type Id = i64;
+    ///
+    ///     const ENTITY: &'static str = "user";
+    ///     const COLLECTION: Option<&'static str> = Some("users");
+    /// }
+    ///
+    /// let queries = DbCache::new(HydraCache::local().build(), "db");
+    /// let query = queries
+    ///     .cached::<User>()
+    ///     .tag("tenant:7")
+    ///     .for_cache_entity(42);
+    ///
+    /// assert_eq!(query.key_value(), Some("user:42"));
+    /// assert_eq!(
+    ///     query.tags_value(),
+    ///     &[
+    ///         "tenant:7".to_owned(),
+    ///         "user:42".to_owned(),
+    ///         "users".to_owned()
+    ///     ]
+    /// );
+    /// ```
+    pub fn for_cache_entity(mut self, id: T::Id) -> Self
+    where
+        T: CacheEntity,
+    {
+        let key = T::cache_key_for(&id);
+        self.key = Some(key);
+        self.tags = self.tags.tag(T::entity_tag_for(&id));
+        self.tags = append_optional_tag(self.tags, T::collection_tag());
         self
     }
 
@@ -438,11 +531,7 @@ where
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<U, E>> + Send + 'static,
     {
-        let Some(key) = self.physical_key() else {
-            return Err(DbCacheError::MissingKey {
-                operation: self.operation_label(),
-            });
-        };
+        let key = self.required_physical_key()?;
 
         self.cache
             .get_or_load(&key, self.options(), loader)
@@ -458,12 +547,16 @@ where
         options
     }
 
+    fn required_physical_key(&self) -> Result<String> {
+        self.physical_key().ok_or_else(|| DbCacheError::MissingKey {
+            operation: self.operation_label(),
+        })
+    }
+
     fn operation_label(&self) -> String {
-        match &self.name {
-            Some(name) => name.clone(),
-            None if self.namespace.is_empty() => "unnamed".to_owned(),
-            None => format!("{}:unnamed", self.namespace),
-        }
+        self.name
+            .clone()
+            .unwrap_or_else(|| default_operation_label(&self.namespace))
     }
 }
 
@@ -475,10 +568,25 @@ fn collection_tag(name: impl ToString) -> String {
     CacheKeyBuilder::from_segment(name).build_string()
 }
 
+fn append_optional_tag(tags: TagSet, tag: Option<String>) -> TagSet {
+    match tag {
+        Some(tag) => tags.tag(tag),
+        None => tags,
+    }
+}
+
 fn physical_key(namespace: &str, key: &str) -> String {
     if namespace.is_empty() {
         key.to_owned()
     } else {
         format!("{namespace}:{key}")
+    }
+}
+
+fn default_operation_label(namespace: &str) -> String {
+    if namespace.is_empty() {
+        "unnamed".to_owned()
+    } else {
+        format!("{namespace}:unnamed")
     }
 }

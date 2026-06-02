@@ -5,12 +5,43 @@ use std::time::Duration;
 use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
-use crate::{DbCache, DbCacheError};
+use crate::{CacheEntity, DbCache, DbCacheError};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct User {
     id: u64,
     name: String,
+}
+
+impl CacheEntity for User {
+    type Id = u64;
+
+    const ENTITY: &'static str = "user";
+    const COLLECTION: Option<&'static str> = Some("users");
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct AccountUser {
+    id: String,
+}
+
+impl CacheEntity for AccountUser {
+    type Id = &'static str;
+
+    const ENTITY: &'static str = "account:user";
+    const COLLECTION: Option<&'static str> = Some("users:active");
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Profile {
+    id: u64,
+}
+
+impl CacheEntity for Profile {
+    type Id = u64;
+
+    const ENTITY: &'static str = "profile";
+    const COLLECTION: Option<&'static str> = None;
 }
 
 #[derive(Debug)]
@@ -119,6 +150,65 @@ async fn collection_tag_escapes_collection_segment() {
 }
 
 #[tokio::test]
+async fn cache_entity_trait_generates_default_metadata() {
+    assert_eq!(User::cache_key_for(&42), "user:42");
+    assert_eq!(User::entity_tag_for(&42), "user:42");
+    assert_eq!(User::collection_tag(), Some("users".to_owned()));
+}
+
+#[tokio::test]
+async fn cache_entity_helper_sets_key_entity_tag_and_collection_tag() {
+    let query = adapter().for_entity::<User>(42);
+
+    assert_eq!(query.key_value(), Some("user:42"));
+    assert_eq!(query.physical_key(), Some("db:user:42".to_owned()));
+    assert_eq!(
+        query.tags_value(),
+        &["user:42".to_owned(), "users".to_owned()]
+    );
+}
+
+#[tokio::test]
+async fn cache_entity_helper_escapes_entity_id_and_collection_segments() {
+    let query = adapter().for_entity::<AccountUser>("42%beta");
+
+    assert_eq!(query.key_value(), Some("account%3Auser:42%25beta"));
+    assert_eq!(
+        query.tags_value(),
+        &[
+            "account%3Auser:42%25beta".to_owned(),
+            "users%3Aactive".to_owned()
+        ]
+    );
+}
+
+#[tokio::test]
+async fn cache_entity_without_collection_only_adds_entity_tag() {
+    let query = adapter().for_entity::<Profile>(7);
+
+    assert_eq!(query.key_value(), Some("profile:7"));
+    assert_eq!(query.tags_value(), &["profile:7".to_owned()]);
+}
+
+#[tokio::test]
+async fn query_for_cache_entity_preserves_existing_tags() {
+    let query = adapter()
+        .cached::<User>()
+        .tag("tenant:7")
+        .for_cache_entity(42);
+
+    assert_eq!(query.key_value(), Some("user:42"));
+    assert_eq!(
+        query.tags_value(),
+        &[
+            "tenant:7".to_owned(),
+            "user:42".to_owned(),
+            "users".to_owned()
+        ]
+    );
+}
+
+#[tokio::test]
 async fn explicit_key_can_override_generated_entity_key() {
     let query = adapter().entity::<User>("user", 42).key("custom:user:42");
 
@@ -207,6 +297,50 @@ async fn collection_helper_caches_adapter_chosen_output_type() {
     assert_eq!(calls.load(Ordering::SeqCst), 1);
 
     assert_eq!(cache.cache().invalidate_tag("users").await.unwrap(), 1);
+}
+
+#[tokio::test]
+async fn cache_entity_helper_caches_and_invalidates_by_collection_tag() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+
+    let first = cache
+        .for_entity::<User>(1)
+        .fetch_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(1))
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached = cache
+        .for_entity::<User>(1)
+        .fetch_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(2))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, user(1));
+    assert_eq!(cached, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    assert_eq!(cache.cache().invalidate_tag("users").await.unwrap(), 1);
+
+    let reloaded = cache
+        .for_entity::<User>(1)
+        .fetch_with(|| async { Ok::<_, LoadError>(user(2)) })
+        .await
+        .unwrap();
+
+    assert_eq!(reloaded, user(2));
 }
 
 #[tokio::test]
@@ -356,6 +490,16 @@ async fn missing_key_error_uses_key_context_for_unnamed_queries() {
     assert!(matches!(
         result,
         Err(DbCacheError::MissingKey { operation }) if operation == "unnamed"
+    ));
+
+    let result = adapter()
+        .cached::<User>()
+        .fetch_with(|| async { Ok::<_, LoadError>(user(1)) })
+        .await;
+
+    assert!(matches!(
+        result,
+        Err(DbCacheError::MissingKey { operation }) if operation == "db:unnamed"
     ));
 
     let result = DbCache::new(HydraCache::local().build(), "db")

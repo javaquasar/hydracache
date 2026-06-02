@@ -18,9 +18,8 @@
 //! let queries = DbCache::new(local, "db");
 //!
 //! let (id, name): (i64, String) = queries
-//!     .cached::<(i64, String)>()
-//!     .key("user:42")
-//!     .tag("user:42")
+//!     .entity::<(i64, String)>("user", 42)
+//!     .collection_tag("users")
 //!     .fetch_one(
 //!         pool.clone(),
 //!         sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
@@ -40,7 +39,7 @@ mod error;
 mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
-pub use hydracache_db::{DbCache, DbCacheError, DbQuery, Result as DbResult};
+pub use hydracache_db::{CacheEntity, DbCache, DbCacheError, DbQuery, Result as DbResult};
 pub use query_ext::SqlxQueryExt;
 
 /// SQLx-specific compatibility name for [`DbCache`].
