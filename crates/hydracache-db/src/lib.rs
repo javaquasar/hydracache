@@ -9,20 +9,14 @@
 //!
 //! ```rust
 //! use hydracache::HydraCache;
-//! use hydracache_db::DbCache;
+//! use hydracache_db::{DbCache, HydraCacheEntity};
 //! use serde::{Deserialize, Serialize};
 //!
-//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
+//! #[hydracache(entity = "user", collection = "users", id = i64)]
 //! struct User {
 //!     id: i64,
 //!     name: String,
-//! }
-//!
-//! impl hydracache_db::CacheEntity for User {
-//!     type Id = i64;
-//!
-//!     const ENTITY: &'static str = "user";
-//!     const COLLECTION: Option<&'static str> = Some("users");
 //! }
 //!
 //! # #[tokio::main]
@@ -52,12 +46,15 @@
 //! # }
 //! ```
 
+extern crate self as hydracache_db;
+
 mod entity;
 mod error;
 mod query;
 
 pub use entity::CacheEntity;
 pub use error::{DbCacheError, Result};
+pub use hydracache_macros::HydraCacheEntity;
 pub use query::{DbCache, DbQuery};
 
 #[cfg(test)]

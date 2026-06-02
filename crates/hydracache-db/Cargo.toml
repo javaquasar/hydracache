@@ -12,8 +12,10 @@ description = "Database-neutral query result cache adapter for HydraCache."
 [dependencies]
 hydracache.workspace = true
 hydracache-core.workspace = true
+hydracache-macros.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
+trybuild.workspace = true

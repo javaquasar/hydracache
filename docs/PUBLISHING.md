@@ -27,9 +27,9 @@ homepage = "https://github.com/javaquasar/hydracache"
 ## First publish
 
 Publish workspace crates in dependency order. `hydracache` depends on
-`hydracache-core`, `hydracache-db` depends on the runtime crate, and concrete
-adapter crates such as `hydracache-sqlx` depend on the database-neutral adapter
-plus external integrations.
+`hydracache-core`, `hydracache-db` depends on the runtime crate and
+`hydracache-macros`, and concrete adapter crates such as `hydracache-sqlx`
+depend on the database-neutral adapter plus external integrations.
 
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
@@ -50,6 +50,9 @@ cargo publish -p hydracache
 Adapter crates are published after the runtime crate they depend on:
 
 ```powershell
+cargo package -p hydracache-macros
+cargo publish -p hydracache-macros
+
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
@@ -99,6 +102,9 @@ cargo publish -p hydracache-core
 cargo package -p hydracache
 cargo publish -p hydracache
 
+cargo package -p hydracache-macros
+cargo publish -p hydracache-macros
+
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
@@ -109,12 +115,12 @@ cargo publish -p hydracache-sqlx
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.10.0 -m "Release v0.10.0"
-git push origin v0.10.0
+git tag -a v0.11.0 -m "Release v0.11.0"
+git push origin v0.11.0
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually
-with the same version, for example `0.10.0`.
+with the same version, for example `0.12.0`.
 
 For `0.10.0` and later, the post-publish smoke crate should also exercise the
 database query ergonomics added on top of `hydracache-db`:
@@ -138,16 +144,11 @@ For `0.10.0` and later, the smoke crate should also verify `CacheEntity`
 metadata:
 
 ```rust
-use hydracache_sqlx::CacheEntity;
+use hydracache_sqlx::{CacheEntity, HydraCacheEntity};
 
+#[derive(HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users", id = i64)]
 struct SmokeUser;
-
-impl CacheEntity for SmokeUser {
-    type Id = i64;
-
-    const ENTITY: &'static str = "user";
-    const COLLECTION: Option<&'static str> = Some("users");
-}
 
 let metadata_query = queries.for_entity::<SmokeUser>(42);
 assert_eq!(metadata_query.key_value(), Some("user:42"));
@@ -157,12 +158,15 @@ assert_eq!(
 );
 ```
 
+For `0.11.0` and later, include `hydracache-macros` in publish verification
+and confirm the derive macro path above compiles from the SQLx re-export.
+
 Only publish crates that changed. If only `hydracache` changed and its
 dependency versions still exist on crates.io, publishing `hydracache-core` is
 not required. If `hydracache-db` depends on a freshly published runtime version,
-publish the runtime first and wait for the crates.io index to update before
-publishing `hydracache-db`. Concrete adapters such as `hydracache-sqlx` are
-published last.
+publish the runtime and macro crate first, then wait for the crates.io index to
+update before publishing `hydracache-db`. Concrete adapters such as
+`hydracache-sqlx` are published last.
 
 ## MSRV and Dependency Updates
 
@@ -195,9 +199,3 @@ To check existing tags before creating a new one:
 ```powershell
 git tag --sort=-creatordate
 ```
-
-## Not published yet
-
-These crates are intentionally not published while they are placeholders:
-
-- `hydracache-macros`

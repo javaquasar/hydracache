@@ -30,6 +30,130 @@ cargo doc --workspace --no-deps --locked
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
 
+`hydracache-db` also runs `trybuild` compile-pass and compile-fail tests for
+`#[derive(HydraCacheEntity)]`. To run only the macro UI tests:
+
+```powershell
+cargo test -p hydracache-db --test derive_ui --locked
+```
+
+When intentionally changing macro diagnostics, rerun this test, inspect the
+generated `wip/*.stderr` output, and update the matching files under
+`crates/hydracache-db/tests/derive/`.
+
+## Procedural Macro Tests
+
+Procedural macros need two layers of tests because normal unit tests and real
+compiler expansion answer different questions.
+
+The `hydracache-macros` crate keeps the real logic in normal Rust functions and
+modules:
+
+```rust
+mod config;
+mod entity;
+mod paths;
+
+#[proc_macro_derive(HydraCacheEntity, attributes(hydracache))]
+pub fn derive_hydracache_entity(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    entity::expand(syn::parse_macro_input!(input as syn::DeriveInput))
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+```
+
+The thin exported function above is intentionally small. The tested logic lives
+behind it:
+
+```rust
+pub(crate) fn expand(input: syn::DeriveInput) -> syn::Result<proc_macro2::TokenStream> {
+    let config = EntityConfig::from_attrs(&input.attrs)?;
+    let entity = config.required_entity(&input)?;
+    let id = config.required_id(&input)?;
+    let collection = config.collection_tokens();
+    let trait_path = cache_entity_trait_path();
+
+    // Real code returns quote! { impl #trait_path for User { ... } }.
+    todo!("docs snippet")
+}
+```
+
+Unit tests in `crates/hydracache-macros/src/config.rs`,
+`entity.rs`, and `paths.rs` cover parser behavior, generated token shape, error
+paths, duplicate options, missing required options, and crate-path resolution.
+For example:
+
+```rust
+let input: syn::DeriveInput = syn::parse_quote! {
+    #[hydracache(entity = "user", collection = "users", id = i64)]
+    struct User;
+};
+
+let config = EntityConfig::from_attrs(&input.attrs).unwrap();
+assert_eq!(config.collection_tokens().to_string(), "Some (\"users\")");
+```
+
+`trybuild` tests then verify the macro as a downstream user sees it through
+rustc. The test harness lives in `crates/hydracache-db/tests/derive_ui.rs`:
+
+```rust
+#[test]
+fn derive_macro_compile_tests() {
+    let tests = trybuild::TestCases::new();
+    tests.pass("tests/derive/pass_entity.rs");
+    tests.pass("tests/derive/pass_no_collection.rs");
+    tests.compile_fail("tests/derive/fail_missing_entity.rs");
+    tests.compile_fail("tests/derive/fail_missing_id.rs");
+    tests.compile_fail("tests/derive/fail_unknown_option.rs");
+}
+```
+
+Compile-pass fixtures prove that generated impls work:
+
+```rust
+use hydracache_db::{CacheEntity, HydraCacheEntity};
+
+#[derive(HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users", id = i64)]
+struct User;
+
+fn main() {
+    assert_eq!(User::cache_key_for(&42), "user:42");
+    assert_eq!(User::collection_tag(), Some("users".to_owned()));
+}
+```
+
+Compile-fail fixtures prove diagnostics stay useful:
+
+```rust
+use hydracache_db::HydraCacheEntity;
+
+#[derive(HydraCacheEntity)]
+#[hydracache(id = i64)]
+struct User;
+
+fn main() {}
+```
+
+The expected error is stored beside the fixture:
+
+```text
+error: missing #[hydracache(entity = "...")]
+ --> tests/derive/fail_missing_entity.rs:5:8
+  |
+5 | struct User;
+  |        ^^^^
+```
+
+When diagnostics intentionally change, run:
+
+```powershell
+cargo test -p hydracache-db --test derive_ui --locked
+```
+
+`trybuild` writes new output under `crates/hydracache-db/wip/`. Review it, then
+move the accepted `.stderr` files into `crates/hydracache-db/tests/derive/`.
+
 ## Coverage Summary
 
 Run workspace coverage:
@@ -69,6 +193,28 @@ As of the `0.8.0` work, `cargo-llvm-cov` reports `100%` function coverage and
 `99%+` total line coverage. Some remaining summary deltas can come from
 source-mapping or generated-region accounting even when the HTML/JSON reports do
 not show executable uncovered source lines.
+
+As of `0.11.0`, the `hydracache-macros` crate has an additional stable Rust
+tooling caveat: the exported proc-macro entrypoint is executed by rustc during
+`trybuild` tests, but stable `cargo-llvm-cov` does not count that execution as a
+normal unit-test function call. Calling that function directly from unit tests
+is not a workaround because `proc_macro::TokenStream` panics outside a real
+procedural macro expansion context:
+
+```text
+procedural macro API is used outside of a procedural macro
+```
+
+The project therefore measures and protects macro behavior in two ways:
+
+- Unit tests cover the parser, expansion function, crate-path resolver, and
+  error construction using `syn::DeriveInput` and `proc_macro2::TokenStream`.
+- `trybuild` compile-pass and compile-fail tests cover the exported derive macro
+  through rustc, including downstream imports and human-facing diagnostics.
+
+The only uncovered function in the stable `cargo-llvm-cov` summary is the thin
+`proc_macro::TokenStream` wrapper. Treat this as a known tooling limitation, not
+as untested macro behavior.
 
 ## Coverage-Only Scheduling Hook
 

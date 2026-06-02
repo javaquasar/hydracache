@@ -1,0 +1,5 @@
+error: missing #[hydracache(id = Type)]
+ --> tests/derive/fail_missing_id.rs:5:8
+  |
+5 | struct User;
+  |        ^^^^

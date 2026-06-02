@@ -52,9 +52,10 @@ queries.for_entity::<User>(user_id)
 - Generated keys and tags use the same `CacheKeyBuilder` escaping rules as the
   manual API.
 
-## Deferred
+## Follow-up
 
-- `#[derive(HydraCacheEntity)]`.
+- `#[derive(HydraCacheEntity)]` was implemented in
+  [V0_11_ENTITY_DERIVE_PLAN.md](V0_11_ENTITY_DERIVE_PLAN.md).
 - Diesel and SeaORM adapter crates.
 - Automatic SQL/table parsing.
 - Implicit invalidation inference.

@@ -5,43 +5,29 @@ use std::time::Duration;
 use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
-use crate::{CacheEntity, DbCache, DbCacheError};
+use crate::{CacheEntity, DbCache, DbCacheError, HydraCacheEntity};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users", id = u64)]
 struct User {
     id: u64,
     name: String,
 }
 
-impl CacheEntity for User {
-    type Id = u64;
-
-    const ENTITY: &'static str = "user";
-    const COLLECTION: Option<&'static str> = Some("users");
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(
+    entity = "account:user",
+    collection = "users:active",
+    id = &'static str
+)]
 struct AccountUser {
     id: String,
 }
 
-impl CacheEntity for AccountUser {
-    type Id = &'static str;
-
-    const ENTITY: &'static str = "account:user";
-    const COLLECTION: Option<&'static str> = Some("users:active");
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(entity = "profile", id = u64)]
 struct Profile {
     id: u64,
-}
-
-impl CacheEntity for Profile {
-    type Id = u64;
-
-    const ENTITY: &'static str = "profile";
-    const COLLECTION: Option<&'static str> = None;
 }
 
 #[derive(Debug)]

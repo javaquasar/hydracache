@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 use hydracache::HydraCache;
-use hydracache_sqlx::{CacheEntity, SqlxCache, SqlxQueryExt};
+use hydracache_sqlx::{HydraCacheEntity, SqlxCache, SqlxQueryExt};
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use testcontainers_modules::{
@@ -10,17 +10,15 @@ use testcontainers_modules::{
     testcontainers::{runners::AsyncRunner, ImageExt},
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(
+    entity = "cache-entity-user",
+    collection = "cache-entity-users",
+    id = i64
+)]
 struct User {
     id: i64,
     name: String,
-}
-
-impl CacheEntity for User {
-    type Id = i64;
-
-    const ENTITY: &'static str = "cache-entity-user";
-    const COLLECTION: Option<&'static str> = Some("cache-entity-users");
 }
 
 #[tokio::test]

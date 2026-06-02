@@ -2,23 +2,17 @@ use hydracache::CacheKeyBuilder;
 
 /// Static cache metadata for a domain entity.
 ///
-/// Implement this trait manually when you want domain-shaped cache calls without
-/// repeating entity and collection names at every query site. A future derive
-/// macro can generate the same implementation.
+/// Derive or implement this trait when you want domain-shaped cache calls
+/// without repeating entity and collection names at every query site.
 ///
 /// # Example
 ///
 /// ```rust
-/// use hydracache_db::CacheEntity;
+/// use hydracache_db::{CacheEntity, HydraCacheEntity};
 ///
+/// #[derive(HydraCacheEntity)]
+/// #[hydracache(entity = "user", collection = "users", id = i64)]
 /// struct User;
-///
-/// impl CacheEntity for User {
-///     type Id = i64;
-///
-///     const ENTITY: &'static str = "user";
-///     const COLLECTION: Option<&'static str> = Some("users");
-/// }
 ///
 /// assert_eq!(User::cache_key_for(&42), "user:42");
 /// assert_eq!(User::entity_tag_for(&42), "user:42");

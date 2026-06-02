@@ -8,7 +8,14 @@
 //!
 //! ```no_run
 //! use hydracache::HydraCache;
-//! use hydracache_sqlx::{DbCache, SqlxQueryExt};
+//! use hydracache_sqlx::{DbCache, HydraCacheEntity, SqlxQueryExt};
+//!
+//! #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
+//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! struct User {
+//!     id: i64,
+//!     name: String,
+//! }
 //!
 //! # async fn example(pool: sqlx::PgPool) -> hydracache_sqlx::Result<()> {
 //! let local = HydraCache::local().build();
@@ -17,17 +24,21 @@
 //! // database-neutral and comes from hydracache-db.
 //! let queries = DbCache::new(local, "db");
 //!
-//! let (id, name): (i64, String) = queries
-//!     .entity::<(i64, String)>("user", 42)
-//!     .collection_tag("users")
-//!     .fetch_one(
-//!         pool.clone(),
-//!         sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
-//!     )
+//! let user: User = queries
+//!     .for_entity::<User>(42)
+//!     .fetch_with(move || async move {
+//!         let (id, name): (i64, String) =
+//!             sqlx::query_as("select id, name from users where id = $1")
+//!                 .bind(42_i64)
+//!                 .fetch_one(&pool)
+//!                 .await?;
+//!
+//!         Ok::<_, sqlx::Error>(User { id, name })
+//!     })
 //!     .await?;
 //!
-//! assert_eq!(id, 42);
-//! assert!(!name.is_empty());
+//! assert_eq!(user.id, 42);
+//! assert!(!user.name.is_empty());
 //! # Ok(())
 //! # }
 //! ```
@@ -35,11 +46,15 @@
 //! Use [`DbQuery::fetch_with`] when you need SQLx macros, transactions, or a
 //! repository function instead of a pool-like executor.
 
+extern crate self as hydracache_sqlx;
+
 mod error;
 mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
-pub use hydracache_db::{CacheEntity, DbCache, DbCacheError, DbQuery, Result as DbResult};
+pub use hydracache_db::{
+    CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity, Result as DbResult,
+};
 pub use query_ext::SqlxQueryExt;
 
 /// SQLx-specific compatibility name for [`DbCache`].

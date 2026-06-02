@@ -65,10 +65,11 @@ The first version includes:
 - database query ergonomics: `entity`, `collection`, `for_entity`, and
   `collection_tag`
 - `CacheEntity` metadata for domain-shaped database cache descriptors
+- `HydraCacheEntity` derive macro for generating `CacheEntity` impls
 
 Out of scope for v0:
 
-- proc macros
+- SQL parsing or query-generation macros
 - distributed invalidation
 - cluster roles
 - public generation-counter APIs
@@ -231,23 +232,17 @@ entity. It generates logical key `user:42` and tag `user:42`. Use
 group. Use `collection_tag("users")` when an entity result should also be
 invalidated together with a broader collection.
 
-When the same entity metadata is used in several places, implement
+When the same entity metadata is used in several places, derive or implement
 `CacheEntity` once and use `for_entity::<T>(id)`:
 
 ```rust
-use hydracache_sqlx::{CacheEntity, DbCache};
+use hydracache_sqlx::{CacheEntity, DbCache, HydraCacheEntity};
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users", id = i64)]
 struct User {
     id: i64,
     name: String,
-}
-
-impl CacheEntity for User {
-    type Id = i64;
-
-    const ENTITY: &'static str = "user";
-    const COLLECTION: Option<&'static str> = Some("users");
 }
 
 # async fn example(queries: DbCache) -> hydracache_sqlx::Result<()> {
@@ -262,9 +257,13 @@ let user = queries
     .await?;
 
 assert_eq!(user.id, 42);
+assert_eq!(User::collection_tag(), Some("users".to_owned()));
 # Ok(())
 # }
 ```
+
+Manual `CacheEntity` implementations remain supported when you prefer no
+proc-macro dependency or want to generate metadata from your own macro layer.
 
 The older `.cached::<T>().key(...).tag(...)` style remains available and is the
 full-control API. The ergonomic helpers only generate common keys and tags on
@@ -301,6 +300,7 @@ lines investigated before release.
 - `hydracache` - use this for the local async cache, typed cache, TTLs, tags, single-flight, and stats.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
+- `hydracache-macros` - usually use this through `HydraCacheEntity` re-exports from `hydracache-db` or `hydracache-sqlx`.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
 
 ## Release Plan
@@ -313,13 +313,14 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_8_SQLX_HELPERS_PLAN.md](docs/plans/V0_8_SQLX_HELPERS_PLAN.md)
 - [docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md](docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md)
 - [docs/plans/V0_10_CACHE_ENTITY_PLAN.md](docs/plans/V0_10_CACHE_ENTITY_PLAN.md)
+- [docs/plans/V0_11_ENTITY_DERIVE_PLAN.md](docs/plans/V0_11_ENTITY_DERIVE_PLAN.md)
 
 ## Workspace
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, codec, errors
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, and stats
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
-- `crates/hydracache-macros` - future macro ergonomics
+- `crates/hydracache-macros` - derive macros such as `HydraCacheEntity`
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports
 
 ## Crate Layout
