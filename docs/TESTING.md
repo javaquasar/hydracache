@@ -31,8 +31,9 @@ testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
 
 `hydracache` and `hydracache-db` also run `trybuild` compile-pass and
-compile-fail tests for `cacheable!(...)`, `#[derive(HydraCacheEntity)]`, and
-`query_cache_policy!(...)`. To run only the macro UI tests:
+compile-fail tests for `cacheable!(...)`, `cacheable_infallible!(...)`,
+`#[derive(HydraCacheEntity)]`, and `query_cache_policy!(...)`. To run only the
+macro UI tests:
 
 ```powershell
 cargo test -p hydracache --test cacheable_ui --locked
@@ -107,8 +108,11 @@ The local-cache macro harness lives in `crates/hydracache/tests/cacheable_ui.rs`
 fn cacheable_macro_compile_tests() {
     let tests = trybuild::TestCases::new();
     tests.pass("tests/cacheable/pass_cacheable.rs");
+    tests.pass("tests/cacheable/pass_cacheable_infallible.rs");
+    tests.pass("tests/cacheable/pass_cacheable_tags.rs");
     tests.compile_fail("tests/cacheable/fail_conflicting_ttl.rs");
     tests.compile_fail("tests/cacheable/fail_missing_cache.rs");
+    tests.compile_fail("tests/cacheable/fail_missing_key.rs");
     tests.compile_fail("tests/cacheable/fail_missing_load.rs");
 }
 ```

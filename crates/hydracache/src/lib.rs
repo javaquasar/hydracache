@@ -44,11 +44,13 @@
 //!
 //! Use [`cacheable!`] when an ordinary async function or expensive operation
 //! should be cached without introducing database-result-cache concepts.
+//! `cacheable!` wraps fallible loaders. [`cacheable_infallible!`] wraps loaders
+//! that return a value directly.
 //!
 //! ```rust
 //! use std::time::Duration;
 //!
-//! use hydracache::{cacheable, HydraCache};
+//! use hydracache::{cacheable, cacheable_infallible, HydraCache};
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -74,13 +76,72 @@
 //! let report = cacheable!(
 //!     cache = cache,
 //!     key = "report:42",
-//!     tag = "reports",
+//!     tags = ["reports", "report:42"],
 //!     ttl = Duration::from_secs(60),
 //!     load = || async { Ok::<_, LoadError>(Report { id: 42 }) },
 //! )
 //! .await?;
 //!
 //! assert_eq!(report.id, 42);
+//!
+//! let total = cacheable_infallible!(
+//!     cache = cache,
+//!     key = "report-total:42",
+//!     tags = ["reports", "report:42"],
+//!     ttl_secs = 60,
+//!     load = || async { 42_u64 },
+//! )
+//! .await?;
+//!
+//! assert_eq!(total, 42);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! Use [`CacheKeyBuilder`] and [`TagSet`] when the key and invalidation tags are
+//! generated from the same domain metadata:
+//!
+//! ```rust
+//! use hydracache::{cacheable, CacheKeyBuilder, HydraCache, TagSet};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+//! struct Profile {
+//!     id: u64,
+//! }
+//!
+//! #[derive(Debug)]
+//! struct LoadError;
+//!
+//! impl std::fmt::Display for LoadError {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!         f.write_str("load failed")
+//!     }
+//! }
+//!
+//! impl std::error::Error for LoadError {}
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//! let profile_id = 42_u64;
+//! let key = CacheKeyBuilder::new()
+//!     .entity("profile", profile_id)
+//!     .build_string();
+//!
+//! let profile = cacheable!(
+//!     cache = cache,
+//!     key = key.as_str(),
+//!     tags = TagSet::new().tag("profiles").entity("profile", profile_id),
+//!     ttl_secs = 60,
+//!     load = move || async move {
+//!         Ok::<_, LoadError>(Profile { id: profile_id })
+//!     },
+//! )
+//! .await?;
+//!
+//! assert_eq!(profile.id, 42);
+//! cache.invalidate_tag("profile:42").await?;
 //! # Ok(())
 //! # }
 //! ```
@@ -134,7 +195,7 @@ pub use cache::HydraCache;
 pub use hydracache_core::{
     CacheError, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, TagSet,
 };
-pub use hydracache_macros::cacheable;
+pub use hydracache_macros::{cacheable, cacheable_infallible};
 pub use typed::TypedCache;
 
 pub use hydracache_core::{CacheOptions as Options, CacheStats as Stats, Result as CacheResult};

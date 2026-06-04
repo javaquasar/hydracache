@@ -52,27 +52,62 @@ pub fn query_cache_policy(input: TokenStream) -> TokenStream {
         .into()
 }
 
-/// Cache an ordinary async loader with explicit local-cache metadata.
+/// Cache an ordinary fallible async loader with explicit local-cache metadata.
+///
+/// The macro builds `CacheOptions` and calls `HydraCache::get_or_load`.
+/// `cache`, `key`, and `load` are required. `tag = ...` can be repeated,
+/// `tags = ...` accepts any iterable accepted by `CacheOptions::tags`, and
+/// either `ttl = Duration` or `ttl_secs = u64` can be supplied.
 ///
 /// # Example
 ///
 /// ```rust,ignore
-/// use hydracache::{cacheable, HydraCache};
+/// use hydracache::{cacheable, CacheKeyBuilder, HydraCache, TagSet};
 ///
 /// let cache = HydraCache::local().build();
+/// let user_id = 42_u64;
+/// let key = CacheKeyBuilder::new().entity("user", user_id).build_string();
 ///
 /// let value = cacheable!(
 ///     cache = cache,
-///     key = "expensive:42",
-///     tag = "expensive",
+///     key = key.as_str(),
+///     tags = TagSet::new().tag("users").entity("user", user_id),
 ///     ttl_secs = 60,
-///     load = || async { Ok::<_, std::io::Error>(42_u64) },
+///     load = move || async move { Ok::<_, std::io::Error>(user_id) },
 /// )
 /// .await?;
 /// ```
 #[proc_macro]
 pub fn cacheable(input: TokenStream) -> TokenStream {
     cacheable::expand(input.into())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// Cache an ordinary async loader that cannot fail in application terms.
+///
+/// The macro builds `CacheOptions` and calls `HydraCache::get_or_insert_with`.
+/// Use it when the loader returns `T` instead of `Result<T, E>`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use hydracache::{cacheable_infallible, HydraCache};
+///
+/// let cache = HydraCache::local().build();
+///
+/// let value = cacheable_infallible!(
+///     cache = cache,
+///     key = "expensive:42",
+///     tags = ["expensive"],
+///     ttl_secs = 60,
+///     load = || async { 42_u64 },
+/// )
+/// .await?;
+/// ```
+#[proc_macro]
+pub fn cacheable_infallible(input: TokenStream) -> TokenStream {
+    cacheable::expand_infallible(input.into())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

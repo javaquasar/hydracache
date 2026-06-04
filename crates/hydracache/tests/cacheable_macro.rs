@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache::{cacheable, HydraCache};
+use hydracache::{cacheable, cacheable_infallible, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -110,4 +110,108 @@ async fn cacheable_macro_applies_tags_and_ttl() {
 
     cache.invalidate_tag("expiring").await.unwrap();
     assert!(!cache.contains_key("expiring:1").await);
+}
+
+#[tokio::test]
+async fn cacheable_macro_accepts_tags_expression() {
+    let cache = HydraCache::local().build();
+    let calls = Arc::new(AtomicUsize::new(0));
+
+    let first: ExpensiveValue = cacheable!(
+        cache = cache,
+        key = "tag-list:1",
+        tags = ["tag-list", "tag-list:1"],
+        load = {
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(ExpensiveValue { id: 1 })
+            }
+        },
+    )
+    .await
+    .unwrap();
+
+    let second: ExpensiveValue = cacheable!(
+        cache = cache,
+        key = "tag-list:1",
+        tags = ["tag-list", "tag-list:1"],
+        load = {
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(ExpensiveValue { id: 2 })
+            }
+        },
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(first, ExpensiveValue { id: 1 });
+    assert_eq!(second, ExpensiveValue { id: 1 });
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    cache.invalidate_tag("tag-list").await.unwrap();
+    assert!(!cache.contains_key("tag-list:1").await);
+}
+
+#[tokio::test]
+async fn cacheable_macro_accepts_tag_set_expression() {
+    let cache = HydraCache::local().build();
+
+    let value: ExpensiveValue = cacheable!(
+        cache = cache,
+        key = "tag-set:1",
+        tags = TagSet::new().tag("tag-set").entity("value", 1),
+        load = || async { Ok::<_, LoadError>(ExpensiveValue { id: 1 }) },
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(value, ExpensiveValue { id: 1 });
+
+    cache.invalidate_tag("value:1").await.unwrap();
+    assert!(!cache.contains_key("tag-set:1").await);
+}
+
+#[tokio::test]
+async fn cacheable_infallible_macro_caches_loader_result() {
+    let cache = HydraCache::local().build();
+    let calls = Arc::new(AtomicUsize::new(0));
+
+    let first: ExpensiveValue = cacheable_infallible!(
+        cache = cache,
+        key = "infallible:1",
+        tags = ["infallible", "infallible:1"],
+        ttl_secs = 60,
+        load = {
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                ExpensiveValue { id: 1 }
+            }
+        },
+    )
+    .await
+    .unwrap();
+
+    let second: ExpensiveValue = cacheable_infallible!(
+        cache = cache,
+        key = "infallible:1",
+        tags = ["infallible", "infallible:1"],
+        ttl_secs = 60,
+        load = {
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                ExpensiveValue { id: 2 }
+            }
+        },
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(first, ExpensiveValue { id: 1 });
+    assert_eq!(second, ExpensiveValue { id: 1 });
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
 }
