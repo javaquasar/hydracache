@@ -1,5 +1,10 @@
 use hydracache::{cacheable, HydraCache};
 
+// Keep the macro span on double-digit line numbers. Rustc versions can format
+// single-digit line-number padding differently, which makes trybuild snapshots
+// fragile across the stable and MSRV toolchains.
+//
+// The test itself verifies only the conflicting TTL diagnostic below.
 fn main() {
     let cache = HydraCache::local().build();
     let _future = cacheable!(

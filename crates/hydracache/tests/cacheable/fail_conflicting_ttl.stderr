@@ -1,14 +1,14 @@
 error: cacheable accepts only one TTL option: ttl or ttl_secs
-  --> tests/cacheable/fail_conflicting_ttl.rs:5:19
+  --> tests/cacheable/fail_conflicting_ttl.rs:10:19
    |
- 5 |       let _future = cacheable!(
+10 |       let _future = cacheable!(
    |  ___________________^
- 6 | |         cache = cache,
- 7 | |         key = "value:1",
- 8 | |         ttl = std::time::Duration::from_secs(60),
- 9 | |         ttl_secs = 60,
-10 | |         load = || async { Ok::<_, std::io::Error>(1_u64) },
-11 | |     );
+11 | |         cache = cache,
+12 | |         key = "value:1",
+13 | |         ttl = std::time::Duration::from_secs(60),
+14 | |         ttl_secs = 60,
+15 | |         load = || async { Ok::<_, std::io::Error>(1_u64) },
+16 | |     );
    | |_____^
    |
    = note: this error originates in the macro `cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)
