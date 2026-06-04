@@ -30,17 +30,19 @@ cargo doc --workspace --no-deps --locked
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
 
-`hydracache-db` also runs `trybuild` compile-pass and compile-fail tests for
-`#[derive(HydraCacheEntity)]` and `query_cache_policy!(...)`. To run only the
-macro UI tests:
+`hydracache` and `hydracache-db` also run `trybuild` compile-pass and
+compile-fail tests for `cacheable!(...)`, `#[derive(HydraCacheEntity)]`, and
+`query_cache_policy!(...)`. To run only the macro UI tests:
 
 ```powershell
+cargo test -p hydracache --test cacheable_ui --locked
 cargo test -p hydracache-db --test derive_ui --locked
 ```
 
 When intentionally changing macro diagnostics, rerun this test, inspect the
 generated `wip/*.stderr` output, and update the matching files under
-`crates/hydracache-db/tests/derive/` or
+`crates/hydracache/tests/cacheable/`,
+`crates/hydracache-db/tests/derive/`, or
 `crates/hydracache-db/tests/policy/`.
 
 ## Procedural Macro Tests
@@ -52,9 +54,11 @@ The `hydracache-macros` crate keeps the real logic in normal Rust functions and
 modules:
 
 ```rust
+mod cacheable;
 mod config;
 mod entity;
 mod paths;
+mod policy;
 
 #[proc_macro_derive(HydraCacheEntity, attributes(hydracache))]
 pub fn derive_hydracache_entity(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -80,10 +84,10 @@ pub(crate) fn expand(input: syn::DeriveInput) -> syn::Result<proc_macro2::TokenS
 }
 ```
 
-Unit tests in `crates/hydracache-macros/src/config.rs`,
-`entity.rs`, and `paths.rs` cover parser behavior, generated token shape, error
-paths, duplicate options, missing required options, and crate-path resolution.
-For example:
+Unit tests in `crates/hydracache-macros/src/cacheable.rs`, `config.rs`,
+`entity.rs`, `paths.rs`, and `policy.rs` cover parser behavior, generated token
+shape, error paths, duplicate options, missing required options, and crate-path
+resolution. For example:
 
 ```rust
 let input: syn::DeriveInput = syn::parse_quote! {
@@ -95,8 +99,21 @@ let config = EntityConfig::from_attrs(&input.attrs).unwrap();
 assert_eq!(config.collection_tokens().to_string(), "Some (\"users\")");
 ```
 
-`trybuild` tests then verify the macro as a downstream user sees it through
-rustc. The test harness lives in `crates/hydracache-db/tests/derive_ui.rs`:
+`trybuild` tests then verify macros as downstream users see them through rustc.
+The local-cache macro harness lives in `crates/hydracache/tests/cacheable_ui.rs`:
+
+```rust
+#[test]
+fn cacheable_macro_compile_tests() {
+    let tests = trybuild::TestCases::new();
+    tests.pass("tests/cacheable/pass_cacheable.rs");
+    tests.compile_fail("tests/cacheable/fail_conflicting_ttl.rs");
+    tests.compile_fail("tests/cacheable/fail_missing_cache.rs");
+    tests.compile_fail("tests/cacheable/fail_missing_load.rs");
+}
+```
+
+The database macro harness lives in `crates/hydracache-db/tests/derive_ui.rs`:
 
 ```rust
 #[test]
@@ -163,12 +180,15 @@ accepted.
 When diagnostics intentionally change, run:
 
 ```powershell
+cargo test -p hydracache --test cacheable_ui --locked
 cargo test -p hydracache-db --test derive_ui --locked
 ```
 
-`trybuild` writes new output under `crates/hydracache-db/wip/`. Review it, then
-move the accepted `.stderr` files next to the matching compile-fail fixture
-under `crates/hydracache-db/tests/derive/` or
+`trybuild` writes new output under the tested crate's `wip/` directory, for
+example `crates/hydracache/wip/` or `crates/hydracache-db/wip/`. Review it,
+then move the accepted `.stderr` files next to the matching compile-fail fixture
+under `crates/hydracache/tests/cacheable/`,
+`crates/hydracache-db/tests/derive/`, or
 `crates/hydracache-db/tests/policy/`.
 
 ## Coverage Summary
@@ -206,17 +226,16 @@ The current practical target is:
 - `100%` visible source-line coverage for project code.
 - `99%+` total line and region coverage in `cargo-llvm-cov` summary.
 
-As of the `0.8.0` work, `cargo-llvm-cov` reports `100%` function coverage and
-`99%+` total line coverage. Some remaining summary deltas can come from
-source-mapping or generated-region accounting even when the HTML/JSON reports do
-not show executable uncovered source lines.
+As of the `0.14.0` work, `cargo-llvm-cov` reports `100%` function coverage and
+`100%` visible source-line coverage for project code. Some remaining summary
+deltas can come from source-mapping or generated-region accounting even when the
+HTML/JSON reports do not show executable uncovered source lines.
 
-As of `0.11.0`, the `hydracache-macros` crate has an additional stable Rust
-tooling caveat: the exported proc-macro entrypoint is executed by rustc during
-`trybuild` tests, but stable `cargo-llvm-cov` does not count that execution as a
-normal unit-test function call. Calling that function directly from unit tests
-is not a workaround because `proc_macro::TokenStream` panics outside a real
-procedural macro expansion context:
+The `hydracache-macros` crate has one stable Rust tooling caveat to remember:
+exported proc-macro entrypoints are only valid inside a real procedural macro
+expansion context. Calling those functions directly from unit tests is not a
+safe workaround because `proc_macro::TokenStream` can panic outside rustc macro
+expansion:
 
 ```text
 procedural macro API is used outside of a procedural macro
@@ -226,12 +245,12 @@ The project therefore measures and protects macro behavior in two ways:
 
 - Unit tests cover the parser, expansion function, crate-path resolver, and
   error construction using `syn::DeriveInput` and `proc_macro2::TokenStream`.
-- `trybuild` compile-pass and compile-fail tests cover the exported derive macro
-  through rustc, including downstream imports and human-facing diagnostics.
+- `trybuild` compile-pass and compile-fail tests cover exported macros through
+  rustc, including downstream imports and human-facing diagnostics.
 
-The only uncovered function in the stable `cargo-llvm-cov` summary is the thin
-`proc_macro::TokenStream` wrapper. Treat this as a known tooling limitation, not
-as untested macro behavior.
+If a future stable toolchain reports a thin proc-macro wrapper as uncovered,
+treat that as a tooling limitation only after confirming the matching parser
+unit tests and `trybuild` fixtures still exercise the macro behavior.
 
 ## Coverage-Only Scheduling Hook
 

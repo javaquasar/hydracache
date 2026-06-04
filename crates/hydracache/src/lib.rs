@@ -40,6 +40,51 @@
 //! # }
 //! ```
 //!
+//! # Cacheable functions
+//!
+//! Use [`cacheable!`] when an ordinary async function or expensive operation
+//! should be cached without introducing database-result-cache concepts.
+//!
+//! ```rust
+//! use std::time::Duration;
+//!
+//! use hydracache::{cacheable, HydraCache};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+//! struct Report {
+//!     id: u64,
+//! }
+//!
+//! #[derive(Debug)]
+//! struct LoadError;
+//!
+//! impl std::fmt::Display for LoadError {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!         f.write_str("load failed")
+//!     }
+//! }
+//!
+//! impl std::error::Error for LoadError {}
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//!
+//! let report = cacheable!(
+//!     cache = cache,
+//!     key = "report:42",
+//!     tag = "reports",
+//!     ttl = Duration::from_secs(60),
+//!     load = || async { Ok::<_, LoadError>(Report { id: 42 }) },
+//! )
+//! .await?;
+//!
+//! assert_eq!(report.id, 42);
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! # Typed local cache
 //!
 //! ```rust
@@ -74,6 +119,8 @@
 //! # }
 //! ```
 
+extern crate self as hydracache;
+
 mod builder;
 mod cache;
 mod entry;
@@ -87,6 +134,7 @@ pub use cache::HydraCache;
 pub use hydracache_core::{
     CacheError, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, TagSet,
 };
+pub use hydracache_macros::cacheable;
 pub use typed::TypedCache;
 
 pub use hydracache_core::{CacheOptions as Options, CacheStats as Stats, Result as CacheResult};

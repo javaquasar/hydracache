@@ -66,6 +66,8 @@ The first version includes:
   `collection_tag`
 - `CacheEntity` metadata for domain-shaped database cache descriptors
 - `HydraCacheEntity` derive macro for generating `CacheEntity` impls
+- `cacheable!` macro for ordinary async function/result caching without DB
+  adapter concepts
 
 Out of scope for v0:
 
@@ -148,6 +150,30 @@ let typed_user = users
 `get_or_insert_with` is the short local-cache spelling for infallible async loaders.
 
 `try_get_or_insert_with` is the fallible-loader spelling. It behaves the same as `get_or_load`.
+
+For ordinary expensive async work, `cacheable!` is the compact macro form of
+`get_or_load`. It stays local-cache focused: you still pass the cache, key, TTL,
+tags, and loader explicitly, and it does not introduce database query metadata.
+
+```rust
+use hydracache::{cacheable, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local().build();
+
+let value = cacheable!(
+    cache = cache,
+    key = "expensive:42",
+    tag = "expensive",
+    ttl_secs = 60,
+    load = || async { Ok::<_, std::io::Error>(42_u64) },
+)
+.await?;
+
+assert_eq!(value, 42);
+# Ok(())
+# }
+```
 
 `typed::<T>("namespace")` creates a typed, namespaced view over the same cache. It
 keeps the shared storage, stats, single-flight, tags, and invalidation safety,
@@ -351,10 +377,10 @@ lines investigated before release.
 
 ## Which Crate Should I Use?
 
-- `hydracache` - use this for the local async cache, typed cache, TTLs, tags, single-flight, and stats.
+- `hydracache` - use this for the local async cache, `cacheable!`, typed cache, TTLs, tags, single-flight, and stats.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
-- `hydracache-macros` - usually use this through `HydraCacheEntity` re-exports from `hydracache-db` or `hydracache-sqlx`.
+- `hydracache-macros` - usually use this through `cacheable!` from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
 
 ## Release Plan
@@ -368,13 +394,14 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md](docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md)
 - [docs/plans/V0_10_CACHE_ENTITY_PLAN.md](docs/plans/V0_10_CACHE_ENTITY_PLAN.md)
 - [docs/plans/V0_11_ENTITY_DERIVE_PLAN.md](docs/plans/V0_11_ENTITY_DERIVE_PLAN.md)
+- [docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md](docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md)
 
 ## Workspace
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, codec, errors
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, and stats
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
-- `crates/hydracache-macros` - derive macros such as `HydraCacheEntity`
+- `crates/hydracache-macros` - procedural macros such as `cacheable!`, `HydraCacheEntity`, and `query_cache_policy!`
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports
 
 ## Crate Layout

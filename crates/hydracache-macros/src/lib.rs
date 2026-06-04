@@ -1,6 +1,7 @@
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
+mod cacheable;
 mod config;
 mod entity;
 mod paths;
@@ -47,6 +48,31 @@ pub fn derive_hydracache_entity(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn query_cache_policy(input: TokenStream) -> TokenStream {
     policy::expand(input.into())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// Cache an ordinary async loader with explicit local-cache metadata.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use hydracache::{cacheable, HydraCache};
+///
+/// let cache = HydraCache::local().build();
+///
+/// let value = cacheable!(
+///     cache = cache,
+///     key = "expensive:42",
+///     tag = "expensive",
+///     ttl_secs = 60,
+///     load = || async { Ok::<_, std::io::Error>(42_u64) },
+/// )
+/// .await?;
+/// ```
+#[proc_macro]
+pub fn cacheable(input: TokenStream) -> TokenStream {
+    cacheable::expand(input.into())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

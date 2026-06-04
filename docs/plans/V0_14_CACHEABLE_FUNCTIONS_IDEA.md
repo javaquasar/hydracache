@@ -1,6 +1,7 @@
 # HydraCache 0.14.0 Cacheable Functions Idea
 
-Status: idea captured for `0.14.0`.
+Status: implemented in `0.14.0` as the explicit `cacheable!(...)`
+function-like macro.
 
 ## Goal
 
@@ -61,6 +62,29 @@ let value = cacheable!(
 ).await?;
 ```
 
+`0.14.0` implements the function-like macro first:
+
+```rust
+let value = hydracache::cacheable!(
+    cache = cache,
+    key = "expensive:42",
+    tag = "expensive",
+    ttl_secs = 60,
+    load = || async { Ok::<_, std::io::Error>(42_u64) },
+)
+.await?;
+```
+
+Supported options:
+
+- `cache = ...` is required and points to the `HydraCache` instance.
+- `key = ...` is required and stays application-owned.
+- `load = ...` is required and is passed to `HydraCache::get_or_load`.
+- `tag = ...` can be repeated.
+- `ttl = ...` accepts a `Duration` expression.
+- `ttl_secs = ...` is a short `Duration::from_secs(...)` form.
+- `ttl` and `ttl_secs` are mutually exclusive.
+
 ## Design Boundary
 
 - `hydracache`: local cache runtime, ordinary function caching, typed local
@@ -73,9 +97,10 @@ let value = cacheable!(
 
 ## Open Questions
 
-- How does the macro receive or locate the cache instance?
-- Should the first version support only explicit `cache = ...`?
-- Should the key syntax be a format string, segmented key builder, or expression?
+- Attribute macro design: how should it receive or locate the cache instance?
+- Should future versions support generated keys from function arguments?
+- Should the key syntax become a format string, segmented key builder, or stay
+  an expression?
 - Should sync functions be supported, or async-only first?
 - How should errors be represented for loader failures?
 - Should tags support interpolation from function arguments?

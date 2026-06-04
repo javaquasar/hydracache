@@ -18,6 +18,22 @@ pub(crate) fn query_cache_policy_path() -> TokenStream2 {
     )
 }
 
+pub(crate) fn cache_options_path() -> TokenStream2 {
+    resolve_runtime_type_path(crate_name("hydracache").ok(), "CacheOptions")
+}
+
+fn resolve_runtime_type_path(
+    runtime_crate: Option<FoundCrate>,
+    exported_type: &str,
+) -> TokenStream2 {
+    if let Some(found) = runtime_crate {
+        exported_type_path_for("hydracache", found, exported_type)
+    } else {
+        let exported_type = syn::Ident::new(exported_type, Span::call_site());
+        quote!(::hydracache::#exported_type)
+    }
+}
+
 fn resolve_exported_type_path(
     db_crate: Option<FoundCrate>,
     sqlx_crate: Option<FoundCrate>,
@@ -95,6 +111,34 @@ mod tests {
         assert_eq!(
             query_cache_policy_path().to_string(),
             ":: hydracache_db :: QueryCachePolicy"
+        );
+    }
+
+    #[test]
+    fn fallback_runtime_path_is_available_without_runtime_dependency() {
+        assert_eq!(
+            cache_options_path().to_string(),
+            ":: hydracache :: CacheOptions"
+        );
+    }
+
+    #[test]
+    fn resolves_runtime_path_for_current_crate() {
+        assert_eq!(
+            resolve_runtime_type_path(Some(FoundCrate::Itself), "CacheOptions").to_string(),
+            ":: hydracache :: CacheOptions"
+        );
+    }
+
+    #[test]
+    fn resolves_runtime_path_for_renamed_crate() {
+        assert_eq!(
+            resolve_runtime_type_path(
+                Some(FoundCrate::Name("local-cache".to_owned())),
+                "CacheOptions",
+            )
+            .to_string(),
+            ":: local_cache :: CacheOptions"
         );
     }
 

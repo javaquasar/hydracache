@@ -1,0 +1,11 @@
+error: cacheable requires load
+ --> tests/cacheable/fail_missing_load.rs:5:19
+  |
+5 |       let _future = cacheable!(
+  |  ___________________^
+6 | |         cache = cache,
+7 | |         key = "value:1",
+8 | |     );
+  | |_____^
+  |
+  = note: this error originates in the macro `cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)
