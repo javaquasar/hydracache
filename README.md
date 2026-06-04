@@ -175,6 +175,11 @@ assert_eq!(value, 42);
 # }
 ```
 
+When the loader captures request state, pool handles, or other non-`Copy`
+values, prefer `move || async move { ... }`. `cacheable!` expands to
+`HydraCache::get_or_load`, so the loader follows the same `Send + 'static`
+bounds as the explicit API.
+
 `typed::<T>("namespace")` creates a typed, namespaced view over the same cache. It
 keeps the shared storage, stats, single-flight, tags, and invalidation safety,
 but removes repeated type annotations at call sites and prefixes keys as

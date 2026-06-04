@@ -1,0 +1,11 @@
+error: cacheable requires key
+ --> tests/cacheable/fail_missing_key.rs:5:19
+  |
+5 |       let _future = cacheable!(
+  |  ___________________^
+6 | |         cache = cache,
+7 | |         load = || async { Ok::<_, std::io::Error>(1_u64) },
+8 | |     );
+  | |_____^
+  |
+  = note: this error originates in the macro `cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)
