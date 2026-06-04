@@ -27,9 +27,10 @@ homepage = "https://github.com/javaquasar/hydracache"
 ## First publish
 
 Publish workspace crates in dependency order. `hydracache` depends on
-`hydracache-core`, `hydracache-db` depends on the runtime crate and
-`hydracache-macros`, and concrete adapter crates such as `hydracache-sqlx`
-depend on the database-neutral adapter plus external integrations.
+`hydracache-core` and `hydracache-macros`, `hydracache-db` depends on the
+runtime crate and macro crate, and concrete adapter crates such as
+`hydracache-sqlx` depend on the database-neutral adapter plus external
+integrations.
 
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
@@ -39,20 +40,25 @@ cargo package -p hydracache-core
 cargo publish -p hydracache-core
 ```
 
-Wait a minute or two for the crates.io index to update, then publish the
-user-facing crate:
+Wait a minute or two for the crates.io index to update, then publish the macro
+crate used by the runtime and adapters:
+
+```powershell
+cargo package -p hydracache-macros
+cargo publish -p hydracache-macros
+```
+
+Wait again for the crates.io index to update, then publish the user-facing
+runtime crate:
 
 ```powershell
 cargo package -p hydracache
 cargo publish -p hydracache
 ```
 
-Adapter crates are published after the runtime crate they depend on:
+Adapter crates are published after the runtime and macro crates they depend on:
 
 ```powershell
-cargo package -p hydracache-macros
-cargo publish -p hydracache-macros
-
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
@@ -60,7 +66,8 @@ cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
 
-If `hydracache` cannot find `hydracache-core`, wait a little longer and retry:
+If `hydracache` cannot find `hydracache-core` or `hydracache-macros`, wait a
+little longer and retry:
 
 ```powershell
 cargo publish -p hydracache
@@ -99,11 +106,11 @@ cargo +1.88.0 test --workspace --locked
 cargo package -p hydracache-core
 cargo publish -p hydracache-core
 
-cargo package -p hydracache
-cargo publish -p hydracache
-
 cargo package -p hydracache-macros
 cargo publish -p hydracache-macros
+
+cargo package -p hydracache
+cargo publish -p hydracache
 
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
@@ -164,11 +171,14 @@ For `0.11.0` and later, include `hydracache-macros` in publish verification
 and confirm the derive macro path above compiles from the SQLx re-export.
 
 Only publish crates that changed. If only `hydracache` changed and its
-dependency versions still exist on crates.io, publishing `hydracache-core` is
-not required. If `hydracache-db` depends on a freshly published runtime version,
-publish the runtime and macro crate first, then wait for the crates.io index to
-update before publishing `hydracache-db`. Concrete adapters such as
-`hydracache-sqlx` are published last.
+dependency versions still exist on crates.io, publishing `hydracache-core` or
+`hydracache-macros` is not required. If `hydracache` depends on a freshly
+published macro crate version, publish `hydracache-macros` first, wait for the
+crates.io index to update, then publish `hydracache`. If `hydracache-db`
+depends on a freshly published runtime version, publish the runtime and macro
+crate first, then wait for the crates.io index to update before publishing
+`hydracache-db`. Concrete adapters such as `hydracache-sqlx` are published
+last.
 
 ## MSRV and Dependency Updates
 
