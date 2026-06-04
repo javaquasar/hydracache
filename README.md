@@ -385,6 +385,43 @@ Mutation endpoints such as `flush`, `invalidate-key`, or `invalidate-tag` are
 not included yet. They need an explicit security and deployment model before
 becoming public API.
 
+## Manual Sandbox
+
+The workspace includes `hydracache-sandbox`, a non-published manual backend for
+trying the cache, actuator routes, Swagger UI, and database-backed loaders
+without writing a separate app.
+
+```powershell
+cargo run -p hydracache-sandbox -- --backend memory
+cargo run -p hydracache-sandbox -- --backend sqlite-memory
+cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
+cargo run -p hydracache-sandbox -- --backend postgres-docker
+```
+
+After startup:
+
+```text
+http://127.0.0.1:3000/swagger-ui
+http://127.0.0.1:3000/openapi.json
+http://127.0.0.1:3000/actuator/hydracache/health
+http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
+```
+
+Useful manual flow:
+
+```text
+POST /demo/load/42
+POST /demo/load/42
+POST /demo/users/42 {"name":"Grace"}
+POST /demo/load/42
+POST /demo/invalidate/user/42
+POST /demo/load/42
+```
+
+The first load should report `source = "loader"`, the second should report
+`source = "cache"`, and the post-invalidation load should read the updated
+backing store value.
+
 ## SQLx Adapter
 
 `hydracache-db` provides the database-neutral result-cache adapter API. It keeps
@@ -569,6 +606,7 @@ lines investigated before release.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
+- `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, and Postgres Docker checks.
 
 ## Release Plan
 
@@ -591,6 +629,7 @@ The v0 release plan is maintained here:
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, and diagnostics
 - `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
+- `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
 - `crates/hydracache-macros` - procedural macros such as `cacheable!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports

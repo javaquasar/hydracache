@@ -1,0 +1,28 @@
+[package]
+name = "hydracache-sandbox"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
+description = "Manual HydraCache sandbox backend with actuator and database modes."
+
+[dependencies]
+axum.workspace = true
+hydracache.workspace = true
+hydracache-actuator-axum = { path = "../hydracache-actuator-axum" }
+hydracache-observability.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "sqlite"] }
+testcontainers-modules.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tower.workspace = true
+
+[lints]
+workspace = true

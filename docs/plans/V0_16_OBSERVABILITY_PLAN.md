@@ -31,6 +31,14 @@ Did the second call actually hit the cache?
 - Serializable `CacheStatsSnapshot`.
 - Serializable `CacheDiagnosticsSnapshot`.
 - Serializable `HydraCacheOverview`.
+- Non-published `hydracache-sandbox` crate for manual checks.
+- Sandbox modes:
+  - `memory`
+  - `sqlite-memory`
+  - `sqlite-file`
+  - `postgres-docker`
+- Sandbox Swagger-compatible OpenAPI surface at `/swagger-ui` and
+  `/openapi.json`.
 - Read-only Axum routes:
   - `GET /`
   - `GET /health`
@@ -100,6 +108,32 @@ let app: Router = Router::new().nest(
     HydraCacheActuator::new(registry).routes(),
 );
 # let _ = app;
+```
+
+## Manual Sandbox Example
+
+`hydracache-sandbox` is a workspace-only manual backend. It is not published to
+crates.io.
+
+```powershell
+cargo run -p hydracache-sandbox -- --backend memory
+cargo run -p hydracache-sandbox -- --backend sqlite-memory
+cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
+cargo run -p hydracache-sandbox -- --backend postgres-docker
+```
+
+The sandbox exposes:
+
+```text
+GET  /swagger-ui
+GET  /openapi.json
+GET  /actuator/hydracache/health
+GET  /actuator/hydracache/caches/main/diagnostics
+POST /demo/load/{id}
+GET  /demo/users/{id}
+POST /demo/users/{id}
+POST /demo/invalidate/user/{id}
+POST /demo/flush
 ```
 
 ## Deferred

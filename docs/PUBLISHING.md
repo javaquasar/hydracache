@@ -66,6 +66,14 @@ cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
 
+`hydracache-sandbox` is a workspace-only manual backend with `publish = false`.
+Run it or test it during validation, but do not publish it:
+
+```powershell
+cargo test -p hydracache-sandbox --locked
+cargo run -p hydracache-sandbox -- --backend memory
+```
+
 If `hydracache` cannot find `hydracache-core` or `hydracache-macros`, wait a
 little longer and retry:
 
