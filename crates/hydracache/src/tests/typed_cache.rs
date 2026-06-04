@@ -83,6 +83,27 @@ async fn typed_cache_loader_helpers_and_errors_work() {
 }
 
 #[tokio::test]
+async fn typed_cache_diagnostics_delegate_to_shared_cache() {
+    let cache = HydraCache::local().build();
+    let users = cache.typed::<User>("users");
+
+    users
+        .get_or_insert_with("1", CacheOptions::new(), || async { user(1) })
+        .await
+        .unwrap();
+    users
+        .get_or_insert_with("1", CacheOptions::new(), || async { user(2) })
+        .await
+        .unwrap();
+
+    let diagnostics = users.diagnostics().await;
+    assert_eq!(diagnostics.stats.loads, 1);
+    assert_eq!(diagnostics.stats.hits, 1);
+    assert_eq!(diagnostics.total_requests(), 2);
+    assert!(!diagnostics.is_empty());
+}
+
+#[tokio::test]
 async fn typed_cache_single_flight_uses_namespaced_key() {
     let cache = HydraCache::local().build();
     let users = cache.typed::<User>("users");

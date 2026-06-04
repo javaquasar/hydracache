@@ -179,6 +179,34 @@
 //! # Ok(())
 //! # }
 //! ```
+//!
+//! # Observability
+//!
+//! Use [`HydraCache::diagnostics`] for quick local smoke checks. It combines
+//! lightweight stats with the approximate local backend entry count.
+//!
+//! ```rust
+//! use hydracache::{CacheOptions, HydraCache};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//!
+//! let first = cache
+//!     .get_or_insert_with("answer", CacheOptions::new(), || async { 42_u64 })
+//!     .await?;
+//! let second = cache
+//!     .get_or_insert_with("answer", CacheOptions::new(), || async { 7_u64 })
+//!     .await?;
+//!
+//! let diagnostics = cache.diagnostics().await;
+//! assert_eq!((first, second), (42, 42));
+//! assert_eq!(diagnostics.stats.loads, 1);
+//! assert_eq!(diagnostics.stats.hits, 1);
+//! assert_eq!(diagnostics.hit_ratio(), Some(0.5));
+//! # Ok(())
+//! # }
+//! ```
 
 extern crate self as hydracache;
 
@@ -193,12 +221,16 @@ mod typed;
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use hydracache_core::{
-    CacheError, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, TagSet,
+    CacheDiagnostics, CacheError, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,
+    PostcardCodec, TagSet,
 };
 pub use hydracache_macros::{cacheable, cacheable_infallible};
 pub use typed::TypedCache;
 
-pub use hydracache_core::{CacheOptions as Options, CacheStats as Stats, Result as CacheResult};
+pub use hydracache_core::{
+    CacheDiagnostics as Diagnostics, CacheOptions as Options, CacheStats as Stats,
+    Result as CacheResult,
+};
 
 #[cfg(test)]
 mod tests;

@@ -243,6 +243,35 @@ async fn stats_track_hits_misses_loads_invalidations() {
 }
 
 #[tokio::test]
+async fn diagnostics_explain_cache_activity_after_repeated_loads() {
+    let cache = HydraCache::local().build();
+
+    let first = cache
+        .get_or_insert_with("user:diagnostics", CacheOptions::new(), || async {
+            user(1)
+        })
+        .await
+        .unwrap();
+    let second = cache
+        .get_or_insert_with("user:diagnostics", CacheOptions::new(), || async {
+            user(2)
+        })
+        .await
+        .unwrap();
+
+    let diagnostics = cache.diagnostics().await;
+    assert_eq!(first, user(1));
+    assert_eq!(second, user(1));
+    assert_eq!(diagnostics.stats.loads, 1);
+    assert_eq!(diagnostics.stats.hits, 1);
+    assert_eq!(diagnostics.stats.misses, 1);
+    assert_eq!(diagnostics.total_requests(), 2);
+    assert_eq!(diagnostics.hit_ratio(), Some(0.5));
+    assert!(!diagnostics.is_empty());
+    assert!(diagnostics.estimated_entries >= 1);
+}
+
+#[tokio::test]
 async fn decode_error_invalidates_bad_entry() {
     let cache = HydraCache::local().build();
 

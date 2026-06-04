@@ -57,6 +57,7 @@ The first version includes:
 - `flush`
 - `postcard` codec over `Bytes`
 - lightweight stats
+- diagnostics snapshot for smoke-checking cache activity
 - single-flight join stats
 - tag-generation invalidation safety
 - Moka-backed local storage
@@ -298,7 +299,51 @@ fresh in-flight load instead of joining the stale one.
 
 Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "user:42"])` for multiple tags.
 
-`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, and evictions. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
+`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, and evictions. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, and `has_stale_load_discards`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
+
+`diagnostics().await` returns a small smoke-test snapshot: the same stats plus the local backend's approximate entry count. It is useful for answering "did the second call hit the cache?" without wiring a metrics system.
+
+## How Do I Know It Works?
+
+The fastest local check is to call the same cached operation twice, then inspect
+`cache.diagnostics()`. The first call should miss and run the loader. The second
+call should hit the cache and avoid the loader.
+
+```rust
+use hydracache::{cacheable_infallible, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local().build();
+
+let first = cacheable_infallible!(
+    cache = cache,
+    key = "expensive:42",
+    tags = ["expensive"],
+    ttl_secs = 60,
+    load = || async { 42_u64 },
+)
+.await?;
+
+let second = cacheable_infallible!(
+    cache = cache,
+    key = "expensive:42",
+    tags = ["expensive"],
+    ttl_secs = 60,
+    load = || async { 7_u64 },
+)
+.await?;
+
+let diagnostics = cache.diagnostics().await;
+
+assert_eq!((first, second), (42, 42));
+assert_eq!(diagnostics.stats.loads, 1);
+assert_eq!(diagnostics.stats.hits, 1);
+assert_eq!(diagnostics.total_requests(), 2);
+assert_eq!(diagnostics.hit_ratio(), Some(0.5));
+assert!(!diagnostics.is_empty());
+# Ok(())
+# }
+```
 
 ## SQLx Adapter
 
@@ -477,7 +522,7 @@ lines investigated before release.
 
 ## Which Crate Should I Use?
 
-- `hydracache` - use this for the local async cache, `cacheable!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, and stats.
+- `hydracache` - use this for the local async cache, `cacheable!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, stats, and diagnostics.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
@@ -496,11 +541,12 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_11_ENTITY_DERIVE_PLAN.md](docs/plans/V0_11_ENTITY_DERIVE_PLAN.md)
 - [docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md](docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md)
 - [docs/plans/V0_15_CACHEABLE_ERGONOMICS_PLAN.md](docs/plans/V0_15_CACHEABLE_ERGONOMICS_PLAN.md)
+- [docs/plans/V0_16_OBSERVABILITY_PLAN.md](docs/plans/V0_16_OBSERVABILITY_PLAN.md)
 
 ## Workspace
 
-- `crates/hydracache-core` - core public types: keys, tags, options, stats, codec, errors
-- `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, and stats
+- `crates/hydracache-core` - core public types: keys, tags, options, stats, diagnostics, codec, errors
+- `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, and diagnostics
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
 - `crates/hydracache-macros` - procedural macros such as `cacheable!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports
@@ -524,6 +570,6 @@ types into:
 - `key.rs` - `CacheKey` and `CacheKeyBuilder`
 - `tags.rs` - `TagSet`
 - `options.rs` - `CacheOptions`
-- `stats.rs` - `CacheStats`
+- `stats.rs` - `CacheStats` and `CacheDiagnostics`
 - `codec.rs` - `CacheCodec` and `PostcardCodec`
 - `error.rs` - `CacheError`

@@ -14,7 +14,7 @@ pub use codec::{CacheCodec, PostcardCodec};
 pub use error::CacheError;
 pub use key::{CacheKey, CacheKeyBuilder};
 pub use options::CacheOptions;
-pub use stats::CacheStats;
+pub use stats::{CacheDiagnostics, CacheStats};
 pub use tags::TagSet;
 
 /// HydraCache result type.

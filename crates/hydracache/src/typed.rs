@@ -3,7 +3,7 @@ use std::future::Future;
 use std::marker::PhantomData;
 
 use hydracache_core::{
-    CacheCodec, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, Result,
+    CacheCodec, CacheDiagnostics, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, Result,
 };
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -174,5 +174,10 @@ where
     /// Return a snapshot of shared cache counters.
     pub fn stats(&self) -> CacheStats {
         self.cache.stats()
+    }
+
+    /// Return shared cache diagnostics for this typed cache view.
+    pub async fn diagnostics(&self) -> CacheDiagnostics {
+        self.cache.diagnostics().await
     }
 }

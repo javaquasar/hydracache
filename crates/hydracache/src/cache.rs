@@ -6,7 +6,9 @@ use std::time::Instant;
 
 use bytes::Bytes;
 use futures_util::FutureExt;
-use hydracache_core::{CacheCodec, CacheError, CacheOptions, CacheStats, PostcardCodec, Result};
+use hydracache_core::{
+    CacheCodec, CacheDiagnostics, CacheError, CacheOptions, CacheStats, PostcardCodec, Result,
+};
 use moka::future::Cache;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -380,8 +382,71 @@ where
     }
 
     /// Return a snapshot of lightweight cache counters.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// let first = cache
+    ///     .get_or_insert_with("answer", CacheOptions::new(), || async { 42_u64 })
+    ///     .await?;
+    /// let second = cache
+    ///     .get_or_insert_with("answer", CacheOptions::new(), || async { 7_u64 })
+    ///     .await?;
+    ///
+    /// let stats = cache.stats();
+    /// assert_eq!((first, second), (42, 42));
+    /// assert_eq!(stats.loads, 1);
+    /// assert_eq!(stats.hits, 1);
+    /// assert_eq!(stats.hit_ratio(), Some(0.5));
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn stats(&self) -> CacheStats {
         self.inner.stats.snapshot()
+    }
+
+    /// Return a diagnostic snapshot for quick application-level smoke checks.
+    ///
+    /// `diagnostics` includes [`CacheStats`] plus the local backend's
+    /// approximate entry count. Use it to answer questions like "did this call
+    /// hit the cache on the second run?" without wiring a metrics system yet.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// cache
+    ///     .get_or_insert_with("report:daily", CacheOptions::new(), || async { 1_u64 })
+    ///     .await?;
+    /// cache
+    ///     .get_or_insert_with("report:daily", CacheOptions::new(), || async { 2_u64 })
+    ///     .await?;
+    ///
+    /// let diagnostics = cache.diagnostics().await;
+    /// assert_eq!(diagnostics.stats.loads, 1);
+    /// assert_eq!(diagnostics.stats.hits, 1);
+    /// assert_eq!(diagnostics.total_requests(), 2);
+    /// assert!(!diagnostics.is_empty());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn diagnostics(&self) -> CacheDiagnostics {
+        self.inner.store.run_pending_tasks().await;
+        CacheDiagnostics {
+            stats: self.stats(),
+            estimated_entries: self.inner.store.entry_count(),
+        }
     }
 
     pub(crate) async fn put_bytes(
