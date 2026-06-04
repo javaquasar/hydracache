@@ -112,6 +112,12 @@ cargo publish -p hydracache-macros
 cargo package -p hydracache
 cargo publish -p hydracache
 
+cargo package -p hydracache-observability
+cargo publish -p hydracache-observability
+
+cargo package -p hydracache-actuator-axum
+cargo publish -p hydracache-actuator-axum
+
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 

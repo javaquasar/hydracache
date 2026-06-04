@@ -5,8 +5,9 @@ HydraCache is a Rust-native local async cache that is designed to grow toward da
 ## Status
 
 HydraCache is in early development. The current implementation provides the
-local async cache runtime plus the first database result-cache adapters:
-`hydracache-db` and `hydracache-sqlx`.
+local async cache runtime, observability snapshots, optional Axum actuator
+routes, plus the first database result-cache adapters: `hydracache-db` and
+`hydracache-sqlx`.
 
 ## Why HydraCache?
 
@@ -58,6 +59,8 @@ The first version includes:
 - `postcard` codec over `Bytes`
 - lightweight stats
 - diagnostics snapshot for smoke-checking cache activity
+- framework-neutral observability registry
+- optional read-only Axum actuator routes
 - single-flight join stats
 - tag-generation invalidation safety
 - Moka-backed local storage
@@ -79,6 +82,7 @@ Out of scope for v0:
 - distributed invalidation
 - cluster roles
 - public generation-counter APIs
+- write-enabled actuator/admin endpoints
 - persistence
 
 ## Local Cache Quick Start
@@ -345,6 +349,42 @@ assert!(!diagnostics.is_empty());
 # }
 ```
 
+## Optional Axum Actuator
+
+HydraCache keeps HTTP support out of the base runtime. If an application wants a
+Spring Boot-style read-only actuator surface, it can opt in through
+`hydracache-observability` and `hydracache-actuator-axum`.
+
+```rust
+use axum::Router;
+use hydracache::HydraCache;
+use hydracache_actuator_axum::HydraCacheActuator;
+use hydracache_observability::HydraCacheRegistry;
+
+let cache = HydraCache::local().build();
+let registry = HydraCacheRegistry::new().with_cache("main", cache);
+
+let app: Router = Router::new().nest(
+    "/actuator/hydracache",
+    HydraCacheActuator::new(registry).routes(),
+);
+# let _ = app;
+```
+
+The actuator exposes read-only routes:
+
+```text
+GET /actuator/hydracache/health
+GET /actuator/hydracache/caches
+GET /actuator/hydracache/caches/main/diagnostics
+GET /actuator/hydracache/caches/main/stats
+GET /actuator/hydracache/
+```
+
+Mutation endpoints such as `flush`, `invalidate-key`, or `invalidate-tag` are
+not included yet. They need an explicit security and deployment model before
+becoming public API.
+
 ## SQLx Adapter
 
 `hydracache-db` provides the database-neutral result-cache adapter API. It keeps
@@ -523,6 +563,8 @@ lines investigated before release.
 ## Which Crate Should I Use?
 
 - `hydracache` - use this for the local async cache, `cacheable!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, stats, and diagnostics.
+- `hydracache-observability` - use this for a framework-neutral registry and serializable cache diagnostic snapshots.
+- `hydracache-actuator-axum` - use this when exposing read-only HydraCache diagnostics through Axum routes.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
@@ -547,6 +589,8 @@ The v0 release plan is maintained here:
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, diagnostics, codec, errors
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, and diagnostics
+- `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
+- `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
 - `crates/hydracache-macros` - procedural macros such as `cacheable!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports

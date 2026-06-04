@@ -24,6 +24,19 @@ Did the second call actually hit the cache?
 - `CacheDiagnostics`
 - `HydraCache::diagnostics().await`
 - `TypedCache::diagnostics().await`
+- New `hydracache-observability` crate.
+- New `hydracache-actuator-axum` crate.
+- `HydraCacheRegistry` for named cache registration.
+- `HydraCacheProbe` for adapting `HydraCache` into a registry probe.
+- Serializable `CacheStatsSnapshot`.
+- Serializable `CacheDiagnosticsSnapshot`.
+- Serializable `HydraCacheOverview`.
+- Read-only Axum routes:
+  - `GET /`
+  - `GET /health`
+  - `GET /caches`
+  - `GET /caches/{name}/diagnostics`
+  - `GET /caches/{name}/stats`
 
 ## Design Notes
 
@@ -36,6 +49,14 @@ entry count. `HydraCache::diagnostics().await` first lets the Moka backend run
 pending maintenance tasks, then reads the entry count. The entry count is still
 diagnostic-only: useful for smoke checks, tests, and examples, but not for
 billing, quotas, or strict accounting.
+
+The actuator modules stay outside the base `hydracache` crate. This keeps the
+embedded runtime HTTP-free while still allowing applications to opt in to a
+Spring Boot-style read-only diagnostics surface when they already use Axum.
+
+The actuator is read-only in `0.16.0`. Mutation endpoints such as `flush`,
+`invalidate-key`, and `invalidate-tag` are deliberately deferred until there is
+an explicit security and deployment model.
 
 ## Example
 
@@ -63,6 +84,24 @@ assert_eq!(diagnostics.hit_ratio(), Some(0.5));
 # }
 ```
 
+## Axum Actuator Example
+
+```rust
+use axum::Router;
+use hydracache::HydraCache;
+use hydracache_actuator_axum::HydraCacheActuator;
+use hydracache_observability::HydraCacheRegistry;
+
+let cache = HydraCache::local().build();
+let registry = HydraCacheRegistry::new().with_cache("main", cache);
+
+let app: Router = Router::new().nest(
+    "/actuator/hydracache",
+    HydraCacheActuator::new(registry).routes(),
+);
+# let _ = app;
+```
+
 ## Deferred
 
 - Event listeners.
@@ -70,3 +109,8 @@ assert_eq!(diagnostics.hit_ratio(), Some(0.5));
 - Metrics exporters.
 - Backend eviction listener integration.
 - Exact memory accounting.
+- Actix-web adapter.
+- Poem adapter.
+- Write-enabled admin endpoints.
+- OpenAPI metadata.
+- Prometheus exporter.
