@@ -20,6 +20,8 @@ sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "sqli
 testcontainers-modules.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+utoipa.workspace = true
+utoipa-swagger-ui.workspace = true
 
 [dev-dependencies]
 tower.workspace = true

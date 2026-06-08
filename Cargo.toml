@@ -51,3 +51,5 @@ thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
 tower = { version = "0.5", features = ["util"] }
 trybuild = "1"
+utoipa = "5"
+utoipa-swagger-ui = { version = "9", features = ["axum"] }

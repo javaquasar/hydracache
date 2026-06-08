@@ -22,17 +22,17 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::{Path as FsPath, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{CacheError, CacheOptions, HydraCache};
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::{PgPool, SqlitePool};
@@ -41,6 +41,9 @@ use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
 use tokio::net::TcpListener;
 use tokio::sync::RwLock;
+use tokio::time::sleep;
+use utoipa::{OpenApi, ToSchema};
+use utoipa_swagger_ui::SwaggerUi;
 
 /// Runtime mode for the manual sandbox.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -67,11 +70,60 @@ impl SandboxBackend {
     }
 }
 
+/// Named sandbox profile for common manual runs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+pub enum SandboxProfile {
+    /// Pure in-memory backing store.
+    Memory,
+    /// SQLite in-memory backing store.
+    SqliteMemory,
+    /// SQLite file-backed store using `HYDRACACHE_SANDBOX_SQLITE_PATH`.
+    SqliteFile,
+    /// Postgres container started through Docker and testcontainers.
+    PostgresDocker,
+}
+
+impl SandboxProfile {
+    /// Stable profile name used by CLI, `.env`, and API responses.
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Memory => "memory",
+            Self::SqliteMemory => "sqlite-memory",
+            Self::SqliteFile => "sqlite-file",
+            Self::PostgresDocker => "postgres-docker",
+        }
+    }
+
+    fn backend(self, sqlite_path: PathBuf) -> SandboxBackend {
+        match self {
+            Self::Memory => SandboxBackend::Memory,
+            Self::SqliteMemory => SandboxBackend::SqliteMemory,
+            Self::SqliteFile => SandboxBackend::SqliteFile { path: sqlite_path },
+            Self::PostgresDocker => SandboxBackend::PostgresDocker,
+        }
+    }
+}
+
+fn parse_profile(value: &str) -> Result<SandboxProfile, SandboxError> {
+    match value {
+        "memory" | "local-memory" => Ok(SandboxProfile::Memory),
+        "sqlite-memory" | "local-sqlite-memory" => Ok(SandboxProfile::SqliteMemory),
+        "sqlite-file" | "local-sqlite-file" => Ok(SandboxProfile::SqliteFile),
+        "postgres-docker" | "docker-postgres" => Ok(SandboxProfile::PostgresDocker),
+        other => Err(SandboxError::config(format!(
+            "unknown profile `{other}`; expected memory, sqlite-memory, sqlite-file, or postgres-docker"
+        ))),
+    }
+}
+
 /// Manual sandbox configuration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SandboxConfig {
     /// Address used by the runnable backend.
     pub bind: SocketAddr,
+    /// Named profile used to derive default backing-store settings.
+    pub profile: SandboxProfile,
     /// Backing data source mode.
     pub backend: SandboxBackend,
 }
@@ -132,10 +184,11 @@ impl SandboxConfig {
             Some(value) => parse_bind(value)?,
             None => default_bind(),
         };
-        let mut backend = env
-            .get("HYDRACACHE_SANDBOX_BACKEND")
+        let mut profile = env
+            .get("HYDRACACHE_SANDBOX_PROFILE")
             .cloned()
             .unwrap_or_else(|| "memory".to_owned());
+        let mut backend_override = env.get("HYDRACACHE_SANDBOX_BACKEND").cloned();
         let mut sqlite_path = env
             .get("HYDRACACHE_SANDBOX_SQLITE_PATH")
             .map(PathBuf::from)
@@ -144,12 +197,22 @@ impl SandboxConfig {
 
         while index < tokens.len() {
             match tokens[index].as_str() {
-                "--backend" => {
+                "--profile" => {
                     index += 1;
-                    backend = tokens
+                    profile = tokens
                         .get(index)
                         .cloned()
-                        .ok_or_else(|| SandboxError::config("--backend requires a value"))?;
+                        .ok_or_else(|| SandboxError::config("--profile requires a value"))?;
+                    backend_override = None;
+                }
+                "--backend" => {
+                    index += 1;
+                    backend_override = Some(
+                        tokens
+                            .get(index)
+                            .cloned()
+                            .ok_or_else(|| SandboxError::config("--backend requires a value"))?,
+                    );
                 }
                 "--sqlite-path" => {
                     index += 1;
@@ -175,9 +238,20 @@ impl SandboxConfig {
             index += 1;
         }
 
-        let backend = parse_backend(&backend, sqlite_path)?;
+        let profile = match backend_override.as_deref() {
+            Some(value) => profile_for_backend(value)?,
+            None => parse_profile(&profile)?,
+        };
+        let backend = match backend_override {
+            Some(value) => parse_backend(&value, sqlite_path)?,
+            None => profile.backend(sqlite_path),
+        };
 
-        Ok(Self { bind, backend })
+        Ok(Self {
+            bind,
+            profile,
+            backend,
+        })
     }
 }
 
@@ -185,8 +259,18 @@ impl Default for SandboxConfig {
     fn default() -> Self {
         Self {
             bind: default_bind(),
+            profile: SandboxProfile::Memory,
             backend: SandboxBackend::Memory,
         }
+    }
+}
+
+fn profile_for_backend(value: &str) -> Result<SandboxProfile, SandboxError> {
+    match parse_backend(value, default_sqlite_path())? {
+        SandboxBackend::Memory => Ok(SandboxProfile::Memory),
+        SandboxBackend::SqliteMemory => Ok(SandboxProfile::SqliteMemory),
+        SandboxBackend::SqliteFile { .. } => Ok(SandboxProfile::SqliteFile),
+        SandboxBackend::PostgresDocker => Ok(SandboxProfile::PostgresDocker),
     }
 }
 
@@ -288,11 +372,13 @@ fn help_text() -> String {
         "  cargo run -p hydracache-sandbox -- --backend postgres-docker",
         "",
         "Options:",
+        "  --profile memory|sqlite-memory|sqlite-file|postgres-docker",
         "  --backend memory|sqlite-memory|sqlite-file|postgres-docker",
         "  --sqlite-path target/hydracache-sandbox.sqlite",
         "  --bind 127.0.0.1:3000",
         "",
         "Environment:",
+        "  HYDRACACHE_SANDBOX_PROFILE=memory",
         "  HYDRACACHE_SANDBOX_BACKEND=memory",
         "  HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000",
         "  HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite",
@@ -311,23 +397,27 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         cache,
         storage,
         loader_calls: Arc::new(AtomicU64::new(0)),
+        profile: config.profile,
         backend: config.backend,
     };
 
     let sandbox_routes = Router::new()
         .route("/", get(info))
         .route("/openapi.json", get(openapi))
-        .route("/swagger-ui", get(swagger_ui))
-        .route("/swagger-ui/", get(swagger_ui))
         .route("/demo/users/{id}", get(get_user).post(upsert_user))
         .route("/demo/load/{id}", post(load_user))
         .route("/demo/invalidate/user/{id}", post(invalidate_user))
         .route("/demo/flush", post(flush_cache))
         .with_state(state);
-    let router = Router::new().merge(sandbox_routes).nest(
-        "/actuator/hydracache",
-        HydraCacheActuator::new(registry).routes(),
-    );
+    let router = Router::new()
+        .merge(sandbox_routes)
+        .merge(
+            SwaggerUi::new("/swagger-ui").url("/swagger-ui/openapi.json", SandboxApiDoc::openapi()),
+        )
+        .nest(
+            "/actuator/hydracache",
+            HydraCacheActuator::new(registry).routes(),
+        );
 
     Ok(SandboxApp {
         router,
@@ -363,6 +453,7 @@ struct SandboxState {
     cache: HydraCache,
     storage: SandboxStorage,
     loader_calls: Arc<AtomicU64>,
+    profile: SandboxProfile,
     backend: SandboxBackend,
 }
 
@@ -481,13 +572,30 @@ async fn connect_storage(
                 .await
                 .map_err(|source| SandboxError::Docker(source.to_string()))?;
             let database_url = format!("postgres://postgres:postgres@{host}:{port}/postgres");
-            let pool = PgPoolOptions::new()
-                .max_connections(5)
-                .connect(&database_url)
-                .await?;
+            let pool = connect_postgres_pool(&database_url).await?;
             Ok((SandboxStorage::Postgres(pool), Some(container)))
         }
     }
+}
+
+async fn connect_postgres_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
+    let mut last_error = None;
+
+    for _ in 0..20 {
+        match PgPoolOptions::new()
+            .max_connections(5)
+            .connect(database_url)
+            .await
+        {
+            Ok(pool) => return Ok(pool),
+            Err(error) => {
+                last_error = Some(error);
+                sleep(Duration::from_millis(250)).await;
+            }
+        }
+    }
+
+    Err(last_error.expect("postgres connection retry loop always runs"))
 }
 
 async fn seed_storage(storage: &SandboxStorage) -> Result<(), SandboxError> {
@@ -526,15 +634,16 @@ fn map_row_error(id: i64, source: sqlx::Error) -> SandboxError {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 struct User {
     id: i64,
     name: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct SandboxInfo {
     name: &'static str,
+    profile: &'static str,
     backend: String,
     swagger_ui: &'static str,
     openapi: &'static str,
@@ -542,12 +651,12 @@ struct SandboxInfo {
     actuator_diagnostics: &'static str,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
 struct UpsertUserRequest {
     name: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct LoadUserResponse {
     user: User,
     source: LoadSource,
@@ -555,14 +664,14 @@ struct LoadUserResponse {
     diagnostics: DemoDiagnostics,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
 enum LoadSource {
     Cache,
     Loader,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct DemoDiagnostics {
     hits: u64,
     misses: u64,
@@ -585,25 +694,32 @@ impl DemoDiagnostics {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct InvalidateResponse {
     tag: String,
     removed: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct FlushResponse {
     flushed: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct ErrorResponse {
     error: String,
 }
 
+#[utoipa::path(
+    get,
+    path = "/",
+    tag = "sandbox",
+    responses((status = 200, description = "Sandbox links and active profile", body = SandboxInfo))
+)]
 async fn info(State(state): State<SandboxState>) -> Json<SandboxInfo> {
     Json(SandboxInfo {
         name: "hydracache-sandbox",
+        profile: state.profile.label(),
         backend: state.backend.label(),
         swagger_ui: "/swagger-ui",
         openapi: "/openapi.json",
@@ -612,6 +728,16 @@ async fn info(State(state): State<SandboxState>) -> Json<SandboxInfo> {
     })
 }
 
+#[utoipa::path(
+    get,
+    path = "/demo/users/{id}",
+    tag = "demo",
+    params(("id" = i64, Path, description = "Demo user id")),
+    responses(
+        (status = 200, description = "User read directly from the backing store", body = User),
+        (status = 404, description = "User not found", body = ErrorResponse)
+    )
+)]
 async fn get_user(
     State(state): State<SandboxState>,
     Path(id): Path<i64>,
@@ -619,6 +745,14 @@ async fn get_user(
     Ok(Json(state.storage.load_user(id).await?))
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/users/{id}",
+    tag = "demo",
+    params(("id" = i64, Path, description = "Demo user id")),
+    request_body = UpsertUserRequest,
+    responses((status = 200, description = "Stored user", body = User))
+)]
 async fn upsert_user(
     State(state): State<SandboxState>,
     Path(id): Path<i64>,
@@ -627,6 +761,16 @@ async fn upsert_user(
     Ok(Json(state.storage.upsert_user(id, request.name).await?))
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/load/{id}",
+    tag = "demo",
+    params(("id" = i64, Path, description = "Demo user id")),
+    responses(
+        (status = 200, description = "HydraCache load result", body = LoadUserResponse),
+        (status = 404, description = "User not found", body = ErrorResponse)
+    )
+)]
 async fn load_user(
     State(state): State<SandboxState>,
     Path(id): Path<i64>,
@@ -663,6 +807,13 @@ async fn load_user(
     }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/invalidate/user/{id}",
+    tag = "demo",
+    params(("id" = i64, Path, description = "Demo user id")),
+    responses((status = 200, description = "Invalidation result", body = InvalidateResponse))
+)]
 async fn invalidate_user(
     State(state): State<SandboxState>,
     Path(id): Path<i64>,
@@ -672,6 +823,12 @@ async fn invalidate_user(
     Ok(Json(InvalidateResponse { tag, removed }))
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/flush",
+    tag = "demo",
+    responses((status = 200, description = "Flush result", body = FlushResponse))
+)]
 async fn flush_cache(
     State(state): State<SandboxState>,
 ) -> Result<Json<FlushResponse>, SandboxHttpError> {
@@ -679,109 +836,83 @@ async fn flush_cache(
     Ok(Json(FlushResponse { flushed: true }))
 }
 
-async fn openapi() -> Json<Value> {
-    Json(openapi_document())
+async fn openapi() -> Json<utoipa::openapi::OpenApi> {
+    Json(SandboxApiDoc::openapi())
 }
 
-async fn swagger_ui() -> Html<&'static str> {
-    Html(SWAGGER_UI_HTML)
-}
+#[utoipa::path(
+    get,
+    path = "/actuator/hydracache/health",
+    tag = "actuator",
+    responses((status = 200, description = "Read-only actuator health"))
+)]
+#[allow(dead_code)]
+fn actuator_health_doc() {}
 
-fn openapi_document() -> Value {
-    json!({
-        "openapi": "3.1.0",
-        "info": {
-            "title": "HydraCache Manual Sandbox",
-            "version": env!("CARGO_PKG_VERSION"),
-            "description": "Manual non-published backend for exercising HydraCache cache, database, and actuator flows."
-        },
-        "paths": {
-            "/": {
-                "get": {
-                    "summary": "Sandbox info",
-                    "responses": { "200": { "description": "Sandbox links and backend mode" } }
-                }
-            },
-            "/demo/users/{id}": {
-                "get": {
-                    "summary": "Read a user directly from the selected backing store without cache",
-                    "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
-                    "responses": { "200": { "description": "User" }, "404": { "description": "User not found" } }
-                },
-                "post": {
-                    "summary": "Upsert a user in the selected backing store without invalidating cache",
-                    "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
-                    "requestBody": {
-                        "required": true,
-                        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpsertUserRequest" } } }
-                    },
-                    "responses": { "200": { "description": "Stored user" } }
-                }
-            },
-            "/demo/load/{id}": {
-                "post": {
-                    "summary": "Load a user through HydraCache",
-                    "description": "First call should use the loader. Repeated calls should return the cached value until invalidated.",
-                    "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
-                    "responses": { "200": { "description": "Cached load result" } }
-                }
-            },
-            "/demo/invalidate/user/{id}": {
-                "post": {
-                    "summary": "Invalidate the user:{id} tag",
-                    "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }],
-                    "responses": { "200": { "description": "Invalidation result" } }
-                }
-            },
-            "/demo/flush": {
-                "post": {
-                    "summary": "Flush local HydraCache contents",
-                    "responses": { "200": { "description": "Flush result" } }
-                }
-            },
-            "/actuator/hydracache/health": {
-                "get": {
-                    "summary": "Read-only actuator health",
-                    "responses": { "200": { "description": "Actuator health" } }
-                }
-            },
-            "/actuator/hydracache/caches/main/diagnostics": {
-                "get": {
-                    "summary": "Read-only HydraCache diagnostics",
-                    "responses": { "200": { "description": "Diagnostics snapshot" } }
-                }
-            }
-        },
-        "components": {
-            "schemas": {
-                "UpsertUserRequest": {
-                    "type": "object",
-                    "required": ["name"],
-                    "properties": { "name": { "type": "string" } }
-                }
-            }
-        }
-    })
-}
+#[utoipa::path(
+    get,
+    path = "/actuator/hydracache/caches",
+    tag = "actuator",
+    responses((status = 200, description = "Read-only cache list"))
+)]
+#[allow(dead_code)]
+fn actuator_caches_doc() {}
 
-const SWAGGER_UI_HTML: &str = r##"<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>HydraCache Sandbox Swagger UI</title>
-  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
-</head>
-<body>
-  <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-  <script>
-    window.ui = SwaggerUIBundle({
-      url: "/openapi.json",
-      dom_id: "#swagger-ui"
-    });
-  </script>
-</body>
-</html>"##;
+#[utoipa::path(
+    get,
+    path = "/actuator/hydracache/caches/{name}/diagnostics",
+    tag = "actuator",
+    params(("name" = String, Path, description = "Registered cache name")),
+    responses((status = 200, description = "Read-only cache diagnostics"))
+)]
+#[allow(dead_code)]
+fn actuator_diagnostics_doc() {}
+
+#[utoipa::path(
+    get,
+    path = "/actuator/hydracache/caches/{name}/stats",
+    tag = "actuator",
+    params(("name" = String, Path, description = "Registered cache name")),
+    responses((status = 200, description = "Read-only cache stats"))
+)]
+#[allow(dead_code)]
+fn actuator_stats_doc() {}
+
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        info,
+        get_user,
+        upsert_user,
+        load_user,
+        invalidate_user,
+        flush_cache,
+        actuator_health_doc,
+        actuator_caches_doc,
+        actuator_diagnostics_doc,
+        actuator_stats_doc
+    ),
+    components(
+        schemas(
+            SandboxProfile,
+            SandboxInfo,
+            User,
+            UpsertUserRequest,
+            LoadUserResponse,
+            LoadSource,
+            DemoDiagnostics,
+            InvalidateResponse,
+            FlushResponse,
+            ErrorResponse
+        )
+    ),
+    tags(
+        (name = "sandbox", description = "Manual sandbox metadata and links"),
+        (name = "demo", description = "Cache and backing-store demo endpoints"),
+        (name = "actuator", description = "Read-only HydraCache actuator endpoints")
+    )
+)]
+struct SandboxApiDoc;
 
 /// Sandbox setup and runtime errors.
 #[derive(Debug, thiserror::Error)]
@@ -885,7 +1016,8 @@ mod tests {
     use std::path::PathBuf;
     use tower::ServiceExt;
 
-    use super::{build_sandbox, openapi_document, SandboxBackend, SandboxConfig};
+    use super::{build_sandbox, SandboxApiDoc, SandboxBackend, SandboxConfig, SandboxProfile};
+    use utoipa::OpenApi;
 
     #[test]
     fn config_parses_supported_backends() {
@@ -895,6 +1027,7 @@ mod tests {
         let sqlite_memory =
             SandboxConfig::from_args(["sandbox", "--backend", "sqlite-memory"]).unwrap();
         assert_eq!(sqlite_memory.backend, SandboxBackend::SqliteMemory);
+        assert_eq!(sqlite_memory.profile, SandboxProfile::SqliteMemory);
 
         let sqlite_file = SandboxConfig::from_args([
             "sandbox",
@@ -911,10 +1044,17 @@ mod tests {
             sqlite_file.backend,
             SandboxBackend::SqliteFile { .. }
         ));
+        assert_eq!(sqlite_file.profile, SandboxProfile::SqliteFile);
 
         let postgres =
             SandboxConfig::from_args(["sandbox", "--backend", "postgres-docker"]).unwrap();
         assert_eq!(postgres.backend, SandboxBackend::PostgresDocker);
+        assert_eq!(postgres.profile, SandboxProfile::PostgresDocker);
+
+        let profile =
+            SandboxConfig::from_args(["sandbox", "--profile", "local-sqlite-memory"]).unwrap();
+        assert_eq!(profile.profile, SandboxProfile::SqliteMemory);
+        assert_eq!(profile.backend, SandboxBackend::SqliteMemory);
     }
 
     #[test]
@@ -929,6 +1069,15 @@ mod tests {
         assert!(missing_backend
             .to_string()
             .contains("--backend requires a value"));
+
+        let missing_profile = SandboxConfig::from_args(["sandbox", "--profile"]).unwrap_err();
+        assert!(missing_profile
+            .to_string()
+            .contains("--profile requires a value"));
+
+        let bad_profile =
+            SandboxConfig::from_args(["sandbox", "--profile", "unknown"]).unwrap_err();
+        assert!(bad_profile.to_string().contains("unknown profile"));
 
         let missing_sqlite_path =
             SandboxConfig::from_args(["sandbox", "--sqlite-path"]).unwrap_err();
@@ -946,9 +1095,12 @@ mod tests {
         let help = SandboxConfig::from_args(["sandbox", "--help"]).unwrap_err();
         assert!(help.to_string().contains("HydraCache manual sandbox"));
         assert!(help.to_string().contains("HYDRACACHE_SANDBOX_BACKEND"));
+        assert!(help.to_string().contains("--profile"));
 
         assert_eq!(SandboxBackend::Memory.label(), "memory");
         assert_eq!(SandboxBackend::SqliteMemory.label(), "sqlite-memory");
+        assert_eq!(SandboxProfile::Memory.label(), "memory");
+        assert_eq!(SandboxProfile::PostgresDocker.label(), "postgres-docker");
 
         let sqlite_file = SandboxBackend::SqliteFile {
             path: PathBuf::from("target/demo.sqlite"),
@@ -962,7 +1114,7 @@ mod tests {
         let values = super::parse_env_contents(
             r#"
             # local sandbox profile
-            export HYDRACACHE_SANDBOX_BACKEND="sqlite-file"
+            export HYDRACACHE_SANDBOX_PROFILE="sqlite-file"
             HYDRACACHE_SANDBOX_BIND='127.0.0.1:3300'
             HYDRACACHE_SANDBOX_SQLITE_PATH=target/from-env.sqlite
             "#,
@@ -970,7 +1122,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            values.get("HYDRACACHE_SANDBOX_BACKEND").unwrap(),
+            values.get("HYDRACACHE_SANDBOX_PROFILE").unwrap(),
             "sqlite-file"
         );
         assert_eq!(
@@ -1001,7 +1153,7 @@ mod tests {
     fn env_config_is_used_and_cli_arguments_override_it() {
         let env_config = SandboxConfig::from_env_iter_and_args(
             [
-                ("HYDRACACHE_SANDBOX_BACKEND", "sqlite-file"),
+                ("HYDRACACHE_SANDBOX_PROFILE", "sqlite-file"),
                 ("HYDRACACHE_SANDBOX_BIND", "127.0.0.1:3200"),
                 ("HYDRACACHE_SANDBOX_SQLITE_PATH", "target/env-config.sqlite"),
             ],
@@ -1010,6 +1162,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(env_config.bind.port(), 3200);
+        assert_eq!(env_config.profile, SandboxProfile::SqliteFile);
         assert!(matches!(
             env_config.backend,
             SandboxBackend::SqliteFile { .. }
@@ -1017,7 +1170,7 @@ mod tests {
 
         let cli_override = SandboxConfig::from_env_iter_and_args(
             [
-                ("HYDRACACHE_SANDBOX_BACKEND", "sqlite-file"),
+                ("HYDRACACHE_SANDBOX_PROFILE", "sqlite-file"),
                 ("HYDRACACHE_SANDBOX_BIND", "127.0.0.1:3200"),
                 ("HYDRACACHE_SANDBOX_SQLITE_PATH", "target/env-config.sqlite"),
             ],
@@ -1032,18 +1185,34 @@ mod tests {
         .unwrap();
 
         assert_eq!(cli_override.bind.port(), 3300);
+        assert_eq!(cli_override.profile, SandboxProfile::SqliteMemory);
         assert_eq!(cli_override.backend, SandboxBackend::SqliteMemory);
+
+        let backend_override = SandboxConfig::from_env_iter_and_args(
+            [
+                ("HYDRACACHE_SANDBOX_PROFILE", "sqlite-file"),
+                ("HYDRACACHE_SANDBOX_BACKEND", "memory"),
+            ],
+            ["sandbox"],
+        )
+        .unwrap();
+        assert_eq!(backend_override.profile, SandboxProfile::Memory);
+        assert_eq!(backend_override.backend, SandboxBackend::Memory);
     }
 
     #[test]
     fn openapi_document_describes_demo_and_actuator_routes() {
-        let document = openapi_document();
+        let document = serde_json::to_value(SandboxApiDoc::openapi()).unwrap();
         let paths = document["paths"].as_object().unwrap();
 
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/flush"));
         assert!(paths.contains_key("/actuator/hydracache/health"));
-        assert!(paths.contains_key("/actuator/hydracache/caches/main/diagnostics"));
+        assert!(paths.contains_key("/actuator/hydracache/caches/{name}/diagnostics"));
+        assert!(document["components"]["schemas"]
+            .as_object()
+            .unwrap()
+            .contains_key("User"));
     }
 
     #[test]
@@ -1157,10 +1326,12 @@ mod tests {
             .await;
         assert_eq!(openapi["openapi"], "3.1.0");
 
-        let swagger = app.oneshot(get("/swagger-ui")).await.unwrap();
+        let swagger = app.oneshot(get("/swagger-ui/")).await.unwrap();
         assert_eq!(swagger.status(), StatusCode::OK);
         let body = to_bytes(swagger.into_body(), usize::MAX).await.unwrap();
-        assert!(String::from_utf8_lossy(&body).contains("SwaggerUIBundle"));
+        let body = String::from_utf8_lossy(&body);
+        assert!(body.to_ascii_lowercase().contains("swagger"));
+        assert!(!body.contains("unpkg.com"));
     }
 
     #[tokio::test]
@@ -1201,6 +1372,7 @@ mod tests {
         let _ = std::fs::remove_file(&path);
 
         let app = build_sandbox(SandboxConfig {
+            profile: SandboxProfile::SqliteFile,
             backend: SandboxBackend::SqliteFile { path: path.clone() },
             ..SandboxConfig::default()
         })
@@ -1219,6 +1391,7 @@ mod tests {
             .as_str()
             .unwrap()
             .starts_with("sqlite-file:"));
+        assert_eq!(info["profile"], "sqlite-file");
 
         let loaded = app
             .clone()

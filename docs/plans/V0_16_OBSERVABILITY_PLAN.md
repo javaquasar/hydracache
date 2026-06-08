@@ -39,8 +39,14 @@ Did the second call actually hit the cache?
   - `postgres-docker`
 - Sandbox local `.env` support through a committed safe demo profile at
   `crates/hydracache-sandbox/.env` plus `.env.example` as a reference.
-- Sandbox Swagger-compatible OpenAPI surface at `/swagger-ui` and
-  `/openapi.json`.
+- Sandbox profile presets through `HYDRACACHE_SANDBOX_PROFILE` and `--profile`.
+- Sandbox OpenAPI generated from Rust route/schema declarations through
+  `utoipa`.
+- Sandbox Swagger UI served from local embedded assets through
+  `utoipa-swagger-ui`, without a CDN dependency.
+- Sandbox HTTP collection and PowerShell demo scripts.
+- Optional Postgres Docker smoke test with graceful skip when Docker is
+  unavailable.
 - Read-only Axum routes:
   - `GET /`
   - `GET /health`
@@ -125,10 +131,10 @@ The committed `.env` profile is useful for the usual local backend and contains
 only non-secret demo settings. CLI flags still override it for one-off checks:
 
 ```powershell
-cargo run -p hydracache-sandbox -- --backend memory
-cargo run -p hydracache-sandbox -- --backend sqlite-memory
-cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
-cargo run -p hydracache-sandbox -- --backend postgres-docker
+cargo run -p hydracache-sandbox -- --profile memory
+cargo run -p hydracache-sandbox -- --profile sqlite-memory
+cargo run -p hydracache-sandbox -- --profile sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
+cargo run -p hydracache-sandbox -- --profile postgres-docker
 ```
 
 The sandbox exposes:
@@ -145,6 +151,14 @@ POST /demo/invalidate/user/{id}
 POST /demo/flush
 ```
 
+Manual request helpers live next to the sandbox crate:
+
+```text
+crates/hydracache-sandbox/http/sandbox.http
+crates/hydracache-sandbox/scripts/run-demo-flow.ps1
+crates/hydracache-sandbox/scripts/start-profile.ps1
+```
+
 ## Deferred
 
 - Event listeners.
@@ -155,5 +169,4 @@ POST /demo/flush
 - Actix-web adapter.
 - Poem adapter.
 - Write-enabled admin endpoints.
-- OpenAPI metadata.
 - Prometheus exporter.

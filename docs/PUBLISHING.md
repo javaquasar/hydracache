@@ -71,7 +71,8 @@ Run it or test it during validation, but do not publish it:
 
 ```powershell
 cargo test -p hydracache-sandbox --locked
-cargo run -p hydracache-sandbox -- --backend memory
+cargo test -p hydracache-sandbox --test postgres_smoke --locked
+cargo run -p hydracache-sandbox -- --profile memory
 ```
 
 If `hydracache` cannot find `hydracache-core` or `hydracache-macros`, wait a

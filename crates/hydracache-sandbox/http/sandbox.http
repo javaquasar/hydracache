@@ -1,0 +1,42 @@
+@baseUrl = http://127.0.0.1:3000
+
+### Sandbox info
+GET {{baseUrl}}/
+
+### OpenAPI document
+GET {{baseUrl}}/openapi.json
+
+### Swagger UI
+GET {{baseUrl}}/swagger-ui/
+
+### Actuator health
+GET {{baseUrl}}/actuator/hydracache/health
+
+### Actuator diagnostics
+GET {{baseUrl}}/actuator/hydracache/caches/main/diagnostics
+
+### First load should use the loader
+POST {{baseUrl}}/demo/load/42
+
+### Second load should use the cache
+POST {{baseUrl}}/demo/load/42
+
+### Update the backing store without invalidating cache
+POST {{baseUrl}}/demo/users/42
+Content-Type: application/json
+
+{
+  "name": "Grace"
+}
+
+### Still cached until invalidated
+POST {{baseUrl}}/demo/load/42
+
+### Invalidate user tag
+POST {{baseUrl}}/demo/invalidate/user/42
+
+### Reload should use the updated backing store value
+POST {{baseUrl}}/demo/load/42
+
+### Flush all local cache entries
+POST {{baseUrl}}/demo/flush

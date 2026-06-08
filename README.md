@@ -399,20 +399,21 @@ The sandbox has a committed `.env` demo profile with safe, non-secret defaults.
 Supported settings:
 
 ```text
-HYDRACACHE_SANDBOX_BACKEND=memory
+HYDRACACHE_SANDBOX_PROFILE=memory
 HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000
 HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite
 ```
 
-Supported backend values are `memory`, `sqlite-memory`, `sqlite-file`, and
+Supported profile values are `memory`, `sqlite-memory`, `sqlite-file`, and
 `postgres-docker`. CLI flags override the committed `.env` values, which is
-handy for one-off manual checks:
+handy for one-off manual checks. `--profile` is the preferred demo preset;
+`--backend` remains available as a lower-level compatibility override.
 
 ```powershell
-cargo run -p hydracache-sandbox -- --backend memory
-cargo run -p hydracache-sandbox -- --backend sqlite-memory
-cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
-cargo run -p hydracache-sandbox -- --backend postgres-docker
+cargo run -p hydracache-sandbox -- --profile memory
+cargo run -p hydracache-sandbox -- --profile sqlite-memory
+cargo run -p hydracache-sandbox -- --profile sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
+cargo run -p hydracache-sandbox -- --profile postgres-docker
 ```
 
 After startup:
@@ -423,6 +424,10 @@ http://127.0.0.1:3000/openapi.json
 http://127.0.0.1:3000/actuator/hydracache/health
 http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
 ```
+
+The OpenAPI document is generated from Rust route/schema declarations through
+`utoipa`. Swagger UI is served from local embedded assets through
+`utoipa-swagger-ui`; it does not depend on a CDN.
 
 Useful manual flow:
 
@@ -438,6 +443,24 @@ POST /demo/load/42
 The first load should report `source = "loader"`, the second should report
 `source = "cache"`, and the post-invalidation load should read the updated
 backing store value.
+
+For editor-based REST clients, use
+`crates/hydracache-sandbox/http/sandbox.http`. For a scripted smoke flow:
+
+```powershell
+crates\hydracache-sandbox\scripts\run-demo-flow.ps1
+```
+
+To start a specific profile without editing `.env`:
+
+```powershell
+crates\hydracache-sandbox\scripts\start-profile.ps1 -Profile sqlite-memory
+```
+
+The sandbox also includes an optional Postgres Docker smoke test. If Docker is
+available, it runs the cache/invalidate/reload flow against a real Postgres
+container. If Docker is unavailable, it prints a skip message and exits
+successfully.
 
 ## SQLx Adapter
 
