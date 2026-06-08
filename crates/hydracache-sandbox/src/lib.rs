@@ -7,6 +7,8 @@
 //! # Run
 //!
 //! ```powershell
+//! cargo run -p hydracache-sandbox
+//!
 //! cargo run -p hydracache-sandbox -- --backend memory
 //! cargo run -p hydracache-sandbox -- --backend sqlite-memory
 //! cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
@@ -15,8 +17,9 @@
 
 use std::collections::BTreeMap;
 use std::fmt;
+use std::fs;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path::PathBuf;
+use std::path::{Path as FsPath, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
@@ -88,14 +91,55 @@ impl SandboxConfig {
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
+        Self::from_env_iter_and_args(std::iter::empty::<(String, String)>(), args)
+    }
+
+    /// Load `crates/hydracache-sandbox/.env`, then process environment
+    /// variables, then command-line arguments.
+    ///
+    /// Later sources override earlier sources. This keeps local sandbox runs
+    /// convenient while preserving CLI flags for one-off experiments.
+    pub fn from_env_and_args<I, S>(args: I) -> Result<Self, SandboxError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let file_vars = read_env_file(&default_env_file_path())?;
+        let process_vars =
+            std::env::vars().filter(|(key, _)| key.starts_with("HYDRACACHE_SANDBOX_"));
+
+        Self::from_env_iter_and_args(file_vars.into_iter().chain(process_vars), args)
+    }
+
+    fn from_env_iter_and_args<I, S, E, K, V>(env_vars: E, args: I) -> Result<Self, SandboxError>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+        E: IntoIterator<Item = (K, V)>,
+        K: Into<String>,
+        V: Into<String>,
+    {
+        let env = env_vars
+            .into_iter()
+            .map(|(key, value)| (key.into(), value.into()))
+            .collect::<BTreeMap<_, _>>();
         let mut tokens: Vec<String> = args.into_iter().map(Into::into).collect();
         if tokens.first().is_some_and(|token| !token.starts_with("--")) {
             tokens.remove(0);
         }
 
-        let mut bind = default_bind();
-        let mut backend = "memory".to_owned();
-        let mut sqlite_path = PathBuf::from("target/hydracache-sandbox.sqlite");
+        let mut bind = match env.get("HYDRACACHE_SANDBOX_BIND") {
+            Some(value) => parse_bind(value)?,
+            None => default_bind(),
+        };
+        let mut backend = env
+            .get("HYDRACACHE_SANDBOX_BACKEND")
+            .cloned()
+            .unwrap_or_else(|| "memory".to_owned());
+        let mut sqlite_path = env
+            .get("HYDRACACHE_SANDBOX_SQLITE_PATH")
+            .map(PathBuf::from)
+            .unwrap_or_else(default_sqlite_path);
         let mut index = 0;
 
         while index < tokens.len() {
@@ -119,9 +163,7 @@ impl SandboxConfig {
                     let value = tokens
                         .get(index)
                         .ok_or_else(|| SandboxError::config("--bind requires a value"))?;
-                    bind = value.parse().map_err(|source| {
-                        SandboxError::config(format!("invalid bind address: {source}"))
-                    })?;
+                    bind = parse_bind(value)?;
                 }
                 "--help" | "-h" => return Err(SandboxError::Help(help_text())),
                 other => {
@@ -133,17 +175,7 @@ impl SandboxConfig {
             index += 1;
         }
 
-        let backend = match backend.as_str() {
-            "memory" => SandboxBackend::Memory,
-            "sqlite-memory" => SandboxBackend::SqliteMemory,
-            "sqlite-file" => SandboxBackend::SqliteFile { path: sqlite_path },
-            "postgres-docker" => SandboxBackend::PostgresDocker,
-            other => {
-                return Err(SandboxError::config(format!(
-                    "unknown backend `{other}`; expected memory, sqlite-memory, sqlite-file, or postgres-docker"
-                )));
-            }
-        };
+        let backend = parse_backend(&backend, sqlite_path)?;
 
         Ok(Self { bind, backend })
     }
@@ -162,18 +194,108 @@ fn default_bind() -> SocketAddr {
     SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 3000)
 }
 
+fn default_sqlite_path() -> PathBuf {
+    PathBuf::from("target/hydracache-sandbox.sqlite")
+}
+
+fn default_env_file_path() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(".env")
+}
+
+fn parse_bind(value: &str) -> Result<SocketAddr, SandboxError> {
+    value
+        .parse()
+        .map_err(|source| SandboxError::config(format!("invalid bind address: {source}")))
+}
+
+fn parse_backend(backend: &str, sqlite_path: PathBuf) -> Result<SandboxBackend, SandboxError> {
+    match backend {
+        "memory" => Ok(SandboxBackend::Memory),
+        "sqlite-memory" => Ok(SandboxBackend::SqliteMemory),
+        "sqlite-file" => Ok(SandboxBackend::SqliteFile { path: sqlite_path }),
+        "postgres-docker" => Ok(SandboxBackend::PostgresDocker),
+        other => Err(SandboxError::config(format!(
+            "unknown backend `{other}`; expected memory, sqlite-memory, sqlite-file, or postgres-docker"
+        ))),
+    }
+}
+
+fn read_env_file(path: &FsPath) -> Result<BTreeMap<String, String>, SandboxError> {
+    if !path.exists() {
+        return Ok(BTreeMap::new());
+    }
+
+    let contents = fs::read_to_string(path)?;
+    parse_env_contents(&contents)
+}
+
+fn parse_env_contents(contents: &str) -> Result<BTreeMap<String, String>, SandboxError> {
+    let mut values = BTreeMap::new();
+
+    for (index, raw_line) in contents.lines().enumerate() {
+        let line = raw_line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+
+        let (raw_key, raw_value) = line.split_once('=').ok_or_else(|| {
+            SandboxError::config(format!(
+                "invalid .env line {}; expected KEY=value",
+                index + 1
+            ))
+        })?;
+        let key = raw_key
+            .trim()
+            .strip_prefix("export ")
+            .unwrap_or_else(|| raw_key.trim())
+            .trim();
+
+        if key.is_empty() {
+            return Err(SandboxError::config(format!(
+                "invalid .env line {}; key cannot be empty",
+                index + 1
+            )));
+        }
+
+        values.insert(key.to_owned(), unquote_env_value(raw_value.trim()));
+    }
+
+    Ok(values)
+}
+
+fn unquote_env_value(value: &str) -> String {
+    if value.len() >= 2
+        && ((value.starts_with('"') && value.ends_with('"'))
+            || (value.starts_with('\'') && value.ends_with('\'')))
+    {
+        value[1..value.len() - 1].to_owned()
+    } else {
+        value.to_owned()
+    }
+}
+
 fn help_text() -> String {
     [
         "HydraCache manual sandbox",
         "",
         "Usage:",
+        "  cargo run -p hydracache-sandbox",
+        "",
+        "CLI overrides:",
         "  cargo run -p hydracache-sandbox -- --backend memory",
         "  cargo run -p hydracache-sandbox -- --backend sqlite-memory",
         "  cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite",
         "  cargo run -p hydracache-sandbox -- --backend postgres-docker",
         "",
         "Options:",
+        "  --backend memory|sqlite-memory|sqlite-file|postgres-docker",
+        "  --sqlite-path target/hydracache-sandbox.sqlite",
         "  --bind 127.0.0.1:3000",
+        "",
+        "Environment:",
+        "  HYDRACACHE_SANDBOX_BACKEND=memory",
+        "  HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000",
+        "  HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite",
     ]
     .join("\n")
 }
@@ -823,6 +945,7 @@ mod tests {
     fn config_help_and_backend_labels_are_available() {
         let help = SandboxConfig::from_args(["sandbox", "--help"]).unwrap_err();
         assert!(help.to_string().contains("HydraCache manual sandbox"));
+        assert!(help.to_string().contains("HYDRACACHE_SANDBOX_BACKEND"));
 
         assert_eq!(SandboxBackend::Memory.label(), "memory");
         assert_eq!(SandboxBackend::SqliteMemory.label(), "sqlite-memory");
@@ -832,6 +955,84 @@ mod tests {
         };
         assert!(sqlite_file.label().starts_with("sqlite-file:"));
         assert_eq!(SandboxBackend::PostgresDocker.label(), "postgres-docker");
+    }
+
+    #[test]
+    fn env_file_parser_accepts_comments_exports_and_quoted_values() {
+        let values = super::parse_env_contents(
+            r#"
+            # local sandbox profile
+            export HYDRACACHE_SANDBOX_BACKEND="sqlite-file"
+            HYDRACACHE_SANDBOX_BIND='127.0.0.1:3300'
+            HYDRACACHE_SANDBOX_SQLITE_PATH=target/from-env.sqlite
+            "#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            values.get("HYDRACACHE_SANDBOX_BACKEND").unwrap(),
+            "sqlite-file"
+        );
+        assert_eq!(
+            values.get("HYDRACACHE_SANDBOX_BIND").unwrap(),
+            "127.0.0.1:3300"
+        );
+        assert_eq!(
+            values.get("HYDRACACHE_SANDBOX_SQLITE_PATH").unwrap(),
+            "target/from-env.sqlite"
+        );
+
+        let missing_file = super::read_env_file(PathBuf::from("target/no-such-env").as_path())
+            .expect("missing .env should be optional");
+        assert!(missing_file.is_empty());
+    }
+
+    #[test]
+    fn env_file_parser_rejects_invalid_lines() {
+        let missing_separator =
+            super::parse_env_contents("HYDRACACHE_SANDBOX_BACKEND").unwrap_err();
+        assert!(missing_separator.to_string().contains("expected KEY=value"));
+
+        let empty_key = super::parse_env_contents("=memory").unwrap_err();
+        assert!(empty_key.to_string().contains("key cannot be empty"));
+    }
+
+    #[test]
+    fn env_config_is_used_and_cli_arguments_override_it() {
+        let env_config = SandboxConfig::from_env_iter_and_args(
+            [
+                ("HYDRACACHE_SANDBOX_BACKEND", "sqlite-file"),
+                ("HYDRACACHE_SANDBOX_BIND", "127.0.0.1:3200"),
+                ("HYDRACACHE_SANDBOX_SQLITE_PATH", "target/env-config.sqlite"),
+            ],
+            ["sandbox"],
+        )
+        .unwrap();
+
+        assert_eq!(env_config.bind.port(), 3200);
+        assert!(matches!(
+            env_config.backend,
+            SandboxBackend::SqliteFile { .. }
+        ));
+
+        let cli_override = SandboxConfig::from_env_iter_and_args(
+            [
+                ("HYDRACACHE_SANDBOX_BACKEND", "sqlite-file"),
+                ("HYDRACACHE_SANDBOX_BIND", "127.0.0.1:3200"),
+                ("HYDRACACHE_SANDBOX_SQLITE_PATH", "target/env-config.sqlite"),
+            ],
+            [
+                "sandbox",
+                "--backend",
+                "sqlite-memory",
+                "--bind",
+                "127.0.0.1:3300",
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(cli_override.bind.port(), 3300);
+        assert_eq!(cli_override.backend, SandboxBackend::SqliteMemory);
     }
 
     #[test]

@@ -392,6 +392,23 @@ trying the cache, actuator routes, Swagger UI, and database-backed loaders
 without writing a separate app.
 
 ```powershell
+cargo run -p hydracache-sandbox
+```
+
+The sandbox has a committed `.env` demo profile with safe, non-secret defaults.
+Supported settings:
+
+```text
+HYDRACACHE_SANDBOX_BACKEND=memory
+HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000
+HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite
+```
+
+Supported backend values are `memory`, `sqlite-memory`, `sqlite-file`, and
+`postgres-docker`. CLI flags override the committed `.env` values, which is
+handy for one-off manual checks:
+
+```powershell
 cargo run -p hydracache-sandbox -- --backend memory
 cargo run -p hydracache-sandbox -- --backend sqlite-memory
 cargo run -p hydracache-sandbox -- --backend sqlite-file --sqlite-path target/hydracache-sandbox.sqlite

@@ -37,6 +37,8 @@ Did the second call actually hit the cache?
   - `sqlite-memory`
   - `sqlite-file`
   - `postgres-docker`
+- Sandbox local `.env` support through a committed safe demo profile at
+  `crates/hydracache-sandbox/.env` plus `.env.example` as a reference.
 - Sandbox Swagger-compatible OpenAPI surface at `/swagger-ui` and
   `/openapi.json`.
 - Read-only Axum routes:
@@ -114,6 +116,13 @@ let app: Router = Router::new().nest(
 
 `hydracache-sandbox` is a workspace-only manual backend. It is not published to
 crates.io.
+
+```powershell
+cargo run -p hydracache-sandbox
+```
+
+The committed `.env` profile is useful for the usual local backend and contains
+only non-secret demo settings. CLI flags still override it for one-off checks:
 
 ```powershell
 cargo run -p hydracache-sandbox -- --backend memory
