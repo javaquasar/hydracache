@@ -77,8 +77,10 @@ cargo run -p hydracache-sandbox -- --profile memory
 
 After startup, open `/demo/ui` or `/swagger-ui`, or run
 `crates\hydracache-sandbox\scripts\run-demo-flow.ps1` to exercise the sandbox
-OpenAPI lab. Inspect `/ready`, `/demo/report`, `/demo/events`, and the
-read-only actuator reports.
+OpenAPI lab. Inspect `/ready`, `/demo/config`, `/demo/presets`,
+`/demo/report`, `/demo/events`, `/demo/export`, `POST /demo/self-test`, and
+the read-only actuator reports. If `HYDRACACHE_SANDBOX_EVENT_LOG_PATH` is set,
+the sandbox also appends demo events to a local JSONL file for manual review.
 For a Compose-backed Postgres run:
 
 ```powershell

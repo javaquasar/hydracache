@@ -60,6 +60,15 @@ Did the second call actually hit the cache?
 - Structured event log at `GET /demo/events`, reset endpoint at
   `POST /demo/reset`, readiness endpoint at `GET /ready`, and expected-failure
   negative scenarios under `POST /demo/negative/*`.
+- Runtime sandbox config at `GET /demo/config`, copyable scenario presets at
+  `GET /demo/presets`, portable export bundle at `GET /demo/export`, and
+  built-in self-test at `POST /demo/self-test`.
+- Event log filtering by `kind`, `key`, `tag`, `flow_id`, and `limit`, plus
+  optional append-only JSONL persistence through
+  `HYDRACACHE_SANDBOX_EVENT_LOG_PATH`.
+- No-CDN developer console counters for hits, misses, loads, and
+  single-flight joins.
+- Docker Compose healthchecks for the full sandbox API service.
 - Sandbox HTTP collection and PowerShell demo scripts.
 - Optional Postgres Docker smoke test with graceful skip when Docker is
   unavailable.
@@ -176,8 +185,14 @@ GET  /ready
 GET  /demo/ui
 GET  /swagger-ui
 GET  /openapi.json
+GET  /demo/config
+GET  /demo/presets
 GET  /demo/report
 GET  /demo/events
+GET  /demo/events?kind=cache-hit
+GET  /demo/events?flow_id=manual-flow&limit=10
+GET  /demo/export
+POST /demo/self-test
 POST /demo/events/clear
 POST /demo/reset
 POST /demo/cache/put

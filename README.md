@@ -403,7 +403,12 @@ HYDRACACHE_SANDBOX_PROFILE=memory
 HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000
 HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite
 HYDRACACHE_SANDBOX_DATABASE_URL=postgres://hydracache:hydracache@127.0.0.1:54329/hydracache
+HYDRACACHE_SANDBOX_EVENT_LOG_PATH=target/hydracache-sandbox-events.jsonl
 ```
+
+`HYDRACACHE_SANDBOX_EVENT_LOG_PATH` is optional. When set, the sandbox writes
+recent demo events to an append-only JSONL file while still keeping the bounded
+in-memory event log for the API and UI.
 
 Supported profile values are `memory`, `sqlite-memory`, `sqlite-file`,
 `postgres-compose`, and `postgres-docker`. CLI flags override the committed
@@ -448,8 +453,11 @@ http://127.0.0.1:3000/demo/ui
 http://127.0.0.1:3000/swagger-ui
 http://127.0.0.1:3000/openapi.json
 http://127.0.0.1:3000/ready
+http://127.0.0.1:3000/demo/config
+http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
+http://127.0.0.1:3000/demo/export
 http://127.0.0.1:3000/actuator/hydracache/health
 http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
 ```
@@ -464,14 +472,21 @@ invalidation/load race safety.
 
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
-state, and show structured events.
+state, show structured events, run the built-in self-test, export a portable
+report bundle, and display small hit/miss/load counters.
 
 Useful Swagger/API groups:
 
 ```text
 GET  /ready
 GET  /demo/ui
+GET  /demo/config
+GET  /demo/presets
 GET  /demo/events
+GET  /demo/events?kind=cache-hit
+GET  /demo/events?flow_id=manual-flow&limit=10
+GET  /demo/export
+POST /demo/self-test
 POST /demo/events/clear
 POST /demo/reset
 POST /demo/cache/put
@@ -498,8 +513,14 @@ GET  /demo/report
 backend, loader counters, function counters, retained event count,
 capabilities, and cache diagnostics. `/demo/events` returns the bounded
 structured event log for recent cache hits, misses, loads, invalidations,
-scenario runs, resets, and expected errors. The read-only actuator remains
-available for operational views: `/actuator/hydracache/health`,
+scenario runs, resets, and expected errors. It can be filtered by exact
+`kind`, `key`, `tag`, `flow_id`, and capped with `limit`. `/demo/export`
+combines sandbox info, readiness, config, report, and events into one bundle;
+`POST /demo/self-test` runs a built-in smoke scenario and returns step-level
+results plus a filtered event log for that self-test flow.
+
+The read-only actuator remains available for operational views:
+`/actuator/hydracache/health`,
 `/actuator/hydracache/caches`, `/actuator/hydracache/caches/main/stats`, and
 `/actuator/hydracache/caches/main/diagnostics`.
 

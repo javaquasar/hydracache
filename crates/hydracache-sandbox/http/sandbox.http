@@ -6,6 +6,12 @@ GET {{baseUrl}}/
 ### Readiness check
 GET {{baseUrl}}/ready
 
+### Runtime sandbox config
+GET {{baseUrl}}/demo/config
+
+### Copyable scenario presets
+GET {{baseUrl}}/demo/presets
+
 ### OpenAPI document
 GET {{baseUrl}}/openapi.json
 
@@ -27,6 +33,18 @@ GET {{baseUrl}}/demo/report
 ### Structured event log
 GET {{baseUrl}}/demo/events
 
+### Filtered event log: cache hits
+GET {{baseUrl}}/demo/events?kind=cache-hit
+
+### Filtered event log: flow id with limit
+GET {{baseUrl}}/demo/events?flow_id=manual-flow&limit=10
+
+### Export bundle
+GET {{baseUrl}}/demo/export
+
+### Built-in self-test
+POST {{baseUrl}}/demo/self-test
+
 ### Clear structured event log
 POST {{baseUrl}}/demo/events/clear
 
@@ -41,7 +59,8 @@ Content-Type: application/json
   "key": "manual:1",
   "value": "alpha",
   "ttl_ms": 5000,
-  "tags": ["manual"]
+  "tags": ["manual"],
+  "flow_id": "manual-flow"
 }
 
 ### Read a raw local cache entry
@@ -49,7 +68,8 @@ POST {{baseUrl}}/demo/cache/get
 Content-Type: application/json
 
 {
-  "key": "manual:1"
+  "key": "manual:1",
+  "flow_id": "manual-flow"
 }
 
 ### Get-or-load should return cache while the manual entry exists
@@ -60,7 +80,8 @@ Content-Type: application/json
   "key": "manual:1",
   "loader_value": "beta",
   "loader_delay_ms": 10,
-  "tags": ["manual"]
+  "tags": ["manual"],
+  "flow_id": "manual-flow"
 }
 
 ### Contains key
@@ -68,7 +89,8 @@ POST {{baseUrl}}/demo/cache/contains
 Content-Type: application/json
 
 {
-  "key": "manual:1"
+  "key": "manual:1",
+  "flow_id": "manual-flow"
 }
 
 ### Remove one key
@@ -76,7 +98,8 @@ POST {{baseUrl}}/demo/cache/remove
 Content-Type: application/json
 
 {
-  "key": "manual:1"
+  "key": "manual:1",
+  "flow_id": "manual-flow"
 }
 
 ### Invalidate by arbitrary tag
@@ -84,7 +107,8 @@ POST {{baseUrl}}/demo/cache/invalidate-tag
 Content-Type: application/json
 
 {
-  "tag": "manual"
+  "tag": "manual",
+  "flow_id": "manual-flow"
 }
 
 ### First load should use the loader
@@ -99,7 +123,8 @@ Content-Type: application/json
 
 {
   "ttl_ms": 5000,
-  "tags": ["users"]
+  "tags": ["users"],
+  "flow_id": "query-flow"
 }
 
 ### Typed-cache load with namespace-specific key
@@ -108,7 +133,8 @@ Content-Type: application/json
 
 {
   "ttl_ms": 5000,
-  "tags": ["team:kernel"]
+  "tags": ["team:kernel"],
+  "flow_id": "typed-flow"
 }
 
 ### Cached non-database function
@@ -122,7 +148,8 @@ Content-Type: application/json
   "key": "ttl:short",
   "value": "short",
   "ttl_ms": 50,
-  "wait_ms": 80
+  "wait_ms": 80,
+  "flow_id": "ttl-flow"
 }
 
 ### Single-flight scenario report
@@ -134,7 +161,8 @@ Content-Type: application/json
   "loader_value": "shared",
   "concurrency": 8,
   "loader_delay_ms": 50,
-  "tags": ["sf"]
+  "tags": ["sf"],
+  "flow_id": "single-flight-flow"
 }
 
 ### Invalidation/load race scenario report
@@ -146,7 +174,8 @@ Content-Type: application/json
   "loader_value": "stale",
   "tag": "race",
   "loader_delay_ms": 80,
-  "invalidate_after_ms": 10
+  "invalidate_after_ms": 10,
+  "flow_id": "race-flow"
 }
 
 ### Negative scenario: missing cache key
@@ -154,7 +183,8 @@ POST {{baseUrl}}/demo/negative/missing-key
 Content-Type: application/json
 
 {
-  "key": "missing:manual"
+  "key": "missing:manual",
+  "flow_id": "negative-flow"
 }
 
 ### Negative scenario: missing backing-store user
@@ -162,7 +192,8 @@ POST {{baseUrl}}/demo/negative/missing-user
 Content-Type: application/json
 
 {
-  "id": 999999
+  "id": 999999,
+  "flow_id": "negative-flow"
 }
 
 ### Negative scenario: loader error
@@ -171,7 +202,8 @@ Content-Type: application/json
 
 {
   "key": "loader:error",
-  "error": "simulated loader failure"
+  "error": "simulated loader failure",
+  "flow_id": "negative-flow"
 }
 
 ### Negative scenario: expired entry
@@ -182,7 +214,8 @@ Content-Type: application/json
   "key": "expired:manual",
   "value": "gone",
   "ttl_ms": 50,
-  "wait_ms": 80
+  "wait_ms": 80,
+  "flow_id": "negative-flow"
 }
 
 ### Negative scenario: invalidation miss
@@ -190,7 +223,8 @@ POST {{baseUrl}}/demo/negative/invalidation-miss
 Content-Type: application/json
 
 {
-  "tag": "missing-tag"
+  "tag": "missing-tag",
+  "flow_id": "negative-flow"
 }
 
 ### Update the backing store without invalidating cache
@@ -198,7 +232,8 @@ POST {{baseUrl}}/demo/users/42
 Content-Type: application/json
 
 {
-  "name": "Grace"
+  "name": "Grace",
+  "flow_id": "manual-flow"
 }
 
 ### Still cached until invalidated

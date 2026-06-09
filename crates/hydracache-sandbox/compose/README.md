@@ -27,9 +27,16 @@ Open:
 http://127.0.0.1:3000/demo/ui
 http://127.0.0.1:3000/swagger-ui
 http://127.0.0.1:3000/openapi.json
+http://127.0.0.1:3000/demo/config
+http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
+http://127.0.0.1:3000/demo/export
 ```
+
+The full-stack sandbox service has a Docker healthcheck against `/ready`.
+Inside the UI or Swagger, `POST /demo/self-test` runs a quick end-to-end
+scenario and returns step-level results plus correlated events.
 
 ## Postgres Only
 
@@ -59,7 +66,8 @@ http://127.0.0.1:3000/demo/ui
 http://127.0.0.1:3000/swagger-ui
 ```
 
-The compatibility full stack also uses `Dockerfile.sandbox`.
+The compatibility full stack also uses `Dockerfile.sandbox` and the same
+`/ready` healthcheck.
 
 ## Stop
 
