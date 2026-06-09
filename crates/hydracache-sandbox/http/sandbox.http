@@ -55,8 +55,61 @@ Content-Type: application/json
   "reset": true
 }
 
+### List committed scenario files
+GET {{baseUrl}}/demo/scenarios/files
+
+### Run committed YAML scenario file
+POST {{baseUrl}}/demo/scenarios/file/run
+Content-Type: application/json
+
+{
+  "path": "golden-path.yaml",
+  "format": "yaml"
+}
+
+### Run committed regression suite file
+POST {{baseUrl}}/demo/scenarios/suite/file/run
+Content-Type: application/json
+
+{
+  "path": "regression-suite.json"
+}
+
+### Run inline scenario suite
+POST {{baseUrl}}/demo/scenarios/suite/run
+Content-Type: application/json
+
+{
+  "name": "manual-inline-suite",
+  "reset_between": true,
+  "entries": [
+    {
+      "name": "named ttl",
+      "scenario": "ttl"
+    },
+    {
+      "name": "committed json",
+      "file": "golden-path.json",
+      "format": "json"
+    }
+  ]
+}
+
+### Flow catalog
+GET {{baseUrl}}/demo/flows
+
 ### Timeline for one flow id
 GET {{baseUrl}}/demo/flows/manual-golden/timeline
+
+### Replay a retained/imported flow through the flow catalog endpoint
+POST {{baseUrl}}/demo/flows/manual-golden/replay
+Content-Type: application/json
+
+{
+  "scenario": "golden-path",
+  "flow_id": "manual-golden-replay",
+  "reset": true
+}
 
 ### Compare supported local profiles
 POST {{baseUrl}}/demo/profiles/compare
@@ -198,6 +251,9 @@ GET {{baseUrl}}/demo/db/seed-report
 ### OpenAPI generated-client contract check
 GET {{baseUrl}}/demo/openapi/client-check
 
+### OpenAPI generated-client smoke check
+GET {{baseUrl}}/demo/openapi/client-smoke
+
 ### Import an empty session event stream shape
 POST {{baseUrl}}/demo/import
 Content-Type: application/json
@@ -299,6 +355,26 @@ Content-Type: application/json
   "ttl_ms": 5000,
   "tags": ["users"],
   "flow_id": "query-flow"
+}
+
+### Query-cache product load from seeded backing store
+POST {{baseUrl}}/demo/query/products/100/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["products"],
+  "flow_id": "product-query-flow"
+}
+
+### Query-cache order summary load from seeded backing store
+POST {{baseUrl}}/demo/query/orders/5000/summary/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["orders"],
+  "flow_id": "order-query-flow"
 }
 
 ### Typed-cache load with namespace-specific key

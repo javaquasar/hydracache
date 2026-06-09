@@ -289,3 +289,48 @@ Invoke-SandboxJson GET "/demo/openapi/client-check" | ConvertTo-Json -Depth 8
 
 Write-Host "`n31. Actuator diagnostics"
 Invoke-SandboxJson GET "/actuator/hydracache/caches/main/diagnostics" | ConvertTo-Json -Depth 8
+
+Write-Host "`n32. Committed scenario files and suite"
+Invoke-SandboxJson GET "/demo/scenarios/files" | ConvertTo-Json -Depth 8
+Invoke-SandboxJson POST "/demo/scenarios/file/run" @{
+    path = "golden-path.yaml"
+    format = "yaml"
+} | ConvertTo-Json -Depth 12
+Invoke-SandboxJson POST "/demo/scenarios/suite/file/run" @{
+    path = "regression-suite.json"
+} | ConvertTo-Json -Depth 12
+
+Write-Host "`n33. Seeded product query cache"
+Invoke-SandboxJson POST "/demo/query/products/200/load" @{
+    ttl_ms = 5000
+    tags = @("products")
+    flow_id = "$FlowId-product"
+} | ConvertTo-Json -Depth 8
+Invoke-SandboxJson POST "/demo/query/products/200/load" @{
+    ttl_ms = 5000
+    tags = @("products")
+    flow_id = "$FlowId-product"
+} | ConvertTo-Json -Depth 8
+
+Write-Host "`n34. Seeded order summary query cache"
+Invoke-SandboxJson POST "/demo/query/orders/5001/summary/load" @{
+    ttl_ms = 5000
+    tags = @("orders")
+    flow_id = "$FlowId-order"
+} | ConvertTo-Json -Depth 8
+Invoke-SandboxJson POST "/demo/query/orders/5001/summary/load" @{
+    ttl_ms = 5000
+    tags = @("orders")
+    flow_id = "$FlowId-order"
+} | ConvertTo-Json -Depth 8
+
+Write-Host "`n35. Flow catalog and retained-flow replay"
+Invoke-SandboxJson GET "/demo/flows" | ConvertTo-Json -Depth 8
+Invoke-SandboxJson POST "/demo/flows/$FlowId-product/replay" @{
+    scenario = "golden-path"
+    flow_id = "$FlowId-flow-replay"
+    reset = $true
+} | ConvertTo-Json -Depth 12
+
+Write-Host "`n36. OpenAPI generated-client smoke"
+Invoke-SandboxJson GET "/demo/openapi/client-smoke" | ConvertTo-Json -Depth 8

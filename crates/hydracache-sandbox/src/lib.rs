@@ -33,7 +33,11 @@
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/export
 //! http://127.0.0.1:3000/demo/scenarios/run
+//! http://127.0.0.1:3000/demo/scenarios/files
+//! http://127.0.0.1:3000/demo/scenarios/file/run
+//! http://127.0.0.1:3000/demo/scenarios/suite/run
 //! http://127.0.0.1:3000/demo/scenarios/document/run
+//! http://127.0.0.1:3000/demo/flows
 //! http://127.0.0.1:3000/demo/flows/{flow_id}/timeline
 //! http://127.0.0.1:3000/demo/benchmarks/manual
 //! http://127.0.0.1:3000/demo/benchmarks/compare
@@ -528,12 +532,21 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/import", post(import_session))
         .route("/demo/self-test", post(self_test))
         .route("/demo/scenarios/run", post(run_scenario))
+        .route("/demo/scenarios/files", get(scenario_files))
+        .route("/demo/scenarios/file/run", post(run_scenario_file))
+        .route("/demo/scenarios/suite/run", post(run_scenario_suite))
+        .route(
+            "/demo/scenarios/suite/file/run",
+            post(run_scenario_suite_file),
+        )
         .route(
             "/demo/scenarios/document/parse",
             post(parse_scenario_document),
         )
         .route("/demo/scenarios/document/run", post(run_scenario_document))
+        .route("/demo/flows", get(flow_catalog))
         .route("/demo/flows/{flow_id}/timeline", get(flow_timeline))
+        .route("/demo/flows/{flow_id}/replay", post(replay_imported_flow))
         .route("/demo/profiles/compare", post(compare_profiles))
         .route("/demo/replay", post(replay_scenario))
         .route("/demo/faults/run", post(run_fault_injection))
@@ -543,6 +556,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/observability/traces/latest", get(latest_trace_demo))
         .route("/demo/db/seed-report", get(seed_report))
         .route("/demo/openapi/client-check", get(openapi_client_check))
+        .route("/demo/openapi/client-smoke", get(openapi_client_smoke))
         .route("/demo/security", get(security_info))
         .route("/demo/report", get(report))
         .route("/demo/events", get(events))
@@ -557,6 +571,12 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/users/{id}", get(get_user).post(upsert_user))
         .route("/demo/load/{id}", post(load_user))
         .route("/demo/query/users/{id}/load", post(query_load_user))
+        .route("/demo/products/{id}", get(get_product))
+        .route("/demo/query/products/{id}/load", post(query_load_product))
+        .route(
+            "/demo/query/orders/{id}/summary/load",
+            post(query_load_order_summary),
+        )
         .route("/demo/typed/users/{id}/load", post(typed_load_user))
         .route("/demo/functions/double/{input}", post(double_function))
         .route("/demo/scenarios/ttl", post(ttl_scenario))
@@ -689,6 +709,78 @@ impl SandboxStorage {
                         .fetch_one(pool)
                         .await;
                 row.map(|(id, name)| User { id, name })
+                    .map_err(|source| map_row_error(id, source))
+            }
+        }
+    }
+
+    async fn load_product(&self, id: i64) -> Result<Product, SandboxError> {
+        match self {
+            Self::Memory(_) => demo_products()
+                .into_iter()
+                .find(|product| product.id == id)
+                .ok_or(SandboxError::NotFound { id }),
+            Self::Sqlite(pool) => {
+                let row: Result<(i64, String, i64), sqlx::Error> =
+                    sqlx::query_as("select id, name, price_cents from products where id = ?")
+                        .bind(id)
+                        .fetch_one(pool)
+                        .await;
+                row.map(|(id, name, price_cents)| Product {
+                    id,
+                    name,
+                    price_cents,
+                })
+                .map_err(|source| map_row_error(id, source))
+            }
+            Self::Postgres(pool) => {
+                let row: Result<(i64, String, i64), sqlx::Error> =
+                    sqlx::query_as("select id, name, price_cents from products where id = $1")
+                        .bind(id)
+                        .fetch_one(pool)
+                        .await;
+                row.map(|(id, name, price_cents)| Product {
+                    id,
+                    name,
+                    price_cents,
+                })
+                .map_err(|source| map_row_error(id, source))
+            }
+        }
+    }
+
+    async fn load_order_summary(&self, id: i64) -> Result<OrderSummary, SandboxError> {
+        match self {
+            Self::Memory(_) => demo_order_summaries()
+                .into_iter()
+                .find(|summary| summary.order_id == id)
+                .ok_or(SandboxError::NotFound { id }),
+            Self::Sqlite(pool) => {
+                let row: Result<OrderSummaryRow, sqlx::Error> = sqlx::query_as(
+                    "select o.id, u.id, u.name, p.id, p.name, p.price_cents, o.quantity
+                         from orders o
+                         join users u on u.id = o.user_id
+                         join products p on p.id = o.product_id
+                         where o.id = ?",
+                )
+                .bind(id)
+                .fetch_one(pool)
+                .await;
+                row.map(order_summary_from_row)
+                    .map_err(|source| map_row_error(id, source))
+            }
+            Self::Postgres(pool) => {
+                let row: Result<OrderSummaryRow, sqlx::Error> = sqlx::query_as(
+                    "select o.id, u.id, u.name, p.id, p.name, p.price_cents, o.quantity
+                         from orders o
+                         join users u on u.id = o.user_id
+                         join products p on p.id = o.product_id
+                         where o.id = $1",
+                )
+                .bind(id)
+                .fetch_one(pool)
+                .await;
+                row.map(order_summary_from_row)
                     .map_err(|source| map_row_error(id, source))
             }
         }
@@ -974,6 +1066,82 @@ struct User {
     name: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+struct Product {
+    id: i64,
+    name: String,
+    price_cents: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+struct OrderSummary {
+    order_id: i64,
+    user_id: i64,
+    user_name: String,
+    product_id: i64,
+    product_name: String,
+    product_price_cents: i64,
+    quantity: i64,
+    total_cents: i64,
+}
+
+type OrderSummaryRow = (i64, i64, String, i64, String, i64, i64);
+
+fn demo_products() -> Vec<Product> {
+    vec![
+        Product {
+            id: 100,
+            name: "Mechanical Keyboard".to_owned(),
+            price_cents: 12_900,
+        },
+        Product {
+            id: 200,
+            name: "Observability Notebook".to_owned(),
+            price_cents: 1_900,
+        },
+    ]
+}
+
+fn demo_order_summaries() -> Vec<OrderSummary> {
+    vec![
+        OrderSummary {
+            order_id: 5_000,
+            user_id: 42,
+            user_name: "Ada".to_owned(),
+            product_id: 100,
+            product_name: "Mechanical Keyboard".to_owned(),
+            product_price_cents: 12_900,
+            quantity: 1,
+            total_cents: 12_900,
+        },
+        OrderSummary {
+            order_id: 5_001,
+            user_id: 7,
+            user_name: "Linus".to_owned(),
+            product_id: 200,
+            product_name: "Observability Notebook".to_owned(),
+            product_price_cents: 1_900,
+            quantity: 2,
+            total_cents: 3_800,
+        },
+    ]
+}
+
+fn order_summary_from_row(
+    (order_id, user_id, user_name, product_id, product_name, product_price_cents, quantity): OrderSummaryRow,
+) -> OrderSummary {
+    OrderSummary {
+        order_id,
+        user_id,
+        user_name,
+        product_id,
+        product_name,
+        product_price_cents,
+        quantity,
+        total_cents: product_price_cents * quantity,
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct SandboxInfo {
     name: &'static str,
@@ -1118,7 +1286,9 @@ struct LatencySummary {
     min_duration_ms: Option<u64>,
     max_duration_ms: Option<u64>,
     avg_duration_ms: Option<u64>,
+    p50_duration_ms: Option<u64>,
     p95_duration_ms: Option<u64>,
+    p99_duration_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -1313,8 +1483,10 @@ struct BenchmarkResponse {
     concurrency: u16,
     unique_keys: u16,
     loader_invocations: u64,
+    loader_call_ratio: f64,
     duration_ms: u64,
     requests_per_second: u64,
+    operation_latency: LatencySummary,
     diagnostics: DemoDiagnostics,
     latency: LatencySummary,
 }
@@ -1339,6 +1511,8 @@ enum ScenarioDocumentFormat {
 #[serde(rename_all = "kebab-case")]
 enum ScenarioStepAction {
     LoadUser,
+    LoadProduct,
+    LoadOrderSummary,
     UpsertUser,
     InvalidateUser,
     CachePut,
@@ -1377,6 +1551,8 @@ struct ScenarioDocument {
     steps: Vec<ScenarioDocumentStep>,
     #[serde(default)]
     assertions: Vec<ScenarioAssertion>,
+    #[serde(default)]
+    timeline_assertions: Vec<TimelineAssertion>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
@@ -1452,6 +1628,40 @@ struct ScenarioAssertion {
     value: u64,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum TimelineAssertionKind {
+    #[serde(rename = "contains-kind")]
+    Contains,
+    #[serde(rename = "first-kind")]
+    First,
+    #[serde(rename = "last-kind")]
+    Last,
+    #[serde(rename = "kind-before-kind")]
+    Before,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+struct TimelineAssertion {
+    #[serde(default)]
+    name: Option<String>,
+    assertion: TimelineAssertionKind,
+    #[serde(default)]
+    kind: Option<DemoEventKind>,
+    #[serde(default)]
+    before: Option<DemoEventKind>,
+    #[serde(default)]
+    after: Option<DemoEventKind>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct TimelineAssertionResult {
+    name: String,
+    assertion: TimelineAssertionKind,
+    passed: bool,
+    message: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct ScenarioDocumentStepResult {
     sequence: usize,
@@ -1481,9 +1691,90 @@ struct ScenarioDocumentRunResponse {
     passed: bool,
     steps: Vec<ScenarioDocumentStepResult>,
     assertions: Vec<ScenarioAssertionResult>,
+    timeline_assertions: Vec<TimelineAssertionResult>,
     report: ApplicationReport,
     events: EventLogResponse,
     latency: LatencySummary,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ScenarioFileInfo {
+    path: String,
+    format: ScenarioDocumentFormat,
+    description: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ScenarioFilesResponse {
+    files: Vec<ScenarioFileInfo>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"path": "golden-path.yaml", "format": "yaml"}))]
+struct ScenarioFileRunRequest {
+    path: String,
+    #[serde(default)]
+    format: Option<ScenarioDocumentFormat>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioFileRunResponse {
+    path: String,
+    format: ScenarioDocumentFormat,
+    run: ScenarioDocumentRunResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+struct ScenarioSuite {
+    name: String,
+    #[serde(default)]
+    description: Option<String>,
+    #[serde(default = "default_true")]
+    reset_between: bool,
+    #[serde(default)]
+    entries: Vec<ScenarioSuiteEntry>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+struct ScenarioSuiteEntry {
+    name: String,
+    #[serde(default)]
+    scenario: Option<ScenarioName>,
+    #[serde(default)]
+    document: Option<ScenarioDocument>,
+    #[serde(default)]
+    file: Option<String>,
+    #[serde(default)]
+    format: Option<ScenarioDocumentFormat>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioSuiteEntryResult {
+    name: String,
+    kind: String,
+    passed: bool,
+    flow_id: Option<String>,
+    summary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioSuiteRunResponse {
+    name: String,
+    description: Option<String>,
+    passed: bool,
+    entries: Vec<ScenarioSuiteEntryResult>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"path": "regression-suite.json"}))]
+struct ScenarioSuiteFileRunRequest {
+    path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioSuiteFileRunResponse {
+    path: String,
+    run: ScenarioSuiteRunResponse,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
@@ -1517,7 +1808,10 @@ struct BenchmarkDiff {
     duration_ms_delta: i64,
     requests_per_second_delta: i64,
     loader_invocations_delta: i64,
+    loader_call_ratio_delta: f64,
+    p95_duration_ms_delta: Option<i64>,
     hit_ratio_delta: Option<f64>,
+    verdict: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -1578,9 +1872,39 @@ struct SessionImportResponse {
     imported_events: usize,
     replaced_events: bool,
     flow_ids: Vec<String>,
+    replayable_flows: Vec<ReplayableFlow>,
     source: Option<String>,
     report: ApplicationReport,
     events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ReplayableFlow {
+    flow_id: String,
+    event_count: usize,
+    suggested_scenario: ScenarioName,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct FlowCatalogResponse {
+    flows: Vec<ReplayableFlow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"scenario": "golden-path", "flow_id": "replay-imported", "reset": true}))]
+struct ReplayImportedFlowRequest {
+    #[serde(default)]
+    scenario: Option<ScenarioName>,
+    #[serde(default)]
+    flow_id: Option<String>,
+    #[serde(default = "default_true")]
+    reset: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ReplayImportedFlowResponse {
+    source_flow: ReplayableFlow,
+    replay: ReplayResponse,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -1590,6 +1914,14 @@ struct OpenApiClientCheckResponse {
     checked_paths: Vec<String>,
     missing_paths: Vec<String>,
     sample_client: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct OpenApiClientSmokeResponse {
+    passed: bool,
+    checked_fragments: Vec<&'static str>,
+    missing_fragments: Vec<&'static str>,
+    client_path: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
@@ -1791,6 +2123,26 @@ struct LoadUserResponse {
     cache_key: String,
     tags: Vec<String>,
     user: User,
+    source: LoadSource,
+    loader_calls: u64,
+    diagnostics: DemoDiagnostics,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct LoadProductResponse {
+    cache_key: String,
+    tags: Vec<String>,
+    product: Product,
+    source: LoadSource,
+    loader_calls: u64,
+    diagnostics: DemoDiagnostics,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct LoadOrderSummaryResponse {
+    cache_key: String,
+    tags: Vec<String>,
+    summary: OrderSummary,
     source: LoadSource,
     loader_calls: u64,
     diagnostics: DemoDiagnostics,
@@ -2381,14 +2733,17 @@ async fn import_session(
     state
         .next_event_id
         .fetch_max(max_event_id.saturating_add(1), Ordering::SeqCst);
+    let events = event_log(&state, &EventQuery::default()).await;
+    let replayable_flows = replayable_flows_from_events(&events.events);
 
     Ok(Json(SessionImportResponse {
         imported_events: imported_event_count,
         replaced_events: request.replace_events,
         flow_ids,
+        replayable_flows,
         source: request.source,
         report: application_report(&state).await,
-        events: event_log(&state, &EventQuery::default()).await,
+        events,
     }))
 }
 
@@ -2910,6 +3265,65 @@ async fn run_scenario(
 }
 
 #[utoipa::path(
+    get,
+    path = "/demo/scenarios/files",
+    tag = "scenarios",
+    responses((status = 200, description = "Committed scenario recipe files available to the sandbox", body = ScenarioFilesResponse))
+)]
+async fn scenario_files() -> Json<ScenarioFilesResponse> {
+    Json(ScenarioFilesResponse {
+        files: scenario_file_infos(),
+    })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/scenarios/file/run",
+    tag = "scenarios",
+    request_body = ScenarioFileRunRequest,
+    responses((status = 200, description = "Run a committed JSON or YAML scenario file", body = ScenarioFileRunResponse))
+)]
+async fn run_scenario_file(
+    State(state): State<SandboxState>,
+    Json(request): Json<ScenarioFileRunRequest>,
+) -> Result<Json<ScenarioFileRunResponse>, SandboxHttpError> {
+    Ok(Json(run_scenario_file_with_request(&state, request).await?))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/scenarios/suite/run",
+    tag = "scenarios",
+    request_body = ScenarioSuite,
+    responses((status = 200, description = "Run a scenario suite mixing named scenarios, inline documents, and committed files", body = ScenarioSuiteRunResponse))
+)]
+async fn run_scenario_suite(
+    State(state): State<SandboxState>,
+    Json(suite): Json<ScenarioSuite>,
+) -> Result<Json<ScenarioSuiteRunResponse>, SandboxHttpError> {
+    Ok(Json(execute_scenario_suite(&state, suite).await?))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/scenarios/suite/file/run",
+    tag = "scenarios",
+    request_body = ScenarioSuiteFileRunRequest,
+    responses((status = 200, description = "Run a committed scenario suite file", body = ScenarioSuiteFileRunResponse))
+)]
+async fn run_scenario_suite_file(
+    State(state): State<SandboxState>,
+    Json(request): Json<ScenarioSuiteFileRunRequest>,
+) -> Result<Json<ScenarioSuiteFileRunResponse>, SandboxHttpError> {
+    let suite = read_scenario_suite_file(&request.path).await?;
+    let run = execute_scenario_suite(&state, suite).await?;
+    Ok(Json(ScenarioSuiteFileRunResponse {
+        path: request.path,
+        run,
+    }))
+}
+
+#[utoipa::path(
     post,
     path = "/demo/scenarios/document/parse",
     tag = "scenarios",
@@ -2941,6 +3355,187 @@ async fn run_scenario_document(
     Json(document): Json<ScenarioDocument>,
 ) -> Result<Json<ScenarioDocumentRunResponse>, SandboxHttpError> {
     Ok(Json(execute_scenario_document(&state, document).await?))
+}
+
+fn scenario_file_infos() -> Vec<ScenarioFileInfo> {
+    vec![
+        ScenarioFileInfo {
+            path: "golden-path.json".to_owned(),
+            format: ScenarioDocumentFormat::Json,
+            description: "Golden path scenario document in JSON.",
+        },
+        ScenarioFileInfo {
+            path: "golden-path.yaml".to_owned(),
+            format: ScenarioDocumentFormat::Yaml,
+            description: "Golden path scenario document in the supported YAML subset.",
+        },
+    ]
+}
+
+async fn read_scenario_suite_file(path: &str) -> Result<ScenarioSuite, SandboxHttpError> {
+    let full_path = resolve_suite_file_path(path)?;
+    let contents = tokio::fs::read_to_string(full_path)
+        .await
+        .map_err(|error| SandboxHttpError::bad_request(error.to_string()))?;
+    serde_json::from_str(&contents)
+        .map_err(|error| SandboxHttpError::bad_request(error.to_string()))
+}
+
+fn resolve_suite_file_path(path: &str) -> Result<PathBuf, SandboxHttpError> {
+    if path.contains("..") || path.contains('\\') || FsPath::new(path).is_absolute() {
+        return Err(SandboxHttpError::bad_request(
+            "suite file path must be a simple relative file name",
+        ));
+    }
+    if path != "regression-suite.json" {
+        return Err(SandboxHttpError::bad_request(format!(
+            "unknown suite file `{path}`"
+        )));
+    }
+    Ok(PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("scenarios")
+        .join(path))
+}
+
+async fn run_scenario_file_with_request(
+    state: &SandboxState,
+    request: ScenarioFileRunRequest,
+) -> Result<ScenarioFileRunResponse, SandboxHttpError> {
+    let format = request
+        .format
+        .unwrap_or_else(|| scenario_format_from_path(&request.path));
+    let document = read_scenario_file_document(&request.path, format).await?;
+    let run = execute_scenario_document(state, document).await?;
+    Ok(ScenarioFileRunResponse {
+        path: request.path,
+        format,
+        run,
+    })
+}
+
+async fn read_scenario_file_document(
+    path: &str,
+    format: ScenarioDocumentFormat,
+) -> Result<ScenarioDocument, SandboxHttpError> {
+    let full_path = resolve_scenario_file_path(path)?;
+    let contents = tokio::fs::read_to_string(full_path)
+        .await
+        .map_err(|error| SandboxHttpError::bad_request(error.to_string()))?;
+    parse_scenario_document_text(format, &contents)
+}
+
+fn scenario_format_from_path(path: &str) -> ScenarioDocumentFormat {
+    if path.ends_with(".yaml") || path.ends_with(".yml") {
+        ScenarioDocumentFormat::Yaml
+    } else {
+        ScenarioDocumentFormat::Json
+    }
+}
+
+fn resolve_scenario_file_path(path: &str) -> Result<PathBuf, SandboxHttpError> {
+    if path.contains("..") || path.contains('\\') || FsPath::new(path).is_absolute() {
+        return Err(SandboxHttpError::bad_request(
+            "scenario file path must be a simple relative file name",
+        ));
+    }
+    let known = scenario_file_infos()
+        .into_iter()
+        .any(|file| file.path == path);
+    if !known {
+        return Err(SandboxHttpError::bad_request(format!(
+            "unknown scenario file `{path}`"
+        )));
+    }
+    Ok(PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("scenarios")
+        .join(path))
+}
+
+async fn execute_scenario_suite(
+    state: &SandboxState,
+    suite: ScenarioSuite,
+) -> Result<ScenarioSuiteRunResponse, SandboxHttpError> {
+    if suite.name.trim().is_empty() {
+        return Err(SandboxHttpError::bad_request(
+            "scenario suite requires a non-empty name",
+        ));
+    }
+    if suite.entries.is_empty() {
+        return Err(SandboxHttpError::bad_request(
+            "scenario suite requires at least one entry",
+        ));
+    }
+
+    let mut entries = Vec::with_capacity(suite.entries.len());
+    for entry in suite.entries {
+        let source_count = usize::from(entry.scenario.is_some())
+            + usize::from(entry.document.is_some())
+            + usize::from(entry.file.is_some());
+        if source_count != 1 {
+            return Err(SandboxHttpError::bad_request(format!(
+                "scenario suite entry `{}` must define exactly one of scenario, document, or file",
+                entry.name
+            )));
+        }
+
+        if let Some(scenario) = entry.scenario {
+            let run = run_named_scenario(state, scenario, None, suite.reset_between).await?;
+            entries.push(ScenarioSuiteEntryResult {
+                name: entry.name,
+                kind: "named-scenario".to_owned(),
+                passed: run.passed,
+                flow_id: Some(run.flow_id),
+                summary: format!("{} step(s)", run.steps.len()),
+            });
+        } else if let Some(document) = entry.document {
+            let run = execute_scenario_document(
+                state,
+                ScenarioDocument {
+                    reset: if suite.reset_between {
+                        true
+                    } else {
+                        document.reset
+                    },
+                    ..document
+                },
+            )
+            .await?;
+            entries.push(ScenarioSuiteEntryResult {
+                name: entry.name,
+                kind: "document".to_owned(),
+                passed: run.passed,
+                flow_id: Some(run.flow_id),
+                summary: format!(
+                    "{} step(s), {} assertion(s)",
+                    run.steps.len(),
+                    run.assertions.len() + run.timeline_assertions.len()
+                ),
+            });
+        } else if let Some(file) = entry.file {
+            let run = run_scenario_file_with_request(
+                state,
+                ScenarioFileRunRequest {
+                    path: file,
+                    format: entry.format,
+                },
+            )
+            .await?;
+            entries.push(ScenarioSuiteEntryResult {
+                name: entry.name,
+                kind: "file".to_owned(),
+                passed: run.run.passed,
+                flow_id: Some(run.run.flow_id),
+                summary: format!("{} from {}", run.run.name, run.path),
+            });
+        }
+    }
+
+    Ok(ScenarioSuiteRunResponse {
+        name: suite.name,
+        description: suite.description,
+        passed: entries.iter().all(|entry| entry.passed),
+        entries,
+    })
 }
 
 fn parse_scenario_document_text(
@@ -3133,8 +3728,15 @@ async fn execute_scenario_document(
             evaluate_scenario_assertion(index + 1, assertion, &report, &events, &step_results)
         })
         .collect::<Vec<_>>();
+    let timeline_assertions = document
+        .timeline_assertions
+        .iter()
+        .enumerate()
+        .map(|(index, assertion)| evaluate_timeline_assertion(index + 1, assertion, &events.events))
+        .collect::<Vec<_>>();
     let passed = step_results.iter().all(|step| step.passed)
-        && assertions.iter().all(|assertion| assertion.passed);
+        && assertions.iter().all(|assertion| assertion.passed)
+        && timeline_assertions.iter().all(|assertion| assertion.passed);
     let latency = events.latency.clone();
 
     Ok(ScenarioDocumentRunResponse {
@@ -3144,6 +3746,7 @@ async fn execute_scenario_document(
         passed,
         steps: step_results,
         assertions,
+        timeline_assertions,
         report,
         events,
         latency,
@@ -3180,6 +3783,50 @@ async fn execute_scenario_document_step(
                 .is_none_or(|expected| expected == response.source);
             let message = format!(
                 "loaded user {id} from {:?}; expected {:?}",
+                response.source, step.expected_source
+            );
+            (passed, message, json!(response))
+        }
+        ScenarioStepAction::LoadProduct => {
+            let id = required_i64(step.id, &name, "id")?;
+            let response = load_product_with_options(
+                state,
+                id,
+                CacheLoadOptionsRequest {
+                    ttl_ms: step.ttl_ms,
+                    tags: step.tags.clone(),
+                    loader_delay_ms: step.loader_delay_ms,
+                    flow_id,
+                },
+            )
+            .await?;
+            let passed = step
+                .expected_source
+                .is_none_or(|expected| expected == response.source);
+            let message = format!(
+                "loaded product {id} from {:?}; expected {:?}",
+                response.source, step.expected_source
+            );
+            (passed, message, json!(response))
+        }
+        ScenarioStepAction::LoadOrderSummary => {
+            let id = required_i64(step.id, &name, "id")?;
+            let response = load_order_summary_with_options(
+                state,
+                id,
+                CacheLoadOptionsRequest {
+                    ttl_ms: step.ttl_ms,
+                    tags: step.tags.clone(),
+                    loader_delay_ms: step.loader_delay_ms,
+                    flow_id,
+                },
+            )
+            .await?;
+            let passed = step
+                .expected_source
+                .is_none_or(|expected| expected == response.source);
+            let message = format!(
+                "loaded order summary {id} from {:?}; expected {:?}",
                 response.source, step.expected_source
             );
             (passed, message, json!(response))
@@ -3453,6 +4100,86 @@ fn evaluate_scenario_assertion(
     }
 }
 
+fn evaluate_timeline_assertion(
+    sequence: usize,
+    assertion: &TimelineAssertion,
+    events: &[DemoEvent],
+) -> TimelineAssertionResult {
+    let name = assertion
+        .name
+        .clone()
+        .unwrap_or_else(|| format!("timeline assertion #{sequence}"));
+    let kinds = events.iter().map(|event| event.kind).collect::<Vec<_>>();
+    let (passed, message) = match assertion.assertion {
+        TimelineAssertionKind::Contains => {
+            let Some(kind) = assertion.kind else {
+                return missing_timeline_assertion_field(name, assertion.assertion, "kind");
+            };
+            (
+                kinds.contains(&kind),
+                format!("timeline contains {kind:?}: {}", kinds.contains(&kind)),
+            )
+        }
+        TimelineAssertionKind::First => {
+            let Some(kind) = assertion.kind else {
+                return missing_timeline_assertion_field(name, assertion.assertion, "kind");
+            };
+            let actual = kinds.first().copied();
+            (
+                actual == Some(kind),
+                format!("first kind was {actual:?}, expected {kind:?}"),
+            )
+        }
+        TimelineAssertionKind::Last => {
+            let Some(kind) = assertion.kind else {
+                return missing_timeline_assertion_field(name, assertion.assertion, "kind");
+            };
+            let actual = kinds.last().copied();
+            (
+                actual == Some(kind),
+                format!("last kind was {actual:?}, expected {kind:?}"),
+            )
+        }
+        TimelineAssertionKind::Before => {
+            let Some(before) = assertion.before else {
+                return missing_timeline_assertion_field(name, assertion.assertion, "before");
+            };
+            let Some(after) = assertion.after else {
+                return missing_timeline_assertion_field(name, assertion.assertion, "after");
+            };
+            let before_index = kinds.iter().position(|kind| *kind == before);
+            let after_index = kinds.iter().position(|kind| *kind == after);
+            let passed = before_index
+                .zip(after_index)
+                .is_some_and(|(before_index, after_index)| before_index < after_index);
+            (
+                passed,
+                format!("{before:?} index {before_index:?}, {after:?} index {after_index:?}"),
+            )
+        }
+    };
+
+    TimelineAssertionResult {
+        name,
+        assertion: assertion.assertion,
+        passed,
+        message,
+    }
+}
+
+fn missing_timeline_assertion_field(
+    name: String,
+    assertion: TimelineAssertionKind,
+    field: &'static str,
+) -> TimelineAssertionResult {
+    TimelineAssertionResult {
+        name,
+        assertion,
+        passed: false,
+        message: format!("timeline assertion requires `{field}`"),
+    }
+}
+
 fn scenario_assertion_actual(
     metric: ScenarioAssertionMetric,
     report: &ApplicationReport,
@@ -3519,6 +4246,87 @@ async fn flow_timeline(
         latency: events.latency,
         steps,
     })
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/flows",
+    tag = "reports",
+    responses((status = 200, description = "Available flow ids retained in the sandbox event log", body = FlowCatalogResponse))
+)]
+async fn flow_catalog(State(state): State<SandboxState>) -> Json<FlowCatalogResponse> {
+    let events = event_log(&state, &EventQuery::default()).await;
+    Json(FlowCatalogResponse {
+        flows: replayable_flows_from_events(&events.events),
+    })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/flows/{flow_id}/replay",
+    tag = "scenarios",
+    params(("flow_id" = String, Path, description = "Imported or retained source flow id")),
+    request_body = ReplayImportedFlowRequest,
+    responses(
+        (status = 200, description = "Replay a named scenario from an imported flow context", body = ReplayImportedFlowResponse),
+        (status = 404, description = "Source flow id is not retained", body = ErrorResponse)
+    )
+)]
+async fn replay_imported_flow(
+    State(state): State<SandboxState>,
+    Path(source_flow_id): Path<String>,
+    Json(request): Json<ReplayImportedFlowRequest>,
+) -> Result<Json<ReplayImportedFlowResponse>, SandboxHttpError> {
+    let events = event_log(&state, &EventQuery::default()).await;
+    let Some(source_flow) = replayable_flows_from_events(&events.events)
+        .into_iter()
+        .find(|flow| flow.flow_id == source_flow_id)
+    else {
+        return Err(SandboxHttpError {
+            status: StatusCode::NOT_FOUND,
+            message: format!("flow `{source_flow_id}` is not retained"),
+        });
+    };
+    let scenario = request.scenario.unwrap_or(source_flow.suggested_scenario);
+    let run = run_named_scenario(&state, scenario, request.flow_id, request.reset).await?;
+    Ok(Json(ReplayImportedFlowResponse {
+        source_flow: source_flow.clone(),
+        replay: ReplayResponse {
+            replayed_from_flow_id: Some(source_flow.flow_id),
+            run,
+        },
+    }))
+}
+
+fn replayable_flows_from_events(events: &[DemoEvent]) -> Vec<ReplayableFlow> {
+    let mut flows = BTreeMap::<String, usize>::new();
+    for event in events {
+        if let Some(flow_id) = &event.flow_id {
+            *flows.entry(flow_id.clone()).or_default() += 1;
+        }
+    }
+    flows
+        .into_iter()
+        .map(|(flow_id, event_count)| ReplayableFlow {
+            suggested_scenario: suggested_scenario_for_flow(&flow_id),
+            flow_id,
+            event_count,
+        })
+        .collect()
+}
+
+fn suggested_scenario_for_flow(flow_id: &str) -> ScenarioName {
+    if flow_id.contains("ttl") {
+        ScenarioName::Ttl
+    } else if flow_id.contains("single-flight") || flow_id.contains("sf") {
+        ScenarioName::SingleFlight
+    } else if flow_id.contains("race") || flow_id.contains("fault") {
+        ScenarioName::InvalidationRace
+    } else if flow_id.contains("negative") {
+        ScenarioName::NegativeSuite
+    } else {
+        ScenarioName::GoldenPath
+    }
 }
 
 #[utoipa::path(
@@ -3779,6 +4587,7 @@ async fn run_manual_benchmark(
     let started = Instant::now();
     let next_index = Arc::new(AtomicU64::new(0));
     let loader_invocations = Arc::new(AtomicU64::new(0));
+    let operation_durations = Arc::new(RwLock::new(Vec::with_capacity(requests.into())));
     let mut tasks = Vec::with_capacity(concurrency.into());
 
     for _ in 0..concurrency {
@@ -3786,12 +4595,14 @@ async fn run_manual_benchmark(
         let key_prefix = request.key_prefix.clone();
         let next_index = Arc::clone(&next_index);
         let loader_invocations = Arc::clone(&loader_invocations);
+        let operation_durations = Arc::clone(&operation_durations);
         tasks.push(tokio::spawn(async move {
             loop {
                 let index = next_index.fetch_add(1, Ordering::SeqCst);
                 if index >= u64::from(requests) {
                     break;
                 }
+                let operation_started = Instant::now();
                 let key = format!("{}:{}", key_prefix, index % u64::from(unique_keys));
                 let value = format!("value:{key}");
                 let task_loader_invocations = Arc::clone(&loader_invocations);
@@ -3806,6 +4617,10 @@ async fn run_manual_benchmark(
                         }
                     })
                     .await?;
+                operation_durations
+                    .write()
+                    .await
+                    .push(elapsed_ms(operation_started));
             }
             Ok::<_, CacheError>(())
         }));
@@ -3817,6 +4632,8 @@ async fn run_manual_benchmark(
     }
 
     let duration_ms = elapsed_ms(started).max(1);
+    let operation_latency = latency_for_durations(&operation_durations.read().await);
+    let loader_invocation_count = loader_invocations.load(Ordering::SeqCst);
     record_event_with_flow_and_duration(
         state,
         DemoEventKind::ScenarioRun,
@@ -3844,9 +4661,11 @@ async fn run_manual_benchmark(
         requests,
         concurrency,
         unique_keys,
-        loader_invocations: loader_invocations.load(Ordering::SeqCst),
+        loader_invocations: loader_invocation_count,
+        loader_call_ratio: loader_invocation_count as f64 / f64::from(requests),
         duration_ms,
         requests_per_second: (u64::from(requests) * 1_000) / duration_ms,
+        operation_latency,
         diagnostics: diagnostics(state).await,
         latency: events.latency,
     })
@@ -3871,6 +4690,14 @@ async fn compare_benchmarks(
             - baseline.requests_per_second as i64,
         loader_invocations_delta: candidate.loader_invocations as i64
             - baseline.loader_invocations as i64,
+        loader_call_ratio_delta: candidate.loader_call_ratio - baseline.loader_call_ratio,
+        p95_duration_ms_delta: match (
+            baseline.operation_latency.p95_duration_ms,
+            candidate.operation_latency.p95_duration_ms,
+        ) {
+            (Some(baseline), Some(candidate)) => Some(candidate as i64 - baseline as i64),
+            _ => None,
+        },
         hit_ratio_delta: match (
             baseline.diagnostics.hit_ratio,
             candidate.diagnostics.hit_ratio,
@@ -3878,6 +4705,7 @@ async fn compare_benchmarks(
             (Some(baseline), Some(candidate)) => Some(candidate - baseline),
             _ => None,
         },
+        verdict: benchmark_verdict(&baseline, &candidate),
     };
 
     Ok(Json(BenchmarkCompareResponse {
@@ -3885,6 +4713,24 @@ async fn compare_benchmarks(
         candidate,
         diff,
     }))
+}
+
+fn benchmark_verdict(baseline: &BenchmarkResponse, candidate: &BenchmarkResponse) -> String {
+    let throughput_better = candidate.requests_per_second > baseline.requests_per_second;
+    let latency_better = match (
+        baseline.operation_latency.p95_duration_ms,
+        candidate.operation_latency.p95_duration_ms,
+    ) {
+        (Some(baseline), Some(candidate)) => candidate <= baseline,
+        _ => candidate.duration_ms <= baseline.duration_ms,
+    };
+    let loaders_better = candidate.loader_call_ratio <= baseline.loader_call_ratio;
+
+    match (throughput_better, latency_better, loaders_better) {
+        (true, true, true) => "candidate-better".to_owned(),
+        (false, false, false) => "candidate-worse".to_owned(),
+        _ => "candidate-mixed".to_owned(),
+    }
 }
 
 #[utoipa::path(
@@ -3965,6 +4811,16 @@ async fn openapi_client_check() -> Json<OpenApiClientCheckResponse> {
     Json(openapi_client_check_response())
 }
 
+#[utoipa::path(
+    get,
+    path = "/demo/openapi/client-smoke",
+    tag = "sandbox",
+    responses((status = 200, description = "Smoke check for the committed minimal generated-client fixture", body = OpenApiClientSmokeResponse))
+)]
+async fn openapi_client_smoke() -> Json<OpenApiClientSmokeResponse> {
+    Json(openapi_client_smoke_response())
+}
+
 fn prometheus_metrics_text(report: &ApplicationReport) -> String {
     let hit_ratio = report.diagnostics.hit_ratio.unwrap_or_default();
     format!(
@@ -4043,11 +4899,18 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         .unwrap_or_default();
     let checked_paths = vec![
         "/ready".to_owned(),
+        "/demo/scenarios/file/run".to_owned(),
+        "/demo/scenarios/suite/file/run".to_owned(),
         "/demo/scenarios/document/run".to_owned(),
+        "/demo/flows".to_owned(),
+        "/demo/flows/{flow_id}/replay".to_owned(),
         "/demo/benchmarks/compare".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/import".to_owned(),
+        "/demo/query/products/{id}/load".to_owned(),
+        "/demo/query/orders/{id}/summary/load".to_owned(),
         "/demo/db/seed-report".to_owned(),
+        "/demo/openapi/client-smoke".to_owned(),
     ];
     let missing_paths = checked_paths
         .iter()
@@ -4061,6 +4924,44 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         checked_paths,
         missing_paths,
         sample_client: "crates/hydracache-sandbox/openapi/generated-client.js",
+    }
+}
+
+fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
+    let client = include_str!("../openapi/generated-client.js");
+    let checked_fragments = vec![
+        "class HydraCacheSandboxClient",
+        "ready()",
+        "runScenarioDocument(document)",
+        "runScenarioFile(path",
+        "runScenarioSuiteFile(path",
+        "compareBenchmarks(baseline, candidate)",
+        "flows()",
+        "replayFlow(flowId",
+        "loadProduct(id",
+        "loadOrderSummary(id",
+        "exportSession()",
+        "importSession(bundle",
+        "/demo/scenarios/document/run",
+        "/demo/scenarios/file/run",
+        "/demo/scenarios/suite/file/run",
+        "/demo/benchmarks/compare",
+        "/demo/flows",
+        "/demo/query/products/",
+        "/demo/query/orders/",
+        "/demo/import",
+    ];
+    let missing_fragments = checked_fragments
+        .iter()
+        .copied()
+        .filter(|fragment| !client.contains(fragment))
+        .collect::<Vec<_>>();
+
+    OpenApiClientSmokeResponse {
+        passed: missing_fragments.is_empty(),
+        checked_fragments,
+        missing_fragments,
+        client_path: "crates/hydracache-sandbox/openapi/generated-client.js",
     }
 }
 
@@ -4541,6 +5442,179 @@ async fn load_user_with_options(
         cache_key: key,
         tags,
         user,
+        source,
+        loader_calls: state.loader_calls.load(Ordering::SeqCst),
+        diagnostics: diagnostics(state).await,
+    })
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/products/{id}",
+    tag = "demo",
+    params(("id" = i64, Path, description = "Demo product id")),
+    responses(
+        (status = 200, description = "Product read directly from the backing store", body = Product),
+        (status = 404, description = "Product not found", body = ErrorResponse)
+    )
+)]
+async fn get_product(
+    State(state): State<SandboxState>,
+    Path(id): Path<i64>,
+) -> Result<Json<Product>, SandboxHttpError> {
+    let product = state.storage.load_product(id).await?;
+    record_event(
+        &state,
+        DemoEventKind::BackingStoreRead,
+        format!("read demo product {id} directly from backing store"),
+        Some(format!("product:{id}")),
+        None,
+        Some(LoadSource::Loader),
+    )
+    .await;
+    Ok(Json(product))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/query/products/{id}/load",
+    tag = "query-cache",
+    params(("id" = i64, Path, description = "Demo product id")),
+    request_body = CacheLoadOptionsRequest,
+    responses(
+        (status = 200, description = "Product query-cache result with custom options", body = LoadProductResponse),
+        (status = 404, description = "Product not found", body = ErrorResponse)
+    )
+)]
+async fn query_load_product(
+    State(state): State<SandboxState>,
+    Path(id): Path<i64>,
+    Json(request): Json<CacheLoadOptionsRequest>,
+) -> Result<Json<LoadProductResponse>, SandboxHttpError> {
+    Ok(Json(load_product_with_options(&state, id, request).await?))
+}
+
+async fn load_product_with_options(
+    state: &SandboxState,
+    id: i64,
+    request: CacheLoadOptionsRequest,
+) -> Result<LoadProductResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let key = format!("product:{id}");
+    let mut tags = vec![format!("product:{id}"), "products".to_owned()];
+    tags.extend(request.tags.clone());
+    let flow_id = request.flow_id.clone();
+    let before_loads = state.cache.stats().loads;
+    let storage = state.storage.clone();
+    let loader_calls = Arc::clone(&state.loader_calls);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(0);
+    let product = state
+        .cache
+        .get_or_load(
+            &key,
+            cache_options(request.ttl_ms, &tags),
+            move || async move {
+                sleep(Duration::from_millis(loader_delay_ms)).await;
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                storage.load_product(id).await
+            },
+        )
+        .await?;
+    let after_loads = state.cache.stats().loads;
+    let source = source_from_load_delta(before_loads, after_loads);
+    record_event_with_flow_and_duration(
+        state,
+        match source {
+            LoadSource::Cache => DemoEventKind::CacheHit,
+            LoadSource::Loader => DemoEventKind::CacheLoad,
+        },
+        format!("query-cache load completed for product {id}"),
+        Some(key.clone()),
+        Some(format!("product:{id}")),
+        Some(source),
+        flow_id,
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    Ok(LoadProductResponse {
+        cache_key: key,
+        tags,
+        product,
+        source,
+        loader_calls: state.loader_calls.load(Ordering::SeqCst),
+        diagnostics: diagnostics(state).await,
+    })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/query/orders/{id}/summary/load",
+    tag = "query-cache",
+    params(("id" = i64, Path, description = "Demo order id")),
+    request_body = CacheLoadOptionsRequest,
+    responses(
+        (status = 200, description = "Join-like order summary query-cache result", body = LoadOrderSummaryResponse),
+        (status = 404, description = "Order not found", body = ErrorResponse)
+    )
+)]
+async fn query_load_order_summary(
+    State(state): State<SandboxState>,
+    Path(id): Path<i64>,
+    Json(request): Json<CacheLoadOptionsRequest>,
+) -> Result<Json<LoadOrderSummaryResponse>, SandboxHttpError> {
+    Ok(Json(
+        load_order_summary_with_options(&state, id, request).await?,
+    ))
+}
+
+async fn load_order_summary_with_options(
+    state: &SandboxState,
+    id: i64,
+    request: CacheLoadOptionsRequest,
+) -> Result<LoadOrderSummaryResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let key = format!("order-summary:{id}");
+    let mut tags = vec![format!("order:{id}"), "orders".to_owned()];
+    tags.extend(request.tags.clone());
+    let flow_id = request.flow_id.clone();
+    let before_loads = state.cache.stats().loads;
+    let storage = state.storage.clone();
+    let loader_calls = Arc::clone(&state.loader_calls);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(0);
+    let summary = state
+        .cache
+        .get_or_load(
+            &key,
+            cache_options(request.ttl_ms, &tags),
+            move || async move {
+                sleep(Duration::from_millis(loader_delay_ms)).await;
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                storage.load_order_summary(id).await
+            },
+        )
+        .await?;
+    let after_loads = state.cache.stats().loads;
+    let source = source_from_load_delta(before_loads, after_loads);
+    record_event_with_flow_and_duration(
+        state,
+        match source {
+            LoadSource::Cache => DemoEventKind::CacheHit,
+            LoadSource::Loader => DemoEventKind::CacheLoad,
+        },
+        format!("query-cache load completed for order summary {id}"),
+        Some(key.clone()),
+        Some(format!("order:{id}")),
+        Some(source),
+        flow_id,
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    Ok(LoadOrderSummaryResponse {
+        cache_key: key,
+        tags,
+        summary,
         source,
         loader_calls: state.loader_calls.load(Ordering::SeqCst),
         diagnostics: diagnostics(state).await,
@@ -5293,6 +6367,8 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     button, a.button { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; margin: .25rem .25rem .25rem 0; padding: .65rem .85rem; border: 1px solid var(--leaf); border-radius: 999px; background: var(--leaf); color: white; text-decoration: none; cursor: pointer; font: inherit; }
     button.secondary, a.secondary { background: transparent; color: var(--leaf); }
     button.warn { border-color: var(--rust); background: var(--rust); }
+    select, textarea { width: 100%; margin: .25rem 0 .5rem; padding: .65rem; border: 1px solid var(--line); border-radius: .8rem; background: #fffdf6; color: var(--ink); font: .85rem/1.35 Consolas, monospace; }
+    textarea { min-height: 13rem; resize: vertical; }
     pre { min-height: 12rem; max-height: 28rem; overflow: auto; padding: 1rem; border-radius: 1rem; background: #142016; color: #d8f5c7; font: .85rem/1.45 Consolas, monospace; }
     .wide { grid-column: 1 / -1; }
     .pill { display: inline-block; padding: .2rem .55rem; border-radius: 999px; background: var(--mint); color: var(--leaf); font-size: .85rem; }
@@ -5347,6 +6423,12 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     <section>
       <h2>Scenario Lab</h2>
       <button onclick="runDocumentScenario()">Run DSL document</button>
+      <button onclick="show('/demo/scenarios/files')">Scenario files</button>
+      <button onclick="post('/demo/scenarios/file/run', {path:'golden-path.yaml', format:'yaml'})">Run YAML file</button>
+      <button onclick="post('/demo/scenarios/suite/file/run', {path:'regression-suite.json'})">Run suite file</button>
+      <button onclick="show('/demo/flows')">Flow catalog</button>
+      <button onclick="post('/demo/query/products/100/load', {ttl_ms:60000, tags:['ui-product'], flow_id:'ui-product'})">Product query cache</button>
+      <button onclick="post('/demo/query/orders/5000/summary/load', {ttl_ms:60000, tags:['ui-order'], flow_id:'ui-order'})">Order summary cache</button>
       <button onclick="runScenario('negative-suite')">Negative suite</button>
       <button onclick="timeline('manual-golden')">Timeline: manual-golden</button>
       <button onclick="post('/demo/profiles/compare', {scenario:'golden-path', profiles:['memory','sqlite-memory','sqlite-file']})">Compare profiles</button>
@@ -5354,7 +6436,33 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/faults/run', {scenario:'invalidation-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:`fault-${Date.now()}`})">Fault injection</button>
       <button onclick="post('/demo/benchmarks/manual', {key_prefix:'ui-bench', requests:64, concurrency:8, unique_keys:4, loader_delay_ms:5, flow_id:`bench-${Date.now()}`})">Manual benchmark</button>
       <button onclick="post('/demo/benchmarks/compare', {baseline:{key_prefix:'ui-bench-a', requests:64, concurrency:8, unique_keys:4, loader_delay_ms:5, flow_id:`bench-a-${Date.now()}`}, candidate:{key_prefix:'ui-bench-b', requests:64, concurrency:8, unique_keys:16, loader_delay_ms:5, flow_id:`bench-b-${Date.now()}`}})">Benchmark diff</button>
+      <button onclick="show('/demo/openapi/client-smoke')">Client smoke</button>
       <button onclick="show('/demo/security')">Security</button>
+    </section>
+    <section class="wide">
+      <h2>Scenario Document Editor</h2>
+      <p>Paste JSON or the supported YAML subset, then parse or run it without leaving the dashboard.</p>
+      <select id="scenario-format">
+        <option value="json">JSON</option>
+        <option value="yaml">YAML</option>
+      </select>
+      <textarea id="scenario-editor">{
+  "name": "editor-golden",
+  "flow_id": "editor-flow",
+  "reset": true,
+  "steps": [
+    {"name": "first load", "action": "load-user", "id": 42, "ttl_ms": 5000, "tags": ["editor"], "expected_source": "loader"},
+    {"name": "second load", "action": "load-user", "id": 42, "ttl_ms": 5000, "tags": ["editor"], "expected_source": "cache"}
+  ],
+  "assertions": [
+    {"name": "has cache hit", "metric": "cache-hits", "op": "gte", "value": 1}
+  ],
+  "timeline_assertions": [
+    {"name": "load before hit", "assertion": "kind-before-kind", "before": "cache-load", "after": "cache-hit"}
+  ]
+}</textarea>
+      <button onclick="parseEditorScenario()">Parse editor document</button>
+      <button onclick="runEditorScenario()">Run editor document</button>
     </section>
     <section>
       <h2>Negative Scenarios</h2>
@@ -5386,6 +6494,8 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     const out = document.querySelector('#out');
     const metrics = document.querySelector('#metrics');
     const timelineBox = document.querySelector('#timeline');
+    const scenarioEditor = document.querySelector('#scenario-editor');
+    const scenarioFormat = document.querySelector('#scenario-format');
     async function show(path) {
       const res = await fetch(path);
       write(await res.json());
@@ -5471,6 +6581,23 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       const timeline = await step('GET', `/demo/flows/${flowId}/timeline`);
       write([run, timeline]);
     }
+    async function parseEditorScenario() {
+      await post('/demo/scenarios/document/parse', { format: scenarioFormat.value, document: scenarioEditor.value });
+    }
+    async function runEditorScenario() {
+      if (scenarioFormat.value === 'json') {
+        const document = JSON.parse(scenarioEditor.value);
+        const run = await step('POST', '/demo/scenarios/document/run', document);
+        const flowId = run.body.flow_id;
+        const timeline = flowId ? await step('GET', `/demo/flows/${flowId}/timeline`) : null;
+        write(timeline ? [run, timeline] : run);
+      } else {
+        const parsed = await step('POST', '/demo/scenarios/document/parse', { format: 'yaml', document: scenarioEditor.value });
+        const run = await step('POST', '/demo/scenarios/document/run', parsed.body.document);
+        const timeline = await step('GET', `/demo/flows/${run.body.flow_id}/timeline`);
+        write([parsed, run, timeline]);
+      }
+    }
     async function timeline(flowId) {
       await show(`/demo/flows/${flowId}/timeline`);
     }
@@ -5508,10 +6635,15 @@ fn elapsed_ms(started: Instant) -> u64 {
 }
 
 fn latency_for_events(events: &[DemoEvent]) -> LatencySummary {
-    let mut durations = events
+    let durations = events
         .iter()
         .filter_map(|event| event.duration_ms)
         .collect::<Vec<_>>();
+    latency_for_durations(&durations)
+}
+
+fn latency_for_durations(durations: &[u64]) -> LatencySummary {
+    let mut durations = durations.to_vec();
     durations.sort_unstable();
 
     let measured_events = durations.len();
@@ -5521,12 +6653,17 @@ fn latency_for_events(events: &[DemoEvent]) -> LatencySummary {
     } else {
         Some(total_duration_ms / measured_events as u64)
     };
-    let p95_duration_ms = if measured_events == 0 {
-        None
-    } else {
-        let index = ((measured_events * 95).saturating_sub(1)) / 100;
-        durations.get(index).copied()
+    let percentile = |percent: usize| {
+        if measured_events == 0 {
+            None
+        } else {
+            let index = ((measured_events * percent).saturating_sub(1)) / 100;
+            durations.get(index).copied()
+        }
     };
+    let p50_duration_ms = percentile(50);
+    let p95_duration_ms = percentile(95);
+    let p99_duration_ms = percentile(99);
 
     LatencySummary {
         measured_events,
@@ -5534,7 +6671,9 @@ fn latency_for_events(events: &[DemoEvent]) -> LatencySummary {
         min_duration_ms: durations.first().copied(),
         max_duration_ms: durations.last().copied(),
         avg_duration_ms,
+        p50_duration_ms,
         p95_duration_ms,
+        p99_duration_ms,
     }
 }
 
@@ -5564,8 +6703,8 @@ fn capabilities() -> Vec<CapabilityReport> {
         },
         CapabilityReport {
             name: "database-backed query cache",
-            endpoint: "/demo/query/users/{id}/load",
-            description: "Load demo users from the selected backing store and cache query results by key and tags.",
+            endpoint: "/demo/query/users/{id}/load, /demo/query/products/{id}/load, and /demo/query/orders/{id}/summary/load",
+            description: "Load demo users, products, and join-like order summaries from the selected backing store and cache query results by key and tags.",
         },
         CapabilityReport {
             name: "typed cache view",
@@ -5593,9 +6732,14 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Run JSON or small YAML scenario documents with step-level assertions for regression-style demo recipes.",
         },
         CapabilityReport {
+            name: "scenario files and suites",
+            endpoint: "/demo/scenarios/file/run and /demo/scenarios/suite/file/run",
+            description: "Run committed scenario recipe files and scenario-suite files as repeatable sandbox regression packs.",
+        },
+        CapabilityReport {
             name: "flow timeline",
-            endpoint: "/demo/flows/{flow_id}/timeline",
-            description: "Render a flow-id event stream as an ordered timeline with latency details.",
+            endpoint: "/demo/flows and /demo/flows/{flow_id}/timeline",
+            description: "List retained flow ids and render a flow-id event stream as an ordered timeline with latency details.",
         },
         CapabilityReport {
             name: "profile comparison",
@@ -5629,8 +6773,13 @@ fn capabilities() -> Vec<CapabilityReport> {
         },
         CapabilityReport {
             name: "session import",
-            endpoint: "/demo/import",
-            description: "Import an exported event stream to preserve bug-report context and replay related scenarios.",
+            endpoint: "/demo/import and /demo/flows/{flow_id}/replay",
+            description: "Import an exported event stream, list replayable flow ids, and replay a related named scenario from imported context.",
+        },
+        CapabilityReport {
+            name: "OpenAPI client smoke",
+            endpoint: "/demo/openapi/client-check and /demo/openapi/client-smoke",
+            description: "Check that generated-client contract paths and the committed minimal fetch client stay aligned with OpenAPI.",
         },
         CapabilityReport {
             name: "seed scripts",
@@ -5710,9 +6859,15 @@ fn actuator_stats_doc() {}
         import_session,
         self_test,
         run_scenario,
+        scenario_files,
+        run_scenario_file,
+        run_scenario_suite,
+        run_scenario_suite_file,
         parse_scenario_document,
         run_scenario_document,
+        flow_catalog,
         flow_timeline,
+        replay_imported_flow,
         compare_profiles,
         replay_scenario,
         run_fault_injection,
@@ -5722,6 +6877,7 @@ fn actuator_stats_doc() {}
         latest_trace_demo,
         seed_report,
         openapi_client_check,
+        openapi_client_smoke,
         security_info,
         report,
         events,
@@ -5737,6 +6893,9 @@ fn actuator_stats_doc() {}
         upsert_user,
         load_user,
         query_load_user,
+        get_product,
+        query_load_product,
+        query_load_order_summary,
         typed_load_user,
         double_function,
         ttl_scenario,
@@ -5778,6 +6937,10 @@ fn actuator_stats_doc() {}
             ScenarioRunResponse,
             TimelineStep,
             TimelineResponse,
+            ReplayableFlow,
+            FlowCatalogResponse,
+            ReplayImportedFlowRequest,
+            ReplayImportedFlowResponse,
             CompareProfilesRequest,
             CompareProfileResult,
             CompareProfilesResponse,
@@ -5798,9 +6961,22 @@ fn actuator_stats_doc() {}
             ScenarioAssertionMetric,
             ScenarioAssertionOperator,
             ScenarioAssertion,
+            TimelineAssertionKind,
+            TimelineAssertion,
+            TimelineAssertionResult,
             ScenarioDocumentStepResult,
             ScenarioAssertionResult,
             ScenarioDocumentRunResponse,
+            ScenarioFileInfo,
+            ScenarioFilesResponse,
+            ScenarioFileRunRequest,
+            ScenarioFileRunResponse,
+            ScenarioSuite,
+            ScenarioSuiteEntry,
+            ScenarioSuiteEntryResult,
+            ScenarioSuiteRunResponse,
+            ScenarioSuiteFileRunRequest,
+            ScenarioSuiteFileRunResponse,
             ScenarioDocumentParseRequest,
             ScenarioDocumentParseResponse,
             TraceSpanReport,
@@ -5810,8 +6986,11 @@ fn actuator_stats_doc() {}
             SessionImportRequest,
             SessionImportResponse,
             OpenApiClientCheckResponse,
+            OpenApiClientSmokeResponse,
             LatencySummary,
             User,
+            Product,
+            OrderSummary,
             UpsertUserRequest,
             CacheKeyRequest,
             CacheTagRequest,
@@ -5833,6 +7012,8 @@ fn actuator_stats_doc() {}
             CacheRemoveResponse,
             CacheInvalidateTagResponse,
             LoadUserResponse,
+            LoadProductResponse,
+            LoadOrderSummaryResponse,
             TypedUserLoadResponse,
             FunctionResultResponse,
             TtlScenarioReport,
@@ -6247,9 +7428,15 @@ mod tests {
         assert!(paths.contains_key("/demo/import"));
         assert!(paths.contains_key("/demo/self-test"));
         assert!(paths.contains_key("/demo/scenarios/run"));
+        assert!(paths.contains_key("/demo/scenarios/files"));
+        assert!(paths.contains_key("/demo/scenarios/file/run"));
+        assert!(paths.contains_key("/demo/scenarios/suite/run"));
+        assert!(paths.contains_key("/demo/scenarios/suite/file/run"));
         assert!(paths.contains_key("/demo/scenarios/document/parse"));
         assert!(paths.contains_key("/demo/scenarios/document/run"));
+        assert!(paths.contains_key("/demo/flows"));
         assert!(paths.contains_key("/demo/flows/{flow_id}/timeline"));
+        assert!(paths.contains_key("/demo/flows/{flow_id}/replay"));
         assert!(paths.contains_key("/demo/profiles/compare"));
         assert!(paths.contains_key("/demo/replay"));
         assert!(paths.contains_key("/demo/faults/run"));
@@ -6259,6 +7446,7 @@ mod tests {
         assert!(paths.contains_key("/demo/observability/traces/latest"));
         assert!(paths.contains_key("/demo/db/seed-report"));
         assert!(paths.contains_key("/demo/openapi/client-check"));
+        assert!(paths.contains_key("/demo/openapi/client-smoke"));
         assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
         assert!(paths.contains_key("/demo/reset"));
@@ -6266,6 +7454,8 @@ mod tests {
         assert!(paths.contains_key("/demo/cache/put"));
         assert!(paths.contains_key("/demo/cache/get-or-load"));
         assert!(paths.contains_key("/demo/query/users/{id}/load"));
+        assert!(paths.contains_key("/demo/query/products/{id}/load"));
+        assert!(paths.contains_key("/demo/query/orders/{id}/summary/load"));
         assert!(paths.contains_key("/demo/typed/users/{id}/load"));
         assert!(paths.contains_key("/demo/functions/double/{input}"));
         assert!(paths.contains_key("/demo/scenarios/single-flight"));
@@ -6290,6 +7480,8 @@ mod tests {
         assert!(schemas.contains_key("ScenarioRunRequest"));
         assert!(schemas.contains_key("ScenarioRunResponse"));
         assert!(schemas.contains_key("TimelineResponse"));
+        assert!(schemas.contains_key("FlowCatalogResponse"));
+        assert!(schemas.contains_key("ReplayImportedFlowResponse"));
         assert!(schemas.contains_key("CompareProfilesResponse"));
         assert!(schemas.contains_key("ReplayResponse"));
         assert!(schemas.contains_key("FaultInjectionResponse"));
@@ -6298,12 +7490,19 @@ mod tests {
         assert!(schemas.contains_key("SecurityInfoResponse"));
         assert!(schemas.contains_key("ScenarioDocument"));
         assert!(schemas.contains_key("ScenarioDocumentRunResponse"));
+        assert!(schemas.contains_key("TimelineAssertionResult"));
+        assert!(schemas.contains_key("ScenarioFileRunResponse"));
+        assert!(schemas.contains_key("ScenarioSuiteRunResponse"));
+        assert!(schemas.contains_key("ScenarioSuiteFileRunResponse"));
         assert!(schemas.contains_key("ScenarioDocumentParseResponse"));
         assert!(schemas.contains_key("TraceDemoResponse"));
         assert!(schemas.contains_key("SeedReport"));
         assert!(schemas.contains_key("SessionImportResponse"));
         assert!(schemas.contains_key("OpenApiClientCheckResponse"));
+        assert!(schemas.contains_key("OpenApiClientSmokeResponse"));
         assert!(schemas.contains_key("LatencySummary"));
+        assert!(schemas.contains_key("Product"));
+        assert!(schemas.contains_key("OrderSummary"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
@@ -6667,10 +7866,17 @@ mod tests {
         assert!(body.contains("/demo/self-test"));
         assert!(body.contains("/demo/scenarios/run"));
         assert!(body.contains("/demo/scenarios/document/run"));
+        assert!(body.contains("/demo/scenarios/file/run"));
+        assert!(body.contains("/demo/scenarios/suite/file/run"));
+        assert!(body.contains("/demo/flows"));
+        assert!(body.contains("/demo/query/products/100/load"));
+        assert!(body.contains("/demo/query/orders/5000/summary/load"));
         assert!(body.contains("/demo/benchmarks/compare"));
         assert!(body.contains("/demo/observability/prometheus"));
         assert!(body.contains("Visual Timeline"));
         assert!(body.contains("Scenario Lab"));
+        assert!(body.contains("Scenario Document Editor"));
+        assert!(body.contains("scenario-editor"));
         assert!(body.contains("Mini Metrics"));
         assert!(!body.contains("cdn."));
         assert!(!body.contains("unpkg.com"));
@@ -6917,6 +8123,166 @@ mod tests {
             .iter()
             .any(|step| step["kind"] == "cache-load"));
 
+        let scenario_files = app
+            .clone()
+            .oneshot(get("/demo/scenarios/files"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(scenario_files["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|file| file["path"] == "golden-path.yaml"));
+
+        let file_run = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/file/run",
+                Body::from(r#"{"path":"golden-path.yaml","format":"yaml"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(file_run["format"], "yaml");
+        assert_eq!(file_run["run"]["passed"], true);
+        assert_eq!(file_run["run"]["flow_id"], "file-yaml-golden");
+        assert_eq!(
+            file_run["run"]["timeline_assertions"]
+                .as_array()
+                .unwrap()
+                .len(),
+            2
+        );
+        assert!(file_run["run"]["timeline_assertions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|assertion| assertion["passed"] == true));
+
+        let suite_file = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/suite/file/run",
+                Body::from(r#"{"path":"regression-suite.json"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(suite_file["path"], "regression-suite.json");
+        assert_eq!(suite_file["run"]["passed"], true);
+        assert_eq!(suite_file["run"]["entries"].as_array().unwrap().len(), 3);
+
+        let inline_suite = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/suite/run",
+                Body::from(
+                    r#"{
+                        "name":"inline-regression",
+                        "reset_between":true,
+                        "entries":[
+                            {"name":"named ttl","scenario":"ttl"},
+                            {"name":"committed json","file":"golden-path.json","format":"json"}
+                        ]
+                    }"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(inline_suite["name"], "inline-regression");
+        assert_eq!(inline_suite["passed"], true);
+        assert_eq!(inline_suite["entries"].as_array().unwrap().len(), 2);
+
+        let product_first = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/products/200/load",
+                Body::from(r#"{"ttl_ms":5000,"tags":["product-test"],"flow_id":"product-flow"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(product_first["cache_key"], "product:200");
+        assert_eq!(product_first["source"], "loader");
+        assert_eq!(product_first["product"]["name"], "Observability Notebook");
+
+        let product_second = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/products/200/load",
+                Body::from(r#"{"ttl_ms":5000,"tags":["product-test"],"flow_id":"product-flow"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(product_second["source"], "cache");
+
+        let order_first = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/orders/5001/summary/load",
+                Body::from(r#"{"ttl_ms":5000,"tags":["order-test"],"flow_id":"order-flow"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(order_first["cache_key"], "order-summary:5001");
+        assert_eq!(order_first["source"], "loader");
+        assert_eq!(order_first["summary"]["total_cents"], 3800);
+
+        let order_second = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/orders/5001/summary/load",
+                Body::from(r#"{"ttl_ms":5000,"tags":["order-test"],"flow_id":"order-flow"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(order_second["source"], "cache");
+
+        let flows = app
+            .clone()
+            .oneshot(get("/demo/flows"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(flows["flows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|flow| flow["flow_id"] == "product-flow"));
+
+        let replay_imported = app
+            .clone()
+            .oneshot(post(
+                "/demo/flows/product-flow/replay",
+                Body::from(
+                    r#"{"scenario":"golden-path","flow_id":"product-flow-replay","reset":true}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(replay_imported["source_flow"]["flow_id"], "product-flow");
+        assert_eq!(
+            replay_imported["replay"]["replayed_from_flow_id"],
+            "product-flow"
+        );
+        assert_eq!(replay_imported["replay"]["run"]["passed"], true);
+
         let compare = app
             .clone()
             .oneshot(post(
@@ -6988,6 +8354,8 @@ mod tests {
         assert_eq!(benchmark["concurrency"], 4);
         assert!(benchmark["loader_invocations"].as_u64().unwrap() <= 2);
         assert!(benchmark["requests_per_second"].as_u64().unwrap() > 0);
+        assert!(benchmark["loader_call_ratio"].as_f64().unwrap() <= 0.125);
+        assert!(benchmark["operation_latency"]["p95_duration_ms"].is_number());
 
         let parsed = app
             .clone()
@@ -7057,6 +8425,11 @@ mod tests {
             .as_object()
             .unwrap()
             .contains_key("duration_ms_delta"));
+        assert!(compare_benchmarks["diff"]
+            .as_object()
+            .unwrap()
+            .contains_key("p95_duration_ms_delta"));
+        assert!(compare_benchmarks["diff"]["verdict"].is_string());
 
         let prometheus = app
             .clone()
@@ -7099,6 +8472,20 @@ mod tests {
             .await;
         assert_eq!(client_check["passed"], true);
 
+        let client_smoke = app
+            .clone()
+            .oneshot(get("/demo/openapi/client-smoke"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(client_smoke["passed"], true);
+        assert!(client_smoke["checked_fragments"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|fragment| fragment == "runScenarioSuiteFile(path"));
+
         let export = app
             .clone()
             .oneshot(get("/demo/export"))
@@ -7119,6 +8506,7 @@ mod tests {
             .await;
         assert_eq!(imported["source"], "test-import");
         assert!(imported["imported_events"].as_u64().unwrap() > 0);
+        assert!(!imported["replayable_flows"].as_array().unwrap().is_empty());
     }
 
     #[tokio::test]
@@ -7383,8 +8771,14 @@ mod tests {
     }
 
     async fn json_body(response: axum::response::Response) -> Value {
-        assert_eq!(response.status(), StatusCode::OK);
+        let status = response.status();
         let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "response body: {}",
+            String::from_utf8_lossy(&bytes)
+        );
         serde_json::from_slice(&bytes).unwrap()
     }
 }

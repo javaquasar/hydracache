@@ -32,20 +32,26 @@ http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
 http://127.0.0.1:3000/demo/export
+http://127.0.0.1:3000/demo/scenarios/files
+http://127.0.0.1:3000/demo/scenarios/file/run
+http://127.0.0.1:3000/demo/scenarios/suite/file/run
 http://127.0.0.1:3000/demo/scenarios/document/run
+http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/db/seed-report
+http://127.0.0.1:3000/demo/openapi/client-smoke
 http://127.0.0.1:3000/demo/security
 ```
 
 The full-stack sandbox service has a Docker healthcheck against `/ready`.
 Inside the UI or Swagger, `POST /demo/self-test` runs a quick end-to-end
 scenario and returns step-level results plus correlated events. The same
-sandbox API also exposes scenario runner, timeline, profile comparison,
-replay, fault-injection, scenario document DSL, benchmark comparison,
-Prometheus/trace demo, DB seed report, session import, and manual benchmark
-endpoints.
+sandbox API also exposes scenario runner, committed scenario files/suites,
+timeline, flow catalog/replay, profile comparison, replay, fault-injection,
+scenario document DSL, benchmark comparison, Prometheus/trace demo, DB seed
+report, seeded users/products/order-summary query-cache demos, session import,
+OpenAPI client smoke, and manual benchmark endpoints.
 
 Set `HYDRACACHE_SANDBOX_TOKEN` if you want the local sandbox routes to require
 `Authorization: Bearer <token>`.

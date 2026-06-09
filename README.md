@@ -460,9 +460,14 @@ http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
 http://127.0.0.1:3000/demo/export
+http://127.0.0.1:3000/demo/scenarios/files
+http://127.0.0.1:3000/demo/scenarios/file/run
+http://127.0.0.1:3000/demo/scenarios/suite/file/run
 http://127.0.0.1:3000/demo/scenarios/document/run
+http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/observability/prometheus
+http://127.0.0.1:3000/demo/openapi/client-smoke
 http://127.0.0.1:3000/demo/security
 http://127.0.0.1:3000/actuator/hydracache/health
 http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
@@ -481,8 +486,11 @@ can run the golden flow, negative scenarios, readiness checks, reset the demo
 state, show structured events, run the built-in self-test, export a portable
 report bundle, compare local profiles, replay named scenarios, run fault
 injection, launch a manual benchmark, run JSON/YAML scenario documents, compare
-benchmark reports, inspect Prometheus-style metrics, and display small
-hit/miss/load counters with a visual flow timeline.
+benchmark reports, run committed scenario files/suites, replay retained flow
+contexts, inspect seeded product/order query-cache demos, run generated-client
+smoke checks, inspect Prometheus-style metrics, and display small hit/miss/load
+counters with a visual flow timeline. The dashboard also includes a textarea
+scenario editor for quickly pasting JSON/YAML recipes.
 
 Useful Swagger/API groups:
 
@@ -495,15 +503,22 @@ GET  /demo/events
 GET  /demo/events?kind=cache-hit
 GET  /demo/events?flow_id=manual-flow&limit=10
 GET  /demo/export
+GET  /demo/flows
 GET  /demo/flows/{flow_id}/timeline
+POST /demo/flows/{flow_id}/replay
 GET  /demo/observability/prometheus
 GET  /demo/observability/traces/latest
 GET  /demo/db/seed-report
 GET  /demo/openapi/client-check
+GET  /demo/openapi/client-smoke
 GET  /demo/security
 POST /demo/import
 POST /demo/self-test
 POST /demo/scenarios/run
+GET  /demo/scenarios/files
+POST /demo/scenarios/file/run
+POST /demo/scenarios/suite/run
+POST /demo/scenarios/suite/file/run
 POST /demo/scenarios/document/parse
 POST /demo/scenarios/document/run
 POST /demo/profiles/compare
@@ -520,6 +535,8 @@ POST /demo/cache/contains
 POST /demo/cache/remove
 POST /demo/cache/invalidate-tag
 POST /demo/query/users/{id}/load
+POST /demo/query/products/{id}/load
+POST /demo/query/orders/{id}/summary/load
 POST /demo/typed/users/{id}/load
 POST /demo/functions/double/{input}
 POST /demo/scenarios/ttl
@@ -548,17 +565,24 @@ workbench:
 
 ```text
 POST /demo/scenarios/run        # golden-path, ttl, single-flight, invalidation-race, negative-suite, self-test
+GET  /demo/scenarios/files      # committed JSON/YAML recipes
+POST /demo/scenarios/file/run   # run one committed recipe
+POST /demo/scenarios/suite/run  # run an inline scenario suite
+POST /demo/scenarios/suite/file/run
+GET  /demo/flows                # retained flow ids that can be replayed
 GET  /demo/flows/{flow_id}/timeline
+POST /demo/flows/{flow_id}/replay
 POST /demo/profiles/compare    # memory/sqlite-memory/sqlite-file; Postgres is reported as skipped
 POST /demo/replay              # rerun a named scenario and link it to a previous flow id
 POST /demo/faults/run          # loader errors, loader delays, invalidation timing
 POST /demo/benchmarks/manual   # small request/concurrency/key-distribution workload
-POST /demo/benchmarks/compare  # baseline/candidate latency, throughput, loader-call diff
+POST /demo/benchmarks/compare  # baseline/candidate latency, throughput, loader-call/p95 diff, verdict
 ```
 
 Scenario documents can be kept as JSON or a small YAML subset in
 `crates/hydracache-sandbox/scenarios/`. They describe steps plus pass/fail
-assertions, so a manual demo can become a reusable regression recipe:
+assertions and optional timeline assertions, so a manual demo can become a
+reusable regression recipe:
 
 ```json
 {
@@ -572,26 +596,46 @@ assertions, so a manual demo can become a reusable regression recipe:
   "assertions": [
     {"name": "cache hit observed", "metric": "cache-hits", "op": "gte", "value": 1},
     {"name": "loader called once", "metric": "loader-calls", "op": "eq", "value": 1}
+  ],
+  "timeline_assertions": [
+    {"name": "load before hit", "assertion": "kind-before-kind", "before": "cache-load", "after": "cache-hit"}
   ]
 }
 ```
 
 Use `POST /demo/scenarios/document/parse` for YAML text normalization and
-`POST /demo/scenarios/document/run` for execution. The bundled YAML example is
-at `crates/hydracache-sandbox/scenarios/golden-path.yaml`.
+`POST /demo/scenarios/document/run` for execution. Use
+`POST /demo/scenarios/file/run` for a committed recipe and
+`POST /demo/scenarios/suite/file/run` for a committed suite such as
+`crates/hydracache-sandbox/scenarios/regression-suite.json`. The bundled YAML
+example is at `crates/hydracache-sandbox/scenarios/golden-path.yaml`.
 
 Latency is recorded on demo events where the sandbox controls the operation.
 `/demo/report`, `/demo/events`, `/demo/export`, scenario responses, timelines,
-and benchmark responses include min/max/average/p95-style summaries.
+and benchmark responses include min/max/average/p50/p95/p99-style summaries.
+Benchmark comparison responses also include loader-call ratio deltas, p95
+latency deltas, and a compact verdict (`candidate-better`,
+`candidate-worse`, or `mixed`).
 
 For observability demos, `/demo/observability/prometheus` emits dependency-free
 Prometheus text metrics and `/demo/observability/traces/latest` returns an
 OpenTelemetry-style teaching view derived from the retained event log. The
 sandbox also includes SQLite/Postgres schema and seed files under
 `crates/hydracache-sandbox/migrations/` and `crates/hydracache-sandbox/seeds/`;
-`GET /demo/db/seed-report` summarizes those assets. `GET
-/demo/openapi/client-check` verifies that representative generated-client paths
-exist in the current OpenAPI document, and
+`GET /demo/db/seed-report` summarizes those assets. The seeded query-cache demo
+now covers users, products, and order summaries:
+
+```text
+POST /demo/query/users/42/load
+POST /demo/query/products/100/load
+POST /demo/query/orders/5000/summary/load
+```
+
+`GET /demo/openapi/client-check` verifies that representative generated-client
+paths exist in the current OpenAPI document. `GET
+/demo/openapi/client-smoke` checks that the committed minimal fetch client still
+contains the expected methods for scenarios, suites, flows, products, orders,
+benchmarks, export, and import.
 `crates/hydracache-sandbox/openapi/generated-client.js` shows a minimal fetch
 client shape.
 

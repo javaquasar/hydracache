@@ -28,3 +28,11 @@ assertions:
     metric: loader-calls
     op: eq
     value: 1
+timeline_assertions:
+  - name: reset starts the flow
+    assertion: first-kind
+    kind: reset
+  - name: load happens before hit
+    assertion: kind-before-kind
+    before: cache-load
+    after: cache-hit

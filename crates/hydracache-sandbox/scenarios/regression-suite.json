@@ -1,0 +1,50 @@
+{
+  "name": "sandbox-regression-suite",
+  "description": "A compact suite for checking the sandbox scenario runner before a release.",
+  "reset_between": true,
+  "entries": [
+    {
+      "name": "named golden path",
+      "scenario": "golden-path"
+    },
+    {
+      "name": "committed YAML recipe",
+      "file": "golden-path.yaml",
+      "format": "yaml"
+    },
+    {
+      "name": "seeded product query",
+      "document": {
+        "name": "seeded-product-query",
+        "flow_id": "suite-product",
+        "reset": true,
+        "steps": [
+          {
+            "name": "first product load",
+            "action": "load-product",
+            "id": 100,
+            "ttl_ms": 5000,
+            "tags": ["suite-product"],
+            "expected_source": "loader"
+          },
+          {
+            "name": "second product load",
+            "action": "load-product",
+            "id": 100,
+            "ttl_ms": 5000,
+            "tags": ["suite-product"],
+            "expected_source": "cache"
+          }
+        ],
+        "assertions": [
+          {
+            "name": "product cache hit",
+            "metric": "cache-hits",
+            "op": "gte",
+            "value": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -40,8 +40,32 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/scenarios/document/run", document);
   }
 
+  runScenarioFile(path = "golden-path.yaml", format = "yaml") {
+    return this.post("/demo/scenarios/file/run", { path, format });
+  }
+
+  runScenarioSuiteFile(path = "regression-suite.json") {
+    return this.post("/demo/scenarios/suite/file/run", { path });
+  }
+
   compareBenchmarks(baseline, candidate) {
     return this.post("/demo/benchmarks/compare", { baseline, candidate });
+  }
+
+  flows() {
+    return this.json("/demo/flows");
+  }
+
+  replayFlow(flowId, body = {}) {
+    return this.post(`/demo/flows/${encodeURIComponent(flowId)}/replay`, body);
+  }
+
+  loadProduct(id, options = {}) {
+    return this.post(`/demo/query/products/${id}/load`, options);
+  }
+
+  loadOrderSummary(id, options = {}) {
+    return this.post(`/demo/query/orders/${id}/summary/load`, options);
   }
 
   exportSession() {
