@@ -61,6 +61,43 @@ loader failure events, and bounded-buffer lag. The lag behavior is intentional:
 HydraCache uses a bounded event bus so cache operations never wait for slow
 listeners.
 
+## Performance Smoke Tests
+
+HydraCache keeps lightweight performance regression tests in
+`crates/hydracache/tests/performance_smoke.rs`. They are normal integration
+tests, so they run with the workspace suite:
+
+```powershell
+cargo test --workspace --all-targets --locked
+```
+
+Run only the performance smoke tests with printed local measurements:
+
+```powershell
+cargo test -p hydracache --test performance_smoke --locked -- --nocapture
+```
+
+For more realistic local timings, run the same test target in release mode:
+
+```powershell
+cargo test --release -p hydracache --test performance_smoke --locked -- --nocapture
+```
+
+These tests deliberately avoid strict wall-clock thresholds because CI machines
+and developer laptops vary too much. Instead, they guard the performance
+properties that should remain stable across environments:
+
+- A warmed hot key must not call the loader again.
+- Hot cache hits must bypass local single-flight coordination.
+- Many concurrent callers for the same cold key must share one loader call.
+- A warmed multi-key workload must keep loader calls bounded by unique keys.
+- Bulk tag invalidation must remove the tagged set without stranded entries.
+
+The printed `perf-smoke` lines are for human comparison during optimization
+work. If a future optimization needs hard latency budgets, prefer adding a
+separate ignored or benchmark-specific target instead of making the default CI
+suite depend on machine-specific timing.
+
 ## Procedural Macro Tests
 
 Procedural macros need two layers of tests because normal unit tests and real
