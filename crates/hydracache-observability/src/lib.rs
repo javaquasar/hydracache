@@ -60,6 +60,10 @@ pub struct CacheStatsSnapshot {
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
     pub evictions: u64,
+    /// Cache events delivered to at least one subscriber.
+    pub events_published: u64,
+    /// Event notifications skipped by slow subscribers.
+    pub event_subscriber_lagged: u64,
     /// Convenience value equal to `hits + misses`.
     pub total_requests: u64,
     /// Convenience value equal to `hits / (hits + misses)`.
@@ -68,6 +72,8 @@ pub struct CacheStatsSnapshot {
     pub single_flight_active: bool,
     /// Whether at least one stale loader result was discarded.
     pub stale_load_discards_seen: bool,
+    /// Whether at least one event subscriber lagged behind the event bus.
+    pub event_subscriber_lag_seen: bool,
 }
 
 impl CacheStatsSnapshot {
@@ -81,10 +87,13 @@ impl CacheStatsSnapshot {
             stale_load_discards: stats.stale_load_discards,
             invalidations: stats.invalidations,
             evictions: stats.evictions,
+            events_published: stats.events_published,
+            event_subscriber_lagged: stats.event_subscriber_lagged,
             total_requests: stats.total_requests(),
             hit_ratio: stats.hit_ratio(),
             single_flight_active: stats.has_single_flight_activity(),
             stale_load_discards_seen: stats.has_stale_load_discards(),
+            event_subscriber_lag_seen: stats.has_event_subscriber_lag(),
         }
     }
 }
@@ -372,6 +381,7 @@ mod tests {
         assert_eq!(snapshot.hit_ratio, Some(2.0 / 3.0));
         assert!(snapshot.single_flight_active);
         assert!(snapshot.stale_load_discards_seen);
+        assert!(!snapshot.event_subscriber_lag_seen);
 
         let via_from: CacheStatsSnapshot = stats.into();
         assert_eq!(via_from.total_requests, 3);

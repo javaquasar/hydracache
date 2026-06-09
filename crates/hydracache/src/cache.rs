@@ -7,13 +7,15 @@ use std::time::Instant;
 use bytes::Bytes;
 use futures_util::FutureExt;
 use hydracache_core::{
-    CacheCodec, CacheDiagnostics, CacheError, CacheOptions, CacheStats, PostcardCodec, Result,
+    CacheCodec, CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions,
+    CacheEventOrigin, CacheOptions, CacheStats, PostcardCodec, Result,
 };
 use moka::future::Cache;
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::builder::HydraCacheBuilder;
 use crate::entry::CacheEntry;
+use crate::events::{CacheEventSubscriber, EventBus};
 use crate::inflight::{InFlightMap, SharedLoadFuture};
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
@@ -65,7 +67,8 @@ where
     pub(crate) in_flight: InFlightMap,
     pub(crate) codec: C,
     pub(crate) default_ttl: std::time::Duration,
-    pub(crate) stats: StatsCounters,
+    pub(crate) stats: Arc<StatsCounters>,
+    pub(crate) events: EventBus,
 }
 
 impl HydraCache<PostcardCodec> {
@@ -118,6 +121,38 @@ where
         TypedCache::new(self.clone(), namespace.into())
     }
 
+    /// Subscribe to cache events matching the provided filters.
+    ///
+    /// Dropping the returned subscriber unregisters it. Access/load events are
+    /// only published when the cache was built with
+    /// [`HydraCacheBuilder::enable_access_events`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    /// let mut events = cache.subscribe(
+    ///     CacheEventOptions::mutations().include_kind(CacheEventKind::Stored),
+    /// );
+    ///
+    /// cache.put("answer", 42_u64, CacheOptions::new()).await?;
+    ///
+    /// let event = events.recv().await.expect("stored event");
+    /// assert_eq!(event.kind(), CacheEventKind::Stored);
+    /// assert_eq!(event.key(), Some("answer"));
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn subscribe(&self, options: CacheEventOptions) -> CacheEventSubscriber {
+        self.inner
+            .events
+            .subscribe(options, self.inner.stats.clone())
+    }
+
     /// Get and decode a cached value.
     ///
     /// Returns `Ok(None)` when the key is missing or expired.
@@ -129,21 +164,45 @@ where
             Some(entry) if entry.is_expired() => {
                 self.remove_expired(key, &entry).await;
                 self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
+                self.publish_key_event(
+                    CacheEventKind::Miss,
+                    key,
+                    CacheEventOrigin::LocalApi,
+                    entry.tags.clone(),
+                );
                 Ok(None)
             }
             Some(entry) => match self.inner.codec.decode::<T>(&entry.value) {
                 Ok(value) => {
                     self.inner.stats.hits.fetch_add(1, Ordering::Relaxed);
+                    self.publish_key_event(
+                        CacheEventKind::Hit,
+                        key,
+                        CacheEventOrigin::LocalApi,
+                        entry.tags.clone(),
+                    );
                     Ok(Some(value))
                 }
                 Err(error) => {
                     self.remove_entry(key, &entry).await;
                     self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
+                    self.publish_key_event(
+                        CacheEventKind::Miss,
+                        key,
+                        CacheEventOrigin::LocalApi,
+                        entry.tags.clone(),
+                    );
                     Err(error)
                 }
             },
             None => {
                 self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
+                self.publish_key_event(
+                    CacheEventKind::Miss,
+                    key,
+                    CacheEventOrigin::LocalApi,
+                    Vec::<String>::new(),
+                );
                 Ok(None)
             }
         }
@@ -315,23 +374,15 @@ where
 
     /// Remove one key from the cache.
     pub async fn invalidate_key(&self, key: &str) -> Result<bool> {
-        self.remove(key).await
+        self.remove_with_event(key, CacheEventKind::KeyInvalidated)
+            .await
     }
 
     /// Remove one key from the cache.
     ///
     /// This is an alias for `invalidate_key` with a shorter name for local-cache use.
     pub async fn remove(&self, key: &str) -> Result<bool> {
-        let Some(entry) = self.inner.store.get(key).await else {
-            return Ok(false);
-        };
-
-        self.remove_entry(key, &entry).await;
-        self.inner
-            .stats
-            .invalidations
-            .fetch_add(1, Ordering::Relaxed);
-        Ok(true)
+        self.remove_with_event(key, CacheEventKind::Removed).await
     }
 
     /// Return whether the key currently maps to a usable value.
@@ -340,7 +391,7 @@ where
     pub async fn contains_key(&self, key: &str) -> bool {
         match self.inner.store.get(key).await {
             Some(entry) if entry.is_expired() => {
-                self.remove_entry(key, &entry).await;
+                self.remove_expired(key, &entry).await;
                 false
             }
             Some(_) => true,
@@ -371,13 +422,26 @@ where
                 .fetch_add(removed, Ordering::Relaxed);
         }
 
+        self.publish_event(CacheEvent::for_tag(
+            CacheEventKind::TagInvalidated,
+            tag,
+            removed,
+            CacheEventOrigin::LocalApi,
+        ));
+
         Ok(removed)
     }
 
     /// Remove all cached entries and tag mappings.
     pub async fn flush(&self) -> Result<()> {
+        let estimated_entries = self.inner.store.entry_count();
         self.inner.store.invalidate_all();
         self.inner.tag_index.clear().await;
+        self.publish_event(CacheEvent::for_cache(
+            CacheEventKind::Flushed,
+            Some(estimated_entries),
+            CacheEventOrigin::LocalApi,
+        ));
         Ok(())
     }
 
@@ -455,7 +519,8 @@ where
         value: Bytes,
         options: CacheOptions,
     ) -> Result<()> {
-        self.put_bytes_unchecked(key, value, options).await
+        self.put_bytes_unchecked(key, value, options, CacheEventOrigin::LocalApi)
+            .await
     }
 
     async fn put_bytes_unchecked(
@@ -463,6 +528,7 @@ where
         key: &str,
         value: Bytes,
         options: CacheOptions,
+        origin: CacheEventOrigin,
     ) -> Result<()> {
         let ttl = options.ttl_value().unwrap_or(self.inner.default_ttl);
         let tags = options.tags_value().to_vec();
@@ -478,6 +544,7 @@ where
 
         self.inner.store.insert(key.to_owned(), entry).await;
         self.inner.tag_index.register(key, &tags).await;
+        self.publish_key_event(CacheEventKind::Stored, key, origin, tags);
         Ok(())
     }
 
@@ -493,10 +560,17 @@ where
                 .stats
                 .stale_load_discards
                 .fetch_add(1, Ordering::Relaxed);
+            self.publish_key_event(
+                CacheEventKind::StaleLoadDiscarded,
+                key,
+                CacheEventOrigin::Loader,
+                options.tags_value().to_vec(),
+            );
             return Ok(false);
         }
 
-        self.put_bytes_unchecked(key, value, options).await?;
+        self.put_bytes_unchecked(key, value, options, CacheEventOrigin::Loader)
+            .await?;
         Ok(true)
     }
 
@@ -511,12 +585,20 @@ where
         Fut: Future<Output = Result<Bytes>> + Send + 'static,
     {
         let generation = self.inner.tag_index.snapshot(options.tags_value()).await;
+        let event_tags = options.tags_value().to_vec();
+        let late_join_event_tags = event_tags.clone();
 
         if let Some(shared) = self.inner.in_flight.get_current(key, &generation).await {
             self.inner
                 .stats
                 .single_flight_joins
                 .fetch_add(1, Ordering::Relaxed);
+            self.publish_key_event(
+                CacheEventKind::SingleFlightJoined,
+                key,
+                CacheEventOrigin::SingleFlight,
+                event_tags,
+            );
             return shared;
         }
 
@@ -530,16 +612,41 @@ where
         let cache = self.clone();
         let load_key = key_owned.clone();
         let load_generation = generation.clone();
+        let load_event_tags = event_tags.clone();
         let shared = async move {
             let result = async {
+                cache.publish_key_event(
+                    CacheEventKind::LoadStarted,
+                    &load_key,
+                    CacheEventOrigin::Loader,
+                    load_event_tags.clone(),
+                );
                 let bytes = loader(cache.clone()).await?;
-                cache
+                let accepted = cache
                     .put_bytes_if_fresh(&load_key, bytes.clone(), options, &load_generation)
                     .await?;
+                if accepted {
+                    cache.publish_key_event(
+                        CacheEventKind::LoadCompleted,
+                        &load_key,
+                        CacheEventOrigin::Loader,
+                        load_event_tags.clone(),
+                    );
+                }
                 Ok(bytes)
             }
-            .await
-            .map_err(Arc::new);
+            .await;
+
+            if result.is_err() {
+                cache.publish_key_event(
+                    CacheEventKind::LoadFailed,
+                    &load_key,
+                    CacheEventOrigin::Loader,
+                    load_event_tags,
+                );
+            }
+
+            let result = result.map_err(Arc::new);
 
             cache
                 .inner
@@ -561,6 +668,12 @@ where
                 .stats
                 .single_flight_joins
                 .fetch_add(1, Ordering::Relaxed);
+            self.publish_key_event(
+                CacheEventKind::SingleFlightJoined,
+                key,
+                CacheEventOrigin::SingleFlight,
+                late_join_event_tags,
+            );
         }
 
         shared
@@ -568,10 +681,47 @@ where
 
     async fn remove_expired(&self, key: &str, entry: &CacheEntry) {
         self.remove_entry(key, entry).await;
+        self.publish_key_event(
+            CacheEventKind::Expired,
+            key,
+            CacheEventOrigin::Backend,
+            entry.tags.clone(),
+        );
     }
 
     async fn remove_entry(&self, key: &str, entry: &CacheEntry) {
         self.inner.store.invalidate(key).await;
         self.inner.tag_index.unregister(key, &entry.tags).await;
+    }
+
+    async fn remove_with_event(&self, key: &str, kind: CacheEventKind) -> Result<bool> {
+        let Some(entry) = self.inner.store.get(key).await else {
+            return Ok(false);
+        };
+
+        self.remove_entry(key, &entry).await;
+        self.inner
+            .stats
+            .invalidations
+            .fetch_add(1, Ordering::Relaxed);
+        self.publish_key_event(kind, key, CacheEventOrigin::LocalApi, entry.tags.clone());
+        Ok(true)
+    }
+
+    fn publish_key_event<I, S>(
+        &self,
+        kind: CacheEventKind,
+        key: &str,
+        origin: CacheEventOrigin,
+        tags: I,
+    ) where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.publish_event(CacheEvent::for_key(kind, key, origin, tags));
+    }
+
+    fn publish_event(&self, event: CacheEvent) {
+        self.inner.events.publish(event, &self.inner.stats);
     }
 }

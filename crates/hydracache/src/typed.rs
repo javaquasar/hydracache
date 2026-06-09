@@ -3,11 +3,13 @@ use std::future::Future;
 use std::marker::PhantomData;
 
 use hydracache_core::{
-    CacheCodec, CacheDiagnostics, CacheKeyBuilder, CacheOptions, CacheStats, PostcardCodec, Result,
+    CacheCodec, CacheDiagnostics, CacheEventOptions, CacheKeyBuilder, CacheOptions, CacheStats,
+    PostcardCodec, Result,
 };
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::cache::HydraCache;
+use crate::events::CacheEventSubscriber;
 
 /// A typed, namespaced view over a [`HydraCache`].
 ///
@@ -63,6 +65,15 @@ where
     /// Return this typed cache namespace.
     pub fn namespace(&self) -> &str {
         &self.namespace
+    }
+
+    /// Subscribe to shared cache events.
+    ///
+    /// The subscription observes the underlying physical keys. Use
+    /// [`CacheEventOptions::key_prefix`] with this typed cache namespace when
+    /// you want events for only this typed view.
+    pub fn subscribe(&self, options: CacheEventOptions) -> CacheEventSubscriber {
+        self.cache.subscribe(options)
     }
 
     /// Build the physical key used by the shared underlying cache.

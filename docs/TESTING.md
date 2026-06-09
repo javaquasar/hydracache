@@ -46,6 +46,21 @@ generated `wip/*.stderr` output, and update the matching files under
 `crates/hydracache-db/tests/derive/`, or
 `crates/hydracache-db/tests/policy/`.
 
+## Cache Event Tests
+
+The cache event/listener API is covered by `crates/hydracache/src/tests/events.rs`.
+Run the focused library tests with:
+
+```powershell
+cargo test -p hydracache --lib --locked events::
+```
+
+These tests cover mutation events, opt-in access events, subscriber filters,
+typed-cache delegation, single-flight join events, stale-load discard events,
+loader failure events, and bounded-buffer lag. The lag behavior is intentional:
+HydraCache uses a bounded event bus so cache operations never wait for slow
+listeners.
+
 ## Procedural Macro Tests
 
 Procedural macros need two layers of tests because normal unit tests and real

@@ -24,5 +24,5 @@
 ## Phase 4
 
 - Add attribute-style ergonomics
-- Explore observable collections and listeners
+- Design cache events and listeners (`docs/plans/V0_18_CACHE_EVENTS_LISTENERS_PLAN.md`)
 - Prepare for future distributed storage and stateful runtime evolution

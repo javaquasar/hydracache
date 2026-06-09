@@ -59,6 +59,7 @@ The first version includes:
 - `postcard` codec over `Bytes`
 - lightweight stats
 - diagnostics snapshot for smoke-checking cache activity
+- cache event subscriptions for mutations and opt-in access/load events
 - framework-neutral observability registry
 - optional read-only Axum actuator routes
 - single-flight join stats
@@ -303,7 +304,7 @@ fresh in-flight load instead of joining the stale one.
 
 Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "user:42"])` for multiple tags.
 
-`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, and evictions. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, and `has_stale_load_discards`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
+`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, evictions, published events, and subscriber lag. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, `has_stale_load_discards`, and `has_event_subscriber_lag`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
 
 `diagnostics().await` returns a small smoke-test snapshot: the same stats plus the local backend's approximate entry count. It is useful for answering "did the second call hit the cache?" without wiring a metrics system.
 
@@ -348,6 +349,60 @@ assert!(!diagnostics.is_empty());
 # Ok(())
 # }
 ```
+
+## Cache Events
+
+Use `HydraCache::subscribe` when you want to observe cache behavior without
+wrapping every call manually. Mutation and invalidation events are published
+when subscribers exist. Hit/miss/load events are opt-in through
+`enable_access_events(true)` because they can be high volume.
+
+```rust
+use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local().build();
+let mut events = cache.subscribe(CacheEventOptions::mutations().tag("users"));
+
+cache
+    .put("user:42", 42_u64, CacheOptions::new().tag("users"))
+    .await?;
+
+let event = events.recv().await.expect("stored event");
+assert_eq!(event.kind(), CacheEventKind::Stored);
+assert_eq!(event.key(), Some("user:42"));
+
+cache.invalidate_tag("users").await?;
+let invalidation = events.recv().await.expect("tag invalidation");
+assert_eq!(invalidation.kind(), CacheEventKind::TagInvalidated);
+# Ok(())
+# }
+```
+
+For a temporary access trace:
+
+```rust
+use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local()
+    .enable_access_events(true)
+    .event_buffer_capacity(256)
+    .build();
+let mut events = cache.subscribe(CacheEventOptions::access().key("answer"));
+
+let answer = cache
+    .get_or_insert_with("answer", CacheOptions::new(), || async { 42_u64 })
+    .await?;
+
+assert_eq!(answer, 42);
+assert_eq!(events.recv().await.unwrap().kind(), CacheEventKind::Miss);
+# Ok(())
+# }
+```
+
+Subscribers use a bounded ring buffer. Slow subscribers may receive
+`CacheEventRecvError::Lagged`, but cache operations never wait for listeners.
 
 ## Optional Axum Actuator
 

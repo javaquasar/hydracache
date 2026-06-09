@@ -6,6 +6,7 @@ use moka::future::Cache;
 
 use crate::cache::{HydraCache, HydraCacheInner};
 use crate::entry::CacheEntry;
+use crate::events::EventBus;
 use crate::inflight::InFlightMap;
 use crate::stats::StatsCounters;
 use crate::tag_index::TagIndex;
@@ -34,6 +35,8 @@ where
     max_capacity: u64,
     max_entry_bytes: usize,
     default_ttl: Duration,
+    event_buffer_capacity: usize,
+    access_events: bool,
     codec: C,
 }
 
@@ -62,6 +65,24 @@ where
         self
     }
 
+    /// Set the bounded cache event buffer capacity.
+    ///
+    /// Slow subscribers may observe lag when more than this many events are
+    /// published before they receive them.
+    pub fn event_buffer_capacity(mut self, capacity: usize) -> Self {
+        self.event_buffer_capacity = capacity.max(1);
+        self
+    }
+
+    /// Enable high-volume hit/miss/load events.
+    ///
+    /// Mutation and invalidation events are always published when subscribers
+    /// exist. Access events are opt-in because they can be very noisy.
+    pub fn enable_access_events(mut self, enabled: bool) -> Self {
+        self.access_events = enabled;
+        self
+    }
+
     /// Replace the default codec.
     ///
     /// Most applications can use the default [`PostcardCodec`].
@@ -73,6 +94,8 @@ where
             max_capacity: self.max_capacity,
             max_entry_bytes: self.max_entry_bytes,
             default_ttl: self.default_ttl,
+            event_buffer_capacity: self.event_buffer_capacity,
+            access_events: self.access_events,
             codec,
         }
     }
@@ -94,7 +117,8 @@ where
                 in_flight: InFlightMap::default(),
                 codec: self.codec,
                 default_ttl: self.default_ttl,
-                stats: StatsCounters::default(),
+                stats: Arc::new(StatsCounters::default()),
+                events: EventBus::new(self.event_buffer_capacity, self.access_events),
             }),
         }
     }
@@ -106,6 +130,8 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             max_capacity: 10_000,
             max_entry_bytes: 16 * 1024 * 1024,
             default_ttl: Duration::from_secs(300),
+            event_buffer_capacity: 1024,
+            access_events: false,
             codec: PostcardCodec,
         }
     }

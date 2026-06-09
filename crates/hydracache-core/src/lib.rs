@@ -5,6 +5,7 @@
 
 mod codec;
 mod error;
+mod events;
 mod key;
 mod options;
 mod stats;
@@ -12,6 +13,10 @@ mod tags;
 
 pub use codec::{CacheCodec, PostcardCodec};
 pub use error::CacheError;
+pub use events::{
+    CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin, CacheEventScope,
+    CacheEventValueMode,
+};
 pub use key::{CacheKey, CacheKeyBuilder};
 pub use options::CacheOptions;
 pub use stats::{CacheDiagnostics, CacheStats};

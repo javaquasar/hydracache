@@ -180,6 +180,32 @@
 //! # }
 //! ```
 //!
+//! # Cache events
+//!
+//! Use [`HydraCache::subscribe`] when an application, actuator, or sandbox
+//! wants to observe cache mutations without wrapping every call manually.
+//! Access/load events are opt-in because hit/miss streams can be noisy.
+//!
+//! ```rust
+//! use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//! let mut events = cache.subscribe(CacheEventOptions::mutations());
+//!
+//! cache
+//!     .put("user:42", 42_u64, CacheOptions::new().tag("users"))
+//!     .await?;
+//!
+//! let event = events.recv().await.expect("stored event");
+//! assert_eq!(event.kind(), CacheEventKind::Stored);
+//! assert_eq!(event.key(), Some("user:42"));
+//! assert_eq!(event.tags(), &["users".to_owned()]);
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! # Observability
 //!
 //! Use [`HydraCache::diagnostics`] for quick local smoke checks. It combines
@@ -213,6 +239,7 @@ extern crate self as hydracache;
 mod builder;
 mod cache;
 mod entry;
+mod events;
 mod inflight;
 mod stats;
 mod tag_index;
@@ -220,8 +247,10 @@ mod typed;
 
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
+pub use events::{CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{
-    CacheDiagnostics, CacheError, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,
+    CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
+    CacheEventScope, CacheEventValueMode, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,
     PostcardCodec, TagSet,
 };
 pub use hydracache_macros::{cacheable, cacheable_infallible};
