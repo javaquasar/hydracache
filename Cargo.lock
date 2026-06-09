@@ -1032,7 +1032,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hydracache"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1048,7 +1048,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-actuator-axum"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "axum",
  "hydracache",
@@ -1061,7 +1061,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1072,7 +1072,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "hydracache",
  "hydracache-core",
@@ -1085,7 +1085,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -1095,7 +1095,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1106,7 +1106,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sandbox"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "axum",
  "hydracache",
@@ -1125,7 +1125,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "async-trait",
  "hydracache",
