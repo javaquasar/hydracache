@@ -32,6 +32,10 @@
 //! http://127.0.0.1:3000/demo/report
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/export
+//! http://127.0.0.1:3000/demo/scenarios/run
+//! http://127.0.0.1:3000/demo/flows/{flow_id}/timeline
+//! http://127.0.0.1:3000/demo/benchmarks/manual
+//! http://127.0.0.1:3000/demo/security
 //! ```
 
 use std::collections::{BTreeMap, VecDeque};
@@ -41,10 +45,11 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::{Path as FsPath, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
-use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
+use axum::extract::{Path, Query, Request, State};
+use axum::http::{header, StatusCode};
+use axum::middleware::{self, Next};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -98,7 +103,7 @@ impl SandboxBackend {
 }
 
 /// Named sandbox profile for common manual runs.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
 pub enum SandboxProfile {
     /// Pure in-memory backing store.
@@ -162,6 +167,8 @@ pub struct SandboxConfig {
     pub backend: SandboxBackend,
     /// Optional JSONL path for persisted demo events.
     pub event_log_path: Option<PathBuf>,
+    /// Optional bearer token required for sandbox routes.
+    pub auth_token: Option<String>,
 }
 
 impl SandboxConfig {
@@ -238,6 +245,7 @@ impl SandboxConfig {
         let mut event_log_path = env
             .get("HYDRACACHE_SANDBOX_EVENT_LOG_PATH")
             .map(PathBuf::from);
+        let mut auth_token = env.get("HYDRACACHE_SANDBOX_TOKEN").cloned();
         let mut index = 0;
 
         while index < tokens.len() {
@@ -280,6 +288,15 @@ impl SandboxConfig {
                             SandboxError::config("--event-log-path requires a value")
                         })?);
                 }
+                "--token" => {
+                    index += 1;
+                    auth_token = Some(
+                        tokens
+                            .get(index)
+                            .cloned()
+                            .ok_or_else(|| SandboxError::config("--token requires a value"))?,
+                    );
+                }
                 "--bind" => {
                     index += 1;
                     let value = tokens
@@ -311,6 +328,7 @@ impl SandboxConfig {
             profile,
             backend,
             event_log_path,
+            auth_token,
         })
     }
 }
@@ -322,6 +340,7 @@ impl Default for SandboxConfig {
             profile: SandboxProfile::Memory,
             backend: SandboxBackend::Memory,
             event_log_path: None,
+            auth_token: None,
         }
     }
 }
@@ -435,6 +454,26 @@ fn unquote_env_value(value: &str) -> String {
     }
 }
 
+fn default_true() -> bool {
+    true
+}
+
+fn default_benchmark_prefix() -> String {
+    "bench".to_owned()
+}
+
+fn default_benchmark_requests() -> u16 {
+    64
+}
+
+fn default_benchmark_concurrency() -> u16 {
+    8
+}
+
+fn default_benchmark_unique_keys() -> u16 {
+    4
+}
+
 fn help_text() -> String {
     [
         "HydraCache manual sandbox",
@@ -455,6 +494,7 @@ fn help_text() -> String {
         "  --sqlite-path target/hydracache-sandbox.sqlite",
         "  --database-url postgres://hydracache:hydracache@127.0.0.1:54329/hydracache",
         "  --event-log-path target/hydracache-sandbox-events.jsonl",
+        "  --token local-dev-token",
         "  --bind 127.0.0.1:3000",
         "",
         "Environment:",
@@ -464,28 +504,15 @@ fn help_text() -> String {
         "  HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite",
         "  HYDRACACHE_SANDBOX_DATABASE_URL=postgres://hydracache:hydracache@127.0.0.1:54329/hydracache",
         "  HYDRACACHE_SANDBOX_EVENT_LOG_PATH=target/hydracache-sandbox-events.jsonl",
+        "  HYDRACACHE_SANDBOX_TOKEN=local-dev-token",
     ]
     .join("\n")
 }
 
 /// Build a runnable sandbox app.
 pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxError> {
-    let cache = HydraCache::local().build();
-    let (storage, postgres_container) = connect_storage(&config.backend).await?;
-    seed_storage(&storage).await?;
-
-    let registry = HydraCacheRegistry::new().with_cache("main", cache.clone());
-    let state = SandboxState {
-        cache,
-        storage,
-        loader_calls: Arc::new(AtomicU64::new(0)),
-        function_calls: Arc::new(AtomicU64::new(0)),
-        next_event_id: Arc::new(AtomicU64::new(0)),
-        events: Arc::new(RwLock::new(VecDeque::new())),
-        event_log_path: config.event_log_path,
-        profile: config.profile,
-        backend: config.backend,
-    };
+    let (state, postgres_container) = build_sandbox_state(config).await?;
+    let registry = HydraCacheRegistry::new().with_cache("main", state.cache.clone());
 
     let sandbox_routes = Router::new()
         .route("/", get(info))
@@ -496,6 +523,13 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/presets", get(presets))
         .route("/demo/export", get(export_bundle))
         .route("/demo/self-test", post(self_test))
+        .route("/demo/scenarios/run", post(run_scenario))
+        .route("/demo/flows/{flow_id}/timeline", get(flow_timeline))
+        .route("/demo/profiles/compare", post(compare_profiles))
+        .route("/demo/replay", post(replay_scenario))
+        .route("/demo/faults/run", post(run_fault_injection))
+        .route("/demo/benchmarks/manual", post(manual_benchmark))
+        .route("/demo/security", get(security_info))
         .route("/demo/report", get(report))
         .route("/demo/events", get(events))
         .route("/demo/events/clear", post(clear_events))
@@ -530,6 +564,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         )
         .route("/demo/invalidate/user/{id}", post(invalidate_user))
         .route("/demo/flush", post(flush_cache))
+        .route_layer(middleware::from_fn_with_state(state.clone(), sandbox_auth))
         .with_state(state);
     let router = Router::new()
         .merge(sandbox_routes)
@@ -545,6 +580,30 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         router,
         postgres_container,
     })
+}
+
+async fn build_sandbox_state(
+    config: SandboxConfig,
+) -> Result<(SandboxState, Option<ContainerAsync<postgres::Postgres>>), SandboxError> {
+    let cache = HydraCache::local().build();
+    let (storage, postgres_container) = connect_storage(&config.backend).await?;
+    seed_storage(&storage).await?;
+
+    Ok((
+        SandboxState {
+            cache,
+            storage,
+            loader_calls: Arc::new(AtomicU64::new(0)),
+            function_calls: Arc::new(AtomicU64::new(0)),
+            next_event_id: Arc::new(AtomicU64::new(0)),
+            events: Arc::new(RwLock::new(VecDeque::new())),
+            event_log_path: config.event_log_path,
+            auth_token: config.auth_token,
+            profile: config.profile,
+            backend: config.backend,
+        },
+        postgres_container,
+    ))
 }
 
 /// Built sandbox application plus optional Docker guard.
@@ -579,6 +638,7 @@ struct SandboxState {
     next_event_id: Arc<AtomicU64>,
     events: Arc<RwLock<VecDeque<DemoEvent>>>,
     event_log_path: Option<PathBuf>,
+    auth_token: Option<String>,
     profile: SandboxProfile,
     backend: SandboxBackend,
 }
@@ -830,6 +890,7 @@ struct SandboxConfigResponse {
     profile: &'static str,
     backend: String,
     event_log_path: Option<String>,
+    auth_required: bool,
     limits: SandboxLimits,
     urls: SandboxUrls,
 }
@@ -848,6 +909,7 @@ struct SandboxUrls {
     readiness: &'static str,
     report: &'static str,
     events: &'static str,
+    timeline: &'static str,
     actuator_diagnostics: &'static str,
 }
 
@@ -893,6 +955,7 @@ struct DemoEvent {
     tag: Option<String>,
     flow_id: Option<String>,
     source: Option<LoadSource>,
+    duration_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -901,6 +964,7 @@ struct EventLogResponse {
     returned: usize,
     capacity: usize,
     filter: EventFilterSummary,
+    latency: LatencySummary,
     events: Vec<DemoEvent>,
 }
 
@@ -937,6 +1001,16 @@ impl From<&EventQuery> for EventFilterSummary {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct ClearEventsResponse {
     cleared: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct LatencySummary {
+    measured_events: usize,
+    total_duration_ms: u64,
+    min_duration_ms: Option<u64>,
+    max_duration_ms: Option<u64>,
+    avg_duration_ms: Option<u64>,
+    p95_duration_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -977,6 +1051,172 @@ struct SelfTestStep {
     name: &'static str,
     passed: bool,
     message: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ScenarioName {
+    GoldenPath,
+    Ttl,
+    SingleFlight,
+    InvalidationRace,
+    NegativeSuite,
+    SelfTest,
+}
+
+impl ScenarioName {
+    fn label(self) -> &'static str {
+        match self {
+            Self::GoldenPath => "golden-path",
+            Self::Ttl => "ttl",
+            Self::SingleFlight => "single-flight",
+            Self::InvalidationRace => "invalidation-race",
+            Self::NegativeSuite => "negative-suite",
+            Self::SelfTest => "self-test",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"scenario": "golden-path", "flow_id": "manual-golden", "reset": true}))]
+struct ScenarioRunRequest {
+    scenario: ScenarioName,
+    #[serde(default)]
+    flow_id: Option<String>,
+    #[serde(default = "default_true")]
+    reset: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+#[schema(example = json!({"scenario": "golden-path", "flow_id": "manual-golden", "passed": true}))]
+struct ScenarioRunResponse {
+    scenario: ScenarioName,
+    flow_id: String,
+    passed: bool,
+    steps: Vec<SelfTestStep>,
+    report: ApplicationReport,
+    events: EventLogResponse,
+    latency: LatencySummary,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct TimelineStep {
+    sequence: usize,
+    kind: DemoEventKind,
+    label: String,
+    key: Option<String>,
+    tag: Option<String>,
+    source: Option<LoadSource>,
+    duration_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct TimelineResponse {
+    flow_id: String,
+    event_count: usize,
+    latency: LatencySummary,
+    steps: Vec<TimelineStep>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"scenario": "golden-path", "profiles": ["memory", "sqlite-memory", "sqlite-file"]}))]
+struct CompareProfilesRequest {
+    scenario: ScenarioName,
+    #[serde(default)]
+    profiles: Vec<SandboxProfile>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct CompareProfileResult {
+    profile: SandboxProfile,
+    supported: bool,
+    skipped_reason: Option<String>,
+    duration_ms: Option<u64>,
+    report: Option<ApplicationReport>,
+    latency: Option<LatencySummary>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct CompareProfilesResponse {
+    scenario: ScenarioName,
+    results: Vec<CompareProfileResult>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"scenario": "golden-path", "source_flow_id": "manual-golden", "flow_id": "replay-golden", "reset": true}))]
+struct ReplayRequest {
+    scenario: ScenarioName,
+    #[serde(default)]
+    source_flow_id: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+    #[serde(default = "default_true")]
+    reset: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ReplayResponse {
+    replayed_from_flow_id: Option<String>,
+    run: ScenarioRunResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"scenario": "invalidation-race", "loader_delay_ms": 80, "invalidate_after_ms": 10, "fail_loader": false, "flow_id": "fault-race"}))]
+struct FaultInjectionRequest {
+    scenario: ScenarioName,
+    #[serde(default)]
+    loader_delay_ms: Option<u64>,
+    #[serde(default)]
+    invalidate_after_ms: Option<u64>,
+    #[serde(default)]
+    fail_loader: bool,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct FaultInjectionResponse {
+    flow_id: String,
+    injected_faults: Vec<String>,
+    run: ScenarioRunResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"key_prefix": "bench", "requests": 64, "concurrency": 8, "unique_keys": 4, "loader_delay_ms": 5, "flow_id": "bench-flow"}))]
+struct BenchmarkRequest {
+    #[serde(default = "default_benchmark_prefix")]
+    key_prefix: String,
+    #[serde(default = "default_benchmark_requests")]
+    requests: u16,
+    #[serde(default = "default_benchmark_concurrency")]
+    concurrency: u16,
+    #[serde(default = "default_benchmark_unique_keys")]
+    unique_keys: u16,
+    #[serde(default)]
+    loader_delay_ms: Option<u64>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct BenchmarkResponse {
+    flow_id: String,
+    requests: u16,
+    concurrency: u16,
+    unique_keys: u16,
+    loader_invocations: u64,
+    duration_ms: u64,
+    requests_per_second: u64,
+    diagnostics: DemoDiagnostics,
+    latency: LatencySummary,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct SecurityInfoResponse {
+    auth_required: bool,
+    scheme: &'static str,
+    header: &'static str,
+    note: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
@@ -1256,6 +1496,7 @@ struct ApplicationReport {
     function_calls: u64,
     event_count: usize,
     diagnostics: DemoDiagnostics,
+    latency: LatencySummary,
     capabilities: Vec<CapabilityReport>,
 }
 
@@ -1322,6 +1563,30 @@ struct ErrorResponse {
     error: String,
 }
 
+async fn sandbox_auth(State(state): State<SandboxState>, request: Request, next: Next) -> Response {
+    let Some(token) = state.auth_token.as_ref() else {
+        return next.run(request).await;
+    };
+    let expected = format!("Bearer {token}");
+    let authorized = request
+        .headers()
+        .get(header::AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| value == expected);
+
+    if authorized {
+        next.run(request).await
+    } else {
+        (
+            StatusCode::UNAUTHORIZED,
+            Json(ErrorResponse {
+                error: "sandbox bearer token is required".to_owned(),
+            }),
+        )
+            .into_response()
+    }
+}
+
 fn sandbox_urls() -> SandboxUrls {
     SandboxUrls {
         dashboard_ui: "/demo/ui",
@@ -1330,6 +1595,7 @@ fn sandbox_urls() -> SandboxUrls {
         readiness: "/ready",
         report: "/demo/report",
         events: "/demo/events",
+        timeline: "/demo/flows/{flow_id}/timeline",
         actuator_diagnostics: "/actuator/hydracache/caches/main/diagnostics",
     }
 }
@@ -1362,6 +1628,7 @@ fn sandbox_config_response(state: &SandboxState) -> SandboxConfigResponse {
             .event_log_path
             .as_ref()
             .map(|path| path.display().to_string()),
+        auth_required: state.auth_token.is_some(),
         limits: SandboxLimits {
             event_log_capacity: MAX_DEMO_EVENTS,
             single_flight_max_concurrency: 64,
@@ -1381,6 +1648,13 @@ async fn readiness_response(state: &SandboxState) -> Result<ReadinessResponse, S
 }
 
 async fn application_report(state: &SandboxState) -> ApplicationReport {
+    let events = state
+        .events
+        .read()
+        .await
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
     ApplicationReport {
         name: "hydracache-sandbox",
         profile: state.profile.label(),
@@ -1388,8 +1662,9 @@ async fn application_report(state: &SandboxState) -> ApplicationReport {
         cache_name: "main",
         loader_calls: state.loader_calls.load(Ordering::SeqCst),
         function_calls: state.function_calls.load(Ordering::SeqCst),
-        event_count: state.events.read().await.len(),
+        event_count: events.len(),
         diagnostics: diagnostics(state).await,
+        latency: latency_for_events(&events),
         capabilities: capabilities(),
     }
 }
@@ -1491,6 +1766,81 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
                 "invalidate_after_ms": 10,
                 "flow_id": "race-flow"
             })),
+        },
+        ScenarioPreset {
+            name: "scenario-runner",
+            method: "POST",
+            path: "/demo/scenarios/run",
+            description:
+                "Run a named scenario preset and return steps, events, latency, and report.",
+            body: Some(json!({
+                "scenario": "golden-path",
+                "flow_id": "manual-golden",
+                "reset": true
+            })),
+        },
+        ScenarioPreset {
+            name: "timeline",
+            method: "GET",
+            path: "/demo/flows/manual-golden/timeline",
+            description: "Show a timeline for events correlated by flow id.",
+            body: None,
+        },
+        ScenarioPreset {
+            name: "compare-profiles",
+            method: "POST",
+            path: "/demo/profiles/compare",
+            description: "Run a scenario against supported local profiles and compare reports.",
+            body: Some(json!({
+                "scenario": "golden-path",
+                "profiles": ["memory", "sqlite-memory", "sqlite-file"]
+            })),
+        },
+        ScenarioPreset {
+            name: "replay",
+            method: "POST",
+            path: "/demo/replay",
+            description: "Replay a named scenario and optionally link it to a previous flow id.",
+            body: Some(json!({
+                "scenario": "golden-path",
+                "source_flow_id": "manual-golden",
+                "flow_id": "replay-golden",
+                "reset": true
+            })),
+        },
+        ScenarioPreset {
+            name: "fault-injection",
+            method: "POST",
+            path: "/demo/faults/run",
+            description:
+                "Run a scenario with explicit delay, invalidation, or loader-error faults.",
+            body: Some(json!({
+                "scenario": "invalidation-race",
+                "loader_delay_ms": 80,
+                "invalidate_after_ms": 10,
+                "flow_id": "fault-race"
+            })),
+        },
+        ScenarioPreset {
+            name: "manual-benchmark",
+            method: "POST",
+            path: "/demo/benchmarks/manual",
+            description: "Run a small manual benchmark for repeated cached operations.",
+            body: Some(json!({
+                "key_prefix": "bench",
+                "requests": 64,
+                "concurrency": 8,
+                "unique_keys": 4,
+                "loader_delay_ms": 5,
+                "flow_id": "bench-flow"
+            })),
+        },
+        ScenarioPreset {
+            name: "security",
+            method: "GET",
+            path: "/demo/security",
+            description: "Show whether the optional local bearer-token guard is enabled.",
+            body: None,
         },
         ScenarioPreset {
             name: "self-test",
@@ -1762,6 +2112,696 @@ async fn self_test(
     }))
 }
 
+async fn reset_demo_state_with_flow(
+    state: &SandboxState,
+    flow_id: Option<String>,
+) -> Result<(), SandboxHttpError> {
+    let started = Instant::now();
+    state.cache.flush().await?;
+    reset_storage(&state.storage).await?;
+    state.loader_calls.store(0, Ordering::SeqCst);
+    state.function_calls.store(0, Ordering::SeqCst);
+    state.next_event_id.store(0, Ordering::SeqCst);
+    state.events.write().await.clear();
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::Reset,
+        "scenario reset cache, counters, event log, and demo users",
+        None,
+        None,
+        None,
+        flow_id,
+        Some(elapsed_ms(started)),
+    )
+    .await;
+    Ok(())
+}
+
+fn scenario_flow_id(
+    state: &SandboxState,
+    scenario: ScenarioName,
+    flow_id: Option<String>,
+) -> String {
+    flow_id.unwrap_or_else(|| {
+        format!(
+            "{}-{}",
+            scenario.label(),
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    })
+}
+
+fn scenario_step(name: &'static str, passed: bool, message: impl Into<String>) -> SelfTestStep {
+    SelfTestStep {
+        name,
+        passed,
+        message: message.into(),
+    }
+}
+
+async fn run_named_scenario(
+    state: &SandboxState,
+    scenario: ScenarioName,
+    flow_id: Option<String>,
+    reset: bool,
+) -> Result<ScenarioRunResponse, SandboxHttpError> {
+    if scenario == ScenarioName::SelfTest {
+        let self_test = self_test(State(state.clone())).await?.0;
+        let latency = self_test.events.latency.clone();
+        return Ok(ScenarioRunResponse {
+            scenario,
+            flow_id: self_test.flow_id,
+            passed: self_test.passed,
+            steps: self_test.steps,
+            report: self_test.report,
+            events: self_test.events,
+            latency,
+        });
+    }
+
+    let flow_id = scenario_flow_id(state, scenario, flow_id);
+    let started = Instant::now();
+    if reset {
+        reset_demo_state_with_flow(state, Some(flow_id.clone())).await?;
+    }
+    let mut steps = Vec::new();
+
+    match scenario {
+        ScenarioName::GoldenPath => {
+            let options = CacheLoadOptionsRequest {
+                ttl_ms: Some(5_000),
+                tags: vec!["scenario".to_owned()],
+                loader_delay_ms: Some(1),
+                flow_id: Some(flow_id.clone()),
+            };
+            let first = load_user_with_options(state, 42, options.clone()).await?;
+            steps.push(scenario_step(
+                "first-load",
+                first.source == LoadSource::Loader && first.user.name == "Ada",
+                format!("first load source was {:?}", first.source),
+            ));
+
+            let second = load_user_with_options(state, 42, options.clone()).await?;
+            steps.push(scenario_step(
+                "second-load",
+                second.source == LoadSource::Cache && second.user.name == "Ada",
+                format!("second load source was {:?}", second.source),
+            ));
+
+            let updated = state.storage.upsert_user(42, "Grace".to_owned()).await?;
+            record_event_with_flow_and_duration(
+                state,
+                DemoEventKind::BackingStoreWrite,
+                "scenario updated demo user 42 in backing store",
+                Some("user:42".to_owned()),
+                None,
+                None,
+                Some(flow_id.clone()),
+                Some(0),
+            )
+            .await;
+            let still_cached = load_user_with_options(state, 42, options.clone()).await?;
+            steps.push(scenario_step(
+                "stale-until-invalidation",
+                updated.name == "Grace"
+                    && still_cached.user.name == "Ada"
+                    && still_cached.source == LoadSource::Cache,
+                format!(
+                    "cached value before invalidation was {}",
+                    still_cached.user.name
+                ),
+            ));
+
+            let removed = state.cache.invalidate_tag("user:42").await?;
+            record_event_with_flow_and_duration(
+                state,
+                DemoEventKind::CacheInvalidate,
+                format!("scenario invalidated user:42 and removed {removed} entries"),
+                None,
+                Some("user:42".to_owned()),
+                None,
+                Some(flow_id.clone()),
+                Some(0),
+            )
+            .await;
+            let reloaded = load_user_with_options(state, 42, options).await?;
+            steps.push(scenario_step(
+                "reload-after-invalidation",
+                removed > 0
+                    && reloaded.user.name == "Grace"
+                    && reloaded.source == LoadSource::Loader,
+                format!("reloaded value was {}", reloaded.user.name),
+            ));
+        }
+        ScenarioName::Ttl => {
+            let report = ttl_scenario(
+                State(state.clone()),
+                Json(TtlScenarioRequest {
+                    key: "scenario:ttl".to_owned(),
+                    value: "short".to_owned(),
+                    ttl_ms: 10,
+                    wait_ms: 30,
+                    tags: vec!["scenario".to_owned()],
+                    flow_id: Some(flow_id.clone()),
+                }),
+            )
+            .await?
+            .0;
+            steps.push(scenario_step(
+                "ttl-expiry",
+                report.expired,
+                format!("value after wait: {:?}", report.value_after_wait),
+            ));
+        }
+        ScenarioName::SingleFlight => {
+            let report = single_flight_scenario(
+                State(state.clone()),
+                Json(SingleFlightScenarioRequest {
+                    key: "scenario:single-flight".to_owned(),
+                    loader_value: "shared".to_owned(),
+                    concurrency: 8,
+                    loader_delay_ms: 20,
+                    ttl_ms: Some(5_000),
+                    tags: vec!["scenario".to_owned()],
+                    flow_id: Some(flow_id.clone()),
+                }),
+            )
+            .await?
+            .0;
+            steps.push(scenario_step(
+                "single-flight",
+                report.loader_invocations == 1 && report.returned_values.len() == 8,
+                format!(
+                    "{} loader invocation(s) served {} callers",
+                    report.loader_invocations,
+                    report.returned_values.len()
+                ),
+            ));
+        }
+        ScenarioName::InvalidationRace => {
+            let report = invalidation_race_scenario(
+                State(state.clone()),
+                Json(InvalidationRaceScenarioRequest {
+                    key: "scenario:race".to_owned(),
+                    loader_value: "stale".to_owned(),
+                    tag: "scenario-race".to_owned(),
+                    loader_delay_ms: 40,
+                    invalidate_after_ms: 5,
+                    flow_id: Some(flow_id.clone()),
+                }),
+            )
+            .await?
+            .0;
+            steps.push(scenario_step(
+                "invalidation-race",
+                report.stale_result_discarded,
+                format!(
+                    "cached after invalidation: {:?}",
+                    report.cached_after_invalidation
+                ),
+            ));
+        }
+        ScenarioName::NegativeSuite => {
+            let missing_key = negative_missing_key(
+                State(state.clone()),
+                Json(NegativeMissingKeyRequest {
+                    key: "scenario:missing".to_owned(),
+                    flow_id: Some(flow_id.clone()),
+                }),
+            )
+            .await?
+            .0;
+            steps.push(scenario_step(
+                "missing-key",
+                missing_key.expected_failure,
+                missing_key.message,
+            ));
+
+            let missing_user = negative_missing_user(
+                State(state.clone()),
+                Json(NegativeMissingUserRequest {
+                    id: 999_999,
+                    flow_id: Some(flow_id.clone()),
+                }),
+            )
+            .await?
+            .0;
+            steps.push(scenario_step(
+                "missing-user",
+                missing_user.expected_failure,
+                missing_user.message,
+            ));
+
+            let loader_error = negative_loader_error(
+                State(state.clone()),
+                Json(NegativeLoaderErrorRequest {
+                    key: "scenario:loader-error".to_owned(),
+                    error: "simulated scenario loader failure".to_owned(),
+                    flow_id: Some(flow_id.clone()),
+                }),
+            )
+            .await?
+            .0;
+            steps.push(scenario_step(
+                "loader-error",
+                loader_error.expected_failure,
+                loader_error.message,
+            ));
+        }
+        ScenarioName::SelfTest => unreachable!("self-test is handled before the scenario match"),
+    }
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!("scenario `{}` completed", scenario.label()),
+        None,
+        Some("scenario".to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+    let latency = events.latency.clone();
+    let passed = steps.iter().all(|step| step.passed);
+
+    Ok(ScenarioRunResponse {
+        scenario,
+        flow_id,
+        passed,
+        steps,
+        report: application_report(state).await,
+        events,
+        latency,
+    })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/scenarios/run",
+    tag = "scenarios",
+    request_body = ScenarioRunRequest,
+    responses((status = 200, description = "Run a named scenario preset", body = ScenarioRunResponse))
+)]
+async fn run_scenario(
+    State(state): State<SandboxState>,
+    Json(request): Json<ScenarioRunRequest>,
+) -> Result<Json<ScenarioRunResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_named_scenario(&state, request.scenario, request.flow_id, request.reset).await?,
+    ))
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/flows/{flow_id}/timeline",
+    tag = "reports",
+    params(("flow_id" = String, Path, description = "Operation correlation id")),
+    responses((status = 200, description = "Timeline view for one flow id", body = TimelineResponse))
+)]
+async fn flow_timeline(
+    State(state): State<SandboxState>,
+    Path(flow_id): Path<String>,
+) -> Json<TimelineResponse> {
+    let events = event_log(
+        &state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+    let steps = events
+        .events
+        .iter()
+        .enumerate()
+        .map(|(index, event)| TimelineStep {
+            sequence: index + 1,
+            kind: event.kind,
+            label: event.message.clone(),
+            key: event.key.clone(),
+            tag: event.tag.clone(),
+            source: event.source,
+            duration_ms: event.duration_ms,
+        })
+        .collect::<Vec<_>>();
+
+    Json(TimelineResponse {
+        flow_id,
+        event_count: steps.len(),
+        latency: events.latency,
+        steps,
+    })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/profiles/compare",
+    tag = "scenarios",
+    request_body = CompareProfilesRequest,
+    responses((status = 200, description = "Run one scenario across supported local profiles", body = CompareProfilesResponse))
+)]
+async fn compare_profiles(
+    Json(request): Json<CompareProfilesRequest>,
+) -> Result<Json<CompareProfilesResponse>, SandboxHttpError> {
+    let profiles = if request.profiles.is_empty() {
+        vec![
+            SandboxProfile::Memory,
+            SandboxProfile::SqliteMemory,
+            SandboxProfile::SqliteFile,
+        ]
+    } else {
+        request.profiles
+    };
+    let mut results = Vec::with_capacity(profiles.len());
+
+    for profile in profiles {
+        let started = Instant::now();
+        if matches!(
+            profile,
+            SandboxProfile::PostgresCompose | SandboxProfile::PostgresDocker
+        ) {
+            results.push(CompareProfileResult {
+                profile,
+                supported: false,
+                skipped_reason: Some(
+                    "profile comparison intentionally skips Postgres profiles to avoid implicit external dependencies".to_owned(),
+                ),
+                duration_ms: None,
+                report: None,
+                latency: None,
+            });
+            continue;
+        }
+
+        let backend = match profile {
+            SandboxProfile::Memory => SandboxBackend::Memory,
+            SandboxProfile::SqliteMemory => SandboxBackend::SqliteMemory,
+            SandboxProfile::SqliteFile => SandboxBackend::SqliteFile {
+                path: PathBuf::from(format!(
+                    "target/hydracache-sandbox-tests/compare-{}.sqlite",
+                    request.scenario.label()
+                )),
+            },
+            SandboxProfile::PostgresCompose | SandboxProfile::PostgresDocker => unreachable!(),
+        };
+        if let SandboxBackend::SqliteFile { path } = &backend {
+            let _ = tokio::fs::remove_file(path).await;
+        }
+        let (profile_state, _guard) = build_sandbox_state(SandboxConfig {
+            bind: default_bind(),
+            profile,
+            backend,
+            event_log_path: None,
+            auth_token: None,
+        })
+        .await?;
+        let run = run_named_scenario(
+            &profile_state,
+            request.scenario,
+            Some(format!(
+                "compare-{}-{}",
+                profile.label(),
+                request.scenario.label()
+            )),
+            true,
+        )
+        .await?;
+        results.push(CompareProfileResult {
+            profile,
+            supported: true,
+            skipped_reason: None,
+            duration_ms: Some(elapsed_ms(started)),
+            report: Some(run.report),
+            latency: Some(run.latency),
+        });
+    }
+
+    Ok(Json(CompareProfilesResponse {
+        scenario: request.scenario,
+        results,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/replay",
+    tag = "scenarios",
+    request_body = ReplayRequest,
+    responses((status = 200, description = "Replay a named scenario, optionally linked to a previous flow id", body = ReplayResponse))
+)]
+async fn replay_scenario(
+    State(state): State<SandboxState>,
+    Json(request): Json<ReplayRequest>,
+) -> Result<Json<ReplayResponse>, SandboxHttpError> {
+    let run = run_named_scenario(&state, request.scenario, request.flow_id, request.reset).await?;
+    Ok(Json(ReplayResponse {
+        replayed_from_flow_id: request.source_flow_id,
+        run,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/faults/run",
+    tag = "scenarios",
+    request_body = FaultInjectionRequest,
+    responses((status = 200, description = "Run a scenario with explicit fault knobs", body = FaultInjectionResponse))
+)]
+async fn run_fault_injection(
+    State(state): State<SandboxState>,
+    Json(request): Json<FaultInjectionRequest>,
+) -> Result<Json<FaultInjectionResponse>, SandboxHttpError> {
+    let flow_id = scenario_flow_id(&state, request.scenario, request.flow_id);
+    let mut injected_faults = Vec::new();
+
+    let run = if request.fail_loader {
+        injected_faults.push("loader-error".to_owned());
+        reset_demo_state_with_flow(&state, Some(flow_id.clone())).await?;
+        let started = Instant::now();
+        let report = negative_loader_error(
+            State(state.clone()),
+            Json(NegativeLoaderErrorRequest {
+                key: "fault:loader-error".to_owned(),
+                error: "fault injection loader failure".to_owned(),
+                flow_id: Some(flow_id.clone()),
+            }),
+        )
+        .await?
+        .0;
+        let steps = vec![scenario_step(
+            "fault-loader-error",
+            report.expected_failure,
+            report.message,
+        )];
+        record_event_with_flow_and_duration(
+            &state,
+            DemoEventKind::ScenarioRun,
+            "fault injection loader-error scenario completed",
+            Some("fault:loader-error".to_owned()),
+            Some("fault".to_owned()),
+            None,
+            Some(flow_id.clone()),
+            Some(elapsed_ms(started)),
+        )
+        .await;
+        let events = event_log(
+            &state,
+            &EventQuery {
+                flow_id: Some(flow_id.clone()),
+                ..EventQuery::default()
+            },
+        )
+        .await;
+        ScenarioRunResponse {
+            scenario: request.scenario,
+            flow_id: flow_id.clone(),
+            passed: steps.iter().all(|step| step.passed),
+            steps,
+            report: application_report(&state).await,
+            latency: events.latency.clone(),
+            events,
+        }
+    } else if request.scenario == ScenarioName::InvalidationRace {
+        injected_faults.push(format!(
+            "loader-delay-ms={}",
+            request.loader_delay_ms.unwrap_or(80)
+        ));
+        injected_faults.push(format!(
+            "invalidate-after-ms={}",
+            request.invalidate_after_ms.unwrap_or(10)
+        ));
+        reset_demo_state_with_flow(&state, Some(flow_id.clone())).await?;
+        let report = invalidation_race_scenario(
+            State(state.clone()),
+            Json(InvalidationRaceScenarioRequest {
+                key: "fault:race".to_owned(),
+                loader_value: "stale".to_owned(),
+                tag: "fault-race".to_owned(),
+                loader_delay_ms: request.loader_delay_ms.unwrap_or(80),
+                invalidate_after_ms: request.invalidate_after_ms.unwrap_or(10),
+                flow_id: Some(flow_id.clone()),
+            }),
+        )
+        .await?
+        .0;
+        let steps = vec![scenario_step(
+            "fault-invalidation-race",
+            report.stale_result_discarded,
+            format!(
+                "cached after invalidation: {:?}",
+                report.cached_after_invalidation
+            ),
+        )];
+        let events = event_log(
+            &state,
+            &EventQuery {
+                flow_id: Some(flow_id.clone()),
+                ..EventQuery::default()
+            },
+        )
+        .await;
+        ScenarioRunResponse {
+            scenario: request.scenario,
+            flow_id: flow_id.clone(),
+            passed: steps.iter().all(|step| step.passed),
+            steps,
+            report: application_report(&state).await,
+            latency: events.latency.clone(),
+            events,
+        }
+    } else {
+        run_named_scenario(&state, request.scenario, Some(flow_id.clone()), true).await?
+    };
+
+    Ok(Json(FaultInjectionResponse {
+        flow_id,
+        injected_faults,
+        run,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/benchmarks/manual",
+    tag = "reports",
+    request_body = BenchmarkRequest,
+    responses((status = 200, description = "Small manual benchmark for repeated cached operations", body = BenchmarkResponse))
+)]
+async fn manual_benchmark(
+    State(state): State<SandboxState>,
+    Json(request): Json<BenchmarkRequest>,
+) -> Result<Json<BenchmarkResponse>, SandboxHttpError> {
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "benchmark-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let requests = request.requests.clamp(1, 1_000);
+    let concurrency = request.concurrency.clamp(1, 64).min(requests);
+    let unique_keys = request.unique_keys.clamp(1, requests);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(1);
+    let started = Instant::now();
+    let next_index = Arc::new(AtomicU64::new(0));
+    let loader_invocations = Arc::new(AtomicU64::new(0));
+    let mut tasks = Vec::with_capacity(concurrency.into());
+
+    for _ in 0..concurrency {
+        let cache = state.cache.clone();
+        let key_prefix = request.key_prefix.clone();
+        let next_index = Arc::clone(&next_index);
+        let loader_invocations = Arc::clone(&loader_invocations);
+        tasks.push(tokio::spawn(async move {
+            loop {
+                let index = next_index.fetch_add(1, Ordering::SeqCst);
+                if index >= u64::from(requests) {
+                    break;
+                }
+                let key = format!("{}:{}", key_prefix, index % u64::from(unique_keys));
+                let value = format!("value:{key}");
+                let task_loader_invocations = Arc::clone(&loader_invocations);
+                cache
+                    .get_or_load(&key, CacheOptions::new().tag("benchmark"), move || {
+                        let value = value.clone();
+                        let loader_invocations = Arc::clone(&task_loader_invocations);
+                        async move {
+                            loader_invocations.fetch_add(1, Ordering::SeqCst);
+                            sleep(Duration::from_millis(loader_delay_ms)).await;
+                            Ok::<_, SandboxError>(value)
+                        }
+                    })
+                    .await?;
+            }
+            Ok::<_, CacheError>(())
+        }));
+    }
+
+    for task in tasks {
+        task.await
+            .map_err(|error| SandboxHttpError::internal(error.to_string()))??;
+    }
+
+    let duration_ms = elapsed_ms(started).max(1);
+    record_event_with_flow_and_duration(
+        &state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "manual benchmark completed: {requests} requests, {concurrency} workers, {unique_keys} unique keys"
+        ),
+        Some(request.key_prefix),
+        Some("benchmark".to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(duration_ms),
+    )
+    .await;
+    let events = event_log(
+        &state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(Json(BenchmarkResponse {
+        flow_id,
+        requests,
+        concurrency,
+        unique_keys,
+        loader_invocations: loader_invocations.load(Ordering::SeqCst),
+        duration_ms,
+        requests_per_second: (u64::from(requests) * 1_000) / duration_ms,
+        diagnostics: diagnostics(&state).await,
+        latency: events.latency,
+    }))
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/security",
+    tag = "sandbox",
+    responses((status = 200, description = "Sandbox auth guard status", body = SecurityInfoResponse))
+)]
+async fn security_info(State(state): State<SandboxState>) -> Json<SecurityInfoResponse> {
+    Json(SecurityInfoResponse {
+        auth_required: state.auth_token.is_some(),
+        scheme: "bearer",
+        header: "Authorization: Bearer <token>",
+        note: "Set HYDRACACHE_SANDBOX_TOKEN or --token to require a local sandbox bearer token.",
+    })
+}
+
 #[utoipa::path(
     get,
     path = "/demo/ui",
@@ -1866,13 +2906,14 @@ async fn cache_put(
     State(state): State<SandboxState>,
     Json(request): Json<CachePutRequest>,
 ) -> Result<Json<CachePutResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let options = cache_options(request.ttl_ms, &request.tags);
     let flow_id = request.flow_id.clone();
     state
         .cache
         .put(&request.key, request.value.clone(), options)
         .await?;
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::CachePut,
         format!("stored raw cache key `{}`", request.key),
@@ -1880,6 +2921,7 @@ async fn cache_put(
         None,
         None,
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -1903,6 +2945,7 @@ async fn cache_get(
     State(state): State<SandboxState>,
     Json(request): Json<CacheKeyRequest>,
 ) -> Result<Json<CacheGetResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let value = state.cache.get::<String>(&request.key).await?;
     let flow_id = request.flow_id.clone();
     let kind = if value.is_some() {
@@ -1910,7 +2953,7 @@ async fn cache_get(
     } else {
         DemoEventKind::CacheMiss
     };
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         kind,
         format!("read raw cache key `{}`", request.key),
@@ -1918,6 +2961,7 @@ async fn cache_get(
         None,
         value.as_ref().map(|_| LoadSource::Cache),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -1939,6 +2983,7 @@ async fn cache_get_or_load(
     State(state): State<SandboxState>,
     Json(request): Json<CacheLoadStringRequest>,
 ) -> Result<Json<CacheLoadStringResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let before_loads = state.cache.stats().loads;
     let key = request.key.clone();
     let flow_id = request.flow_id.clone();
@@ -1954,7 +2999,7 @@ async fn cache_get_or_load(
         })
         .await?;
     let source = source_from_load_delta(before_loads, state.cache.stats().loads);
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         match source {
             LoadSource::Cache => DemoEventKind::CacheHit,
@@ -1965,6 +3010,7 @@ async fn cache_get_or_load(
         None,
         Some(source),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -1987,8 +3033,9 @@ async fn cache_contains(
     State(state): State<SandboxState>,
     Json(request): Json<CacheKeyRequest>,
 ) -> Result<Json<CacheContainsResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let contains = state.cache.contains_key(&request.key).await;
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         if contains {
             DemoEventKind::CacheHit
@@ -2000,6 +3047,7 @@ async fn cache_contains(
         None,
         contains.then_some(LoadSource::Cache),
         request.flow_id.clone(),
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2021,8 +3069,9 @@ async fn cache_remove(
     State(state): State<SandboxState>,
     Json(request): Json<CacheKeyRequest>,
 ) -> Result<Json<CacheRemoveResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let removed = state.cache.remove(&request.key).await?;
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::CacheRemove,
         format!("remove completed for key `{}`", request.key),
@@ -2030,6 +3079,7 @@ async fn cache_remove(
         None,
         None,
         request.flow_id.clone(),
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2051,8 +3101,9 @@ async fn cache_invalidate_tag(
     State(state): State<SandboxState>,
     Json(request): Json<CacheTagRequest>,
 ) -> Result<Json<CacheInvalidateTagResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let removed = state.cache.invalidate_tag(&request.tag).await?;
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::CacheInvalidate,
         format!(
@@ -2063,6 +3114,7 @@ async fn cache_invalidate_tag(
         Some(request.tag.clone()),
         None,
         request.flow_id.clone(),
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2171,6 +3223,7 @@ async fn load_user_with_options(
     id: i64,
     request: CacheLoadOptionsRequest,
 ) -> Result<LoadUserResponse, SandboxHttpError> {
+    let started = Instant::now();
     let key = format!("user:{id}");
     let tags = user_tags(id, &request.tags);
     let flow_id = request.flow_id.clone();
@@ -2192,7 +3245,7 @@ async fn load_user_with_options(
         .await?;
     let after_loads = state.cache.stats().loads;
     let source = source_from_load_delta(before_loads, after_loads);
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         state,
         match source {
             LoadSource::Cache => DemoEventKind::CacheHit,
@@ -2203,6 +3256,7 @@ async fn load_user_with_options(
         Some(format!("user:{id}")),
         Some(source),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2232,6 +3286,7 @@ async fn typed_load_user(
     Path(id): Path<i64>,
     Json(request): Json<CacheLoadOptionsRequest>,
 ) -> Result<Json<TypedUserLoadResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let namespace = "typed-users";
     let typed = state.cache.typed::<User>(namespace);
     let local_key = id.to_string();
@@ -2255,7 +3310,7 @@ async fn typed_load_user(
         )
         .await?;
     let source = source_from_load_delta(before_loads, state.cache.stats().loads);
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         match source {
             LoadSource::Cache => DemoEventKind::CacheHit,
@@ -2266,6 +3321,7 @@ async fn typed_load_user(
         Some(format!("typed-user:{id}")),
         Some(source),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2291,6 +3347,7 @@ async fn double_function(
     State(state): State<SandboxState>,
     Path(input): Path<u64>,
 ) -> Result<Json<FunctionResultResponse>, SandboxHttpError> {
+    let started = Instant::now();
     let key = format!("function:double:{input}");
     let before_loads = state.cache.stats().loads;
     let function_calls = Arc::clone(&state.function_calls);
@@ -2307,7 +3364,7 @@ async fn double_function(
         )
         .await?;
     let source = source_from_load_delta(before_loads, state.cache.stats().loads);
-    record_event(
+    record_event_with_flow_and_duration(
         &state,
         match source {
             LoadSource::Cache => DemoEventKind::CacheHit,
@@ -2317,6 +3374,8 @@ async fn double_function(
         Some(key.clone()),
         Some("functions".to_owned()),
         Some(source),
+        None,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2341,6 +3400,7 @@ async fn ttl_scenario(
     State(state): State<SandboxState>,
     Json(request): Json<TtlScenarioRequest>,
 ) -> Result<Json<TtlScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let _ = state.cache.remove(&request.key).await?;
     let flow_id = request.flow_id.clone();
     state
@@ -2355,7 +3415,7 @@ async fn ttl_scenario(
     sleep(Duration::from_millis(request.wait_ms)).await;
     let value_after_wait = state.cache.get::<String>(&request.key).await?;
     let expired = value_after_wait.is_none();
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::ScenarioRun,
         format!(
@@ -2366,6 +3426,7 @@ async fn ttl_scenario(
         None,
         None,
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2391,6 +3452,7 @@ async fn single_flight_scenario(
     State(state): State<SandboxState>,
     Json(request): Json<SingleFlightScenarioRequest>,
 ) -> Result<Json<SingleFlightScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let _ = state.cache.remove(&request.key).await?;
     let effective_concurrency = request.concurrency.clamp(2, 64);
     let flow_id = request.flow_id.clone();
@@ -2423,7 +3485,7 @@ async fn single_flight_scenario(
             .map_err(|error| SandboxHttpError::internal(error.to_string()))??;
         returned_values.push(value);
     }
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::ScenarioRun,
         format!(
@@ -2434,6 +3496,7 @@ async fn single_flight_scenario(
         None,
         Some(LoadSource::Loader),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2458,6 +3521,7 @@ async fn invalidation_race_scenario(
     State(state): State<SandboxState>,
     Json(request): Json<InvalidationRaceScenarioRequest>,
 ) -> Result<Json<InvalidationRaceScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let _ = state.cache.remove(&request.key).await?;
     let cache = state.cache.clone();
     let key = request.key.clone();
@@ -2483,7 +3547,7 @@ async fn invalidation_race_scenario(
     let diagnostics = diagnostics(&state).await;
     let stale_result_discarded =
         cached_after_invalidation.is_none() && diagnostics.stale_load_discards > 0;
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::ScenarioRun,
         format!(
@@ -2494,6 +3558,7 @@ async fn invalidation_race_scenario(
         Some(request.tag.clone()),
         None,
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2519,6 +3584,7 @@ async fn negative_missing_key(
     State(state): State<SandboxState>,
     Json(request): Json<NegativeMissingKeyRequest>,
 ) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let value = state.cache.get::<String>(&request.key).await?;
     let expected_failure = value.is_none();
     let flow_id = request.flow_id.clone();
@@ -2527,7 +3593,7 @@ async fn negative_missing_key(
     } else {
         format!("cache key `{}` unexpectedly exists", request.key)
     };
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         if expected_failure {
             DemoEventKind::CacheMiss
@@ -2539,6 +3605,7 @@ async fn negative_missing_key(
         None,
         value.as_ref().map(|_| LoadSource::Cache),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2563,6 +3630,7 @@ async fn negative_missing_user(
     State(state): State<SandboxState>,
     Json(request): Json<NegativeMissingUserRequest>,
 ) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let result = state.storage.load_user(request.id).await;
     let expected_failure = matches!(result, Err(SandboxError::NotFound { .. }));
     let flow_id = request.flow_id.clone();
@@ -2573,7 +3641,7 @@ async fn negative_missing_user(
         ),
         Err(error) => error.to_string(),
     };
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         if expected_failure {
             DemoEventKind::Error
@@ -2585,6 +3653,7 @@ async fn negative_missing_user(
         None,
         None,
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2609,6 +3678,7 @@ async fn negative_loader_error(
     State(state): State<SandboxState>,
     Json(request): Json<NegativeLoaderErrorRequest>,
 ) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let _ = state.cache.remove(&request.key).await?;
     let key = request.key.clone();
     let flow_id = request.flow_id.clone();
@@ -2624,7 +3694,7 @@ async fn negative_loader_error(
         .err()
         .map(|error| error.to_string())
         .unwrap_or_else(|| "loader unexpectedly returned a value".to_owned());
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::Error,
         message.clone(),
@@ -2632,6 +3702,7 @@ async fn negative_loader_error(
         None,
         None,
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2656,6 +3727,7 @@ async fn negative_expired_entry(
     State(state): State<SandboxState>,
     Json(request): Json<NegativeExpiredEntryRequest>,
 ) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let flow_id = request.flow_id.clone();
     state
         .cache
@@ -2676,7 +3748,7 @@ async fn negative_expired_entry(
             request.key
         )
     };
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         if expected_failure {
             DemoEventKind::CacheMiss
@@ -2688,6 +3760,7 @@ async fn negative_expired_entry(
         None,
         value.as_ref().map(|_| LoadSource::Cache),
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2712,6 +3785,7 @@ async fn negative_invalidation_miss(
     State(state): State<SandboxState>,
     Json(request): Json<NegativeInvalidationMissRequest>,
 ) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let started = Instant::now();
     let removed = state.cache.invalidate_tag(&request.tag).await?;
     let expected_failure = removed == 0;
     let flow_id = request.flow_id.clone();
@@ -2723,7 +3797,7 @@ async fn negative_invalidation_miss(
             request.tag
         )
     };
-    record_event_with_flow(
+    record_event_with_flow_and_duration(
         &state,
         DemoEventKind::CacheInvalidate,
         message.clone(),
@@ -2731,6 +3805,7 @@ async fn negative_invalidation_miss(
         Some(request.tag.clone()),
         None,
         flow_id,
+        Some(elapsed_ms(started)),
     )
     .await;
 
@@ -2815,6 +3890,20 @@ async fn record_event_with_flow(
     source: Option<LoadSource>,
     flow_id: Option<String>,
 ) -> DemoEvent {
+    record_event_with_flow_and_duration(state, kind, message, key, tag, source, flow_id, None).await
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn record_event_with_flow_and_duration(
+    state: &SandboxState,
+    kind: DemoEventKind,
+    message: impl Into<String>,
+    key: Option<String>,
+    tag: Option<String>,
+    source: Option<LoadSource>,
+    flow_id: Option<String>,
+    duration_ms: Option<u64>,
+) -> DemoEvent {
     let event = DemoEvent {
         id: state.next_event_id.fetch_add(1, Ordering::SeqCst) + 1,
         kind,
@@ -2823,6 +3912,7 @@ async fn record_event_with_flow(
         tag,
         flow_id,
         source,
+        duration_ms,
     };
     {
         let mut events = state.events.write().await;
@@ -2895,12 +3985,14 @@ async fn event_log(state: &SandboxState, query: &EventQuery) -> EventLogResponse
     let returned = filtered.len();
     let mut filter = EventFilterSummary::from(query);
     filter.limit = query.limit.map(|limit| limit.min(MAX_DEMO_EVENTS));
+    let latency = latency_for_events(&filtered);
 
     EventLogResponse {
         retained,
         returned,
         capacity: MAX_DEMO_EVENTS,
         filter,
+        latency,
         events: filtered,
     }
 }
@@ -2961,9 +4053,20 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     <section>
       <h2>Golden Path</h2>
       <button onclick="golden()">Run load/update/invalidate flow</button>
+      <button onclick="runScenario('golden-path')">Scenario runner</button>
       <button onclick="post('/demo/scenarios/single-flight', {key:'ui:sf', loader_value:'shared', concurrency:8, loader_delay_ms:40, tags:['ui'], flow_id:'ui-single-flight'})">Single-flight</button>
       <button onclick="post('/demo/scenarios/invalidation-race', {key:'ui:race', loader_value:'stale', tag:'ui-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:'ui-race'})">Invalidation race</button>
       <button onclick="post('/demo/scenarios/ttl', {key:'ui:ttl', value:'short', ttl_ms:50, wait_ms:90, flow_id:'ui-ttl'})">TTL expiry</button>
+    </section>
+    <section>
+      <h2>Scenario Lab</h2>
+      <button onclick="runScenario('negative-suite')">Negative suite</button>
+      <button onclick="timeline('manual-golden')">Timeline: manual-golden</button>
+      <button onclick="post('/demo/profiles/compare', {scenario:'golden-path', profiles:['memory','sqlite-memory','sqlite-file']})">Compare profiles</button>
+      <button onclick="post('/demo/replay', {scenario:'golden-path', source_flow_id:'manual-golden', flow_id:`replay-${Date.now()}`, reset:true})">Replay golden</button>
+      <button onclick="post('/demo/faults/run', {scenario:'invalidation-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:`fault-${Date.now()}`})">Fault injection</button>
+      <button onclick="post('/demo/benchmarks/manual', {key_prefix:'ui-bench', requests:64, concurrency:8, unique_keys:4, loader_delay_ms:5, flow_id:`bench-${Date.now()}`})">Manual benchmark</button>
+      <button onclick="show('/demo/security')">Security</button>
     </section>
     <section>
       <h2>Negative Scenarios</h2>
@@ -3026,17 +4129,19 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       metrics.innerHTML = values.map(([label, value]) => `<div class="metric"><span>${label}</span><strong>${value}</strong><div class="bar"><span style="width:${Math.round((value / max) * 100)}%"></span></div></div>`).join('');
     }
     async function golden() {
-      const flowId = `ui-golden-${Date.now()}`;
-      const results = [];
-      results.push(await step('POST', '/demo/load/42'));
-      results.push(await step('POST', '/demo/load/42'));
-      results.push(await step('POST', '/demo/users/42', { name: 'Grace', flow_id: flowId }));
-      results.push(await step('POST', '/demo/load/42'));
-      results.push(await step('POST', '/demo/invalidate/user/42'));
-      results.push(await step('POST', '/demo/load/42'));
-      results.push(await step('GET', '/demo/report'));
-      results.push(await step('GET', `/demo/events?flow_id=${flowId}`));
-      write(results);
+      const flowId = 'manual-golden';
+      const run = await step('POST', '/demo/scenarios/run', { scenario: 'golden-path', flow_id: flowId, reset: true });
+      const timeline = await step('GET', `/demo/flows/${flowId}/timeline`);
+      write([run, timeline]);
+    }
+    async function runScenario(scenario) {
+      const flowId = `${scenario}-${Date.now()}`;
+      const run = await step('POST', '/demo/scenarios/run', { scenario, flow_id: flowId, reset: true });
+      const timeline = await step('GET', `/demo/flows/${flowId}/timeline`);
+      write([run, timeline]);
+    }
+    async function timeline(flowId) {
+      await show(`/demo/flows/${flowId}/timeline`);
     }
   </script>
 </body>
@@ -3064,6 +4169,41 @@ fn source_from_load_delta(before_loads: u64, after_loads: u64) -> LoadSource {
         LoadSource::Loader
     } else {
         LoadSource::Cache
+    }
+}
+
+fn elapsed_ms(started: Instant) -> u64 {
+    started.elapsed().as_millis().try_into().unwrap_or(u64::MAX)
+}
+
+fn latency_for_events(events: &[DemoEvent]) -> LatencySummary {
+    let mut durations = events
+        .iter()
+        .filter_map(|event| event.duration_ms)
+        .collect::<Vec<_>>();
+    durations.sort_unstable();
+
+    let measured_events = durations.len();
+    let total_duration_ms = durations.iter().sum();
+    let avg_duration_ms = if measured_events == 0 {
+        None
+    } else {
+        Some(total_duration_ms / measured_events as u64)
+    };
+    let p95_duration_ms = if measured_events == 0 {
+        None
+    } else {
+        let index = ((measured_events * 95).saturating_sub(1)) / 100;
+        durations.get(index).copied()
+    };
+
+    LatencySummary {
+        measured_events,
+        total_duration_ms,
+        min_duration_ms: durations.first().copied(),
+        max_duration_ms: durations.last().copied(),
+        avg_duration_ms,
+        p95_duration_ms,
     }
 }
 
@@ -3110,6 +4250,36 @@ fn capabilities() -> Vec<CapabilityReport> {
             name: "single-flight",
             endpoint: "/demo/scenarios/single-flight",
             description: "Spawn concurrent same-key requests and verify that only one loader invocation runs.",
+        },
+        CapabilityReport {
+            name: "scenario runner",
+            endpoint: "/demo/scenarios/run",
+            description: "Run named presets such as golden-path, ttl, single-flight, invalidation-race, negative-suite, and self-test.",
+        },
+        CapabilityReport {
+            name: "flow timeline",
+            endpoint: "/demo/flows/{flow_id}/timeline",
+            description: "Render a flow-id event stream as an ordered timeline with latency details.",
+        },
+        CapabilityReport {
+            name: "profile comparison",
+            endpoint: "/demo/profiles/compare",
+            description: "Run one scenario against supported local profiles and compare reports and latency.",
+        },
+        CapabilityReport {
+            name: "replay",
+            endpoint: "/demo/replay",
+            description: "Replay a named scenario and link the new run to an earlier flow id.",
+        },
+        CapabilityReport {
+            name: "fault injection",
+            endpoint: "/demo/faults/run",
+            description: "Inject loader errors, loader delays, and invalidation timing into manual scenarios.",
+        },
+        CapabilityReport {
+            name: "manual benchmark",
+            endpoint: "/demo/benchmarks/manual",
+            description: "Run a small local cache workload with configurable requests, concurrency, and key distribution.",
         },
         CapabilityReport {
             name: "invalidation safety",
@@ -3182,6 +4352,13 @@ fn actuator_stats_doc() {}
         presets,
         export_bundle,
         self_test,
+        run_scenario,
+        flow_timeline,
+        compare_profiles,
+        replay_scenario,
+        run_fault_injection,
+        manual_benchmark,
+        security_info,
         report,
         events,
         clear_events,
@@ -3232,6 +4409,22 @@ fn actuator_stats_doc() {}
             ExportBundle,
             SelfTestResponse,
             SelfTestStep,
+            ScenarioName,
+            ScenarioRunRequest,
+            ScenarioRunResponse,
+            TimelineStep,
+            TimelineResponse,
+            CompareProfilesRequest,
+            CompareProfileResult,
+            CompareProfilesResponse,
+            ReplayRequest,
+            ReplayResponse,
+            FaultInjectionRequest,
+            FaultInjectionResponse,
+            BenchmarkRequest,
+            BenchmarkResponse,
+            SecurityInfoResponse,
+            LatencySummary,
             User,
             UpsertUserRequest,
             CacheKeyRequest,
@@ -3489,6 +4682,7 @@ mod tests {
         assert!(help.to_string().contains("HydraCache manual sandbox"));
         assert!(help.to_string().contains("HYDRACACHE_SANDBOX_BACKEND"));
         assert!(help.to_string().contains("HYDRACACHE_SANDBOX_DATABASE_URL"));
+        assert!(help.to_string().contains("HYDRACACHE_SANDBOX_TOKEN"));
         assert!(help.to_string().contains("--profile"));
 
         assert_eq!(SandboxBackend::Memory.label(), "memory");
@@ -3638,6 +4832,13 @@ mod tests {
             event_log_path.event_log_path,
             Some(PathBuf::from("target/cli-events.jsonl"))
         );
+
+        let auth_token = SandboxConfig::from_env_iter_and_args(
+            [("HYDRACACHE_SANDBOX_TOKEN", "env-token")],
+            ["sandbox", "--token", "cli-token"],
+        )
+        .unwrap();
+        assert_eq!(auth_token.auth_token, Some("cli-token".to_owned()));
     }
 
     #[test]
@@ -3651,6 +4852,13 @@ mod tests {
         assert!(paths.contains_key("/demo/presets"));
         assert!(paths.contains_key("/demo/export"));
         assert!(paths.contains_key("/demo/self-test"));
+        assert!(paths.contains_key("/demo/scenarios/run"));
+        assert!(paths.contains_key("/demo/flows/{flow_id}/timeline"));
+        assert!(paths.contains_key("/demo/profiles/compare"));
+        assert!(paths.contains_key("/demo/replay"));
+        assert!(paths.contains_key("/demo/faults/run"));
+        assert!(paths.contains_key("/demo/benchmarks/manual"));
+        assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
@@ -3677,6 +4885,16 @@ mod tests {
         assert!(schemas.contains_key("PresetResponse"));
         assert!(schemas.contains_key("ExportBundle"));
         assert!(schemas.contains_key("SelfTestResponse"));
+        assert!(schemas.contains_key("ScenarioName"));
+        assert!(schemas.contains_key("ScenarioRunRequest"));
+        assert!(schemas.contains_key("ScenarioRunResponse"));
+        assert!(schemas.contains_key("TimelineResponse"));
+        assert!(schemas.contains_key("CompareProfilesResponse"));
+        assert!(schemas.contains_key("ReplayResponse"));
+        assert!(schemas.contains_key("FaultInjectionResponse"));
+        assert!(schemas.contains_key("BenchmarkResponse"));
+        assert!(schemas.contains_key("SecurityInfoResponse"));
+        assert!(schemas.contains_key("LatencySummary"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
@@ -4038,6 +5256,8 @@ mod tests {
         assert!(body.contains("HydraCache manual sandbox"));
         assert!(body.contains("/demo/report"));
         assert!(body.contains("/demo/self-test"));
+        assert!(body.contains("/demo/scenarios/run"));
+        assert!(body.contains("Scenario Lab"));
         assert!(body.contains("Mini Metrics"));
         assert!(!body.contains("cdn."));
         assert!(!body.contains("unpkg.com"));
@@ -4067,7 +5287,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .any(|preset| preset["name"] == "self-test"));
+            .any(|preset| preset["name"] == "manual-benchmark"));
 
         app.clone()
             .oneshot(post(
@@ -4228,6 +5448,154 @@ mod tests {
             .unwrap()
             .iter()
             .any(|capability| capability["name"] == "negative scenarios"));
+    }
+
+    #[tokio::test]
+    async fn scenario_lab_routes_cover_runner_timeline_compare_replay_faults_benchmark_and_security(
+    ) {
+        let app = build_sandbox(SandboxConfig::default())
+            .await
+            .unwrap()
+            .router;
+
+        let security = app
+            .clone()
+            .oneshot(get("/demo/security"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(security["auth_required"], false);
+        assert_eq!(security["scheme"], "bearer");
+
+        let run = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/run",
+                Body::from(r#"{"scenario":"golden-path","flow_id":"test-golden","reset":true}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(run["scenario"], "golden-path");
+        assert_eq!(run["flow_id"], "test-golden");
+        assert_eq!(run["passed"], true);
+        assert!(run["events"]["returned"].as_u64().unwrap() >= 5);
+        assert!(run["latency"]["measured_events"].as_u64().unwrap() >= 1);
+
+        let timeline = app
+            .clone()
+            .oneshot(get("/demo/flows/test-golden/timeline"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(timeline["flow_id"], "test-golden");
+        assert!(timeline["event_count"].as_u64().unwrap() >= 5);
+        assert!(timeline["steps"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|step| step["kind"] == "cache-load"));
+
+        let compare = app
+            .clone()
+            .oneshot(post(
+                "/demo/profiles/compare",
+                Body::from(
+                    r#"{"scenario":"ttl","profiles":["memory","sqlite-memory","postgres-compose"]}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(compare["scenario"], "ttl");
+        let compare_results = compare["results"].as_array().unwrap();
+        assert_eq!(compare_results.len(), 3);
+        assert!(compare_results
+            .iter()
+            .any(|result| result["profile"] == "memory" && result["supported"] == true));
+        assert!(compare_results
+            .iter()
+            .any(|result| result["profile"] == "postgres-compose" && result["supported"] == false));
+
+        let replay = app
+            .clone()
+            .oneshot(post(
+                "/demo/replay",
+                Body::from(
+                    r#"{"scenario":"negative-suite","source_flow_id":"test-golden","flow_id":"test-replay","reset":true}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(replay["replayed_from_flow_id"], "test-golden");
+        assert_eq!(replay["run"]["flow_id"], "test-replay");
+        assert_eq!(replay["run"]["passed"], true);
+
+        let fault = app
+            .clone()
+            .oneshot(post(
+                "/demo/faults/run",
+                Body::from(
+                    r#"{"scenario":"invalidation-race","loader_delay_ms":40,"invalidate_after_ms":5,"flow_id":"test-fault"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(fault["flow_id"], "test-fault");
+        assert_eq!(fault["run"]["passed"], true);
+        assert!(fault["injected_faults"].as_array().unwrap().len() >= 2);
+
+        let benchmark = app
+            .clone()
+            .oneshot(post(
+                "/demo/benchmarks/manual",
+                Body::from(
+                    r#"{"key_prefix":"test-bench","requests":16,"concurrency":4,"unique_keys":2,"loader_delay_ms":1,"flow_id":"test-bench"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(benchmark["flow_id"], "test-bench");
+        assert_eq!(benchmark["requests"], 16);
+        assert_eq!(benchmark["concurrency"], 4);
+        assert!(benchmark["loader_invocations"].as_u64().unwrap() <= 2);
+        assert!(benchmark["requests_per_second"].as_u64().unwrap() > 0);
+    }
+
+    #[tokio::test]
+    async fn optional_auth_guard_protects_sandbox_routes_when_token_is_configured() {
+        let app = build_sandbox(SandboxConfig {
+            auth_token: Some("secret".to_owned()),
+            ..SandboxConfig::default()
+        })
+        .await
+        .unwrap()
+        .router;
+
+        let unauthorized = app.clone().oneshot(get("/demo/report")).await.unwrap();
+        assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
+
+        let authorized = app
+            .clone()
+            .oneshot(get_with_auth("/demo/security", "secret"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(authorized["auth_required"], true);
+
+        let swagger = app.oneshot(get("/swagger-ui/")).await.unwrap();
+        assert_eq!(swagger.status(), StatusCode::OK);
     }
 
     #[tokio::test]
@@ -4453,6 +5821,15 @@ mod tests {
             .uri(uri)
             .header("content-type", "application/json")
             .body(body)
+            .unwrap()
+    }
+
+    fn get_with_auth(uri: &str, token: &str) -> Request<Body> {
+        Request::builder()
+            .method("GET")
+            .uri(uri)
+            .header("authorization", format!("Bearer {token}"))
+            .body(Body::empty())
             .unwrap()
     }
 

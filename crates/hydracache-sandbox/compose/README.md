@@ -32,11 +32,17 @@ http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
 http://127.0.0.1:3000/demo/export
+http://127.0.0.1:3000/demo/security
 ```
 
 The full-stack sandbox service has a Docker healthcheck against `/ready`.
 Inside the UI or Swagger, `POST /demo/self-test` runs a quick end-to-end
-scenario and returns step-level results plus correlated events.
+scenario and returns step-level results plus correlated events. The same
+sandbox API also exposes scenario runner, timeline, profile comparison,
+replay, fault-injection, and manual benchmark endpoints.
+
+Set `HYDRACACHE_SANDBOX_TOKEN` if you want the local sandbox routes to require
+`Authorization: Bearer <token>`.
 
 ## Postgres Only
 

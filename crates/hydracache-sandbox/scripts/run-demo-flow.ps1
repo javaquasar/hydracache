@@ -1,5 +1,6 @@
 param(
-    [string] $BaseUrl = "http://127.0.0.1:3000"
+    [string] $BaseUrl = "http://127.0.0.1:3000",
+    [string] $Token = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,13 +15,18 @@ function Invoke-SandboxJson {
     )
 
     $uri = "$BaseUrl$Path"
+    $headers = @{}
+    if ($Token -ne "") {
+        $headers["Authorization"] = "Bearer $Token"
+    }
     if ($null -eq $Body) {
-        return Invoke-RestMethod -Method $Method -Uri $uri
+        return Invoke-RestMethod -Method $Method -Uri $uri -Headers $headers
     }
 
     return Invoke-RestMethod `
         -Method $Method `
         -Uri $uri `
+        -Headers $headers `
         -ContentType "application/json" `
         -Body ($Body | ConvertTo-Json -Depth 8)
 }
@@ -163,5 +169,44 @@ Invoke-SandboxJson GET "/demo/export" | ConvertTo-Json -Depth 8
 Write-Host "`n23. Built-in self-test"
 Invoke-SandboxJson POST "/demo/self-test" | ConvertTo-Json -Depth 8
 
-Write-Host "`n24. Actuator diagnostics"
+Write-Host "`n24. Scenario runner and timeline"
+Invoke-SandboxJson POST "/demo/scenarios/run" @{
+    scenario = "golden-path"
+    flow_id = "$FlowId-runner"
+    reset = $true
+} | ConvertTo-Json -Depth 8
+Invoke-SandboxJson GET "/demo/flows/$FlowId-runner/timeline" | ConvertTo-Json -Depth 8
+
+Write-Host "`n25. Compare supported local profiles"
+Invoke-SandboxJson POST "/demo/profiles/compare" @{
+    scenario = "ttl"
+    profiles = @("memory", "sqlite-memory", "sqlite-file", "postgres-compose")
+} | ConvertTo-Json -Depth 8
+
+Write-Host "`n26. Replay and fault injection"
+Invoke-SandboxJson POST "/demo/replay" @{
+    scenario = "negative-suite"
+    source_flow_id = "$FlowId-runner"
+    flow_id = "$FlowId-replay"
+    reset = $true
+} | ConvertTo-Json -Depth 8
+Invoke-SandboxJson POST "/demo/faults/run" @{
+    scenario = "invalidation-race"
+    loader_delay_ms = 80
+    invalidate_after_ms = 10
+    flow_id = "$FlowId-fault"
+} | ConvertTo-Json -Depth 8
+
+Write-Host "`n27. Manual benchmark and security"
+Invoke-SandboxJson POST "/demo/benchmarks/manual" @{
+    key_prefix = "script-bench"
+    requests = 64
+    concurrency = 8
+    unique_keys = 4
+    loader_delay_ms = 5
+    flow_id = "$FlowId-bench"
+} | ConvertTo-Json -Depth 8
+Invoke-SandboxJson GET "/demo/security" | ConvertTo-Json -Depth 8
+
+Write-Host "`n28. Actuator diagnostics"
 Invoke-SandboxJson GET "/actuator/hydracache/caches/main/diagnostics" | ConvertTo-Json -Depth 8

@@ -66,6 +66,10 @@ Did the second call actually hit the cache?
 - Event log filtering by `kind`, `key`, `tag`, `flow_id`, and `limit`, plus
   optional append-only JSONL persistence through
   `HYDRACACHE_SANDBOX_EVENT_LOG_PATH`.
+- Scenario runner, flow timeline, profile comparison, replay, fault injection,
+  manual benchmark, and optional local bearer-token guard endpoints.
+- Latency summaries on event logs, reports, exports, timelines, scenario
+  responses, and manual benchmark responses.
 - No-CDN developer console counters for hits, misses, loads, and
   single-flight joins.
 - Docker Compose healthchecks for the full sandbox API service.
@@ -192,7 +196,14 @@ GET  /demo/events
 GET  /demo/events?kind=cache-hit
 GET  /demo/events?flow_id=manual-flow&limit=10
 GET  /demo/export
+GET  /demo/flows/{flow_id}/timeline
+GET  /demo/security
 POST /demo/self-test
+POST /demo/scenarios/run
+POST /demo/profiles/compare
+POST /demo/replay
+POST /demo/faults/run
+POST /demo/benchmarks/manual
 POST /demo/events/clear
 POST /demo/reset
 POST /demo/cache/put

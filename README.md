@@ -404,11 +404,13 @@ HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000
 HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite
 HYDRACACHE_SANDBOX_DATABASE_URL=postgres://hydracache:hydracache@127.0.0.1:54329/hydracache
 HYDRACACHE_SANDBOX_EVENT_LOG_PATH=target/hydracache-sandbox-events.jsonl
+# HYDRACACHE_SANDBOX_TOKEN=local-dev-token
 ```
 
 `HYDRACACHE_SANDBOX_EVENT_LOG_PATH` is optional. When set, the sandbox writes
 recent demo events to an append-only JSONL file while still keeping the bounded
-in-memory event log for the API and UI.
+in-memory event log for the API and UI. `HYDRACACHE_SANDBOX_TOKEN` is also
+optional; when set, sandbox routes require `Authorization: Bearer <token>`.
 
 Supported profile values are `memory`, `sqlite-memory`, `sqlite-file`,
 `postgres-compose`, and `postgres-docker`. CLI flags override the committed
@@ -458,6 +460,7 @@ http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
 http://127.0.0.1:3000/demo/export
+http://127.0.0.1:3000/demo/security
 http://127.0.0.1:3000/actuator/hydracache/health
 http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
 ```
@@ -473,7 +476,8 @@ invalidation/load race safety.
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
 state, show structured events, run the built-in self-test, export a portable
-report bundle, and display small hit/miss/load counters.
+report bundle, compare local profiles, replay named scenarios, run fault
+injection, launch a manual benchmark, and display small hit/miss/load counters.
 
 Useful Swagger/API groups:
 
@@ -486,7 +490,14 @@ GET  /demo/events
 GET  /demo/events?kind=cache-hit
 GET  /demo/events?flow_id=manual-flow&limit=10
 GET  /demo/export
+GET  /demo/flows/{flow_id}/timeline
+GET  /demo/security
 POST /demo/self-test
+POST /demo/scenarios/run
+POST /demo/profiles/compare
+POST /demo/replay
+POST /demo/faults/run
+POST /demo/benchmarks/manual
 POST /demo/events/clear
 POST /demo/reset
 POST /demo/cache/put
@@ -518,6 +529,22 @@ scenario runs, resets, and expected errors. It can be filtered by exact
 combines sandbox info, readiness, config, report, and events into one bundle;
 `POST /demo/self-test` runs a built-in smoke scenario and returns step-level
 results plus a filtered event log for that self-test flow.
+
+The scenario lab endpoints turn the sandbox into a reproducible cache behavior
+workbench:
+
+```text
+POST /demo/scenarios/run        # golden-path, ttl, single-flight, invalidation-race, negative-suite, self-test
+GET  /demo/flows/{flow_id}/timeline
+POST /demo/profiles/compare    # memory/sqlite-memory/sqlite-file; Postgres is reported as skipped
+POST /demo/replay              # rerun a named scenario and link it to a previous flow id
+POST /demo/faults/run          # loader errors, loader delays, invalidation timing
+POST /demo/benchmarks/manual   # small request/concurrency/key-distribution workload
+```
+
+Latency is recorded on demo events where the sandbox controls the operation.
+`/demo/report`, `/demo/events`, `/demo/export`, scenario responses, timelines,
+and benchmark responses include min/max/average/p95-style summaries.
 
 The read-only actuator remains available for operational views:
 `/actuator/hydracache/health`,

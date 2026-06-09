@@ -45,6 +45,80 @@ GET {{baseUrl}}/demo/export
 ### Built-in self-test
 POST {{baseUrl}}/demo/self-test
 
+### Scenario runner: golden path
+POST {{baseUrl}}/demo/scenarios/run
+Content-Type: application/json
+
+{
+  "scenario": "golden-path",
+  "flow_id": "manual-golden",
+  "reset": true
+}
+
+### Timeline for one flow id
+GET {{baseUrl}}/demo/flows/manual-golden/timeline
+
+### Compare supported local profiles
+POST {{baseUrl}}/demo/profiles/compare
+Content-Type: application/json
+
+{
+  "scenario": "ttl",
+  "profiles": ["memory", "sqlite-memory", "sqlite-file", "postgres-compose"]
+}
+
+### Replay a named scenario and link it to a previous flow
+POST {{baseUrl}}/demo/replay
+Content-Type: application/json
+
+{
+  "scenario": "negative-suite",
+  "source_flow_id": "manual-golden",
+  "flow_id": "manual-replay",
+  "reset": true
+}
+
+### Fault injection: invalidation race timing
+POST {{baseUrl}}/demo/faults/run
+Content-Type: application/json
+
+{
+  "scenario": "invalidation-race",
+  "loader_delay_ms": 80,
+  "invalidate_after_ms": 10,
+  "flow_id": "fault-race"
+}
+
+### Fault injection: loader error
+POST {{baseUrl}}/demo/faults/run
+Content-Type: application/json
+
+{
+  "scenario": "golden-path",
+  "fail_loader": true,
+  "flow_id": "fault-loader"
+}
+
+### Manual benchmark
+POST {{baseUrl}}/demo/benchmarks/manual
+Content-Type: application/json
+
+{
+  "key_prefix": "bench",
+  "requests": 64,
+  "concurrency": 8,
+  "unique_keys": 4,
+  "loader_delay_ms": 5,
+  "flow_id": "bench-flow"
+}
+
+### Optional auth guard status
+GET {{baseUrl}}/demo/security
+
+### Optional auth guard example when HYDRACACHE_SANDBOX_TOKEN is configured
+GET {{baseUrl}}/demo/security
+Authorization: Bearer local-dev-token
+
 ### Clear structured event log
 POST {{baseUrl}}/demo/events/clear
 
