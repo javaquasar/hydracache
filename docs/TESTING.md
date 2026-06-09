@@ -98,6 +98,24 @@ work. If a future optimization needs hard latency budgets, prefer adding a
 separate ignored or benchmark-specific target instead of making the default CI
 suite depend on machine-specific timing.
 
+## Allocation Profiles
+
+Allocation profiles are intentionally manual because allocation counts vary by
+platform, optimization level, async runtime scheduling, and dependency versions.
+The harness lives in `crates/hydracache/tests/allocation_profile.rs` and uses a
+test-local counting global allocator.
+
+Run it in release mode with ignored tests enabled:
+
+```powershell
+cargo test --release -p hydracache --test allocation_profile --locked -- --ignored --nocapture
+```
+
+The output contains `allocation-profile` lines for hot `get` hits,
+`contains_key`, typed-cache hot hits, and bulk tag invalidation. Use these
+numbers as before/after evidence when working through
+`docs/plans/V0_18_ALLOCATION_OPTIMIZATION_PLAN.md`.
+
 ## Procedural Macro Tests
 
 Procedural macros need two layers of tests because normal unit tests and real
