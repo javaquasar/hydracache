@@ -1,0 +1,44 @@
+{
+  "name": "golden-path-json",
+  "description": "Load the same user twice and assert that the second call is served from cache.",
+  "flow_id": "file-json-golden",
+  "reset": true,
+  "steps": [
+    {
+      "name": "first load",
+      "action": "load-user",
+      "id": 42,
+      "ttl_ms": 5000,
+      "tags": ["file-json"],
+      "expected_source": "loader"
+    },
+    {
+      "name": "second load",
+      "action": "load-user",
+      "id": 42,
+      "ttl_ms": 5000,
+      "tags": ["file-json"],
+      "expected_source": "cache"
+    }
+  ],
+  "assertions": [
+    {
+      "name": "all steps passed",
+      "metric": "failed-steps",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "name": "cache hit observed",
+      "metric": "cache-hits",
+      "op": "gte",
+      "value": 1
+    },
+    {
+      "name": "loader called once",
+      "metric": "loader-calls",
+      "op": "eq",
+      "value": 1
+    }
+  ]
+}

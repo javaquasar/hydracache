@@ -112,6 +112,106 @@ Content-Type: application/json
   "flow_id": "bench-flow"
 }
 
+### Benchmark compare
+POST {{baseUrl}}/demo/benchmarks/compare
+Content-Type: application/json
+
+{
+  "baseline": {
+    "key_prefix": "bench-a",
+    "requests": 64,
+    "concurrency": 8,
+    "unique_keys": 4,
+    "loader_delay_ms": 5,
+    "flow_id": "bench-a"
+  },
+  "candidate": {
+    "key_prefix": "bench-b",
+    "requests": 64,
+    "concurrency": 8,
+    "unique_keys": 16,
+    "loader_delay_ms": 5,
+    "flow_id": "bench-b"
+  }
+}
+
+### Parse a small YAML scenario document
+POST {{baseUrl}}/demo/scenarios/document/parse
+Content-Type: application/json
+
+{
+  "format": "yaml",
+  "document": "name: yaml-golden\nflow_id: yaml-flow\nreset: true\nsteps:\n  - name: first load\n    action: load-user\n    id: 42\n    ttl_ms: 5000\n    tags: [yaml]\n    expected_source: loader\n  - name: second load\n    action: load-user\n    id: 42\n    ttl_ms: 5000\n    tags: [yaml]\n    expected_source: cache\nassertions:\n  - name: has hit\n    metric: cache-hits\n    op: gte\n    value: 1\n"
+}
+
+### Run a JSON scenario document with assertions
+POST {{baseUrl}}/demo/scenarios/document/run
+Content-Type: application/json
+
+{
+  "name": "json-golden",
+  "flow_id": "json-dsl-flow",
+  "reset": true,
+  "steps": [
+    {
+      "name": "first load",
+      "action": "load-user",
+      "id": 42,
+      "ttl_ms": 5000,
+      "tags": ["json-dsl"],
+      "expected_source": "loader"
+    },
+    {
+      "name": "second load",
+      "action": "load-user",
+      "id": 42,
+      "ttl_ms": 5000,
+      "tags": ["json-dsl"],
+      "expected_source": "cache"
+    }
+  ],
+  "assertions": [
+    {
+      "name": "all steps pass",
+      "metric": "failed-steps",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "name": "has cache hit",
+      "metric": "cache-hits",
+      "op": "gte",
+      "value": 1
+    }
+  ]
+}
+
+### Prometheus text metrics
+GET {{baseUrl}}/demo/observability/prometheus
+
+### OpenTelemetry-style latest trace
+GET {{baseUrl}}/demo/observability/traces/latest
+
+### Database seed and migration report
+GET {{baseUrl}}/demo/db/seed-report
+
+### OpenAPI generated-client contract check
+GET {{baseUrl}}/demo/openapi/client-check
+
+### Import an empty session event stream shape
+POST {{baseUrl}}/demo/import
+Content-Type: application/json
+
+{
+  "replace_events": true,
+  "source": "manual-import",
+  "bundle": {
+    "events": {
+      "events": []
+    }
+  }
+}
+
 ### Optional auth guard status
 GET {{baseUrl}}/demo/security
 

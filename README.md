@@ -460,6 +460,9 @@ http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
 http://127.0.0.1:3000/demo/export
+http://127.0.0.1:3000/demo/scenarios/document/run
+http://127.0.0.1:3000/demo/benchmarks/compare
+http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/security
 http://127.0.0.1:3000/actuator/hydracache/health
 http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
@@ -477,7 +480,9 @@ invalidation/load race safety.
 can run the golden flow, negative scenarios, readiness checks, reset the demo
 state, show structured events, run the built-in self-test, export a portable
 report bundle, compare local profiles, replay named scenarios, run fault
-injection, launch a manual benchmark, and display small hit/miss/load counters.
+injection, launch a manual benchmark, run JSON/YAML scenario documents, compare
+benchmark reports, inspect Prometheus-style metrics, and display small
+hit/miss/load counters with a visual flow timeline.
 
 Useful Swagger/API groups:
 
@@ -491,13 +496,21 @@ GET  /demo/events?kind=cache-hit
 GET  /demo/events?flow_id=manual-flow&limit=10
 GET  /demo/export
 GET  /demo/flows/{flow_id}/timeline
+GET  /demo/observability/prometheus
+GET  /demo/observability/traces/latest
+GET  /demo/db/seed-report
+GET  /demo/openapi/client-check
 GET  /demo/security
+POST /demo/import
 POST /demo/self-test
 POST /demo/scenarios/run
+POST /demo/scenarios/document/parse
+POST /demo/scenarios/document/run
 POST /demo/profiles/compare
 POST /demo/replay
 POST /demo/faults/run
 POST /demo/benchmarks/manual
+POST /demo/benchmarks/compare
 POST /demo/events/clear
 POST /demo/reset
 POST /demo/cache/put
@@ -540,11 +553,47 @@ POST /demo/profiles/compare    # memory/sqlite-memory/sqlite-file; Postgres is r
 POST /demo/replay              # rerun a named scenario and link it to a previous flow id
 POST /demo/faults/run          # loader errors, loader delays, invalidation timing
 POST /demo/benchmarks/manual   # small request/concurrency/key-distribution workload
+POST /demo/benchmarks/compare  # baseline/candidate latency, throughput, loader-call diff
 ```
+
+Scenario documents can be kept as JSON or a small YAML subset in
+`crates/hydracache-sandbox/scenarios/`. They describe steps plus pass/fail
+assertions, so a manual demo can become a reusable regression recipe:
+
+```json
+{
+  "name": "golden-path-json",
+  "flow_id": "file-json-golden",
+  "reset": true,
+  "steps": [
+    {"name": "first load", "action": "load-user", "id": 42, "expected_source": "loader"},
+    {"name": "second load", "action": "load-user", "id": 42, "expected_source": "cache"}
+  ],
+  "assertions": [
+    {"name": "cache hit observed", "metric": "cache-hits", "op": "gte", "value": 1},
+    {"name": "loader called once", "metric": "loader-calls", "op": "eq", "value": 1}
+  ]
+}
+```
+
+Use `POST /demo/scenarios/document/parse` for YAML text normalization and
+`POST /demo/scenarios/document/run` for execution. The bundled YAML example is
+at `crates/hydracache-sandbox/scenarios/golden-path.yaml`.
 
 Latency is recorded on demo events where the sandbox controls the operation.
 `/demo/report`, `/demo/events`, `/demo/export`, scenario responses, timelines,
 and benchmark responses include min/max/average/p95-style summaries.
+
+For observability demos, `/demo/observability/prometheus` emits dependency-free
+Prometheus text metrics and `/demo/observability/traces/latest` returns an
+OpenTelemetry-style teaching view derived from the retained event log. The
+sandbox also includes SQLite/Postgres schema and seed files under
+`crates/hydracache-sandbox/migrations/` and `crates/hydracache-sandbox/seeds/`;
+`GET /demo/db/seed-report` summarizes those assets. `GET
+/demo/openapi/client-check` verifies that representative generated-client paths
+exist in the current OpenAPI document, and
+`crates/hydracache-sandbox/openapi/generated-client.js` shows a minimal fetch
+client shape.
 
 The read-only actuator remains available for operational views:
 `/actuator/hydracache/health`,

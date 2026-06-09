@@ -81,9 +81,10 @@ OpenAPI lab. Inspect `/ready`, `/demo/config`, `/demo/presets`,
 `/demo/report`, `/demo/events`, `/demo/export`, `POST /demo/self-test`, and
 the read-only actuator reports. The script also covers the scenario runner,
 flow timeline, local profile comparison, replay, fault injection, manual
-benchmark, and optional auth-guard status. If `HYDRACACHE_SANDBOX_EVENT_LOG_PATH`
-is set, the sandbox also appends demo events to a local JSONL file for manual
-review.
+benchmark, scenario document DSL, benchmark comparison, Prometheus/trace demo
+reports, DB seed report, OpenAPI client check, and optional auth-guard status.
+If `HYDRACACHE_SANDBOX_EVENT_LOG_PATH` is set, the sandbox also appends demo
+events to a local JSONL file for manual review.
 For a Compose-backed Postgres run:
 
 ```powershell

@@ -31,6 +31,19 @@ function Invoke-SandboxJson {
         -Body ($Body | ConvertTo-Json -Depth 8)
 }
 
+function Invoke-SandboxText {
+    param(
+        [string] $Path
+    )
+
+    $headers = @{}
+    if ($Token -ne "") {
+        $headers["Authorization"] = "Bearer $Token"
+    }
+
+    return Invoke-RestMethod -Method GET -Uri "$BaseUrl$Path" -Headers $headers
+}
+
 Write-Host "HydraCache sandbox demo flow against $BaseUrl"
 Write-Host "Flow id: $FlowId"
 
@@ -208,5 +221,71 @@ Invoke-SandboxJson POST "/demo/benchmarks/manual" @{
 } | ConvertTo-Json -Depth 8
 Invoke-SandboxJson GET "/demo/security" | ConvertTo-Json -Depth 8
 
-Write-Host "`n28. Actuator diagnostics"
+Write-Host "`n28. Scenario document DSL"
+Invoke-SandboxJson POST "/demo/scenarios/document/run" @{
+    name = "script-dsl-golden"
+    flow_id = "$FlowId-dsl"
+    reset = $true
+    steps = @(
+        @{
+            name = "first load"
+            action = "load-user"
+            id = 42
+            ttl_ms = 5000
+            tags = @("script-dsl")
+            expected_source = "loader"
+        },
+        @{
+            name = "second load"
+            action = "load-user"
+            id = 42
+            ttl_ms = 5000
+            tags = @("script-dsl")
+            expected_source = "cache"
+        }
+    )
+    assertions = @(
+        @{
+            name = "all steps pass"
+            metric = "failed-steps"
+            op = "eq"
+            value = 0
+        },
+        @{
+            name = "has cache hit"
+            metric = "cache-hits"
+            op = "gte"
+            value = 1
+        }
+    )
+} | ConvertTo-Json -Depth 12
+Invoke-SandboxJson GET "/demo/flows/$FlowId-dsl/timeline" | ConvertTo-Json -Depth 8
+
+Write-Host "`n29. Benchmark compare"
+Invoke-SandboxJson POST "/demo/benchmarks/compare" @{
+    baseline = @{
+        key_prefix = "script-bench-a"
+        requests = 64
+        concurrency = 8
+        unique_keys = 4
+        loader_delay_ms = 5
+        flow_id = "$FlowId-bench-a"
+    }
+    candidate = @{
+        key_prefix = "script-bench-b"
+        requests = 64
+        concurrency = 8
+        unique_keys = 16
+        loader_delay_ms = 5
+        flow_id = "$FlowId-bench-b"
+    }
+} | ConvertTo-Json -Depth 8
+
+Write-Host "`n30. Observability, seed report, and OpenAPI client check"
+Invoke-SandboxJson GET "/demo/observability/traces/latest" | ConvertTo-Json -Depth 8
+Invoke-SandboxText "/demo/observability/prometheus"
+Invoke-SandboxJson GET "/demo/db/seed-report" | ConvertTo-Json -Depth 8
+Invoke-SandboxJson GET "/demo/openapi/client-check" | ConvertTo-Json -Depth 8
+
+Write-Host "`n31. Actuator diagnostics"
 Invoke-SandboxJson GET "/actuator/hydracache/caches/main/diagnostics" | ConvertTo-Json -Depth 8

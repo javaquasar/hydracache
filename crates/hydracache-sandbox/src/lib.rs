@@ -33,12 +33,15 @@
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/export
 //! http://127.0.0.1:3000/demo/scenarios/run
+//! http://127.0.0.1:3000/demo/scenarios/document/run
 //! http://127.0.0.1:3000/demo/flows/{flow_id}/timeline
 //! http://127.0.0.1:3000/demo/benchmarks/manual
+//! http://127.0.0.1:3000/demo/benchmarks/compare
+//! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
 //! ```
 
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;
 use std::fs;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -522,13 +525,24 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/config", get(config_info))
         .route("/demo/presets", get(presets))
         .route("/demo/export", get(export_bundle))
+        .route("/demo/import", post(import_session))
         .route("/demo/self-test", post(self_test))
         .route("/demo/scenarios/run", post(run_scenario))
+        .route(
+            "/demo/scenarios/document/parse",
+            post(parse_scenario_document),
+        )
+        .route("/demo/scenarios/document/run", post(run_scenario_document))
         .route("/demo/flows/{flow_id}/timeline", get(flow_timeline))
         .route("/demo/profiles/compare", post(compare_profiles))
         .route("/demo/replay", post(replay_scenario))
         .route("/demo/faults/run", post(run_fault_injection))
         .route("/demo/benchmarks/manual", post(manual_benchmark))
+        .route("/demo/benchmarks/compare", post(compare_benchmarks))
+        .route("/demo/observability/prometheus", get(prometheus_metrics))
+        .route("/demo/observability/traces/latest", get(latest_trace_demo))
+        .route("/demo/db/seed-report", get(seed_report))
+        .route("/demo/openapi/client-check", get(openapi_client_check))
         .route("/demo/security", get(security_info))
         .route("/demo/report", get(report))
         .route("/demo/events", get(events))
@@ -719,10 +733,14 @@ impl SandboxStorage {
                 Ok(())
             }
             Self::Sqlite(pool) => {
+                sqlx::query("delete from orders").execute(pool).await?;
+                sqlx::query("delete from products").execute(pool).await?;
                 sqlx::query("delete from users").execute(pool).await?;
                 Ok(())
             }
             Self::Postgres(pool) => {
+                sqlx::query("delete from orders").execute(pool).await?;
+                sqlx::query("delete from products").execute(pool).await?;
                 sqlx::query("delete from users").execute(pool).await?;
                 Ok(())
             }
@@ -831,8 +849,28 @@ async fn seed_storage(storage: &SandboxStorage) -> Result<(), SandboxError> {
             )
             .execute(pool)
             .await?;
+            sqlx::query(
+                "create table if not exists products (
+                    id bigint primary key,
+                    name text not null,
+                    price_cents bigint not null
+                )",
+            )
+            .execute(pool)
+            .await?;
+            sqlx::query(
+                "create table if not exists orders (
+                    id bigint primary key,
+                    user_id bigint not null,
+                    product_id bigint not null,
+                    quantity bigint not null
+                )",
+            )
+            .execute(pool)
+            .await?;
             storage.upsert_user(42, "Ada".to_owned()).await?;
             storage.upsert_user(7, "Linus".to_owned()).await?;
+            seed_sqlite_catalog(pool).await?;
         }
         SandboxStorage::Postgres(pool) => {
             sqlx::query(
@@ -840,10 +878,80 @@ async fn seed_storage(storage: &SandboxStorage) -> Result<(), SandboxError> {
             )
             .execute(pool)
             .await?;
+            sqlx::query(
+                "create table if not exists products (
+                    id bigint primary key,
+                    name text not null,
+                    price_cents bigint not null
+                )",
+            )
+            .execute(pool)
+            .await?;
+            sqlx::query(
+                "create table if not exists orders (
+                    id bigint primary key,
+                    user_id bigint not null,
+                    product_id bigint not null,
+                    quantity bigint not null
+                )",
+            )
+            .execute(pool)
+            .await?;
             storage.upsert_user(42, "Ada".to_owned()).await?;
             storage.upsert_user(7, "Linus".to_owned()).await?;
+            seed_postgres_catalog(pool).await?;
         }
     }
+    Ok(())
+}
+
+async fn seed_sqlite_catalog(pool: &SqlitePool) -> Result<(), SandboxError> {
+    sqlx::query(
+        "insert into products (id, name, price_cents) values
+            (100, 'Mechanical Keyboard', 12900),
+            (200, 'Observability Notebook', 1900)
+         on conflict(id) do update set
+            name = excluded.name,
+            price_cents = excluded.price_cents",
+    )
+    .execute(pool)
+    .await?;
+    sqlx::query(
+        "insert into orders (id, user_id, product_id, quantity) values
+            (5000, 42, 100, 1),
+            (5001, 7, 200, 2)
+         on conflict(id) do update set
+            user_id = excluded.user_id,
+            product_id = excluded.product_id,
+            quantity = excluded.quantity",
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+async fn seed_postgres_catalog(pool: &PgPool) -> Result<(), SandboxError> {
+    sqlx::query(
+        "insert into products (id, name, price_cents) values
+            (100, 'Mechanical Keyboard', 12900),
+            (200, 'Observability Notebook', 1900)
+         on conflict(id) do update set
+            name = excluded.name,
+            price_cents = excluded.price_cents",
+    )
+    .execute(pool)
+    .await?;
+    sqlx::query(
+        "insert into orders (id, user_id, product_id, quantity) values
+            (5000, 42, 100, 1),
+            (5001, 7, 200, 2)
+         on conflict(id) do update set
+            user_id = excluded.user_id,
+            product_id = excluded.product_id,
+            quantity = excluded.quantity",
+    )
+    .execute(pool)
+    .await?;
     Ok(())
 }
 
@@ -946,7 +1054,7 @@ enum DemoEventKind {
     Error,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 struct DemoEvent {
     id: u64,
     kind: DemoEventKind,
@@ -1217,6 +1325,271 @@ struct SecurityInfoResponse {
     scheme: &'static str,
     header: &'static str,
     note: &'static str,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ScenarioDocumentFormat {
+    #[default]
+    Json,
+    Yaml,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ScenarioStepAction {
+    LoadUser,
+    UpsertUser,
+    InvalidateUser,
+    CachePut,
+    CacheGet,
+    Ttl,
+    SingleFlight,
+    InvalidationRace,
+    NegativeLoaderError,
+    ManualBenchmark,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[schema(example = json!({
+    "name": "golden-dsl",
+    "description": "Load, hit, update, invalidate, and reload a demo user.",
+    "flow_id": "dsl-golden",
+    "reset": true,
+    "steps": [
+        {"name": "first load", "action": "load-user", "id": 42, "ttl_ms": 5000, "tags": ["dsl"], "expected_source": "loader"},
+        {"name": "second load", "action": "load-user", "id": 42, "ttl_ms": 5000, "tags": ["dsl"], "expected_source": "cache"}
+    ],
+    "assertions": [
+        {"name": "has hit", "metric": "cache-hits", "op": "gte", "value": 1},
+        {"name": "one loader call", "metric": "loader-calls", "op": "eq", "value": 1}
+    ]
+}))]
+struct ScenarioDocument {
+    name: String,
+    #[serde(default)]
+    description: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+    #[serde(default = "default_true")]
+    reset: bool,
+    #[serde(default)]
+    steps: Vec<ScenarioDocumentStep>,
+    #[serde(default)]
+    assertions: Vec<ScenarioAssertion>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+struct ScenarioDocumentStep {
+    #[serde(default)]
+    name: Option<String>,
+    action: ScenarioStepAction,
+    #[serde(default)]
+    id: Option<i64>,
+    #[serde(default)]
+    user_name: Option<String>,
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    tag: Option<String>,
+    #[serde(default)]
+    tags: Vec<String>,
+    #[serde(default)]
+    ttl_ms: Option<u64>,
+    #[serde(default)]
+    wait_ms: Option<u64>,
+    #[serde(default)]
+    loader_delay_ms: Option<u64>,
+    #[serde(default)]
+    invalidate_after_ms: Option<u64>,
+    #[serde(default)]
+    concurrency: Option<u16>,
+    #[serde(default)]
+    requests: Option<u16>,
+    #[serde(default)]
+    unique_keys: Option<u16>,
+    #[serde(default)]
+    error: Option<String>,
+    #[serde(default)]
+    expected_source: Option<LoadSource>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ScenarioAssertionMetric {
+    PassedSteps,
+    FailedSteps,
+    LoaderCalls,
+    FunctionCalls,
+    CacheHits,
+    CacheMisses,
+    CacheLoads,
+    SingleFlightJoins,
+    StaleLoadDiscards,
+    Invalidations,
+    EventCount,
+    FlowEventCount,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ScenarioAssertionOperator {
+    Eq,
+    Gt,
+    Gte,
+    Lt,
+    Lte,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+struct ScenarioAssertion {
+    #[serde(default)]
+    name: Option<String>,
+    metric: ScenarioAssertionMetric,
+    op: ScenarioAssertionOperator,
+    value: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioDocumentStepResult {
+    sequence: usize,
+    name: String,
+    action: ScenarioStepAction,
+    passed: bool,
+    message: String,
+    #[schema(value_type = Object)]
+    output: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ScenarioAssertionResult {
+    name: String,
+    metric: ScenarioAssertionMetric,
+    op: ScenarioAssertionOperator,
+    expected: u64,
+    actual: u64,
+    passed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioDocumentRunResponse {
+    name: String,
+    description: Option<String>,
+    flow_id: String,
+    passed: bool,
+    steps: Vec<ScenarioDocumentStepResult>,
+    assertions: Vec<ScenarioAssertionResult>,
+    report: ApplicationReport,
+    events: EventLogResponse,
+    latency: LatencySummary,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"format": "yaml", "document": "name: golden-dsl\nflow_id: dsl-golden\nreset: true\nsteps:\n  - name: first load\n    action: load-user\n    id: 42\n    expected_source: loader\nassertions:\n  - metric: loader-calls\n    op: gte\n    value: 1\n"}))]
+struct ScenarioDocumentParseRequest {
+    #[serde(default)]
+    format: ScenarioDocumentFormat,
+    document: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ScenarioDocumentParseResponse {
+    format: ScenarioDocumentFormat,
+    document: ScenarioDocument,
+    #[schema(value_type = Object)]
+    normalized_json: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({
+    "baseline": {"key_prefix": "bench-a", "requests": 64, "concurrency": 8, "unique_keys": 4, "loader_delay_ms": 5, "flow_id": "bench-a"},
+    "candidate": {"key_prefix": "bench-b", "requests": 64, "concurrency": 8, "unique_keys": 16, "loader_delay_ms": 5, "flow_id": "bench-b"}
+}))]
+struct BenchmarkCompareRequest {
+    baseline: BenchmarkRequest,
+    candidate: BenchmarkRequest,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct BenchmarkDiff {
+    duration_ms_delta: i64,
+    requests_per_second_delta: i64,
+    loader_invocations_delta: i64,
+    hit_ratio_delta: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct BenchmarkCompareResponse {
+    baseline: BenchmarkResponse,
+    candidate: BenchmarkResponse,
+    diff: BenchmarkDiff,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct TraceSpanReport {
+    trace_id: String,
+    span_id: String,
+    parent_span_id: Option<String>,
+    name: String,
+    duration_ms: Option<u64>,
+    #[schema(value_type = Object)]
+    attributes: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct TraceDemoResponse {
+    trace_id: String,
+    span_count: usize,
+    note: &'static str,
+    spans: Vec<TraceSpanReport>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct SeedTableReport {
+    name: &'static str,
+    rows: u64,
+    description: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct SeedReport {
+    backend: String,
+    tables: Vec<SeedTableReport>,
+    migration_scripts: Vec<&'static str>,
+    seed_script: &'static str,
+    note: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, ToSchema)]
+#[schema(example = json!({"replace_events": true, "source": "bug-report", "bundle": {"events": {"events": []}}}))]
+struct SessionImportRequest {
+    #[serde(default = "default_true")]
+    replace_events: bool,
+    #[serde(default)]
+    source: Option<String>,
+    #[schema(value_type = Object)]
+    bundle: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct SessionImportResponse {
+    imported_events: usize,
+    replaced_events: bool,
+    flow_ids: Vec<String>,
+    source: Option<String>,
+    report: ApplicationReport,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct OpenApiClientCheckResponse {
+    openapi_version: String,
+    passed: bool,
+    checked_paths: Vec<String>,
+    missing_paths: Vec<String>,
+    sample_client: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
@@ -1507,7 +1880,7 @@ struct CapabilityReport {
     description: &'static str,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
 enum LoadSource {
     Cache,
@@ -1780,6 +2153,26 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
             })),
         },
         ScenarioPreset {
+            name: "scenario-document",
+            method: "POST",
+            path: "/demo/scenarios/document/run",
+            description: "Run a JSON/YAML-compatible scenario document with executable assertions.",
+            body: Some(json!({
+                "name": "golden-dsl",
+                "description": "Load and hit a cached user through the scenario DSL.",
+                "flow_id": "dsl-golden",
+                "reset": true,
+                "steps": [
+                    {"name": "first load", "action": "load-user", "id": 42, "ttl_ms": 5000, "tags": ["dsl"], "expected_source": "loader"},
+                    {"name": "second load", "action": "load-user", "id": 42, "ttl_ms": 5000, "tags": ["dsl"], "expected_source": "cache"}
+                ],
+                "assertions": [
+                    {"name": "has cache hit", "metric": "cache-hits", "op": "gte", "value": 1},
+                    {"name": "loader called once", "metric": "loader-calls", "op": "eq", "value": 1}
+                ]
+            })),
+        },
+        ScenarioPreset {
             name: "timeline",
             method: "GET",
             path: "/demo/flows/manual-golden/timeline",
@@ -1833,6 +2226,34 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
                 "unique_keys": 4,
                 "loader_delay_ms": 5,
                 "flow_id": "bench-flow"
+            })),
+        },
+        ScenarioPreset {
+            name: "benchmark-compare",
+            method: "POST",
+            path: "/demo/benchmarks/compare",
+            description: "Run two benchmark profiles and compare latency, throughput, loaders, and hit ratio.",
+            body: Some(json!({
+                "baseline": {"key_prefix": "bench-a", "requests": 64, "concurrency": 8, "unique_keys": 4, "loader_delay_ms": 5, "flow_id": "bench-a"},
+                "candidate": {"key_prefix": "bench-b", "requests": 64, "concurrency": 8, "unique_keys": 16, "loader_delay_ms": 5, "flow_id": "bench-b"}
+            })),
+        },
+        ScenarioPreset {
+            name: "prometheus-metrics",
+            method: "GET",
+            path: "/demo/observability/prometheus",
+            description: "Read Prometheus text exposition for local sandbox diagnostics.",
+            body: None,
+        },
+        ScenarioPreset {
+            name: "session-import",
+            method: "POST",
+            path: "/demo/import",
+            description: "Import a previously exported event stream for bug-report replay context.",
+            body: Some(json!({
+                "replace_events": true,
+                "source": "manual-import",
+                "bundle": {"events": {"events": []}}
             })),
         },
         ScenarioPreset {
@@ -1918,6 +2339,73 @@ async fn export_bundle(
         report: application_report(&state).await,
         events: event_log(&state, &EventQuery::default()).await,
     }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/import",
+    tag = "reports",
+    request_body = SessionImportRequest,
+    responses((status = 200, description = "Import a portable sandbox session event stream from an export bundle", body = SessionImportResponse))
+)]
+async fn import_session(
+    State(state): State<SandboxState>,
+    Json(request): Json<SessionImportRequest>,
+) -> Result<Json<SessionImportResponse>, SandboxHttpError> {
+    let imported_events = importable_events_from_bundle(&request.bundle)?;
+    let flow_ids = imported_events
+        .iter()
+        .filter_map(|event| event.flow_id.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let max_event_id = imported_events
+        .iter()
+        .map(|event| event.id)
+        .max()
+        .unwrap_or_default();
+    let imported_event_count = imported_events.len();
+
+    {
+        let mut events = state.events.write().await;
+        if request.replace_events {
+            events.clear();
+        }
+        for event in imported_events {
+            if events.len() == MAX_DEMO_EVENTS {
+                events.pop_front();
+            }
+            events.push_back(event);
+        }
+    }
+    state
+        .next_event_id
+        .fetch_max(max_event_id.saturating_add(1), Ordering::SeqCst);
+
+    Ok(Json(SessionImportResponse {
+        imported_events: imported_event_count,
+        replaced_events: request.replace_events,
+        flow_ids,
+        source: request.source,
+        report: application_report(&state).await,
+        events: event_log(&state, &EventQuery::default()).await,
+    }))
+}
+
+fn importable_events_from_bundle(bundle: &Value) -> Result<Vec<DemoEvent>, SandboxHttpError> {
+    let events_value = bundle
+        .get("events")
+        .and_then(|events| events.get("events"))
+        .cloned()
+        .or_else(|| bundle.get("events").cloned())
+        .ok_or_else(|| {
+            SandboxHttpError::bad_request(
+                "import bundle must contain either `events.events` or direct `events` array",
+            )
+        })?;
+
+    serde_json::from_value(events_value)
+        .map_err(|error| SandboxHttpError::bad_request(error.to_string()))
 }
 
 #[utoipa::path(
@@ -2422,6 +2910,576 @@ async fn run_scenario(
 }
 
 #[utoipa::path(
+    post,
+    path = "/demo/scenarios/document/parse",
+    tag = "scenarios",
+    request_body = ScenarioDocumentParseRequest,
+    responses((status = 200, description = "Parse a JSON or small YAML scenario document into the normalized scenario DSL", body = ScenarioDocumentParseResponse))
+)]
+async fn parse_scenario_document(
+    Json(request): Json<ScenarioDocumentParseRequest>,
+) -> Result<Json<ScenarioDocumentParseResponse>, SandboxHttpError> {
+    let document = parse_scenario_document_text(request.format, &request.document)?;
+    let normalized_json = serde_json::to_value(&document)
+        .map_err(|error| SandboxHttpError::internal(error.to_string()))?;
+    Ok(Json(ScenarioDocumentParseResponse {
+        format: request.format,
+        document,
+        normalized_json,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/scenarios/document/run",
+    tag = "scenarios",
+    request_body = ScenarioDocument,
+    responses((status = 200, description = "Run a JSON/YAML-compatible scenario document with step assertions", body = ScenarioDocumentRunResponse))
+)]
+async fn run_scenario_document(
+    State(state): State<SandboxState>,
+    Json(document): Json<ScenarioDocument>,
+) -> Result<Json<ScenarioDocumentRunResponse>, SandboxHttpError> {
+    Ok(Json(execute_scenario_document(&state, document).await?))
+}
+
+fn parse_scenario_document_text(
+    format: ScenarioDocumentFormat,
+    document: &str,
+) -> Result<ScenarioDocument, SandboxHttpError> {
+    let parsed = match format {
+        ScenarioDocumentFormat::Json => serde_json::from_str(document)
+            .map_err(|error| SandboxHttpError::bad_request(error.to_string()))?,
+        ScenarioDocumentFormat::Yaml => parse_small_yaml_scenario_document(document)?,
+    };
+    validate_scenario_document(&parsed)?;
+    Ok(parsed)
+}
+
+fn validate_scenario_document(document: &ScenarioDocument) -> Result<(), SandboxHttpError> {
+    if document.name.trim().is_empty() {
+        return Err(SandboxHttpError::bad_request(
+            "scenario document requires a non-empty name",
+        ));
+    }
+    if document.steps.is_empty() {
+        return Err(SandboxHttpError::bad_request(
+            "scenario document requires at least one step",
+        ));
+    }
+    Ok(())
+}
+
+fn parse_small_yaml_scenario_document(input: &str) -> Result<ScenarioDocument, SandboxHttpError> {
+    let mut root = serde_json::Map::new();
+    let mut arrays = BTreeMap::<String, Vec<Value>>::new();
+    let mut current_section = None::<String>;
+    let mut current_item = None::<serde_json::Map<String, Value>>;
+
+    for raw_line in input.lines() {
+        let without_comment = raw_line.split('#').next().unwrap_or_default();
+        if without_comment.trim().is_empty() {
+            continue;
+        }
+
+        let indent = without_comment
+            .chars()
+            .take_while(|character| *character == ' ')
+            .count();
+        let line = without_comment.trim();
+
+        if indent == 0 {
+            flush_yaml_item(&mut arrays, current_section.as_deref(), &mut current_item);
+            current_section = None;
+            if let Some(section) = line.strip_suffix(':') {
+                let section = section.trim().to_owned();
+                arrays.entry(section.clone()).or_default();
+                current_section = Some(section);
+                continue;
+            }
+            let (key, value) = split_yaml_pair(line)?;
+            root.insert(key.to_owned(), parse_small_yaml_value(value));
+            continue;
+        }
+
+        let Some(section) = current_section.as_deref() else {
+            return Err(SandboxHttpError::bad_request(format!(
+                "yaml line `{line}` is indented but no list section is active"
+            )));
+        };
+
+        if let Some(rest) = line.strip_prefix("- ") {
+            flush_yaml_item(&mut arrays, Some(section), &mut current_item);
+            let mut item = serde_json::Map::new();
+            if !rest.trim().is_empty() {
+                let (key, value) = split_yaml_pair(rest.trim())?;
+                item.insert(key.to_owned(), parse_small_yaml_value(value));
+            }
+            current_item = Some(item);
+        } else {
+            let Some(item) = current_item.as_mut() else {
+                return Err(SandboxHttpError::bad_request(format!(
+                    "yaml line `{line}` belongs to section `{section}` but no list item is active"
+                )));
+            };
+            let (key, value) = split_yaml_pair(line)?;
+            item.insert(key.to_owned(), parse_small_yaml_value(value));
+        }
+    }
+
+    flush_yaml_item(&mut arrays, current_section.as_deref(), &mut current_item);
+    for (section, items) in arrays {
+        root.insert(section, Value::Array(items));
+    }
+
+    serde_json::from_value(Value::Object(root))
+        .map_err(|error| SandboxHttpError::bad_request(error.to_string()))
+}
+
+fn flush_yaml_item(
+    arrays: &mut BTreeMap<String, Vec<Value>>,
+    section: Option<&str>,
+    current_item: &mut Option<serde_json::Map<String, Value>>,
+) {
+    if let (Some(section), Some(item)) = (section, current_item.take()) {
+        arrays
+            .entry(section.to_owned())
+            .or_default()
+            .push(Value::Object(item));
+    }
+}
+
+fn split_yaml_pair(line: &str) -> Result<(&str, &str), SandboxHttpError> {
+    line.split_once(':')
+        .map(|(key, value)| (key.trim(), value.trim()))
+        .filter(|(key, _)| !key.is_empty())
+        .ok_or_else(|| {
+            SandboxHttpError::bad_request(format!("expected yaml key/value pair in `{line}`"))
+        })
+}
+
+fn parse_small_yaml_value(value: &str) -> Value {
+    let value = value.trim();
+    if value.starts_with('[') && value.ends_with(']') {
+        let inner = &value[1..value.len() - 1];
+        if inner.trim().is_empty() {
+            return Value::Array(Vec::new());
+        }
+        return Value::Array(
+            inner
+                .split(',')
+                .map(|part| parse_small_yaml_value(part.trim()))
+                .collect(),
+        );
+    }
+
+    let unquoted = value
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
+        .or_else(|| {
+            value
+                .strip_prefix('\'')
+                .and_then(|value| value.strip_suffix('\''))
+        })
+        .unwrap_or(value);
+
+    match unquoted {
+        "true" => Value::Bool(true),
+        "false" => Value::Bool(false),
+        "null" | "~" => Value::Null,
+        _ => unquoted
+            .parse::<i64>()
+            .map(Value::from)
+            .unwrap_or_else(|_| Value::String(unquoted.to_owned())),
+    }
+}
+
+async fn execute_scenario_document(
+    state: &SandboxState,
+    document: ScenarioDocument,
+) -> Result<ScenarioDocumentRunResponse, SandboxHttpError> {
+    validate_scenario_document(&document)?;
+    let flow_id = document.flow_id.clone().unwrap_or_else(|| {
+        format!(
+            "document-{}-{}",
+            document.name.replace(' ', "-"),
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+
+    if document.reset {
+        reset_demo_state_with_flow(state, Some(flow_id.clone())).await?;
+    }
+
+    let mut step_results = Vec::with_capacity(document.steps.len());
+    for (index, step) in document.steps.iter().enumerate() {
+        step_results.push(execute_scenario_document_step(state, &flow_id, index + 1, step).await?);
+    }
+
+    let report = application_report(state).await;
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+    let assertions = document
+        .assertions
+        .iter()
+        .enumerate()
+        .map(|(index, assertion)| {
+            evaluate_scenario_assertion(index + 1, assertion, &report, &events, &step_results)
+        })
+        .collect::<Vec<_>>();
+    let passed = step_results.iter().all(|step| step.passed)
+        && assertions.iter().all(|assertion| assertion.passed);
+    let latency = events.latency.clone();
+
+    Ok(ScenarioDocumentRunResponse {
+        name: document.name,
+        description: document.description,
+        flow_id,
+        passed,
+        steps: step_results,
+        assertions,
+        report,
+        events,
+        latency,
+    })
+}
+
+async fn execute_scenario_document_step(
+    state: &SandboxState,
+    flow_id: &str,
+    sequence: usize,
+    step: &ScenarioDocumentStep,
+) -> Result<ScenarioDocumentStepResult, SandboxHttpError> {
+    let name = step
+        .name
+        .clone()
+        .unwrap_or_else(|| format!("{:?} #{sequence}", step.action));
+    let flow_id = Some(flow_id.to_owned());
+    let (passed, message, output) = match step.action {
+        ScenarioStepAction::LoadUser => {
+            let id = required_i64(step.id, &name, "id")?;
+            let response = load_user_with_options(
+                state,
+                id,
+                CacheLoadOptionsRequest {
+                    ttl_ms: step.ttl_ms,
+                    tags: step.tags.clone(),
+                    loader_delay_ms: step.loader_delay_ms,
+                    flow_id,
+                },
+            )
+            .await?;
+            let passed = step
+                .expected_source
+                .is_none_or(|expected| expected == response.source);
+            let message = format!(
+                "loaded user {id} from {:?}; expected {:?}",
+                response.source, step.expected_source
+            );
+            (passed, message, json!(response))
+        }
+        ScenarioStepAction::UpsertUser => {
+            let id = required_i64(step.id, &name, "id")?;
+            let user_name = step
+                .user_name
+                .clone()
+                .or_else(|| step.value.clone())
+                .ok_or_else(|| missing_step_field(&name, "user_name or value"))?;
+            let started = Instant::now();
+            let user = state.storage.upsert_user(id, user_name).await?;
+            record_event_with_flow_and_duration(
+                state,
+                DemoEventKind::BackingStoreWrite,
+                format!("scenario document upserted user {id}"),
+                Some(format!("user:{id}")),
+                None,
+                None,
+                flow_id,
+                Some(elapsed_ms(started)),
+            )
+            .await;
+            (true, format!("upserted user {id}"), json!(user))
+        }
+        ScenarioStepAction::InvalidateUser => {
+            let id = required_i64(step.id, &name, "id")?;
+            let tag = format!("user:{id}");
+            let started = Instant::now();
+            let removed = state.cache.invalidate_tag(&tag).await?;
+            record_event_with_flow_and_duration(
+                state,
+                DemoEventKind::CacheInvalidate,
+                format!("scenario document invalidated {tag} and removed {removed} entries"),
+                None,
+                Some(tag.clone()),
+                None,
+                flow_id,
+                Some(elapsed_ms(started)),
+            )
+            .await;
+            (
+                removed > 0,
+                format!("invalidated {tag} and removed {removed} entries"),
+                json!(InvalidateResponse { tag, removed }),
+            )
+        }
+        ScenarioStepAction::CachePut => {
+            let key = required_string(step.key.clone(), &name, "key")?;
+            let value = required_string(step.value.clone(), &name, "value")?;
+            let response = cache_put(
+                State(state.clone()),
+                Json(CachePutRequest {
+                    key: key.clone(),
+                    value,
+                    ttl_ms: step.ttl_ms,
+                    tags: step.tags.clone(),
+                    flow_id,
+                }),
+            )
+            .await?
+            .0;
+            (true, format!("stored {key}"), json!(response))
+        }
+        ScenarioStepAction::CacheGet => {
+            let key = required_string(step.key.clone(), &name, "key")?;
+            let response = cache_get(
+                State(state.clone()),
+                Json(CacheKeyRequest {
+                    key: key.clone(),
+                    flow_id,
+                }),
+            )
+            .await?
+            .0;
+            (
+                response.value.is_some(),
+                format!("read {key} -> {:?}", response.value),
+                json!(response),
+            )
+        }
+        ScenarioStepAction::Ttl => {
+            let response = ttl_scenario(
+                State(state.clone()),
+                Json(TtlScenarioRequest {
+                    key: step
+                        .key
+                        .clone()
+                        .unwrap_or_else(|| format!("doc:ttl:{sequence}")),
+                    value: step.value.clone().unwrap_or_else(|| "short".to_owned()),
+                    ttl_ms: step.ttl_ms.unwrap_or(10),
+                    wait_ms: step.wait_ms.unwrap_or(30),
+                    tags: step.tags.clone(),
+                    flow_id,
+                }),
+            )
+            .await?
+            .0;
+            (
+                response.expired,
+                format!("ttl expired: {}", response.expired),
+                json!(response),
+            )
+        }
+        ScenarioStepAction::SingleFlight => {
+            let response = single_flight_scenario(
+                State(state.clone()),
+                Json(SingleFlightScenarioRequest {
+                    key: step
+                        .key
+                        .clone()
+                        .unwrap_or_else(|| format!("doc:single-flight:{sequence}")),
+                    loader_value: step.value.clone().unwrap_or_else(|| "shared".to_owned()),
+                    concurrency: step.concurrency.unwrap_or(8),
+                    loader_delay_ms: step.loader_delay_ms.unwrap_or(20),
+                    ttl_ms: step.ttl_ms,
+                    tags: step.tags.clone(),
+                    flow_id,
+                }),
+            )
+            .await?
+            .0;
+            (
+                response.loader_invocations == 1,
+                format!(
+                    "{} loader invocation(s) served {} callers",
+                    response.loader_invocations,
+                    response.returned_values.len()
+                ),
+                json!(response),
+            )
+        }
+        ScenarioStepAction::InvalidationRace => {
+            let response = invalidation_race_scenario(
+                State(state.clone()),
+                Json(InvalidationRaceScenarioRequest {
+                    key: step
+                        .key
+                        .clone()
+                        .unwrap_or_else(|| format!("doc:race:{sequence}")),
+                    loader_value: step.value.clone().unwrap_or_else(|| "stale".to_owned()),
+                    tag: step
+                        .tag
+                        .clone()
+                        .unwrap_or_else(|| format!("doc-race-{sequence}")),
+                    loader_delay_ms: step.loader_delay_ms.unwrap_or(40),
+                    invalidate_after_ms: step.invalidate_after_ms.unwrap_or(5),
+                    flow_id,
+                }),
+            )
+            .await?
+            .0;
+            (
+                response.stale_result_discarded,
+                format!(
+                    "stale result discarded: {}",
+                    response.stale_result_discarded
+                ),
+                json!(response),
+            )
+        }
+        ScenarioStepAction::NegativeLoaderError => {
+            let response = negative_loader_error(
+                State(state.clone()),
+                Json(NegativeLoaderErrorRequest {
+                    key: step
+                        .key
+                        .clone()
+                        .unwrap_or_else(|| format!("doc:loader-error:{sequence}")),
+                    error: step
+                        .error
+                        .clone()
+                        .unwrap_or_else(|| "scenario document loader failure".to_owned()),
+                    flow_id,
+                }),
+            )
+            .await?
+            .0;
+            (
+                response.expected_failure,
+                response.message.clone(),
+                json!(response),
+            )
+        }
+        ScenarioStepAction::ManualBenchmark => {
+            let response = run_manual_benchmark(
+                state,
+                BenchmarkRequest {
+                    key_prefix: step
+                        .key
+                        .clone()
+                        .unwrap_or_else(|| format!("doc-bench-{sequence}")),
+                    requests: step.requests.unwrap_or(32),
+                    concurrency: step.concurrency.unwrap_or(4),
+                    unique_keys: step.unique_keys.unwrap_or(4),
+                    loader_delay_ms: step.loader_delay_ms,
+                    flow_id,
+                },
+            )
+            .await?;
+            (
+                response.requests > 0,
+                format!(
+                    "benchmark completed at {} req/s",
+                    response.requests_per_second
+                ),
+                json!(response),
+            )
+        }
+    };
+
+    Ok(ScenarioDocumentStepResult {
+        sequence,
+        name,
+        action: step.action,
+        passed,
+        message,
+        output,
+    })
+}
+
+fn required_i64(
+    value: Option<i64>,
+    step_name: &str,
+    field: &'static str,
+) -> Result<i64, SandboxHttpError> {
+    value.ok_or_else(|| missing_step_field(step_name, field))
+}
+
+fn required_string(
+    value: Option<String>,
+    step_name: &str,
+    field: &'static str,
+) -> Result<String, SandboxHttpError> {
+    value.ok_or_else(|| missing_step_field(step_name, field))
+}
+
+fn missing_step_field(step_name: &str, field: &'static str) -> SandboxHttpError {
+    SandboxHttpError::bad_request(format!(
+        "scenario document step `{step_name}` requires field `{field}`"
+    ))
+}
+
+fn evaluate_scenario_assertion(
+    sequence: usize,
+    assertion: &ScenarioAssertion,
+    report: &ApplicationReport,
+    events: &EventLogResponse,
+    steps: &[ScenarioDocumentStepResult],
+) -> ScenarioAssertionResult {
+    let actual = scenario_assertion_actual(assertion.metric, report, events, steps);
+    let passed = match assertion.op {
+        ScenarioAssertionOperator::Eq => actual == assertion.value,
+        ScenarioAssertionOperator::Gt => actual > assertion.value,
+        ScenarioAssertionOperator::Gte => actual >= assertion.value,
+        ScenarioAssertionOperator::Lt => actual < assertion.value,
+        ScenarioAssertionOperator::Lte => actual <= assertion.value,
+    };
+
+    ScenarioAssertionResult {
+        name: assertion
+            .name
+            .clone()
+            .unwrap_or_else(|| format!("assertion #{sequence}")),
+        metric: assertion.metric,
+        op: assertion.op,
+        expected: assertion.value,
+        actual,
+        passed,
+    }
+}
+
+fn scenario_assertion_actual(
+    metric: ScenarioAssertionMetric,
+    report: &ApplicationReport,
+    events: &EventLogResponse,
+    steps: &[ScenarioDocumentStepResult],
+) -> u64 {
+    match metric {
+        ScenarioAssertionMetric::PassedSteps => {
+            steps.iter().filter(|step| step.passed).count() as u64
+        }
+        ScenarioAssertionMetric::FailedSteps => {
+            steps.iter().filter(|step| !step.passed).count() as u64
+        }
+        ScenarioAssertionMetric::LoaderCalls => report.loader_calls,
+        ScenarioAssertionMetric::FunctionCalls => report.function_calls,
+        ScenarioAssertionMetric::CacheHits => report.diagnostics.hits,
+        ScenarioAssertionMetric::CacheMisses => report.diagnostics.misses,
+        ScenarioAssertionMetric::CacheLoads => report.diagnostics.loads,
+        ScenarioAssertionMetric::SingleFlightJoins => report.diagnostics.single_flight_joins,
+        ScenarioAssertionMetric::StaleLoadDiscards => report.diagnostics.stale_load_discards,
+        ScenarioAssertionMetric::Invalidations => report.diagnostics.invalidations,
+        ScenarioAssertionMetric::EventCount => report.event_count as u64,
+        ScenarioAssertionMetric::FlowEventCount => events.returned as u64,
+    }
+}
+
+#[utoipa::path(
     get,
     path = "/demo/flows/{flow_id}/timeline",
     tag = "reports",
@@ -2701,6 +3759,13 @@ async fn manual_benchmark(
     State(state): State<SandboxState>,
     Json(request): Json<BenchmarkRequest>,
 ) -> Result<Json<BenchmarkResponse>, SandboxHttpError> {
+    Ok(Json(run_manual_benchmark(&state, request).await?))
+}
+
+async fn run_manual_benchmark(
+    state: &SandboxState,
+    request: BenchmarkRequest,
+) -> Result<BenchmarkResponse, SandboxHttpError> {
     let flow_id = request.flow_id.unwrap_or_else(|| {
         format!(
             "benchmark-{}",
@@ -2753,7 +3818,7 @@ async fn manual_benchmark(
 
     let duration_ms = elapsed_ms(started).max(1);
     record_event_with_flow_and_duration(
-        &state,
+        state,
         DemoEventKind::ScenarioRun,
         format!(
             "manual benchmark completed: {requests} requests, {concurrency} workers, {unique_keys} unique keys"
@@ -2766,7 +3831,7 @@ async fn manual_benchmark(
     )
     .await;
     let events = event_log(
-        &state,
+        state,
         &EventQuery {
             flow_id: Some(flow_id.clone()),
             ..EventQuery::default()
@@ -2774,7 +3839,7 @@ async fn manual_benchmark(
     )
     .await;
 
-    Ok(Json(BenchmarkResponse {
+    Ok(BenchmarkResponse {
         flow_id,
         requests,
         concurrency,
@@ -2782,9 +3847,221 @@ async fn manual_benchmark(
         loader_invocations: loader_invocations.load(Ordering::SeqCst),
         duration_ms,
         requests_per_second: (u64::from(requests) * 1_000) / duration_ms,
-        diagnostics: diagnostics(&state).await,
+        diagnostics: diagnostics(state).await,
         latency: events.latency,
+    })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/benchmarks/compare",
+    tag = "reports",
+    request_body = BenchmarkCompareRequest,
+    responses((status = 200, description = "Run two manual benchmark profiles and return their diff", body = BenchmarkCompareResponse))
+)]
+async fn compare_benchmarks(
+    State(state): State<SandboxState>,
+    Json(request): Json<BenchmarkCompareRequest>,
+) -> Result<Json<BenchmarkCompareResponse>, SandboxHttpError> {
+    let baseline = run_manual_benchmark(&state, request.baseline).await?;
+    let candidate = run_manual_benchmark(&state, request.candidate).await?;
+    let diff = BenchmarkDiff {
+        duration_ms_delta: candidate.duration_ms as i64 - baseline.duration_ms as i64,
+        requests_per_second_delta: candidate.requests_per_second as i64
+            - baseline.requests_per_second as i64,
+        loader_invocations_delta: candidate.loader_invocations as i64
+            - baseline.loader_invocations as i64,
+        hit_ratio_delta: match (
+            baseline.diagnostics.hit_ratio,
+            candidate.diagnostics.hit_ratio,
+        ) {
+            (Some(baseline), Some(candidate)) => Some(candidate - baseline),
+            _ => None,
+        },
+    };
+
+    Ok(Json(BenchmarkCompareResponse {
+        baseline,
+        candidate,
+        diff,
     }))
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/observability/prometheus",
+    tag = "reports",
+    responses((status = 200, description = "Prometheus text exposition demo for the current sandbox cache"))
+)]
+async fn prometheus_metrics(State(state): State<SandboxState>) -> Response {
+    let report = application_report(&state).await;
+    (
+        [(header::CONTENT_TYPE, "text/plain; version=0.0.4")],
+        prometheus_metrics_text(&report),
+    )
+        .into_response()
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/observability/traces/latest",
+    tag = "reports",
+    responses((status = 200, description = "OpenTelemetry-style trace demo derived from retained sandbox events", body = TraceDemoResponse))
+)]
+async fn latest_trace_demo(State(state): State<SandboxState>) -> Json<TraceDemoResponse> {
+    let events = event_log(
+        &state,
+        &EventQuery {
+            limit: Some(25),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+    Json(trace_demo_from_events(&events.events))
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/db/seed-report",
+    tag = "demo",
+    responses((status = 200, description = "Database seed and migration script summary for manual sandbox modes", body = SeedReport))
+)]
+async fn seed_report(State(state): State<SandboxState>) -> Json<SeedReport> {
+    Json(SeedReport {
+        backend: state.backend.label(),
+        tables: vec![
+            SeedTableReport {
+                name: "users",
+                rows: 2,
+                description: "Primary query-cache examples load Ada and Linus from this table.",
+            },
+            SeedTableReport {
+                name: "products",
+                rows: 2,
+                description: "Catalog sample for richer future DB query-cache demos.",
+            },
+            SeedTableReport {
+                name: "orders",
+                rows: 2,
+                description: "Small join-friendly order sample for manual SQL experiments.",
+            },
+        ],
+        migration_scripts: vec![
+            "crates/hydracache-sandbox/migrations/sqlite/001_demo_schema.sql",
+            "crates/hydracache-sandbox/migrations/postgres/001_demo_schema.sql",
+        ],
+        seed_script: "crates/hydracache-sandbox/seeds/demo_seed.sql",
+        note: "Memory mode seeds users in-process; SQLite/Postgres modes also create products and orders.",
+    })
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/openapi/client-check",
+    tag = "sandbox",
+    responses((status = 200, description = "Contract check proving that representative generated-client paths exist in OpenAPI", body = OpenApiClientCheckResponse))
+)]
+async fn openapi_client_check() -> Json<OpenApiClientCheckResponse> {
+    Json(openapi_client_check_response())
+}
+
+fn prometheus_metrics_text(report: &ApplicationReport) -> String {
+    let hit_ratio = report.diagnostics.hit_ratio.unwrap_or_default();
+    format!(
+        "# HELP hydracache_sandbox_cache_hits Total cache hits observed by the sandbox.\n\
+         # TYPE hydracache_sandbox_cache_hits counter\n\
+         hydracache_sandbox_cache_hits{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_cache_misses Total cache misses observed by the sandbox.\n\
+         # TYPE hydracache_sandbox_cache_misses counter\n\
+         hydracache_sandbox_cache_misses{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_cache_loads Total loader executions observed by the sandbox.\n\
+         # TYPE hydracache_sandbox_cache_loads counter\n\
+         hydracache_sandbox_cache_loads{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_hit_ratio Current hit ratio snapshot.\n\
+         # TYPE hydracache_sandbox_hit_ratio gauge\n\
+         hydracache_sandbox_hit_ratio{{cache=\"main\",profile=\"{}\"}} {:.6}\n\
+         # HELP hydracache_sandbox_events_retained Retained in-memory event count.\n\
+         # TYPE hydracache_sandbox_events_retained gauge\n\
+         hydracache_sandbox_events_retained{{cache=\"main\",profile=\"{}\"}} {}\n",
+        report.profile,
+        report.diagnostics.hits,
+        report.profile,
+        report.diagnostics.misses,
+        report.profile,
+        report.diagnostics.loads,
+        report.profile,
+        hit_ratio,
+        report.profile,
+        report.event_count
+    )
+}
+
+fn trace_demo_from_events(events: &[DemoEvent]) -> TraceDemoResponse {
+    let trace_id = events
+        .iter()
+        .find_map(|event| event.flow_id.clone())
+        .unwrap_or_else(|| "sandbox-latest".to_owned());
+    let spans = events
+        .iter()
+        .map(|event| {
+            let mut attributes = BTreeMap::new();
+            attributes.insert("event.kind".to_owned(), format!("{:?}", event.kind));
+            if let Some(key) = &event.key {
+                attributes.insert("cache.key".to_owned(), key.clone());
+            }
+            if let Some(tag) = &event.tag {
+                attributes.insert("cache.tag".to_owned(), tag.clone());
+            }
+            if let Some(source) = event.source {
+                attributes.insert("cache.source".to_owned(), format!("{source:?}"));
+            }
+
+            TraceSpanReport {
+                trace_id: trace_id.clone(),
+                span_id: format!("event-{}", event.id),
+                parent_span_id: event.flow_id.as_ref().map(|_| trace_id.clone()),
+                name: event.message.clone(),
+                duration_ms: event.duration_ms,
+                attributes,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    TraceDemoResponse {
+        trace_id,
+        span_count: spans.len(),
+        note: "OpenTelemetry-style teaching view derived from sandbox events; no collector is required.",
+        spans,
+    }
+}
+
+fn openapi_client_check_response() -> OpenApiClientCheckResponse {
+    let document = serde_json::to_value(SandboxApiDoc::openapi()).unwrap_or_else(|_| json!({}));
+    let paths = document["paths"]
+        .as_object()
+        .map(|paths| paths.keys().cloned().collect::<BTreeSet<_>>())
+        .unwrap_or_default();
+    let checked_paths = vec![
+        "/ready".to_owned(),
+        "/demo/scenarios/document/run".to_owned(),
+        "/demo/benchmarks/compare".to_owned(),
+        "/demo/observability/prometheus".to_owned(),
+        "/demo/import".to_owned(),
+        "/demo/db/seed-report".to_owned(),
+    ];
+    let missing_paths = checked_paths
+        .iter()
+        .filter(|path| !paths.contains(*path))
+        .cloned()
+        .collect::<Vec<_>>();
+
+    OpenApiClientCheckResponse {
+        openapi_version: document["openapi"].as_str().unwrap_or("unknown").to_owned(),
+        passed: missing_paths.is_empty(),
+        checked_paths,
+        missing_paths,
+        sample_client: "crates/hydracache-sandbox/openapi/generated-client.js",
+    }
 }
 
 #[utoipa::path(
@@ -4024,6 +5301,11 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     .metric strong { display: block; font-size: 1.6rem; line-height: 1; }
     .bar { height: .55rem; overflow: hidden; border-radius: 999px; background: #dbe5d4; }
     .bar span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--leaf), #7da35f); transition: width .25s ease; }
+    .timeline { display: grid; gap: .5rem; margin-top: .75rem; }
+    .timeline-row { display: grid; grid-template-columns: 3rem 11rem 1fr 5rem; gap: .5rem; align-items: start; padding: .65rem; border: 1px solid var(--line); border-radius: .9rem; background: #fffdf6; }
+    .timeline-kind { font: .75rem/1.1 Consolas, monospace; color: var(--leaf); }
+    .timeline-label { color: var(--ink); }
+    .timeline-empty { color: var(--muted); }
   </style>
 </head>
 <body>
@@ -4046,6 +5328,10 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="show('/demo/events')">Event log</button>
       <button onclick="show('/demo/events?kind=cache-hit')">Cache hits</button>
       <button onclick="show('/demo/events?limit=10')">Last 10 events</button>
+      <button onclick="showText('/demo/observability/prometheus')">Prometheus</button>
+      <button onclick="show('/demo/observability/traces/latest')">Trace demo</button>
+      <button onclick="show('/demo/db/seed-report')">Seed report</button>
+      <button onclick="show('/demo/openapi/client-check')">Client check</button>
       <button onclick="show('/demo/export')">Export</button>
       <button onclick="post('/demo/self-test', null)">Self-test</button>
       <button class="warn" onclick="post('/demo/reset', null)">Reset demo</button>
@@ -4060,12 +5346,14 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     </section>
     <section>
       <h2>Scenario Lab</h2>
+      <button onclick="runDocumentScenario()">Run DSL document</button>
       <button onclick="runScenario('negative-suite')">Negative suite</button>
       <button onclick="timeline('manual-golden')">Timeline: manual-golden</button>
       <button onclick="post('/demo/profiles/compare', {scenario:'golden-path', profiles:['memory','sqlite-memory','sqlite-file']})">Compare profiles</button>
       <button onclick="post('/demo/replay', {scenario:'golden-path', source_flow_id:'manual-golden', flow_id:`replay-${Date.now()}`, reset:true})">Replay golden</button>
       <button onclick="post('/demo/faults/run', {scenario:'invalidation-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:`fault-${Date.now()}`})">Fault injection</button>
       <button onclick="post('/demo/benchmarks/manual', {key_prefix:'ui-bench', requests:64, concurrency:8, unique_keys:4, loader_delay_ms:5, flow_id:`bench-${Date.now()}`})">Manual benchmark</button>
+      <button onclick="post('/demo/benchmarks/compare', {baseline:{key_prefix:'ui-bench-a', requests:64, concurrency:8, unique_keys:4, loader_delay_ms:5, flow_id:`bench-a-${Date.now()}`}, candidate:{key_prefix:'ui-bench-b', requests:64, concurrency:8, unique_keys:16, loader_delay_ms:5, flow_id:`bench-b-${Date.now()}`}})">Benchmark diff</button>
       <button onclick="show('/demo/security')">Security</button>
     </section>
     <section>
@@ -4086,6 +5374,10 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       </div>
     </section>
     <section class="wide">
+      <h2>Visual Timeline</h2>
+      <div id="timeline" class="timeline timeline-empty">Run a scenario with a flow id to render timeline rows here.</div>
+    </section>
+    <section class="wide">
       <h2>Output</h2>
       <pre id="out">Click a button to run a sandbox API call.</pre>
     </section>
@@ -4093,9 +5385,14 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
   <script>
     const out = document.querySelector('#out');
     const metrics = document.querySelector('#metrics');
+    const timelineBox = document.querySelector('#timeline');
     async function show(path) {
       const res = await fetch(path);
       write(await res.json());
+    }
+    async function showText(path) {
+      const res = await fetch(path);
+      out.textContent = await res.text();
     }
     async function post(path, body) {
       const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : null });
@@ -4108,6 +5405,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     function write(data) {
       out.textContent = JSON.stringify(data, null, 2);
       renderMetrics(data);
+      renderTimeline(data);
     }
     function reportFrom(data) {
       if (Array.isArray(data)) return data.slice().reverse().map(item => reportFrom(item.body)).find(Boolean);
@@ -4128,6 +5426,20 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       const max = Math.max(1, ...values.map(([, value]) => value));
       metrics.innerHTML = values.map(([label, value]) => `<div class="metric"><span>${label}</span><strong>${value}</strong><div class="bar"><span style="width:${Math.round((value / max) * 100)}%"></span></div></div>`).join('');
     }
+    function timelineFrom(data) {
+      if (Array.isArray(data)) return data.map(item => timelineFrom(item.body)).find(Boolean);
+      if (data?.steps && data?.flow_id && typeof data.event_count === 'number') return data;
+      if (data?.events?.events && data?.flow_id) {
+        return { flow_id: data.flow_id, event_count: data.events.events.length, steps: data.events.events.map((event, index) => ({ sequence: index + 1, kind: event.kind, label: event.message, duration_ms: event.duration_ms })) };
+      }
+      return null;
+    }
+    function renderTimeline(data) {
+      const timeline = timelineFrom(data);
+      if (!timeline?.steps?.length) return;
+      timelineBox.classList.remove('timeline-empty');
+      timelineBox.innerHTML = timeline.steps.map(step => `<div class="timeline-row"><strong>#${step.sequence}</strong><span class="timeline-kind">${step.kind}</span><span class="timeline-label">${step.label}</span><span>${step.duration_ms ?? 0} ms</span></div>`).join('');
+    }
     async function golden() {
       const flowId = 'manual-golden';
       const run = await step('POST', '/demo/scenarios/run', { scenario: 'golden-path', flow_id: flowId, reset: true });
@@ -4137,6 +5449,25 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     async function runScenario(scenario) {
       const flowId = `${scenario}-${Date.now()}`;
       const run = await step('POST', '/demo/scenarios/run', { scenario, flow_id: flowId, reset: true });
+      const timeline = await step('GET', `/demo/flows/${flowId}/timeline`);
+      write([run, timeline]);
+    }
+    async function runDocumentScenario() {
+      const flowId = `dsl-${Date.now()}`;
+      const run = await step('POST', '/demo/scenarios/document/run', {
+        name: 'ui-dsl-golden',
+        description: 'Dashboard DSL scenario with assertions.',
+        flow_id: flowId,
+        reset: true,
+        steps: [
+          { name: 'first load', action: 'load-user', id: 42, ttl_ms: 5000, tags: ['ui-dsl'], expected_source: 'loader' },
+          { name: 'second load', action: 'load-user', id: 42, ttl_ms: 5000, tags: ['ui-dsl'], expected_source: 'cache' }
+        ],
+        assertions: [
+          { name: 'has cache hit', metric: 'cache-hits', op: 'gte', value: 1 },
+          { name: 'loader called once', metric: 'loader-calls', op: 'eq', value: 1 }
+        ]
+      });
       const timeline = await step('GET', `/demo/flows/${flowId}/timeline`);
       write([run, timeline]);
     }
@@ -4257,6 +5588,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Run named presets such as golden-path, ttl, single-flight, invalidation-race, negative-suite, and self-test.",
         },
         CapabilityReport {
+            name: "scenario document DSL",
+            endpoint: "/demo/scenarios/document/run",
+            description: "Run JSON or small YAML scenario documents with step-level assertions for regression-style demo recipes.",
+        },
+        CapabilityReport {
             name: "flow timeline",
             endpoint: "/demo/flows/{flow_id}/timeline",
             description: "Render a flow-id event stream as an ordered timeline with latency details.",
@@ -4280,6 +5616,26 @@ fn capabilities() -> Vec<CapabilityReport> {
             name: "manual benchmark",
             endpoint: "/demo/benchmarks/manual",
             description: "Run a small local cache workload with configurable requests, concurrency, and key distribution.",
+        },
+        CapabilityReport {
+            name: "benchmark comparison",
+            endpoint: "/demo/benchmarks/compare",
+            description: "Compare two manual benchmark profiles by latency, throughput, loader calls, and hit ratio.",
+        },
+        CapabilityReport {
+            name: "observability demo",
+            endpoint: "/demo/observability/prometheus and /demo/observability/traces/latest",
+            description: "Expose Prometheus text metrics and OpenTelemetry-style spans derived from sandbox events.",
+        },
+        CapabilityReport {
+            name: "session import",
+            endpoint: "/demo/import",
+            description: "Import an exported event stream to preserve bug-report context and replay related scenarios.",
+        },
+        CapabilityReport {
+            name: "seed scripts",
+            endpoint: "/demo/db/seed-report",
+            description: "Describe SQLite/Postgres schema and seed scripts for users, products, and orders.",
         },
         CapabilityReport {
             name: "invalidation safety",
@@ -4351,13 +5707,21 @@ fn actuator_stats_doc() {}
         config_info,
         presets,
         export_bundle,
+        import_session,
         self_test,
         run_scenario,
+        parse_scenario_document,
+        run_scenario_document,
         flow_timeline,
         compare_profiles,
         replay_scenario,
         run_fault_injection,
         manual_benchmark,
+        compare_benchmarks,
+        prometheus_metrics,
+        latest_trace_demo,
+        seed_report,
+        openapi_client_check,
         security_info,
         report,
         events,
@@ -4423,7 +5787,29 @@ fn actuator_stats_doc() {}
             FaultInjectionResponse,
             BenchmarkRequest,
             BenchmarkResponse,
+            BenchmarkCompareRequest,
+            BenchmarkDiff,
+            BenchmarkCompareResponse,
             SecurityInfoResponse,
+            ScenarioDocumentFormat,
+            ScenarioStepAction,
+            ScenarioDocument,
+            ScenarioDocumentStep,
+            ScenarioAssertionMetric,
+            ScenarioAssertionOperator,
+            ScenarioAssertion,
+            ScenarioDocumentStepResult,
+            ScenarioAssertionResult,
+            ScenarioDocumentRunResponse,
+            ScenarioDocumentParseRequest,
+            ScenarioDocumentParseResponse,
+            TraceSpanReport,
+            TraceDemoResponse,
+            SeedTableReport,
+            SeedReport,
+            SessionImportRequest,
+            SessionImportResponse,
+            OpenApiClientCheckResponse,
             LatencySummary,
             User,
             UpsertUserRequest,
@@ -4517,6 +5903,13 @@ struct SandboxHttpError {
 }
 
 impl SandboxHttpError {
+    fn bad_request(message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::BAD_REQUEST,
+            message: message.into(),
+        }
+    }
+
     fn internal(message: impl Into<String>) -> Self {
         Self {
             status: StatusCode::INTERNAL_SERVER_ERROR,
@@ -4851,13 +6244,21 @@ mod tests {
         assert!(paths.contains_key("/demo/config"));
         assert!(paths.contains_key("/demo/presets"));
         assert!(paths.contains_key("/demo/export"));
+        assert!(paths.contains_key("/demo/import"));
         assert!(paths.contains_key("/demo/self-test"));
         assert!(paths.contains_key("/demo/scenarios/run"));
+        assert!(paths.contains_key("/demo/scenarios/document/parse"));
+        assert!(paths.contains_key("/demo/scenarios/document/run"));
         assert!(paths.contains_key("/demo/flows/{flow_id}/timeline"));
         assert!(paths.contains_key("/demo/profiles/compare"));
         assert!(paths.contains_key("/demo/replay"));
         assert!(paths.contains_key("/demo/faults/run"));
         assert!(paths.contains_key("/demo/benchmarks/manual"));
+        assert!(paths.contains_key("/demo/benchmarks/compare"));
+        assert!(paths.contains_key("/demo/observability/prometheus"));
+        assert!(paths.contains_key("/demo/observability/traces/latest"));
+        assert!(paths.contains_key("/demo/db/seed-report"));
+        assert!(paths.contains_key("/demo/openapi/client-check"));
         assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
         assert!(paths.contains_key("/demo/reset"));
@@ -4893,7 +6294,15 @@ mod tests {
         assert!(schemas.contains_key("ReplayResponse"));
         assert!(schemas.contains_key("FaultInjectionResponse"));
         assert!(schemas.contains_key("BenchmarkResponse"));
+        assert!(schemas.contains_key("BenchmarkCompareResponse"));
         assert!(schemas.contains_key("SecurityInfoResponse"));
+        assert!(schemas.contains_key("ScenarioDocument"));
+        assert!(schemas.contains_key("ScenarioDocumentRunResponse"));
+        assert!(schemas.contains_key("ScenarioDocumentParseResponse"));
+        assert!(schemas.contains_key("TraceDemoResponse"));
+        assert!(schemas.contains_key("SeedReport"));
+        assert!(schemas.contains_key("SessionImportResponse"));
+        assert!(schemas.contains_key("OpenApiClientCheckResponse"));
         assert!(schemas.contains_key("LatencySummary"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
@@ -5257,6 +6666,10 @@ mod tests {
         assert!(body.contains("/demo/report"));
         assert!(body.contains("/demo/self-test"));
         assert!(body.contains("/demo/scenarios/run"));
+        assert!(body.contains("/demo/scenarios/document/run"));
+        assert!(body.contains("/demo/benchmarks/compare"));
+        assert!(body.contains("/demo/observability/prometheus"));
+        assert!(body.contains("Visual Timeline"));
         assert!(body.contains("Scenario Lab"));
         assert!(body.contains("Mini Metrics"));
         assert!(!body.contains("cdn."));
@@ -5288,6 +6701,11 @@ mod tests {
             .unwrap()
             .iter()
             .any(|preset| preset["name"] == "manual-benchmark"));
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|preset| preset["name"] == "scenario-document"));
 
         app.clone()
             .oneshot(post(
@@ -5447,7 +6865,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .any(|capability| capability["name"] == "negative scenarios"));
+            .any(|capability| capability["name"] == "scenario document DSL"));
     }
 
     #[tokio::test]
@@ -5570,6 +6988,137 @@ mod tests {
         assert_eq!(benchmark["concurrency"], 4);
         assert!(benchmark["loader_invocations"].as_u64().unwrap() <= 2);
         assert!(benchmark["requests_per_second"].as_u64().unwrap() > 0);
+
+        let parsed = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/document/parse",
+                Body::from(
+                    "{
+                        \"format\":\"yaml\",
+                        \"document\":\"name: yaml-golden\\nflow_id: yaml-flow\\nreset: true\\nsteps:\\n  - name: first load\\n    action: load-user\\n    id: 42\\n    ttl_ms: 5000\\n    tags: [yaml]\\n    expected_source: loader\\n  - name: second load\\n    action: load-user\\n    id: 42\\n    ttl_ms: 5000\\n    tags: [yaml]\\n    expected_source: cache\\nassertions:\\n  - name: has hit\\n    metric: cache-hits\\n    op: gte\\n    value: 1\\n\"
+                    }",
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(parsed["document"]["name"], "yaml-golden");
+        assert_eq!(parsed["document"]["steps"].as_array().unwrap().len(), 2);
+
+        let document_run = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/document/run",
+                Body::from(
+                    r#"{
+                        "name":"json-golden",
+                        "flow_id":"json-dsl-flow",
+                        "reset":true,
+                        "steps":[
+                            {"name":"first load","action":"load-user","id":42,"ttl_ms":5000,"tags":["json-dsl"],"expected_source":"loader"},
+                            {"name":"second load","action":"load-user","id":42,"ttl_ms":5000,"tags":["json-dsl"],"expected_source":"cache"},
+                            {"name":"single flight","action":"single-flight","key":"json-dsl:sf","value":"shared","concurrency":4,"loader_delay_ms":5}
+                        ],
+                        "assertions":[
+                            {"name":"all steps pass","metric":"failed-steps","op":"eq","value":0},
+                            {"name":"has cache hit","metric":"cache-hits","op":"gte","value":1},
+                            {"name":"has single flight","metric":"single-flight-joins","op":"gte","value":1}
+                        ]
+                    }"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(document_run["passed"], true);
+        assert_eq!(document_run["flow_id"], "json-dsl-flow");
+        assert_eq!(document_run["assertions"].as_array().unwrap().len(), 3);
+
+        let compare_benchmarks = app
+            .clone()
+            .oneshot(post(
+                "/demo/benchmarks/compare",
+                Body::from(
+                    r#"{
+                        "baseline":{"key_prefix":"bench-a","requests":16,"concurrency":4,"unique_keys":2,"loader_delay_ms":1,"flow_id":"bench-a"},
+                        "candidate":{"key_prefix":"bench-b","requests":16,"concurrency":4,"unique_keys":4,"loader_delay_ms":1,"flow_id":"bench-b"}
+                    }"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(compare_benchmarks["baseline"]["requests"], 16);
+        assert!(compare_benchmarks["diff"]
+            .as_object()
+            .unwrap()
+            .contains_key("duration_ms_delta"));
+
+        let prometheus = app
+            .clone()
+            .oneshot(get("/demo/observability/prometheus"))
+            .await
+            .unwrap();
+        assert_eq!(prometheus.status(), StatusCode::OK);
+        let prometheus_body = to_bytes(prometheus.into_body(), usize::MAX).await.unwrap();
+        let prometheus_body = String::from_utf8_lossy(&prometheus_body);
+        assert!(prometheus_body.contains("hydracache_sandbox_cache_hits"));
+
+        let trace = app
+            .clone()
+            .oneshot(get("/demo/observability/traces/latest"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(trace["span_count"].as_u64().unwrap() > 0);
+
+        let seed = app
+            .clone()
+            .oneshot(get("/demo/db/seed-report"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(seed["tables"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|table| table["name"] == "products"));
+
+        let client_check = app
+            .clone()
+            .oneshot(get("/demo/openapi/client-check"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(client_check["passed"], true);
+
+        let export = app
+            .clone()
+            .oneshot(get("/demo/export"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        let import_body = serde_json::json!({
+            "replace_events": true,
+            "source": "test-import",
+            "bundle": export
+        });
+        let imported = app
+            .oneshot(post("/demo/import", Body::from(import_body.to_string())))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(imported["source"], "test-import");
+        assert!(imported["imported_events"].as_u64().unwrap() > 0);
     }
 
     #[tokio::test]
