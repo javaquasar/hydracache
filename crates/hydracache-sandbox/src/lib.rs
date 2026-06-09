@@ -20,8 +20,18 @@
 //!
 //! docker compose -f crates/hydracache-sandbox/compose/docker-compose.full.yml up
 //! ```
+//!
+//! # Open
+//!
+//! ```text
+//! http://127.0.0.1:3000/demo/ui
+//! http://127.0.0.1:3000/swagger-ui
+//! http://127.0.0.1:3000/ready
+//! http://127.0.0.1:3000/demo/report
+//! http://127.0.0.1:3000/demo/events
+//! ```
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::fs;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -32,7 +42,7 @@ use std::time::Duration;
 
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{CacheError, CacheOptions, HydraCache};
@@ -50,6 +60,8 @@ use tokio::sync::RwLock;
 use tokio::time::sleep;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
+
+const MAX_DEMO_EVENTS: usize = 256;
 
 /// Runtime mode for the manual sandbox.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -446,14 +458,21 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         storage,
         loader_calls: Arc::new(AtomicU64::new(0)),
         function_calls: Arc::new(AtomicU64::new(0)),
+        next_event_id: Arc::new(AtomicU64::new(0)),
+        events: Arc::new(RwLock::new(VecDeque::new())),
         profile: config.profile,
         backend: config.backend,
     };
 
     let sandbox_routes = Router::new()
         .route("/", get(info))
+        .route("/ready", get(readiness))
         .route("/openapi.json", get(openapi))
+        .route("/demo/ui", get(dashboard_ui))
         .route("/demo/report", get(report))
+        .route("/demo/events", get(events))
+        .route("/demo/events/clear", post(clear_events))
+        .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
         .route("/demo/cache/get", post(cache_get))
         .route("/demo/cache/get-or-load", post(cache_get_or_load))
@@ -473,6 +492,14 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/scenarios/invalidation-race",
             post(invalidation_race_scenario),
+        )
+        .route("/demo/negative/missing-key", post(negative_missing_key))
+        .route("/demo/negative/missing-user", post(negative_missing_user))
+        .route("/demo/negative/loader-error", post(negative_loader_error))
+        .route("/demo/negative/expired-entry", post(negative_expired_entry))
+        .route(
+            "/demo/negative/invalidation-miss",
+            post(negative_invalidation_miss),
         )
         .route("/demo/invalidate/user/{id}", post(invalidate_user))
         .route("/demo/flush", post(flush_cache))
@@ -522,6 +549,8 @@ struct SandboxState {
     storage: SandboxStorage,
     loader_calls: Arc<AtomicU64>,
     function_calls: Arc<AtomicU64>,
+    next_event_id: Arc<AtomicU64>,
+    events: Arc<RwLock<VecDeque<DemoEvent>>>,
     profile: SandboxProfile,
     backend: SandboxBackend,
 }
@@ -591,6 +620,37 @@ impl SandboxStorage {
                 .execute(pool)
                 .await?;
                 Ok(User { id, name })
+            }
+        }
+    }
+
+    async fn clear_users(&self) -> Result<(), SandboxError> {
+        match self {
+            Self::Memory(users) => {
+                users.write().await.clear();
+                Ok(())
+            }
+            Self::Sqlite(pool) => {
+                sqlx::query("delete from users").execute(pool).await?;
+                Ok(())
+            }
+            Self::Postgres(pool) => {
+                sqlx::query("delete from users").execute(pool).await?;
+                Ok(())
+            }
+        }
+    }
+
+    async fn check_ready(&self) -> Result<&'static str, SandboxError> {
+        match self {
+            Self::Memory(_) => Ok("memory backing store is ready"),
+            Self::Sqlite(pool) => {
+                sqlx::query("select 1").execute(pool).await?;
+                Ok("sqlite backing store is ready")
+            }
+            Self::Postgres(pool) => {
+                sqlx::query("select 1").execute(pool).await?;
+                Ok("postgres backing store is ready")
             }
         }
     }
@@ -699,6 +759,11 @@ async fn seed_storage(storage: &SandboxStorage) -> Result<(), SandboxError> {
     Ok(())
 }
 
+async fn reset_storage(storage: &SandboxStorage) -> Result<(), SandboxError> {
+    storage.clear_users().await?;
+    seed_storage(storage).await
+}
+
 fn map_row_error(id: i64, source: sqlx::Error) -> SandboxError {
     if matches!(source, sqlx::Error::RowNotFound) {
         SandboxError::NotFound { id }
@@ -718,10 +783,69 @@ struct SandboxInfo {
     name: &'static str,
     profile: &'static str,
     backend: String,
+    dashboard_ui: &'static str,
     swagger_ui: &'static str,
     openapi: &'static str,
+    readiness: &'static str,
+    report: &'static str,
+    events: &'static str,
     actuator_health: &'static str,
     actuator_diagnostics: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ReadinessResponse {
+    status: &'static str,
+    profile: &'static str,
+    backend: String,
+    check: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ResetResponse {
+    reset: bool,
+    seeded_users: Vec<User>,
+    diagnostics: DemoDiagnostics,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum DemoEventKind {
+    CacheHit,
+    CacheMiss,
+    CachePut,
+    CacheLoad,
+    CacheRemove,
+    CacheInvalidate,
+    CacheFlush,
+    ScenarioRun,
+    BackingStoreRead,
+    BackingStoreWrite,
+    Reset,
+    Error,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct DemoEvent {
+    id: u64,
+    kind: DemoEventKind,
+    message: String,
+    key: Option<String>,
+    tag: Option<String>,
+    source: Option<LoadSource>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct EventLogResponse {
+    retained: usize,
+    capacity: usize,
+    events: Vec<DemoEvent>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClearEventsResponse {
+    cleared: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
@@ -800,6 +924,35 @@ struct InvalidationRaceScenarioRequest {
     tag: String,
     loader_delay_ms: u64,
     invalidate_after_ms: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+struct NegativeMissingKeyRequest {
+    key: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+struct NegativeMissingUserRequest {
+    id: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+struct NegativeLoaderErrorRequest {
+    key: String,
+    error: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+struct NegativeExpiredEntryRequest {
+    key: String,
+    value: String,
+    ttl_ms: u64,
+    wait_ms: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+struct NegativeInvalidationMissRequest {
+    tag: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -911,6 +1064,16 @@ struct InvalidationRaceScenarioReport {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct NegativeScenarioReport {
+    scenario: &'static str,
+    expected_failure: bool,
+    message: String,
+    key: Option<String>,
+    tag: Option<String>,
+    diagnostics: DemoDiagnostics,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct ApplicationReport {
     name: &'static str,
     profile: &'static str,
@@ -918,6 +1081,7 @@ struct ApplicationReport {
     cache_name: &'static str,
     loader_calls: u64,
     function_calls: u64,
+    event_count: usize,
     diagnostics: DemoDiagnostics,
     capabilities: Vec<CapabilityReport>,
 }
@@ -996,11 +1160,46 @@ async fn info(State(state): State<SandboxState>) -> Json<SandboxInfo> {
         name: "hydracache-sandbox",
         profile: state.profile.label(),
         backend: state.backend.label(),
+        dashboard_ui: "/demo/ui",
         swagger_ui: "/swagger-ui",
         openapi: "/openapi.json",
+        readiness: "/ready",
+        report: "/demo/report",
+        events: "/demo/events",
         actuator_health: "/actuator/hydracache/health",
         actuator_diagnostics: "/actuator/hydracache/caches/main/diagnostics",
     })
+}
+
+#[utoipa::path(
+    get,
+    path = "/ready",
+    tag = "sandbox",
+    responses(
+        (status = 200, description = "Sandbox readiness check", body = ReadinessResponse),
+        (status = 500, description = "Selected backend is not ready", body = ErrorResponse)
+    )
+)]
+async fn readiness(
+    State(state): State<SandboxState>,
+) -> Result<Json<ReadinessResponse>, SandboxHttpError> {
+    let check = state.storage.check_ready().await?;
+    Ok(Json(ReadinessResponse {
+        status: "UP",
+        profile: state.profile.label(),
+        backend: state.backend.label(),
+        check,
+    }))
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/ui",
+    tag = "sandbox",
+    responses((status = 200, description = "Local HTML dashboard for the manual sandbox"))
+)]
+async fn dashboard_ui() -> Html<&'static str> {
+    Html(DASHBOARD_HTML)
 }
 
 #[utoipa::path(
@@ -1017,9 +1216,73 @@ async fn report(State(state): State<SandboxState>) -> Json<ApplicationReport> {
         cache_name: "main",
         loader_calls: state.loader_calls.load(Ordering::SeqCst),
         function_calls: state.function_calls.load(Ordering::SeqCst),
+        event_count: state.events.read().await.len(),
         diagnostics: diagnostics(&state).await,
         capabilities: capabilities(),
     })
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/events",
+    tag = "reports",
+    responses((status = 200, description = "Structured sandbox event log", body = EventLogResponse))
+)]
+async fn events(State(state): State<SandboxState>) -> Json<EventLogResponse> {
+    Json(event_log(&state).await)
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/events/clear",
+    tag = "reports",
+    responses((status = 200, description = "Clear structured sandbox event log", body = ClearEventsResponse))
+)]
+async fn clear_events(State(state): State<SandboxState>) -> Json<ClearEventsResponse> {
+    let mut events = state.events.write().await;
+    let cleared = events.len();
+    events.clear();
+    Json(ClearEventsResponse { cleared })
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/reset",
+    tag = "reports",
+    responses(
+        (status = 200, description = "Reset cache, counters, event log, and demo users", body = ResetResponse),
+        (status = 500, description = "Reset failed", body = ErrorResponse)
+    )
+)]
+async fn reset_demo(
+    State(state): State<SandboxState>,
+) -> Result<Json<ResetResponse>, SandboxHttpError> {
+    state.cache.flush().await?;
+    reset_storage(&state.storage).await?;
+    state.loader_calls.store(0, Ordering::SeqCst);
+    state.function_calls.store(0, Ordering::SeqCst);
+    state.next_event_id.store(0, Ordering::SeqCst);
+    state.events.write().await.clear();
+    record_event(
+        &state,
+        DemoEventKind::Reset,
+        "sandbox cache, counters, event log, and demo users were reset",
+        None,
+        None,
+        None,
+    )
+    .await;
+    let seeded_users = vec![
+        state.storage.load_user(42).await?,
+        state.storage.load_user(7).await?,
+    ];
+
+    Ok(Json(ResetResponse {
+        reset: true,
+        seeded_users,
+        diagnostics: diagnostics(&state).await,
+        events: event_log(&state).await,
+    }))
 }
 
 #[utoipa::path(
@@ -1038,6 +1301,15 @@ async fn cache_put(
         .cache
         .put(&request.key, request.value.clone(), options)
         .await?;
+    record_event(
+        &state,
+        DemoEventKind::CachePut,
+        format!("stored raw cache key `{}`", request.key),
+        Some(request.key.clone()),
+        None,
+        None,
+    )
+    .await;
 
     Ok(Json(CachePutResponse {
         key: request.key,
@@ -1060,6 +1332,20 @@ async fn cache_get(
     Json(request): Json<CacheKeyRequest>,
 ) -> Result<Json<CacheGetResponse>, SandboxHttpError> {
     let value = state.cache.get::<String>(&request.key).await?;
+    let kind = if value.is_some() {
+        DemoEventKind::CacheHit
+    } else {
+        DemoEventKind::CacheMiss
+    };
+    record_event(
+        &state,
+        kind,
+        format!("read raw cache key `{}`", request.key),
+        Some(request.key.clone()),
+        None,
+        value.as_ref().map(|_| LoadSource::Cache),
+    )
+    .await;
 
     Ok(Json(CacheGetResponse {
         key: request.key,
@@ -1093,6 +1379,18 @@ async fn cache_get_or_load(
         })
         .await?;
     let source = source_from_load_delta(before_loads, state.cache.stats().loads);
+    record_event(
+        &state,
+        match source {
+            LoadSource::Cache => DemoEventKind::CacheHit,
+            LoadSource::Loader => DemoEventKind::CacheLoad,
+        },
+        format!("get-or-load completed for raw key `{key}`"),
+        Some(key.clone()),
+        None,
+        Some(source),
+    )
+    .await;
 
     Ok(Json(CacheLoadStringResponse {
         key,
@@ -1114,6 +1412,19 @@ async fn cache_contains(
     Json(request): Json<CacheKeyRequest>,
 ) -> Result<Json<CacheContainsResponse>, SandboxHttpError> {
     let contains = state.cache.contains_key(&request.key).await;
+    record_event(
+        &state,
+        if contains {
+            DemoEventKind::CacheHit
+        } else {
+            DemoEventKind::CacheMiss
+        },
+        format!("contains check completed for key `{}`", request.key),
+        Some(request.key.clone()),
+        None,
+        contains.then_some(LoadSource::Cache),
+    )
+    .await;
 
     Ok(Json(CacheContainsResponse {
         key: request.key,
@@ -1134,6 +1445,15 @@ async fn cache_remove(
     Json(request): Json<CacheKeyRequest>,
 ) -> Result<Json<CacheRemoveResponse>, SandboxHttpError> {
     let removed = state.cache.remove(&request.key).await?;
+    record_event(
+        &state,
+        DemoEventKind::CacheRemove,
+        format!("remove completed for key `{}`", request.key),
+        Some(request.key.clone()),
+        None,
+        None,
+    )
+    .await;
 
     Ok(Json(CacheRemoveResponse {
         key: request.key,
@@ -1154,6 +1474,18 @@ async fn cache_invalidate_tag(
     Json(request): Json<CacheTagRequest>,
 ) -> Result<Json<CacheInvalidateTagResponse>, SandboxHttpError> {
     let removed = state.cache.invalidate_tag(&request.tag).await?;
+    record_event(
+        &state,
+        DemoEventKind::CacheInvalidate,
+        format!(
+            "invalidated tag `{}` and removed {removed} entries",
+            request.tag
+        ),
+        None,
+        Some(request.tag.clone()),
+        None,
+    )
+    .await;
 
     Ok(Json(CacheInvalidateTagResponse {
         tag: request.tag,
@@ -1176,7 +1508,17 @@ async fn get_user(
     State(state): State<SandboxState>,
     Path(id): Path<i64>,
 ) -> Result<Json<User>, SandboxHttpError> {
-    Ok(Json(state.storage.load_user(id).await?))
+    let user = state.storage.load_user(id).await?;
+    record_event(
+        &state,
+        DemoEventKind::BackingStoreRead,
+        format!("read demo user {id} directly from backing store"),
+        Some(format!("user:{id}")),
+        None,
+        Some(LoadSource::Loader),
+    )
+    .await;
+    Ok(Json(user))
 }
 
 #[utoipa::path(
@@ -1192,7 +1534,17 @@ async fn upsert_user(
     Path(id): Path<i64>,
     Json(request): Json<UpsertUserRequest>,
 ) -> Result<Json<User>, SandboxHttpError> {
-    Ok(Json(state.storage.upsert_user(id, request.name).await?))
+    let user = state.storage.upsert_user(id, request.name).await?;
+    record_event(
+        &state,
+        DemoEventKind::BackingStoreWrite,
+        format!("upserted demo user {id} in backing store"),
+        Some(format!("user:{id}")),
+        None,
+        None,
+    )
+    .await;
+    Ok(Json(user))
 }
 
 #[utoipa::path(
@@ -1258,6 +1610,18 @@ async fn load_user_with_options(
         .await?;
     let after_loads = state.cache.stats().loads;
     let source = source_from_load_delta(before_loads, after_loads);
+    record_event(
+        state,
+        match source {
+            LoadSource::Cache => DemoEventKind::CacheHit,
+            LoadSource::Loader => DemoEventKind::CacheLoad,
+        },
+        format!("query-cache load completed for user {id}"),
+        Some(key.clone()),
+        Some(format!("user:{id}")),
+        Some(source),
+    )
+    .await;
 
     Ok(LoadUserResponse {
         cache_key: key,
@@ -1307,6 +1671,18 @@ async fn typed_load_user(
         )
         .await?;
     let source = source_from_load_delta(before_loads, state.cache.stats().loads);
+    record_event(
+        &state,
+        match source {
+            LoadSource::Cache => DemoEventKind::CacheHit,
+            LoadSource::Loader => DemoEventKind::CacheLoad,
+        },
+        format!("typed-cache load completed for user {id}"),
+        Some(cache_key.clone()),
+        Some(format!("typed-user:{id}")),
+        Some(source),
+    )
+    .await;
 
     Ok(Json(TypedUserLoadResponse {
         namespace: namespace.to_owned(),
@@ -1346,6 +1722,18 @@ async fn double_function(
         )
         .await?;
     let source = source_from_load_delta(before_loads, state.cache.stats().loads);
+    record_event(
+        &state,
+        match source {
+            LoadSource::Cache => DemoEventKind::CacheHit,
+            LoadSource::Loader => DemoEventKind::CacheLoad,
+        },
+        format!("cached double function completed for input {input}"),
+        Some(key.clone()),
+        Some("functions".to_owned()),
+        Some(source),
+    )
+    .await;
 
     Ok(Json(FunctionResultResponse {
         cache_key: key,
@@ -1381,6 +1769,18 @@ async fn ttl_scenario(
     sleep(Duration::from_millis(request.wait_ms)).await;
     let value_after_wait = state.cache.get::<String>(&request.key).await?;
     let expired = value_after_wait.is_none();
+    record_event(
+        &state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "ttl scenario completed for key `{}`; expired={expired}",
+            request.key
+        ),
+        Some(request.key.clone()),
+        None,
+        None,
+    )
+    .await;
 
     Ok(Json(TtlScenarioReport {
         key: request.key,
@@ -1435,6 +1835,18 @@ async fn single_flight_scenario(
             .map_err(|error| SandboxHttpError::internal(error.to_string()))??;
         returned_values.push(value);
     }
+    record_event(
+        &state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "single-flight scenario completed for key `{}` with {effective_concurrency} callers",
+            request.key
+        ),
+        Some(request.key.clone()),
+        None,
+        Some(LoadSource::Loader),
+    )
+    .await;
 
     Ok(Json(SingleFlightScenarioReport {
         key: request.key,
@@ -1481,6 +1893,18 @@ async fn invalidation_race_scenario(
     let diagnostics = diagnostics(&state).await;
     let stale_result_discarded =
         cached_after_invalidation.is_none() && diagnostics.stale_load_discards > 0;
+    record_event(
+        &state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "invalidation race scenario completed for key `{}`; stale_result_discarded={stale_result_discarded}",
+            request.key
+        ),
+        Some(request.key.clone()),
+        Some(request.tag.clone()),
+        None,
+    )
+    .await;
 
     Ok(Json(InvalidationRaceScenarioReport {
         key: request.key,
@@ -1490,6 +1914,232 @@ async fn invalidation_race_scenario(
         cached_after_invalidation,
         stale_result_discarded,
         diagnostics,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/negative/missing-key",
+    tag = "negative-scenarios",
+    request_body = NegativeMissingKeyRequest,
+    responses((status = 200, description = "Expected missing cache key scenario", body = NegativeScenarioReport))
+)]
+async fn negative_missing_key(
+    State(state): State<SandboxState>,
+    Json(request): Json<NegativeMissingKeyRequest>,
+) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let value = state.cache.get::<String>(&request.key).await?;
+    let expected_failure = value.is_none();
+    let message = if expected_failure {
+        format!("cache key `{}` is missing as expected", request.key)
+    } else {
+        format!("cache key `{}` unexpectedly exists", request.key)
+    };
+    record_event(
+        &state,
+        if expected_failure {
+            DemoEventKind::CacheMiss
+        } else {
+            DemoEventKind::CacheHit
+        },
+        message.clone(),
+        Some(request.key.clone()),
+        None,
+        value.as_ref().map(|_| LoadSource::Cache),
+    )
+    .await;
+
+    Ok(Json(NegativeScenarioReport {
+        scenario: "missing-key",
+        expected_failure,
+        message,
+        key: Some(request.key),
+        tag: None,
+        diagnostics: diagnostics(&state).await,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/negative/missing-user",
+    tag = "negative-scenarios",
+    request_body = NegativeMissingUserRequest,
+    responses((status = 200, description = "Expected missing backing-store user scenario", body = NegativeScenarioReport))
+)]
+async fn negative_missing_user(
+    State(state): State<SandboxState>,
+    Json(request): Json<NegativeMissingUserRequest>,
+) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let result = state.storage.load_user(request.id).await;
+    let expected_failure = matches!(result, Err(SandboxError::NotFound { .. }));
+    let message = match result {
+        Ok(user) => format!(
+            "demo user {} unexpectedly exists as `{}`",
+            user.id, user.name
+        ),
+        Err(error) => error.to_string(),
+    };
+    record_event(
+        &state,
+        if expected_failure {
+            DemoEventKind::Error
+        } else {
+            DemoEventKind::BackingStoreRead
+        },
+        message.clone(),
+        Some(format!("user:{}", request.id)),
+        None,
+        None,
+    )
+    .await;
+
+    Ok(Json(NegativeScenarioReport {
+        scenario: "missing-user",
+        expected_failure,
+        message,
+        key: Some(format!("user:{}", request.id)),
+        tag: None,
+        diagnostics: diagnostics(&state).await,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/negative/loader-error",
+    tag = "negative-scenarios",
+    request_body = NegativeLoaderErrorRequest,
+    responses((status = 200, description = "Expected loader error scenario", body = NegativeScenarioReport))
+)]
+async fn negative_loader_error(
+    State(state): State<SandboxState>,
+    Json(request): Json<NegativeLoaderErrorRequest>,
+) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let _ = state.cache.remove(&request.key).await?;
+    let key = request.key.clone();
+    let error_message = request.error.clone();
+    let result = state
+        .cache
+        .get_or_load(&key, CacheOptions::new(), move || async move {
+            Err::<String, _>(SandboxError::config(error_message))
+        })
+        .await;
+    let expected_failure = result.is_err();
+    let message = result
+        .err()
+        .map(|error| error.to_string())
+        .unwrap_or_else(|| "loader unexpectedly returned a value".to_owned());
+    record_event(
+        &state,
+        DemoEventKind::Error,
+        message.clone(),
+        Some(request.key.clone()),
+        None,
+        None,
+    )
+    .await;
+
+    Ok(Json(NegativeScenarioReport {
+        scenario: "loader-error",
+        expected_failure,
+        message,
+        key: Some(request.key),
+        tag: None,
+        diagnostics: diagnostics(&state).await,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/negative/expired-entry",
+    tag = "negative-scenarios",
+    request_body = NegativeExpiredEntryRequest,
+    responses((status = 200, description = "Expected expired entry scenario", body = NegativeScenarioReport))
+)]
+async fn negative_expired_entry(
+    State(state): State<SandboxState>,
+    Json(request): Json<NegativeExpiredEntryRequest>,
+) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    state
+        .cache
+        .put(
+            &request.key,
+            request.value,
+            CacheOptions::new().ttl(Duration::from_millis(request.ttl_ms)),
+        )
+        .await?;
+    sleep(Duration::from_millis(request.wait_ms)).await;
+    let value = state.cache.get::<String>(&request.key).await?;
+    let expected_failure = value.is_none();
+    let message = if expected_failure {
+        format!("cache key `{}` expired as expected", request.key)
+    } else {
+        format!(
+            "cache key `{}` did not expire within wait window",
+            request.key
+        )
+    };
+    record_event(
+        &state,
+        if expected_failure {
+            DemoEventKind::CacheMiss
+        } else {
+            DemoEventKind::CacheHit
+        },
+        message.clone(),
+        Some(request.key.clone()),
+        None,
+        value.as_ref().map(|_| LoadSource::Cache),
+    )
+    .await;
+
+    Ok(Json(NegativeScenarioReport {
+        scenario: "expired-entry",
+        expected_failure,
+        message,
+        key: Some(request.key),
+        tag: None,
+        diagnostics: diagnostics(&state).await,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/negative/invalidation-miss",
+    tag = "negative-scenarios",
+    request_body = NegativeInvalidationMissRequest,
+    responses((status = 200, description = "Expected invalidation miss scenario", body = NegativeScenarioReport))
+)]
+async fn negative_invalidation_miss(
+    State(state): State<SandboxState>,
+    Json(request): Json<NegativeInvalidationMissRequest>,
+) -> Result<Json<NegativeScenarioReport>, SandboxHttpError> {
+    let removed = state.cache.invalidate_tag(&request.tag).await?;
+    let expected_failure = removed == 0;
+    let message = if expected_failure {
+        format!("tag `{}` matched no entries as expected", request.tag)
+    } else {
+        format!(
+            "tag `{}` unexpectedly removed {removed} entries",
+            request.tag
+        )
+    };
+    record_event(
+        &state,
+        DemoEventKind::CacheInvalidate,
+        message.clone(),
+        None,
+        Some(request.tag.clone()),
+        None,
+    )
+    .await;
+
+    Ok(Json(NegativeScenarioReport {
+        scenario: "invalidation-miss",
+        expected_failure,
+        message,
+        key: None,
+        tag: Some(request.tag),
+        diagnostics: diagnostics(&state).await,
     }))
 }
 
@@ -1506,6 +2156,15 @@ async fn invalidate_user(
 ) -> Result<Json<InvalidateResponse>, SandboxHttpError> {
     let tag = format!("user:{id}");
     let removed = state.cache.invalidate_tag(&tag).await?;
+    record_event(
+        &state,
+        DemoEventKind::CacheInvalidate,
+        format!("invalidated user tag `{tag}` and removed {removed} entries"),
+        None,
+        Some(tag.clone()),
+        None,
+    )
+    .await;
     Ok(Json(InvalidateResponse { tag, removed }))
 }
 
@@ -1519,12 +2178,144 @@ async fn flush_cache(
     State(state): State<SandboxState>,
 ) -> Result<Json<FlushResponse>, SandboxHttpError> {
     state.cache.flush().await?;
+    record_event(
+        &state,
+        DemoEventKind::CacheFlush,
+        "flushed all local cache entries",
+        None,
+        None,
+        None,
+    )
+    .await;
     Ok(Json(FlushResponse { flushed: true }))
 }
 
 async fn openapi() -> Json<utoipa::openapi::OpenApi> {
     Json(SandboxApiDoc::openapi())
 }
+
+async fn record_event(
+    state: &SandboxState,
+    kind: DemoEventKind,
+    message: impl Into<String>,
+    key: Option<String>,
+    tag: Option<String>,
+    source: Option<LoadSource>,
+) -> DemoEvent {
+    let event = DemoEvent {
+        id: state.next_event_id.fetch_add(1, Ordering::SeqCst) + 1,
+        kind,
+        message: message.into(),
+        key,
+        tag,
+        source,
+    };
+    let mut events = state.events.write().await;
+    if events.len() >= MAX_DEMO_EVENTS {
+        events.pop_front();
+    }
+    events.push_back(event.clone());
+    event
+}
+
+async fn event_log(state: &SandboxState) -> EventLogResponse {
+    let events = state.events.read().await;
+    EventLogResponse {
+        retained: events.len(),
+        capacity: MAX_DEMO_EVENTS,
+        events: events.iter().cloned().collect(),
+    }
+}
+
+const DASHBOARD_HTML: &str = r#"<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HydraCache Sandbox</title>
+  <style>
+    :root { color-scheme: light; --ink: #17211a; --muted: #60705f; --line: #d7decf; --leaf: #376846; --sand: #f6f1e7; --mint: #e6f2df; --rust: #9a4d2b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--ink); background: radial-gradient(circle at 10% 5%, #fff8db, transparent 28rem), linear-gradient(135deg, #f8f4ea, #eaf2e4); }
+    header { padding: 2rem clamp(1rem, 4vw, 4rem); border-bottom: 1px solid var(--line); }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 4.5rem); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 0 0 .8rem; font-size: 1.15rem; }
+    p { color: var(--muted); }
+    main { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: 1rem; padding: clamp(1rem, 4vw, 4rem); }
+    section { background: rgba(255,255,255,.74); border: 1px solid var(--line); border-radius: 1.25rem; padding: 1rem; box-shadow: 0 1rem 2rem rgba(42,58,36,.08); }
+    button, a.button { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; margin: .25rem .25rem .25rem 0; padding: .65rem .85rem; border: 1px solid var(--leaf); border-radius: 999px; background: var(--leaf); color: white; text-decoration: none; cursor: pointer; font: inherit; }
+    button.secondary, a.secondary { background: transparent; color: var(--leaf); }
+    button.warn { border-color: var(--rust); background: var(--rust); }
+    pre { min-height: 12rem; max-height: 28rem; overflow: auto; padding: 1rem; border-radius: 1rem; background: #142016; color: #d8f5c7; font: .85rem/1.45 Consolas, monospace; }
+    .wide { grid-column: 1 / -1; }
+    .pill { display: inline-block; padding: .2rem .55rem; border-radius: 999px; background: var(--mint); color: var(--leaf); font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="pill">HydraCache manual sandbox</span>
+    <h1>Cache behavior you can poke.</h1>
+    <p>Run golden flows, negative scenarios, readiness checks, and inspect the structured event log without leaving this page.</p>
+    <a class="button secondary" href="/swagger-ui/">Swagger UI</a>
+    <a class="button secondary" href="/openapi.json">OpenAPI JSON</a>
+    <a class="button secondary" href="/actuator/hydracache/caches/main/diagnostics">Actuator Diagnostics</a>
+  </header>
+  <main>
+    <section>
+      <h2>Reports</h2>
+      <button onclick="show('/ready')">Readiness</button>
+      <button onclick="show('/demo/report')">Application report</button>
+      <button onclick="show('/demo/events')">Event log</button>
+      <button class="warn" onclick="post('/demo/reset', null)">Reset demo</button>
+    </section>
+    <section>
+      <h2>Golden Path</h2>
+      <button onclick="golden()">Run load/update/invalidate flow</button>
+      <button onclick="post('/demo/scenarios/single-flight', {key:'ui:sf', loader_value:'shared', concurrency:8, loader_delay_ms:40, tags:['ui']})">Single-flight</button>
+      <button onclick="post('/demo/scenarios/invalidation-race', {key:'ui:race', loader_value:'stale', tag:'ui-race', loader_delay_ms:80, invalidate_after_ms:10})">Invalidation race</button>
+      <button onclick="post('/demo/scenarios/ttl', {key:'ui:ttl', value:'short', ttl_ms:50, wait_ms:90})">TTL expiry</button>
+    </section>
+    <section>
+      <h2>Negative Scenarios</h2>
+      <button onclick="post('/demo/negative/missing-key', {key:'missing:ui'})">Missing key</button>
+      <button onclick="post('/demo/negative/missing-user', {id:999999})">Missing user</button>
+      <button onclick="post('/demo/negative/loader-error', {key:'loader:error', error:'simulated loader failure'})">Loader error</button>
+      <button onclick="post('/demo/negative/expired-entry', {key:'expired:ui', value:'gone', ttl_ms:25, wait_ms:60})">Expired entry</button>
+      <button onclick="post('/demo/negative/invalidation-miss', {tag:'missing-tag'})">Invalidation miss</button>
+    </section>
+    <section class="wide">
+      <h2>Output</h2>
+      <pre id="out">Click a button to run a sandbox API call.</pre>
+    </section>
+  </main>
+  <script>
+    const out = document.querySelector('#out');
+    async function show(path) {
+      const res = await fetch(path);
+      out.textContent = JSON.stringify(await res.json(), null, 2);
+    }
+    async function post(path, body) {
+      const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : null });
+      out.textContent = JSON.stringify(await res.json(), null, 2);
+    }
+    async function step(method, path, body) {
+      const res = await fetch(path, { method, headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : null });
+      return { method, path, status: res.status, body: await res.json() };
+    }
+    async function golden() {
+      const results = [];
+      results.push(await step('POST', '/demo/load/42'));
+      results.push(await step('POST', '/demo/load/42'));
+      results.push(await step('POST', '/demo/users/42', { name: 'Grace' }));
+      results.push(await step('POST', '/demo/load/42'));
+      results.push(await step('POST', '/demo/invalidate/user/42'));
+      results.push(await step('POST', '/demo/load/42'));
+      results.push(await step('GET', '/demo/report'));
+      out.textContent = JSON.stringify(results, null, 2);
+    }
+  </script>
+</body>
+</html>"#;
 
 fn cache_options(ttl_ms: Option<u64>, tags: &[String]) -> CacheOptions {
     let mut options = CacheOptions::new();
@@ -1561,6 +2352,16 @@ async fn diagnostics(state: &SandboxState) -> DemoDiagnostics {
 fn capabilities() -> Vec<CapabilityReport> {
     vec![
         CapabilityReport {
+            name: "dashboard",
+            endpoint: "/demo/ui",
+            description: "Open a local no-CDN HTML dashboard for golden flows, reports, event log, and negative scenarios.",
+        },
+        CapabilityReport {
+            name: "readiness",
+            endpoint: "/ready",
+            description: "Check that the selected memory, SQLite, or Postgres backing store is ready.",
+        },
+        CapabilityReport {
             name: "local cache put/get/remove",
             endpoint: "/demo/cache/*",
             description: "Exercise raw HydraCache keys, TTL, tags, contains, remove, and tag invalidation.",
@@ -1592,8 +2393,18 @@ fn capabilities() -> Vec<CapabilityReport> {
         },
         CapabilityReport {
             name: "operation reports",
-            endpoint: "/demo/report and /actuator/hydracache/*",
-            description: "Read cumulative cache diagnostics, loader counters, health, cache list, stats, and actuator snapshots.",
+            endpoint: "/demo/report, /demo/events, and /actuator/hydracache/*",
+            description: "Read cumulative diagnostics, loader counters, function counters, structured events, health, cache list, stats, and actuator snapshots.",
+        },
+        CapabilityReport {
+            name: "reset",
+            endpoint: "/demo/reset",
+            description: "Flush cache, reset counters and event log, and reseed the demo users.",
+        },
+        CapabilityReport {
+            name: "negative scenarios",
+            endpoint: "/demo/negative/*",
+            description: "Exercise expected failure modes: missing key, missing user, loader error, expired entry, and invalidation miss.",
         },
     ]
 }
@@ -1640,7 +2451,12 @@ fn actuator_stats_doc() {}
 #[openapi(
     paths(
         info,
+        readiness,
+        dashboard_ui,
         report,
+        events,
+        clear_events,
+        reset_demo,
         cache_put,
         cache_get,
         cache_get_or_load,
@@ -1656,6 +2472,11 @@ fn actuator_stats_doc() {}
         ttl_scenario,
         single_flight_scenario,
         invalidation_race_scenario,
+        negative_missing_key,
+        negative_missing_user,
+        negative_loader_error,
+        negative_expired_entry,
+        negative_invalidation_miss,
         invalidate_user,
         flush_cache,
         actuator_health_doc,
@@ -1667,6 +2488,12 @@ fn actuator_stats_doc() {}
         schemas(
             SandboxProfile,
             SandboxInfo,
+            ReadinessResponse,
+            ResetResponse,
+            DemoEventKind,
+            DemoEvent,
+            EventLogResponse,
+            ClearEventsResponse,
             User,
             UpsertUserRequest,
             CacheKeyRequest,
@@ -1677,6 +2504,11 @@ fn actuator_stats_doc() {}
             TtlScenarioRequest,
             SingleFlightScenarioRequest,
             InvalidationRaceScenarioRequest,
+            NegativeMissingKeyRequest,
+            NegativeMissingUserRequest,
+            NegativeLoaderErrorRequest,
+            NegativeExpiredEntryRequest,
+            NegativeInvalidationMissRequest,
             CachePutResponse,
             CacheGetResponse,
             CacheLoadStringResponse,
@@ -1689,6 +2521,7 @@ fn actuator_stats_doc() {}
             TtlScenarioReport,
             SingleFlightScenarioReport,
             InvalidationRaceScenarioReport,
+            NegativeScenarioReport,
             ApplicationReport,
             CapabilityReport,
             LoadSource,
@@ -1706,6 +2539,7 @@ fn actuator_stats_doc() {}
         (name = "typed-cache", description = "TypedCache namespaced cache scenarios"),
         (name = "function-cache", description = "Cached non-database function scenarios"),
         (name = "scenarios", description = "End-to-end cache behavior scenarios"),
+        (name = "negative-scenarios", description = "Expected failure modes and edge cases"),
         (name = "demo", description = "Cache and backing-store demo endpoints"),
         (name = "actuator", description = "Read-only HydraCache actuator endpoints")
     )
@@ -2059,6 +2893,10 @@ mod tests {
         let document = serde_json::to_value(SandboxApiDoc::openapi()).unwrap();
         let paths = document["paths"].as_object().unwrap();
 
+        assert!(paths.contains_key("/ready"));
+        assert!(paths.contains_key("/demo/ui"));
+        assert!(paths.contains_key("/demo/events"));
+        assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));
         assert!(paths.contains_key("/demo/cache/get-or-load"));
@@ -2067,6 +2905,11 @@ mod tests {
         assert!(paths.contains_key("/demo/functions/double/{input}"));
         assert!(paths.contains_key("/demo/scenarios/single-flight"));
         assert!(paths.contains_key("/demo/scenarios/invalidation-race"));
+        assert!(paths.contains_key("/demo/negative/missing-key"));
+        assert!(paths.contains_key("/demo/negative/missing-user"));
+        assert!(paths.contains_key("/demo/negative/loader-error"));
+        assert!(paths.contains_key("/demo/negative/expired-entry"));
+        assert!(paths.contains_key("/demo/negative/invalidation-miss"));
         assert!(paths.contains_key("/demo/report"));
         assert!(paths.contains_key("/demo/flush"));
         assert!(paths.contains_key("/actuator/hydracache/health"));
@@ -2406,6 +3249,166 @@ mod tests {
         assert_eq!(report["cache_name"], "main");
         assert!(report["capabilities"].as_array().unwrap().len() >= 7);
         assert!(report["diagnostics"]["total_requests"].as_u64().unwrap() > 0);
+    }
+
+    #[tokio::test]
+    async fn developer_console_routes_cover_readiness_events_reset_and_negative_scenarios() {
+        let app = build_sandbox(SandboxConfig::default())
+            .await
+            .unwrap()
+            .router;
+
+        let ready = app
+            .clone()
+            .oneshot(get("/ready"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(ready["status"], "UP");
+        assert_eq!(ready["profile"], "memory");
+
+        let dashboard = app.clone().oneshot(get("/demo/ui")).await.unwrap();
+        assert_eq!(dashboard.status(), StatusCode::OK);
+        let body = to_bytes(dashboard.into_body(), usize::MAX).await.unwrap();
+        let body = String::from_utf8_lossy(&body);
+        assert!(body.contains("HydraCache manual sandbox"));
+        assert!(body.contains("/demo/report"));
+        assert!(!body.contains("cdn."));
+        assert!(!body.contains("unpkg.com"));
+
+        app.clone()
+            .oneshot(post(
+                "/demo/cache/put",
+                Body::from(r#"{"key":"console:1","value":"alpha","tags":["console"]}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+
+        let events = app
+            .clone()
+            .oneshot(get("/demo/events"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(events["retained"].as_u64().unwrap() >= 1);
+        assert_eq!(events["capacity"], super::MAX_DEMO_EVENTS);
+        assert_eq!(events["events"][0]["kind"], "cache-put");
+
+        let cleared = app
+            .clone()
+            .oneshot(post("/demo/events/clear", Body::empty()))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(cleared["cleared"].as_u64().unwrap() >= 1);
+
+        let empty_events = app
+            .clone()
+            .oneshot(get("/demo/events"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(empty_events["retained"], 0);
+
+        let missing_key = app
+            .clone()
+            .oneshot(post(
+                "/demo/negative/missing-key",
+                Body::from(r#"{"key":"missing:console"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(missing_key["scenario"], "missing-key");
+        assert_eq!(missing_key["expected_failure"], true);
+
+        let missing_user = app
+            .clone()
+            .oneshot(post(
+                "/demo/negative/missing-user",
+                Body::from(r#"{"id":999999}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(missing_user["scenario"], "missing-user");
+        assert_eq!(missing_user["expected_failure"], true);
+
+        let loader_error = app
+            .clone()
+            .oneshot(post(
+                "/demo/negative/loader-error",
+                Body::from(r#"{"key":"loader:error","error":"simulated failure"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(loader_error["scenario"], "loader-error");
+        assert_eq!(loader_error["expected_failure"], true);
+        assert!(loader_error["message"]
+            .as_str()
+            .unwrap()
+            .contains("simulated failure"));
+
+        let expired = app
+            .clone()
+            .oneshot(post(
+                "/demo/negative/expired-entry",
+                Body::from(r#"{"key":"expired:console","value":"gone","ttl_ms":10,"wait_ms":30}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(expired["scenario"], "expired-entry");
+        assert_eq!(expired["expected_failure"], true);
+
+        let invalidation_miss = app
+            .clone()
+            .oneshot(post(
+                "/demo/negative/invalidation-miss",
+                Body::from(r#"{"tag":"missing-console-tag"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(invalidation_miss["scenario"], "invalidation-miss");
+        assert_eq!(invalidation_miss["expected_failure"], true);
+
+        let reset = app
+            .clone()
+            .oneshot(post("/demo/reset", Body::empty()))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(reset["reset"], true);
+        assert_eq!(reset["seeded_users"].as_array().unwrap().len(), 2);
+        assert_eq!(reset["events"]["retained"], 1);
+        assert_eq!(reset["events"]["events"][0]["kind"], "reset");
+
+        let report = app
+            .oneshot(get("/demo/report"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(report["event_count"], 1);
+        assert!(report["capabilities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|capability| capability["name"] == "negative scenarios"));
     }
 
     #[tokio::test]

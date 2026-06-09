@@ -423,21 +423,33 @@ Compose files live next to the sandbox crate. To run only the local Postgres
 dependency and start the Rust sandbox from the host:
 
 ```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile postgres up -d
+cargo run -p hydracache-sandbox -- --profile postgres-compose
+```
+
+Compatibility shortcut:
+
+```powershell
 docker compose -f crates/hydracache-sandbox/compose/docker-compose.postgres.yml up -d
 cargo run -p hydracache-sandbox -- --profile postgres-compose
 ```
 
-To run both Postgres and the sandbox API in Docker:
+To run both Postgres and the sandbox API in Docker with the prebuilt sandbox
+image:
 
 ```powershell
-docker compose -f crates/hydracache-sandbox/compose/docker-compose.full.yml up
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile full up --build
 ```
 
 After startup:
 
 ```text
+http://127.0.0.1:3000/demo/ui
 http://127.0.0.1:3000/swagger-ui
 http://127.0.0.1:3000/openapi.json
+http://127.0.0.1:3000/ready
+http://127.0.0.1:3000/demo/report
+http://127.0.0.1:3000/demo/events
 http://127.0.0.1:3000/actuator/hydracache/health
 http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
 ```
@@ -450,9 +462,18 @@ exercise raw local-cache operations, typed-cache namespacing, database-backed
 query caching, cached non-database functions, TTL expiry, single-flight, and
 invalidation/load race safety.
 
+`/demo/ui` is a small local no-CDN developer console on top of the same API. It
+can run the golden flow, negative scenarios, readiness checks, reset the demo
+state, and show structured events.
+
 Useful Swagger/API groups:
 
 ```text
+GET  /ready
+GET  /demo/ui
+GET  /demo/events
+POST /demo/events/clear
+POST /demo/reset
 POST /demo/cache/put
 POST /demo/cache/get
 POST /demo/cache/get-or-load
@@ -465,30 +486,45 @@ POST /demo/functions/double/{input}
 POST /demo/scenarios/ttl
 POST /demo/scenarios/single-flight
 POST /demo/scenarios/invalidation-race
+POST /demo/negative/missing-key
+POST /demo/negative/missing-user
+POST /demo/negative/loader-error
+POST /demo/negative/expired-entry
+POST /demo/negative/invalidation-miss
 GET  /demo/report
 ```
 
 `/demo/report` returns a cumulative application report with active profile,
-backend, loader counters, function counters, capabilities, and cache
-diagnostics. The read-only actuator remains available for operational views:
-`/actuator/hydracache/health`, `/actuator/hydracache/caches`,
-`/actuator/hydracache/caches/main/stats`, and
+backend, loader counters, function counters, retained event count,
+capabilities, and cache diagnostics. `/demo/events` returns the bounded
+structured event log for recent cache hits, misses, loads, invalidations,
+scenario runs, resets, and expected errors. The read-only actuator remains
+available for operational views: `/actuator/hydracache/health`,
+`/actuator/hydracache/caches`, `/actuator/hydracache/caches/main/stats`, and
 `/actuator/hydracache/caches/main/diagnostics`.
 
-A compact database-backed cache flow is still useful:
+Golden demo path:
 
 ```text
+GET  /ready
+POST /demo/reset
 POST /demo/load/42
 POST /demo/load/42
 POST /demo/users/42 {"name":"Grace"}
 POST /demo/load/42
 POST /demo/invalidate/user/42
 POST /demo/load/42
+GET  /demo/events
+GET  /demo/report
 ```
 
 The first load should report `source = "loader"`, the second should report
 `source = "cache"`, and the post-invalidation load should read the updated
 backing store value.
+
+Negative scenarios deliberately return `200 OK` with `expected_failure = true`
+when the edge case was reproduced. They are meant for demos and manual checks,
+not for production actuator behavior.
 
 For editor-based REST clients, use
 `crates/hydracache-sandbox/http/sandbox.http`. For a scripted smoke flow:

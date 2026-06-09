@@ -43,16 +43,23 @@ Did the second call actually hit the cache?
 - Sandbox profile presets through `HYDRACACHE_SANDBOX_PROFILE` and `--profile`.
 - Docker Compose files for running the local Postgres dependency or the full
   sandbox API stack.
+- Unified Compose profiles plus `Dockerfile.sandbox` for building a local
+  sandbox API image.
 - Sandbox OpenAPI generated from Rust route/schema declarations through
   `utoipa`.
 - Sandbox Swagger UI served from local embedded assets through
   `utoipa-swagger-ui`, without a CDN dependency.
+- Local no-CDN developer console at `GET /demo/ui`.
 - Sandbox Swagger API expanded into an interactive HydraCache lab for raw
   local-cache operations, typed-cache namespacing, database-backed query
   caching, cached non-database functions, TTL expiry, single-flight, and
   invalidation/load race safety.
 - Application-level sandbox report at `GET /demo/report` with active profile,
-  backend, loader counters, function counters, capabilities, and diagnostics.
+  backend, loader counters, function counters, event count, capabilities, and
+  diagnostics.
+- Structured event log at `GET /demo/events`, reset endpoint at
+  `POST /demo/reset`, readiness endpoint at `GET /ready`, and expected-failure
+  negative scenarios under `POST /demo/negative/*`.
 - Sandbox HTTP collection and PowerShell demo scripts.
 - Optional Postgres Docker smoke test with graceful skip when Docker is
   unavailable.
@@ -79,9 +86,10 @@ The actuator modules stay outside the base `hydracache` crate. This keeps the
 embedded runtime HTTP-free while still allowing applications to opt in to a
 Spring Boot-style read-only diagnostics surface when they already use Axum.
 
-The actuator is read-only in `0.16.0`. Mutation endpoints such as `flush`,
-`invalidate-key`, and `invalidate-tag` are deliberately deferred until there is
-an explicit security and deployment model.
+The actuator is read-only in `0.16.0`. The workspace-only sandbox has
+mutation/demo endpoints for manual experiments, but public write-enabled
+actuator endpoints are deliberately deferred until there is an explicit
+security and deployment model.
 
 ## Example
 
@@ -150,18 +158,28 @@ cargo run -p hydracache-sandbox -- --profile postgres-docker
 Compose startup options:
 
 ```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile postgres up -d
+cargo run -p hydracache-sandbox -- --profile postgres-compose
+
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile full up --build
+
 docker compose -f crates/hydracache-sandbox/compose/docker-compose.postgres.yml up -d
 cargo run -p hydracache-sandbox -- --profile postgres-compose
 
-docker compose -f crates/hydracache-sandbox/compose/docker-compose.full.yml up
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.full.yml up --build
 ```
 
 The sandbox exposes:
 
 ```text
+GET  /ready
+GET  /demo/ui
 GET  /swagger-ui
 GET  /openapi.json
 GET  /demo/report
+GET  /demo/events
+POST /demo/events/clear
+POST /demo/reset
 POST /demo/cache/put
 POST /demo/cache/get
 POST /demo/cache/get-or-load
@@ -174,6 +192,11 @@ POST /demo/functions/double/{input}
 POST /demo/scenarios/ttl
 POST /demo/scenarios/single-flight
 POST /demo/scenarios/invalidation-race
+POST /demo/negative/missing-key
+POST /demo/negative/missing-user
+POST /demo/negative/loader-error
+POST /demo/negative/expired-entry
+POST /demo/negative/invalidation-miss
 GET  /actuator/hydracache/health
 GET  /actuator/hydracache/caches/main/diagnostics
 POST /demo/load/{id}
@@ -193,7 +216,6 @@ crates/hydracache-sandbox/scripts/start-profile.ps1
 
 ## Deferred
 
-- Event listeners.
 - Tracing spans.
 - Metrics exporters.
 - Backend eviction listener integration.

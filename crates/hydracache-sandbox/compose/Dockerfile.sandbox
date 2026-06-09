@@ -1,0 +1,21 @@
+FROM rust:1.88-bookworm AS builder
+
+WORKDIR /workspace
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+
+RUN cargo build -p hydracache-sandbox --release --locked
+
+FROM debian:bookworm-slim AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /workspace/target/release/hydracache-sandbox /usr/local/bin/hydracache-sandbox
+
+EXPOSE 3000
+
+ENTRYPOINT ["hydracache-sandbox"]
+CMD ["--profile", "postgres-compose", "--bind", "0.0.0.0:3000"]

@@ -3,11 +3,17 @@
 ### Sandbox info
 GET {{baseUrl}}/
 
+### Readiness check
+GET {{baseUrl}}/ready
+
 ### OpenAPI document
 GET {{baseUrl}}/openapi.json
 
 ### Swagger UI
 GET {{baseUrl}}/swagger-ui/
+
+### Developer console dashboard
+GET {{baseUrl}}/demo/ui
 
 ### Actuator health
 GET {{baseUrl}}/actuator/hydracache/health
@@ -17,6 +23,15 @@ GET {{baseUrl}}/actuator/hydracache/caches/main/diagnostics
 
 ### Application report
 GET {{baseUrl}}/demo/report
+
+### Structured event log
+GET {{baseUrl}}/demo/events
+
+### Clear structured event log
+POST {{baseUrl}}/demo/events/clear
+
+### Reset demo cache, counters, users, and event log
+POST {{baseUrl}}/demo/reset
 
 ### Put a raw local cache entry with TTL and tags
 POST {{baseUrl}}/demo/cache/put
@@ -132,6 +147,50 @@ Content-Type: application/json
   "tag": "race",
   "loader_delay_ms": 80,
   "invalidate_after_ms": 10
+}
+
+### Negative scenario: missing cache key
+POST {{baseUrl}}/demo/negative/missing-key
+Content-Type: application/json
+
+{
+  "key": "missing:manual"
+}
+
+### Negative scenario: missing backing-store user
+POST {{baseUrl}}/demo/negative/missing-user
+Content-Type: application/json
+
+{
+  "id": 999999
+}
+
+### Negative scenario: loader error
+POST {{baseUrl}}/demo/negative/loader-error
+Content-Type: application/json
+
+{
+  "key": "loader:error",
+  "error": "simulated loader failure"
+}
+
+### Negative scenario: expired entry
+POST {{baseUrl}}/demo/negative/expired-entry
+Content-Type: application/json
+
+{
+  "key": "expired:manual",
+  "value": "gone",
+  "ttl_ms": 50,
+  "wait_ms": 80
+}
+
+### Negative scenario: invalidation miss
+POST {{baseUrl}}/demo/negative/invalidation-miss
+Content-Type: application/json
+
+{
+  "tag": "missing-tag"
 }
 
 ### Update the backing store without invalidating cache

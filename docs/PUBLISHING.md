@@ -75,10 +75,24 @@ cargo test -p hydracache-sandbox --test postgres_smoke --locked
 cargo run -p hydracache-sandbox -- --profile memory
 ```
 
-After startup, open `/swagger-ui` or run
+After startup, open `/demo/ui` or `/swagger-ui`, or run
 `crates\hydracache-sandbox\scripts\run-demo-flow.ps1` to exercise the sandbox
-OpenAPI lab and inspect `/demo/report` plus the read-only actuator reports.
+OpenAPI lab. Inspect `/ready`, `/demo/report`, `/demo/events`, and the
+read-only actuator reports.
 For a Compose-backed Postgres run:
+
+```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile postgres up -d
+cargo run -p hydracache-sandbox -- --profile postgres-compose
+```
+
+For a full Compose sandbox API stack:
+
+```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile full up --build
+```
+
+Compatibility shortcut:
 
 ```powershell
 docker compose -f crates/hydracache-sandbox/compose/docker-compose.postgres.yml up -d
