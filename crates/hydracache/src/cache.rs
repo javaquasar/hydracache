@@ -15,7 +15,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::builder::HydraCacheBuilder;
 use crate::entry::CacheEntry;
-use crate::events::{CacheEventSubscriber, EventBus};
+use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
 use crate::inflight::{InFlightMap, SharedLoadFuture};
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
@@ -151,6 +151,63 @@ where
         self.inner
             .events
             .subscribe(options, self.inner.stats.clone())
+    }
+
+    /// Subscribe to mutation and invalidation events.
+    pub fn subscribe_mutations(&self) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::mutations())
+    }
+
+    /// Subscribe to access and loader events.
+    ///
+    /// These events are published only when the cache is built with
+    /// [`HydraCacheBuilder::enable_access_events`].
+    pub fn subscribe_access(&self) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::access())
+    }
+
+    /// Subscribe to events for one exact physical key.
+    pub fn subscribe_key(&self, key: impl Into<String>) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::new().key(key))
+    }
+
+    /// Subscribe to events associated with one tag.
+    pub fn subscribe_tag(&self, tag: impl Into<String>) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::new().tag(tag))
+    }
+
+    /// Run a callback for events matching the provided filters.
+    ///
+    /// The callback runs in a background task over a normal event subscription;
+    /// it is never executed directly by cache operations.
+    pub fn add_listener<F>(
+        &self,
+        options: CacheEventOptions,
+        listener: F,
+    ) -> CacheEventListenerHandle
+    where
+        F: Fn(CacheEvent) + Send + 'static,
+    {
+        CacheEventListenerHandle::spawn(self.subscribe(options), listener)
+    }
+
+    /// Run a callback for mutation and invalidation events.
+    pub fn on_mutation<F>(&self, listener: F) -> CacheEventListenerHandle
+    where
+        F: Fn(CacheEvent) + Send + 'static,
+    {
+        self.add_listener(CacheEventOptions::mutations(), listener)
+    }
+
+    /// Run a callback for access and loader events.
+    ///
+    /// These events are published only when the cache is built with
+    /// [`HydraCacheBuilder::enable_access_events`].
+    pub fn on_access<F>(&self, listener: F) -> CacheEventListenerHandle
+    where
+        F: Fn(CacheEvent) + Send + 'static,
+    {
+        self.add_listener(CacheEventOptions::access(), listener)
     }
 
     /// Get and decode a cached value.

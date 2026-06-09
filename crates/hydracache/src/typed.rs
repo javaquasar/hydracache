@@ -3,13 +3,13 @@ use std::future::Future;
 use std::marker::PhantomData;
 
 use hydracache_core::{
-    CacheCodec, CacheDiagnostics, CacheEventOptions, CacheKeyBuilder, CacheOptions, CacheStats,
-    PostcardCodec, Result,
+    CacheCodec, CacheDiagnostics, CacheEvent, CacheEventOptions, CacheKeyBuilder, CacheOptions,
+    CacheStats, PostcardCodec, Result,
 };
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::cache::HydraCache;
-use crate::events::CacheEventSubscriber;
+use crate::events::{CacheEventListenerHandle, CacheEventSubscriber};
 
 /// A typed, namespaced view over a [`HydraCache`].
 ///
@@ -76,9 +76,64 @@ where
         self.cache.subscribe(options)
     }
 
+    /// Subscribe to mutation and invalidation events for this namespace.
+    pub fn subscribe_mutations(&self) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::mutations().key_prefix(self.namespace_prefix()))
+    }
+
+    /// Subscribe to access and loader events for this namespace.
+    ///
+    /// These events are published only when the shared cache is built with
+    /// `enable_access_events(true)`.
+    pub fn subscribe_access(&self) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::access().key_prefix(self.namespace_prefix()))
+    }
+
+    /// Subscribe to key-scoped events for this typed namespace.
+    pub fn subscribe_namespace(&self) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::new().key_prefix(self.namespace_prefix()))
+    }
+
+    /// Subscribe to one logical typed key.
+    pub fn subscribe_key(&self, key: &str) -> CacheEventSubscriber {
+        self.subscribe(CacheEventOptions::new().key(self.key(key)))
+    }
+
+    /// Subscribe to events associated with one tag.
+    pub fn subscribe_tag(&self, tag: impl Into<String>) -> CacheEventSubscriber {
+        self.cache.subscribe_tag(tag)
+    }
+
+    /// Run a callback for events matching the provided filters.
+    pub fn add_listener<F>(
+        &self,
+        options: CacheEventOptions,
+        listener: F,
+    ) -> CacheEventListenerHandle
+    where
+        F: Fn(CacheEvent) + Send + 'static,
+    {
+        self.cache.add_listener(options, listener)
+    }
+
+    /// Run a callback for mutation events scoped to this namespace.
+    pub fn on_mutation<F>(&self, listener: F) -> CacheEventListenerHandle
+    where
+        F: Fn(CacheEvent) + Send + 'static,
+    {
+        self.add_listener(
+            CacheEventOptions::mutations().key_prefix(self.namespace_prefix()),
+            listener,
+        )
+    }
+
     /// Build the physical key used by the shared underlying cache.
     pub fn key(&self, key: &str) -> String {
         format!("{}:{key}", self.namespace)
+    }
+
+    fn namespace_prefix(&self) -> String {
+        format!("{}:", self.namespace)
     }
 
     /// Build a physical key from escaped key segments inside this namespace.

@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use hydracache_core::{CacheEvent, CacheEventKind, CacheEventOptions};
 use tokio::sync::broadcast;
+use tokio::task::JoinHandle;
 
 use crate::stats::StatsCounters;
 
@@ -101,8 +102,62 @@ impl CacheEventSubscriber {
         }
     }
 
+    /// Receive the next matching event and skip lag notifications.
+    ///
+    /// This helper is useful for dashboards and lightweight listeners where
+    /// "latest matching event" is more important than reacting to lag as an
+    /// error. Use [`recv`](Self::recv) when lag must be handled explicitly.
+    pub async fn next_event(&mut self) -> Option<CacheEvent> {
+        loop {
+            match self.recv().await {
+                Ok(event) => return Some(event),
+                Err(CacheEventRecvError::Closed) => return None,
+                Err(CacheEventRecvError::Lagged(_)) => continue,
+            }
+        }
+    }
+
     /// Return this subscriber's immutable filter options.
     pub fn options(&self) -> &CacheEventOptions {
         &self.options
+    }
+}
+
+/// Handle for a callback-style cache event listener.
+///
+/// Dropping the handle unsubscribes the listener by aborting its background
+/// task. The callback is never run on the cache operation hot path.
+pub struct CacheEventListenerHandle {
+    task: JoinHandle<()>,
+}
+
+impl CacheEventListenerHandle {
+    pub(crate) fn spawn<F>(mut subscriber: CacheEventSubscriber, listener: F) -> Self
+    where
+        F: Fn(CacheEvent) + Send + 'static,
+    {
+        let task = tokio::spawn(async move {
+            while let Some(event) = subscriber.next_event().await {
+                listener(event);
+            }
+        });
+
+        Self { task }
+    }
+
+    /// Unsubscribe this listener.
+    pub fn unsubscribe(self) {
+        self.task.abort();
+    }
+
+    /// Return whether the background listener task has finished.
+    pub fn is_finished(&self) -> bool {
+        self.task.is_finished()
+    }
+}
+
+impl Drop for CacheEventListenerHandle {
+    fn drop(&mut self) {
+        self.task.abort();
     }
 }

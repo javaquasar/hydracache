@@ -5,7 +5,7 @@ use std::time::Duration;
 use hydracache_core::{
     CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin, CacheOptions,
 };
-use tokio::sync::oneshot;
+use tokio::sync::{mpsc, oneshot};
 
 use crate::events::CacheEventRecvError;
 use crate::tests::common::{user, LoaderError, User};
@@ -287,4 +287,172 @@ async fn load_failed_event_is_emitted_when_access_events_are_enabled() {
     let event = recv_event(&mut events).await;
     assert_eq!(event.kind(), CacheEventKind::LoadFailed);
     assert_eq!(event.key(), Some("user:error"));
+}
+
+#[tokio::test]
+async fn shorthand_subscriptions_cover_mutations_access_key_and_tag_filters() {
+    let cache = HydraCache::local().enable_access_events(true).build();
+    let mut mutations = cache.subscribe_mutations();
+    let mut access = cache.subscribe_access();
+    let mut key_events = cache.subscribe_key("user:2");
+    let mut tag_events = cache.subscribe_tag("users");
+
+    let missing: Option<User> = cache.get("missing").await.unwrap();
+    assert_eq!(missing, None);
+    assert_eq!(recv_event(&mut access).await.kind(), CacheEventKind::Miss);
+
+    cache
+        .put("user:1", user(1), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+    let stored = recv_event(&mut mutations).await;
+    assert_eq!(stored.kind(), CacheEventKind::Stored);
+    assert_eq!(stored.key(), Some("user:1"));
+
+    let tagged = recv_event(&mut tag_events).await;
+    assert_eq!(tagged.kind(), CacheEventKind::Stored);
+    assert_eq!(tagged.tags(), &["users".to_owned()]);
+
+    cache
+        .put("user:2", user(2), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+    let key_event = recv_event(&mut key_events).await;
+    assert_eq!(key_event.kind(), CacheEventKind::Stored);
+    assert_eq!(key_event.key(), Some("user:2"));
+}
+
+#[tokio::test]
+async fn next_event_skips_lag_and_returns_latest_matching_event() {
+    let cache = HydraCache::local().event_buffer_capacity(1).build();
+    let mut events = cache.subscribe_mutations();
+
+    for index in 0..3 {
+        cache
+            .put(format!("key:{index}").as_str(), index, CacheOptions::new())
+            .await
+            .unwrap();
+    }
+
+    let event = tokio::time::timeout(Duration::from_millis(500), events.next_event())
+        .await
+        .expect("latest event should arrive")
+        .expect("subscription should stay open after lag");
+
+    assert_eq!(event.kind(), CacheEventKind::Stored);
+    assert_eq!(event.key(), Some("key:2"));
+    assert!(cache.stats().event_subscriber_lagged > 0);
+}
+
+#[tokio::test]
+async fn callback_listener_receives_events_and_unsubscribe_stops_delivery() {
+    let cache = HydraCache::local().build();
+    let (tx, mut rx) = mpsc::unbounded_channel();
+    let handle = cache.on_mutation(move |event| {
+        let _ = tx.send(event.kind());
+    });
+
+    cache
+        .put("user:1", user(1), CacheOptions::new())
+        .await
+        .unwrap();
+
+    let kind = tokio::time::timeout(Duration::from_millis(500), rx.recv())
+        .await
+        .expect("callback should receive event")
+        .expect("callback channel should stay open");
+    assert_eq!(kind, CacheEventKind::Stored);
+    assert!(!handle.is_finished());
+
+    handle.unsubscribe();
+
+    cache
+        .put("user:2", user(2), CacheOptions::new())
+        .await
+        .unwrap();
+    let later = tokio::time::timeout(Duration::from_millis(50), rx.recv()).await;
+    assert!(
+        !matches!(later, Ok(Some(_))),
+        "unsubscribed callback should not receive later events"
+    );
+}
+
+#[tokio::test]
+async fn access_callback_receives_events_when_access_events_are_enabled() {
+    let cache = HydraCache::local().enable_access_events(true).build();
+    let (tx, mut rx) = mpsc::unbounded_channel();
+    let handle = cache.on_access(move |event| {
+        let _ = tx.send(event.kind());
+    });
+
+    let cached: Option<User> = cache.get("missing").await.unwrap();
+    assert_eq!(cached, None);
+
+    let kind = tokio::time::timeout(Duration::from_millis(500), rx.recv())
+        .await
+        .expect("access callback should receive event")
+        .expect("access callback channel should stay open");
+    assert_eq!(kind, CacheEventKind::Miss);
+
+    handle.unsubscribe();
+}
+
+#[tokio::test]
+async fn typed_cache_helpers_scope_namespace_key_tag_and_callbacks() {
+    let cache = HydraCache::local().build();
+    let users = cache.typed::<User>("users");
+    let admins = cache.typed::<User>("admins");
+    let mut namespace_events = users.subscribe_namespace();
+    let mut mutation_events = users.subscribe_mutations();
+    let mut key_events = users.subscribe_key("2");
+    let mut tag_events = users.subscribe_tag("users");
+    let (tx, mut rx) = mpsc::unbounded_channel();
+    let handle = users.on_mutation(move |event| {
+        let _ = tx.send(event.key().map(str::to_owned));
+    });
+
+    admins.put("1", user(1), CacheOptions::new()).await.unwrap();
+    users
+        .put("1", user(1), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    let namespace_event = recv_event(&mut namespace_events).await;
+    assert_eq!(namespace_event.key(), Some("users:1"));
+
+    let mutation_event = recv_event(&mut mutation_events).await;
+    assert_eq!(mutation_event.key(), Some("users:1"));
+
+    let tagged = recv_event(&mut tag_events).await;
+    assert_eq!(tagged.tags(), &["users".to_owned()]);
+
+    let callback_key = tokio::time::timeout(Duration::from_millis(500), rx.recv())
+        .await
+        .expect("typed callback should receive event")
+        .expect("callback channel should stay open");
+    assert_eq!(callback_key.as_deref(), Some("users:1"));
+
+    users.put("2", user(2), CacheOptions::new()).await.unwrap();
+    let key_event = recv_event(&mut key_events).await;
+    assert_eq!(key_event.key(), Some("users:2"));
+
+    handle.unsubscribe();
+}
+
+#[tokio::test]
+async fn typed_access_subscription_filters_to_namespace() {
+    let cache = HydraCache::local().enable_access_events(true).build();
+    let users = cache.typed::<User>("users");
+    let admins = cache.typed::<User>("admins");
+    let mut events = users.subscribe_access();
+
+    let admin: Option<User> = admins.get("1").await.unwrap();
+    let user: Option<User> = users.get("1").await.unwrap();
+
+    assert_eq!(admin, None);
+    assert_eq!(user, None);
+
+    let event = recv_event(&mut events).await;
+    assert_eq!(event.kind(), CacheEventKind::Miss);
+    assert_eq!(event.key(), Some("users:1"));
 }

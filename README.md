@@ -358,11 +358,11 @@ when subscribers exist. Hit/miss/load events are opt-in through
 `enable_access_events(true)` because they can be high volume.
 
 ```rust
-use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+use hydracache::{CacheEventKind, CacheOptions, HydraCache};
 
 # async fn example() -> hydracache::CacheResult<()> {
 let cache = HydraCache::local().build();
-let mut events = cache.subscribe(CacheEventOptions::mutations().tag("users"));
+let mut events = cache.subscribe_tag("users");
 
 cache
     .put("user:42", 42_u64, CacheOptions::new().tag("users"))
@@ -379,24 +379,62 @@ assert_eq!(invalidation.kind(), CacheEventKind::TagInvalidated);
 # }
 ```
 
+For callback-style listeners, keep the returned handle alive while the listener
+should be active:
+
+```rust
+use hydracache::{CacheOptions, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local().build();
+let listener = cache.on_mutation(|event| {
+    println!("cache changed: {event:?}");
+});
+
+cache.put("user:42", 42_u64, CacheOptions::new()).await?;
+listener.unsubscribe();
+# Ok(())
+# }
+```
+
 For a temporary access trace:
 
 ```rust
-use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+use hydracache::{CacheEventKind, CacheOptions, HydraCache};
 
 # async fn example() -> hydracache::CacheResult<()> {
 let cache = HydraCache::local()
     .enable_access_events(true)
     .event_buffer_capacity(256)
     .build();
-let mut events = cache.subscribe(CacheEventOptions::access().key("answer"));
+let mut events = cache.subscribe_access();
 
 let answer = cache
     .get_or_insert_with("answer", CacheOptions::new(), || async { 42_u64 })
     .await?;
 
 assert_eq!(answer, 42);
-assert_eq!(events.recv().await.unwrap().kind(), CacheEventKind::Miss);
+let event = events.next_event().await.expect("access event");
+assert_eq!(event.kind(), CacheEventKind::Miss);
+# Ok(())
+# }
+```
+
+Typed cache views also provide scoped helpers:
+
+```rust
+use hydracache::{CacheEventKind, CacheOptions, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local().build();
+let users = cache.typed::<u64>("users");
+let mut events = users.subscribe_key("42");
+
+users.put("42", 42, CacheOptions::new()).await?;
+
+let event = events.recv().await.expect("typed key event");
+assert_eq!(event.kind(), CacheEventKind::Stored);
+assert_eq!(event.key(), Some("users:42"));
 # Ok(())
 # }
 ```

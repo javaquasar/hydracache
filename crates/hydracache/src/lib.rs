@@ -187,12 +187,12 @@
 //! Access/load events are opt-in because hit/miss streams can be noisy.
 //!
 //! ```rust
-//! use hydracache::{CacheEventKind, CacheEventOptions, CacheOptions, HydraCache};
+//! use hydracache::{CacheEventKind, CacheOptions, HydraCache};
 //!
 //! # #[tokio::main]
 //! # async fn main() -> hydracache::CacheResult<()> {
 //! let cache = HydraCache::local().build();
-//! let mut events = cache.subscribe(CacheEventOptions::mutations());
+//! let mut events = cache.subscribe_mutations();
 //!
 //! cache
 //!     .put("user:42", 42_u64, CacheOptions::new().tag("users"))
@@ -202,6 +202,24 @@
 //! assert_eq!(event.kind(), CacheEventKind::Stored);
 //! assert_eq!(event.key(), Some("user:42"));
 //! assert_eq!(event.tags(), &["users".to_owned()]);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! Callback listeners are adapters over the same subscription stream:
+//!
+//! ```rust
+//! use hydracache::{CacheOptions, HydraCache};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//! let listener = cache.on_mutation(|event| {
+//!     println!("cache changed: {event:?}");
+//! });
+//!
+//! cache.put("user:42", 42_u64, CacheOptions::new()).await?;
+//! listener.unsubscribe();
 //! # Ok(())
 //! # }
 //! ```
@@ -247,7 +265,7 @@ mod typed;
 
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
-pub use events::{CacheEventRecvError, CacheEventSubscriber};
+pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
     CacheEventScope, CacheEventValueMode, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,
