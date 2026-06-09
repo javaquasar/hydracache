@@ -75,6 +75,16 @@ cargo test -p hydracache-sandbox --test postgres_smoke --locked
 cargo run -p hydracache-sandbox -- --profile memory
 ```
 
+After startup, open `/swagger-ui` or run
+`crates\hydracache-sandbox\scripts\run-demo-flow.ps1` to exercise the sandbox
+OpenAPI lab and inspect `/demo/report` plus the read-only actuator reports.
+For a Compose-backed Postgres run:
+
+```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.postgres.yml up -d
+cargo run -p hydracache-sandbox -- --profile postgres-compose
+```
+
 If `hydracache` cannot find `hydracache-core` or `hydracache-macros`, wait a
 little longer and retry:
 

@@ -36,14 +36,23 @@ Did the second call actually hit the cache?
   - `memory`
   - `sqlite-memory`
   - `sqlite-file`
+  - `postgres-compose`
   - `postgres-docker`
 - Sandbox local `.env` support through a committed safe demo profile at
   `crates/hydracache-sandbox/.env` plus `.env.example` as a reference.
 - Sandbox profile presets through `HYDRACACHE_SANDBOX_PROFILE` and `--profile`.
+- Docker Compose files for running the local Postgres dependency or the full
+  sandbox API stack.
 - Sandbox OpenAPI generated from Rust route/schema declarations through
   `utoipa`.
 - Sandbox Swagger UI served from local embedded assets through
   `utoipa-swagger-ui`, without a CDN dependency.
+- Sandbox Swagger API expanded into an interactive HydraCache lab for raw
+  local-cache operations, typed-cache namespacing, database-backed query
+  caching, cached non-database functions, TTL expiry, single-flight, and
+  invalidation/load race safety.
+- Application-level sandbox report at `GET /demo/report` with active profile,
+  backend, loader counters, function counters, capabilities, and diagnostics.
 - Sandbox HTTP collection and PowerShell demo scripts.
 - Optional Postgres Docker smoke test with graceful skip when Docker is
   unavailable.
@@ -134,7 +143,17 @@ only non-secret demo settings. CLI flags still override it for one-off checks:
 cargo run -p hydracache-sandbox -- --profile memory
 cargo run -p hydracache-sandbox -- --profile sqlite-memory
 cargo run -p hydracache-sandbox -- --profile sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
+cargo run -p hydracache-sandbox -- --profile postgres-compose
 cargo run -p hydracache-sandbox -- --profile postgres-docker
+```
+
+Compose startup options:
+
+```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.postgres.yml up -d
+cargo run -p hydracache-sandbox -- --profile postgres-compose
+
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.full.yml up
 ```
 
 The sandbox exposes:
@@ -142,6 +161,19 @@ The sandbox exposes:
 ```text
 GET  /swagger-ui
 GET  /openapi.json
+GET  /demo/report
+POST /demo/cache/put
+POST /demo/cache/get
+POST /demo/cache/get-or-load
+POST /demo/cache/contains
+POST /demo/cache/remove
+POST /demo/cache/invalidate-tag
+POST /demo/query/users/{id}/load
+POST /demo/typed/users/{id}/load
+POST /demo/functions/double/{input}
+POST /demo/scenarios/ttl
+POST /demo/scenarios/single-flight
+POST /demo/scenarios/invalidation-race
 GET  /actuator/hydracache/health
 GET  /actuator/hydracache/caches/main/diagnostics
 POST /demo/load/{id}

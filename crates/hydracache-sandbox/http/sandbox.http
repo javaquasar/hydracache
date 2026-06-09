@@ -15,11 +15,124 @@ GET {{baseUrl}}/actuator/hydracache/health
 ### Actuator diagnostics
 GET {{baseUrl}}/actuator/hydracache/caches/main/diagnostics
 
+### Application report
+GET {{baseUrl}}/demo/report
+
+### Put a raw local cache entry with TTL and tags
+POST {{baseUrl}}/demo/cache/put
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "value": "alpha",
+  "ttl_ms": 5000,
+  "tags": ["manual"]
+}
+
+### Read a raw local cache entry
+POST {{baseUrl}}/demo/cache/get
+Content-Type: application/json
+
+{
+  "key": "manual:1"
+}
+
+### Get-or-load should return cache while the manual entry exists
+POST {{baseUrl}}/demo/cache/get-or-load
+Content-Type: application/json
+
+{
+  "key": "manual:1",
+  "loader_value": "beta",
+  "loader_delay_ms": 10,
+  "tags": ["manual"]
+}
+
+### Contains key
+POST {{baseUrl}}/demo/cache/contains
+Content-Type: application/json
+
+{
+  "key": "manual:1"
+}
+
+### Remove one key
+POST {{baseUrl}}/demo/cache/remove
+Content-Type: application/json
+
+{
+  "key": "manual:1"
+}
+
+### Invalidate by arbitrary tag
+POST {{baseUrl}}/demo/cache/invalidate-tag
+Content-Type: application/json
+
+{
+  "tag": "manual"
+}
+
 ### First load should use the loader
 POST {{baseUrl}}/demo/load/42
 
 ### Second load should use the cache
 POST {{baseUrl}}/demo/load/42
+
+### Query-cache load with custom TTL and tags
+POST {{baseUrl}}/demo/query/users/42/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["users"]
+}
+
+### Typed-cache load with namespace-specific key
+POST {{baseUrl}}/demo/typed/users/7/load
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["team:kernel"]
+}
+
+### Cached non-database function
+POST {{baseUrl}}/demo/functions/double/21
+
+### TTL scenario report
+POST {{baseUrl}}/demo/scenarios/ttl
+Content-Type: application/json
+
+{
+  "key": "ttl:short",
+  "value": "short",
+  "ttl_ms": 50,
+  "wait_ms": 80
+}
+
+### Single-flight scenario report
+POST {{baseUrl}}/demo/scenarios/single-flight
+Content-Type: application/json
+
+{
+  "key": "sf:1",
+  "loader_value": "shared",
+  "concurrency": 8,
+  "loader_delay_ms": 50,
+  "tags": ["sf"]
+}
+
+### Invalidation/load race scenario report
+POST {{baseUrl}}/demo/scenarios/invalidation-race
+Content-Type: application/json
+
+{
+  "key": "race:1",
+  "loader_value": "stale",
+  "tag": "race",
+  "loader_delay_ms": 80,
+  "invalidate_after_ms": 10
+}
 
 ### Update the backing store without invalidating cache
 POST {{baseUrl}}/demo/users/42

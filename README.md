@@ -402,18 +402,35 @@ Supported settings:
 HYDRACACHE_SANDBOX_PROFILE=memory
 HYDRACACHE_SANDBOX_BIND=127.0.0.1:3000
 HYDRACACHE_SANDBOX_SQLITE_PATH=target/hydracache-sandbox.sqlite
+HYDRACACHE_SANDBOX_DATABASE_URL=postgres://hydracache:hydracache@127.0.0.1:54329/hydracache
 ```
 
-Supported profile values are `memory`, `sqlite-memory`, `sqlite-file`, and
-`postgres-docker`. CLI flags override the committed `.env` values, which is
-handy for one-off manual checks. `--profile` is the preferred demo preset;
-`--backend` remains available as a lower-level compatibility override.
+Supported profile values are `memory`, `sqlite-memory`, `sqlite-file`,
+`postgres-compose`, and `postgres-docker`. CLI flags override the committed
+`.env` values, which is handy for one-off manual checks. `--profile` is the
+preferred demo preset; `--backend` remains available as a lower-level
+compatibility override.
 
 ```powershell
 cargo run -p hydracache-sandbox -- --profile memory
 cargo run -p hydracache-sandbox -- --profile sqlite-memory
 cargo run -p hydracache-sandbox -- --profile sqlite-file --sqlite-path target/hydracache-sandbox.sqlite
+cargo run -p hydracache-sandbox -- --profile postgres-compose
 cargo run -p hydracache-sandbox -- --profile postgres-docker
+```
+
+Compose files live next to the sandbox crate. To run only the local Postgres
+dependency and start the Rust sandbox from the host:
+
+```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.postgres.yml up -d
+cargo run -p hydracache-sandbox -- --profile postgres-compose
+```
+
+To run both Postgres and the sandbox API in Docker:
+
+```powershell
+docker compose -f crates/hydracache-sandbox/compose/docker-compose.full.yml up
 ```
 
 After startup:
@@ -427,9 +444,38 @@ http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
 
 The OpenAPI document is generated from Rust route/schema declarations through
 `utoipa`. Swagger UI is served from local embedded assets through
-`utoipa-swagger-ui`; it does not depend on a CDN.
+`utoipa-swagger-ui`; it does not depend on a CDN. The Swagger surface is meant
+to be an interactive HydraCache lab, not only reference documentation. It can
+exercise raw local-cache operations, typed-cache namespacing, database-backed
+query caching, cached non-database functions, TTL expiry, single-flight, and
+invalidation/load race safety.
 
-Useful manual flow:
+Useful Swagger/API groups:
+
+```text
+POST /demo/cache/put
+POST /demo/cache/get
+POST /demo/cache/get-or-load
+POST /demo/cache/contains
+POST /demo/cache/remove
+POST /demo/cache/invalidate-tag
+POST /demo/query/users/{id}/load
+POST /demo/typed/users/{id}/load
+POST /demo/functions/double/{input}
+POST /demo/scenarios/ttl
+POST /demo/scenarios/single-flight
+POST /demo/scenarios/invalidation-race
+GET  /demo/report
+```
+
+`/demo/report` returns a cumulative application report with active profile,
+backend, loader counters, function counters, capabilities, and cache
+diagnostics. The read-only actuator remains available for operational views:
+`/actuator/hydracache/health`, `/actuator/hydracache/caches`,
+`/actuator/hydracache/caches/main/stats`, and
+`/actuator/hydracache/caches/main/diagnostics`.
+
+A compact database-backed cache flow is still useful:
 
 ```text
 POST /demo/load/42
@@ -455,6 +501,7 @@ To start a specific profile without editing `.env`:
 
 ```powershell
 crates\hydracache-sandbox\scripts\start-profile.ps1 -Profile sqlite-memory
+crates\hydracache-sandbox\scripts\start-profile.ps1 -Profile postgres-compose
 ```
 
 The sandbox also includes an optional Postgres Docker smoke test. If Docker is
