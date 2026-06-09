@@ -60,7 +60,10 @@ use axum::middleware::{self, Next};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use hydracache::{CacheError, CacheOptions, HydraCache};
+use hydracache::{
+    CacheError, CacheEvent, CacheEventKind, CacheEventOrigin, CacheEventSubscriber, CacheOptions,
+    HydraCache,
+};
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use serde::{Deserialize, Serialize};
@@ -74,8 +77,8 @@ use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
-use tokio::sync::RwLock;
-use tokio::time::sleep;
+use tokio::sync::{mpsc, RwLock};
+use tokio::time::{sleep, timeout};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -561,6 +564,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/report", get(report))
         .route("/demo/events", get(events))
         .route("/demo/events/clear", post(clear_events))
+        .route("/demo/listeners/run", post(run_listener_demo))
         .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
         .route("/demo/cache/get", post(cache_get))
@@ -619,7 +623,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
 async fn build_sandbox_state(
     config: SandboxConfig,
 ) -> Result<(SandboxState, Option<ContainerAsync<postgres::Postgres>>), SandboxError> {
-    let cache = HydraCache::local().build();
+    let cache = HydraCache::local()
+        .enable_access_events(true)
+        .event_buffer_capacity(MAX_DEMO_EVENTS)
+        .build();
     let (storage, postgres_container) = connect_storage(&config.backend).await?;
     seed_storage(&storage).await?;
 
@@ -1215,6 +1222,7 @@ enum DemoEventKind {
     CacheRemove,
     CacheInvalidate,
     CacheFlush,
+    CacheListener,
     ScenarioRun,
     BackingStoreRead,
     BackingStoreWrite,
@@ -1977,6 +1985,25 @@ struct CacheLoadStringRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"key": "listener:1", "tag": "listener-demo", "value": "alpha", "loader_value": "beta", "ttl_ms": 5000, "flow_id": "listener-flow"}))]
+struct ListenerDemoRequest {
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    tag: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    loader_value: Option<String>,
+    #[serde(default)]
+    ttl_ms: Option<u64>,
+    #[serde(default)]
+    flow_id: Option<String>,
+    #[serde(default)]
+    listener_idle_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"ttl_ms": 5000, "tags": ["users"], "loader_delay_ms": 10, "flow_id": "query-flow"}))]
 struct CacheLoadOptionsRequest {
     #[serde(default)]
@@ -2095,6 +2122,35 @@ struct CacheLoadStringResponse {
     value: String,
     source: LoadSource,
     diagnostics: DemoDiagnostics,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ListenerEventReport {
+    stream: String,
+    kind: String,
+    key: Option<String>,
+    tag: Option<String>,
+    tags: Vec<String>,
+    affected_keys: Option<u64>,
+    origin: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ListenerDemoResponse {
+    flow_id: String,
+    key: String,
+    tag: String,
+    value_after_put: Option<String>,
+    value_after_reload: String,
+    removed_by_tag: u64,
+    passed: bool,
+    mutation_events: Vec<ListenerEventReport>,
+    access_events: Vec<ListenerEventReport>,
+    key_events: Vec<ListenerEventReport>,
+    tag_events: Vec<ListenerEventReport>,
+    callback_events: Vec<ListenerEventReport>,
+    diagnostics: DemoDiagnostics,
+    events: EventLogResponse,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -2428,6 +2484,20 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
             body: Some(json!({
                 "key": "manual:1",
                 "flow_id": "manual-flow"
+            })),
+        },
+        ScenarioPreset {
+            name: "listener-demo",
+            method: "POST",
+            path: "/demo/listeners/run",
+            description: "Capture mutation, access, key, tag, and callback listener events for one cache flow.",
+            body: Some(json!({
+                "key": "listener:1",
+                "tag": "listener-demo",
+                "value": "alpha",
+                "loader_value": "beta",
+                "ttl_ms": 5000,
+                "flow_id": "listener-flow"
             })),
         },
         ScenarioPreset {
@@ -5308,6 +5378,207 @@ async fn cache_invalidate_tag(
 }
 
 #[utoipa::path(
+    post,
+    path = "/demo/listeners/run",
+    tag = "listeners",
+    request_body = ListenerDemoRequest,
+    responses((status = 200, description = "Run a listener/subscription demo scenario", body = ListenerDemoResponse))
+)]
+async fn run_listener_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<ListenerDemoRequest>,
+) -> Result<Json<ListenerDemoResponse>, SandboxHttpError> {
+    Ok(Json(run_listener_demo_with_request(&state, request).await?))
+}
+
+async fn run_listener_demo_with_request(
+    state: &SandboxState,
+    request: ListenerDemoRequest,
+) -> Result<ListenerDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "listener-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let key = request.key.unwrap_or_else(|| format!("{flow_id}:key"));
+    let tag = request.tag.unwrap_or_else(|| "listener-demo".to_owned());
+    let value = request.value.unwrap_or_else(|| "alpha".to_owned());
+    let loader_value = request.loader_value.unwrap_or_else(|| "beta".to_owned());
+    let tags = vec![tag.clone()];
+    let idle = Duration::from_millis(request.listener_idle_ms.unwrap_or(25).clamp(1, 500));
+
+    // Reset only this demo key/tag before listeners are attached, keeping the
+    // captured event streams focused on the scenario below.
+    let _ = state.cache.remove(&key).await?;
+    let _ = state.cache.invalidate_tag(&tag).await?;
+
+    let mut mutation_subscriber = state.cache.subscribe_mutations();
+    let mut access_subscriber = state.cache.subscribe_access();
+    let mut key_subscriber = state.cache.subscribe_key(key.clone());
+    let mut tag_subscriber = state.cache.subscribe_tag(tag.clone());
+    let (callback_tx, mut callback_rx) = mpsc::unbounded_channel();
+    let listener = state.cache.on_mutation(move |event| {
+        let _ = callback_tx.send(listener_event_report("callback", event));
+    });
+
+    state
+        .cache
+        .put(&key, value.clone(), cache_options(request.ttl_ms, &tags))
+        .await?;
+    let value_after_put: Option<String> = state.cache.get(&key).await?;
+    let removed_by_tag = state.cache.invalidate_tag(&tag).await?;
+    let value_after_reload = state
+        .cache
+        .get_or_insert_with(
+            &key,
+            cache_options(request.ttl_ms, &tags),
+            move || async move { loader_value },
+        )
+        .await?;
+
+    let mutation_events =
+        drain_cache_listener_events("mutation", &mut mutation_subscriber, idle).await;
+    let access_events = drain_cache_listener_events("access", &mut access_subscriber, idle).await;
+    let key_events = drain_cache_listener_events("key", &mut key_subscriber, idle).await;
+    let tag_events = drain_cache_listener_events("tag", &mut tag_subscriber, idle).await;
+    let callback_events = drain_callback_listener_events(&mut callback_rx, idle).await;
+    listener.unsubscribe();
+
+    let passed = contains_listener_kind(&mutation_events, "stored")
+        && contains_listener_kind(&mutation_events, "tag-invalidated")
+        && contains_listener_kind(&access_events, "hit")
+        && contains_listener_kind(&access_events, "miss")
+        && contains_listener_kind(&access_events, "load-completed")
+        && contains_listener_kind(&key_events, "stored")
+        && contains_listener_kind(&tag_events, "tag-invalidated")
+        && contains_listener_kind(&callback_events, "stored")
+        && value_after_put.as_deref() == Some(value.as_str())
+        && removed_by_tag > 0
+        && value_after_reload != value;
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::CacheListener,
+        format!(
+            "listener demo captured {} mutation, {} access, {} key, {} tag, and {} callback events",
+            mutation_events.len(),
+            access_events.len(),
+            key_events.len(),
+            tag_events.len(),
+            callback_events.len()
+        ),
+        Some(key.clone()),
+        Some(tag.clone()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(ListenerDemoResponse {
+        flow_id,
+        key,
+        tag,
+        value_after_put,
+        value_after_reload,
+        removed_by_tag,
+        passed,
+        mutation_events,
+        access_events,
+        key_events,
+        tag_events,
+        callback_events,
+        diagnostics: diagnostics(state).await,
+        events,
+    })
+}
+
+async fn drain_cache_listener_events(
+    stream: &'static str,
+    subscriber: &mut CacheEventSubscriber,
+    idle: Duration,
+) -> Vec<ListenerEventReport> {
+    let mut events = Vec::new();
+    while events.len() < MAX_DEMO_EVENTS {
+        match timeout(idle, subscriber.next_event()).await {
+            Ok(Some(event)) => events.push(listener_event_report(stream, event)),
+            Ok(None) | Err(_) => break,
+        }
+    }
+    events
+}
+
+async fn drain_callback_listener_events(
+    receiver: &mut mpsc::UnboundedReceiver<ListenerEventReport>,
+    idle: Duration,
+) -> Vec<ListenerEventReport> {
+    let mut events = Vec::new();
+    while events.len() < MAX_DEMO_EVENTS {
+        match timeout(idle, receiver.recv()).await {
+            Ok(Some(event)) => events.push(event),
+            Ok(None) | Err(_) => break,
+        }
+    }
+    events
+}
+
+fn listener_event_report(stream: &'static str, event: CacheEvent) -> ListenerEventReport {
+    ListenerEventReport {
+        stream: stream.to_owned(),
+        kind: cache_event_kind_label(event.kind()).to_owned(),
+        key: event.key().map(str::to_owned),
+        tag: event.tag().map(str::to_owned),
+        tags: event.tags().to_vec(),
+        affected_keys: event.affected_keys(),
+        origin: cache_event_origin_label(event.origin()).to_owned(),
+    }
+}
+
+fn contains_listener_kind(events: &[ListenerEventReport], kind: &str) -> bool {
+    events.iter().any(|event| event.kind == kind)
+}
+
+fn cache_event_kind_label(kind: CacheEventKind) -> &'static str {
+    match kind {
+        CacheEventKind::Hit => "hit",
+        CacheEventKind::Miss => "miss",
+        CacheEventKind::SingleFlightJoined => "single-flight-joined",
+        CacheEventKind::LoadStarted => "load-started",
+        CacheEventKind::LoadCompleted => "load-completed",
+        CacheEventKind::LoadFailed => "load-failed",
+        CacheEventKind::Stored => "stored",
+        CacheEventKind::Removed => "removed",
+        CacheEventKind::KeyInvalidated => "key-invalidated",
+        CacheEventKind::TagInvalidated => "tag-invalidated",
+        CacheEventKind::Flushed => "flushed",
+        CacheEventKind::StaleLoadDiscarded => "stale-load-discarded",
+        CacheEventKind::Expired => "expired",
+        CacheEventKind::Evicted => "evicted",
+    }
+}
+
+fn cache_event_origin_label(origin: CacheEventOrigin) -> &'static str {
+    match origin {
+        CacheEventOrigin::LocalApi => "local-api",
+        CacheEventOrigin::Loader => "loader",
+        CacheEventOrigin::SingleFlight => "single-flight",
+        CacheEventOrigin::Backend => "backend",
+        CacheEventOrigin::DistributedBus => "distributed-bus",
+    }
+}
+
+#[utoipa::path(
     get,
     path = "/demo/users/{id}",
     tag = "demo",
@@ -6423,6 +6694,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/scenarios/single-flight', {key:'ui:sf', loader_value:'shared', concurrency:8, loader_delay_ms:40, tags:['ui'], flow_id:'ui-single-flight'})">Single-flight</button>
       <button onclick="post('/demo/scenarios/invalidation-race', {key:'ui:race', loader_value:'stale', tag:'ui-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:'ui-race'})">Invalidation race</button>
       <button onclick="post('/demo/scenarios/ttl', {key:'ui:ttl', value:'short', ttl_ms:50, wait_ms:90, flow_id:'ui-ttl'})">TTL expiry</button>
+      <button onclick="post('/demo/listeners/run', {key:'ui:listener', tag:'ui-listener', value:'alpha', loader_value:'beta', ttl_ms:5000, flow_id:`ui-listener-${Date.now()}`})">Listener demo</button>
     </section>
     <section>
       <h2>Scenario Lab</h2>
@@ -6886,6 +7158,7 @@ fn actuator_stats_doc() {}
         report,
         events,
         clear_events,
+        run_listener_demo,
         reset_demo,
         cache_put,
         cache_get,
@@ -7015,6 +7288,9 @@ fn actuator_stats_doc() {}
             CacheContainsResponse,
             CacheRemoveResponse,
             CacheInvalidateTagResponse,
+            ListenerDemoRequest,
+            ListenerEventReport,
+            ListenerDemoResponse,
             LoadUserResponse,
             LoadProductResponse,
             LoadOrderSummaryResponse,
@@ -7037,6 +7313,7 @@ fn actuator_stats_doc() {}
         (name = "sandbox", description = "Manual sandbox metadata and links"),
         (name = "reports", description = "Application-level cache operation reports"),
         (name = "local-cache", description = "Raw HydraCache local-cache operations"),
+        (name = "listeners", description = "Cache listener and subscription demo flows"),
         (name = "query-cache", description = "Database-backed query-cache scenarios"),
         (name = "typed-cache", description = "TypedCache namespaced cache scenarios"),
         (name = "function-cache", description = "Cached non-database function scenarios"),
@@ -7453,6 +7730,7 @@ mod tests {
         assert!(paths.contains_key("/demo/openapi/client-smoke"));
         assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
+        assert!(paths.contains_key("/demo/listeners/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));
@@ -7507,6 +7785,9 @@ mod tests {
         assert!(schemas.contains_key("LatencySummary"));
         assert!(schemas.contains_key("Product"));
         assert!(schemas.contains_key("OrderSummary"));
+        assert!(schemas.contains_key("ListenerDemoRequest"));
+        assert!(schemas.contains_key("ListenerEventReport"));
+        assert!(schemas.contains_key("ListenerDemoResponse"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
@@ -7721,6 +8002,37 @@ mod tests {
             .await;
         assert_eq!(invalidated["removed"], 1);
 
+        let listener = app
+            .clone()
+            .oneshot(post(
+                "/demo/listeners/run",
+                Body::from(
+                    r#"{"key":"listener:test","tag":"listener-test","value":"alpha","loader_value":"beta","flow_id":"listener-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(listener["flow_id"], "listener-test");
+        assert_eq!(listener["passed"], true);
+        assert_eq!(listener["value_after_put"], "alpha");
+        assert_eq!(listener["value_after_reload"], "beta");
+        assert_eq!(listener["removed_by_tag"], 1);
+        assert_listener_events_include(&listener["mutation_events"], "stored");
+        assert_listener_events_include(&listener["mutation_events"], "tag-invalidated");
+        assert_listener_events_include(&listener["access_events"], "hit");
+        assert_listener_events_include(&listener["access_events"], "miss");
+        assert_listener_events_include(&listener["access_events"], "load-completed");
+        assert_listener_events_include(&listener["key_events"], "stored");
+        assert_listener_events_include(&listener["tag_events"], "tag-invalidated");
+        assert_listener_events_include(&listener["callback_events"], "stored");
+        assert!(listener["events"]["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|event| event["kind"] == "cache-listener"));
+
         let query = app
             .clone()
             .oneshot(post(
@@ -7873,6 +8185,7 @@ mod tests {
         assert!(body.contains("/demo/scenarios/file/run"));
         assert!(body.contains("/demo/scenarios/suite/file/run"));
         assert!(body.contains("/demo/flows"));
+        assert!(body.contains("/demo/listeners/run"));
         assert!(body.contains("/demo/query/products/100/load"));
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
         assert!(body.contains("/demo/benchmarks/compare"));
@@ -7911,6 +8224,11 @@ mod tests {
             .unwrap()
             .iter()
             .any(|preset| preset["name"] == "manual-benchmark"));
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|preset| preset["name"] == "listener-demo"));
         assert!(presets["presets"]
             .as_array()
             .unwrap()
@@ -8772,6 +9090,17 @@ mod tests {
             .header("authorization", format!("Bearer {token}"))
             .body(Body::empty())
             .unwrap()
+    }
+
+    fn assert_listener_events_include(events: &Value, kind: &str) {
+        assert!(
+            events
+                .as_array()
+                .unwrap_or_else(|| panic!("listener events must be an array: {events}"))
+                .iter()
+                .any(|event| event["kind"] == kind),
+            "expected listener event kind `{kind}` in {events}"
+        );
     }
 
     async fn json_body(response: axum::response::Response) -> Value {

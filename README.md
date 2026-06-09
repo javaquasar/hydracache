@@ -572,7 +572,8 @@ The OpenAPI document is generated from Rust route/schema declarations through
 to be an interactive HydraCache lab, not only reference documentation. It can
 exercise raw local-cache operations, typed-cache namespacing, database-backed
 query caching, cached non-database functions, TTL expiry, single-flight, and
-invalidation/load race safety.
+invalidation/load race safety. It also includes a listener demo that captures
+mutation, access, key, tag, and callback events produced by one cache flow.
 
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
@@ -583,7 +584,8 @@ benchmark reports, run committed scenario files/suites, replay retained flow
 contexts, inspect seeded product/order query-cache demos, run generated-client
 smoke checks, inspect Prometheus-style metrics, and display small hit/miss/load
 counters with a visual flow timeline. The dashboard also includes a textarea
-scenario editor for quickly pasting JSON/YAML recipes.
+scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
+demo for verifying subscriptions manually.
 
 Useful Swagger/API groups:
 
@@ -627,6 +629,7 @@ POST /demo/cache/get-or-load
 POST /demo/cache/contains
 POST /demo/cache/remove
 POST /demo/cache/invalidate-tag
+POST /demo/listeners/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
 POST /demo/query/orders/{id}/summary/load
