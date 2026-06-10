@@ -18,7 +18,7 @@ Implemented in the first 0.20.0 slice:
 - tests for discovery, admission, stale generation rejection, diagnostics, and
   client/member invalidation propagation.
 
-Implemented in the follow-up 0.21.0 slice:
+Implemented in the follow-up 0.20.0 control-plane slice:
 
 - `ClusterControlPlane` as the adapter boundary underneath client/member
   builders;

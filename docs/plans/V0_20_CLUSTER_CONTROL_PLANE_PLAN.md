@@ -1,4 +1,4 @@
-# HydraCache 0.21.0 Cluster Control Plane Plan
+# HydraCache 0.20.0 Cluster Control Plane Plan
 
 Status: implemented.
 
@@ -15,7 +15,8 @@ and future cluster implementations.
 Local | Client | Member
 ```
 
-`0.21.0` introduces the boundary underneath that shape:
+The follow-up implementation inside the same release introduces the boundary
+underneath that shape:
 
 ```text
 HydraCache::client/member builders

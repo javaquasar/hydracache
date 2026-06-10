@@ -561,7 +561,7 @@ and a member is a cluster participant. In `0.20.0` both can join an
 diagnostics. Real discovery and Raft-backed metadata are planned as later
 adapters.
 
-`0.21.0` adds the `ClusterControlPlane` seam. The default path still uses
+`0.20.0` also adds the `ClusterControlPlane` seam. The default path still uses
 `InMemoryCluster`, but advanced users and future HydraCache crates can pass a
 custom adapter through `.control_plane(...)`:
 
@@ -1199,7 +1199,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md](docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md)
 - [docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md](docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md)
 - [docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md](docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md)
-- [docs/plans/V0_21_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_21_CLUSTER_CONTROL_PLANE_PLAN.md)
+- [docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md)
 
 ## Workspace
 
