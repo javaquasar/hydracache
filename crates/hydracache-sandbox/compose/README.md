@@ -55,6 +55,11 @@ report, seeded users/products/order-summary query-cache demos, session import,
 OpenAPI client smoke, distributed invalidation bus demo, and manual benchmark
 endpoints.
 
+The distributed invalidation demo response includes a compact timeline
+(`source-publish`, `target-apply`, `diagnostics`) and diagnostics counters for
+published, received, applied, lagged, publish-failure, and receiver-closed bus
+states. The Prometheus endpoint exposes the same bus health counters.
+
 Set `HYDRACACHE_SANDBOX_TOKEN` if you want the local sandbox routes to require
 `Authorization: Bearer <token>`.
 

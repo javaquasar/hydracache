@@ -70,6 +70,12 @@ pub struct CacheStatsSnapshot {
     pub distributed_invalidations_received: u64,
     /// Received invalidation messages applied to the local cache.
     pub distributed_invalidations_applied: u64,
+    /// Invalidation messages skipped because a bus receiver lagged behind.
+    pub distributed_invalidation_lagged: u64,
+    /// Invalidation publish attempts that returned an error.
+    pub distributed_invalidation_publish_failures: u64,
+    /// Times an attached bus receiver reported that the stream closed.
+    pub distributed_invalidation_receiver_closed: u64,
     /// Convenience value equal to `hits + misses`.
     pub total_requests: u64,
     /// Convenience value equal to `hits / (hits + misses)`.
@@ -82,6 +88,8 @@ pub struct CacheStatsSnapshot {
     pub event_subscriber_lag_seen: bool,
     /// Whether this cache published or received bus invalidations.
     pub distributed_invalidation_active: bool,
+    /// Whether this cache observed invalidation bus health issues.
+    pub distributed_invalidation_bus_issues: bool,
 }
 
 impl CacheStatsSnapshot {
@@ -100,12 +108,18 @@ impl CacheStatsSnapshot {
             distributed_invalidations_published: stats.distributed_invalidations_published,
             distributed_invalidations_received: stats.distributed_invalidations_received,
             distributed_invalidations_applied: stats.distributed_invalidations_applied,
+            distributed_invalidation_lagged: stats.distributed_invalidation_lagged,
+            distributed_invalidation_publish_failures: stats
+                .distributed_invalidation_publish_failures,
+            distributed_invalidation_receiver_closed: stats
+                .distributed_invalidation_receiver_closed,
             total_requests: stats.total_requests(),
             hit_ratio: stats.hit_ratio(),
             single_flight_active: stats.has_single_flight_activity(),
             stale_load_discards_seen: stats.has_stale_load_discards(),
             event_subscriber_lag_seen: stats.has_event_subscriber_lag(),
             distributed_invalidation_active: stats.has_distributed_invalidation_activity(),
+            distributed_invalidation_bus_issues: stats.has_distributed_invalidation_bus_issues(),
         }
     }
 }
@@ -385,6 +399,9 @@ mod tests {
             single_flight_joins: 1,
             stale_load_discards: 1,
             distributed_invalidations_received: 1,
+            distributed_invalidation_lagged: 1,
+            distributed_invalidation_publish_failures: 1,
+            distributed_invalidation_receiver_closed: 1,
             ..hydracache_core::CacheStats::default()
         };
 
@@ -396,7 +413,11 @@ mod tests {
         assert!(snapshot.stale_load_discards_seen);
         assert!(!snapshot.event_subscriber_lag_seen);
         assert!(snapshot.distributed_invalidation_active);
+        assert!(snapshot.distributed_invalidation_bus_issues);
         assert_eq!(snapshot.distributed_invalidations_received, 1);
+        assert_eq!(snapshot.distributed_invalidation_lagged, 1);
+        assert_eq!(snapshot.distributed_invalidation_publish_failures, 1);
+        assert_eq!(snapshot.distributed_invalidation_receiver_closed, 1);
 
         let via_from: CacheStatsSnapshot = stats.into();
         assert_eq!(via_from.total_requests, 3);

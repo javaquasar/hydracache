@@ -274,6 +274,13 @@
 //! # }
 //! ```
 //!
+//! Custom transports implement [`CacheInvalidationBus`] and return
+//! [`CacheInvalidationReceive::Message`], [`CacheInvalidationReceive::Lagged`],
+//! or [`CacheInvalidationReceive::Closed`] from their receivers. HydraCache
+//! records lag, publish failures, and closed receivers in
+//! [`hydracache_core::CacheStats`] so applications can detect bus health issues
+//! without parsing logs.
+//!
 //! # Observability
 //!
 //! Use [`HydraCache::diagnostics`] for quick local smoke checks. It combines
@@ -324,8 +331,8 @@ pub use hydracache_core::{
 };
 pub use hydracache_macros::{cacheable, cacheable_infallible};
 pub use invalidation_bus::{
-    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceiver,
-    InMemoryInvalidationBus,
+    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
+    CacheInvalidationReceiver, InMemoryInvalidationBus,
 };
 pub use typed::TypedCache;
 

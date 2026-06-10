@@ -23,6 +23,7 @@ The runtime exposes a small transport abstraction:
 
 - `CacheInvalidation`
 - `CacheInvalidationMessage`
+- `CacheInvalidationReceive`
 - `CacheInvalidationBus`
 - `CacheInvalidationReceiver`
 - `InMemoryInvalidationBus`
@@ -43,6 +44,8 @@ to the bus.
 - Self-originated invalidation messages are ignored to prevent echo loops.
 - Remote invalidations emit normal cache events with `DistributedBus` origin.
 - Diagnostics expose published, received, and applied bus invalidation counters.
+- Diagnostics expose bus health counters for lagged receivers, publish failures,
+  and closed receiver streams.
 
 ## Non-Goals
 
@@ -62,6 +65,8 @@ one `InMemoryInvalidationBus`, then verifies:
 - flush propagates to the target
 - target events use `origin = distributed-bus`
 - source/target diagnostics expose bus counters
+- the response includes a timeline: source publish -> target apply ->
+  diagnostics assertion
 
 ## Tests
 
@@ -72,6 +77,10 @@ Runtime tests cover:
 - flush propagation
 - echo-loop suppression
 - typed cache physical-key invalidation over the shared bus
+- publish failure diagnostics
+- lagged receiver diagnostics
+- closed receiver diagnostics
+- in-memory receiver lag reporting
 
 Sandbox tests cover:
 

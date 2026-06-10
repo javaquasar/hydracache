@@ -2,13 +2,15 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use hydracache_core::{CacheEventKind, CacheEventOptions, CacheEventOrigin, CacheOptions, Result};
+use hydracache_core::{
+    CacheError, CacheEventKind, CacheEventOptions, CacheEventOrigin, CacheOptions, Result,
+};
 use tokio::sync::watch;
 
 use crate::tests::common::{user, User};
 use crate::{
-    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceiver,
-    HydraCache, InMemoryInvalidationBus,
+    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
+    CacheInvalidationReceiver, HydraCache, InMemoryInvalidationBus,
 };
 
 #[derive(Debug, Clone)]
@@ -29,8 +31,52 @@ struct ClosingReceiver;
 
 #[async_trait]
 impl CacheInvalidationReceiver for ClosingReceiver {
-    async fn recv(&mut self) -> Option<CacheInvalidationMessage> {
-        None
+    async fn recv(&mut self) -> CacheInvalidationReceive {
+        CacheInvalidationReceive::Closed
+    }
+}
+
+#[derive(Debug, Clone)]
+struct FailingPublishBus;
+
+#[async_trait]
+impl CacheInvalidationBus for FailingPublishBus {
+    async fn publish(&self, _message: CacheInvalidationMessage) -> Result<()> {
+        Err(CacheError::Backend("publish failed".to_owned()))
+    }
+
+    fn subscribe(&self) -> Box<dyn CacheInvalidationReceiver> {
+        Box::new(ClosingReceiver)
+    }
+}
+
+#[derive(Debug, Clone)]
+struct LagThenCloseBus;
+
+#[async_trait]
+impl CacheInvalidationBus for LagThenCloseBus {
+    async fn publish(&self, _message: CacheInvalidationMessage) -> Result<()> {
+        Ok(())
+    }
+
+    fn subscribe(&self) -> Box<dyn CacheInvalidationReceiver> {
+        Box::new(LagThenCloseReceiver { polled: false })
+    }
+}
+
+struct LagThenCloseReceiver {
+    polled: bool,
+}
+
+#[async_trait]
+impl CacheInvalidationReceiver for LagThenCloseReceiver {
+    async fn recv(&mut self) -> CacheInvalidationReceive {
+        if self.polled {
+            CacheInvalidationReceive::Closed
+        } else {
+            self.polled = true;
+            CacheInvalidationReceive::Lagged(3)
+        }
     }
 }
 
@@ -202,10 +248,12 @@ async fn owned_bus_builder_generates_observable_node_id_and_handles_closed_recei
 
     assert!(cache.invalidation_node_id().starts_with("hydracache-node-"));
 
-    tokio::task::yield_now().await;
+    wait_until(|| cache.stats().distributed_invalidation_receiver_closed == 1).await;
 
     assert_eq!(cache.stats().distributed_invalidations_received, 0);
     assert_eq!(cache.stats().distributed_invalidations_applied, 0);
+    assert_eq!(cache.stats().distributed_invalidation_receiver_closed, 1);
+    assert!(cache.stats().has_distributed_invalidation_bus_issues());
 }
 
 #[tokio::test]
@@ -273,4 +321,39 @@ async fn self_originated_bus_messages_are_ignored_by_listener() {
     assert_eq!(cache.stats().distributed_invalidations_published, 1);
     assert_eq!(cache.stats().distributed_invalidations_received, 0);
     assert_eq!(cache.stats().distributed_invalidations_applied, 0);
+}
+
+#[tokio::test]
+async fn publish_failures_are_reported_in_stats_and_returned_to_caller() {
+    let cache = HydraCache::local()
+        .invalidation_bus(FailingPublishBus)
+        .invalidation_node_id("failing")
+        .build();
+
+    let error = cache.invalidate_tag("users").await.unwrap_err();
+
+    assert!(error.to_string().contains("publish failed"));
+    assert_eq!(cache.stats().distributed_invalidations_published, 0);
+    assert_eq!(cache.stats().distributed_invalidation_publish_failures, 1);
+    assert!(cache.stats().has_distributed_invalidation_bus_issues());
+}
+
+#[tokio::test]
+async fn receiver_lag_and_close_are_reported_in_stats() {
+    let cache = HydraCache::local()
+        .invalidation_bus(LagThenCloseBus)
+        .invalidation_node_id("lagging")
+        .build();
+
+    wait_until(|| {
+        let stats = cache.stats();
+        stats.distributed_invalidation_lagged == 3
+            && stats.distributed_invalidation_receiver_closed == 1
+    })
+    .await;
+
+    let stats = cache.stats();
+    assert_eq!(stats.distributed_invalidation_lagged, 3);
+    assert_eq!(stats.distributed_invalidation_receiver_closed, 1);
+    assert!(stats.has_distributed_invalidation_bus_issues());
 }

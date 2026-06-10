@@ -96,14 +96,49 @@ impl CacheInvalidationMessage {
     }
 }
 
+/// Result of polling an invalidation receiver.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CacheInvalidationReceive {
+    /// A valid invalidation message is ready to apply.
+    Message(CacheInvalidationMessage),
+    /// The receiver skipped messages because it lagged behind the bus.
+    ///
+    /// A cache records this as diagnostics and keeps listening for the next
+    /// message. External transports can use this when they detect dropped
+    /// messages, truncated streams, or compacted offsets.
+    Lagged(u64),
+    /// The bus stream closed and the background listener should stop.
+    Closed,
+}
+
+impl CacheInvalidationReceive {
+    /// Wrap a message receive result.
+    pub fn message(message: CacheInvalidationMessage) -> Self {
+        Self::Message(message)
+    }
+
+    /// Return whether this result reports a closed bus stream.
+    pub fn is_closed(&self) -> bool {
+        matches!(self, Self::Closed)
+    }
+
+    /// Return the number of skipped messages when this result reports lag.
+    pub fn lagged_count(&self) -> Option<u64> {
+        match self {
+            Self::Lagged(count) => Some(*count),
+            Self::Message(_) | Self::Closed => None,
+        }
+    }
+}
+
 /// Receiver side of a cache invalidation bus.
 #[async_trait]
 pub trait CacheInvalidationReceiver: Send + 'static {
     /// Receive the next invalidation message.
     ///
-    /// Returning `None` means the bus is closed and the background cache sync
-    /// task should exit.
-    async fn recv(&mut self) -> Option<CacheInvalidationMessage>;
+    /// [`CacheInvalidationReceive::Closed`] means the bus is closed and the
+    /// background cache sync task should exit.
+    async fn recv(&mut self) -> CacheInvalidationReceive;
 }
 
 /// Transport abstraction for cross-cache invalidation.
@@ -169,12 +204,12 @@ struct InMemoryInvalidationReceiver {
 
 #[async_trait]
 impl CacheInvalidationReceiver for InMemoryInvalidationReceiver {
-    async fn recv(&mut self) -> Option<CacheInvalidationMessage> {
-        loop {
-            match self.receiver.recv().await {
-                Ok(message) => return Some(message),
-                Err(broadcast::error::RecvError::Closed) => return None,
-                Err(broadcast::error::RecvError::Lagged(_)) => continue,
+    async fn recv(&mut self) -> CacheInvalidationReceive {
+        match self.receiver.recv().await {
+            Ok(message) => CacheInvalidationReceive::Message(message),
+            Err(broadcast::error::RecvError::Closed) => CacheInvalidationReceive::Closed,
+            Err(broadcast::error::RecvError::Lagged(count)) => {
+                CacheInvalidationReceive::Lagged(count)
             }
         }
     }
@@ -183,7 +218,8 @@ impl CacheInvalidationReceiver for InMemoryInvalidationReceiver {
 #[cfg(test)]
 mod tests {
     use super::{
-        CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, InMemoryInvalidationBus,
+        CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage,
+        CacheInvalidationReceive, InMemoryInvalidationBus,
     };
 
     #[test]
@@ -213,7 +249,9 @@ mod tests {
         .await
         .unwrap();
 
-        let message = subscriber.recv().await.unwrap();
+        let CacheInvalidationReceive::Message(message) = subscriber.recv().await else {
+            panic!("expected invalidation message");
+        };
         assert_eq!(message.source_id(), "node-a");
         assert_eq!(message.invalidation().tag_value(), Some("users"));
     }
@@ -239,11 +277,11 @@ mod tests {
 
         drop(bus);
 
-        assert_eq!(subscriber.recv().await, None);
+        assert_eq!(subscriber.recv().await, CacheInvalidationReceive::Closed);
     }
 
     #[tokio::test]
-    async fn in_memory_receiver_skips_lagged_messages_and_returns_latest() {
+    async fn in_memory_receiver_reports_lagged_messages_before_latest() {
         let bus = InMemoryInvalidationBus::new(1);
         let mut subscriber = bus.subscribe();
 
@@ -256,7 +294,25 @@ mod tests {
             .unwrap();
         }
 
-        let message = subscriber.recv().await.unwrap();
+        let lag = subscriber.recv().await;
+        assert_eq!(lag.lagged_count(), Some(2));
+
+        let CacheInvalidationReceive::Message(message) = subscriber.recv().await else {
+            panic!("expected latest invalidation message after lag notification");
+        };
         assert_eq!(message.invalidation().key_value(), Some("latest"));
+    }
+
+    #[test]
+    fn receive_helpers_describe_closed_and_message_states() {
+        let message = CacheInvalidationMessage::new("node-a", CacheInvalidation::key("user:42"));
+        let received = CacheInvalidationReceive::message(message.clone());
+
+        assert_eq!(received, CacheInvalidationReceive::Message(message));
+        assert!(!received.is_closed());
+        assert_eq!(received.lagged_count(), None);
+        assert!(CacheInvalidationReceive::Closed.is_closed());
+        assert_eq!(CacheInvalidationReceive::Closed.lagged_count(), None);
+        assert_eq!(CacheInvalidationReceive::Lagged(3).lagged_count(), Some(3));
     }
 }

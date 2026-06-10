@@ -2176,6 +2176,17 @@ struct ListenerDemoResponse {
     events: EventLogResponse,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct DistributedInvalidationTimelineStep {
+    step: u8,
+    phase: &'static str,
+    actor: &'static str,
+    operation: &'static str,
+    key: Option<String>,
+    tag: Option<String>,
+    detail: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct DistributedInvalidationDemoResponse {
     flow_id: String,
@@ -2192,6 +2203,7 @@ struct DistributedInvalidationDemoResponse {
     target_contains_after_key: bool,
     target_contains_after_flush: bool,
     remote_events: Vec<ListenerEventReport>,
+    timeline: Vec<DistributedInvalidationTimelineStep>,
     source_diagnostics: DemoDiagnostics,
     target_diagnostics: DemoDiagnostics,
     passed: bool,
@@ -2354,6 +2366,9 @@ struct DemoDiagnostics {
     distributed_invalidations_published: u64,
     distributed_invalidations_received: u64,
     distributed_invalidations_applied: u64,
+    distributed_invalidation_lagged: u64,
+    distributed_invalidation_publish_failures: u64,
+    distributed_invalidation_receiver_closed: u64,
     total_requests: u64,
     hit_ratio: Option<f64>,
     estimated_entries: u64,
@@ -2375,6 +2390,13 @@ impl DemoDiagnostics {
             distributed_invalidations_published: snapshot.stats.distributed_invalidations_published,
             distributed_invalidations_received: snapshot.stats.distributed_invalidations_received,
             distributed_invalidations_applied: snapshot.stats.distributed_invalidations_applied,
+            distributed_invalidation_lagged: snapshot.stats.distributed_invalidation_lagged,
+            distributed_invalidation_publish_failures: snapshot
+                .stats
+                .distributed_invalidation_publish_failures,
+            distributed_invalidation_receiver_closed: snapshot
+                .stats
+                .distributed_invalidation_receiver_closed,
             total_requests: snapshot.stats.total_requests,
             hit_ratio: snapshot.stats.hit_ratio,
             estimated_entries: snapshot.estimated_entries,
@@ -4970,7 +4992,16 @@ fn prometheus_metrics_text(report: &ApplicationReport) -> String {
          hydracache_sandbox_distributed_invalidations_published{{cache=\"main\",profile=\"{}\"}} {}\n\
          # HELP hydracache_sandbox_distributed_invalidations_applied Remote invalidation messages applied locally.\n\
          # TYPE hydracache_sandbox_distributed_invalidations_applied counter\n\
-         hydracache_sandbox_distributed_invalidations_applied{{cache=\"main\",profile=\"{}\"}} {}\n",
+         hydracache_sandbox_distributed_invalidations_applied{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_distributed_invalidation_lagged Invalidation bus messages skipped by lagging receivers.\n\
+         # TYPE hydracache_sandbox_distributed_invalidation_lagged counter\n\
+         hydracache_sandbox_distributed_invalidation_lagged{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_distributed_invalidation_publish_failures Invalidation publish attempts that returned errors.\n\
+         # TYPE hydracache_sandbox_distributed_invalidation_publish_failures counter\n\
+         hydracache_sandbox_distributed_invalidation_publish_failures{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_distributed_invalidation_receiver_closed Bus receiver close notifications observed by the cache.\n\
+         # TYPE hydracache_sandbox_distributed_invalidation_receiver_closed counter\n\
+         hydracache_sandbox_distributed_invalidation_receiver_closed{{cache=\"main\",profile=\"{}\"}} {}\n",
         report.profile,
         report.diagnostics.hits,
         report.profile,
@@ -4984,7 +5015,13 @@ fn prometheus_metrics_text(report: &ApplicationReport) -> String {
         report.profile,
         report.diagnostics.distributed_invalidations_published,
         report.profile,
-        report.diagnostics.distributed_invalidations_applied
+        report.diagnostics.distributed_invalidations_applied,
+        report.profile,
+        report.diagnostics.distributed_invalidation_lagged,
+        report.profile,
+        report.diagnostics.distributed_invalidation_publish_failures,
+        report.profile,
+        report.diagnostics.distributed_invalidation_receiver_closed
     )
 }
 
@@ -5530,6 +5567,82 @@ async fn run_distributed_invalidation_demo_with_request(
     let remote_events = vec![tag_event, key_event, flush_event];
     let source_diagnostics = diagnostics_for_cache("sandbox-source", &source).await;
     let target_diagnostics = diagnostics_for_cache("sandbox-target", &target).await;
+    let timeline = vec![
+        distributed_timeline_step(
+            1,
+            "source-publish",
+            "source",
+            "invalidate-tag",
+            None,
+            Some(tag.clone()),
+            format!("source removed {tag_removed_on_source} local key(s) and published tag invalidation"),
+        ),
+        distributed_timeline_step(
+            2,
+            "target-apply",
+            "target",
+            "invalidate-tag",
+            Some(key.clone()),
+            Some(tag.clone()),
+            format!(
+                "target applied remote tag invalidation; contains_after={target_contains_after_tag}"
+            ),
+        ),
+        distributed_timeline_step(
+            3,
+            "source-publish",
+            "source",
+            "invalidate-key",
+            Some(second_key.clone()),
+            None,
+            format!(
+                "source published key invalidation even though local removal result was {key_removed_on_source}"
+            ),
+        ),
+        distributed_timeline_step(
+            4,
+            "target-apply",
+            "target",
+            "invalidate-key",
+            Some(second_key.clone()),
+            None,
+            format!(
+                "target applied remote key invalidation; contains_after={target_contains_after_key}"
+            ),
+        ),
+        distributed_timeline_step(
+            5,
+            "source-publish",
+            "source",
+            "flush",
+            Some(flush_key.clone()),
+            None,
+            "source flushed local cache and published flush invalidation".to_owned(),
+        ),
+        distributed_timeline_step(
+            6,
+            "target-apply",
+            "target",
+            "flush",
+            Some(flush_key.clone()),
+            None,
+            format!("target applied remote flush; contains_after={target_contains_after_flush}"),
+        ),
+        distributed_timeline_step(
+            7,
+            "diagnostics",
+            "sandbox",
+            "assertions",
+            None,
+            None,
+            format!(
+                "published={}, received={}, applied={}",
+                source_diagnostics.distributed_invalidations_published,
+                target_diagnostics.distributed_invalidations_received,
+                target_diagnostics.distributed_invalidations_applied
+            ),
+        ),
+    ];
     let passed = tag_removed_on_source == 1
         && !key_removed_on_source
         && !target_contains_after_tag
@@ -5586,11 +5699,32 @@ async fn run_distributed_invalidation_demo_with_request(
         target_contains_after_key,
         target_contains_after_flush,
         remote_events,
+        timeline,
         source_diagnostics,
         target_diagnostics,
         passed,
         events,
     })
+}
+
+fn distributed_timeline_step(
+    step: u8,
+    phase: &'static str,
+    actor: &'static str,
+    operation: &'static str,
+    key: Option<String>,
+    tag: Option<String>,
+    detail: String,
+) -> DistributedInvalidationTimelineStep {
+    DistributedInvalidationTimelineStep {
+        step,
+        phase,
+        actor,
+        operation,
+        key,
+        tag,
+        detail,
+    }
 }
 
 async fn run_listener_demo_with_request(
@@ -7515,6 +7649,7 @@ fn actuator_stats_doc() {}
             ListenerDemoRequest,
             ListenerEventReport,
             ListenerDemoResponse,
+            DistributedInvalidationTimelineStep,
             DistributedInvalidationDemoRequest,
             DistributedInvalidationDemoResponse,
             LoadUserResponse,
@@ -8016,6 +8151,7 @@ mod tests {
         assert!(schemas.contains_key("ListenerDemoRequest"));
         assert!(schemas.contains_key("ListenerEventReport"));
         assert!(schemas.contains_key("ListenerDemoResponse"));
+        assert!(schemas.contains_key("DistributedInvalidationTimelineStep"));
         assert!(schemas.contains_key("DistributedInvalidationDemoRequest"));
         assert!(schemas.contains_key("DistributedInvalidationDemoResponse"));
         assert_eq!(
@@ -8286,6 +8422,20 @@ mod tests {
             distributed["target_diagnostics"]["distributed_invalidations_received"],
             3
         );
+        assert_eq!(
+            distributed["target_diagnostics"]["distributed_invalidation_lagged"],
+            0
+        );
+        assert_eq!(
+            distributed["source_diagnostics"]["distributed_invalidation_publish_failures"],
+            0
+        );
+        assert_eq!(distributed["timeline"].as_array().unwrap().len(), 7);
+        assert!(distributed["timeline"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|step| step["phase"] == "target-apply" && step["operation"] == "flush"));
         assert_listener_events_include(&distributed["remote_events"], "tag-invalidated");
         assert_listener_events_include(&distributed["remote_events"], "key-invalidated");
         assert_listener_events_include(&distributed["remote_events"], "flushed");

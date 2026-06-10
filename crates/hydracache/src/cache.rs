@@ -18,7 +18,9 @@ use crate::builder::HydraCacheBuilder;
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
 use crate::inflight::{InFlightMap, SharedLoadFuture};
-use crate::invalidation_bus::{CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage};
+use crate::invalidation_bus::{
+    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
+};
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
 use crate::typed::TypedCache;
@@ -843,11 +845,19 @@ where
             return Ok(());
         };
 
-        bus.publish(CacheInvalidationMessage::new(
-            self.inner.invalidation_node_id.clone(),
-            invalidation,
-        ))
-        .await?;
+        if let Err(error) = bus
+            .publish(CacheInvalidationMessage::new(
+                self.inner.invalidation_node_id.clone(),
+                invalidation,
+            ))
+            .await
+        {
+            self.inner
+                .stats
+                .distributed_invalidation_publish_failures
+                .fetch_add(1, Ordering::Relaxed);
+            return Err(error);
+        }
         self.inner
             .stats
             .distributed_invalidations_published
@@ -867,19 +877,33 @@ where
             loop {
                 tokio::select! {
                     _ = shutdown.changed() => break,
-                    message = receiver.recv() => {
-                        let Some(message) = message else {
-                            break;
-                        };
+                    received = receiver.recv() => {
                         let Some(inner) = weak_inner.upgrade() else {
                             break;
                         };
-                        if message.source_id() == node_id {
-                            continue;
-                        }
+                        match received {
+                            CacheInvalidationReceive::Message(message) => {
+                                if message.source_id() == node_id {
+                                    continue;
+                                }
 
-                        let cache = HydraCache { inner };
-                        let _ = cache.apply_remote_invalidation(message).await;
+                                let cache = HydraCache { inner };
+                                let _ = cache.apply_remote_invalidation(message).await;
+                            }
+                            CacheInvalidationReceive::Lagged(count) => {
+                                inner
+                                    .stats
+                                    .distributed_invalidation_lagged
+                                    .fetch_add(count, Ordering::Relaxed);
+                            }
+                            CacheInvalidationReceive::Closed => {
+                                inner
+                                    .stats
+                                    .distributed_invalidation_receiver_closed
+                                    .fetch_add(1, Ordering::Relaxed);
+                                break;
+                            }
+                        }
                     }
                 }
             }
