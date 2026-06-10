@@ -669,8 +669,24 @@ pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
     /// Admit or update a client candidate.
     async fn join_client(&self, candidate: ClusterCandidate) -> Result<ClusterMember>;
 
-    /// Remove a node from this control plane.
-    async fn leave(&self, node_id: &ClusterNodeId) -> Result<Option<ClusterMembershipEvent>>;
+    /// Validate that a node id is still owned by the provided process generation.
+    ///
+    /// Cluster-backed invalidation publishers call this before sending a bus
+    /// message. Control planes should reject missing nodes and generation
+    /// mismatches so stale processes cannot publish freshness changes after a
+    /// restart reused the same logical node id.
+    async fn validate_generation(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<()>;
+
+    /// Remove a node from this control plane when the generation still matches.
+    async fn leave(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<Option<ClusterMembershipEvent>>;
 
     /// Build diagnostics for a local runtime attached to this control plane.
     fn diagnostics_for(
@@ -871,8 +887,20 @@ impl ClusterControlPlane for RaftStyleMetadataControlPlane {
         Ok(member)
     }
 
-    async fn leave(&self, node_id: &ClusterNodeId) -> Result<Option<ClusterMembershipEvent>> {
-        let Some(event) = self.cluster.leave(node_id) else {
+    async fn validate_generation(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<()> {
+        self.cluster.validate_generation(node_id, generation)
+    }
+
+    async fn leave(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<Option<ClusterMembershipEvent>> {
+        let Some(event) = self.cluster.leave(node_id, generation)? else {
             return Ok(None);
         };
         if let ClusterMembershipEvent::NodeLeft {
@@ -994,12 +1022,32 @@ impl InMemoryCluster {
         }
     }
 
-    /// Remove a node from the in-memory cluster model.
-    pub fn leave(&self, node_id: &ClusterNodeId) -> Option<ClusterMembershipEvent> {
+    /// Validate that a node id is still owned by the provided generation.
+    pub fn validate_generation(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<()> {
         let mut state = self.state.lock().expect("cluster state poisoned");
+        validate_generation_locked(&mut state, node_id, generation)
+    }
+
+    /// Remove a node from the in-memory cluster model when generation matches.
+    pub fn leave(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<Option<ClusterMembershipEvent>> {
+        let mut state = self.state.lock().expect("cluster state poisoned");
+        if current_generation_locked(&state, node_id).is_none() {
+            return Ok(None);
+        }
+        validate_generation_locked(&mut state, node_id, generation)?;
         let removed_member = state.members.remove(node_id);
         let removed_client = state.clients.remove(node_id);
-        let removed = removed_member.or(removed_client)?;
+        let Some(removed) = removed_member.or(removed_client) else {
+            return Ok(None);
+        };
         if removed.role == ClusterRole::Member {
             state.epoch.advance();
         }
@@ -1009,7 +1057,7 @@ impl InMemoryCluster {
             epoch: state.epoch,
         };
         state.events.push(event.clone());
-        Some(event)
+        Ok(Some(event))
     }
 
     /// Return admitted member snapshots.
@@ -1084,8 +1132,20 @@ impl ClusterControlPlane for InMemoryCluster {
         InMemoryCluster::join_client(self, candidate)
     }
 
-    async fn leave(&self, node_id: &ClusterNodeId) -> Result<Option<ClusterMembershipEvent>> {
-        Ok(InMemoryCluster::leave(self, node_id))
+    async fn validate_generation(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<()> {
+        InMemoryCluster::validate_generation(self, node_id, generation)
+    }
+
+    async fn leave(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<Option<ClusterMembershipEvent>> {
+        InMemoryCluster::leave(self, node_id, generation)
     }
 
     fn diagnostics_for(
@@ -1128,6 +1188,47 @@ fn reject_stale_generation(
         candidate.node_id,
         existing.value(),
         candidate.generation.value()
+    )))
+}
+
+fn current_generation_locked(
+    state: &InMemoryClusterState,
+    node_id: &ClusterNodeId,
+) -> Option<ClusterGeneration> {
+    state
+        .members
+        .get(node_id)
+        .or_else(|| state.clients.get(node_id))
+        .map(|existing| existing.generation)
+}
+
+fn validate_generation_locked(
+    state: &mut InMemoryClusterState,
+    node_id: &ClusterNodeId,
+    generation: ClusterGeneration,
+) -> Result<()> {
+    let Some(existing) = current_generation_locked(state, node_id) else {
+        return Err(CacheError::Backend(format!(
+            "cluster node '{node_id}' is not admitted"
+        )));
+    };
+
+    if existing == generation {
+        return Ok(());
+    }
+
+    state
+        .events
+        .push(ClusterMembershipEvent::StaleGenerationRejected {
+            node_id: node_id.clone(),
+            existing,
+            attempted: generation,
+        });
+    Err(CacheError::Backend(format!(
+        "stale cluster generation for node '{}': existing {}, attempted {}",
+        node_id,
+        existing.value(),
+        generation.value()
     )))
 }
 
@@ -1178,8 +1279,30 @@ impl ClusterRuntime {
         })
     }
 
+    pub(crate) fn generation(&self) -> ClusterGeneration {
+        self.generation
+    }
+
+    pub(crate) async fn validate_generation(&self) -> Result<()> {
+        self.control_plane
+            .validate_generation(&self.node_id, self.generation)
+            .await
+    }
+
+    pub(crate) async fn validate_remote_generation(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<()> {
+        self.control_plane
+            .validate_generation(node_id, generation)
+            .await
+    }
+
     pub(crate) async fn leave(&self) -> Result<Option<ClusterMembershipEvent>> {
-        self.control_plane.leave(&self.node_id).await
+        self.control_plane
+            .leave(&self.node_id, self.generation)
+            .await
     }
 }
 
@@ -1794,7 +1917,10 @@ mod tests {
             .join_client(ClusterCandidate::client(client_id.clone()))
             .unwrap();
 
-        let client_left = cluster.leave(&client_id).unwrap();
+        let client_left = cluster
+            .leave(&client_id, ClusterGeneration::default())
+            .unwrap()
+            .unwrap();
         assert_eq!(cluster.epoch().value(), 1);
         assert!(matches!(
             client_left,
@@ -1804,7 +1930,10 @@ mod tests {
             }
         ));
 
-        let member_left = cluster.leave(&member_id).unwrap();
+        let member_left = cluster
+            .leave(&member_id, ClusterGeneration::default())
+            .unwrap()
+            .unwrap();
         assert_eq!(cluster.epoch().value(), 2);
         assert!(matches!(
             member_left,
@@ -1813,7 +1942,39 @@ mod tests {
                 ..
             }
         ));
-        assert!(cluster.leave(&member_id).is_none());
+        assert!(cluster
+            .leave(&member_id, ClusterGeneration::default())
+            .unwrap()
+            .is_none());
+    }
+
+    #[test]
+    fn leave_rejects_stale_generation_without_removing_newer_node() {
+        let cluster = InMemoryCluster::new("orders");
+        let node_id = ClusterNodeId::from("member-a");
+
+        cluster
+            .join_member(
+                ClusterCandidate::member(node_id.clone()).generation(ClusterGeneration::new(1)),
+            )
+            .unwrap();
+        cluster
+            .join_member(
+                ClusterCandidate::member(node_id.clone()).generation(ClusterGeneration::new(2)),
+            )
+            .unwrap();
+
+        let error = cluster
+            .leave(&node_id, ClusterGeneration::new(1))
+            .unwrap_err();
+
+        assert!(error.to_string().contains("stale cluster generation"));
+        assert_eq!(cluster.members().len(), 1);
+        assert_eq!(cluster.members()[0].generation.value(), 2);
+        assert!(matches!(
+            cluster.events().last(),
+            Some(ClusterMembershipEvent::StaleGenerationRejected { .. })
+        ));
     }
 
     #[test]
@@ -1870,7 +2031,10 @@ mod tests {
         assert_eq!(diagnostics.bootstrap, ["seed-a:7000".to_owned()]);
 
         let left = control_plane
-            .leave(&ClusterNodeId::from("client-a"))
+            .leave(
+                &ClusterNodeId::from("client-a"),
+                ClusterGeneration::default(),
+            )
             .await
             .unwrap()
             .unwrap();

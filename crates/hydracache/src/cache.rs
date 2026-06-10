@@ -16,8 +16,8 @@ use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
-    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent, ClusterRuntime,
-    HydraCacheClientBuilder, HydraCacheMemberBuilder,
+    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent, ClusterNodeId,
+    ClusterRuntime, HydraCacheClientBuilder, HydraCacheMemberBuilder,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -929,13 +929,20 @@ where
             return Ok(());
         };
 
-        if let Err(error) = bus
-            .publish(CacheInvalidationMessage::new(
-                self.inner.invalidation_node_id.clone(),
-                invalidation,
-            ))
-            .await
-        {
+        let mut message =
+            CacheInvalidationMessage::new(self.inner.invalidation_node_id.clone(), invalidation);
+        if let Some(runtime) = &self.inner.cluster_runtime {
+            if let Err(error) = runtime.validate_generation().await {
+                self.inner
+                    .stats
+                    .distributed_invalidation_publish_failures
+                    .fetch_add(1, Ordering::Relaxed);
+                return Err(error);
+            }
+            message = message.with_source_generation(runtime.generation());
+        }
+
+        if let Err(error) = bus.publish(message).await {
             self.inner
                 .stats
                 .distributed_invalidation_publish_failures
@@ -995,6 +1002,15 @@ where
     }
 
     async fn apply_remote_invalidation(&self, message: CacheInvalidationMessage) -> Result<()> {
+        if let (Some(runtime), Some(generation)) =
+            (&self.inner.cluster_runtime, message.source_generation())
+        {
+            let source_id = ClusterNodeId::from(message.source_id().to_owned());
+            runtime
+                .validate_remote_generation(&source_id, generation)
+                .await?;
+        }
+
         let (_, invalidation) = message.into_parts();
         self.inner
             .stats

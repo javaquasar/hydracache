@@ -558,8 +558,10 @@ impl CacheInvalidationReceiver for MyReceiver {
 shape. They are intentionally small: a client is an application-side near-cache,
 and a member is a cluster participant. In `0.20.0` both can join an
 `InMemoryCluster`, share its invalidation bus, and expose role/generation/epoch
-diagnostics. Real discovery and Raft-backed metadata are planned as later
-adapters.
+diagnostics. Cluster generations are part of the safety contract: stale
+processes with an older generation cannot leave a newer runtime or publish
+cluster invalidations after a node id is reused by a restart. Real discovery
+and Raft-backed metadata are planned as later adapters.
 
 `0.20.0` also adds the `ClusterControlPlane` seam. The default path still uses
 `InMemoryCluster`, but advanced users and future HydraCache crates can pass a
@@ -679,10 +681,13 @@ assert_eq!(client.cluster_diagnostics().unwrap().client_count, 0);
 This mode does not replicate cached values. It gives applications a stable
 cluster vocabulary now: role, node id, generation, bootstrap metadata, and
 invalidation propagation. `leave_cluster()` removes client/member membership
-metadata without clearing local cache contents. `InMemoryClusterDiscovery`
-models a plain discovery journal, while `ChitchatStyleDiscovery` adds a
-dependency-free seed-node/gossip-shaped adapter for candidate and liveness
-events. `InMemoryCluster` models authoritative admission and epoch movement.
+metadata without clearing local cache contents, but only when the caller's
+generation still matches the admitted generation. Cluster-originated
+invalidation messages also carry that generation, so receivers can reject stale
+messages from old processes. `InMemoryClusterDiscovery` models a plain
+discovery journal, while `ChitchatStyleDiscovery` adds a dependency-free
+seed-node/gossip-shaped adapter for candidate and liveness events.
+`InMemoryCluster` models authoritative admission and epoch movement.
 `RaftStyleMetadataControlPlane` adds a dependency-free metadata-log adapter with
 committed membership commands and snapshots. The intended next step is to plug
 real discovery and membership libraries underneath this API through

@@ -4,6 +4,8 @@ use async_trait::async_trait;
 use hydracache_core::Result;
 use tokio::sync::broadcast;
 
+use crate::cluster::ClusterGeneration;
+
 /// Cache invalidation operation that can be propagated to another cache node.
 ///
 /// The operation intentionally carries no cached value. A bus invalidates local
@@ -69,6 +71,7 @@ impl CacheInvalidation {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CacheInvalidationMessage {
     source_id: String,
+    source_generation: Option<ClusterGeneration>,
     invalidation: CacheInvalidation,
 }
 
@@ -77,13 +80,25 @@ impl CacheInvalidationMessage {
     pub fn new(source_id: impl Into<String>, invalidation: CacheInvalidation) -> Self {
         Self {
             source_id: source_id.into(),
+            source_generation: None,
             invalidation,
         }
+    }
+
+    /// Attach the cluster generation that published this message.
+    pub fn with_source_generation(mut self, generation: ClusterGeneration) -> Self {
+        self.source_generation = Some(generation);
+        self
     }
 
     /// Return the id of the cache instance that published this message.
     pub fn source_id(&self) -> &str {
         &self.source_id
+    }
+
+    /// Return the cluster generation that published this message, if known.
+    pub fn source_generation(&self) -> Option<ClusterGeneration> {
+        self.source_generation
     }
 
     /// Return the invalidation operation.
@@ -221,6 +236,7 @@ mod tests {
         CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage,
         CacheInvalidationReceive, InMemoryInvalidationBus,
     };
+    use crate::ClusterGeneration;
 
     #[test]
     fn invalidation_helpers_expose_operation_metadata() {
@@ -253,7 +269,18 @@ mod tests {
             panic!("expected invalidation message");
         };
         assert_eq!(message.source_id(), "node-a");
+        assert_eq!(message.source_generation(), None);
         assert_eq!(message.invalidation().tag_value(), Some("users"));
+    }
+
+    #[test]
+    fn invalidation_message_can_carry_cluster_generation() {
+        let message = CacheInvalidationMessage::new("node-a", CacheInvalidation::flush())
+            .with_source_generation(ClusterGeneration::new(7));
+
+        assert_eq!(message.source_id(), "node-a");
+        assert_eq!(message.source_generation(), Some(ClusterGeneration::new(7)));
+        assert!(message.invalidation().is_flush());
     }
 
     #[test]

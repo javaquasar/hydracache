@@ -6,11 +6,12 @@ use tokio::time::{sleep, timeout};
 
 use crate::tests::common::{user, User};
 use crate::{
-    CacheError, CacheEventSubscriber, CacheInvalidationBus, ChitchatStyleDiscovery,
-    ClusterCandidate, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
-    ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId,
-    ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
-    RaftMetadataCommand, RaftStyleMetadataControlPlane,
+    CacheError, CacheEventSubscriber, CacheInvalidation, CacheInvalidationBus,
+    CacheInvalidationMessage, ChitchatStyleDiscovery, ClusterCandidate, ClusterControlPlane,
+    ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration,
+    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache, InMemoryCluster,
+    InMemoryClusterDiscovery, InMemoryInvalidationBus, RaftMetadataCommand,
+    RaftStyleMetadataControlPlane,
 };
 
 async fn wait_until_absent(cache: &HydraCache, key: &str) {
@@ -380,6 +381,105 @@ async fn cluster_rejects_stale_generation_for_same_node() {
 }
 
 #[tokio::test]
+async fn stale_runtime_cannot_leave_newer_generation() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let stale = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(1))
+        .start()
+        .await
+        .unwrap();
+
+    let current = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(2))
+        .start()
+        .await
+        .unwrap();
+
+    let error = stale.leave_cluster().await.unwrap_err();
+
+    assert!(error.to_string().contains("stale cluster generation"));
+    assert_eq!(cluster.members().len(), 1);
+    assert_eq!(cluster.members()[0].generation.value(), 2);
+    assert_eq!(current.cluster_diagnostics().unwrap().member_count, 1);
+}
+
+#[tokio::test]
+async fn stale_runtime_cannot_publish_cluster_invalidation() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let stale = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(1))
+        .start()
+        .await
+        .unwrap();
+    let _current = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(2))
+        .start()
+        .await
+        .unwrap();
+    let observer = HydraCache::client()
+        .shared_cluster(cluster)
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    observer
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    let error = stale.invalidate_tag("users").await.unwrap_err();
+
+    assert!(error.to_string().contains("stale cluster generation"));
+    assert_eq!(stale.stats().distributed_invalidations_published, 0);
+    assert_eq!(stale.stats().distributed_invalidation_publish_failures, 1);
+    assert!(observer.get::<User>("user:42").await.unwrap().is_some());
+}
+
+#[tokio::test]
+async fn stale_bus_message_generation_is_rejected_by_cluster_receivers() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let bus = cluster.invalidation_bus();
+    HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(2))
+        .start()
+        .await
+        .unwrap();
+    let observer = HydraCache::client()
+        .shared_cluster(cluster)
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    observer
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    bus.publish(
+        CacheInvalidationMessage::new("member-a", CacheInvalidation::tag("users"))
+            .with_source_generation(ClusterGeneration::new(1)),
+    )
+    .await
+    .unwrap();
+    sleep(Duration::from_millis(50)).await;
+
+    assert!(observer.get::<User>("user:42").await.unwrap().is_some());
+    assert_eq!(observer.stats().distributed_invalidations_applied, 0);
+}
+
+#[tokio::test]
 async fn client_builder_can_create_isolated_cluster_runtime() {
     let client = HydraCache::client()
         .cluster("isolated")
@@ -698,9 +798,18 @@ impl ClusterControlPlane for RejectingControlPlane {
         ))
     }
 
+    async fn validate_generation(
+        &self,
+        _node_id: &ClusterNodeId,
+        _generation: ClusterGeneration,
+    ) -> crate::CacheResult<()> {
+        Ok(())
+    }
+
     async fn leave(
         &self,
         _node_id: &ClusterNodeId,
+        _generation: ClusterGeneration,
     ) -> crate::CacheResult<Option<ClusterMembershipEvent>> {
         Ok(None)
     }
