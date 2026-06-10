@@ -805,6 +805,7 @@ http://127.0.0.1:3000/demo/scenarios/document/run
 http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
+http://127.0.0.1:3000/demo/cluster/lifecycle/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
 http://127.0.0.1:3000/demo/security
@@ -821,7 +822,11 @@ query caching, cached non-database functions, TTL expiry, single-flight, and
 invalidation/load race safety. It also includes a listener demo that captures
 mutation, access, key, tag, and callback events produced by one cache flow, plus
 a distributed invalidation demo that creates two temporary cache nodes on one
-in-memory bus and verifies tag, key, and flush propagation.
+in-memory bus and verifies tag, key, and flush propagation. The cluster
+lifecycle demo creates a temporary member/client pair, records discovery
+candidates, verifies remote invalidation in both directions, calls
+`leave_cluster()` for both runtimes, and confirms local cache contents are not
+cleared by leaving membership.
 
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
@@ -833,8 +838,9 @@ contexts, inspect seeded product/order query-cache demos, run generated-client
 smoke checks, inspect Prometheus-style metrics, and display small hit/miss/load
 counters with a visual flow timeline. The dashboard also includes a textarea
 scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
-demo for verifying subscriptions manually. It also includes a one-click
-distributed invalidation flow that renders remote bus events in the output.
+demo for verifying subscriptions manually. It also includes one-click
+distributed invalidation and cluster lifecycle flows that render remote bus
+events and membership timelines in the output.
 
 Useful Swagger/API groups:
 
@@ -880,6 +886,7 @@ POST /demo/cache/remove
 POST /demo/cache/invalidate-tag
 POST /demo/listeners/run
 POST /demo/distributed/invalidation/run
+POST /demo/cluster/lifecycle/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
 POST /demo/query/orders/{id}/summary/load
@@ -894,6 +901,20 @@ POST /demo/negative/loader-error
 POST /demo/negative/expired-entry
 POST /demo/negative/invalidation-miss
 GET  /demo/report
+```
+
+Cluster lifecycle demo payload:
+
+```json
+{
+  "cluster": "sandbox-orders",
+  "key": "cluster:user:42",
+  "second_key": "cluster:user:99",
+  "retained_key": "cluster:retained",
+  "tag": "cluster-users",
+  "value": "Ada",
+  "flow_id": "cluster-flow"
+}
 ```
 
 `/demo/report` returns a cumulative application report with active profile,

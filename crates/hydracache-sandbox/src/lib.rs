@@ -42,6 +42,7 @@
 //! http://127.0.0.1:3000/demo/benchmarks/manual
 //! http://127.0.0.1:3000/demo/benchmarks/compare
 //! http://127.0.0.1:3000/demo/distributed/invalidation/run
+//! http://127.0.0.1:3000/demo/cluster/lifecycle/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
 //! ```
@@ -63,7 +64,9 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{
     CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
-    CacheEventSubscriber, CacheOptions, HydraCache, InMemoryInvalidationBus,
+    CacheEventSubscriber, CacheOptions, ClusterDiagnostics, ClusterDiscoveryDiagnostics,
+    ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent, ClusterRole, HydraCache,
+    InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
@@ -569,6 +572,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/distributed/invalidation/run",
             post(run_distributed_invalidation_demo),
+        )
+        .route(
+            "/demo/cluster/lifecycle/run",
+            post(run_cluster_lifecycle_demo),
         )
         .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
@@ -2027,6 +2034,25 @@ struct DistributedInvalidationDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-orders", "key": "cluster:user:42", "second_key": "cluster:user:99", "retained_key": "cluster:retained", "tag": "cluster-users", "value": "Ada", "flow_id": "cluster-flow"}))]
+struct ClusterLifecycleDemoRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    second_key: Option<String>,
+    #[serde(default)]
+    retained_key: Option<String>,
+    #[serde(default)]
+    tag: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"ttl_ms": 5000, "tags": ["users"], "loader_delay_ms": 10, "flow_id": "query-flow"}))]
 struct CacheLoadOptionsRequest {
     #[serde(default)]
@@ -2206,6 +2232,79 @@ struct DistributedInvalidationDemoResponse {
     timeline: Vec<DistributedInvalidationTimelineStep>,
     source_diagnostics: DemoDiagnostics,
     target_diagnostics: DemoDiagnostics,
+    passed: bool,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterLifecycleTimelineStep {
+    step: u8,
+    phase: &'static str,
+    actor: &'static str,
+    operation: &'static str,
+    key: Option<String>,
+    tag: Option<String>,
+    detail: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterRuntimeReport {
+    cluster: String,
+    role: &'static str,
+    node_id: String,
+    generation: u64,
+    epoch: u64,
+    member_count: usize,
+    client_count: usize,
+    connected: bool,
+    invalidation_subscribers: usize,
+    bootstrap: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterDiscoveryReport {
+    local_node_id: String,
+    candidate_count: usize,
+    event_count: usize,
+    candidate_node_ids: Vec<String>,
+    event_kinds: Vec<&'static str>,
+    has_candidates: bool,
+    has_events: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterMembershipEventReport {
+    kind: &'static str,
+    node_id: String,
+    role: &'static str,
+    generation: Option<u64>,
+    epoch: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterLifecycleDemoResponse {
+    flow_id: String,
+    cluster: String,
+    member_node_id: String,
+    client_node_id: String,
+    key: String,
+    second_key: String,
+    retained_key: String,
+    tag: String,
+    tag_removed_on_member: u64,
+    key_removed_on_client: bool,
+    client_contains_after_member_tag_invalidation: bool,
+    member_contains_after_client_key_invalidation: bool,
+    client_retained_after_leave: bool,
+    remote_events: Vec<ListenerEventReport>,
+    member_before_leave: ClusterRuntimeReport,
+    client_before_leave: ClusterRuntimeReport,
+    member_after_leave: ClusterRuntimeReport,
+    client_after_leave: ClusterRuntimeReport,
+    discovery: ClusterDiscoveryReport,
+    client_leave: Option<ClusterMembershipEventReport>,
+    member_leave: Option<ClusterMembershipEventReport>,
+    timeline: Vec<ClusterLifecycleTimelineStep>,
     passed: bool,
     events: EventLogResponse,
 }
@@ -5079,6 +5178,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/flows/{flow_id}/replay".to_owned(),
         "/demo/benchmarks/compare".to_owned(),
         "/demo/distributed/invalidation/run".to_owned(),
+        "/demo/cluster/lifecycle/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/import".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
@@ -5717,6 +5817,408 @@ fn distributed_timeline_step(
     detail: String,
 ) -> DistributedInvalidationTimelineStep {
     DistributedInvalidationTimelineStep {
+        step,
+        phase,
+        actor,
+        operation,
+        key,
+        tag,
+        detail,
+    }
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/cluster/lifecycle/run",
+    tag = "cluster",
+    request_body = ClusterLifecycleDemoRequest,
+    responses((status = 200, description = "Run a client/member cluster lifecycle demo", body = ClusterLifecycleDemoResponse))
+)]
+async fn run_cluster_lifecycle_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<ClusterLifecycleDemoRequest>,
+) -> Result<Json<ClusterLifecycleDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_cluster_lifecycle_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_cluster_lifecycle_demo_with_request(
+    state: &SandboxState,
+    request: ClusterLifecycleDemoRequest,
+) -> Result<ClusterLifecycleDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request
+        .flow_id
+        .unwrap_or_else(|| format!("cluster-{}", state.next_event_id.load(Ordering::SeqCst) + 1));
+    let cluster_name = request
+        .cluster
+        .unwrap_or_else(|| "sandbox-orders".to_owned());
+    let key = request.key.unwrap_or_else(|| format!("{flow_id}:tagged"));
+    let second_key = request
+        .second_key
+        .unwrap_or_else(|| format!("{flow_id}:key"));
+    let retained_key = request
+        .retained_key
+        .unwrap_or_else(|| format!("{flow_id}:retained"));
+    let tag = request.tag.unwrap_or_else(|| "cluster-demo".to_owned());
+    let value = request.value.unwrap_or_else(|| "cached".to_owned());
+    let member_node_id = "sandbox-member-a".to_owned();
+    let client_node_id = "sandbox-client-a".to_owned();
+    let cluster = Arc::new(InMemoryCluster::new(cluster_name.clone()));
+    let discovery = Arc::new(InMemoryClusterDiscovery::new());
+
+    let member: HydraCache = HydraCache::member()
+        .cluster(cluster_name.clone())
+        .shared_cluster(cluster.clone())
+        .shared_discovery(discovery.clone())
+        .node_id(member_node_id.clone())
+        .generation(ClusterGeneration::new(1))
+        .bootstrap("sandbox-seed:7000")
+        .bind("127.0.0.1:7100")
+        .diagnostics_endpoint("127.0.0.1:7200")
+        .start()
+        .await?;
+    let client: HydraCache = HydraCache::client()
+        .cluster(cluster_name.clone())
+        .shared_cluster(cluster)
+        .shared_discovery(discovery.clone())
+        .node_id(client_node_id.clone())
+        .generation(ClusterGeneration::new(1))
+        .bootstrap("sandbox-seed:7000")
+        .control_endpoint("127.0.0.1:8100")
+        .diagnostics_endpoint("127.0.0.1:8200")
+        .connect()
+        .await?;
+
+    discovery.mark_live(member_node_id.as_str());
+    discovery.mark_live(client_node_id.as_str());
+
+    let mut client_remote_events =
+        client.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+    let mut member_remote_events =
+        member.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+
+    member
+        .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+        .await?;
+    client
+        .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+        .await?;
+    client
+        .put(&retained_key, value.clone(), CacheOptions::new())
+        .await?;
+
+    let tag_removed_on_member = member.invalidate_tag(&tag).await?;
+    let tag_event = recv_listener_event("client", &mut client_remote_events).await?;
+    let client_contains_after_member_tag_invalidation = client.contains_key(&key).await;
+
+    member
+        .put(&second_key, value.clone(), CacheOptions::new())
+        .await?;
+    client
+        .put(&second_key, value.clone(), CacheOptions::new())
+        .await?;
+    let key_removed_on_client = client.invalidate_key(&second_key).await?;
+    let key_event = recv_listener_event("member", &mut member_remote_events).await?;
+    let member_contains_after_client_key_invalidation = member.contains_key(&second_key).await;
+
+    let member_before_leave = cluster_runtime_report(
+        member
+            .cluster_diagnostics()
+            .expect("member cluster diagnostics"),
+    );
+    let client_before_leave = cluster_runtime_report(
+        client
+            .cluster_diagnostics()
+            .expect("client cluster diagnostics"),
+    );
+    let discovery_report = cluster_discovery_report(
+        member
+            .cluster_discovery_diagnostics()
+            .expect("cluster discovery diagnostics"),
+    );
+
+    let client_leave = client
+        .leave_cluster()
+        .await?
+        .map(cluster_membership_event_report);
+    let client_after_leave = cluster_runtime_report(
+        client
+            .cluster_diagnostics()
+            .expect("client cluster diagnostics"),
+    );
+    let client_retained_after_leave = client
+        .get::<String>(&retained_key)
+        .await?
+        .is_some_and(|cached| cached == value);
+    let member_leave = member
+        .leave_cluster()
+        .await?
+        .map(cluster_membership_event_report);
+    let member_after_leave = cluster_runtime_report(
+        member
+            .cluster_diagnostics()
+            .expect("member cluster diagnostics"),
+    );
+
+    let remote_events = vec![tag_event, key_event];
+    let timeline = vec![
+        cluster_timeline_step(
+            1,
+            "discovery",
+            "member+client",
+            "announce",
+            None,
+            None,
+            format!(
+                "discovery observed {} candidate(s) and {} event(s)",
+                discovery_report.candidate_count, discovery_report.event_count
+            ),
+        ),
+        cluster_timeline_step(
+            2,
+            "admission",
+            "control-plane",
+            "join",
+            None,
+            None,
+            format!(
+                "admitted members={} clients={} epoch={}",
+                member_before_leave.member_count,
+                client_before_leave.client_count,
+                member_before_leave.epoch
+            ),
+        ),
+        cluster_timeline_step(
+            3,
+            "member-publish",
+            "member",
+            "invalidate-tag",
+            Some(key.clone()),
+            Some(tag.clone()),
+            format!(
+                "member removed {tag_removed_on_member} local key(s), client contains after remote apply={client_contains_after_member_tag_invalidation}"
+            ),
+        ),
+        cluster_timeline_step(
+            4,
+            "client-publish",
+            "client",
+            "invalidate-key",
+            Some(second_key.clone()),
+            None,
+            format!(
+                "client local removal={key_removed_on_client}, member contains after remote apply={member_contains_after_client_key_invalidation}"
+            ),
+        ),
+        cluster_timeline_step(
+            5,
+            "lifecycle",
+            "client",
+            "leave-cluster",
+            Some(retained_key.clone()),
+            None,
+            format!(
+                "client_count_after_leave={}, retained_local_cache={client_retained_after_leave}",
+                client_after_leave.client_count
+            ),
+        ),
+        cluster_timeline_step(
+            6,
+            "lifecycle",
+            "member",
+            "leave-cluster",
+            None,
+            None,
+            format!(
+                "member_count_after_leave={}, final_epoch={}",
+                member_after_leave.member_count, member_after_leave.epoch
+            ),
+        ),
+    ];
+
+    let passed = member_before_leave.member_count == 1
+        && client_before_leave.client_count == 1
+        && discovery_report.candidate_count == 2
+        && discovery_report.event_count >= 4
+        && tag_removed_on_member == 1
+        && key_removed_on_client
+        && !client_contains_after_member_tag_invalidation
+        && !member_contains_after_client_key_invalidation
+        && client_after_leave.client_count == 0
+        && member_after_leave.member_count == 0
+        && client_retained_after_leave
+        && client_leave
+            .as_ref()
+            .is_some_and(|event| event.kind == "node-left" && event.role == "client")
+        && member_leave
+            .as_ref()
+            .is_some_and(|event| event.kind == "node-left" && event.role == "member")
+        && remote_events
+            .iter()
+            .any(|event| event.kind == "tag-invalidated")
+        && remote_events
+            .iter()
+            .any(|event| event.kind == "key-invalidated");
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "cluster lifecycle demo joined member/client, applied {} remote invalidations, and left cluster",
+            remote_events.len()
+        ),
+        Some(key.clone()),
+        Some(tag.clone()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(ClusterLifecycleDemoResponse {
+        flow_id,
+        cluster: cluster_name,
+        member_node_id,
+        client_node_id,
+        key,
+        second_key,
+        retained_key,
+        tag,
+        tag_removed_on_member,
+        key_removed_on_client,
+        client_contains_after_member_tag_invalidation,
+        member_contains_after_client_key_invalidation,
+        client_retained_after_leave,
+        remote_events,
+        member_before_leave,
+        client_before_leave,
+        member_after_leave,
+        client_after_leave,
+        discovery: discovery_report,
+        client_leave,
+        member_leave,
+        timeline,
+        passed,
+        events,
+    })
+}
+
+fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeReport {
+    ClusterRuntimeReport {
+        cluster: diagnostics.cluster_name,
+        role: cluster_role_label(diagnostics.role),
+        node_id: diagnostics.node_id.to_string(),
+        generation: diagnostics.generation.value(),
+        epoch: diagnostics.epoch.value(),
+        member_count: diagnostics.member_count,
+        client_count: diagnostics.client_count,
+        connected: diagnostics.connected,
+        invalidation_subscribers: diagnostics.invalidation_subscribers,
+        bootstrap: diagnostics.bootstrap,
+    }
+}
+
+fn cluster_discovery_report(diagnostics: ClusterDiscoveryDiagnostics) -> ClusterDiscoveryReport {
+    let mut candidate_node_ids = diagnostics
+        .candidates
+        .iter()
+        .map(|candidate| candidate.node_id.to_string())
+        .collect::<Vec<_>>();
+    candidate_node_ids.sort();
+    let event_kinds = diagnostics
+        .events
+        .iter()
+        .map(cluster_discovery_event_label)
+        .collect::<Vec<_>>();
+
+    ClusterDiscoveryReport {
+        local_node_id: diagnostics.local_node_id.to_string(),
+        candidate_count: diagnostics.candidate_count(),
+        event_count: diagnostics.event_count(),
+        candidate_node_ids,
+        event_kinds,
+        has_candidates: diagnostics.has_candidates(),
+        has_events: diagnostics.has_events(),
+    }
+}
+
+fn cluster_membership_event_report(event: ClusterMembershipEvent) -> ClusterMembershipEventReport {
+    match event {
+        ClusterMembershipEvent::MemberJoined(member) => ClusterMembershipEventReport {
+            kind: "member-joined",
+            node_id: member.node_id.to_string(),
+            role: cluster_role_label(member.role),
+            generation: Some(member.generation.value()),
+            epoch: member.epoch.value(),
+        },
+        ClusterMembershipEvent::ClientConnected(member) => ClusterMembershipEventReport {
+            kind: "client-connected",
+            node_id: member.node_id.to_string(),
+            role: cluster_role_label(member.role),
+            generation: Some(member.generation.value()),
+            epoch: member.epoch.value(),
+        },
+        ClusterMembershipEvent::NodeLeft {
+            node_id,
+            role,
+            epoch,
+        } => ClusterMembershipEventReport {
+            kind: "node-left",
+            node_id: node_id.to_string(),
+            role: cluster_role_label(role),
+            generation: None,
+            epoch: epoch.value(),
+        },
+        ClusterMembershipEvent::StaleGenerationRejected {
+            node_id, attempted, ..
+        } => ClusterMembershipEventReport {
+            kind: "stale-generation-rejected",
+            node_id: node_id.to_string(),
+            role: "unknown",
+            generation: Some(attempted.value()),
+            epoch: 0,
+        },
+    }
+}
+
+fn cluster_discovery_event_label(event: &ClusterDiscoveryEvent) -> &'static str {
+    match event {
+        ClusterDiscoveryEvent::CandidateSeen(_) => "candidate-seen",
+        ClusterDiscoveryEvent::MemberLive(_) => "member-live",
+        ClusterDiscoveryEvent::MemberSuspect(_) => "member-suspect",
+        ClusterDiscoveryEvent::MemberDead(_) => "member-dead",
+    }
+}
+
+fn cluster_role_label(role: ClusterRole) -> &'static str {
+    match role {
+        ClusterRole::Local => "local",
+        ClusterRole::Client => "client",
+        ClusterRole::Member => "member",
+    }
+}
+
+fn cluster_timeline_step(
+    step: u8,
+    phase: &'static str,
+    actor: &'static str,
+    operation: &'static str,
+    key: Option<String>,
+    tag: Option<String>,
+    detail: String,
+) -> ClusterLifecycleTimelineStep {
+    ClusterLifecycleTimelineStep {
         step,
         phase,
         actor,
@@ -7043,6 +7545,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/scenarios/ttl', {key:'ui:ttl', value:'short', ttl_ms:50, wait_ms:90, flow_id:'ui-ttl'})">TTL expiry</button>
       <button onclick="post('/demo/listeners/run', {key:'ui:listener', tag:'ui-listener', value:'alpha', loader_value:'beta', ttl_ms:5000, flow_id:`ui-listener-${Date.now()}`})">Listener demo</button>
       <button onclick="post('/demo/distributed/invalidation/run', {key:'ui:dist:tagged', second_key:'ui:dist:key', flush_key:'ui:dist:flush', tag:'ui-dist', value:'alpha', flow_id:`ui-dist-${Date.now()}`})">Distributed invalidation</button>
+      <button onclick="post('/demo/cluster/lifecycle/run', {cluster:'ui-cluster', key:'ui:cluster:tagged', second_key:'ui:cluster:key', retained_key:'ui:cluster:retained', tag:'ui-cluster', value:'alpha', flow_id:`ui-cluster-${Date.now()}`})">Cluster lifecycle</button>
     </section>
     <section>
       <h2>Scenario Lab</h2>
@@ -7400,6 +7903,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Create two temporary cache nodes on one in-memory bus and verify remote tag, key, and flush invalidations.",
         },
         CapabilityReport {
+            name: "cluster lifecycle",
+            endpoint: "/demo/cluster/lifecycle/run",
+            description: "Create a temporary member/client cluster, verify discovery, distributed invalidation, explicit leave, and retained local cache contents.",
+        },
+        CapabilityReport {
             name: "observability demo",
             endpoint: "/demo/observability/prometheus and /demo/observability/traces/latest",
             description: "Expose Prometheus text metrics and OpenTelemetry-style spans derived from sandbox events.",
@@ -7517,6 +8025,7 @@ fn actuator_stats_doc() {}
         clear_events,
         run_listener_demo,
         run_distributed_invalidation_demo,
+        run_cluster_lifecycle_demo,
         reset_demo,
         cache_put,
         cache_get,
@@ -7652,6 +8161,12 @@ fn actuator_stats_doc() {}
             DistributedInvalidationTimelineStep,
             DistributedInvalidationDemoRequest,
             DistributedInvalidationDemoResponse,
+            ClusterLifecycleTimelineStep,
+            ClusterLifecycleDemoRequest,
+            ClusterRuntimeReport,
+            ClusterDiscoveryReport,
+            ClusterMembershipEventReport,
+            ClusterLifecycleDemoResponse,
             LoadUserResponse,
             LoadProductResponse,
             LoadOrderSummaryResponse,
@@ -7676,6 +8191,7 @@ fn actuator_stats_doc() {}
         (name = "local-cache", description = "Raw HydraCache local-cache operations"),
         (name = "listeners", description = "Cache listener and subscription demo flows"),
         (name = "distributed", description = "Distributed invalidation bus demo flows"),
+        (name = "cluster", description = "Client/member cluster lifecycle demo flows"),
         (name = "query-cache", description = "Database-backed query-cache scenarios"),
         (name = "typed-cache", description = "TypedCache namespaced cache scenarios"),
         (name = "function-cache", description = "Cached non-database function scenarios"),
@@ -8094,6 +8610,7 @@ mod tests {
         assert!(paths.contains_key("/demo/events"));
         assert!(paths.contains_key("/demo/listeners/run"));
         assert!(paths.contains_key("/demo/distributed/invalidation/run"));
+        assert!(paths.contains_key("/demo/cluster/lifecycle/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));
@@ -8154,6 +8671,12 @@ mod tests {
         assert!(schemas.contains_key("DistributedInvalidationTimelineStep"));
         assert!(schemas.contains_key("DistributedInvalidationDemoRequest"));
         assert!(schemas.contains_key("DistributedInvalidationDemoResponse"));
+        assert!(schemas.contains_key("ClusterLifecycleTimelineStep"));
+        assert!(schemas.contains_key("ClusterLifecycleDemoRequest"));
+        assert!(schemas.contains_key("ClusterRuntimeReport"));
+        assert!(schemas.contains_key("ClusterDiscoveryReport"));
+        assert!(schemas.contains_key("ClusterMembershipEventReport"));
+        assert!(schemas.contains_key("ClusterLifecycleDemoResponse"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
@@ -8439,6 +8962,34 @@ mod tests {
         assert_listener_events_include(&distributed["remote_events"], "tag-invalidated");
         assert_listener_events_include(&distributed["remote_events"], "key-invalidated");
         assert_listener_events_include(&distributed["remote_events"], "flushed");
+
+        let cluster = app
+            .clone()
+            .oneshot(post(
+                "/demo/cluster/lifecycle/run",
+                Body::from(
+                    r#"{"cluster":"test-cluster","key":"cluster:tagged","second_key":"cluster:key","retained_key":"cluster:retained","tag":"cluster-test","value":"alpha","flow_id":"cluster-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(cluster["flow_id"], "cluster-test");
+        assert_eq!(cluster["passed"], true);
+        assert_eq!(cluster["member_before_leave"]["member_count"], 1);
+        assert_eq!(cluster["client_before_leave"]["client_count"], 1);
+        assert_eq!(cluster["discovery"]["candidate_count"], 2);
+        assert_eq!(cluster["client_leave"]["kind"], "node-left");
+        assert_eq!(cluster["client_leave"]["role"], "client");
+        assert_eq!(cluster["member_leave"]["kind"], "node-left");
+        assert_eq!(cluster["member_leave"]["role"], "member");
+        assert_eq!(cluster["client_after_leave"]["client_count"], 0);
+        assert_eq!(cluster["member_after_leave"]["member_count"], 0);
+        assert_eq!(cluster["client_retained_after_leave"], true);
+        assert_eq!(cluster["timeline"].as_array().unwrap().len(), 6);
+        assert_listener_events_include(&cluster["remote_events"], "tag-invalidated");
+        assert_listener_events_include(&cluster["remote_events"], "key-invalidated");
 
         let query = app
             .clone()

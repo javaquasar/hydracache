@@ -334,3 +334,14 @@ Invoke-SandboxJson POST "/demo/flows/$FlowId-product/replay" @{
 
 Write-Host "`n36. OpenAPI generated-client smoke"
 Invoke-SandboxJson GET "/demo/openapi/client-smoke" | ConvertTo-Json -Depth 8
+
+Write-Host "`n37. Cluster lifecycle demo"
+Invoke-SandboxJson POST "/demo/cluster/lifecycle/run" @{
+    cluster = "script-cluster"
+    key = "script-cluster:tagged"
+    second_key = "script-cluster:key"
+    retained_key = "script-cluster:retained"
+    tag = "script-cluster"
+    value = "alpha"
+    flow_id = "$FlowId-cluster"
+} | ConvertTo-Json -Depth 12

@@ -354,6 +354,33 @@ Content-Type: application/json
   "flow_id": "listener-flow"
 }
 
+### Distributed invalidation demo: remote tag, key, and flush propagation
+POST {{baseUrl}}/demo/distributed/invalidation/run
+Content-Type: application/json
+
+{
+  "key": "dist:tagged",
+  "second_key": "dist:key",
+  "flush_key": "dist:flush",
+  "tag": "dist",
+  "value": "alpha",
+  "flow_id": "dist-flow"
+}
+
+### Cluster lifecycle demo: client/member discovery, invalidation, and leave
+POST {{baseUrl}}/demo/cluster/lifecycle/run
+Content-Type: application/json
+
+{
+  "cluster": "sandbox-orders",
+  "key": "cluster:tagged",
+  "second_key": "cluster:key",
+  "retained_key": "cluster:retained",
+  "tag": "cluster-users",
+  "value": "Ada",
+  "flow_id": "cluster-flow"
+}
+
 ### First load should use the loader
 POST {{baseUrl}}/demo/load/42
 

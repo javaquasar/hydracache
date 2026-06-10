@@ -42,6 +42,14 @@ Implemented in the follow-up 0.20.0 lifecycle slice:
 - leave removes control-plane membership metadata without clearing local cache
   contents.
 
+Implemented in the follow-up 0.20.0 sandbox slice:
+
+- `POST /demo/cluster/lifecycle/run`;
+- OpenAPI schemas for cluster runtime, discovery, membership event, and
+  timeline reports;
+- one-click dashboard flow for admission, discovery, remote invalidation,
+  explicit leave, and retained local cache contents.
+
 Still future work:
 
 - concrete chitchat-backed discovery adapter;
