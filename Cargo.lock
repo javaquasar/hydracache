@@ -1164,7 +1164,9 @@ name = "hydracache-cluster-raft"
 version = "0.20.0"
 dependencies = [
  "async-trait",
+ "chitchat",
  "hydracache",
+ "hydracache-cluster-chitchat",
  "raft",
  "slog",
  "tokio",

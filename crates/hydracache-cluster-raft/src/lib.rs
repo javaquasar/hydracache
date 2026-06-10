@@ -9,6 +9,50 @@
 //! drives the real raft-rs lifecycle: campaign, propose, `Ready`, stable-log
 //! append, and committed-entry application.
 //!
+//! ## Bridging Discovery To Raft Metadata
+//!
+//! The cluster composition is deliberately split:
+//!
+//! - `hydracache-cluster-chitchat` discovers member/client candidates.
+//! - [`hydracache::ClusterAdmissionBridge`] polls those candidates.
+//! - `RaftMetadataRuntime` commits accepted membership metadata.
+//!
+//! ```no_run
+//! use std::net::SocketAddr;
+//! use std::sync::Arc;
+//!
+//! use hydracache::{
+//!     ClusterAdmissionBridge, ClusterCandidate, ClusterGeneration,
+//!     ClusterDiscovery,
+//! };
+//! use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
+//! use hydracache_cluster_raft::RaftMetadataRuntime;
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let discovery = Arc::new(
+//!     ChitchatDiscovery::spawn_udp(ChitchatDiscoveryConfig::new(
+//!         "orders",
+//!         "member-a",
+//!         ClusterGeneration::new(1),
+//!         "127.0.0.1:7000".parse::<SocketAddr>().unwrap(),
+//!     ))
+//!     .await?,
+//! );
+//! let control_plane = Arc::new(RaftMetadataRuntime::single_node("orders", 1)?);
+//! let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane.clone());
+//!
+//! discovery
+//!     .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+//!     .await?;
+//! bridge.run_once().await;
+//!
+//! assert_eq!(bridge.diagnostics().candidates_admitted, 1);
+//! assert_eq!(control_plane.snapshot().commands_committed, 1);
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! # Example
 //!
 //! ```rust

@@ -15,4 +15,6 @@ raft.workspace = true
 slog.workspace = true
 
 [dev-dependencies]
+chitchat.workspace = true
+hydracache-cluster-chitchat.workspace = true
 tokio.workspace = true
