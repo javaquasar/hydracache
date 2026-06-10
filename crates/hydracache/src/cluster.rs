@@ -682,6 +682,226 @@ pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
     ) -> ClusterDiagnostics;
 }
 
+/// Metadata command committed by [`RaftStyleMetadataControlPlane`].
+///
+/// This is intentionally small and transport-neutral. A future `raft-rs`
+/// adapter can use the same command shape as the replicated state-machine input
+/// while keeping [`HydraCache::client`] and [`HydraCache::member`] unchanged.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RaftMetadataCommand {
+    /// A member was admitted or updated.
+    MemberUpsert {
+        /// Admitted node id.
+        node_id: ClusterNodeId,
+        /// Admitted process generation.
+        generation: ClusterGeneration,
+        /// Cluster epoch observed after admission.
+        epoch: ClusterEpoch,
+    },
+    /// A client was admitted or updated.
+    ClientUpsert {
+        /// Admitted node id.
+        node_id: ClusterNodeId,
+        /// Admitted process generation.
+        generation: ClusterGeneration,
+        /// Cluster epoch observed after admission.
+        epoch: ClusterEpoch,
+    },
+    /// A node left membership.
+    NodeLeft {
+        /// Removed node id.
+        node_id: ClusterNodeId,
+        /// Removed node role.
+        role: ClusterRole,
+        /// Cluster epoch observed after removal.
+        epoch: ClusterEpoch,
+    },
+}
+
+/// Snapshot of the raft-style metadata journal.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RaftMetadataSnapshot {
+    /// Simulated Raft term.
+    pub term: u64,
+    /// Number of committed metadata commands.
+    pub commit_index: u64,
+    /// Current cluster metadata epoch.
+    pub epoch: ClusterEpoch,
+    /// Current admitted member count.
+    pub member_count: usize,
+    /// Current connected client count.
+    pub client_count: usize,
+    /// Last committed command, if any.
+    pub last_command: Option<RaftMetadataCommand>,
+}
+
+#[derive(Debug)]
+struct RaftMetadataState {
+    term: u64,
+    commit_index: u64,
+    commands: Vec<RaftMetadataCommand>,
+}
+
+impl Default for RaftMetadataState {
+    fn default() -> Self {
+        Self {
+            term: 1,
+            commit_index: 0,
+            commands: Vec::new(),
+        }
+    }
+}
+
+/// Dependency-free, raft-style cluster metadata control plane.
+///
+/// This adapter does not run the real `raft-rs` protocol yet. It models the
+/// part of Raft that HydraCache's public cluster API needs before a networked
+/// implementation exists: successful membership changes are appended to a
+/// committed metadata log, exposed through a snapshot, and used by the same
+/// [`ClusterControlPlane`] trait as other adapters.
+///
+/// # Example
+///
+/// ```rust
+/// use std::sync::Arc;
+///
+/// use hydracache::{HydraCache, RaftStyleMetadataControlPlane};
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let control_plane = Arc::new(RaftStyleMetadataControlPlane::new("orders"));
+///
+/// let member = HydraCache::member()
+///     .control_plane(control_plane.clone())
+///     .node_id("member-a")
+///     .start()
+///     .await?;
+///
+/// assert_eq!(control_plane.snapshot().commit_index, 1);
+/// assert_eq!(member.cluster_diagnostics().unwrap().member_count, 1);
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug)]
+pub struct RaftStyleMetadataControlPlane {
+    cluster: InMemoryCluster,
+    metadata: Mutex<RaftMetadataState>,
+}
+
+impl RaftStyleMetadataControlPlane {
+    /// Create a raft-style metadata control plane for a logical cluster.
+    pub fn new(cluster_name: impl Into<String>) -> Self {
+        Self {
+            cluster: InMemoryCluster::new(cluster_name),
+            metadata: Mutex::new(RaftMetadataState::default()),
+        }
+    }
+
+    /// Override the simulated Raft term.
+    pub fn with_term(mut self, term: u64) -> Self {
+        self.metadata
+            .get_mut()
+            .expect("raft metadata poisoned")
+            .term = term;
+        self
+    }
+
+    /// Return committed metadata commands.
+    pub fn commands(&self) -> Vec<RaftMetadataCommand> {
+        self.metadata
+            .lock()
+            .expect("raft metadata poisoned")
+            .commands
+            .clone()
+    }
+
+    /// Return a point-in-time metadata snapshot.
+    pub fn snapshot(&self) -> RaftMetadataSnapshot {
+        let metadata = self.metadata.lock().expect("raft metadata poisoned");
+        RaftMetadataSnapshot {
+            term: metadata.term,
+            commit_index: metadata.commit_index,
+            epoch: self.cluster.epoch(),
+            member_count: self.cluster.members().len(),
+            client_count: self.cluster.clients().len(),
+            last_command: metadata.commands.last().cloned(),
+        }
+    }
+
+    fn append_command(&self, command: RaftMetadataCommand) {
+        let mut metadata = self.metadata.lock().expect("raft metadata poisoned");
+        metadata.commit_index = metadata.commit_index.saturating_add(1);
+        metadata.commands.push(command);
+    }
+}
+
+impl Default for RaftStyleMetadataControlPlane {
+    fn default() -> Self {
+        Self::new("hydracache")
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterControlPlane for RaftStyleMetadataControlPlane {
+    fn name(&self) -> String {
+        self.cluster.name().to_owned()
+    }
+
+    fn invalidation_bus(&self) -> Arc<dyn CacheInvalidationBus> {
+        self.cluster.invalidation_bus()
+    }
+
+    async fn join_member(&self, candidate: ClusterCandidate) -> Result<ClusterMember> {
+        let member = self.cluster.join_member(candidate)?;
+        self.append_command(RaftMetadataCommand::MemberUpsert {
+            node_id: member.node_id.clone(),
+            generation: member.generation,
+            epoch: member.epoch,
+        });
+        Ok(member)
+    }
+
+    async fn join_client(&self, candidate: ClusterCandidate) -> Result<ClusterMember> {
+        let member = self.cluster.join_client(candidate)?;
+        self.append_command(RaftMetadataCommand::ClientUpsert {
+            node_id: member.node_id.clone(),
+            generation: member.generation,
+            epoch: member.epoch,
+        });
+        Ok(member)
+    }
+
+    async fn leave(&self, node_id: &ClusterNodeId) -> Result<Option<ClusterMembershipEvent>> {
+        let Some(event) = self.cluster.leave(node_id) else {
+            return Ok(None);
+        };
+        if let ClusterMembershipEvent::NodeLeft {
+            node_id,
+            role,
+            epoch,
+        } = &event
+        {
+            self.append_command(RaftMetadataCommand::NodeLeft {
+                node_id: node_id.clone(),
+                role: *role,
+                epoch: *epoch,
+            });
+        }
+        Ok(Some(event))
+    }
+
+    fn diagnostics_for(
+        &self,
+        role: ClusterRole,
+        node_id: ClusterNodeId,
+        generation: ClusterGeneration,
+        bootstrap: Vec<String>,
+    ) -> ClusterDiagnostics {
+        self.cluster
+            .diagnostics_for(role, node_id, generation, bootstrap)
+    }
+}
+
 #[derive(Debug, Default)]
 struct InMemoryClusterState {
     epoch: ClusterEpoch,

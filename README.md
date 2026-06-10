@@ -683,9 +683,11 @@ metadata without clearing local cache contents. `InMemoryClusterDiscovery`
 models a plain discovery journal, while `ChitchatStyleDiscovery` adds a
 dependency-free seed-node/gossip-shaped adapter for candidate and liveness
 events. `InMemoryCluster` models authoritative admission and epoch movement.
-The intended next step is to plug real discovery and membership libraries
-underneath this API through `ClusterDiscovery` and `ClusterControlPlane` without
-changing ordinary cache usage.
+`RaftStyleMetadataControlPlane` adds a dependency-free metadata-log adapter with
+committed membership commands and snapshots. The intended next step is to plug
+real discovery and membership libraries underneath this API through
+`ClusterDiscovery` and `ClusterControlPlane` without changing ordinary cache
+usage.
 
 ## Optional Axum Actuator
 

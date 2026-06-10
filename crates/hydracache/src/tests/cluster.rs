@@ -10,6 +10,7 @@ use crate::{
     ClusterCandidate, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
     ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId,
     ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
+    RaftMetadataCommand, RaftStyleMetadataControlPlane,
 };
 
 async fn wait_until_absent(cache: &HydraCache, key: &str) {
@@ -466,6 +467,88 @@ async fn builders_accept_control_plane_trait_objects() {
 
     assert_eq!(member.cluster_diagnostics().unwrap().member_count, 1);
     assert_eq!(client.cluster_diagnostics().unwrap().client_count, 1);
+}
+
+#[tokio::test]
+async fn raft_style_metadata_control_plane_records_committed_membership_commands() {
+    let control_plane = Arc::new(RaftStyleMetadataControlPlane::new("orders").with_term(7));
+    let member = HydraCache::member()
+        .control_plane(control_plane.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(1))
+        .start()
+        .await
+        .unwrap();
+    let client = HydraCache::client()
+        .control_plane(control_plane.clone())
+        .node_id("client-a")
+        .generation(ClusterGeneration::new(1))
+        .connect()
+        .await
+        .unwrap();
+
+    let snapshot = control_plane.snapshot();
+    assert_eq!(snapshot.term, 7);
+    assert_eq!(snapshot.commit_index, 2);
+    assert_eq!(snapshot.epoch.value(), 1);
+    assert_eq!(snapshot.member_count, 1);
+    assert_eq!(snapshot.client_count, 1);
+    assert!(matches!(
+        snapshot.last_command,
+        Some(RaftMetadataCommand::ClientUpsert { ref node_id, .. })
+            if node_id.as_str() == "client-a"
+    ));
+    assert!(matches!(
+        &control_plane.commands()[0],
+        RaftMetadataCommand::MemberUpsert {
+            node_id,
+            generation,
+            epoch,
+        } if node_id.as_str() == "member-a"
+            && generation.value() == 1
+            && epoch.value() == 1
+    ));
+
+    let stale = HydraCache::member()
+        .control_plane(control_plane.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(0))
+        .start()
+        .await
+        .unwrap_err();
+    assert!(stale.to_string().contains("stale cluster generation"));
+    assert_eq!(control_plane.snapshot().commit_index, 2);
+
+    let client_left = client.leave_cluster().await.unwrap().unwrap();
+    assert!(matches!(
+        client_left,
+        ClusterMembershipEvent::NodeLeft {
+            role: ClusterRole::Client,
+            ..
+        }
+    ));
+    let member_left = member.leave_cluster().await.unwrap().unwrap();
+    assert!(matches!(
+        member_left,
+        ClusterMembershipEvent::NodeLeft {
+            role: ClusterRole::Member,
+            ..
+        }
+    ));
+
+    let snapshot = control_plane.snapshot();
+    assert_eq!(snapshot.commit_index, 4);
+    assert_eq!(snapshot.epoch.value(), 2);
+    assert_eq!(snapshot.member_count, 0);
+    assert_eq!(snapshot.client_count, 0);
+    assert!(matches!(
+        snapshot.last_command,
+        Some(RaftMetadataCommand::NodeLeft {
+            role: ClusterRole::Member,
+            epoch,
+            ..
+        }) if epoch.value() == 2
+    ));
 }
 
 #[tokio::test]

@@ -292,6 +292,9 @@
 //! [`ChitchatStyleDiscovery`] is a dependency-free seed-node discovery spike
 //! that records chitchat-shaped candidates and liveness events without starting
 //! a network runtime.
+//! [`RaftStyleMetadataControlPlane`] is a dependency-free metadata-log spike
+//! that records committed membership commands and snapshots without starting a
+//! Raft runtime.
 //!
 //! ```rust
 //! use std::sync::Arc;
@@ -392,7 +395,8 @@ pub use cluster::{
     ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints,
     ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
     ClusterRole, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
-    InMemoryClusterDiscovery,
+    InMemoryClusterDiscovery, RaftMetadataCommand, RaftMetadataSnapshot,
+    RaftStyleMetadataControlPlane,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

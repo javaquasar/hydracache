@@ -68,6 +68,16 @@ Implemented in the follow-up 0.20.0 chitchat-style discovery slice:
   trait;
 - rustdoc example and regression tests using the public builder API.
 
+Implemented in the follow-up 0.20.0 raft-style metadata slice:
+
+- `RaftStyleMetadataControlPlane`;
+- `RaftMetadataCommand` and `RaftMetadataSnapshot`;
+- committed command log for member upsert, client upsert, and node leave;
+- `snapshot()` with term, commit index, epoch, member/client counts, and last
+  command;
+- stale-generation rejection leaves the commit index unchanged;
+- rustdoc example and regression tests using the public builder API.
+
 Still future work:
 
 - concrete chitchat-backed discovery adapter;
