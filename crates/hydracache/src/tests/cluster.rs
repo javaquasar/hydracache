@@ -6,8 +6,8 @@ use tokio::time::{sleep, timeout};
 
 use crate::tests::common::{user, User};
 use crate::{
-    CacheError, CacheInvalidationBus, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
-    ClusterDiscovery, ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration,
+    CacheError, CacheEventSubscriber, CacheInvalidationBus, ClusterCandidate, ClusterControlPlane,
+    ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration,
     ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache, InMemoryCluster,
     InMemoryClusterDiscovery, InMemoryInvalidationBus,
 };
@@ -24,6 +24,15 @@ async fn wait_until_absent(cache: &HydraCache, key: &str) {
     })
     .await
     .expect("cache entry should be removed by cluster invalidation");
+}
+
+async fn wait_for_distributed_mutation(subscriber: &mut CacheEventSubscriber) {
+    let event = timeout(Duration::from_secs(2), subscriber.recv())
+        .await
+        .expect("distributed mutation event should arrive")
+        .expect("distributed mutation event stream should remain open");
+
+    assert_eq!(event.origin(), CacheEventOrigin::DistributedBus);
 }
 
 #[tokio::test]
@@ -168,6 +177,180 @@ async fn client_invalidation_reaches_member_cache() {
     wait_until_absent(&member, "user:7").await;
     assert_eq!(client.stats().distributed_invalidations_published, 1);
     assert_eq!(member.stats().distributed_invalidations_applied, 1);
+}
+
+#[tokio::test]
+async fn multi_node_cluster_propagates_invalidations_and_tracks_membership_changes() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let discovery = Arc::new(InMemoryClusterDiscovery::new());
+
+    let member_a = HydraCache::member()
+        .cluster("orders")
+        .shared_cluster(cluster.clone())
+        .shared_discovery(discovery.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(1))
+        .bind("127.0.0.1:7000")
+        .start()
+        .await
+        .unwrap();
+    let member_b = HydraCache::member()
+        .cluster("orders")
+        .shared_cluster(cluster.clone())
+        .shared_discovery(discovery.clone())
+        .node_id("member-b")
+        .generation(ClusterGeneration::new(1))
+        .bind("127.0.0.1:7001")
+        .start()
+        .await
+        .unwrap();
+    let client_a = HydraCache::client()
+        .cluster("orders")
+        .shared_cluster(cluster.clone())
+        .shared_discovery(discovery.clone())
+        .node_id("client-a")
+        .generation(ClusterGeneration::new(1))
+        .bootstrap("127.0.0.1:7000")
+        .connect()
+        .await
+        .unwrap();
+    let client_b = HydraCache::client()
+        .cluster("orders")
+        .shared_cluster(cluster.clone())
+        .shared_discovery(discovery.clone())
+        .node_id("client-b")
+        .generation(ClusterGeneration::new(1))
+        .bootstrap("127.0.0.1:7001")
+        .connect()
+        .await
+        .unwrap();
+
+    assert_eq!(cluster.members().len(), 2);
+    assert_eq!(cluster.clients().len(), 2);
+    assert_eq!(discovery.candidates().len(), 4);
+    assert_eq!(member_a.cluster_diagnostics().unwrap().epoch.value(), 2);
+
+    for cache in [&member_a, &member_b, &client_a, &client_b] {
+        cache
+            .put("user:42", user(42), CacheOptions::new().tag("users"))
+            .await
+            .unwrap();
+    }
+
+    let mut member_b_tag_events =
+        member_b.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+    let mut client_a_tag_events =
+        client_a.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+    let mut client_b_tag_events =
+        client_b.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+
+    assert_eq!(member_a.invalidate_tag("users").await.unwrap(), 1);
+    wait_for_distributed_mutation(&mut member_b_tag_events).await;
+    wait_for_distributed_mutation(&mut client_a_tag_events).await;
+    wait_for_distributed_mutation(&mut client_b_tag_events).await;
+    drop((
+        member_b_tag_events,
+        client_a_tag_events,
+        client_b_tag_events,
+    ));
+
+    for cache in [&member_a, &member_b, &client_a, &client_b] {
+        wait_until_absent(cache, "user:42").await;
+    }
+
+    for cache in [&member_a, &member_b, &client_a, &client_b] {
+        cache
+            .put("user:99", user(99), CacheOptions::new())
+            .await
+            .unwrap();
+    }
+
+    let mut member_a_key_events =
+        member_a.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+    let mut member_b_key_events =
+        member_b.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+    let mut client_a_key_events =
+        client_a.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+
+    assert!(client_b.invalidate_key("user:99").await.unwrap());
+    wait_for_distributed_mutation(&mut member_a_key_events).await;
+    wait_for_distributed_mutation(&mut member_b_key_events).await;
+    wait_for_distributed_mutation(&mut client_a_key_events).await;
+
+    for cache in [&member_a, &member_b, &client_a, &client_b] {
+        wait_until_absent(cache, "user:99").await;
+    }
+
+    assert_eq!(member_a.stats().distributed_invalidations_published, 1);
+    assert_eq!(client_b.stats().distributed_invalidations_published, 1);
+    assert_eq!(member_b.stats().distributed_invalidations_applied, 2);
+    assert_eq!(client_a.stats().distributed_invalidations_applied, 2);
+
+    let upgraded_client_b = HydraCache::client()
+        .cluster("orders")
+        .shared_cluster(cluster.clone())
+        .node_id("client-b")
+        .generation(ClusterGeneration::new(2))
+        .connect()
+        .await
+        .unwrap();
+    assert_eq!(cluster.clients().len(), 2);
+    assert_eq!(
+        cluster
+            .clients()
+            .into_iter()
+            .find(|client| client.node_id.as_str() == "client-b")
+            .unwrap()
+            .generation
+            .value(),
+        2
+    );
+
+    let stale_member = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(0))
+        .start()
+        .await
+        .unwrap_err();
+    assert!(stale_member
+        .to_string()
+        .contains("stale cluster generation"));
+
+    let stale_client = HydraCache::client()
+        .shared_cluster(cluster.clone())
+        .node_id("client-b")
+        .generation(ClusterGeneration::new(1))
+        .connect()
+        .await
+        .unwrap_err();
+    assert!(stale_client
+        .to_string()
+        .contains("stale cluster generation"));
+
+    let client_left = client_a.leave_cluster().await.unwrap().unwrap();
+    assert!(matches!(
+        client_left,
+        ClusterMembershipEvent::NodeLeft {
+            role: ClusterRole::Client,
+            ..
+        }
+    ));
+    let member_left = member_b.leave_cluster().await.unwrap().unwrap();
+    assert!(matches!(
+        member_left,
+        ClusterMembershipEvent::NodeLeft {
+            role: ClusterRole::Member,
+            ..
+        }
+    ));
+
+    let diagnostics = upgraded_client_b.cluster_diagnostics().unwrap();
+    assert_eq!(diagnostics.member_count, 1);
+    assert_eq!(diagnostics.client_count, 1);
+    assert_eq!(diagnostics.epoch.value(), 3);
+    assert_eq!(cluster.members()[0].node_id.as_str(), "member-a");
+    assert_eq!(cluster.clients()[0].node_id.as_str(), "client-b");
 }
 
 #[tokio::test]

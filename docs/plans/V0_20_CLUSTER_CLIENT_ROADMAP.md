@@ -50,6 +50,15 @@ Implemented in the follow-up 0.20.0 sandbox slice:
 - one-click dashboard flow for admission, discovery, remote invalidation,
   explicit leave, and retained local cache contents.
 
+Implemented in the follow-up 0.20.0 multi-node regression slice:
+
+- two-member/two-client cluster test;
+- member-published tag invalidation reaches every other runtime;
+- client-published key invalidation reaches every other runtime;
+- generation upgrade and stale-generation rejection stay valid in a larger
+  cluster;
+- leave updates member/client counts after distributed activity.
+
 Still future work:
 
 - concrete chitchat-backed discovery adapter;
