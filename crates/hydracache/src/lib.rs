@@ -286,7 +286,8 @@
 //! [`HydraCache::client`] creates an application-side near-cache. [`HydraCache::member`]
 //! creates an in-process cluster member. In v0.20 both can share an
 //! [`InMemoryCluster`] for tests, demos, and embedded applications while the
-//! future discovery/Raft adapters are still being designed.
+//! future discovery/Raft adapters are still being designed. Custom adapters can
+//! implement [`ClusterControlPlane`] and be passed with `.control_plane(...)`.
 //!
 //! ```rust
 //! use std::sync::Arc;
@@ -383,9 +384,10 @@ mod typed;
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{
-    ClusterCandidate, ClusterDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch,
-    ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId, ClusterRole,
-    HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery,
+    ClusterCandidate, ClusterControlPlane, ClusterDiagnostics, ClusterDiscoveryEvent,
+    ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
+    ClusterNodeId, ClusterRole, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
+    InMemoryClusterDiscovery,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

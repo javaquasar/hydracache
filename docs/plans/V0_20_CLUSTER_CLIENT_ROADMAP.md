@@ -18,6 +18,13 @@ Implemented in the first 0.20.0 slice:
 - tests for discovery, admission, stale generation rejection, diagnostics, and
   client/member invalidation propagation.
 
+Implemented in the follow-up 0.21.0 slice:
+
+- `ClusterControlPlane` as the adapter boundary underneath client/member
+  builders;
+- `.control_plane(Arc<dyn ClusterControlPlane>)` for custom future backends;
+- `InMemoryCluster` as the default implementation of that trait.
+
 Still future work:
 
 - chitchat-backed discovery adapter;

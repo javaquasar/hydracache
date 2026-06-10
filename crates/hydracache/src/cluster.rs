@@ -401,6 +401,39 @@ pub struct ClusterDiagnostics {
     pub invalidation_subscribers: usize,
 }
 
+/// Transport-neutral control-plane contract for cluster admission and metadata.
+///
+/// This trait is the seam where future chitchat/Raft-backed adapters can plug
+/// in without changing [`HydraCache::client`] or [`HydraCache::member`] usage.
+/// It is intentionally focused on control-plane decisions: admission, leave,
+/// diagnostics, and the invalidation bus used for the hot freshness path.
+#[async_trait::async_trait]
+pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
+    /// Return the logical cluster name.
+    fn name(&self) -> String;
+
+    /// Return the invalidation bus used by admitted participants.
+    fn invalidation_bus(&self) -> Arc<dyn CacheInvalidationBus>;
+
+    /// Admit or update a member candidate.
+    async fn join_member(&self, candidate: ClusterCandidate) -> Result<ClusterMember>;
+
+    /// Admit or update a client candidate.
+    async fn join_client(&self, candidate: ClusterCandidate) -> Result<ClusterMember>;
+
+    /// Remove a node from this control plane.
+    async fn leave(&self, node_id: &ClusterNodeId) -> Result<Option<ClusterMembershipEvent>>;
+
+    /// Build diagnostics for a local runtime attached to this control plane.
+    fn diagnostics_for(
+        &self,
+        role: ClusterRole,
+        node_id: ClusterNodeId,
+        generation: ClusterGeneration,
+        bootstrap: Vec<String>,
+    ) -> ClusterDiagnostics;
+}
+
 #[derive(Debug, Default)]
 struct InMemoryClusterState {
     epoch: ClusterEpoch,
@@ -565,6 +598,39 @@ impl InMemoryCluster {
     }
 }
 
+#[async_trait::async_trait]
+impl ClusterControlPlane for InMemoryCluster {
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    fn invalidation_bus(&self) -> Arc<dyn CacheInvalidationBus> {
+        InMemoryCluster::invalidation_bus(self)
+    }
+
+    async fn join_member(&self, candidate: ClusterCandidate) -> Result<ClusterMember> {
+        InMemoryCluster::join_member(self, candidate)
+    }
+
+    async fn join_client(&self, candidate: ClusterCandidate) -> Result<ClusterMember> {
+        InMemoryCluster::join_client(self, candidate)
+    }
+
+    async fn leave(&self, node_id: &ClusterNodeId) -> Result<Option<ClusterMembershipEvent>> {
+        Ok(InMemoryCluster::leave(self, node_id))
+    }
+
+    fn diagnostics_for(
+        &self,
+        role: ClusterRole,
+        node_id: ClusterNodeId,
+        generation: ClusterGeneration,
+        bootstrap: Vec<String>,
+    ) -> ClusterDiagnostics {
+        InMemoryCluster::diagnostics_for(self, role, node_id, generation, bootstrap)
+    }
+}
+
 fn reject_stale_generation(
     state: &mut InMemoryClusterState,
     candidate: &ClusterCandidate,
@@ -599,7 +665,7 @@ fn reject_stale_generation(
 
 #[derive(Debug, Clone)]
 pub(crate) struct ClusterRuntime {
-    cluster: Arc<InMemoryCluster>,
+    control_plane: Arc<dyn ClusterControlPlane>,
     role: ClusterRole,
     node_id: ClusterNodeId,
     generation: ClusterGeneration,
@@ -608,14 +674,14 @@ pub(crate) struct ClusterRuntime {
 
 impl ClusterRuntime {
     fn new(
-        cluster: Arc<InMemoryCluster>,
+        control_plane: Arc<dyn ClusterControlPlane>,
         role: ClusterRole,
         node_id: ClusterNodeId,
         generation: ClusterGeneration,
         bootstrap: Vec<String>,
     ) -> Self {
         Self {
-            cluster,
+            control_plane,
             role,
             node_id,
             generation,
@@ -624,13 +690,17 @@ impl ClusterRuntime {
     }
 
     pub(crate) fn diagnostics(&self) -> ClusterDiagnostics {
-        self.cluster.diagnostics_for(
+        self.control_plane.diagnostics_for(
             self.role,
             self.node_id.clone(),
             self.generation,
             self.bootstrap.clone(),
         )
     }
+}
+
+fn default_control_plane(cluster_name: String) -> Arc<dyn ClusterControlPlane> {
+    Arc::new(InMemoryCluster::new(cluster_name))
 }
 
 /// Builder for a client near-cache connected to a HydraCache cluster.
@@ -642,7 +712,7 @@ where
     cache_builder: HydraCacheBuilder<C>,
     cluster_name: String,
     bootstrap: Vec<String>,
-    cluster: Option<Arc<InMemoryCluster>>,
+    control_plane: Option<Arc<dyn ClusterControlPlane>>,
     discovery: Option<Arc<InMemoryClusterDiscovery>>,
     node_id: Option<ClusterNodeId>,
     generation: ClusterGeneration,
@@ -655,7 +725,7 @@ impl HydraCacheClientBuilder<PostcardCodec> {
             cache_builder: HydraCacheBuilder::default(),
             cluster_name: "hydracache".to_owned(),
             bootstrap: Vec::new(),
-            cluster: None,
+            control_plane: None,
             discovery: None,
             node_id: None,
             generation: ClusterGeneration::default(),
@@ -685,7 +755,17 @@ where
 
     /// Attach an in-process cluster model.
     pub fn shared_cluster(mut self, cluster: Arc<InMemoryCluster>) -> Self {
-        self.cluster = Some(cluster);
+        self.control_plane = Some(cluster);
+        self
+    }
+
+    /// Attach a custom cluster control-plane adapter.
+    ///
+    /// Use this for future networked or Raft-backed implementations. The
+    /// adapter is responsible for admission decisions and for returning the
+    /// invalidation bus that the cache should use after admission.
+    pub fn control_plane(mut self, control_plane: Arc<dyn ClusterControlPlane>) -> Self {
+        self.control_plane = Some(control_plane);
         self
     }
 
@@ -758,7 +838,7 @@ where
             cache_builder: self.cache_builder.codec(codec),
             cluster_name: self.cluster_name,
             bootstrap: self.bootstrap,
-            cluster: self.cluster,
+            control_plane: self.control_plane,
             discovery: self.discovery,
             node_id: self.node_id,
             generation: self.generation,
@@ -768,9 +848,9 @@ where
 
     /// Connect the client near-cache.
     pub async fn connect(self) -> Result<HydraCache<C>> {
-        let cluster = self
-            .cluster
-            .unwrap_or_else(|| Arc::new(InMemoryCluster::new(self.cluster_name.clone())));
+        let control_plane = self
+            .control_plane
+            .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
         let node_id = self.node_id.unwrap_or_else(next_client_id);
         let candidate = ClusterCandidate::client(node_id.clone())
             .generation(self.generation)
@@ -778,14 +858,14 @@ where
         if let Some(discovery) = &self.discovery {
             discovery.announce(candidate.clone());
         }
-        let admitted = cluster.join_client(candidate)?;
+        let admitted = control_plane.join_client(candidate).await?;
 
         Ok(self
             .cache_builder
-            .shared_invalidation_bus(cluster.invalidation_bus())
+            .shared_invalidation_bus(control_plane.invalidation_bus())
             .invalidation_node_id(admitted.node_id.as_str())
             .cluster_runtime(ClusterRuntime::new(
-                cluster,
+                control_plane,
                 ClusterRole::Client,
                 admitted.node_id,
                 admitted.generation,
@@ -804,7 +884,7 @@ where
     cache_builder: HydraCacheBuilder<C>,
     cluster_name: String,
     bootstrap: Vec<String>,
-    cluster: Option<Arc<InMemoryCluster>>,
+    control_plane: Option<Arc<dyn ClusterControlPlane>>,
     discovery: Option<Arc<InMemoryClusterDiscovery>>,
     node_id: Option<ClusterNodeId>,
     generation: ClusterGeneration,
@@ -817,7 +897,7 @@ impl HydraCacheMemberBuilder<PostcardCodec> {
             cache_builder: HydraCacheBuilder::default(),
             cluster_name: "hydracache".to_owned(),
             bootstrap: Vec::new(),
-            cluster: None,
+            control_plane: None,
             discovery: None,
             node_id: None,
             generation: ClusterGeneration::default(),
@@ -844,7 +924,17 @@ where
 
     /// Attach an in-process cluster model.
     pub fn shared_cluster(mut self, cluster: Arc<InMemoryCluster>) -> Self {
-        self.cluster = Some(cluster);
+        self.control_plane = Some(cluster);
+        self
+    }
+
+    /// Attach a custom cluster control-plane adapter.
+    ///
+    /// Use this for future networked or Raft-backed implementations. The
+    /// adapter is responsible for admission decisions and for returning the
+    /// invalidation bus that the cache should use after admission.
+    pub fn control_plane(mut self, control_plane: Arc<dyn ClusterControlPlane>) -> Self {
+        self.control_plane = Some(control_plane);
         self
     }
 
@@ -921,7 +1011,7 @@ where
             cache_builder: self.cache_builder.codec(codec),
             cluster_name: self.cluster_name,
             bootstrap: self.bootstrap,
-            cluster: self.cluster,
+            control_plane: self.control_plane,
             discovery: self.discovery,
             node_id: self.node_id,
             generation: self.generation,
@@ -931,9 +1021,9 @@ where
 
     /// Start the member runtime.
     pub async fn start(self) -> Result<HydraCache<C>> {
-        let cluster = self
-            .cluster
-            .unwrap_or_else(|| Arc::new(InMemoryCluster::new(self.cluster_name.clone())));
+        let control_plane = self
+            .control_plane
+            .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
         let node_id = self.node_id.unwrap_or_else(next_member_id);
         let candidate = ClusterCandidate::member(node_id.clone())
             .generation(self.generation)
@@ -941,14 +1031,14 @@ where
         if let Some(discovery) = &self.discovery {
             discovery.announce(candidate.clone());
         }
-        let admitted = cluster.join_member(candidate)?;
+        let admitted = control_plane.join_member(candidate).await?;
 
         Ok(self
             .cache_builder
-            .shared_invalidation_bus(cluster.invalidation_bus())
+            .shared_invalidation_bus(control_plane.invalidation_bus())
             .invalidation_node_id(admitted.node_id.as_str())
             .cluster_runtime(ClusterRuntime::new(
-                cluster,
+                control_plane,
                 ClusterRole::Member,
                 admitted.node_id,
                 admitted.generation,
@@ -963,8 +1053,8 @@ mod tests {
     use std::sync::Arc;
 
     use super::{
-        ClusterCandidate, ClusterDiscoveryEvent, ClusterEndpoints, ClusterGeneration,
-        ClusterMembershipEvent, ClusterNodeId, ClusterRole, InMemoryCluster,
+        ClusterCandidate, ClusterControlPlane, ClusterDiscoveryEvent, ClusterEndpoints,
+        ClusterGeneration, ClusterMembershipEvent, ClusterNodeId, ClusterRole, InMemoryCluster,
         InMemoryClusterDiscovery,
     };
 
@@ -1196,5 +1286,47 @@ mod tests {
         assert_eq!(diagnostics.bootstrap, ["seed-a:7000".to_owned()]);
         assert!(diagnostics.connected);
         assert_eq!(diagnostics.invalidation_subscribers, 1);
+    }
+
+    #[tokio::test]
+    async fn in_memory_cluster_satisfies_control_plane_contract() {
+        let control_plane: Arc<dyn ClusterControlPlane> = Arc::new(InMemoryCluster::new("orders"));
+
+        let member = control_plane
+            .join_member(ClusterCandidate::member("member-a"))
+            .await
+            .unwrap();
+        let client = control_plane
+            .join_client(ClusterCandidate::client("client-a"))
+            .await
+            .unwrap();
+
+        assert_eq!(control_plane.name(), "orders");
+        assert!(member.is_member());
+        assert!(client.is_client());
+        let _receiver = control_plane.invalidation_bus().subscribe();
+
+        let diagnostics = control_plane.diagnostics_for(
+            ClusterRole::Client,
+            ClusterNodeId::from("client-a"),
+            ClusterGeneration::default(),
+            vec!["seed-a:7000".to_owned()],
+        );
+        assert_eq!(diagnostics.member_count, 1);
+        assert_eq!(diagnostics.client_count, 1);
+        assert_eq!(diagnostics.bootstrap, ["seed-a:7000".to_owned()]);
+
+        let left = control_plane
+            .leave(&ClusterNodeId::from("client-a"))
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(matches!(
+            left,
+            ClusterMembershipEvent::NodeLeft {
+                role: ClusterRole::Client,
+                ..
+            }
+        ));
     }
 }

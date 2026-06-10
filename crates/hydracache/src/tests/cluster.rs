@@ -6,8 +6,9 @@ use tokio::time::{sleep, timeout};
 
 use crate::tests::common::{user, User};
 use crate::{
-    ClusterDiscoveryEvent, ClusterGeneration, ClusterRole, HydraCache, InMemoryCluster,
-    InMemoryClusterDiscovery,
+    CacheError, CacheInvalidationBus, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
+    ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId,
+    ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
 };
 
 async fn wait_until_absent(cache: &HydraCache, key: &str) {
@@ -200,4 +201,120 @@ async fn client_builder_can_create_isolated_cluster_runtime() {
     assert_eq!(diagnostics.member_count, 0);
     assert_eq!(diagnostics.client_count, 1);
     assert_eq!(diagnostics.bootstrap, vec!["127.0.0.1:7000".to_owned()]);
+}
+
+#[tokio::test]
+async fn builders_accept_control_plane_trait_objects() {
+    let control_plane: Arc<dyn ClusterControlPlane> = Arc::new(InMemoryCluster::new("orders"));
+
+    let member = HydraCache::member()
+        .control_plane(control_plane.clone())
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap();
+    let client = HydraCache::client()
+        .control_plane(control_plane)
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    assert_eq!(member.cluster_diagnostics().unwrap().member_count, 1);
+    assert_eq!(client.cluster_diagnostics().unwrap().client_count, 1);
+}
+
+#[derive(Debug)]
+struct RejectingControlPlane {
+    bus: Arc<InMemoryInvalidationBus>,
+}
+
+impl RejectingControlPlane {
+    fn new() -> Self {
+        Self {
+            bus: Arc::new(InMemoryInvalidationBus::default()),
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterControlPlane for RejectingControlPlane {
+    fn name(&self) -> String {
+        "rejecting".to_owned()
+    }
+
+    fn invalidation_bus(&self) -> Arc<dyn CacheInvalidationBus> {
+        self.bus.clone()
+    }
+
+    async fn join_member(
+        &self,
+        _candidate: ClusterCandidate,
+    ) -> crate::CacheResult<crate::ClusterMember> {
+        Err(CacheError::Backend(
+            "admission denied for member".to_owned(),
+        ))
+    }
+
+    async fn join_client(
+        &self,
+        _candidate: ClusterCandidate,
+    ) -> crate::CacheResult<crate::ClusterMember> {
+        Err(CacheError::Backend(
+            "admission denied for client".to_owned(),
+        ))
+    }
+
+    async fn leave(
+        &self,
+        _node_id: &ClusterNodeId,
+    ) -> crate::CacheResult<Option<ClusterMembershipEvent>> {
+        Ok(None)
+    }
+
+    fn diagnostics_for(
+        &self,
+        role: ClusterRole,
+        node_id: ClusterNodeId,
+        generation: ClusterGeneration,
+        bootstrap: Vec<String>,
+    ) -> ClusterDiagnostics {
+        ClusterDiagnostics {
+            cluster_name: self.name(),
+            role,
+            node_id,
+            generation,
+            epoch: ClusterEpoch::default(),
+            member_count: 0,
+            client_count: 0,
+            bootstrap,
+            connected: false,
+            invalidation_subscribers: self.bus.receiver_count(),
+        }
+    }
+}
+
+#[tokio::test]
+async fn builders_return_custom_control_plane_admission_errors() {
+    let control_plane = Arc::new(RejectingControlPlane::new());
+
+    let client_error = HydraCache::client()
+        .control_plane(control_plane.clone())
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap_err();
+    assert!(client_error
+        .to_string()
+        .contains("admission denied for client"));
+
+    let member_error = HydraCache::member()
+        .control_plane(control_plane)
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap_err();
+    assert!(member_error
+        .to_string()
+        .contains("admission denied for member"));
 }

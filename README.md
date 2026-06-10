@@ -561,6 +561,32 @@ and a member is a cluster participant. In `0.20.0` both can join an
 diagnostics. Real discovery and Raft-backed metadata are planned as later
 adapters.
 
+`0.21.0` adds the `ClusterControlPlane` seam. The default path still uses
+`InMemoryCluster`, but advanced users and future HydraCache crates can pass a
+custom adapter through `.control_plane(...)`:
+
+```rust
+# use std::sync::Arc;
+# use hydracache::{ClusterControlPlane, HydraCache};
+# async fn example(control_plane: Arc<dyn ClusterControlPlane>) -> hydracache::CacheResult<()> {
+let member = HydraCache::member()
+    .control_plane(control_plane.clone())
+    .node_id("member-a")
+    .start()
+    .await?;
+
+let client = HydraCache::client()
+    .control_plane(control_plane)
+    .node_id("api-client-a")
+    .connect()
+    .await?;
+
+assert_eq!(member.cluster_diagnostics().unwrap().member_count, 1);
+assert_eq!(client.cluster_diagnostics().unwrap().client_count, 1);
+# Ok(())
+# }
+```
+
 ```rust
 use std::sync::Arc;
 use std::time::Duration;
@@ -622,7 +648,8 @@ invalidation propagation. `InMemoryClusterDiscovery` models the future
 gossip/discovery side by recording candidate and liveness events, while
 `InMemoryCluster` models authoritative admission and epoch movement. The
 intended next step is to plug discovery and
-membership libraries underneath this API without changing ordinary cache usage.
+membership libraries underneath this API through `ClusterControlPlane` without
+changing ordinary cache usage.
 
 ## Optional Axum Actuator
 
@@ -1172,6 +1199,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md](docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md)
 - [docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md](docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md)
 - [docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md](docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md)
+- [docs/plans/V0_21_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_21_CLUSTER_CONTROL_PLANE_PLAN.md)
 
 ## Workspace
 
