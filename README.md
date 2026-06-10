@@ -605,6 +605,7 @@ let cache = HydraCache::client()
     .await?;
 
 assert_eq!(cache.cluster_diagnostics().unwrap().client_count, 1);
+assert!(cache.cluster_discovery_diagnostics().unwrap().has_candidates());
 # Ok(())
 # }
 ```
@@ -659,6 +660,13 @@ assert!(!client.contains_key("user:42").await);
 let diagnostics = client.cluster_diagnostics().expect("cluster runtime");
 assert_eq!(diagnostics.member_count, 1);
 assert_eq!(diagnostics.client_count, 1);
+assert_eq!(
+    client
+        .cluster_discovery_diagnostics()
+        .unwrap()
+        .candidate_count(),
+    2,
+);
 assert_eq!(discovery.candidates().len(), 2);
 # Ok(())
 # }

@@ -31,6 +31,7 @@ async fn local_cache_has_no_cluster_diagnostics() {
     let cache = HydraCache::local().build();
 
     assert!(cache.cluster_diagnostics().is_none());
+    assert!(cache.cluster_discovery_diagnostics().is_none());
 }
 
 #[tokio::test]
@@ -91,6 +92,13 @@ async fn member_and_client_builders_connect_to_shared_cluster() {
             .count(),
         2
     );
+
+    let member_discovery = member.cluster_discovery_diagnostics().unwrap();
+    assert_eq!(member_discovery.local_node_id.as_str(), "member-a");
+    assert_eq!(member_discovery.candidate_count(), 2);
+    assert_eq!(member_discovery.event_count(), 2);
+    assert!(member_discovery.has_candidates());
+    assert!(member_discovery.has_events());
 }
 
 #[tokio::test]
@@ -202,6 +210,7 @@ async fn client_builder_can_create_isolated_cluster_runtime() {
     assert_eq!(diagnostics.member_count, 0);
     assert_eq!(diagnostics.client_count, 1);
     assert_eq!(diagnostics.bootstrap, vec!["127.0.0.1:7000".to_owned()]);
+    assert!(client.cluster_discovery_diagnostics().is_none());
 }
 
 #[tokio::test]
@@ -254,6 +263,18 @@ async fn builders_accept_discovery_trait_objects() {
             .count(),
         2
     );
+
+    let diagnostics = HydraCache::client()
+        .shared_cluster(Arc::new(InMemoryCluster::new("another-orders")))
+        .discovery(discovery.clone())
+        .node_id("client-b")
+        .connect()
+        .await
+        .unwrap()
+        .cluster_discovery_diagnostics()
+        .unwrap();
+    assert_eq!(diagnostics.local_node_id.as_str(), "client-b");
+    assert_eq!(diagnostics.candidate_count(), 3);
 }
 
 #[derive(Debug)]

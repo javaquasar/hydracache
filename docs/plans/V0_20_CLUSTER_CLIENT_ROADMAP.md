@@ -32,6 +32,8 @@ Implemented in the follow-up 0.20.0 discovery-adapter slice:
 - `.discovery(Arc<dyn ClusterDiscovery>)` for custom future discovery backends;
 - `InMemoryClusterDiscovery` as the default implementation of that trait;
 - discovery errors returned before control-plane admission.
+- `cluster_discovery_diagnostics()` for observing candidates and discovery
+  event history when discovery is configured.
 
 Still future work:
 

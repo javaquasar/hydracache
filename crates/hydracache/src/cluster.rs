@@ -459,6 +459,39 @@ pub struct ClusterDiagnostics {
     pub invalidation_subscribers: usize,
 }
 
+/// Discovery diagnostics visible from a [`HydraCache`] client/member runtime.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterDiscoveryDiagnostics {
+    /// Local node id that owns this diagnostics snapshot.
+    pub local_node_id: ClusterNodeId,
+    /// Latest candidate snapshots known to the discovery adapter.
+    pub candidates: Vec<ClusterCandidate>,
+    /// Discovery events known to the discovery adapter.
+    pub events: Vec<ClusterDiscoveryEvent>,
+}
+
+impl ClusterDiscoveryDiagnostics {
+    /// Number of latest candidate snapshots.
+    pub fn candidate_count(&self) -> usize {
+        self.candidates.len()
+    }
+
+    /// Number of discovery events.
+    pub fn event_count(&self) -> usize {
+        self.events.len()
+    }
+
+    /// Return whether discovery has observed at least one candidate.
+    pub fn has_candidates(&self) -> bool {
+        !self.candidates.is_empty()
+    }
+
+    /// Return whether discovery has recorded at least one event.
+    pub fn has_events(&self) -> bool {
+        !self.events.is_empty()
+    }
+}
+
 /// Transport-neutral control-plane contract for cluster admission and metadata.
 ///
 /// This trait is the seam where future chitchat/Raft-backed adapters can plug
@@ -724,6 +757,7 @@ fn reject_stale_generation(
 #[derive(Debug, Clone)]
 pub(crate) struct ClusterRuntime {
     control_plane: Arc<dyn ClusterControlPlane>,
+    discovery: Option<Arc<dyn ClusterDiscovery>>,
     role: ClusterRole,
     node_id: ClusterNodeId,
     generation: ClusterGeneration,
@@ -733,6 +767,7 @@ pub(crate) struct ClusterRuntime {
 impl ClusterRuntime {
     fn new(
         control_plane: Arc<dyn ClusterControlPlane>,
+        discovery: Option<Arc<dyn ClusterDiscovery>>,
         role: ClusterRole,
         node_id: ClusterNodeId,
         generation: ClusterGeneration,
@@ -740,6 +775,7 @@ impl ClusterRuntime {
     ) -> Self {
         Self {
             control_plane,
+            discovery,
             role,
             node_id,
             generation,
@@ -754,6 +790,15 @@ impl ClusterRuntime {
             self.generation,
             self.bootstrap.clone(),
         )
+    }
+
+    pub(crate) fn discovery_diagnostics(&self) -> Option<ClusterDiscoveryDiagnostics> {
+        let discovery = self.discovery.as_ref()?;
+        Some(ClusterDiscoveryDiagnostics {
+            local_node_id: self.node_id.clone(),
+            candidates: discovery.candidates(),
+            events: discovery.events(),
+        })
     }
 }
 
@@ -920,10 +965,11 @@ where
             .control_plane
             .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
         let node_id = self.node_id.unwrap_or_else(next_client_id);
+        let discovery = self.discovery.clone();
         let candidate = ClusterCandidate::client(node_id.clone())
             .generation(self.generation)
             .endpoints(self.endpoints);
-        if let Some(discovery) = &self.discovery {
+        if let Some(discovery) = &discovery {
             discovery.announce(candidate.clone()).await?;
         }
         let admitted = control_plane.join_client(candidate).await?;
@@ -934,6 +980,7 @@ where
             .invalidation_node_id(admitted.node_id.as_str())
             .cluster_runtime(ClusterRuntime::new(
                 control_plane,
+                discovery,
                 ClusterRole::Client,
                 admitted.node_id,
                 admitted.generation,
@@ -1103,10 +1150,11 @@ where
             .control_plane
             .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
         let node_id = self.node_id.unwrap_or_else(next_member_id);
+        let discovery = self.discovery.clone();
         let candidate = ClusterCandidate::member(node_id.clone())
             .generation(self.generation)
             .endpoints(self.endpoints);
-        if let Some(discovery) = &self.discovery {
+        if let Some(discovery) = &discovery {
             discovery.announce(candidate.clone()).await?;
         }
         let admitted = control_plane.join_member(candidate).await?;
@@ -1117,6 +1165,7 @@ where
             .invalidation_node_id(admitted.node_id.as_str())
             .cluster_runtime(ClusterRuntime::new(
                 control_plane,
+                discovery,
                 ClusterRole::Member,
                 admitted.node_id,
                 admitted.generation,
@@ -1131,9 +1180,9 @@ mod tests {
     use std::sync::Arc;
 
     use super::{
-        ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryEvent,
-        ClusterEndpoints, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId, ClusterRole,
-        InMemoryCluster, InMemoryClusterDiscovery,
+        ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
+        ClusterDiscoveryEvent, ClusterEndpoints, ClusterGeneration, ClusterMembershipEvent,
+        ClusterNodeId, ClusterRole, InMemoryCluster, InMemoryClusterDiscovery,
     };
 
     #[test]
@@ -1214,6 +1263,22 @@ mod tests {
             ClusterDiscoveryEvent::MemberSuspect(ClusterNodeId::from("member-a")),
             ClusterDiscoveryEvent::MemberDead(ClusterNodeId::from("member-a"))
         );
+    }
+
+    #[test]
+    fn discovery_diagnostics_helpers_report_candidate_and_event_counts() {
+        let diagnostics = ClusterDiscoveryDiagnostics {
+            local_node_id: ClusterNodeId::from("client-a"),
+            candidates: vec![ClusterCandidate::client("client-a")],
+            events: vec![ClusterDiscoveryEvent::MemberLive(ClusterNodeId::from(
+                "client-a",
+            ))],
+        };
+
+        assert_eq!(diagnostics.candidate_count(), 1);
+        assert_eq!(diagnostics.event_count(), 1);
+        assert!(diagnostics.has_candidates());
+        assert!(diagnostics.has_events());
     }
 
     #[test]

@@ -386,9 +386,9 @@ pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{
     ClusterCandidate, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
-    ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
-    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCacheClientBuilder,
-    HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery,
+    ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch,
+    ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId, ClusterRole,
+    HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

@@ -16,7 +16,8 @@ use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
-    ClusterDiagnostics, ClusterRuntime, HydraCacheClientBuilder, HydraCacheMemberBuilder,
+    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterRuntime, HydraCacheClientBuilder,
+    HydraCacheMemberBuilder,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -175,6 +176,17 @@ where
             .cluster_runtime
             .as_ref()
             .map(ClusterRuntime::diagnostics)
+    }
+
+    /// Return discovery diagnostics when this cache was built with discovery.
+    ///
+    /// Local caches and client/member caches without a discovery adapter return
+    /// `None`.
+    pub fn cluster_discovery_diagnostics(&self) -> Option<ClusterDiscoveryDiagnostics> {
+        self.inner
+            .cluster_runtime
+            .as_ref()
+            .and_then(ClusterRuntime::discovery_diagnostics)
     }
 
     /// Subscribe to cache events matching the provided filters.

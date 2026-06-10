@@ -35,6 +35,20 @@ That decision belongs to `ClusterControlPlane`.
 `InMemoryClusterDiscovery` implements the trait and remains the default
 dependency-free option for tests, demos, and embedded apps.
 
+## Diagnostics
+
+`HydraCache::cluster_discovery_diagnostics()` exposes a snapshot when a
+client/member runtime was built with discovery.
+
+The snapshot contains:
+
+- local node id;
+- latest candidate snapshots;
+- discovery event history;
+- helper counts for candidates and events.
+
+Local caches and client/member runtimes without discovery return `None`.
+
 ## Builder API
 
 Existing API remains valid:
@@ -86,6 +100,7 @@ Tests prove:
 - builders can use `Arc<dyn ClusterDiscovery>`, not only
   `Arc<InMemoryClusterDiscovery>`;
 - discovery errors are returned before admission;
+- discovery diagnostics are exposed only when discovery is configured;
 - existing `.shared_discovery(...)` behavior remains intact.
 
 ## Future Work
