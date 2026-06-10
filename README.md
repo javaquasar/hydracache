@@ -1,13 +1,15 @@
 # HydraCache
 
-HydraCache is a Rust-native local async cache that is designed to grow toward database result caching and distributed synchronization later.
+HydraCache is a Rust-native local async cache that is designed to grow toward
+database result caching and optional cluster synchronization.
 
 ## Status
 
 HydraCache is in early development. The current implementation provides the
 local async cache runtime, observability snapshots, optional Axum actuator
-routes, an in-process distributed invalidation bus, plus the first database
-result-cache adapters: `hydracache-db` and `hydracache-sqlx`.
+routes, an in-process distributed invalidation bus, the first client/member
+cluster API shape, plus the database result-cache adapters `hydracache-db` and
+`hydracache-sqlx`.
 
 ## Why HydraCache?
 
@@ -62,6 +64,16 @@ The first version includes:
 - cache event subscriptions for mutations and opt-in access/load events
 - in-process invalidation bus for synchronizing `invalidate_key`,
   `invalidate_tag`, `remove`, and `flush` across cache instances
+- `HydraCache::client()` for application-side near-cache instances connected
+  to a cluster runtime
+- `HydraCache::member()` for in-process cluster members that route
+  invalidation intent and expose cluster diagnostics
+- `InMemoryCluster` for tests, demos, and the first cluster API surface before
+  real discovery/Raft transports are introduced
+- `InMemoryClusterDiscovery` for recording discovered candidates and liveness
+  events before authoritative membership admission
+- cluster diagnostics for role, node id, generation, epoch, bootstrap nodes,
+  member/client counts, and invalidation subscribers
 - framework-neutral observability registry
 - optional read-only Axum actuator routes
 - single-flight join stats
@@ -84,8 +96,8 @@ Out of scope for v0:
 - SQL parsing or query-generation macros
 - external distributed transports such as Postgres LISTEN/NOTIFY, Redis, NATS,
   or cluster membership protocols
-- cluster roles
-- public generation-counter APIs
+- Raft-backed membership, ownership, or failover decisions
+- discovery adapters such as chitchat or libp2p
 - write-enabled actuator/admin endpoints
 - persistence
 
@@ -539,6 +551,78 @@ impl CacheInvalidationReceiver for MyReceiver {
     }
 }
 ```
+
+## Client And Member Cluster Mode
+
+`HydraCache::client()` and `HydraCache::member()` are the first public cluster
+shape. They are intentionally small: a client is an application-side near-cache,
+and a member is a cluster participant. In `0.20.0` both can join an
+`InMemoryCluster`, share its invalidation bus, and expose role/generation/epoch
+diagnostics. Real discovery and Raft-backed metadata are planned as later
+adapters.
+
+```rust
+use std::sync::Arc;
+use std::time::Duration;
+
+use hydracache::{
+    CacheEventOrigin, CacheOptions, ClusterGeneration, HydraCache, InMemoryCluster,
+};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cluster = Arc::new(InMemoryCluster::new("orders-prod"));
+
+let discovery = Arc::new(hydracache::InMemoryClusterDiscovery::new());
+
+let member = HydraCache::member()
+    .cluster("orders-prod")
+    .shared_cluster(cluster.clone())
+    .shared_discovery(discovery.clone())
+    .node_id("member-a")
+    .generation(ClusterGeneration::new(1))
+    .bind("127.0.0.1:7000")
+    .diagnostics_endpoint("http://127.0.0.1:3000")
+    .start()
+    .await?;
+
+let client = HydraCache::client()
+    .cluster("orders-prod")
+    .shared_cluster(cluster)
+    .shared_discovery(discovery.clone())
+    .node_id("api-client-a")
+    .generation(ClusterGeneration::new(1))
+    .bootstrap("127.0.0.1:7000")
+    .near_cache_capacity(10_000)
+    .default_ttl(Duration::from_secs(60))
+    .connect()
+    .await?;
+
+client
+    .put("user:42", 42_u64, CacheOptions::new().tag("user:42"))
+    .await?;
+
+let mut events = client.subscribe_tag("user:42");
+member.invalidate_tag("user:42").await?;
+
+let event = events.recv().await.expect("subscription stays open");
+assert_eq!(event.origin(), CacheEventOrigin::DistributedBus);
+assert!(!client.contains_key("user:42").await);
+
+let diagnostics = client.cluster_diagnostics().expect("cluster runtime");
+assert_eq!(diagnostics.member_count, 1);
+assert_eq!(diagnostics.client_count, 1);
+assert_eq!(discovery.candidates().len(), 2);
+# Ok(())
+# }
+```
+
+This mode does not replicate cached values. It gives applications a stable
+cluster vocabulary now: role, node id, generation, bootstrap metadata, and
+invalidation propagation. `InMemoryClusterDiscovery` models the future
+gossip/discovery side by recording candidate and liveness events, while
+`InMemoryCluster` models authoritative admission and epoch movement. The
+intended next step is to plug discovery and
+membership libraries underneath this API without changing ordinary cache usage.
 
 ## Optional Axum Actuator
 
@@ -1085,11 +1169,14 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md](docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md)
 - [docs/plans/V0_15_CACHEABLE_ERGONOMICS_PLAN.md](docs/plans/V0_15_CACHEABLE_ERGONOMICS_PLAN.md)
 - [docs/plans/V0_16_OBSERVABILITY_PLAN.md](docs/plans/V0_16_OBSERVABILITY_PLAN.md)
+- [docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md](docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md)
+- [docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md](docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md)
+- [docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md](docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md)
 
 ## Workspace
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, diagnostics, codec, errors
-- `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, and diagnostics
+- `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, diagnostics, invalidation bus, and client/member cluster API
 - `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
 - `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes
@@ -1105,8 +1192,10 @@ into focused modules:
 - `cache.rs` - `HydraCache` runtime API
 - `builder.rs` - local cache builder
 - `typed.rs` - `TypedCache<T>` namespaced view
+- `cluster.rs` - client/member cluster roles, in-memory discovery, in-memory cluster model, generation guard, and cluster diagnostics
 - `entry.rs` - encoded cache entries and TTL expiration
 - `inflight.rs` - local single-flight in-flight load tracking
+- `invalidation_bus.rs` - pluggable invalidation propagation bus and in-memory implementation
 - `tag_index.rs` - tag index and generation freshness checks
 - `stats.rs` - internal stats counters
 

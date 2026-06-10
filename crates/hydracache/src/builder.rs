@@ -7,6 +7,7 @@ use moka::future::Cache;
 use tokio::sync::watch;
 
 use crate::cache::{HydraCache, HydraCacheInner};
+use crate::cluster::ClusterRuntime;
 use crate::entry::CacheEntry;
 use crate::events::EventBus;
 use crate::inflight::InFlightMap;
@@ -49,6 +50,7 @@ where
     access_events: bool,
     invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
     invalidation_node_id: Option<String>,
+    cluster_runtime: Option<ClusterRuntime>,
     codec: C,
 }
 
@@ -164,8 +166,14 @@ where
             access_events: self.access_events,
             invalidation_bus: self.invalidation_bus,
             invalidation_node_id: self.invalidation_node_id,
+            cluster_runtime: self.cluster_runtime,
             codec,
         }
+    }
+
+    pub(crate) fn cluster_runtime(mut self, runtime: ClusterRuntime) -> Self {
+        self.cluster_runtime = Some(runtime);
+        self
     }
 
     /// Build the local cache.
@@ -201,6 +209,7 @@ where
                 invalidation_bus: self.invalidation_bus,
                 invalidation_node_id,
                 bus_shutdown,
+                cluster_runtime: self.cluster_runtime,
             }),
         };
 
@@ -222,6 +231,7 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             access_events: false,
             invalidation_bus: None,
             invalidation_node_id: None,
+            cluster_runtime: None,
             codec: PostcardCodec,
         }
     }

@@ -1,8 +1,8 @@
-//! User-facing HydraCache local runtime.
+//! User-facing HydraCache runtime.
 //!
-//! v0 is intentionally local-only: no SQLx adapter, no distributed coordination,
-//! and no cluster membership. The goal is a small async cache with TTL, tags,
-//! local single-flight, and pleasant loader ergonomics.
+//! HydraCache is local-first: [`HydraCache::local`] has no network dependency.
+//! Optional client/member builders add the first cluster API shape on top of
+//! the same local cache and distributed invalidation bus.
 //!
 //! # Quick start
 //!
@@ -281,6 +281,64 @@
 //! [`hydracache_core::CacheStats`] so applications can detect bus health issues
 //! without parsing logs.
 //!
+//! # Client and member cluster mode
+//!
+//! [`HydraCache::client`] creates an application-side near-cache. [`HydraCache::member`]
+//! creates an in-process cluster member. In v0.20 both can share an
+//! [`InMemoryCluster`] for tests, demos, and embedded applications while the
+//! future discovery/Raft adapters are still being designed.
+//!
+//! ```rust
+//! use std::sync::Arc;
+//!
+//! use hydracache::{
+//!     CacheEventOrigin, CacheOptions, ClusterGeneration, HydraCache, InMemoryCluster,
+//!     InMemoryClusterDiscovery,
+//! };
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cluster = Arc::new(InMemoryCluster::new("orders-prod"));
+//! let discovery = Arc::new(InMemoryClusterDiscovery::new());
+//!
+//! let member = HydraCache::member()
+//!     .cluster("orders-prod")
+//!     .shared_cluster(cluster.clone())
+//!     .shared_discovery(discovery.clone())
+//!     .node_id("member-a")
+//!     .generation(ClusterGeneration::new(1))
+//!     .bind("127.0.0.1:7000")
+//!     .start()
+//!     .await?;
+//!
+//! let client = HydraCache::client()
+//!     .cluster("orders-prod")
+//!     .shared_cluster(cluster)
+//!     .shared_discovery(discovery.clone())
+//!     .node_id("api-client-a")
+//!     .bootstrap("127.0.0.1:7000")
+//!     .connect()
+//!     .await?;
+//!
+//! client
+//!     .put("user:42", 42_u64, CacheOptions::new().tag("user:42"))
+//!     .await?;
+//!
+//! let mut events = client.subscribe_tag("user:42");
+//! member.invalidate_tag("user:42").await?;
+//!
+//! let event = events.recv().await.expect("subscription stays open");
+//! assert_eq!(event.origin(), CacheEventOrigin::DistributedBus);
+//! assert!(!client.contains_key("user:42").await);
+//!
+//! let diagnostics = client.cluster_diagnostics().expect("cluster runtime");
+//! assert_eq!(diagnostics.member_count, 1);
+//! assert_eq!(diagnostics.client_count, 1);
+//! assert_eq!(discovery.candidates().len(), 2);
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! # Observability
 //!
 //! Use [`HydraCache::diagnostics`] for quick local smoke checks. It combines
@@ -313,6 +371,7 @@ extern crate self as hydracache;
 
 mod builder;
 mod cache;
+mod cluster;
 mod entry;
 mod events;
 mod inflight;
@@ -323,6 +382,11 @@ mod typed;
 
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
+pub use cluster::{
+    ClusterCandidate, ClusterDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch,
+    ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId, ClusterRole,
+    HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery,
+};
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,

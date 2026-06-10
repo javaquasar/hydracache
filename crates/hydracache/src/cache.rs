@@ -15,6 +15,9 @@ use serde::{de::DeserializeOwned, Serialize};
 use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
+use crate::cluster::{
+    ClusterDiagnostics, ClusterRuntime, HydraCacheClientBuilder, HydraCacheMemberBuilder,
+};
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
 use crate::inflight::{InFlightMap, SharedLoadFuture};
@@ -76,6 +79,7 @@ where
     pub(crate) invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
     pub(crate) invalidation_node_id: String,
     pub(crate) bus_shutdown: Option<watch::Sender<bool>>,
+    pub(crate) cluster_runtime: Option<ClusterRuntime>,
 }
 
 impl<C> Drop for HydraCacheInner<C>
@@ -101,6 +105,22 @@ impl HydraCache<PostcardCodec> {
     /// ```
     pub fn local() -> HydraCacheBuilder<PostcardCodec> {
         HydraCacheBuilder::default()
+    }
+
+    /// Start building a client near-cache connected to a HydraCache cluster.
+    ///
+    /// v0.20 provides an in-process cluster model for tests and demos. Network
+    /// discovery and Raft-backed membership are intentionally future adapters.
+    pub fn client() -> HydraCacheClientBuilder<PostcardCodec> {
+        HydraCacheClientBuilder::default()
+    }
+
+    /// Start building an in-process cluster member.
+    ///
+    /// Members participate in the in-memory invalidation bus today and provide
+    /// the API shape for future chitchat/Raft-backed cluster runtimes.
+    pub fn member() -> HydraCacheMemberBuilder<PostcardCodec> {
+        HydraCacheMemberBuilder::default()
     }
 }
 
@@ -145,6 +165,16 @@ where
     /// originally published.
     pub fn invalidation_node_id(&self) -> &str {
         &self.inner.invalidation_node_id
+    }
+
+    /// Return cluster diagnostics when this cache was built as a client or member.
+    ///
+    /// Local caches return `None`.
+    pub fn cluster_diagnostics(&self) -> Option<ClusterDiagnostics> {
+        self.inner
+            .cluster_runtime
+            .as_ref()
+            .map(ClusterRuntime::diagnostics)
     }
 
     /// Subscribe to cache events matching the provided filters.

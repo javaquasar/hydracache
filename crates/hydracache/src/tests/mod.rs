@@ -1,3 +1,4 @@
+mod cluster;
 mod common;
 mod concurrency;
 mod events;
