@@ -1,0 +1,18 @@
+[package]
+name = "hydracache-cluster-raft"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "raft-rs metadata control-plane runtime for HydraCache cluster mode"
+readme = "README.md"
+
+[dependencies]
+async-trait.workspace = true
+hydracache.workspace = true
+raft.workspace = true
+slog.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

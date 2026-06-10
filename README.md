@@ -72,6 +72,10 @@ The first version includes:
   real discovery/Raft transports are introduced
 - `InMemoryClusterDiscovery` for recording discovered candidates and liveness
   events before authoritative membership admission
+- optional `hydracache-cluster-chitchat` crate for real chitchat-backed
+  candidate discovery
+- optional `hydracache-cluster-raft` crate for a real raft-rs-backed metadata
+  runtime
 - cluster diagnostics for role, node id, generation, epoch, bootstrap nodes,
   member/client counts, and invalidation subscribers
 - framework-neutral observability registry
@@ -561,7 +565,8 @@ and a member is a cluster participant. In `0.20.0` both can join an
 diagnostics. Cluster generations are part of the safety contract: stale
 processes with an older generation cannot leave a newer runtime or publish
 cluster invalidations after a node id is reused by a restart. Real discovery
-and Raft-backed metadata are planned as later adapters.
+and raft-rs metadata support live in optional cluster crates, so local-only
+applications do not pull those dependencies.
 
 `0.20.0` also adds the `ClusterControlPlane` seam. The default path still uses
 `InMemoryCluster`, but advanced users and future HydraCache crates can pass a
@@ -689,10 +694,18 @@ discovery journal, while `ChitchatStyleDiscovery` adds a dependency-free
 seed-node/gossip-shaped adapter for candidate and liveness events.
 `InMemoryCluster` models authoritative admission and epoch movement.
 `RaftStyleMetadataControlPlane` adds a dependency-free metadata-log adapter with
-committed membership commands and snapshots. The intended next step is to plug
-real discovery and membership libraries underneath this API through
-`ClusterDiscovery` and `ClusterControlPlane` without changing ordinary cache
-usage.
+committed membership commands and snapshots.
+
+For real discovery, use `hydracache-cluster-chitchat` and pass
+`Arc<ChitchatDiscovery>` through `.discovery(...)`. It runs `chitchat`,
+advertises HydraCache candidate metadata in chitchat node state, and can be
+tested with chitchat's in-memory `ChannelTransport`.
+
+For real metadata coordination, use `hydracache-cluster-raft` and pass
+`Arc<RaftMetadataRuntime>` through `.control_plane(...)`. The current runtime is
+a single-node in-memory raft-rs state machine that campaigns, proposes metadata
+commands, drains `Ready`, appends stable log entries, and applies committed
+membership commands.
 
 ## Optional Axum Actuator
 
@@ -1270,6 +1283,8 @@ The v0 release plan is maintained here:
 
 - `crates/hydracache-core` - core public types: keys, tags, options, stats, diagnostics, codec, errors
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, diagnostics, invalidation bus, and client/member cluster API
+- `crates/hydracache-cluster-chitchat` - optional real chitchat-backed cluster discovery adapter
+- `crates/hydracache-cluster-raft` - optional real raft-rs metadata control-plane runtime
 - `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
 - `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes

@@ -1,0 +1,18 @@
+[package]
+name = "hydracache-cluster-chitchat"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Chitchat-backed discovery adapter for HydraCache cluster mode"
+readme = "README.md"
+
+[dependencies]
+async-trait.workspace = true
+chitchat.workspace = true
+hydracache.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tokio-stream.workspace = true

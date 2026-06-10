@@ -353,6 +353,8 @@ Required behavior:
 
 ### Phase 5: Chitchat Discovery Adapter
 
+Status: implemented as the optional `hydracache-cluster-chitchat` crate.
+
 Add chitchat-backed discovery only after the in-memory model is stable.
 
 Required behavior:
@@ -363,7 +365,22 @@ Required behavior:
 - expose discovery diagnostics;
 - test with in-memory transport where possible.
 
+Implemented behavior:
+
+- `ChitchatDiscoveryConfig` maps HydraCache node id and generation to
+  `chitchat::ChitchatId`;
+- `ChitchatDiscovery::spawn_udp(...)` runs the real UDP chitchat transport;
+- `ChitchatDiscovery::spawn_with_transport(...)` lets tests use
+  `chitchat::transport::ChannelTransport`;
+- candidate role, generation, endpoints, and metadata are written into real
+  chitchat `NodeState`;
+- remote chitchat node-state snapshots are converted back into
+  `ClusterCandidate` values.
+
 ### Phase 6: Raft Metadata Spike
+
+Status: implemented as the optional `hydracache-cluster-raft` crate for the
+single-node state-machine boundary.
 
 Add raft-rs only for committed cluster metadata.
 
@@ -378,6 +395,23 @@ Required behavior:
 - persist and recover metadata state.
 
 Raft must not be placed on the invalidation hot path.
+
+Implemented behavior:
+
+- `RaftMetadataRuntime` uses real `raft::RawNode<MemStorage>`;
+- the runtime campaigns a single-node Raft group to leader;
+- member/client admission and generation-safe leave are proposed as metadata
+  commands;
+- `Ready` is drained, entries are appended to `MemStorage`, and committed
+  entries are applied to the metadata command log;
+- stale-generation rejections do not commit extra commands.
+
+Still deferred:
+
+- multi-node Raft transport;
+- learner promotion and voter removal through real ConfChangeV2;
+- durable storage and recovery;
+- cluster epoch ownership transfer beyond metadata admission.
 
 ## Design Rules
 
