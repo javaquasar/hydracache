@@ -792,6 +792,337 @@ impl ClusterAdmissionBridgeDiagnostics {
     }
 }
 
+/// Polling behavior for [`ClusterAdmissionBridge`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ClusterAdmissionBridgeConfig {
+    /// How often the background task should poll discovery candidates.
+    pub poll_interval: Duration,
+    /// Whether client candidates should be admitted.
+    pub admit_clients: bool,
+    /// Whether member candidates should be admitted.
+    pub admit_members: bool,
+}
+
+impl ClusterAdmissionBridgeConfig {
+    /// Return config with a custom polling interval.
+    pub fn poll_interval(mut self, poll_interval: Duration) -> Self {
+        self.poll_interval = poll_interval;
+        self
+    }
+
+    /// Enable or disable client admission.
+    pub fn admit_clients(mut self, admit_clients: bool) -> Self {
+        self.admit_clients = admit_clients;
+        self
+    }
+
+    /// Enable or disable member admission.
+    pub fn admit_members(mut self, admit_members: bool) -> Self {
+        self.admit_members = admit_members;
+        self
+    }
+
+    fn normalized_poll_interval(self) -> Duration {
+        if self.poll_interval.is_zero() {
+            Duration::from_millis(1)
+        } else {
+            self.poll_interval
+        }
+    }
+}
+
+impl Default for ClusterAdmissionBridgeConfig {
+    fn default() -> Self {
+        Self {
+            poll_interval: Duration::from_secs(1),
+            admit_clients: true,
+            admit_members: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ClusterAdmissionSnapshot {
+    generation: ClusterGeneration,
+    role: ClusterRole,
+}
+
+#[derive(Debug, Default)]
+struct ClusterAdmissionBridgeState {
+    admitted: BTreeMap<ClusterNodeId, ClusterAdmissionSnapshot>,
+    events: Vec<ClusterAdmissionBridgeEvent>,
+    diagnostics: ClusterAdmissionBridgeDiagnostics,
+}
+
+#[derive(Debug)]
+struct ClusterAdmissionBridgeInner {
+    discovery: Arc<dyn ClusterDiscovery>,
+    control_plane: Arc<dyn ClusterControlPlane>,
+    config: ClusterAdmissionBridgeConfig,
+    state: Mutex<ClusterAdmissionBridgeState>,
+    run_lock: tokio::sync::Mutex<()>,
+}
+
+/// Polls discovery candidates and admits them into an authoritative control plane.
+///
+/// The bridge is the seam between gossip-style discovery and Raft-style
+/// metadata. Discovery can be eventually consistent and noisy; the bridge keeps
+/// a local admission snapshot so repeated polls do not rewrite the same
+/// generation, and only the control plane decides whether a candidate is truly
+/// accepted.
+///
+/// # Example
+///
+/// ```rust
+/// use std::sync::Arc;
+///
+/// use hydracache::{
+///     ClusterAdmissionBridge, ClusterCandidate, InMemoryCluster,
+///     InMemoryClusterDiscovery,
+/// };
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let discovery = Arc::new(InMemoryClusterDiscovery::new());
+/// let control_plane = Arc::new(InMemoryCluster::new("orders"));
+/// let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane.clone());
+///
+/// discovery.announce(ClusterCandidate::member("member-a"));
+/// assert_eq!(bridge.run_once().await, 1);
+/// assert_eq!(control_plane.members().len(), 1);
+/// assert_eq!(bridge.diagnostics().candidates_admitted, 1);
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug, Clone)]
+pub struct ClusterAdmissionBridge {
+    inner: Arc<ClusterAdmissionBridgeInner>,
+}
+
+impl ClusterAdmissionBridge {
+    /// Create a bridge with default polling behavior.
+    pub fn new(
+        discovery: Arc<dyn ClusterDiscovery>,
+        control_plane: Arc<dyn ClusterControlPlane>,
+    ) -> Self {
+        Self::with_config(
+            discovery,
+            control_plane,
+            ClusterAdmissionBridgeConfig::default(),
+        )
+    }
+
+    /// Create a bridge with explicit polling behavior.
+    pub fn with_config(
+        discovery: Arc<dyn ClusterDiscovery>,
+        control_plane: Arc<dyn ClusterControlPlane>,
+        config: ClusterAdmissionBridgeConfig,
+    ) -> Self {
+        Self {
+            inner: Arc::new(ClusterAdmissionBridgeInner {
+                discovery,
+                control_plane,
+                config,
+                state: Mutex::new(ClusterAdmissionBridgeState::default()),
+                run_lock: tokio::sync::Mutex::new(()),
+            }),
+        }
+    }
+
+    /// Return this bridge config.
+    pub fn config(&self) -> ClusterAdmissionBridgeConfig {
+        self.inner.config
+    }
+
+    /// Return a point-in-time diagnostics snapshot.
+    pub fn diagnostics(&self) -> ClusterAdmissionBridgeDiagnostics {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .diagnostics
+            .clone()
+    }
+
+    /// Return bridge events recorded so far.
+    pub fn events(&self) -> Vec<ClusterAdmissionBridgeEvent> {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .events
+            .clone()
+    }
+
+    /// Poll discovery once and try to admit every latest candidate snapshot.
+    ///
+    /// The return value is the number of candidate snapshots processed.
+    pub async fn run_once(&self) -> usize {
+        let _guard = self.inner.run_lock.lock().await;
+        let candidates = self.inner.discovery.candidates();
+        let processed = candidates.len();
+        for candidate in candidates {
+            self.admit_candidate(candidate).await;
+        }
+        processed
+    }
+
+    /// Start a background polling loop.
+    ///
+    /// Use [`ClusterAdmissionBridgeHandle::shutdown`] to stop the loop
+    /// gracefully. Dropping the handle also asks the task to stop, but does not
+    /// wait for it.
+    pub fn start(&self) -> ClusterAdmissionBridgeHandle {
+        let bridge = self.clone();
+        let (shutdown, mut shutdown_rx) = tokio::sync::watch::channel(false);
+        let task = tokio::spawn(async move {
+            let mut interval = tokio::time::interval(bridge.config().normalized_poll_interval());
+            loop {
+                tokio::select! {
+                    changed = shutdown_rx.changed() => {
+                        if changed.is_err() || *shutdown_rx.borrow() {
+                            bridge.record_event(ClusterAdmissionBridgeEvent::BridgeStopped);
+                            break;
+                        }
+                    }
+                    _ = interval.tick() => {
+                        bridge.run_once().await;
+                    }
+                }
+            }
+        });
+
+        ClusterAdmissionBridgeHandle { shutdown, task }
+    }
+
+    async fn admit_candidate(&self, candidate: ClusterCandidate) {
+        self.record_event(ClusterAdmissionBridgeEvent::CandidateSeen(
+            candidate.clone(),
+        ));
+
+        if let Some(event) = self.pre_admission_event(&candidate) {
+            self.record_event(event);
+            return;
+        }
+
+        let result = match candidate.role {
+            ClusterRole::Member => {
+                self.inner
+                    .control_plane
+                    .join_member(candidate.clone())
+                    .await
+            }
+            ClusterRole::Client => {
+                self.inner
+                    .control_plane
+                    .join_client(candidate.clone())
+                    .await
+            }
+            ClusterRole::Local => unreachable!("local candidates are ignored before admission"),
+        };
+
+        match result {
+            Ok(member) => self.record_admitted(member),
+            Err(error) => self.record_event(ClusterAdmissionBridgeEvent::CandidateRejected {
+                candidate,
+                reason: ClusterAdmissionRejectReason::AdmissionError(error.to_string()),
+            }),
+        }
+    }
+
+    fn pre_admission_event(
+        &self,
+        candidate: &ClusterCandidate,
+    ) -> Option<ClusterAdmissionBridgeEvent> {
+        let ignore_reason = match candidate.role {
+            ClusterRole::Local => Some(ClusterAdmissionIgnoreReason::LocalRole),
+            ClusterRole::Client if !self.inner.config.admit_clients => {
+                Some(ClusterAdmissionIgnoreReason::RoleDisabled)
+            }
+            ClusterRole::Member if !self.inner.config.admit_members => {
+                Some(ClusterAdmissionIgnoreReason::RoleDisabled)
+            }
+            ClusterRole::Client | ClusterRole::Member => None,
+        };
+        if let Some(reason) = ignore_reason {
+            return Some(ClusterAdmissionBridgeEvent::CandidateIgnored {
+                candidate: candidate.clone(),
+                reason,
+            });
+        }
+
+        let state = self
+            .inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned");
+        let existing = state.admitted.get(&candidate.node_id)?;
+
+        if existing.generation > candidate.generation {
+            return Some(ClusterAdmissionBridgeEvent::CandidateRejected {
+                candidate: candidate.clone(),
+                reason: ClusterAdmissionRejectReason::StaleGeneration {
+                    existing: existing.generation,
+                    attempted: candidate.generation,
+                },
+            });
+        }
+
+        if existing.generation == candidate.generation && existing.role == candidate.role {
+            return Some(ClusterAdmissionBridgeEvent::CandidateIgnored {
+                candidate: candidate.clone(),
+                reason: ClusterAdmissionIgnoreReason::AlreadyCurrent,
+            });
+        }
+
+        None
+    }
+
+    fn record_admitted(&self, member: ClusterMember) {
+        let mut state = self
+            .inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned");
+        state.admitted.insert(
+            member.node_id.clone(),
+            ClusterAdmissionSnapshot {
+                generation: member.generation,
+                role: member.role,
+            },
+        );
+        let event = ClusterAdmissionBridgeEvent::CandidateAdmitted(member);
+        state.diagnostics.record_event(&event);
+        state.events.push(event);
+    }
+
+    fn record_event(&self, event: ClusterAdmissionBridgeEvent) {
+        let mut state = self
+            .inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned");
+        state.diagnostics.record_event(&event);
+        state.events.push(event);
+    }
+}
+
+/// Handle for a background [`ClusterAdmissionBridge`] polling task.
+#[must_use]
+#[derive(Debug)]
+pub struct ClusterAdmissionBridgeHandle {
+    shutdown: tokio::sync::watch::Sender<bool>,
+    task: tokio::task::JoinHandle<()>,
+}
+
+impl ClusterAdmissionBridgeHandle {
+    /// Ask the polling task to stop and wait until it exits.
+    pub async fn shutdown(self) {
+        let _ = self.shutdown.send(true);
+        let _ = self.task.await;
+    }
+}
+
 /// Transport-neutral control-plane contract for cluster admission and metadata.
 ///
 /// This trait is the seam where future chitchat/Raft-backed adapters can plug
@@ -1825,13 +2156,15 @@ where
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
+    use std::time::Duration;
 
     use super::{
-        ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
-        ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
-        ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent,
-        ClusterEndpoints, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
-        ClusterRole, InMemoryCluster, InMemoryClusterDiscovery,
+        ClusterAdmissionBridge, ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics,
+        ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
+        ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
+        ClusterDiscoveryEvent, ClusterEndpoints, ClusterGeneration, ClusterMember,
+        ClusterMembershipEvent, ClusterNodeId, ClusterRole, InMemoryCluster,
+        InMemoryClusterDiscovery,
     };
 
     #[test]
@@ -1962,6 +2295,142 @@ mod tests {
         assert_eq!(diagnostics.last_candidate, Some(candidate.node_id.clone()));
         assert_eq!(diagnostics.last_admitted, Some(candidate.node_id));
         assert_eq!(diagnostics.last_error.as_deref(), Some("raft unavailable"));
+    }
+
+    #[tokio::test]
+    async fn admission_bridge_run_once_admits_candidates_and_deduplicates_generation() {
+        let discovery = Arc::new(InMemoryClusterDiscovery::new());
+        let control_plane = Arc::new(InMemoryCluster::new("orders"));
+        let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane.clone());
+
+        discovery
+            .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)));
+
+        assert_eq!(bridge.run_once().await, 1);
+        assert_eq!(control_plane.members().len(), 1);
+        assert_eq!(control_plane.events().len(), 1);
+
+        assert_eq!(bridge.run_once().await, 1);
+        assert_eq!(control_plane.events().len(), 1);
+
+        let diagnostics = bridge.diagnostics();
+        assert_eq!(diagnostics.candidates_seen, 2);
+        assert_eq!(diagnostics.candidates_admitted, 1);
+        assert_eq!(diagnostics.candidates_ignored, 1);
+        assert_eq!(diagnostics.total_decisions(), 2);
+        assert!(matches!(
+            bridge.events().last(),
+            Some(ClusterAdmissionBridgeEvent::CandidateIgnored {
+                reason: ClusterAdmissionIgnoreReason::AlreadyCurrent,
+                ..
+            })
+        ));
+    }
+
+    #[tokio::test]
+    async fn admission_bridge_allows_role_transition_for_same_generation() {
+        let discovery = Arc::new(InMemoryClusterDiscovery::new());
+        let control_plane = Arc::new(InMemoryCluster::new("orders"));
+        let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane.clone());
+
+        discovery
+            .announce(ClusterCandidate::client("node-a").generation(ClusterGeneration::new(1)));
+        assert_eq!(bridge.run_once().await, 1);
+        assert_eq!(control_plane.clients().len(), 1);
+
+        discovery
+            .announce(ClusterCandidate::member("node-a").generation(ClusterGeneration::new(1)));
+        assert_eq!(bridge.run_once().await, 1);
+
+        assert_eq!(control_plane.clients().len(), 0);
+        assert_eq!(control_plane.members().len(), 1);
+        assert_eq!(control_plane.events().len(), 2);
+        assert_eq!(bridge.diagnostics().candidates_admitted, 2);
+    }
+
+    #[tokio::test]
+    async fn admission_bridge_rejects_stale_candidate_before_control_plane_write() {
+        let discovery = Arc::new(InMemoryClusterDiscovery::new());
+        let control_plane = Arc::new(InMemoryCluster::new("orders"));
+        let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane.clone());
+
+        discovery
+            .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(2)));
+        assert_eq!(bridge.run_once().await, 1);
+
+        discovery
+            .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)));
+        assert_eq!(bridge.run_once().await, 1);
+
+        assert_eq!(control_plane.members()[0].generation.value(), 2);
+        assert_eq!(control_plane.events().len(), 1);
+        assert!(matches!(
+            bridge.events().last(),
+            Some(ClusterAdmissionBridgeEvent::CandidateRejected {
+                reason: ClusterAdmissionRejectReason::StaleGeneration { existing, attempted },
+                ..
+            }) if existing.value() == 2 && attempted.value() == 1
+        ));
+    }
+
+    #[tokio::test]
+    async fn admission_bridge_respects_role_filters_and_ignores_local_candidates() {
+        let discovery = Arc::new(InMemoryClusterDiscovery::new());
+        let control_plane = Arc::new(InMemoryCluster::new("orders"));
+        let bridge = ClusterAdmissionBridge::with_config(
+            discovery.clone(),
+            control_plane.clone(),
+            ClusterAdmissionBridgeConfig::default().admit_clients(false),
+        );
+        let mut local_candidate = ClusterCandidate::client("local-a");
+        local_candidate.role = ClusterRole::Local;
+
+        discovery.announce(ClusterCandidate::client("client-a"));
+        discovery.announce(local_candidate);
+
+        assert_eq!(bridge.run_once().await, 2);
+        assert!(control_plane.clients().is_empty());
+        assert!(control_plane.members().is_empty());
+
+        let diagnostics = bridge.diagnostics();
+        assert_eq!(diagnostics.candidates_seen, 2);
+        assert_eq!(diagnostics.candidates_ignored, 2);
+        assert!(bridge.events().iter().any(|event| matches!(
+            event,
+            ClusterAdmissionBridgeEvent::CandidateIgnored {
+                reason: ClusterAdmissionIgnoreReason::RoleDisabled,
+                ..
+            }
+        )));
+        assert!(bridge.events().iter().any(|event| matches!(
+            event,
+            ClusterAdmissionBridgeEvent::CandidateIgnored {
+                reason: ClusterAdmissionIgnoreReason::LocalRole,
+                ..
+            }
+        )));
+    }
+
+    #[tokio::test]
+    async fn admission_bridge_background_loop_can_shutdown_gracefully() {
+        let discovery = Arc::new(InMemoryClusterDiscovery::new());
+        let control_plane = Arc::new(InMemoryCluster::new("orders"));
+        let bridge = ClusterAdmissionBridge::with_config(
+            discovery.clone(),
+            control_plane.clone(),
+            ClusterAdmissionBridgeConfig::default().poll_interval(Duration::from_millis(1)),
+        );
+
+        discovery.announce(ClusterCandidate::member("member-a"));
+        let handle = bridge.start();
+        tokio::time::sleep(Duration::from_millis(10)).await;
+        handle.shutdown().await;
+
+        assert_eq!(control_plane.members().len(), 1);
+        assert!(matches!(
+            bridge.events().last(),
+            Some(ClusterAdmissionBridgeEvent::BridgeStopped)
+        ));
     }
 
     #[test]

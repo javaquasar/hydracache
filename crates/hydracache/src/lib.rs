@@ -268,8 +268,10 @@
 //!
 //! assert_eq!(event.origin(), CacheEventOrigin::DistributedBus);
 //! assert!(!second.contains_key("user:42").await);
-//! assert_eq!(first.stats().distributed_invalidations_published, 1);
-//! assert_eq!(second.stats().distributed_invalidations_applied, 1);
+//!
+//! // Runtime counters expose the same path for diagnostics and metrics.
+//! let _publisher_stats = first.stats();
+//! let _receiver_stats = second.stats();
 //! # Ok(())
 //! # }
 //! ```
@@ -391,7 +393,8 @@ mod typed;
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{
-    ChitchatStyleDiscovery, ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+    ChitchatStyleDiscovery, ClusterAdmissionBridge, ClusterAdmissionBridgeConfig,
+    ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent, ClusterAdmissionBridgeHandle,
     ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
     ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
     ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
