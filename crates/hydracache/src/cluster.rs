@@ -800,6 +800,10 @@ impl ClusterRuntime {
             events: discovery.events(),
         })
     }
+
+    pub(crate) async fn leave(&self) -> Result<Option<ClusterMembershipEvent>> {
+        self.control_plane.leave(&self.node_id).await
+    }
 }
 
 fn default_control_plane(cluster_name: String) -> Arc<dyn ClusterControlPlane> {

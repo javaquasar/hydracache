@@ -16,8 +16,8 @@ use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
-    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterRuntime, HydraCacheClientBuilder,
-    HydraCacheMemberBuilder,
+    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent, ClusterRuntime,
+    HydraCacheClientBuilder, HydraCacheMemberBuilder,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -187,6 +187,48 @@ where
             .cluster_runtime
             .as_ref()
             .and_then(ClusterRuntime::discovery_diagnostics)
+    }
+
+    /// Leave the attached cluster runtime when this cache is a client or member.
+    ///
+    /// Local caches return `Ok(None)`. A client/member cache returns the
+    /// control-plane leave event when the node was still admitted.
+    ///
+    /// This removes cluster membership metadata, but it does not clear the
+    /// local cache contents.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use hydracache::{ClusterMembershipEvent, ClusterRole, HydraCache, InMemoryCluster};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cluster = Arc::new(InMemoryCluster::new("orders"));
+    /// let client = HydraCache::client()
+    ///     .shared_cluster(cluster)
+    ///     .node_id("client-a")
+    ///     .connect()
+    ///     .await?;
+    ///
+    /// let left = client.leave_cluster().await?.expect("client was admitted");
+    /// assert!(matches!(
+    ///     left,
+    ///     ClusterMembershipEvent::NodeLeft {
+    ///         role: ClusterRole::Client,
+    ///         ..
+    ///     }
+    /// ));
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn leave_cluster(&self) -> Result<Option<ClusterMembershipEvent>> {
+        match &self.inner.cluster_runtime {
+            Some(runtime) => runtime.leave().await,
+            None => Ok(None),
+        }
     }
 
     /// Subscribe to cache events matching the provided filters.

@@ -32,6 +32,7 @@ async fn local_cache_has_no_cluster_diagnostics() {
 
     assert!(cache.cluster_diagnostics().is_none());
     assert!(cache.cluster_discovery_diagnostics().is_none());
+    assert!(cache.leave_cluster().await.unwrap().is_none());
 }
 
 #[tokio::test]
@@ -211,6 +212,56 @@ async fn client_builder_can_create_isolated_cluster_runtime() {
     assert_eq!(diagnostics.client_count, 1);
     assert_eq!(diagnostics.bootstrap, vec!["127.0.0.1:7000".to_owned()]);
     assert!(client.cluster_discovery_diagnostics().is_none());
+}
+
+#[tokio::test]
+async fn client_and_member_can_leave_cluster_without_clearing_local_cache() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let member = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap();
+    let client = HydraCache::client()
+        .shared_cluster(cluster.clone())
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    client
+        .put("user:42", user(42), CacheOptions::new().tag("user:42"))
+        .await
+        .unwrap();
+    assert_eq!(cluster.members().len(), 1);
+    assert_eq!(cluster.clients().len(), 1);
+
+    let client_left = client.leave_cluster().await.unwrap().unwrap();
+    assert!(matches!(
+        client_left,
+        ClusterMembershipEvent::NodeLeft {
+            role: ClusterRole::Client,
+            epoch,
+            ..
+        } if epoch.value() == 1
+    ));
+    assert_eq!(cluster.clients().len(), 0);
+    assert_eq!(cluster.members().len(), 1);
+    assert!(client.get::<User>("user:42").await.unwrap().is_some());
+
+    let member_left = member.leave_cluster().await.unwrap().unwrap();
+    assert!(matches!(
+        member_left,
+        ClusterMembershipEvent::NodeLeft {
+            role: ClusterRole::Member,
+            epoch,
+            ..
+        } if epoch.value() == 2
+    ));
+    assert_eq!(cluster.members().len(), 0);
+    assert!(member.leave_cluster().await.unwrap().is_none());
+    assert_eq!(member.cluster_diagnostics().unwrap().member_count, 0);
 }
 
 #[tokio::test]

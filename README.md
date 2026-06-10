@@ -668,13 +668,19 @@ assert_eq!(
     2,
 );
 assert_eq!(discovery.candidates().len(), 2);
+
+let left = client.leave_cluster().await?;
+assert!(left.is_some());
+assert_eq!(client.cluster_diagnostics().unwrap().client_count, 0);
 # Ok(())
 # }
 ```
 
 This mode does not replicate cached values. It gives applications a stable
 cluster vocabulary now: role, node id, generation, bootstrap metadata, and
-invalidation propagation. `InMemoryClusterDiscovery` models the future
+invalidation propagation. `leave_cluster()` removes client/member membership
+metadata without clearing local cache contents. `InMemoryClusterDiscovery`
+models the future
 gossip/discovery side by recording candidate and liveness events, while
 `InMemoryCluster` models authoritative admission and epoch movement. The
 intended next step is to plug discovery and

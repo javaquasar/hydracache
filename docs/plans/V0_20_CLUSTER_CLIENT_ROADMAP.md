@@ -35,6 +35,13 @@ Implemented in the follow-up 0.20.0 discovery-adapter slice:
 - `cluster_discovery_diagnostics()` for observing candidates and discovery
   event history when discovery is configured.
 
+Implemented in the follow-up 0.20.0 lifecycle slice:
+
+- `HydraCache::leave_cluster().await` for explicit client/member leave;
+- local caches return `Ok(None)`;
+- leave removes control-plane membership metadata without clearing local cache
+  contents.
+
 Still future work:
 
 - concrete chitchat-backed discovery adapter;
