@@ -224,6 +224,56 @@
 //! # }
 //! ```
 //!
+//! # Distributed invalidation bus
+//!
+//! Use [`InMemoryInvalidationBus`] when several cache instances in one process
+//! should propagate invalidation intent to each other. The bus only sends
+//! `invalidate_key`, `invalidate_tag`, `remove`, and `flush` operations; cached
+//! values are not replicated.
+//!
+//! ```rust
+//! use std::sync::Arc;
+//! use std::time::Duration;
+//!
+//! use hydracache::{CacheEventOrigin, CacheOptions, HydraCache, InMemoryInvalidationBus};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let bus = Arc::new(InMemoryInvalidationBus::default());
+//! let first = HydraCache::local()
+//!     .shared_invalidation_bus(bus.clone())
+//!     .invalidation_node_id("first")
+//!     .build();
+//! let second = HydraCache::local()
+//!     .shared_invalidation_bus(bus)
+//!     .invalidation_node_id("second")
+//!     .build();
+//!
+//! first
+//!     .put("user:42", 42_u64, CacheOptions::new().tag("users"))
+//!     .await?;
+//! second
+//!     .put("user:42", 42_u64, CacheOptions::new().tag("users"))
+//!     .await?;
+//!
+//! let mut events = second.subscribe_tag("users");
+//! first.invalidate_tag("users").await?;
+//!
+//! // Remote invalidation is applied by a background task, so applications that
+//! // need to observe it immediately should wait on events or diagnostics.
+//! let event = tokio::time::timeout(Duration::from_millis(500), events.recv())
+//!     .await
+//!     .expect("remote invalidation event")
+//!     .expect("subscription stays open");
+//!
+//! assert_eq!(event.origin(), CacheEventOrigin::DistributedBus);
+//! assert!(!second.contains_key("user:42").await);
+//! assert_eq!(first.stats().distributed_invalidations_published, 1);
+//! assert_eq!(second.stats().distributed_invalidations_applied, 1);
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! # Observability
 //!
 //! Use [`HydraCache::diagnostics`] for quick local smoke checks. It combines
@@ -259,6 +309,7 @@ mod cache;
 mod entry;
 mod events;
 mod inflight;
+mod invalidation_bus;
 mod stats;
 mod tag_index;
 mod typed;
@@ -272,6 +323,10 @@ pub use hydracache_core::{
     PostcardCodec, TagSet,
 };
 pub use hydracache_macros::{cacheable, cacheable_infallible};
+pub use invalidation_bus::{
+    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceiver,
+    InMemoryInvalidationBus,
+};
 pub use typed::TypedCache;
 
 pub use hydracache_core::{

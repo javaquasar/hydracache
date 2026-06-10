@@ -13,6 +13,9 @@ pub(crate) struct StatsCounters {
     pub(crate) evictions: AtomicU64,
     pub(crate) events_published: AtomicU64,
     pub(crate) event_subscriber_lagged: AtomicU64,
+    pub(crate) distributed_invalidations_published: AtomicU64,
+    pub(crate) distributed_invalidations_received: AtomicU64,
+    pub(crate) distributed_invalidations_applied: AtomicU64,
 }
 
 impl StatsCounters {
@@ -27,6 +30,15 @@ impl StatsCounters {
             evictions: self.evictions.load(Ordering::Relaxed),
             events_published: self.events_published.load(Ordering::Relaxed),
             event_subscriber_lagged: self.event_subscriber_lagged.load(Ordering::Relaxed),
+            distributed_invalidations_published: self
+                .distributed_invalidations_published
+                .load(Ordering::Relaxed),
+            distributed_invalidations_received: self
+                .distributed_invalidations_received
+                .load(Ordering::Relaxed),
+            distributed_invalidations_applied: self
+                .distributed_invalidations_applied
+                .load(Ordering::Relaxed),
         }
     }
 }

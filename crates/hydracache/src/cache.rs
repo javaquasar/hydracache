@@ -12,11 +12,13 @@ use hydracache_core::{
 };
 use moka::future::Cache;
 use serde::{de::DeserializeOwned, Serialize};
+use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
 use crate::inflight::{InFlightMap, SharedLoadFuture};
+use crate::invalidation_bus::{CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage};
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
 use crate::typed::TypedCache;
@@ -69,6 +71,20 @@ where
     pub(crate) default_ttl: std::time::Duration,
     pub(crate) stats: Arc<StatsCounters>,
     pub(crate) events: EventBus,
+    pub(crate) invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
+    pub(crate) invalidation_node_id: String,
+    pub(crate) bus_shutdown: Option<watch::Sender<bool>>,
+}
+
+impl<C> Drop for HydraCacheInner<C>
+where
+    C: CacheCodec,
+{
+    fn drop(&mut self) {
+        if let Some(shutdown) = &self.bus_shutdown {
+            let _ = shutdown.send(true);
+        }
+    }
 }
 
 impl HydraCache<PostcardCodec> {
@@ -119,6 +135,14 @@ where
     /// ```
     pub fn typed<T>(&self, namespace: impl Into<String>) -> TypedCache<T, C> {
         TypedCache::new(self.clone(), namespace.into())
+    }
+
+    /// Return this cache instance's invalidation node id.
+    ///
+    /// The id is included in bus messages and lets each cache ignore messages it
+    /// originally published.
+    pub fn invalidation_node_id(&self) -> &str {
+        &self.inner.invalidation_node_id
     }
 
     /// Subscribe to cache events matching the provided filters.
@@ -431,15 +455,28 @@ where
 
     /// Remove one key from the cache.
     pub async fn invalidate_key(&self, key: &str) -> Result<bool> {
-        self.remove_with_event(key, CacheEventKind::KeyInvalidated)
-            .await
+        let removed = self
+            .remove_with_event(
+                key,
+                CacheEventKind::KeyInvalidated,
+                CacheEventOrigin::LocalApi,
+            )
+            .await?;
+        self.publish_invalidation(CacheInvalidation::key(key))
+            .await?;
+        Ok(removed)
     }
 
     /// Remove one key from the cache.
     ///
     /// This is an alias for `invalidate_key` with a shorter name for local-cache use.
     pub async fn remove(&self, key: &str) -> Result<bool> {
-        self.remove_with_event(key, CacheEventKind::Removed).await
+        let removed = self
+            .remove_with_event(key, CacheEventKind::Removed, CacheEventOrigin::LocalApi)
+            .await?;
+        self.publish_invalidation(CacheInvalidation::key(key))
+            .await?;
+        Ok(removed)
     }
 
     /// Return whether the key currently maps to a usable value.
@@ -462,6 +499,15 @@ where
     /// started before the invalidation will return to their caller but skip
     /// storing stale values back into the cache.
     pub async fn invalidate_tag(&self, tag: &str) -> Result<u64> {
+        let removed = self
+            .invalidate_tag_with_origin(tag, CacheEventOrigin::LocalApi)
+            .await?;
+        self.publish_invalidation(CacheInvalidation::tag(tag))
+            .await?;
+        Ok(removed)
+    }
+
+    async fn invalidate_tag_with_origin(&self, tag: &str, origin: CacheEventOrigin) -> Result<u64> {
         let keys = self.inner.tag_index.take_tag(tag).await;
         let mut removed = 0;
 
@@ -483,7 +529,7 @@ where
             CacheEventKind::TagInvalidated,
             tag,
             removed,
-            CacheEventOrigin::LocalApi,
+            origin,
         ));
 
         Ok(removed)
@@ -491,13 +537,18 @@ where
 
     /// Remove all cached entries and tag mappings.
     pub async fn flush(&self) -> Result<()> {
+        self.flush_with_origin(CacheEventOrigin::LocalApi).await?;
+        self.publish_invalidation(CacheInvalidation::flush()).await
+    }
+
+    async fn flush_with_origin(&self, origin: CacheEventOrigin) -> Result<()> {
         let estimated_entries = self.inner.store.entry_count();
         self.inner.store.invalidate_all();
         self.inner.tag_index.clear().await;
         self.publish_event(CacheEvent::for_cache(
             CacheEventKind::Flushed,
             Some(estimated_entries),
-            CacheEventOrigin::LocalApi,
+            origin,
         ));
         Ok(())
     }
@@ -751,7 +802,12 @@ where
         self.inner.tag_index.unregister(key, &entry.tags).await;
     }
 
-    async fn remove_with_event(&self, key: &str, kind: CacheEventKind) -> Result<bool> {
+    async fn remove_with_event(
+        &self,
+        key: &str,
+        kind: CacheEventKind,
+        origin: CacheEventOrigin,
+    ) -> Result<bool> {
         let Some(entry) = self.inner.store.get(key).await else {
             return Ok(false);
         };
@@ -761,7 +817,7 @@ where
             .stats
             .invalidations
             .fetch_add(1, Ordering::Relaxed);
-        self.publish_key_event(kind, key, CacheEventOrigin::LocalApi, entry.tags.clone());
+        self.publish_key_event(kind, key, origin, entry.tags.clone());
         Ok(true)
     }
 
@@ -780,5 +836,86 @@ where
 
     fn publish_event(&self, event: CacheEvent) {
         self.inner.events.publish(event, &self.inner.stats);
+    }
+
+    async fn publish_invalidation(&self, invalidation: CacheInvalidation) -> Result<()> {
+        let Some(bus) = &self.inner.invalidation_bus else {
+            return Ok(());
+        };
+
+        bus.publish(CacheInvalidationMessage::new(
+            self.inner.invalidation_node_id.clone(),
+            invalidation,
+        ))
+        .await?;
+        self.inner
+            .stats
+            .distributed_invalidations_published
+            .fetch_add(1, Ordering::Relaxed);
+        Ok(())
+    }
+
+    pub(crate) fn spawn_invalidation_listener(&self, mut shutdown: watch::Receiver<bool>) {
+        let Some(bus) = self.inner.invalidation_bus.clone() else {
+            return;
+        };
+        let mut receiver = bus.subscribe();
+        let node_id = self.inner.invalidation_node_id.clone();
+        let weak_inner = Arc::downgrade(&self.inner);
+
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    _ = shutdown.changed() => break,
+                    message = receiver.recv() => {
+                        let Some(message) = message else {
+                            break;
+                        };
+                        let Some(inner) = weak_inner.upgrade() else {
+                            break;
+                        };
+                        if message.source_id() == node_id {
+                            continue;
+                        }
+
+                        let cache = HydraCache { inner };
+                        let _ = cache.apply_remote_invalidation(message).await;
+                    }
+                }
+            }
+        });
+    }
+
+    async fn apply_remote_invalidation(&self, message: CacheInvalidationMessage) -> Result<()> {
+        let (_, invalidation) = message.into_parts();
+        self.inner
+            .stats
+            .distributed_invalidations_received
+            .fetch_add(1, Ordering::Relaxed);
+
+        match invalidation {
+            CacheInvalidation::Key { key } => {
+                self.remove_with_event(
+                    &key,
+                    CacheEventKind::KeyInvalidated,
+                    CacheEventOrigin::DistributedBus,
+                )
+                .await?;
+            }
+            CacheInvalidation::Tag { tag } => {
+                self.invalidate_tag_with_origin(&tag, CacheEventOrigin::DistributedBus)
+                    .await?;
+            }
+            CacheInvalidation::Flush => {
+                self.flush_with_origin(CacheEventOrigin::DistributedBus)
+                    .await?;
+            }
+        }
+
+        self.inner
+            .stats
+            .distributed_invalidations_applied
+            .fetch_add(1, Ordering::Relaxed);
+        Ok(())
     }
 }

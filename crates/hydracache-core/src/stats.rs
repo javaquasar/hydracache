@@ -12,6 +12,7 @@
 /// assert_eq!(stats.hits, 0);
 /// assert_eq!(stats.single_flight_joins, 0);
 /// assert_eq!(stats.events_published, 0);
+/// assert_eq!(stats.distributed_invalidations_published, 0);
 /// assert_eq!(stats.total_requests(), 0);
 /// assert_eq!(stats.hit_ratio(), None);
 /// ```
@@ -37,6 +38,12 @@ pub struct CacheStats {
     pub events_published: u64,
     /// Event notifications skipped by slow subscribers.
     pub event_subscriber_lagged: u64,
+    /// Invalidation messages published to an attached bus.
+    pub distributed_invalidations_published: u64,
+    /// Invalidation messages received from an attached bus.
+    pub distributed_invalidations_received: u64,
+    /// Received invalidation messages applied to the local cache.
+    pub distributed_invalidations_applied: u64,
 }
 
 impl CacheStats {
@@ -105,6 +112,13 @@ impl CacheStats {
     pub fn has_event_subscriber_lag(&self) -> bool {
         self.event_subscriber_lagged > 0
     }
+
+    /// Return whether this cache has published or received bus invalidations.
+    pub fn has_distributed_invalidation_activity(&self) -> bool {
+        self.distributed_invalidations_published > 0
+            || self.distributed_invalidations_received > 0
+            || self.distributed_invalidations_applied > 0
+    }
 }
 
 /// User-facing diagnostic snapshot for a local cache instance.
@@ -171,6 +185,7 @@ mod tests {
         assert!(!empty.has_single_flight_activity());
         assert!(!empty.has_stale_load_discards());
         assert!(!empty.has_event_subscriber_lag());
+        assert!(!empty.has_distributed_invalidation_activity());
 
         let active = CacheStats {
             hits: 3,
@@ -178,6 +193,9 @@ mod tests {
             single_flight_joins: 2,
             stale_load_discards: 1,
             event_subscriber_lagged: 1,
+            distributed_invalidations_published: 1,
+            distributed_invalidations_received: 1,
+            distributed_invalidations_applied: 1,
             ..CacheStats::default()
         };
         assert_eq!(active.total_requests(), 4);
@@ -185,6 +203,7 @@ mod tests {
         assert!(active.has_single_flight_activity());
         assert!(active.has_stale_load_discards());
         assert!(active.has_event_subscriber_lag());
+        assert!(active.has_distributed_invalidation_activity());
     }
 
     #[test]

@@ -1,15 +1,25 @@
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
 use hydracache_core::{CacheCodec, PostcardCodec};
 use moka::future::Cache;
+use tokio::sync::watch;
 
 use crate::cache::{HydraCache, HydraCacheInner};
 use crate::entry::CacheEntry;
 use crate::events::EventBus;
 use crate::inflight::InFlightMap;
+use crate::invalidation_bus::CacheInvalidationBus;
 use crate::stats::StatsCounters;
 use crate::tag_index::TagIndex;
+
+static NEXT_INVALIDATION_NODE_ID: AtomicU64 = AtomicU64::new(1);
+
+fn next_invalidation_node_id() -> String {
+    let id = NEXT_INVALIDATION_NODE_ID.fetch_add(1, Ordering::Relaxed);
+    format!("hydracache-node-{id}")
+}
 
 /// Builder for a local [`HydraCache`] instance.
 ///
@@ -37,6 +47,8 @@ where
     default_ttl: Duration,
     event_buffer_capacity: usize,
     access_events: bool,
+    invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
+    invalidation_node_id: Option<String>,
     codec: C,
 }
 
@@ -83,6 +95,60 @@ where
         self
     }
 
+    /// Attach a shared invalidation bus to this cache.
+    ///
+    /// Caches that share the same bus propagate `invalidate_key`,
+    /// `invalidate_tag`, `remove`, and `flush` operations to each other. Values
+    /// are not replicated. Building a cache with a bus requires an active Tokio
+    /// runtime because HydraCache starts a lightweight background receiver task.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use hydracache::{HydraCache, InMemoryInvalidationBus};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// let bus = Arc::new(InMemoryInvalidationBus::default());
+    /// let first = HydraCache::local()
+    ///     .shared_invalidation_bus(bus.clone())
+    ///     .invalidation_node_id("first")
+    ///     .build();
+    /// let second = HydraCache::local()
+    ///     .shared_invalidation_bus(bus)
+    ///     .invalidation_node_id("second")
+    ///     .build();
+    /// # let _ = (first, second);
+    /// # }
+    /// ```
+    pub fn shared_invalidation_bus(mut self, bus: Arc<dyn CacheInvalidationBus>) -> Self {
+        self.invalidation_bus = Some(bus);
+        self
+    }
+
+    /// Attach an owned invalidation bus to this cache.
+    ///
+    /// Use [`shared_invalidation_bus`](Self::shared_invalidation_bus) when two
+    /// or more caches should communicate through the same bus instance.
+    pub fn invalidation_bus<B>(self, bus: B) -> Self
+    where
+        B: CacheInvalidationBus,
+    {
+        self.shared_invalidation_bus(Arc::new(bus))
+    }
+
+    /// Set a stable node id used to suppress self-originated invalidations.
+    ///
+    /// A generated id is used by default. Supplying an explicit id is useful for
+    /// tests, sandbox demos, and future external transports where observability
+    /// should show human-readable node names.
+    pub fn invalidation_node_id(mut self, node_id: impl Into<String>) -> Self {
+        self.invalidation_node_id = Some(node_id.into());
+        self
+    }
+
     /// Replace the default codec.
     ///
     /// Most applications can use the default [`PostcardCodec`].
@@ -96,6 +162,8 @@ where
             default_ttl: self.default_ttl,
             event_buffer_capacity: self.event_buffer_capacity,
             access_events: self.access_events,
+            invalidation_bus: self.invalidation_bus,
+            invalidation_node_id: self.invalidation_node_id,
             codec,
         }
     }
@@ -110,7 +178,18 @@ where
             })
             .build();
 
-        HydraCache {
+        let invalidation_node_id = self
+            .invalidation_node_id
+            .unwrap_or_else(next_invalidation_node_id);
+        let (bus_shutdown, bus_shutdown_rx) = self
+            .invalidation_bus
+            .as_ref()
+            .map(|_| watch::channel(false))
+            .map_or((None, None), |(sender, receiver)| {
+                (Some(sender), Some(receiver))
+            });
+
+        let cache = HydraCache {
             inner: Arc::new(HydraCacheInner {
                 store,
                 tag_index: TagIndex::default(),
@@ -119,8 +198,17 @@ where
                 default_ttl: self.default_ttl,
                 stats: Arc::new(StatsCounters::default()),
                 events: EventBus::new(self.event_buffer_capacity, self.access_events),
+                invalidation_bus: self.invalidation_bus,
+                invalidation_node_id,
+                bus_shutdown,
             }),
+        };
+
+        if let Some(shutdown) = bus_shutdown_rx {
+            cache.spawn_invalidation_listener(shutdown);
         }
+
+        cache
     }
 }
 
@@ -132,6 +220,8 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             default_ttl: Duration::from_secs(300),
             event_buffer_capacity: 1024,
             access_events: false,
+            invalidation_bus: None,
+            invalidation_node_id: None,
             codec: PostcardCodec,
         }
     }

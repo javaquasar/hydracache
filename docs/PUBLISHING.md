@@ -169,8 +169,8 @@ cargo publish -p hydracache-sqlx
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.18.0 -m "Release v0.18.0"
-git push origin v0.18.0
+git tag -a v0.19.0 -m "Release v0.19.0"
+git push origin v0.19.0
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually

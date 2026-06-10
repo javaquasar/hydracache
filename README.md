@@ -6,8 +6,8 @@ HydraCache is a Rust-native local async cache that is designed to grow toward da
 
 HydraCache is in early development. The current implementation provides the
 local async cache runtime, observability snapshots, optional Axum actuator
-routes, plus the first database result-cache adapters: `hydracache-db` and
-`hydracache-sqlx`.
+routes, an in-process distributed invalidation bus, plus the first database
+result-cache adapters: `hydracache-db` and `hydracache-sqlx`.
 
 ## Why HydraCache?
 
@@ -60,6 +60,8 @@ The first version includes:
 - lightweight stats
 - diagnostics snapshot for smoke-checking cache activity
 - cache event subscriptions for mutations and opt-in access/load events
+- in-process invalidation bus for synchronizing `invalidate_key`,
+  `invalidate_tag`, `remove`, and `flush` across cache instances
 - framework-neutral observability registry
 - optional read-only Axum actuator routes
 - single-flight join stats
@@ -80,7 +82,8 @@ The first version includes:
 Out of scope for v0:
 
 - SQL parsing or query-generation macros
-- distributed invalidation
+- external distributed transports such as Postgres LISTEN/NOTIFY, Redis, NATS,
+  or cluster membership protocols
 - cluster roles
 - public generation-counter APIs
 - write-enabled actuator/admin endpoints
@@ -304,7 +307,7 @@ fresh in-flight load instead of joining the stale one.
 
 Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "user:42"])` for multiple tags.
 
-`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, evictions, published events, and subscriber lag. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, `has_stale_load_discards`, and `has_event_subscriber_lag`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
+`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, evictions, published events, subscriber lag, and distributed invalidation bus activity. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, `has_stale_load_discards`, `has_event_subscriber_lag`, and `has_distributed_invalidation_activity`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
 
 `diagnostics().await` returns a small smoke-test snapshot: the same stats plus the local backend's approximate entry count. It is useful for answering "did the second call hit the cache?" without wiring a metrics system.
 
@@ -442,6 +445,57 @@ assert_eq!(event.key(), Some("users:42"));
 Subscribers use a bounded ring buffer. Slow subscribers may receive
 `CacheEventRecvError::Lagged`, but cache operations never wait for listeners.
 
+## Distributed Invalidation Bus
+
+Use `InMemoryInvalidationBus` when several cache instances in one process should
+share invalidation intent. This is the first step toward distributed
+synchronization: it propagates invalidations, not values.
+
+```rust
+use std::sync::Arc;
+use std::time::Duration;
+
+use hydracache::{CacheEventOrigin, CacheOptions, HydraCache, InMemoryInvalidationBus};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let bus = Arc::new(InMemoryInvalidationBus::default());
+let first = HydraCache::local()
+    .shared_invalidation_bus(bus.clone())
+    .invalidation_node_id("first")
+    .build();
+let second = HydraCache::local()
+    .shared_invalidation_bus(bus)
+    .invalidation_node_id("second")
+    .build();
+
+first
+    .put("user:42", 42_u64, CacheOptions::new().tag("users"))
+    .await?;
+second
+    .put("user:42", 42_u64, CacheOptions::new().tag("users"))
+    .await?;
+
+let mut events = second.subscribe_tag("users");
+first.invalidate_tag("users").await?;
+
+let event = tokio::time::timeout(Duration::from_millis(500), events.recv())
+    .await
+    .expect("remote invalidation event")
+    .expect("subscription stays open");
+
+assert_eq!(event.origin(), CacheEventOrigin::DistributedBus);
+assert!(!second.contains_key("user:42").await);
+assert_eq!(first.stats().distributed_invalidations_published, 1);
+assert_eq!(second.stats().distributed_invalidations_applied, 1);
+# Ok(())
+# }
+```
+
+The same bus also propagates `invalidate_key`, `remove`, and `flush`. Each cache
+has an invalidation node id; self-originated messages are ignored so local
+operations do not echo back forever. External transports are intentionally left
+to future crates or adapters.
+
 ## Optional Axum Actuator
 
 HydraCache keeps HTTP support out of the base runtime. If an application wants a
@@ -559,6 +613,7 @@ http://127.0.0.1:3000/demo/scenarios/suite/file/run
 http://127.0.0.1:3000/demo/scenarios/document/run
 http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
+http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
 http://127.0.0.1:3000/demo/security
@@ -573,7 +628,9 @@ to be an interactive HydraCache lab, not only reference documentation. It can
 exercise raw local-cache operations, typed-cache namespacing, database-backed
 query caching, cached non-database functions, TTL expiry, single-flight, and
 invalidation/load race safety. It also includes a listener demo that captures
-mutation, access, key, tag, and callback events produced by one cache flow.
+mutation, access, key, tag, and callback events produced by one cache flow, plus
+a distributed invalidation demo that creates two temporary cache nodes on one
+in-memory bus and verifies tag, key, and flush propagation.
 
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
@@ -585,7 +642,8 @@ contexts, inspect seeded product/order query-cache demos, run generated-client
 smoke checks, inspect Prometheus-style metrics, and display small hit/miss/load
 counters with a visual flow timeline. The dashboard also includes a textarea
 scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
-demo for verifying subscriptions manually.
+demo for verifying subscriptions manually. It also includes a one-click
+distributed invalidation flow that renders remote bus events in the output.
 
 Useful Swagger/API groups:
 
@@ -630,6 +688,7 @@ POST /demo/cache/contains
 POST /demo/cache/remove
 POST /demo/cache/invalidate-tag
 POST /demo/listeners/run
+POST /demo/distributed/invalidation/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
 POST /demo/query/orders/{id}/summary/load

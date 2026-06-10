@@ -41,6 +41,7 @@
 //! http://127.0.0.1:3000/demo/flows/{flow_id}/timeline
 //! http://127.0.0.1:3000/demo/benchmarks/manual
 //! http://127.0.0.1:3000/demo/benchmarks/compare
+//! http://127.0.0.1:3000/demo/distributed/invalidation/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
 //! ```
@@ -61,8 +62,8 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{
-    CacheError, CacheEvent, CacheEventKind, CacheEventOrigin, CacheEventSubscriber, CacheOptions,
-    HydraCache,
+    CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
+    CacheEventSubscriber, CacheOptions, HydraCache, InMemoryInvalidationBus,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
@@ -565,6 +566,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/events", get(events))
         .route("/demo/events/clear", post(clear_events))
         .route("/demo/listeners/run", post(run_listener_demo))
+        .route(
+            "/demo/distributed/invalidation/run",
+            post(run_distributed_invalidation_demo),
+        )
         .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
         .route("/demo/cache/get", post(cache_get))
@@ -1193,6 +1198,7 @@ struct SandboxUrls {
     report: &'static str,
     events: &'static str,
     timeline: &'static str,
+    distributed_invalidation: &'static str,
     actuator_diagnostics: &'static str,
 }
 
@@ -2004,6 +2010,23 @@ struct ListenerDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"key": "dist:user:42", "tag": "dist-users", "value": "cached-user", "flow_id": "distributed-flow"}))]
+struct DistributedInvalidationDemoRequest {
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    second_key: Option<String>,
+    #[serde(default)]
+    flush_key: Option<String>,
+    #[serde(default)]
+    tag: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"ttl_ms": 5000, "tags": ["users"], "loader_delay_ms": 10, "flow_id": "query-flow"}))]
 struct CacheLoadOptionsRequest {
     #[serde(default)]
@@ -2150,6 +2173,28 @@ struct ListenerDemoResponse {
     tag_events: Vec<ListenerEventReport>,
     callback_events: Vec<ListenerEventReport>,
     diagnostics: DemoDiagnostics,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct DistributedInvalidationDemoResponse {
+    flow_id: String,
+    bus: &'static str,
+    source_node_id: String,
+    target_node_id: String,
+    key: String,
+    second_key: String,
+    flush_key: String,
+    tag: String,
+    tag_removed_on_source: u64,
+    key_removed_on_source: bool,
+    target_contains_after_tag: bool,
+    target_contains_after_key: bool,
+    target_contains_after_flush: bool,
+    remote_events: Vec<ListenerEventReport>,
+    source_diagnostics: DemoDiagnostics,
+    target_diagnostics: DemoDiagnostics,
+    passed: bool,
     events: EventLogResponse,
 }
 
@@ -2306,6 +2351,9 @@ struct DemoDiagnostics {
     evictions: u64,
     events_published: u64,
     event_subscriber_lagged: u64,
+    distributed_invalidations_published: u64,
+    distributed_invalidations_received: u64,
+    distributed_invalidations_applied: u64,
     total_requests: u64,
     hit_ratio: Option<f64>,
     estimated_entries: u64,
@@ -2324,6 +2372,9 @@ impl DemoDiagnostics {
             evictions: snapshot.stats.evictions,
             events_published: snapshot.stats.events_published,
             event_subscriber_lagged: snapshot.stats.event_subscriber_lagged,
+            distributed_invalidations_published: snapshot.stats.distributed_invalidations_published,
+            distributed_invalidations_received: snapshot.stats.distributed_invalidations_received,
+            distributed_invalidations_applied: snapshot.stats.distributed_invalidations_applied,
             total_requests: snapshot.stats.total_requests,
             hit_ratio: snapshot.stats.hit_ratio,
             estimated_entries: snapshot.estimated_entries,
@@ -2381,6 +2432,7 @@ fn sandbox_urls() -> SandboxUrls {
         report: "/demo/report",
         events: "/demo/events",
         timeline: "/demo/flows/{flow_id}/timeline",
+        distributed_invalidation: "/demo/distributed/invalidation/run",
         actuator_diagnostics: "/actuator/hydracache/caches/main/diagnostics",
     }
 }
@@ -4912,7 +4964,13 @@ fn prometheus_metrics_text(report: &ApplicationReport) -> String {
          hydracache_sandbox_hit_ratio{{cache=\"main\",profile=\"{}\"}} {:.6}\n\
          # HELP hydracache_sandbox_events_retained Retained in-memory event count.\n\
          # TYPE hydracache_sandbox_events_retained gauge\n\
-         hydracache_sandbox_events_retained{{cache=\"main\",profile=\"{}\"}} {}\n",
+         hydracache_sandbox_events_retained{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_distributed_invalidations_published Invalidation messages published by the cache bus integration.\n\
+         # TYPE hydracache_sandbox_distributed_invalidations_published counter\n\
+         hydracache_sandbox_distributed_invalidations_published{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_distributed_invalidations_applied Remote invalidation messages applied locally.\n\
+         # TYPE hydracache_sandbox_distributed_invalidations_applied counter\n\
+         hydracache_sandbox_distributed_invalidations_applied{{cache=\"main\",profile=\"{}\"}} {}\n",
         report.profile,
         report.diagnostics.hits,
         report.profile,
@@ -4922,7 +4980,11 @@ fn prometheus_metrics_text(report: &ApplicationReport) -> String {
         report.profile,
         hit_ratio,
         report.profile,
-        report.event_count
+        report.event_count,
+        report.profile,
+        report.diagnostics.distributed_invalidations_published,
+        report.profile,
+        report.diagnostics.distributed_invalidations_applied
     )
 }
 
@@ -4979,6 +5041,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/flows".to_owned(),
         "/demo/flows/{flow_id}/replay".to_owned(),
         "/demo/benchmarks/compare".to_owned(),
+        "/demo/distributed/invalidation/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/import".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
@@ -5391,6 +5454,145 @@ async fn run_listener_demo(
     Ok(Json(run_listener_demo_with_request(&state, request).await?))
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/distributed/invalidation/run",
+    tag = "distributed",
+    request_body = DistributedInvalidationDemoRequest,
+    responses((status = 200, description = "Run an in-memory distributed invalidation bus demo", body = DistributedInvalidationDemoResponse))
+)]
+async fn run_distributed_invalidation_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<DistributedInvalidationDemoRequest>,
+) -> Result<Json<DistributedInvalidationDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_distributed_invalidation_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_distributed_invalidation_demo_with_request(
+    state: &SandboxState,
+    request: DistributedInvalidationDemoRequest,
+) -> Result<DistributedInvalidationDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "distributed-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let key = request.key.unwrap_or_else(|| format!("{flow_id}:tagged"));
+    let second_key = request
+        .second_key
+        .unwrap_or_else(|| format!("{flow_id}:key"));
+    let flush_key = request
+        .flush_key
+        .unwrap_or_else(|| format!("{flow_id}:flush"));
+    let tag = request.tag.unwrap_or_else(|| "distributed-demo".to_owned());
+    let value = request.value.unwrap_or_else(|| "cached".to_owned());
+    let bus = Arc::new(InMemoryInvalidationBus::new(32));
+    let source = HydraCache::local()
+        .enable_access_events(true)
+        .shared_invalidation_bus(bus.clone())
+        .invalidation_node_id("sandbox-source")
+        .build();
+    let target = HydraCache::local()
+        .enable_access_events(true)
+        .shared_invalidation_bus(bus)
+        .invalidation_node_id("sandbox-target")
+        .build();
+    let mut target_events =
+        target.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+
+    source
+        .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+        .await?;
+    target
+        .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+        .await?;
+
+    let tag_removed_on_source = source.invalidate_tag(&tag).await?;
+    let tag_event = recv_listener_event("target", &mut target_events).await?;
+    let target_contains_after_tag = target.contains_key(&key).await;
+
+    target
+        .put(&second_key, value.clone(), CacheOptions::new())
+        .await?;
+    let key_removed_on_source = source.invalidate_key(&second_key).await?;
+    let key_event = recv_listener_event("target", &mut target_events).await?;
+    let target_contains_after_key = target.contains_key(&second_key).await;
+
+    target.put(&flush_key, value, CacheOptions::new()).await?;
+    source.flush().await?;
+    let flush_event = recv_listener_event("target", &mut target_events).await?;
+    let target_contains_after_flush = target.contains_key(&flush_key).await;
+
+    let remote_events = vec![tag_event, key_event, flush_event];
+    let source_diagnostics = diagnostics_for_cache("sandbox-source", &source).await;
+    let target_diagnostics = diagnostics_for_cache("sandbox-target", &target).await;
+    let passed = tag_removed_on_source == 1
+        && !key_removed_on_source
+        && !target_contains_after_tag
+        && !target_contains_after_key
+        && !target_contains_after_flush
+        && source_diagnostics.distributed_invalidations_published == 3
+        && target_diagnostics.distributed_invalidations_received == 3
+        && target_diagnostics.distributed_invalidations_applied == 3
+        && remote_events
+            .iter()
+            .any(|event| event.kind == "tag-invalidated")
+        && remote_events
+            .iter()
+            .any(|event| event.kind == "key-invalidated")
+        && remote_events.iter().any(|event| event.kind == "flushed");
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::CacheInvalidate,
+        format!(
+            "distributed invalidation demo published {} bus messages and target applied {}",
+            source_diagnostics.distributed_invalidations_published,
+            target_diagnostics.distributed_invalidations_applied
+        ),
+        Some(key.clone()),
+        Some(tag.clone()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(DistributedInvalidationDemoResponse {
+        flow_id,
+        bus: "in-memory",
+        source_node_id: source.invalidation_node_id().to_owned(),
+        target_node_id: target.invalidation_node_id().to_owned(),
+        key,
+        second_key,
+        flush_key,
+        tag,
+        tag_removed_on_source,
+        key_removed_on_source,
+        target_contains_after_tag,
+        target_contains_after_key,
+        target_contains_after_flush,
+        remote_events,
+        source_diagnostics,
+        target_diagnostics,
+        passed,
+        events,
+    })
+}
+
 async fn run_listener_demo_with_request(
     state: &SandboxState,
     request: ListenerDemoRequest,
@@ -5502,6 +5704,17 @@ async fn run_listener_demo_with_request(
         diagnostics: diagnostics(state).await,
         events,
     })
+}
+
+async fn recv_listener_event(
+    stream: &'static str,
+    subscriber: &mut CacheEventSubscriber,
+) -> Result<ListenerEventReport, SandboxHttpError> {
+    let event = timeout(Duration::from_millis(500), subscriber.recv())
+        .await
+        .map_err(|_| SandboxError::config("timed out waiting for distributed invalidation"))?
+        .map_err(|source| SandboxError::config(source.to_string()))?;
+    Ok(listener_event_report(stream, event))
 }
 
 async fn drain_cache_listener_events(
@@ -6695,6 +6908,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/scenarios/invalidation-race', {key:'ui:race', loader_value:'stale', tag:'ui-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:'ui-race'})">Invalidation race</button>
       <button onclick="post('/demo/scenarios/ttl', {key:'ui:ttl', value:'short', ttl_ms:50, wait_ms:90, flow_id:'ui-ttl'})">TTL expiry</button>
       <button onclick="post('/demo/listeners/run', {key:'ui:listener', tag:'ui-listener', value:'alpha', loader_value:'beta', ttl_ms:5000, flow_id:`ui-listener-${Date.now()}`})">Listener demo</button>
+      <button onclick="post('/demo/distributed/invalidation/run', {key:'ui:dist:tagged', second_key:'ui:dist:key', flush_key:'ui:dist:flush', tag:'ui-dist', value:'alpha', flow_id:`ui-dist-${Date.now()}`})">Distributed invalidation</button>
     </section>
     <section>
       <h2>Scenario Lab</h2>
@@ -6954,9 +7168,13 @@ fn latency_for_durations(durations: &[u64]) -> LatencySummary {
 }
 
 async fn diagnostics(state: &SandboxState) -> DemoDiagnostics {
+    diagnostics_for_cache("main", &state.cache).await
+}
+
+async fn diagnostics_for_cache(name: impl Into<String>, cache: &HydraCache) -> DemoDiagnostics {
     DemoDiagnostics::from_snapshot(CacheDiagnosticsSnapshot::from_diagnostics(
-        "main",
-        state.cache.diagnostics().await,
+        name,
+        cache.diagnostics().await,
     ))
 }
 
@@ -7041,6 +7259,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             name: "benchmark comparison",
             endpoint: "/demo/benchmarks/compare",
             description: "Compare two manual benchmark profiles by latency, throughput, loader calls, and hit ratio.",
+        },
+        CapabilityReport {
+            name: "distributed invalidation bus",
+            endpoint: "/demo/distributed/invalidation/run",
+            description: "Create two temporary cache nodes on one in-memory bus and verify remote tag, key, and flush invalidations.",
         },
         CapabilityReport {
             name: "observability demo",
@@ -7159,6 +7382,7 @@ fn actuator_stats_doc() {}
         events,
         clear_events,
         run_listener_demo,
+        run_distributed_invalidation_demo,
         reset_demo,
         cache_put,
         cache_get,
@@ -7291,6 +7515,8 @@ fn actuator_stats_doc() {}
             ListenerDemoRequest,
             ListenerEventReport,
             ListenerDemoResponse,
+            DistributedInvalidationDemoRequest,
+            DistributedInvalidationDemoResponse,
             LoadUserResponse,
             LoadProductResponse,
             LoadOrderSummaryResponse,
@@ -7314,6 +7540,7 @@ fn actuator_stats_doc() {}
         (name = "reports", description = "Application-level cache operation reports"),
         (name = "local-cache", description = "Raw HydraCache local-cache operations"),
         (name = "listeners", description = "Cache listener and subscription demo flows"),
+        (name = "distributed", description = "Distributed invalidation bus demo flows"),
         (name = "query-cache", description = "Database-backed query-cache scenarios"),
         (name = "typed-cache", description = "TypedCache namespaced cache scenarios"),
         (name = "function-cache", description = "Cached non-database function scenarios"),
@@ -7731,6 +7958,7 @@ mod tests {
         assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
         assert!(paths.contains_key("/demo/listeners/run"));
+        assert!(paths.contains_key("/demo/distributed/invalidation/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));
@@ -7788,6 +8016,8 @@ mod tests {
         assert!(schemas.contains_key("ListenerDemoRequest"));
         assert!(schemas.contains_key("ListenerEventReport"));
         assert!(schemas.contains_key("ListenerDemoResponse"));
+        assert!(schemas.contains_key("DistributedInvalidationDemoRequest"));
+        assert!(schemas.contains_key("DistributedInvalidationDemoResponse"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
@@ -8032,6 +8262,33 @@ mod tests {
             .unwrap()
             .iter()
             .any(|event| event["kind"] == "cache-listener"));
+
+        let distributed = app
+            .clone()
+            .oneshot(post(
+                "/demo/distributed/invalidation/run",
+                Body::from(
+                    r#"{"key":"dist:tagged","second_key":"dist:key","flush_key":"dist:flush","tag":"dist","value":"alpha","flow_id":"dist-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(distributed["flow_id"], "dist-test");
+        assert_eq!(distributed["passed"], true);
+        assert_eq!(distributed["bus"], "in-memory");
+        assert_eq!(
+            distributed["source_diagnostics"]["distributed_invalidations_published"],
+            3
+        );
+        assert_eq!(
+            distributed["target_diagnostics"]["distributed_invalidations_received"],
+            3
+        );
+        assert_listener_events_include(&distributed["remote_events"], "tag-invalidated");
+        assert_listener_events_include(&distributed["remote_events"], "key-invalidated");
+        assert_listener_events_include(&distributed["remote_events"], "flushed");
 
         let query = app
             .clone()
