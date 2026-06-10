@@ -114,6 +114,43 @@ async fn member_and_client_builders_connect_to_shared_cluster() {
 }
 
 #[tokio::test]
+async fn cache_runtime_can_subscribe_to_cluster_membership_events() {
+    let local = HydraCache::local().build();
+    assert!(local.subscribe_cluster_membership().is_none());
+
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let member = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap();
+    let mut events = member
+        .subscribe_cluster_membership()
+        .expect("member runtime exposes membership events");
+
+    let client = HydraCache::client()
+        .shared_cluster(cluster)
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    assert!(matches!(
+        events.recv().await.unwrap(),
+        ClusterMembershipEvent::ClientConnected(joined)
+            if joined.node_id.as_str() == "client-a"
+    ));
+    assert_eq!(
+        client
+            .cluster_diagnostics()
+            .expect("cluster diagnostics")
+            .membership_subscribers,
+        1
+    );
+}
+
+#[tokio::test]
 async fn member_invalidation_reaches_client_near_cache() {
     let cluster = Arc::new(InMemoryCluster::new("orders"));
 
@@ -832,6 +869,7 @@ impl ClusterControlPlane for RejectingControlPlane {
             bootstrap,
             connected: false,
             invalidation_subscribers: self.bus.receiver_count(),
+            membership_subscribers: 0,
         }
     }
 }

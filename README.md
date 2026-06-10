@@ -696,6 +696,11 @@ seed-node/gossip-shaped adapter for candidate and liveness events.
 `RaftStyleMetadataControlPlane` adds a dependency-free metadata-log adapter with
 committed membership commands and snapshots.
 
+Client/member caches can also observe authoritative membership changes through
+`subscribe_cluster_membership()`. The stream is bounded and non-blocking:
+admission never waits for slow subscribers, and slow consumers receive a lag
+error so they can rebuild from diagnostics or snapshots.
+
 For real discovery, use `hydracache-cluster-chitchat` and pass
 `Arc<ChitchatDiscovery>` through `.discovery(...)`. It runs `chitchat`,
 advertises HydraCache candidate metadata in chitchat node state, and can be

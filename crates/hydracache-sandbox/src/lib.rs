@@ -2281,6 +2281,7 @@ struct ClusterRuntimeReport {
     client_count: usize,
     connected: bool,
     invalidation_subscribers: usize,
+    membership_subscribers: usize,
     bootstrap: Vec<String>,
 }
 
@@ -6455,6 +6456,7 @@ fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeRepo
         client_count: diagnostics.client_count,
         connected: diagnostics.connected,
         invalidation_subscribers: diagnostics.invalidation_subscribers,
+        membership_subscribers: diagnostics.membership_subscribers,
         bootstrap: diagnostics.bootstrap,
     }
 }

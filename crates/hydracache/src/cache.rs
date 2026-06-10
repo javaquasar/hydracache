@@ -16,8 +16,9 @@ use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
-    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent, ClusterNodeId,
-    ClusterRuntime, HydraCacheClientBuilder, HydraCacheMemberBuilder,
+    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent,
+    ClusterMembershipSubscriber, ClusterNodeId, ClusterRuntime, HydraCacheClientBuilder,
+    HydraCacheMemberBuilder,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -187,6 +188,51 @@ where
             .cluster_runtime
             .as_ref()
             .and_then(ClusterRuntime::discovery_diagnostics)
+    }
+
+    /// Subscribe to membership events for this cache's attached cluster runtime.
+    ///
+    /// Local caches return `None`. Client/member caches return a bounded stream
+    /// of events emitted after subscription; slow subscribers may receive lag
+    /// errors.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use hydracache::{ClusterMembershipEvent, HydraCache, InMemoryCluster};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cluster = Arc::new(InMemoryCluster::new("orders"));
+    /// let member = HydraCache::member()
+    ///     .shared_cluster(cluster.clone())
+    ///     .node_id("member-a")
+    ///     .start()
+    ///     .await?;
+    /// let mut events = member
+    ///     .subscribe_cluster_membership()
+    ///     .expect("member has a cluster runtime");
+    ///
+    /// let _client = HydraCache::client()
+    ///     .shared_cluster(cluster)
+    ///     .node_id("client-a")
+    ///     .connect()
+    ///     .await?;
+    ///
+    /// assert!(matches!(
+    ///     events.recv().await.expect("membership event"),
+    ///     ClusterMembershipEvent::ClientConnected(_)
+    /// ));
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn subscribe_cluster_membership(&self) -> Option<ClusterMembershipSubscriber> {
+        self.inner
+            .cluster_runtime
+            .as_ref()
+            .map(ClusterRuntime::subscribe_membership)
     }
 
     /// Leave the attached cluster runtime when this cache is a client or member.

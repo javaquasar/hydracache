@@ -9,6 +9,7 @@ use hydracache_core::{CacheCodec, CacheError, PostcardCodec, Result};
 use crate::builder::HydraCacheBuilder;
 use crate::cache::HydraCache;
 use crate::invalidation_bus::{CacheInvalidationBus, InMemoryInvalidationBus};
+use tokio::sync::broadcast;
 
 static NEXT_CLUSTER_CLIENT_ID: AtomicU64 = AtomicU64::new(1);
 static NEXT_CLUSTER_MEMBER_ID: AtomicU64 = AtomicU64::new(1);
@@ -584,11 +585,117 @@ pub enum ClusterMembershipEvent {
     StaleGenerationRejected {
         /// Rejected node id.
         node_id: ClusterNodeId,
+        /// Runtime role associated with the rejected generation.
+        role: ClusterRole,
         /// Existing accepted generation.
         existing: ClusterGeneration,
         /// Attempted stale generation.
         attempted: ClusterGeneration,
+        /// Machine-friendly rejection reason.
+        reason: String,
     },
+}
+
+/// Error returned by [`ClusterMembershipSubscriber::recv`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClusterMembershipRecvError {
+    /// The membership event stream has been closed.
+    Closed,
+    /// The subscriber lagged behind the bounded event stream.
+    Lagged(u64),
+}
+
+impl fmt::Display for ClusterMembershipRecvError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Closed => formatter.write_str("cluster membership subscription closed"),
+            Self::Lagged(skipped) => {
+                write!(
+                    formatter,
+                    "cluster membership subscriber lagged by {skipped} events"
+                )
+            }
+        }
+    }
+}
+
+impl std::error::Error for ClusterMembershipRecvError {}
+
+/// Receiver for cluster membership events from a control plane.
+///
+/// The stream is intentionally bounded. Admission and leave operations never
+/// wait for slow subscribers; slow consumers receive
+/// [`ClusterMembershipRecvError::Lagged`] and can decide whether to rebuild
+/// their view from diagnostics/snapshots.
+#[derive(Debug)]
+pub struct ClusterMembershipSubscriber {
+    receiver: broadcast::Receiver<ClusterMembershipEvent>,
+}
+
+impl ClusterMembershipSubscriber {
+    fn new(receiver: broadcast::Receiver<ClusterMembershipEvent>) -> Self {
+        Self { receiver }
+    }
+
+    fn closed() -> Self {
+        let (sender, receiver) = broadcast::channel(1);
+        drop(sender);
+        Self { receiver }
+    }
+
+    /// Receive the next membership event.
+    pub async fn recv(
+        &mut self,
+    ) -> std::result::Result<ClusterMembershipEvent, ClusterMembershipRecvError> {
+        match self.receiver.recv().await {
+            Ok(event) => Ok(event),
+            Err(broadcast::error::RecvError::Closed) => Err(ClusterMembershipRecvError::Closed),
+            Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                Err(ClusterMembershipRecvError::Lagged(skipped))
+            }
+        }
+    }
+
+    /// Receive the next event, skipping lag notifications.
+    pub async fn next_event(&mut self) -> Option<ClusterMembershipEvent> {
+        loop {
+            match self.recv().await {
+                Ok(event) => return Some(event),
+                Err(ClusterMembershipRecvError::Closed) => return None,
+                Err(ClusterMembershipRecvError::Lagged(_)) => continue,
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ClusterMembershipEventBus {
+    sender: broadcast::Sender<ClusterMembershipEvent>,
+}
+
+impl ClusterMembershipEventBus {
+    fn new(capacity: usize) -> Self {
+        let (sender, _) = broadcast::channel(capacity.max(1));
+        Self { sender }
+    }
+
+    fn publish(&self, event: ClusterMembershipEvent) {
+        let _ = self.sender.send(event);
+    }
+
+    fn subscribe(&self) -> ClusterMembershipSubscriber {
+        ClusterMembershipSubscriber::new(self.sender.subscribe())
+    }
+
+    fn receiver_count(&self) -> usize {
+        self.sender.receiver_count()
+    }
+}
+
+impl Default for ClusterMembershipEventBus {
+    fn default() -> Self {
+        Self::new(1024)
+    }
 }
 
 /// Cluster diagnostics visible from a [`HydraCache`] instance.
@@ -614,6 +721,8 @@ pub struct ClusterDiagnostics {
     pub connected: bool,
     /// Number of active invalidation bus receivers.
     pub invalidation_subscribers: usize,
+    /// Number of active cluster membership event subscribers.
+    pub membership_subscribers: usize,
 }
 
 /// Discovery diagnostics visible from a [`HydraCache`] client/member runtime.
@@ -1162,6 +1271,14 @@ pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
         generation: ClusterGeneration,
     ) -> Result<Option<ClusterMembershipEvent>>;
 
+    /// Subscribe to authoritative membership events.
+    ///
+    /// Implementations that do not expose a stream can use the default closed
+    /// subscriber. Built-in control planes return a bounded non-blocking stream.
+    fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
+        ClusterMembershipSubscriber::closed()
+    }
+
     /// Build diagnostics for a local runtime attached to this control plane.
     fn diagnostics_for(
         &self,
@@ -1392,6 +1509,10 @@ impl ClusterControlPlane for RaftStyleMetadataControlPlane {
         Ok(Some(event))
     }
 
+    fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
+        self.cluster.subscribe_membership()
+    }
+
     fn diagnostics_for(
         &self,
         role: ClusterRole,
@@ -1421,6 +1542,7 @@ struct InMemoryClusterState {
 pub struct InMemoryCluster {
     name: String,
     invalidation_bus: Arc<InMemoryInvalidationBus>,
+    membership_events: ClusterMembershipEventBus,
     state: Mutex<InMemoryClusterState>,
 }
 
@@ -1430,6 +1552,7 @@ impl InMemoryCluster {
         Self {
             name: name.into(),
             invalidation_bus: Arc::new(InMemoryInvalidationBus::default()),
+            membership_events: ClusterMembershipEventBus::default(),
             state: Mutex::new(InMemoryClusterState::default()),
         }
     }
@@ -1462,7 +1585,7 @@ impl InMemoryCluster {
     fn join(&self, mut candidate: ClusterCandidate, role: ClusterRole) -> Result<ClusterMember> {
         candidate.role = role;
         let mut state = self.state.lock().expect("cluster state poisoned");
-        reject_stale_generation(&mut state, &candidate)?;
+        reject_stale_generation(&mut state, &self.membership_events, &candidate)?;
 
         match role {
             ClusterRole::Local => Err(CacheError::Backend(
@@ -1471,9 +1594,9 @@ impl InMemoryCluster {
             ClusterRole::Client => {
                 let member = ClusterMember::from_candidate(candidate, state.epoch);
                 state.clients.insert(member.node_id.clone(), member.clone());
-                state
-                    .events
-                    .push(ClusterMembershipEvent::ClientConnected(member.clone()));
+                let event = ClusterMembershipEvent::ClientConnected(member.clone());
+                state.events.push(event.clone());
+                self.membership_events.publish(event);
                 Ok(member)
             }
             ClusterRole::Member => {
@@ -1488,9 +1611,9 @@ impl InMemoryCluster {
                 state.clients.remove(&candidate.node_id);
                 let member = ClusterMember::from_candidate(candidate, state.epoch);
                 state.members.insert(member.node_id.clone(), member.clone());
-                state
-                    .events
-                    .push(ClusterMembershipEvent::MemberJoined(member.clone()));
+                let event = ClusterMembershipEvent::MemberJoined(member.clone());
+                state.events.push(event.clone());
+                self.membership_events.publish(event);
                 Ok(member)
             }
         }
@@ -1503,7 +1626,7 @@ impl InMemoryCluster {
         generation: ClusterGeneration,
     ) -> Result<()> {
         let mut state = self.state.lock().expect("cluster state poisoned");
-        validate_generation_locked(&mut state, node_id, generation)
+        validate_generation_locked(&mut state, &self.membership_events, node_id, generation)
     }
 
     /// Remove a node from the in-memory cluster model when generation matches.
@@ -1516,7 +1639,7 @@ impl InMemoryCluster {
         if current_generation_locked(&state, node_id).is_none() {
             return Ok(None);
         }
-        validate_generation_locked(&mut state, node_id, generation)?;
+        validate_generation_locked(&mut state, &self.membership_events, node_id, generation)?;
         let removed_member = state.members.remove(node_id);
         let removed_client = state.clients.remove(node_id);
         let Some(removed) = removed_member.or(removed_client) else {
@@ -1531,6 +1654,7 @@ impl InMemoryCluster {
             epoch: state.epoch,
         };
         state.events.push(event.clone());
+        self.membership_events.publish(event.clone());
         Ok(Some(event))
     }
 
@@ -1565,6 +1689,11 @@ impl InMemoryCluster {
             .clone()
     }
 
+    /// Subscribe to membership events emitted after subscription.
+    pub fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
+        self.membership_events.subscribe()
+    }
+
     fn diagnostics_for(
         &self,
         role: ClusterRole,
@@ -1584,6 +1713,7 @@ impl InMemoryCluster {
             bootstrap,
             connected: true,
             invalidation_subscribers: self.invalidation_bus.receiver_count(),
+            membership_subscribers: self.membership_events.receiver_count(),
         }
     }
 }
@@ -1622,6 +1752,10 @@ impl ClusterControlPlane for InMemoryCluster {
         InMemoryCluster::leave(self, node_id, generation)
     }
 
+    fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
+        InMemoryCluster::subscribe_membership(self)
+    }
+
     fn diagnostics_for(
         &self,
         role: ClusterRole,
@@ -1635,6 +1769,7 @@ impl ClusterControlPlane for InMemoryCluster {
 
 fn reject_stale_generation(
     state: &mut InMemoryClusterState,
+    membership_events: &ClusterMembershipEventBus,
     candidate: &ClusterCandidate,
 ) -> Result<()> {
     let existing_generation = state
@@ -1650,13 +1785,15 @@ fn reject_stale_generation(
         return Ok(());
     }
 
-    state
-        .events
-        .push(ClusterMembershipEvent::StaleGenerationRejected {
-            node_id: candidate.node_id.clone(),
-            existing,
-            attempted: candidate.generation,
-        });
+    let event = ClusterMembershipEvent::StaleGenerationRejected {
+        node_id: candidate.node_id.clone(),
+        role: candidate.role,
+        existing,
+        attempted: candidate.generation,
+        reason: "stale-generation".to_owned(),
+    };
+    state.events.push(event.clone());
+    membership_events.publish(event);
     Err(CacheError::Backend(format!(
         "stale cluster generation for node '{}': existing {}, attempted {}",
         candidate.node_id,
@@ -1678,26 +1815,35 @@ fn current_generation_locked(
 
 fn validate_generation_locked(
     state: &mut InMemoryClusterState,
+    membership_events: &ClusterMembershipEventBus,
     node_id: &ClusterNodeId,
     generation: ClusterGeneration,
 ) -> Result<()> {
-    let Some(existing) = current_generation_locked(state, node_id) else {
+    let Some(existing_member) = state
+        .members
+        .get(node_id)
+        .or_else(|| state.clients.get(node_id))
+    else {
         return Err(CacheError::Backend(format!(
             "cluster node '{node_id}' is not admitted"
         )));
     };
+    let existing = existing_member.generation;
+    let role = existing_member.role;
 
     if existing == generation {
         return Ok(());
     }
 
-    state
-        .events
-        .push(ClusterMembershipEvent::StaleGenerationRejected {
-            node_id: node_id.clone(),
-            existing,
-            attempted: generation,
-        });
+    let event = ClusterMembershipEvent::StaleGenerationRejected {
+        node_id: node_id.clone(),
+        role,
+        existing,
+        attempted: generation,
+        reason: "generation-mismatch".to_owned(),
+    };
+    state.events.push(event.clone());
+    membership_events.publish(event);
     Err(CacheError::Backend(format!(
         "stale cluster generation for node '{}': existing {}, attempted {}",
         node_id,
@@ -1761,6 +1907,10 @@ impl ClusterRuntime {
         self.control_plane
             .validate_generation(&self.node_id, self.generation)
             .await
+    }
+
+    pub(crate) fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
+        self.control_plane.subscribe_membership()
     }
 
     pub(crate) async fn validate_remote_generation(
@@ -2162,9 +2312,9 @@ mod tests {
         ClusterAdmissionBridge, ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics,
         ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
         ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
-        ClusterDiscoveryEvent, ClusterEndpoints, ClusterGeneration, ClusterMember,
-        ClusterMembershipEvent, ClusterNodeId, ClusterRole, InMemoryCluster,
-        InMemoryClusterDiscovery,
+        ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
+        ClusterMembershipEvent, ClusterMembershipEventBus, ClusterMembershipRecvError,
+        ClusterNodeId, ClusterRole, InMemoryCluster, InMemoryClusterDiscovery,
     };
 
     #[test]
@@ -2504,6 +2654,82 @@ mod tests {
         assert_eq!(cluster.members().len(), 1);
         assert_eq!(cluster.clients().len(), 1);
         assert_eq!(cluster.events().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn membership_subscriber_receives_join_leave_and_stale_rejection_events() {
+        let cluster = InMemoryCluster::new("orders");
+        let mut events = cluster.subscribe_membership();
+        let member_id = ClusterNodeId::from("member-a");
+
+        cluster
+            .join_member(
+                ClusterCandidate::member(member_id.clone()).generation(ClusterGeneration::new(2)),
+            )
+            .unwrap();
+        assert!(matches!(
+            events.recv().await.unwrap(),
+            ClusterMembershipEvent::MemberJoined(member) if member.node_id == member_id
+        ));
+
+        let error = cluster
+            .join_member(
+                ClusterCandidate::member(member_id.clone()).generation(ClusterGeneration::new(1)),
+            )
+            .unwrap_err();
+        assert!(error.to_string().contains("stale cluster generation"));
+        assert!(matches!(
+            events.recv().await.unwrap(),
+            ClusterMembershipEvent::StaleGenerationRejected {
+                node_id,
+                role: ClusterRole::Member,
+                existing,
+                attempted,
+                reason,
+            } if node_id == member_id
+                && existing.value() == 2
+                && attempted.value() == 1
+                && reason == "stale-generation"
+        ));
+
+        cluster
+            .leave(&member_id, ClusterGeneration::new(2))
+            .unwrap()
+            .unwrap();
+        assert!(matches!(
+            events.recv().await.unwrap(),
+            ClusterMembershipEvent::NodeLeft {
+                node_id,
+                role: ClusterRole::Member,
+                ..
+            } if node_id == member_id
+        ));
+    }
+
+    #[tokio::test]
+    async fn membership_subscriber_reports_lag_for_slow_consumers() {
+        let bus = ClusterMembershipEventBus::new(1);
+        let mut events = bus.subscribe();
+        let first = ClusterMember::from_candidate(
+            ClusterCandidate::member("member-a"),
+            ClusterEpoch::new(1),
+        );
+        let second = ClusterMember::from_candidate(
+            ClusterCandidate::member("member-b"),
+            ClusterEpoch::new(2),
+        );
+
+        bus.publish(ClusterMembershipEvent::MemberJoined(first));
+        bus.publish(ClusterMembershipEvent::MemberJoined(second));
+
+        assert!(matches!(
+            events.recv().await,
+            Err(ClusterMembershipRecvError::Lagged(1))
+        ));
+        assert!(matches!(
+            events.recv().await.unwrap(),
+            ClusterMembershipEvent::MemberJoined(member) if member.node_id.as_str() == "member-b"
+        ));
     }
 
     #[test]

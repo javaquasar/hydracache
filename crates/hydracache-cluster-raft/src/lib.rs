@@ -83,8 +83,8 @@ use std::sync::{Arc, Mutex};
 
 use hydracache::{
     CacheError, CacheInvalidationBus, CacheResult, ClusterCandidate, ClusterControlPlane,
-    ClusterDiagnostics, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
-    ClusterRole, InMemoryCluster, RaftMetadataCommand,
+    ClusterDiagnostics, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
+    ClusterMembershipSubscriber, ClusterNodeId, ClusterRole, InMemoryCluster, RaftMetadataCommand,
 };
 use raft::eraftpb::{Entry, EntryType};
 use raft::storage::MemStorage;
@@ -389,6 +389,10 @@ impl ClusterControlPlane for RaftMetadataRuntime {
             })?;
         }
         Ok(Some(event))
+    }
+
+    fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
+        self.cluster.subscribe_membership()
     }
 
     fn diagnostics_for(

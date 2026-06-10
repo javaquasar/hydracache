@@ -398,9 +398,10 @@ pub use cluster::{
     ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
     ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
     ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
-    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCacheClientBuilder,
-    HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, RaftMetadataCommand,
-    RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
+    ClusterMembershipEvent, ClusterMembershipRecvError, ClusterMembershipSubscriber, ClusterNodeId,
+    ClusterRole, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
+    InMemoryClusterDiscovery, RaftMetadataCommand, RaftMetadataSnapshot,
+    RaftStyleMetadataControlPlane,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{
