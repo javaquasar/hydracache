@@ -105,6 +105,7 @@ simple, visible, and safe.
 
 - [Cluster formation library analysis](./V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md)
 - [Chitchat + Raft cluster idea](./V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md)
+- [Cluster next steps plan](./V0_20_CLUSTER_NEXT_STEPS_PLAN.md)
 - [Distributed invalidation bus plan](./V0_19_DISTRIBUTED_INVALIDATION_BUS_PLAN.md)
 
 ## Cluster Construction

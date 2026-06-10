@@ -1280,6 +1280,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md](docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md)
 - [docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md](docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md)
 - [docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md)
+- [docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md](docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md)
 
 ## Workspace
 
