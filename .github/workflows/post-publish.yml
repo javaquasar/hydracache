@@ -28,6 +28,8 @@ jobs:
         run: |
           cargo add hydracache@${{ inputs.version }}
           cargo add hydracache-core@${{ inputs.version }}
+          cargo add hydracache-cluster-chitchat@${{ inputs.version }}
+          cargo add hydracache-cluster-raft@${{ inputs.version }}
           cargo add hydracache-db@${{ inputs.version }}
           cargo add hydracache-sqlx@${{ inputs.version }}
           cargo add serde --features derive
@@ -40,9 +42,13 @@ jobs:
           #[cfg(test)]
           mod tests {
               use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
+              use hydracache::ClusterGeneration;
+              use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
+              use hydracache_cluster_raft::RaftMetadataRuntime;
               use hydracache_db::DbCache;
               use hydracache_sqlx::SqlxCache;
               use serde::{Deserialize, Serialize};
+              use std::sync::Arc;
 
               #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
               struct User {
@@ -82,6 +88,40 @@ jobs:
 
                   assert_eq!(users.invalidate_tag("user:42").await?, 1);
                   assert_eq!(users.get(&key).await?, None);
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_cluster_adapter_smoke_test() -> hydracache::CacheResult<()> {
+                  let discovery = ChitchatDiscovery::spawn_udp(
+                      ChitchatDiscoveryConfig::new(
+                          "orders",
+                          "member-a",
+                          ClusterGeneration::new(1),
+                          "127.0.0.1:0".parse().unwrap(),
+                      ),
+                  )
+                  .await?;
+
+                  hydracache::ClusterDiscovery::announce(
+                      &discovery,
+                      hydracache::ClusterCandidate::member("member-a")
+                          .generation(ClusterGeneration::new(1)),
+                  )
+                  .await?;
+                  assert_eq!(discovery.candidates().len(), 1);
+
+                  let control_plane = Arc::new(RaftMetadataRuntime::single_node("orders", 1)?);
+                  let member = HydraCache::member()
+                      .control_plane(control_plane.clone())
+                      .node_id("member-a")
+                      .generation(ClusterGeneration::new(1))
+                      .start()
+                      .await?;
+
+                  assert_eq!(member.cluster_diagnostics().unwrap().member_count, 1);
+                  assert_eq!(control_plane.snapshot().commands_committed, 1);
 
                   Ok(())
               }

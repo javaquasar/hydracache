@@ -59,12 +59,23 @@ cargo publish -p hydracache
 Adapter crates are published after the runtime and macro crates they depend on:
 
 ```powershell
+cargo package -p hydracache-cluster-chitchat
+cargo publish -p hydracache-cluster-chitchat
+
+cargo package -p hydracache-cluster-raft
+cargo publish -p hydracache-cluster-raft
+
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
+
+If either cluster adapter cannot resolve `hydracache = "^X.Y.Z"`, wait for the
+freshly published runtime crate to appear in the crates.io index and retry the
+same `cargo package -p ...` command. This is expected before `hydracache X.Y.Z`
+is visible to dependent package verification.
 
 `hydracache-sandbox` is a workspace-only manual backend with `publish = false`.
 Run it or test it during validation, but do not publish it:
@@ -153,6 +164,12 @@ cargo publish -p hydracache-macros
 cargo package -p hydracache
 cargo publish -p hydracache
 
+cargo package -p hydracache-cluster-chitchat
+cargo publish -p hydracache-cluster-chitchat
+
+cargo package -p hydracache-cluster-raft
+cargo publish -p hydracache-cluster-raft
+
 cargo package -p hydracache-observability
 cargo publish -p hydracache-observability
 
@@ -224,8 +241,10 @@ published macro crate version, publish `hydracache-macros` first, wait for the
 crates.io index to update, then publish `hydracache`. If `hydracache-db`
 depends on a freshly published runtime version, publish the runtime and macro
 crate first, then wait for the crates.io index to update before publishing
-`hydracache-db`. Concrete adapters such as `hydracache-sqlx` are published
-last.
+`hydracache-db`. Cluster adapters such as `hydracache-cluster-chitchat` and
+`hydracache-cluster-raft` also depend on the runtime crate and should be
+published after `hydracache`. Concrete database adapters such as
+`hydracache-sqlx` are published last.
 
 ## MSRV and Dependency Updates
 

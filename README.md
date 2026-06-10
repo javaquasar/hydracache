@@ -1253,6 +1253,8 @@ lines investigated before release.
 - `hydracache` - use this for the local async cache, `cacheable!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, stats, and diagnostics.
 - `hydracache-observability` - use this for a framework-neutral registry and serializable cache diagnostic snapshots.
 - `hydracache-actuator-axum` - use this when exposing read-only HydraCache diagnostics through Axum routes.
+- `hydracache-cluster-chitchat` - use this when you want real chitchat-backed cluster candidate discovery.
+- `hydracache-cluster-raft` - use this when you want the real raft-rs metadata runtime behind `ClusterControlPlane`.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
