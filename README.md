@@ -680,12 +680,12 @@ This mode does not replicate cached values. It gives applications a stable
 cluster vocabulary now: role, node id, generation, bootstrap metadata, and
 invalidation propagation. `leave_cluster()` removes client/member membership
 metadata without clearing local cache contents. `InMemoryClusterDiscovery`
-models the future
-gossip/discovery side by recording candidate and liveness events, while
-`InMemoryCluster` models authoritative admission and epoch movement. The
-intended next step is to plug discovery and
-membership libraries underneath this API through `ClusterDiscovery` and
-`ClusterControlPlane` without changing ordinary cache usage.
+models a plain discovery journal, while `ChitchatStyleDiscovery` adds a
+dependency-free seed-node/gossip-shaped adapter for candidate and liveness
+events. `InMemoryCluster` models authoritative admission and epoch movement.
+The intended next step is to plug real discovery and membership libraries
+underneath this API through `ClusterDiscovery` and `ClusterControlPlane` without
+changing ordinary cache usage.
 
 ## Optional Axum Actuator
 

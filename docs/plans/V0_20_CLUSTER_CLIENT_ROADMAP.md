@@ -59,6 +59,15 @@ Implemented in the follow-up 0.20.0 multi-node regression slice:
   cluster;
 - leave updates member/client counts after distributed activity.
 
+Implemented in the follow-up 0.20.0 chitchat-style discovery slice:
+
+- `ChitchatStyleDiscovery`;
+- seed-node diagnostics through `seeds()`, `seed_count()`, and `has_seeds()`;
+- candidate metadata for `discovery.adapter` and `discovery.seeds`;
+- live/suspect/dead liveness events through the existing `ClusterDiscovery`
+  trait;
+- rustdoc example and regression tests using the public builder API.
+
 Still future work:
 
 - concrete chitchat-backed discovery adapter;

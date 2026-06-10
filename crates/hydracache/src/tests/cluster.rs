@@ -6,10 +6,10 @@ use tokio::time::{sleep, timeout};
 
 use crate::tests::common::{user, User};
 use crate::{
-    CacheError, CacheEventSubscriber, CacheInvalidationBus, ClusterCandidate, ClusterControlPlane,
-    ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration,
-    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache, InMemoryCluster,
-    InMemoryClusterDiscovery, InMemoryInvalidationBus,
+    CacheError, CacheEventSubscriber, CacheInvalidationBus, ChitchatStyleDiscovery,
+    ClusterCandidate, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
+    ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId,
+    ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
 };
 
 async fn wait_until_absent(cache: &HydraCache, key: &str) {
@@ -509,6 +509,69 @@ async fn builders_accept_discovery_trait_objects() {
         .unwrap();
     assert_eq!(diagnostics.local_node_id.as_str(), "client-b");
     assert_eq!(diagnostics.candidate_count(), 3);
+}
+
+#[tokio::test]
+async fn chitchat_style_discovery_records_seed_metadata_and_liveness_events() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let discovery = Arc::new(ChitchatStyleDiscovery::new(["seed-a:7000", "seed-b:7000"]));
+
+    assert_eq!(discovery.adapter_name(), "chitchat-style");
+    assert_eq!(discovery.seed_count(), 2);
+    assert!(discovery.has_seeds());
+    assert_eq!(discovery.seeds(), ["seed-a:7000", "seed-b:7000"]);
+
+    let discovery_trait: Arc<dyn ClusterDiscovery> = discovery.clone();
+    let member = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .discovery(discovery_trait.clone())
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap();
+    let client = HydraCache::client()
+        .shared_cluster(cluster)
+        .discovery(discovery_trait)
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    discovery.mark_live("member-a");
+    discovery.mark_suspect("client-a");
+    discovery.mark_dead("client-a");
+
+    let candidates = discovery.candidates();
+    assert_eq!(candidates.len(), 2);
+    for candidate in &candidates {
+        assert_eq!(
+            candidate.metadata.get("discovery.adapter").unwrap(),
+            "chitchat-style"
+        );
+        assert_eq!(
+            candidate.metadata.get("discovery.seeds").unwrap(),
+            "seed-a:7000,seed-b:7000"
+        );
+    }
+
+    let diagnostics = client.cluster_discovery_diagnostics().unwrap();
+    assert_eq!(diagnostics.local_node_id.as_str(), "client-a");
+    assert_eq!(diagnostics.candidate_count(), 2);
+    assert_eq!(diagnostics.event_count(), 5);
+    assert!(diagnostics
+        .events
+        .iter()
+        .any(|event| matches!(event, ClusterDiscoveryEvent::MemberLive(node) if node.as_str() == "member-a")));
+    assert!(diagnostics
+        .events
+        .iter()
+        .any(|event| matches!(event, ClusterDiscoveryEvent::MemberSuspect(node) if node.as_str() == "client-a")));
+    assert!(diagnostics
+        .events
+        .iter()
+        .any(|event| matches!(event, ClusterDiscoveryEvent::MemberDead(node) if node.as_str() == "client-a")));
+
+    assert_eq!(member.cluster_diagnostics().unwrap().member_count, 1);
 }
 
 #[derive(Debug)]

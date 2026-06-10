@@ -289,6 +289,9 @@
 //! future discovery/Raft adapters are still being designed. Custom adapters can
 //! implement [`ClusterDiscovery`] for discovery/liveness and
 //! [`ClusterControlPlane`] for admission/metadata decisions.
+//! [`ChitchatStyleDiscovery`] is a dependency-free seed-node discovery spike
+//! that records chitchat-shaped candidates and liveness events without starting
+//! a network runtime.
 //!
 //! ```rust
 //! use std::sync::Arc;
@@ -385,10 +388,11 @@ mod typed;
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{
-    ClusterCandidate, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
-    ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch,
-    ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId, ClusterRole,
-    HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery,
+    ChitchatStyleDiscovery, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
+    ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints,
+    ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
+    ClusterRole, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
+    InMemoryClusterDiscovery,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

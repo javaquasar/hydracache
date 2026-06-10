@@ -407,6 +407,163 @@ impl ClusterDiscovery for InMemoryClusterDiscovery {
     }
 }
 
+/// Dependency-free, chitchat-style discovery adapter for tests and API spikes.
+///
+/// This adapter intentionally does not run the real `chitchat` network
+/// protocol yet. It models the part of chitchat that matters to HydraCache's
+/// public cluster API: a node starts with seed addresses, announces itself as a
+/// candidate, and records liveness transitions separately from authoritative
+/// control-plane admission.
+///
+/// Candidate announcements are stored in-memory and annotated with adapter
+/// metadata so tests, diagnostics, and the sandbox can distinguish this path
+/// from the plain [`InMemoryClusterDiscovery`] journal.
+///
+/// # Example
+///
+/// ```rust
+/// use std::sync::Arc;
+///
+/// use hydracache::{ChitchatStyleDiscovery, HydraCache, InMemoryCluster};
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let cluster = Arc::new(InMemoryCluster::new("orders"));
+/// let discovery = Arc::new(ChitchatStyleDiscovery::new([
+///     "127.0.0.1:7000",
+///     "127.0.0.1:7001",
+/// ]));
+///
+/// let member = HydraCache::member()
+///     .shared_cluster(cluster)
+///     .discovery(discovery.clone())
+///     .node_id("member-a")
+///     .start()
+///     .await?;
+///
+/// assert_eq!(discovery.seed_count(), 2);
+/// assert_eq!(discovery.candidates().len(), 1);
+/// assert!(member.cluster_discovery_diagnostics().unwrap().has_candidates());
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug)]
+pub struct ChitchatStyleDiscovery {
+    seeds: Vec<String>,
+    inner: InMemoryClusterDiscovery,
+}
+
+impl ChitchatStyleDiscovery {
+    /// Create a chitchat-style discovery journal with seed addresses.
+    pub fn new<I, S>(seeds: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        Self {
+            seeds: seeds.into_iter().map(Into::into).collect(),
+            inner: InMemoryClusterDiscovery::new(),
+        }
+    }
+
+    /// Return the static seed addresses used to bootstrap discovery.
+    pub fn seeds(&self) -> &[String] {
+        &self.seeds
+    }
+
+    /// Return the number of configured seed addresses.
+    pub fn seed_count(&self) -> usize {
+        self.seeds.len()
+    }
+
+    /// Return whether the adapter has at least one seed address.
+    pub fn has_seeds(&self) -> bool {
+        !self.seeds.is_empty()
+    }
+
+    /// Return the adapter label attached to candidate metadata.
+    pub fn adapter_name(&self) -> &'static str {
+        "chitchat-style"
+    }
+
+    /// Announce or update a candidate with chitchat-style metadata.
+    pub fn announce(&self, mut candidate: ClusterCandidate) {
+        candidate
+            .metadata
+            .entry("discovery.adapter".to_owned())
+            .or_insert_with(|| self.adapter_name().to_owned());
+        if self.has_seeds() {
+            candidate
+                .metadata
+                .entry("discovery.seeds".to_owned())
+                .or_insert_with(|| self.seeds.join(","));
+        }
+        self.inner.announce(candidate);
+    }
+
+    /// Record that a node appears live.
+    pub fn mark_live(&self, node_id: impl Into<ClusterNodeId>) {
+        self.inner.mark_live(node_id);
+    }
+
+    /// Record that a node is suspected unhealthy.
+    pub fn mark_suspect(&self, node_id: impl Into<ClusterNodeId>) {
+        self.inner.mark_suspect(node_id);
+    }
+
+    /// Record that a node is considered dead.
+    pub fn mark_dead(&self, node_id: impl Into<ClusterNodeId>) {
+        self.inner.mark_dead(node_id);
+    }
+
+    /// Return the latest candidate snapshot for every discovered node id.
+    pub fn candidates(&self) -> Vec<ClusterCandidate> {
+        self.inner.candidates()
+    }
+
+    /// Return discovery events recorded by the adapter.
+    pub fn events(&self) -> Vec<ClusterDiscoveryEvent> {
+        self.inner.events()
+    }
+}
+
+impl Default for ChitchatStyleDiscovery {
+    fn default() -> Self {
+        Self::new(std::iter::empty::<String>())
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterDiscovery for ChitchatStyleDiscovery {
+    async fn announce(&self, candidate: ClusterCandidate) -> Result<()> {
+        ChitchatStyleDiscovery::announce(self, candidate);
+        Ok(())
+    }
+
+    async fn mark_live(&self, node_id: ClusterNodeId) -> Result<()> {
+        ChitchatStyleDiscovery::mark_live(self, node_id);
+        Ok(())
+    }
+
+    async fn mark_suspect(&self, node_id: ClusterNodeId) -> Result<()> {
+        ChitchatStyleDiscovery::mark_suspect(self, node_id);
+        Ok(())
+    }
+
+    async fn mark_dead(&self, node_id: ClusterNodeId) -> Result<()> {
+        ChitchatStyleDiscovery::mark_dead(self, node_id);
+        Ok(())
+    }
+
+    fn candidates(&self) -> Vec<ClusterCandidate> {
+        ChitchatStyleDiscovery::candidates(self)
+    }
+
+    fn events(&self) -> Vec<ClusterDiscoveryEvent> {
+        ChitchatStyleDiscovery::events(self)
+    }
+}
+
 /// Authoritative or simulated cluster membership event.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClusterMembershipEvent {
