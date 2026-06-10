@@ -391,12 +391,13 @@ mod typed;
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{
-    ChitchatStyleDiscovery, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
-    ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints,
-    ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
-    ClusterRole, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
-    InMemoryClusterDiscovery, RaftMetadataCommand, RaftMetadataSnapshot,
-    RaftStyleMetadataControlPlane,
+    ChitchatStyleDiscovery, ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+    ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
+    ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
+    ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
+    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCacheClientBuilder,
+    HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, RaftMetadataCommand,
+    RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

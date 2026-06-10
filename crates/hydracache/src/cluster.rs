@@ -649,6 +649,149 @@ impl ClusterDiscoveryDiagnostics {
     }
 }
 
+/// Reason why the admission bridge ignored a discovered candidate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClusterAdmissionIgnoreReason {
+    /// The candidate already matches authoritative metadata.
+    AlreadyCurrent,
+    /// The candidate role is not admitted by this bridge configuration.
+    RoleDisabled,
+    /// Local cache roles are never admitted into a cluster control plane.
+    LocalRole,
+}
+
+/// Reason why the admission bridge rejected a discovered candidate.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClusterAdmissionRejectReason {
+    /// The candidate generation is older than authoritative metadata.
+    StaleGeneration {
+        /// Existing accepted generation.
+        existing: ClusterGeneration,
+        /// Attempted generation.
+        attempted: ClusterGeneration,
+    },
+    /// The control plane returned an admission error.
+    AdmissionError(String),
+}
+
+/// Event emitted by a cluster admission bridge.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClusterAdmissionBridgeEvent {
+    /// A discovery candidate was observed by the bridge.
+    CandidateSeen(ClusterCandidate),
+    /// A candidate was admitted by the control plane.
+    CandidateAdmitted(ClusterMember),
+    /// A candidate did not require a control-plane write.
+    CandidateIgnored {
+        /// Ignored candidate.
+        candidate: ClusterCandidate,
+        /// Ignore reason.
+        reason: ClusterAdmissionIgnoreReason,
+    },
+    /// A candidate was rejected before or during admission.
+    CandidateRejected {
+        /// Rejected candidate.
+        candidate: ClusterCandidate,
+        /// Rejection reason.
+        reason: ClusterAdmissionRejectReason,
+    },
+    /// The bridge loop stopped.
+    BridgeStopped,
+}
+
+/// Lightweight counters for a cluster admission bridge.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache::{
+///     ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+///     ClusterAdmissionIgnoreReason, ClusterCandidate,
+/// };
+///
+/// let mut diagnostics = ClusterAdmissionBridgeDiagnostics::default();
+/// let candidate = ClusterCandidate::client("client-a");
+///
+/// diagnostics.record_event(&ClusterAdmissionBridgeEvent::CandidateSeen(candidate.clone()));
+/// diagnostics.record_event(&ClusterAdmissionBridgeEvent::CandidateIgnored {
+///     candidate,
+///     reason: ClusterAdmissionIgnoreReason::AlreadyCurrent,
+/// });
+///
+/// assert_eq!(diagnostics.candidates_seen, 1);
+/// assert_eq!(diagnostics.total_decisions(), 1);
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ClusterAdmissionBridgeDiagnostics {
+    /// Number of candidate snapshots observed.
+    pub candidates_seen: u64,
+    /// Number of candidates admitted.
+    pub candidates_admitted: u64,
+    /// Number of candidates ignored without writing metadata.
+    pub candidates_ignored: u64,
+    /// Number of candidates rejected as stale or invalid.
+    pub candidates_rejected: u64,
+    /// Number of admission attempts that returned an error.
+    pub admission_failures: u64,
+    /// Last candidate node id observed by the bridge.
+    pub last_candidate: Option<ClusterNodeId>,
+    /// Last admitted node id.
+    pub last_admitted: Option<ClusterNodeId>,
+    /// Last error message, if any.
+    pub last_error: Option<String>,
+}
+
+impl ClusterAdmissionBridgeDiagnostics {
+    /// Return the total number of terminal bridge decisions.
+    pub fn total_decisions(&self) -> u64 {
+        self.candidates_admitted
+            .saturating_add(self.candidates_ignored)
+            .saturating_add(self.candidates_rejected)
+    }
+
+    /// Return whether the bridge has observed at least one candidate.
+    pub fn has_seen_candidates(&self) -> bool {
+        self.candidates_seen > 0
+    }
+
+    /// Return whether the bridge admitted at least one candidate.
+    pub fn has_admissions(&self) -> bool {
+        self.candidates_admitted > 0
+    }
+
+    /// Return whether the bridge reported any rejection or failure.
+    pub fn has_issues(&self) -> bool {
+        self.candidates_rejected > 0 || self.admission_failures > 0
+    }
+
+    /// Update counters from a bridge event.
+    pub fn record_event(&mut self, event: &ClusterAdmissionBridgeEvent) {
+        match event {
+            ClusterAdmissionBridgeEvent::CandidateSeen(candidate) => {
+                self.candidates_seen = self.candidates_seen.saturating_add(1);
+                self.last_candidate = Some(candidate.node_id.clone());
+            }
+            ClusterAdmissionBridgeEvent::CandidateAdmitted(member) => {
+                self.candidates_admitted = self.candidates_admitted.saturating_add(1);
+                self.last_admitted = Some(member.node_id.clone());
+            }
+            ClusterAdmissionBridgeEvent::CandidateIgnored { candidate, .. } => {
+                self.candidates_ignored = self.candidates_ignored.saturating_add(1);
+                self.last_candidate = Some(candidate.node_id.clone());
+            }
+            ClusterAdmissionBridgeEvent::CandidateRejected { candidate, reason } => {
+                self.candidates_rejected = self.candidates_rejected.saturating_add(1);
+                self.last_candidate = Some(candidate.node_id.clone());
+                if let ClusterAdmissionRejectReason::AdmissionError(error) = reason {
+                    self.admission_failures = self.admission_failures.saturating_add(1);
+                    self.last_error = Some(error.clone());
+                }
+            }
+            ClusterAdmissionBridgeEvent::BridgeStopped => {}
+        }
+    }
+}
+
 /// Transport-neutral control-plane contract for cluster admission and metadata.
 ///
 /// This trait is the seam where future chitchat/Raft-backed adapters can plug
@@ -1684,9 +1827,11 @@ mod tests {
     use std::sync::Arc;
 
     use super::{
-        ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
-        ClusterDiscoveryEvent, ClusterEndpoints, ClusterGeneration, ClusterMembershipEvent,
-        ClusterNodeId, ClusterRole, InMemoryCluster, InMemoryClusterDiscovery,
+        ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+        ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
+        ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent,
+        ClusterEndpoints, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
+        ClusterRole, InMemoryCluster, InMemoryClusterDiscovery,
     };
 
     #[test]
@@ -1783,6 +1928,40 @@ mod tests {
         assert_eq!(diagnostics.event_count(), 1);
         assert!(diagnostics.has_candidates());
         assert!(diagnostics.has_events());
+    }
+
+    #[test]
+    fn admission_bridge_diagnostics_record_events_without_double_counting_failures() {
+        let candidate = ClusterCandidate::member("member-a").generation(ClusterGeneration::new(3));
+        let admitted = ClusterMember::from_candidate(candidate.clone(), Default::default());
+        let mut diagnostics = ClusterAdmissionBridgeDiagnostics::default();
+
+        diagnostics.record_event(&ClusterAdmissionBridgeEvent::CandidateSeen(
+            candidate.clone(),
+        ));
+        diagnostics.record_event(&ClusterAdmissionBridgeEvent::CandidateIgnored {
+            candidate: candidate.clone(),
+            reason: ClusterAdmissionIgnoreReason::AlreadyCurrent,
+        });
+        diagnostics.record_event(&ClusterAdmissionBridgeEvent::CandidateAdmitted(admitted));
+        diagnostics.record_event(&ClusterAdmissionBridgeEvent::CandidateRejected {
+            candidate: candidate.clone(),
+            reason: ClusterAdmissionRejectReason::AdmissionError("raft unavailable".to_owned()),
+        });
+        diagnostics.record_event(&ClusterAdmissionBridgeEvent::BridgeStopped);
+
+        assert_eq!(diagnostics.candidates_seen, 1);
+        assert_eq!(diagnostics.candidates_ignored, 1);
+        assert_eq!(diagnostics.candidates_admitted, 1);
+        assert_eq!(diagnostics.candidates_rejected, 1);
+        assert_eq!(diagnostics.admission_failures, 1);
+        assert_eq!(diagnostics.total_decisions(), 3);
+        assert!(diagnostics.has_seen_candidates());
+        assert!(diagnostics.has_admissions());
+        assert!(diagnostics.has_issues());
+        assert_eq!(diagnostics.last_candidate, Some(candidate.node_id.clone()));
+        assert_eq!(diagnostics.last_admitted, Some(candidate.node_id));
+        assert_eq!(diagnostics.last_error.as_deref(), Some("raft unavailable"));
     }
 
     #[test]
