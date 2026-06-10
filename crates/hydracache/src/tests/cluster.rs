@@ -7,8 +7,9 @@ use tokio::time::{sleep, timeout};
 use crate::tests::common::{user, User};
 use crate::{
     CacheError, CacheInvalidationBus, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
-    ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId,
-    ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
+    ClusterDiscovery, ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration,
+    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache, InMemoryCluster,
+    InMemoryClusterDiscovery, InMemoryInvalidationBus,
 };
 
 async fn wait_until_absent(cache: &HydraCache, key: &str) {
@@ -224,6 +225,37 @@ async fn builders_accept_control_plane_trait_objects() {
     assert_eq!(client.cluster_diagnostics().unwrap().client_count, 1);
 }
 
+#[tokio::test]
+async fn builders_accept_discovery_trait_objects() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let discovery: Arc<dyn ClusterDiscovery> = Arc::new(InMemoryClusterDiscovery::new());
+
+    HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .discovery(discovery.clone())
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap();
+    HydraCache::client()
+        .shared_cluster(cluster)
+        .discovery(discovery.clone())
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    assert_eq!(discovery.candidates().len(), 2);
+    assert_eq!(
+        discovery
+            .events()
+            .iter()
+            .filter(|event| matches!(event, ClusterDiscoveryEvent::CandidateSeen(_)))
+            .count(),
+        2
+    );
+}
+
 #[derive(Debug)]
 struct RejectingControlPlane {
     bus: Arc<InMemoryInvalidationBus>,
@@ -317,4 +349,60 @@ async fn builders_return_custom_control_plane_admission_errors() {
     assert!(member_error
         .to_string()
         .contains("admission denied for member"));
+}
+
+#[derive(Debug, Default)]
+struct RejectingDiscovery;
+
+#[async_trait::async_trait]
+impl ClusterDiscovery for RejectingDiscovery {
+    async fn announce(&self, _candidate: ClusterCandidate) -> crate::CacheResult<()> {
+        Err(CacheError::Backend("discovery announce failed".to_owned()))
+    }
+
+    async fn mark_live(&self, _node_id: ClusterNodeId) -> crate::CacheResult<()> {
+        Ok(())
+    }
+
+    async fn mark_suspect(&self, _node_id: ClusterNodeId) -> crate::CacheResult<()> {
+        Ok(())
+    }
+
+    async fn mark_dead(&self, _node_id: ClusterNodeId) -> crate::CacheResult<()> {
+        Ok(())
+    }
+
+    fn candidates(&self) -> Vec<ClusterCandidate> {
+        Vec::new()
+    }
+
+    fn events(&self) -> Vec<ClusterDiscoveryEvent> {
+        Vec::new()
+    }
+}
+
+#[tokio::test]
+async fn builders_return_custom_discovery_errors_before_admission() {
+    let cluster = Arc::new(InMemoryCluster::new("orders"));
+    let discovery = Arc::new(RejectingDiscovery);
+
+    let error = HydraCache::client()
+        .shared_cluster(cluster.clone())
+        .discovery(discovery.clone())
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap_err();
+    assert!(error.to_string().contains("discovery announce failed"));
+    assert_eq!(cluster.clients().len(), 0);
+
+    let error = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .discovery(discovery)
+        .node_id("member-a")
+        .start()
+        .await
+        .unwrap_err();
+    assert!(error.to_string().contains("discovery announce failed"));
+    assert_eq!(cluster.members().len(), 0);
 }

@@ -587,6 +587,28 @@ assert_eq!(client.cluster_diagnostics().unwrap().client_count, 1);
 # }
 ```
 
+`ClusterDiscovery` is the matching seam for discovery and liveness. Use
+`.shared_discovery(...)` for the embedded in-memory journal or `.discovery(...)`
+for a future chitchat/DNS/mDNS/P2P adapter:
+
+```rust
+# use std::sync::Arc;
+# use hydracache::{ClusterDiscovery, HydraCache, InMemoryCluster};
+# async fn example(discovery: Arc<dyn ClusterDiscovery>) -> hydracache::CacheResult<()> {
+let cluster = Arc::new(InMemoryCluster::new("orders-prod"));
+
+let cache = HydraCache::client()
+    .shared_cluster(cluster)
+    .discovery(discovery)
+    .node_id("api-client-a")
+    .connect()
+    .await?;
+
+assert_eq!(cache.cluster_diagnostics().unwrap().client_count, 1);
+# Ok(())
+# }
+```
+
 ```rust
 use std::sync::Arc;
 use std::time::Duration;
@@ -648,8 +670,8 @@ invalidation propagation. `InMemoryClusterDiscovery` models the future
 gossip/discovery side by recording candidate and liveness events, while
 `InMemoryCluster` models authoritative admission and epoch movement. The
 intended next step is to plug discovery and
-membership libraries underneath this API through `ClusterControlPlane` without
-changing ordinary cache usage.
+membership libraries underneath this API through `ClusterDiscovery` and
+`ClusterControlPlane` without changing ordinary cache usage.
 
 ## Optional Axum Actuator
 
@@ -1199,6 +1221,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md](docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md)
 - [docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md](docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md)
 - [docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md](docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md)
+- [docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md](docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md)
 - [docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md)
 
 ## Workspace

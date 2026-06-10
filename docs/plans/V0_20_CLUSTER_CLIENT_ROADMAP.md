@@ -25,9 +25,17 @@ Implemented in the follow-up 0.20.0 control-plane slice:
 - `.control_plane(Arc<dyn ClusterControlPlane>)` for custom future backends;
 - `InMemoryCluster` as the default implementation of that trait.
 
+Implemented in the follow-up 0.20.0 discovery-adapter slice:
+
+- `ClusterDiscovery` as the adapter boundary for candidate and liveness
+  observation;
+- `.discovery(Arc<dyn ClusterDiscovery>)` for custom future discovery backends;
+- `InMemoryClusterDiscovery` as the default implementation of that trait;
+- discovery errors returned before control-plane admission.
+
 Still future work:
 
-- chitchat-backed discovery adapter;
+- concrete chitchat-backed discovery adapter;
 - raft-rs-backed authoritative metadata;
 - real network client/member protocol;
 - ownership maps and remote value loading.

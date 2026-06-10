@@ -271,6 +271,33 @@ pub enum ClusterDiscoveryEvent {
     MemberDead(ClusterNodeId),
 }
 
+/// Transport-neutral discovery contract for cluster candidates and liveness.
+///
+/// This is the seam where future chitchat, DNS, mDNS, or P2P discovery
+/// adapters can plug in. Discovery observes candidates and liveness; it does
+/// not make authoritative membership decisions. Admission remains the
+/// responsibility of [`ClusterControlPlane`].
+#[async_trait::async_trait]
+pub trait ClusterDiscovery: fmt::Debug + Send + Sync {
+    /// Announce or update a candidate.
+    async fn announce(&self, candidate: ClusterCandidate) -> Result<()>;
+
+    /// Record that a node appears live.
+    async fn mark_live(&self, node_id: ClusterNodeId) -> Result<()>;
+
+    /// Record that a node is suspected unhealthy.
+    async fn mark_suspect(&self, node_id: ClusterNodeId) -> Result<()>;
+
+    /// Record that a node is considered dead.
+    async fn mark_dead(&self, node_id: ClusterNodeId) -> Result<()>;
+
+    /// Return the latest candidate snapshot for every discovered node id.
+    fn candidates(&self) -> Vec<ClusterCandidate>;
+
+    /// Return discovery events recorded by this adapter.
+    fn events(&self) -> Vec<ClusterDiscoveryEvent>;
+}
+
 #[derive(Debug, Default)]
 struct InMemoryClusterDiscoveryState {
     candidates: BTreeMap<ClusterNodeId, ClusterCandidate>,
@@ -346,6 +373,37 @@ impl InMemoryClusterDiscovery {
             .expect("cluster discovery poisoned")
             .events
             .clone()
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterDiscovery for InMemoryClusterDiscovery {
+    async fn announce(&self, candidate: ClusterCandidate) -> Result<()> {
+        InMemoryClusterDiscovery::announce(self, candidate);
+        Ok(())
+    }
+
+    async fn mark_live(&self, node_id: ClusterNodeId) -> Result<()> {
+        InMemoryClusterDiscovery::mark_live(self, node_id);
+        Ok(())
+    }
+
+    async fn mark_suspect(&self, node_id: ClusterNodeId) -> Result<()> {
+        InMemoryClusterDiscovery::mark_suspect(self, node_id);
+        Ok(())
+    }
+
+    async fn mark_dead(&self, node_id: ClusterNodeId) -> Result<()> {
+        InMemoryClusterDiscovery::mark_dead(self, node_id);
+        Ok(())
+    }
+
+    fn candidates(&self) -> Vec<ClusterCandidate> {
+        InMemoryClusterDiscovery::candidates(self)
+    }
+
+    fn events(&self) -> Vec<ClusterDiscoveryEvent> {
+        InMemoryClusterDiscovery::events(self)
     }
 }
 
@@ -713,7 +771,7 @@ where
     cluster_name: String,
     bootstrap: Vec<String>,
     control_plane: Option<Arc<dyn ClusterControlPlane>>,
-    discovery: Option<Arc<InMemoryClusterDiscovery>>,
+    discovery: Option<Arc<dyn ClusterDiscovery>>,
     node_id: Option<ClusterNodeId>,
     generation: ClusterGeneration,
     endpoints: ClusterEndpoints,
@@ -771,6 +829,16 @@ where
 
     /// Attach an in-process discovery journal.
     pub fn shared_discovery(mut self, discovery: Arc<InMemoryClusterDiscovery>) -> Self {
+        self.discovery = Some(discovery);
+        self
+    }
+
+    /// Attach a custom discovery adapter.
+    ///
+    /// Use this for future chitchat, DNS, mDNS, or P2P-backed discovery. The
+    /// adapter observes candidates and liveness; the control plane still owns
+    /// authoritative admission.
+    pub fn discovery(mut self, discovery: Arc<dyn ClusterDiscovery>) -> Self {
         self.discovery = Some(discovery);
         self
     }
@@ -856,7 +924,7 @@ where
             .generation(self.generation)
             .endpoints(self.endpoints);
         if let Some(discovery) = &self.discovery {
-            discovery.announce(candidate.clone());
+            discovery.announce(candidate.clone()).await?;
         }
         let admitted = control_plane.join_client(candidate).await?;
 
@@ -885,7 +953,7 @@ where
     cluster_name: String,
     bootstrap: Vec<String>,
     control_plane: Option<Arc<dyn ClusterControlPlane>>,
-    discovery: Option<Arc<InMemoryClusterDiscovery>>,
+    discovery: Option<Arc<dyn ClusterDiscovery>>,
     node_id: Option<ClusterNodeId>,
     generation: ClusterGeneration,
     endpoints: ClusterEndpoints,
@@ -940,6 +1008,16 @@ where
 
     /// Attach an in-process discovery journal.
     pub fn shared_discovery(mut self, discovery: Arc<InMemoryClusterDiscovery>) -> Self {
+        self.discovery = Some(discovery);
+        self
+    }
+
+    /// Attach a custom discovery adapter.
+    ///
+    /// Use this for future chitchat, DNS, mDNS, or P2P-backed discovery. The
+    /// adapter observes candidates and liveness; the control plane still owns
+    /// authoritative admission.
+    pub fn discovery(mut self, discovery: Arc<dyn ClusterDiscovery>) -> Self {
         self.discovery = Some(discovery);
         self
     }
@@ -1029,7 +1107,7 @@ where
             .generation(self.generation)
             .endpoints(self.endpoints);
         if let Some(discovery) = &self.discovery {
-            discovery.announce(candidate.clone());
+            discovery.announce(candidate.clone()).await?;
         }
         let admitted = control_plane.join_member(candidate).await?;
 
@@ -1053,9 +1131,9 @@ mod tests {
     use std::sync::Arc;
 
     use super::{
-        ClusterCandidate, ClusterControlPlane, ClusterDiscoveryEvent, ClusterEndpoints,
-        ClusterGeneration, ClusterMembershipEvent, ClusterNodeId, ClusterRole, InMemoryCluster,
-        InMemoryClusterDiscovery,
+        ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryEvent,
+        ClusterEndpoints, ClusterGeneration, ClusterMembershipEvent, ClusterNodeId, ClusterRole,
+        InMemoryCluster, InMemoryClusterDiscovery,
     };
 
     #[test]
@@ -1159,6 +1237,35 @@ mod tests {
         assert!(matches!(
             discovery.events().last(),
             Some(ClusterDiscoveryEvent::MemberDead(node_id)) if node_id.as_str() == "member-a"
+        ));
+    }
+
+    #[tokio::test]
+    async fn in_memory_discovery_satisfies_discovery_contract() {
+        let discovery: Arc<dyn ClusterDiscovery> = Arc::new(InMemoryClusterDiscovery::new());
+
+        discovery
+            .announce(ClusterCandidate::client("client-a"))
+            .await
+            .unwrap();
+        discovery
+            .mark_live(ClusterNodeId::from("client-a"))
+            .await
+            .unwrap();
+        discovery
+            .mark_suspect(ClusterNodeId::from("client-a"))
+            .await
+            .unwrap();
+        discovery
+            .mark_dead(ClusterNodeId::from("client-a"))
+            .await
+            .unwrap();
+
+        assert_eq!(discovery.candidates().len(), 1);
+        assert_eq!(discovery.events().len(), 4);
+        assert!(matches!(
+            discovery.events().last(),
+            Some(ClusterDiscoveryEvent::MemberDead(node_id)) if node_id.as_str() == "client-a"
         ));
     }
 
