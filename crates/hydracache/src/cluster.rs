@@ -266,6 +266,15 @@ pub enum ClusterDiscoveryEvent {
     CandidateSeen(ClusterCandidate),
     /// A member appears live.
     MemberLive(ClusterNodeId),
+    /// A member or client published an intentional graceful-leave marker.
+    MemberLeaving {
+        /// Leaving node id.
+        node_id: ClusterNodeId,
+        /// Generation that published the leave marker.
+        generation: ClusterGeneration,
+        /// Runtime role that is leaving.
+        role: ClusterRole,
+    },
     /// A member is suspected unhealthy.
     MemberSuspect(ClusterNodeId),
     /// A member is considered dead.

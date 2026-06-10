@@ -6685,6 +6685,7 @@ fn cluster_discovery_event_label(event: &ClusterDiscoveryEvent) -> &'static str 
     match event {
         ClusterDiscoveryEvent::CandidateSeen(_) => "candidate-seen",
         ClusterDiscoveryEvent::MemberLive(_) => "member-live",
+        ClusterDiscoveryEvent::MemberLeaving { .. } => "member-leaving",
         ClusterDiscoveryEvent::MemberSuspect(_) => "member-suspect",
         ClusterDiscoveryEvent::MemberDead(_) => "member-dead",
     }

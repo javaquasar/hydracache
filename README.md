@@ -706,6 +706,24 @@ For real discovery, use `hydracache-cluster-chitchat` and pass
 advertises HydraCache candidate metadata in chitchat node state, and can be
 tested with chitchat's in-memory `ChannelTransport`.
 
+Chitchat discovery can also publish graceful-leave markers. These markers are
+generation-safe advisory metadata: remote discovery nodes can see
+`lifecycle = leaving`, while authoritative removal still goes through the
+configured control plane.
+
+```rust
+# async fn example(
+#     discovery: &hydracache_cluster_chitchat::ChitchatDiscovery,
+# ) -> hydracache::CacheResult<()> {
+use hydracache::{ClusterGeneration, ClusterRole};
+
+discovery
+    .mark_leaving("member-a", ClusterGeneration::new(7), ClusterRole::Member)
+    .await?;
+# Ok(())
+# }
+```
+
 For real metadata coordination, use `hydracache-cluster-raft` and pass
 `Arc<RaftMetadataRuntime>` through `.control_plane(...)`. The current runtime is
 a single-node in-memory raft-rs state machine that campaigns, proposes metadata

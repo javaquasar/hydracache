@@ -67,7 +67,17 @@ const KEY_GENERATION: &str = "hydracache.generation";
 const KEY_ENDPOINT_CONTROL: &str = "hydracache.endpoint.control";
 const KEY_ENDPOINT_INVALIDATION: &str = "hydracache.endpoint.invalidation";
 const KEY_ENDPOINT_DIAGNOSTICS: &str = "hydracache.endpoint.diagnostics";
+const KEY_LIFECYCLE: &str = "hydracache.lifecycle";
+const KEY_LEFT_GENERATION: &str = "hydracache.left.generation";
+const KEY_LEFT_ROLE: &str = "hydracache.left.role";
 const KEY_METADATA_PREFIX: &str = "hydracache.metadata.";
+
+const LIFECYCLE_ACTIVE: &str = "active";
+const LIFECYCLE_LEAVING: &str = "leaving";
+
+const METADATA_LIFECYCLE: &str = "lifecycle";
+const METADATA_LEFT_GENERATION: &str = "left.generation";
+const METADATA_LEFT_ROLE: &str = "left.role";
 
 /// Configuration for a chitchat-backed HydraCache discovery node.
 #[derive(Debug, Clone)]
@@ -298,11 +308,78 @@ impl ChitchatDiscovery {
             .map(ToOwned::to_owned)
     }
 
+    /// Publish a generation-safe graceful-leave marker in local chitchat state.
+    ///
+    /// The marker is advisory discovery metadata. Authoritative leave still
+    /// belongs to the configured HydraCache control plane, but remote discovery
+    /// nodes can observe this marker and distinguish an intentional leave from
+    /// ordinary suspect/dead failure detection.
+    ///
+    /// ```no_run
+    /// # use std::net::SocketAddr;
+    /// # use hydracache::{ClusterGeneration, ClusterRole};
+    /// # use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let discovery = ChitchatDiscovery::spawn_udp(
+    ///     ChitchatDiscoveryConfig::new(
+    ///         "orders",
+    ///         "member-a",
+    ///         ClusterGeneration::new(7),
+    ///         "127.0.0.1:7000".parse::<SocketAddr>().unwrap(),
+    ///     ),
+    /// )
+    /// .await?;
+    ///
+    /// discovery
+    ///     .mark_leaving("member-a", ClusterGeneration::new(7), ClusterRole::Member)
+    ///     .await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn mark_leaving(
+        &self,
+        node_id: impl Into<ClusterNodeId>,
+        generation: ClusterGeneration,
+        role: ClusterRole,
+    ) -> CacheResult<()> {
+        let node_id = node_id.into();
+        if node_id.as_str() != self.chitchat_id.node_id.as_ref() {
+            return Err(CacheError::Backend(format!(
+                "chitchat leave marker can only be written by local node {}; attempted {}",
+                self.chitchat_id.node_id, node_id
+            )));
+        }
+        if role == ClusterRole::Local {
+            return Err(CacheError::Backend(
+                "local caches do not publish chitchat leave markers".to_owned(),
+            ));
+        }
+
+        let mut chitchat = self.chitchat.lock().await;
+        let node_state = chitchat.self_node_state();
+        reject_stale_leave_generation(node_state, generation)?;
+
+        node_state.set(KEY_ROLE, role_to_str(role));
+        node_state.set(KEY_GENERATION, generation.value().to_string());
+        node_state.set(KEY_LIFECYCLE, LIFECYCLE_LEAVING);
+        node_state.set(KEY_LEFT_GENERATION, generation.value().to_string());
+        node_state.set(KEY_LEFT_ROLE, role_to_str(role));
+
+        record_leave_marker(self.state.clone(), node_id, generation, role);
+        Ok(())
+    }
+
     async fn announce_candidate(&self, mut candidate: ClusterCandidate) -> CacheResult<()> {
         candidate
             .metadata
             .entry("discovery.adapter".to_owned())
             .or_insert_with(|| "chitchat".to_owned());
+        candidate
+            .metadata
+            .insert(METADATA_LIFECYCLE.to_owned(), LIFECYCLE_ACTIVE.to_owned());
+        candidate.metadata.remove(METADATA_LEFT_GENERATION);
+        candidate.metadata.remove(METADATA_LEFT_ROLE);
 
         self.chitchat
             .lock()
@@ -361,6 +438,7 @@ async fn write_candidate_to_chitchat(
     let node_state = chitchat.self_node_state();
     node_state.set(KEY_ROLE, role_to_str(candidate.role));
     node_state.set(KEY_GENERATION, candidate.generation.value().to_string());
+    node_state.set(KEY_LIFECYCLE, LIFECYCLE_ACTIVE);
     set_optional(
         node_state,
         KEY_ENDPOINT_CONTROL,
@@ -379,6 +457,31 @@ async fn write_candidate_to_chitchat(
     for (key, value) in &candidate.metadata {
         node_state.set(format!("{KEY_METADATA_PREFIX}{key}"), value);
     }
+}
+
+fn reject_stale_leave_generation(
+    node_state: &NodeState,
+    generation: ClusterGeneration,
+) -> CacheResult<()> {
+    if let Some(active_generation) = parse_generation(node_state.get(KEY_GENERATION)) {
+        if generation < active_generation {
+            return Err(CacheError::Backend(format!(
+                "stale chitchat leave marker rejected: marker generation {} is older than active generation {}",
+                generation.value(),
+                active_generation.value()
+            )));
+        }
+    }
+    if let Some(left_generation) = parse_generation(node_state.get(KEY_LEFT_GENERATION)) {
+        if generation < left_generation {
+            return Err(CacheError::Backend(format!(
+                "stale chitchat leave marker rejected: marker generation {} is older than previous leave generation {}",
+                generation.value(),
+                left_generation.value()
+            )));
+        }
+    }
+    Ok(())
 }
 
 fn set_optional(node_state: &mut NodeState, key: &str, value: Option<&str>) {
@@ -426,15 +529,48 @@ fn record_candidate(state: Arc<Mutex<DiscoveryState>>, candidate: ClusterCandida
         .insert(candidate.node_id.clone(), candidate);
 }
 
+fn record_leave_marker(
+    state: Arc<Mutex<DiscoveryState>>,
+    node_id: ClusterNodeId,
+    generation: ClusterGeneration,
+    role: ClusterRole,
+) {
+    let mut state = state.lock().expect("chitchat discovery state poisoned");
+    {
+        let candidate = state
+            .candidates
+            .entry(node_id.clone())
+            .or_insert_with(|| match role {
+                ClusterRole::Member => ClusterCandidate::member(node_id.clone()),
+                ClusterRole::Client => ClusterCandidate::client(node_id.clone()),
+                ClusterRole::Local => ClusterCandidate::client(node_id.clone()),
+            });
+        candidate.generation = generation;
+        candidate.role = role;
+        candidate
+            .metadata
+            .insert(METADATA_LIFECYCLE.to_owned(), LIFECYCLE_LEAVING.to_owned());
+        candidate.metadata.insert(
+            METADATA_LEFT_GENERATION.to_owned(),
+            generation.value().to_string(),
+        );
+        candidate
+            .metadata
+            .insert(METADATA_LEFT_ROLE.to_owned(), role_to_str(role).to_owned());
+    }
+    state.events.push(ClusterDiscoveryEvent::MemberLeaving {
+        node_id,
+        generation,
+        role,
+    });
+}
+
 fn candidate_from_node(
     chitchat_id: &ChitchatId,
     node_state: &NodeState,
 ) -> Option<ClusterCandidate> {
     let role = parse_role(node_state.get(KEY_ROLE)?)?;
-    let generation = node_state
-        .get(KEY_GENERATION)
-        .and_then(|value| value.parse::<u64>().ok())
-        .map(ClusterGeneration::new)
+    let generation = parse_generation(node_state.get(KEY_GENERATION))
         .unwrap_or_else(|| ClusterGeneration::new(chitchat_id.generation_id));
     let mut candidate = match role {
         ClusterRole::Member => ClusterCandidate::member(chitchat_id.node_id.to_string()),
@@ -459,11 +595,49 @@ fn candidate_from_node(
                 .insert(metadata_key.to_owned(), value.to_owned());
         }
     }
+    if let Some(lifecycle) = node_state.get(KEY_LIFECYCLE) {
+        candidate
+            .metadata
+            .insert(METADATA_LIFECYCLE.to_owned(), lifecycle.to_owned());
+        if lifecycle == LIFECYCLE_LEAVING {
+            copy_node_state_metadata(
+                node_state,
+                &mut candidate,
+                KEY_LEFT_GENERATION,
+                METADATA_LEFT_GENERATION,
+            );
+            copy_node_state_metadata(
+                node_state,
+                &mut candidate,
+                KEY_LEFT_ROLE,
+                METADATA_LEFT_ROLE,
+            );
+        }
+    }
     candidate
         .metadata
         .entry("discovery.adapter".to_owned())
         .or_insert_with(|| "chitchat".to_owned());
     Some(candidate)
+}
+
+fn parse_generation(value: Option<&str>) -> Option<ClusterGeneration> {
+    value
+        .and_then(|value| value.parse::<u64>().ok())
+        .map(ClusterGeneration::new)
+}
+
+fn copy_node_state_metadata(
+    node_state: &NodeState,
+    candidate: &mut ClusterCandidate,
+    node_state_key: &str,
+    metadata_key: &str,
+) {
+    if let Some(value) = node_state.get(node_state_key) {
+        candidate
+            .metadata
+            .insert(metadata_key.to_owned(), value.to_owned());
+    }
 }
 
 fn role_to_str(role: ClusterRole) -> &'static str {
@@ -571,6 +745,196 @@ mod tests {
             Some(ClusterDiscoveryEvent::CandidateSeen(candidate))
                 if candidate.node_id.as_str() == "member-a"
         ));
+    }
+
+    #[tokio::test]
+    async fn leave_marker_is_written_to_local_chitchat_state() {
+        let transport = ChannelTransport::default();
+        let discovery =
+            ChitchatDiscovery::spawn_with_transport(config(47_012, "member-a"), &transport)
+                .await
+                .unwrap();
+
+        discovery
+            .announce(
+                ClusterCandidate::member("member-a").generation(ClusterGeneration::new(47_012)),
+            )
+            .await
+            .unwrap();
+        discovery
+            .mark_leaving(
+                "member-a",
+                ClusterGeneration::new(47_012),
+                ClusterRole::Member,
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            discovery.local_value(KEY_LIFECYCLE).await.as_deref(),
+            Some(LIFECYCLE_LEAVING)
+        );
+        assert_eq!(
+            discovery.local_value(KEY_LEFT_GENERATION).await.as_deref(),
+            Some("47012")
+        );
+        assert_eq!(
+            discovery.local_value(KEY_LEFT_ROLE).await.as_deref(),
+            Some("member")
+        );
+        let candidate = discovery
+            .candidates()
+            .into_iter()
+            .find(|candidate| candidate.node_id.as_str() == "member-a")
+            .expect("candidate should remain visible after graceful leave");
+        assert_eq!(
+            candidate
+                .metadata
+                .get(METADATA_LIFECYCLE)
+                .map(String::as_str),
+            Some(LIFECYCLE_LEAVING)
+        );
+        assert!(discovery.events().iter().any(|event| {
+            matches!(
+                event,
+                ClusterDiscoveryEvent::MemberLeaving { node_id, generation, role }
+                    if node_id.as_str() == "member-a"
+                        && *generation == ClusterGeneration::new(47_012)
+                        && *role == ClusterRole::Member
+            )
+        }));
+    }
+
+    #[tokio::test]
+    async fn stale_leave_marker_cannot_overwrite_newer_generation() {
+        let transport = ChannelTransport::default();
+        let discovery =
+            ChitchatDiscovery::spawn_with_transport(config(47_013, "member-a"), &transport)
+                .await
+                .unwrap();
+
+        discovery
+            .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(3)))
+            .await
+            .unwrap();
+
+        let error = discovery
+            .mark_leaving("member-a", ClusterGeneration::new(2), ClusterRole::Member)
+            .await
+            .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("stale chitchat leave marker rejected"));
+        assert_eq!(
+            discovery.local_value(KEY_LIFECYCLE).await.as_deref(),
+            Some(LIFECYCLE_ACTIVE)
+        );
+    }
+
+    #[tokio::test]
+    async fn remote_discovery_observes_leave_marker_metadata() {
+        let transport = ChannelTransport::default();
+        let first = ChitchatDiscovery::spawn_with_transport(config(47_014, "member-a"), &transport)
+            .await
+            .unwrap();
+        let second = ChitchatDiscovery::spawn_with_transport(
+            config(47_015, "client-a").seed_node("127.0.0.1:47014"),
+            &transport,
+        )
+        .await
+        .unwrap();
+
+        first
+            .announce(
+                ClusterCandidate::member("member-a").generation(ClusterGeneration::new(47_014)),
+            )
+            .await
+            .unwrap();
+        first
+            .mark_leaving(
+                "member-a",
+                ClusterGeneration::new(47_014),
+                ClusterRole::Member,
+            )
+            .await
+            .unwrap();
+
+        first.gossip_once(addr(47_015)).unwrap();
+        second.gossip_once(addr(47_014)).unwrap();
+
+        wait_until(Duration::from_secs(2), || {
+            second.candidates().iter().any(|candidate| {
+                candidate.node_id.as_str() == "member-a"
+                    && candidate
+                        .metadata
+                        .get(METADATA_LIFECYCLE)
+                        .is_some_and(|value| value == LIFECYCLE_LEAVING)
+            })
+        })
+        .await;
+
+        let remote = second
+            .candidates()
+            .into_iter()
+            .find(|candidate| candidate.node_id.as_str() == "member-a")
+            .expect("remote candidate should be present");
+        assert_eq!(
+            remote
+                .metadata
+                .get(METADATA_LEFT_GENERATION)
+                .map(String::as_str),
+            Some("47014")
+        );
+        assert_eq!(
+            remote.metadata.get(METADATA_LEFT_ROLE).map(String::as_str),
+            Some("member")
+        );
+    }
+
+    #[tokio::test]
+    async fn newer_rejoin_supersedes_leave_marker() {
+        let transport = ChannelTransport::default();
+        let discovery =
+            ChitchatDiscovery::spawn_with_transport(config(47_016, "member-a"), &transport)
+                .await
+                .unwrap();
+
+        discovery
+            .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(2)))
+            .await
+            .unwrap();
+        discovery
+            .mark_leaving("member-a", ClusterGeneration::new(2), ClusterRole::Member)
+            .await
+            .unwrap();
+        discovery
+            .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(3)))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            discovery.local_value(KEY_LIFECYCLE).await.as_deref(),
+            Some(LIFECYCLE_ACTIVE)
+        );
+        assert_eq!(
+            discovery.local_value(KEY_GENERATION).await.as_deref(),
+            Some("3")
+        );
+        let candidate = discovery
+            .candidates()
+            .into_iter()
+            .find(|candidate| candidate.node_id.as_str() == "member-a")
+            .expect("candidate should be visible after rejoin");
+        assert_eq!(candidate.generation, ClusterGeneration::new(3));
+        assert_eq!(
+            candidate
+                .metadata
+                .get(METADATA_LIFECYCLE)
+                .map(String::as_str),
+            Some(LIFECYCLE_ACTIVE)
+        );
+        assert!(!candidate.metadata.contains_key(METADATA_LEFT_GENERATION));
     }
 
     #[tokio::test]
