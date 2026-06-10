@@ -11,8 +11,11 @@ description = "Manual HydraCache sandbox backend with actuator and database mode
 
 [dependencies]
 axum.workspace = true
+chitchat.workspace = true
 hydracache.workspace = true
 hydracache-actuator-axum = { path = "../hydracache-actuator-axum" }
+hydracache-cluster-chitchat.workspace = true
+hydracache-cluster-raft.workspace = true
 hydracache-observability.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -68,6 +68,10 @@ export class HydraCacheSandboxClient {
     return this.post(`/demo/query/orders/${id}/summary/load`, options);
   }
 
+  runRealClusterAdapters(options = {}) {
+    return this.post("/demo/cluster/real-adapters/run", options);
+  }
+
   exportSession() {
     return this.json("/demo/export");
   }

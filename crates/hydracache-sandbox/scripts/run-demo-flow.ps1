@@ -345,3 +345,11 @@ Invoke-SandboxJson POST "/demo/cluster/lifecycle/run" @{
     value = "alpha"
     flow_id = "$FlowId-cluster"
 } | ConvertTo-Json -Depth 12
+
+Write-Host "`n38. Real cluster adapters demo"
+Invoke-SandboxJson POST "/demo/cluster/real-adapters/run" @{
+    cluster = "script-real-cluster"
+    member_node_id = "script-member-a"
+    client_node_id = "script-client-a"
+    flow_id = "$FlowId-real-cluster"
+} | ConvertTo-Json -Depth 12

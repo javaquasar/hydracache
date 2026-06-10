@@ -39,6 +39,7 @@ http://127.0.0.1:3000/demo/scenarios/document/run
 http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
+http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/db/seed-report
 http://127.0.0.1:3000/demo/openapi/client-smoke
@@ -52,8 +53,8 @@ sandbox API also exposes scenario runner, committed scenario files/suites,
 timeline, flow catalog/replay, profile comparison, replay, fault-injection,
 scenario document DSL, benchmark comparison, Prometheus/trace demo, DB seed
 report, seeded users/products/order-summary query-cache demos, session import,
-OpenAPI client smoke, distributed invalidation bus demo, and manual benchmark
-endpoints.
+OpenAPI client smoke, distributed invalidation bus demo, real chitchat + raft
+cluster-adapter demo, and manual benchmark endpoints.
 
 The distributed invalidation demo response includes a compact timeline
 (`source-publish`, `target-apply`, `diagnostics`) and diagnostics counters for

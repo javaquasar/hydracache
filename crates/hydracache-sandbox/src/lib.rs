@@ -43,6 +43,7 @@
 //! http://127.0.0.1:3000/demo/benchmarks/compare
 //! http://127.0.0.1:3000/demo/distributed/invalidation/run
 //! http://127.0.0.1:3000/demo/cluster/lifecycle/run
+//! http://127.0.0.1:3000/demo/cluster/real-adapters/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
 //! ```
@@ -62,13 +63,18 @@ use axum::middleware::{self, Next};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use chitchat::transport::ChannelTransport;
 use hydracache::{
     CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
-    CacheEventSubscriber, CacheOptions, ClusterDiagnostics, ClusterDiscoveryDiagnostics,
+    CacheEventSubscriber, CacheOptions, ClusterAdmissionBridge, ClusterAdmissionBridgeDiagnostics,
+    ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
+    ClusterCandidate, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
     ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent, ClusterRole, HydraCache,
-    InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
+    InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus, RaftMetadataCommand,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
+use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
+use hydracache_cluster_raft::{RaftMetadataRuntime, RaftMetadataRuntimeSnapshot, RaftRuntimeRole};
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -576,6 +582,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/cluster/lifecycle/run",
             post(run_cluster_lifecycle_demo),
+        )
+        .route(
+            "/demo/cluster/real-adapters/run",
+            post(run_real_cluster_adapters_demo),
         )
         .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
@@ -2053,6 +2063,19 @@ struct ClusterLifecycleDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-orders", "member_node_id": "sandbox-member-a", "client_node_id": "sandbox-client-a", "flow_id": "real-cluster-flow"}))]
+struct RealClusterAdaptersDemoRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    member_node_id: Option<String>,
+    #[serde(default)]
+    client_node_id: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"ttl_ms": 5000, "tags": ["users"], "loader_delay_ms": 10, "flow_id": "query-flow"}))]
 struct CacheLoadOptionsRequest {
     #[serde(default)]
@@ -2305,6 +2328,80 @@ struct ClusterLifecycleDemoResponse {
     client_leave: Option<ClusterMembershipEventReport>,
     member_leave: Option<ClusterMembershipEventReport>,
     timeline: Vec<ClusterLifecycleTimelineStep>,
+    passed: bool,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterAdmissionBridgeReport {
+    candidates_seen: u64,
+    candidates_admitted: u64,
+    candidates_ignored: u64,
+    candidates_rejected: u64,
+    admission_failures: u64,
+    total_decisions: u64,
+    has_seen_candidates: bool,
+    has_admissions: bool,
+    has_issues: bool,
+    last_candidate: Option<String>,
+    last_admitted: Option<String>,
+    last_error: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterAdmissionBridgeEventReport {
+    kind: &'static str,
+    node_id: Option<String>,
+    role: Option<&'static str>,
+    generation: Option<u64>,
+    reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct RaftMetadataCommandReport {
+    kind: &'static str,
+    node_id: String,
+    role: Option<&'static str>,
+    generation: Option<u64>,
+    epoch: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct RaftMetadataRuntimeReport {
+    raft_node_id: u64,
+    term: u64,
+    commit_index: u64,
+    applied_index: u64,
+    role: &'static str,
+    commands_committed: usize,
+    last_command: Option<RaftMetadataCommandReport>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct RealClusterAdaptersTimelineStep {
+    step: u8,
+    phase: &'static str,
+    actor: &'static str,
+    operation: &'static str,
+    detail: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct RealClusterAdaptersDemoResponse {
+    flow_id: String,
+    cluster: String,
+    discovery_adapter: &'static str,
+    control_plane: &'static str,
+    member_node_id: String,
+    client_node_id: String,
+    candidates_processed_first_run: usize,
+    candidates_processed_second_run: usize,
+    bridge: ClusterAdmissionBridgeReport,
+    bridge_events: Vec<ClusterAdmissionBridgeEventReport>,
+    raft: RaftMetadataRuntimeReport,
+    discovery: ClusterDiscoveryReport,
+    commands: Vec<RaftMetadataCommandReport>,
+    timeline: Vec<RealClusterAdaptersTimelineStep>,
     passed: bool,
     events: EventLogResponse,
 }
@@ -5179,6 +5276,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/benchmarks/compare".to_owned(),
         "/demo/distributed/invalidation/run".to_owned(),
         "/demo/cluster/lifecycle/run".to_owned(),
+        "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/import".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
@@ -5214,12 +5312,14 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "replayFlow(flowId",
         "loadProduct(id",
         "loadOrderSummary(id",
+        "runRealClusterAdapters(",
         "exportSession()",
         "importSession(bundle",
         "/demo/scenarios/document/run",
         "/demo/scenarios/file/run",
         "/demo/scenarios/suite/file/run",
         "/demo/benchmarks/compare",
+        "/demo/cluster/real-adapters/run",
         "/demo/flows",
         "/demo/query/products/",
         "/demo/query/orders/",
@@ -6114,6 +6214,236 @@ async fn run_cluster_lifecycle_demo_with_request(
     })
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/cluster/real-adapters/run",
+    tag = "cluster",
+    request_body = RealClusterAdaptersDemoRequest,
+    responses((status = 200, description = "Run real chitchat discovery through the admission bridge into raft-rs metadata", body = RealClusterAdaptersDemoResponse))
+)]
+async fn run_real_cluster_adapters_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<RealClusterAdaptersDemoRequest>,
+) -> Result<Json<RealClusterAdaptersDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_real_cluster_adapters_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_real_cluster_adapters_demo_with_request(
+    state: &SandboxState,
+    request: RealClusterAdaptersDemoRequest,
+) -> Result<RealClusterAdaptersDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "real-cluster-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let cluster_name = request
+        .cluster
+        .unwrap_or_else(|| "sandbox-orders".to_owned());
+    let member_node_id = request
+        .member_node_id
+        .unwrap_or_else(|| "sandbox-member-a".to_owned());
+    let client_node_id = request
+        .client_node_id
+        .unwrap_or_else(|| "sandbox-client-a".to_owned());
+    let member_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 49_001);
+    let client_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 49_002);
+    let transport = ChannelTransport::default();
+
+    let member_discovery = Arc::new(
+        ChitchatDiscovery::spawn_with_transport(
+            ChitchatDiscoveryConfig::new(
+                cluster_name.clone(),
+                member_node_id.clone(),
+                ClusterGeneration::new(1),
+                member_addr,
+            )
+            .gossip_interval(Duration::from_millis(20)),
+            &transport,
+        )
+        .await?,
+    );
+    let client_discovery = Arc::new(
+        ChitchatDiscovery::spawn_with_transport(
+            ChitchatDiscoveryConfig::new(
+                cluster_name.clone(),
+                client_node_id.clone(),
+                ClusterGeneration::new(1),
+                client_addr,
+            )
+            .seed_node(member_addr.to_string())
+            .gossip_interval(Duration::from_millis(20)),
+            &transport,
+        )
+        .await?,
+    );
+    let control_plane = Arc::new(RaftMetadataRuntime::single_node(cluster_name.clone(), 1)?);
+    let bridge = ClusterAdmissionBridge::new(member_discovery.clone(), control_plane.clone());
+
+    member_discovery
+        .announce(
+            ClusterCandidate::member(member_node_id.clone())
+                .generation(ClusterGeneration::new(1))
+                .metadata("sandbox.flow_id", flow_id.clone()),
+        )
+        .await?;
+    client_discovery
+        .announce(
+            ClusterCandidate::client(client_node_id.clone())
+                .generation(ClusterGeneration::new(1))
+                .metadata("sandbox.flow_id", flow_id.clone()),
+        )
+        .await?;
+    client_discovery.gossip_once(member_addr)?;
+
+    wait_for_chitchat_candidate(&member_discovery, &client_node_id).await?;
+
+    let candidates_processed_first_run = bridge.run_once().await;
+    let candidates_processed_second_run = bridge.run_once().await;
+    let bridge_report = cluster_admission_bridge_report(bridge.diagnostics());
+    let bridge_events = bridge
+        .events()
+        .iter()
+        .map(cluster_admission_bridge_event_report)
+        .collect::<Vec<_>>();
+    let raft = raft_runtime_report(control_plane.snapshot());
+    let commands = control_plane
+        .commands()
+        .iter()
+        .map(raft_command_report)
+        .collect::<Vec<_>>();
+    let discovery = cluster_discovery_report(ClusterDiscoveryDiagnostics {
+        local_node_id: member_node_id.clone().into(),
+        candidates: member_discovery.candidates(),
+        events: member_discovery.events(),
+    });
+
+    let timeline = vec![
+        real_cluster_timeline_step(
+            1,
+            "discovery",
+            "chitchat",
+            "announce+gossip",
+            format!(
+                "member discovery observed {} candidate(s) through ChannelTransport",
+                discovery.candidate_count
+            ),
+        ),
+        real_cluster_timeline_step(
+            2,
+            "admission",
+            "bridge",
+            "run-once",
+            format!(
+                "bridge admitted {} candidate(s) and rejected {}",
+                bridge_report.candidates_admitted, bridge_report.candidates_rejected
+            ),
+        ),
+        real_cluster_timeline_step(
+            3,
+            "metadata",
+            "raft-rs",
+            "commit",
+            format!(
+                "raft role={} committed {} command(s)",
+                raft.role, raft.commands_committed
+            ),
+        ),
+        real_cluster_timeline_step(
+            4,
+            "dedup",
+            "bridge",
+            "run-once",
+            format!(
+                "second bridge run processed {candidates_processed_second_run} candidate(s) and ignored {} already-current candidate(s)",
+                bridge_report.candidates_ignored
+            ),
+        ),
+    ];
+
+    let passed = candidates_processed_first_run == 2
+        && candidates_processed_second_run == 2
+        && bridge_report.candidates_admitted == 2
+        && bridge_report.candidates_ignored == 2
+        && bridge_report.candidates_rejected == 0
+        && bridge_report.admission_failures == 0
+        && raft.commands_committed == 2
+        && discovery.candidate_count == 2
+        && commands
+            .iter()
+            .any(|command| command.kind == "member-upsert" && command.node_id == member_node_id)
+        && commands
+            .iter()
+            .any(|command| command.kind == "client-upsert" && command.node_id == client_node_id);
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "real adapter demo connected chitchat discovery to raft metadata with {} committed command(s)",
+            raft.commands_committed
+        ),
+        None,
+        None,
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(RealClusterAdaptersDemoResponse {
+        flow_id,
+        cluster: cluster_name,
+        discovery_adapter: "chitchat-channel",
+        control_plane: "raft-rs-single-node",
+        member_node_id,
+        client_node_id,
+        candidates_processed_first_run,
+        candidates_processed_second_run,
+        bridge: bridge_report,
+        bridge_events,
+        raft,
+        discovery,
+        commands,
+        timeline,
+        passed,
+        events,
+    })
+}
+
+async fn wait_for_chitchat_candidate(
+    discovery: &ChitchatDiscovery,
+    node_id: &str,
+) -> Result<(), SandboxHttpError> {
+    timeout(Duration::from_secs(2), async {
+        loop {
+            if discovery
+                .candidates()
+                .iter()
+                .any(|candidate| candidate.node_id.as_str() == node_id)
+            {
+                return;
+            }
+            sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .map_err(|_| SandboxHttpError::internal("timed out waiting for chitchat candidate"))
+}
+
 fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeReport {
     ClusterRuntimeReport {
         cluster: diagnostics.cluster_name,
@@ -6126,6 +6456,163 @@ fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeRepo
         connected: diagnostics.connected,
         invalidation_subscribers: diagnostics.invalidation_subscribers,
         bootstrap: diagnostics.bootstrap,
+    }
+}
+
+fn cluster_admission_bridge_report(
+    diagnostics: ClusterAdmissionBridgeDiagnostics,
+) -> ClusterAdmissionBridgeReport {
+    ClusterAdmissionBridgeReport {
+        candidates_seen: diagnostics.candidates_seen,
+        candidates_admitted: diagnostics.candidates_admitted,
+        candidates_ignored: diagnostics.candidates_ignored,
+        candidates_rejected: diagnostics.candidates_rejected,
+        admission_failures: diagnostics.admission_failures,
+        total_decisions: diagnostics.total_decisions(),
+        has_seen_candidates: diagnostics.has_seen_candidates(),
+        has_admissions: diagnostics.has_admissions(),
+        has_issues: diagnostics.has_issues(),
+        last_candidate: diagnostics
+            .last_candidate
+            .map(|node_id| node_id.to_string()),
+        last_admitted: diagnostics.last_admitted.map(|node_id| node_id.to_string()),
+        last_error: diagnostics.last_error,
+    }
+}
+
+fn cluster_admission_bridge_event_report(
+    event: &ClusterAdmissionBridgeEvent,
+) -> ClusterAdmissionBridgeEventReport {
+    match event {
+        ClusterAdmissionBridgeEvent::CandidateSeen(candidate) => {
+            bridge_candidate_event("candidate-seen", candidate, None)
+        }
+        ClusterAdmissionBridgeEvent::CandidateAdmitted(member) => {
+            ClusterAdmissionBridgeEventReport {
+                kind: "candidate-admitted",
+                node_id: Some(member.node_id.to_string()),
+                role: Some(cluster_role_label(member.role)),
+                generation: Some(member.generation.value()),
+                reason: None,
+            }
+        }
+        ClusterAdmissionBridgeEvent::CandidateIgnored { candidate, reason } => {
+            bridge_candidate_event(
+                "candidate-ignored",
+                candidate,
+                Some(admission_ignore_reason_label(reason).to_owned()),
+            )
+        }
+        ClusterAdmissionBridgeEvent::CandidateRejected { candidate, reason } => {
+            bridge_candidate_event(
+                "candidate-rejected",
+                candidate,
+                Some(admission_reject_reason_label(reason)),
+            )
+        }
+        ClusterAdmissionBridgeEvent::BridgeStopped => ClusterAdmissionBridgeEventReport {
+            kind: "bridge-stopped",
+            node_id: None,
+            role: None,
+            generation: None,
+            reason: None,
+        },
+    }
+}
+
+fn bridge_candidate_event(
+    kind: &'static str,
+    candidate: &ClusterCandidate,
+    reason: Option<String>,
+) -> ClusterAdmissionBridgeEventReport {
+    ClusterAdmissionBridgeEventReport {
+        kind,
+        node_id: Some(candidate.node_id.to_string()),
+        role: Some(cluster_role_label(candidate.role)),
+        generation: Some(candidate.generation.value()),
+        reason,
+    }
+}
+
+fn admission_ignore_reason_label(reason: &ClusterAdmissionIgnoreReason) -> &'static str {
+    match reason {
+        ClusterAdmissionIgnoreReason::AlreadyCurrent => "already-current",
+        ClusterAdmissionIgnoreReason::RoleDisabled => "role-disabled",
+        ClusterAdmissionIgnoreReason::LocalRole => "local-role",
+    }
+}
+
+fn admission_reject_reason_label(reason: &ClusterAdmissionRejectReason) -> String {
+    match reason {
+        ClusterAdmissionRejectReason::StaleGeneration {
+            existing,
+            attempted,
+        } => format!(
+            "stale-generation: existing={}, attempted={}",
+            existing.value(),
+            attempted.value()
+        ),
+        ClusterAdmissionRejectReason::AdmissionError(error) => {
+            format!("admission-error: {error}")
+        }
+    }
+}
+
+fn raft_runtime_report(snapshot: RaftMetadataRuntimeSnapshot) -> RaftMetadataRuntimeReport {
+    RaftMetadataRuntimeReport {
+        raft_node_id: snapshot.raft_node_id,
+        term: snapshot.term,
+        commit_index: snapshot.commit_index,
+        applied_index: snapshot.applied_index,
+        role: raft_role_label(snapshot.role),
+        commands_committed: snapshot.commands_committed,
+        last_command: snapshot.last_command.as_ref().map(raft_command_report),
+    }
+}
+
+fn raft_command_report(command: &RaftMetadataCommand) -> RaftMetadataCommandReport {
+    match command {
+        RaftMetadataCommand::MemberUpsert {
+            node_id,
+            generation,
+            epoch,
+        } => RaftMetadataCommandReport {
+            kind: "member-upsert",
+            node_id: node_id.to_string(),
+            role: Some("member"),
+            generation: Some(generation.value()),
+            epoch: epoch.value(),
+        },
+        RaftMetadataCommand::ClientUpsert {
+            node_id,
+            generation,
+            epoch,
+        } => RaftMetadataCommandReport {
+            kind: "client-upsert",
+            node_id: node_id.to_string(),
+            role: Some("client"),
+            generation: Some(generation.value()),
+            epoch: epoch.value(),
+        },
+        RaftMetadataCommand::NodeLeft {
+            node_id,
+            role,
+            epoch,
+        } => RaftMetadataCommandReport {
+            kind: "node-left",
+            node_id: node_id.to_string(),
+            role: Some(cluster_role_label(*role)),
+            generation: None,
+            epoch: epoch.value(),
+        },
+    }
+}
+
+fn raft_role_label(role: RaftRuntimeRole) -> &'static str {
+    match role {
+        RaftRuntimeRole::Follower => "follower",
+        RaftRuntimeRole::Candidate => "candidate",
+        RaftRuntimeRole::Leader => "leader",
     }
 }
 
@@ -6206,6 +6693,22 @@ fn cluster_role_label(role: ClusterRole) -> &'static str {
         ClusterRole::Local => "local",
         ClusterRole::Client => "client",
         ClusterRole::Member => "member",
+    }
+}
+
+fn real_cluster_timeline_step(
+    step: u8,
+    phase: &'static str,
+    actor: &'static str,
+    operation: &'static str,
+    detail: String,
+) -> RealClusterAdaptersTimelineStep {
+    RealClusterAdaptersTimelineStep {
+        step,
+        phase,
+        actor,
+        operation,
+        detail,
     }
 }
 
@@ -7546,6 +8049,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/listeners/run', {key:'ui:listener', tag:'ui-listener', value:'alpha', loader_value:'beta', ttl_ms:5000, flow_id:`ui-listener-${Date.now()}`})">Listener demo</button>
       <button onclick="post('/demo/distributed/invalidation/run', {key:'ui:dist:tagged', second_key:'ui:dist:key', flush_key:'ui:dist:flush', tag:'ui-dist', value:'alpha', flow_id:`ui-dist-${Date.now()}`})">Distributed invalidation</button>
       <button onclick="post('/demo/cluster/lifecycle/run', {cluster:'ui-cluster', key:'ui:cluster:tagged', second_key:'ui:cluster:key', retained_key:'ui:cluster:retained', tag:'ui-cluster', value:'alpha', flow_id:`ui-cluster-${Date.now()}`})">Cluster lifecycle</button>
+      <button onclick="post('/demo/cluster/real-adapters/run', {cluster:'ui-real-cluster', flow_id:`ui-real-cluster-${Date.now()}`})">Real chitchat + raft</button>
     </section>
     <section>
       <h2>Scenario Lab</h2>
@@ -7908,6 +8412,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Create a temporary member/client cluster, verify discovery, distributed invalidation, explicit leave, and retained local cache contents.",
         },
         CapabilityReport {
+            name: "real cluster adapters",
+            endpoint: "/demo/cluster/real-adapters/run",
+            description: "Connect real chitchat-backed discovery to the polling admission bridge and commit membership metadata through the raft-rs runtime.",
+        },
+        CapabilityReport {
             name: "observability demo",
             endpoint: "/demo/observability/prometheus and /demo/observability/traces/latest",
             description: "Expose Prometheus text metrics and OpenTelemetry-style spans derived from sandbox events.",
@@ -8026,6 +8535,7 @@ fn actuator_stats_doc() {}
         run_listener_demo,
         run_distributed_invalidation_demo,
         run_cluster_lifecycle_demo,
+        run_real_cluster_adapters_demo,
         reset_demo,
         cache_put,
         cache_get,
@@ -8167,6 +8677,13 @@ fn actuator_stats_doc() {}
             ClusterDiscoveryReport,
             ClusterMembershipEventReport,
             ClusterLifecycleDemoResponse,
+            RealClusterAdaptersDemoRequest,
+            ClusterAdmissionBridgeReport,
+            ClusterAdmissionBridgeEventReport,
+            RaftMetadataCommandReport,
+            RaftMetadataRuntimeReport,
+            RealClusterAdaptersTimelineStep,
+            RealClusterAdaptersDemoResponse,
             LoadUserResponse,
             LoadProductResponse,
             LoadOrderSummaryResponse,
@@ -8611,6 +9128,7 @@ mod tests {
         assert!(paths.contains_key("/demo/listeners/run"));
         assert!(paths.contains_key("/demo/distributed/invalidation/run"));
         assert!(paths.contains_key("/demo/cluster/lifecycle/run"));
+        assert!(paths.contains_key("/demo/cluster/real-adapters/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));
@@ -8677,6 +9195,13 @@ mod tests {
         assert!(schemas.contains_key("ClusterDiscoveryReport"));
         assert!(schemas.contains_key("ClusterMembershipEventReport"));
         assert!(schemas.contains_key("ClusterLifecycleDemoResponse"));
+        assert!(schemas.contains_key("RealClusterAdaptersDemoRequest"));
+        assert!(schemas.contains_key("ClusterAdmissionBridgeReport"));
+        assert!(schemas.contains_key("ClusterAdmissionBridgeEventReport"));
+        assert!(schemas.contains_key("RaftMetadataCommandReport"));
+        assert!(schemas.contains_key("RaftMetadataRuntimeReport"));
+        assert!(schemas.contains_key("RealClusterAdaptersTimelineStep"));
+        assert!(schemas.contains_key("RealClusterAdaptersDemoResponse"));
         assert_eq!(
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
@@ -8991,6 +9516,40 @@ mod tests {
         assert_listener_events_include(&cluster["remote_events"], "tag-invalidated");
         assert_listener_events_include(&cluster["remote_events"], "key-invalidated");
 
+        let real_cluster = app
+            .clone()
+            .oneshot(post(
+                "/demo/cluster/real-adapters/run",
+                Body::from(
+                    r#"{"cluster":"test-real-cluster","member_node_id":"real-member-a","client_node_id":"real-client-a","flow_id":"real-cluster-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(real_cluster["flow_id"], "real-cluster-test");
+        assert_eq!(real_cluster["passed"], true);
+        assert_eq!(real_cluster["discovery_adapter"], "chitchat-channel");
+        assert_eq!(real_cluster["control_plane"], "raft-rs-single-node");
+        assert_eq!(real_cluster["bridge"]["candidates_admitted"], 2);
+        assert_eq!(real_cluster["bridge"]["candidates_ignored"], 2);
+        assert_eq!(real_cluster["bridge"]["candidates_rejected"], 0);
+        assert_eq!(real_cluster["raft"]["role"], "leader");
+        assert_eq!(real_cluster["raft"]["commands_committed"], 2);
+        assert_eq!(real_cluster["discovery"]["candidate_count"], 2);
+        assert_eq!(real_cluster["timeline"].as_array().unwrap().len(), 4);
+        assert!(real_cluster["commands"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|command| command["kind"] == "member-upsert"));
+        assert!(real_cluster["commands"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|command| command["kind"] == "client-upsert"));
+
         let query = app
             .clone()
             .oneshot(post(
@@ -9146,6 +9705,7 @@ mod tests {
         assert!(body.contains("/demo/listeners/run"));
         assert!(body.contains("/demo/query/products/100/load"));
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
+        assert!(body.contains("/demo/cluster/real-adapters/run"));
         assert!(body.contains("/demo/benchmarks/compare"));
         assert!(body.contains("/demo/observability/prometheus"));
         assert!(body.contains("Visual Timeline"));

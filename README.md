@@ -707,6 +707,12 @@ a single-node in-memory raft-rs state machine that campaigns, proposes metadata
 commands, drains `Ready`, appends stable log entries, and applies committed
 membership commands.
 
+To connect those two optional crates, use `ClusterAdmissionBridge`: chitchat
+finds candidates, the bridge polls and deduplicates generation/role snapshots,
+and the raft runtime commits accepted metadata. The sandbox endpoint
+`POST /demo/cluster/real-adapters/run` demonstrates that path end-to-end with
+real adapter crates and deterministic in-memory chitchat transport.
+
 ## Optional Axum Actuator
 
 HydraCache keeps HTTP support out of the base runtime. If an application wants a
@@ -826,6 +832,7 @@ http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/cluster/lifecycle/run
+http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
 http://127.0.0.1:3000/demo/security
@@ -846,7 +853,10 @@ in-memory bus and verifies tag, key, and flush propagation. The cluster
 lifecycle demo creates a temporary member/client pair, records discovery
 candidates, verifies remote invalidation in both directions, calls
 `leave_cluster()` for both runtimes, and confirms local cache contents are not
-cleared by leaving membership.
+cleared by leaving membership. The real-adapters demo connects
+`hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
+`hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
+full discovery-to-metadata path can be inspected without Docker or UDP ports.
 
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
@@ -860,7 +870,8 @@ counters with a visual flow timeline. The dashboard also includes a textarea
 scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
 demo for verifying subscriptions manually. It also includes one-click
 distributed invalidation and cluster lifecycle flows that render remote bus
-events and membership timelines in the output.
+events and membership timelines in the output, plus a real chitchat + raft
+adapter flow that shows bridge diagnostics and committed metadata commands.
 
 Useful Swagger/API groups:
 
@@ -907,6 +918,7 @@ POST /demo/cache/invalidate-tag
 POST /demo/listeners/run
 POST /demo/distributed/invalidation/run
 POST /demo/cluster/lifecycle/run
+POST /demo/cluster/real-adapters/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
 POST /demo/query/orders/{id}/summary/load
@@ -1259,7 +1271,7 @@ lines investigated before release.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
-- `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, and Postgres Docker checks.
+- `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, Postgres Docker, and real cluster-adapter checks.
 
 ## Release Plan
 

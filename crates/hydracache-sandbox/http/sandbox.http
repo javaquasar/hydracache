@@ -381,6 +381,17 @@ Content-Type: application/json
   "flow_id": "cluster-flow"
 }
 
+### Real adapters demo: chitchat discovery -> admission bridge -> raft metadata
+POST {{baseUrl}}/demo/cluster/real-adapters/run
+Content-Type: application/json
+
+{
+  "cluster": "sandbox-orders",
+  "member_node_id": "sandbox-member-a",
+  "client_node_id": "sandbox-client-a",
+  "flow_id": "real-cluster-flow"
+}
+
 ### First load should use the loader
 POST {{baseUrl}}/demo/load/42
 

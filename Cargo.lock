@@ -1222,8 +1222,11 @@ name = "hydracache-sandbox"
 version = "0.20.0"
 dependencies = [
  "axum",
+ "chitchat",
  "hydracache",
  "hydracache-actuator-axum",
+ "hydracache-cluster-chitchat",
+ "hydracache-cluster-raft",
  "hydracache-observability",
  "serde",
  "serde_json",
