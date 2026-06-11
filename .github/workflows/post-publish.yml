@@ -6,7 +6,7 @@ on:
       version:
         description: Published HydraCache version to verify
         required: true
-        default: 0.7.0
+        default: 0.20.0
 
 permissions:
   contents: read
@@ -28,8 +28,11 @@ jobs:
         run: |
           cargo add hydracache@${{ inputs.version }}
           cargo add hydracache-core@${{ inputs.version }}
+          cargo add hydracache-cluster@${{ inputs.version }}
           cargo add hydracache-cluster-chitchat@${{ inputs.version }}
           cargo add hydracache-cluster-raft@${{ inputs.version }}
+          cargo add hydracache-observability@${{ inputs.version }}
+          cargo add hydracache-actuator-axum@${{ inputs.version }}
           cargo add hydracache-db@${{ inputs.version }}
           cargo add hydracache-sqlx@${{ inputs.version }}
           cargo add serde --features derive
@@ -43,9 +46,12 @@ jobs:
           mod tests {
               use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
               use hydracache::ClusterGeneration;
+              use hydracache_actuator_axum::HydraCacheActuator;
+              use hydracache_cluster::HydraCluster;
               use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
               use hydracache_cluster_raft::RaftMetadataRuntime;
               use hydracache_db::DbCache;
+              use hydracache_observability::HydraCacheRegistry;
               use hydracache_sqlx::SqlxCache;
               use serde::{Deserialize, Serialize};
               use std::sync::Arc;
@@ -127,6 +133,26 @@ jobs:
               }
 
               #[tokio::test]
+              async fn published_cluster_composition_smoke_test() -> hydracache::CacheResult<()> {
+                  let cluster = HydraCluster::builder("orders")
+                      .node_id("member-b")
+                      .generation(ClusterGeneration::new(2))
+                      .raft_single_node(1)
+                      .build()
+                      .await?;
+
+                  let member = cluster.member_cache().start().await?;
+                  let diagnostics = member.cluster_diagnostics().unwrap();
+
+                  assert_eq!(cluster.cluster_name(), "orders");
+                  assert_eq!(diagnostics.node_id.as_str(), "member-b");
+                  assert_eq!(diagnostics.member_count, 1);
+                  assert_eq!(cluster.raft().snapshot().commands_committed, 1);
+
+                  Ok(())
+              }
+
+              #[tokio::test]
               async fn published_sqlx_adapter_smoke_test() -> hydracache_sqlx::Result<()> {
                   let cache = HydraCache::local().build();
                   let queries = DbCache::new(cache, "db");
@@ -165,6 +191,28 @@ jobs:
                       .await?;
 
                   assert_eq!(user.id, 7);
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_observability_and_actuator_smoke_test() -> hydracache::CacheResult<()> {
+                  let cache = HydraCache::local().build();
+                  cache
+                      .get_or_insert_with("answer", CacheOptions::new(), || async { 42_u64 })
+                      .await?;
+                  cache
+                      .get_or_insert_with("answer", CacheOptions::new(), || async { 7_u64 })
+                      .await?;
+
+                  let registry = HydraCacheRegistry::new().with_cache("main", cache);
+                  let diagnostics = registry.diagnostics("main").await.unwrap();
+                  assert_eq!(diagnostics.stats.loads, 1);
+                  assert_eq!(diagnostics.stats.hits, 1);
+                  assert_eq!(diagnostics.hit_ratio(), Some(0.5));
+
+                  let routes = HydraCacheActuator::new(registry).routes();
+                  let _ = routes;
 
                   Ok(())
               }

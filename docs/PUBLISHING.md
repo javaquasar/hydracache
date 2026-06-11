@@ -208,6 +208,14 @@ git push origin vX.Y.Z
 After the tag is pushed, run the `Post Publish Verification` workflow manually
 with the same version, for example `0.20.0`.
 
+The workflow creates a fresh external consumer crate and pulls the published
+packages from crates.io. It should cover the runtime, core, macros through the
+runtime, cluster composition crate, chitchat and raft cluster adapters,
+observability, actuator routes, `hydracache-db`, and `hydracache-sqlx`. This
+check is intentionally separate from workspace tests because it catches
+packaging, dependency-order, and re-export problems that local path
+dependencies can hide.
+
 For `0.10.0` and later, the post-publish smoke crate should also exercise the
 database query ergonomics added on top of `hydracache-db`:
 
