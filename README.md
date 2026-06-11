@@ -755,6 +755,29 @@ membership commands. Command ids make retries idempotent, and membership is
 materialized only after a successful Raft commit. The runtime can also export
 and import an in-memory metadata snapshot for recovery tests and demos.
 
+If you want the standard chitchat + raft composition without wiring every
+adapter manually, use `hydracache-cluster`:
+
+```rust
+# async fn example() -> hydracache::CacheResult<()> {
+use hydracache::ClusterGeneration;
+use hydracache_cluster::HydraCluster;
+
+let cluster = HydraCluster::builder("orders")
+    .node_id("member-a")
+    .generation(ClusterGeneration::new(1))
+    .chitchat_udp("127.0.0.1:7000")
+    .seed("127.0.0.1:7001")
+    .raft_single_node(1)
+    .build()
+    .await?;
+
+let member = cluster.member_cache().start().await?;
+# let _ = member;
+# Ok(())
+# }
+```
+
 To connect those two optional crates, use `ClusterAdmissionBridge`: chitchat
 finds candidates, the bridge polls and deduplicates generation/role snapshots,
 and the raft runtime commits accepted metadata. The sandbox endpoint
@@ -1313,6 +1336,7 @@ lines investigated before release.
 - `hydracache` - use this for the local async cache, `cacheable!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, stats, and diagnostics.
 - `hydracache-observability` - use this for a framework-neutral registry and serializable cache diagnostic snapshots.
 - `hydracache-actuator-axum` - use this when exposing read-only HydraCache diagnostics through Axum routes.
+- `hydracache-cluster` - use this when you want the standard chitchat + raft adapter composition without wiring every handle manually.
 - `hydracache-cluster-chitchat` - use this when you want real chitchat-backed cluster candidate discovery.
 - `hydracache-cluster-raft` - use this when you want the real raft-rs metadata runtime behind `ClusterControlPlane`.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.

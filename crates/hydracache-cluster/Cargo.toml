@@ -1,0 +1,20 @@
+[package]
+name = "hydracache-cluster"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Ergonomic cluster composition helpers for HydraCache"
+readme = "README.md"
+
+[dependencies]
+hydracache.workspace = true
+hydracache-cluster-chitchat.workspace = true
+hydracache-cluster-raft.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
+[lints]
+workspace = true

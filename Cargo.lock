@@ -1149,6 +1149,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-cluster"
+version = "0.20.0"
+dependencies = [
+ "hydracache",
+ "hydracache-cluster-chitchat",
+ "hydracache-cluster-raft",
+ "tokio",
+]
+
+[[package]]
 name = "hydracache-cluster-chitchat"
 version = "0.20.0"
 dependencies = [

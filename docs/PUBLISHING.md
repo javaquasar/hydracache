@@ -65,6 +65,9 @@ cargo publish -p hydracache-cluster-chitchat
 cargo package -p hydracache-cluster-raft
 cargo publish -p hydracache-cluster-raft
 
+cargo package -p hydracache-cluster
+cargo publish -p hydracache-cluster
+
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
@@ -169,6 +172,9 @@ cargo publish -p hydracache-cluster-chitchat
 
 cargo package -p hydracache-cluster-raft
 cargo publish -p hydracache-cluster-raft
+
+cargo package -p hydracache-cluster
+cargo publish -p hydracache-cluster
 
 cargo package -p hydracache-observability
 cargo publish -p hydracache-observability

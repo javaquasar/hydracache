@@ -2,6 +2,7 @@
 members = [
     "crates/hydracache",
     "crates/hydracache-actuator-axum",
+    "crates/hydracache-cluster",
     "crates/hydracache-cluster-chitchat",
     "crates/hydracache-cluster-raft",
     "crates/hydracache-core",
@@ -36,6 +37,7 @@ chitchat = "0.11.0"
 futures-util = "0.3.32"
 hydracache-core = { path = "crates/hydracache-core", version = "0.20.0" }
 hydracache = { path = "crates/hydracache", version = "0.20.0" }
+hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.20.0" }
 hydracache-cluster-chitchat = { path = "crates/hydracache-cluster-chitchat", version = "0.20.0" }
 hydracache-cluster-raft = { path = "crates/hydracache-cluster-raft", version = "0.20.0" }
 hydracache-db = { path = "crates/hydracache-db", version = "0.20.0" }
