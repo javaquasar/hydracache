@@ -36,13 +36,17 @@ impl EventBus {
     }
 
     pub(crate) fn publish(&self, event: CacheEvent, stats: &StatsCounters) {
-        if !self.should_publish(event.kind()) || self.sender.receiver_count() == 0 {
+        if !self.may_publish(event.kind()) {
             return;
         }
 
         if self.sender.send(event).is_ok() {
             stats.events_published.fetch_add(1, Ordering::Relaxed);
         }
+    }
+
+    pub(crate) fn may_publish(&self, kind: CacheEventKind) -> bool {
+        self.should_publish(kind) && self.sender.receiver_count() > 0
     }
 
     fn should_publish(&self, kind: CacheEventKind) -> bool {
@@ -159,5 +163,52 @@ impl CacheEventListenerHandle {
 impl Drop for CacheEventListenerHandle {
     fn drop(&mut self) {
         self.task.abort();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use hydracache_core::{CacheEventKind, CacheEventOptions};
+
+    use super::EventBus;
+    use crate::stats::StatsCounters;
+
+    #[test]
+    fn preflight_requires_an_active_subscriber() {
+        let bus = EventBus::new(16, false);
+
+        assert!(!bus.may_publish(CacheEventKind::Stored));
+
+        let subscriber = bus.subscribe(
+            CacheEventOptions::mutations(),
+            Arc::new(StatsCounters::default()),
+        );
+        assert!(bus.may_publish(CacheEventKind::Stored));
+
+        drop(subscriber);
+        assert!(!bus.may_publish(CacheEventKind::Stored));
+    }
+
+    #[test]
+    fn preflight_keeps_access_events_disabled_until_enabled() {
+        let disabled_bus = EventBus::new(16, false);
+        let _disabled_subscriber = disabled_bus.subscribe(
+            CacheEventOptions::access(),
+            Arc::new(StatsCounters::default()),
+        );
+
+        assert!(!disabled_bus.may_publish(CacheEventKind::Hit));
+        assert!(disabled_bus.may_publish(CacheEventKind::Stored));
+
+        let enabled_bus = EventBus::new(16, true);
+        let _enabled_subscriber = enabled_bus.subscribe(
+            CacheEventOptions::access(),
+            Arc::new(StatsCounters::default()),
+        );
+
+        assert!(enabled_bus.may_publish(CacheEventKind::Hit));
+        assert!(enabled_bus.may_publish(CacheEventKind::Stored));
     }
 }
