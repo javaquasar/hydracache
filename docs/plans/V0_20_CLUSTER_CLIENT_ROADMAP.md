@@ -78,12 +78,31 @@ Implemented in the follow-up 0.20.0 raft-style metadata slice:
 - stale-generation rejection leaves the commit index unchanged;
 - rustdoc example and regression tests using the public builder API.
 
-Still future work:
+Implemented in later 0.20.0 hardening slices:
 
-- concrete chitchat-backed discovery adapter;
-- raft-rs-backed authoritative metadata;
-- real network client/member protocol;
-- ownership maps and remote value loading.
+- `hydracache-cluster-chitchat` with a real `chitchat`-backed
+  `ClusterDiscovery` implementation;
+- `hydracache-cluster-raft` with a real raft-rs-backed metadata runtime behind
+  `ClusterControlPlane`;
+- `hydracache-cluster` composition helpers for wiring chitchat discovery and
+  raft metadata together;
+- admission bridge tests that connect discovered candidates to authoritative
+  metadata;
+- framed invalidation transport spike with encode/decode, duplicate-message,
+  close, and reconnect behavior;
+- raft recovery, command idempotency, and stale-command hardening;
+- dedicated cluster load stability tests.
+
+Still future work after 0.20.0:
+
+- production multi-node Raft transport;
+- durable metadata storage;
+- production network client/member protocol;
+- ownership maps, partition metadata, and failover decisions;
+- remote value loading and owner-side query execution;
+- external invalidation transports such as Postgres LISTEN/NOTIFY, Redis, or
+  NATS;
+- production-grade member/client security and authentication.
 
 ## Product Direction
 
