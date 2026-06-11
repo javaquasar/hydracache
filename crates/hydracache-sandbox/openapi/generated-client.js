@@ -92,6 +92,10 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/cluster/read-through/run", options);
   }
 
+  runClusterOwnerLoad(options = {}) {
+    return this.post("/demo/cluster/owner-load/run", options);
+  }
+
   runRealClusterAdapters(options = {}) {
     return this.post("/demo/cluster/real-adapters/run", options);
   }

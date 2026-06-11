@@ -387,6 +387,19 @@ Content-Type: application/json
   "flow_id": "cluster-flow"
 }
 
+### Cluster owner-load demo: owner loader, near-cache hydration, concurrent sharing, and rejections
+POST {{baseUrl}}/demo/cluster/owner-load/run
+Content-Type: application/json
+
+{
+  "cluster": "sandbox-orders",
+  "key": "cluster:owner-load:user:42",
+  "value": "Ada",
+  "concurrency": 8,
+  "loader_delay_ms": 40,
+  "flow_id": "owner-load-flow"
+}
+
 ### Real adapters demo: chitchat discovery -> admission bridge -> raft metadata
 POST {{baseUrl}}/demo/cluster/real-adapters/run
 Content-Type: application/json

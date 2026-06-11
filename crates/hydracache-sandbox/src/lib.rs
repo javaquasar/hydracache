@@ -49,6 +49,7 @@
 //! http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
 //! http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
 //! http://127.0.0.1:3000/demo/cluster/read-through/run
+//! http://127.0.0.1:3000/demo/cluster/owner-load/run
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
@@ -72,22 +73,25 @@ use axum::{Json, Router};
 use chitchat::transport::ChannelTransport;
 use hydracache::{
     CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
-    CacheEventSubscriber, CacheOptions, ClusterAdmissionBridge, ClusterAdmissionBridgeDiagnostics,
-    ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
-    ClusterCandidate, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
-    ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent, ClusterOwnershipDecision,
-    ClusterOwnershipDiagnostics, ClusterPeerFetch, ClusterPeerFetchDiagnostics,
-    ClusterPeerFetchResponse, ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery,
-    InMemoryInvalidationBus, InMemoryPeerFetch, RaftMetadataCommand,
+    CacheEventSubscriber, CacheOptions, CacheResult, ClusterAdmissionBridge,
+    ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason,
+    ClusterAdmissionRejectReason, ClusterCandidate, ClusterDiagnostics, ClusterDiscovery,
+    ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent,
+    ClusterOwnershipDecision, ClusterOwnershipDiagnostics, ClusterPeerFetch,
+    ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole, HydraCache,
+    InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus, InMemoryPeerFetch,
+    RaftMetadataCommand,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftMetadataRuntimeSnapshot, RaftRuntimeRole};
 use hydracache_cluster_transport_axum::{
-    AxumPeerFetchService, MemoryPeerFetchStore, PeerFetchReadThrough,
-    PeerFetchReadThroughDiagnostics, PeerFetchReadThroughOutcome, PeerFetchReadThroughPolicy,
-    PeerFetchReadThroughStatus, PeerFetchRouter, PeerFetchRouterDiagnostics,
-    PeerFetchRouterOutcome, PeerFetchRouterStatus,
+    AxumOwnerLoadService, AxumPeerFetchService, MemoryPeerFetchStore, OwnerLoadDescriptor,
+    OwnerLoadDiagnostics, OwnerLoadReadThroughDiagnostics, OwnerLoadReadThroughOutcome,
+    OwnerLoadReadThroughStatus, OwnerLoadRegistry, OwnerLoadRejectionCode, OwnerLoadResponse,
+    OwnerLoadService, OwnerLoadValue, PeerFetchReadThrough, PeerFetchReadThroughDiagnostics,
+    PeerFetchReadThroughOutcome, PeerFetchReadThroughPolicy, PeerFetchReadThroughStatus,
+    PeerFetchRouter, PeerFetchRouterDiagnostics, PeerFetchRouterOutcome, PeerFetchRouterStatus,
 };
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use serde::{Deserialize, Serialize};
@@ -614,6 +618,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/cluster/read-through/run",
             post(run_cluster_read_through_demo),
+        )
+        .route(
+            "/demo/cluster/owner-load/run",
+            post(run_cluster_owner_load_demo),
         )
         .route(
             "/demo/cluster/real-adapters/run",
@@ -2243,6 +2251,23 @@ struct ClusterReadThroughDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-orders", "key": "cluster:owner-load:user:42", "value": "Ada", "concurrency": 8, "loader_delay_ms": 40, "flow_id": "owner-load-flow"}))]
+struct ClusterOwnerLoadDemoRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    concurrency: Option<u16>,
+    #[serde(default)]
+    loader_delay_ms: Option<u64>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"cluster": "sandbox-orders", "member_node_id": "sandbox-member-a", "client_node_id": "sandbox-client-a", "flow_id": "real-cluster-flow"}))]
 struct RealClusterAdaptersDemoRequest {
     #[serde(default)]
@@ -2698,6 +2723,94 @@ struct ClusterReadThroughDemoResponse {
     router_diagnostics: ClusterPeerFetchRouterDiagnosticsReport,
     hydrated_value_after_first_read: Option<String>,
     hydrated_value_after_second_read: Option<String>,
+    member_a_endpoint: String,
+    member_b_endpoint: String,
+    timeline: Vec<ClusterOwnershipTimelineStep>,
+    passed: bool,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterOwnerLoadReadReport {
+    key: String,
+    owner_node_id: Option<String>,
+    endpoint: Option<String>,
+    policy: String,
+    status: String,
+    hit: bool,
+    remote_loaded: bool,
+    remote_miss: bool,
+    route_error: bool,
+    hydrated: bool,
+    value_len: Option<usize>,
+    decoded_value: Option<String>,
+    rejection_code: Option<String>,
+    failure_code: Option<String>,
+    error: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterOwnerLoadReadThroughDiagnosticsReport {
+    attempts: u64,
+    local_hits: u64,
+    local_misses: u64,
+    remote_hits: u64,
+    remote_loaded: u64,
+    remote_misses: u64,
+    total_hits: u64,
+    hydrations: u64,
+    in_flight_joins: u64,
+    routing_errors: u64,
+    rejections: u64,
+    failures: u64,
+    transport_errors: u64,
+    has_errors: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterOwnerLoadServiceDiagnosticsReport {
+    attempts: u64,
+    owner_hits: u64,
+    owner_misses: u64,
+    loader_executions: u64,
+    in_flight_joins: u64,
+    loaded: u64,
+    misses: u64,
+    rejections: u64,
+    failures: u64,
+    stores: u64,
+    total_successes: u64,
+    has_failures: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterOwnerLoadConcurrentReport {
+    concurrency: u16,
+    loader_calls: u64,
+    statuses: Vec<String>,
+    all_loaded: bool,
+    hydrated_value: Option<String>,
+    read_through_diagnostics: ClusterOwnerLoadReadThroughDiagnosticsReport,
+    owner_service_diagnostics: ClusterOwnerLoadServiceDiagnosticsReport,
+    passed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterOwnerLoadDemoResponse {
+    flow_id: String,
+    cluster: String,
+    key: String,
+    value: String,
+    loader: String,
+    owner: ClusterOwnershipDecisionReport,
+    first_load: ClusterOwnerLoadReadReport,
+    second_load: ClusterOwnerLoadReadReport,
+    missing_loader: ClusterOwnerLoadReadReport,
+    stale_generation: ClusterOwnerLoadReadReport,
+    wrong_owner: ClusterOwnerLoadReadReport,
+    concurrent: ClusterOwnerLoadConcurrentReport,
+    read_through_diagnostics: ClusterOwnerLoadReadThroughDiagnosticsReport,
+    owner_service_diagnostics: ClusterOwnerLoadServiceDiagnosticsReport,
     member_a_endpoint: String,
     member_b_endpoint: String,
     timeline: Vec<ClusterOwnershipTimelineStep>,
@@ -5739,6 +5852,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/cluster/ownership-transfer/run".to_owned(),
         "/demo/cluster/routed-peer-fetch/run".to_owned(),
         "/demo/cluster/read-through/run".to_owned(),
+        "/demo/cluster/owner-load/run".to_owned(),
         "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
@@ -5782,6 +5896,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "runClusterOwnershipTransfer(",
         "runClusterRoutedPeerFetch(",
         "runClusterReadThrough(",
+        "runClusterOwnerLoad(",
         "runRealClusterAdapters(",
         "exportSession()",
         "importSession(bundle",
@@ -5793,6 +5908,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/events/summary",
         "/demo/cluster/routed-peer-fetch/run",
         "/demo/cluster/read-through/run",
+        "/demo/cluster/owner-load/run",
         "/demo/cluster/real-adapters/run",
         "/demo/flows",
         "/demo/query/products/",
@@ -7595,6 +7711,363 @@ async fn run_cluster_read_through_demo_with_request(
     })
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/cluster/owner-load/run",
+    tag = "cluster",
+    request_body = ClusterOwnerLoadDemoRequest,
+    responses((status = 200, description = "Run owner-side load, near-cache hydration, concurrent sharing, and rejection demos", body = ClusterOwnerLoadDemoResponse))
+)]
+async fn run_cluster_owner_load_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<ClusterOwnerLoadDemoRequest>,
+) -> Result<Json<ClusterOwnerLoadDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_cluster_owner_load_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_cluster_owner_load_demo_with_request(
+    state: &SandboxState,
+    request: ClusterOwnerLoadDemoRequest,
+) -> Result<ClusterOwnerLoadDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "cluster-owner-load-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let cluster_name = request
+        .cluster
+        .unwrap_or_else(|| "sandbox-orders".to_owned());
+    let key = request
+        .key
+        .unwrap_or_else(|| "cluster:owner-load:user:42".to_owned());
+    let value = request.value.unwrap_or_else(|| "Ada".to_owned());
+    let concurrency = request.concurrency.unwrap_or(8).clamp(1, 32);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(40).min(1_000);
+    let loader_name = "users.by-id";
+    let slow_loader_name = "users.slow";
+    let tag = "cluster-owner-load-users";
+
+    let fast_loader_calls = Arc::new(AtomicU64::new(0));
+    let slow_loader_calls = Arc::new(AtomicU64::new(0));
+    let registry = OwnerLoadRegistry::new()
+        .register(loader_name, {
+            let fast_loader_calls = fast_loader_calls.clone();
+            move |request| {
+                let fast_loader_calls = fast_loader_calls.clone();
+                async move {
+                    fast_loader_calls.fetch_add(1, Ordering::SeqCst);
+                    let value = request
+                        .arg_str("value")
+                        .map(str::to_owned)
+                        .map_err(|error| CacheError::Backend(error.to_string()))?;
+                    owner_load_string_value(value, request.cache_options()).await
+                }
+            }
+        })
+        .register(slow_loader_name, {
+            let slow_loader_calls = slow_loader_calls.clone();
+            move |request| {
+                let slow_loader_calls = slow_loader_calls.clone();
+                async move {
+                    slow_loader_calls.fetch_add(1, Ordering::SeqCst);
+                    sleep(Duration::from_millis(loader_delay_ms)).await;
+                    let value = request
+                        .arg_str("value")
+                        .map(str::to_owned)
+                        .map_err(|error| CacheError::Backend(error.to_string()))?;
+                    owner_load_string_value(value, request.cache_options()).await
+                }
+            }
+        });
+
+    let member_a_id = "sandbox-owner-load-a";
+    let member_b_id = "sandbox-owner-load-b";
+    let generation = ClusterGeneration::new(1);
+    let service_a = OwnerLoadService::new(
+        member_a_id,
+        generation,
+        HydraCache::local().build(),
+        registry.clone(),
+    );
+    let service_b = OwnerLoadService::new(
+        member_b_id,
+        generation,
+        HydraCache::local().build(),
+        registry,
+    );
+    let (member_a_endpoint, shutdown_a, server_a) =
+        spawn_owner_load_demo_server(service_a.clone()).await?;
+    let (member_b_endpoint, shutdown_b, server_b) =
+        spawn_owner_load_demo_server(service_b.clone()).await?;
+
+    let cluster = InMemoryCluster::new(cluster_name.clone());
+    cluster.join_member(
+        ClusterCandidate::member(member_a_id)
+            .generation(generation)
+            .peer_fetch_base_url(member_a_endpoint.clone()),
+    )?;
+    cluster.join_member(
+        ClusterCandidate::member(member_b_id)
+            .generation(generation)
+            .peer_fetch_base_url(member_b_endpoint.clone()),
+    )?;
+
+    let owner_decision = cluster.owner_for_key(&key);
+    let owner = cluster_ownership_decision_report(&owner_decision);
+    let client_cache = HydraCache::local().build();
+    let read_through = PeerFetchReadThrough::new(client_cache.clone());
+    let descriptor = OwnerLoadDescriptor::new(loader_name)
+        .tag(tag)
+        .arg("value", value.as_str());
+
+    let first_outcome = read_through
+        .get_or_load_encoded(owner_decision.clone(), descriptor.clone())
+        .await?;
+    let first_decoded = decoded_owner_load_value(&first_outcome).await?;
+    let first_load = owner_load_read_report(&first_outcome, first_decoded);
+
+    let second_outcome = read_through
+        .get_or_load_encoded(owner_decision.clone(), descriptor.clone())
+        .await?;
+    let second_decoded = decoded_owner_load_value(&second_outcome).await?;
+    let second_load = owner_load_read_report(&second_outcome, second_decoded);
+
+    let missing_loader_key = format!("{key}:missing-loader");
+    let missing_loader_outcome = read_through
+        .get_or_load_encoded(
+            cluster.owner_for_key(&missing_loader_key),
+            OwnerLoadDescriptor::new("users.missing")
+                .key(missing_loader_key)
+                .tag(tag)
+                .arg("value", value.as_str()),
+        )
+        .await?;
+    let missing_loader = owner_load_read_report(
+        &missing_loader_outcome,
+        decoded_owner_load_value(&missing_loader_outcome).await?,
+    );
+
+    let stale_key = format!("{key}:stale-generation");
+    let stale_outcome = read_through
+        .get_or_load_encoded(
+            decision_with_owner_generation(
+                cluster.owner_for_key(&stale_key),
+                ClusterGeneration::new(0),
+            ),
+            OwnerLoadDescriptor::new(loader_name)
+                .key(stale_key)
+                .tag(tag)
+                .arg("value", value.as_str()),
+        )
+        .await?;
+    let stale_generation = owner_load_read_report(
+        &stale_outcome,
+        decoded_owner_load_value(&stale_outcome).await?,
+    );
+
+    let wrong_owner_key = format!("{key}:wrong-owner");
+    let wrong_owner_outcome = read_through
+        .get_or_load_encoded(
+            decision_with_owner_node_id(
+                cluster.owner_for_key(&wrong_owner_key),
+                "sandbox-wrong-owner",
+            ),
+            OwnerLoadDescriptor::new(loader_name)
+                .key(wrong_owner_key)
+                .tag(tag)
+                .arg("value", value.as_str()),
+        )
+        .await?;
+    let wrong_owner = owner_load_read_report(
+        &wrong_owner_outcome,
+        decoded_owner_load_value(&wrong_owner_outcome).await?,
+    );
+
+    let before_concurrent = aggregate_owner_load_diagnostics(&service_a, &service_b);
+    let concurrent_key = format!("{key}:concurrent");
+    let concurrent_read_through = Arc::new(PeerFetchReadThrough::new(HydraCache::local().build()));
+    let mut tasks = Vec::new();
+    for _ in 0..concurrency {
+        let read_through = concurrent_read_through.clone();
+        let decision = cluster.owner_for_key(&concurrent_key);
+        let descriptor = OwnerLoadDescriptor::new(slow_loader_name)
+            .tag(tag)
+            .arg("value", value.as_str());
+        tasks.push(tokio::spawn(async move {
+            read_through
+                .get_or_load_encoded(decision, descriptor)
+                .await
+                .map(|outcome| owner_load_read_through_status_label(outcome.status).to_owned())
+        }));
+    }
+
+    let mut statuses = Vec::new();
+    for task in tasks {
+        statuses.push(
+            task.await
+                .map_err(|error| SandboxHttpError::internal(error.to_string()))??,
+        );
+    }
+    let hydrated_value = concurrent_read_through
+        .cache()
+        .get::<String>(&concurrent_key)
+        .await?;
+    let after_concurrent = aggregate_owner_load_diagnostics(&service_a, &service_b);
+    let concurrent_service_diagnostics =
+        subtract_owner_load_diagnostics(after_concurrent, before_concurrent);
+    let concurrent_read_diagnostics = owner_load_read_through_diagnostics_report(
+        concurrent_read_through.owner_load_diagnostics(),
+    );
+    let concurrent = ClusterOwnerLoadConcurrentReport {
+        concurrency,
+        loader_calls: slow_loader_calls.load(Ordering::SeqCst),
+        all_loaded: statuses.iter().all(|status| status == "remote-loaded"),
+        statuses,
+        hydrated_value,
+        read_through_diagnostics: concurrent_read_diagnostics,
+        owner_service_diagnostics: owner_load_service_diagnostics_report(
+            concurrent_service_diagnostics,
+        ),
+        passed: slow_loader_calls.load(Ordering::SeqCst) == 1
+            && concurrent_read_through
+                .cache()
+                .get::<String>(&concurrent_key)
+                .await?
+                .as_deref()
+                == Some(value.as_str()),
+    };
+
+    let read_through_diagnostics =
+        owner_load_read_through_diagnostics_report(read_through.owner_load_diagnostics());
+    let owner_service_diagnostics = owner_load_service_diagnostics_report(
+        aggregate_owner_load_diagnostics(&service_a, &service_b),
+    );
+    let timeline = vec![
+        cluster_ownership_timeline_step(
+            1,
+            "admission",
+            "member-a/member-b",
+            "advertise-owner-load-endpoint",
+            format!("member-a endpoint={member_a_endpoint}; member-b endpoint={member_b_endpoint}"),
+        ),
+        cluster_ownership_timeline_step(
+            2,
+            "ownership",
+            "resolver",
+            "owner-for-key",
+            format!(
+                "resolver={} selected owner={:?} among {} member(s)",
+                owner.resolver, owner.owner_node_id, owner.member_count
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            3,
+            "owner-load",
+            "client-near-cache",
+            "miss-route-load-hydrate",
+            format!(
+                "first status={} hydrated={} decoded={:?}",
+                first_load.status, first_load.hydrated, first_load.decoded_value
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            4,
+            "owner-load",
+            "client-near-cache",
+            "second-local-hit",
+            format!("second status={}", second_load.status),
+        ),
+        cluster_ownership_timeline_step(
+            5,
+            "owner-load",
+            "owner-service",
+            "concurrent-single-flight",
+            format!(
+                "{} concurrent callers shared {} loader call(s)",
+                concurrent.concurrency, concurrent.loader_calls
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            6,
+            "owner-load",
+            "owner-service",
+            "structured-rejections",
+            format!(
+                "missing-loader={} stale-generation={} wrong-owner={}",
+                missing_loader.status, stale_generation.status, wrong_owner.status
+            ),
+        ),
+    ];
+
+    let passed = owner.has_owner
+        && owner.member_count == 2
+        && first_load.remote_loaded
+        && first_load.hydrated
+        && first_load.decoded_value.as_deref() == Some(value.as_str())
+        && second_load.status == "local-hit"
+        && missing_loader.rejection_code.as_deref() == Some("missing-loader")
+        && stale_generation.rejection_code.as_deref() == Some("stale-generation")
+        && wrong_owner.rejection_code.as_deref() == Some("wrong-owner")
+        && concurrent.passed
+        && owner_service_diagnostics.loaded >= 2
+        && owner_service_diagnostics.rejections >= 3;
+
+    let _ = shutdown_a.send(());
+    let _ = shutdown_b.send(());
+    let _ = timeout(Duration::from_secs(1), server_a).await;
+    let _ = timeout(Duration::from_secs(1), server_b).await;
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "cluster owner-load demo loaded owner value, hydrated near-cache, shared {} concurrent callers, and verified structured rejections",
+            concurrent.concurrency
+        ),
+        Some(key.clone()),
+        Some(tag.to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(ClusterOwnerLoadDemoResponse {
+        flow_id,
+        cluster: cluster_name,
+        key,
+        value,
+        loader: loader_name.to_owned(),
+        owner,
+        first_load,
+        second_load,
+        missing_loader,
+        stale_generation,
+        wrong_owner,
+        concurrent,
+        read_through_diagnostics,
+        owner_service_diagnostics,
+        member_a_endpoint,
+        member_b_endpoint,
+        timeline,
+        passed,
+        events,
+    })
+}
+
 async fn spawn_peer_fetch_demo_server(
     owner: impl Into<String>,
     generation: ClusterGeneration,
@@ -7605,6 +8078,26 @@ async fn spawn_peer_fetch_demo_server(
         .map_err(SandboxError::io)?;
     let addr = listener.local_addr().map_err(SandboxError::io)?;
     let routes = AxumPeerFetchService::new(owner.into(), generation, Arc::new(store)).routes();
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let server = tokio::spawn(async move {
+        let _ = axum::serve(listener, routes)
+            .with_graceful_shutdown(async {
+                let _ = shutdown_rx.await;
+            })
+            .await;
+    });
+
+    Ok((format!("http://{addr}"), shutdown_tx, server))
+}
+
+async fn spawn_owner_load_demo_server(
+    service: OwnerLoadService,
+) -> Result<(String, oneshot::Sender<()>, tokio::task::JoinHandle<()>), SandboxHttpError> {
+    let listener = TcpListener::bind((IpAddr::V4(Ipv4Addr::LOCALHOST), 0))
+        .await
+        .map_err(SandboxError::io)?;
+    let addr = listener.local_addr().map_err(SandboxError::io)?;
+    let routes = AxumOwnerLoadService::new(service).routes();
     let (shutdown_tx, shutdown_rx) = oneshot::channel();
     let server = tokio::spawn(async move {
         let _ = axum::serve(listener, routes)
@@ -8047,6 +8540,194 @@ fn read_through_status_label(status: PeerFetchReadThroughStatus) -> &'static str
         PeerFetchReadThroughStatus::GenerationMismatch => "generation-mismatch",
         PeerFetchReadThroughStatus::TransportError => "transport-error",
     }
+}
+
+async fn owner_load_string_value(
+    value: String,
+    options: CacheOptions,
+) -> CacheResult<Option<OwnerLoadValue>> {
+    let encoder = HydraCache::local().build();
+    encoder
+        .put("__owner_load_demo_value", value, CacheOptions::new())
+        .await?;
+    let encoded = encoder
+        .get_encoded("__owner_load_demo_value")
+        .await?
+        .ok_or_else(|| CacheError::Backend("failed to encode owner-load demo value".to_owned()))?;
+    Ok(Some(OwnerLoadValue::encoded(encoded, options)))
+}
+
+async fn decoded_owner_load_value(
+    outcome: &OwnerLoadReadThroughOutcome,
+) -> Result<Option<String>, SandboxHttpError> {
+    let Some(value) = outcome.value.clone() else {
+        return Ok(None);
+    };
+    let decoder = HydraCache::local().build();
+    decoder
+        .put_encoded("__owner_load_demo_decode", value, CacheOptions::new())
+        .await?;
+    Ok(decoder.get::<String>("__owner_load_demo_decode").await?)
+}
+
+fn owner_load_read_report(
+    outcome: &OwnerLoadReadThroughOutcome,
+    decoded_value: Option<String>,
+) -> ClusterOwnerLoadReadReport {
+    let (rejection_code, failure_code) = match outcome.response.as_ref() {
+        Some(OwnerLoadResponse::Rejected(rejection)) => (
+            Some(owner_load_rejection_code_label(rejection.code).to_owned()),
+            None,
+        ),
+        Some(OwnerLoadResponse::Failed(failure)) => (None, Some(failure.code.clone())),
+        _ => (None, None),
+    };
+
+    ClusterOwnerLoadReadReport {
+        key: outcome.key.clone(),
+        owner_node_id: outcome.owner.as_ref().map(ToString::to_string),
+        endpoint: outcome.endpoint.clone(),
+        policy: read_through_policy_label(outcome.policy).to_owned(),
+        status: owner_load_read_through_status_label(outcome.status).to_owned(),
+        hit: outcome.is_hit(),
+        remote_loaded: outcome.is_remote_loaded(),
+        remote_miss: outcome.is_remote_miss(),
+        route_error: outcome.is_route_error(),
+        hydrated: outcome.hydrated,
+        value_len: outcome.value.as_ref().map(|value| value.len()),
+        decoded_value,
+        rejection_code,
+        failure_code,
+        error: outcome.error.clone(),
+    }
+}
+
+fn owner_load_read_through_diagnostics_report(
+    diagnostics: OwnerLoadReadThroughDiagnostics,
+) -> ClusterOwnerLoadReadThroughDiagnosticsReport {
+    ClusterOwnerLoadReadThroughDiagnosticsReport {
+        attempts: diagnostics.attempts,
+        local_hits: diagnostics.local_hits,
+        local_misses: diagnostics.local_misses,
+        remote_hits: diagnostics.remote_hits,
+        remote_loaded: diagnostics.remote_loaded,
+        remote_misses: diagnostics.remote_misses,
+        total_hits: diagnostics.total_hits(),
+        hydrations: diagnostics.hydrations,
+        in_flight_joins: diagnostics.in_flight_joins,
+        routing_errors: diagnostics.routing_errors,
+        rejections: diagnostics.rejections,
+        failures: diagnostics.failures,
+        transport_errors: diagnostics.transport_errors,
+        has_errors: diagnostics.has_errors(),
+    }
+}
+
+fn owner_load_service_diagnostics_report(
+    diagnostics: OwnerLoadDiagnostics,
+) -> ClusterOwnerLoadServiceDiagnosticsReport {
+    ClusterOwnerLoadServiceDiagnosticsReport {
+        attempts: diagnostics.attempts,
+        owner_hits: diagnostics.owner_hits,
+        owner_misses: diagnostics.owner_misses,
+        loader_executions: diagnostics.loader_executions,
+        in_flight_joins: diagnostics.in_flight_joins,
+        loaded: diagnostics.loaded,
+        misses: diagnostics.misses,
+        rejections: diagnostics.rejections,
+        failures: diagnostics.failures,
+        stores: diagnostics.stores,
+        total_successes: diagnostics.total_successes(),
+        has_failures: diagnostics.has_failures(),
+    }
+}
+
+fn owner_load_read_through_status_label(status: OwnerLoadReadThroughStatus) -> &'static str {
+    match status {
+        OwnerLoadReadThroughStatus::LocalHit => "local-hit",
+        OwnerLoadReadThroughStatus::RemoteHit => "remote-hit",
+        OwnerLoadReadThroughStatus::RemoteLoaded => "remote-loaded",
+        OwnerLoadReadThroughStatus::RemoteMiss => "remote-miss",
+        OwnerLoadReadThroughStatus::NoOwner => "no-owner",
+        OwnerLoadReadThroughStatus::MissingEndpoint => "missing-endpoint",
+        OwnerLoadReadThroughStatus::Rejected => "rejected",
+        OwnerLoadReadThroughStatus::Failed => "failed",
+        OwnerLoadReadThroughStatus::TransportError => "transport-error",
+    }
+}
+
+fn owner_load_rejection_code_label(code: OwnerLoadRejectionCode) -> &'static str {
+    match code {
+        OwnerLoadRejectionCode::NoOwner => "no-owner",
+        OwnerLoadRejectionCode::WrongOwner => "wrong-owner",
+        OwnerLoadRejectionCode::StaleGeneration => "stale-generation",
+        OwnerLoadRejectionCode::MissingLoader => "missing-loader",
+        OwnerLoadRejectionCode::InvalidRequest => "invalid-request",
+    }
+}
+
+fn aggregate_owner_load_diagnostics(
+    first: &OwnerLoadService,
+    second: &OwnerLoadService,
+) -> OwnerLoadDiagnostics {
+    let first = first.diagnostics();
+    let second = second.diagnostics();
+    OwnerLoadDiagnostics {
+        attempts: first.attempts.saturating_add(second.attempts),
+        owner_hits: first.owner_hits.saturating_add(second.owner_hits),
+        owner_misses: first.owner_misses.saturating_add(second.owner_misses),
+        loader_executions: first
+            .loader_executions
+            .saturating_add(second.loader_executions),
+        in_flight_joins: first.in_flight_joins.saturating_add(second.in_flight_joins),
+        loaded: first.loaded.saturating_add(second.loaded),
+        misses: first.misses.saturating_add(second.misses),
+        rejections: first.rejections.saturating_add(second.rejections),
+        failures: first.failures.saturating_add(second.failures),
+        stores: first.stores.saturating_add(second.stores),
+    }
+}
+
+fn subtract_owner_load_diagnostics(
+    current: OwnerLoadDiagnostics,
+    baseline: OwnerLoadDiagnostics,
+) -> OwnerLoadDiagnostics {
+    OwnerLoadDiagnostics {
+        attempts: current.attempts.saturating_sub(baseline.attempts),
+        owner_hits: current.owner_hits.saturating_sub(baseline.owner_hits),
+        owner_misses: current.owner_misses.saturating_sub(baseline.owner_misses),
+        loader_executions: current
+            .loader_executions
+            .saturating_sub(baseline.loader_executions),
+        in_flight_joins: current
+            .in_flight_joins
+            .saturating_sub(baseline.in_flight_joins),
+        loaded: current.loaded.saturating_sub(baseline.loaded),
+        misses: current.misses.saturating_sub(baseline.misses),
+        rejections: current.rejections.saturating_sub(baseline.rejections),
+        failures: current.failures.saturating_sub(baseline.failures),
+        stores: current.stores.saturating_sub(baseline.stores),
+    }
+}
+
+fn decision_with_owner_generation(
+    mut decision: ClusterOwnershipDecision,
+    generation: ClusterGeneration,
+) -> ClusterOwnershipDecision {
+    if let Some(owner) = decision.owner.as_mut() {
+        owner.generation = generation;
+    }
+    decision
+}
+
+fn decision_with_owner_node_id(
+    mut decision: ClusterOwnershipDecision,
+    node_id: impl Into<String>,
+) -> ClusterOwnershipDecision {
+    if let Some(owner) = decision.owner.as_mut() {
+        owner.node_id = node_id.into().into();
+    }
+    decision
 }
 
 fn cluster_admission_bridge_report(
@@ -9734,6 +10415,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/cluster/ownership-transfer/run', {cluster:'ui-transfer-cluster', key:'ui:cluster:transfer', tag:'ui-transfer', value:'alpha', flow_id:`ui-transfer-${Date.now()}`})">Ownership transfer</button>
       <button onclick="post('/demo/cluster/routed-peer-fetch/run', {cluster:'ui-routed-cluster', key:'ui:cluster:routed', value:'alpha', flow_id:`ui-routed-${Date.now()}`})">Routed peer fetch</button>
       <button onclick="post('/demo/cluster/read-through/run', {cluster:'ui-read-through-cluster', key:'ui:cluster:read-through', value:'Ada', flow_id:`ui-read-through-${Date.now()}`})">Read-through hydration</button>
+      <button onclick="post('/demo/cluster/owner-load/run', {cluster:'ui-owner-load-cluster', key:'ui:cluster:owner-load', value:'Ada', concurrency:8, loader_delay_ms:40, flow_id:`ui-owner-load-${Date.now()}`})">Owner-side load</button>
       <button onclick="post('/demo/cluster/real-adapters/run', {cluster:'ui-real-cluster', flow_id:`ui-real-cluster-${Date.now()}`})">Real chitchat + raft</button>
     </section>
     <section>
@@ -10118,6 +10800,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Resolve an owner, fetch cached bytes through the read-through helper, hydrate the client near-cache, and verify the second read is local.",
         },
         CapabilityReport {
+            name: "cluster owner-load lab",
+            endpoint: "/demo/cluster/owner-load/run",
+            description: "Resolve an owner, run a registered owner-side loader on miss, hydrate the client near-cache, verify same-key concurrent sharing, and show structured rejection reports.",
+        },
+        CapabilityReport {
             name: "real cluster adapters",
             endpoint: "/demo/cluster/real-adapters/run",
             description: "Connect real chitchat-backed discovery to the polling admission bridge and commit membership metadata through the raft-rs runtime.",
@@ -10247,6 +10934,7 @@ fn actuator_stats_doc() {}
         run_cluster_ownership_transfer_demo,
         run_cluster_routed_peer_fetch_demo,
         run_cluster_read_through_demo,
+        run_cluster_owner_load_demo,
         run_real_cluster_adapters_demo,
         reset_demo,
         cache_put,
@@ -10411,6 +11099,12 @@ fn actuator_stats_doc() {}
             ClusterReadThroughReport,
             ClusterReadThroughDiagnosticsReport,
             ClusterReadThroughDemoResponse,
+            ClusterOwnerLoadDemoRequest,
+            ClusterOwnerLoadReadReport,
+            ClusterOwnerLoadReadThroughDiagnosticsReport,
+            ClusterOwnerLoadServiceDiagnosticsReport,
+            ClusterOwnerLoadConcurrentReport,
+            ClusterOwnerLoadDemoResponse,
             RealClusterAdaptersDemoRequest,
             ClusterAdmissionBridgeReport,
             ClusterAdmissionBridgeEventReport,
@@ -10883,6 +11577,9 @@ mod tests {
         assert!(super::capabilities()
             .iter()
             .any(|capability| capability.name == "cluster read-through lab"));
+        assert!(super::capabilities()
+            .iter()
+            .any(|capability| capability.name == "cluster owner-load lab"));
 
         let http_error = super::SandboxHttpError::bad_request("bad input").into_response();
         assert_eq!(http_error.status(), StatusCode::BAD_REQUEST);
@@ -10975,6 +11672,7 @@ mod tests {
         assert!(paths.contains_key("/demo/cluster/ownership-transfer/run"));
         assert!(paths.contains_key("/demo/cluster/routed-peer-fetch/run"));
         assert!(paths.contains_key("/demo/cluster/read-through/run"));
+        assert!(paths.contains_key("/demo/cluster/owner-load/run"));
         assert!(paths.contains_key("/demo/cluster/real-adapters/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
@@ -11060,6 +11758,12 @@ mod tests {
         assert!(schemas.contains_key("ClusterReadThroughReport"));
         assert!(schemas.contains_key("ClusterReadThroughDiagnosticsReport"));
         assert!(schemas.contains_key("ClusterReadThroughDemoResponse"));
+        assert!(schemas.contains_key("ClusterOwnerLoadDemoRequest"));
+        assert!(schemas.contains_key("ClusterOwnerLoadReadReport"));
+        assert!(schemas.contains_key("ClusterOwnerLoadReadThroughDiagnosticsReport"));
+        assert!(schemas.contains_key("ClusterOwnerLoadServiceDiagnosticsReport"));
+        assert!(schemas.contains_key("ClusterOwnerLoadConcurrentReport"));
+        assert!(schemas.contains_key("ClusterOwnerLoadDemoResponse"));
         assert!(schemas.contains_key("RealClusterAdaptersDemoRequest"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeReport"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeEventReport"));
@@ -11512,6 +12216,47 @@ mod tests {
         assert_eq!(read_through["router_diagnostics"]["hits"], 1);
         assert_eq!(read_through["timeline"].as_array().unwrap().len(), 4);
 
+        let owner_load = app
+            .clone()
+            .oneshot(post(
+                "/demo/cluster/owner-load/run",
+                Body::from(
+                    r#"{"cluster":"test-owner-load-cluster","key":"cluster:owner-load","value":"Ada","concurrency":8,"loader_delay_ms":10,"flow_id":"owner-load-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(owner_load["flow_id"], "owner-load-test");
+        assert_eq!(owner_load["passed"], true);
+        assert_eq!(owner_load["owner"]["has_owner"], true);
+        assert_eq!(owner_load["owner"]["member_count"], 2);
+        assert_eq!(owner_load["first_load"]["status"], "remote-loaded");
+        assert_eq!(owner_load["first_load"]["remote_loaded"], true);
+        assert_eq!(owner_load["first_load"]["hydrated"], true);
+        assert_eq!(owner_load["first_load"]["decoded_value"], "Ada");
+        assert_eq!(owner_load["second_load"]["status"], "local-hit");
+        assert_eq!(owner_load["second_load"]["decoded_value"], "Ada");
+        assert_eq!(
+            owner_load["missing_loader"]["rejection_code"],
+            "missing-loader"
+        );
+        assert_eq!(
+            owner_load["stale_generation"]["rejection_code"],
+            "stale-generation"
+        );
+        assert_eq!(owner_load["wrong_owner"]["rejection_code"], "wrong-owner");
+        assert_eq!(owner_load["concurrent"]["passed"], true);
+        assert_eq!(owner_load["concurrent"]["loader_calls"], 1);
+        assert_eq!(
+            owner_load["concurrent"]["read_through_diagnostics"]["attempts"],
+            8
+        );
+        assert_eq!(owner_load["read_through_diagnostics"]["local_hits"], 1);
+        assert_eq!(owner_load["owner_service_diagnostics"]["rejections"], 3);
+        assert_eq!(owner_load["timeline"].as_array().unwrap().len(), 6);
+
         let real_cluster = app
             .clone()
             .oneshot(post(
@@ -11705,6 +12450,7 @@ mod tests {
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
         assert!(body.contains("/demo/cluster/routed-peer-fetch/run"));
         assert!(body.contains("/demo/cluster/read-through/run"));
+        assert!(body.contains("/demo/cluster/owner-load/run"));
         assert!(body.contains("/demo/cluster/real-adapters/run"));
         assert!(body.contains("/demo/benchmarks/compare"));
         assert!(body.contains("/demo/observability/prometheus"));

@@ -904,6 +904,65 @@ and transport errors never hydrate stale bytes. The sandbox route
 `POST /demo/cluster/read-through/run` demonstrates the complete flow:
 local miss -> owner remote hit -> local hydration -> second read local hit.
 
+For owner-side load-on-miss, keep using `PeerFetchReadThrough`, but pass an
+`OwnerLoadDescriptor` instead of raw `CacheOptions`. The client still sends only
+data: loader name, key, tags, TTL, arguments, and observed owner generation.
+The owner executes a loader that was explicitly registered on that member:
+
+```rust
+use hydracache::{CacheOptions, ClusterCandidate, ClusterGeneration, HydraCache, InMemoryCluster};
+use hydracache_cluster_transport_axum::{
+    OwnerLoadDescriptor, OwnerLoadRegistry, OwnerLoadValue, PeerFetchReadThrough,
+};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let registry = OwnerLoadRegistry::new().register("users.by-id", |request| async move {
+    let id = request.arg_u64("id").map_err(|error| {
+        hydracache::CacheError::Backend(error.to_string())
+    })?;
+    let user_name = format!("user-{id}");
+    let encoder = HydraCache::local().build();
+    encoder.put("encoded", user_name, CacheOptions::new()).await?;
+    let encoded = encoder.get_encoded("encoded").await?.expect("encoded value");
+
+    Ok(Some(OwnerLoadValue::encoded(
+        encoded,
+        request.cache_options(),
+    )))
+});
+# let _ = registry;
+
+let near_cache = HydraCache::local().build();
+let cluster = InMemoryCluster::new("users");
+cluster.join_member(
+    ClusterCandidate::member("member-a")
+        .generation(ClusterGeneration::new(1))
+        .peer_fetch_base_url("http://127.0.0.1:3000"),
+)?;
+
+let outcome = PeerFetchReadThrough::new(near_cache)
+    .get_or_load_encoded(
+        cluster.owner_for_key("user:42"),
+        OwnerLoadDescriptor::new("users.by-id")
+            .tag("users")
+            .tag("user:42")
+            .arg("id", 42_u64),
+    )
+    .await?;
+
+assert!(outcome.is_hit());
+# Ok(())
+# }
+```
+
+Use plain peer-fetch read-through when the owner should only return bytes that
+are already cached. Use owner-load read-through when the owner is allowed to run
+one of your named loaders on miss and then store the encoded result locally. The
+sandbox route `POST /demo/cluster/owner-load/run` demonstrates:
+client miss -> owner miss -> registered owner loader -> owner store -> client
+hydrate -> second read local hit, plus concurrent same-key sharing and
+structured rejections for missing loader, stale generation, and wrong owner.
+
 Ownership counters live in a separate diagnostics snapshot so the original
 `ClusterDiagnostics` struct can remain backwards-compatible for users that
 construct it in tests:
@@ -923,7 +982,7 @@ assert_eq!(ownership.owner_found(), 1);
 
 ## Cluster Support Boundaries
 
-The current `0.24.x` cluster support is intentionally an embedded coordination
+The current `0.25.x` cluster support is intentionally an embedded coordination
 surface, not a production distributed data grid. It includes:
 
 - local, client, and member cache roles;
@@ -938,13 +997,15 @@ surface, not a production distributed data grid. It includes:
 - advertised peer-fetch endpoint metadata and `PeerFetchRouter`;
 - `PeerFetchReadThrough` for local/near-cache read-through and hydration from
   owner cached bytes;
+- explicit owner-side loader registry, owner-load HTTP route/client, and
+  read-through load-on-miss helper for named loaders;
 - diagnostics counters for membership, invalidation, ownership, peer-fetch,
-  routed peer-fetch, and read-through activity.
+  routed peer-fetch, read-through, and owner-load activity.
 
 It intentionally does not yet include:
 
 - production multi-node Raft networking or durable metadata storage;
-- automatic remote owner-side loader/query execution;
+- transparent remote closures, raw SQL execution, or arbitrary executable code;
 - value replication, backup ownership, or failover repair;
 - external invalidation transports such as Redis, NATS, or Postgres
   LISTEN/NOTIFY;
@@ -1163,6 +1224,7 @@ http://127.0.0.1:3000/demo/cluster/ownership/run
 http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
 http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
 http://127.0.0.1:3000/demo/cluster/read-through/run
+http://127.0.0.1:3000/demo/cluster/owner-load/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
@@ -1194,7 +1256,11 @@ peer-fetch lab starts two temporary HTTP peer-fetch services, advertises their
 base URLs through member metadata, resolves the key owner, and verifies that
 `PeerFetchRouter` fetches the encoded value from the advertised owner endpoint.
 The read-through lab builds on that route by hydrating a client near-cache from
-the owner response and proving that the second read is a local hit.
+the owner response and proving that the second read is a local hit. The
+owner-load lab goes one step further: on owner miss it executes a registered
+named loader on the selected owner, stores the encoded value there, hydrates the
+client near-cache, verifies concurrent same-key sharing, and reports structured
+missing-loader, stale-generation, and wrong-owner rejections.
 The real-adapters demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the

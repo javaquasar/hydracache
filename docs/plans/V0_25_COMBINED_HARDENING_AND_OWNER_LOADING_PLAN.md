@@ -687,18 +687,18 @@ server startup wiring thin.
 
 ## Completion Checklist
 
-- [ ] Combined plan documented.
-- [ ] Release notes `docs/releases/0.25.0.md` created.
+- [x] Combined plan documented.
+- [x] Release notes `docs/releases/0.25.0.md` created.
 - [ ] Coverage target reached or residual gap documented.
-- [ ] Owner-load protocol types added and tested.
-- [ ] Loader registry added and tested.
-- [ ] Owner service added and tested.
-- [ ] HTTP owner-load route/client added and tested.
-- [ ] Read-through load helper added and tested.
-- [ ] Diagnostics exposed and tested.
-- [ ] Sandbox route, OpenAPI schemas, and scenario reports added.
-- [ ] README updated.
-- [ ] Rustdoc examples compile.
+- [x] Owner-load protocol types added and tested.
+- [x] Loader registry added and tested.
+- [x] Owner service added and tested.
+- [x] HTTP owner-load route/client added and tested.
+- [x] Read-through load helper added and tested.
+- [x] Diagnostics exposed and tested.
+- [x] Sandbox route, OpenAPI schemas, and scenario reports added.
+- [x] README updated.
+- [x] Rustdoc examples compile.
 - [ ] Full workspace tests pass.
 - [ ] Clippy with `-D warnings` passes.
 - [ ] Docs build with `RUSTDOCFLAGS=-D warnings`.
