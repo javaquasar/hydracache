@@ -1033,6 +1033,12 @@ where
                                     .distributed_invalidation_lagged
                                     .fetch_add(count, Ordering::Relaxed);
                             }
+                            CacheInvalidationReceive::DecodeError(_) => {
+                                inner
+                                    .stats
+                                    .distributed_invalidation_decode_errors
+                                    .fetch_add(1, Ordering::Relaxed);
+                            }
                             CacheInvalidationReceive::Closed => {
                                 inner
                                     .stats

@@ -1,4 +1,6 @@
+use std::collections::BTreeMap;
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::time::Duration;
 
 use async_trait::async_trait;
@@ -10,7 +12,9 @@ use tokio::sync::watch;
 use crate::tests::common::{user, User};
 use crate::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
-    CacheInvalidationReceiver, HydraCache, InMemoryInvalidationBus,
+    CacheInvalidationReceiver, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
+    ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
+    ClusterRole, HydraCache, InMemoryFramedInvalidationBus, InMemoryInvalidationBus,
 };
 
 #[derive(Debug, Clone)]
@@ -76,6 +80,134 @@ impl CacheInvalidationReceiver for LagThenCloseReceiver {
         } else {
             self.polled = true;
             CacheInvalidationReceive::Lagged(3)
+        }
+    }
+}
+
+#[derive(Debug)]
+struct FramedGenerationControlPlane {
+    bus: Arc<InMemoryFramedInvalidationBus>,
+    members: Mutex<BTreeMap<ClusterNodeId, ClusterMember>>,
+    clients: Mutex<BTreeMap<ClusterNodeId, ClusterMember>>,
+}
+
+impl FramedGenerationControlPlane {
+    fn new(bus: Arc<InMemoryFramedInvalidationBus>) -> Self {
+        Self {
+            bus,
+            members: Mutex::new(BTreeMap::new()),
+            clients: Mutex::new(BTreeMap::new()),
+        }
+    }
+
+    fn upsert_candidate(
+        table: &Mutex<BTreeMap<ClusterNodeId, ClusterMember>>,
+        candidate: ClusterCandidate,
+    ) -> ClusterMember {
+        let member = ClusterMember {
+            node_id: candidate.node_id,
+            generation: candidate.generation,
+            role: candidate.role,
+            epoch: ClusterEpoch::new(1),
+            endpoints: candidate.endpoints,
+            metadata: candidate.metadata,
+        };
+        table
+            .lock()
+            .expect("test control plane table poisoned")
+            .insert(member.node_id.clone(), member.clone());
+        member
+    }
+
+    fn find_generation(&self, node_id: &ClusterNodeId) -> Option<ClusterGeneration> {
+        if let Some(generation) = self
+            .members
+            .lock()
+            .expect("test member table poisoned")
+            .get(node_id)
+            .map(|member| member.generation)
+        {
+            return Some(generation);
+        }
+        self.clients
+            .lock()
+            .expect("test client table poisoned")
+            .get(node_id)
+            .map(|member| member.generation)
+    }
+}
+
+#[async_trait]
+impl ClusterControlPlane for FramedGenerationControlPlane {
+    fn name(&self) -> String {
+        "orders".to_owned()
+    }
+
+    fn invalidation_bus(&self) -> Arc<dyn CacheInvalidationBus> {
+        self.bus.clone()
+    }
+
+    async fn join_member(&self, candidate: ClusterCandidate) -> Result<ClusterMember> {
+        Ok(Self::upsert_candidate(&self.members, candidate))
+    }
+
+    async fn join_client(&self, candidate: ClusterCandidate) -> Result<ClusterMember> {
+        Ok(Self::upsert_candidate(&self.clients, candidate))
+    }
+
+    async fn validate_generation(
+        &self,
+        node_id: &ClusterNodeId,
+        generation: ClusterGeneration,
+    ) -> Result<()> {
+        match self.find_generation(node_id) {
+            Some(current) if current == generation => Ok(()),
+            Some(current) => Err(CacheError::Backend(format!(
+                "stale cluster generation for {node_id}: attempted {}, current {}",
+                generation.value(),
+                current.value()
+            ))),
+            None => Err(CacheError::Backend(format!(
+                "unknown cluster node {node_id}"
+            ))),
+        }
+    }
+
+    async fn leave(
+        &self,
+        _node_id: &ClusterNodeId,
+        _generation: ClusterGeneration,
+    ) -> Result<Option<ClusterMembershipEvent>> {
+        Ok(None)
+    }
+
+    fn diagnostics_for(
+        &self,
+        role: ClusterRole,
+        node_id: ClusterNodeId,
+        generation: ClusterGeneration,
+        bootstrap: Vec<String>,
+    ) -> ClusterDiagnostics {
+        ClusterDiagnostics {
+            cluster_name: self.name(),
+            role,
+            node_id,
+            generation,
+            epoch: ClusterEpoch::new(1),
+            member_count: self
+                .members
+                .lock()
+                .expect("test member table poisoned")
+                .len(),
+            client_count: self
+                .clients
+                .lock()
+                .expect("test client table poisoned")
+                .len(),
+            bootstrap,
+            connected: true,
+            invalidation_subscribers: self.bus.receiver_count(),
+            membership_subscribers: 0,
         }
     }
 }
@@ -148,6 +280,161 @@ async fn shared_bus_propagates_tag_invalidations_between_cache_instances() {
     assert_eq!(source.stats().distributed_invalidations_received, 0);
     assert_eq!(target.stats().distributed_invalidations_received, 1);
     assert_eq!(target.stats().distributed_invalidations_applied, 1);
+}
+
+#[tokio::test]
+async fn framed_bus_propagates_tag_invalidations_between_independent_runtimes() {
+    let bus = Arc::new(InMemoryFramedInvalidationBus::for_cluster("orders", 16));
+    let source = HydraCache::local()
+        .shared_invalidation_bus(bus.clone())
+        .invalidation_node_id("source")
+        .build();
+    let target = HydraCache::local()
+        .shared_invalidation_bus(bus)
+        .invalidation_node_id("target")
+        .build();
+
+    source
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+    target
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    assert_eq!(source.invalidate_tag("users").await.unwrap(), 1);
+    wait_until_absent(&target, "user:42").await;
+
+    assert_eq!(source.stats().distributed_invalidations_published, 1);
+    assert_eq!(target.stats().distributed_invalidations_received, 1);
+    assert_eq!(target.stats().distributed_invalidations_applied, 1);
+    assert_eq!(target.stats().distributed_invalidation_decode_errors, 0);
+}
+
+#[tokio::test]
+async fn framed_bus_stale_cluster_generation_is_rejected_before_apply() {
+    let bus = Arc::new(InMemoryFramedInvalidationBus::for_cluster("orders", 16));
+    let control_plane = Arc::new(FramedGenerationControlPlane::new(bus.clone()));
+    HydraCache::member()
+        .control_plane(control_plane.clone())
+        .node_id("member-a")
+        .generation(ClusterGeneration::new(2))
+        .start()
+        .await
+        .unwrap();
+    let target = HydraCache::client()
+        .control_plane(control_plane)
+        .node_id("client-a")
+        .connect()
+        .await
+        .unwrap();
+
+    target
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    bus.publish(
+        CacheInvalidationMessage::new("member-a", CacheInvalidation::tag("users"))
+            .with_source_generation(ClusterGeneration::new(1)),
+    )
+    .await
+    .unwrap();
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
+    assert!(target.contains_key("user:42").await);
+    assert_eq!(target.stats().distributed_invalidations_applied, 0);
+
+    bus.publish(
+        CacheInvalidationMessage::new("member-a", CacheInvalidation::tag("users"))
+            .with_source_generation(ClusterGeneration::new(2)),
+    )
+    .await
+    .unwrap();
+
+    wait_until_absent(&target, "user:42").await;
+    assert_eq!(target.stats().distributed_invalidations_applied, 1);
+}
+
+#[tokio::test]
+async fn framed_bus_decode_errors_are_reported_without_applying_invalidation() {
+    let bus = Arc::new(InMemoryFramedInvalidationBus::new(16));
+    let target = HydraCache::local()
+        .shared_invalidation_bus(bus.clone())
+        .invalidation_node_id("target")
+        .build();
+
+    target
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    bus.publish_encoded_frame(bytes::Bytes::from_static(b"corrupted-frame"))
+        .unwrap();
+
+    wait_until(|| target.stats().distributed_invalidation_decode_errors == 1).await;
+
+    assert!(target.contains_key("user:42").await);
+    assert_eq!(target.stats().distributed_invalidations_applied, 0);
+    assert!(target.stats().has_distributed_invalidation_bus_issues());
+}
+
+#[tokio::test]
+async fn framed_bus_close_is_reported_in_cache_stats_and_publish_fails() {
+    let bus = Arc::new(InMemoryFramedInvalidationBus::new(16));
+    let cache = HydraCache::local()
+        .shared_invalidation_bus(bus.clone())
+        .invalidation_node_id("source")
+        .build();
+
+    bus.close();
+
+    wait_until(|| cache.stats().distributed_invalidation_receiver_closed == 1).await;
+    let error = cache.invalidate_tag("users").await.unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("framed invalidation transport is closed"));
+    assert_eq!(cache.stats().distributed_invalidation_publish_failures, 1);
+}
+
+#[tokio::test]
+async fn framed_bus_reconnect_does_not_replay_already_applied_invalidation() {
+    let bus = Arc::new(InMemoryFramedInvalidationBus::new(16));
+    let source = HydraCache::local()
+        .shared_invalidation_bus(bus.clone())
+        .invalidation_node_id("source")
+        .build();
+    let target = HydraCache::local()
+        .shared_invalidation_bus(bus.clone())
+        .invalidation_node_id("target")
+        .build();
+
+    target
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+    source.invalidate_tag("users").await.unwrap();
+    wait_until_absent(&target, "user:42").await;
+
+    drop(target);
+
+    let reconnected_target = HydraCache::local()
+        .shared_invalidation_bus(bus)
+        .invalidation_node_id("target")
+        .build();
+    reconnected_target
+        .put("user:42", user(42), CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
+    assert!(reconnected_target.contains_key("user:42").await);
+    assert_eq!(
+        reconnected_target.stats().distributed_invalidations_applied,
+        0
+    );
 }
 
 #[tokio::test]

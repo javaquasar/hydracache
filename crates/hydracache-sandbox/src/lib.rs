@@ -2564,6 +2564,7 @@ struct DemoDiagnostics {
     distributed_invalidations_received: u64,
     distributed_invalidations_applied: u64,
     distributed_invalidation_lagged: u64,
+    distributed_invalidation_decode_errors: u64,
     distributed_invalidation_publish_failures: u64,
     distributed_invalidation_receiver_closed: u64,
     total_requests: u64,
@@ -2588,6 +2589,9 @@ impl DemoDiagnostics {
             distributed_invalidations_received: snapshot.stats.distributed_invalidations_received,
             distributed_invalidations_applied: snapshot.stats.distributed_invalidations_applied,
             distributed_invalidation_lagged: snapshot.stats.distributed_invalidation_lagged,
+            distributed_invalidation_decode_errors: snapshot
+                .stats
+                .distributed_invalidation_decode_errors,
             distributed_invalidation_publish_failures: snapshot
                 .stats
                 .distributed_invalidation_publish_failures,
@@ -5193,6 +5197,9 @@ fn prometheus_metrics_text(report: &ApplicationReport) -> String {
          # HELP hydracache_sandbox_distributed_invalidation_lagged Invalidation bus messages skipped by lagging receivers.\n\
          # TYPE hydracache_sandbox_distributed_invalidation_lagged counter\n\
          hydracache_sandbox_distributed_invalidation_lagged{{cache=\"main\",profile=\"{}\"}} {}\n\
+         # HELP hydracache_sandbox_distributed_invalidation_decode_errors Invalidation transport frames that could not be decoded.\n\
+         # TYPE hydracache_sandbox_distributed_invalidation_decode_errors counter\n\
+         hydracache_sandbox_distributed_invalidation_decode_errors{{cache=\"main\",profile=\"{}\"}} {}\n\
          # HELP hydracache_sandbox_distributed_invalidation_publish_failures Invalidation publish attempts that returned errors.\n\
          # TYPE hydracache_sandbox_distributed_invalidation_publish_failures counter\n\
          hydracache_sandbox_distributed_invalidation_publish_failures{{cache=\"main\",profile=\"{}\"}} {}\n\
@@ -5215,6 +5222,8 @@ fn prometheus_metrics_text(report: &ApplicationReport) -> String {
         report.diagnostics.distributed_invalidations_applied,
         report.profile,
         report.diagnostics.distributed_invalidation_lagged,
+        report.profile,
+        report.diagnostics.distributed_invalidation_decode_errors,
         report.profile,
         report.diagnostics.distributed_invalidation_publish_failures,
         report.profile,

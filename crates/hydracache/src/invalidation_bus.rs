@@ -1,10 +1,17 @@
 use std::fmt;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
 
 use async_trait::async_trait;
-use hydracache_core::Result;
+use bytes::Bytes;
+use hydracache_core::{CacheCodec, CacheError, PostcardCodec, Result};
+use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
 
 use crate::cluster::ClusterGeneration;
+
+/// Current binary encoding version for cross-process invalidation frames.
+pub const CACHE_INVALIDATION_FRAME_VERSION: u16 = 1;
 
 /// Cache invalidation operation that can be propagated to another cache node.
 ///
@@ -24,6 +31,33 @@ pub enum CacheInvalidation {
     },
     /// Flush the whole local cache on receiving nodes.
     Flush,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+enum CacheInvalidationFrameKind {
+    Key { key: String },
+    Tag { tag: String },
+    Flush,
+}
+
+impl From<CacheInvalidation> for CacheInvalidationFrameKind {
+    fn from(invalidation: CacheInvalidation) -> Self {
+        match invalidation {
+            CacheInvalidation::Key { key } => Self::Key { key },
+            CacheInvalidation::Tag { tag } => Self::Tag { tag },
+            CacheInvalidation::Flush => Self::Flush,
+        }
+    }
+}
+
+impl From<CacheInvalidationFrameKind> for CacheInvalidation {
+    fn from(kind: CacheInvalidationFrameKind) -> Self {
+        match kind {
+            CacheInvalidationFrameKind::Key { key } => Self::Key { key },
+            CacheInvalidationFrameKind::Tag { tag } => Self::Tag { tag },
+            CacheInvalidationFrameKind::Flush => Self::Flush,
+        }
+    }
 }
 
 impl CacheInvalidation {
@@ -111,6 +145,129 @@ impl CacheInvalidationMessage {
     }
 }
 
+/// Binary envelope for invalidation messages that cross a process boundary.
+///
+/// The frame keeps transport metadata outside the hot local invalidation
+/// operation: protocol version, optional cluster name, optional message id for
+/// diagnostics/idempotency, source node id, source generation, and the
+/// key/tag/flush operation. Real transports can encode this frame into TCP,
+/// Redis, NATS, Postgres notifications, or another byte-oriented channel.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache::{
+///     CacheInvalidation, CacheInvalidationFrame, CacheInvalidationMessage,
+///     ClusterGeneration,
+/// };
+///
+/// let message = CacheInvalidationMessage::new("member-a", CacheInvalidation::tag("users"))
+///     .with_source_generation(ClusterGeneration::new(3));
+/// let frame = CacheInvalidationFrame::new(message)
+///     .with_cluster_name("orders")
+///     .with_message_id(42);
+///
+/// let encoded = frame.encode().unwrap();
+/// let decoded = CacheInvalidationFrame::decode(&encoded).unwrap();
+///
+/// assert_eq!(decoded.cluster_name(), Some("orders"));
+/// assert_eq!(decoded.message_id(), Some(42));
+/// assert_eq!(decoded.source_generation(), Some(ClusterGeneration::new(3)));
+/// assert_eq!(decoded.invalidation().tag_value(), Some("users"));
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CacheInvalidationFrame {
+    version: u16,
+    message_id: Option<u64>,
+    cluster_name: Option<String>,
+    source_id: String,
+    source_generation: Option<u64>,
+    invalidation: CacheInvalidationFrameKind,
+}
+
+impl CacheInvalidationFrame {
+    /// Build a frame from a cache invalidation message.
+    pub fn new(message: CacheInvalidationMessage) -> Self {
+        let source_generation = message.source_generation().map(ClusterGeneration::value);
+        Self {
+            version: CACHE_INVALIDATION_FRAME_VERSION,
+            message_id: None,
+            cluster_name: None,
+            source_id: message.source_id().to_owned(),
+            source_generation,
+            invalidation: message.invalidation().clone().into(),
+        }
+    }
+
+    /// Attach a logical cluster name for diagnostics and transport filtering.
+    pub fn with_cluster_name(mut self, cluster_name: impl Into<String>) -> Self {
+        self.cluster_name = Some(cluster_name.into());
+        self
+    }
+
+    /// Attach a monotonic transport message id.
+    pub fn with_message_id(mut self, message_id: u64) -> Self {
+        self.message_id = Some(message_id);
+        self
+    }
+
+    /// Return the wire-format version.
+    pub fn version(&self) -> u16 {
+        self.version
+    }
+
+    /// Return the optional logical cluster name.
+    pub fn cluster_name(&self) -> Option<&str> {
+        self.cluster_name.as_deref()
+    }
+
+    /// Return the optional transport message id.
+    pub fn message_id(&self) -> Option<u64> {
+        self.message_id
+    }
+
+    /// Return the publishing node id.
+    pub fn source_id(&self) -> &str {
+        &self.source_id
+    }
+
+    /// Return the publishing generation, if the source is cluster-backed.
+    pub fn source_generation(&self) -> Option<ClusterGeneration> {
+        self.source_generation.map(ClusterGeneration::new)
+    }
+
+    /// Return the invalidation operation in this frame.
+    pub fn invalidation(&self) -> CacheInvalidation {
+        self.invalidation.clone().into()
+    }
+
+    /// Convert this frame back into the message consumed by HydraCache.
+    pub fn into_message(self) -> CacheInvalidationMessage {
+        let mut message = CacheInvalidationMessage::new(self.source_id, self.invalidation.into());
+        if let Some(generation) = self.source_generation {
+            message = message.with_source_generation(ClusterGeneration::new(generation));
+        }
+        message
+    }
+
+    /// Encode this frame into compact bytes.
+    pub fn encode(&self) -> Result<Bytes> {
+        PostcardCodec.encode(self)
+    }
+
+    /// Decode a frame from bytes and reject unsupported encoding versions.
+    pub fn decode(bytes: &Bytes) -> Result<Self> {
+        let frame: Self = PostcardCodec.decode(bytes)?;
+        if frame.version != CACHE_INVALIDATION_FRAME_VERSION {
+            return Err(CacheError::Decode(format!(
+                "unsupported invalidation frame version {}",
+                frame.version
+            )));
+        }
+        Ok(frame)
+    }
+}
+
 /// Result of polling an invalidation receiver.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CacheInvalidationReceive {
@@ -124,6 +281,8 @@ pub enum CacheInvalidationReceive {
     Lagged(u64),
     /// The bus stream closed and the background listener should stop.
     Closed,
+    /// A transport frame could not be decoded.
+    DecodeError(String),
 }
 
 impl CacheInvalidationReceive {
@@ -141,7 +300,15 @@ impl CacheInvalidationReceive {
     pub fn lagged_count(&self) -> Option<u64> {
         match self {
             Self::Lagged(count) => Some(*count),
-            Self::Message(_) | Self::Closed => None,
+            Self::Message(_) | Self::Closed | Self::DecodeError(_) => None,
+        }
+    }
+
+    /// Return the decode error message when a transport frame was invalid.
+    pub fn decode_error(&self) -> Option<&str> {
+        match self {
+            Self::DecodeError(error) => Some(error),
+            Self::Message(_) | Self::Lagged(_) | Self::Closed => None,
         }
     }
 }
@@ -152,7 +319,8 @@ pub trait CacheInvalidationReceiver: Send + 'static {
     /// Receive the next invalidation message.
     ///
     /// [`CacheInvalidationReceive::Closed`] means the bus is closed and the
-    /// background cache sync task should exit.
+    /// background cache sync task should exit. [`CacheInvalidationReceive::DecodeError`]
+    /// means one transport frame was skipped and the receiver can continue.
     async fn recv(&mut self) -> CacheInvalidationReceive;
 }
 
@@ -213,6 +381,154 @@ impl CacheInvalidationBus for InMemoryInvalidationBus {
     }
 }
 
+/// In-memory framed invalidation bus for cross-process transport experiments.
+///
+/// Unlike [`InMemoryInvalidationBus`], this bus encodes every message into a
+/// [`CacheInvalidationFrame`] and sends bytes through the channel. It is still
+/// in-process and non-durable, but it exercises the same encode/decode boundary
+/// a TCP, Redis, NATS, or Postgres transport would need.
+///
+/// # Example
+///
+/// ```rust
+/// use std::sync::Arc;
+///
+/// use hydracache::{HydraCache, InMemoryFramedInvalidationBus};
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let bus = Arc::new(InMemoryFramedInvalidationBus::for_cluster("orders", 128));
+/// let first = HydraCache::local()
+///     .shared_invalidation_bus(bus.clone())
+///     .invalidation_node_id("first")
+///     .build();
+/// let second = HydraCache::local()
+///     .shared_invalidation_bus(bus)
+///     .invalidation_node_id("second")
+///     .build();
+///
+/// # let _ = (first, second);
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug, Clone)]
+pub struct InMemoryFramedInvalidationBus {
+    sender: broadcast::Sender<Bytes>,
+    cluster_name: Option<String>,
+    next_message_id: Arc<AtomicU64>,
+    closed: Arc<AtomicBool>,
+}
+
+impl InMemoryFramedInvalidationBus {
+    /// Create a framed bus without a logical cluster name.
+    pub fn new(capacity: usize) -> Self {
+        let (sender, _) = broadcast::channel(capacity.max(1));
+        Self {
+            sender,
+            cluster_name: None,
+            next_message_id: Arc::new(AtomicU64::new(1)),
+            closed: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    /// Create a framed bus that annotates each frame with a cluster name.
+    pub fn for_cluster(cluster_name: impl Into<String>, capacity: usize) -> Self {
+        Self {
+            cluster_name: Some(cluster_name.into()),
+            ..Self::new(capacity)
+        }
+    }
+
+    /// Return the number of active frame receivers.
+    pub fn receiver_count(&self) -> usize {
+        self.sender.receiver_count()
+    }
+
+    /// Return whether this test transport has been closed.
+    pub fn is_closed(&self) -> bool {
+        self.closed.load(Ordering::Relaxed)
+    }
+
+    /// Close this test transport and wake existing receivers.
+    pub fn close(&self) {
+        if !self.closed.swap(true, Ordering::Relaxed) {
+            let _ = self.sender.send(Bytes::new());
+        }
+    }
+
+    /// Publish already-encoded frame bytes.
+    ///
+    /// This is useful for tests and future transport adapters that receive
+    /// bytes outside HydraCache and want to reuse the same decode path.
+    pub fn publish_encoded_frame(&self, bytes: Bytes) -> Result<()> {
+        if self.is_closed() {
+            return Err(CacheError::Backend(
+                "framed invalidation transport is closed".to_owned(),
+            ));
+        }
+        let _ = self.sender.send(bytes);
+        Ok(())
+    }
+}
+
+impl Default for InMemoryFramedInvalidationBus {
+    fn default() -> Self {
+        Self::new(1024)
+    }
+}
+
+#[async_trait]
+impl CacheInvalidationBus for InMemoryFramedInvalidationBus {
+    async fn publish(&self, message: CacheInvalidationMessage) -> Result<()> {
+        if self.is_closed() {
+            return Err(CacheError::Backend(
+                "framed invalidation transport is closed".to_owned(),
+            ));
+        }
+
+        let message_id = self.next_message_id.fetch_add(1, Ordering::Relaxed);
+        let mut frame = CacheInvalidationFrame::new(message).with_message_id(message_id);
+        if let Some(cluster_name) = &self.cluster_name {
+            frame = frame.with_cluster_name(cluster_name.clone());
+        }
+        self.publish_encoded_frame(frame.encode()?)
+    }
+
+    fn subscribe(&self) -> Box<dyn CacheInvalidationReceiver> {
+        Box::new(InMemoryFramedInvalidationReceiver {
+            receiver: self.sender.subscribe(),
+            closed: self.closed.clone(),
+        })
+    }
+}
+
+struct InMemoryFramedInvalidationReceiver {
+    receiver: broadcast::Receiver<Bytes>,
+    closed: Arc<AtomicBool>,
+}
+
+#[async_trait]
+impl CacheInvalidationReceiver for InMemoryFramedInvalidationReceiver {
+    async fn recv(&mut self) -> CacheInvalidationReceive {
+        if self.closed.load(Ordering::Relaxed) {
+            return CacheInvalidationReceive::Closed;
+        }
+        match self.receiver.recv().await {
+            Ok(bytes) if bytes.is_empty() && self.closed.load(Ordering::Relaxed) => {
+                CacheInvalidationReceive::Closed
+            }
+            Ok(bytes) => match CacheInvalidationFrame::decode(&bytes) {
+                Ok(frame) => CacheInvalidationReceive::Message(frame.into_message()),
+                Err(error) => CacheInvalidationReceive::DecodeError(error.to_string()),
+            },
+            Err(broadcast::error::RecvError::Closed) => CacheInvalidationReceive::Closed,
+            Err(broadcast::error::RecvError::Lagged(count)) => {
+                CacheInvalidationReceive::Lagged(count)
+            }
+        }
+    }
+}
+
 struct InMemoryInvalidationReceiver {
     receiver: broadcast::Receiver<CacheInvalidationMessage>,
 }
@@ -233,8 +549,9 @@ impl CacheInvalidationReceiver for InMemoryInvalidationReceiver {
 #[cfg(test)]
 mod tests {
     use super::{
-        CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage,
-        CacheInvalidationReceive, InMemoryInvalidationBus,
+        CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
+        CacheInvalidationReceive, InMemoryFramedInvalidationBus, InMemoryInvalidationBus,
+        CACHE_INVALIDATION_FRAME_VERSION,
     };
     use crate::ClusterGeneration;
 
@@ -281,6 +598,113 @@ mod tests {
         assert_eq!(message.source_id(), "node-a");
         assert_eq!(message.source_generation(), Some(ClusterGeneration::new(7)));
         assert!(message.invalidation().is_flush());
+    }
+
+    #[test]
+    fn invalidation_frame_roundtrips_transport_metadata_and_message() {
+        let message = CacheInvalidationMessage::new("member-a", CacheInvalidation::tag("users"))
+            .with_source_generation(ClusterGeneration::new(7));
+        let frame = CacheInvalidationFrame::new(message)
+            .with_cluster_name("orders")
+            .with_message_id(42);
+
+        let encoded = frame.encode().unwrap();
+        let decoded = CacheInvalidationFrame::decode(&encoded).unwrap();
+        let decoded_message = decoded.clone().into_message();
+
+        assert_eq!(decoded.version(), CACHE_INVALIDATION_FRAME_VERSION);
+        assert_eq!(decoded.cluster_name(), Some("orders"));
+        assert_eq!(decoded.message_id(), Some(42));
+        assert_eq!(decoded.source_id(), "member-a");
+        assert_eq!(decoded.source_generation(), Some(ClusterGeneration::new(7)));
+        assert_eq!(decoded.invalidation().tag_value(), Some("users"));
+        assert_eq!(decoded_message.source_id(), "member-a");
+        assert_eq!(
+            decoded_message.source_generation(),
+            Some(ClusterGeneration::new(7))
+        );
+        assert_eq!(decoded_message.invalidation().tag_value(), Some("users"));
+    }
+
+    #[test]
+    fn invalidation_frame_rejects_unsupported_encoding_version() {
+        let mut frame = CacheInvalidationFrame::new(CacheInvalidationMessage::new(
+            "member-a",
+            CacheInvalidation::flush(),
+        ));
+        frame.version = CACHE_INVALIDATION_FRAME_VERSION + 1;
+        let encoded = frame.encode().unwrap();
+
+        let error = CacheInvalidationFrame::decode(&encoded).unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("unsupported invalidation frame version"));
+    }
+
+    #[tokio::test]
+    async fn framed_bus_delivers_messages_through_binary_frames() {
+        let bus = InMemoryFramedInvalidationBus::for_cluster("orders", 8);
+        let mut subscriber = bus.subscribe();
+
+        bus.publish(
+            CacheInvalidationMessage::new("member-a", CacheInvalidation::key("user:42"))
+                .with_source_generation(ClusterGeneration::new(3)),
+        )
+        .await
+        .unwrap();
+
+        let CacheInvalidationReceive::Message(message) = subscriber.recv().await else {
+            panic!("expected decoded invalidation message");
+        };
+        assert_eq!(message.source_id(), "member-a");
+        assert_eq!(message.source_generation(), Some(ClusterGeneration::new(3)));
+        assert_eq!(message.invalidation().key_value(), Some("user:42"));
+    }
+
+    #[tokio::test]
+    async fn framed_bus_reports_decode_errors_without_closing_receiver() {
+        let bus = InMemoryFramedInvalidationBus::new(8);
+        let mut subscriber = bus.subscribe();
+
+        bus.publish_encoded_frame(bytes::Bytes::from_static(b"not-a-frame"))
+            .unwrap();
+        bus.publish(CacheInvalidationMessage::new(
+            "member-a",
+            CacheInvalidation::tag("users"),
+        ))
+        .await
+        .unwrap();
+
+        let decode_error = subscriber.recv().await;
+        assert!(decode_error.decode_error().is_some());
+
+        let CacheInvalidationReceive::Message(message) = subscriber.recv().await else {
+            panic!("receiver should continue after a decode error");
+        };
+        assert_eq!(message.invalidation().tag_value(), Some("users"));
+    }
+
+    #[tokio::test]
+    async fn framed_bus_close_wakes_receivers_and_rejects_publishes() {
+        let bus = InMemoryFramedInvalidationBus::new(8);
+        let mut subscriber = bus.subscribe();
+        assert_eq!(bus.receiver_count(), 1);
+
+        bus.close();
+
+        assert!(bus.is_closed());
+        assert_eq!(subscriber.recv().await, CacheInvalidationReceive::Closed);
+        let error = bus
+            .publish(CacheInvalidationMessage::new(
+                "member-a",
+                CacheInvalidation::flush(),
+            ))
+            .await
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("framed invalidation transport is closed"));
     }
 
     #[test]
@@ -338,8 +762,13 @@ mod tests {
         assert_eq!(received, CacheInvalidationReceive::Message(message));
         assert!(!received.is_closed());
         assert_eq!(received.lagged_count(), None);
+        assert_eq!(received.decode_error(), None);
         assert!(CacheInvalidationReceive::Closed.is_closed());
         assert_eq!(CacheInvalidationReceive::Closed.lagged_count(), None);
         assert_eq!(CacheInvalidationReceive::Lagged(3).lagged_count(), Some(3));
+        assert_eq!(
+            CacheInvalidationReceive::DecodeError("bad frame".to_owned()).decode_error(),
+            Some("bad frame")
+        );
     }
 }

@@ -323,7 +323,7 @@ fresh in-flight load instead of joining the stale one.
 
 Use `CacheOptions::tag("users")` for one tag and `CacheOptions::tags(["users", "user:42"])` for multiple tags.
 
-`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, evictions, published events, subscriber lag, distributed invalidation bus activity, and distributed bus health issues. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, `has_stale_load_discards`, `has_event_subscriber_lag`, `has_distributed_invalidation_activity`, and `has_distributed_invalidation_bus_issues`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
+`stats` returns lightweight counters for hits, misses, loads, single-flight joins, stale load discards, invalidations, evictions, published events, subscriber lag, distributed invalidation bus activity, and distributed bus health issues. Transport diagnostics include lag, decode errors, publish failures, and closed receivers. It also exposes helpers such as `total_requests`, `hit_ratio`, `has_single_flight_activity`, `has_stale_load_discards`, `has_event_subscriber_lag`, `has_distributed_invalidation_activity`, and `has_distributed_invalidation_bus_issues`. v0 does not wire backend eviction listeners yet, so `evictions` remains zero.
 
 `diagnostics().await` returns a small smoke-test snapshot: the same stats plus the local backend's approximate entry count. It is useful for answering "did the second call hit the cache?" without wiring a metrics system.
 
@@ -517,7 +517,30 @@ Important semantics:
 - The bus propagates invalidation intent only; cached values are never replicated.
 - Delivery is best-effort for the in-memory bus. It is not durable and does not replay messages after restart.
 - Remote invalidations emit normal events with `CacheEventOrigin::DistributedBus`.
-- Diagnostics expose `distributed_invalidations_published`, `distributed_invalidations_received`, `distributed_invalidations_applied`, plus bus health counters for lag, publish failures, and closed receivers.
+- Diagnostics expose `distributed_invalidations_published`, `distributed_invalidations_received`, `distributed_invalidations_applied`, plus bus health counters for lag, decode errors, publish failures, and closed receivers.
+
+For transport experiments, `InMemoryFramedInvalidationBus` serializes every
+message into a `CacheInvalidationFrame` before delivery. It is still
+in-process, but it exercises the same binary boundary future TCP, Redis, NATS,
+or Postgres adapters will use:
+
+```rust
+use std::sync::Arc;
+
+use hydracache::{HydraCache, InMemoryFramedInvalidationBus};
+
+let bus = Arc::new(InMemoryFramedInvalidationBus::for_cluster("orders", 128));
+let first = HydraCache::local()
+    .shared_invalidation_bus(bus.clone())
+    .invalidation_node_id("first")
+    .build();
+let second = HydraCache::local()
+    .shared_invalidation_bus(bus)
+    .invalidation_node_id("second")
+    .build();
+
+# let _ = (first, second);
+```
 
 Custom transports implement the same small API:
 

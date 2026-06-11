@@ -14,6 +14,7 @@
 /// assert_eq!(stats.events_published, 0);
 /// assert_eq!(stats.distributed_invalidations_published, 0);
 /// assert_eq!(stats.distributed_invalidation_lagged, 0);
+/// assert_eq!(stats.distributed_invalidation_decode_errors, 0);
 /// assert_eq!(stats.total_requests(), 0);
 /// assert_eq!(stats.hit_ratio(), None);
 /// ```
@@ -47,6 +48,8 @@ pub struct CacheStats {
     pub distributed_invalidations_applied: u64,
     /// Invalidation messages skipped because a bus receiver lagged behind.
     pub distributed_invalidation_lagged: u64,
+    /// Invalidation transport frames that could not be decoded.
+    pub distributed_invalidation_decode_errors: u64,
     /// Invalidation publish attempts that returned an error.
     pub distributed_invalidation_publish_failures: u64,
     /// Times an attached bus receiver reported that the stream closed.
@@ -126,6 +129,7 @@ impl CacheStats {
             || self.distributed_invalidations_received > 0
             || self.distributed_invalidations_applied > 0
             || self.distributed_invalidation_lagged > 0
+            || self.distributed_invalidation_decode_errors > 0
             || self.distributed_invalidation_publish_failures > 0
             || self.distributed_invalidation_receiver_closed > 0
     }
@@ -133,6 +137,7 @@ impl CacheStats {
     /// Return whether this cache observed invalidation bus health issues.
     pub fn has_distributed_invalidation_bus_issues(&self) -> bool {
         self.distributed_invalidation_lagged > 0
+            || self.distributed_invalidation_decode_errors > 0
             || self.distributed_invalidation_publish_failures > 0
             || self.distributed_invalidation_receiver_closed > 0
     }
@@ -215,6 +220,7 @@ mod tests {
             distributed_invalidations_received: 1,
             distributed_invalidations_applied: 1,
             distributed_invalidation_lagged: 1,
+            distributed_invalidation_decode_errors: 1,
             distributed_invalidation_publish_failures: 1,
             distributed_invalidation_receiver_closed: 1,
             ..CacheStats::default()

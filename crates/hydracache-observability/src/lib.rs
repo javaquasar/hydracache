@@ -72,6 +72,8 @@ pub struct CacheStatsSnapshot {
     pub distributed_invalidations_applied: u64,
     /// Invalidation messages skipped because a bus receiver lagged behind.
     pub distributed_invalidation_lagged: u64,
+    /// Invalidation transport frames that could not be decoded.
+    pub distributed_invalidation_decode_errors: u64,
     /// Invalidation publish attempts that returned an error.
     pub distributed_invalidation_publish_failures: u64,
     /// Times an attached bus receiver reported that the stream closed.
@@ -109,6 +111,7 @@ impl CacheStatsSnapshot {
             distributed_invalidations_received: stats.distributed_invalidations_received,
             distributed_invalidations_applied: stats.distributed_invalidations_applied,
             distributed_invalidation_lagged: stats.distributed_invalidation_lagged,
+            distributed_invalidation_decode_errors: stats.distributed_invalidation_decode_errors,
             distributed_invalidation_publish_failures: stats
                 .distributed_invalidation_publish_failures,
             distributed_invalidation_receiver_closed: stats
@@ -400,6 +403,7 @@ mod tests {
             stale_load_discards: 1,
             distributed_invalidations_received: 1,
             distributed_invalidation_lagged: 1,
+            distributed_invalidation_decode_errors: 1,
             distributed_invalidation_publish_failures: 1,
             distributed_invalidation_receiver_closed: 1,
             ..hydracache_core::CacheStats::default()
@@ -416,6 +420,7 @@ mod tests {
         assert!(snapshot.distributed_invalidation_bus_issues);
         assert_eq!(snapshot.distributed_invalidations_received, 1);
         assert_eq!(snapshot.distributed_invalidation_lagged, 1);
+        assert_eq!(snapshot.distributed_invalidation_decode_errors, 1);
         assert_eq!(snapshot.distributed_invalidation_publish_failures, 1);
         assert_eq!(snapshot.distributed_invalidation_receiver_closed, 1);
 

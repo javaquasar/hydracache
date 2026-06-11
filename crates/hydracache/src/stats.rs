@@ -17,6 +17,7 @@ pub(crate) struct StatsCounters {
     pub(crate) distributed_invalidations_received: AtomicU64,
     pub(crate) distributed_invalidations_applied: AtomicU64,
     pub(crate) distributed_invalidation_lagged: AtomicU64,
+    pub(crate) distributed_invalidation_decode_errors: AtomicU64,
     pub(crate) distributed_invalidation_publish_failures: AtomicU64,
     pub(crate) distributed_invalidation_receiver_closed: AtomicU64,
 }
@@ -44,6 +45,9 @@ impl StatsCounters {
                 .load(Ordering::Relaxed),
             distributed_invalidation_lagged: self
                 .distributed_invalidation_lagged
+                .load(Ordering::Relaxed),
+            distributed_invalidation_decode_errors: self
+                .distributed_invalidation_decode_errors
                 .load(Ordering::Relaxed),
             distributed_invalidation_publish_failures: self
                 .distributed_invalidation_publish_failures

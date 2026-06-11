@@ -276,10 +276,16 @@
 //! # }
 //! ```
 //!
+//! [`InMemoryFramedInvalidationBus`] is a transport spike for cross-process
+//! adapters. It serializes each message into [`CacheInvalidationFrame`] bytes
+//! before delivery, so tests can exercise the same encoding boundary future
+//! TCP, Redis, NATS, or Postgres adapters will need.
+//!
 //! Custom transports implement [`CacheInvalidationBus`] and return
 //! [`CacheInvalidationReceive::Message`], [`CacheInvalidationReceive::Lagged`],
-//! or [`CacheInvalidationReceive::Closed`] from their receivers. HydraCache
-//! records lag, publish failures, and closed receivers in
+//! [`CacheInvalidationReceive::DecodeError`], or
+//! [`CacheInvalidationReceive::Closed`] from their receivers. HydraCache
+//! records lag, decode errors, publish failures, and closed receivers in
 //! [`hydracache_core::CacheStats`] so applications can detect bus health issues
 //! without parsing logs.
 //!
@@ -411,8 +417,9 @@ pub use hydracache_core::{
 };
 pub use hydracache_macros::{cacheable, cacheable_infallible};
 pub use invalidation_bus::{
-    CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
-    CacheInvalidationReceiver, InMemoryInvalidationBus,
+    CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
+    CacheInvalidationReceive, CacheInvalidationReceiver, InMemoryFramedInvalidationBus,
+    InMemoryInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
 };
 pub use typed::TypedCache;
 
