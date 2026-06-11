@@ -464,7 +464,7 @@ Also run focused adapter tests:
 ```powershell
 cargo test -p hydracache-cluster-chitchat --locked
 cargo test -p hydracache-cluster-raft --locked
-cargo test -p hydracache-sandbox cluster --locked
+cargo test -p hydracache-sandbox --locked
 ```
 
 Package verification for cluster adapter crates requires `hydracache 0.20.0` to
