@@ -81,10 +81,21 @@ async fn member_and_client_builders_connect_to_shared_cluster() {
     assert_eq!(member_diag.member_count, 1);
     assert_eq!(member_diag.client_count, 1);
     assert_eq!(member_diag.epoch.value(), 1);
+    assert!(member_diag.is_member_role());
+    assert_eq!(member_diag.participant_count(), 2);
+    assert_eq!(member_diag.bootstrap_count(), 0);
+    assert!(member_diag.has_members());
+    assert!(member_diag.has_clients());
+    assert!(!member_diag.has_bootstrap());
+    assert!(member_diag.has_multiple_participants());
+    assert!(member_diag.is_operational());
 
     let client_diag = client.cluster_diagnostics().unwrap();
     assert_eq!(client_diag.role, ClusterRole::Client);
     assert_eq!(client_diag.bootstrap, vec!["127.0.0.1:7000".to_owned()]);
+    assert!(client_diag.is_client_role());
+    assert_eq!(client_diag.bootstrap_count(), 1);
+    assert!(client_diag.has_bootstrap());
     assert_eq!(client.invalidation_node_id(), "client-a");
     assert!(client_diag.invalidation_subscribers >= 2);
 
@@ -872,6 +883,28 @@ impl ClusterControlPlane for RejectingControlPlane {
             membership_subscribers: 0,
         }
     }
+}
+
+#[tokio::test]
+async fn diagnostics_helpers_describe_disconnected_control_plane_views() {
+    let control_plane = RejectingControlPlane::new();
+    let diagnostics = control_plane.diagnostics_for(
+        ClusterRole::Client,
+        ClusterNodeId::from("client-a"),
+        ClusterGeneration::new(3),
+        vec!["seed-a:7000".to_owned()],
+    );
+
+    assert!(diagnostics.is_client_role());
+    assert!(!diagnostics.is_member_role());
+    assert!(!diagnostics.is_local_role());
+    assert_eq!(diagnostics.participant_count(), 0);
+    assert_eq!(diagnostics.bootstrap_count(), 1);
+    assert!(!diagnostics.has_members());
+    assert!(!diagnostics.has_clients());
+    assert!(diagnostics.has_bootstrap());
+    assert!(!diagnostics.has_multiple_participants());
+    assert!(!diagnostics.is_operational());
 }
 
 #[tokio::test]

@@ -734,6 +734,68 @@ pub struct ClusterDiagnostics {
     pub membership_subscribers: usize,
 }
 
+impl ClusterDiagnostics {
+    /// Return whether this diagnostics snapshot belongs to a local cache role.
+    pub fn is_local_role(&self) -> bool {
+        self.role == ClusterRole::Local
+    }
+
+    /// Return whether this diagnostics snapshot belongs to a client runtime.
+    pub fn is_client_role(&self) -> bool {
+        self.role == ClusterRole::Client
+    }
+
+    /// Return whether this diagnostics snapshot belongs to a member runtime.
+    pub fn is_member_role(&self) -> bool {
+        self.role == ClusterRole::Member
+    }
+
+    /// Return the total number of admitted members and connected clients.
+    pub fn participant_count(&self) -> usize {
+        self.member_count.saturating_add(self.client_count)
+    }
+
+    /// Return the number of configured bootstrap addresses.
+    pub fn bootstrap_count(&self) -> usize {
+        self.bootstrap.len()
+    }
+
+    /// Return whether at least one member is currently admitted.
+    pub fn has_members(&self) -> bool {
+        self.member_count > 0
+    }
+
+    /// Return whether at least one client is currently connected.
+    pub fn has_clients(&self) -> bool {
+        self.client_count > 0
+    }
+
+    /// Return whether at least one bootstrap address is configured.
+    pub fn has_bootstrap(&self) -> bool {
+        !self.bootstrap.is_empty()
+    }
+
+    /// Return whether the invalidation bus has active receivers.
+    pub fn has_invalidation_subscribers(&self) -> bool {
+        self.invalidation_subscribers > 0
+    }
+
+    /// Return whether the membership event bus has active receivers.
+    pub fn has_membership_subscribers(&self) -> bool {
+        self.membership_subscribers > 0
+    }
+
+    /// Return whether the current view contains more than one participant.
+    pub fn has_multiple_participants(&self) -> bool {
+        self.participant_count() > 1
+    }
+
+    /// Return whether this runtime appears connected to a usable cluster view.
+    pub fn is_operational(&self) -> bool {
+        self.connected && self.participant_count() > 0
+    }
+}
+
 /// Discovery diagnostics visible from a [`HydraCache`] client/member runtime.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClusterDiscoveryDiagnostics {
@@ -2582,7 +2644,18 @@ mod tests {
 
         discovery.announce(ClusterCandidate::member("member-a"));
         let handle = bridge.start();
-        tokio::time::sleep(Duration::from_millis(10)).await;
+
+        tokio::time::timeout(Duration::from_secs(1), async {
+            loop {
+                if control_plane.members().len() == 1 {
+                    return;
+                }
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        })
+        .await
+        .expect("background bridge should admit the candidate");
+
         handle.shutdown().await;
 
         assert_eq!(control_plane.members().len(), 1);
@@ -2883,6 +2956,18 @@ mod tests {
         assert_eq!(diagnostics.bootstrap, ["seed-a:7000".to_owned()]);
         assert!(diagnostics.connected);
         assert_eq!(diagnostics.invalidation_subscribers, 1);
+        assert!(diagnostics.is_member_role());
+        assert!(!diagnostics.is_client_role());
+        assert!(!diagnostics.is_local_role());
+        assert_eq!(diagnostics.participant_count(), 1);
+        assert_eq!(diagnostics.bootstrap_count(), 1);
+        assert!(diagnostics.has_members());
+        assert!(!diagnostics.has_clients());
+        assert!(diagnostics.has_bootstrap());
+        assert!(diagnostics.has_invalidation_subscribers());
+        assert!(!diagnostics.has_membership_subscribers());
+        assert!(!diagnostics.has_multiple_participants());
+        assert!(diagnostics.is_operational());
     }
 
     #[tokio::test]

@@ -2345,10 +2345,19 @@ struct ClusterRuntimeReport {
     epoch: u64,
     member_count: usize,
     client_count: usize,
+    participant_count: usize,
     connected: bool,
     invalidation_subscribers: usize,
     membership_subscribers: usize,
     bootstrap: Vec<String>,
+    bootstrap_count: usize,
+    has_members: bool,
+    has_clients: bool,
+    has_bootstrap: bool,
+    has_invalidation_subscribers: bool,
+    has_membership_subscribers: bool,
+    has_multiple_participants: bool,
+    operational: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -6620,6 +6629,16 @@ async fn wait_for_chitchat_candidate(
 }
 
 fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeReport {
+    let participant_count = diagnostics.participant_count();
+    let bootstrap_count = diagnostics.bootstrap_count();
+    let has_members = diagnostics.has_members();
+    let has_clients = diagnostics.has_clients();
+    let has_bootstrap = diagnostics.has_bootstrap();
+    let has_invalidation_subscribers = diagnostics.has_invalidation_subscribers();
+    let has_membership_subscribers = diagnostics.has_membership_subscribers();
+    let has_multiple_participants = diagnostics.has_multiple_participants();
+    let operational = diagnostics.is_operational();
+
     ClusterRuntimeReport {
         cluster: diagnostics.cluster_name,
         role: cluster_role_label(diagnostics.role),
@@ -6628,9 +6647,18 @@ fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeRepo
         epoch: diagnostics.epoch.value(),
         member_count: diagnostics.member_count,
         client_count: diagnostics.client_count,
+        participant_count,
         connected: diagnostics.connected,
         invalidation_subscribers: diagnostics.invalidation_subscribers,
         membership_subscribers: diagnostics.membership_subscribers,
+        bootstrap_count,
+        has_members,
+        has_clients,
+        has_bootstrap,
+        has_invalidation_subscribers,
+        has_membership_subscribers,
+        has_multiple_participants,
+        operational,
         bootstrap: diagnostics.bootstrap,
     }
 }

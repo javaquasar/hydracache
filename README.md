@@ -697,6 +697,10 @@ assert!(!client.contains_key("user:42").await);
 let diagnostics = client.cluster_diagnostics().expect("cluster runtime");
 assert_eq!(diagnostics.member_count, 1);
 assert_eq!(diagnostics.client_count, 1);
+assert_eq!(diagnostics.participant_count(), 2);
+assert!(diagnostics.is_client_role());
+assert!(diagnostics.has_bootstrap());
+assert!(diagnostics.is_operational());
 assert_eq!(
     client
         .cluster_discovery_diagnostics()
@@ -725,6 +729,13 @@ seed-node/gossip-shaped adapter for candidate and liveness events.
 `InMemoryCluster` models authoritative admission and epoch movement.
 `RaftStyleMetadataControlPlane` adds a dependency-free metadata-log adapter with
 committed membership commands and snapshots.
+
+`ClusterDiagnostics` also exposes cheap helper methods such as
+`participant_count()`, `bootstrap_count()`, `has_members()`, `has_clients()`,
+`has_bootstrap()`, `has_multiple_participants()`, and `is_operational()`. These
+helpers are intentionally derived from the existing snapshot so applications can
+render dashboards or health reports without doing their own repetitive count
+logic.
 
 Client/member caches can also observe authoritative membership changes through
 `subscribe_cluster_membership()`. The stream is bounded and non-blocking:
