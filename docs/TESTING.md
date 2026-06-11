@@ -98,6 +98,65 @@ work. If a future optimization needs hard latency budgets, prefer adding a
 separate ignored or benchmark-specific target instead of making the default CI
 suite depend on machine-specific timing.
 
+## Cluster Load Stability Tests
+
+HydraCache keeps cluster stability load checks in
+`crates/hydracache/tests/cluster_load_stability.rs`. These tests are not
+latency benchmarks. They exercise the client/member in-memory cluster path under
+concurrent reads, loader calls, tag invalidations, remote invalidation
+application, leave/rejoin, and generation-safe publish rejection.
+
+The smoke load test is intentionally small and runs with the normal workspace
+suite:
+
+```powershell
+cargo test -p hydracache --test cluster_load_stability --locked
+```
+
+Run it with local measurements:
+
+```powershell
+cargo test -p hydracache --test cluster_load_stability --locked -- --nocapture
+```
+
+The heavier manual load test is ignored by default so CI remains stable. Run it
+explicitly when checking cluster changes:
+
+```powershell
+cargo test -p hydracache --test cluster_load_stability --locked -- --ignored --nocapture
+```
+
+You can tune the manual workload with environment variables:
+
+```powershell
+$env:HYDRACACHE_CLUSTER_LOAD_MEMBERS = '3'
+$env:HYDRACACHE_CLUSTER_LOAD_CLIENTS = '6'
+$env:HYDRACACHE_CLUSTER_LOAD_REQUESTS = '5000'
+$env:HYDRACACHE_CLUSTER_LOAD_CONCURRENCY = '64'
+$env:HYDRACACHE_CLUSTER_LOAD_UNIQUE_KEYS = '256'
+$env:HYDRACACHE_CLUSTER_LOAD_INVALIDATE_EVERY = '41'
+$env:HYDRACACHE_CLUSTER_LOAD_LOADER_DELAY_MS = '1'
+cargo test -p hydracache --test cluster_load_stability --locked -- --ignored --nocapture
+```
+
+The printed `cluster-load` line includes node count, request count,
+concurrency, unique keys, read operations, invalidation operations, loader
+calls, published/received/applied invalidation counters, bus health issues,
+elapsed time, and approximate operations per second.
+
+The assertions avoid machine-specific latency thresholds. Instead, they verify
+these stability properties:
+
+- All mixed workload operations complete without panics or cache errors.
+- Loader calls stay bounded by read operations.
+- Distributed invalidations are published, received, and applied.
+- Key and tag invalidations eventually remove values from every node.
+- A left client keeps local cache contents but cannot publish with its stale
+  generation.
+- A rejoined client with a newer generation is admitted successfully.
+- Bus health counters for lag, decode errors, publish failures, and closed
+  receivers remain zero.
+
 ## Allocation Profiles
 
 Allocation profiles are intentionally manual because allocation counts vary by

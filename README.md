@@ -1337,6 +1337,15 @@ cargo test --doc --workspace --locked
 cargo llvm-cov --workspace --all-targets --locked --summary-only
 ```
 
+Cluster load stability checks live in a separate integration test target. The
+small smoke test runs in the normal suite, and the heavier manual workload is
+ignored by default:
+
+```powershell
+cargo test -p hydracache --test cluster_load_stability --locked -- --nocapture
+cargo test -p hydracache --test cluster_load_stability --locked -- --ignored --nocapture
+```
+
 Coverage is tracked with `cargo-llvm-cov`. The current target is `100%`
 function coverage and `99%+` total line coverage, with visible uncovered source
 lines investigated before release.
