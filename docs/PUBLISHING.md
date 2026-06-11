@@ -32,6 +32,44 @@ runtime crate and macro crate, and concrete adapter crates such as
 `hydracache-sqlx` depend on the database-neutral adapter plus external
 integrations.
 
+Before publishing, verify publishable packages in the same dependency order.
+This catches missing files, stale workspace versions, and publish-time
+dependency mistakes before the next crate reaches crates.io. Because `cargo
+package` verifies registry dependencies, downstream crates can only be packaged
+after their freshly bumped HydraCache dependencies are visible in the crates.io
+index:
+
+```powershell
+.\scripts\package-publishable.ps1 -Set bootstrap
+```
+
+After publishing `hydracache-core` and `hydracache-macros`, wait for the index
+to update, then run:
+
+```powershell
+.\scripts\package-publishable.ps1 -Set runtime
+```
+
+After publishing `hydracache`, wait again, then run:
+
+```powershell
+.\scripts\package-publishable.ps1 -Set adapters
+```
+
+When checking an intentionally uncommitted release diff before the final commit,
+use:
+
+```powershell
+.\scripts\package-publishable.ps1 -Set bootstrap -AllowDirty
+```
+
+If every bumped workspace dependency version is already visible in the crates.io
+index, the full package check can be run in one command:
+
+```powershell
+.\scripts\package-publishable.ps1 -Set all
+```
+
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
 

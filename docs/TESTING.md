@@ -26,6 +26,20 @@ cargo test --doc --workspace --locked
 cargo doc --workspace --no-deps --locked
 ```
 
+Before publishing, also package publishable crates in dependency-order stages:
+
+```powershell
+.\scripts\package-publishable.ps1 -Set bootstrap
+.\scripts\package-publishable.ps1 -Set runtime
+.\scripts\package-publishable.ps1 -Set adapters
+```
+
+`cargo package` verifies dependencies through the crates.io index, so
+`-Set runtime` should be run after `hydracache-core` and `hydracache-macros`
+are published, and `-Set adapters` should be run after `hydracache` is
+published. Use `-AllowDirty` only when validating an intentionally uncommitted
+release diff before the final commit.
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
