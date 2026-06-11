@@ -119,6 +119,64 @@ async fn get_encoded_removes_expired_entry() {
 }
 
 #[tokio::test]
+async fn put_encoded_hydrates_bytes_and_participates_in_tag_invalidation() {
+    let source = HydraCache::local().build();
+    let target = HydraCache::local().build();
+
+    source
+        .put("user:encoded", user(42), CacheOptions::new())
+        .await
+        .unwrap();
+    let encoded = source
+        .get_encoded("user:encoded")
+        .await
+        .unwrap()
+        .expect("source value");
+
+    target
+        .put_encoded("user:encoded", encoded, CacheOptions::new().tag("users"))
+        .await
+        .unwrap();
+
+    assert_eq!(
+        target.get::<User>("user:encoded").await.unwrap(),
+        Some(user(42))
+    );
+    assert_eq!(target.invalidate_tag("users").await.unwrap(), 1);
+    assert_eq!(target.get::<User>("user:encoded").await.unwrap(), None);
+}
+
+#[tokio::test]
+async fn put_encoded_honors_entry_ttl() {
+    let source = HydraCache::local().build();
+    let target = HydraCache::local().build();
+
+    source
+        .put("user:ttl-encoded", user(7), CacheOptions::new())
+        .await
+        .unwrap();
+    let encoded = source
+        .get_encoded("user:ttl-encoded")
+        .await
+        .unwrap()
+        .expect("source value");
+
+    target
+        .put_encoded(
+            "user:ttl-encoded",
+            encoded,
+            CacheOptions::new().ttl(Duration::from_millis(20)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    assert_eq!(target.get::<User>("user:ttl-encoded").await.unwrap(), None);
+    assert!(!target.contains_key("user:ttl-encoded").await);
+}
+
+#[tokio::test]
 async fn get_or_load_loads_on_miss_and_uses_hit_afterward() {
     let cache = HydraCache::local().build();
 

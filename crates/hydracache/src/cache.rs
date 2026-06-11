@@ -520,6 +520,49 @@ where
         }
     }
 
+    /// Store already-encoded bytes for a key.
+    ///
+    /// This is mainly intended for transport adapters and cluster near-cache
+    /// hydration. The bytes must have been produced by a compatible
+    /// [`CacheCodec`]; `HydraCache` stores them as-is and will decode them on a
+    /// later typed [`get`](Self::get).
+    ///
+    /// TTLs, tags, tag-index updates, store events, and diagnostics follow the
+    /// same rules as [`put`](Self::put).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let source = HydraCache::local().build();
+    /// let target = HydraCache::local().build();
+    ///
+    /// source.put("answer", 42_u64, CacheOptions::new()).await?;
+    /// let encoded = source
+    ///     .get_encoded("answer")
+    ///     .await?
+    ///     .expect("source value is cached");
+    ///
+    /// target
+    ///     .put_encoded("answer", encoded, CacheOptions::new().tag("answers"))
+    ///     .await?;
+    ///
+    /// assert_eq!(target.get::<u64>("answer").await?, Some(42));
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn put_encoded(
+        &self,
+        key: &str,
+        value: impl Into<Bytes>,
+        options: CacheOptions,
+    ) -> Result<()> {
+        self.put_bytes(key, value.into(), options).await
+    }
+
     /// Encode and store a value.
     ///
     /// # Example
