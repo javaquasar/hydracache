@@ -52,8 +52,10 @@
 //! ```
 
 use std::collections::BTreeMap;
+use std::error::Error;
 use std::fmt;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use axum::extract::State;
 use axum::http::StatusCode;
@@ -75,6 +77,631 @@ use serde::{Deserialize, Serialize};
 
 /// Default HTTP path used by the peer-fetch route and client.
 pub const DEFAULT_PEER_FETCH_PATH: &str = "/cluster/peer-fetch";
+
+/// Default HTTP path reserved for owner-side load requests.
+pub const DEFAULT_OWNER_LOAD_PATH: &str = "/cluster/owner-load";
+
+/// One typed argument passed to a registered owner-side loader.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", content = "value", rename_all = "kebab-case")]
+pub enum OwnerLoadArg {
+    /// UTF-8 string argument.
+    String(String),
+    /// Signed integer argument.
+    I64(i64),
+    /// Unsigned integer argument.
+    U64(u64),
+    /// Boolean argument.
+    Bool(bool),
+}
+
+impl From<String> for OwnerLoadArg {
+    fn from(value: String) -> Self {
+        Self::String(value)
+    }
+}
+
+impl From<&str> for OwnerLoadArg {
+    fn from(value: &str) -> Self {
+        Self::String(value.to_owned())
+    }
+}
+
+impl From<i64> for OwnerLoadArg {
+    fn from(value: i64) -> Self {
+        Self::I64(value)
+    }
+}
+
+impl From<u64> for OwnerLoadArg {
+    fn from(value: u64) -> Self {
+        Self::U64(value)
+    }
+}
+
+impl From<bool> for OwnerLoadArg {
+    fn from(value: bool) -> Self {
+        Self::Bool(value)
+    }
+}
+
+/// Named argument bag for owner-side loaders.
+///
+/// # Example
+///
+/// ```
+/// use hydracache_cluster_transport_axum::OwnerLoadArgs;
+///
+/// let args = OwnerLoadArgs::new()
+///     .arg("id", 42_i64)
+///     .arg("tenant", "acme");
+///
+/// assert_eq!(args.get_i64("id"), Some(42));
+/// assert_eq!(args.get_str("tenant"), Some("acme"));
+/// ```
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadArgs {
+    values: BTreeMap<String, OwnerLoadArg>,
+}
+
+impl OwnerLoadArgs {
+    /// Create an empty argument bag.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Add or replace one named argument.
+    pub fn arg(mut self, name: impl Into<String>, value: impl Into<OwnerLoadArg>) -> Self {
+        self.values.insert(name.into(), value.into());
+        self
+    }
+
+    /// Return one raw argument by name.
+    pub fn get(&self, name: &str) -> Option<&OwnerLoadArg> {
+        self.values.get(name)
+    }
+
+    /// Return one string argument by name.
+    pub fn get_str(&self, name: &str) -> Option<&str> {
+        match self.values.get(name) {
+            Some(OwnerLoadArg::String(value)) => Some(value.as_str()),
+            _ => None,
+        }
+    }
+
+    /// Return one signed integer argument by name.
+    pub fn get_i64(&self, name: &str) -> Option<i64> {
+        match self.values.get(name) {
+            Some(OwnerLoadArg::I64(value)) => Some(*value),
+            Some(OwnerLoadArg::U64(value)) => i64::try_from(*value).ok(),
+            _ => None,
+        }
+    }
+
+    /// Return one unsigned integer argument by name.
+    pub fn get_u64(&self, name: &str) -> Option<u64> {
+        match self.values.get(name) {
+            Some(OwnerLoadArg::U64(value)) => Some(*value),
+            Some(OwnerLoadArg::I64(value)) => u64::try_from(*value).ok(),
+            _ => None,
+        }
+    }
+
+    /// Return one boolean argument by name.
+    pub fn get_bool(&self, name: &str) -> Option<bool> {
+        match self.values.get(name) {
+            Some(OwnerLoadArg::Bool(value)) => Some(*value),
+            _ => None,
+        }
+    }
+
+    /// Return the number of arguments.
+    pub fn len(&self) -> usize {
+        self.values.len()
+    }
+
+    /// Return whether no arguments are present.
+    pub fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
+}
+
+/// Application-level description of a load that may be routed to a key owner.
+///
+/// The descriptor is intentionally data-only. It names a registered loader and
+/// carries key, tags, TTL, and serializable arguments. It never carries a Rust
+/// closure or raw SQL string for arbitrary remote execution.
+///
+/// # Example
+///
+/// ```
+/// use std::time::Duration;
+///
+/// use hydracache_cluster_transport_axum::OwnerLoadDescriptor;
+///
+/// let descriptor = OwnerLoadDescriptor::new("users.by-id")
+///     .key("user:42")
+///     .tag("user:42")
+///     .arg("id", 42_i64)
+///     .ttl(Duration::from_secs(60));
+///
+/// assert_eq!(descriptor.loader(), "users.by-id");
+/// assert_eq!(descriptor.key_value(), Some("user:42"));
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadDescriptor {
+    loader: String,
+    key: Option<String>,
+    tags: Vec<String>,
+    ttl_ms: Option<u64>,
+    args: OwnerLoadArgs,
+}
+
+impl OwnerLoadDescriptor {
+    /// Create a descriptor for a registered owner-side loader.
+    pub fn new(loader: impl Into<String>) -> Self {
+        Self {
+            loader: loader.into(),
+            key: None,
+            tags: Vec::new(),
+            ttl_ms: None,
+            args: OwnerLoadArgs::new(),
+        }
+    }
+
+    /// Set the logical cache key.
+    pub fn key(mut self, key: impl Into<String>) -> Self {
+        self.key = Some(key.into());
+        self
+    }
+
+    /// Attach one invalidation tag.
+    pub fn tag(mut self, tag: impl Into<String>) -> Self {
+        self.tags.push(tag.into());
+        self
+    }
+
+    /// Attach invalidation tags.
+    pub fn tags<I, S>(mut self, tags: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.tags = tags.into_iter().map(Into::into).collect();
+        self
+    }
+
+    /// Set the owner-side cache TTL.
+    pub fn ttl(mut self, ttl: Duration) -> Self {
+        self.ttl_ms = Some(duration_to_millis(ttl));
+        self
+    }
+
+    /// Set the owner-side cache TTL in milliseconds.
+    pub fn ttl_millis(mut self, ttl_ms: u64) -> Self {
+        self.ttl_ms = Some(ttl_ms);
+        self
+    }
+
+    /// Add one named loader argument.
+    pub fn arg(mut self, name: impl Into<String>, value: impl Into<OwnerLoadArg>) -> Self {
+        self.args = self.args.arg(name, value);
+        self
+    }
+
+    /// Return the registered loader name.
+    pub fn loader(&self) -> &str {
+        &self.loader
+    }
+
+    /// Return the logical cache key, if configured.
+    pub fn key_value(&self) -> Option<&str> {
+        self.key.as_deref()
+    }
+
+    /// Return configured tags.
+    pub fn tags_value(&self) -> &[String] {
+        &self.tags
+    }
+
+    /// Return the configured TTL in milliseconds.
+    pub fn ttl_millis_value(&self) -> Option<u64> {
+        self.ttl_ms
+    }
+
+    /// Return loader arguments.
+    pub fn args(&self) -> &OwnerLoadArgs {
+        &self.args
+    }
+
+    /// Convert descriptor metadata into local cache options.
+    pub fn cache_options(&self) -> CacheOptions {
+        let mut options = CacheOptions::new().tags(self.tags.clone());
+        if let Some(ttl_ms) = self.ttl_ms {
+            options = options.ttl(Duration::from_millis(ttl_ms));
+        }
+        options
+    }
+
+    /// Build an owner-load request from an ownership decision.
+    pub fn into_request(
+        self,
+        decision: ClusterOwnershipDecision,
+        request_id: impl Into<String>,
+    ) -> Result<OwnerLoadRequest, OwnerLoadRequestBuildError> {
+        OwnerLoadRequest::from_descriptor(decision, self, request_id)
+    }
+}
+
+/// Error returned when a descriptor cannot become an owner-load request.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OwnerLoadRequestBuildError {
+    /// The ownership decision had no eligible owner.
+    NoOwner { key: String },
+    /// The descriptor did not include a cache key.
+    MissingKey { loader: String },
+}
+
+impl fmt::Display for OwnerLoadRequestBuildError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::NoOwner { key } => {
+                write!(
+                    formatter,
+                    "cannot build owner-load request for '{key}': no owner"
+                )
+            }
+            Self::MissingKey { loader } => {
+                write!(
+                    formatter,
+                    "owner-load descriptor '{loader}' is missing a key"
+                )
+            }
+        }
+    }
+}
+
+impl Error for OwnerLoadRequestBuildError {}
+
+/// Transport-neutral owner-side load request.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadRequest {
+    /// Expected owner member id.
+    pub owner: String,
+    /// Logical cache key to read or load on the owner.
+    pub key: String,
+    /// Registered owner-side loader name.
+    pub loader: String,
+    /// Invalidation tags to apply if the owner stores a loaded value.
+    pub tags: Vec<String>,
+    /// Per-entry TTL in milliseconds.
+    pub ttl_ms: Option<u64>,
+    /// Typed loader arguments.
+    pub args: OwnerLoadArgs,
+    /// Owner generation observed by the caller.
+    pub generation: Option<u64>,
+    /// Caller-generated request id for logs and diagnostics.
+    pub request_id: String,
+}
+
+impl OwnerLoadRequest {
+    /// Build a request from an ownership decision and descriptor.
+    pub fn from_descriptor(
+        decision: ClusterOwnershipDecision,
+        descriptor: OwnerLoadDescriptor,
+        request_id: impl Into<String>,
+    ) -> Result<Self, OwnerLoadRequestBuildError> {
+        let key = descriptor
+            .key
+            .clone()
+            .ok_or_else(|| OwnerLoadRequestBuildError::MissingKey {
+                loader: descriptor.loader.clone(),
+            })?;
+        let owner = decision
+            .owner
+            .ok_or_else(|| OwnerLoadRequestBuildError::NoOwner { key: key.clone() })?;
+
+        Ok(Self {
+            owner: owner.node_id.as_str().to_owned(),
+            key,
+            loader: descriptor.loader,
+            tags: descriptor.tags,
+            ttl_ms: descriptor.ttl_ms,
+            args: descriptor.args,
+            generation: Some(owner.generation.value()),
+            request_id: request_id.into(),
+        })
+    }
+
+    /// Return a required signed integer argument.
+    pub fn arg_i64(&self, name: &str) -> Result<i64, OwnerLoadRequestArgError> {
+        self.args
+            .get_i64(name)
+            .ok_or_else(|| OwnerLoadRequestArgError::missing_or_wrong_type(name, "i64"))
+    }
+
+    /// Return a required unsigned integer argument.
+    pub fn arg_u64(&self, name: &str) -> Result<u64, OwnerLoadRequestArgError> {
+        self.args
+            .get_u64(name)
+            .ok_or_else(|| OwnerLoadRequestArgError::missing_or_wrong_type(name, "u64"))
+    }
+
+    /// Return a required string argument.
+    pub fn arg_str(&self, name: &str) -> Result<&str, OwnerLoadRequestArgError> {
+        self.args
+            .get_str(name)
+            .ok_or_else(|| OwnerLoadRequestArgError::missing_or_wrong_type(name, "string"))
+    }
+
+    /// Return a required boolean argument.
+    pub fn arg_bool(&self, name: &str) -> Result<bool, OwnerLoadRequestArgError> {
+        self.args
+            .get_bool(name)
+            .ok_or_else(|| OwnerLoadRequestArgError::missing_or_wrong_type(name, "bool"))
+    }
+
+    /// Convert request tags and TTL into local cache options.
+    pub fn cache_options(&self) -> CacheOptions {
+        let mut options = CacheOptions::new().tags(self.tags.clone());
+        if let Some(ttl_ms) = self.ttl_ms {
+            options = options.ttl(Duration::from_millis(ttl_ms));
+        }
+        options
+    }
+}
+
+/// Error returned by typed owner-load argument accessors.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnerLoadRequestArgError {
+    name: String,
+    expected: &'static str,
+}
+
+impl OwnerLoadRequestArgError {
+    fn missing_or_wrong_type(name: &str, expected: &'static str) -> Self {
+        Self {
+            name: name.to_owned(),
+            expected,
+        }
+    }
+
+    /// Return the argument name.
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Return the expected argument type.
+    pub fn expected(&self) -> &'static str {
+        self.expected
+    }
+}
+
+impl fmt::Display for OwnerLoadRequestArgError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "missing owner-load argument '{}' with expected type {}",
+            self.name, self.expected
+        )
+    }
+}
+
+impl Error for OwnerLoadRequestArgError {}
+
+/// Successful owner-load value.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadHit {
+    /// Owner that served the value.
+    pub owner: String,
+    /// Logical cache key that was served.
+    pub key: String,
+    /// Registered loader name associated with this response.
+    pub loader: String,
+    /// Base64-encoded cache bytes.
+    pub value_base64: String,
+}
+
+impl OwnerLoadHit {
+    /// Create a hit from encoded bytes.
+    pub fn new(
+        owner: impl Into<String>,
+        key: impl Into<String>,
+        loader: impl Into<String>,
+        value: Bytes,
+    ) -> Self {
+        Self {
+            owner: owner.into(),
+            key: key.into(),
+            loader: loader.into(),
+            value_base64: BASE64_STANDARD.encode(value.as_ref()),
+        }
+    }
+
+    /// Decode the base64 payload into bytes.
+    pub fn decode_value(&self) -> CacheResult<Bytes> {
+        BASE64_STANDARD
+            .decode(&self.value_base64)
+            .map(Bytes::from)
+            .map_err(|error| CacheError::Decode(format!("invalid owner-load payload: {error}")))
+    }
+}
+
+/// Owner-load miss response.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadMiss {
+    /// Owner that served the miss.
+    pub owner: String,
+    /// Logical cache key that missed.
+    pub key: String,
+    /// Registered loader name associated with this miss.
+    pub loader: String,
+}
+
+impl OwnerLoadMiss {
+    /// Create a miss response.
+    pub fn new(
+        owner: impl Into<String>,
+        key: impl Into<String>,
+        loader: impl Into<String>,
+    ) -> Self {
+        Self {
+            owner: owner.into(),
+            key: key.into(),
+            loader: loader.into(),
+        }
+    }
+}
+
+/// Stable owner-load rejection code.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum OwnerLoadRejectionCode {
+    /// The ownership decision had no owner.
+    NoOwner,
+    /// The request reached a member that is not the requested owner.
+    WrongOwner,
+    /// The request generation is stale or does not match the owner.
+    StaleGeneration,
+    /// No loader is registered for the requested name.
+    MissingLoader,
+    /// The request was malformed or incomplete.
+    InvalidRequest,
+}
+
+/// Owner-load rejection response.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadRejection {
+    /// Machine-readable rejection code.
+    pub code: OwnerLoadRejectionCode,
+    /// Human-readable detail.
+    pub message: String,
+    /// Owner requested by the caller, if available.
+    pub requested_owner: Option<String>,
+    /// Owner serving the request, if available.
+    pub current_owner: Option<String>,
+    /// Generation observed by the caller, if available.
+    pub requested_generation: Option<u64>,
+    /// Current owner generation, if available.
+    pub current_generation: Option<u64>,
+}
+
+impl OwnerLoadRejection {
+    /// Create a rejection with a stable code and message.
+    pub fn new(code: OwnerLoadRejectionCode, message: impl Into<String>) -> Self {
+        Self {
+            code,
+            message: message.into(),
+            requested_owner: None,
+            current_owner: None,
+            requested_generation: None,
+            current_generation: None,
+        }
+    }
+
+    /// Attach requested/current owner metadata.
+    pub fn owners(
+        mut self,
+        requested_owner: impl Into<String>,
+        current_owner: impl Into<String>,
+    ) -> Self {
+        self.requested_owner = Some(requested_owner.into());
+        self.current_owner = Some(current_owner.into());
+        self
+    }
+
+    /// Attach requested/current generation metadata.
+    pub fn generations(mut self, requested: Option<u64>, current: Option<u64>) -> Self {
+        self.requested_generation = requested;
+        self.current_generation = current;
+        self
+    }
+}
+
+/// Owner-load failure response.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OwnerLoadFailure {
+    /// Stable machine-readable failure code.
+    pub code: String,
+    /// Human-readable detail.
+    pub message: String,
+    /// Logical cache key being loaded.
+    pub key: String,
+    /// Registered loader name that failed.
+    pub loader: String,
+}
+
+impl OwnerLoadFailure {
+    /// Create a failure response.
+    pub fn new(
+        code: impl Into<String>,
+        message: impl Into<String>,
+        key: impl Into<String>,
+        loader: impl Into<String>,
+    ) -> Self {
+        Self {
+            code: code.into(),
+            message: message.into(),
+            key: key.into(),
+            loader: loader.into(),
+        }
+    }
+}
+
+/// Transport-neutral owner-load response.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "status", content = "body", rename_all = "kebab-case")]
+pub enum OwnerLoadResponse {
+    /// Owner already had encoded bytes for the key.
+    Hit(OwnerLoadHit),
+    /// Owner executed a registered loader and stored the encoded value.
+    Loaded(OwnerLoadHit),
+    /// Owner or loader intentionally produced no value.
+    Miss(OwnerLoadMiss),
+    /// Owner rejected the request before running a loader.
+    Rejected(OwnerLoadRejection),
+    /// Loader or codec failed.
+    Failed(OwnerLoadFailure),
+}
+
+impl OwnerLoadResponse {
+    /// Return whether the response contains encoded bytes.
+    pub fn is_hit(&self) -> bool {
+        matches!(self, Self::Hit(_) | Self::Loaded(_))
+    }
+
+    /// Return whether the response came from an owner-side loader execution.
+    pub fn is_loaded(&self) -> bool {
+        matches!(self, Self::Loaded(_))
+    }
+
+    /// Return whether the response is a miss.
+    pub fn is_miss(&self) -> bool {
+        matches!(self, Self::Miss(_))
+    }
+
+    /// Return whether the request was rejected before loader execution.
+    pub fn is_rejected(&self) -> bool {
+        matches!(self, Self::Rejected(_))
+    }
+
+    /// Return whether the loader or codec failed.
+    pub fn is_failed(&self) -> bool {
+        matches!(self, Self::Failed(_))
+    }
+
+    /// Decode the response value when this is `Hit` or `Loaded`.
+    pub fn decode_value(&self) -> CacheResult<Option<Bytes>> {
+        match self {
+            Self::Hit(hit) | Self::Loaded(hit) => hit.decode_value().map(Some),
+            Self::Miss(_) | Self::Rejected(_) | Self::Failed(_) => Ok(None),
+        }
+    }
+}
+
+fn duration_to_millis(duration: Duration) -> u64 {
+    duration.as_millis().min(u128::from(u64::MAX)) as u64
+}
 
 /// Outcome status produced by [`PeerFetchRouter`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1164,6 +1791,170 @@ mod tests {
     use serde::de::DeserializeOwned;
     use tokio::sync::oneshot;
     use tower::ServiceExt;
+
+    #[test]
+    fn owner_load_args_descriptor_and_request_roundtrip() {
+        let descriptor = OwnerLoadDescriptor::new("users.by-id")
+            .key("user:42")
+            .tag("users")
+            .tag("user:42")
+            .ttl(Duration::from_secs(60))
+            .arg("id", 42_i64)
+            .arg("tenant", "acme")
+            .arg("include_deleted", false);
+
+        assert_eq!(descriptor.loader(), "users.by-id");
+        assert_eq!(descriptor.key_value(), Some("user:42"));
+        assert_eq!(
+            descriptor.tags_value(),
+            &["users".to_owned(), "user:42".to_owned()]
+        );
+        assert_eq!(descriptor.ttl_millis_value(), Some(60_000));
+        assert_eq!(descriptor.args().get_i64("id"), Some(42));
+        assert_eq!(descriptor.args().get_str("tenant"), Some("acme"));
+        assert_eq!(descriptor.args().get_bool("include_deleted"), Some(false));
+
+        let options = descriptor.cache_options();
+        assert_eq!(options.ttl_value(), Some(Duration::from_secs(60)));
+        assert_eq!(
+            options.tags_value(),
+            &["users".to_owned(), "user:42".to_owned()]
+        );
+
+        let request = descriptor
+            .into_request(
+                decision_with_endpoint("http://127.0.0.1:3000", "ignored", 7),
+                "req-1",
+            )
+            .unwrap();
+
+        assert_eq!(request.owner, "member-a");
+        assert_eq!(request.key, "user:42");
+        assert_eq!(request.loader, "users.by-id");
+        assert_eq!(request.generation, Some(7));
+        assert_eq!(request.request_id, "req-1");
+        assert_eq!(request.arg_i64("id").unwrap(), 42);
+        assert_eq!(request.arg_u64("id").unwrap(), 42);
+        assert_eq!(request.arg_str("tenant").unwrap(), "acme");
+        assert!(!request.arg_bool("include_deleted").unwrap());
+        assert!(request
+            .arg_str("missing")
+            .unwrap_err()
+            .to_string()
+            .contains("missing"));
+
+        let serialized = serde_json::to_string(&request).unwrap();
+        let decoded: OwnerLoadRequest = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(decoded, request);
+    }
+
+    #[test]
+    fn owner_load_request_build_errors_are_explicit() {
+        let missing_key = OwnerLoadDescriptor::new("users.by-id")
+            .into_request(
+                decision_with_endpoint("http://127.0.0.1:3000", "ignored", 7),
+                "req-1",
+            )
+            .unwrap_err();
+        assert_eq!(
+            missing_key,
+            OwnerLoadRequestBuildError::MissingKey {
+                loader: "users.by-id".to_owned()
+            }
+        );
+        assert!(missing_key.to_string().contains("missing a key"));
+
+        let no_owner = OwnerLoadDescriptor::new("users.by-id")
+            .key("user:42")
+            .into_request(
+                ClusterOwnershipDecision {
+                    key: "user:42".to_owned(),
+                    owner: None,
+                    member_count: 0,
+                    resolver: "test",
+                },
+                "req-1",
+            )
+            .unwrap_err();
+        assert_eq!(
+            no_owner,
+            OwnerLoadRequestBuildError::NoOwner {
+                key: "user:42".to_owned()
+            }
+        );
+        assert!(no_owner.to_string().contains("no owner"));
+    }
+
+    #[test]
+    fn owner_load_response_statuses_decode_and_roundtrip() {
+        let hit = OwnerLoadResponse::Hit(OwnerLoadHit::new(
+            "member-a",
+            "user:42",
+            "users.by-id",
+            Bytes::from_static(b"encoded-user"),
+        ));
+        assert!(hit.is_hit());
+        assert!(!hit.is_loaded());
+        assert_eq!(
+            hit.decode_value().unwrap(),
+            Some(Bytes::from_static(b"encoded-user"))
+        );
+
+        let loaded = OwnerLoadResponse::Loaded(OwnerLoadHit::new(
+            "member-a",
+            "user:42",
+            "users.by-id",
+            Bytes::from_static(b"loaded-user"),
+        ));
+        assert!(loaded.is_hit());
+        assert!(loaded.is_loaded());
+        assert_eq!(
+            loaded.decode_value().unwrap(),
+            Some(Bytes::from_static(b"loaded-user"))
+        );
+
+        let miss =
+            OwnerLoadResponse::Miss(OwnerLoadMiss::new("member-a", "missing", "users.by-id"));
+        assert!(miss.is_miss());
+        assert_eq!(miss.decode_value().unwrap(), None);
+
+        let rejected = OwnerLoadResponse::Rejected(
+            OwnerLoadRejection::new(OwnerLoadRejectionCode::StaleGeneration, "stale generation")
+                .owners("member-a", "member-b")
+                .generations(Some(6), Some(7)),
+        );
+        assert!(rejected.is_rejected());
+        assert_eq!(rejected.decode_value().unwrap(), None);
+
+        let failed = OwnerLoadResponse::Failed(OwnerLoadFailure::new(
+            "loader-error",
+            "database unavailable",
+            "user:42",
+            "users.by-id",
+        ));
+        assert!(failed.is_failed());
+        assert_eq!(failed.decode_value().unwrap(), None);
+
+        for response in [hit, loaded, miss, rejected, failed] {
+            let encoded = serde_json::to_string(&response).unwrap();
+            let decoded: OwnerLoadResponse = serde_json::from_str(&encoded).unwrap();
+            assert_eq!(decoded, response);
+        }
+    }
+
+    #[test]
+    fn owner_load_invalid_payload_reports_decode_error() {
+        let response = OwnerLoadResponse::Hit(OwnerLoadHit {
+            owner: "member-a".to_owned(),
+            key: "user:42".to_owned(),
+            loader: "users.by-id".to_owned(),
+            value_base64: "not base64".to_owned(),
+        });
+
+        let error = response.decode_value().unwrap_err();
+        assert!(matches!(error, CacheError::Decode(_)));
+        assert!(error.to_string().contains("invalid owner-load payload"));
+    }
 
     #[tokio::test]
     async fn memory_store_reports_hits_and_misses() {
