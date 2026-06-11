@@ -689,7 +689,7 @@ server startup wiring thin.
 
 - [x] Combined plan documented.
 - [x] Release notes `docs/releases/0.25.0.md` created.
-- [ ] Coverage target reached or residual gap documented.
+- [x] Coverage target reached or residual gap documented.
 - [x] Owner-load protocol types added and tested.
 - [x] Loader registry added and tested.
 - [x] Owner service added and tested.
@@ -699,8 +699,8 @@ server startup wiring thin.
 - [x] Sandbox route, OpenAPI schemas, and scenario reports added.
 - [x] README updated.
 - [x] Rustdoc examples compile.
-- [ ] Full workspace tests pass.
-- [ ] Clippy with `-D warnings` passes.
-- [ ] Docs build with `RUSTDOCFLAGS=-D warnings`.
-- [ ] Coverage summary recorded in `docs/TESTING.md`.
-- [ ] Publishable package checks pass in dependency order.
+- [x] Full workspace tests pass.
+- [x] Clippy with `-D warnings` passes.
+- [x] Docs build with `RUSTDOCFLAGS=-D warnings`.
+- [x] Coverage summary recorded in `docs/TESTING.md`.
+- [x] Publishable package checks pass in dependency order.

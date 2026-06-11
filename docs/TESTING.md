@@ -114,6 +114,26 @@ cargo test --doc -p hydracache-cluster-transport-axum --locked
 cargo test -p hydracache-sandbox --locked swagger_api_exercises_library_features_and_reports
 ```
 
+For the 0.25 owner-load layer specifically, run the owner-load transport tests,
+the sandbox route suite, and rustdoc examples:
+
+```powershell
+cargo test -p hydracache-cluster-transport-axum --locked owner_load
+cargo test -p hydracache-sandbox --locked memory_sandbox_routes_exercise_cache_and_actuator
+cargo test --doc -p hydracache-cluster-transport-axum --locked
+```
+
+On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
+test executable under `target\debug\deps` is locked by the OS, rerun the
+workspace suite with a fresh target directory:
+
+```powershell
+cargo test --workspace --locked --target-dir target\release-gate-test
+```
+
+This does not relax the release gate; it avoids a stale locked `.exe` while
+running the same test graph.
+
 `hydracache` and `hydracache-db` also run `trybuild` compile-pass and
 compile-fail tests for `cacheable!(...)`, `cacheable_infallible!(...)`,
 `#[derive(HydraCacheEntity)]`, and `query_cache_policy!(...)`. To run only the
@@ -459,6 +479,25 @@ Regions:   93.12%
 Functions: 91.80%
 Lines:     94.17%
 ```
+
+The 2026-06-11 owner-load implementation and sandbox lab measured:
+
+```text
+Workspace regions:   93.08%
+Workspace functions: 91.20%
+Workspace lines:     94.01%
+
+hydracache-cluster-transport-axum regions: 95.39%
+hydracache-cluster-transport-axum lines:   94.84%
+hydracache-sandbox lines:                  90.51%
+```
+
+The reusable owner-load transport code is near the library target and the new
+behavior is covered by unit tests, HTTP route tests, concurrent same-key tests,
+and rustdoc compile tests. The workspace remains below the aspirational `95%+`
+line target because the non-published sandbox carries a broad manual UI,
+OpenAPI, scenario, and CLI surface; that residual gap is documented rather than
+hidden.
 
 Most reusable library crates are now at or above the target line-coverage
 range. The largest remaining gaps are concentrated in the manual sandbox and a
