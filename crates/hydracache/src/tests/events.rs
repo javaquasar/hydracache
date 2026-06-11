@@ -94,6 +94,32 @@ async fn access_events_are_disabled_by_default() {
 }
 
 #[tokio::test]
+async fn subscriber_options_and_closed_errors_are_observable() {
+    assert_eq!(
+        CacheEventRecvError::Closed.to_string(),
+        "cache event subscription closed"
+    );
+    assert_eq!(
+        CacheEventRecvError::Lagged(2).to_string(),
+        "cache event subscriber lagged by 2 events"
+    );
+
+    let options = CacheEventOptions::mutations().tag("users");
+    let mut events = {
+        let cache = HydraCache::local().build();
+        let events = cache.subscribe(options.clone());
+        assert_eq!(events.options(), &options);
+        events
+    };
+
+    let result = tokio::time::timeout(Duration::from_millis(500), events.recv())
+        .await
+        .expect("closed event bus should wake subscriber");
+    assert_eq!(result.unwrap_err(), CacheEventRecvError::Closed);
+    assert_eq!(events.next_event().await, None);
+}
+
+#[tokio::test]
 async fn access_events_can_be_enabled_for_miss_load_store_and_hit_flow() {
     let cache = HydraCache::local().enable_access_events(true).build();
     let mut events = cache.subscribe(CacheEventOptions::new());

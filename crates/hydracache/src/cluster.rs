@@ -2890,12 +2890,13 @@ mod tests {
     use std::time::Duration;
 
     use super::{
-        ClusterAdmissionBridge, ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics,
-        ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
-        ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
-        ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
-        ClusterMembershipEvent, ClusterMembershipEventBus, ClusterMembershipRecvError,
-        ClusterNodeId, ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterPeerFetch,
+        ChitchatStyleDiscovery, ClusterAdmissionBridge, ClusterAdmissionBridgeConfig,
+        ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+        ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
+        ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent,
+        ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
+        ClusterMembershipEventBus, ClusterMembershipRecvError, ClusterNodeId,
+        ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterPeerFetch,
         ClusterPeerFetchGenerationMismatch, ClusterPeerFetchRequest, ClusterPeerFetchResponse,
         ClusterRole, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
         RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
@@ -3326,6 +3327,17 @@ mod tests {
         )));
     }
 
+    #[test]
+    fn admission_bridge_config_normalizes_zero_interval_and_member_filter() {
+        let config = ClusterAdmissionBridgeConfig::default()
+            .poll_interval(Duration::ZERO)
+            .admit_members(false);
+
+        assert_eq!(config.normalized_poll_interval(), Duration::from_millis(1));
+        assert!(!config.admit_members);
+        assert!(config.admit_clients);
+    }
+
     #[tokio::test]
     async fn admission_bridge_background_loop_can_shutdown_gracefully() {
         let discovery = Arc::new(InMemoryClusterDiscovery::new());
@@ -3410,6 +3422,74 @@ mod tests {
             discovery.events().last(),
             Some(ClusterDiscoveryEvent::MemberDead(node_id)) if node_id.as_str() == "client-a"
         ));
+    }
+
+    #[tokio::test]
+    async fn chitchat_style_discovery_satisfies_trait_and_seed_metadata_paths() {
+        let empty = ChitchatStyleDiscovery::default();
+        assert_eq!(empty.seed_count(), 0);
+        assert!(!empty.has_seeds());
+        assert_eq!(empty.adapter_name(), "chitchat-style");
+
+        let discovery = ChitchatStyleDiscovery::new(["127.0.0.1:7000", "127.0.0.1:7001"]);
+        assert_eq!(discovery.seed_count(), 2);
+        assert!(discovery.has_seeds());
+        assert_eq!(discovery.seeds()[0], "127.0.0.1:7000");
+
+        let discovery: Arc<dyn ClusterDiscovery> = Arc::new(discovery);
+        discovery
+            .announce(ClusterCandidate::member("member-a"))
+            .await
+            .unwrap();
+        discovery
+            .mark_live(ClusterNodeId::from("member-a"))
+            .await
+            .unwrap();
+        discovery
+            .mark_suspect(ClusterNodeId::from("member-a"))
+            .await
+            .unwrap();
+        discovery
+            .mark_dead(ClusterNodeId::from("member-a"))
+            .await
+            .unwrap();
+
+        let candidates = discovery.candidates();
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(
+            candidates[0]
+                .metadata
+                .get("discovery.adapter")
+                .map(String::as_str),
+            Some("chitchat-style")
+        );
+        assert_eq!(
+            candidates[0]
+                .metadata
+                .get("discovery.seeds")
+                .map(String::as_str),
+            Some("127.0.0.1:7000,127.0.0.1:7001")
+        );
+        assert_eq!(discovery.events().len(), 4);
+    }
+
+    #[tokio::test]
+    async fn closed_membership_subscriber_and_display_errors_are_observable() {
+        assert_eq!(
+            ClusterMembershipRecvError::Closed.to_string(),
+            "cluster membership subscription closed"
+        );
+        assert_eq!(
+            ClusterMembershipRecvError::Lagged(3).to_string(),
+            "cluster membership subscriber lagged by 3 events"
+        );
+
+        let mut subscriber = super::ClusterMembershipSubscriber::closed();
+        assert_eq!(
+            subscriber.recv().await.unwrap_err(),
+            ClusterMembershipRecvError::Closed
+        );
+        assert_eq!(subscriber.next_event().await, None);
     }
 
     #[test]

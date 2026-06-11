@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache_core::{CacheEventOptions, CacheEventOrigin, CacheOptions};
+use hydracache_core::{CacheEventOptions, CacheEventOrigin, CacheOptions, PostcardCodec};
 use tokio::time::{sleep, timeout};
 
 use crate::tests::common::{user, User};
@@ -122,6 +122,89 @@ async fn member_and_client_builders_connect_to_shared_cluster() {
     assert_eq!(member_discovery.event_count(), 2);
     assert!(member_discovery.has_candidates());
     assert!(member_discovery.has_events());
+}
+
+#[tokio::test]
+async fn member_and_client_builders_apply_cache_tuning_and_endpoint_metadata() {
+    let cluster = Arc::new(InMemoryCluster::new("orders-tuned"));
+
+    let member = HydraCache::member()
+        .shared_cluster(cluster.clone())
+        .node_id("member-tuned")
+        .generation(ClusterGeneration::new(3))
+        .bind("127.0.0.1:7100")
+        .diagnostics_endpoint("http://127.0.0.1:3100")
+        .cache_capacity(2)
+        .max_entry_bytes(128)
+        .default_ttl(Duration::from_millis(50))
+        .enable_access_events(true)
+        .event_buffer_capacity(4)
+        .codec(PostcardCodec)
+        .start()
+        .await
+        .unwrap();
+
+    let client = HydraCache::client()
+        .shared_cluster(cluster.clone())
+        .node_id("client-tuned")
+        .generation(ClusterGeneration::new(5))
+        .bootstrap("127.0.0.1:7100")
+        .control_endpoint("127.0.0.1:7200")
+        .diagnostics_endpoint("http://127.0.0.1:3200")
+        .near_cache_capacity(2)
+        .max_entry_bytes(128)
+        .default_ttl(Duration::from_millis(50))
+        .enable_access_events(true)
+        .event_buffer_capacity(4)
+        .codec(PostcardCodec)
+        .connect()
+        .await
+        .unwrap();
+
+    member
+        .put("member-key", user(1), CacheOptions::new())
+        .await
+        .unwrap();
+    client
+        .put("client-key", user(2), CacheOptions::new())
+        .await
+        .unwrap();
+
+    let members = cluster.members();
+    let member_record = members
+        .iter()
+        .find(|member| member.node_id.as_str() == "member-tuned")
+        .unwrap();
+    assert_eq!(
+        member_record.endpoints.control.as_deref(),
+        Some("127.0.0.1:7100")
+    );
+    assert_eq!(
+        member_record.endpoints.invalidation.as_deref(),
+        Some("127.0.0.1:7100")
+    );
+    assert_eq!(
+        member_record.endpoints.diagnostics.as_deref(),
+        Some("http://127.0.0.1:3100")
+    );
+
+    let clients = cluster.clients();
+    let client_record = clients
+        .iter()
+        .find(|client| client.node_id.as_str() == "client-tuned")
+        .unwrap();
+    assert_eq!(
+        client_record.endpoints.control.as_deref(),
+        Some("127.0.0.1:7200")
+    );
+    assert_eq!(
+        client_record.endpoints.diagnostics.as_deref(),
+        Some("http://127.0.0.1:3200")
+    );
+    assert_eq!(
+        client.cluster_diagnostics().unwrap().bootstrap,
+        vec!["127.0.0.1:7100".to_owned()]
+    );
 }
 
 #[tokio::test]
@@ -697,6 +780,40 @@ async fn raft_style_metadata_control_plane_records_committed_membership_commands
             ..
         }) if epoch.value() == 2
     ));
+}
+
+#[tokio::test]
+async fn raft_style_metadata_control_plane_exposes_trait_paths_and_noop_leave() {
+    let control_plane = RaftStyleMetadataControlPlane::default().with_term(9);
+    assert_eq!(control_plane.name(), "hydracache");
+    assert_eq!(control_plane.snapshot().term, 9);
+    assert!(control_plane.commands().is_empty());
+    assert_eq!(
+        control_plane
+            .leave(&ClusterNodeId::from("missing"), ClusterGeneration::new(1))
+            .await
+            .unwrap(),
+        None
+    );
+
+    let _bus_subscriber = control_plane.invalidation_bus().subscribe();
+    let diagnostics = control_plane.diagnostics_for(
+        ClusterRole::Client,
+        ClusterNodeId::from("client-a"),
+        ClusterGeneration::new(1),
+        vec!["seed-a".to_owned()],
+    );
+    assert_eq!(diagnostics.cluster_name, "hydracache");
+    assert_eq!(diagnostics.role, ClusterRole::Client);
+    assert_eq!(diagnostics.bootstrap, vec!["seed-a".to_owned()]);
+    assert_eq!(diagnostics.invalidation_subscribers, 1);
+
+    let ownership = control_plane.ownership_diagnostics();
+    assert_eq!(ownership.resolver, "rendezvous");
+    assert_eq!(ownership.resolutions, 0);
+    assert_eq!(ownership.no_owner, 0);
+    assert_eq!(ownership.owner_found_ratio(), None);
+    let _membership_subscriber = control_plane.subscribe_membership();
 }
 
 #[tokio::test]
