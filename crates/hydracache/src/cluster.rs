@@ -376,6 +376,15 @@ pub struct ClusterPeerFetchRequest {
     pub generation: Option<ClusterGeneration>,
 }
 
+/// Requested owner generation did not match the current owner generation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ClusterPeerFetchGenerationMismatch {
+    /// Generation observed by the caller when it resolved ownership.
+    pub requested: ClusterGeneration,
+    /// Current generation known by the owner or transport.
+    pub current: ClusterGeneration,
+}
+
 impl ClusterPeerFetchRequest {
     /// Create a new peer-fetch request.
     pub fn new(owner: impl Into<ClusterNodeId>, key: impl Into<String>) -> Self {
@@ -390,6 +399,29 @@ impl ClusterPeerFetchRequest {
     pub fn generation(mut self, generation: ClusterGeneration) -> Self {
         self.generation = Some(generation);
         self
+    }
+
+    /// Return whether this request carries an observed owner generation.
+    pub fn has_generation(&self) -> bool {
+        self.generation.is_some()
+    }
+
+    /// Return whether this request can be served by `current` owner generation.
+    pub fn matches_generation(&self, current: ClusterGeneration) -> bool {
+        self.generation_mismatch(current).is_none()
+    }
+
+    /// Return mismatch details when the observed owner generation is stale.
+    pub fn generation_mismatch(
+        &self,
+        current: ClusterGeneration,
+    ) -> Option<ClusterPeerFetchGenerationMismatch> {
+        match self.generation {
+            Some(requested) if requested != current => {
+                Some(ClusterPeerFetchGenerationMismatch { requested, current })
+            }
+            _ => None,
+        }
     }
 }
 
@@ -2648,8 +2680,9 @@ mod tests {
         ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
         ClusterMembershipEvent, ClusterMembershipEventBus, ClusterMembershipRecvError,
         ClusterNodeId, ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterPeerFetch,
-        ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, InMemoryCluster,
-        InMemoryClusterDiscovery, InMemoryPeerFetch, RendezvousClusterOwnership,
+        ClusterPeerFetchGenerationMismatch, ClusterPeerFetchRequest, ClusterPeerFetchResponse,
+        ClusterRole, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
+        RendezvousClusterOwnership,
     };
     use bytes::Bytes;
 
@@ -2781,6 +2814,43 @@ mod tests {
         assert_eq!(request.generation, Some(ClusterGeneration::new(3)));
     }
 
+    #[test]
+    fn ownership_decision_without_owner_cannot_build_peer_fetch_request() {
+        let decision = ClusterOwnershipDecision {
+            key: "user:42".to_owned(),
+            owner: None,
+            member_count: 0,
+            resolver: "test",
+        };
+
+        assert!(!decision.has_owner());
+        assert!(decision.peer_fetch_request().is_none());
+    }
+
+    #[test]
+    fn peer_fetch_request_reports_generation_mismatch() {
+        let request = ClusterPeerFetchRequest::new("member-a", "user:42")
+            .generation(ClusterGeneration::new(3));
+
+        assert!(request.has_generation());
+        assert!(request.matches_generation(ClusterGeneration::new(3)));
+        assert_eq!(
+            request.generation_mismatch(ClusterGeneration::new(4)),
+            Some(ClusterPeerFetchGenerationMismatch {
+                requested: ClusterGeneration::new(3),
+                current: ClusterGeneration::new(4),
+            })
+        );
+        assert!(!request.matches_generation(ClusterGeneration::new(4)));
+
+        let generationless = ClusterPeerFetchRequest::new("member-a", "user:42");
+        assert!(!generationless.has_generation());
+        assert!(generationless.matches_generation(ClusterGeneration::new(99)));
+        assert!(generationless
+            .generation_mismatch(ClusterGeneration::new(99))
+            .is_none());
+    }
+
     #[tokio::test]
     async fn in_memory_peer_fetch_returns_hits_misses_and_removes_values() {
         let fetch = InMemoryPeerFetch::new();
@@ -2816,6 +2886,17 @@ mod tests {
             Some(Bytes::from_static(b"encoded"))
         );
         assert!(fetch.is_empty());
+
+        let removed = fetch
+            .fetch(ClusterPeerFetchRequest::new(owner.clone(), "user:42"))
+            .await
+            .unwrap();
+        assert!(removed.is_miss());
+        assert_eq!(
+            fetch.remove(&owner, "user:42"),
+            None,
+            "removing an already removed value is a no-op"
+        );
     }
 
     #[test]
