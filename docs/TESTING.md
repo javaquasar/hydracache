@@ -86,9 +86,9 @@ successfully.
 
 `hydracache-sandbox` includes the manual OpenAPI lab plus route-level tests for
 cluster lifecycle, deterministic ownership, peer fetch, routed HTTP peer-fetch,
-real chitchat/raft adapters, generated-client smoke checks, and optional
-Postgres smoke coverage. Run it directly when changing sandbox or
-cluster-operability behavior:
+read-through near-cache hydration, real chitchat/raft adapters,
+generated-client smoke checks, and optional Postgres smoke coverage. Run it
+directly when changing sandbox or cluster-operability behavior:
 
 ```powershell
 cargo test -p hydracache-sandbox --locked
@@ -99,6 +99,17 @@ tests plus rustdoc examples before the full workspace gate:
 
 ```powershell
 cargo test -p hydracache-cluster-transport-axum --locked
+cargo test --doc -p hydracache-cluster-transport-axum --locked
+cargo test -p hydracache-sandbox --locked swagger_api_exercises_library_features_and_reports
+```
+
+For the 0.24 read-through hydration layer specifically, run the encoded
+hydration tests, transport read-through tests, rustdoc examples, and sandbox
+Swagger smoke:
+
+```powershell
+cargo test -p hydracache --lib --locked put_encoded
+cargo test -p hydracache-cluster-transport-axum --locked read_through
 cargo test --doc -p hydracache-cluster-transport-axum --locked
 cargo test -p hydracache-sandbox --locked swagger_api_exercises_library_features_and_reports
 ```

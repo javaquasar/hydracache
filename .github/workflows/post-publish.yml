@@ -82,7 +82,8 @@ jobs:
               use hydracache_cluster_raft::RaftMetadataRuntime;
               use hydracache_cluster_transport_axum::{
                   AxumPeerFetchService, HttpPeerFetch, MemoryPeerFetchStore,
-                  PeerFetchHttpRequest, PeerFetchHttpResponse, PeerFetchRouter,
+                  PeerFetchHttpRequest, PeerFetchHttpResponse, PeerFetchReadThrough,
+                  PeerFetchReadThroughPolicy, PeerFetchReadThroughStatus, PeerFetchRouter,
                   PeerFetchRouterStatus, DEFAULT_PEER_FETCH_PATH,
               };
               use hydracache_db::DbCache;
@@ -301,6 +302,55 @@ jobs:
                   assert_eq!(diagnostics.missing_endpoint, 1);
                   assert_eq!(diagnostics.routed_requests(), 0);
                   assert!(diagnostics.has_failures());
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_read_through_smoke_test() -> hydracache::CacheResult<()> {
+                  let source = HydraCache::local().build();
+                  let near_cache = HydraCache::local().build();
+                  source
+                      .put("answer", 42_u64, CacheOptions::new())
+                      .await?;
+                  let encoded = source
+                      .get_encoded("answer")
+                      .await?
+                      .expect("source value");
+                  near_cache
+                      .put_encoded("answer", encoded, CacheOptions::new().tag("answers"))
+                      .await?;
+
+                  let cluster = InMemoryCluster::new("orders");
+                  cluster.join_member(
+                      ClusterCandidate::member("member-a")
+                          .generation(ClusterGeneration::new(1)),
+                  )?;
+
+                  let read_through = PeerFetchReadThrough::new(near_cache.clone());
+                  let local = read_through
+                      .fetch_encoded(cluster.owner_for_key("answer"), CacheOptions::new())
+                      .await?;
+                  assert_eq!(local.status, PeerFetchReadThroughStatus::LocalHit);
+                  assert!(local.is_local_hit());
+                  assert_eq!(near_cache.get::<u64>("answer").await?, Some(42));
+
+                  let owner_only = PeerFetchReadThrough::new(HydraCache::local().build())
+                      .policy(PeerFetchReadThroughPolicy::OwnerOnly)
+                      .without_hydration();
+                  let missing_endpoint = owner_only
+                      .fetch_encoded(cluster.owner_for_key("answer"), CacheOptions::new())
+                      .await?;
+                  assert_eq!(
+                      missing_endpoint.status,
+                      PeerFetchReadThroughStatus::MissingEndpoint
+                  );
+                  assert!(missing_endpoint.is_router_error());
+
+                  let diagnostics = owner_only.diagnostics();
+                  assert_eq!(diagnostics.attempts, 1);
+                  assert_eq!(diagnostics.router_errors, 1);
+                  assert!(diagnostics.has_router_errors());
 
                   Ok(())
               }

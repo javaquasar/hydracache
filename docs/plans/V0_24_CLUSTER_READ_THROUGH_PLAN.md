@@ -84,10 +84,10 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 
 ## Completion Checklist
 
-- [ ] `HydraCache::put_encoded` is public, documented, and tested.
-- [ ] `PeerFetchReadThrough` supports local-first and owner-first policies.
-- [ ] Remote hit hydration stores bytes locally with tags/TTL.
-- [ ] Diagnostics counters cover all read-through outcomes.
-- [ ] Concurrent same-key read-through calls share one remote route attempt.
-- [ ] Sandbox exposes the full read-through flow.
-- [ ] README, testing docs, release notes, and rustdoc examples are current.
+- [x] `HydraCache::put_encoded` is public, documented, and tested.
+- [x] `PeerFetchReadThrough` supports local-first and owner-first policies.
+- [x] Remote hit hydration stores bytes locally with tags/TTL.
+- [x] Diagnostics counters cover all read-through outcomes.
+- [x] Concurrent same-key read-through calls share one remote route attempt.
+- [x] Sandbox exposes the full read-through flow.
+- [x] README, testing docs, release notes, and rustdoc examples are current.

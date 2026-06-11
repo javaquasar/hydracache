@@ -857,6 +857,53 @@ advertised endpoints, generation mismatches, and transport errors. The sandbox
 route `POST /demo/cluster/routed-peer-fetch/run` renders those counters as JSON
 so the routing path can be inspected without writing an application first.
 
+For client/member near-cache read-through, use `PeerFetchReadThrough`. It checks
+the local cache according to a policy, routes misses to the advertised owner,
+and hydrates the local cache when the owner returns encoded bytes:
+
+```rust
+use hydracache::{CacheOptions, ClusterCandidate, ClusterGeneration, HydraCache, InMemoryCluster};
+use hydracache_cluster_transport_axum::{
+    PeerFetchReadThrough, PeerFetchReadThroughStatus,
+};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let near_cache = HydraCache::local().build();
+let cluster = InMemoryCluster::new("orders");
+cluster.join_member(
+    ClusterCandidate::member("member-a")
+        .generation(ClusterGeneration::new(1))
+        .peer_fetch_base_url("http://127.0.0.1:3000"),
+)?;
+
+let read_through = PeerFetchReadThrough::new(near_cache.clone());
+let outcome = read_through
+    .fetch_encoded(
+        cluster.owner_for_key("user:42"),
+        CacheOptions::new().tag("user:42"),
+    )
+    .await?;
+
+assert!(matches!(
+    outcome.status,
+    PeerFetchReadThroughStatus::RemoteHit
+        | PeerFetchReadThroughStatus::RemoteMiss
+        | PeerFetchReadThroughStatus::TransportError
+));
+
+let diagnostics = read_through.diagnostics();
+assert_eq!(diagnostics.attempts, 1);
+# Ok(())
+# }
+```
+
+The default policy is `LocalThenOwner`: local hit, otherwise owner fetch. The
+helper also supports `OwnerThenLocal` and `OwnerOnly`. Remote hits hydrate the
+near cache by default through `HydraCache::put_encoded`; generation mismatches
+and transport errors never hydrate stale bytes. The sandbox route
+`POST /demo/cluster/read-through/run` demonstrates the complete flow:
+local miss -> owner remote hit -> local hydration -> second read local hit.
+
 Ownership counters live in a separate diagnostics snapshot so the original
 `ClusterDiagnostics` struct can remain backwards-compatible for users that
 construct it in tests:
@@ -876,7 +923,7 @@ assert_eq!(ownership.owner_found(), 1);
 
 ## Cluster Support Boundaries
 
-The current `0.23.x` cluster support is intentionally an embedded coordination
+The current `0.24.x` cluster support is intentionally an embedded coordination
 surface, not a production distributed data grid. It includes:
 
 - local, client, and member cache roles;
@@ -889,8 +936,10 @@ surface, not a production distributed data grid. It includes:
 - a transport-neutral peer-fetch seam that moves encoded bytes;
 - an optional Axum/HTTP peer-fetch transport for owner member reads;
 - advertised peer-fetch endpoint metadata and `PeerFetchRouter`;
-- diagnostics counters for membership, invalidation, ownership, peer-fetch, and
-  routed peer-fetch activity.
+- `PeerFetchReadThrough` for local/near-cache read-through and hydration from
+  owner cached bytes;
+- diagnostics counters for membership, invalidation, ownership, peer-fetch,
+  routed peer-fetch, and read-through activity.
 
 It intentionally does not yet include:
 
@@ -1113,6 +1162,7 @@ http://127.0.0.1:3000/demo/cluster/lifecycle/run
 http://127.0.0.1:3000/demo/cluster/ownership/run
 http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
 http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
+http://127.0.0.1:3000/demo/cluster/read-through/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
@@ -1143,6 +1193,8 @@ shows the original owner rejoining with a newer generation. The routed
 peer-fetch lab starts two temporary HTTP peer-fetch services, advertises their
 base URLs through member metadata, resolves the key owner, and verifies that
 `PeerFetchRouter` fetches the encoded value from the advertised owner endpoint.
+The read-through lab builds on that route by hydrating a client near-cache from
+the owner response and proving that the second read is a local hit.
 The real-adapters demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
@@ -1161,9 +1213,9 @@ scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
 demo for verifying subscriptions manually. It also includes one-click
 distributed invalidation and cluster lifecycle flows that render remote bus
 events and membership timelines in the output, cluster ownership flows that
-render owner selection, transfer, advertised endpoint routing, and peer-fetch
-results, plus a real chitchat + raft adapter flow that shows bridge diagnostics
-and committed metadata commands.
+render owner selection, transfer, advertised endpoint routing, peer-fetch
+results, and read-through hydration, plus a real chitchat + raft adapter flow
+that shows bridge diagnostics and committed metadata commands.
 
 Useful Swagger/API groups:
 
@@ -1215,6 +1267,7 @@ POST /demo/cluster/lifecycle/run
 POST /demo/cluster/ownership/run
 POST /demo/cluster/ownership-transfer/run
 POST /demo/cluster/routed-peer-fetch/run
+POST /demo/cluster/read-through/run
 POST /demo/cluster/real-adapters/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
@@ -1287,6 +1340,22 @@ The response includes `owner`, `routed_peer_fetch`, `router_diagnostics`, both
 temporary member endpoints, a three-step timeline, and `passed: true` when the
 owner endpoint was discovered from metadata and the HTTP fetch returned the
 expected encoded value.
+
+Read-through hydration demo payload:
+
+```json
+{
+  "cluster": "manual-read-through",
+  "key": "manual:user:42",
+  "value": "Ada",
+  "flow_id": "manual-read-through"
+}
+```
+
+The response includes `first_read`, `second_read`,
+`read_through_diagnostics`, `router_diagnostics`, and hydrated decoded values.
+`passed: true` means the first call was a remote owner hit, the value was
+hydrated into the client near-cache, and the second call was served locally.
 
 `/demo/report` returns a cumulative application report with active profile,
 backend, loader counters, function counters, retained event count,
@@ -1619,7 +1688,7 @@ lines investigated before release.
 - `hydracache-cluster` - use this when you want the standard chitchat + raft adapter composition without wiring every handle manually.
 - `hydracache-cluster-chitchat` - use this when you want real chitchat-backed cluster candidate discovery.
 - `hydracache-cluster-raft` - use this when you want the real raft-rs metadata runtime behind `ClusterControlPlane`.
-- `hydracache-cluster-transport-axum` - use this when cluster members should expose HTTP peer-fetch over encoded cache bytes.
+- `hydracache-cluster-transport-axum` - use this when cluster members should expose HTTP peer-fetch over encoded cache bytes or use read-through near-cache hydration.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
@@ -1657,7 +1726,7 @@ The v0 release plan is maintained here:
 - `crates/hydracache-cluster-chitchat` - optional real chitchat-backed cluster discovery adapter
 - `crates/hydracache-cluster-raft` - optional real raft-rs metadata control-plane runtime
 - `crates/hydracache-cluster` - optional composition helpers for the standard chitchat + raft cluster setup
-- `crates/hydracache-cluster-transport-axum` - optional Axum/HTTP peer-fetch transport for encoded member values
+- `crates/hydracache-cluster-transport-axum` - optional Axum/HTTP peer-fetch transport and read-through near-cache hydration for encoded member values
 - `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
 - `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes
