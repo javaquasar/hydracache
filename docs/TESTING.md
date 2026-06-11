@@ -123,6 +123,25 @@ cargo test -p hydracache-sandbox --locked memory_sandbox_routes_exercise_cache_a
 cargo test --doc -p hydracache-cluster-transport-axum --locked
 ```
 
+For the 0.26 event preflight layer specifically, run the listener preflight
+tests, lazy event-construction checks, performance smoke assertions, the sandbox
+Swagger route smoke, and rustdoc examples:
+
+```powershell
+cargo test -p hydracache --lib --locked events::tests::preflight
+cargo test -p hydracache --lib --locked cache::tests::lazy
+cargo test -p hydracache --test performance_smoke --locked event_preflight
+cargo test -p hydracache-sandbox --locked swagger_api_exercises_library_features_and_reports
+cargo test --doc -p hydracache --locked
+```
+
+The ignored allocation profile also includes event preflight modes. Use it when
+comparing local allocation behavior around listener changes:
+
+```powershell
+cargo test -p hydracache --test allocation_profile --locked -- --ignored profile_event_preflight_modes --nocapture
+```
+
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
 test executable under `target\debug\deps` is locked by the OS, rerun the
 workspace suite with a fresh target directory:
@@ -196,6 +215,9 @@ properties that should remain stable across environments:
 - Many concurrent callers for the same cold key must share one loader call.
 - A warmed multi-key workload must keep loader calls bounded by unique keys.
 - Bulk tag invalidation must remove the tagged set without stranded entries.
+- Event preflight must publish no events without subscribers, publish mutation
+  events only to mutation subscribers, keep access subscribers silent until
+  access events are enabled, and publish access events after explicit opt-in.
 
 The printed `perf-smoke` lines are for human comparison during optimization
 work. If a future optimization needs hard latency budgets, prefer adding a

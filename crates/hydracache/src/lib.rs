@@ -224,6 +224,35 @@
 //! # }
 //! ```
 //!
+//! Event publication is preflighted before HydraCache builds owned event
+//! payloads. If an event kind is disabled or no active subscriber can receive
+//! it, the cache operation skips the event allocation path. Access events still
+//! require both a subscriber and [`HydraCacheBuilder::enable_access_events`].
+//!
+//! ```rust
+//! use hydracache::{CacheEventKind, CacheOptions, HydraCache};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let quiet_cache = HydraCache::local().build();
+//! quiet_cache
+//!     .put("user:42", "Ada", CacheOptions::new().tag("users"))
+//!     .await?;
+//! assert_eq!(quiet_cache.stats().events_published, 0);
+//!
+//! let observed_cache = HydraCache::local().build();
+//! let mut events = observed_cache.subscribe_mutations();
+//! observed_cache
+//!     .put("user:43", "Grace", CacheOptions::new().tag("users"))
+//!     .await?;
+//!
+//! let event = events.recv().await.expect("stored event");
+//! assert_eq!(event.kind(), CacheEventKind::Stored);
+//! assert_eq!(observed_cache.stats().events_published, 1);
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! # Distributed invalidation bus
 //!
 //! Use [`InMemoryInvalidationBus`] when several cache instances in one process

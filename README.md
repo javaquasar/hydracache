@@ -473,6 +473,36 @@ assert_eq!(event.key(), Some("users:42"));
 Subscribers use a bounded ring buffer. Slow subscribers may receive
 `CacheEventRecvError::Lagged`, but cache operations never wait for listeners.
 
+Event publication has a cheap preflight path. HydraCache builds owned event
+payloads only when the event kind is enabled and at least one active subscriber
+can receive it. This keeps ordinary cache calls from paying listener allocation
+cost when no listener is installed. Mutation events only need a mutation/key/tag
+subscriber; access events still require both a subscriber and
+`enable_access_events(true)`.
+
+```rust
+use hydracache::{CacheEventKind, CacheOptions, HydraCache};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let quiet_cache = HydraCache::local().build();
+quiet_cache
+    .put("user:42", "Ada", CacheOptions::new().tag("users"))
+    .await?;
+assert_eq!(quiet_cache.stats().events_published, 0);
+
+let observed_cache = HydraCache::local().build();
+let mut events = observed_cache.subscribe_mutations();
+observed_cache
+    .put("user:43", "Grace", CacheOptions::new().tag("users"))
+    .await?;
+
+let event = events.recv().await.expect("stored event");
+assert_eq!(event.kind(), CacheEventKind::Stored);
+assert_eq!(observed_cache.stats().events_published, 1);
+# Ok(())
+# }
+```
+
 ## Distributed Invalidation Bus
 
 Use `InMemoryInvalidationBus` when several cache instances in one process should
@@ -1226,6 +1256,7 @@ http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
 http://127.0.0.1:3000/demo/cluster/read-through/run
 http://127.0.0.1:3000/demo/cluster/owner-load/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
+http://127.0.0.1:3000/demo/events/preflight/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
 http://127.0.0.1:3000/demo/security
@@ -1261,6 +1292,10 @@ owner-load lab goes one step further: on owner miss it executes a registered
 named loader on the selected owner, stores the encoded value there, hydrates the
 client near-cache, verifies concurrent same-key sharing, and reports structured
 missing-loader, stale-generation, and wrong-owner rejections.
+The event preflight lab demonstrates listener cost boundaries: no-subscriber
+operations publish nothing, mutation subscribers see only mutation events,
+disabled access subscribers do not turn on hit/miss streams, and enabled access
+subscribers receive access events.
 The real-adapters demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
@@ -1328,6 +1363,7 @@ POST /demo/cache/contains
 POST /demo/cache/remove
 POST /demo/cache/invalidate-tag
 POST /demo/listeners/run
+POST /demo/events/preflight/run
 POST /demo/distributed/invalidation/run
 POST /demo/cluster/lifecycle/run
 POST /demo/cluster/ownership/run

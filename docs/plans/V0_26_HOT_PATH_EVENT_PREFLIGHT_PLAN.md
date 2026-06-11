@@ -141,13 +141,13 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 
 ## Completion Checklist
 
-- [ ] Roadmap and release plan documented.
-- [ ] Event preflight API added and tested.
-- [ ] Cache event construction is lazy on unobserved paths.
-- [ ] Existing listener behavior remains source-compatible.
-- [ ] Allocation/performance smoke coverage added.
-- [ ] Sandbox preflight report added and tested.
-- [ ] README updated.
-- [ ] Rustdoc examples compile.
-- [ ] Release notes updated.
+- [x] Roadmap and release plan documented.
+- [x] Event preflight API added and tested.
+- [x] Cache event construction is lazy on unobserved paths.
+- [x] Existing listener behavior remains source-compatible.
+- [x] Allocation/performance smoke coverage added.
+- [x] Sandbox preflight report added and tested.
+- [x] README updated.
+- [x] Rustdoc examples compile.
+- [x] Release notes updated.
 - [ ] Full release gate passes.
