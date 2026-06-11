@@ -10529,6 +10529,7 @@ impl fmt::Debug for SandboxApp {
 mod tests {
     use axum::body::{to_bytes, Body};
     use axum::http::{Request, StatusCode};
+    use axum::response::IntoResponse;
     use serde_json::Value;
     use std::fs;
     use std::path::PathBuf;
@@ -10793,6 +10794,84 @@ mod tests {
         )
         .unwrap();
         assert_eq!(auth_token.auth_token, Some("cli-token".to_owned()));
+    }
+
+    #[test]
+    fn sandbox_helpers_cover_defaults_formats_and_error_responses() {
+        assert!(super::default_true());
+        assert_eq!(super::default_benchmark_prefix(), "bench");
+        assert_eq!(super::default_benchmark_requests(), 64);
+        assert_eq!(super::default_benchmark_concurrency(), 8);
+        assert_eq!(super::default_benchmark_unique_keys(), 4);
+        assert_eq!(super::default_bind().port(), 3000);
+        assert_eq!(
+            super::default_postgres_database_url(),
+            "postgres://hydracache:hydracache@127.0.0.1:54329/hydracache"
+        );
+        assert!(super::default_env_file_path().ends_with(".env"));
+
+        let bind = super::parse_bind("127.0.0.1:3399").unwrap();
+        assert_eq!(bind.port(), 3399);
+        assert_eq!(
+            super::parse_profile("postgres-docker").unwrap(),
+            SandboxProfile::PostgresDocker
+        );
+        assert_eq!(
+            super::parse_profile("postgres-compose").unwrap(),
+            SandboxProfile::PostgresCompose
+        );
+
+        let sqlite_path = PathBuf::from("target/helper.sqlite");
+        let database_url = "postgres://demo".to_owned();
+        assert!(matches!(
+            super::parse_backend("postgres-url", sqlite_path.clone(), database_url.clone())
+                .unwrap(),
+            SandboxBackend::PostgresUrl { database_url: parsed } if parsed == database_url
+        ));
+        assert!(matches!(
+            super::parse_backend("sqlite-file", sqlite_path.clone(), database_url.clone())
+                .unwrap(),
+            SandboxBackend::SqliteFile { path } if path == sqlite_path
+        ));
+
+        assert_eq!(super::unquote_env_value("\"quoted\""), "quoted");
+        assert_eq!(super::unquote_env_value("'quoted'"), "quoted");
+        assert_eq!(super::unquote_env_value("plain"), "plain");
+        assert_eq!(
+            super::parse_small_yaml_value("true"),
+            serde_json::json!(true)
+        );
+        assert_eq!(super::parse_small_yaml_value("42"), serde_json::json!(42));
+        assert_eq!(
+            super::parse_small_yaml_value("[alpha, beta]"),
+            serde_json::json!(["alpha", "beta"])
+        );
+
+        let urls = super::sandbox_urls();
+        assert_eq!(urls.swagger_ui, "/swagger-ui");
+        assert_eq!(urls.scenario_catalog, "/demo/scenarios/catalog");
+        assert!(super::capabilities()
+            .iter()
+            .any(|capability| capability.name == "cluster read-through lab"));
+
+        let http_error = super::SandboxHttpError::bad_request("bad input").into_response();
+        assert_eq!(http_error.status(), StatusCode::BAD_REQUEST);
+        let not_found = super::SandboxHttpError::from(super::SandboxError::NotFound { id: 77 });
+        assert_eq!(not_found.status, StatusCode::NOT_FOUND);
+        assert!(not_found.message.contains("77"));
+        let loader_error =
+            super::SandboxHttpError::from(hydracache::CacheError::Loader("user not found".into()));
+        assert_eq!(loader_error.status, StatusCode::NOT_FOUND);
+        let io_error = super::SandboxError::io(std::io::Error::other("disk is full"));
+        assert!(io_error.to_string().contains("disk is full"));
+
+        let document = super::parse_scenario_document_text(
+            super::ScenarioDocumentFormat::Yaml,
+            "name: helper-yaml\nflow_id: helper-flow\nsteps:\n  - name: load\n    action: load-user\n    id: 42\n",
+        )
+        .unwrap();
+        assert_eq!(document.name, "helper-yaml");
+        assert_eq!(document.steps.len(), 1);
     }
 
     #[test]
@@ -12279,6 +12358,151 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn sandbox_error_routes_cover_bad_requests_and_missing_demo_rows() {
+        let app = build_sandbox(SandboxConfig::default())
+            .await
+            .unwrap()
+            .router;
+
+        let product = app
+            .clone()
+            .oneshot(get("/demo/products/100"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(product["name"], "Mechanical Keyboard");
+
+        let missing_product = app
+            .clone()
+            .oneshot(get("/demo/products/999"))
+            .await
+            .unwrap();
+        let missing_product = error_body(missing_product, StatusCode::NOT_FOUND).await;
+        assert!(missing_product["error"]
+            .as_str()
+            .unwrap()
+            .contains("sandbox user 999 not found"));
+
+        let missing_order = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/orders/999999/summary/load",
+                Body::from(r#"{"ttl_ms":5000}"#),
+            ))
+            .await
+            .unwrap();
+        let missing_order = error_body(missing_order, StatusCode::NOT_FOUND).await;
+        assert!(missing_order["error"]
+            .as_str()
+            .unwrap()
+            .contains("not found"));
+
+        let invalid_json_document = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/document/parse",
+                Body::from(r#"{"format":"json","document":"{}"}"#),
+            ))
+            .await
+            .unwrap();
+        let invalid_json_document =
+            error_body(invalid_json_document, StatusCode::BAD_REQUEST).await;
+        assert!(invalid_json_document["error"]
+            .as_str()
+            .unwrap()
+            .contains("name"));
+
+        let invalid_yaml_document = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/document/parse",
+                Body::from(r#"{"format":"yaml","document":"  - name: orphan"}"#),
+            ))
+            .await
+            .unwrap();
+        let invalid_yaml_document =
+            error_body(invalid_yaml_document, StatusCode::BAD_REQUEST).await;
+        assert!(invalid_yaml_document["error"]
+            .as_str()
+            .unwrap()
+            .contains("no list section is active"));
+
+        let unknown_scenario_file = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/file/run",
+                Body::from(r#"{"path":"missing.yaml","format":"yaml"}"#),
+            ))
+            .await
+            .unwrap();
+        let unknown_scenario_file =
+            error_body(unknown_scenario_file, StatusCode::BAD_REQUEST).await;
+        assert!(unknown_scenario_file["error"]
+            .as_str()
+            .unwrap()
+            .contains("unknown scenario file"));
+
+        let traversal_scenario_file = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/file/run",
+                Body::from(r#"{"path":"../golden-path.yaml","format":"yaml"}"#),
+            ))
+            .await
+            .unwrap();
+        let traversal_scenario_file =
+            error_body(traversal_scenario_file, StatusCode::BAD_REQUEST).await;
+        assert!(traversal_scenario_file["error"]
+            .as_str()
+            .unwrap()
+            .contains("simple relative file name"));
+
+        let empty_suite = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/suite/run",
+                Body::from(r#"{"name":"","entries":[]}"#),
+            ))
+            .await
+            .unwrap();
+        let empty_suite = error_body(empty_suite, StatusCode::BAD_REQUEST).await;
+        assert!(empty_suite["error"]
+            .as_str()
+            .unwrap()
+            .contains("non-empty name"));
+
+        let invalid_suite_entry = app
+            .clone()
+            .oneshot(post(
+                "/demo/scenarios/suite/run",
+                Body::from(
+                    r#"{"name":"bad-suite","entries":[{"name":"ambiguous","scenario":"ttl","file":"golden-path.yaml"}]}"#,
+                ),
+            ))
+            .await
+            .unwrap();
+        let invalid_suite_entry = error_body(invalid_suite_entry, StatusCode::BAD_REQUEST).await;
+        assert!(invalid_suite_entry["error"]
+            .as_str()
+            .unwrap()
+            .contains("exactly one of scenario, document, or file"));
+
+        let invalid_import = app
+            .oneshot(post(
+                "/demo/import",
+                Body::from(r#"{"replace_events":true,"source":"bad-import","bundle":{}}"#),
+            ))
+            .await
+            .unwrap();
+        let invalid_import = error_body(invalid_import, StatusCode::BAD_REQUEST).await;
+        assert!(invalid_import["error"]
+            .as_str()
+            .unwrap()
+            .contains("import bundle must contain"));
+    }
+
+    #[tokio::test]
     async fn optional_auth_guard_protects_sandbox_routes_when_token_is_configured() {
         let app = build_sandbox(SandboxConfig {
             auth_token: Some("secret".to_owned()),
@@ -12556,6 +12780,18 @@ mod tests {
         assert_eq!(
             status,
             StatusCode::OK,
+            "response body: {}",
+            String::from_utf8_lossy(&bytes)
+        );
+        serde_json::from_slice(&bytes).unwrap()
+    }
+
+    async fn error_body(response: axum::response::Response, expected_status: StatusCode) -> Value {
+        let status = response.status();
+        let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        assert_eq!(
+            status,
+            expected_status,
             "response body: {}",
             String::from_utf8_lossy(&bytes)
         );
