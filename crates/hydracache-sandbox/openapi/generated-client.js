@@ -84,6 +84,10 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/cluster/ownership-transfer/run", options);
   }
 
+  runClusterRoutedPeerFetch(options = {}) {
+    return this.post("/demo/cluster/routed-peer-fetch/run", options);
+  }
+
   runRealClusterAdapters(options = {}) {
     return this.post("/demo/cluster/real-adapters/run", options);
   }

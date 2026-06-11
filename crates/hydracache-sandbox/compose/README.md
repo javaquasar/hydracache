@@ -42,6 +42,7 @@ http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/cluster/lifecycle/run
+http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/db/seed-report
@@ -57,8 +58,9 @@ scenario catalog, timeline, flow catalog/replay, event summary, profile
 comparison, replay, fault-injection, scenario document DSL, benchmark
 comparison, Prometheus/trace demo, DB seed report, seeded
 users/products/order-summary query-cache demos, session import, OpenAPI client
-smoke, distributed invalidation bus demo, cluster lifecycle demo, real chitchat
-+ raft cluster-adapter demo, and manual benchmark endpoints.
+smoke, distributed invalidation bus demo, cluster lifecycle demo, real
+chitchat/raft cluster-adapter demo, routed HTTP peer-fetch demo, and manual
+benchmark endpoints.
 
 The distributed invalidation demo response includes a compact timeline
 (`source-publish`, `target-apply`, `diagnostics`) and diagnostics counters for

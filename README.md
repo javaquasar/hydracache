@@ -1075,6 +1075,7 @@ http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/cluster/lifecycle/run
 http://127.0.0.1:3000/demo/cluster/ownership/run
 http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
+http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
@@ -1101,8 +1102,11 @@ key, exercises the transport-neutral peer-fetch seam, and verifies that
 owner-originated tag invalidation reaches a client near-cache. The ownership
 transfer lab then removes the selected owner, verifies ownership moves to the
 survivor, demonstrates peer-fetch miss/hit behavior around the transfer, and
-shows the original owner rejoining with a newer generation. The real-adapters
-demo connects
+shows the original owner rejoining with a newer generation. The routed
+peer-fetch lab starts two temporary HTTP peer-fetch services, advertises their
+base URLs through member metadata, resolves the key owner, and verifies that
+`PeerFetchRouter` fetches the encoded value from the advertised owner endpoint.
+The real-adapters demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
 full discovery-to-metadata path can be inspected without Docker or UDP ports.
@@ -1120,9 +1124,9 @@ scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
 demo for verifying subscriptions manually. It also includes one-click
 distributed invalidation and cluster lifecycle flows that render remote bus
 events and membership timelines in the output, cluster ownership flows that
-render owner selection, transfer, and peer-fetch results, plus a real chitchat
-+ raft adapter flow that shows bridge diagnostics and committed metadata
-commands.
+render owner selection, transfer, advertised endpoint routing, and peer-fetch
+results, plus a real chitchat + raft adapter flow that shows bridge diagnostics
+and committed metadata commands.
 
 Useful Swagger/API groups:
 
@@ -1173,6 +1177,7 @@ POST /demo/distributed/invalidation/run
 POST /demo/cluster/lifecycle/run
 POST /demo/cluster/ownership/run
 POST /demo/cluster/ownership-transfer/run
+POST /demo/cluster/routed-peer-fetch/run
 POST /demo/cluster/real-adapters/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
@@ -1229,6 +1234,22 @@ Invoke-RestMethod `
   -ContentType 'application/json' `
   -Body $body
 ```
+
+Routed peer-fetch demo payload:
+
+```json
+{
+  "cluster": "manual-routed",
+  "key": "manual:user:42",
+  "value": "Ada",
+  "flow_id": "manual-routed"
+}
+```
+
+The response includes `owner`, `routed_peer_fetch`, `router_diagnostics`, both
+temporary member endpoints, a three-step timeline, and `passed: true` when the
+owner endpoint was discovered from metadata and the HTTP fetch returned the
+expected encoded value.
 
 `/demo/report` returns a cumulative application report with active profile,
 backend, loader counters, function counters, retained event count,

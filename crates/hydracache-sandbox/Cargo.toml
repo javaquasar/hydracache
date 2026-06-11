@@ -16,6 +16,7 @@ hydracache.workspace = true
 hydracache-actuator-axum = { path = "../hydracache-actuator-axum" }
 hydracache-cluster-chitchat.workspace = true
 hydracache-cluster-raft.workspace = true
+hydracache-cluster-transport-axum.workspace = true
 hydracache-observability.workspace = true
 serde.workspace = true
 serde_json.workspace = true

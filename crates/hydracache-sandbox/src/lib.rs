@@ -47,6 +47,7 @@
 //! http://127.0.0.1:3000/demo/cluster/lifecycle/run
 //! http://127.0.0.1:3000/demo/cluster/ownership/run
 //! http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
+//! http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
@@ -81,6 +82,10 @@ use hydracache::{
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftMetadataRuntimeSnapshot, RaftRuntimeRole};
+use hydracache_cluster_transport_axum::{
+    AxumPeerFetchService, MemoryPeerFetchStore, PeerFetchRouter, PeerFetchRouterDiagnostics,
+    PeerFetchRouterOutcome, PeerFetchRouterStatus,
+};
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -93,7 +98,7 @@ use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::{mpsc, oneshot, RwLock};
 use tokio::time::{sleep, timeout};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
@@ -598,6 +603,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/cluster/ownership-transfer/run",
             post(run_cluster_ownership_transfer_demo),
+        )
+        .route(
+            "/demo/cluster/routed-peer-fetch/run",
+            post(run_cluster_routed_peer_fetch_demo),
         )
         .route(
             "/demo/cluster/real-adapters/run",
@@ -2171,6 +2180,19 @@ struct ClusterOwnershipTransferDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-orders", "key": "cluster:routed:user:42", "value": "encoded-routed-user", "flow_id": "routed-peer-fetch-flow"}))]
+struct ClusterRoutedPeerFetchDemoRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"cluster": "sandbox-orders", "member_node_id": "sandbox-member-a", "client_node_id": "sandbox-client-a", "flow_id": "real-cluster-flow"}))]
 struct RealClusterAdaptersDemoRequest {
     #[serde(default)]
@@ -2531,6 +2553,49 @@ struct ClusterOwnershipTransferDemoResponse {
     survivor_after_leave: ClusterRuntimeReport,
     client_after_transfer: ClusterRuntimeReport,
     rejoined_owner: ClusterRuntimeReport,
+    timeline: Vec<ClusterOwnershipTimelineStep>,
+    passed: bool,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterRoutedPeerFetchReport {
+    key: String,
+    owner_node_id: Option<String>,
+    endpoint: Option<String>,
+    status: String,
+    hit: bool,
+    miss: bool,
+    did_not_route: bool,
+    value_len: Option<usize>,
+    value_utf8: Option<String>,
+    error: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterPeerFetchRouterDiagnosticsReport {
+    attempts: u64,
+    hits: u64,
+    misses: u64,
+    routed_requests: u64,
+    no_owner: u64,
+    missing_endpoint: u64,
+    generation_mismatches: u64,
+    transport_errors: u64,
+    has_failures: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterRoutedPeerFetchDemoResponse {
+    flow_id: String,
+    cluster: String,
+    key: String,
+    value: String,
+    owner: ClusterOwnershipDecisionReport,
+    routed_peer_fetch: ClusterRoutedPeerFetchReport,
+    router_diagnostics: ClusterPeerFetchRouterDiagnosticsReport,
+    member_a_endpoint: String,
+    member_b_endpoint: String,
     timeline: Vec<ClusterOwnershipTimelineStep>,
     passed: bool,
     events: EventLogResponse,
@@ -5568,6 +5633,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/cluster/lifecycle/run".to_owned(),
         "/demo/cluster/ownership/run".to_owned(),
         "/demo/cluster/ownership-transfer/run".to_owned(),
+        "/demo/cluster/routed-peer-fetch/run".to_owned(),
         "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
@@ -5609,6 +5675,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "loadOrderSummary(id",
         "runClusterOwnership(",
         "runClusterOwnershipTransfer(",
+        "runClusterRoutedPeerFetch(",
         "runRealClusterAdapters(",
         "exportSession()",
         "importSession(bundle",
@@ -5618,6 +5685,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/scenarios/suite/file/run",
         "/demo/benchmarks/compare",
         "/demo/events/summary",
+        "/demo/cluster/routed-peer-fetch/run",
         "/demo/cluster/real-adapters/run",
         "/demo/flows",
         "/demo/query/products/",
@@ -7059,6 +7127,188 @@ async fn run_cluster_ownership_transfer_demo_with_request(
 
 #[utoipa::path(
     post,
+    path = "/demo/cluster/routed-peer-fetch/run",
+    tag = "cluster",
+    request_body = ClusterRoutedPeerFetchDemoRequest,
+    responses((status = 200, description = "Run a routed HTTP peer-fetch demo through advertised owner endpoints", body = ClusterRoutedPeerFetchDemoResponse))
+)]
+async fn run_cluster_routed_peer_fetch_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<ClusterRoutedPeerFetchDemoRequest>,
+) -> Result<Json<ClusterRoutedPeerFetchDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_cluster_routed_peer_fetch_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_cluster_routed_peer_fetch_demo_with_request(
+    state: &SandboxState,
+    request: ClusterRoutedPeerFetchDemoRequest,
+) -> Result<ClusterRoutedPeerFetchDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "cluster-routed-peer-fetch-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let cluster_name = request
+        .cluster
+        .unwrap_or_else(|| "sandbox-orders".to_owned());
+    let key = request
+        .key
+        .unwrap_or_else(|| "cluster:routed:user:42".to_owned());
+    let value = request
+        .value
+        .unwrap_or_else(|| "encoded-routed-user".to_owned());
+
+    let member_a_id = "sandbox-routed-a";
+    let member_b_id = "sandbox-routed-b";
+    let generation = ClusterGeneration::new(1);
+    let store_a = MemoryPeerFetchStore::new();
+    let store_b = MemoryPeerFetchStore::new();
+    let (member_a_endpoint, shutdown_a, server_a) =
+        spawn_peer_fetch_demo_server(member_a_id, generation, store_a.clone()).await?;
+    let (member_b_endpoint, shutdown_b, server_b) =
+        spawn_peer_fetch_demo_server(member_b_id, generation, store_b.clone()).await?;
+
+    let cluster = InMemoryCluster::new(cluster_name.clone());
+    cluster.join_member(
+        ClusterCandidate::member(member_a_id)
+            .generation(generation)
+            .peer_fetch_base_url(member_a_endpoint.clone()),
+    )?;
+    cluster.join_member(
+        ClusterCandidate::member(member_b_id)
+            .generation(generation)
+            .peer_fetch_base_url(member_b_endpoint.clone()),
+    )?;
+
+    let owner_decision = cluster.owner_for_key(&key);
+    let owner_node_id = owner_decision
+        .owner_node_id()
+        .map(ToString::to_string)
+        .ok_or_else(|| SandboxHttpError::internal("ownership resolver returned no owner"))?;
+    if owner_node_id == member_a_id {
+        store_a.put(key.clone(), value.clone().into_bytes());
+    } else {
+        store_b.put(key.clone(), value.clone().into_bytes());
+    }
+
+    let router = PeerFetchRouter::new();
+    let routed_outcome = router.fetch_owner_value(owner_decision.clone()).await;
+    let router_diagnostics = peer_fetch_router_diagnostics_report(router.diagnostics());
+    let routed_peer_fetch = routed_peer_fetch_report(&routed_outcome);
+    let owner = cluster_ownership_decision_report(&owner_decision);
+    let timeline = vec![
+        cluster_ownership_timeline_step(
+            1,
+            "admission",
+            "member-a/member-b",
+            "advertise-peer-fetch-endpoint",
+            format!("member-a endpoint={member_a_endpoint}; member-b endpoint={member_b_endpoint}"),
+        ),
+        cluster_ownership_timeline_step(
+            2,
+            "ownership",
+            "resolver",
+            "owner-for-key",
+            format!(
+                "resolver={} selected owner={:?} among {} member(s)",
+                owner.resolver, owner.owner_node_id, owner.member_count
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            3,
+            "routing",
+            "peer-fetch-router",
+            "fetch-owner-value",
+            format!(
+                "status={} endpoint={:?} value_len={:?}",
+                routed_peer_fetch.status, routed_peer_fetch.endpoint, routed_peer_fetch.value_len
+            ),
+        ),
+    ];
+
+    let passed = owner.has_owner
+        && owner.member_count == 2
+        && routed_peer_fetch.hit
+        && routed_peer_fetch.value_utf8.as_deref() == Some(value.as_str())
+        && routed_peer_fetch.owner_node_id.as_deref() == Some(owner_node_id.as_str())
+        && router_diagnostics.attempts == 1
+        && router_diagnostics.hits == 1
+        && router_diagnostics.routed_requests == 1
+        && !router_diagnostics.has_failures;
+
+    let _ = shutdown_a.send(());
+    let _ = shutdown_b.send(());
+    let _ = timeout(Duration::from_secs(1), server_a).await;
+    let _ = timeout(Duration::from_secs(1), server_b).await;
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "routed peer-fetch demo selected owner {owner_node_id} and completed with status {}",
+            routed_peer_fetch.status
+        ),
+        Some(key.clone()),
+        None,
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(ClusterRoutedPeerFetchDemoResponse {
+        flow_id,
+        cluster: cluster_name,
+        key,
+        value,
+        owner,
+        routed_peer_fetch,
+        router_diagnostics,
+        member_a_endpoint,
+        member_b_endpoint,
+        timeline,
+        passed,
+        events,
+    })
+}
+
+async fn spawn_peer_fetch_demo_server(
+    owner: impl Into<String>,
+    generation: ClusterGeneration,
+    store: MemoryPeerFetchStore,
+) -> Result<(String, oneshot::Sender<()>, tokio::task::JoinHandle<()>), SandboxHttpError> {
+    let listener = TcpListener::bind((IpAddr::V4(Ipv4Addr::LOCALHOST), 0))
+        .await
+        .map_err(SandboxError::io)?;
+    let addr = listener.local_addr().map_err(SandboxError::io)?;
+    let routes = AxumPeerFetchService::new(owner.into(), generation, Arc::new(store)).routes();
+    let (shutdown_tx, shutdown_rx) = oneshot::channel();
+    let server = tokio::spawn(async move {
+        let _ = axum::serve(listener, routes)
+            .with_graceful_shutdown(async {
+                let _ = shutdown_rx.await;
+            })
+            .await;
+    });
+
+    Ok((format!("http://{addr}"), shutdown_tx, server))
+}
+
+#[utoipa::path(
+    post,
     path = "/demo/cluster/real-adapters/run",
     tag = "cluster",
     request_body = RealClusterAdaptersDemoRequest,
@@ -7378,6 +7628,53 @@ fn peer_fetch_diagnostics_report(
         misses: diagnostics.misses,
         total_requests: diagnostics.total_requests(),
         hit_ratio: diagnostics.hit_ratio(),
+    }
+}
+
+fn routed_peer_fetch_report(outcome: &PeerFetchRouterOutcome) -> ClusterRoutedPeerFetchReport {
+    let value_utf8 = outcome
+        .value
+        .as_ref()
+        .and_then(|value| String::from_utf8(value.to_vec()).ok());
+
+    ClusterRoutedPeerFetchReport {
+        key: outcome.key.clone(),
+        owner_node_id: outcome.owner.as_ref().map(ToString::to_string),
+        endpoint: outcome.endpoint.clone(),
+        status: peer_fetch_router_status_label(outcome.status).to_owned(),
+        hit: outcome.is_hit(),
+        miss: outcome.is_miss(),
+        did_not_route: outcome.did_not_route(),
+        value_len: outcome.value.as_ref().map(|value| value.len()),
+        value_utf8,
+        error: outcome.error.clone(),
+    }
+}
+
+fn peer_fetch_router_diagnostics_report(
+    diagnostics: PeerFetchRouterDiagnostics,
+) -> ClusterPeerFetchRouterDiagnosticsReport {
+    ClusterPeerFetchRouterDiagnosticsReport {
+        attempts: diagnostics.attempts,
+        hits: diagnostics.hits,
+        misses: diagnostics.misses,
+        routed_requests: diagnostics.routed_requests(),
+        no_owner: diagnostics.no_owner,
+        missing_endpoint: diagnostics.missing_endpoint,
+        generation_mismatches: diagnostics.generation_mismatches,
+        transport_errors: diagnostics.transport_errors,
+        has_failures: diagnostics.has_failures(),
+    }
+}
+
+fn peer_fetch_router_status_label(status: PeerFetchRouterStatus) -> &'static str {
+    match status {
+        PeerFetchRouterStatus::NoOwner => "no-owner",
+        PeerFetchRouterStatus::MissingEndpoint => "missing-endpoint",
+        PeerFetchRouterStatus::Hit => "hit",
+        PeerFetchRouterStatus::Miss => "miss",
+        PeerFetchRouterStatus::GenerationMismatch => "generation-mismatch",
+        PeerFetchRouterStatus::TransportError => "transport-error",
     }
 }
 
@@ -9064,6 +9361,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/cluster/lifecycle/run', {cluster:'ui-cluster', key:'ui:cluster:tagged', second_key:'ui:cluster:key', retained_key:'ui:cluster:retained', tag:'ui-cluster', value:'alpha', flow_id:`ui-cluster-${Date.now()}`})">Cluster lifecycle</button>
       <button onclick="post('/demo/cluster/ownership/run', {cluster:'ui-ownership-cluster', key:'ui:cluster:owned', tag:'ui-owned', value:'alpha', flow_id:`ui-ownership-${Date.now()}`})">Cluster ownership</button>
       <button onclick="post('/demo/cluster/ownership-transfer/run', {cluster:'ui-transfer-cluster', key:'ui:cluster:transfer', tag:'ui-transfer', value:'alpha', flow_id:`ui-transfer-${Date.now()}`})">Ownership transfer</button>
+      <button onclick="post('/demo/cluster/routed-peer-fetch/run', {cluster:'ui-routed-cluster', key:'ui:cluster:routed', value:'alpha', flow_id:`ui-routed-${Date.now()}`})">Routed peer fetch</button>
       <button onclick="post('/demo/cluster/real-adapters/run', {cluster:'ui-real-cluster', flow_id:`ui-real-cluster-${Date.now()}`})">Real chitchat + raft</button>
     </section>
     <section>
@@ -9438,6 +9736,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Demonstrate owner leave, ownership transfer to a survivor, peer-fetch miss/hit behavior, and rejoin with a newer generation.",
         },
         CapabilityReport {
+            name: "routed peer-fetch lab",
+            endpoint: "/demo/cluster/routed-peer-fetch/run",
+            description: "Resolve an owner, read its advertised HTTP peer-fetch endpoint, and fetch encoded bytes through the automatic peer-fetch router.",
+        },
+        CapabilityReport {
             name: "real cluster adapters",
             endpoint: "/demo/cluster/real-adapters/run",
             description: "Connect real chitchat-backed discovery to the polling admission bridge and commit membership metadata through the raft-rs runtime.",
@@ -9565,6 +9868,7 @@ fn actuator_stats_doc() {}
         run_cluster_lifecycle_demo,
         run_cluster_ownership_demo,
         run_cluster_ownership_transfer_demo,
+        run_cluster_routed_peer_fetch_demo,
         run_real_cluster_adapters_demo,
         reset_demo,
         cache_put,
@@ -9721,6 +10025,10 @@ fn actuator_stats_doc() {}
             ClusterOwnershipDemoResponse,
             ClusterOwnershipTransferDemoRequest,
             ClusterOwnershipTransferDemoResponse,
+            ClusterRoutedPeerFetchDemoRequest,
+            ClusterRoutedPeerFetchReport,
+            ClusterPeerFetchRouterDiagnosticsReport,
+            ClusterRoutedPeerFetchDemoResponse,
             RealClusterAdaptersDemoRequest,
             ClusterAdmissionBridgeReport,
             ClusterAdmissionBridgeEventReport,
@@ -10176,6 +10484,7 @@ mod tests {
         assert!(paths.contains_key("/demo/cluster/lifecycle/run"));
         assert!(paths.contains_key("/demo/cluster/ownership/run"));
         assert!(paths.contains_key("/demo/cluster/ownership-transfer/run"));
+        assert!(paths.contains_key("/demo/cluster/routed-peer-fetch/run"));
         assert!(paths.contains_key("/demo/cluster/real-adapters/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
@@ -10253,6 +10562,10 @@ mod tests {
         assert!(schemas.contains_key("ClusterOwnershipDemoResponse"));
         assert!(schemas.contains_key("ClusterOwnershipTransferDemoRequest"));
         assert!(schemas.contains_key("ClusterOwnershipTransferDemoResponse"));
+        assert!(schemas.contains_key("ClusterRoutedPeerFetchDemoRequest"));
+        assert!(schemas.contains_key("ClusterRoutedPeerFetchReport"));
+        assert!(schemas.contains_key("ClusterPeerFetchRouterDiagnosticsReport"));
+        assert!(schemas.contains_key("ClusterRoutedPeerFetchDemoResponse"));
         assert!(schemas.contains_key("RealClusterAdaptersDemoRequest"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeReport"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeEventReport"));
@@ -10643,6 +10956,33 @@ mod tests {
         assert_eq!(transfer["rejoined_owner"]["member_count"], 2);
         assert_eq!(transfer["timeline"].as_array().unwrap().len(), 5);
 
+        let routed = app
+            .clone()
+            .oneshot(post(
+                "/demo/cluster/routed-peer-fetch/run",
+                Body::from(
+                    r#"{"cluster":"test-routed-cluster","key":"cluster:routed","value":"alpha","flow_id":"routed-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(routed["flow_id"], "routed-test");
+        assert_eq!(routed["passed"], true);
+        assert_eq!(routed["owner"]["has_owner"], true);
+        assert_eq!(routed["owner"]["member_count"], 2);
+        assert_eq!(routed["routed_peer_fetch"]["status"], "hit");
+        assert_eq!(routed["routed_peer_fetch"]["hit"], true);
+        assert_eq!(routed["routed_peer_fetch"]["miss"], false);
+        assert_eq!(routed["routed_peer_fetch"]["did_not_route"], false);
+        assert_eq!(routed["routed_peer_fetch"]["value_utf8"], "alpha");
+        assert_eq!(routed["router_diagnostics"]["attempts"], 1);
+        assert_eq!(routed["router_diagnostics"]["hits"], 1);
+        assert_eq!(routed["router_diagnostics"]["routed_requests"], 1);
+        assert_eq!(routed["router_diagnostics"]["has_failures"], false);
+        assert_eq!(routed["timeline"].as_array().unwrap().len(), 3);
+
         let real_cluster = app
             .clone()
             .oneshot(post(
@@ -10834,6 +11174,7 @@ mod tests {
         assert!(body.contains("/demo/listeners/run"));
         assert!(body.contains("/demo/query/products/100/load"));
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
+        assert!(body.contains("/demo/cluster/routed-peer-fetch/run"));
         assert!(body.contains("/demo/cluster/real-adapters/run"));
         assert!(body.contains("/demo/benchmarks/compare"));
         assert!(body.contains("/demo/observability/prometheus"));
@@ -11097,6 +11438,11 @@ mod tests {
             .unwrap()
             .iter()
             .any(|capability| capability["name"] == "scenario document DSL"));
+        assert!(report["capabilities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|capability| capability["endpoint"] == "/demo/cluster/routed-peer-fetch/run"));
     }
 
     #[tokio::test]

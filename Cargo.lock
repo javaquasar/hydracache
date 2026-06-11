@@ -1251,6 +1251,7 @@ dependencies = [
  "hydracache-actuator-axum",
  "hydracache-cluster-chitchat",
  "hydracache-cluster-raft",
+ "hydracache-cluster-transport-axum",
  "hydracache-observability",
  "serde",
  "serde_json",
