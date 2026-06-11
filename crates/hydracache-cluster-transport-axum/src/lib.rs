@@ -1791,7 +1791,134 @@ impl PeerFetchReadThroughDiagnostics {
     }
 }
 
+/// Outcome status produced by owner-load read-through.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OwnerLoadReadThroughStatus {
+    /// The value was already available in the local/near cache.
+    LocalHit,
+    /// The owner already had encoded bytes.
+    RemoteHit,
+    /// The owner executed a registered loader and returned encoded bytes.
+    RemoteLoaded,
+    /// The owner or registered loader produced no value.
+    RemoteMiss,
+    /// The ownership decision had no eligible owner.
+    NoOwner,
+    /// The owner did not advertise an owner-load endpoint.
+    MissingEndpoint,
+    /// The owner rejected the request.
+    Rejected,
+    /// The owner reported a loader/cache failure.
+    Failed,
+    /// The HTTP transport failed or returned an invalid response.
+    TransportError,
+}
+
+/// Result of one owner-load read-through attempt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnerLoadReadThroughOutcome {
+    /// Logical cache key being loaded.
+    pub key: String,
+    /// Policy used for this read-through attempt.
+    pub policy: PeerFetchReadThroughPolicy,
+    /// Terminal owner-load read-through status.
+    pub status: OwnerLoadReadThroughStatus,
+    /// Owner selected by the ownership resolver, when one exists.
+    pub owner: Option<ClusterNodeId>,
+    /// Full owner-load endpoint used by the helper, when available.
+    pub endpoint: Option<String>,
+    /// Structured owner-load response, when an owner route was reached.
+    pub response: Option<OwnerLoadResponse>,
+    /// Encoded bytes returned by local cache or owner on hit/load.
+    pub value: Option<Bytes>,
+    /// Whether remote bytes were stored into the local/near cache.
+    pub hydrated: bool,
+    /// Human-readable routing or transport detail.
+    pub error: Option<String>,
+}
+
+impl OwnerLoadReadThroughOutcome {
+    /// Return whether the read-through attempt returned encoded bytes.
+    pub fn is_hit(&self) -> bool {
+        matches!(
+            self.status,
+            OwnerLoadReadThroughStatus::LocalHit
+                | OwnerLoadReadThroughStatus::RemoteHit
+                | OwnerLoadReadThroughStatus::RemoteLoaded
+        )
+    }
+
+    /// Return whether the value came from a remote owner-side loader.
+    pub fn is_remote_loaded(&self) -> bool {
+        self.status == OwnerLoadReadThroughStatus::RemoteLoaded
+    }
+
+    /// Return whether the owner route produced no value.
+    pub fn is_remote_miss(&self) -> bool {
+        self.status == OwnerLoadReadThroughStatus::RemoteMiss
+    }
+
+    /// Return whether this outcome represents a routing or transport problem.
+    pub fn is_route_error(&self) -> bool {
+        matches!(
+            self.status,
+            OwnerLoadReadThroughStatus::NoOwner
+                | OwnerLoadReadThroughStatus::MissingEndpoint
+                | OwnerLoadReadThroughStatus::TransportError
+        )
+    }
+}
+
+/// Point-in-time counters for owner-load read-through calls.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct OwnerLoadReadThroughDiagnostics {
+    /// Total owner-load read-through calls observed.
+    pub attempts: u64,
+    /// Calls that found the value in the local/near cache.
+    pub local_hits: u64,
+    /// Local cache misses before owner-load routing.
+    pub local_misses: u64,
+    /// Owner-routed calls that returned an existing owner value.
+    pub remote_hits: u64,
+    /// Owner-routed calls that executed a loader and returned a value.
+    pub remote_loaded: u64,
+    /// Owner-routed calls that produced no value.
+    pub remote_misses: u64,
+    /// Remote values stored into the local/near cache.
+    pub hydrations: u64,
+    /// Calls that joined an already-running same-key owner-load route.
+    pub in_flight_joins: u64,
+    /// Calls with no owner, missing endpoint, or malformed descriptor.
+    pub routing_errors: u64,
+    /// Owner-side request rejections.
+    pub rejections: u64,
+    /// Owner-side loader/cache failures.
+    pub failures: u64,
+    /// HTTP transport failures.
+    pub transport_errors: u64,
+}
+
+impl OwnerLoadReadThroughDiagnostics {
+    /// Return local + remote successful value outcomes.
+    pub fn total_hits(&self) -> u64 {
+        self.local_hits
+            .saturating_add(self.remote_hits)
+            .saturating_add(self.remote_loaded)
+    }
+
+    /// Return whether any non-miss problem was observed.
+    pub fn has_errors(&self) -> bool {
+        self.routing_errors
+            .saturating_add(self.rejections)
+            .saturating_add(self.failures)
+            .saturating_add(self.transport_errors)
+            > 0
+    }
+}
+
 type SharedReadThroughFuture = Shared<BoxFuture<'static, CacheResult<PeerFetchReadThroughOutcome>>>;
+type SharedOwnerLoadReadThroughFuture =
+    Shared<BoxFuture<'static, CacheResult<OwnerLoadReadThroughOutcome>>>;
 
 /// Local/near-cache read-through helper backed by [`PeerFetchRouter`].
 ///
@@ -1809,6 +1936,8 @@ where
     hydrate_remote_hits: bool,
     diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
     in_flight: Arc<Mutex<BTreeMap<String, SharedReadThroughFuture>>>,
+    owner_load_diagnostics: Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
+    owner_load_in_flight: Arc<Mutex<BTreeMap<String, SharedOwnerLoadReadThroughFuture>>>,
 }
 
 impl<C> PeerFetchReadThrough<C>
@@ -1858,6 +1987,10 @@ where
             hydrate_remote_hits: true,
             diagnostics: Arc::new(Mutex::new(PeerFetchReadThroughDiagnostics::default())),
             in_flight: Arc::new(Mutex::new(BTreeMap::new())),
+            owner_load_diagnostics: Arc::new(
+                Mutex::new(OwnerLoadReadThroughDiagnostics::default()),
+            ),
+            owner_load_in_flight: Arc::new(Mutex::new(BTreeMap::new())),
         }
     }
 
@@ -1896,6 +2029,14 @@ where
             .expect("peer-fetch read-through diagnostics poisoned")
     }
 
+    /// Return current owner-load read-through diagnostics.
+    pub fn owner_load_diagnostics(&self) -> OwnerLoadReadThroughDiagnostics {
+        *self
+            .owner_load_diagnostics
+            .lock()
+            .expect("owner-load read-through diagnostics poisoned")
+    }
+
     /// Fetch encoded bytes through the configured local/owner policy.
     pub async fn fetch_encoded(
         &self,
@@ -1927,6 +2068,86 @@ where
             }
             PeerFetchReadThroughPolicy::OwnerOnly => {
                 self.fetch_owner_shared(decision, options).await
+            }
+        }
+    }
+
+    /// Fetch encoded bytes locally, or ask the owner to execute a registered
+    /// loader on miss.
+    ///
+    /// If the descriptor does not set an explicit cache key, the helper uses
+    /// the key already present in the ownership decision. That keeps callers
+    /// from spelling the same key twice in the common path.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hydracache::{CacheOptions, ClusterCandidate, ClusterGeneration, HydraCache, InMemoryCluster};
+    /// use hydracache_cluster_transport_axum::{OwnerLoadDescriptor, PeerFetchReadThrough};
+    ///
+    /// # async fn example() -> hydracache::CacheResult<()> {
+    /// let near_cache = HydraCache::local().build();
+    /// let cluster = InMemoryCluster::new("users");
+    /// cluster.join_member(
+    ///     ClusterCandidate::member("member-a")
+    ///         .generation(ClusterGeneration::new(1))
+    ///         .peer_fetch_base_url("http://127.0.0.1:3000"),
+    /// )?;
+    ///
+    /// let descriptor = OwnerLoadDescriptor::new("users.by-id")
+    ///     .tag("users")
+    ///     .tag("user:42")
+    ///     .arg("id", 42_u64);
+    ///
+    /// let outcome = PeerFetchReadThrough::new(near_cache)
+    ///     .get_or_load_encoded(cluster.owner_for_key("user:42"), descriptor)
+    ///     .await?;
+    ///
+    /// if outcome.is_remote_loaded() {
+    ///     assert!(outcome.hydrated);
+    /// }
+    /// # let _ = CacheOptions::new();
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn get_or_load_encoded(
+        &self,
+        decision: ClusterOwnershipDecision,
+        descriptor: OwnerLoadDescriptor,
+    ) -> CacheResult<OwnerLoadReadThroughOutcome> {
+        Self::record_owner_load(&self.owner_load_diagnostics, |diagnostics| {
+            diagnostics.attempts = diagnostics.attempts.saturating_add(1);
+        });
+
+        let descriptor = if descriptor.key_value().is_some() {
+            descriptor
+        } else {
+            descriptor.key(decision.key.clone())
+        };
+
+        match self.policy {
+            PeerFetchReadThroughPolicy::LocalThenOwner => {
+                if let Some(outcome) = self.owner_load_local_hit(&decision, &descriptor).await? {
+                    return Ok(outcome);
+                }
+                self.owner_load_shared(decision, descriptor).await
+            }
+            PeerFetchReadThroughPolicy::OwnerThenLocal => {
+                let remote = self
+                    .owner_load_shared(decision.clone(), descriptor.clone())
+                    .await?;
+                if remote.is_hit() {
+                    Ok(remote)
+                } else if let Some(local) =
+                    self.owner_load_local_hit(&decision, &descriptor).await?
+                {
+                    Ok(local)
+                } else {
+                    Ok(remote)
+                }
+            }
+            PeerFetchReadThroughPolicy::OwnerOnly => {
+                self.owner_load_shared(decision, descriptor).await
             }
         }
     }
@@ -2009,6 +2230,91 @@ where
         result
     }
 
+    async fn owner_load_local_hit(
+        &self,
+        decision: &ClusterOwnershipDecision,
+        descriptor: &OwnerLoadDescriptor,
+    ) -> CacheResult<Option<OwnerLoadReadThroughOutcome>> {
+        let key = descriptor
+            .key_value()
+            .unwrap_or(decision.key.as_str())
+            .to_owned();
+        match self.cache.get_encoded(&key).await? {
+            Some(value) => {
+                Self::record_owner_load(&self.owner_load_diagnostics, |diagnostics| {
+                    diagnostics.local_hits = diagnostics.local_hits.saturating_add(1);
+                });
+                Ok(Some(OwnerLoadReadThroughOutcome {
+                    key,
+                    policy: self.policy,
+                    status: OwnerLoadReadThroughStatus::LocalHit,
+                    owner: decision.owner.as_ref().map(|member| member.node_id.clone()),
+                    endpoint: None,
+                    response: None,
+                    value: Some(value),
+                    hydrated: false,
+                    error: None,
+                }))
+            }
+            None => {
+                Self::record_owner_load(&self.owner_load_diagnostics, |diagnostics| {
+                    diagnostics.local_misses = diagnostics.local_misses.saturating_add(1);
+                });
+                Ok(None)
+            }
+        }
+    }
+
+    async fn owner_load_shared(
+        &self,
+        decision: ClusterOwnershipDecision,
+        descriptor: OwnerLoadDescriptor,
+    ) -> CacheResult<OwnerLoadReadThroughOutcome> {
+        let key = descriptor
+            .key_value()
+            .map(str::to_owned)
+            .unwrap_or_else(|| decision.key.clone());
+        let shared = {
+            let mut in_flight = self
+                .owner_load_in_flight
+                .lock()
+                .expect("owner-load read-through in-flight map poisoned");
+            if let Some(shared) = in_flight.get(&key) {
+                Self::record_owner_load(&self.owner_load_diagnostics, |diagnostics| {
+                    diagnostics.in_flight_joins = diagnostics.in_flight_joins.saturating_add(1);
+                });
+                shared.clone()
+            } else {
+                let cache = self.cache.clone();
+                let diagnostics = self.owner_load_diagnostics.clone();
+                let policy = self.policy;
+                let hydrate_remote_hits = self.hydrate_remote_hits;
+                let shared = async move {
+                    Self::owner_load_once(
+                        cache,
+                        diagnostics,
+                        policy,
+                        hydrate_remote_hits,
+                        decision,
+                        descriptor,
+                    )
+                    .await
+                }
+                .boxed()
+                .shared();
+                in_flight.insert(key.clone(), shared.clone());
+                shared
+            }
+        };
+
+        let result = shared.await;
+        self.owner_load_in_flight
+            .lock()
+            .expect("owner-load read-through in-flight map poisoned")
+            .remove(&key);
+        result
+    }
+
     async fn fetch_owner_once(
         cache: HydraCache<C>,
         router: PeerFetchRouter,
@@ -2064,6 +2370,156 @@ where
         })
     }
 
+    async fn owner_load_once(
+        cache: HydraCache<C>,
+        diagnostics: Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
+        policy: PeerFetchReadThroughPolicy,
+        hydrate_remote_hits: bool,
+        decision: ClusterOwnershipDecision,
+        descriptor: OwnerLoadDescriptor,
+    ) -> CacheResult<OwnerLoadReadThroughOutcome> {
+        let key = descriptor
+            .key_value()
+            .map(str::to_owned)
+            .unwrap_or_else(|| decision.key.clone());
+        let Some(owner) = decision.owner.clone() else {
+            Self::record_owner_load(&diagnostics, |diagnostics| {
+                diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
+            });
+            return Ok(OwnerLoadReadThroughOutcome {
+                key,
+                policy,
+                status: OwnerLoadReadThroughStatus::NoOwner,
+                owner: None,
+                endpoint: None,
+                response: None,
+                value: None,
+                hydrated: false,
+                error: Some("ownership decision did not select an owner".to_owned()),
+            });
+        };
+
+        let Some(base_url) = owner.peer_fetch_base_url() else {
+            Self::record_owner_load(&diagnostics, |diagnostics| {
+                diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
+            });
+            return Ok(OwnerLoadReadThroughOutcome {
+                key,
+                policy,
+                status: OwnerLoadReadThroughStatus::MissingEndpoint,
+                owner: Some(owner.node_id),
+                endpoint: None,
+                response: None,
+                value: None,
+                hydrated: false,
+                error: Some("owner did not advertise an owner-load base URL".to_owned()),
+            });
+        };
+
+        let options = descriptor.cache_options();
+        let request = match descriptor.into_request(decision, format!("owner-load:{key}")) {
+            Ok(request) => request,
+            Err(error) => {
+                Self::record_owner_load(&diagnostics, |diagnostics| {
+                    diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
+                });
+                return Ok(OwnerLoadReadThroughOutcome {
+                    key,
+                    policy,
+                    status: OwnerLoadReadThroughStatus::Rejected,
+                    owner: Some(owner.node_id),
+                    endpoint: None,
+                    response: None,
+                    value: None,
+                    hydrated: false,
+                    error: Some(error.to_string()),
+                });
+            }
+        };
+
+        let client = HttpOwnerLoad::for_base_url(base_url);
+        let endpoint = client.endpoint().to_owned();
+        match client.load(request).await {
+            Ok(response) => {
+                let status = owner_load_read_through_status(&response);
+                let mut value = response.decode_value()?;
+                let mut hydrated = false;
+
+                match &response {
+                    OwnerLoadResponse::Hit(_) => {
+                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                            diagnostics.remote_hits = diagnostics.remote_hits.saturating_add(1);
+                        });
+                    }
+                    OwnerLoadResponse::Loaded(_) => {
+                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                            diagnostics.remote_loaded = diagnostics.remote_loaded.saturating_add(1);
+                        });
+                    }
+                    OwnerLoadResponse::Miss(_) => {
+                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                            diagnostics.remote_misses = diagnostics.remote_misses.saturating_add(1);
+                        });
+                    }
+                    OwnerLoadResponse::Rejected(_) => {
+                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                            diagnostics.rejections = diagnostics.rejections.saturating_add(1);
+                        });
+                    }
+                    OwnerLoadResponse::Failed(_) => {
+                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                            diagnostics.failures = diagnostics.failures.saturating_add(1);
+                        });
+                    }
+                }
+
+                if hydrate_remote_hits
+                    && matches!(
+                        status,
+                        OwnerLoadReadThroughStatus::RemoteHit
+                            | OwnerLoadReadThroughStatus::RemoteLoaded
+                    )
+                {
+                    if let Some(bytes) = value.clone() {
+                        cache.put_encoded(&key, bytes, options).await?;
+                        hydrated = true;
+                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                            diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
+                        });
+                    }
+                }
+
+                Ok(OwnerLoadReadThroughOutcome {
+                    key,
+                    policy,
+                    status,
+                    owner: Some(owner.node_id),
+                    endpoint: Some(endpoint),
+                    response: Some(response),
+                    value: value.take(),
+                    hydrated,
+                    error: None,
+                })
+            }
+            Err(error) => {
+                Self::record_owner_load(&diagnostics, |diagnostics| {
+                    diagnostics.transport_errors = diagnostics.transport_errors.saturating_add(1);
+                });
+                Ok(OwnerLoadReadThroughOutcome {
+                    key,
+                    policy,
+                    status: OwnerLoadReadThroughStatus::TransportError,
+                    owner: Some(owner.node_id),
+                    endpoint: Some(endpoint),
+                    response: None,
+                    value: None,
+                    hydrated: false,
+                    error: Some(error.to_string()),
+                })
+            }
+        }
+    }
+
     fn record_read_through(
         diagnostics: &Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
         update: impl FnOnce(&mut PeerFetchReadThroughDiagnostics),
@@ -2071,6 +2527,16 @@ where
         let mut diagnostics = diagnostics
             .lock()
             .expect("peer-fetch read-through diagnostics poisoned");
+        update(&mut diagnostics);
+    }
+
+    fn record_owner_load(
+        diagnostics: &Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
+        update: impl FnOnce(&mut OwnerLoadReadThroughDiagnostics),
+    ) {
+        let mut diagnostics = diagnostics
+            .lock()
+            .expect("owner-load read-through diagnostics poisoned");
         update(&mut diagnostics);
     }
 }
@@ -2083,6 +2549,16 @@ fn read_through_status_from_router(status: PeerFetchRouterStatus) -> PeerFetchRe
         PeerFetchRouterStatus::Miss => PeerFetchReadThroughStatus::RemoteMiss,
         PeerFetchRouterStatus::GenerationMismatch => PeerFetchReadThroughStatus::GenerationMismatch,
         PeerFetchRouterStatus::TransportError => PeerFetchReadThroughStatus::TransportError,
+    }
+}
+
+fn owner_load_read_through_status(response: &OwnerLoadResponse) -> OwnerLoadReadThroughStatus {
+    match response {
+        OwnerLoadResponse::Hit(_) => OwnerLoadReadThroughStatus::RemoteHit,
+        OwnerLoadResponse::Loaded(_) => OwnerLoadReadThroughStatus::RemoteLoaded,
+        OwnerLoadResponse::Miss(_) => OwnerLoadReadThroughStatus::RemoteMiss,
+        OwnerLoadResponse::Rejected(_) => OwnerLoadReadThroughStatus::Rejected,
+        OwnerLoadResponse::Failed(_) => OwnerLoadReadThroughStatus::Failed,
     }
 }
 
@@ -3688,6 +4164,306 @@ mod tests {
         assert_eq!(diagnostics.loaded, 1);
         assert_eq!(diagnostics.owner_hits, 1);
         assert_eq!(diagnostics.rejections, 1);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn owner_load_read_through_local_hit_uses_descriptor_key_and_skips_http() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("explicit-answer", 42_u64, CacheOptions::new())
+            .await
+            .unwrap();
+        let read_through = PeerFetchReadThrough::new(cache);
+
+        let outcome = read_through
+            .get_or_load_encoded(
+                decision_with_endpoint("http://127.0.0.1:9", "decision-answer", 7),
+                OwnerLoadDescriptor::new("answers.by-id").key("explicit-answer"),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.key, "explicit-answer");
+        assert_eq!(outcome.status, OwnerLoadReadThroughStatus::LocalHit);
+        assert!(outcome.is_hit());
+        assert_eq!(outcome.value, Some(encoded_u64(42).await));
+
+        let diagnostics = read_through.owner_load_diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.local_hits, 1);
+        assert_eq!(diagnostics.local_misses, 0);
+        assert_eq!(diagnostics.total_hits(), 1);
+        assert!(!diagnostics.has_errors());
+    }
+
+    #[tokio::test]
+    async fn owner_load_read_through_remote_loaded_hydrates_then_hits_local_cache() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let registry = OwnerLoadRegistry::new().register("answers.by-id", {
+            let calls = calls.clone();
+            move |request| {
+                let calls = calls.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok(Some(OwnerLoadValue::encoded(
+                        encoded_u64(request.arg_u64("id").unwrap()).await,
+                        request.cache_options(),
+                    )))
+                }
+            }
+        });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        );
+        let (base_url, shutdown, server) =
+            spawn_server(AxumOwnerLoadService::new(service).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone());
+        let descriptor = OwnerLoadDescriptor::new("answers.by-id")
+            .tag("answers")
+            .arg("id", 42_u64);
+
+        let first = read_through
+            .get_or_load_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                descriptor.clone(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(first.key, "answer");
+        assert_eq!(first.status, OwnerLoadReadThroughStatus::RemoteLoaded);
+        assert!(first.is_remote_loaded());
+        assert!(first.hydrated);
+        assert!(matches!(first.response, Some(OwnerLoadResponse::Loaded(_))));
+        assert_eq!(first.value, Some(encoded_u64(42).await));
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+
+        let second = read_through
+            .get_or_load_encoded(decision_with_endpoint(&base_url, "answer", 7), descriptor)
+            .await
+            .unwrap();
+
+        assert_eq!(second.status, OwnerLoadReadThroughStatus::LocalHit);
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        let diagnostics = read_through.owner_load_diagnostics();
+        assert_eq!(diagnostics.attempts, 2);
+        assert_eq!(diagnostics.local_hits, 1);
+        assert_eq!(diagnostics.local_misses, 1);
+        assert_eq!(diagnostics.remote_loaded, 1);
+        assert_eq!(diagnostics.hydrations, 1);
+        assert_eq!(diagnostics.total_hits(), 2);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn owner_load_read_through_without_hydration_preserves_remote_only_flow() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let registry = OwnerLoadRegistry::new().register("answers.by-id", {
+            let calls = calls.clone();
+            move |request| {
+                let calls = calls.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok(Some(OwnerLoadValue::encoded(
+                        encoded_u64(request.arg_u64("id").unwrap()).await,
+                        request.cache_options(),
+                    )))
+                }
+            }
+        });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        );
+        let (base_url, shutdown, server) =
+            spawn_server(AxumOwnerLoadService::new(service).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone()).without_hydration();
+        let descriptor = OwnerLoadDescriptor::new("answers.by-id").arg("id", 42_u64);
+
+        let first = read_through
+            .get_or_load_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                descriptor.clone(),
+            )
+            .await
+            .unwrap();
+        let second = read_through
+            .get_or_load_encoded(decision_with_endpoint(&base_url, "answer", 7), descriptor)
+            .await
+            .unwrap();
+
+        assert_eq!(first.status, OwnerLoadReadThroughStatus::RemoteLoaded);
+        assert_eq!(second.status, OwnerLoadReadThroughStatus::RemoteHit);
+        assert!(!first.hydrated);
+        assert!(!second.hydrated);
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), None);
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        let diagnostics = read_through.owner_load_diagnostics();
+        assert_eq!(diagnostics.local_misses, 2);
+        assert_eq!(diagnostics.remote_loaded, 1);
+        assert_eq!(diagnostics.remote_hits, 1);
+        assert_eq!(diagnostics.hydrations, 0);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn owner_load_read_through_reports_no_owner_and_missing_endpoint() {
+        let read_through = PeerFetchReadThrough::new(HydraCache::local().build());
+        let descriptor = OwnerLoadDescriptor::new("answers.by-id").arg("id", 42_u64);
+
+        let no_owner = read_through
+            .get_or_load_encoded(
+                ClusterOwnershipDecision {
+                    key: "answer".to_owned(),
+                    owner: None,
+                    member_count: 0,
+                    resolver: "test",
+                },
+                descriptor.clone(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(no_owner.status, OwnerLoadReadThroughStatus::NoOwner);
+        assert!(no_owner.is_route_error());
+
+        let missing_endpoint = read_through
+            .get_or_load_encoded(
+                decision_with_member(member_without_endpoint(), "answer"),
+                descriptor,
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            missing_endpoint.status,
+            OwnerLoadReadThroughStatus::MissingEndpoint
+        );
+        assert!(missing_endpoint.is_route_error());
+
+        let diagnostics = read_through.owner_load_diagnostics();
+        assert_eq!(diagnostics.attempts, 2);
+        assert_eq!(diagnostics.routing_errors, 2);
+        assert!(diagnostics.has_errors());
+    }
+
+    #[tokio::test]
+    async fn owner_load_read_through_rejections_and_failures_do_not_hydrate() {
+        let registry = OwnerLoadRegistry::new().register("answers.failing", |_| async {
+            Err(CacheError::Backend("forced loader failure".to_owned()))
+        });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        );
+        let (base_url, shutdown, server) =
+            spawn_server(AxumOwnerLoadService::new(service).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone());
+
+        let rejected = read_through
+            .get_or_load_encoded(
+                decision_with_endpoint(&base_url, "missing-loader", 7),
+                OwnerLoadDescriptor::new("answers.missing").arg("id", 1_u64),
+            )
+            .await
+            .unwrap();
+        let failed = read_through
+            .get_or_load_encoded(
+                decision_with_endpoint(&base_url, "failing-loader", 7),
+                OwnerLoadDescriptor::new("answers.failing").arg("id", 2_u64),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(rejected.status, OwnerLoadReadThroughStatus::Rejected);
+        assert_eq!(failed.status, OwnerLoadReadThroughStatus::Failed);
+        assert!(!rejected.hydrated);
+        assert!(!failed.hydrated);
+        assert_eq!(cache.get::<u64>("missing-loader").await.unwrap(), None);
+        assert_eq!(cache.get::<u64>("failing-loader").await.unwrap(), None);
+
+        let diagnostics = read_through.owner_load_diagnostics();
+        assert_eq!(diagnostics.rejections, 1);
+        assert_eq!(diagnostics.failures, 1);
+        assert_eq!(diagnostics.hydrations, 0);
+        assert!(diagnostics.has_errors());
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn concurrent_owner_load_read_through_for_same_key_shares_remote_route() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let registry = OwnerLoadRegistry::new().register("answers.slow", {
+            let calls = calls.clone();
+            move |request| {
+                let calls = calls.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    tokio::time::sleep(Duration::from_millis(40)).await;
+                    Ok(Some(OwnerLoadValue::encoded(
+                        encoded_u64(request.arg_u64("id").unwrap()).await,
+                        request.cache_options(),
+                    )))
+                }
+            }
+        });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        );
+        let (base_url, shutdown, server) =
+            spawn_server(AxumOwnerLoadService::new(service.clone()).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = Arc::new(PeerFetchReadThrough::new(cache.clone()));
+
+        let mut tasks = Vec::new();
+        for _ in 0..8 {
+            let read_through = read_through.clone();
+            let decision = decision_with_endpoint(&base_url, "answer", 7);
+            let descriptor = OwnerLoadDescriptor::new("answers.slow").arg("id", 42_u64);
+            tasks.push(tokio::spawn(async move {
+                read_through.get_or_load_encoded(decision, descriptor).await
+            }));
+        }
+
+        for task in tasks {
+            let outcome = task.await.unwrap().unwrap();
+            assert_eq!(outcome.status, OwnerLoadReadThroughStatus::RemoteLoaded);
+            assert_eq!(outcome.value, Some(encoded_u64(42).await));
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(service.diagnostics().attempts, 1);
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+
+        let diagnostics = read_through.owner_load_diagnostics();
+        assert_eq!(diagnostics.attempts, 8);
+        assert_eq!(diagnostics.remote_loaded, 1);
+        assert_eq!(diagnostics.hydrations, 1);
+        assert!(diagnostics.in_flight_joins >= 1);
 
         shutdown.send(()).unwrap();
         server.await.unwrap();
