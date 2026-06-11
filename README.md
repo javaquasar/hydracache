@@ -1648,6 +1648,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md](docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md)
 - [docs/plans/V0_22_REMOTE_PEER_FETCH_PLAN.md](docs/plans/V0_22_REMOTE_PEER_FETCH_PLAN.md)
 - [docs/plans/V0_23_PEER_FETCH_ROUTING_PLAN.md](docs/plans/V0_23_PEER_FETCH_ROUTING_PLAN.md)
+- [docs/plans/V0_24_CLUSTER_READ_THROUGH_PLAN.md](docs/plans/V0_24_CLUSTER_READ_THROUGH_PLAN.md)
 
 ## Workspace
 
