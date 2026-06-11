@@ -3369,6 +3369,110 @@ mod tests {
             .contains(&different_key.owner_node_id().expect("owner").as_str()));
     }
 
+    #[test]
+    fn ownership_ignores_client_join_and_leave() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_member(ClusterCandidate::member("member-a"))
+            .unwrap();
+        cluster
+            .join_member(ClusterCandidate::member("member-b"))
+            .unwrap();
+
+        let before_clients = cluster.owner_for_key("user:42");
+        cluster
+            .join_client(ClusterCandidate::client("client-a"))
+            .unwrap();
+        cluster
+            .join_client(ClusterCandidate::client("client-b"))
+            .unwrap();
+        let after_client_join = cluster.owner_for_key("user:42");
+
+        cluster
+            .leave(
+                &ClusterNodeId::from("client-a"),
+                ClusterGeneration::default(),
+            )
+            .unwrap();
+        let after_client_leave = cluster.owner_for_key("user:42");
+
+        assert_eq!(before_clients.member_count, 2);
+        assert_eq!(
+            before_clients.owner_node_id(),
+            after_client_join.owner_node_id()
+        );
+        assert_eq!(
+            before_clients.owner_node_id(),
+            after_client_leave.owner_node_id()
+        );
+        assert_eq!(cluster.clients().len(), 1);
+    }
+
+    #[test]
+    fn ownership_moves_when_owner_member_leaves_and_returns_on_rejoin() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_member(ClusterCandidate::member("member-a"))
+            .unwrap();
+        cluster
+            .join_member(ClusterCandidate::member("member-b"))
+            .unwrap();
+
+        let initial = cluster.owner_for_key("user:42");
+        let initial_owner = initial.owner.clone().expect("initial owner");
+        let initial_owner_id = initial_owner.node_id.clone();
+        let survivor = cluster
+            .members()
+            .into_iter()
+            .find(|member| member.node_id != initial_owner_id)
+            .expect("surviving member");
+
+        cluster
+            .leave(&initial_owner.node_id, initial_owner.generation)
+            .unwrap();
+        let after_leave = cluster.owner_for_key("user:42");
+
+        assert_eq!(after_leave.member_count, 1);
+        assert_eq!(after_leave.owner_node_id(), Some(&survivor.node_id));
+
+        let rejoined_generation = initial_owner.generation.next();
+        cluster
+            .join_member(
+                ClusterCandidate::member(initial_owner_id.as_str()).generation(rejoined_generation),
+            )
+            .unwrap();
+        let after_rejoin = cluster.owner_for_key("user:42");
+
+        assert_eq!(after_rejoin.member_count, 2);
+        assert_eq!(after_rejoin.owner_node_id(), Some(&initial_owner_id));
+        assert_eq!(after_rejoin.owner_generation(), Some(rejoined_generation));
+    }
+
+    #[test]
+    fn stale_member_candidate_does_not_replace_owner_generation() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(2)))
+            .unwrap();
+
+        let stale = cluster.join_member(
+            ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+        );
+        let owner = cluster.owner_for_key("user:42");
+
+        assert!(stale
+            .unwrap_err()
+            .to_string()
+            .contains("stale cluster generation"));
+        assert_eq!(owner.member_count, 1);
+        assert_eq!(
+            owner.owner_node_id().map(ClusterNodeId::as_str),
+            Some("member-a")
+        );
+        assert_eq!(owner.owner_generation(), Some(ClusterGeneration::new(2)));
+        assert_eq!(cluster.members().len(), 1);
+    }
+
     #[tokio::test]
     async fn in_memory_cluster_satisfies_control_plane_contract() {
         let control_plane: Arc<dyn ClusterControlPlane> = Arc::new(InMemoryCluster::new("orders"));
