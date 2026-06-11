@@ -11,9 +11,10 @@
 //! use std::sync::Arc;
 //!
 //! use hydracache::{
-//!     CacheOptions, ClusterGeneration, ClusterPeerFetch, ClusterPeerFetchRequest, HydraCache,
+//!     CacheOptions, ClusterCandidate, ClusterGeneration, ClusterPeerFetch,
+//!     ClusterPeerFetchRequest, HydraCache, InMemoryCluster,
 //! };
-//! use hydracache_cluster_transport_axum::{AxumPeerFetchService, HttpPeerFetch};
+//! use hydracache_cluster_transport_axum::{AxumPeerFetchService, HttpPeerFetch, PeerFetchRouter};
 //!
 //! # async fn example() -> hydracache::CacheResult<()> {
 //! let owner_cache = HydraCache::local().build();
@@ -35,6 +36,17 @@
 //!     )
 //!     .await;
 //! # let _ = response;
+//!
+//! let cluster = InMemoryCluster::new("orders");
+//! cluster.join_member(
+//!     ClusterCandidate::member("member-a")
+//!         .generation(ClusterGeneration::new(1))
+//!         .peer_fetch_base_url("http://127.0.0.1:3000"),
+//! )?;
+//! let routed = PeerFetchRouter::new()
+//!     .fetch_owner_value(cluster.owner_for_key("user:42"))
+//!     .await;
+//! # let _ = routed;
 //! # Ok(())
 //! # }
 //! ```
@@ -52,14 +64,271 @@ use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
 use bytes::Bytes;
 use hydracache::{
-    CacheError, CacheResult, ClusterGeneration, ClusterNodeId, ClusterPeerFetch,
-    ClusterPeerFetchRequest, ClusterPeerFetchResponse, HydraCache,
+    CacheError, CacheResult, ClusterGeneration, ClusterNodeId, ClusterOwnershipDecision,
+    ClusterPeerFetch, ClusterPeerFetchRequest, ClusterPeerFetchResponse, HydraCache,
 };
 use hydracache_core::CacheCodec;
 use serde::{Deserialize, Serialize};
 
 /// Default HTTP path used by the peer-fetch route and client.
 pub const DEFAULT_PEER_FETCH_PATH: &str = "/cluster/peer-fetch";
+
+/// Outcome status produced by [`PeerFetchRouter`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PeerFetchRouterStatus {
+    /// The ownership decision had no eligible owner.
+    NoOwner,
+    /// The owner did not advertise a peer-fetch endpoint.
+    MissingEndpoint,
+    /// The owner returned encoded bytes.
+    Hit,
+    /// The owner was reachable but did not have the value.
+    Miss,
+    /// The owner rejected the request because the observed generation is stale.
+    GenerationMismatch,
+    /// The transport request failed or returned an unexpected response.
+    TransportError,
+}
+
+/// Result of routing one ownership decision through a peer-fetch transport.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PeerFetchRouterOutcome {
+    /// Logical cache key being fetched.
+    pub key: String,
+    /// Owner selected by the ownership resolver, when one exists.
+    pub owner: Option<ClusterNodeId>,
+    /// Full peer-fetch endpoint used by the router, when available.
+    pub endpoint: Option<String>,
+    /// Terminal route status.
+    pub status: PeerFetchRouterStatus,
+    /// Encoded value returned by the owner on hit.
+    pub value: Option<Bytes>,
+    /// Human-readable transport or routing error detail.
+    pub error: Option<String>,
+}
+
+impl PeerFetchRouterOutcome {
+    fn new(
+        key: String,
+        owner: Option<ClusterNodeId>,
+        endpoint: Option<String>,
+        status: PeerFetchRouterStatus,
+        value: Option<Bytes>,
+        error: Option<String>,
+    ) -> Self {
+        Self {
+            key,
+            owner,
+            endpoint,
+            status,
+            value,
+            error,
+        }
+    }
+
+    /// Return whether the routed request returned a value.
+    pub fn is_hit(&self) -> bool {
+        self.status == PeerFetchRouterStatus::Hit
+    }
+
+    /// Return whether the owner was reached but did not have the value.
+    pub fn is_miss(&self) -> bool {
+        self.status == PeerFetchRouterStatus::Miss
+    }
+
+    /// Return whether the router did not issue an HTTP request.
+    pub fn did_not_route(&self) -> bool {
+        matches!(
+            self.status,
+            PeerFetchRouterStatus::NoOwner | PeerFetchRouterStatus::MissingEndpoint
+        )
+    }
+}
+
+/// Point-in-time counters for [`PeerFetchRouter`].
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PeerFetchRouterDiagnostics {
+    /// Total routing calls observed.
+    pub attempts: u64,
+    /// Routed requests that returned encoded bytes.
+    pub hits: u64,
+    /// Routed requests that reached the owner and missed.
+    pub misses: u64,
+    /// Calls where ownership had no eligible member.
+    pub no_owner: u64,
+    /// Calls where the owner did not advertise a peer-fetch endpoint.
+    pub missing_endpoint: u64,
+    /// Calls rejected due to stale owner generation.
+    pub generation_mismatches: u64,
+    /// Calls that failed at the HTTP transport layer.
+    pub transport_errors: u64,
+}
+
+impl PeerFetchRouterDiagnostics {
+    /// Return hit + miss routed requests.
+    pub fn routed_requests(&self) -> u64 {
+        self.hits.saturating_add(self.misses)
+    }
+
+    /// Return whether any routing failures were observed.
+    pub fn has_failures(&self) -> bool {
+        self.no_owner
+            .saturating_add(self.missing_endpoint)
+            .saturating_add(self.generation_mismatches)
+            .saturating_add(self.transport_errors)
+            > 0
+    }
+}
+
+/// Routes ownership decisions to an advertised HTTP peer-fetch endpoint.
+#[derive(Debug, Clone, Default)]
+pub struct PeerFetchRouter {
+    diagnostics: Arc<Mutex<PeerFetchRouterDiagnostics>>,
+}
+
+impl PeerFetchRouter {
+    /// Create a router with empty diagnostics.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hydracache::{ClusterCandidate, ClusterGeneration, InMemoryCluster};
+    /// use hydracache_cluster_transport_axum::{
+    ///     PeerFetchRouter, PeerFetchRouterStatus,
+    /// };
+    ///
+    /// # async fn example() -> hydracache::CacheResult<()> {
+    /// let cluster = InMemoryCluster::new("orders");
+    /// cluster.join_member(
+    ///     ClusterCandidate::member("member-a")
+    ///         .generation(ClusterGeneration::new(1))
+    ///         .peer_fetch_base_url("http://127.0.0.1:3000"),
+    /// )?;
+    ///
+    /// let outcome = PeerFetchRouter::new()
+    ///     .fetch_owner_value(cluster.owner_for_key("user:42"))
+    ///     .await;
+    ///
+    /// assert!(matches!(
+    ///     outcome.status,
+    ///     PeerFetchRouterStatus::Hit
+    ///         | PeerFetchRouterStatus::Miss
+    ///         | PeerFetchRouterStatus::TransportError
+    /// ));
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Route an ownership decision through the owner's advertised endpoint.
+    pub async fn fetch_owner_value(
+        &self,
+        decision: ClusterOwnershipDecision,
+    ) -> PeerFetchRouterOutcome {
+        self.record(|diagnostics| {
+            diagnostics.attempts = diagnostics.attempts.saturating_add(1);
+        });
+
+        let key = decision.key.clone();
+        let Some(owner) = decision.owner.clone() else {
+            self.record(|diagnostics| {
+                diagnostics.no_owner = diagnostics.no_owner.saturating_add(1);
+            });
+            return PeerFetchRouterOutcome::new(
+                key,
+                None,
+                None,
+                PeerFetchRouterStatus::NoOwner,
+                None,
+                Some("ownership decision did not select an owner".to_owned()),
+            );
+        };
+
+        let Some(base_url) = owner.peer_fetch_base_url() else {
+            self.record(|diagnostics| {
+                diagnostics.missing_endpoint = diagnostics.missing_endpoint.saturating_add(1);
+            });
+            return PeerFetchRouterOutcome::new(
+                key,
+                Some(owner.node_id),
+                None,
+                PeerFetchRouterStatus::MissingEndpoint,
+                None,
+                Some("owner did not advertise a peer-fetch base URL".to_owned()),
+            );
+        };
+
+        let peer_fetch = HttpPeerFetch::for_base_url(base_url);
+        let endpoint = peer_fetch.endpoint().to_owned();
+        let request = ClusterPeerFetchRequest::new(owner.node_id.clone(), decision.key)
+            .generation(owner.generation);
+
+        match peer_fetch.fetch(request).await {
+            Ok(response) if response.is_hit() => {
+                self.record(|diagnostics| {
+                    diagnostics.hits = diagnostics.hits.saturating_add(1);
+                });
+                PeerFetchRouterOutcome::new(
+                    key,
+                    Some(response.owner),
+                    Some(endpoint),
+                    PeerFetchRouterStatus::Hit,
+                    response.value,
+                    None,
+                )
+            }
+            Ok(response) => {
+                self.record(|diagnostics| {
+                    diagnostics.misses = diagnostics.misses.saturating_add(1);
+                });
+                PeerFetchRouterOutcome::new(
+                    key,
+                    Some(response.owner),
+                    Some(endpoint),
+                    PeerFetchRouterStatus::Miss,
+                    None,
+                    None,
+                )
+            }
+            Err(error) => {
+                let message = error.to_string();
+                let status = if message.contains("generation-mismatch") {
+                    self.record(|diagnostics| {
+                        diagnostics.generation_mismatches =
+                            diagnostics.generation_mismatches.saturating_add(1);
+                    });
+                    PeerFetchRouterStatus::GenerationMismatch
+                } else {
+                    self.record(|diagnostics| {
+                        diagnostics.transport_errors =
+                            diagnostics.transport_errors.saturating_add(1);
+                    });
+                    PeerFetchRouterStatus::TransportError
+                };
+                PeerFetchRouterOutcome::new(
+                    key,
+                    Some(owner.node_id),
+                    Some(endpoint),
+                    status,
+                    None,
+                    Some(message),
+                )
+            }
+        }
+    }
+
+    /// Return current router diagnostics.
+    pub fn diagnostics(&self) -> PeerFetchRouterDiagnostics {
+        *self.diagnostics.lock().expect("peer-fetch router poisoned")
+    }
+
+    fn record(&self, update: impl FnOnce(&mut PeerFetchRouterDiagnostics)) {
+        let mut diagnostics = self.diagnostics.lock().expect("peer-fetch router poisoned");
+        update(&mut diagnostics);
+    }
+}
 
 /// Owner-side store abstraction used by the HTTP route.
 ///
@@ -425,6 +694,9 @@ mod tests {
 
     use axum::body::{to_bytes, Body};
     use axum::http::Request;
+    use hydracache::{
+        ClusterCandidate, ClusterEndpoints, ClusterEpoch, ClusterMember, ClusterRole,
+    };
     use serde::de::DeserializeOwned;
     use tokio::sync::oneshot;
     use tower::ServiceExt;
@@ -590,6 +862,146 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn router_reports_no_owner_without_calling_transport() {
+        let router = PeerFetchRouter::new();
+        let outcome = router
+            .fetch_owner_value(ClusterOwnershipDecision {
+                key: "user:42".to_owned(),
+                owner: None,
+                member_count: 0,
+                resolver: "test",
+            })
+            .await;
+
+        assert_eq!(outcome.status, PeerFetchRouterStatus::NoOwner);
+        assert!(outcome.did_not_route());
+        assert_eq!(outcome.owner, None);
+        assert!(outcome.endpoint.is_none());
+
+        let diagnostics = router.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.no_owner, 1);
+        assert!(diagnostics.has_failures());
+    }
+
+    #[tokio::test]
+    async fn router_reports_missing_endpoint_without_calling_transport() {
+        let router = PeerFetchRouter::new();
+        let outcome = router
+            .fetch_owner_value(decision_with_member(member_without_endpoint(), "user:42"))
+            .await;
+
+        assert_eq!(outcome.status, PeerFetchRouterStatus::MissingEndpoint);
+        assert!(outcome.did_not_route());
+        assert_eq!(
+            outcome.owner.as_ref().map(ClusterNodeId::as_str),
+            Some("member-a")
+        );
+        assert!(outcome.endpoint.is_none());
+
+        let diagnostics = router.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.missing_endpoint, 1);
+        assert!(diagnostics.has_failures());
+    }
+
+    #[tokio::test]
+    async fn router_fetches_hit_from_advertised_owner_endpoint() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("user:42", Bytes::from_static(b"encoded-user"));
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let router = PeerFetchRouter::new();
+
+        let outcome = router
+            .fetch_owner_value(decision_with_endpoint(&base_url, "user:42", 7))
+            .await;
+
+        assert_eq!(outcome.status, PeerFetchRouterStatus::Hit);
+        assert!(outcome.is_hit());
+        assert_eq!(outcome.value.unwrap().as_ref(), b"encoded-user");
+        assert_eq!(
+            outcome.endpoint.as_deref(),
+            Some(format!("{base_url}{DEFAULT_PEER_FETCH_PATH}").as_str())
+        );
+
+        let diagnostics = router.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.hits, 1);
+        assert_eq!(diagnostics.routed_requests(), 1);
+        assert!(!diagnostics.has_failures());
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn router_fetches_miss_from_advertised_owner_endpoint() {
+        let (base_url, shutdown, server) =
+            spawn_server(service_with_store(MemoryPeerFetchStore::new()).routes()).await;
+        let router = PeerFetchRouter::new();
+
+        let outcome = router
+            .fetch_owner_value(decision_with_endpoint(&base_url, "missing", 7))
+            .await;
+
+        assert_eq!(outcome.status, PeerFetchRouterStatus::Miss);
+        assert!(outcome.is_miss());
+        assert!(outcome.value.is_none());
+
+        let diagnostics = router.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.misses, 1);
+        assert_eq!(diagnostics.routed_requests(), 1);
+        assert!(!diagnostics.has_failures());
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn router_reports_generation_mismatch_from_owner() {
+        let (base_url, shutdown, server) =
+            spawn_server(service_with_store(MemoryPeerFetchStore::new()).routes()).await;
+        let router = PeerFetchRouter::new();
+
+        let outcome = router
+            .fetch_owner_value(decision_with_endpoint(&base_url, "user:42", 6))
+            .await;
+
+        assert_eq!(outcome.status, PeerFetchRouterStatus::GenerationMismatch);
+        assert!(outcome
+            .error
+            .as_deref()
+            .unwrap()
+            .contains("generation-mismatch"));
+
+        let diagnostics = router.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.generation_mismatches, 1);
+        assert!(diagnostics.has_failures());
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn router_reports_transport_error_for_invalid_endpoint() {
+        let router = PeerFetchRouter::new();
+
+        let outcome = router
+            .fetch_owner_value(decision_with_endpoint("not a url", "user:42", 7))
+            .await;
+
+        assert_eq!(outcome.status, PeerFetchRouterStatus::TransportError);
+        assert!(outcome.error.is_some());
+
+        let diagnostics = router.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.transport_errors, 1);
+        assert!(diagnostics.has_failures());
+    }
+
+    #[tokio::test]
     async fn http_response_rejects_invalid_base64() {
         let response = PeerFetchHttpResponse {
             owner: "member-a".to_owned(),
@@ -619,6 +1031,52 @@ mod tests {
 
     fn service_with_store(store: MemoryPeerFetchStore) -> AxumPeerFetchService {
         AxumPeerFetchService::new("member-a", ClusterGeneration::new(7), Arc::new(store))
+    }
+
+    fn decision_with_endpoint(
+        base_url: &str,
+        key: impl Into<String>,
+        generation: u64,
+    ) -> ClusterOwnershipDecision {
+        decision_with_member(member_with_endpoint(base_url, generation), key)
+    }
+
+    fn decision_with_member(
+        owner: ClusterMember,
+        key: impl Into<String>,
+    ) -> ClusterOwnershipDecision {
+        ClusterOwnershipDecision {
+            key: key.into(),
+            owner: Some(owner),
+            member_count: 1,
+            resolver: "test",
+        }
+    }
+
+    fn member_with_endpoint(base_url: &str, generation: u64) -> ClusterMember {
+        let candidate = ClusterCandidate::member("member-a")
+            .generation(ClusterGeneration::new(generation))
+            .peer_fetch_base_url(base_url);
+
+        ClusterMember {
+            node_id: candidate.node_id,
+            generation: candidate.generation,
+            role: candidate.role,
+            epoch: ClusterEpoch::new(1),
+            endpoints: candidate.endpoints,
+            metadata: candidate.metadata,
+        }
+    }
+
+    fn member_without_endpoint() -> ClusterMember {
+        ClusterMember {
+            node_id: ClusterNodeId::from("member-a"),
+            generation: ClusterGeneration::new(7),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(1),
+            endpoints: ClusterEndpoints::new(),
+            metadata: Default::default(),
+        }
     }
 
     fn json_request<T>(body: T) -> Request<Body>
