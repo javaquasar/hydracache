@@ -48,6 +48,7 @@
 //! http://127.0.0.1:3000/demo/cluster/ownership/run
 //! http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
 //! http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
+//! http://127.0.0.1:3000/demo/cluster/read-through/run
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
@@ -83,7 +84,9 @@ use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftMetadataRuntimeSnapshot, RaftRuntimeRole};
 use hydracache_cluster_transport_axum::{
-    AxumPeerFetchService, MemoryPeerFetchStore, PeerFetchRouter, PeerFetchRouterDiagnostics,
+    AxumPeerFetchService, MemoryPeerFetchStore, PeerFetchReadThrough,
+    PeerFetchReadThroughDiagnostics, PeerFetchReadThroughOutcome, PeerFetchReadThroughPolicy,
+    PeerFetchReadThroughStatus, PeerFetchRouter, PeerFetchRouterDiagnostics,
     PeerFetchRouterOutcome, PeerFetchRouterStatus,
 };
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
@@ -607,6 +610,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/cluster/routed-peer-fetch/run",
             post(run_cluster_routed_peer_fetch_demo),
+        )
+        .route(
+            "/demo/cluster/read-through/run",
+            post(run_cluster_read_through_demo),
         )
         .route(
             "/demo/cluster/real-adapters/run",
@@ -2193,6 +2200,19 @@ struct ClusterRoutedPeerFetchDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-orders", "key": "cluster:read-through:user:42", "value": "Ada", "flow_id": "read-through-flow"}))]
+struct ClusterReadThroughDemoRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"cluster": "sandbox-orders", "member_node_id": "sandbox-member-a", "client_node_id": "sandbox-client-a", "flow_id": "real-cluster-flow"}))]
 struct RealClusterAdaptersDemoRequest {
     #[serde(default)]
@@ -2594,6 +2614,60 @@ struct ClusterRoutedPeerFetchDemoResponse {
     owner: ClusterOwnershipDecisionReport,
     routed_peer_fetch: ClusterRoutedPeerFetchReport,
     router_diagnostics: ClusterPeerFetchRouterDiagnosticsReport,
+    member_a_endpoint: String,
+    member_b_endpoint: String,
+    timeline: Vec<ClusterOwnershipTimelineStep>,
+    passed: bool,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterReadThroughReport {
+    key: String,
+    owner_node_id: Option<String>,
+    endpoint: Option<String>,
+    policy: String,
+    status: String,
+    hit: bool,
+    local_hit: bool,
+    remote_hit: bool,
+    remote_miss: bool,
+    router_error: bool,
+    hydrated: bool,
+    value_len: Option<usize>,
+    decoded_value: Option<String>,
+    error: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterReadThroughDiagnosticsReport {
+    attempts: u64,
+    local_hits: u64,
+    local_misses: u64,
+    remote_hits: u64,
+    remote_misses: u64,
+    total_hits: u64,
+    total_misses: u64,
+    hydrations: u64,
+    in_flight_joins: u64,
+    router_errors: u64,
+    fallback_loads: u64,
+    has_router_errors: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterReadThroughDemoResponse {
+    flow_id: String,
+    cluster: String,
+    key: String,
+    value: String,
+    owner: ClusterOwnershipDecisionReport,
+    first_read: ClusterReadThroughReport,
+    second_read: ClusterReadThroughReport,
+    read_through_diagnostics: ClusterReadThroughDiagnosticsReport,
+    router_diagnostics: ClusterPeerFetchRouterDiagnosticsReport,
+    hydrated_value_after_first_read: Option<String>,
+    hydrated_value_after_second_read: Option<String>,
     member_a_endpoint: String,
     member_b_endpoint: String,
     timeline: Vec<ClusterOwnershipTimelineStep>,
@@ -5634,6 +5708,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/cluster/ownership/run".to_owned(),
         "/demo/cluster/ownership-transfer/run".to_owned(),
         "/demo/cluster/routed-peer-fetch/run".to_owned(),
+        "/demo/cluster/read-through/run".to_owned(),
         "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
@@ -5676,6 +5751,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "runClusterOwnership(",
         "runClusterOwnershipTransfer(",
         "runClusterRoutedPeerFetch(",
+        "runClusterReadThrough(",
         "runRealClusterAdapters(",
         "exportSession()",
         "importSession(bundle",
@@ -5686,6 +5762,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/benchmarks/compare",
         "/demo/events/summary",
         "/demo/cluster/routed-peer-fetch/run",
+        "/demo/cluster/read-through/run",
         "/demo/cluster/real-adapters/run",
         "/demo/flows",
         "/demo/query/products/",
@@ -7285,6 +7362,209 @@ async fn run_cluster_routed_peer_fetch_demo_with_request(
     })
 }
 
+#[utoipa::path(
+    post,
+    path = "/demo/cluster/read-through/run",
+    tag = "cluster",
+    request_body = ClusterReadThroughDemoRequest,
+    responses((status = 200, description = "Run a cluster read-through demo with near-cache hydration", body = ClusterReadThroughDemoResponse))
+)]
+async fn run_cluster_read_through_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<ClusterReadThroughDemoRequest>,
+) -> Result<Json<ClusterReadThroughDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_cluster_read_through_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_cluster_read_through_demo_with_request(
+    state: &SandboxState,
+    request: ClusterReadThroughDemoRequest,
+) -> Result<ClusterReadThroughDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "cluster-read-through-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let cluster_name = request
+        .cluster
+        .unwrap_or_else(|| "sandbox-orders".to_owned());
+    let key = request
+        .key
+        .unwrap_or_else(|| "cluster:read-through:user:42".to_owned());
+    let value = request.value.unwrap_or_else(|| "Ada".to_owned());
+    let tag = "cluster-read-through-users";
+
+    let member_a_id = "sandbox-read-through-a";
+    let member_b_id = "sandbox-read-through-b";
+    let generation = ClusterGeneration::new(1);
+    let store_a = MemoryPeerFetchStore::new();
+    let store_b = MemoryPeerFetchStore::new();
+    let (member_a_endpoint, shutdown_a, server_a) =
+        spawn_peer_fetch_demo_server(member_a_id, generation, store_a.clone()).await?;
+    let (member_b_endpoint, shutdown_b, server_b) =
+        spawn_peer_fetch_demo_server(member_b_id, generation, store_b.clone()).await?;
+
+    let cluster = InMemoryCluster::new(cluster_name.clone());
+    cluster.join_member(
+        ClusterCandidate::member(member_a_id)
+            .generation(generation)
+            .peer_fetch_base_url(member_a_endpoint.clone()),
+    )?;
+    cluster.join_member(
+        ClusterCandidate::member(member_b_id)
+            .generation(generation)
+            .peer_fetch_base_url(member_b_endpoint.clone()),
+    )?;
+
+    let owner_decision = cluster.owner_for_key(&key);
+    let owner_node_id = owner_decision
+        .owner_node_id()
+        .map(ToString::to_string)
+        .ok_or_else(|| SandboxHttpError::internal("ownership resolver returned no owner"))?;
+
+    let encoder = HydraCache::local().build();
+    encoder
+        .put(&key, value.clone(), CacheOptions::new())
+        .await?;
+    let encoded_value = encoder
+        .get_encoded(&key)
+        .await?
+        .ok_or_else(|| SandboxHttpError::internal("failed to encode read-through demo value"))?;
+
+    if owner_node_id == member_a_id {
+        store_a.put(key.clone(), encoded_value);
+    } else {
+        store_b.put(key.clone(), encoded_value);
+    }
+
+    let client_cache = HydraCache::local().build();
+    let read_through = PeerFetchReadThrough::new(client_cache.clone());
+    let options = CacheOptions::new().tag(tag);
+    let first_outcome = read_through
+        .fetch_encoded(owner_decision.clone(), options.clone())
+        .await?;
+    let hydrated_value_after_first_read = client_cache.get::<String>(&key).await?;
+    let first_read = read_through_report(&first_outcome, hydrated_value_after_first_read.clone());
+
+    let second_outcome = read_through
+        .fetch_encoded(owner_decision.clone(), options)
+        .await?;
+    let hydrated_value_after_second_read = client_cache.get::<String>(&key).await?;
+    let second_read =
+        read_through_report(&second_outcome, hydrated_value_after_second_read.clone());
+
+    let owner = cluster_ownership_decision_report(&owner_decision);
+    let read_through_diagnostics = read_through_diagnostics_report(read_through.diagnostics());
+    let router_diagnostics =
+        peer_fetch_router_diagnostics_report(read_through.router().diagnostics());
+    let timeline = vec![
+        cluster_ownership_timeline_step(
+            1,
+            "admission",
+            "member-a/member-b",
+            "advertise-peer-fetch-endpoint",
+            format!("member-a endpoint={member_a_endpoint}; member-b endpoint={member_b_endpoint}"),
+        ),
+        cluster_ownership_timeline_step(
+            2,
+            "ownership",
+            "resolver",
+            "owner-for-key",
+            format!(
+                "resolver={} selected owner={:?} among {} member(s)",
+                owner.resolver, owner.owner_node_id, owner.member_count
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            3,
+            "read-through",
+            "client-near-cache",
+            "remote-hit-and-hydrate",
+            format!(
+                "first status={} hydrated={} decoded_value={:?}",
+                first_read.status, first_read.hydrated, hydrated_value_after_first_read
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            4,
+            "read-through",
+            "client-near-cache",
+            "second-local-hit",
+            format!(
+                "second status={} router attempts={}",
+                second_read.status, router_diagnostics.attempts
+            ),
+        ),
+    ];
+
+    let passed = owner.has_owner
+        && owner.member_count == 2
+        && first_read.remote_hit
+        && first_read.hydrated
+        && second_read.local_hit
+        && hydrated_value_after_first_read.as_deref() == Some(value.as_str())
+        && hydrated_value_after_second_read.as_deref() == Some(value.as_str())
+        && read_through_diagnostics.attempts == 2
+        && read_through_diagnostics.local_hits == 1
+        && read_through_diagnostics.local_misses == 1
+        && read_through_diagnostics.remote_hits == 1
+        && read_through_diagnostics.hydrations == 1
+        && read_through_diagnostics.router_errors == 0
+        && router_diagnostics.attempts == 1
+        && router_diagnostics.hits == 1;
+
+    let _ = shutdown_a.send(());
+    let _ = shutdown_b.send(());
+    let _ = timeout(Duration::from_secs(1), server_a).await;
+    let _ = timeout(Duration::from_secs(1), server_b).await;
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "cluster read-through demo selected owner {owner_node_id}, hydrated first read, and hit local cache on second read"
+        ),
+        Some(key.clone()),
+        Some(tag.to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(ClusterReadThroughDemoResponse {
+        flow_id,
+        cluster: cluster_name,
+        key,
+        value,
+        owner,
+        first_read,
+        second_read,
+        read_through_diagnostics,
+        router_diagnostics,
+        hydrated_value_after_first_read,
+        hydrated_value_after_second_read,
+        member_a_endpoint,
+        member_b_endpoint,
+        timeline,
+        passed,
+        events,
+    })
+}
+
 async fn spawn_peer_fetch_demo_server(
     owner: impl Into<String>,
     generation: ClusterGeneration,
@@ -7675,6 +7955,67 @@ fn peer_fetch_router_status_label(status: PeerFetchRouterStatus) -> &'static str
         PeerFetchRouterStatus::Miss => "miss",
         PeerFetchRouterStatus::GenerationMismatch => "generation-mismatch",
         PeerFetchRouterStatus::TransportError => "transport-error",
+    }
+}
+
+fn read_through_report(
+    outcome: &PeerFetchReadThroughOutcome,
+    decoded_value: Option<String>,
+) -> ClusterReadThroughReport {
+    ClusterReadThroughReport {
+        key: outcome.key.clone(),
+        owner_node_id: outcome.owner.as_ref().map(ToString::to_string),
+        endpoint: outcome.endpoint.clone(),
+        policy: read_through_policy_label(outcome.policy).to_owned(),
+        status: read_through_status_label(outcome.status).to_owned(),
+        hit: outcome.is_hit(),
+        local_hit: outcome.is_local_hit(),
+        remote_hit: outcome.is_remote_hit(),
+        remote_miss: outcome.is_remote_miss(),
+        router_error: outcome.is_router_error(),
+        hydrated: outcome.hydrated,
+        value_len: outcome.value.as_ref().map(|value| value.len()),
+        decoded_value,
+        error: outcome.error.clone(),
+    }
+}
+
+fn read_through_diagnostics_report(
+    diagnostics: PeerFetchReadThroughDiagnostics,
+) -> ClusterReadThroughDiagnosticsReport {
+    ClusterReadThroughDiagnosticsReport {
+        attempts: diagnostics.attempts,
+        local_hits: diagnostics.local_hits,
+        local_misses: diagnostics.local_misses,
+        remote_hits: diagnostics.remote_hits,
+        remote_misses: diagnostics.remote_misses,
+        total_hits: diagnostics.total_hits(),
+        total_misses: diagnostics.total_misses(),
+        hydrations: diagnostics.hydrations,
+        in_flight_joins: diagnostics.in_flight_joins,
+        router_errors: diagnostics.router_errors,
+        fallback_loads: diagnostics.fallback_loads,
+        has_router_errors: diagnostics.has_router_errors(),
+    }
+}
+
+fn read_through_policy_label(policy: PeerFetchReadThroughPolicy) -> &'static str {
+    match policy {
+        PeerFetchReadThroughPolicy::LocalThenOwner => "local-then-owner",
+        PeerFetchReadThroughPolicy::OwnerThenLocal => "owner-then-local",
+        PeerFetchReadThroughPolicy::OwnerOnly => "owner-only",
+    }
+}
+
+fn read_through_status_label(status: PeerFetchReadThroughStatus) -> &'static str {
+    match status {
+        PeerFetchReadThroughStatus::LocalHit => "local-hit",
+        PeerFetchReadThroughStatus::RemoteHit => "remote-hit",
+        PeerFetchReadThroughStatus::RemoteMiss => "remote-miss",
+        PeerFetchReadThroughStatus::NoOwner => "no-owner",
+        PeerFetchReadThroughStatus::MissingEndpoint => "missing-endpoint",
+        PeerFetchReadThroughStatus::GenerationMismatch => "generation-mismatch",
+        PeerFetchReadThroughStatus::TransportError => "transport-error",
     }
 }
 
@@ -9362,6 +9703,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/cluster/ownership/run', {cluster:'ui-ownership-cluster', key:'ui:cluster:owned', tag:'ui-owned', value:'alpha', flow_id:`ui-ownership-${Date.now()}`})">Cluster ownership</button>
       <button onclick="post('/demo/cluster/ownership-transfer/run', {cluster:'ui-transfer-cluster', key:'ui:cluster:transfer', tag:'ui-transfer', value:'alpha', flow_id:`ui-transfer-${Date.now()}`})">Ownership transfer</button>
       <button onclick="post('/demo/cluster/routed-peer-fetch/run', {cluster:'ui-routed-cluster', key:'ui:cluster:routed', value:'alpha', flow_id:`ui-routed-${Date.now()}`})">Routed peer fetch</button>
+      <button onclick="post('/demo/cluster/read-through/run', {cluster:'ui-read-through-cluster', key:'ui:cluster:read-through', value:'Ada', flow_id:`ui-read-through-${Date.now()}`})">Read-through hydration</button>
       <button onclick="post('/demo/cluster/real-adapters/run', {cluster:'ui-real-cluster', flow_id:`ui-real-cluster-${Date.now()}`})">Real chitchat + raft</button>
     </section>
     <section>
@@ -9741,6 +10083,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Resolve an owner, read its advertised HTTP peer-fetch endpoint, and fetch encoded bytes through the automatic peer-fetch router.",
         },
         CapabilityReport {
+            name: "cluster read-through lab",
+            endpoint: "/demo/cluster/read-through/run",
+            description: "Resolve an owner, fetch cached bytes through the read-through helper, hydrate the client near-cache, and verify the second read is local.",
+        },
+        CapabilityReport {
             name: "real cluster adapters",
             endpoint: "/demo/cluster/real-adapters/run",
             description: "Connect real chitchat-backed discovery to the polling admission bridge and commit membership metadata through the raft-rs runtime.",
@@ -9869,6 +10216,7 @@ fn actuator_stats_doc() {}
         run_cluster_ownership_demo,
         run_cluster_ownership_transfer_demo,
         run_cluster_routed_peer_fetch_demo,
+        run_cluster_read_through_demo,
         run_real_cluster_adapters_demo,
         reset_demo,
         cache_put,
@@ -10029,6 +10377,10 @@ fn actuator_stats_doc() {}
             ClusterRoutedPeerFetchReport,
             ClusterPeerFetchRouterDiagnosticsReport,
             ClusterRoutedPeerFetchDemoResponse,
+            ClusterReadThroughDemoRequest,
+            ClusterReadThroughReport,
+            ClusterReadThroughDiagnosticsReport,
+            ClusterReadThroughDemoResponse,
             RealClusterAdaptersDemoRequest,
             ClusterAdmissionBridgeReport,
             ClusterAdmissionBridgeEventReport,
@@ -10485,6 +10837,7 @@ mod tests {
         assert!(paths.contains_key("/demo/cluster/ownership/run"));
         assert!(paths.contains_key("/demo/cluster/ownership-transfer/run"));
         assert!(paths.contains_key("/demo/cluster/routed-peer-fetch/run"));
+        assert!(paths.contains_key("/demo/cluster/read-through/run"));
         assert!(paths.contains_key("/demo/cluster/real-adapters/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
@@ -10566,6 +10919,10 @@ mod tests {
         assert!(schemas.contains_key("ClusterRoutedPeerFetchReport"));
         assert!(schemas.contains_key("ClusterPeerFetchRouterDiagnosticsReport"));
         assert!(schemas.contains_key("ClusterRoutedPeerFetchDemoResponse"));
+        assert!(schemas.contains_key("ClusterReadThroughDemoRequest"));
+        assert!(schemas.contains_key("ClusterReadThroughReport"));
+        assert!(schemas.contains_key("ClusterReadThroughDiagnosticsReport"));
+        assert!(schemas.contains_key("ClusterReadThroughDemoResponse"));
         assert!(schemas.contains_key("RealClusterAdaptersDemoRequest"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeReport"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeEventReport"));
@@ -10983,6 +11340,41 @@ mod tests {
         assert_eq!(routed["router_diagnostics"]["has_failures"], false);
         assert_eq!(routed["timeline"].as_array().unwrap().len(), 3);
 
+        let read_through = app
+            .clone()
+            .oneshot(post(
+                "/demo/cluster/read-through/run",
+                Body::from(
+                    r#"{"cluster":"test-read-through-cluster","key":"cluster:read-through","value":"Ada","flow_id":"read-through-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(read_through["flow_id"], "read-through-test");
+        assert_eq!(read_through["passed"], true);
+        assert_eq!(read_through["owner"]["has_owner"], true);
+        assert_eq!(read_through["owner"]["member_count"], 2);
+        assert_eq!(read_through["first_read"]["status"], "remote-hit");
+        assert_eq!(read_through["first_read"]["remote_hit"], true);
+        assert_eq!(read_through["first_read"]["hydrated"], true);
+        assert_eq!(read_through["first_read"]["decoded_value"], "Ada");
+        assert_eq!(read_through["second_read"]["status"], "local-hit");
+        assert_eq!(read_through["second_read"]["local_hit"], true);
+        assert_eq!(read_through["second_read"]["decoded_value"], "Ada");
+        assert_eq!(read_through["hydrated_value_after_first_read"], "Ada");
+        assert_eq!(read_through["hydrated_value_after_second_read"], "Ada");
+        assert_eq!(read_through["read_through_diagnostics"]["attempts"], 2);
+        assert_eq!(read_through["read_through_diagnostics"]["local_hits"], 1);
+        assert_eq!(read_through["read_through_diagnostics"]["local_misses"], 1);
+        assert_eq!(read_through["read_through_diagnostics"]["remote_hits"], 1);
+        assert_eq!(read_through["read_through_diagnostics"]["hydrations"], 1);
+        assert_eq!(read_through["read_through_diagnostics"]["router_errors"], 0);
+        assert_eq!(read_through["router_diagnostics"]["attempts"], 1);
+        assert_eq!(read_through["router_diagnostics"]["hits"], 1);
+        assert_eq!(read_through["timeline"].as_array().unwrap().len(), 4);
+
         let real_cluster = app
             .clone()
             .oneshot(post(
@@ -11175,6 +11567,7 @@ mod tests {
         assert!(body.contains("/demo/query/products/100/load"));
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
         assert!(body.contains("/demo/cluster/routed-peer-fetch/run"));
+        assert!(body.contains("/demo/cluster/read-through/run"));
         assert!(body.contains("/demo/cluster/real-adapters/run"));
         assert!(body.contains("/demo/benchmarks/compare"));
         assert!(body.contains("/demo/observability/prometheus"));
@@ -11443,6 +11836,11 @@ mod tests {
             .unwrap()
             .iter()
             .any(|capability| capability["endpoint"] == "/demo/cluster/routed-peer-fetch/run"));
+        assert!(report["capabilities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|capability| capability["endpoint"] == "/demo/cluster/read-through/run"));
     }
 
     #[tokio::test]

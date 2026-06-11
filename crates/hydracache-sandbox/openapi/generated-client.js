@@ -88,6 +88,10 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/cluster/routed-peer-fetch/run", options);
   }
 
+  runClusterReadThrough(options = {}) {
+    return this.post("/demo/cluster/read-through/run", options);
+  }
+
   runRealClusterAdapters(options = {}) {
     return this.post("/demo/cluster/real-adapters/run", options);
   }
