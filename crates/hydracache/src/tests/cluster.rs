@@ -881,6 +881,8 @@ impl ClusterControlPlane for RejectingControlPlane {
             connected: false,
             invalidation_subscribers: self.bus.receiver_count(),
             membership_subscribers: 0,
+            ownership_resolutions: 0,
+            ownership_no_owner: 0,
         }
     }
 }

@@ -2370,6 +2370,8 @@ struct ClusterRuntimeReport {
     connected: bool,
     invalidation_subscribers: usize,
     membership_subscribers: usize,
+    ownership_resolutions: u64,
+    ownership_no_owner: u64,
     bootstrap: Vec<String>,
     bootstrap_count: usize,
     has_members: bool,
@@ -6946,6 +6948,8 @@ fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeRepo
         connected: diagnostics.connected,
         invalidation_subscribers: diagnostics.invalidation_subscribers,
         membership_subscribers: diagnostics.membership_subscribers,
+        ownership_resolutions: diagnostics.ownership_resolutions,
+        ownership_no_owner: diagnostics.ownership_no_owner,
         bootstrap_count,
         has_members,
         has_clients,
@@ -10189,6 +10193,8 @@ mod tests {
         assert_eq!(ownership["client_contains_after_owner_invalidation"], false);
         assert_eq!(ownership["client"]["participant_count"], 3);
         assert_eq!(ownership["client"]["has_multiple_participants"], true);
+        assert_eq!(ownership["client"]["ownership_resolutions"], 1);
+        assert_eq!(ownership["client"]["ownership_no_owner"], 0);
         assert_eq!(ownership["timeline"].as_array().unwrap().len(), 4);
         assert_eq!(ownership["remote_event"]["kind"], "tag-invalidated");
 

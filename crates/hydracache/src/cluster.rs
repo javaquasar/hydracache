@@ -476,7 +476,42 @@ pub trait ClusterPeerFetch: Send + Sync {
 /// In-memory peer-fetch implementation for tests, demos, and sandbox reports.
 #[derive(Debug, Clone, Default)]
 pub struct InMemoryPeerFetch {
-    values: Arc<Mutex<BTreeMap<(ClusterNodeId, String), Bytes>>>,
+    state: Arc<Mutex<InMemoryPeerFetchState>>,
+}
+
+#[derive(Debug, Default)]
+struct InMemoryPeerFetchState {
+    values: BTreeMap<(ClusterNodeId, String), Bytes>,
+    hits: u64,
+    misses: u64,
+}
+
+/// Point-in-time counters for an [`InMemoryPeerFetch`] registry.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ClusterPeerFetchDiagnostics {
+    /// Number of stored owner/key values.
+    pub stored_values: usize,
+    /// Number of fetch requests that returned a value.
+    pub hits: u64,
+    /// Number of fetch requests that did not find a value.
+    pub misses: u64,
+}
+
+impl ClusterPeerFetchDiagnostics {
+    /// Return total fetch requests observed by this registry.
+    pub fn total_requests(&self) -> u64 {
+        self.hits.saturating_add(self.misses)
+    }
+
+    /// Return the hit ratio when at least one request has been observed.
+    pub fn hit_ratio(&self) -> Option<f64> {
+        let total = self.total_requests();
+        if total == 0 {
+            None
+        } else {
+            Some(self.hits as f64 / total as f64)
+        }
+    }
 }
 
 impl InMemoryPeerFetch {
@@ -492,40 +527,60 @@ impl InMemoryPeerFetch {
         key: impl Into<String>,
         value: impl Into<Bytes>,
     ) {
-        self.values
+        self.state
             .lock()
             .expect("peer fetch state poisoned")
+            .values
             .insert((owner.into(), key.into()), value.into());
     }
 
     /// Remove an encoded value for an owner/key pair.
     pub fn remove(&self, owner: &ClusterNodeId, key: &str) -> Option<Bytes> {
-        self.values
+        self.state
             .lock()
             .expect("peer fetch state poisoned")
+            .values
             .remove(&(owner.clone(), key.to_owned()))
     }
 
     /// Return the number of stored owner/key values.
     pub fn len(&self) -> usize {
-        self.values.lock().expect("peer fetch state poisoned").len()
+        self.state
+            .lock()
+            .expect("peer fetch state poisoned")
+            .values
+            .len()
     }
 
     /// Return whether no values are stored.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    /// Return current in-memory peer-fetch diagnostics.
+    pub fn diagnostics(&self) -> ClusterPeerFetchDiagnostics {
+        let state = self.state.lock().expect("peer fetch state poisoned");
+        ClusterPeerFetchDiagnostics {
+            stored_values: state.values.len(),
+            hits: state.hits,
+            misses: state.misses,
+        }
+    }
 }
 
 #[async_trait::async_trait]
 impl ClusterPeerFetch for InMemoryPeerFetch {
     async fn fetch(&self, request: ClusterPeerFetchRequest) -> Result<ClusterPeerFetchResponse> {
-        let value = self
+        let mut state = self.state.lock().expect("peer fetch state poisoned");
+        let value = state
             .values
-            .lock()
-            .expect("peer fetch state poisoned")
             .get(&(request.owner.clone(), request.key.clone()))
             .cloned();
+        if value.is_some() {
+            state.hits = state.hits.saturating_add(1);
+        } else {
+            state.misses = state.misses.saturating_add(1);
+        }
 
         Ok(ClusterPeerFetchResponse {
             owner: request.owner,
@@ -1008,6 +1063,10 @@ pub struct ClusterDiagnostics {
     pub invalidation_subscribers: usize,
     /// Number of active cluster membership event subscribers.
     pub membership_subscribers: usize,
+    /// Number of ownership resolution attempts handled by this control plane.
+    pub ownership_resolutions: u64,
+    /// Number of ownership resolutions that found no admitted member owner.
+    pub ownership_no_owner: u64,
 }
 
 impl ClusterDiagnostics {
@@ -1878,6 +1937,8 @@ struct InMemoryClusterState {
     members: BTreeMap<ClusterNodeId, ClusterMember>,
     clients: BTreeMap<ClusterNodeId, ClusterMember>,
     events: Vec<ClusterMembershipEvent>,
+    ownership_resolutions: u64,
+    ownership_no_owner: u64,
 }
 
 /// In-process cluster model for tests, demos, and the first client/member API.
@@ -2041,8 +2102,18 @@ impl InMemoryCluster {
         key: impl AsRef<str>,
         resolver: &dyn ClusterOwnershipResolver,
     ) -> ClusterOwnershipDecision {
-        let members = self.members();
-        resolver.resolve_owner(key.as_ref(), &members)
+        let key = key.as_ref();
+        let members = {
+            let mut state = self.state.lock().expect("cluster state poisoned");
+            state.ownership_resolutions = state.ownership_resolutions.saturating_add(1);
+            state.members.values().cloned().collect::<Vec<_>>()
+        };
+        let decision = resolver.resolve_owner(key, &members);
+        if !decision.has_owner() {
+            let mut state = self.state.lock().expect("cluster state poisoned");
+            state.ownership_no_owner = state.ownership_no_owner.saturating_add(1);
+        }
+        decision
     }
 
     /// Return membership events recorded by the in-memory model.
@@ -2079,6 +2150,8 @@ impl InMemoryCluster {
             connected: true,
             invalidation_subscribers: self.invalidation_bus.receiver_count(),
             membership_subscribers: self.membership_events.receiver_count(),
+            ownership_resolutions: state.ownership_resolutions,
+            ownership_no_owner: state.ownership_no_owner,
         }
     }
 }
@@ -2897,6 +2970,13 @@ mod tests {
             None,
             "removing an already removed value is a no-op"
         );
+
+        let diagnostics = fetch.diagnostics();
+        assert_eq!(diagnostics.stored_values, 0);
+        assert_eq!(diagnostics.hits, 1);
+        assert_eq!(diagnostics.misses, 2);
+        assert_eq!(diagnostics.total_requests(), 3);
+        assert_eq!(diagnostics.hit_ratio(), Some(1.0 / 3.0));
     }
 
     #[test]
@@ -3405,6 +3485,8 @@ mod tests {
         assert_eq!(diagnostics.bootstrap, ["seed-a:7000".to_owned()]);
         assert!(diagnostics.connected);
         assert_eq!(diagnostics.invalidation_subscribers, 1);
+        assert_eq!(diagnostics.ownership_resolutions, 0);
+        assert_eq!(diagnostics.ownership_no_owner, 0);
         assert!(diagnostics.is_member_role());
         assert!(!diagnostics.is_client_role());
         assert!(!diagnostics.is_local_role());
@@ -3448,6 +3530,15 @@ mod tests {
         assert!(different_key.has_owner());
         assert!(["member-a", "member-b"]
             .contains(&different_key.owner_node_id().expect("owner").as_str()));
+
+        let diagnostics = cluster.diagnostics_for(
+            ClusterRole::Member,
+            ClusterNodeId::from("member-a"),
+            ClusterGeneration::default(),
+            Vec::new(),
+        );
+        assert_eq!(diagnostics.ownership_resolutions, 4);
+        assert_eq!(diagnostics.ownership_no_owner, 1);
     }
 
     #[test]
