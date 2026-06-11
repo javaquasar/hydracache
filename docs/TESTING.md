@@ -437,16 +437,32 @@ target\llvm-cov-html\html\index.html
 
 ## Current Coverage Expectation
 
-The current practical target is:
+The current practical target is split by surface area:
 
-- `100%` function coverage.
-- `100%` visible source-line coverage for project code.
-- `99%+` total line and region coverage in `cargo-llvm-cov` summary.
+- Reusable library crates should stay above `95%` line coverage.
+- Workspace coverage, including the non-published sandbox, should trend toward
+  `95%+` line coverage.
+- Visible uncovered source lines should be investigated before release.
 
-As of the `0.14.0` work, `cargo-llvm-cov` reports `100%` function coverage and
-`100%` visible source-line coverage for project code. Some remaining summary
-deltas can come from source-mapping or generated-region accounting even when the
-HTML/JSON reports do not show executable uncovered source lines.
+The `0.24.0` baseline measured on 2026-06-11 is:
+
+```text
+Regions:   91.44%
+Functions: 88.75%
+Lines:     92.24%
+```
+
+The largest current gaps are in the manual sandbox and cluster-adapter edge
+paths:
+
+- `crates/hydracache-sandbox/src/lib.rs`
+- `crates/hydracache/src/cluster.rs`
+- `crates/hydracache-cluster-chitchat/src/lib.rs`
+- `crates/hydracache-cluster-raft/src/lib.rs`
+- `crates/hydracache-cluster-transport-axum/src/lib.rs`
+
+See [the 0.25.0 coverage hardening plan](plans/V0_25_COVERAGE_HARDENING_PLAN.md)
+for the concrete improvement checklist.
 
 The `hydracache-macros` crate has one stable Rust tooling caveat to remember:
 exported proc-macro entrypoints are only valid inside a real procedural macro

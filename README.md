@@ -1676,9 +1676,10 @@ cargo test -p hydracache --test cluster_load_stability --locked -- --nocapture
 cargo test -p hydracache --test cluster_load_stability --locked -- --ignored --nocapture
 ```
 
-Coverage is tracked with `cargo-llvm-cov`. The current target is `100%`
-function coverage and `99%+` total line coverage, with visible uncovered source
-lines investigated before release.
+Coverage is tracked with `cargo-llvm-cov`. The current target is `95%+` line
+coverage for reusable library crates and a workspace trend toward `95%+`,
+including the intentionally broad manual sandbox. Visible uncovered source
+lines should be investigated before release.
 
 ## Which Crate Should I Use?
 
