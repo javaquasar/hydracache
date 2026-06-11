@@ -23,6 +23,33 @@ jobs:
       - name: Create consumer project
         run: cargo new hydracache-consumer --lib
 
+      - name: Create dependency-order smoke project
+        run: cargo new hydracache-order-smoke --lib
+
+      - name: Add published dependencies in package order
+        working-directory: hydracache-order-smoke
+        run: |
+          cargo add hydracache-core@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-macros@${{ inputs.version }}
+          cargo check
+          cargo add hydracache@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-cluster-chitchat@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-cluster-raft@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-cluster@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-observability@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-actuator-axum@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-db@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-sqlx@${{ inputs.version }}
+          cargo check
+
       - name: Add published dependencies
         working-directory: hydracache-consumer
         run: |
@@ -154,21 +181,57 @@ jobs:
 
               #[tokio::test]
               async fn published_cluster_ownership_and_peer_fetch_smoke_test() -> hydracache::CacheResult<()> {
-                  let cluster = hydracache::InMemoryCluster::new("orders");
-                  cluster.join_member(hydracache::ClusterCandidate::member("member-a"))?;
-                  cluster.join_member(hydracache::ClusterCandidate::member("member-b"))?;
+                  let empty = hydracache::InMemoryCluster::new("empty");
+                  let no_owner = empty.owner_for_key("user:42");
+                  assert!(!no_owner.has_owner());
+                  assert!(no_owner.peer_fetch_request().is_none());
+
+                  let cluster = Arc::new(hydracache::InMemoryCluster::new("orders"));
+                  let member_a = HydraCache::member()
+                      .shared_cluster(cluster.clone())
+                      .node_id("member-a")
+                      .start()
+                      .await?;
+                  let _member_b = HydraCache::member()
+                      .shared_cluster(cluster.clone())
+                      .node_id("member-b")
+                      .start()
+                      .await?;
 
                   let decision = cluster.owner_for_key("user:42");
                   assert!(decision.has_owner());
                   assert_eq!(decision.member_count, 2);
 
                   let request = decision.peer_fetch_request().unwrap();
+                  assert!(request.has_generation());
+                  assert!(request.matches_generation(request.generation.unwrap()));
+                  assert!(request
+                      .generation_mismatch(request.generation.unwrap().next())
+                      .is_some());
+
+                  let cluster_diagnostics = member_a.cluster_diagnostics().unwrap();
+                  assert_eq!(cluster_diagnostics.ownership_resolutions, 1);
+                  assert_eq!(cluster_diagnostics.ownership_no_owner, 0);
+
                   let fetch = hydracache::InMemoryPeerFetch::new();
                   fetch.put(request.owner.clone(), request.key.clone(), b"encoded-user".to_vec());
 
-                  let response = hydracache::ClusterPeerFetch::fetch(&fetch, request).await?;
+                  let response = hydracache::ClusterPeerFetch::fetch(&fetch, request.clone()).await?;
                   assert!(response.is_hit());
                   assert_eq!(response.value.unwrap().as_ref(), b"encoded-user");
+
+                  let missing = hydracache::ClusterPeerFetch::fetch(
+                      &fetch,
+                      hydracache::ClusterPeerFetchRequest::new(request.owner, "missing"),
+                  )
+                  .await?;
+                  assert!(missing.is_miss());
+
+                  let fetch_diagnostics = fetch.diagnostics();
+                  assert_eq!(fetch_diagnostics.hits, 1);
+                  assert_eq!(fetch_diagnostics.misses, 1);
+                  assert_eq!(fetch_diagnostics.total_requests(), 2);
+                  assert_eq!(fetch_diagnostics.hit_ratio(), Some(0.5));
 
                   Ok(())
               }
