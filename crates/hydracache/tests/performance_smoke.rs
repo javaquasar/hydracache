@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use hydracache::{CacheOptions, HydraCache};
+use hydracache::{CacheEventKind, CacheOptions, HydraCache};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Barrier;
 
@@ -29,6 +29,22 @@ struct PerfReport {
     elapsed: Duration,
 }
 
+#[derive(Debug)]
+struct EventPreflightReport {
+    scenario: &'static str,
+    events_published: u64,
+}
+
+impl EventPreflightReport {
+    fn emit(&self) {
+        eprintln!(
+            "event-preflight-smoke {scenario}: events_published={events_published}",
+            scenario = self.scenario,
+            events_published = self.events_published,
+        );
+    }
+}
+
 impl PerfReport {
     fn emit(&self) {
         eprintln!(
@@ -48,6 +64,72 @@ fn requests_per_second(requests: u64, elapsed: Duration) -> f64 {
     } else {
         requests as f64 / elapsed.as_secs_f64()
     }
+}
+
+#[tokio::test]
+async fn event_preflight_publishes_only_observed_event_classes() {
+    let no_subscriber = HydraCache::local().build();
+    no_subscriber
+        .put(
+            "event:no-subscriber",
+            PerfValue::new(1),
+            CacheOptions::new().tag("events"),
+        )
+        .await
+        .unwrap();
+    let cached: Option<PerfValue> = no_subscriber.get("event:no-subscriber").await.unwrap();
+    assert_eq!(cached, Some(PerfValue::new(1)));
+    assert_eq!(no_subscriber.stats().events_published, 0);
+    EventPreflightReport {
+        scenario: "no-subscriber",
+        events_published: no_subscriber.stats().events_published,
+    }
+    .emit();
+
+    let mutation_subscriber = HydraCache::local().build();
+    let mut mutation_events = mutation_subscriber.subscribe_mutations();
+    mutation_subscriber
+        .put(
+            "event:mutation",
+            PerfValue::new(2),
+            CacheOptions::new().tag("events"),
+        )
+        .await
+        .unwrap();
+    let event = mutation_events.recv().await.unwrap();
+    assert_eq!(event.kind(), CacheEventKind::Stored);
+    let cached: Option<PerfValue> = mutation_subscriber.get("event:mutation").await.unwrap();
+    assert_eq!(cached, Some(PerfValue::new(2)));
+    assert_eq!(mutation_subscriber.stats().events_published, 1);
+    EventPreflightReport {
+        scenario: "mutation-subscriber",
+        events_published: mutation_subscriber.stats().events_published,
+    }
+    .emit();
+
+    let disabled_access = HydraCache::local().build();
+    let _access_events = disabled_access.subscribe_access();
+    let cached: Option<PerfValue> = disabled_access.get("event:missing").await.unwrap();
+    assert_eq!(cached, None);
+    assert_eq!(disabled_access.stats().events_published, 0);
+    EventPreflightReport {
+        scenario: "access-subscriber-disabled",
+        events_published: disabled_access.stats().events_published,
+    }
+    .emit();
+
+    let enabled_access = HydraCache::local().enable_access_events(true).build();
+    let mut access_events = enabled_access.subscribe_access();
+    let cached: Option<PerfValue> = enabled_access.get("event:missing").await.unwrap();
+    assert_eq!(cached, None);
+    let event = access_events.recv().await.unwrap();
+    assert_eq!(event.kind(), CacheEventKind::Miss);
+    assert_eq!(enabled_access.stats().events_published, 1);
+    EventPreflightReport {
+        scenario: "access-subscriber-enabled",
+        events_published: enabled_access.stats().events_published,
+    }
+    .emit();
 }
 
 #[tokio::test]

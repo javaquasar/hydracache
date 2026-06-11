@@ -163,6 +163,72 @@ async fn profile_contains_key_metadata_hits() {
 
 #[tokio::test]
 #[ignore = "manual allocation profile; run with --ignored --nocapture"]
+async fn profile_event_preflight_modes() {
+    let _profile_guard = PROFILE_LOCK.lock().await;
+    let operations = 128;
+
+    let no_subscriber = HydraCache::local().build();
+    no_subscriber
+        .put(
+            "allocation:event:no-subscriber",
+            AllocationValue::new(10),
+            CacheOptions::new().tags(["allocation", "events"]),
+        )
+        .await
+        .unwrap();
+    start_counting();
+    for _ in 0..operations {
+        let cached: Option<AllocationValue> = no_subscriber
+            .get("allocation:event:no-subscriber")
+            .await
+            .unwrap();
+        assert_eq!(cached, Some(AllocationValue::new(10)));
+    }
+    finish_counting().emit("event-preflight-no-subscriber", operations);
+
+    let mutation_subscriber = HydraCache::local().build();
+    let _events = mutation_subscriber.subscribe_mutations();
+    mutation_subscriber
+        .put(
+            "allocation:event:mutation-subscriber",
+            AllocationValue::new(11),
+            CacheOptions::new().tags(["allocation", "events"]),
+        )
+        .await
+        .unwrap();
+    start_counting();
+    for _ in 0..operations {
+        let cached: Option<AllocationValue> = mutation_subscriber
+            .get("allocation:event:mutation-subscriber")
+            .await
+            .unwrap();
+        assert_eq!(cached, Some(AllocationValue::new(11)));
+    }
+    finish_counting().emit("event-preflight-mutation-subscriber", operations);
+
+    let access_subscriber = HydraCache::local().enable_access_events(true).build();
+    let _events = access_subscriber.subscribe_access();
+    access_subscriber
+        .put(
+            "allocation:event:access-subscriber",
+            AllocationValue::new(12),
+            CacheOptions::new().tags(["allocation", "events"]),
+        )
+        .await
+        .unwrap();
+    start_counting();
+    for _ in 0..operations {
+        let cached: Option<AllocationValue> = access_subscriber
+            .get("allocation:event:access-subscriber")
+            .await
+            .unwrap();
+        assert_eq!(cached, Some(AllocationValue::new(12)));
+    }
+    finish_counting().emit("event-preflight-access-subscriber", operations);
+}
+
+#[tokio::test]
+#[ignore = "manual allocation profile; run with --ignored --nocapture"]
 async fn profile_typed_hot_get_hits() {
     let _profile_guard = PROFILE_LOCK.lock().await;
     let cache = HydraCache::local().build();
