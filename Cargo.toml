@@ -55,7 +55,7 @@ serde_json = "1"
 slog = "2.7"
 sqlx = { version = "0.8", default-features = false }
 syn = { version = "2", features = ["full"] }
-testcontainers-modules = { version = "0.14.0", features = ["postgres"] }
+testcontainers-modules = { version = "0.15.0", features = ["postgres"] }
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
 tokio-stream = "0.1"

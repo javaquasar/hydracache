@@ -29,8 +29,8 @@ Current restored versions include:
 
 - `idna_adapter 1.2.2`
 - ICU `2.2.x`
-- `testcontainers-modules 0.14.0`
-- `testcontainers 0.26.3`
+- `testcontainers-modules 0.15.0`
+- `testcontainers 0.27.3`
 - `serde_with 3.20.0`
 - `home 0.5.12`
 

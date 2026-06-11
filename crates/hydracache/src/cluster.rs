@@ -1063,10 +1063,6 @@ pub struct ClusterDiagnostics {
     pub invalidation_subscribers: usize,
     /// Number of active cluster membership event subscribers.
     pub membership_subscribers: usize,
-    /// Number of ownership resolution attempts handled by this control plane.
-    pub ownership_resolutions: u64,
-    /// Number of ownership resolutions that found no admitted member owner.
-    pub ownership_no_owner: u64,
 }
 
 impl ClusterDiagnostics {
@@ -1128,6 +1124,48 @@ impl ClusterDiagnostics {
     /// Return whether this runtime appears connected to a usable cluster view.
     pub fn is_operational(&self) -> bool {
         self.connected && self.participant_count() > 0
+    }
+}
+
+/// Ownership diagnostics visible from a cluster control plane.
+///
+/// This is intentionally separate from [`ClusterDiagnostics`] so ownership
+/// counters can evolve without adding fields to the externally constructible
+/// runtime diagnostics snapshot.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct ClusterOwnershipDiagnostics {
+    /// Resolver name used by the control plane.
+    pub resolver: &'static str,
+    /// Number of ownership resolution attempts handled by this control plane.
+    pub resolutions: u64,
+    /// Number of ownership resolutions that found no admitted member owner.
+    pub no_owner: u64,
+}
+
+impl ClusterOwnershipDiagnostics {
+    /// Create an ownership diagnostics snapshot.
+    pub fn new(resolver: &'static str, resolutions: u64, no_owner: u64) -> Self {
+        Self {
+            resolver,
+            resolutions,
+            no_owner,
+        }
+    }
+
+    /// Number of ownership resolutions that selected an owner.
+    pub fn owner_found(&self) -> u64 {
+        self.resolutions.saturating_sub(self.no_owner)
+    }
+
+    /// Return whether any ownership resolution has been attempted.
+    pub fn has_resolutions(&self) -> bool {
+        self.resolutions > 0
+    }
+
+    /// Ratio of ownership resolutions that found an admitted owner.
+    pub fn owner_found_ratio(&self) -> Option<f64> {
+        (self.resolutions > 0).then(|| self.owner_found() as f64 / self.resolutions as f64)
     }
 }
 
@@ -1693,6 +1731,11 @@ pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
         generation: ClusterGeneration,
         bootstrap: Vec<String>,
     ) -> ClusterDiagnostics;
+
+    /// Return ownership-specific diagnostics for this control plane.
+    fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
+        ClusterOwnershipDiagnostics::new("unknown", 0, 0)
+    }
 }
 
 /// Metadata command committed by [`RaftStyleMetadataControlPlane`].
@@ -1929,6 +1972,10 @@ impl ClusterControlPlane for RaftStyleMetadataControlPlane {
         self.cluster
             .diagnostics_for(role, node_id, generation, bootstrap)
     }
+
+    fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
+        self.cluster.ownership_diagnostics()
+    }
 }
 
 #[derive(Debug, Default)]
@@ -2116,6 +2163,16 @@ impl InMemoryCluster {
         decision
     }
 
+    /// Return ownership diagnostics for this in-memory model.
+    pub fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
+        let state = self.state.lock().expect("cluster state poisoned");
+        ClusterOwnershipDiagnostics::new(
+            RendezvousClusterOwnership.name(),
+            state.ownership_resolutions,
+            state.ownership_no_owner,
+        )
+    }
+
     /// Return membership events recorded by the in-memory model.
     pub fn events(&self) -> Vec<ClusterMembershipEvent> {
         self.state
@@ -2150,8 +2207,6 @@ impl InMemoryCluster {
             connected: true,
             invalidation_subscribers: self.invalidation_bus.receiver_count(),
             membership_subscribers: self.membership_events.receiver_count(),
-            ownership_resolutions: state.ownership_resolutions,
-            ownership_no_owner: state.ownership_no_owner,
         }
     }
 }
@@ -2202,6 +2257,10 @@ impl ClusterControlPlane for InMemoryCluster {
         bootstrap: Vec<String>,
     ) -> ClusterDiagnostics {
         InMemoryCluster::diagnostics_for(self, role, node_id, generation, bootstrap)
+    }
+
+    fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
+        InMemoryCluster::ownership_diagnostics(self)
     }
 }
 
@@ -2326,6 +2385,10 @@ impl ClusterRuntime {
             self.generation,
             self.bootstrap.clone(),
         )
+    }
+
+    pub(crate) fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
+        self.control_plane.ownership_diagnostics()
     }
 
     pub(crate) fn discovery_diagnostics(&self) -> Option<ClusterDiscoveryDiagnostics> {
@@ -3485,8 +3548,6 @@ mod tests {
         assert_eq!(diagnostics.bootstrap, ["seed-a:7000".to_owned()]);
         assert!(diagnostics.connected);
         assert_eq!(diagnostics.invalidation_subscribers, 1);
-        assert_eq!(diagnostics.ownership_resolutions, 0);
-        assert_eq!(diagnostics.ownership_no_owner, 0);
         assert!(diagnostics.is_member_role());
         assert!(!diagnostics.is_client_role());
         assert!(!diagnostics.is_local_role());
@@ -3499,6 +3560,14 @@ mod tests {
         assert!(!diagnostics.has_membership_subscribers());
         assert!(!diagnostics.has_multiple_participants());
         assert!(diagnostics.is_operational());
+
+        let ownership = cluster.ownership_diagnostics();
+        assert_eq!(ownership.resolver, "rendezvous");
+        assert_eq!(ownership.resolutions, 0);
+        assert_eq!(ownership.no_owner, 0);
+        assert_eq!(ownership.owner_found(), 0);
+        assert!(!ownership.has_resolutions());
+        assert_eq!(ownership.owner_found_ratio(), None);
     }
 
     #[test]
@@ -3531,14 +3600,11 @@ mod tests {
         assert!(["member-a", "member-b"]
             .contains(&different_key.owner_node_id().expect("owner").as_str()));
 
-        let diagnostics = cluster.diagnostics_for(
-            ClusterRole::Member,
-            ClusterNodeId::from("member-a"),
-            ClusterGeneration::default(),
-            Vec::new(),
-        );
-        assert_eq!(diagnostics.ownership_resolutions, 4);
-        assert_eq!(diagnostics.ownership_no_owner, 1);
+        let diagnostics = cluster.ownership_diagnostics();
+        assert_eq!(diagnostics.resolutions, 4);
+        assert_eq!(diagnostics.no_owner, 1);
+        assert_eq!(diagnostics.owner_found(), 3);
+        assert_eq!(diagnostics.owner_found_ratio(), Some(0.75));
     }
 
     #[test]

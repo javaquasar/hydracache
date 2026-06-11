@@ -74,9 +74,9 @@ use hydracache::{
     ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
     ClusterCandidate, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
     ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent, ClusterOwnershipDecision,
-    ClusterPeerFetch, ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole,
-    HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
-    InMemoryPeerFetch, RaftMetadataCommand,
+    ClusterOwnershipDiagnostics, ClusterPeerFetch, ClusterPeerFetchDiagnostics,
+    ClusterPeerFetchResponse, ClusterRole, HydraCache, InMemoryCluster, InMemoryClusterDiscovery,
+    InMemoryInvalidationBus, InMemoryPeerFetch, RaftMetadataCommand,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
@@ -6633,20 +6633,23 @@ async fn run_cluster_ownership_demo_with_request(
     let remote_event = recv_listener_event("client", &mut client_remote_events).await?;
     let client_contains_after_owner_invalidation = client.contains_key(&key).await;
 
-    let member_a_report = cluster_runtime_report(
+    let member_a_report = cluster_runtime_report_with_ownership(
         member_a
             .cluster_diagnostics()
             .expect("member-a diagnostics"),
+        member_a.cluster_ownership_diagnostics(),
     );
-    let member_b_report = cluster_runtime_report(
+    let member_b_report = cluster_runtime_report_with_ownership(
         member_b
             .cluster_diagnostics()
             .expect("member-b diagnostics"),
+        member_b.cluster_ownership_diagnostics(),
     );
-    let client_report = cluster_runtime_report(
+    let client_report = cluster_runtime_report_with_ownership(
         client
             .cluster_diagnostics()
             .expect("client cluster diagnostics"),
+        client.cluster_ownership_diagnostics(),
     );
     let owner_report = cluster_ownership_decision_report(&owner_decision);
     let peer_fetch_report = cluster_peer_fetch_report(&peer_fetch_response);
@@ -6885,22 +6888,25 @@ async fn run_cluster_ownership_transfer_demo_with_request(
     let peer_fetch_diagnostics = peer_fetch_diagnostics_report(peer_fetch.diagnostics());
 
     let survivor_after_leave = if survivor_id == member_a_id {
-        cluster_runtime_report(
+        cluster_runtime_report_with_ownership(
             member_a
                 .cluster_diagnostics()
                 .expect("survivor member-a diagnostics"),
+            member_a.cluster_ownership_diagnostics(),
         )
     } else {
-        cluster_runtime_report(
+        cluster_runtime_report_with_ownership(
             member_b
                 .cluster_diagnostics()
                 .expect("survivor member-b diagnostics"),
+            member_b.cluster_ownership_diagnostics(),
         )
     };
-    let client_after_transfer = cluster_runtime_report(
+    let client_after_transfer = cluster_runtime_report_with_ownership(
         client
             .cluster_diagnostics()
             .expect("client cluster diagnostics after transfer"),
+        client.cluster_ownership_diagnostics(),
     );
 
     let rejoined = HydraCache::member()
@@ -6911,10 +6917,11 @@ async fn run_cluster_ownership_transfer_demo_with_request(
         .start()
         .await?;
     let after_rejoin_decision = cluster.owner_for_key(&key);
-    let rejoined_owner = cluster_runtime_report(
+    let rejoined_owner = cluster_runtime_report_with_ownership(
         rejoined
             .cluster_diagnostics()
             .expect("rejoined owner diagnostics"),
+        rejoined.cluster_ownership_diagnostics(),
     );
 
     let initial_owner = cluster_ownership_decision_report(&initial_decision);
@@ -7281,6 +7288,13 @@ async fn wait_for_chitchat_candidate(
 }
 
 fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeReport {
+    cluster_runtime_report_with_ownership(diagnostics, None)
+}
+
+fn cluster_runtime_report_with_ownership(
+    diagnostics: ClusterDiagnostics,
+    ownership: Option<ClusterOwnershipDiagnostics>,
+) -> ClusterRuntimeReport {
     let participant_count = diagnostics.participant_count();
     let bootstrap_count = diagnostics.bootstrap_count();
     let has_members = diagnostics.has_members();
@@ -7290,6 +7304,14 @@ fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeRepo
     let has_membership_subscribers = diagnostics.has_membership_subscribers();
     let has_multiple_participants = diagnostics.has_multiple_participants();
     let operational = diagnostics.is_operational();
+    let ownership_resolutions = ownership
+        .as_ref()
+        .map(|diagnostics| diagnostics.resolutions)
+        .unwrap_or(0);
+    let ownership_no_owner = ownership
+        .as_ref()
+        .map(|diagnostics| diagnostics.no_owner)
+        .unwrap_or(0);
 
     ClusterRuntimeReport {
         cluster: diagnostics.cluster_name,
@@ -7303,8 +7325,8 @@ fn cluster_runtime_report(diagnostics: ClusterDiagnostics) -> ClusterRuntimeRepo
         connected: diagnostics.connected,
         invalidation_subscribers: diagnostics.invalidation_subscribers,
         membership_subscribers: diagnostics.membership_subscribers,
-        ownership_resolutions: diagnostics.ownership_resolutions,
-        ownership_no_owner: diagnostics.ownership_no_owner,
+        ownership_resolutions,
+        ownership_no_owner,
         bootstrap_count,
         has_members,
         has_clients,

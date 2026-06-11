@@ -202,6 +202,9 @@ cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --doc --workspace --locked
 Set-Item -Path Env:RUSTDOCFLAGS -Value '-D warnings'; cargo doc --workspace --no-deps --locked
 cargo llvm-cov --workspace --all-targets --locked --summary-only
+cargo semver-checks -p hydracache --baseline-version 0.20.0 --release-type minor --all-features
+cargo audit --ignore RUSTSEC-2024-0437
+cargo deny check
 
 cargo +1.88.0 check --workspace --all-targets --locked
 cargo +1.88.0 test --workspace --locked
@@ -236,6 +239,11 @@ cargo publish -p hydracache-db
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
+
+For `0.21.0` and later, also run the full SemVer sweep from
+[TESTING.md](TESTING.md) across publishable non-macro crates. The
+`hydracache-macros` crate is validated through macro unit tests and `trybuild`
+because `cargo-semver-checks` cannot inspect a proc-macro-only API surface.
 
 Then tag and push the new version:
 
@@ -327,6 +335,11 @@ Rust and is not part of the stable release gate.
 
 The previous Rust `1.85` dependency pins are documented historically in
 [TD-0001](technical-debt/TD-0001-msrv-pinned-sqlx-transitive-dependencies.md).
+
+The current audit exception for `RUSTSEC-2024-0437` is documented in
+[TD-0002](technical-debt/TD-0002-raft-protobuf-advisory.md). It comes from
+`raft 0.7.0` and should be revisited before production remote-value routing or
+a `1.0` compatibility review.
 
 ## Git Tags
 

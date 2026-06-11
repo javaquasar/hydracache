@@ -17,8 +17,8 @@ use tokio::sync::watch;
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
     ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent,
-    ClusterMembershipSubscriber, ClusterNodeId, ClusterRuntime, HydraCacheClientBuilder,
-    HydraCacheMemberBuilder,
+    ClusterMembershipSubscriber, ClusterNodeId, ClusterOwnershipDiagnostics, ClusterRuntime,
+    HydraCacheClientBuilder, HydraCacheMemberBuilder,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -177,6 +177,43 @@ where
             .cluster_runtime
             .as_ref()
             .map(ClusterRuntime::diagnostics)
+    }
+
+    /// Return ownership diagnostics when this cache was built as a client or member.
+    ///
+    /// Local caches return `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use hydracache::{HydraCache, InMemoryCluster};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cluster = Arc::new(InMemoryCluster::new("orders"));
+    /// let member = HydraCache::member()
+    ///     .shared_cluster(cluster.clone())
+    ///     .node_id("member-a")
+    ///     .start()
+    ///     .await?;
+    ///
+    /// let _owner = cluster.owner_for_key("user:42");
+    /// let ownership = member
+    ///     .cluster_ownership_diagnostics()
+    ///     .expect("cluster runtime");
+    ///
+    /// assert_eq!(ownership.resolver, "rendezvous");
+    /// assert_eq!(ownership.resolutions, 1);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn cluster_ownership_diagnostics(&self) -> Option<ClusterOwnershipDiagnostics> {
+        self.inner
+            .cluster_runtime
+            .as_ref()
+            .map(ClusterRuntime::ownership_diagnostics)
     }
 
     /// Return discovery diagnostics when this cache was built with discovery.

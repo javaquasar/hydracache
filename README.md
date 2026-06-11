@@ -788,6 +788,23 @@ assert!(response.is_hit());
 The in-memory implementation is for tests, demos, and sandbox reports. Real
 network peer fetch and owner-side query execution remain future work.
 
+Ownership counters live in a separate diagnostics snapshot so the original
+`ClusterDiagnostics` struct can remain backwards-compatible for users that
+construct it in tests:
+
+```rust
+# use hydracache::{ClusterCandidate, InMemoryCluster};
+let cluster = InMemoryCluster::new("orders");
+cluster.join_member(ClusterCandidate::member("member-a"))?;
+let _owner = cluster.owner_for_key("user:42");
+
+let ownership = cluster.ownership_diagnostics();
+assert_eq!(ownership.resolver, "rendezvous");
+assert_eq!(ownership.resolutions, 1);
+assert_eq!(ownership.owner_found(), 1);
+# Ok::<(), hydracache::CacheError>(())
+```
+
 ## Cluster Support Boundaries
 
 The current `0.21.x` cluster support is intentionally an embedded coordination
@@ -817,6 +834,24 @@ This boundary is deliberate: applications can adopt local caching, explicit
 invalidation, DB result caching, and cluster-aware diagnostics now, while the
 future remote-value layer can evolve behind the existing ownership and
 peer-fetch seams.
+
+## Upgrading From 0.20 To 0.21
+
+The local cache, DB adapter, listener, and macro APIs remain source-compatible.
+The main additions are cluster-facing:
+
+- `hydracache-cluster-chitchat`, `hydracache-cluster-raft`, and
+  `hydracache-cluster` are now included in the normal publish/post-publish
+  verification flow.
+- `InMemoryCluster::owner_for_key(...)` and `ClusterPeerFetch` provide the
+  first ownership and encoded-byte peer-fetch seams.
+- `HydraCache::cluster_ownership_diagnostics()` exposes ownership counters
+  without adding fields to the existing `ClusterDiagnostics` struct.
+- The sandbox includes ownership and ownership-transfer labs for manual checks.
+
+If you publish or validate from source, run the staged package checks from
+`docs/PUBLISHING.md` because downstream crates can only package after freshly
+published HydraCache dependencies are visible in the crates.io index.
 
 Client/member caches can also observe authoritative membership changes through
 `subscribe_cluster_membership()`. The stream is bounded and non-blocking:
@@ -1133,6 +1168,32 @@ Cluster lifecycle demo payload:
   "value": "Ada",
   "flow_id": "cluster-flow"
 }
+```
+
+Cluster ownership demo with `curl`:
+
+```bash
+curl -X POST http://127.0.0.1:3000/demo/cluster/ownership/run \
+  -H "content-type: application/json" \
+  -d '{"cluster":"manual-ownership","key":"manual:user:42","tag":"manual-users","value":"Ada","flow_id":"manual-ownership"}'
+```
+
+The same ownership-transfer scenario from PowerShell:
+
+```powershell
+$body = @{
+  cluster = 'manual-transfer'
+  key = 'manual:user:42'
+  tag = 'manual-users'
+  value = 'Ada'
+  flow_id = 'manual-transfer'
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri 'http://127.0.0.1:3000/demo/cluster/ownership-transfer/run' `
+  -ContentType 'application/json' `
+  -Body $body
 ```
 
 `/demo/report` returns a cumulative application report with active profile,

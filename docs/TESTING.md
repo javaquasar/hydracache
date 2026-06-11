@@ -24,7 +24,46 @@ cargo test --workspace --all-targets --locked
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --doc --workspace --locked
 cargo doc --workspace --no-deps --locked
+cargo semver-checks -p hydracache --baseline-version 0.20.0 --release-type minor --all-features
+cargo audit --ignore RUSTSEC-2024-0437
+cargo deny check
 ```
+
+For a full published-crate SemVer sweep, run:
+
+```powershell
+$semverPackages = @(
+  'hydracache-core',
+  'hydracache',
+  'hydracache-cluster-chitchat',
+  'hydracache-cluster-raft',
+  'hydracache-cluster',
+  'hydracache-observability',
+  'hydracache-actuator-axum',
+  'hydracache-db',
+  'hydracache-sqlx'
+)
+
+foreach ($package in $semverPackages) {
+  cargo semver-checks -p $package --baseline-version 0.20.0 --release-type minor --all-features
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+```
+
+`hydracache-macros` is a proc-macro crate, so `cargo-semver-checks` reports no
+ordinary library target for it. Keep covering it with unit tests, doctests where
+applicable, and `trybuild` compile-pass/compile-fail tests.
+
+`cargo audit` ignores `RUSTSEC-2024-0437` only because `raft 0.7.0` depends on
+`protobuf 2.x` unconditionally and the `prost-codec` path requires local
+`protoc`. The rationale is tracked in
+[`TD-0002`](technical-debt/TD-0002-raft-protobuf-advisory.md). Do not add new
+ignored advisories without a matching technical-debt note.
+
+`cargo semver-checks` is especially useful for public structs. In `0.21.0` it
+caught that adding ownership fields to `ClusterDiagnostics` would break
+downstream struct literals, so ownership counters are exposed through
+`ClusterOwnershipDiagnostics` instead.
 
 Before publishing, also package publishable crates in dependency-order stages:
 
