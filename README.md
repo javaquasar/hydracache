@@ -761,6 +761,30 @@ assert_eq!(owner.resolver, "rendezvous");
 The default resolver uses stable rendezvous-style hashing over the key and
 member node id. Clients are ignored; only admitted members can own keys.
 
+`ClusterPeerFetch` is the matching transport-neutral seam for the next phase.
+It works with encoded bytes, so it does not force a specific database adapter,
+codec, or serialization format:
+
+```rust
+use bytes::Bytes;
+use hydracache::{ClusterPeerFetch, ClusterPeerFetchRequest, InMemoryPeerFetch};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let peer_fetch = InMemoryPeerFetch::new();
+peer_fetch.put("member-a", "user:42", Bytes::from_static(b"encoded-user"));
+
+let response = peer_fetch
+    .fetch(ClusterPeerFetchRequest::new("member-a", "user:42"))
+    .await?;
+
+assert!(response.is_hit());
+# Ok(())
+# }
+```
+
+The in-memory implementation is for tests, demos, and sandbox reports. Real
+network peer fetch and owner-side query execution remain future work.
+
 Client/member caches can also observe authoritative membership changes through
 `subscribe_cluster_membership()`. The stream is bounded and non-blocking:
 admission never waits for slow subscribers, and slow consumers receive a lag

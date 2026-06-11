@@ -4,6 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use bytes::Bytes;
 use hydracache_core::{CacheCodec, CacheError, PostcardCodec, Result};
 
 use crate::builder::HydraCacheBuilder;
@@ -287,6 +288,14 @@ impl ClusterOwnershipDecision {
     pub fn owner_generation(&self) -> Option<ClusterGeneration> {
         self.owner.as_ref().map(|owner| owner.generation)
     }
+
+    /// Build a peer-fetch request for this decision, if it has an owner.
+    pub fn peer_fetch_request(&self) -> Option<ClusterPeerFetchRequest> {
+        self.owner.as_ref().map(|owner| {
+            ClusterPeerFetchRequest::new(owner.node_id.clone(), self.key.clone())
+                .generation(owner.generation)
+        })
+    }
 }
 
 /// Strategy for mapping cache keys to admitted cluster members.
@@ -354,6 +363,144 @@ fn rendezvous_score(key: &str, node_id: &ClusterNodeId) -> u64 {
         hash = hash.wrapping_mul(FNV_PRIME);
     }
     hash
+}
+
+/// Request for fetching an encoded cache value from an owner member.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterPeerFetchRequest {
+    /// Owner member expected to serve this request.
+    pub owner: ClusterNodeId,
+    /// Logical cache key requested from the owner.
+    pub key: String,
+    /// Optional owner generation observed by the caller.
+    pub generation: Option<ClusterGeneration>,
+}
+
+impl ClusterPeerFetchRequest {
+    /// Create a new peer-fetch request.
+    pub fn new(owner: impl Into<ClusterNodeId>, key: impl Into<String>) -> Self {
+        Self {
+            owner: owner.into(),
+            key: key.into(),
+            generation: None,
+        }
+    }
+
+    /// Attach the owner generation observed by the caller.
+    pub fn generation(mut self, generation: ClusterGeneration) -> Self {
+        self.generation = Some(generation);
+        self
+    }
+}
+
+/// Response returned by a peer-fetch implementation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterPeerFetchResponse {
+    /// Owner member that served or attempted to serve the request.
+    pub owner: ClusterNodeId,
+    /// Logical cache key requested from the owner.
+    pub key: String,
+    /// Encoded cache value, when the owner had it.
+    pub value: Option<Bytes>,
+}
+
+impl ClusterPeerFetchResponse {
+    /// Create a cache-hit response.
+    pub fn hit(owner: impl Into<ClusterNodeId>, key: impl Into<String>, value: Bytes) -> Self {
+        Self {
+            owner: owner.into(),
+            key: key.into(),
+            value: Some(value),
+        }
+    }
+
+    /// Create a cache-miss response.
+    pub fn miss(owner: impl Into<ClusterNodeId>, key: impl Into<String>) -> Self {
+        Self {
+            owner: owner.into(),
+            key: key.into(),
+            value: None,
+        }
+    }
+
+    /// Return whether the owner returned a value.
+    pub fn is_hit(&self) -> bool {
+        self.value.is_some()
+    }
+
+    /// Return whether the owner did not have the requested value.
+    pub fn is_miss(&self) -> bool {
+        self.value.is_none()
+    }
+}
+
+/// Transport-neutral peer-fetch seam for future owner-side value loading.
+#[async_trait::async_trait]
+pub trait ClusterPeerFetch: Send + Sync {
+    /// Fetch an encoded value from the requested owner.
+    async fn fetch(&self, request: ClusterPeerFetchRequest) -> Result<ClusterPeerFetchResponse>;
+}
+
+/// In-memory peer-fetch implementation for tests, demos, and sandbox reports.
+#[derive(Debug, Clone, Default)]
+pub struct InMemoryPeerFetch {
+    values: Arc<Mutex<BTreeMap<(ClusterNodeId, String), Bytes>>>,
+}
+
+impl InMemoryPeerFetch {
+    /// Create an empty in-memory peer-fetch registry.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Store an encoded value for an owner/key pair.
+    pub fn put(
+        &self,
+        owner: impl Into<ClusterNodeId>,
+        key: impl Into<String>,
+        value: impl Into<Bytes>,
+    ) {
+        self.values
+            .lock()
+            .expect("peer fetch state poisoned")
+            .insert((owner.into(), key.into()), value.into());
+    }
+
+    /// Remove an encoded value for an owner/key pair.
+    pub fn remove(&self, owner: &ClusterNodeId, key: &str) -> Option<Bytes> {
+        self.values
+            .lock()
+            .expect("peer fetch state poisoned")
+            .remove(&(owner.clone(), key.to_owned()))
+    }
+
+    /// Return the number of stored owner/key values.
+    pub fn len(&self) -> usize {
+        self.values.lock().expect("peer fetch state poisoned").len()
+    }
+
+    /// Return whether no values are stored.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterPeerFetch for InMemoryPeerFetch {
+    async fn fetch(&self, request: ClusterPeerFetchRequest) -> Result<ClusterPeerFetchResponse> {
+        let value = self
+            .values
+            .lock()
+            .expect("peer fetch state poisoned")
+            .get(&(request.owner.clone(), request.key.clone()))
+            .cloned();
+
+        Ok(ClusterPeerFetchResponse {
+            owner: request.owner,
+            key: request.key,
+            value,
+        })
+    }
 }
 
 /// Event emitted by discovery before authoritative admission.
@@ -2500,9 +2647,11 @@ mod tests {
         ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
         ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
         ClusterMembershipEvent, ClusterMembershipEventBus, ClusterMembershipRecvError,
-        ClusterNodeId, ClusterOwnershipResolver, ClusterRole, InMemoryCluster,
-        InMemoryClusterDiscovery, RendezvousClusterOwnership,
+        ClusterNodeId, ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterPeerFetch,
+        ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, InMemoryCluster,
+        InMemoryClusterDiscovery, InMemoryPeerFetch, RendezvousClusterOwnership,
     };
+    use bytes::Bytes;
 
     #[test]
     fn node_id_formats_and_converts_from_strings() {
@@ -2609,6 +2758,64 @@ mod tests {
         assert!(!decision.has_owner());
         assert!(decision.owner_node_id().is_none());
         assert!(decision.owner_generation().is_none());
+        assert!(decision.peer_fetch_request().is_none());
+    }
+
+    #[tokio::test]
+    async fn ownership_decision_builds_peer_fetch_request_for_owner() {
+        let member = ClusterMember::from_candidate(
+            ClusterCandidate::member("member-a").generation(ClusterGeneration::new(3)),
+            ClusterEpoch::new(1),
+        );
+        let decision = ClusterOwnershipDecision {
+            key: "user:42".to_owned(),
+            owner: Some(member),
+            member_count: 1,
+            resolver: "test",
+        };
+
+        let request = decision.peer_fetch_request().expect("owner exists");
+
+        assert_eq!(request.owner.as_str(), "member-a");
+        assert_eq!(request.key, "user:42");
+        assert_eq!(request.generation, Some(ClusterGeneration::new(3)));
+    }
+
+    #[tokio::test]
+    async fn in_memory_peer_fetch_returns_hits_misses_and_removes_values() {
+        let fetch = InMemoryPeerFetch::new();
+        let owner = ClusterNodeId::from("member-a");
+
+        assert!(fetch.is_empty());
+        fetch.put(owner.clone(), "user:42", Bytes::from_static(b"encoded"));
+        assert_eq!(fetch.len(), 1);
+
+        let hit = fetch
+            .fetch(ClusterPeerFetchRequest::new(owner.clone(), "user:42"))
+            .await
+            .unwrap();
+        assert_eq!(
+            hit,
+            ClusterPeerFetchResponse::hit(owner.clone(), "user:42", Bytes::from_static(b"encoded"))
+        );
+        assert!(hit.is_hit());
+        assert!(!hit.is_miss());
+
+        let missing = fetch
+            .fetch(ClusterPeerFetchRequest::new(owner.clone(), "user:99"))
+            .await
+            .unwrap();
+        assert!(missing.is_miss());
+        assert_eq!(
+            missing,
+            ClusterPeerFetchResponse::miss(owner.clone(), "user:99")
+        );
+
+        assert_eq!(
+            fetch.remove(&owner, "user:42"),
+            Some(Bytes::from_static(b"encoded"))
+        );
+        assert!(fetch.is_empty());
     }
 
     #[test]
