@@ -674,6 +674,36 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
     })
 }
 
+/// Build the startup banner printed by the sandbox binary.
+///
+/// The binary stays intentionally thin, while this helper keeps the visible
+/// startup text testable without launching the long-lived HTTP server.
+///
+/// # Example
+///
+/// ```
+/// use hydracache_sandbox::{startup_messages, SandboxConfig};
+///
+/// let config = SandboxConfig::default();
+/// let messages = startup_messages(&config);
+///
+/// assert!(messages[0].contains("HydraCache sandbox listening"));
+/// assert!(messages.iter().any(|line| line.contains("Swagger UI")));
+/// ```
+pub fn startup_messages(config: &SandboxConfig) -> Vec<String> {
+    let bind = config.bind;
+    let profile = config.profile.label();
+    let backend = config.backend.label();
+
+    vec![
+        format!("HydraCache sandbox listening on http://{bind}"),
+        format!("Profile: {profile}"),
+        format!("Backend: {backend}"),
+        format!("Swagger UI: http://{bind}/swagger-ui"),
+        format!("Actuator health: http://{bind}/actuator/hydracache/health"),
+    ]
+}
+
 async fn build_sandbox_state(
     config: SandboxConfig,
 ) -> Result<(SandboxState, Option<ContainerAsync<postgres::Postgres>>), SandboxError> {
@@ -10872,6 +10902,34 @@ mod tests {
         .unwrap();
         assert_eq!(document.name, "helper-yaml");
         assert_eq!(document.steps.len(), 1);
+    }
+
+    #[test]
+    fn startup_messages_describe_manual_sandbox_entrypoints() {
+        let config = SandboxConfig::from_args([
+            "sandbox",
+            "--backend",
+            "sqlite-file",
+            "--sqlite-path",
+            "target/startup.sqlite",
+            "--bind",
+            "127.0.0.1:3555",
+        ])
+        .unwrap();
+
+        let messages = super::startup_messages(&config);
+
+        assert_eq!(
+            messages[0],
+            "HydraCache sandbox listening on http://127.0.0.1:3555"
+        );
+        assert_eq!(messages[1], "Profile: sqlite-file");
+        assert!(messages[2].starts_with("Backend: sqlite-file:"));
+        assert_eq!(messages[3], "Swagger UI: http://127.0.0.1:3555/swagger-ui");
+        assert_eq!(
+            messages[4],
+            "Actuator health: http://127.0.0.1:3555/actuator/hydracache/health"
+        );
     }
 
     #[test]
