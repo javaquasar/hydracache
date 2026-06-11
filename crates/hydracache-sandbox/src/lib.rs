@@ -32,6 +32,7 @@
 //! http://127.0.0.1:3000/demo/report
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/events/summary
+//! http://127.0.0.1:3000/demo/events/preflight/run
 //! http://127.0.0.1:3000/demo/export
 //! http://127.0.0.1:3000/demo/scenarios/run
 //! http://127.0.0.1:3000/demo/scenarios/files
@@ -594,6 +595,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/events", get(events))
         .route("/demo/events/summary", get(events_summary))
         .route("/demo/events/clear", post(clear_events))
+        .route("/demo/events/preflight/run", post(run_event_preflight_demo))
         .route("/demo/listeners/run", post(run_listener_demo))
         .route(
             "/demo/distributed/invalidation/run",
@@ -2159,6 +2161,13 @@ struct ListenerDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"flow_id": "event-preflight-flow"}))]
+struct EventPreflightDemoRequest {
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"key": "dist:user:42", "tag": "dist-users", "value": "cached-user", "flow_id": "distributed-flow"}))]
 struct DistributedInvalidationDemoRequest {
     #[serde(default)]
@@ -2426,6 +2435,28 @@ struct ListenerDemoResponse {
     key_events: Vec<ListenerEventReport>,
     tag_events: Vec<ListenerEventReport>,
     callback_events: Vec<ListenerEventReport>,
+    diagnostics: DemoDiagnostics,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct EventPreflightScenarioReport {
+    scenario: &'static str,
+    description: &'static str,
+    subscriber: &'static str,
+    access_events_enabled: bool,
+    operation: &'static str,
+    expected_events_published: u64,
+    actual_events_published: u64,
+    observed_kinds: Vec<String>,
+    passed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct EventPreflightDemoResponse {
+    flow_id: String,
+    passed: bool,
+    scenarios: Vec<EventPreflightScenarioReport>,
     diagnostics: DemoDiagnostics,
     events: EventLogResponse,
 }
@@ -3276,6 +3307,15 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
                 "loader_value": "beta",
                 "ttl_ms": 5000,
                 "flow_id": "listener-flow"
+            })),
+        },
+        ScenarioPreset {
+            name: "event-preflight",
+            method: "POST",
+            path: "/demo/events/preflight/run",
+            description: "Show that unobserved event classes do not publish payloads on the cache hot path.",
+            body: Some(json!({
+                "flow_id": "event-preflight-flow"
             })),
         },
         ScenarioPreset {
@@ -5856,6 +5896,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
+        "/demo/events/preflight/run".to_owned(),
         "/demo/import".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
         "/demo/query/orders/{id}/summary/load".to_owned(),
@@ -5887,6 +5928,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "scenarioCatalog()",
         "runScenarioSuiteFile(path",
         "eventSummary()",
+        "runEventPreflight(",
         "compareBenchmarks(baseline, candidate)",
         "flows()",
         "replayFlow(flowId",
@@ -5906,6 +5948,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/scenarios/suite/file/run",
         "/demo/benchmarks/compare",
         "/demo/events/summary",
+        "/demo/events/preflight/run",
         "/demo/cluster/routed-peer-fetch/run",
         "/demo/cluster/read-through/run",
         "/demo/cluster/owner-load/run",
@@ -6282,6 +6325,22 @@ async fn cache_invalidate_tag(
         removed,
         diagnostics: diagnostics(&state).await,
     }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/events/preflight/run",
+    tag = "listeners",
+    request_body = EventPreflightDemoRequest,
+    responses((status = 200, description = "Run an event preflight demo showing which event classes are published", body = EventPreflightDemoResponse))
+)]
+async fn run_event_preflight_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<EventPreflightDemoRequest>,
+) -> Result<Json<EventPreflightDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_event_preflight_demo_with_request(&state, request).await?,
+    ))
 }
 
 #[utoipa::path(
@@ -9020,6 +9079,137 @@ fn cluster_timeline_step(
     }
 }
 
+async fn run_event_preflight_demo_with_request(
+    state: &SandboxState,
+    request: EventPreflightDemoRequest,
+) -> Result<EventPreflightDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "event-preflight-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let idle = Duration::from_millis(15);
+
+    let no_subscriber = HydraCache::local().build();
+    no_subscriber
+        .put(
+            "preflight:no-subscriber",
+            "alpha".to_owned(),
+            CacheOptions::new().tag("preflight"),
+        )
+        .await?;
+    let value: Option<String> = no_subscriber.get("preflight:no-subscriber").await?;
+    let no_subscriber_report = EventPreflightScenarioReport {
+        scenario: "no-subscriber",
+        description: "No event payloads are published when no subscriber exists.",
+        subscriber: "none",
+        access_events_enabled: false,
+        operation: "put + get-hit",
+        expected_events_published: 0,
+        actual_events_published: no_subscriber.stats().events_published,
+        observed_kinds: Vec::new(),
+        passed: value.as_deref() == Some("alpha") && no_subscriber.stats().events_published == 0,
+    };
+
+    let mutation_cache = HydraCache::local().build();
+    let mut mutation_events = mutation_cache.subscribe_mutations();
+    mutation_cache
+        .put(
+            "preflight:mutation",
+            "beta".to_owned(),
+            CacheOptions::new().tag("preflight"),
+        )
+        .await?;
+    let value: Option<String> = mutation_cache.get("preflight:mutation").await?;
+    let mutation_reports =
+        drain_cache_listener_events("mutation", &mut mutation_events, idle).await;
+    let mutation_observed = listener_kinds(&mutation_reports);
+    let mutation_report = EventPreflightScenarioReport {
+        scenario: "mutation-subscriber",
+        description:
+            "Mutation subscribers receive mutation events while disabled access events stay quiet.",
+        subscriber: "mutations",
+        access_events_enabled: false,
+        operation: "put + get-hit",
+        expected_events_published: 1,
+        actual_events_published: mutation_cache.stats().events_published,
+        observed_kinds: mutation_observed.clone(),
+        passed: value.as_deref() == Some("beta")
+            && mutation_cache.stats().events_published == 1
+            && mutation_observed == ["stored"],
+    };
+
+    let disabled_access_cache = HydraCache::local().build();
+    let mut disabled_access_events = disabled_access_cache.subscribe_access();
+    let value: Option<String> = disabled_access_cache.get("preflight:missing").await?;
+    let disabled_access_reports =
+        drain_cache_listener_events("access", &mut disabled_access_events, idle).await;
+    let disabled_access_observed = listener_kinds(&disabled_access_reports);
+    let disabled_access_report = EventPreflightScenarioReport {
+        scenario: "access-subscriber-disabled",
+        description: "Access subscribers do not enable hit/miss publication by themselves.",
+        subscriber: "access",
+        access_events_enabled: false,
+        operation: "get-miss",
+        expected_events_published: 0,
+        actual_events_published: disabled_access_cache.stats().events_published,
+        observed_kinds: disabled_access_observed.clone(),
+        passed: value.is_none()
+            && disabled_access_cache.stats().events_published == 0
+            && disabled_access_observed.is_empty(),
+    };
+
+    let enabled_access_cache = HydraCache::local().enable_access_events(true).build();
+    let mut enabled_access_events = enabled_access_cache.subscribe_access();
+    let value: Option<String> = enabled_access_cache.get("preflight:missing").await?;
+    let enabled_access_reports =
+        drain_cache_listener_events("access", &mut enabled_access_events, idle).await;
+    let enabled_access_observed = listener_kinds(&enabled_access_reports);
+    let enabled_access_report = EventPreflightScenarioReport {
+        scenario: "access-subscriber-enabled",
+        description: "Access events publish once the cache is explicitly configured for them.",
+        subscriber: "access",
+        access_events_enabled: true,
+        operation: "get-miss",
+        expected_events_published: 1,
+        actual_events_published: enabled_access_cache.stats().events_published,
+        observed_kinds: enabled_access_observed.clone(),
+        passed: value.is_none()
+            && enabled_access_cache.stats().events_published == 1
+            && enabled_access_observed == ["miss"],
+    };
+
+    let scenarios = vec![
+        no_subscriber_report,
+        mutation_report,
+        disabled_access_report,
+        enabled_access_report,
+    ];
+    let passed = scenarios.iter().all(|scenario| scenario.passed);
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!("event preflight demo completed: passed={passed}"),
+        None,
+        Some("event-preflight".to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    Ok(EventPreflightDemoResponse {
+        flow_id,
+        passed,
+        scenarios,
+        diagnostics: diagnostics(state).await,
+        events: event_log(state, &EventQuery::default()).await,
+    })
+}
+
 async fn run_listener_demo_with_request(
     state: &SandboxState,
     request: ListenerDemoRequest,
@@ -9183,6 +9373,10 @@ fn listener_event_report(stream: &'static str, event: CacheEvent) -> ListenerEve
         affected_keys: event.affected_keys(),
         origin: cache_event_origin_label(event.origin()).to_owned(),
     }
+}
+
+fn listener_kinds(events: &[ListenerEventReport]) -> Vec<String> {
+    events.iter().map(|event| event.kind.clone()).collect()
 }
 
 fn contains_listener_kind(events: &[ListenerEventReport], kind: &str) -> bool {
@@ -10409,6 +10603,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/scenarios/invalidation-race', {key:'ui:race', loader_value:'stale', tag:'ui-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:'ui-race'})">Invalidation race</button>
       <button onclick="post('/demo/scenarios/ttl', {key:'ui:ttl', value:'short', ttl_ms:50, wait_ms:90, flow_id:'ui-ttl'})">TTL expiry</button>
       <button onclick="post('/demo/listeners/run', {key:'ui:listener', tag:'ui-listener', value:'alpha', loader_value:'beta', ttl_ms:5000, flow_id:`ui-listener-${Date.now()}`})">Listener demo</button>
+      <button onclick="post('/demo/events/preflight/run', {flow_id:`ui-event-preflight-${Date.now()}`})">Event preflight</button>
       <button onclick="post('/demo/distributed/invalidation/run', {key:'ui:dist:tagged', second_key:'ui:dist:key', flush_key:'ui:dist:flush', tag:'ui-dist', value:'alpha', flow_id:`ui-dist-${Date.now()}`})">Distributed invalidation</button>
       <button onclick="post('/demo/cluster/lifecycle/run', {cluster:'ui-cluster', key:'ui:cluster:tagged', second_key:'ui:cluster:key', retained_key:'ui:cluster:retained', tag:'ui-cluster', value:'alpha', flow_id:`ui-cluster-${Date.now()}`})">Cluster lifecycle</button>
       <button onclick="post('/demo/cluster/ownership/run', {cluster:'ui-ownership-cluster', key:'ui:cluster:owned', tag:'ui-owned', value:'alpha', flow_id:`ui-ownership-${Date.now()}`})">Cluster ownership</button>
@@ -10770,6 +10965,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Compare two manual benchmark profiles by latency, throughput, loader calls, and hit ratio.",
         },
         CapabilityReport {
+            name: "event preflight lab",
+            endpoint: "/demo/events/preflight/run",
+            description: "Demonstrate that unobserved listener/access event classes do not publish payloads on the cache hot path.",
+        },
+        CapabilityReport {
             name: "distributed invalidation bus",
             endpoint: "/demo/distributed/invalidation/run",
             description: "Create two temporary cache nodes on one in-memory bus and verify remote tag, key, and flush invalidations.",
@@ -10927,6 +11127,7 @@ fn actuator_stats_doc() {}
         events,
         events_summary,
         clear_events,
+        run_event_preflight_demo,
         run_listener_demo,
         run_distributed_invalidation_demo,
         run_cluster_lifecycle_demo,
@@ -11074,6 +11275,9 @@ fn actuator_stats_doc() {}
             ListenerDemoRequest,
             ListenerEventReport,
             ListenerDemoResponse,
+            EventPreflightDemoRequest,
+            EventPreflightScenarioReport,
+            EventPreflightDemoResponse,
             DistributedInvalidationTimelineStep,
             DistributedInvalidationDemoRequest,
             DistributedInvalidationDemoResponse,
@@ -11665,6 +11869,7 @@ mod tests {
         assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
         assert!(paths.contains_key("/demo/events/summary"));
+        assert!(paths.contains_key("/demo/events/preflight/run"));
         assert!(paths.contains_key("/demo/listeners/run"));
         assert!(paths.contains_key("/demo/distributed/invalidation/run"));
         assert!(paths.contains_key("/demo/cluster/lifecycle/run"));
@@ -11733,6 +11938,9 @@ mod tests {
         assert!(schemas.contains_key("ListenerDemoRequest"));
         assert!(schemas.contains_key("ListenerEventReport"));
         assert!(schemas.contains_key("ListenerDemoResponse"));
+        assert!(schemas.contains_key("EventPreflightDemoRequest"));
+        assert!(schemas.contains_key("EventPreflightScenarioReport"));
+        assert!(schemas.contains_key("EventPreflightDemoResponse"));
         assert!(schemas.contains_key("DistributedInvalidationTimelineStep"));
         assert!(schemas.contains_key("DistributedInvalidationDemoRequest"));
         assert!(schemas.contains_key("DistributedInvalidationDemoResponse"));
@@ -12015,6 +12223,35 @@ mod tests {
             .unwrap()
             .iter()
             .any(|event| event["kind"] == "cache-listener"));
+
+        let preflight = app
+            .clone()
+            .oneshot(post(
+                "/demo/events/preflight/run",
+                Body::from(r#"{"flow_id":"event-preflight-test"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(preflight["flow_id"], "event-preflight-test");
+        assert_eq!(preflight["passed"], true);
+        let scenarios = preflight["scenarios"].as_array().unwrap();
+        assert_eq!(scenarios.len(), 4);
+        assert!(scenarios
+            .iter()
+            .any(|scenario| scenario["scenario"] == "no-subscriber"
+                && scenario["actual_events_published"] == 0));
+        assert!(scenarios
+            .iter()
+            .any(|scenario| scenario["scenario"] == "mutation-subscriber"
+                && scenario["observed_kinds"].as_array().unwrap()[0] == "stored"));
+        assert!(scenarios.iter().any(|scenario| scenario["scenario"]
+            == "access-subscriber-disabled"
+            && scenario["actual_events_published"] == 0));
+        assert!(scenarios.iter().any(|scenario| scenario["scenario"]
+            == "access-subscriber-enabled"
+            && scenario["observed_kinds"].as_array().unwrap()[0] == "miss"));
 
         let distributed = app
             .clone()
@@ -12446,6 +12683,7 @@ mod tests {
         assert!(body.contains("/demo/flows"));
         assert!(body.contains("/demo/events/summary"));
         assert!(body.contains("/demo/listeners/run"));
+        assert!(body.contains("/demo/events/preflight/run"));
         assert!(body.contains("/demo/query/products/100/load"));
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
         assert!(body.contains("/demo/cluster/routed-peer-fetch/run"));
@@ -12498,6 +12736,11 @@ mod tests {
             .unwrap()
             .iter()
             .any(|preset| preset["name"] == "listener-demo"));
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|preset| preset["name"] == "event-preflight"));
         assert!(presets["presets"]
             .as_array()
             .unwrap()

@@ -56,6 +56,10 @@ export class HydraCacheSandboxClient {
     return this.json("/demo/events/summary");
   }
 
+  runEventPreflight(options = {}) {
+    return this.post("/demo/events/preflight/run", options);
+  }
+
   compareBenchmarks(baseline, candidate) {
     return this.post("/demo/benchmarks/compare", { baseline, candidate });
   }

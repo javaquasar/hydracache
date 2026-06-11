@@ -360,6 +360,14 @@ Content-Type: application/json
   "flow_id": "listener-flow"
 }
 
+### Event preflight demo: observed vs unobserved listener cost modes
+POST {{baseUrl}}/demo/events/preflight/run
+Content-Type: application/json
+
+{
+  "flow_id": "event-preflight-flow"
+}
+
 ### Distributed invalidation demo: remote tag, key, and flush propagation
 POST {{baseUrl}}/demo/distributed/invalidation/run
 Content-Type: application/json
