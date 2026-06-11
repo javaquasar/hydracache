@@ -46,6 +46,7 @@
 //! http://127.0.0.1:3000/demo/distributed/invalidation/run
 //! http://127.0.0.1:3000/demo/cluster/lifecycle/run
 //! http://127.0.0.1:3000/demo/cluster/ownership/run
+//! http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
@@ -73,8 +74,9 @@ use hydracache::{
     ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
     ClusterCandidate, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
     ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent, ClusterOwnershipDecision,
-    ClusterPeerFetch, ClusterPeerFetchResponse, ClusterRole, HydraCache, InMemoryCluster,
-    InMemoryClusterDiscovery, InMemoryInvalidationBus, InMemoryPeerFetch, RaftMetadataCommand,
+    ClusterPeerFetch, ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole,
+    HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
+    InMemoryPeerFetch, RaftMetadataCommand,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
@@ -592,6 +594,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/cluster/ownership/run",
             post(run_cluster_ownership_demo),
+        )
+        .route(
+            "/demo/cluster/ownership-transfer/run",
+            post(run_cluster_ownership_transfer_demo),
         )
         .route(
             "/demo/cluster/real-adapters/run",
@@ -2150,6 +2156,21 @@ struct ClusterOwnershipDemoRequest {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-orders", "key": "cluster:transfer:user:42", "tag": "cluster-transfer-users", "value": "encoded-transfer-user", "flow_id": "ownership-transfer-flow"}))]
+struct ClusterOwnershipTransferDemoRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    key: Option<String>,
+    #[serde(default)]
+    tag: Option<String>,
+    #[serde(default)]
+    value: Option<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"cluster": "sandbox-orders", "member_node_id": "sandbox-member-a", "client_node_id": "sandbox-client-a", "flow_id": "real-cluster-flow"}))]
 struct RealClusterAdaptersDemoRequest {
     #[serde(default)]
@@ -2451,6 +2472,15 @@ struct ClusterPeerFetchReport {
     value_utf8: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterPeerFetchDiagnosticsReport {
+    stored_values: usize,
+    hits: u64,
+    misses: u64,
+    total_requests: u64,
+    hit_ratio: Option<f64>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct ClusterOwnershipTimelineStep {
     step: u8,
@@ -2475,6 +2505,32 @@ struct ClusterOwnershipDemoResponse {
     tag_removed_on_owner: u64,
     client_contains_after_owner_invalidation: bool,
     remote_event: ListenerEventReport,
+    timeline: Vec<ClusterOwnershipTimelineStep>,
+    passed: bool,
+    events: EventLogResponse,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterOwnershipTransferDemoResponse {
+    flow_id: String,
+    cluster: String,
+    key: String,
+    tag: String,
+    value: String,
+    initial_owner: ClusterOwnershipDecisionReport,
+    after_leave_owner: ClusterOwnershipDecisionReport,
+    after_rejoin_owner: ClusterOwnershipDecisionReport,
+    initial_peer_fetch: ClusterPeerFetchReport,
+    transferred_peer_fetch_miss: ClusterPeerFetchReport,
+    transferred_peer_fetch_hit: ClusterPeerFetchReport,
+    peer_fetch_diagnostics: ClusterPeerFetchDiagnosticsReport,
+    owner_leave: ClusterMembershipEventReport,
+    remote_event: ListenerEventReport,
+    tag_removed_on_initial_owner: u64,
+    client_contains_after_initial_invalidation: bool,
+    survivor_after_leave: ClusterRuntimeReport,
+    client_after_transfer: ClusterRuntimeReport,
+    rejoined_owner: ClusterRuntimeReport,
     timeline: Vec<ClusterOwnershipTimelineStep>,
     passed: bool,
     events: EventLogResponse,
@@ -5511,6 +5567,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/distributed/invalidation/run".to_owned(),
         "/demo/cluster/lifecycle/run".to_owned(),
         "/demo/cluster/ownership/run".to_owned(),
+        "/demo/cluster/ownership-transfer/run".to_owned(),
         "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
@@ -5551,6 +5608,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "loadProduct(id",
         "loadOrderSummary(id",
         "runClusterOwnership(",
+        "runClusterOwnershipTransfer(",
         "runRealClusterAdapters(",
         "exportSession()",
         "importSession(bundle",
@@ -6697,6 +6755,303 @@ async fn run_cluster_ownership_demo_with_request(
 
 #[utoipa::path(
     post,
+    path = "/demo/cluster/ownership-transfer/run",
+    tag = "cluster",
+    request_body = ClusterOwnershipTransferDemoRequest,
+    responses((status = 200, description = "Run a cluster ownership-transfer lab demo", body = ClusterOwnershipTransferDemoResponse))
+)]
+async fn run_cluster_ownership_transfer_demo(
+    State(state): State<SandboxState>,
+    Json(request): Json<ClusterOwnershipTransferDemoRequest>,
+) -> Result<Json<ClusterOwnershipTransferDemoResponse>, SandboxHttpError> {
+    Ok(Json(
+        run_cluster_ownership_transfer_demo_with_request(&state, request).await?,
+    ))
+}
+
+async fn run_cluster_ownership_transfer_demo_with_request(
+    state: &SandboxState,
+    request: ClusterOwnershipTransferDemoRequest,
+) -> Result<ClusterOwnershipTransferDemoResponse, SandboxHttpError> {
+    let started = Instant::now();
+    let flow_id = request.flow_id.unwrap_or_else(|| {
+        format!(
+            "cluster-ownership-transfer-{}",
+            state.next_event_id.load(Ordering::SeqCst) + 1
+        )
+    });
+    let cluster_name = request
+        .cluster
+        .unwrap_or_else(|| "sandbox-orders".to_owned());
+    let key = request
+        .key
+        .unwrap_or_else(|| "cluster:transfer:user:42".to_owned());
+    let tag = request
+        .tag
+        .unwrap_or_else(|| "cluster-transfer-users".to_owned());
+    let value = request
+        .value
+        .unwrap_or_else(|| "encoded-transfer-user".to_owned());
+
+    let member_a_id = "sandbox-transfer-a";
+    let member_b_id = "sandbox-transfer-b";
+    let client_id = "sandbox-transfer-client";
+    let cluster = Arc::new(InMemoryCluster::new(cluster_name.clone()));
+    let member_a = HydraCache::member()
+        .cluster(cluster_name.clone())
+        .shared_cluster(cluster.clone())
+        .node_id(member_a_id)
+        .generation(ClusterGeneration::new(1))
+        .start()
+        .await?;
+    let member_b = HydraCache::member()
+        .cluster(cluster_name.clone())
+        .shared_cluster(cluster.clone())
+        .node_id(member_b_id)
+        .generation(ClusterGeneration::new(1))
+        .start()
+        .await?;
+    let client = HydraCache::client()
+        .cluster(cluster_name.clone())
+        .shared_cluster(cluster.clone())
+        .node_id(client_id)
+        .generation(ClusterGeneration::new(1))
+        .bootstrap(member_a_id)
+        .bootstrap(member_b_id)
+        .connect()
+        .await?;
+
+    let initial_decision = cluster.owner_for_key(&key);
+    let initial_request = initial_decision.peer_fetch_request().ok_or_else(|| {
+        SandboxHttpError::internal("ownership resolver returned no initial owner")
+    })?;
+    let initial_owner_id = initial_request.owner.to_string();
+    let survivor_id = if initial_owner_id == member_a_id {
+        member_b_id
+    } else {
+        member_a_id
+    };
+    let peer_fetch = InMemoryPeerFetch::new();
+    peer_fetch.put(
+        initial_request.owner.clone(),
+        key.clone(),
+        value.clone().into_bytes(),
+    );
+    let initial_peer_fetch = peer_fetch.fetch(initial_request.clone()).await?;
+
+    if initial_owner_id == member_a_id {
+        member_a
+            .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+            .await?;
+    } else {
+        member_b
+            .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+            .await?;
+    }
+    client
+        .put(&key, value.clone(), CacheOptions::new().tag(&tag))
+        .await?;
+
+    let mut client_remote_events =
+        client.subscribe(CacheEventOptions::mutations().origin(CacheEventOrigin::DistributedBus));
+    let tag_removed_on_initial_owner = if initial_owner_id == member_a_id {
+        member_a.invalidate_tag(&tag).await?
+    } else {
+        member_b.invalidate_tag(&tag).await?
+    };
+    let remote_event = recv_listener_event("client", &mut client_remote_events).await?;
+    let client_contains_after_initial_invalidation = client.contains_key(&key).await;
+
+    let owner_leave_event = if initial_owner_id == member_a_id {
+        member_a.leave_cluster().await?
+    } else {
+        member_b.leave_cluster().await?
+    }
+    .ok_or_else(|| SandboxHttpError::internal("initial owner did not leave the cluster"))?;
+    let owner_leave = cluster_membership_event_report(owner_leave_event.clone());
+
+    let after_leave_decision = cluster.owner_for_key(&key);
+    let after_leave_request = after_leave_decision.peer_fetch_request().ok_or_else(|| {
+        SandboxHttpError::internal("ownership resolver returned no survivor owner")
+    })?;
+    let _removed_old_value = peer_fetch.remove(&initial_request.owner, &key);
+    let transferred_peer_fetch_miss = peer_fetch.fetch(after_leave_request.clone()).await?;
+    peer_fetch.put(
+        after_leave_request.owner.clone(),
+        key.clone(),
+        value.clone().into_bytes(),
+    );
+    let transferred_peer_fetch_hit = peer_fetch.fetch(after_leave_request).await?;
+    let peer_fetch_diagnostics = peer_fetch_diagnostics_report(peer_fetch.diagnostics());
+
+    let survivor_after_leave = if survivor_id == member_a_id {
+        cluster_runtime_report(
+            member_a
+                .cluster_diagnostics()
+                .expect("survivor member-a diagnostics"),
+        )
+    } else {
+        cluster_runtime_report(
+            member_b
+                .cluster_diagnostics()
+                .expect("survivor member-b diagnostics"),
+        )
+    };
+    let client_after_transfer = cluster_runtime_report(
+        client
+            .cluster_diagnostics()
+            .expect("client cluster diagnostics after transfer"),
+    );
+
+    let rejoined = HydraCache::member()
+        .cluster(cluster_name.clone())
+        .shared_cluster(cluster.clone())
+        .node_id(initial_owner_id.as_str())
+        .generation(ClusterGeneration::new(2))
+        .start()
+        .await?;
+    let after_rejoin_decision = cluster.owner_for_key(&key);
+    let rejoined_owner = cluster_runtime_report(
+        rejoined
+            .cluster_diagnostics()
+            .expect("rejoined owner diagnostics"),
+    );
+
+    let initial_owner = cluster_ownership_decision_report(&initial_decision);
+    let after_leave_owner = cluster_ownership_decision_report(&after_leave_decision);
+    let after_rejoin_owner = cluster_ownership_decision_report(&after_rejoin_decision);
+    let initial_peer_fetch = cluster_peer_fetch_report(&initial_peer_fetch);
+    let transferred_peer_fetch_miss = cluster_peer_fetch_report(&transferred_peer_fetch_miss);
+    let transferred_peer_fetch_hit = cluster_peer_fetch_report(&transferred_peer_fetch_hit);
+    let timeline = vec![
+        cluster_ownership_timeline_step(
+            1,
+            "ownership",
+            "resolver",
+            "initial-owner",
+            format!(
+                "selected initial owner={:?} among {} member(s)",
+                initial_owner.owner_node_id, initial_owner.member_count
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            2,
+            "invalidation",
+            "initial-owner",
+            "invalidate-tag",
+            format!(
+                "owner removed {tag_removed_on_initial_owner} local key(s); client contains after remote apply={client_contains_after_initial_invalidation}"
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            3,
+            "membership",
+            "initial-owner",
+            "leave-cluster",
+            format!(
+                "owner left as {}; survivor owner after leave={:?}",
+                owner_leave.role, after_leave_owner.owner_node_id
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            4,
+            "peer-fetch",
+            "survivor",
+            "miss-then-hit",
+            format!(
+                "survivor miss={} then hit={}; peer fetch requests={}",
+                transferred_peer_fetch_miss.miss,
+                transferred_peer_fetch_hit.hit,
+                peer_fetch_diagnostics.total_requests
+            ),
+        ),
+        cluster_ownership_timeline_step(
+            5,
+            "membership",
+            "initial-owner",
+            "rejoin-new-generation",
+            format!(
+                "rejoined owner generation={}, owner after rejoin={:?}",
+                rejoined_owner.generation, after_rejoin_owner.owner_node_id
+            ),
+        ),
+    ];
+
+    let passed = initial_owner.has_owner
+        && after_leave_owner.has_owner
+        && after_rejoin_owner.has_owner
+        && initial_owner.owner_node_id != after_leave_owner.owner_node_id
+        && after_rejoin_owner.owner_node_id == initial_owner.owner_node_id
+        && after_rejoin_owner.owner_generation == Some(2)
+        && initial_peer_fetch.hit
+        && transferred_peer_fetch_miss.miss
+        && transferred_peer_fetch_hit.hit
+        && peer_fetch_diagnostics.hits == 2
+        && peer_fetch_diagnostics.misses == 1
+        && peer_fetch_diagnostics.stored_values == 1
+        && tag_removed_on_initial_owner == 1
+        && !client_contains_after_initial_invalidation
+        && remote_event.kind == "tag-invalidated"
+        && owner_leave.kind == "node-left"
+        && owner_leave.role == "member"
+        && survivor_after_leave.member_count == 1
+        && client_after_transfer.client_count == 1
+        && rejoined_owner.member_count == 2;
+
+    record_event_with_flow_and_duration(
+        state,
+        DemoEventKind::ScenarioRun,
+        format!(
+            "cluster ownership transfer demo moved owner from {:?} to {:?} and back to {:?}",
+            initial_owner.owner_node_id,
+            after_leave_owner.owner_node_id,
+            after_rejoin_owner.owner_node_id
+        ),
+        Some(key.clone()),
+        Some(tag.clone()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+
+    let events = event_log(
+        state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(ClusterOwnershipTransferDemoResponse {
+        flow_id,
+        cluster: cluster_name,
+        key,
+        tag,
+        value,
+        initial_owner,
+        after_leave_owner,
+        after_rejoin_owner,
+        initial_peer_fetch,
+        transferred_peer_fetch_miss,
+        transferred_peer_fetch_hit,
+        peer_fetch_diagnostics,
+        owner_leave,
+        remote_event,
+        tag_removed_on_initial_owner,
+        client_contains_after_initial_invalidation,
+        survivor_after_leave,
+        client_after_transfer,
+        rejoined_owner,
+        timeline,
+        passed,
+        events,
+    })
+}
+
+#[utoipa::path(
+    post,
     path = "/demo/cluster/real-adapters/run",
     tag = "cluster",
     request_body = RealClusterAdaptersDemoRequest,
@@ -6989,6 +7344,18 @@ fn cluster_peer_fetch_report(response: &ClusterPeerFetchResponse) -> ClusterPeer
         miss: response.is_miss(),
         value_len,
         value_utf8,
+    }
+}
+
+fn peer_fetch_diagnostics_report(
+    diagnostics: ClusterPeerFetchDiagnostics,
+) -> ClusterPeerFetchDiagnosticsReport {
+    ClusterPeerFetchDiagnosticsReport {
+        stored_values: diagnostics.stored_values,
+        hits: diagnostics.hits,
+        misses: diagnostics.misses,
+        total_requests: diagnostics.total_requests(),
+        hit_ratio: diagnostics.hit_ratio(),
     }
 }
 
@@ -8674,6 +9041,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/distributed/invalidation/run', {key:'ui:dist:tagged', second_key:'ui:dist:key', flush_key:'ui:dist:flush', tag:'ui-dist', value:'alpha', flow_id:`ui-dist-${Date.now()}`})">Distributed invalidation</button>
       <button onclick="post('/demo/cluster/lifecycle/run', {cluster:'ui-cluster', key:'ui:cluster:tagged', second_key:'ui:cluster:key', retained_key:'ui:cluster:retained', tag:'ui-cluster', value:'alpha', flow_id:`ui-cluster-${Date.now()}`})">Cluster lifecycle</button>
       <button onclick="post('/demo/cluster/ownership/run', {cluster:'ui-ownership-cluster', key:'ui:cluster:owned', tag:'ui-owned', value:'alpha', flow_id:`ui-ownership-${Date.now()}`})">Cluster ownership</button>
+      <button onclick="post('/demo/cluster/ownership-transfer/run', {cluster:'ui-transfer-cluster', key:'ui:cluster:transfer', tag:'ui-transfer', value:'alpha', flow_id:`ui-transfer-${Date.now()}`})">Ownership transfer</button>
       <button onclick="post('/demo/cluster/real-adapters/run', {cluster:'ui-real-cluster', flow_id:`ui-real-cluster-${Date.now()}`})">Real chitchat + raft</button>
     </section>
     <section>
@@ -9043,6 +9411,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Resolve an owner for a key, demonstrate the peer-fetch seam, and verify owner-originated invalidation reaches a client near-cache.",
         },
         CapabilityReport {
+            name: "cluster ownership transfer lab",
+            endpoint: "/demo/cluster/ownership-transfer/run",
+            description: "Demonstrate owner leave, ownership transfer to a survivor, peer-fetch miss/hit behavior, and rejoin with a newer generation.",
+        },
+        CapabilityReport {
             name: "real cluster adapters",
             endpoint: "/demo/cluster/real-adapters/run",
             description: "Connect real chitchat-backed discovery to the polling admission bridge and commit membership metadata through the raft-rs runtime.",
@@ -9169,6 +9542,7 @@ fn actuator_stats_doc() {}
         run_distributed_invalidation_demo,
         run_cluster_lifecycle_demo,
         run_cluster_ownership_demo,
+        run_cluster_ownership_transfer_demo,
         run_real_cluster_adapters_demo,
         reset_demo,
         cache_put,
@@ -9320,8 +9694,11 @@ fn actuator_stats_doc() {}
             ClusterOwnershipDemoRequest,
             ClusterOwnershipDecisionReport,
             ClusterPeerFetchReport,
+            ClusterPeerFetchDiagnosticsReport,
             ClusterOwnershipTimelineStep,
             ClusterOwnershipDemoResponse,
+            ClusterOwnershipTransferDemoRequest,
+            ClusterOwnershipTransferDemoResponse,
             RealClusterAdaptersDemoRequest,
             ClusterAdmissionBridgeReport,
             ClusterAdmissionBridgeEventReport,
@@ -9776,6 +10153,7 @@ mod tests {
         assert!(paths.contains_key("/demo/distributed/invalidation/run"));
         assert!(paths.contains_key("/demo/cluster/lifecycle/run"));
         assert!(paths.contains_key("/demo/cluster/ownership/run"));
+        assert!(paths.contains_key("/demo/cluster/ownership-transfer/run"));
         assert!(paths.contains_key("/demo/cluster/real-adapters/run"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
@@ -9848,8 +10226,11 @@ mod tests {
         assert!(schemas.contains_key("ClusterOwnershipDemoRequest"));
         assert!(schemas.contains_key("ClusterOwnershipDecisionReport"));
         assert!(schemas.contains_key("ClusterPeerFetchReport"));
+        assert!(schemas.contains_key("ClusterPeerFetchDiagnosticsReport"));
         assert!(schemas.contains_key("ClusterOwnershipTimelineStep"));
         assert!(schemas.contains_key("ClusterOwnershipDemoResponse"));
+        assert!(schemas.contains_key("ClusterOwnershipTransferDemoRequest"));
+        assert!(schemas.contains_key("ClusterOwnershipTransferDemoResponse"));
         assert!(schemas.contains_key("RealClusterAdaptersDemoRequest"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeReport"));
         assert!(schemas.contains_key("ClusterAdmissionBridgeEventReport"));
@@ -10197,6 +10578,48 @@ mod tests {
         assert_eq!(ownership["client"]["ownership_no_owner"], 0);
         assert_eq!(ownership["timeline"].as_array().unwrap().len(), 4);
         assert_eq!(ownership["remote_event"]["kind"], "tag-invalidated");
+
+        let transfer = app
+            .clone()
+            .oneshot(post(
+                "/demo/cluster/ownership-transfer/run",
+                Body::from(
+                    r#"{"cluster":"test-transfer-cluster","key":"cluster:transfer","tag":"cluster-transfer","value":"alpha","flow_id":"transfer-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(transfer["flow_id"], "transfer-test");
+        assert_eq!(transfer["passed"], true);
+        assert_eq!(transfer["initial_owner"]["has_owner"], true);
+        assert_eq!(transfer["after_leave_owner"]["has_owner"], true);
+        assert_ne!(
+            transfer["initial_owner"]["owner_node_id"],
+            transfer["after_leave_owner"]["owner_node_id"]
+        );
+        assert_eq!(
+            transfer["after_rejoin_owner"]["owner_node_id"],
+            transfer["initial_owner"]["owner_node_id"]
+        );
+        assert_eq!(transfer["initial_peer_fetch"]["hit"], true);
+        assert_eq!(transfer["transferred_peer_fetch_miss"]["miss"], true);
+        assert_eq!(transfer["transferred_peer_fetch_hit"]["hit"], true);
+        assert_eq!(transfer["peer_fetch_diagnostics"]["hits"], 2);
+        assert_eq!(transfer["peer_fetch_diagnostics"]["misses"], 1);
+        assert_eq!(transfer["peer_fetch_diagnostics"]["stored_values"], 1);
+        assert_eq!(transfer["tag_removed_on_initial_owner"], 1);
+        assert_eq!(
+            transfer["client_contains_after_initial_invalidation"],
+            false
+        );
+        assert_eq!(transfer["owner_leave"]["kind"], "node-left");
+        assert_eq!(transfer["owner_leave"]["role"], "member");
+        assert_eq!(transfer["remote_event"]["kind"], "tag-invalidated");
+        assert_eq!(transfer["survivor_after_leave"]["member_count"], 1);
+        assert_eq!(transfer["rejoined_owner"]["member_count"], 2);
+        assert_eq!(transfer["timeline"].as_array().unwrap().len(), 5);
 
         let real_cluster = app
             .clone()

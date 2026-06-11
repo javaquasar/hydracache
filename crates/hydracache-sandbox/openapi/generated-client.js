@@ -80,6 +80,10 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/cluster/ownership/run", options);
   }
 
+  runClusterOwnershipTransfer(options = {}) {
+    return this.post("/demo/cluster/ownership-transfer/run", options);
+  }
+
   runRealClusterAdapters(options = {}) {
     return this.post("/demo/cluster/real-adapters/run", options);
   }

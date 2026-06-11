@@ -144,7 +144,8 @@ files/suites, flow catalog/timeline/replay, local profile comparison, replay,
 fault injection, manual benchmark, scenario document DSL, benchmark comparison,
 Prometheus/trace demo reports, DB seed report, users/products/order-summary
 query-cache loads, OpenAPI client check/smoke, cluster lifecycle, cluster
-ownership, real cluster adapters, and optional auth-guard status.
+ownership, ownership transfer, real cluster adapters, and optional auth-guard
+status.
 If `HYDRACACHE_SANDBOX_EVENT_LOG_PATH` is set, the sandbox also appends demo
 events to a local JSONL file for manual review.
 For a Compose-backed Postgres run:

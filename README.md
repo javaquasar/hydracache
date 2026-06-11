@@ -972,6 +972,7 @@ http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/cluster/lifecycle/run
 http://127.0.0.1:3000/demo/cluster/ownership/run
+http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
@@ -995,7 +996,10 @@ candidates, verifies remote invalidation in both directions, calls
 `leave_cluster()` for both runtimes, and confirms local cache contents are not
 cleared by leaving membership. The cluster ownership lab resolves an owner for a
 key, exercises the transport-neutral peer-fetch seam, and verifies that
-owner-originated tag invalidation reaches a client near-cache. The real-adapters
+owner-originated tag invalidation reaches a client near-cache. The ownership
+transfer lab then removes the selected owner, verifies ownership moves to the
+survivor, demonstrates peer-fetch miss/hit behavior around the transfer, and
+shows the original owner rejoining with a newer generation. The real-adapters
 demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
@@ -1013,9 +1017,10 @@ counters with a visual flow timeline. The dashboard also includes a textarea
 scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
 demo for verifying subscriptions manually. It also includes one-click
 distributed invalidation and cluster lifecycle flows that render remote bus
-events and membership timelines in the output, a cluster ownership flow that
-renders owner selection and peer-fetch results, plus a real chitchat + raft
-adapter flow that shows bridge diagnostics and committed metadata commands.
+events and membership timelines in the output, cluster ownership flows that
+render owner selection, transfer, and peer-fetch results, plus a real chitchat
++ raft adapter flow that shows bridge diagnostics and committed metadata
+commands.
 
 Useful Swagger/API groups:
 
@@ -1065,6 +1070,7 @@ POST /demo/listeners/run
 POST /demo/distributed/invalidation/run
 POST /demo/cluster/lifecycle/run
 POST /demo/cluster/ownership/run
+POST /demo/cluster/ownership-transfer/run
 POST /demo/cluster/real-adapters/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
