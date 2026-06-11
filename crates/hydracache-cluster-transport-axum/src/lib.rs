@@ -54,6 +54,7 @@
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
+use std::future::Future;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -413,6 +414,12 @@ impl OwnerLoadRequest {
         })
     }
 
+    /// Replace the request argument bag.
+    pub fn with_args(mut self, args: OwnerLoadArgs) -> Self {
+        self.args = args;
+        self
+    }
+
     /// Return a required signed integer argument.
     pub fn arg_i64(&self, name: &str) -> Result<i64, OwnerLoadRequestArgError> {
         self.args
@@ -696,6 +703,490 @@ impl OwnerLoadResponse {
             Self::Hit(hit) | Self::Loaded(hit) => hit.decode_value().map(Some),
             Self::Miss(_) | Self::Rejected(_) | Self::Failed(_) => Ok(None),
         }
+    }
+}
+
+/// Encoded value produced by an owner-side loader.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OwnerLoadValue {
+    value: Bytes,
+    options: CacheOptions,
+}
+
+impl OwnerLoadValue {
+    /// Create a loader value from encoded bytes and cache options.
+    pub fn encoded(value: impl Into<Bytes>, options: CacheOptions) -> Self {
+        Self {
+            value: value.into(),
+            options,
+        }
+    }
+
+    /// Return encoded bytes.
+    pub fn value(&self) -> &Bytes {
+        &self.value
+    }
+
+    /// Return cache options used when storing the value on the owner.
+    pub fn options(&self) -> &CacheOptions {
+        &self.options
+    }
+
+    fn into_parts(self) -> (Bytes, CacheOptions) {
+        (self.value, self.options)
+    }
+}
+
+type OwnerLoadFuture = BoxFuture<'static, CacheResult<Option<OwnerLoadValue>>>;
+type OwnerLoadHandler = Arc<dyn Fn(OwnerLoadRequest) -> OwnerLoadFuture + Send + Sync>;
+type SharedOwnerLoadFuture = Shared<BoxFuture<'static, OwnerLoadResponse>>;
+
+/// Registry of explicitly named owner-side loaders.
+///
+/// Applications register stable loader names on member nodes. Clients then send
+/// data-only [`OwnerLoadDescriptor`] values that reference those names. This
+/// keeps remote owner loading explicit and avoids sending closures or arbitrary
+/// executable code over the network.
+///
+/// # Example
+///
+/// ```no_run
+/// use bytes::Bytes;
+/// use hydracache::CacheOptions;
+/// use hydracache_cluster_transport_axum::{
+///     OwnerLoadRegistry, OwnerLoadValue,
+/// };
+///
+/// let registry = OwnerLoadRegistry::new()
+///     .register("users.by-id", |request| async move {
+///         let id = request.arg_i64("id").unwrap();
+///         let encoded = Bytes::from(format!("encoded-user-{id}"));
+///         Ok(Some(OwnerLoadValue::encoded(encoded, request.cache_options())))
+///     });
+///
+/// assert!(registry.contains_loader("users.by-id"));
+/// ```
+#[derive(Clone, Default)]
+pub struct OwnerLoadRegistry {
+    loaders: BTreeMap<String, OwnerLoadHandler>,
+}
+
+impl fmt::Debug for OwnerLoadRegistry {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("OwnerLoadRegistry")
+            .field("loader_count", &self.loaders.len())
+            .field("loader_names", &self.loader_names())
+            .finish()
+    }
+}
+
+impl OwnerLoadRegistry {
+    /// Create an empty registry.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Register or replace one named loader.
+    pub fn register<F, Fut>(mut self, name: impl Into<String>, handler: F) -> Self
+    where
+        F: Fn(OwnerLoadRequest) -> Fut + Send + Sync + 'static,
+        Fut: Future<Output = CacheResult<Option<OwnerLoadValue>>> + Send + 'static,
+    {
+        let handler = Arc::new(move |request| handler(request).boxed()) as OwnerLoadHandler;
+        self.loaders.insert(name.into(), handler);
+        self
+    }
+
+    /// Return whether a loader name is registered.
+    pub fn contains_loader(&self, name: &str) -> bool {
+        self.loaders.contains_key(name)
+    }
+
+    /// Return the number of registered loaders.
+    pub fn len(&self) -> usize {
+        self.loaders.len()
+    }
+
+    /// Return whether no loaders are registered.
+    pub fn is_empty(&self) -> bool {
+        self.loaders.is_empty()
+    }
+
+    /// Return registered loader names in deterministic order.
+    pub fn loader_names(&self) -> Vec<&str> {
+        self.loaders.keys().map(String::as_str).collect()
+    }
+
+    async fn load(&self, request: OwnerLoadRequest) -> CacheResult<Option<OwnerLoadValue>> {
+        let Some(handler) = self.loaders.get(&request.loader).cloned() else {
+            return Err(CacheError::Backend(format!(
+                "owner-load loader '{}' is not registered",
+                request.loader
+            )));
+        };
+
+        handler(request).await
+    }
+}
+
+/// Point-in-time counters for [`OwnerLoadService`].
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct OwnerLoadDiagnostics {
+    /// Total owner-load requests observed.
+    pub attempts: u64,
+    /// Requests that hit the owner's local cache.
+    pub owner_hits: u64,
+    /// Requests that missed the owner's local cache.
+    pub owner_misses: u64,
+    /// Registered loader executions.
+    pub loader_executions: u64,
+    /// Requests that joined an already-running owner-side load for the key.
+    pub in_flight_joins: u64,
+    /// Loader results stored on the owner and returned to callers.
+    pub loaded: u64,
+    /// Loader results that intentionally produced no value.
+    pub misses: u64,
+    /// Requests rejected before loader execution.
+    pub rejections: u64,
+    /// Loader, codec, or local cache failures.
+    pub failures: u64,
+    /// Successful owner cache stores after loader completion.
+    pub stores: u64,
+}
+
+impl OwnerLoadDiagnostics {
+    /// Return owner hits plus successful owner loads.
+    pub fn total_successes(&self) -> u64 {
+        self.owner_hits.saturating_add(self.loaded)
+    }
+
+    /// Return whether any request failed or was rejected.
+    pub fn has_failures(&self) -> bool {
+        self.rejections.saturating_add(self.failures) > 0
+    }
+}
+
+/// Owner-side load service backed by a local [`HydraCache`] and loader registry.
+///
+/// # Example
+///
+/// ```no_run
+/// use bytes::Bytes;
+/// use hydracache::{CacheOptions, ClusterGeneration, HydraCache};
+/// use hydracache_cluster_transport_axum::{
+///     OwnerLoadRegistry, OwnerLoadRequest, OwnerLoadService, OwnerLoadValue,
+/// };
+///
+/// # async fn example() -> hydracache::CacheResult<()> {
+/// let cache = HydraCache::local().build();
+/// let registry = OwnerLoadRegistry::new()
+///     .register("users.by-id", |request| async move {
+///         let id = request.arg_i64("id").unwrap();
+///         Ok(Some(OwnerLoadValue::encoded(
+///             Bytes::from(format!("encoded-user-{id}")),
+///             request.cache_options(),
+///         )))
+///     });
+///
+/// let service = OwnerLoadService::new(
+///     "member-a",
+///     ClusterGeneration::new(1),
+///     cache,
+///     registry,
+/// );
+///
+/// let request = OwnerLoadRequest {
+///     owner: "member-a".to_owned(),
+///     key: "user:42".to_owned(),
+///     loader: "users.by-id".to_owned(),
+///     tags: vec!["user:42".to_owned()],
+///     ttl_ms: None,
+///     args: Default::default(),
+///     generation: Some(1),
+///     request_id: "req-1".to_owned(),
+/// };
+///
+/// let _response = service.load(request).await;
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Clone)]
+pub struct OwnerLoadService<C = hydracache::PostcardCodec>
+where
+    C: CacheCodec,
+{
+    owner: ClusterNodeId,
+    generation: ClusterGeneration,
+    cache: HydraCache<C>,
+    registry: OwnerLoadRegistry,
+    diagnostics: Arc<Mutex<OwnerLoadDiagnostics>>,
+    in_flight: Arc<Mutex<BTreeMap<String, SharedOwnerLoadFuture>>>,
+}
+
+impl<C> fmt::Debug for OwnerLoadService<C>
+where
+    C: CacheCodec,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("OwnerLoadService")
+            .field("owner", &self.owner)
+            .field("generation", &self.generation)
+            .field("registry", &self.registry)
+            .finish_non_exhaustive()
+    }
+}
+
+impl<C> OwnerLoadService<C>
+where
+    C: CacheCodec + Send + Sync + 'static,
+{
+    /// Create an owner-load service for one member.
+    pub fn new(
+        owner: impl Into<ClusterNodeId>,
+        generation: ClusterGeneration,
+        cache: HydraCache<C>,
+        registry: OwnerLoadRegistry,
+    ) -> Self {
+        Self {
+            owner: owner.into(),
+            generation,
+            cache,
+            registry,
+            diagnostics: Arc::new(Mutex::new(OwnerLoadDiagnostics::default())),
+            in_flight: Arc::new(Mutex::new(BTreeMap::new())),
+        }
+    }
+
+    /// Return the owner node id served by this service.
+    pub fn owner(&self) -> &ClusterNodeId {
+        &self.owner
+    }
+
+    /// Return the owner generation served by this service.
+    pub fn generation(&self) -> ClusterGeneration {
+        self.generation
+    }
+
+    /// Return the local owner cache.
+    pub fn cache(&self) -> &HydraCache<C> {
+        &self.cache
+    }
+
+    /// Return the owner loader registry.
+    pub fn registry(&self) -> &OwnerLoadRegistry {
+        &self.registry
+    }
+
+    /// Return current owner-load diagnostics.
+    pub fn diagnostics(&self) -> OwnerLoadDiagnostics {
+        *self
+            .diagnostics
+            .lock()
+            .expect("owner-load diagnostics poisoned")
+    }
+
+    /// Serve one owner-load request.
+    pub async fn load(&self, request: OwnerLoadRequest) -> OwnerLoadResponse {
+        Self::record(&self.diagnostics, |diagnostics| {
+            diagnostics.attempts = diagnostics.attempts.saturating_add(1);
+        });
+
+        if request.owner != self.owner.as_str() {
+            return self.reject(
+                OwnerLoadRejection::new(
+                    OwnerLoadRejectionCode::WrongOwner,
+                    format!(
+                        "owner-load service serves owner '{}', not '{}'",
+                        self.owner, request.owner
+                    ),
+                )
+                .owners(request.owner, self.owner.as_str()),
+            );
+        }
+
+        if let Some(requested_generation) = request.generation {
+            if ClusterGeneration::new(requested_generation) != self.generation {
+                return self.reject(
+                    OwnerLoadRejection::new(
+                        OwnerLoadRejectionCode::StaleGeneration,
+                        format!(
+                            "requested owner generation {} does not match current generation {}",
+                            requested_generation,
+                            self.generation.value()
+                        ),
+                    )
+                    .generations(Some(requested_generation), Some(self.generation.value())),
+                );
+            }
+        }
+
+        match self.cache.get_encoded(&request.key).await {
+            Ok(Some(value)) => {
+                Self::record(&self.diagnostics, |diagnostics| {
+                    diagnostics.owner_hits = diagnostics.owner_hits.saturating_add(1);
+                });
+                return OwnerLoadResponse::Hit(OwnerLoadHit::new(
+                    self.owner.as_str(),
+                    request.key,
+                    request.loader,
+                    value,
+                ));
+            }
+            Ok(None) => {
+                Self::record(&self.diagnostics, |diagnostics| {
+                    diagnostics.owner_misses = diagnostics.owner_misses.saturating_add(1);
+                });
+            }
+            Err(error) => {
+                return self.fail(
+                    "cache-read-error",
+                    error.to_string(),
+                    request.key,
+                    request.loader,
+                );
+            }
+        }
+
+        if !self.registry.contains_loader(&request.loader) {
+            return self.reject(OwnerLoadRejection::new(
+                OwnerLoadRejectionCode::MissingLoader,
+                format!("owner-load loader '{}' is not registered", request.loader),
+            ));
+        }
+
+        self.load_shared(request).await
+    }
+
+    async fn load_shared(&self, request: OwnerLoadRequest) -> OwnerLoadResponse {
+        let key = request.key.clone();
+        let shared = {
+            let mut in_flight = self
+                .in_flight
+                .lock()
+                .expect("owner-load in-flight map poisoned");
+            if let Some(shared) = in_flight.get(&key) {
+                Self::record(&self.diagnostics, |diagnostics| {
+                    diagnostics.in_flight_joins = diagnostics.in_flight_joins.saturating_add(1);
+                });
+                shared.clone()
+            } else {
+                let cache = self.cache.clone();
+                let registry = self.registry.clone();
+                let diagnostics = self.diagnostics.clone();
+                let owner = self.owner.clone();
+                let shared = async move {
+                    Self::load_once(cache, registry, diagnostics, owner, request).await
+                }
+                .boxed()
+                .shared();
+                in_flight.insert(key.clone(), shared.clone());
+                shared
+            }
+        };
+
+        let response = shared.await;
+        self.in_flight
+            .lock()
+            .expect("owner-load in-flight map poisoned")
+            .remove(&key);
+        response
+    }
+
+    async fn load_once(
+        cache: HydraCache<C>,
+        registry: OwnerLoadRegistry,
+        diagnostics: Arc<Mutex<OwnerLoadDiagnostics>>,
+        owner: ClusterNodeId,
+        request: OwnerLoadRequest,
+    ) -> OwnerLoadResponse {
+        Self::record(&diagnostics, |diagnostics| {
+            diagnostics.loader_executions = diagnostics.loader_executions.saturating_add(1);
+        });
+
+        match registry.load(request.clone()).await {
+            Ok(Some(value)) => {
+                let (bytes, options) = value.into_parts();
+                match cache
+                    .put_encoded(&request.key, bytes.clone(), options)
+                    .await
+                {
+                    Ok(()) => {
+                        Self::record(&diagnostics, |diagnostics| {
+                            diagnostics.loaded = diagnostics.loaded.saturating_add(1);
+                            diagnostics.stores = diagnostics.stores.saturating_add(1);
+                        });
+                        OwnerLoadResponse::Loaded(OwnerLoadHit::new(
+                            owner.as_str(),
+                            request.key,
+                            request.loader,
+                            bytes,
+                        ))
+                    }
+                    Err(error) => {
+                        Self::record(&diagnostics, |diagnostics| {
+                            diagnostics.failures = diagnostics.failures.saturating_add(1);
+                        });
+                        OwnerLoadResponse::Failed(OwnerLoadFailure::new(
+                            "cache-store-error",
+                            error.to_string(),
+                            request.key,
+                            request.loader,
+                        ))
+                    }
+                }
+            }
+            Ok(None) => {
+                Self::record(&diagnostics, |diagnostics| {
+                    diagnostics.misses = diagnostics.misses.saturating_add(1);
+                });
+                OwnerLoadResponse::Miss(OwnerLoadMiss::new(
+                    owner.as_str(),
+                    request.key,
+                    request.loader,
+                ))
+            }
+            Err(error) => {
+                Self::record(&diagnostics, |diagnostics| {
+                    diagnostics.failures = diagnostics.failures.saturating_add(1);
+                });
+                OwnerLoadResponse::Failed(OwnerLoadFailure::new(
+                    "loader-error",
+                    error.to_string(),
+                    request.key,
+                    request.loader,
+                ))
+            }
+        }
+    }
+
+    fn reject(&self, rejection: OwnerLoadRejection) -> OwnerLoadResponse {
+        Self::record(&self.diagnostics, |diagnostics| {
+            diagnostics.rejections = diagnostics.rejections.saturating_add(1);
+        });
+        OwnerLoadResponse::Rejected(rejection)
+    }
+
+    fn fail(
+        &self,
+        code: impl Into<String>,
+        message: impl Into<String>,
+        key: String,
+        loader: String,
+    ) -> OwnerLoadResponse {
+        Self::record(&self.diagnostics, |diagnostics| {
+            diagnostics.failures = diagnostics.failures.saturating_add(1);
+        });
+        OwnerLoadResponse::Failed(OwnerLoadFailure::new(code, message, key, loader))
+    }
+
+    fn record(
+        diagnostics: &Arc<Mutex<OwnerLoadDiagnostics>>,
+        update: impl FnOnce(&mut OwnerLoadDiagnostics),
+    ) {
+        let mut diagnostics = diagnostics.lock().expect("owner-load diagnostics poisoned");
+        update(&mut diagnostics);
     }
 }
 
@@ -1957,6 +2448,289 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn owner_load_registry_replaces_loaders_and_exposes_names() {
+        let registry = OwnerLoadRegistry::new()
+            .register("users.by-id", |_| async {
+                Ok(Some(OwnerLoadValue::encoded(
+                    Bytes::from_static(b"first"),
+                    CacheOptions::new(),
+                )))
+            })
+            .register("users.by-id", |_| async { Ok(None) });
+
+        assert_eq!(registry.len(), 1);
+        assert!(!registry.is_empty());
+        assert_eq!(registry.loader_names(), vec!["users.by-id"]);
+        assert!(registry.contains_loader("users.by-id"));
+        assert!(format!("{registry:?}").contains("users.by-id"));
+
+        let loaded = registry
+            .load(owner_load_request("user:42", "users.by-id", 7))
+            .await
+            .unwrap();
+        assert_eq!(loaded, None);
+
+        let missing = registry
+            .load(owner_load_request("user:42", "missing", 7))
+            .await
+            .unwrap_err();
+        assert!(missing.to_string().contains("not registered"));
+    }
+
+    #[tokio::test]
+    async fn owner_load_service_hits_local_cache_without_loader_execution() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("answer", 42_u64, CacheOptions::new())
+            .await
+            .unwrap();
+        let registry = OwnerLoadRegistry::new();
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            cache.clone(),
+            registry,
+        );
+
+        let response = service
+            .load(owner_load_request("answer", "missing-loader", 7))
+            .await;
+
+        assert!(response.is_hit());
+        assert!(!response.is_loaded());
+        assert_eq!(
+            response.decode_value().unwrap().unwrap(),
+            encoded_u64(42).await
+        );
+        assert_eq!(service.owner().as_str(), "member-a");
+        assert_eq!(service.generation(), ClusterGeneration::new(7));
+        assert_eq!(
+            service.cache().get::<u64>("answer").await.unwrap(),
+            Some(42)
+        );
+
+        let diagnostics = service.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.owner_hits, 1);
+        assert_eq!(diagnostics.owner_misses, 0);
+        assert_eq!(diagnostics.loader_executions, 0);
+        assert_eq!(diagnostics.total_successes(), 1);
+        assert!(!diagnostics.has_failures());
+        assert!(format!("{service:?}").contains("OwnerLoadService"));
+    }
+
+    #[tokio::test]
+    async fn owner_load_service_loads_miss_and_stores_value() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let registry = {
+            let calls = calls.clone();
+            OwnerLoadRegistry::new().register("answers.by-id", move |request| {
+                let calls = calls.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok(Some(OwnerLoadValue::encoded(
+                        encoded_u64(request.arg_u64("id").unwrap()).await,
+                        request.cache_options(),
+                    )))
+                }
+            })
+        };
+        let cache = HydraCache::local().build();
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            cache.clone(),
+            registry,
+        );
+
+        let response = service
+            .load(
+                owner_load_request("answer", "answers.by-id", 7)
+                    .with_args(OwnerLoadArgs::new().arg("id", 42_u64)),
+            )
+            .await;
+
+        assert!(response.is_loaded());
+        assert_eq!(
+            response.decode_value().unwrap().unwrap(),
+            encoded_u64(42).await
+        );
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        let second = service
+            .load(owner_load_request("answer", "answers.by-id", 7))
+            .await;
+        assert!(matches!(second, OwnerLoadResponse::Hit(_)));
+
+        let diagnostics = service.diagnostics();
+        assert_eq!(diagnostics.attempts, 2);
+        assert_eq!(diagnostics.owner_hits, 1);
+        assert_eq!(diagnostics.owner_misses, 1);
+        assert_eq!(diagnostics.loader_executions, 1);
+        assert_eq!(diagnostics.loaded, 1);
+        assert_eq!(diagnostics.stores, 1);
+        assert_eq!(diagnostics.total_successes(), 2);
+    }
+
+    #[tokio::test]
+    async fn owner_load_service_rejects_wrong_owner_generation_and_missing_loader() {
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            OwnerLoadRegistry::new(),
+        );
+
+        let wrong_owner = service
+            .load(OwnerLoadRequest {
+                owner: "member-b".to_owned(),
+                ..owner_load_request("user:42", "users.by-id", 7)
+            })
+            .await;
+        assert!(wrong_owner.is_rejected());
+        match wrong_owner {
+            OwnerLoadResponse::Rejected(rejection) => {
+                assert_eq!(rejection.code, OwnerLoadRejectionCode::WrongOwner);
+                assert_eq!(rejection.current_owner.as_deref(), Some("member-a"));
+            }
+            other => panic!("unexpected response: {other:?}"),
+        }
+
+        let stale_generation = service
+            .load(owner_load_request("user:42", "users.by-id", 6))
+            .await;
+        assert!(stale_generation.is_rejected());
+        match stale_generation {
+            OwnerLoadResponse::Rejected(rejection) => {
+                assert_eq!(rejection.code, OwnerLoadRejectionCode::StaleGeneration);
+                assert_eq!(rejection.requested_generation, Some(6));
+                assert_eq!(rejection.current_generation, Some(7));
+            }
+            other => panic!("unexpected response: {other:?}"),
+        }
+
+        let missing_loader = service
+            .load(owner_load_request("user:42", "users.by-id", 7))
+            .await;
+        assert!(missing_loader.is_rejected());
+        match missing_loader {
+            OwnerLoadResponse::Rejected(rejection) => {
+                assert_eq!(rejection.code, OwnerLoadRejectionCode::MissingLoader);
+                assert!(rejection.message.contains("not registered"));
+            }
+            other => panic!("unexpected response: {other:?}"),
+        }
+
+        let diagnostics = service.diagnostics();
+        assert_eq!(diagnostics.attempts, 3);
+        assert_eq!(diagnostics.rejections, 3);
+        assert_eq!(diagnostics.owner_misses, 1);
+        assert_eq!(diagnostics.loader_executions, 0);
+        assert!(diagnostics.has_failures());
+    }
+
+    #[tokio::test]
+    async fn owner_load_service_maps_loader_miss_and_failure() {
+        let miss_service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            OwnerLoadRegistry::new().register("users.optional", |_| async { Ok(None) }),
+        );
+
+        let miss = miss_service
+            .load(owner_load_request("missing", "users.optional", 7))
+            .await;
+        assert!(miss.is_miss());
+        assert_eq!(miss.decode_value().unwrap(), None);
+        assert_eq!(miss_service.diagnostics().misses, 1);
+
+        let failure_service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            OwnerLoadRegistry::new().register("users.failing", |_| async {
+                Err(CacheError::Loader("database unavailable".to_owned()))
+            }),
+        );
+
+        let failure = failure_service
+            .load(owner_load_request("user:42", "users.failing", 7))
+            .await;
+        assert!(failure.is_failed());
+        match failure {
+            OwnerLoadResponse::Failed(failure) => {
+                assert_eq!(failure.code, "loader-error");
+                assert!(failure.message.contains("database unavailable"));
+            }
+            other => panic!("unexpected response: {other:?}"),
+        }
+        assert_eq!(failure_service.diagnostics().failures, 1);
+    }
+
+    #[tokio::test]
+    async fn owner_load_service_shares_concurrent_loader_for_same_key() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let registry = {
+            let calls = calls.clone();
+            OwnerLoadRegistry::new().register("answers.slow", move |request| {
+                let calls = calls.clone();
+                async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    tokio::time::sleep(Duration::from_millis(40)).await;
+                    Ok(Some(OwnerLoadValue::encoded(
+                        encoded_u64(request.arg_u64("id").unwrap()).await,
+                        request.cache_options(),
+                    )))
+                }
+            })
+        };
+        let service = Arc::new(OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        ));
+
+        let mut tasks = Vec::new();
+        for _ in 0..8 {
+            let service = service.clone();
+            tasks.push(tokio::spawn(async move {
+                service
+                    .load(
+                        owner_load_request("answer", "answers.slow", 7)
+                            .with_args(OwnerLoadArgs::new().arg("id", 42_u64)),
+                    )
+                    .await
+            }));
+        }
+
+        for task in tasks {
+            let response = task.await.unwrap();
+            assert!(response.is_loaded());
+            assert_eq!(
+                response.decode_value().unwrap().unwrap(),
+                encoded_u64(42).await
+            );
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(
+            service.cache().get::<u64>("answer").await.unwrap(),
+            Some(42)
+        );
+
+        let diagnostics = service.diagnostics();
+        assert_eq!(diagnostics.attempts, 8);
+        assert_eq!(diagnostics.owner_misses, 8);
+        assert_eq!(diagnostics.loader_executions, 1);
+        assert!(diagnostics.in_flight_joins >= 1);
+        assert_eq!(diagnostics.loaded, 1);
+        assert_eq!(diagnostics.stores, 1);
+    }
+
+    #[tokio::test]
     async fn memory_store_reports_hits_and_misses() {
         let store = MemoryPeerFetchStore::new();
         assert!(store.is_empty());
@@ -2617,6 +3391,19 @@ mod tests {
         assert!(body.message.contains("forced store failure"));
         assert_eq!(body.requested_generation, Some(7));
         assert_eq!(body.current_generation, Some(7));
+    }
+
+    fn owner_load_request(key: &str, loader: &str, generation: u64) -> OwnerLoadRequest {
+        OwnerLoadRequest {
+            owner: "member-a".to_owned(),
+            key: key.to_owned(),
+            loader: loader.to_owned(),
+            tags: vec![key.to_owned()],
+            ttl_ms: Some(60_000),
+            args: OwnerLoadArgs::new(),
+            generation: Some(generation),
+            request_id: format!("request:{key}"),
+        }
     }
 
     fn service_with_store(store: MemoryPeerFetchStore) -> AxumPeerFetchService {
