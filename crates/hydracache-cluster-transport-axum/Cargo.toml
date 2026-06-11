@@ -1,0 +1,27 @@
+[package]
+name = "hydracache-cluster-transport-axum"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Axum/HTTP peer-fetch transport for HydraCache cluster members"
+readme = "README.md"
+
+[dependencies]
+async-trait.workspace = true
+axum.workspace = true
+base64.workspace = true
+bytes.workspace = true
+hydracache.workspace = true
+hydracache-core.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+tokio.workspace = true
+tower.workspace = true
+
+[lints]
+workspace = true

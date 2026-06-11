@@ -81,6 +81,8 @@ The current v0 line includes:
   candidate discovery
 - optional `hydracache-cluster-raft` crate for a real raft-rs-backed metadata
   runtime
+- optional `hydracache-cluster-transport-axum` crate for real HTTP peer-fetch
+  over encoded cache bytes
 - cluster diagnostics for role, node id, generation, epoch, bootstrap nodes,
   member/client counts, invalidation subscribers, ownership resolutions, and
   no-owner outcomes
@@ -785,8 +787,39 @@ assert!(response.is_hit());
 # }
 ```
 
-The in-memory implementation is for tests, demos, and sandbox reports. Real
-network peer fetch and owner-side query execution remain future work.
+The in-memory implementation is for tests, demos, and sandbox reports. For real
+member-to-member HTTP peer fetch, opt in to `hydracache-cluster-transport-axum`:
+
+```rust
+use std::sync::Arc;
+
+use hydracache::{CacheOptions, ClusterGeneration, HydraCache};
+use hydracache_cluster_transport_axum::{AxumPeerFetchService, HttpPeerFetch};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let owner_cache = HydraCache::local().build();
+owner_cache.put("user:42", 42_u64, CacheOptions::new()).await?;
+
+let routes = AxumPeerFetchService::new(
+    "member-a",
+    ClusterGeneration::new(1),
+    Arc::new(owner_cache),
+)
+.routes();
+# let _ = routes;
+
+let peer_fetch = HttpPeerFetch::for_base_url("http://127.0.0.1:3000");
+assert_eq!(
+    peer_fetch.endpoint(),
+    "http://127.0.0.1:3000/cluster/peer-fetch"
+);
+# Ok(())
+# }
+```
+
+The HTTP transport validates owner id and generation before returning bytes, so
+stale clients do not silently read from a restarted owner. Owner-side automatic
+query execution, TLS, and authentication remain future work.
 
 Ownership counters live in a separate diagnostics snapshot so the original
 `ClusterDiagnostics` struct can remain backwards-compatible for users that
@@ -807,7 +840,7 @@ assert_eq!(ownership.owner_found(), 1);
 
 ## Cluster Support Boundaries
 
-The current `0.21.x` cluster support is intentionally an embedded coordination
+The current `0.22.x` cluster support is intentionally an embedded coordination
 surface, not a production distributed data grid. It includes:
 
 - local, client, and member cache roles;
@@ -818,6 +851,7 @@ surface, not a production distributed data grid. It includes:
 - a composition crate for the standard chitchat + raft setup;
 - deterministic rendezvous ownership resolution over admitted members;
 - a transport-neutral peer-fetch seam that moves encoded bytes;
+- an optional Axum/HTTP peer-fetch transport for owner member reads;
 - diagnostics counters for membership, invalidation, ownership, and peer-fetch
   demo activity.
 
@@ -1527,6 +1561,7 @@ lines investigated before release.
 - `hydracache-cluster` - use this when you want the standard chitchat + raft adapter composition without wiring every handle manually.
 - `hydracache-cluster-chitchat` - use this when you want real chitchat-backed cluster candidate discovery.
 - `hydracache-cluster-raft` - use this when you want the real raft-rs metadata runtime behind `ClusterControlPlane`.
+- `hydracache-cluster-transport-axum` - use this when cluster members should expose HTTP peer-fetch over encoded cache bytes.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
@@ -1553,6 +1588,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md](docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md)
 - [docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md)
 - [docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md](docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md)
+- [docs/plans/V0_22_REMOTE_PEER_FETCH_PLAN.md](docs/plans/V0_22_REMOTE_PEER_FETCH_PLAN.md)
 
 ## Workspace
 
@@ -1560,6 +1596,8 @@ The v0 release plan is maintained here:
 - `crates/hydracache` - user-facing local cache runtime, typed cache, single-flight, tag index, stats, diagnostics, invalidation bus, and client/member cluster API
 - `crates/hydracache-cluster-chitchat` - optional real chitchat-backed cluster discovery adapter
 - `crates/hydracache-cluster-raft` - optional real raft-rs metadata control-plane runtime
+- `crates/hydracache-cluster` - optional composition helpers for the standard chitchat + raft cluster setup
+- `crates/hydracache-cluster-transport-axum` - optional Axum/HTTP peer-fetch transport for encoded member values
 - `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
 - `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes

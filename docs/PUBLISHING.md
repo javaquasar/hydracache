@@ -107,6 +107,9 @@ cargo publish -p hydracache-cluster-raft
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
 
+cargo package -p hydracache-cluster-transport-axum
+cargo publish -p hydracache-cluster-transport-axum
+
 cargo package -p hydracache-observability
 cargo publish -p hydracache-observability
 
@@ -185,7 +188,8 @@ git push origin v0.1.0
 Then run the `Post Publish Verification` GitHub Actions workflow manually with
 the published version. It creates a fresh consumer crate and installs
 `hydracache`, `hydracache-core`, the currently covered cluster discovery/Raft
-adapter crates, and DB adapter crates from crates.io.
+adapter crates, peer-fetch transport crate, and DB adapter crates from
+crates.io.
 
 ## Publishing an update
 
@@ -227,6 +231,9 @@ cargo publish -p hydracache-cluster-raft
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
 
+cargo package -p hydracache-cluster-transport-axum
+cargo publish -p hydracache-cluster-transport-axum
+
 cargo package -p hydracache-observability
 cargo publish -p hydracache-observability
 
@@ -259,8 +266,9 @@ The workflow creates a fresh external consumer crate and pulls the published
 packages from crates.io. It also creates a dependency-order smoke crate that
 adds every published HydraCache crate in publish order and runs `cargo check`
 after each addition. Together, these checks cover the runtime, core, macros,
-cluster composition crate, chitchat and raft cluster adapters, observability,
-actuator routes, `hydracache-db`, and `hydracache-sqlx`. This is intentionally
+cluster composition crate, chitchat and raft cluster adapters, HTTP peer-fetch
+transport, observability, actuator routes, `hydracache-db`, and
+`hydracache-sqlx`. This is intentionally
 separate from workspace tests because it catches packaging, dependency-order,
 and re-export problems that local path dependencies can hide.
 
@@ -315,9 +323,10 @@ crate first, then wait for the crates.io index to update before publishing
 `hydracache-db`. Cluster adapters such as `hydracache-cluster-chitchat` and
 `hydracache-cluster-raft` also depend on the runtime crate and should be
 published after `hydracache`. Composition and integration crates such as
-`hydracache-cluster`, `hydracache-observability`, and
-`hydracache-actuator-axum` should follow the crates they depend on. Concrete
-database adapters such as `hydracache-sqlx` are published last.
+`hydracache-cluster`, `hydracache-cluster-transport-axum`,
+`hydracache-observability`, and `hydracache-actuator-axum` should follow the
+crates they depend on. Concrete database adapters such as `hydracache-sqlx` are
+published last.
 
 ## MSRV and Dependency Updates
 

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use bytes::Bytes;
-use hydracache_core::{CacheError, CacheOptions, Result as CacheResult};
+use hydracache_core::{CacheCodec, CacheError, CacheOptions, PostcardCodec, Result as CacheResult};
 use std::sync::atomic::AtomicUsize;
 
 use crate::tests::common::{user, LoaderError, User};
@@ -75,6 +75,47 @@ async fn get_removes_expired_entry() {
     let cached: Option<User> = cache.get("user:expired").await.unwrap();
     assert_eq!(cached, None);
     assert!(!cache.contains_key("user:expired").await);
+}
+
+#[tokio::test]
+async fn get_encoded_returns_stored_bytes_without_decoding() {
+    let cache = HydraCache::local().build();
+
+    cache
+        .put("user:encoded", user(1), CacheOptions::new())
+        .await
+        .unwrap();
+
+    let encoded = cache
+        .get_encoded("user:encoded")
+        .await
+        .unwrap()
+        .expect("encoded value");
+    let decoded: User = PostcardCodec.decode(&encoded).unwrap();
+
+    assert_eq!(decoded, user(1));
+    assert_eq!(cache.stats().hits, 1);
+}
+
+#[tokio::test]
+async fn get_encoded_removes_expired_entry() {
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:encoded-expired",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(20)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    let encoded = cache.get_encoded("user:encoded-expired").await.unwrap();
+    assert_eq!(encoded, None);
+    assert!(!cache.contains_key("user:encoded-expired").await);
+    assert_eq!(cache.stats().misses, 1);
 }
 
 #[tokio::test]

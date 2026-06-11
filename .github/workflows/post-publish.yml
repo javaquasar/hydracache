@@ -6,7 +6,7 @@ on:
       version:
         description: Published HydraCache version to verify
         required: true
-        default: 0.21.0
+        default: 0.22.0
 
 permissions:
   contents: read
@@ -41,6 +41,8 @@ jobs:
           cargo check
           cargo add hydracache-cluster@${{ inputs.version }}
           cargo check
+          cargo add hydracache-cluster-transport-axum@${{ inputs.version }}
+          cargo check
           cargo add hydracache-observability@${{ inputs.version }}
           cargo check
           cargo add hydracache-actuator-axum@${{ inputs.version }}
@@ -58,6 +60,7 @@ jobs:
           cargo add hydracache-cluster@${{ inputs.version }}
           cargo add hydracache-cluster-chitchat@${{ inputs.version }}
           cargo add hydracache-cluster-raft@${{ inputs.version }}
+          cargo add hydracache-cluster-transport-axum@${{ inputs.version }}
           cargo add hydracache-observability@${{ inputs.version }}
           cargo add hydracache-actuator-axum@${{ inputs.version }}
           cargo add hydracache-db@${{ inputs.version }}
@@ -77,6 +80,10 @@ jobs:
               use hydracache_cluster::HydraCluster;
               use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
               use hydracache_cluster_raft::RaftMetadataRuntime;
+              use hydracache_cluster_transport_axum::{
+                  AxumPeerFetchService, HttpPeerFetch, MemoryPeerFetchStore,
+                  PeerFetchHttpRequest, PeerFetchHttpResponse, DEFAULT_PEER_FETCH_PATH,
+              };
               use hydracache_db::DbCache;
               use hydracache_observability::HydraCacheRegistry;
               use hydracache_sqlx::SqlxCache;
@@ -232,6 +239,43 @@ jobs:
                   assert_eq!(fetch_diagnostics.misses, 1);
                   assert_eq!(fetch_diagnostics.total_requests(), 2);
                   assert_eq!(fetch_diagnostics.hit_ratio(), Some(0.5));
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_http_peer_fetch_transport_smoke_test() -> hydracache::CacheResult<()> {
+                  let store = MemoryPeerFetchStore::new();
+                  store.put("user:42", Vec::from("encoded-user"));
+                  let service = AxumPeerFetchService::new(
+                      "member-a",
+                      ClusterGeneration::new(7),
+                      Arc::new(store),
+                  );
+                  let _routes = service.routes();
+
+                  let request = hydracache::ClusterPeerFetchRequest::new("member-a", "user:42")
+                      .generation(ClusterGeneration::new(7));
+                  let http_request = PeerFetchHttpRequest::from_peer_request(&request);
+                  assert_eq!(http_request.owner, "member-a");
+                  assert_eq!(http_request.generation, Some(7));
+
+                  let peer_response = hydracache::ClusterPeerFetchResponse::hit(
+                      "member-a",
+                      "user:42",
+                      Vec::from("encoded-user"),
+                  );
+                  let http_response = PeerFetchHttpResponse::from_peer_response(&peer_response);
+                  assert_eq!(
+                      http_response.decode_value()?.unwrap().as_ref(),
+                      b"encoded-user"
+                  );
+
+                  let peer_fetch = HttpPeerFetch::for_base_url("http://127.0.0.1:3000/");
+                  assert_eq!(
+                      peer_fetch.endpoint(),
+                      format!("http://127.0.0.1:3000{DEFAULT_PEER_FETCH_PATH}")
+                  );
 
                   Ok(())
               }

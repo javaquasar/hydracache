@@ -18,6 +18,7 @@ $packageSets = @{
         "hydracache-cluster-chitchat",
         "hydracache-cluster-raft",
         "hydracache-cluster",
+        "hydracache-cluster-transport-axum",
         "hydracache-observability",
         "hydracache-actuator-axum",
         "hydracache-db",

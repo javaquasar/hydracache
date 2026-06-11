@@ -458,6 +458,68 @@ where
         }
     }
 
+    /// Get the encoded bytes stored for a key.
+    ///
+    /// This is mainly intended for transport adapters that need to move an
+    /// already-encoded value between cache members without knowing the
+    /// application type. Most application code should prefer [`get`](Self::get)
+    /// or [`get_or_insert_with`](Self::get_or_insert_with).
+    ///
+    /// Expiration, hit/miss counters, and access events follow the same rules
+    /// as [`get`](Self::get).
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{CacheOptions, HydraCache};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// cache.put("answer", 42_u64, CacheOptions::new()).await?;
+    ///
+    /// let encoded = cache.get_encoded("answer").await?;
+    /// assert!(encoded.is_some());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn get_encoded(&self, key: &str) -> Result<Option<Bytes>> {
+        match self.inner.store.get(key).await {
+            Some(entry) if entry.is_expired() => {
+                self.remove_expired(key, &entry).await;
+                self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
+                self.publish_key_event(
+                    CacheEventKind::Miss,
+                    key,
+                    CacheEventOrigin::LocalApi,
+                    entry.tags.clone(),
+                );
+                Ok(None)
+            }
+            Some(entry) => {
+                self.inner.stats.hits.fetch_add(1, Ordering::Relaxed);
+                self.publish_key_event(
+                    CacheEventKind::Hit,
+                    key,
+                    CacheEventOrigin::LocalApi,
+                    entry.tags.clone(),
+                );
+                Ok(Some(entry.value))
+            }
+            None => {
+                self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
+                self.publish_key_event(
+                    CacheEventKind::Miss,
+                    key,
+                    CacheEventOrigin::LocalApi,
+                    Vec::<String>::new(),
+                );
+                Ok(None)
+            }
+        }
+    }
+
     /// Encode and store a value.
     ///
     /// # Example
