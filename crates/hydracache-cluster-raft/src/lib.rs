@@ -9,6 +9,13 @@
 //! drives the real raft-rs lifecycle: campaign, propose, `Ready`, stable-log
 //! append, and committed-entry application.
 //!
+//! Applied commands are stored as [`RaftMetadataCommandEnvelope`] values with a
+//! stable command id. Duplicate command ids are reported as
+//! [`RaftCommandStatus::Duplicate`], and materialized membership changes happen
+//! only after a successful Raft commit. [`RaftMetadataRuntime::export_snapshot`]
+//! and [`RaftMetadataRuntime::from_snapshot`] provide an in-memory recovery
+//! boundary for tests and demos.
+//!
 //! ## Bridging Discovery To Raft Metadata
 //!
 //! The cluster composition is deliberately split:
@@ -78,12 +85,13 @@
 //! # }
 //! ```
 
+use std::collections::BTreeSet;
 use std::fmt;
 use std::sync::{Arc, Mutex};
 
 use hydracache::{
     CacheError, CacheInvalidationBus, CacheResult, ClusterCandidate, ClusterControlPlane,
-    ClusterDiagnostics, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
+    ClusterDiagnostics, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
     ClusterMembershipSubscriber, ClusterNodeId, ClusterRole, InMemoryCluster, RaftMetadataCommand,
 };
 use raft::eraftpb::{Entry, EntryType};
@@ -164,6 +172,56 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub commands_committed: usize,
     /// Last applied metadata command, if any.
     pub last_command: Option<RaftMetadataCommand>,
+    /// Number of duplicate command ids skipped by the metadata state machine.
+    pub duplicate_commands: usize,
+    /// Last command result, if any.
+    pub last_result: Option<RaftCommandResult>,
+}
+
+/// Metadata command plus a stable idempotency key.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RaftMetadataCommandEnvelope {
+    /// Stable command id used to deduplicate retries.
+    pub command_id: String,
+    /// Metadata command applied after Raft commit.
+    pub command: RaftMetadataCommand,
+}
+
+/// Result of proposing a metadata command.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RaftCommandResult {
+    /// Stable command id.
+    pub command_id: String,
+    /// Result status.
+    pub status: RaftCommandStatus,
+    /// Applied index observed after the command was handled.
+    pub applied_index: u64,
+}
+
+/// Status for a metadata command proposal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftCommandStatus {
+    /// Command was proposed, committed, and applied.
+    Committed,
+    /// Command id was already applied and was skipped.
+    Duplicate,
+}
+
+/// Exported in-memory metadata snapshot for recovery tests and demos.
+///
+/// This is not a durable multi-node Raft log format yet. It captures the
+/// materialized metadata commands that have already been applied so a new
+/// runtime can rebuild the same membership view.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RaftMetadataRuntimeExport {
+    /// Logical cluster name.
+    pub cluster_name: String,
+    /// Local raft node id.
+    pub raft_node_id: u64,
+    /// Last applied index tracked by the metadata state machine.
+    pub applied_index: u64,
+    /// Applied command envelopes in order.
+    pub commands: Vec<RaftMetadataCommandEnvelope>,
 }
 
 /// Stable debug-friendly view of raft-rs [`StateRole`].
@@ -189,8 +247,12 @@ impl From<StateRole> for RaftRuntimeRole {
 
 struct RaftRuntimeState {
     raw_node: RawNode<MemStorage>,
-    commands: Vec<RaftMetadataCommand>,
+    commands: Vec<RaftMetadataCommandEnvelope>,
+    applied_command_ids: BTreeSet<String>,
+    results: Vec<RaftCommandResult>,
     applied_index: u64,
+    #[cfg(test)]
+    fail_next_proposal: bool,
 }
 
 impl fmt::Debug for RaftRuntimeState {
@@ -233,7 +295,11 @@ impl RaftMetadataRuntime {
         let mut state = RaftRuntimeState {
             raw_node,
             commands: Vec::new(),
+            applied_command_ids: BTreeSet::new(),
+            results: Vec::new(),
             applied_index: 0,
+            #[cfg(test)]
+            fail_next_proposal: false,
         };
         state.drain_ready()?;
 
@@ -250,6 +316,26 @@ impl RaftMetadataRuntime {
             .lock()
             .expect("raft metadata state poisoned")
             .commands
+            .iter()
+            .map(|envelope| envelope.command.clone())
+            .collect()
+    }
+
+    /// Return applied command envelopes with idempotency keys.
+    pub fn command_envelopes(&self) -> Vec<RaftMetadataCommandEnvelope> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .commands
+            .clone()
+    }
+
+    /// Return command proposal results.
+    pub fn command_results(&self) -> Vec<RaftCommandResult> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .results
             .clone()
     }
 
@@ -264,24 +350,281 @@ impl RaftMetadataRuntime {
             applied_index: state.applied_index,
             role: state.raw_node.raft.state.into(),
             commands_committed: state.commands.len(),
-            last_command: state.commands.last().cloned(),
+            last_command: state
+                .commands
+                .last()
+                .map(|envelope| envelope.command.clone()),
+            duplicate_commands: state
+                .results
+                .iter()
+                .filter(|result| result.status == RaftCommandStatus::Duplicate)
+                .count(),
+            last_result: state.results.last().cloned(),
         }
     }
 
-    fn commit_command(&self, command: RaftMetadataCommand) -> CacheResult<()> {
+    /// Export the applied metadata snapshot for in-memory recovery.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration};
+    /// use hydracache_cluster_raft::RaftMetadataRuntime;
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let runtime = RaftMetadataRuntime::single_node("orders", 1)?;
+    /// runtime
+    ///     .join_member(
+    ///         ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+    ///     )
+    ///     .await?;
+    ///
+    /// let exported = runtime.export_snapshot();
+    /// let recovered = RaftMetadataRuntime::from_snapshot(exported)?;
+    ///
+    /// assert_eq!(recovered.snapshot().commands_committed, 1);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn export_snapshot(&self) -> RaftMetadataRuntimeExport {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        RaftMetadataRuntimeExport {
+            cluster_name: self.cluster.name().to_owned(),
+            raft_node_id: self.raft_node_id,
+            applied_index: state.applied_index,
+            commands: state.commands.clone(),
+        }
+    }
+
+    /// Rebuild a single-node runtime from an exported metadata snapshot.
+    pub fn from_snapshot(snapshot: RaftMetadataRuntimeExport) -> CacheResult<Self> {
+        let runtime = Self::single_node(snapshot.cluster_name, snapshot.raft_node_id)?;
+        {
+            let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+            state.commands.clear();
+            state.applied_command_ids.clear();
+            state.results.clear();
+            state.applied_index = snapshot.applied_index;
+        }
+        for envelope in snapshot.commands {
+            runtime.apply_recovered_envelope(envelope)?;
+        }
+        Ok(runtime)
+    }
+
+    fn commit_command(
+        &self,
+        command_id: String,
+        command: RaftMetadataCommand,
+    ) -> CacheResult<RaftCommandResult> {
         self.raft
             .lock()
             .expect("raft metadata state poisoned")
-            .commit_command(command)
+            .commit_command(RaftMetadataCommandEnvelope {
+                command_id,
+                command,
+            })
+    }
+
+    fn apply_recovered_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
+        materialize_command(&self.cluster, &envelope.command)?;
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        if state
+            .applied_command_ids
+            .insert(envelope.command_id.clone())
+        {
+            state.commands.push(envelope);
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn fail_next_proposal_for_test(&self) {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .fail_next_proposal = true;
+    }
+}
+
+fn command_id_for(command: &RaftMetadataCommand) -> String {
+    match command {
+        RaftMetadataCommand::MemberUpsert {
+            node_id,
+            generation,
+            ..
+        } => format!(
+            "member-upsert:{}:{}",
+            command_id_node(node_id),
+            generation.value()
+        ),
+        RaftMetadataCommand::ClientUpsert {
+            node_id,
+            generation,
+            ..
+        } => format!(
+            "client-upsert:{}:{}",
+            command_id_node(node_id),
+            generation.value()
+        ),
+        RaftMetadataCommand::NodeLeft { node_id, epoch, .. } => {
+            format!("node-left:{}:{}", command_id_node(node_id), epoch.value())
+        }
+    }
+}
+
+fn command_id_node(node_id: &ClusterNodeId) -> String {
+    node_id.as_str().replace('|', "%7C").replace(':', "%3A")
+}
+
+fn predicted_member_epoch(cluster: &InMemoryCluster, candidate: &ClusterCandidate) -> ClusterEpoch {
+    let should_advance = cluster
+        .members()
+        .into_iter()
+        .find(|member| member.node_id == candidate.node_id)
+        .map(|existing| existing.generation < candidate.generation)
+        .unwrap_or(true);
+    if should_advance {
+        ClusterEpoch::new(cluster.epoch().value().saturating_add(1))
+    } else {
+        cluster.epoch()
+    }
+}
+
+fn predicted_leave_epoch(
+    cluster: &InMemoryCluster,
+    node_id: &ClusterNodeId,
+) -> Option<(ClusterRole, ClusterEpoch)> {
+    if let Some(member) = cluster
+        .members()
+        .into_iter()
+        .find(|member| &member.node_id == node_id)
+    {
+        return Some((
+            member.role,
+            ClusterEpoch::new(cluster.epoch().value().saturating_add(1)),
+        ));
+    }
+    cluster
+        .clients()
+        .into_iter()
+        .find(|member| &member.node_id == node_id)
+        .map(|member| (member.role, cluster.epoch()))
+}
+
+fn reject_stale_candidate(
+    cluster: &InMemoryCluster,
+    candidate: &ClusterCandidate,
+) -> CacheResult<()> {
+    let existing = cluster
+        .members()
+        .into_iter()
+        .chain(cluster.clients())
+        .find(|member| member.node_id == candidate.node_id);
+    if let Some(existing) = existing {
+        if existing.generation > candidate.generation {
+            return Err(CacheError::Backend(format!(
+                "stale cluster generation for node '{}': existing {}, attempted {}",
+                candidate.node_id,
+                existing.generation.value(),
+                candidate.generation.value()
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn find_materialized(
+    cluster: &InMemoryCluster,
+    node_id: &ClusterNodeId,
+    role: ClusterRole,
+) -> Option<ClusterMember> {
+    match role {
+        ClusterRole::Member => cluster
+            .members()
+            .into_iter()
+            .find(|member| &member.node_id == node_id),
+        ClusterRole::Client => cluster
+            .clients()
+            .into_iter()
+            .find(|member| &member.node_id == node_id),
+        ClusterRole::Local => None,
+    }
+}
+
+fn materialize_command(
+    cluster: &InMemoryCluster,
+    command: &RaftMetadataCommand,
+) -> CacheResult<Option<ClusterMembershipEvent>> {
+    match command {
+        RaftMetadataCommand::MemberUpsert {
+            node_id,
+            generation,
+            ..
+        } => {
+            cluster
+                .join_member(ClusterCandidate::member(node_id.clone()).generation(*generation))?;
+            Ok(None)
+        }
+        RaftMetadataCommand::ClientUpsert {
+            node_id,
+            generation,
+            ..
+        } => {
+            cluster
+                .join_client(ClusterCandidate::client(node_id.clone()).generation(*generation))?;
+            Ok(None)
+        }
+        RaftMetadataCommand::NodeLeft { node_id, .. } => {
+            let generation = cluster
+                .members()
+                .into_iter()
+                .chain(cluster.clients())
+                .find(|member| member.node_id == *node_id)
+                .map(|member| member.generation);
+            if let Some(generation) = generation {
+                cluster.leave(node_id, generation)
+            } else {
+                Ok(None)
+            }
+        }
     }
 }
 
 impl RaftRuntimeState {
-    fn commit_command(&mut self, command: RaftMetadataCommand) -> CacheResult<()> {
+    fn commit_command(
+        &mut self,
+        envelope: RaftMetadataCommandEnvelope,
+    ) -> CacheResult<RaftCommandResult> {
+        if self.applied_command_ids.contains(&envelope.command_id) {
+            let result = RaftCommandResult {
+                command_id: envelope.command_id,
+                status: RaftCommandStatus::Duplicate,
+                applied_index: self.applied_index,
+            };
+            self.results.push(result.clone());
+            return Ok(result);
+        }
+        #[cfg(test)]
+        if self.fail_next_proposal {
+            self.fail_next_proposal = false;
+            return Err(CacheError::Backend(
+                "forced raft proposal failure".to_owned(),
+            ));
+        }
+        let command_id = envelope.command_id.clone();
         self.raw_node
-            .propose(vec![], encode_command(&command))
+            .propose(vec![], encode_envelope(&envelope))
             .map_err(to_cache_error)?;
-        self.drain_ready()
+        self.drain_ready()?;
+        let result = RaftCommandResult {
+            command_id,
+            status: RaftCommandStatus::Committed,
+            applied_index: self.applied_index,
+        };
+        self.results.push(result.clone());
+        Ok(result)
     }
 
     fn drain_ready(&mut self) -> CacheResult<()> {
@@ -324,7 +667,10 @@ impl RaftRuntimeState {
             if entry.data.is_empty() || entry.get_entry_type() != EntryType::EntryNormal {
                 continue;
             }
-            self.commands.push(decode_command(entry.data.as_ref())?);
+            let envelope = decode_envelope(entry.data.as_ref())?;
+            if self.applied_command_ids.insert(envelope.command_id.clone()) {
+                self.commands.push(envelope);
+            }
         }
         Ok(())
     }
@@ -341,23 +687,43 @@ impl ClusterControlPlane for RaftMetadataRuntime {
     }
 
     async fn join_member(&self, candidate: ClusterCandidate) -> CacheResult<ClusterMember> {
-        let member = self.cluster.join_member(candidate)?;
-        self.commit_command(RaftMetadataCommand::MemberUpsert {
-            node_id: member.node_id.clone(),
-            generation: member.generation,
-            epoch: member.epoch,
-        })?;
-        Ok(member)
+        let mut candidate = candidate;
+        candidate.role = ClusterRole::Member;
+        reject_stale_candidate(&self.cluster, &candidate)?;
+        let command = RaftMetadataCommand::MemberUpsert {
+            node_id: candidate.node_id.clone(),
+            generation: candidate.generation,
+            epoch: predicted_member_epoch(&self.cluster, &candidate),
+        };
+        let result = self.commit_command(command_id_for(&command), command)?;
+        if result.status == RaftCommandStatus::Duplicate {
+            if let Some(member) =
+                find_materialized(&self.cluster, &candidate.node_id, ClusterRole::Member)
+            {
+                return Ok(member);
+            }
+        }
+        self.cluster.join_member(candidate)
     }
 
     async fn join_client(&self, candidate: ClusterCandidate) -> CacheResult<ClusterMember> {
-        let member = self.cluster.join_client(candidate)?;
-        self.commit_command(RaftMetadataCommand::ClientUpsert {
-            node_id: member.node_id.clone(),
-            generation: member.generation,
-            epoch: member.epoch,
-        })?;
-        Ok(member)
+        let mut candidate = candidate;
+        candidate.role = ClusterRole::Client;
+        reject_stale_candidate(&self.cluster, &candidate)?;
+        let command = RaftMetadataCommand::ClientUpsert {
+            node_id: candidate.node_id.clone(),
+            generation: candidate.generation,
+            epoch: self.cluster.epoch(),
+        };
+        let result = self.commit_command(command_id_for(&command), command)?;
+        if result.status == RaftCommandStatus::Duplicate {
+            if let Some(member) =
+                find_materialized(&self.cluster, &candidate.node_id, ClusterRole::Client)
+            {
+                return Ok(member);
+            }
+        }
+        self.cluster.join_client(candidate)
     }
 
     async fn validate_generation(
@@ -373,22 +739,23 @@ impl ClusterControlPlane for RaftMetadataRuntime {
         node_id: &ClusterNodeId,
         generation: ClusterGeneration,
     ) -> CacheResult<Option<ClusterMembershipEvent>> {
-        let Some(event) = self.cluster.leave(node_id, generation)? else {
+        if predicted_leave_epoch(&self.cluster, node_id).is_none() {
             return Ok(None);
         };
-        if let ClusterMembershipEvent::NodeLeft {
-            node_id,
+        self.cluster.validate_generation(node_id, generation)?;
+        let Some((role, epoch)) = predicted_leave_epoch(&self.cluster, node_id) else {
+            return Ok(None);
+        };
+        let command = RaftMetadataCommand::NodeLeft {
+            node_id: node_id.clone(),
             role,
             epoch,
-        } = &event
-        {
-            self.commit_command(RaftMetadataCommand::NodeLeft {
-                node_id: node_id.clone(),
-                role: *role,
-                epoch: *epoch,
-            })?;
+        };
+        let result = self.commit_command(command_id_for(&command), command)?;
+        if result.status == RaftCommandStatus::Duplicate {
+            return Ok(None);
         }
-        Ok(Some(event))
+        self.cluster.leave(node_id, generation)
     }
 
     fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
@@ -425,6 +792,33 @@ fn encode_command(command: &RaftMetadataCommand) -> Vec<u8> {
             epoch,
         } => format!("left|{node_id}|{}|{}", role_to_str(*role), epoch.value()).into_bytes(),
     }
+}
+
+fn encode_envelope(envelope: &RaftMetadataCommandEnvelope) -> Vec<u8> {
+    let command = String::from_utf8(encode_command(&envelope.command))
+        .expect("raft metadata command encoding is utf8");
+    format!("v1|{}|{command}", envelope.command_id).into_bytes()
+}
+
+fn decode_envelope(data: &[u8]) -> CacheResult<RaftMetadataCommandEnvelope> {
+    let text = std::str::from_utf8(data)
+        .map_err(|error| CacheError::Backend(format!("invalid raft envelope utf8: {error}")))?;
+    if let Some(rest) = text.strip_prefix("v1|") {
+        let Some((command_id, command_text)) = rest.split_once('|') else {
+            return Err(CacheError::Backend(format!(
+                "invalid raft metadata envelope: {text}"
+            )));
+        };
+        return Ok(RaftMetadataCommandEnvelope {
+            command_id: command_id.to_owned(),
+            command: decode_command(command_text.as_bytes())?,
+        });
+    }
+    let command = decode_command(data)?;
+    Ok(RaftMetadataCommandEnvelope {
+        command_id: command_id_for(&command),
+        command,
+    })
 }
 
 fn decode_command(data: &[u8]) -> CacheResult<RaftMetadataCommand> {
@@ -486,7 +880,7 @@ fn to_cache_error(error: impl fmt::Display) -> CacheError {
 mod tests {
     use std::sync::Arc;
 
-    use hydracache::{HydraCache, InMemoryCluster};
+    use hydracache::{ClusterControlPlane, HydraCache, InMemoryCluster};
 
     use super::*;
 
@@ -534,6 +928,78 @@ mod tests {
             Some(RaftMetadataCommand::ClientUpsert { ref node_id, .. })
                 if node_id.as_str() == "client-a"
         ));
+    }
+
+    #[tokio::test]
+    async fn command_idempotency_prevents_duplicate_admission_after_retry() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let candidate = ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1));
+
+        let first = runtime.join_member(candidate.clone()).await.unwrap();
+        let second = runtime.join_member(candidate).await.unwrap();
+        let snapshot = runtime.snapshot();
+
+        assert_eq!(first.node_id, second.node_id);
+        assert_eq!(snapshot.commands_committed, 1);
+        assert_eq!(snapshot.duplicate_commands, 1);
+        assert_eq!(
+            snapshot.last_result.map(|result| result.status),
+            Some(RaftCommandStatus::Duplicate)
+        );
+        assert_eq!(runtime.command_results().len(), 2);
+        assert_eq!(runtime.cluster.members().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn runtime_recovers_materialized_metadata_from_exported_snapshot() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+
+        runtime
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+            .await
+            .unwrap();
+        runtime
+            .join_client(ClusterCandidate::client("client-a").generation(ClusterGeneration::new(1)))
+            .await
+            .unwrap();
+        runtime
+            .leave(&ClusterNodeId::from("member-a"), ClusterGeneration::new(1))
+            .await
+            .unwrap();
+
+        let exported = runtime.export_snapshot();
+        let recovered = RaftMetadataRuntime::from_snapshot(exported).unwrap();
+
+        assert_eq!(recovered.commands(), runtime.commands());
+        assert_eq!(recovered.cluster.members().len(), 0);
+        assert_eq!(recovered.cluster.clients().len(), 1);
+        assert_eq!(
+            recovered
+                .cluster
+                .clients()
+                .first()
+                .map(|client| client.node_id.as_str().to_owned()),
+            Some("client-a".to_owned())
+        );
+        assert_eq!(
+            recovered.snapshot().applied_index,
+            runtime.snapshot().applied_index
+        );
+    }
+
+    #[tokio::test]
+    async fn failed_proposal_does_not_mutate_materialized_metadata() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime.fail_next_proposal_for_test();
+
+        let error = runtime
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+            .await
+            .unwrap_err();
+
+        assert!(error.to_string().contains("forced raft proposal failure"));
+        assert_eq!(runtime.snapshot().commands_committed, 0);
+        assert!(runtime.cluster.members().is_empty());
     }
 
     #[tokio::test]
@@ -613,6 +1079,14 @@ mod tests {
 
         for command in commands {
             assert_eq!(decode_command(&encode_command(&command)).unwrap(), command);
+            let envelope = RaftMetadataCommandEnvelope {
+                command_id: command_id_for(&command),
+                command: command.clone(),
+            };
+            assert_eq!(
+                decode_envelope(&encode_envelope(&envelope)).unwrap(),
+                envelope
+            );
         }
     }
 

@@ -751,7 +751,9 @@ For real metadata coordination, use `hydracache-cluster-raft` and pass
 `Arc<RaftMetadataRuntime>` through `.control_plane(...)`. The current runtime is
 a single-node in-memory raft-rs state machine that campaigns, proposes metadata
 commands, drains `Ready`, appends stable log entries, and applies committed
-membership commands.
+membership commands. Command ids make retries idempotent, and membership is
+materialized only after a successful Raft commit. The runtime can also export
+and import an in-memory metadata snapshot for recovery tests and demos.
 
 To connect those two optional crates, use `ClusterAdmissionBridge`: chitchat
 finds candidates, the bridge polls and deduplicates generation/role snapshots,
