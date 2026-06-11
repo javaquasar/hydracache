@@ -821,6 +821,42 @@ The HTTP transport validates owner id and generation before returning bytes, so
 stale clients do not silently read from a restarted owner. Owner-side automatic
 query execution, TLS, and authentication remain future work.
 
+When members advertise their peer-fetch base URL, `PeerFetchRouter` can connect
+the ownership decision to the HTTP transport automatically:
+
+```rust
+use hydracache::{ClusterCandidate, ClusterGeneration, InMemoryCluster};
+use hydracache_cluster_transport_axum::{PeerFetchRouter, PeerFetchRouterStatus};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cluster = InMemoryCluster::new("orders");
+cluster.join_member(
+    ClusterCandidate::member("member-a")
+        .generation(ClusterGeneration::new(1))
+        .peer_fetch_base_url("http://127.0.0.1:3000"),
+)?;
+
+let router = PeerFetchRouter::new();
+let outcome = router.fetch_owner_value(cluster.owner_for_key("user:42")).await;
+
+assert!(matches!(
+    outcome.status,
+    PeerFetchRouterStatus::Hit
+        | PeerFetchRouterStatus::Miss
+        | PeerFetchRouterStatus::TransportError
+));
+
+let diagnostics = router.diagnostics();
+assert_eq!(diagnostics.attempts, 1);
+# Ok(())
+# }
+```
+
+Router diagnostics expose attempts, hits, misses, no-owner decisions, missing
+advertised endpoints, generation mismatches, and transport errors. The sandbox
+route `POST /demo/cluster/routed-peer-fetch/run` renders those counters as JSON
+so the routing path can be inspected without writing an application first.
+
 Ownership counters live in a separate diagnostics snapshot so the original
 `ClusterDiagnostics` struct can remain backwards-compatible for users that
 construct it in tests:
@@ -840,7 +876,7 @@ assert_eq!(ownership.owner_found(), 1);
 
 ## Cluster Support Boundaries
 
-The current `0.22.x` cluster support is intentionally an embedded coordination
+The current `0.23.x` cluster support is intentionally an embedded coordination
 surface, not a production distributed data grid. It includes:
 
 - local, client, and member cache roles;
@@ -852,8 +888,9 @@ surface, not a production distributed data grid. It includes:
 - deterministic rendezvous ownership resolution over admitted members;
 - a transport-neutral peer-fetch seam that moves encoded bytes;
 - an optional Axum/HTTP peer-fetch transport for owner member reads;
-- diagnostics counters for membership, invalidation, ownership, and peer-fetch
-  demo activity.
+- advertised peer-fetch endpoint metadata and `PeerFetchRouter`;
+- diagnostics counters for membership, invalidation, ownership, peer-fetch, and
+  routed peer-fetch activity.
 
 It intentionally does not yet include:
 

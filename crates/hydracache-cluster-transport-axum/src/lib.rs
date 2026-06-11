@@ -146,6 +146,40 @@ impl PeerFetchRouterOutcome {
 }
 
 /// Point-in-time counters for [`PeerFetchRouter`].
+///
+/// These counters are intentionally small and copyable so they can be exported
+/// through application diagnostics, actuator endpoints, or sandbox reports
+/// without holding the router lock.
+///
+/// # Example
+///
+/// ```no_run
+/// use hydracache::{ClusterCandidate, InMemoryCluster};
+/// use hydracache_cluster_transport_axum::PeerFetchRouter;
+///
+/// # async fn example() -> hydracache::CacheResult<()> {
+/// let router = PeerFetchRouter::new();
+///
+/// let empty = InMemoryCluster::new("orders");
+/// let no_owner = router.fetch_owner_value(empty.owner_for_key("user:42")).await;
+/// assert!(no_owner.did_not_route());
+///
+/// let cluster = InMemoryCluster::new("orders");
+/// cluster.join_member(ClusterCandidate::member("member-a"))?;
+/// let missing_endpoint = router
+///     .fetch_owner_value(cluster.owner_for_key("user:42"))
+///     .await;
+/// assert!(missing_endpoint.did_not_route());
+///
+/// let diagnostics = router.diagnostics();
+/// assert_eq!(diagnostics.attempts, 2);
+/// assert_eq!(diagnostics.no_owner, 1);
+/// assert_eq!(diagnostics.missing_endpoint, 1);
+/// assert_eq!(diagnostics.routed_requests(), 0);
+/// assert!(diagnostics.has_failures());
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct PeerFetchRouterDiagnostics {
     /// Total routing calls observed.

@@ -85,12 +85,22 @@ testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
 
 `hydracache-sandbox` includes the manual OpenAPI lab plus route-level tests for
-cluster lifecycle, deterministic ownership, peer fetch, real chitchat/raft
-adapters, generated-client smoke checks, and optional Postgres smoke coverage.
-Run it directly when changing sandbox or cluster-operability behavior:
+cluster lifecycle, deterministic ownership, peer fetch, routed HTTP peer-fetch,
+real chitchat/raft adapters, generated-client smoke checks, and optional
+Postgres smoke coverage. Run it directly when changing sandbox or
+cluster-operability behavior:
 
 ```powershell
 cargo test -p hydracache-sandbox --locked
+```
+
+For the 0.23 peer-fetch routing layer specifically, run the transport crate
+tests plus rustdoc examples before the full workspace gate:
+
+```powershell
+cargo test -p hydracache-cluster-transport-axum --locked
+cargo test --doc -p hydracache-cluster-transport-axum --locked
+cargo test -p hydracache-sandbox --locked swagger_api_exercises_library_features_and_reports
 ```
 
 `hydracache` and `hydracache-db` also run `trybuild` compile-pass and
