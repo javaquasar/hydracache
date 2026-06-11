@@ -703,4 +703,4 @@ server startup wiring thin.
 - [x] Clippy with `-D warnings` passes.
 - [x] Docs build with `RUSTDOCFLAGS=-D warnings`.
 - [x] Coverage summary recorded in `docs/TESTING.md`.
-- [x] Publishable package checks pass in dependency order.
+- [ ] Publishable package checks pass in dependency order after staged publish.
