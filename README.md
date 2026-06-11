@@ -971,6 +971,7 @@ http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/cluster/lifecycle/run
+http://127.0.0.1:3000/demo/cluster/ownership/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/openapi/client-smoke
@@ -992,7 +993,10 @@ in-memory bus and verifies tag, key, and flush propagation. The cluster
 lifecycle demo creates a temporary member/client pair, records discovery
 candidates, verifies remote invalidation in both directions, calls
 `leave_cluster()` for both runtimes, and confirms local cache contents are not
-cleared by leaving membership. The real-adapters demo connects
+cleared by leaving membership. The cluster ownership lab resolves an owner for a
+key, exercises the transport-neutral peer-fetch seam, and verifies that
+owner-originated tag invalidation reaches a client near-cache. The real-adapters
+demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
 full discovery-to-metadata path can be inspected without Docker or UDP ports.
@@ -1009,7 +1013,8 @@ counters with a visual flow timeline. The dashboard also includes a textarea
 scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
 demo for verifying subscriptions manually. It also includes one-click
 distributed invalidation and cluster lifecycle flows that render remote bus
-events and membership timelines in the output, plus a real chitchat + raft
+events and membership timelines in the output, a cluster ownership flow that
+renders owner selection and peer-fetch results, plus a real chitchat + raft
 adapter flow that shows bridge diagnostics and committed metadata commands.
 
 Useful Swagger/API groups:
@@ -1059,6 +1064,7 @@ POST /demo/cache/invalidate-tag
 POST /demo/listeners/run
 POST /demo/distributed/invalidation/run
 POST /demo/cluster/lifecycle/run
+POST /demo/cluster/ownership/run
 POST /demo/cluster/real-adapters/run
 POST /demo/query/users/{id}/load
 POST /demo/query/products/{id}/load
