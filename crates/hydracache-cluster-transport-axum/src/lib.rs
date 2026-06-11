@@ -1190,6 +1190,183 @@ where
     }
 }
 
+#[derive(Clone)]
+struct OwnerLoadHttpState<C>
+where
+    C: CacheCodec,
+{
+    service: OwnerLoadService<C>,
+}
+
+/// Axum route factory for serving owner-side load requests from one member.
+#[derive(Clone)]
+pub struct AxumOwnerLoadService<C = hydracache::PostcardCodec>
+where
+    C: CacheCodec,
+{
+    service: OwnerLoadService<C>,
+}
+
+impl<C> fmt::Debug for AxumOwnerLoadService<C>
+where
+    C: CacheCodec,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("AxumOwnerLoadService")
+            .field("owner", &self.service.owner())
+            .field("generation", &self.service.generation())
+            .finish_non_exhaustive()
+    }
+}
+
+impl<C> AxumOwnerLoadService<C>
+where
+    C: CacheCodec + Send + Sync + 'static,
+{
+    /// Create an Axum owner-load route factory.
+    pub fn new(service: OwnerLoadService<C>) -> Self {
+        Self { service }
+    }
+
+    /// Return the underlying owner-load service.
+    pub fn service(&self) -> &OwnerLoadService<C> {
+        &self.service
+    }
+
+    /// Build the Axum router with `POST /cluster/owner-load`.
+    pub fn routes(&self) -> Router {
+        Router::new()
+            .route(DEFAULT_OWNER_LOAD_PATH, post(handle_owner_load::<C>))
+            .with_state(OwnerLoadHttpState {
+                service: self.service.clone(),
+            })
+    }
+}
+
+async fn handle_owner_load<C>(
+    State(state): State<OwnerLoadHttpState<C>>,
+    Json(request): Json<OwnerLoadRequest>,
+) -> Response
+where
+    C: CacheCodec + Send + Sync + 'static,
+{
+    let response = state.service.load(request).await;
+    (owner_load_http_status(&response), Json(response)).into_response()
+}
+
+fn owner_load_http_status(response: &OwnerLoadResponse) -> StatusCode {
+    match response {
+        OwnerLoadResponse::Hit(_) | OwnerLoadResponse::Loaded(_) | OwnerLoadResponse::Miss(_) => {
+            StatusCode::OK
+        }
+        OwnerLoadResponse::Rejected(rejection) => match rejection.code {
+            OwnerLoadRejectionCode::StaleGeneration => StatusCode::CONFLICT,
+            OwnerLoadRejectionCode::InvalidRequest => StatusCode::BAD_REQUEST,
+            OwnerLoadRejectionCode::NoOwner
+            | OwnerLoadRejectionCode::WrongOwner
+            | OwnerLoadRejectionCode::MissingLoader => StatusCode::NOT_FOUND,
+        },
+        OwnerLoadResponse::Failed(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
+/// HTTP client for owner-side load requests.
+///
+/// # Example
+///
+/// ```no_run
+/// use hydracache_cluster_transport_axum::{HttpOwnerLoad, OwnerLoadRequest};
+///
+/// # async fn example(request: OwnerLoadRequest) -> hydracache::CacheResult<()> {
+/// let client = HttpOwnerLoad::for_base_url("http://127.0.0.1:3000");
+/// let _response = client.load(request).await?;
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Debug, Clone)]
+pub struct HttpOwnerLoad {
+    endpoint: String,
+    client: reqwest::Client,
+}
+
+impl HttpOwnerLoad {
+    /// Create an owner-load client for a full endpoint URL.
+    pub fn new(endpoint: impl Into<String>) -> Self {
+        Self {
+            endpoint: endpoint.into(),
+            client: reqwest::Client::new(),
+        }
+    }
+
+    /// Create an owner-load client from a member base URL.
+    ///
+    /// `DEFAULT_OWNER_LOAD_PATH` is appended after trimming a trailing slash.
+    pub fn for_base_url(base_url: impl AsRef<str>) -> Self {
+        let base_url = base_url.as_ref().trim_end_matches('/');
+        Self::new(format!("{base_url}{DEFAULT_OWNER_LOAD_PATH}"))
+    }
+
+    /// Return the endpoint URL used by this client.
+    pub fn endpoint(&self) -> &str {
+        &self.endpoint
+    }
+
+    /// Send one owner-load request.
+    pub async fn load(&self, request: OwnerLoadRequest) -> CacheResult<OwnerLoadResponse> {
+        let expected_owner = request.owner.clone();
+        let expected_key = request.key.clone();
+        let response = self
+            .client
+            .post(&self.endpoint)
+            .json(&request)
+            .send()
+            .await
+            .map_err(|error| CacheError::Backend(format!("owner-load request failed: {error}")))?;
+
+        let status = response.status();
+        let response = response
+            .json::<OwnerLoadResponse>()
+            .await
+            .map_err(|error| {
+                CacheError::Decode(format!(
+                    "invalid owner-load response with HTTP status {status}: {error}"
+                ))
+            })?;
+
+        validate_owner_load_identity(&response, &expected_owner, &expected_key)?;
+        Ok(response)
+    }
+}
+
+fn validate_owner_load_identity(
+    response: &OwnerLoadResponse,
+    expected_owner: &str,
+    expected_key: &str,
+) -> CacheResult<()> {
+    match response {
+        OwnerLoadResponse::Hit(hit) | OwnerLoadResponse::Loaded(hit) => {
+            if hit.owner != expected_owner || hit.key != expected_key {
+                return Err(CacheError::Backend(format!(
+                    "owner-load response identity mismatch: expected owner/key '{expected_owner}/{expected_key}', got '{}/{}'",
+                    hit.owner, hit.key
+                )));
+            }
+        }
+        OwnerLoadResponse::Miss(miss) => {
+            if miss.owner != expected_owner || miss.key != expected_key {
+                return Err(CacheError::Backend(format!(
+                    "owner-load miss identity mismatch: expected owner/key '{expected_owner}/{expected_key}', got '{}/{}'",
+                    miss.owner, miss.key
+                )));
+            }
+        }
+        OwnerLoadResponse::Rejected(_) | OwnerLoadResponse::Failed(_) => {}
+    }
+
+    Ok(())
+}
+
 fn duration_to_millis(duration: Duration) -> u64 {
     duration.as_millis().min(u128::from(u64::MAX)) as u64
 }
@@ -3364,6 +3541,182 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn owner_load_route_returns_hit_loaded_miss_and_rejections() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("cached", 7_u64, CacheOptions::new())
+            .await
+            .unwrap();
+        let registry = OwnerLoadRegistry::new()
+            .register("answers.by-id", |request| async move {
+                Ok(Some(OwnerLoadValue::encoded(
+                    encoded_u64(request.arg_u64("id").unwrap()).await,
+                    request.cache_options(),
+                )))
+            })
+            .register("answers.optional", |_| async { Ok(None) });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            cache.clone(),
+            registry,
+        );
+        let route_factory = AxumOwnerLoadService::new(service.clone());
+        assert_eq!(route_factory.service().owner().as_str(), "member-a");
+        assert!(format!("{route_factory:?}").contains("AxumOwnerLoadService"));
+        let app = route_factory.routes();
+
+        let hit = app
+            .clone()
+            .oneshot(owner_load_json_request(owner_load_request(
+                "cached", "missing", 7,
+            )))
+            .await
+            .unwrap();
+        assert_eq!(hit.status(), StatusCode::OK);
+        let hit: OwnerLoadResponse = response_json(hit).await;
+        assert!(matches!(hit, OwnerLoadResponse::Hit(_)));
+        assert_eq!(hit.decode_value().unwrap().unwrap(), encoded_u64(7).await);
+
+        let loaded = app
+            .clone()
+            .oneshot(owner_load_json_request(
+                owner_load_request("answer", "answers.by-id", 7)
+                    .with_args(OwnerLoadArgs::new().arg("id", 42_u64)),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(loaded.status(), StatusCode::OK);
+        let loaded: OwnerLoadResponse = response_json(loaded).await;
+        assert!(loaded.is_loaded());
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+
+        let miss = app
+            .clone()
+            .oneshot(owner_load_json_request(owner_load_request(
+                "missing",
+                "answers.optional",
+                7,
+            )))
+            .await
+            .unwrap();
+        assert_eq!(miss.status(), StatusCode::OK);
+        let miss: OwnerLoadResponse = response_json(miss).await;
+        assert!(miss.is_miss());
+
+        let stale = app
+            .clone()
+            .oneshot(owner_load_json_request(owner_load_request(
+                "other",
+                "answers.by-id",
+                6,
+            )))
+            .await
+            .unwrap();
+        assert_eq!(stale.status(), StatusCode::CONFLICT);
+        let stale: OwnerLoadResponse = response_json(stale).await;
+        assert!(stale.is_rejected());
+
+        let missing_loader = app
+            .oneshot(owner_load_json_request(owner_load_request(
+                "other", "missing", 7,
+            )))
+            .await
+            .unwrap();
+        assert_eq!(missing_loader.status(), StatusCode::NOT_FOUND);
+        let missing_loader: OwnerLoadResponse = response_json(missing_loader).await;
+        assert!(missing_loader.is_rejected());
+
+        let diagnostics = service.diagnostics();
+        assert_eq!(diagnostics.attempts, 5);
+        assert_eq!(diagnostics.owner_hits, 1);
+        assert_eq!(diagnostics.loaded, 1);
+        assert_eq!(diagnostics.misses, 1);
+        assert_eq!(diagnostics.rejections, 2);
+    }
+
+    #[tokio::test]
+    async fn http_owner_load_round_trips_against_axum_server() {
+        let registry = OwnerLoadRegistry::new().register("answers.by-id", |request| async move {
+            Ok(Some(OwnerLoadValue::encoded(
+                encoded_u64(request.arg_u64("id").unwrap()).await,
+                request.cache_options(),
+            )))
+        });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        );
+        let app = AxumOwnerLoadService::new(service.clone()).routes();
+        let (base_url, shutdown, server) = spawn_server(app).await;
+        let client = HttpOwnerLoad::for_base_url(&base_url);
+
+        assert_eq!(
+            client.endpoint(),
+            format!("{base_url}{DEFAULT_OWNER_LOAD_PATH}")
+        );
+
+        let response = client
+            .load(
+                owner_load_request("answer", "answers.by-id", 7)
+                    .with_args(OwnerLoadArgs::new().arg("id", 42_u64)),
+            )
+            .await
+            .unwrap();
+        assert!(response.is_loaded());
+        assert_eq!(
+            response.decode_value().unwrap().unwrap(),
+            encoded_u64(42).await
+        );
+
+        let cached = client
+            .load(owner_load_request("answer", "answers.by-id", 7))
+            .await
+            .unwrap();
+        assert!(matches!(cached, OwnerLoadResponse::Hit(_)));
+
+        let stale = client
+            .load(owner_load_request("answer", "answers.by-id", 6))
+            .await
+            .unwrap();
+        assert!(stale.is_rejected());
+
+        let diagnostics = service.diagnostics();
+        assert_eq!(diagnostics.attempts, 3);
+        assert_eq!(diagnostics.loaded, 1);
+        assert_eq!(diagnostics.owner_hits, 1);
+        assert_eq!(diagnostics.rejections, 1);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[test]
+    fn http_owner_load_identity_validation_is_strict_for_values_and_misses() {
+        let wrong_hit = OwnerLoadResponse::Hit(OwnerLoadHit::new(
+            "member-b",
+            "user:42",
+            "users.by-id",
+            Bytes::from_static(b"value"),
+        ));
+        let error = validate_owner_load_identity(&wrong_hit, "member-a", "user:42").unwrap_err();
+        assert!(error.to_string().contains("identity mismatch"));
+
+        let wrong_miss =
+            OwnerLoadResponse::Miss(OwnerLoadMiss::new("member-a", "other", "users.by-id"));
+        let error = validate_owner_load_identity(&wrong_miss, "member-a", "user:42").unwrap_err();
+        assert!(error.to_string().contains("miss identity mismatch"));
+
+        let rejected = OwnerLoadResponse::Rejected(OwnerLoadRejection::new(
+            OwnerLoadRejectionCode::WrongOwner,
+            "wrong owner",
+        ));
+        validate_owner_load_identity(&rejected, "member-a", "user:42").unwrap();
+    }
+
+    #[tokio::test]
     async fn service_reports_store_errors_and_exposes_owner_metadata() {
         let service = AxumPeerFetchService::new(
             "member-a",
@@ -3501,9 +3854,23 @@ mod tests {
     where
         T: Serialize,
     {
+        json_request_to(DEFAULT_PEER_FETCH_PATH, body)
+    }
+
+    fn owner_load_json_request<T>(body: T) -> Request<Body>
+    where
+        T: Serialize,
+    {
+        json_request_to(DEFAULT_OWNER_LOAD_PATH, body)
+    }
+
+    fn json_request_to<T>(path: &str, body: T) -> Request<Body>
+    where
+        T: Serialize,
+    {
         Request::builder()
             .method("POST")
-            .uri(DEFAULT_PEER_FETCH_PATH)
+            .uri(path)
             .header("content-type", "application/json")
             .body(Body::from(serde_json::to_vec(&body).unwrap()))
             .unwrap()
