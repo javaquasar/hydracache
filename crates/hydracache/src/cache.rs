@@ -95,6 +95,71 @@ where
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use hydracache_core::{CacheEventKind, CacheEventOrigin};
+
+    use super::HydraCache;
+
+    #[test]
+    fn lazy_key_event_tags_are_not_built_without_subscribers() {
+        let cache = HydraCache::local().build();
+        let tag_builds = AtomicUsize::new(0);
+
+        cache.publish_key_event_with_tags(
+            CacheEventKind::Stored,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            || {
+                tag_builds.fetch_add(1, Ordering::Relaxed);
+                vec!["users".to_owned()]
+            },
+        );
+
+        assert_eq!(tag_builds.load(Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    fn lazy_key_event_tags_are_built_for_observed_mutations() {
+        let cache = HydraCache::local().build();
+        let _events = cache.subscribe_mutations();
+        let tag_builds = AtomicUsize::new(0);
+
+        cache.publish_key_event_with_tags(
+            CacheEventKind::Stored,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            || {
+                tag_builds.fetch_add(1, Ordering::Relaxed);
+                vec!["users".to_owned()]
+            },
+        );
+
+        assert_eq!(tag_builds.load(Ordering::Relaxed), 1);
+    }
+
+    #[test]
+    fn lazy_key_event_tags_respect_disabled_access_events() {
+        let cache = HydraCache::local().build();
+        let _events = cache.subscribe_access();
+        let tag_builds = AtomicUsize::new(0);
+
+        cache.publish_key_event_with_tags(
+            CacheEventKind::Hit,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            || {
+                tag_builds.fetch_add(1, Ordering::Relaxed);
+                vec!["users".to_owned()]
+            },
+        );
+
+        assert_eq!(tag_builds.load(Ordering::Relaxed), 0);
+    }
+}
+
 impl HydraCache<PostcardCodec> {
     /// Start building a local cache.
     ///
@@ -414,33 +479,33 @@ where
             Some(entry) if entry.is_expired() => {
                 self.remove_expired(key, &entry).await;
                 self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
-                self.publish_key_event(
+                self.publish_key_event_with_tags(
                     CacheEventKind::Miss,
                     key,
                     CacheEventOrigin::LocalApi,
-                    entry.tags.clone(),
+                    || entry.tags.clone(),
                 );
                 Ok(None)
             }
             Some(entry) => match self.inner.codec.decode::<T>(&entry.value) {
                 Ok(value) => {
                     self.inner.stats.hits.fetch_add(1, Ordering::Relaxed);
-                    self.publish_key_event(
+                    self.publish_key_event_with_tags(
                         CacheEventKind::Hit,
                         key,
                         CacheEventOrigin::LocalApi,
-                        entry.tags.clone(),
+                        || entry.tags.clone(),
                     );
                     Ok(Some(value))
                 }
                 Err(error) => {
                     self.remove_entry(key, &entry).await;
                     self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
-                    self.publish_key_event(
+                    self.publish_key_event_with_tags(
                         CacheEventKind::Miss,
                         key,
                         CacheEventOrigin::LocalApi,
-                        entry.tags.clone(),
+                        || entry.tags.clone(),
                     );
                     Err(error)
                 }
@@ -489,21 +554,21 @@ where
             Some(entry) if entry.is_expired() => {
                 self.remove_expired(key, &entry).await;
                 self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
-                self.publish_key_event(
+                self.publish_key_event_with_tags(
                     CacheEventKind::Miss,
                     key,
                     CacheEventOrigin::LocalApi,
-                    entry.tags.clone(),
+                    || entry.tags.clone(),
                 );
                 Ok(None)
             }
             Some(entry) => {
                 self.inner.stats.hits.fetch_add(1, Ordering::Relaxed);
-                self.publish_key_event(
+                self.publish_key_event_with_tags(
                     CacheEventKind::Hit,
                     key,
                     CacheEventOrigin::LocalApi,
-                    entry.tags.clone(),
+                    || entry.tags.clone(),
                 );
                 Ok(Some(entry.value))
             }
@@ -799,12 +864,7 @@ where
                 .fetch_add(removed, Ordering::Relaxed);
         }
 
-        self.publish_event(CacheEvent::for_tag(
-            CacheEventKind::TagInvalidated,
-            tag,
-            removed,
-            origin,
-        ));
+        self.publish_tag_event(CacheEventKind::TagInvalidated, tag, removed, origin);
 
         Ok(removed)
     }
@@ -819,11 +879,7 @@ where
         let estimated_entries = self.inner.store.entry_count();
         self.inner.store.invalidate_all();
         self.inner.tag_index.clear().await;
-        self.publish_event(CacheEvent::for_cache(
-            CacheEventKind::Flushed,
-            Some(estimated_entries),
-            origin,
-        ));
+        self.publish_cache_event(CacheEventKind::Flushed, Some(estimated_entries), origin);
         Ok(())
     }
 
@@ -942,11 +998,11 @@ where
                 .stats
                 .stale_load_discards
                 .fetch_add(1, Ordering::Relaxed);
-            self.publish_key_event(
+            self.publish_key_event_with_tags(
                 CacheEventKind::StaleLoadDiscarded,
                 key,
                 CacheEventOrigin::Loader,
-                options.tags_value().to_vec(),
+                || options.tags_value().to_vec(),
             );
             return Ok(false);
         }
@@ -967,19 +1023,17 @@ where
         Fut: Future<Output = Result<Bytes>> + Send + 'static,
     {
         let generation = self.inner.tag_index.snapshot(options.tags_value()).await;
-        let event_tags = options.tags_value().to_vec();
-        let late_join_event_tags = event_tags.clone();
 
         if let Some(shared) = self.inner.in_flight.get_current(key, &generation).await {
             self.inner
                 .stats
                 .single_flight_joins
                 .fetch_add(1, Ordering::Relaxed);
-            self.publish_key_event(
+            self.publish_key_event_with_tags(
                 CacheEventKind::SingleFlightJoined,
                 key,
                 CacheEventOrigin::SingleFlight,
-                event_tags,
+                || options.tags_value().to_vec(),
             );
             return shared;
         }
@@ -994,25 +1048,40 @@ where
         let cache = self.clone();
         let load_key = key_owned.clone();
         let load_generation = generation.clone();
-        let load_event_tags = event_tags.clone();
+        let late_join_event_tags = self
+            .event_tags_if_observed(CacheEventKind::SingleFlightJoined, || {
+                options.tags_value().to_vec()
+            });
         let shared = async move {
+            let load_event_tags = cache.event_tags_if_observed(CacheEventKind::LoadStarted, || {
+                options.tags_value().to_vec()
+            });
+            let load_completed_event_tags = cache
+                .event_tags_if_observed(CacheEventKind::LoadCompleted, || {
+                    options.tags_value().to_vec()
+                });
+            let load_failed_event_tags = cache
+                .event_tags_if_observed(CacheEventKind::LoadFailed, || {
+                    options.tags_value().to_vec()
+                });
+
             let result = async {
-                cache.publish_key_event(
+                cache.publish_key_event_with_prepared_tags(
                     CacheEventKind::LoadStarted,
                     &load_key,
                     CacheEventOrigin::Loader,
-                    load_event_tags.clone(),
+                    load_event_tags,
                 );
                 let bytes = loader(cache.clone()).await?;
                 let accepted = cache
                     .put_bytes_if_fresh(&load_key, bytes.clone(), options, &load_generation)
                     .await?;
                 if accepted {
-                    cache.publish_key_event(
+                    cache.publish_key_event_with_prepared_tags(
                         CacheEventKind::LoadCompleted,
                         &load_key,
                         CacheEventOrigin::Loader,
-                        load_event_tags.clone(),
+                        load_completed_event_tags,
                     );
                 }
                 Ok(bytes)
@@ -1020,11 +1089,11 @@ where
             .await;
 
             if result.is_err() {
-                cache.publish_key_event(
+                cache.publish_key_event_with_prepared_tags(
                     CacheEventKind::LoadFailed,
                     &load_key,
                     CacheEventOrigin::Loader,
-                    load_event_tags,
+                    load_failed_event_tags,
                 );
             }
 
@@ -1050,7 +1119,7 @@ where
                 .stats
                 .single_flight_joins
                 .fetch_add(1, Ordering::Relaxed);
-            self.publish_key_event(
+            self.publish_key_event_with_prepared_tags(
                 CacheEventKind::SingleFlightJoined,
                 key,
                 CacheEventOrigin::SingleFlight,
@@ -1063,11 +1132,11 @@ where
 
     async fn remove_expired(&self, key: &str, entry: &CacheEntry) {
         self.remove_entry(key, entry).await;
-        self.publish_key_event(
+        self.publish_key_event_with_tags(
             CacheEventKind::Expired,
             key,
             CacheEventOrigin::Backend,
-            entry.tags.clone(),
+            || entry.tags.clone(),
         );
     }
 
@@ -1091,8 +1160,19 @@ where
             .stats
             .invalidations
             .fetch_add(1, Ordering::Relaxed);
-        self.publish_key_event(kind, key, origin, entry.tags.clone());
+        self.publish_key_event_with_tags(kind, key, origin, || entry.tags.clone());
         Ok(true)
+    }
+
+    fn may_publish_event(&self, kind: CacheEventKind) -> bool {
+        self.inner.events.may_publish(kind)
+    }
+
+    fn event_tags_if_observed<F>(&self, kind: CacheEventKind, tags: F) -> Option<Vec<String>>
+    where
+        F: FnOnce() -> Vec<String>,
+    {
+        self.may_publish_event(kind).then(tags)
     }
 
     fn publish_key_event<I, S>(
@@ -1105,7 +1185,64 @@ where
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        self.publish_event(CacheEvent::for_key(kind, key, origin, tags));
+        self.publish_key_event_with_tags(kind, key, origin, || tags);
+    }
+
+    fn publish_key_event_with_tags<F, I, S>(
+        &self,
+        kind: CacheEventKind,
+        key: &str,
+        origin: CacheEventOrigin,
+        tags: F,
+    ) where
+        F: FnOnce() -> I,
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        if !self.may_publish_event(kind) {
+            return;
+        }
+
+        self.publish_event(CacheEvent::for_key(kind, key, origin, tags()));
+    }
+
+    fn publish_key_event_with_prepared_tags(
+        &self,
+        kind: CacheEventKind,
+        key: &str,
+        origin: CacheEventOrigin,
+        tags: Option<Vec<String>>,
+    ) {
+        if let Some(tags) = tags {
+            self.publish_key_event(kind, key, origin, tags);
+        }
+    }
+
+    fn publish_tag_event(
+        &self,
+        kind: CacheEventKind,
+        tag: &str,
+        affected_keys: u64,
+        origin: CacheEventOrigin,
+    ) {
+        if !self.may_publish_event(kind) {
+            return;
+        }
+
+        self.publish_event(CacheEvent::for_tag(kind, tag, affected_keys, origin));
+    }
+
+    fn publish_cache_event(
+        &self,
+        kind: CacheEventKind,
+        affected_keys: Option<u64>,
+        origin: CacheEventOrigin,
+    ) {
+        if !self.may_publish_event(kind) {
+            return;
+        }
+
+        self.publish_event(CacheEvent::for_cache(kind, affected_keys, origin));
     }
 
     fn publish_event(&self, event: CacheEvent) {
