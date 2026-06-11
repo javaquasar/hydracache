@@ -6,7 +6,7 @@ on:
       version:
         description: Published HydraCache version to verify
         required: true
-        default: 0.20.0
+        default: 0.21.0
 
 permissions:
   contents: read
@@ -148,6 +148,27 @@ jobs:
                   assert_eq!(diagnostics.node_id.as_str(), "member-b");
                   assert_eq!(diagnostics.member_count, 1);
                   assert_eq!(cluster.raft().snapshot().commands_committed, 1);
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_cluster_ownership_and_peer_fetch_smoke_test() -> hydracache::CacheResult<()> {
+                  let cluster = hydracache::InMemoryCluster::new("orders");
+                  cluster.join_member(hydracache::ClusterCandidate::member("member-a"))?;
+                  cluster.join_member(hydracache::ClusterCandidate::member("member-b"))?;
+
+                  let decision = cluster.owner_for_key("user:42");
+                  assert!(decision.has_owner());
+                  assert_eq!(decision.member_count, 2);
+
+                  let request = decision.peer_fetch_request().unwrap();
+                  let fetch = hydracache::InMemoryPeerFetch::new();
+                  fetch.put(request.owner.clone(), request.key.clone(), b"encoded-user".to_vec());
+
+                  let response = hydracache::ClusterPeerFetch::fetch(&fetch, request).await?;
+                  assert!(response.is_hit());
+                  assert_eq!(response.value.unwrap().as_ref(), b"encoded-user");
 
                   Ok(())
               }

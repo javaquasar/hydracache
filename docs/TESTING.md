@@ -30,6 +30,15 @@ cargo doc --workspace --no-deps --locked
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
 
+`hydracache-sandbox` includes the manual OpenAPI lab plus route-level tests for
+cluster lifecycle, deterministic ownership, peer fetch, real chitchat/raft
+adapters, generated-client smoke checks, and optional Postgres smoke coverage.
+Run it directly when changing sandbox or cluster-operability behavior:
+
+```powershell
+cargo test -p hydracache-sandbox --locked
+```
+
 `hydracache` and `hydracache-db` also run `trybuild` compile-pass and
 compile-fail tests for `cacheable!(...)`, `cacheable_infallible!(...)`,
 `#[derive(HydraCacheEntity)]`, and `query_cache_policy!(...)`. To run only the
