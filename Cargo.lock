@@ -1187,6 +1187,7 @@ dependencies = [
  "axum",
  "base64",
  "bytes",
+ "futures-util",
  "hydracache",
  "hydracache-core",
  "reqwest",

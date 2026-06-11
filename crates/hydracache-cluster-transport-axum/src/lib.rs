@@ -63,9 +63,12 @@ use axum::{Json, Router};
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
 use bytes::Bytes;
+use futures_util::future::{BoxFuture, Shared};
+use futures_util::FutureExt;
 use hydracache::{
-    CacheError, CacheResult, ClusterGeneration, ClusterNodeId, ClusterOwnershipDecision,
-    ClusterPeerFetch, ClusterPeerFetchRequest, ClusterPeerFetchResponse, HydraCache,
+    CacheError, CacheOptions, CacheResult, ClusterGeneration, ClusterNodeId,
+    ClusterOwnershipDecision, ClusterPeerFetch, ClusterPeerFetchRequest, ClusterPeerFetchResponse,
+    HydraCache,
 };
 use hydracache_core::CacheCodec;
 use serde::{Deserialize, Serialize};
@@ -361,6 +364,430 @@ impl PeerFetchRouter {
     fn record(&self, update: impl FnOnce(&mut PeerFetchRouterDiagnostics)) {
         let mut diagnostics = self.diagnostics.lock().expect("peer-fetch router poisoned");
         update(&mut diagnostics);
+    }
+}
+
+/// Read-through policy for local/near-cache and owner peer-fetch ordering.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum PeerFetchReadThroughPolicy {
+    /// Check the local cache first, then route to the owner on miss.
+    #[default]
+    LocalThenOwner,
+    /// Route to the owner first, then fall back to the local cache on miss/error.
+    OwnerThenLocal,
+    /// Route only to the owner. Remote hits may still hydrate the local cache.
+    OwnerOnly,
+}
+
+/// Outcome status produced by [`PeerFetchReadThrough`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PeerFetchReadThroughStatus {
+    /// The value was already available in the local/near cache.
+    LocalHit,
+    /// The owner returned encoded bytes.
+    RemoteHit,
+    /// The owner was reachable but did not have the value.
+    RemoteMiss,
+    /// The ownership decision had no eligible owner.
+    NoOwner,
+    /// The owner did not advertise a peer-fetch endpoint.
+    MissingEndpoint,
+    /// The owner rejected the request because the observed generation is stale.
+    GenerationMismatch,
+    /// The transport request failed or returned an unexpected response.
+    TransportError,
+}
+
+/// Result of one read-through attempt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PeerFetchReadThroughOutcome {
+    /// Logical cache key being fetched.
+    pub key: String,
+    /// Policy used for this read-through attempt.
+    pub policy: PeerFetchReadThroughPolicy,
+    /// Terminal read-through status.
+    pub status: PeerFetchReadThroughStatus,
+    /// Owner selected by the ownership resolver, when one exists.
+    pub owner: Option<ClusterNodeId>,
+    /// Full peer-fetch endpoint used by the router, when available.
+    pub endpoint: Option<String>,
+    /// Encoded value returned by local cache or owner on hit.
+    pub value: Option<Bytes>,
+    /// Whether a remote hit was stored into the local cache.
+    pub hydrated: bool,
+    /// Human-readable routing error detail.
+    pub error: Option<String>,
+}
+
+impl PeerFetchReadThroughOutcome {
+    /// Return whether the read-through attempt returned encoded bytes.
+    pub fn is_hit(&self) -> bool {
+        matches!(
+            self.status,
+            PeerFetchReadThroughStatus::LocalHit | PeerFetchReadThroughStatus::RemoteHit
+        )
+    }
+
+    /// Return whether the hit came from the local/near cache.
+    pub fn is_local_hit(&self) -> bool {
+        self.status == PeerFetchReadThroughStatus::LocalHit
+    }
+
+    /// Return whether the hit came from the owner peer-fetch route.
+    pub fn is_remote_hit(&self) -> bool {
+        self.status == PeerFetchReadThroughStatus::RemoteHit
+    }
+
+    /// Return whether the owner was reached but did not have the value.
+    pub fn is_remote_miss(&self) -> bool {
+        self.status == PeerFetchReadThroughStatus::RemoteMiss
+    }
+
+    /// Return whether the attempt ended in a routing/transport problem.
+    pub fn is_router_error(&self) -> bool {
+        matches!(
+            self.status,
+            PeerFetchReadThroughStatus::NoOwner
+                | PeerFetchReadThroughStatus::MissingEndpoint
+                | PeerFetchReadThroughStatus::GenerationMismatch
+                | PeerFetchReadThroughStatus::TransportError
+        )
+    }
+}
+
+/// Point-in-time counters for [`PeerFetchReadThrough`].
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct PeerFetchReadThroughDiagnostics {
+    /// Total read-through calls observed.
+    pub attempts: u64,
+    /// Calls that found the value in the local/near cache.
+    pub local_hits: u64,
+    /// Local cache misses before a remote route attempt.
+    pub local_misses: u64,
+    /// Owner-routed calls that returned encoded bytes.
+    pub remote_hits: u64,
+    /// Owner-routed calls that reached the owner and missed.
+    pub remote_misses: u64,
+    /// Remote hits stored into the local/near cache.
+    pub hydrations: u64,
+    /// Calls that joined an already-running same-key remote route.
+    pub in_flight_joins: u64,
+    /// Owner routing calls that ended in no-owner, missing-endpoint, generation,
+    /// or transport errors.
+    pub router_errors: u64,
+    /// Reserved for future local loader fallback helpers.
+    pub fallback_loads: u64,
+}
+
+impl PeerFetchReadThroughDiagnostics {
+    /// Return local + remote hits.
+    pub fn total_hits(&self) -> u64 {
+        self.local_hits.saturating_add(self.remote_hits)
+    }
+
+    /// Return local + remote misses.
+    pub fn total_misses(&self) -> u64 {
+        self.local_misses.saturating_add(self.remote_misses)
+    }
+
+    /// Return whether any router errors were observed.
+    pub fn has_router_errors(&self) -> bool {
+        self.router_errors > 0
+    }
+}
+
+type SharedReadThroughFuture = Shared<BoxFuture<'static, CacheResult<PeerFetchReadThroughOutcome>>>;
+
+/// Local/near-cache read-through helper backed by [`PeerFetchRouter`].
+///
+/// The helper checks a local cache according to a [`PeerFetchReadThroughPolicy`],
+/// routes misses to the advertised owner endpoint, and hydrates the local cache
+/// with encoded bytes returned by the owner.
+#[derive(Debug)]
+pub struct PeerFetchReadThrough<C = hydracache::PostcardCodec>
+where
+    C: CacheCodec,
+{
+    cache: HydraCache<C>,
+    router: PeerFetchRouter,
+    policy: PeerFetchReadThroughPolicy,
+    hydrate_remote_hits: bool,
+    diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
+    in_flight: Arc<Mutex<BTreeMap<String, SharedReadThroughFuture>>>,
+}
+
+impl<C> PeerFetchReadThrough<C>
+where
+    C: CacheCodec + Send + Sync + 'static,
+{
+    /// Create a read-through helper with [`PeerFetchReadThroughPolicy::LocalThenOwner`].
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use hydracache::{CacheOptions, ClusterCandidate, ClusterGeneration, HydraCache, InMemoryCluster};
+    /// use hydracache_cluster_transport_axum::PeerFetchReadThrough;
+    ///
+    /// # async fn example() -> hydracache::CacheResult<()> {
+    /// let near_cache = HydraCache::local().build();
+    /// let cluster = InMemoryCluster::new("orders");
+    /// cluster.join_member(
+    ///     ClusterCandidate::member("member-a")
+    ///         .generation(ClusterGeneration::new(1))
+    ///         .peer_fetch_base_url("http://127.0.0.1:3000"),
+    /// )?;
+    ///
+    /// let outcome = PeerFetchReadThrough::new(near_cache)
+    ///     .fetch_encoded(
+    ///         cluster.owner_for_key("user:42"),
+    ///         CacheOptions::new().tag("user:42"),
+    ///     )
+    ///     .await?;
+    ///
+    /// if outcome.is_remote_hit() {
+    ///     assert!(outcome.hydrated);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn new(cache: HydraCache<C>) -> Self {
+        Self::with_router(cache, PeerFetchRouter::new())
+    }
+
+    /// Create a read-through helper with a caller-provided router.
+    pub fn with_router(cache: HydraCache<C>, router: PeerFetchRouter) -> Self {
+        Self {
+            cache,
+            router,
+            policy: PeerFetchReadThroughPolicy::default(),
+            hydrate_remote_hits: true,
+            diagnostics: Arc::new(Mutex::new(PeerFetchReadThroughDiagnostics::default())),
+            in_flight: Arc::new(Mutex::new(BTreeMap::new())),
+        }
+    }
+
+    /// Set the read-through policy.
+    pub fn policy(mut self, policy: PeerFetchReadThroughPolicy) -> Self {
+        self.policy = policy;
+        self
+    }
+
+    /// Enable or disable local hydration after remote hits.
+    pub fn hydrate_remote_hits(mut self, enabled: bool) -> Self {
+        self.hydrate_remote_hits = enabled;
+        self
+    }
+
+    /// Disable local hydration after remote hits.
+    pub fn without_hydration(self) -> Self {
+        self.hydrate_remote_hits(false)
+    }
+
+    /// Return the local/near cache handle used by this helper.
+    pub fn cache(&self) -> &HydraCache<C> {
+        &self.cache
+    }
+
+    /// Return the underlying peer-fetch router.
+    pub fn router(&self) -> &PeerFetchRouter {
+        &self.router
+    }
+
+    /// Return current read-through diagnostics.
+    pub fn diagnostics(&self) -> PeerFetchReadThroughDiagnostics {
+        *self
+            .diagnostics
+            .lock()
+            .expect("peer-fetch read-through diagnostics poisoned")
+    }
+
+    /// Fetch encoded bytes through the configured local/owner policy.
+    pub async fn fetch_encoded(
+        &self,
+        decision: ClusterOwnershipDecision,
+        options: CacheOptions,
+    ) -> CacheResult<PeerFetchReadThroughOutcome> {
+        Self::record_read_through(&self.diagnostics, |diagnostics| {
+            diagnostics.attempts = diagnostics.attempts.saturating_add(1);
+        });
+
+        match self.policy {
+            PeerFetchReadThroughPolicy::LocalThenOwner => {
+                if let Some(outcome) = self.local_hit(&decision).await? {
+                    return Ok(outcome);
+                }
+                self.fetch_owner_shared(decision, options).await
+            }
+            PeerFetchReadThroughPolicy::OwnerThenLocal => {
+                let remote = self
+                    .fetch_owner_shared(decision.clone(), options.clone())
+                    .await?;
+                if remote.is_hit() {
+                    Ok(remote)
+                } else if let Some(local) = self.local_hit(&decision).await? {
+                    Ok(local)
+                } else {
+                    Ok(remote)
+                }
+            }
+            PeerFetchReadThroughPolicy::OwnerOnly => {
+                self.fetch_owner_shared(decision, options).await
+            }
+        }
+    }
+
+    async fn local_hit(
+        &self,
+        decision: &ClusterOwnershipDecision,
+    ) -> CacheResult<Option<PeerFetchReadThroughOutcome>> {
+        match self.cache.get_encoded(&decision.key).await? {
+            Some(value) => {
+                Self::record_read_through(&self.diagnostics, |diagnostics| {
+                    diagnostics.local_hits = diagnostics.local_hits.saturating_add(1);
+                });
+                Ok(Some(PeerFetchReadThroughOutcome {
+                    key: decision.key.clone(),
+                    policy: self.policy,
+                    status: PeerFetchReadThroughStatus::LocalHit,
+                    owner: decision.owner.as_ref().map(|member| member.node_id.clone()),
+                    endpoint: None,
+                    value: Some(value),
+                    hydrated: false,
+                    error: None,
+                }))
+            }
+            None => {
+                Self::record_read_through(&self.diagnostics, |diagnostics| {
+                    diagnostics.local_misses = diagnostics.local_misses.saturating_add(1);
+                });
+                Ok(None)
+            }
+        }
+    }
+
+    async fn fetch_owner_shared(
+        &self,
+        decision: ClusterOwnershipDecision,
+        options: CacheOptions,
+    ) -> CacheResult<PeerFetchReadThroughOutcome> {
+        let key = decision.key.clone();
+        let shared = {
+            let mut in_flight = self
+                .in_flight
+                .lock()
+                .expect("peer-fetch read-through in-flight map poisoned");
+            if let Some(shared) = in_flight.get(&key) {
+                Self::record_read_through(&self.diagnostics, |diagnostics| {
+                    diagnostics.in_flight_joins = diagnostics.in_flight_joins.saturating_add(1);
+                });
+                shared.clone()
+            } else {
+                let cache = self.cache.clone();
+                let router = self.router.clone();
+                let diagnostics = self.diagnostics.clone();
+                let policy = self.policy;
+                let hydrate_remote_hits = self.hydrate_remote_hits;
+                let shared = async move {
+                    Self::fetch_owner_once(
+                        cache,
+                        router,
+                        diagnostics,
+                        policy,
+                        hydrate_remote_hits,
+                        decision,
+                        options,
+                    )
+                    .await
+                }
+                .boxed()
+                .shared();
+                in_flight.insert(key.clone(), shared.clone());
+                shared
+            }
+        };
+
+        let result = shared.await;
+        self.in_flight
+            .lock()
+            .expect("peer-fetch read-through in-flight map poisoned")
+            .remove(&key);
+        result
+    }
+
+    async fn fetch_owner_once(
+        cache: HydraCache<C>,
+        router: PeerFetchRouter,
+        diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
+        policy: PeerFetchReadThroughPolicy,
+        hydrate_remote_hits: bool,
+        decision: ClusterOwnershipDecision,
+        options: CacheOptions,
+    ) -> CacheResult<PeerFetchReadThroughOutcome> {
+        let routed = router.fetch_owner_value(decision).await;
+        let status = read_through_status_from_router(routed.status);
+        let mut hydrated = false;
+
+        match routed.status {
+            PeerFetchRouterStatus::Hit => {
+                Self::record_read_through(&diagnostics, |diagnostics| {
+                    diagnostics.remote_hits = diagnostics.remote_hits.saturating_add(1);
+                });
+                if hydrate_remote_hits {
+                    if let Some(value) = routed.value.clone() {
+                        cache.put_encoded(&routed.key, value, options).await?;
+                        hydrated = true;
+                        Self::record_read_through(&diagnostics, |diagnostics| {
+                            diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
+                        });
+                    }
+                }
+            }
+            PeerFetchRouterStatus::Miss => {
+                Self::record_read_through(&diagnostics, |diagnostics| {
+                    diagnostics.remote_misses = diagnostics.remote_misses.saturating_add(1);
+                });
+            }
+            PeerFetchRouterStatus::NoOwner
+            | PeerFetchRouterStatus::MissingEndpoint
+            | PeerFetchRouterStatus::GenerationMismatch
+            | PeerFetchRouterStatus::TransportError => {
+                Self::record_read_through(&diagnostics, |diagnostics| {
+                    diagnostics.router_errors = diagnostics.router_errors.saturating_add(1);
+                });
+            }
+        }
+
+        Ok(PeerFetchReadThroughOutcome {
+            key: routed.key,
+            policy,
+            status,
+            owner: routed.owner,
+            endpoint: routed.endpoint,
+            value: routed.value,
+            hydrated,
+            error: routed.error,
+        })
+    }
+
+    fn record_read_through(
+        diagnostics: &Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
+        update: impl FnOnce(&mut PeerFetchReadThroughDiagnostics),
+    ) {
+        let mut diagnostics = diagnostics
+            .lock()
+            .expect("peer-fetch read-through diagnostics poisoned");
+        update(&mut diagnostics);
+    }
+}
+
+fn read_through_status_from_router(status: PeerFetchRouterStatus) -> PeerFetchReadThroughStatus {
+    match status {
+        PeerFetchRouterStatus::NoOwner => PeerFetchReadThroughStatus::NoOwner,
+        PeerFetchRouterStatus::MissingEndpoint => PeerFetchReadThroughStatus::MissingEndpoint,
+        PeerFetchRouterStatus::Hit => PeerFetchReadThroughStatus::RemoteHit,
+        PeerFetchRouterStatus::Miss => PeerFetchReadThroughStatus::RemoteMiss,
+        PeerFetchRouterStatus::GenerationMismatch => PeerFetchReadThroughStatus::GenerationMismatch,
+        PeerFetchRouterStatus::TransportError => PeerFetchReadThroughStatus::TransportError,
     }
 }
 
@@ -726,6 +1153,9 @@ impl ClusterPeerFetch for HttpPeerFetch {
 mod tests {
     use super::*;
 
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::time::Duration;
+
     use axum::body::{to_bytes, Body};
     use axum::http::Request;
     use hydracache::{
@@ -1063,8 +1493,290 @@ mod tests {
         assert!(!encoded.is_empty());
     }
 
+    #[tokio::test]
+    async fn read_through_local_hit_does_not_call_router() {
+        let cache = HydraCache::local().build();
+        cache
+            .put("answer", 42_u64, CacheOptions::new())
+            .await
+            .unwrap();
+        let read_through = PeerFetchReadThrough::new(cache);
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint("not a url", "answer", 7),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::LocalHit);
+        assert!(outcome.is_hit());
+        assert!(outcome.is_local_hit());
+        assert!(!outcome.hydrated);
+        assert_eq!(read_through.router().diagnostics().attempts, 0);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.local_hits, 1);
+        assert_eq!(diagnostics.remote_hits, 0);
+        assert_eq!(diagnostics.total_hits(), 1);
+    }
+
+    #[tokio::test]
+    async fn read_through_remote_hit_hydrates_near_cache() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer", encoded_u64(42).await);
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone());
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                CacheOptions::new().tag("answers"),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteHit);
+        assert!(outcome.is_remote_hit());
+        assert!(outcome.hydrated);
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+        assert_eq!(cache.invalidate_tag("answers").await.unwrap(), 1);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.attempts, 1);
+        assert_eq!(diagnostics.local_misses, 1);
+        assert_eq!(diagnostics.remote_hits, 1);
+        assert_eq!(diagnostics.hydrations, 1);
+        assert!(!diagnostics.has_router_errors());
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn read_through_remote_miss_does_not_hydrate() {
+        let (base_url, shutdown, server) =
+            spawn_server(service_with_store(MemoryPeerFetchStore::new()).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone());
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "missing", 7),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteMiss);
+        assert!(outcome.is_remote_miss());
+        assert!(!outcome.hydrated);
+        assert!(!cache.contains_key("missing").await);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.remote_misses, 1);
+        assert_eq!(diagnostics.hydrations, 0);
+        assert_eq!(diagnostics.total_misses(), 2);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn read_through_missing_endpoint_reports_router_error_without_hydration() {
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone());
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_member(member_without_endpoint(), "answer"),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::MissingEndpoint);
+        assert!(outcome.is_router_error());
+        assert!(!outcome.hydrated);
+        assert!(!cache.contains_key("answer").await);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.router_errors, 1);
+        assert!(diagnostics.has_router_errors());
+    }
+
+    #[tokio::test]
+    async fn read_through_generation_mismatch_never_hydrates_stale_value() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer", encoded_u64(42).await);
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone());
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 6),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            outcome.status,
+            PeerFetchReadThroughStatus::GenerationMismatch
+        );
+        assert!(outcome.is_router_error());
+        assert!(!outcome.hydrated);
+        assert!(!cache.contains_key("answer").await);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.router_errors, 1);
+        assert_eq!(diagnostics.hydrations, 0);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn read_through_owner_then_local_can_fallback_to_local_hit() {
+        let (base_url, shutdown, server) =
+            spawn_server(service_with_store(MemoryPeerFetchStore::new()).routes()).await;
+        let cache = HydraCache::local().build();
+        cache
+            .put("answer", 42_u64, CacheOptions::new())
+            .await
+            .unwrap();
+        let read_through =
+            PeerFetchReadThrough::new(cache).policy(PeerFetchReadThroughPolicy::OwnerThenLocal);
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::LocalHit);
+        assert!(outcome.is_local_hit());
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.remote_misses, 1);
+        assert_eq!(diagnostics.local_hits, 1);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn read_through_owner_only_skips_local_cache() {
+        let (base_url, shutdown, server) =
+            spawn_server(service_with_store(MemoryPeerFetchStore::new()).routes()).await;
+        let cache = HydraCache::local().build();
+        cache
+            .put("answer", 42_u64, CacheOptions::new())
+            .await
+            .unwrap();
+        let read_through =
+            PeerFetchReadThrough::new(cache).policy(PeerFetchReadThroughPolicy::OwnerOnly);
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                CacheOptions::new(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteMiss);
+        assert_eq!(read_through.diagnostics().local_hits, 0);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn concurrent_read_through_for_same_key_shares_remote_route_and_hydration() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let store = DelayedPeerFetchStore {
+            value: encoded_u64(42).await,
+            calls: calls.clone(),
+            delay: Duration::from_millis(40),
+        };
+        let app = AxumPeerFetchService::new("member-a", ClusterGeneration::new(7), Arc::new(store))
+            .routes();
+        let (base_url, shutdown, server) = spawn_server(app).await;
+        let cache = HydraCache::local().build();
+        let read_through = Arc::new(PeerFetchReadThrough::new(cache.clone()));
+
+        let mut tasks = Vec::new();
+        for _ in 0..8 {
+            let read_through = read_through.clone();
+            let decision = decision_with_endpoint(&base_url, "answer", 7);
+            tasks.push(tokio::spawn(async move {
+                read_through
+                    .fetch_encoded(decision, CacheOptions::new().tag("answers"))
+                    .await
+            }));
+        }
+
+        for task in tasks {
+            let outcome = task.await.unwrap().unwrap();
+            assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteHit);
+            assert!(outcome.is_remote_hit());
+        }
+
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.attempts, 8);
+        assert_eq!(diagnostics.remote_hits, 1);
+        assert_eq!(diagnostics.hydrations, 1);
+        assert!(diagnostics.in_flight_joins >= 1);
+        assert_eq!(read_through.router().diagnostics().attempts, 1);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
     fn service_with_store(store: MemoryPeerFetchStore) -> AxumPeerFetchService {
         AxumPeerFetchService::new("member-a", ClusterGeneration::new(7), Arc::new(store))
+    }
+
+    async fn encoded_u64(value: u64) -> Bytes {
+        let cache = HydraCache::local().build();
+        cache
+            .put("value", value, CacheOptions::new())
+            .await
+            .unwrap();
+        cache
+            .get_encoded("value")
+            .await
+            .unwrap()
+            .expect("encoded value")
+    }
+
+    struct DelayedPeerFetchStore {
+        value: Bytes,
+        calls: Arc<AtomicUsize>,
+        delay: Duration,
+    }
+
+    #[async_trait::async_trait]
+    impl PeerFetchStore for DelayedPeerFetchStore {
+        async fn get_encoded(&self, key: &str) -> CacheResult<Option<Bytes>> {
+            self.calls.fetch_add(1, Ordering::SeqCst);
+            tokio::time::sleep(self.delay).await;
+            if key == "answer" {
+                Ok(Some(self.value.clone()))
+            } else {
+                Ok(None)
+            }
+        }
     }
 
     fn decision_with_endpoint(
