@@ -1,5 +1,9 @@
 # HydraCache 0.25.0 Coverage Hardening Plan
 
+> This plan is now part of the broader
+> [0.25.0 combined hardening and owner-side loading plan](V0_25_COMBINED_HARDENING_AND_OWNER_LOADING_PLAN.md).
+> Keep this file as the detailed coverage sub-plan.
+
 `0.24.0` added cluster read-through and left the workspace with strong core
 coverage but visible gaps in the sandbox and cluster-adapter edge paths.
 
