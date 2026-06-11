@@ -444,7 +444,7 @@ The current practical target is split by surface area:
   `95%+` line coverage.
 - Visible uncovered source lines should be investigated before release.
 
-The `0.24.0` baseline measured on 2026-06-11 is:
+The initial `0.24.0` baseline measured on 2026-06-11 was:
 
 ```text
 Regions:   91.44%
@@ -452,14 +452,27 @@ Functions: 88.75%
 Lines:     92.24%
 ```
 
-The largest current gaps are in the manual sandbox and cluster-adapter edge
-paths:
+The 2026-06-11 coverage hardening pass raised the workspace to:
 
-- `crates/hydracache-sandbox/src/lib.rs`
-- `crates/hydracache/src/cluster.rs`
-- `crates/hydracache-cluster-chitchat/src/lib.rs`
-- `crates/hydracache-cluster-raft/src/lib.rs`
-- `crates/hydracache-cluster-transport-axum/src/lib.rs`
+```text
+Regions:   93.12%
+Functions: 91.80%
+Lines:     94.17%
+```
+
+Most reusable library crates are now at or above the target line-coverage
+range. The largest remaining gaps are concentrated in the manual sandbox and a
+small set of adapter edge paths:
+
+- `crates/hydracache-sandbox/src/lib.rs` - scenario/action branches and manual
+  API combinations.
+- `crates/hydracache-sandbox/src/main.rs` - intentionally thin long-lived HTTP
+  server wiring.
+- `crates/hydracache-cluster-chitchat/src/lib.rs` - real gossip timing and
+  network-lifecycle edge paths.
+- `crates/hydracache-cluster-raft/src/lib.rs` - runtime failure and recovery
+  edge paths.
+- `crates/hydracache-cluster/src/lib.rs` - high-level adapter wiring branches.
 
 See [the 0.25.0 coverage hardening plan](plans/V0_25_COVERAGE_HARDENING_PLAN.md)
 for the concrete improvement checklist.
