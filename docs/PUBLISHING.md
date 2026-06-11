@@ -56,7 +56,8 @@ cargo package -p hydracache
 cargo publish -p hydracache
 ```
 
-Adapter crates are published after the runtime and macro crates they depend on:
+Adapter and integration crates are published after the runtime and macro crates
+they depend on:
 
 ```powershell
 cargo package -p hydracache-cluster-chitchat
@@ -67,6 +68,12 @@ cargo publish -p hydracache-cluster-raft
 
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
+
+cargo package -p hydracache-observability
+cargo publish -p hydracache-observability
+
+cargo package -p hydracache-actuator-axum
+cargo publish -p hydracache-actuator-axum
 
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
@@ -92,13 +99,14 @@ cargo run -p hydracache-sandbox -- --profile memory
 After startup, open `/demo/ui` or `/swagger-ui`, or run
 `crates\hydracache-sandbox\scripts\run-demo-flow.ps1` to exercise the sandbox
 OpenAPI lab. Inspect `/ready`, `/demo/config`, `/demo/presets`,
-`/demo/report`, `/demo/events`, `/demo/export`, `POST /demo/self-test`, and
-the read-only actuator reports. The script also covers the scenario runner,
-committed scenario files/suites, flow catalog/timeline/replay, local profile
-comparison, replay, fault injection, manual benchmark, scenario document DSL,
-benchmark comparison, Prometheus/trace demo reports, DB seed report,
-users/products/order-summary query-cache loads, OpenAPI client check/smoke, and
-optional auth-guard status.
+`/demo/report`, `/demo/events`, `/demo/events/summary`, `/demo/export`,
+`/demo/scenarios/catalog`, `POST /demo/self-test`, and the read-only actuator
+reports. The script also covers the scenario runner, committed scenario
+files/suites, flow catalog/timeline/replay, local profile comparison, replay,
+fault injection, manual benchmark, scenario document DSL, benchmark comparison,
+Prometheus/trace demo reports, DB seed report, users/products/order-summary
+query-cache loads, OpenAPI client check/smoke, cluster lifecycle, real cluster
+adapters, and optional auth-guard status.
 If `HYDRACACHE_SANDBOX_EVENT_LOG_PATH` is set, the sandbox also appends demo
 events to a local JSONL file for manual review.
 For a Compose-backed Postgres run:
@@ -137,7 +145,8 @@ git push origin v0.1.0
 
 Then run the `Post Publish Verification` GitHub Actions workflow manually with
 the published version. It creates a fresh consumer crate and installs
-`hydracache`, `hydracache-core`, and published adapter crates from crates.io.
+`hydracache`, `hydracache-core`, the currently covered cluster discovery/Raft
+adapter crates, and DB adapter crates from crates.io.
 
 ## Publishing an update
 
@@ -192,12 +201,12 @@ cargo publish -p hydracache-sqlx
 Then tag and push the new version:
 
 ```powershell
-git tag -a v0.19.0 -m "Release v0.19.0"
-git push origin v0.19.0
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually
-with the same version, for example `0.12.0`.
+with the same version, for example `0.20.0`.
 
 For `0.10.0` and later, the post-publish smoke crate should also exercise the
 database query ergonomics added on top of `hydracache-db`:
@@ -249,8 +258,10 @@ depends on a freshly published runtime version, publish the runtime and macro
 crate first, then wait for the crates.io index to update before publishing
 `hydracache-db`. Cluster adapters such as `hydracache-cluster-chitchat` and
 `hydracache-cluster-raft` also depend on the runtime crate and should be
-published after `hydracache`. Concrete database adapters such as
-`hydracache-sqlx` are published last.
+published after `hydracache`. Composition and integration crates such as
+`hydracache-cluster`, `hydracache-observability`, and
+`hydracache-actuator-axum` should follow the crates they depend on. Concrete
+database adapters such as `hydracache-sqlx` are published last.
 
 ## MSRV and Dependency Updates
 

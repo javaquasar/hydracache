@@ -29,7 +29,8 @@ first version needs no server, proxy, daemon, or network hop.
 
 Compared with ReadySet or Noria-style query engines, HydraCache deliberately
 does not try to incrementally maintain SQL result graphs. It is a lightweight
-cache library first, with database-result caching planned as an adapter layer.
+cache library first, with database-result caching implemented as opt-in adapter
+crates.
 
 The long-term direction is:
 
@@ -39,7 +40,7 @@ simple local cache -> database result-cache adapter -> optional distributed sync
 
 ## v0 Scope
 
-The first version includes:
+The current v0 line includes:
 
 - local async cache runtime
 - `HydraCache::local()` builder
@@ -98,10 +99,12 @@ The first version includes:
 Out of scope for v0:
 
 - SQL parsing or query-generation macros
-- external distributed transports such as Postgres LISTEN/NOTIFY, Redis, NATS,
-  or cluster membership protocols
-- Raft-backed membership, ownership, or failover decisions
-- discovery adapters such as chitchat or libp2p
+- external invalidation transports such as Postgres LISTEN/NOTIFY, Redis, or
+  NATS
+- production multi-node Raft transport, durable metadata storage, ownership,
+  routing, and failover decisions
+- production value replication or remote owner-side query execution
+- additional discovery adapters such as libp2p
 - write-enabled actuator/admin endpoints
 - persistence
 

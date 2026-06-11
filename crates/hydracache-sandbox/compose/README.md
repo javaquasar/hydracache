@@ -31,14 +31,17 @@ http://127.0.0.1:3000/demo/config
 http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
+http://127.0.0.1:3000/demo/events/summary
 http://127.0.0.1:3000/demo/export
 http://127.0.0.1:3000/demo/scenarios/files
+http://127.0.0.1:3000/demo/scenarios/catalog
 http://127.0.0.1:3000/demo/scenarios/file/run
 http://127.0.0.1:3000/demo/scenarios/suite/file/run
 http://127.0.0.1:3000/demo/scenarios/document/run
 http://127.0.0.1:3000/demo/flows
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
+http://127.0.0.1:3000/demo/cluster/lifecycle/run
 http://127.0.0.1:3000/demo/cluster/real-adapters/run
 http://127.0.0.1:3000/demo/observability/prometheus
 http://127.0.0.1:3000/demo/db/seed-report
@@ -50,11 +53,12 @@ The full-stack sandbox service has a Docker healthcheck against `/ready`.
 Inside the UI or Swagger, `POST /demo/self-test` runs a quick end-to-end
 scenario and returns step-level results plus correlated events. The same
 sandbox API also exposes scenario runner, committed scenario files/suites,
-timeline, flow catalog/replay, profile comparison, replay, fault-injection,
-scenario document DSL, benchmark comparison, Prometheus/trace demo, DB seed
-report, seeded users/products/order-summary query-cache demos, session import,
-OpenAPI client smoke, distributed invalidation bus demo, real chitchat + raft
-cluster-adapter demo, and manual benchmark endpoints.
+scenario catalog, timeline, flow catalog/replay, event summary, profile
+comparison, replay, fault-injection, scenario document DSL, benchmark
+comparison, Prometheus/trace demo, DB seed report, seeded
+users/products/order-summary query-cache demos, session import, OpenAPI client
+smoke, distributed invalidation bus demo, cluster lifecycle demo, real chitchat
++ raft cluster-adapter demo, and manual benchmark endpoints.
 
 The distributed invalidation demo response includes a compact timeline
 (`source-publish`, `target-apply`, `diagnostics`) and diagnostics counters for

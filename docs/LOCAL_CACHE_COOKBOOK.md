@@ -1,7 +1,7 @@
 # HydraCache Local Cache Cookbook
 
-HydraCache should be useful as a local async cache before SQL adapters or
-distributed synchronization are added.
+HydraCache should be useful as a local async cache even when SQL adapters or
+distributed synchronization are not enabled.
 
 This cookbook shows the intended local-cache style.
 
@@ -156,7 +156,7 @@ cache.invalidate_tag("user:42").await?;
 ```
 
 Tags are explicit application-level invalidation groups. They are the intended
-Phase 0 and Phase 1 mechanism for database-result cache freshness.
+local and database-result cache freshness mechanism.
 
 HydraCache tracks tag generations. If a tagged loader starts, then the tag is
 invalidated before the loader finishes, the loader result is returned to that

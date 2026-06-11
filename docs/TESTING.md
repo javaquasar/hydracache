@@ -21,7 +21,7 @@ Run these before opening or publishing a release:
 cargo fmt --all -- --check
 cargo check --workspace --all-targets --locked
 cargo test --workspace --all-targets --locked
-cargo clippy --workspace --all-targets --locked -- -D warnings
+cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --doc --workspace --locked
 cargo doc --workspace --no-deps --locked
 ```
@@ -360,8 +360,8 @@ Why it is safe:
 - The hook exists only to make an already-valid interleaving easier for tests
   and coverage tooling to observe.
 
-The workspace manifest declares `cfg(coverage)` as an expected cfg so
-`cargo clippy -- -D warnings` does not fail on the coverage-only annotation.
+The workspace manifest declares `cfg(coverage)` as an expected cfg so the
+workspace Clippy gate does not fail on the coverage-only annotation.
 Crates that use workspace lint settings opt into that shared configuration with:
 
 ```toml
@@ -372,7 +372,8 @@ workspace = true
 In this project `crates/hydracache/Cargo.toml` uses that entry because
 `crates/hydracache/src/cache.rs` contains the `#[cfg(coverage)]` hook. Without
 the opt-in, Cargo would not apply the workspace `unexpected_cfgs` configuration
-to that crate, and `cargo clippy --workspace --all-targets --locked -- -D warnings`
+to that crate, and the current CI command
+`cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`
 could fail with an `unexpected cfg condition name: coverage` warning promoted to
 an error.
 

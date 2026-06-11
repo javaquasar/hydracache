@@ -1,6 +1,7 @@
 # HydraCache 0.20.0 Cluster Next Steps Plan
 
-Status: expanded implementation plan for the remaining 0.20.0 cluster work.
+Status: implementation status and remaining hardening plan for the 0.20.0
+cluster work.
 
 Date: 2026-06-11.
 
@@ -15,9 +16,33 @@ Related documents:
 Related source crates:
 
 - `crates/hydracache`
+- `crates/hydracache-cluster`
 - `crates/hydracache-cluster-chitchat`
 - `crates/hydracache-cluster-raft`
 - `crates/hydracache-sandbox`
+
+## Current 0.20.0 Status
+
+Implemented in the current codebase:
+
+- client/member builders and diagnostics in the base `hydracache` crate;
+- `hydracache-cluster` composition helpers for wiring discovery and metadata
+  adapters together;
+- real chitchat-backed discovery in `hydracache-cluster-chitchat`;
+- real raft-rs-backed metadata runtime in `hydracache-cluster-raft`;
+- admission bridge from discovered candidates into the control plane;
+- generation-safe leave and invalidation publish rejection;
+- sandbox demos for in-memory lifecycle and real chitchat + raft adapters;
+- documentation and release notes for the supported client/member shape.
+
+Still intentionally deferred:
+
+- production multi-node Raft transport;
+- durable metadata storage;
+- cluster ownership/routing and failover decisions;
+- distributed value ownership or owner-side query execution;
+- external invalidation transports such as Postgres LISTEN/NOTIFY, Redis, or
+  NATS.
 
 ## Executive Analysis
 
