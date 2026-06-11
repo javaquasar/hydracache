@@ -1477,6 +1477,27 @@ mod tests {
         assert!(matches!(error, CacheError::Decode(_)));
     }
 
+    #[test]
+    fn http_response_can_be_built_from_transport_neutral_response() {
+        let hit = ClusterPeerFetchResponse::hit(
+            "member-a",
+            "user:42",
+            Bytes::from_static(b"encoded-user"),
+        );
+        let dto = PeerFetchHttpResponse::from_peer_response(&hit);
+
+        assert_eq!(dto.owner, "member-a");
+        assert_eq!(dto.key, "user:42");
+        assert_eq!(
+            dto.decode_value().unwrap(),
+            Some(Bytes::from_static(b"encoded-user"))
+        );
+
+        let miss = ClusterPeerFetchResponse::miss("member-a", "missing");
+        let dto = PeerFetchHttpResponse::from_peer_response(&miss);
+        assert_eq!(dto.value_base64, None);
+    }
+
     #[tokio::test]
     async fn hydracache_implements_peer_fetch_store() {
         let cache = HydraCache::local().build();
@@ -1551,6 +1572,40 @@ mod tests {
         assert_eq!(diagnostics.remote_hits, 1);
         assert_eq!(diagnostics.hydrations, 1);
         assert!(!diagnostics.has_router_errors());
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn read_through_without_hydration_preserves_remote_value_only() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer", encoded_u64(42).await);
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone()).without_hydration();
+
+        assert_eq!(read_through.cache().stats().total_requests(), 0);
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                CacheOptions::new().tag("answers"),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteHit);
+        assert!(outcome.is_remote_hit());
+        assert_eq!(
+            outcome.value.as_deref(),
+            Some(encoded_u64(42).await.as_ref())
+        );
+        assert!(!outcome.hydrated);
+        assert!(!cache.contains_key("answer").await);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.remote_hits, 1);
+        assert_eq!(diagnostics.hydrations, 0);
 
         shutdown.send(()).unwrap();
         server.await.unwrap();
@@ -1743,6 +1798,36 @@ mod tests {
         server.await.unwrap();
     }
 
+    #[tokio::test]
+    async fn service_reports_store_errors_and_exposes_owner_metadata() {
+        let service = AxumPeerFetchService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            Arc::new(FailingStore),
+        );
+
+        assert_eq!(service.owner().as_str(), "member-a");
+        assert_eq!(service.generation(), ClusterGeneration::new(7));
+        assert!(format!("{service:?}").contains("AxumPeerFetchService"));
+
+        let response = service
+            .routes()
+            .oneshot(json_request(PeerFetchHttpRequest {
+                owner: "member-a".to_owned(),
+                key: "boom".to_owned(),
+                generation: Some(7),
+            }))
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        let body: PeerFetchHttpErrorBody = response_json(response).await;
+        assert_eq!(body.code, "store-error");
+        assert!(body.message.contains("forced store failure"));
+        assert_eq!(body.requested_generation, Some(7));
+        assert_eq!(body.current_generation, Some(7));
+    }
+
     fn service_with_store(store: MemoryPeerFetchStore) -> AxumPeerFetchService {
         AxumPeerFetchService::new("member-a", ClusterGeneration::new(7), Arc::new(store))
     }
@@ -1776,6 +1861,15 @@ mod tests {
             } else {
                 Ok(None)
             }
+        }
+    }
+
+    struct FailingStore;
+
+    #[async_trait::async_trait]
+    impl PeerFetchStore for FailingStore {
+        async fn get_encoded(&self, _key: &str) -> CacheResult<Option<Bytes>> {
+            Err(CacheError::Backend("forced store failure".to_owned()))
         }
     }
 

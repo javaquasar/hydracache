@@ -706,6 +706,39 @@ mod tests {
         assert_eq!(id.generation_id, 42);
     }
 
+    #[test]
+    fn config_builder_setters_feed_chitchat_config() {
+        let config = ChitchatDiscoveryConfig::new(
+            "orders",
+            "member-a",
+            ClusterGeneration::new(43),
+            addr(47_002),
+        )
+        .gossip_advertise_addr(addr(48_002))
+        .seed_node("127.0.0.1:47001")
+        .seed_nodes(["127.0.0.1:47002", "127.0.0.1:47003"])
+        .gossip_interval(Duration::from_millis(33))
+        .marked_for_deletion_grace_period(Duration::from_secs(7))
+        .failure_detector_config(FailureDetectorConfig::default());
+
+        let id = config.chitchat_id();
+        assert_eq!(id.node_id.as_ref(), "member-a");
+        assert_eq!(id.generation_id, 43);
+        assert_eq!(id.gossip_advertise_addr, addr(48_002));
+        assert_eq!(
+            config.seed_nodes_value(),
+            &["127.0.0.1:47002".to_owned(), "127.0.0.1:47003".to_owned()]
+        );
+
+        let chitchat_config = config.into_chitchat_config();
+        assert_eq!(chitchat_config.cluster_id, "orders");
+        assert_eq!(chitchat_config.gossip_interval, Duration::from_millis(33));
+        assert_eq!(
+            chitchat_config.marked_for_deletion_grace_period,
+            Duration::from_secs(7)
+        );
+    }
+
     #[tokio::test]
     async fn announce_writes_candidate_to_real_chitchat_state() {
         let transport = ChannelTransport::default();
@@ -830,6 +863,46 @@ mod tests {
             discovery.local_value(KEY_LIFECYCLE).await.as_deref(),
             Some(LIFECYCLE_ACTIVE)
         );
+    }
+
+    #[tokio::test]
+    async fn leave_marker_rejects_wrong_node_and_local_role() {
+        let transport = ChannelTransport::default();
+        let discovery =
+            ChitchatDiscovery::spawn_with_transport(config(47_017, "member-a"), &transport)
+                .await
+                .unwrap();
+
+        discovery
+            .announce(
+                ClusterCandidate::member("member-a").generation(ClusterGeneration::new(47_017)),
+            )
+            .await
+            .unwrap();
+
+        let wrong_node = discovery
+            .mark_leaving(
+                "member-b",
+                ClusterGeneration::new(47_017),
+                ClusterRole::Member,
+            )
+            .await
+            .unwrap_err();
+        assert!(wrong_node
+            .to_string()
+            .contains("can only be written by local node"));
+
+        let local_role = discovery
+            .mark_leaving(
+                "member-a",
+                ClusterGeneration::new(47_017),
+                ClusterRole::Local,
+            )
+            .await
+            .unwrap_err();
+        assert!(local_role
+            .to_string()
+            .contains("local caches do not publish"));
     }
 
     #[tokio::test]
@@ -983,6 +1056,7 @@ mod tests {
             remote.metadata.get("discovery.adapter").map(String::as_str),
             Some("chitchat")
         );
+        assert!(format!("{first:?}").contains("ChitchatDiscovery"));
     }
 
     async fn wait_until(timeout_after: Duration, mut condition: impl FnMut() -> bool) {

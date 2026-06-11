@@ -1091,6 +1091,38 @@ mod tests {
     }
 
     #[test]
+    fn command_decoding_reports_malformed_metadata() {
+        assert!(decode_command(b"not|a|command")
+            .unwrap_err()
+            .to_string()
+            .contains("invalid raft metadata command"));
+        assert!(decode_command(b"member|member-a|nan|1")
+            .unwrap_err()
+            .to_string()
+            .contains("invalid generation"));
+        assert!(decode_command(b"left|member-a|unknown|1")
+            .unwrap_err()
+            .to_string()
+            .contains("invalid raft metadata role"));
+        assert!(decode_command(&[0xff])
+            .unwrap_err()
+            .to_string()
+            .contains("invalid raft command utf8"));
+        assert!(decode_envelope(b"v1|missing-command")
+            .unwrap_err()
+            .to_string()
+            .contains("invalid raft metadata envelope"));
+
+        let legacy = decode_envelope(b"client|client-a|1|2").unwrap();
+        assert!(matches!(
+            legacy.command,
+            RaftMetadataCommand::ClientUpsert { ref node_id, .. }
+                if node_id.as_str() == "client-a"
+        ));
+        assert_eq!(parse_role("local").unwrap(), ClusterRole::Local);
+    }
+
+    #[test]
     fn runtime_keeps_invalidation_bus_from_inner_cluster() {
         let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
         let _subscriber = runtime.invalidation_bus().subscribe();
@@ -1103,6 +1135,28 @@ mod tests {
         );
 
         assert_eq!(diagnostics.invalidation_subscribers, 1);
+    }
+
+    #[tokio::test]
+    async fn runtime_accessors_and_unknown_leave_are_observable() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        assert_eq!(runtime.name(), "orders");
+        assert!(format!("{:?}", runtime.snapshot()).contains("RaftMetadataRuntimeSnapshot"));
+
+        let left = runtime
+            .leave(&ClusterNodeId::from("missing"), ClusterGeneration::new(1))
+            .await
+            .unwrap();
+        assert!(left.is_none());
+        assert_eq!(runtime.snapshot().commands_committed, 0);
+
+        runtime
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+            .await
+            .unwrap();
+        assert_eq!(runtime.command_envelopes().len(), 1);
+        assert_eq!(runtime.command_results().len(), 1);
+        assert!(format!("{runtime:?}").contains("RaftMetadataRuntime"));
     }
 
     #[test]
