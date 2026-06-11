@@ -1,7 +1,8 @@
 # HydraCache
 
-HydraCache is a Rust-native local async cache that is designed to grow toward
-database result caching and optional cluster synchronization.
+HydraCache is an embedded Rust cache toolkit for local caching, function
+memoization, and database result caching, with explicit invalidation and
+optional cluster synchronization.
 
 ## Status
 
@@ -14,7 +15,10 @@ cluster API shape, plus the database result-cache adapters `hydracache-db` and
 ## Why HydraCache?
 
 HydraCache is not trying to replace low-level cache engines, databases, or
-query processors. It is an application-facing cache layer for Rust services.
+query processors. It is an application-facing cache layer for Rust services:
+start with a simple local cache or cached function, then grow toward database
+result caching and cluster-aware invalidation without adding a mandatory cache
+server.
 
 Compared with using Moka directly, HydraCache adds a smaller product-shaped API:
 loader helpers, TTLs, tag invalidation, local single-flight, codec-backed
