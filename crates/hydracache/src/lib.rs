@@ -410,7 +410,7 @@ pub use cluster::{
     ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, HydraCacheClientBuilder,
     HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
     RaftMetadataCommand, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
-    RendezvousClusterOwnership,
+    RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

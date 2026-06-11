@@ -15,6 +15,13 @@ use tokio::sync::broadcast;
 static NEXT_CLUSTER_CLIENT_ID: AtomicU64 = AtomicU64::new(1);
 static NEXT_CLUSTER_MEMBER_ID: AtomicU64 = AtomicU64::new(1);
 
+/// Metadata key used by members to advertise their peer-fetch base URL.
+///
+/// The value is a base URL such as `http://127.0.0.1:3000`, not the full
+/// peer-fetch route. Transport adapters append their own route path so one
+/// advertised endpoint can stay stable across route-versioning changes.
+pub const CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY: &str = "hydracache.peer_fetch.base_url";
+
 fn next_client_id() -> ClusterNodeId {
     let id = NEXT_CLUSTER_CLIENT_ID.fetch_add(1, Ordering::Relaxed);
     ClusterNodeId::new(format!("hydracache-client-{id}"))
@@ -218,6 +225,47 @@ impl ClusterCandidate {
         self.metadata.insert(key.into(), value.into());
         self
     }
+
+    /// Advertise the base URL used by peer-fetch transports.
+    ///
+    /// The URL should not include the concrete peer-fetch path. For example,
+    /// use `http://127.0.0.1:3000`, not
+    /// `http://127.0.0.1:3000/cluster/peer-fetch`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{ClusterCandidate, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY};
+    ///
+    /// let candidate = ClusterCandidate::member("member-a")
+    ///     .peer_fetch_base_url("http://127.0.0.1:3000");
+    ///
+    /// assert_eq!(
+    ///     candidate.peer_fetch_base_url_value(),
+    ///     Some("http://127.0.0.1:3000")
+    /// );
+    /// assert_eq!(
+    ///     candidate
+    ///         .metadata
+    ///         .get(CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY)
+    ///         .map(String::as_str),
+    ///     Some("http://127.0.0.1:3000")
+    /// );
+    /// ```
+    pub fn peer_fetch_base_url(mut self, base_url: impl Into<String>) -> Self {
+        self.metadata.insert(
+            CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY.to_owned(),
+            base_url.into(),
+        );
+        self
+    }
+
+    /// Return the advertised peer-fetch base URL, when present.
+    pub fn peer_fetch_base_url_value(&self) -> Option<&str> {
+        self.metadata
+            .get(CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY)
+            .map(String::as_str)
+    }
 }
 
 /// Admitted cluster participant snapshot.
@@ -257,6 +305,38 @@ impl ClusterMember {
     /// Return whether this member is a cluster member node.
     pub fn is_member(&self) -> bool {
         self.role == ClusterRole::Member
+    }
+
+    /// Return the advertised peer-fetch base URL, when present.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use hydracache::{
+    ///     ClusterCandidate, ClusterControlPlane, InMemoryCluster,
+    /// };
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cluster = InMemoryCluster::new("orders");
+    /// let member = ClusterControlPlane::join_member(
+    ///     &cluster,
+    ///     ClusterCandidate::member("member-a")
+    ///         .peer_fetch_base_url("http://127.0.0.1:3000"),
+    /// )
+    /// .await?;
+    ///
+    /// assert_eq!(
+    ///     member.peer_fetch_base_url(),
+    ///     Some("http://127.0.0.1:3000")
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn peer_fetch_base_url(&self) -> Option<&str> {
+        self.metadata
+            .get(CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY)
+            .map(String::as_str)
     }
 }
 
@@ -2818,7 +2898,7 @@ mod tests {
         ClusterNodeId, ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterPeerFetch,
         ClusterPeerFetchGenerationMismatch, ClusterPeerFetchRequest, ClusterPeerFetchResponse,
         ClusterRole, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
-        RendezvousClusterOwnership,
+        RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
     };
     use bytes::Bytes;
 
@@ -2882,6 +2962,28 @@ mod tests {
             candidate.metadata.get("version").map(String::as_str),
             Some("0.20.0")
         );
+    }
+
+    #[test]
+    fn peer_fetch_endpoint_metadata_is_carried_to_member() {
+        let candidate =
+            ClusterCandidate::member("member-a").peer_fetch_base_url("http://127.0.0.1:3000");
+
+        assert_eq!(
+            candidate.peer_fetch_base_url_value(),
+            Some("http://127.0.0.1:3000")
+        );
+        assert_eq!(
+            candidate
+                .metadata
+                .get(CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY)
+                .map(String::as_str),
+            Some("http://127.0.0.1:3000")
+        );
+
+        let member = ClusterMember::from_candidate(candidate, ClusterEpoch::new(1));
+
+        assert_eq!(member.peer_fetch_base_url(), Some("http://127.0.0.1:3000"));
     }
 
     #[test]
