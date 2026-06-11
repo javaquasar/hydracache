@@ -737,6 +737,30 @@ helpers are intentionally derived from the existing snapshot so applications can
 render dashboards or health reports without doing their own repetitive count
 logic.
 
+## Cluster Ownership Resolver
+
+`InMemoryCluster::owner_for_key(...)` provides the first deterministic
+ownership primitive for future Groupcache-style routing. It chooses an admitted
+member for a key, but it does not fetch values or execute loaders remotely.
+
+```rust
+use hydracache::{ClusterCandidate, InMemoryCluster};
+
+let cluster = InMemoryCluster::new("orders");
+cluster.join_member(ClusterCandidate::member("member-a"))?;
+cluster.join_member(ClusterCandidate::member("member-b"))?;
+
+let owner = cluster.owner_for_key("user:42");
+
+assert!(owner.has_owner());
+assert_eq!(owner.member_count, 2);
+assert_eq!(owner.resolver, "rendezvous");
+# Ok::<(), hydracache::CacheError>(())
+```
+
+The default resolver uses stable rendezvous-style hashing over the key and
+member node id. Clients are ignored; only admitted members can own keys.
+
 Client/member caches can also observe authoritative membership changes through
 `subscribe_cluster_membership()`. The stream is bounded and non-blocking:
 admission never waits for slow subscribers, and slow consumers receive a lag

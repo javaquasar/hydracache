@@ -405,9 +405,9 @@ pub use cluster::{
     ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
     ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
     ClusterMembershipEvent, ClusterMembershipRecvError, ClusterMembershipSubscriber, ClusterNodeId,
-    ClusterRole, HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster,
-    InMemoryClusterDiscovery, RaftMetadataCommand, RaftMetadataSnapshot,
-    RaftStyleMetadataControlPlane,
+    ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterRole, HydraCacheClientBuilder,
+    HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, RaftMetadataCommand,
+    RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

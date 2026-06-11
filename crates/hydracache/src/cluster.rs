@@ -259,6 +259,103 @@ impl ClusterMember {
     }
 }
 
+/// Result of resolving which admitted member owns a cache key.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterOwnershipDecision {
+    /// Logical cache key used for the lookup.
+    pub key: String,
+    /// Owner selected by the resolver, if at least one member is eligible.
+    pub owner: Option<ClusterMember>,
+    /// Number of eligible member nodes considered by the resolver.
+    pub member_count: usize,
+    /// Stable resolver name for diagnostics and sandbox reports.
+    pub resolver: &'static str,
+}
+
+impl ClusterOwnershipDecision {
+    /// Return whether an owner was selected.
+    pub fn has_owner(&self) -> bool {
+        self.owner.is_some()
+    }
+
+    /// Return the selected owner node id.
+    pub fn owner_node_id(&self) -> Option<&ClusterNodeId> {
+        self.owner.as_ref().map(|owner| &owner.node_id)
+    }
+
+    /// Return the selected owner generation.
+    pub fn owner_generation(&self) -> Option<ClusterGeneration> {
+        self.owner.as_ref().map(|owner| owner.generation)
+    }
+}
+
+/// Strategy for mapping cache keys to admitted cluster members.
+///
+/// This trait is intentionally value-agnostic. It decides ownership only; a
+/// later peer-fetch layer can use the decision to contact the owner.
+pub trait ClusterOwnershipResolver: Send + Sync {
+    /// Stable resolver name for diagnostics.
+    fn name(&self) -> &'static str;
+
+    /// Resolve the owner for `key` among the provided participants.
+    fn resolve_owner(&self, key: &str, participants: &[ClusterMember]) -> ClusterOwnershipDecision;
+}
+
+/// Deterministic rendezvous-style ownership resolver.
+///
+/// The resolver scores each admitted member by hashing `key` with the member
+/// node id and picks the highest score. It ignores clients and local roles.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct RendezvousClusterOwnership;
+
+impl ClusterOwnershipResolver for RendezvousClusterOwnership {
+    fn name(&self) -> &'static str {
+        "rendezvous"
+    }
+
+    fn resolve_owner(&self, key: &str, participants: &[ClusterMember]) -> ClusterOwnershipDecision {
+        let mut member_count = 0_usize;
+        let mut best: Option<(u64, ClusterMember)> = None;
+
+        for participant in participants
+            .iter()
+            .filter(|candidate| candidate.is_member())
+        {
+            member_count = member_count.saturating_add(1);
+            let score = rendezvous_score(key, &participant.node_id);
+            let replace = best
+                .as_ref()
+                .map(|(best_score, best_member)| {
+                    score > *best_score
+                        || (score == *best_score && participant.node_id > best_member.node_id)
+                })
+                .unwrap_or(true);
+            if replace {
+                best = Some((score, participant.clone()));
+            }
+        }
+
+        ClusterOwnershipDecision {
+            key: key.to_owned(),
+            owner: best.map(|(_, member)| member),
+            member_count,
+            resolver: self.name(),
+        }
+    }
+}
+
+fn rendezvous_score(key: &str, node_id: &ClusterNodeId) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x100000001b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in key.bytes().chain([0xff]).chain(node_id.as_str().bytes()) {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash
+}
+
 /// Event emitted by discovery before authoritative admission.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClusterDiscoveryEvent {
@@ -1751,6 +1848,24 @@ impl InMemoryCluster {
             .collect()
     }
 
+    /// Resolve which admitted member owns a logical cache key.
+    ///
+    /// This is a local, deterministic decision over the current in-memory
+    /// member view. It does not load values or contact the owner.
+    pub fn owner_for_key(&self, key: impl AsRef<str>) -> ClusterOwnershipDecision {
+        self.owner_for_key_with(key, &RendezvousClusterOwnership)
+    }
+
+    /// Resolve ownership with a custom resolver.
+    pub fn owner_for_key_with(
+        &self,
+        key: impl AsRef<str>,
+        resolver: &dyn ClusterOwnershipResolver,
+    ) -> ClusterOwnershipDecision {
+        let members = self.members();
+        resolver.resolve_owner(key.as_ref(), &members)
+    }
+
     /// Return membership events recorded by the in-memory model.
     pub fn events(&self) -> Vec<ClusterMembershipEvent> {
         self.state
@@ -2385,7 +2500,8 @@ mod tests {
         ClusterCandidate, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics,
         ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember,
         ClusterMembershipEvent, ClusterMembershipEventBus, ClusterMembershipRecvError,
-        ClusterNodeId, ClusterRole, InMemoryCluster, InMemoryClusterDiscovery,
+        ClusterNodeId, ClusterOwnershipResolver, ClusterRole, InMemoryCluster,
+        InMemoryClusterDiscovery, RendezvousClusterOwnership,
     };
 
     #[test]
@@ -2448,6 +2564,51 @@ mod tests {
             candidate.metadata.get("version").map(String::as_str),
             Some("0.20.0")
         );
+    }
+
+    #[test]
+    fn rendezvous_ownership_resolver_selects_stable_member_owner() {
+        let resolver = RendezvousClusterOwnership;
+        let first = ClusterMember::from_candidate(
+            ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+            ClusterEpoch::new(1),
+        );
+        let second = ClusterMember::from_candidate(
+            ClusterCandidate::member("member-b").generation(ClusterGeneration::new(1)),
+            ClusterEpoch::new(1),
+        );
+        let client = ClusterMember::from_candidate(
+            ClusterCandidate::client("client-a").generation(ClusterGeneration::new(1)),
+            ClusterEpoch::new(1),
+        );
+        let participants = vec![first.clone(), second.clone(), client];
+        let reversed = vec![second, first];
+
+        let decision = resolver.resolve_owner("user:42", &participants);
+        let reversed_decision = resolver.resolve_owner("user:42", &reversed);
+
+        assert_eq!(decision.resolver, "rendezvous");
+        assert_eq!(decision.key, "user:42");
+        assert_eq!(decision.member_count, 2);
+        assert!(decision.has_owner());
+        assert_eq!(decision.owner_node_id(), reversed_decision.owner_node_id());
+        assert_eq!(decision.owner_generation(), Some(ClusterGeneration::new(1)));
+    }
+
+    #[test]
+    fn rendezvous_ownership_resolver_reports_no_owner_without_members() {
+        let resolver = RendezvousClusterOwnership;
+        let participants = vec![ClusterMember::from_candidate(
+            ClusterCandidate::client("client-a"),
+            ClusterEpoch::default(),
+        )];
+
+        let decision = resolver.resolve_owner("user:42", &participants);
+
+        assert_eq!(decision.member_count, 0);
+        assert!(!decision.has_owner());
+        assert!(decision.owner_node_id().is_none());
+        assert!(decision.owner_generation().is_none());
     }
 
     #[test]
@@ -2968,6 +3129,37 @@ mod tests {
         assert!(!diagnostics.has_membership_subscribers());
         assert!(!diagnostics.has_multiple_participants());
         assert!(diagnostics.is_operational());
+    }
+
+    #[test]
+    fn in_memory_cluster_resolves_key_owner_from_admitted_members() {
+        let cluster = InMemoryCluster::new("orders");
+
+        let empty = cluster.owner_for_key("user:42");
+        assert!(!empty.has_owner());
+        assert_eq!(empty.member_count, 0);
+
+        cluster
+            .join_member(ClusterCandidate::member("member-a"))
+            .unwrap();
+        cluster
+            .join_member(ClusterCandidate::member("member-b"))
+            .unwrap();
+        cluster
+            .join_client(ClusterCandidate::client("client-a"))
+            .unwrap();
+
+        let first = cluster.owner_for_key("user:42");
+        let second = cluster.owner_for_key("user:42");
+        let different_key = cluster.owner_for_key("user:99");
+
+        assert_eq!(first.resolver, "rendezvous");
+        assert_eq!(first.member_count, 2);
+        assert!(first.has_owner());
+        assert_eq!(first.owner_node_id(), second.owner_node_id());
+        assert!(different_key.has_owner());
+        assert!(["member-a", "member-b"]
+            .contains(&different_key.owner_node_id().expect("owner").as_str()));
     }
 
     #[tokio::test]
