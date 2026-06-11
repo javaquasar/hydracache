@@ -82,7 +82,10 @@ The current v0 line includes:
 - optional `hydracache-cluster-raft` crate for a real raft-rs-backed metadata
   runtime
 - cluster diagnostics for role, node id, generation, epoch, bootstrap nodes,
-  member/client counts, and invalidation subscribers
+  member/client counts, invalidation subscribers, ownership resolutions, and
+  no-owner outcomes
+- deterministic in-memory ownership resolver for admitted members
+- transport-neutral peer-fetch API seam over encoded bytes
 - framework-neutral observability registry
 - optional read-only Axum actuator routes
 - single-flight join stats
@@ -784,6 +787,36 @@ assert!(response.is_hit());
 
 The in-memory implementation is for tests, demos, and sandbox reports. Real
 network peer fetch and owner-side query execution remain future work.
+
+## Cluster Support Boundaries
+
+The current `0.21.x` cluster support is intentionally an embedded coordination
+surface, not a production distributed data grid. It includes:
+
+- local, client, and member cache roles;
+- generation-safe admission, leave, and invalidation publishing;
+- in-memory cluster control plane for tests, demos, and local embedding;
+- chitchat-backed discovery candidate adapter;
+- raft-rs-backed metadata/control-plane adapter;
+- a composition crate for the standard chitchat + raft setup;
+- deterministic rendezvous ownership resolution over admitted members;
+- a transport-neutral peer-fetch seam that moves encoded bytes;
+- diagnostics counters for membership, invalidation, ownership, and peer-fetch
+  demo activity.
+
+It intentionally does not yet include:
+
+- production multi-node Raft networking or durable metadata storage;
+- automatic remote owner-side loader/query execution;
+- value replication, backup ownership, or failover repair;
+- external invalidation transports such as Redis, NATS, or Postgres
+  LISTEN/NOTIFY;
+- cluster security, authentication, or write-enabled admin APIs.
+
+This boundary is deliberate: applications can adopt local caching, explicit
+invalidation, DB result caching, and cluster-aware diagnostics now, while the
+future remote-value layer can evolve behind the existing ownership and
+peer-fetch seams.
 
 Client/member caches can also observe authoritative membership changes through
 `subscribe_cluster_membership()`. The stream is bounded and non-blocking:
