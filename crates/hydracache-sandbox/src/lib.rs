@@ -31,9 +31,11 @@
 //! http://127.0.0.1:3000/demo/presets
 //! http://127.0.0.1:3000/demo/report
 //! http://127.0.0.1:3000/demo/events
+//! http://127.0.0.1:3000/demo/events/summary
 //! http://127.0.0.1:3000/demo/export
 //! http://127.0.0.1:3000/demo/scenarios/run
 //! http://127.0.0.1:3000/demo/scenarios/files
+//! http://127.0.0.1:3000/demo/scenarios/catalog
 //! http://127.0.0.1:3000/demo/scenarios/file/run
 //! http://127.0.0.1:3000/demo/scenarios/suite/run
 //! http://127.0.0.1:3000/demo/scenarios/document/run
@@ -546,6 +548,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/self-test", post(self_test))
         .route("/demo/scenarios/run", post(run_scenario))
         .route("/demo/scenarios/files", get(scenario_files))
+        .route("/demo/scenarios/catalog", get(scenario_catalog))
         .route("/demo/scenarios/file/run", post(run_scenario_file))
         .route("/demo/scenarios/suite/run", post(run_scenario_suite))
         .route(
@@ -573,6 +576,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/security", get(security_info))
         .route("/demo/report", get(report))
         .route("/demo/events", get(events))
+        .route("/demo/events/summary", get(events_summary))
         .route("/demo/events/clear", post(clear_events))
         .route("/demo/listeners/run", post(run_listener_demo))
         .route(
@@ -1184,6 +1188,8 @@ struct SandboxInfo {
     presets: &'static str,
     report: &'static str,
     events: &'static str,
+    events_summary: &'static str,
+    scenario_catalog: &'static str,
     export: &'static str,
     self_test: &'static str,
     actuator_health: &'static str,
@@ -1214,6 +1220,8 @@ struct SandboxUrls {
     readiness: &'static str,
     report: &'static str,
     events: &'static str,
+    events_summary: &'static str,
+    scenario_catalog: &'static str,
     timeline: &'static str,
     distributed_invalidation: &'static str,
     actuator_diagnostics: &'static str,
@@ -1273,6 +1281,31 @@ struct EventLogResponse {
     filter: EventFilterSummary,
     latency: LatencySummary,
     events: Vec<DemoEvent>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct EventCount {
+    name: String,
+    count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct FlowEventSummary {
+    flow_id: String,
+    event_count: usize,
+    suggested_scenario: ScenarioName,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct EventSummaryResponse {
+    retained: usize,
+    capacity: usize,
+    latency: LatencySummary,
+    by_kind: Vec<EventCount>,
+    by_source: Vec<EventCount>,
+    by_flow: Vec<FlowEventSummary>,
+    by_key: Vec<EventCount>,
+    by_tag: Vec<EventCount>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
@@ -1738,6 +1771,39 @@ struct ScenarioFileInfo {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct ScenarioFilesResponse {
     files: Vec<ScenarioFileInfo>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "kebab-case")]
+enum ScenarioCatalogKind {
+    Document,
+    Suite,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ScenarioCatalogItem {
+    path: String,
+    kind: ScenarioCatalogKind,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    format: Option<ScenarioDocumentFormat>,
+    name: String,
+    description: Option<String>,
+    run_endpoint: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    step_count: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    assertion_count: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    timeline_assertion_count: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    suite_entry_count: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ScenarioCatalogResponse {
+    total: usize,
+    documents: Vec<ScenarioCatalogItem>,
+    suites: Vec<ScenarioCatalogItem>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
@@ -2654,6 +2720,8 @@ fn sandbox_urls() -> SandboxUrls {
         readiness: "/ready",
         report: "/demo/report",
         events: "/demo/events",
+        events_summary: "/demo/events/summary",
+        scenario_catalog: "/demo/scenarios/catalog",
         timeline: "/demo/flows/{flow_id}/timeline",
         distributed_invalidation: "/demo/distributed/invalidation/run",
         actuator_diagnostics: "/actuator/hydracache/caches/main/diagnostics",
@@ -2673,6 +2741,8 @@ fn sandbox_info(state: &SandboxState) -> SandboxInfo {
         presets: "/demo/presets",
         report: "/demo/report",
         events: "/demo/events",
+        events_summary: "/demo/events/summary",
+        scenario_catalog: "/demo/scenarios/catalog",
         export: "/demo/export",
         self_test: "/demo/self-test",
         actuator_health: "/actuator/hydracache/health",
@@ -2760,6 +2830,20 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
                 "key": "manual:1",
                 "flow_id": "manual-flow"
             })),
+        },
+        ScenarioPreset {
+            name: "event-summary",
+            method: "GET",
+            path: "/demo/events/summary",
+            description: "Summarize retained events by kind, source, flow id, key, tag, and latency.",
+            body: None,
+        },
+        ScenarioPreset {
+            name: "scenario-catalog",
+            method: "GET",
+            path: "/demo/scenarios/catalog",
+            description: "List committed scenario documents and suites with parsed metadata.",
+            body: None,
         },
         ScenarioPreset {
             name: "listener-demo",
@@ -3626,6 +3710,16 @@ async fn scenario_files() -> Json<ScenarioFilesResponse> {
 }
 
 #[utoipa::path(
+    get,
+    path = "/demo/scenarios/catalog",
+    tag = "scenarios",
+    responses((status = 200, description = "Parsed catalog of committed scenario documents and suites", body = ScenarioCatalogResponse))
+)]
+async fn scenario_catalog() -> Result<Json<ScenarioCatalogResponse>, SandboxHttpError> {
+    Ok(Json(build_scenario_catalog().await?))
+}
+
+#[utoipa::path(
     post,
     path = "/demo/scenarios/file/run",
     tag = "scenarios",
@@ -3721,6 +3815,54 @@ fn scenario_file_infos() -> Vec<ScenarioFileInfo> {
     ]
 }
 
+fn scenario_suite_file_paths() -> Vec<&'static str> {
+    vec!["regression-suite.json"]
+}
+
+async fn build_scenario_catalog() -> Result<ScenarioCatalogResponse, SandboxHttpError> {
+    let mut documents = Vec::new();
+    for file in scenario_file_infos() {
+        let document = read_scenario_file_document(&file.path, file.format).await?;
+        documents.push(ScenarioCatalogItem {
+            path: file.path,
+            kind: ScenarioCatalogKind::Document,
+            format: Some(file.format),
+            name: document.name,
+            description: document
+                .description
+                .or_else(|| Some(file.description.to_owned())),
+            run_endpoint: "/demo/scenarios/file/run",
+            step_count: Some(document.steps.len()),
+            assertion_count: Some(document.assertions.len()),
+            timeline_assertion_count: Some(document.timeline_assertions.len()),
+            suite_entry_count: None,
+        });
+    }
+
+    let mut suites = Vec::new();
+    for path in scenario_suite_file_paths() {
+        let suite = read_scenario_suite_file(path).await?;
+        suites.push(ScenarioCatalogItem {
+            path: path.to_owned(),
+            kind: ScenarioCatalogKind::Suite,
+            format: Some(ScenarioDocumentFormat::Json),
+            name: suite.name,
+            description: suite.description,
+            run_endpoint: "/demo/scenarios/suite/file/run",
+            step_count: None,
+            assertion_count: None,
+            timeline_assertion_count: None,
+            suite_entry_count: Some(suite.entries.len()),
+        });
+    }
+
+    Ok(ScenarioCatalogResponse {
+        total: documents.len() + suites.len(),
+        documents,
+        suites,
+    })
+}
+
 async fn read_scenario_suite_file(path: &str) -> Result<ScenarioSuite, SandboxHttpError> {
     let full_path = resolve_suite_file_path(path)?;
     let contents = tokio::fs::read_to_string(full_path)
@@ -3736,7 +3878,7 @@ fn resolve_suite_file_path(path: &str) -> Result<PathBuf, SandboxHttpError> {
             "suite file path must be a simple relative file name",
         ));
     }
-    if path != "regression-suite.json" {
+    if !scenario_suite_file_paths().contains(&path) {
         return Err(SandboxHttpError::bad_request(format!(
             "unknown suite file `{path}`"
         )));
@@ -5279,6 +5421,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
     let checked_paths = vec![
         "/ready".to_owned(),
         "/demo/scenarios/file/run".to_owned(),
+        "/demo/scenarios/catalog".to_owned(),
         "/demo/scenarios/suite/file/run".to_owned(),
         "/demo/scenarios/document/run".to_owned(),
         "/demo/flows".to_owned(),
@@ -5288,6 +5431,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/cluster/lifecycle/run".to_owned(),
         "/demo/cluster/real-adapters/run".to_owned(),
         "/demo/observability/prometheus".to_owned(),
+        "/demo/events/summary".to_owned(),
         "/demo/import".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
         "/demo/query/orders/{id}/summary/load".to_owned(),
@@ -5316,7 +5460,9 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "ready()",
         "runScenarioDocument(document)",
         "runScenarioFile(path",
+        "scenarioCatalog()",
         "runScenarioSuiteFile(path",
+        "eventSummary()",
         "compareBenchmarks(baseline, candidate)",
         "flows()",
         "replayFlow(flowId",
@@ -5327,8 +5473,10 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "importSession(bundle",
         "/demo/scenarios/document/run",
         "/demo/scenarios/file/run",
+        "/demo/scenarios/catalog",
         "/demo/scenarios/suite/file/run",
         "/demo/benchmarks/compare",
+        "/demo/events/summary",
         "/demo/cluster/real-adapters/run",
         "/demo/flows",
         "/demo/query/products/",
@@ -5402,6 +5550,23 @@ async fn events(
     Query(query): Query<EventQuery>,
 ) -> Json<EventLogResponse> {
     Json(event_log(&state, &query).await)
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/events/summary",
+    tag = "reports",
+    responses((status = 200, description = "Grouped sandbox event summary by kind, source, flow, key, and tag", body = EventSummaryResponse))
+)]
+async fn events_summary(State(state): State<SandboxState>) -> Json<EventSummaryResponse> {
+    let events = state
+        .events
+        .read()
+        .await
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+    Json(event_summary_from_events(&events))
 }
 
 #[utoipa::path(
@@ -7987,6 +8152,79 @@ async fn event_log(state: &SandboxState, query: &EventQuery) -> EventLogResponse
     }
 }
 
+fn event_summary_from_events(events: &[DemoEvent]) -> EventSummaryResponse {
+    let mut by_kind = BTreeMap::<String, usize>::new();
+    let mut by_source = BTreeMap::<String, usize>::new();
+    let mut by_key = BTreeMap::<String, usize>::new();
+    let mut by_tag = BTreeMap::<String, usize>::new();
+    let mut by_flow = BTreeMap::<String, usize>::new();
+
+    for event in events {
+        increment_count(&mut by_kind, event_kind_label(event.kind));
+        increment_count(&mut by_source, event_source_label(event.source));
+        if let Some(key) = &event.key {
+            increment_count(&mut by_key, key.clone());
+        }
+        if let Some(tag) = &event.tag {
+            increment_count(&mut by_tag, tag.clone());
+        }
+        if let Some(flow_id) = &event.flow_id {
+            increment_count(&mut by_flow, flow_id.clone());
+        }
+    }
+
+    EventSummaryResponse {
+        retained: events.len(),
+        capacity: MAX_DEMO_EVENTS,
+        latency: latency_for_events(events),
+        by_kind: sorted_event_counts(by_kind),
+        by_source: sorted_event_counts(by_source),
+        by_flow: by_flow
+            .into_iter()
+            .map(|(flow_id, event_count)| FlowEventSummary {
+                suggested_scenario: suggested_scenario_for_flow(&flow_id),
+                flow_id,
+                event_count,
+            })
+            .collect(),
+        by_key: sorted_event_counts(by_key),
+        by_tag: sorted_event_counts(by_tag),
+    }
+}
+
+fn increment_count(counts: &mut BTreeMap<String, usize>, name: impl Into<String>) {
+    *counts.entry(name.into()).or_default() += 1;
+}
+
+fn sorted_event_counts(counts: BTreeMap<String, usize>) -> Vec<EventCount> {
+    let mut counts = counts
+        .into_iter()
+        .map(|(name, count)| EventCount { name, count })
+        .collect::<Vec<_>>();
+    counts.sort_by(|left, right| {
+        right
+            .count
+            .cmp(&left.count)
+            .then_with(|| left.name.cmp(&right.name))
+    });
+    counts
+}
+
+fn event_kind_label(kind: DemoEventKind) -> String {
+    serde_json::to_value(kind)
+        .ok()
+        .and_then(|value| value.as_str().map(ToOwned::to_owned))
+        .unwrap_or_else(|| format!("{kind:?}"))
+}
+
+fn event_source_label(source: Option<LoadSource>) -> &'static str {
+    match source {
+        Some(LoadSource::Cache) => "cache",
+        Some(LoadSource::Loader) => "loader",
+        None => "none",
+    }
+}
+
 const DASHBOARD_HTML: &str = r#"<!doctype html>
 <html lang="en">
 <head>
@@ -8041,6 +8279,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="show('/demo/presets')">Presets</button>
       <button onclick="show('/demo/report')">Application report</button>
       <button onclick="show('/demo/events')">Event log</button>
+      <button onclick="show('/demo/events/summary')">Event summary</button>
       <button onclick="show('/demo/events?kind=cache-hit')">Cache hits</button>
       <button onclick="show('/demo/events?limit=10')">Last 10 events</button>
       <button onclick="showText('/demo/observability/prometheus')">Prometheus</button>
@@ -8066,6 +8305,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
     <section>
       <h2>Scenario Lab</h2>
       <button onclick="runDocumentScenario()">Run DSL document</button>
+      <button onclick="show('/demo/scenarios/catalog')">Scenario catalog</button>
       <button onclick="show('/demo/scenarios/files')">Scenario files</button>
       <button onclick="post('/demo/scenarios/file/run', {path:'golden-path.yaml', format:'yaml'})">Run YAML file</button>
       <button onclick="post('/demo/scenarios/suite/file/run', {path:'regression-suite.json'})">Run suite file</button>
@@ -8380,8 +8620,8 @@ fn capabilities() -> Vec<CapabilityReport> {
         },
         CapabilityReport {
             name: "scenario files and suites",
-            endpoint: "/demo/scenarios/file/run and /demo/scenarios/suite/file/run",
-            description: "Run committed scenario recipe files and scenario-suite files as repeatable sandbox regression packs.",
+            endpoint: "/demo/scenarios/catalog, /demo/scenarios/file/run, and /demo/scenarios/suite/file/run",
+            description: "Catalog and run committed scenario recipe files and scenario-suite files as repeatable sandbox regression packs.",
         },
         CapabilityReport {
             name: "flow timeline",
@@ -8455,8 +8695,8 @@ fn capabilities() -> Vec<CapabilityReport> {
         },
         CapabilityReport {
             name: "operation reports",
-            endpoint: "/demo/report, /demo/events, and /actuator/hydracache/*",
-            description: "Read cumulative diagnostics, loader counters, function counters, structured events, health, cache list, stats, and actuator snapshots.",
+            endpoint: "/demo/report, /demo/events, /demo/events/summary, and /actuator/hydracache/*",
+            description: "Read cumulative diagnostics, loader counters, function counters, structured events, grouped event summaries, health, cache list, stats, and actuator snapshots.",
         },
         CapabilityReport {
             name: "reset",
@@ -8522,6 +8762,7 @@ fn actuator_stats_doc() {}
         self_test,
         run_scenario,
         scenario_files,
+        scenario_catalog,
         run_scenario_file,
         run_scenario_suite,
         run_scenario_suite_file,
@@ -8543,6 +8784,7 @@ fn actuator_stats_doc() {}
         security_info,
         report,
         events,
+        events_summary,
         clear_events,
         run_listener_demo,
         run_distributed_invalidation_demo,
@@ -8591,6 +8833,9 @@ fn actuator_stats_doc() {}
             DemoEventKind,
             DemoEvent,
             EventLogResponse,
+            EventCount,
+            FlowEventSummary,
+            EventSummaryResponse,
             EventFilterSummary,
             ClearEventsResponse,
             ScenarioPreset,
@@ -8635,6 +8880,9 @@ fn actuator_stats_doc() {}
             ScenarioDocumentRunResponse,
             ScenarioFileInfo,
             ScenarioFilesResponse,
+            ScenarioCatalogKind,
+            ScenarioCatalogItem,
+            ScenarioCatalogResponse,
             ScenarioFileRunRequest,
             ScenarioFileRunResponse,
             ScenarioSuite,
@@ -9117,6 +9365,7 @@ mod tests {
         assert!(paths.contains_key("/demo/self-test"));
         assert!(paths.contains_key("/demo/scenarios/run"));
         assert!(paths.contains_key("/demo/scenarios/files"));
+        assert!(paths.contains_key("/demo/scenarios/catalog"));
         assert!(paths.contains_key("/demo/scenarios/file/run"));
         assert!(paths.contains_key("/demo/scenarios/suite/run"));
         assert!(paths.contains_key("/demo/scenarios/suite/file/run"));
@@ -9137,6 +9386,7 @@ mod tests {
         assert!(paths.contains_key("/demo/openapi/client-smoke"));
         assert!(paths.contains_key("/demo/security"));
         assert!(paths.contains_key("/demo/events"));
+        assert!(paths.contains_key("/demo/events/summary"));
         assert!(paths.contains_key("/demo/listeners/run"));
         assert!(paths.contains_key("/demo/distributed/invalidation/run"));
         assert!(paths.contains_key("/demo/cluster/lifecycle/run"));
@@ -9165,6 +9415,8 @@ mod tests {
         assert!(schemas.contains_key("User"));
         assert!(schemas.contains_key("SandboxConfigResponse"));
         assert!(schemas.contains_key("EventFilterSummary"));
+        assert!(schemas.contains_key("EventSummaryResponse"));
+        assert!(schemas.contains_key("ScenarioCatalogResponse"));
         assert!(schemas.contains_key("PresetResponse"));
         assert!(schemas.contains_key("ExportBundle"));
         assert!(schemas.contains_key("SelfTestResponse"));
@@ -9712,8 +9964,10 @@ mod tests {
         assert!(body.contains("/demo/scenarios/run"));
         assert!(body.contains("/demo/scenarios/document/run"));
         assert!(body.contains("/demo/scenarios/file/run"));
+        assert!(body.contains("/demo/scenarios/catalog"));
         assert!(body.contains("/demo/scenarios/suite/file/run"));
         assert!(body.contains("/demo/flows"));
+        assert!(body.contains("/demo/events/summary"));
         assert!(body.contains("/demo/listeners/run"));
         assert!(body.contains("/demo/query/products/100/load"));
         assert!(body.contains("/demo/query/orders/5000/summary/load"));
@@ -9741,6 +9995,11 @@ mod tests {
             super::MAX_DEMO_EVENTS
         );
         assert_eq!(config["urls"]["swagger_ui"], "/swagger-ui");
+        assert_eq!(config["urls"]["events_summary"], "/demo/events/summary");
+        assert_eq!(
+            config["urls"]["scenario_catalog"],
+            "/demo/scenarios/catalog"
+        );
 
         let presets = app
             .clone()
@@ -9763,7 +10022,34 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
+            .any(|preset| preset["name"] == "event-summary"));
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|preset| preset["name"] == "scenario-catalog"));
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
             .any(|preset| preset["name"] == "scenario-document"));
+
+        let catalog = app
+            .clone()
+            .oneshot(get("/demo/scenarios/catalog"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(catalog["total"], 3);
+        assert!(catalog["documents"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|document| document["path"] == "golden-path.yaml"
+                && document["step_count"].as_u64().unwrap() >= 2));
+        assert_eq!(catalog["suites"][0]["path"], "regression-suite.json");
+        assert!(catalog["suites"][0]["suite_entry_count"].as_u64().unwrap() >= 1);
 
         app.clone()
             .oneshot(post(
@@ -9789,6 +10075,30 @@ mod tests {
         assert_eq!(events["capacity"], super::MAX_DEMO_EVENTS);
         assert_eq!(events["events"][0]["kind"], "cache-put");
         assert_eq!(events["events"][0]["flow_id"], "console-flow");
+
+        let summary = app
+            .clone()
+            .oneshot(get("/demo/events/summary"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert!(summary["retained"].as_u64().unwrap() >= 1);
+        assert!(summary["by_kind"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|count| count["name"] == "cache-put" && count["count"] == 1));
+        assert!(summary["by_flow"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|flow| flow["flow_id"] == "console-flow"));
+        assert!(summary["by_key"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|count| count["name"] == "console:1"));
 
         let filtered = app
             .clone()

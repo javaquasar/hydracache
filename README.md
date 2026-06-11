@@ -894,8 +894,10 @@ http://127.0.0.1:3000/demo/config
 http://127.0.0.1:3000/demo/presets
 http://127.0.0.1:3000/demo/report
 http://127.0.0.1:3000/demo/events
+http://127.0.0.1:3000/demo/events/summary
 http://127.0.0.1:3000/demo/export
 http://127.0.0.1:3000/demo/scenarios/files
+http://127.0.0.1:3000/demo/scenarios/catalog
 http://127.0.0.1:3000/demo/scenarios/file/run
 http://127.0.0.1:3000/demo/scenarios/suite/file/run
 http://127.0.0.1:3000/demo/scenarios/document/run
@@ -932,9 +934,9 @@ full discovery-to-metadata path can be inspected without Docker or UDP ports.
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
 state, show structured events, run the built-in self-test, export a portable
-report bundle, compare local profiles, replay named scenarios, run fault
+report bundle, inspect grouped event summaries, compare local profiles, replay named scenarios, run fault
 injection, launch a manual benchmark, run JSON/YAML scenario documents, compare
-benchmark reports, run committed scenario files/suites, replay retained flow
+benchmark reports, catalog and run committed scenario files/suites, replay retained flow
 contexts, inspect seeded product/order query-cache demos, run generated-client
 smoke checks, inspect Prometheus-style metrics, and display small hit/miss/load
 counters with a visual flow timeline. The dashboard also includes a textarea
@@ -952,6 +954,7 @@ GET  /demo/ui
 GET  /demo/config
 GET  /demo/presets
 GET  /demo/events
+GET  /demo/events/summary
 GET  /demo/events?kind=cache-hit
 GET  /demo/events?flow_id=manual-flow&limit=10
 GET  /demo/export
@@ -968,6 +971,7 @@ POST /demo/import
 POST /demo/self-test
 POST /demo/scenarios/run
 GET  /demo/scenarios/files
+GET  /demo/scenarios/catalog
 POST /demo/scenarios/file/run
 POST /demo/scenarios/suite/run
 POST /demo/scenarios/suite/file/run
@@ -1025,8 +1029,10 @@ backend, loader counters, function counters, retained event count,
 capabilities, and cache diagnostics. `/demo/events` returns the bounded
 structured event log for recent cache hits, misses, loads, invalidations,
 scenario runs, resets, and expected errors. It can be filtered by exact
-`kind`, `key`, `tag`, `flow_id`, and capped with `limit`. `/demo/export`
-combines sandbox info, readiness, config, report, and events into one bundle;
+`kind`, `key`, `tag`, `flow_id`, and capped with `limit`.
+`/demo/events/summary` groups the retained log by event kind, load source, flow
+id, key, and tag, which is useful when a manual run generated a lot of output.
+`/demo/export` combines sandbox info, readiness, config, report, and events into one bundle;
 `POST /demo/self-test` runs a built-in smoke scenario and returns step-level
 results plus a filtered event log for that self-test flow.
 
@@ -1036,6 +1042,7 @@ workbench:
 ```text
 POST /demo/scenarios/run        # golden-path, ttl, single-flight, invalidation-race, negative-suite, self-test
 GET  /demo/scenarios/files      # committed JSON/YAML recipes
+GET  /demo/scenarios/catalog    # parsed recipe/suite metadata and run endpoints
 POST /demo/scenarios/file/run   # run one committed recipe
 POST /demo/scenarios/suite/run  # run an inline scenario suite
 POST /demo/scenarios/suite/file/run

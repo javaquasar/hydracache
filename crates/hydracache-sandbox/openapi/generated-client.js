@@ -44,8 +44,16 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/scenarios/file/run", { path, format });
   }
 
+  scenarioCatalog() {
+    return this.json("/demo/scenarios/catalog");
+  }
+
   runScenarioSuiteFile(path = "regression-suite.json") {
     return this.post("/demo/scenarios/suite/file/run", { path });
+  }
+
+  eventSummary() {
+    return this.json("/demo/events/summary");
   }
 
   compareBenchmarks(baseline, candidate) {
