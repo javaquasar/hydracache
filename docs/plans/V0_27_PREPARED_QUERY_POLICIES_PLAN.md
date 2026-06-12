@@ -128,4 +128,4 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 - [x] README updated.
 - [x] Rustdoc examples compile.
 - [x] Release notes updated.
-- [ ] Full release gate passes.
+- [x] Full release gate passes.
