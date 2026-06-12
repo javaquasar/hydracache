@@ -11,7 +11,7 @@
 //! use std::time::Duration;
 //!
 //! use hydracache::HydraCache;
-//! use hydracache_db::{DbCache, HydraCacheEntity, QueryCachePolicy};
+//! use hydracache_db::{DbCache, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy};
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -40,6 +40,46 @@
 //!     .load(|| async {
 //!         // This loader runs only on a cache miss. On a cache hit, HydraCache
 //!         // returns the cached User and this database code is not executed.
+//!         Ok::<_, std::io::Error>(User {
+//!             id: 42,
+//!             name: "Ada".to_owned(),
+//!         })
+//!     })
+//!     .await?;
+//!
+//! assert_eq!(user.id, 42);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! For hot repository methods, prepare stable metadata once and bind only the
+//! dynamic id on each call:
+//!
+//! ```rust
+//! use std::time::Duration;
+//!
+//! use hydracache::HydraCache;
+//! use hydracache_db::{DbCache, HydraCacheEntity, PreparedQueryPolicy};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
+//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! struct User {
+//!     id: i64,
+//!     name: String,
+//! }
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache_db::Result<()> {
+//! let queries = DbCache::new(HydraCache::local().build(), "db");
+//! let load_user = queries.prepare::<User>(
+//!     PreparedQueryPolicy::for_cache_entity::<User>()
+//!         .with_name("load-user")
+//!         .ttl(Duration::from_secs(60)),
+//! );
+//!
+//! let user = load_user
+//!     .load_id(42, || async {
 //!         Ok::<_, std::io::Error>(User {
 //!             id: 42,
 //!             name: "Ada".to_owned(),

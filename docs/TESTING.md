@@ -142,6 +142,23 @@ comparing local allocation behavior around listener changes:
 cargo test -p hydracache --test allocation_profile --locked -- --ignored profile_event_preflight_modes --nocapture
 ```
 
+For the 0.27 prepared query policy layer specifically, run the database-neutral
+prepared policy tests, SQLx re-export tests, real SQLite integration test, the
+Postgres testcontainers flow, and rustdoc examples:
+
+```powershell
+cargo test -p hydracache-db --lib --locked prepared
+cargo test -p hydracache-sqlx --lib --locked prepared
+cargo test -p hydracache-sqlx --test sqlite_prepared --locked
+cargo test -p hydracache-sqlx --test postgres_testcontainers --locked
+cargo test --doc -p hydracache-db --locked
+cargo test --doc -p hydracache-sqlx --locked
+```
+
+`sqlite_prepared` runs against a real in-memory SQLite database and does not
+need Docker. `postgres_testcontainers` uses Docker when available and exits
+successfully with a skip message when Docker is unavailable.
+
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
 test executable under `target\debug\deps` is locked by the OS, rerun the
 workspace suite with a fresh target directory:

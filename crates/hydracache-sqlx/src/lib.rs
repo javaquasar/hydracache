@@ -8,7 +8,7 @@
 //!
 //! ```no_run
 //! use hydracache::HydraCache;
-//! use hydracache_sqlx::{DbCache, HydraCacheEntity, SqlxQueryExt};
+//! use hydracache_sqlx::{DbCache, HydraCacheEntity, PreparedQueryPolicy, SqlxQueryExt};
 //!
 //! #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
 //! #[hydracache(entity = "user", collection = "users", id = i64)]
@@ -43,11 +43,46 @@
 //! # }
 //! ```
 //!
+//! Prepared policies keep repeated repository methods cheap while still using
+//! ordinary SQLx query execution on cache misses:
+//!
+//! ```no_run
+//! use hydracache::HydraCache;
+//! use hydracache_sqlx::{DbCache, HydraCacheEntity, PreparedQueryPolicy, SqlxQueryExt};
+//!
+//! #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
+//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! struct User {
+//!     id: i64,
+//!     name: String,
+//! }
+//!
+//! # async fn example(pool: sqlx::PgPool) -> hydracache_sqlx::Result<()> {
+//! let queries = DbCache::new(HydraCache::local().build(), "db");
+//! let load_user = queries.prepare::<(i64, String)>(
+//!     PreparedQueryPolicy::for_cache_entity::<User>().with_name("load-user"),
+//! );
+//!
+//! let (id, name) = load_user
+//!     .for_id(42)
+//!     .fetch_one(
+//!         pool.clone(),
+//!         sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+//!     )
+//!     .await?;
+//!
+//! assert_eq!(id, 42);
+//! assert!(!name.is_empty());
+//! # Ok(())
+//! # }
+//! ```
+//!
 //! Use [`DbQuery::fetch_with`] when you need SQLx macros, transactions, or a
 //! repository function instead of a pool-like executor.
 //!
-//! [`QueryCachePolicy`] is also re-exported for SQLx users, but the policy type
-//! is database-neutral and lives in `hydracache-db`.
+//! [`QueryCachePolicy`] and [`PreparedQueryPolicy`] are also re-exported for
+//! SQLx users, but the policy types are database-neutral and live in
+//! `hydracache-db`.
 //! [`query_cache_policy!`] is re-exported for the same convenience.
 
 extern crate self as hydracache_sqlx;

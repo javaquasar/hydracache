@@ -1721,6 +1721,34 @@ let user = queries
     .await?;
 ```
 
+For hot repository methods, prepare stable metadata once and bind only the
+dynamic id on each call. `PreparedQueryPolicy` precomputes diagnostic names,
+TTLs, entity key prefixes, and collection tags, then produces ordinary
+`DbQuery` values. This is the preferred shape for future Diesel and SeaORM
+wrappers because the prepared contract is database-neutral.
+
+```rust
+use std::time::Duration;
+
+use hydracache_db::PreparedQueryPolicy;
+
+let load_user = queries.prepare::<User>(
+    PreparedQueryPolicy::for_cache_entity::<User>()
+        .with_name("load-user")
+        .ttl(Duration::from_secs(60)),
+);
+
+let user = load_user
+    .load_id(user_id, move || async move {
+        // This can call SQLx, Diesel, SeaORM, or a repository method.
+        Ok::<_, std::io::Error>(User {
+            id: user_id,
+            name: "Ada".to_owned(),
+        })
+    })
+    .await?;
+```
+
 When the policy is mostly declarative, `query_cache_policy!` can generate it
 from compact metadata:
 
@@ -1748,7 +1776,8 @@ let user = queries
 ```
 
 `hydracache-sqlx` includes a Postgres integration test backed by
-testcontainers. When Docker is available, it verifies cache hits, tag
+testcontainers and a real SQLite in-memory integration test for prepared query
+policies. When Docker is available, the Postgres test verifies cache hits, tag
 invalidation, and reloads against a real database. When Docker is unavailable,
 the test logs a skip message and exits successfully instead of failing the
 build.

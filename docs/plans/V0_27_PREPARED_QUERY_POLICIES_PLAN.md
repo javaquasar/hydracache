@@ -120,12 +120,12 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 ## Completion Checklist
 
 - [x] Release plan documented.
-- [ ] Prepared policy types added and tested.
-- [ ] Prepared query descriptors added and tested.
-- [ ] SQLx prepared path re-exported and tested.
-- [ ] Real Postgres prepared flow covered.
-- [ ] Real SQLite prepared flow covered.
-- [ ] README updated.
-- [ ] Rustdoc examples compile.
-- [ ] Release notes updated.
+- [x] Prepared policy types added and tested.
+- [x] Prepared query descriptors added and tested.
+- [x] SQLx prepared path re-exported and tested.
+- [x] Real Postgres prepared flow covered.
+- [x] Real SQLite prepared flow covered.
+- [x] README updated.
+- [x] Rustdoc examples compile.
+- [x] Release notes updated.
 - [ ] Full release gate passes.
