@@ -96,6 +96,12 @@ package:
 .\scripts\verify-feature-matrix.ps1 -DryRun
 ```
 
+Release readiness can also be dry-run before the final version bump and tag:
+
+```powershell
+.\scripts\verify-release-readiness.ps1 -Version 0.34.0 -DryRun
+```
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.

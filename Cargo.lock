@@ -1387,6 +1387,7 @@ dependencies = [
  "hydracache",
  "hydracache-core",
  "serde",
+ "serde_json",
  "tokio",
 ]
 

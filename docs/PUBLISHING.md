@@ -70,6 +70,25 @@ index, the full package check can be run in one command:
 .\scripts\package-publishable.ps1 -Set all
 ```
 
+For a release-readiness summary before tagging or publishing, run:
+
+```powershell
+.\scripts\verify-release-readiness.ps1 -Version 0.34.0 -DryRun
+```
+
+After the workspace version is bumped, the release commit is clean, and the tag
+points at `HEAD`, run the strict check:
+
+```powershell
+.\scripts\verify-release-readiness.ps1 -Version 0.34.0
+```
+
+To also execute the full local release gate from the same script:
+
+```powershell
+.\scripts\verify-release-readiness.ps1 -Version 0.34.0 -RunGate
+```
+
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
 
