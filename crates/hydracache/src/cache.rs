@@ -95,71 +95,6 @@ where
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::sync::atomic::{AtomicUsize, Ordering};
-
-    use hydracache_core::{CacheEventKind, CacheEventOrigin};
-
-    use super::HydraCache;
-
-    #[test]
-    fn lazy_key_event_tags_are_not_built_without_subscribers() {
-        let cache = HydraCache::local().build();
-        let tag_builds = AtomicUsize::new(0);
-
-        cache.publish_key_event_with_tags(
-            CacheEventKind::Stored,
-            "user:42",
-            CacheEventOrigin::LocalApi,
-            || {
-                tag_builds.fetch_add(1, Ordering::Relaxed);
-                vec!["users".to_owned()]
-            },
-        );
-
-        assert_eq!(tag_builds.load(Ordering::Relaxed), 0);
-    }
-
-    #[test]
-    fn lazy_key_event_tags_are_built_for_observed_mutations() {
-        let cache = HydraCache::local().build();
-        let _events = cache.subscribe_mutations();
-        let tag_builds = AtomicUsize::new(0);
-
-        cache.publish_key_event_with_tags(
-            CacheEventKind::Stored,
-            "user:42",
-            CacheEventOrigin::LocalApi,
-            || {
-                tag_builds.fetch_add(1, Ordering::Relaxed);
-                vec!["users".to_owned()]
-            },
-        );
-
-        assert_eq!(tag_builds.load(Ordering::Relaxed), 1);
-    }
-
-    #[test]
-    fn lazy_key_event_tags_respect_disabled_access_events() {
-        let cache = HydraCache::local().build();
-        let _events = cache.subscribe_access();
-        let tag_builds = AtomicUsize::new(0);
-
-        cache.publish_key_event_with_tags(
-            CacheEventKind::Hit,
-            "user:42",
-            CacheEventOrigin::LocalApi,
-            || {
-                tag_builds.fetch_add(1, Ordering::Relaxed);
-                vec!["users".to_owned()]
-            },
-        );
-
-        assert_eq!(tag_builds.load(Ordering::Relaxed), 0);
-    }
-}
-
 impl HydraCache<PostcardCodec> {
     /// Start building a local cache.
     ///
@@ -1372,5 +1307,70 @@ where
             .distributed_invalidations_applied
             .fetch_add(1, Ordering::Relaxed);
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use hydracache_core::{CacheEventKind, CacheEventOrigin};
+
+    use super::HydraCache;
+
+    #[test]
+    fn lazy_key_event_tags_are_not_built_without_subscribers() {
+        let cache = HydraCache::local().build();
+        let tag_builds = AtomicUsize::new(0);
+
+        cache.publish_key_event_with_tags(
+            CacheEventKind::Stored,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            || {
+                tag_builds.fetch_add(1, Ordering::Relaxed);
+                vec!["users".to_owned()]
+            },
+        );
+
+        assert_eq!(tag_builds.load(Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    fn lazy_key_event_tags_are_built_for_observed_mutations() {
+        let cache = HydraCache::local().build();
+        let _events = cache.subscribe_mutations();
+        let tag_builds = AtomicUsize::new(0);
+
+        cache.publish_key_event_with_tags(
+            CacheEventKind::Stored,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            || {
+                tag_builds.fetch_add(1, Ordering::Relaxed);
+                vec!["users".to_owned()]
+            },
+        );
+
+        assert_eq!(tag_builds.load(Ordering::Relaxed), 1);
+    }
+
+    #[test]
+    fn lazy_key_event_tags_respect_disabled_access_events() {
+        let cache = HydraCache::local().build();
+        let _events = cache.subscribe_access();
+        let tag_builds = AtomicUsize::new(0);
+
+        cache.publish_key_event_with_tags(
+            CacheEventKind::Hit,
+            "user:42",
+            CacheEventOrigin::LocalApi,
+            || {
+                tag_builds.fetch_add(1, Ordering::Relaxed);
+                vec!["users".to_owned()]
+            },
+        );
+
+        assert_eq!(tag_builds.load(Ordering::Relaxed), 0);
     }
 }
