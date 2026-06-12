@@ -56,6 +56,9 @@ For stable stats, diagnostics, and actuator response expectations, see
 For dependency selection and package-level verification, see
 [`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md).
 
+For choosing TTLs, tags, negative caching, and refresh/stale policies, see
+[`docs/POLICY_GUIDE.md`](docs/POLICY_GUIDE.md).
+
 ## v0 Scope
 
 The current v0 line includes:

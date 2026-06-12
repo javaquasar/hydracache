@@ -182,6 +182,10 @@ default production surface until there is a clear authorization model.
 The stable v0 fields and actuator response shapes are documented in
 [`OBSERVABILITY_CONTRACT.md`](OBSERVABILITY_CONTRACT.md).
 
+For concrete preset guidance across entity, catalog, search, permission,
+negative-cache, and explicit-invalidation scenarios, see
+[`POLICY_GUIDE.md`](POLICY_GUIDE.md).
+
 ## Release Checklist For Cache Behavior
 
 Before shipping cache-sensitive changes:
