@@ -87,12 +87,13 @@ use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftMetadataRuntimeSnapshot, RaftRuntimeRole};
 use hydracache_cluster_transport_axum::{
-    AxumOwnerLoadService, AxumPeerFetchService, MemoryPeerFetchStore, OwnerLoadDescriptor,
-    OwnerLoadDiagnostics, OwnerLoadReadThroughDiagnostics, OwnerLoadReadThroughOutcome,
-    OwnerLoadReadThroughStatus, OwnerLoadRegistry, OwnerLoadRejectionCode, OwnerLoadResponse,
-    OwnerLoadService, OwnerLoadValue, PeerFetchReadThrough, PeerFetchReadThroughDiagnostics,
-    PeerFetchReadThroughOutcome, PeerFetchReadThroughPolicy, PeerFetchReadThroughStatus,
-    PeerFetchRouter, PeerFetchRouterDiagnostics, PeerFetchRouterOutcome, PeerFetchRouterStatus,
+    AxumOwnerLoadService, AxumPeerFetchService, HotRemoteCacheDiagnostics, HotRemoteCachePolicy,
+    MemoryPeerFetchStore, OwnerLoadDescriptor, OwnerLoadDiagnostics,
+    OwnerLoadReadThroughDiagnostics, OwnerLoadReadThroughOutcome, OwnerLoadReadThroughStatus,
+    OwnerLoadRegistry, OwnerLoadRejectionCode, OwnerLoadResponse, OwnerLoadService, OwnerLoadValue,
+    PeerFetchReadThrough, PeerFetchReadThroughDiagnostics, PeerFetchReadThroughOutcome,
+    PeerFetchReadThroughPolicy, PeerFetchReadThroughStatus, PeerFetchRouter,
+    PeerFetchRouterDiagnostics, PeerFetchRouterOutcome, PeerFetchRouterStatus,
 };
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use serde::{Deserialize, Serialize};
@@ -2757,6 +2758,19 @@ struct ClusterReadThroughDiagnosticsReport {
     has_router_errors: bool,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterHotRemoteCacheDiagnosticsReport {
+    enabled: bool,
+    ttl_millis: Option<u64>,
+    max_entries: Option<usize>,
+    tracked_entries: usize,
+    hydrations: u64,
+    skipped_hydrations: u64,
+    pressure_evictions: u64,
+    bounded: bool,
+    has_pressure_evictions: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct ClusterReadThroughDemoResponse {
     flow_id: String,
@@ -2767,6 +2781,7 @@ struct ClusterReadThroughDemoResponse {
     first_read: ClusterReadThroughReport,
     second_read: ClusterReadThroughReport,
     read_through_diagnostics: ClusterReadThroughDiagnosticsReport,
+    hot_remote_diagnostics: ClusterHotRemoteCacheDiagnosticsReport,
     router_diagnostics: ClusterPeerFetchRouterDiagnosticsReport,
     hydrated_value_after_first_read: Option<String>,
     hydrated_value_after_second_read: Option<String>,
@@ -2838,6 +2853,7 @@ struct ClusterOwnerLoadConcurrentReport {
     all_loaded: bool,
     hydrated_value: Option<String>,
     read_through_diagnostics: ClusterOwnerLoadReadThroughDiagnosticsReport,
+    hot_remote_diagnostics: ClusterHotRemoteCacheDiagnosticsReport,
     owner_service_diagnostics: ClusterOwnerLoadServiceDiagnosticsReport,
     passed: bool,
 }
@@ -2857,6 +2873,7 @@ struct ClusterOwnerLoadDemoResponse {
     wrong_owner: ClusterOwnerLoadReadReport,
     concurrent: ClusterOwnerLoadConcurrentReport,
     read_through_diagnostics: ClusterOwnerLoadReadThroughDiagnosticsReport,
+    hot_remote_diagnostics: ClusterHotRemoteCacheDiagnosticsReport,
     owner_service_diagnostics: ClusterOwnerLoadServiceDiagnosticsReport,
     member_a_endpoint: String,
     member_b_endpoint: String,
@@ -7664,7 +7681,11 @@ async fn run_cluster_read_through_demo_with_request(
     }
 
     let client_cache = HydraCache::local().build();
-    let read_through = PeerFetchReadThrough::new(client_cache.clone());
+    let read_through = PeerFetchReadThrough::new(client_cache.clone()).hot_remote_policy(
+        HotRemoteCachePolicy::new()
+            .ttl(Duration::from_secs(30))
+            .max_entries(16),
+    );
     let options = CacheOptions::new().tag(tag);
     let first_outcome = read_through
         .fetch_encoded(owner_decision.clone(), options.clone())
@@ -7681,6 +7702,8 @@ async fn run_cluster_read_through_demo_with_request(
 
     let owner = cluster_ownership_decision_report(&owner_decision);
     let read_through_diagnostics = read_through_diagnostics_report(read_through.diagnostics());
+    let hot_remote_diagnostics =
+        hot_remote_cache_diagnostics_report(read_through.hot_remote_diagnostics());
     let router_diagnostics =
         peer_fetch_router_diagnostics_report(read_through.router().diagnostics());
     let timeline = vec![
@@ -7717,8 +7740,10 @@ async fn run_cluster_read_through_demo_with_request(
             "client-near-cache",
             "second-local-hit",
             format!(
-                "second status={} router attempts={}",
-                second_read.status, router_diagnostics.attempts
+                "second status={} router attempts={} hot-remote tracked={}",
+                second_read.status,
+                router_diagnostics.attempts,
+                hot_remote_diagnostics.tracked_entries
             ),
         ),
     ];
@@ -7736,6 +7761,9 @@ async fn run_cluster_read_through_demo_with_request(
         && read_through_diagnostics.remote_hits == 1
         && read_through_diagnostics.hydrations == 1
         && read_through_diagnostics.router_errors == 0
+        && hot_remote_diagnostics.enabled
+        && hot_remote_diagnostics.hydrations == 1
+        && hot_remote_diagnostics.tracked_entries == 1
         && router_diagnostics.attempts == 1
         && router_diagnostics.hits == 1;
 
@@ -7776,6 +7804,7 @@ async fn run_cluster_read_through_demo_with_request(
         first_read,
         second_read,
         read_through_diagnostics,
+        hot_remote_diagnostics,
         router_diagnostics,
         hydrated_value_after_first_read,
         hydrated_value_after_second_read,
@@ -7895,7 +7924,11 @@ async fn run_cluster_owner_load_demo_with_request(
     let owner_decision = cluster.owner_for_key(&key);
     let owner = cluster_ownership_decision_report(&owner_decision);
     let client_cache = HydraCache::local().build();
-    let read_through = PeerFetchReadThrough::new(client_cache.clone());
+    let read_through = PeerFetchReadThrough::new(client_cache.clone()).hot_remote_policy(
+        HotRemoteCachePolicy::new()
+            .ttl(Duration::from_secs(30))
+            .max_entries(16),
+    );
     let descriptor = OwnerLoadDescriptor::new(loader_name)
         .tag(tag)
         .arg("value", value.as_str());
@@ -7965,7 +7998,13 @@ async fn run_cluster_owner_load_demo_with_request(
 
     let before_concurrent = aggregate_owner_load_diagnostics(&service_a, &service_b);
     let concurrent_key = format!("{key}:concurrent");
-    let concurrent_read_through = Arc::new(PeerFetchReadThrough::new(HydraCache::local().build()));
+    let concurrent_read_through = Arc::new(
+        PeerFetchReadThrough::new(HydraCache::local().build()).hot_remote_policy(
+            HotRemoteCachePolicy::new()
+                .ttl(Duration::from_secs(30))
+                .max_entries(16),
+        ),
+    );
     let mut tasks = Vec::new();
     for _ in 0..concurrency {
         let read_through = concurrent_read_through.clone();
@@ -7998,6 +8037,8 @@ async fn run_cluster_owner_load_demo_with_request(
     let concurrent_read_diagnostics = owner_load_read_through_diagnostics_report(
         concurrent_read_through.owner_load_diagnostics(),
     );
+    let concurrent_hot_remote_diagnostics =
+        hot_remote_cache_diagnostics_report(concurrent_read_through.hot_remote_diagnostics());
     let concurrent = ClusterOwnerLoadConcurrentReport {
         concurrency,
         loader_calls: slow_loader_calls.load(Ordering::SeqCst),
@@ -8005,6 +8046,7 @@ async fn run_cluster_owner_load_demo_with_request(
         statuses,
         hydrated_value,
         read_through_diagnostics: concurrent_read_diagnostics,
+        hot_remote_diagnostics: concurrent_hot_remote_diagnostics,
         owner_service_diagnostics: owner_load_service_diagnostics_report(
             concurrent_service_diagnostics,
         ),
@@ -8019,6 +8061,8 @@ async fn run_cluster_owner_load_demo_with_request(
 
     let read_through_diagnostics =
         owner_load_read_through_diagnostics_report(read_through.owner_load_diagnostics());
+    let hot_remote_diagnostics =
+        hot_remote_cache_diagnostics_report(read_through.hot_remote_diagnostics());
     let owner_service_diagnostics = owner_load_service_diagnostics_report(
         aggregate_owner_load_diagnostics(&service_a, &service_b),
     );
@@ -8089,6 +8133,10 @@ async fn run_cluster_owner_load_demo_with_request(
         && stale_generation.rejection_code.as_deref() == Some("stale-generation")
         && wrong_owner.rejection_code.as_deref() == Some("wrong-owner")
         && concurrent.passed
+        && hot_remote_diagnostics.enabled
+        && hot_remote_diagnostics.hydrations == 1
+        && hot_remote_diagnostics.tracked_entries == 1
+        && concurrent.hot_remote_diagnostics.hydrations == 1
         && owner_service_diagnostics.loaded >= 2
         && owner_service_diagnostics.rejections >= 3;
 
@@ -8135,6 +8183,7 @@ async fn run_cluster_owner_load_demo_with_request(
         wrong_owner,
         concurrent,
         read_through_diagnostics,
+        hot_remote_diagnostics,
         owner_service_diagnostics,
         member_a_endpoint,
         member_b_endpoint,
@@ -8624,6 +8673,22 @@ fn read_through_diagnostics_report(
         router_errors: diagnostics.router_errors,
         fallback_loads: diagnostics.fallback_loads,
         has_router_errors: diagnostics.has_router_errors(),
+    }
+}
+
+fn hot_remote_cache_diagnostics_report(
+    diagnostics: HotRemoteCacheDiagnostics,
+) -> ClusterHotRemoteCacheDiagnosticsReport {
+    ClusterHotRemoteCacheDiagnosticsReport {
+        enabled: diagnostics.enabled,
+        ttl_millis: diagnostics.ttl_millis,
+        max_entries: diagnostics.max_entries,
+        tracked_entries: diagnostics.tracked_entries,
+        hydrations: diagnostics.hydrations,
+        skipped_hydrations: diagnostics.skipped_hydrations,
+        pressure_evictions: diagnostics.pressure_evictions,
+        bounded: diagnostics.is_bounded(),
+        has_pressure_evictions: diagnostics.has_pressure_evictions(),
     }
 }
 
@@ -11351,6 +11416,7 @@ fn actuator_stats_doc() {}
             ClusterReadThroughDemoRequest,
             ClusterReadThroughReport,
             ClusterReadThroughDiagnosticsReport,
+            ClusterHotRemoteCacheDiagnosticsReport,
             ClusterReadThroughDemoResponse,
             ClusterOwnerLoadDemoRequest,
             ClusterOwnerLoadReadReport,
@@ -12014,6 +12080,7 @@ mod tests {
         assert!(schemas.contains_key("ClusterReadThroughDemoRequest"));
         assert!(schemas.contains_key("ClusterReadThroughReport"));
         assert!(schemas.contains_key("ClusterReadThroughDiagnosticsReport"));
+        assert!(schemas.contains_key("ClusterHotRemoteCacheDiagnosticsReport"));
         assert!(schemas.contains_key("ClusterReadThroughDemoResponse"));
         assert!(schemas.contains_key("ClusterOwnerLoadDemoRequest"));
         assert!(schemas.contains_key("ClusterOwnerLoadReadReport"));
@@ -12498,6 +12565,15 @@ mod tests {
         assert_eq!(read_through["read_through_diagnostics"]["remote_hits"], 1);
         assert_eq!(read_through["read_through_diagnostics"]["hydrations"], 1);
         assert_eq!(read_through["read_through_diagnostics"]["router_errors"], 0);
+        assert_eq!(read_through["hot_remote_diagnostics"]["enabled"], true);
+        assert_eq!(read_through["hot_remote_diagnostics"]["ttl_millis"], 30_000);
+        assert_eq!(read_through["hot_remote_diagnostics"]["max_entries"], 16);
+        assert_eq!(read_through["hot_remote_diagnostics"]["tracked_entries"], 1);
+        assert_eq!(read_through["hot_remote_diagnostics"]["hydrations"], 1);
+        assert_eq!(
+            read_through["hot_remote_diagnostics"]["pressure_evictions"],
+            0
+        );
         assert_eq!(read_through["router_diagnostics"]["attempts"], 1);
         assert_eq!(read_through["router_diagnostics"]["hits"], 1);
         assert_eq!(read_through["timeline"].as_array().unwrap().len(), 4);
@@ -12539,7 +12615,20 @@ mod tests {
             owner_load["concurrent"]["read_through_diagnostics"]["attempts"],
             8
         );
+        assert_eq!(
+            owner_load["concurrent"]["hot_remote_diagnostics"]["hydrations"],
+            1
+        );
+        assert_eq!(
+            owner_load["concurrent"]["hot_remote_diagnostics"]["tracked_entries"],
+            1
+        );
         assert_eq!(owner_load["read_through_diagnostics"]["local_hits"], 1);
+        assert_eq!(owner_load["hot_remote_diagnostics"]["enabled"], true);
+        assert_eq!(owner_load["hot_remote_diagnostics"]["ttl_millis"], 30_000);
+        assert_eq!(owner_load["hot_remote_diagnostics"]["max_entries"], 16);
+        assert_eq!(owner_load["hot_remote_diagnostics"]["hydrations"], 1);
+        assert_eq!(owner_load["hot_remote_diagnostics"]["tracked_entries"], 1);
         assert_eq!(owner_load["owner_service_diagnostics"]["rejections"], 3);
         assert_eq!(owner_load["timeline"].as_array().unwrap().len(), 6);
 
