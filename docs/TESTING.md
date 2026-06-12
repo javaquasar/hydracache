@@ -42,6 +42,8 @@ $semverPackages = @(
   'hydracache-observability',
   'hydracache-actuator-axum',
   'hydracache-db',
+  'hydracache-diesel',
+  'hydracache-seaorm',
   'hydracache-sqlx'
 )
 
@@ -83,6 +85,12 @@ release diff before the final commit.
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
+
+`hydracache-diesel` and `hydracache-seaorm` include real in-memory SQLite tests
+for cache hits, invalidation, optional misses, list caching, and adapter
+re-exports. The sandbox also exposes an OpenAPI ORM comparison route that runs
+SQLx, Diesel, and SeaORM-style cache descriptors over the same selected backing
+row.
 
 `hydracache-sandbox` includes the manual OpenAPI lab plus route-level tests for
 cluster lifecycle, deterministic ownership, peer fetch, routed HTTP peer-fetch,
@@ -201,6 +209,21 @@ checks the crates.io versions that downstream users will resolve:
 
 ```powershell
 .\scripts\verify-crates-io-consumer.ps1 -Version 0.30.0
+```
+
+For the 0.31 Diesel and SeaORM adapter layer specifically, run the focused
+adapter tests, rustdoc examples, sandbox OpenAPI comparison coverage, and the
+external consumer check in local-path mode:
+
+```powershell
+cargo test -p hydracache-diesel --locked
+cargo test -p hydracache-seaorm --locked
+cargo test --doc -p hydracache-diesel --locked
+cargo test --doc -p hydracache-seaorm --locked
+cargo test -p hydracache-sandbox --lib --locked openapi_document_describes_demo_and_actuator_routes
+cargo test -p hydracache-sandbox --lib --locked memory_sandbox_routes_exercise_cache_and_actuator
+cargo test -p hydracache-sandbox --lib --locked sqlite_memory_sandbox_routes_use_real_database
+.\scripts\verify-crates-io-consumer.ps1 -Version 0.31.0 -LocalPath . -WorkDir target\consumer-check-0.31.0-local
 ```
 
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a

@@ -100,11 +100,11 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 ## Checklist
 
 - [x] Release plan documented.
-- [ ] Diesel adapter crate implemented and tested.
-- [ ] SeaORM adapter crate implemented and tested.
-- [ ] Sandbox/OpenAPI comparison endpoint implemented and tested.
-- [ ] README and generated docs examples updated.
-- [ ] Testing and publishing docs updated.
-- [ ] External consumer check includes Diesel and SeaORM crates.
+- [x] Diesel adapter crate implemented and tested.
+- [x] SeaORM adapter crate implemented and tested.
+- [x] Sandbox/OpenAPI comparison endpoint implemented and tested.
+- [x] README and generated docs examples updated.
+- [x] Testing and publishing docs updated.
+- [x] External consumer check includes Diesel and SeaORM crates.
 - [ ] Workspace bumped to `0.31.0`.
 - [ ] Full release gate passes.

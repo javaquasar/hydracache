@@ -16,7 +16,7 @@
 //! let user_name = queries
 //!     .entity::<String>("user", 42)
 //!     .collection_tag("users")
-//!     .sea_one(|| async { Ok::<_, sea_orm::DbErr>(Some("Ada".to_owned())) })
+//!     .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>(Some("Ada".to_owned())) })
 //!     .await?;
 //!
 //! assert_eq!(user_name, Some("Ada".to_owned()));

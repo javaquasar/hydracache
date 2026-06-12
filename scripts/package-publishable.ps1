@@ -22,6 +22,8 @@ $packageSets = @{
         "hydracache-observability",
         "hydracache-actuator-axum",
         "hydracache-db",
+        "hydracache-diesel",
+        "hydracache-seaorm",
         "hydracache-sqlx"
     )
 }

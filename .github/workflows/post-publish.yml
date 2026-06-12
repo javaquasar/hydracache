@@ -49,6 +49,10 @@ jobs:
           cargo check
           cargo add hydracache-db@${{ inputs.version }}
           cargo check
+          cargo add hydracache-diesel@${{ inputs.version }}
+          cargo check
+          cargo add hydracache-seaorm@${{ inputs.version }}
+          cargo check
           cargo add hydracache-sqlx@${{ inputs.version }}
           cargo check
 
@@ -64,6 +68,8 @@ jobs:
           cargo add hydracache-observability@${{ inputs.version }}
           cargo add hydracache-actuator-axum@${{ inputs.version }}
           cargo add hydracache-db@${{ inputs.version }}
+          cargo add hydracache-diesel@${{ inputs.version }}
+          cargo add hydracache-seaorm@${{ inputs.version }}
           cargo add hydracache-sqlx@${{ inputs.version }}
           cargo add serde --features derive
           cargo add tokio --features macros,rt-multi-thread
@@ -87,7 +93,9 @@ jobs:
                   PeerFetchRouterStatus, DEFAULT_PEER_FETCH_PATH,
               };
               use hydracache_db::DbCache;
+              use hydracache_diesel::{DieselCache, DieselQueryExt};
               use hydracache_observability::HydraCacheRegistry;
+              use hydracache_seaorm::{SeaOrmCache, SeaOrmQueryExt};
               use hydracache_sqlx::SqlxCache;
               use serde::{Deserialize, Serialize};
               use std::sync::Arc;
@@ -394,6 +402,48 @@ jobs:
                       .await?;
 
                   assert_eq!(user.id, 7);
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_diesel_adapter_smoke_test() -> hydracache_diesel::Result<()> {
+                  let cache = HydraCache::local().build();
+                  let queries = DieselCache::new(cache, "diesel");
+
+                  let user = queries
+                      .cached::<User>()
+                      .key("user:42")
+                      .diesel_first(|| {
+                          Ok::<_, hydracache_diesel::diesel::result::Error>(User {
+                              id: 42,
+                              name: "Ada".to_owned(),
+                          })
+                      })
+                      .await?;
+
+                  assert_eq!(user.name, "Ada");
+
+                  Ok(())
+              }
+
+              #[tokio::test]
+              async fn published_seaorm_adapter_smoke_test() -> hydracache_seaorm::Result<()> {
+                  let cache = HydraCache::local().build();
+                  let queries = SeaOrmCache::new(cache, "seaorm");
+
+                  let user = queries
+                      .cached::<User>()
+                      .key("user:42")
+                      .sea_value(|| async {
+                          Ok::<_, hydracache_seaorm::sea_orm::DbErr>(User {
+                              id: 42,
+                              name: "Ada".to_owned(),
+                          })
+                      })
+                      .await?;
+
+                  assert_eq!(user.name, "Ada");
 
                   Ok(())
               }

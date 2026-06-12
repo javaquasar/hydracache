@@ -119,6 +119,12 @@ cargo publish -p hydracache-actuator-axum
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
+cargo package -p hydracache-diesel
+cargo publish -p hydracache-diesel
+
+cargo package -p hydracache-seaorm
+cargo publish -p hydracache-seaorm
+
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
@@ -261,6 +267,12 @@ cargo publish -p hydracache-actuator-axum
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
 
+cargo package -p hydracache-diesel
+cargo publish -p hydracache-diesel
+
+cargo package -p hydracache-seaorm
+cargo publish -p hydracache-seaorm
+
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
 ```
@@ -291,8 +303,8 @@ packages from crates.io. It also creates a dependency-order smoke crate that
 adds every published HydraCache crate in publish order and runs `cargo check`
 after each addition. Together, these checks cover the runtime, core, macros,
 cluster composition crate, chitchat and raft cluster adapters, HTTP peer-fetch
-transport, observability, actuator routes, `hydracache-db`, and
-`hydracache-sqlx`. This is intentionally
+transport, observability, actuator routes, `hydracache-db`,
+`hydracache-diesel`, `hydracache-seaorm`, and `hydracache-sqlx`. This is intentionally
 separate from workspace tests because it catches packaging, dependency-order,
 and re-export problems that local path dependencies can hide.
 
@@ -349,17 +361,19 @@ crate first, then wait for the crates.io index to update before publishing
 published after `hydracache`. Composition and integration crates such as
 `hydracache-cluster`, `hydracache-cluster-transport-axum`,
 `hydracache-observability`, and `hydracache-actuator-axum` should follow the
-crates they depend on. Concrete database adapters such as `hydracache-sqlx` are
-published last.
+crates they depend on. Concrete database adapters such as
+`hydracache-diesel`, `hydracache-seaorm`, and `hydracache-sqlx` are published
+last.
 
 ## MSRV and Dependency Updates
 
 The workspace MSRV is Rust `1.88`. Before publishing, run the MSRV commands in
 the update checklist above, not only the stable toolchain commands.
 
-`hydracache-sqlx` uses SQLx and testcontainers dev dependencies, so dependency
-updates can move the practical Rust floor. If `cargo update` changes those
-packages, verify MSRV before committing the lockfile.
+`hydracache-sqlx`, `hydracache-diesel`, and `hydracache-seaorm` use external
+database-library dependencies, so dependency updates can move the practical
+Rust floor. If `cargo update` changes those packages, verify MSRV before
+committing the lockfile.
 
 Coverage setup and report commands are documented in
 [TESTING.md](TESTING.md). The release checklist uses stable `cargo-llvm-cov`

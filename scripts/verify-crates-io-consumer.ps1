@@ -62,8 +62,10 @@ $(HydraDependency "hydracache-cluster-raft")
 $(HydraDependency "hydracache-cluster-transport-axum")
 $(HydraDependency "hydracache-core")
 $(HydraDependency "hydracache-db")
+$(HydraDependency "hydracache-diesel")
 $(HydraDependency "hydracache-macros")
 $(HydraDependency "hydracache-observability")
+$(HydraDependency "hydracache-seaorm")
 $(HydraDependency "hydracache-sqlx")
 "@
 
@@ -86,7 +88,9 @@ use hydracache_cluster_transport_axum::{
     MemoryPeerFetchStore,
 };
 use hydracache_db::{DbCache, QueryCachePolicy};
+use hydracache_diesel::{DieselCache, DieselQueryExt};
 use hydracache_observability::HydraCacheRegistry;
+use hydracache_seaorm::{SeaOrmCache, SeaOrmQueryExt};
 use hydracache_sqlx::SqlxCache;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -114,6 +118,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     assert_eq!(user.id, 42);
 
     let _sqlx_alias: SqlxCache = DbCache::new(cache.clone(), "sqlx");
+    let diesel_user = DieselCache::new(cache.clone(), "diesel")
+        .cached::<User>()
+        .key("user:diesel")
+        .diesel_first(|| Ok::<_, hydracache_diesel::diesel::result::Error>(User { id: 7 }))
+        .await?;
+    assert_eq!(diesel_user.id, 7);
+
+    let seaorm_user = SeaOrmCache::new(cache.clone(), "seaorm")
+        .cached::<User>()
+        .key("user:seaorm")
+        .sea_value(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>(User { id: 8 }) })
+        .await?;
+    assert_eq!(seaorm_user.id, 8);
+
     let registry = HydraCacheRegistry::new().with_cache("main", cache.clone());
     let _actuator_routes = HydraCacheActuator::new(registry).routes();
 

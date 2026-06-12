@@ -10,7 +10,7 @@ HydraCache is in early development. The current implementation provides the
 local async cache runtime, observability snapshots, optional Axum actuator
 routes, an in-process distributed invalidation bus, the first client/member
 cluster API shape, plus the database result-cache adapters `hydracache-db` and
-`hydracache-sqlx`.
+`hydracache-sqlx`, `hydracache-diesel`, and `hydracache-seaorm`.
 
 ## Why HydraCache?
 
@@ -1895,6 +1895,61 @@ invalidation, and reloads against a real database. When Docker is unavailable,
 the test logs a skip message and exits successfully instead of failing the
 build.
 
+## Diesel And SeaORM Adapters
+
+`hydracache-diesel` and `hydracache-seaorm` use the same database-neutral
+`DbCache` model as `hydracache-sqlx`. The ORM still owns query construction,
+connection/pool handling, transactions, and row mapping. HydraCache only owns
+the cache boundary: key, tags, TTL, single-flight, serialization, diagnostics,
+and explicit invalidation.
+
+Diesel is synchronous, so `DieselQueryExt` runs the provided loader through
+`tokio::task::spawn_blocking`:
+
+```rust
+use hydracache::HydraCache;
+use hydracache_diesel::{DieselCache, DieselQueryExt};
+
+# async fn example() -> hydracache_diesel::Result<()> {
+let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+let user_name = queries
+    .entity::<String>("user", 42)
+    .collection_tag("users")
+    .diesel_first(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
+    .await?;
+
+assert_eq!(user_name, "Ada");
+# Ok(())
+# }
+```
+
+SeaORM is already async, so `SeaOrmQueryExt` accepts ordinary async loaders:
+
+```rust
+use hydracache::HydraCache;
+use hydracache_seaorm::{SeaOrmCache, SeaOrmQueryExt};
+
+# async fn example() -> hydracache_seaorm::Result<()> {
+let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+let user_name = queries
+    .entity::<String>("user", 42)
+    .collection_tag("users")
+    .sea_value(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>("Ada".to_owned()) })
+    .await?;
+
+assert_eq!(user_name, "Ada");
+# Ok(())
+# }
+```
+
+The manual sandbox exposes
+`POST /demo/query/users/{id}/orm-comparison` in Swagger. It runs SQLx, Diesel,
+and SeaORM-style adapter paths against the same selected sandbox backing row
+and reports whether each adapter did `loader` on the first call and `cache` on
+the second call.
+
 Testing and coverage commands are documented in
 [docs/TESTING.md](docs/TESTING.md).
 
@@ -1936,7 +1991,9 @@ lines should be investigated before release.
 - `hydracache-cluster-transport-axum` - use this when cluster members should expose HTTP peer-fetch over encoded cache bytes or use read-through near-cache hydration.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
 - `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
-- `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/`hydracache-sqlx`.
+- `hydracache-diesel` - use this if you want Diesel-facing aliases, re-exports, and blocking `diesel_first`/`diesel_optional`/`diesel_all` helpers.
+- `hydracache-seaorm` - use this if you want SeaORM-facing aliases, re-exports, and async `sea_one`/`sea_value`/`sea_all` helpers.
+- `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/adapter crates.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
 - `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, Postgres Docker, and real cluster-adapter checks.
 
@@ -1964,6 +2021,7 @@ The v0 release plan is maintained here:
 - [docs/plans/V0_23_PEER_FETCH_ROUTING_PLAN.md](docs/plans/V0_23_PEER_FETCH_ROUTING_PLAN.md)
 - [docs/plans/V0_24_CLUSTER_READ_THROUGH_PLAN.md](docs/plans/V0_24_CLUSTER_READ_THROUGH_PLAN.md)
 - [docs/plans/V0_25_COMBINED_HARDENING_AND_OWNER_LOADING_PLAN.md](docs/plans/V0_25_COMBINED_HARDENING_AND_OWNER_LOADING_PLAN.md)
+- [docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md](docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md)
 
 ## Workspace
 
@@ -1977,7 +2035,9 @@ The v0 release plan is maintained here:
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
 - `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
+- `crates/hydracache-diesel` - Diesel-facing integration crate and re-exports
 - `crates/hydracache-macros` - procedural macros such as `cacheable!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
+- `crates/hydracache-seaorm` - SeaORM-facing integration crate and re-exports
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports
 
 ## Crate Layout

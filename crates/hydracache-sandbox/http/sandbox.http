@@ -48,6 +48,17 @@ GET {{baseUrl}}/demo/export
 ### Built-in self-test
 POST {{baseUrl}}/demo/self-test
 
+### Compare SQLx, Diesel, and SeaORM adapter cache behavior
+POST {{baseUrl}}/demo/query/users/42/orm-comparison
+Content-Type: application/json
+
+{
+  "ttl_ms": 5000,
+  "tags": ["users", "orm-comparison"],
+  "loader_delay_ms": 10,
+  "flow_id": "orm-comparison-flow"
+}
+
 ### Scenario runner: golden path
 POST {{baseUrl}}/demo/scenarios/run
 Content-Type: application/json

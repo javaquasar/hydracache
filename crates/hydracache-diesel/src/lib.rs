@@ -20,7 +20,7 @@
 //! let user_name = queries
 //!     .entity::<String>("user", 42)
 //!     .collection_tag("users")
-//!     .diesel_first(move || Ok::<_, diesel::result::Error>("Ada".to_owned()))
+//!     .diesel_first(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
 //!     .await?;
 //!
 //! assert_eq!(user_name, "Ada");

@@ -95,7 +95,10 @@ use hydracache_cluster_transport_axum::{
     PeerFetchReadThroughPolicy, PeerFetchReadThroughStatus, PeerFetchRouter,
     PeerFetchRouterDiagnostics, PeerFetchRouterOutcome, PeerFetchRouterStatus,
 };
+use hydracache_diesel::{DieselCache, DieselQueryExt};
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
+use hydracache_seaorm::{SeaOrmCache, SeaOrmQueryExt};
+use hydracache_sqlx::SqlxCache;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sqlx::postgres::PgPoolOptions;
@@ -640,6 +643,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/users/{id}", get(get_user).post(upsert_user))
         .route("/demo/load/{id}", post(load_user))
         .route("/demo/query/users/{id}/load", post(query_load_user))
+        .route(
+            "/demo/query/users/{id}/orm-comparison",
+            post(query_user_orm_comparison),
+        )
         .route("/demo/products/{id}", get(get_product))
         .route("/demo/query/products/{id}/load", post(query_load_product))
         .route(
@@ -2303,6 +2310,19 @@ struct CacheLoadOptionsRequest {
     flow_id: Option<String>,
 }
 
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"ttl_ms": 5000, "tags": ["users", "orm-comparison"], "loader_delay_ms": 10, "flow_id": "orm-comparison-flow"}))]
+struct OrmComparisonRequest {
+    #[serde(default)]
+    ttl_ms: Option<u64>,
+    #[serde(default)]
+    tags: Vec<String>,
+    #[serde(default)]
+    loader_delay_ms: Option<u64>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
 #[schema(example = json!({"key": "ttl:short", "value": "short", "ttl_ms": 50, "wait_ms": 80, "tags": ["ttl"], "flow_id": "ttl-flow"}))]
 struct TtlScenarioRequest {
@@ -2988,6 +3008,32 @@ struct LoadUserResponse {
     diagnostics: DemoDiagnostics,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct OrmAdapterRun {
+    adapter: &'static str,
+    namespace: &'static str,
+    cache_key: String,
+    tags: Vec<String>,
+    first_source: LoadSource,
+    second_source: LoadSource,
+    loader_calls_delta: u64,
+    first_user: User,
+    second_user: User,
+    passed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct OrmComparisonResponse {
+    flow_id: String,
+    backend: String,
+    user_id: i64,
+    same_backing_row: bool,
+    passed: bool,
+    adapters: Vec<OrmAdapterRun>,
+    loader_calls: u64,
+    diagnostics: DemoDiagnostics,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct LoadProductResponse {
     cache_key: String,
@@ -3362,6 +3408,18 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
                 "tags": ["users"],
                 "loader_delay_ms": 10,
                 "flow_id": "query-flow"
+            })),
+        },
+        ScenarioPreset {
+            name: "orm-adapter-comparison",
+            method: "POST",
+            path: "/demo/query/users/42/orm-comparison",
+            description: "Compare SQLx, Diesel, and SeaORM adapter cache behavior over the same sandbox backing row.",
+            body: Some(json!({
+                "ttl_ms": 5000,
+                "tags": ["users", "orm-comparison"],
+                "loader_delay_ms": 10,
+                "flow_id": "orm-comparison-flow"
             })),
         },
         ScenarioPreset {
@@ -9671,6 +9729,312 @@ async fn load_user_with_options(
 }
 
 #[utoipa::path(
+    post,
+    path = "/demo/query/users/{id}/orm-comparison",
+    tag = "query-cache",
+    params(("id" = i64, Path, description = "Demo user id")),
+    request_body = OrmComparisonRequest,
+    responses(
+        (status = 200, description = "Compare SQLx, Diesel, and SeaORM adapter cache behavior over the same backing row", body = OrmComparisonResponse),
+        (status = 404, description = "User not found", body = ErrorResponse)
+    )
+)]
+async fn query_user_orm_comparison(
+    State(state): State<SandboxState>,
+    Path(id): Path<i64>,
+    Json(request): Json<OrmComparisonRequest>,
+) -> Result<Json<OrmComparisonResponse>, SandboxHttpError> {
+    Ok(Json(run_user_orm_comparison(&state, id, request).await?))
+}
+
+async fn run_user_orm_comparison(
+    state: &SandboxState,
+    id: i64,
+    request: OrmComparisonRequest,
+) -> Result<OrmComparisonResponse, SandboxHttpError> {
+    let backing_user = state.storage.load_user(id).await?;
+    let flow_id = request
+        .flow_id
+        .clone()
+        .unwrap_or_else(|| format!("orm-comparison-{id}"));
+
+    let sqlx = run_sqlx_user_adapter(state, id, &request, backing_user.clone(), &flow_id).await?;
+    let diesel =
+        run_diesel_user_adapter(state, id, &request, backing_user.clone(), &flow_id).await?;
+    let seaorm =
+        run_seaorm_user_adapter(state, id, &request, backing_user.clone(), &flow_id).await?;
+    let adapters = vec![sqlx, diesel, seaorm];
+    let same_backing_row = adapters
+        .iter()
+        .all(|adapter| adapter.first_user == backing_user && adapter.second_user == backing_user);
+    let passed = same_backing_row && adapters.iter().all(|adapter| adapter.passed);
+
+    record_event_with_flow(
+        state,
+        if passed {
+            DemoEventKind::CacheHit
+        } else {
+            DemoEventKind::CacheLoad
+        },
+        format!("ORM adapter comparison completed for user {id}"),
+        Some(format!("orm-comparison:user:{id}")),
+        Some(format!("user:{id}")),
+        None,
+        Some(flow_id.clone()),
+    )
+    .await;
+
+    Ok(OrmComparisonResponse {
+        flow_id,
+        backend: state.backend.label(),
+        user_id: id,
+        same_backing_row,
+        passed,
+        adapters,
+        loader_calls: state.loader_calls.load(Ordering::SeqCst),
+        diagnostics: diagnostics(state).await,
+    })
+}
+
+async fn run_sqlx_user_adapter(
+    state: &SandboxState,
+    id: i64,
+    request: &OrmComparisonRequest,
+    backing_user: User,
+    flow_id: &str,
+) -> Result<OrmAdapterRun, SandboxHttpError> {
+    let namespace = "orm-sqlx";
+    let cache_key = format!("{namespace}:user:{id}");
+    let tags = orm_user_tags(id, &request.tags);
+    let queries = SqlxCache::new(state.cache.clone(), namespace);
+    let loader_calls_before = state.loader_calls.load(Ordering::SeqCst);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(0);
+
+    let before_first = state.cache.stats().loads;
+    let first_user = {
+        let loader_calls = Arc::clone(&state.loader_calls);
+        let user = backing_user.clone();
+        let query = orm_user_query(queries.entity::<User>("user", id), id, request);
+        query
+            .fetch_with(move || async move {
+                sleep(Duration::from_millis(loader_delay_ms)).await;
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, SandboxError>(user)
+            })
+            .await
+            .map_err(|error| orm_adapter_http_error("sqlx", error))?
+    };
+    let first_source = source_from_load_delta(before_first, state.cache.stats().loads);
+
+    let before_second = state.cache.stats().loads;
+    let second_user = {
+        let loader_calls = Arc::clone(&state.loader_calls);
+        let user = backing_user;
+        let query = orm_user_query(queries.entity::<User>("user", id), id, request);
+        query
+            .fetch_with(move || async move {
+                sleep(Duration::from_millis(loader_delay_ms)).await;
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, SandboxError>(user)
+            })
+            .await
+            .map_err(|error| orm_adapter_http_error("sqlx", error))?
+    };
+    let second_source = source_from_load_delta(before_second, state.cache.stats().loads);
+
+    Ok(orm_adapter_run(
+        state,
+        "sqlx",
+        namespace,
+        cache_key,
+        tags,
+        first_source,
+        second_source,
+        loader_calls_before,
+        first_user,
+        second_user,
+        flow_id,
+    )
+    .await)
+}
+
+async fn run_diesel_user_adapter(
+    state: &SandboxState,
+    id: i64,
+    request: &OrmComparisonRequest,
+    backing_user: User,
+    flow_id: &str,
+) -> Result<OrmAdapterRun, SandboxHttpError> {
+    let namespace = "orm-diesel";
+    let cache_key = format!("{namespace}:user:{id}");
+    let tags = orm_user_tags(id, &request.tags);
+    let queries = DieselCache::new(state.cache.clone(), namespace);
+    let loader_calls_before = state.loader_calls.load(Ordering::SeqCst);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(0);
+
+    let before_first = state.cache.stats().loads;
+    let first_user = {
+        let loader_calls = Arc::clone(&state.loader_calls);
+        let user = backing_user.clone();
+        let query = orm_user_query(queries.entity::<User>("user", id), id, request);
+        query
+            .diesel_first(move || {
+                if loader_delay_ms > 0 {
+                    std::thread::sleep(Duration::from_millis(loader_delay_ms));
+                }
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, hydracache_diesel::diesel::result::Error>(user)
+            })
+            .await
+            .map_err(|error| orm_adapter_http_error("diesel", error))?
+    };
+    let first_source = source_from_load_delta(before_first, state.cache.stats().loads);
+
+    let before_second = state.cache.stats().loads;
+    let second_user = {
+        let loader_calls = Arc::clone(&state.loader_calls);
+        let user = backing_user;
+        let query = orm_user_query(queries.entity::<User>("user", id), id, request);
+        query
+            .diesel_first(move || {
+                if loader_delay_ms > 0 {
+                    std::thread::sleep(Duration::from_millis(loader_delay_ms));
+                }
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, hydracache_diesel::diesel::result::Error>(user)
+            })
+            .await
+            .map_err(|error| orm_adapter_http_error("diesel", error))?
+    };
+    let second_source = source_from_load_delta(before_second, state.cache.stats().loads);
+
+    Ok(orm_adapter_run(
+        state,
+        "diesel",
+        namespace,
+        cache_key,
+        tags,
+        first_source,
+        second_source,
+        loader_calls_before,
+        first_user,
+        second_user,
+        flow_id,
+    )
+    .await)
+}
+
+async fn run_seaorm_user_adapter(
+    state: &SandboxState,
+    id: i64,
+    request: &OrmComparisonRequest,
+    backing_user: User,
+    flow_id: &str,
+) -> Result<OrmAdapterRun, SandboxHttpError> {
+    let namespace = "orm-seaorm";
+    let cache_key = format!("{namespace}:user:{id}");
+    let tags = orm_user_tags(id, &request.tags);
+    let queries = SeaOrmCache::new(state.cache.clone(), namespace);
+    let loader_calls_before = state.loader_calls.load(Ordering::SeqCst);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(0);
+
+    let before_first = state.cache.stats().loads;
+    let first_user = {
+        let loader_calls = Arc::clone(&state.loader_calls);
+        let user = backing_user.clone();
+        let query = orm_user_query(queries.entity::<User>("user", id), id, request);
+        query
+            .sea_value(move || async move {
+                sleep(Duration::from_millis(loader_delay_ms)).await;
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, hydracache_seaorm::sea_orm::DbErr>(user)
+            })
+            .await
+            .map_err(|error| orm_adapter_http_error("seaorm", error))?
+    };
+    let first_source = source_from_load_delta(before_first, state.cache.stats().loads);
+
+    let before_second = state.cache.stats().loads;
+    let second_user = {
+        let loader_calls = Arc::clone(&state.loader_calls);
+        let user = backing_user;
+        let query = orm_user_query(queries.entity::<User>("user", id), id, request);
+        query
+            .sea_value(move || async move {
+                sleep(Duration::from_millis(loader_delay_ms)).await;
+                loader_calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, hydracache_seaorm::sea_orm::DbErr>(user)
+            })
+            .await
+            .map_err(|error| orm_adapter_http_error("seaorm", error))?
+    };
+    let second_source = source_from_load_delta(before_second, state.cache.stats().loads);
+
+    Ok(orm_adapter_run(
+        state,
+        "seaorm",
+        namespace,
+        cache_key,
+        tags,
+        first_source,
+        second_source,
+        loader_calls_before,
+        first_user,
+        second_user,
+        flow_id,
+    )
+    .await)
+}
+
+async fn orm_adapter_run(
+    state: &SandboxState,
+    adapter: &'static str,
+    namespace: &'static str,
+    cache_key: String,
+    tags: Vec<String>,
+    first_source: LoadSource,
+    second_source: LoadSource,
+    loader_calls_before: u64,
+    first_user: User,
+    second_user: User,
+    flow_id: &str,
+) -> OrmAdapterRun {
+    let loader_calls_delta = state.loader_calls.load(Ordering::SeqCst) - loader_calls_before;
+    let passed = first_source == LoadSource::Loader
+        && second_source == LoadSource::Cache
+        && loader_calls_delta == 1
+        && first_user == second_user;
+
+    record_event_with_flow(
+        state,
+        if second_source == LoadSource::Cache {
+            DemoEventKind::CacheHit
+        } else {
+            DemoEventKind::CacheLoad
+        },
+        format!("{adapter} adapter comparison used {first_source:?} then {second_source:?}"),
+        Some(cache_key.clone()),
+        Some(format!("user:{}", first_user.id)),
+        Some(second_source),
+        Some(flow_id.to_owned()),
+    )
+    .await;
+
+    OrmAdapterRun {
+        adapter,
+        namespace,
+        cache_key,
+        tags,
+        first_source,
+        second_source,
+        loader_calls_delta,
+        first_user,
+        second_user,
+        passed,
+    }
+}
+
+#[utoipa::path(
     get,
     path = "/demo/products/{id}",
     tag = "demo",
@@ -10738,6 +11102,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/query/orders/5000/summary/load', {ttl_ms:60000, tags:['ui-order'], flow_id:'ui-order'})">Order summary cache</button>
       <button onclick="runScenario('negative-suite')">Negative suite</button>
       <button onclick="timeline('manual-golden')">Timeline: manual-golden</button>
+      <button onclick="post('/demo/query/users/42/orm-comparison', {ttl_ms:60000, tags:['users','ui-orm'], loader_delay_ms:10, flow_id:`ui-orm-${Date.now()}`})">ORM adapter comparison</button>
       <button onclick="post('/demo/profiles/compare', {scenario:'golden-path', profiles:['memory','sqlite-memory','sqlite-file']})">Compare profiles</button>
       <button onclick="post('/demo/replay', {scenario:'golden-path', source_flow_id:'manual-golden', flow_id:`replay-${Date.now()}`, reset:true})">Replay golden</button>
       <button onclick="post('/demo/faults/run', {scenario:'invalidation-race', loader_delay_ms:80, invalidate_after_ms:10, flow_id:`fault-${Date.now()}`})">Fault injection</button>
@@ -10929,6 +11294,41 @@ fn user_tags(id: i64, extra_tags: &[String]) -> Vec<String> {
     tags
 }
 
+fn orm_user_query(
+    mut query: hydracache_sqlx::DbQuery<User>,
+    id: i64,
+    request: &OrmComparisonRequest,
+) -> hydracache_sqlx::DbQuery<User> {
+    let entity_tag = format!("user:{id}");
+    let extra_tags = request
+        .tags
+        .iter()
+        .filter(|tag| tag.as_str() != "users" && tag.as_str() != entity_tag.as_str())
+        .cloned();
+    query = query.collection_tag("users").tags(extra_tags);
+    if let Some(ttl_ms) = request.ttl_ms {
+        query = query.ttl(Duration::from_millis(ttl_ms));
+    }
+    query
+}
+
+fn orm_user_tags(id: i64, extra_tags: &[String]) -> Vec<String> {
+    let mut tags = vec![format!("user:{id}"), "users".to_owned()];
+    for tag in extra_tags {
+        if !tags.iter().any(|existing| existing == tag) {
+            tags.push(tag.clone());
+        }
+    }
+    tags
+}
+
+fn orm_adapter_http_error(
+    adapter: &'static str,
+    error: impl std::error::Error,
+) -> SandboxHttpError {
+    SandboxHttpError::internal(format!("{adapter} ORM adapter cache error: {error}"))
+}
+
 fn source_from_load_delta(before_loads: u64, after_loads: u64) -> LoadSource {
     if after_loads > before_loads {
         LoadSource::Loader
@@ -11016,6 +11416,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             name: "database-backed query cache",
             endpoint: "/demo/query/users/{id}/load, /demo/query/products/{id}/load, and /demo/query/orders/{id}/summary/load",
             description: "Load demo users, products, and join-like order summaries from the selected backing store and cache query results by key and tags.",
+        },
+        CapabilityReport {
+            name: "ORM adapter comparison",
+            endpoint: "/demo/query/users/{id}/orm-comparison",
+            description: "Compare SQLx, Diesel, and SeaORM adapter cache descriptors over the same selected sandbox backing row.",
         },
         CapabilityReport {
             name: "typed cache view",
@@ -11261,6 +11666,7 @@ fn actuator_stats_doc() {}
         upsert_user,
         load_user,
         query_load_user,
+        query_user_orm_comparison,
         get_product,
         query_load_product,
         query_load_order_summary,
@@ -11371,6 +11777,7 @@ fn actuator_stats_doc() {}
             CachePutRequest,
             CacheLoadStringRequest,
             CacheLoadOptionsRequest,
+            OrmComparisonRequest,
             TtlScenarioRequest,
             SingleFlightScenarioRequest,
             InvalidationRaceScenarioRequest,
@@ -11432,6 +11839,8 @@ fn actuator_stats_doc() {}
             RealClusterAdaptersTimelineStep,
             RealClusterAdaptersDemoResponse,
             LoadUserResponse,
+            OrmAdapterRun,
+            OrmComparisonResponse,
             LoadProductResponse,
             LoadOrderSummaryResponse,
             TypedUserLoadResponse,
@@ -11999,6 +12408,7 @@ mod tests {
         assert!(paths.contains_key("/demo/cache/put"));
         assert!(paths.contains_key("/demo/cache/get-or-load"));
         assert!(paths.contains_key("/demo/query/users/{id}/load"));
+        assert!(paths.contains_key("/demo/query/users/{id}/orm-comparison"));
         assert!(paths.contains_key("/demo/query/products/{id}/load"));
         assert!(paths.contains_key("/demo/query/orders/{id}/summary/load"));
         assert!(paths.contains_key("/demo/typed/users/{id}/load"));
@@ -12050,6 +12460,9 @@ mod tests {
         assert!(schemas.contains_key("LatencySummary"));
         assert!(schemas.contains_key("Product"));
         assert!(schemas.contains_key("OrderSummary"));
+        assert!(schemas.contains_key("OrmComparisonRequest"));
+        assert!(schemas.contains_key("OrmAdapterRun"));
+        assert!(schemas.contains_key("OrmComparisonResponse"));
         assert!(schemas.contains_key("ListenerDemoRequest"));
         assert!(schemas.contains_key("ListenerEventReport"));
         assert!(schemas.contains_key("ListenerDemoResponse"));
@@ -12678,6 +13091,29 @@ mod tests {
             .await;
         assert_eq!(query["user"]["name"], "Ada");
         assert_eq!(query["tags"][0], "user:42");
+
+        let orm_comparison = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/users/42/orm-comparison",
+                Body::from(
+                    r#"{"ttl_ms":5000,"tags":["users","orm-test"],"loader_delay_ms":1,"flow_id":"orm-test"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(orm_comparison["passed"], true);
+        assert_eq!(orm_comparison["same_backing_row"], true);
+        assert_eq!(orm_comparison["adapters"].as_array().unwrap().len(), 3);
+        for adapter in orm_comparison["adapters"].as_array().unwrap() {
+            assert_eq!(adapter["first_source"], "loader");
+            assert_eq!(adapter["second_source"], "cache");
+            assert_eq!(adapter["loader_calls_delta"], 1);
+            assert_eq!(adapter["first_user"]["name"], "Ada");
+            assert_eq!(adapter["second_user"]["name"], "Ada");
+        }
 
         let typed_first = app
             .clone()
@@ -13820,6 +14256,24 @@ mod tests {
             .unwrap()
             .await;
         assert_eq!(loaded["user"]["name"], "Linus");
+
+        let orm_comparison = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/users/42/orm-comparison",
+                Body::from(r#"{"ttl_ms":5000,"tags":["sqlite-orm"],"flow_id":"sqlite-orm"}"#),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(orm_comparison["backend"], "sqlite-memory");
+        assert_eq!(orm_comparison["passed"], true);
+        assert!(orm_comparison["adapters"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|adapter| adapter["second_source"] == "cache"));
 
         let missing = app.oneshot(get("/demo/users/999")).await.unwrap();
         assert_eq!(missing.status(), StatusCode::NOT_FOUND);
