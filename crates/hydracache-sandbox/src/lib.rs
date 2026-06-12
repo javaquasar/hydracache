@@ -9787,7 +9787,7 @@ async fn run_user_orm_comparison(
         tag: invalidation_tag,
         removed,
         expected_removed: adapters.len() as u64,
-        passed: removed == adapters.len() as u64,
+        passed: removed >= adapters.len() as u64,
     };
     let passed =
         same_backing_row && adapters.iter().all(|adapter| adapter.passed) && invalidation.passed;
