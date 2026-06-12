@@ -127,7 +127,7 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 ## Completion Checklist
 
 - [x] Release plan documented.
-- [ ] Lifecycle diagnostics types added and tested.
+- [x] Lifecycle diagnostics types added and tested.
 - [ ] Admission bridge lifecycle added and tested.
 - [ ] Runtime lifecycle snapshot added and tested.
 - [ ] Sandbox/actuator-style reports updated and tested.

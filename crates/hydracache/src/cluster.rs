@@ -136,6 +136,178 @@ impl ClusterRole {
     }
 }
 
+/// Lifecycle state for an embedded cluster component.
+///
+/// The lifecycle model is diagnostic, not supervisory: HydraCache records what
+/// happened, while the application still decides when to start HTTP servers,
+/// admission bridges, or other background work.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache::{ClusterLifecycleDiagnostics, ClusterLifecycleStatus};
+///
+/// let mut lifecycle = ClusterLifecycleDiagnostics::idle("admission-bridge");
+/// assert_eq!(lifecycle.status, ClusterLifecycleStatus::Idle);
+///
+/// lifecycle.record_start();
+/// assert!(lifecycle.is_running());
+///
+/// lifecycle.record_shutdown_requested();
+/// lifecycle.record_graceful_stop();
+/// assert!(lifecycle.is_stopped());
+/// ```
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ClusterLifecycleStatus {
+    /// The component has not been started yet.
+    #[default]
+    Idle,
+    /// The component is currently running.
+    Running,
+    /// Shutdown was requested, but the component has not reported completion.
+    Stopping,
+    /// The component stopped gracefully.
+    Stopped,
+    /// The component failed.
+    Failed,
+}
+
+impl ClusterLifecycleStatus {
+    /// Return whether this status represents active work.
+    pub fn is_running(self) -> bool {
+        self == Self::Running
+    }
+
+    /// Return whether shutdown was requested and completion is pending.
+    pub fn is_stopping(self) -> bool {
+        self == Self::Stopping
+    }
+
+    /// Return whether this status represents a graceful stop.
+    pub fn is_stopped(self) -> bool {
+        self == Self::Stopped
+    }
+
+    /// Return whether this status represents a failure.
+    pub fn has_failed(self) -> bool {
+        self == Self::Failed
+    }
+
+    /// Return whether no more work is expected for this lifecycle instance.
+    pub fn is_terminal(self) -> bool {
+        matches!(self, Self::Stopped | Self::Failed)
+    }
+}
+
+/// Point-in-time lifecycle diagnostics for an embedded cluster component.
+///
+/// # Example
+///
+/// ```rust
+/// use hydracache::ClusterLifecycleDiagnostics;
+///
+/// let mut lifecycle = ClusterLifecycleDiagnostics::idle("peer-fetch-service");
+/// lifecycle.record_start();
+/// lifecycle.record_failure("listener closed unexpectedly");
+///
+/// assert!(lifecycle.has_failed());
+/// assert_eq!(lifecycle.start_count, 1);
+/// assert_eq!(
+///     lifecycle.last_error.as_deref(),
+///     Some("listener closed unexpectedly"),
+/// );
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterLifecycleDiagnostics {
+    /// Stable component name used in diagnostics and sandbox reports.
+    pub component: String,
+    /// Current lifecycle status.
+    pub status: ClusterLifecycleStatus,
+    /// Number of recorded starts.
+    pub start_count: u64,
+    /// Number of graceful stops.
+    pub stop_count: u64,
+    /// Whether shutdown was requested at least once.
+    pub shutdown_requested: bool,
+    /// Last lifecycle error, if any.
+    pub last_error: Option<String>,
+}
+
+impl ClusterLifecycleDiagnostics {
+    /// Create an idle lifecycle snapshot for a component.
+    pub fn idle(component: impl Into<String>) -> Self {
+        Self {
+            component: component.into(),
+            status: ClusterLifecycleStatus::Idle,
+            start_count: 0,
+            stop_count: 0,
+            shutdown_requested: false,
+            last_error: None,
+        }
+    }
+
+    /// Create a running lifecycle snapshot for a component.
+    pub fn running(component: impl Into<String>) -> Self {
+        let mut lifecycle = Self::idle(component);
+        lifecycle.record_start();
+        lifecycle
+    }
+
+    /// Record that the component started.
+    pub fn record_start(&mut self) {
+        self.status = ClusterLifecycleStatus::Running;
+        self.start_count = self.start_count.saturating_add(1);
+        self.shutdown_requested = false;
+        self.last_error = None;
+    }
+
+    /// Record that shutdown was requested.
+    pub fn record_shutdown_requested(&mut self) {
+        self.shutdown_requested = true;
+        if !self.status.is_terminal() {
+            self.status = ClusterLifecycleStatus::Stopping;
+        }
+    }
+
+    /// Record a graceful stop.
+    pub fn record_graceful_stop(&mut self) {
+        self.status = ClusterLifecycleStatus::Stopped;
+        self.stop_count = self.stop_count.saturating_add(1);
+        self.shutdown_requested = true;
+    }
+
+    /// Record a component failure.
+    pub fn record_failure(&mut self, error: impl Into<String>) {
+        self.status = ClusterLifecycleStatus::Failed;
+        self.last_error = Some(error.into());
+    }
+
+    /// Return whether this component is currently running.
+    pub fn is_running(&self) -> bool {
+        self.status.is_running()
+    }
+
+    /// Return whether this component is stopping.
+    pub fn is_stopping(&self) -> bool {
+        self.status.is_stopping()
+    }
+
+    /// Return whether this component stopped gracefully.
+    pub fn is_stopped(&self) -> bool {
+        self.status.is_stopped()
+    }
+
+    /// Return whether this component failed.
+    pub fn has_failed(&self) -> bool {
+        self.status.has_failed()
+    }
+
+    /// Return whether this component reached a terminal status.
+    pub fn is_terminal(&self) -> bool {
+        self.status.is_terminal()
+    }
+}
+
 /// Advertised endpoints for a cluster participant.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ClusterEndpoints {
@@ -2894,12 +3066,13 @@ mod tests {
         ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
         ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
         ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent,
-        ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
-        ClusterMembershipEventBus, ClusterMembershipRecvError, ClusterNodeId,
-        ClusterOwnershipDecision, ClusterOwnershipResolver, ClusterPeerFetch,
-        ClusterPeerFetchGenerationMismatch, ClusterPeerFetchRequest, ClusterPeerFetchResponse,
-        ClusterRole, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
-        RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
+        ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterLifecycleDiagnostics,
+        ClusterLifecycleStatus, ClusterMember, ClusterMembershipEvent, ClusterMembershipEventBus,
+        ClusterMembershipRecvError, ClusterNodeId, ClusterOwnershipDecision,
+        ClusterOwnershipResolver, ClusterPeerFetch, ClusterPeerFetchGenerationMismatch,
+        ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, InMemoryCluster,
+        InMemoryClusterDiscovery, InMemoryPeerFetch, RendezvousClusterOwnership,
+        CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
     };
     use bytes::Bytes;
 
@@ -2921,6 +3094,52 @@ mod tests {
         assert_eq!(first.value(), 7);
         assert_eq!(second.value(), 8);
         assert!(second > first);
+    }
+
+    #[test]
+    fn lifecycle_diagnostics_track_start_stop_and_helpers() {
+        let mut lifecycle = ClusterLifecycleDiagnostics::idle("admission-bridge");
+
+        assert_eq!(lifecycle.component, "admission-bridge");
+        assert_eq!(lifecycle.status, ClusterLifecycleStatus::Idle);
+        assert!(!lifecycle.is_terminal());
+
+        lifecycle.record_start();
+        assert!(lifecycle.is_running());
+        assert_eq!(lifecycle.start_count, 1);
+        assert_eq!(lifecycle.stop_count, 0);
+        assert!(!lifecycle.shutdown_requested);
+
+        lifecycle.record_shutdown_requested();
+        assert!(lifecycle.is_stopping());
+        assert!(lifecycle.shutdown_requested);
+
+        lifecycle.record_graceful_stop();
+        assert!(lifecycle.is_stopped());
+        assert!(lifecycle.is_terminal());
+        assert_eq!(lifecycle.stop_count, 1);
+
+        lifecycle.record_start();
+        assert!(lifecycle.is_running());
+        assert_eq!(lifecycle.start_count, 2);
+        assert!(!lifecycle.shutdown_requested);
+    }
+
+    #[test]
+    fn lifecycle_diagnostics_report_failure_and_running_constructor() {
+        let mut lifecycle = ClusterLifecycleDiagnostics::running("peer-fetch");
+
+        assert_eq!(lifecycle.status, ClusterLifecycleStatus::Running);
+        assert_eq!(lifecycle.start_count, 1);
+
+        lifecycle.record_failure("socket closed");
+        assert!(lifecycle.has_failed());
+        assert!(lifecycle.is_terminal());
+        assert_eq!(lifecycle.last_error.as_deref(), Some("socket closed"));
+
+        lifecycle.record_shutdown_requested();
+        assert!(lifecycle.has_failed());
+        assert!(lifecycle.shutdown_requested);
     }
 
     #[test]
