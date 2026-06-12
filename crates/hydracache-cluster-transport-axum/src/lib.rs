@@ -2110,6 +2110,31 @@ type SharedReadThroughFuture = Shared<BoxFuture<'static, CacheResult<PeerFetchRe
 type SharedOwnerLoadReadThroughFuture =
     Shared<BoxFuture<'static, CacheResult<OwnerLoadReadThroughOutcome>>>;
 
+struct ReadThroughExecution<C>
+where
+    C: CacheCodec,
+{
+    cache: HydraCache<C>,
+    router: PeerFetchRouter,
+    diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
+    policy: PeerFetchReadThroughPolicy,
+    hydrate_remote_hits: bool,
+    hot_remote_policy: HotRemoteCachePolicy,
+    hot_remote: Arc<Mutex<HotRemoteCacheState>>,
+}
+
+struct OwnerLoadReadThroughExecution<C>
+where
+    C: CacheCodec,
+{
+    cache: HydraCache<C>,
+    diagnostics: Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
+    policy: PeerFetchReadThroughPolicy,
+    hydrate_remote_hits: bool,
+    hot_remote_policy: HotRemoteCachePolicy,
+    hot_remote: Arc<Mutex<HotRemoteCacheState>>,
+}
+
 /// Local/near-cache read-through helper backed by [`PeerFetchRouter`].
 ///
 /// The helper checks a local cache according to a [`PeerFetchReadThroughPolicy`],
@@ -2431,7 +2456,7 @@ where
                 let hot_remote_policy = self.hot_remote_policy;
                 let hot_remote = self.hot_remote.clone();
                 let shared = async move {
-                    Self::fetch_owner_once(
+                    let execution = ReadThroughExecution {
                         cache,
                         router,
                         diagnostics,
@@ -2439,10 +2464,8 @@ where
                         hydrate_remote_hits,
                         hot_remote_policy,
                         hot_remote,
-                        decision,
-                        options,
-                    )
-                    .await
+                    };
+                    Self::fetch_owner_once(execution, decision, options).await
                 }
                 .boxed()
                 .shared();
@@ -2521,17 +2544,15 @@ where
                 let hot_remote_policy = self.hot_remote_policy;
                 let hot_remote = self.hot_remote.clone();
                 let shared = async move {
-                    Self::owner_load_once(
+                    let execution = OwnerLoadReadThroughExecution {
                         cache,
                         diagnostics,
                         policy,
                         hydrate_remote_hits,
                         hot_remote_policy,
                         hot_remote,
-                        decision,
-                        descriptor,
-                    )
-                    .await
+                    };
+                    Self::owner_load_once(execution, decision, descriptor).await
                 }
                 .boxed()
                 .shared();
@@ -2549,48 +2570,42 @@ where
     }
 
     async fn fetch_owner_once(
-        cache: HydraCache<C>,
-        router: PeerFetchRouter,
-        diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
-        policy: PeerFetchReadThroughPolicy,
-        hydrate_remote_hits: bool,
-        hot_remote_policy: HotRemoteCachePolicy,
-        hot_remote: Arc<Mutex<HotRemoteCacheState>>,
+        execution: ReadThroughExecution<C>,
         decision: ClusterOwnershipDecision,
         options: CacheOptions,
     ) -> CacheResult<PeerFetchReadThroughOutcome> {
-        let routed = router.fetch_owner_value(decision).await;
+        let routed = execution.router.fetch_owner_value(decision).await;
         let status = read_through_status_from_router(routed.status);
         let mut hydrated = false;
 
         match routed.status {
             PeerFetchRouterStatus::Hit => {
-                Self::record_read_through(&diagnostics, |diagnostics| {
+                Self::record_read_through(&execution.diagnostics, |diagnostics| {
                     diagnostics.remote_hits = diagnostics.remote_hits.saturating_add(1);
                 });
-                if hydrate_remote_hits {
+                if execution.hydrate_remote_hits {
                     if let Some(value) = routed.value.clone() {
                         hydrated = Self::hydrate_remote_entry(
-                            &cache,
+                            &execution.cache,
                             &routed.key,
                             value,
                             options,
-                            hot_remote_policy,
-                            &hot_remote,
+                            execution.hot_remote_policy,
+                            &execution.hot_remote,
                         )
                         .await?;
                         if hydrated {
-                            Self::record_read_through(&diagnostics, |diagnostics| {
+                            Self::record_read_through(&execution.diagnostics, |diagnostics| {
                                 diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
                             });
                         }
                     }
                 } else {
-                    Self::record_hot_remote_skip(&hot_remote);
+                    Self::record_hot_remote_skip(&execution.hot_remote);
                 }
             }
             PeerFetchRouterStatus::Miss => {
-                Self::record_read_through(&diagnostics, |diagnostics| {
+                Self::record_read_through(&execution.diagnostics, |diagnostics| {
                     diagnostics.remote_misses = diagnostics.remote_misses.saturating_add(1);
                 });
             }
@@ -2598,7 +2613,7 @@ where
             | PeerFetchRouterStatus::MissingEndpoint
             | PeerFetchRouterStatus::GenerationMismatch
             | PeerFetchRouterStatus::TransportError => {
-                Self::record_read_through(&diagnostics, |diagnostics| {
+                Self::record_read_through(&execution.diagnostics, |diagnostics| {
                     diagnostics.router_errors = diagnostics.router_errors.saturating_add(1);
                 });
             }
@@ -2606,7 +2621,7 @@ where
 
         Ok(PeerFetchReadThroughOutcome {
             key: routed.key,
-            policy,
+            policy: execution.policy,
             status,
             owner: routed.owner,
             endpoint: routed.endpoint,
@@ -2617,12 +2632,7 @@ where
     }
 
     async fn owner_load_once(
-        cache: HydraCache<C>,
-        diagnostics: Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
-        policy: PeerFetchReadThroughPolicy,
-        hydrate_remote_hits: bool,
-        hot_remote_policy: HotRemoteCachePolicy,
-        hot_remote: Arc<Mutex<HotRemoteCacheState>>,
+        execution: OwnerLoadReadThroughExecution<C>,
         decision: ClusterOwnershipDecision,
         descriptor: OwnerLoadDescriptor,
     ) -> CacheResult<OwnerLoadReadThroughOutcome> {
@@ -2631,12 +2641,12 @@ where
             .map(str::to_owned)
             .unwrap_or_else(|| decision.key.clone());
         let Some(owner) = decision.owner.clone() else {
-            Self::record_owner_load(&diagnostics, |diagnostics| {
+            Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                 diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
             });
             return Ok(OwnerLoadReadThroughOutcome {
                 key,
-                policy,
+                policy: execution.policy,
                 status: OwnerLoadReadThroughStatus::NoOwner,
                 owner: None,
                 endpoint: None,
@@ -2648,12 +2658,12 @@ where
         };
 
         let Some(base_url) = owner.peer_fetch_base_url() else {
-            Self::record_owner_load(&diagnostics, |diagnostics| {
+            Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                 diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
             });
             return Ok(OwnerLoadReadThroughOutcome {
                 key,
-                policy,
+                policy: execution.policy,
                 status: OwnerLoadReadThroughStatus::MissingEndpoint,
                 owner: Some(owner.node_id),
                 endpoint: None,
@@ -2668,12 +2678,12 @@ where
         let request = match descriptor.into_request(decision, format!("owner-load:{key}")) {
             Ok(request) => request,
             Err(error) => {
-                Self::record_owner_load(&diagnostics, |diagnostics| {
+                Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                     diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
                 });
                 return Ok(OwnerLoadReadThroughOutcome {
                     key,
-                    policy,
+                    policy: execution.policy,
                     status: OwnerLoadReadThroughStatus::Rejected,
                     owner: Some(owner.node_id),
                     endpoint: None,
@@ -2695,33 +2705,33 @@ where
 
                 match &response {
                     OwnerLoadResponse::Hit(_) => {
-                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                        Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.remote_hits = diagnostics.remote_hits.saturating_add(1);
                         });
                     }
                     OwnerLoadResponse::Loaded(_) => {
-                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                        Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.remote_loaded = diagnostics.remote_loaded.saturating_add(1);
                         });
                     }
                     OwnerLoadResponse::Miss(_) => {
-                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                        Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.remote_misses = diagnostics.remote_misses.saturating_add(1);
                         });
                     }
                     OwnerLoadResponse::Rejected(_) => {
-                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                        Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.rejections = diagnostics.rejections.saturating_add(1);
                         });
                     }
                     OwnerLoadResponse::Failed(_) => {
-                        Self::record_owner_load(&diagnostics, |diagnostics| {
+                        Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.failures = diagnostics.failures.saturating_add(1);
                         });
                     }
                 }
 
-                if hydrate_remote_hits
+                if execution.hydrate_remote_hits
                     && matches!(
                         status,
                         OwnerLoadReadThroughStatus::RemoteHit
@@ -2730,27 +2740,27 @@ where
                 {
                     if let Some(bytes) = value.clone() {
                         hydrated = Self::hydrate_remote_entry(
-                            &cache,
+                            &execution.cache,
                             &key,
                             bytes,
                             options,
-                            hot_remote_policy,
-                            &hot_remote,
+                            execution.hot_remote_policy,
+                            &execution.hot_remote,
                         )
                         .await?;
                         if hydrated {
-                            Self::record_owner_load(&diagnostics, |diagnostics| {
+                            Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                                 diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
                             });
                         }
                     }
                 } else if value.is_some() {
-                    Self::record_hot_remote_skip(&hot_remote);
+                    Self::record_hot_remote_skip(&execution.hot_remote);
                 }
 
                 Ok(OwnerLoadReadThroughOutcome {
                     key,
-                    policy,
+                    policy: execution.policy,
                     status,
                     owner: Some(owner.node_id),
                     endpoint: Some(endpoint),
@@ -2761,12 +2771,12 @@ where
                 })
             }
             Err(error) => {
-                Self::record_owner_load(&diagnostics, |diagnostics| {
+                Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                     diagnostics.transport_errors = diagnostics.transport_errors.saturating_add(1);
                 });
                 Ok(OwnerLoadReadThroughOutcome {
                     key,
-                    policy,
+                    policy: execution.policy,
                     status: OwnerLoadReadThroughStatus::TransportError,
                     owner: Some(owner.node_id),
                     endpoint: Some(endpoint),
