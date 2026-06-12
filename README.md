@@ -46,6 +46,10 @@ simple local cache -> database result-cache adapter -> optional distributed sync
 For production usage guidance, see
 [`docs/PRODUCTION_GUIDE.md`](docs/PRODUCTION_GUIDE.md).
 
+For a full production-style flow that combines database-cache policies,
+invalidation, refresh/stale behavior, and diagnostics, see
+[`docs/PRODUCTION_EXAMPLE.md`](docs/PRODUCTION_EXAMPLE.md).
+
 ## v0 Scope
 
 The current v0 line includes:
