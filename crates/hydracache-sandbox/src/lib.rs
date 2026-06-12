@@ -9844,16 +9844,18 @@ async fn run_sqlx_user_adapter(
 
     Ok(orm_adapter_run(
         state,
-        "sqlx",
-        namespace,
-        cache_key,
-        tags,
-        first_source,
-        second_source,
-        loader_calls_before,
-        first_user,
-        second_user,
-        flow_id,
+        OrmAdapterRunInput {
+            adapter: "sqlx",
+            namespace,
+            cache_key,
+            tags,
+            first_source,
+            second_source,
+            loader_calls_before,
+            first_user,
+            second_user,
+            flow_id,
+        },
     )
     .await)
 }
@@ -9910,16 +9912,18 @@ async fn run_diesel_user_adapter(
 
     Ok(orm_adapter_run(
         state,
-        "diesel",
-        namespace,
-        cache_key,
-        tags,
-        first_source,
-        second_source,
-        loader_calls_before,
-        first_user,
-        second_user,
-        flow_id,
+        OrmAdapterRunInput {
+            adapter: "diesel",
+            namespace,
+            cache_key,
+            tags,
+            first_source,
+            second_source,
+            loader_calls_before,
+            first_user,
+            second_user,
+            flow_id,
+        },
     )
     .await)
 }
@@ -9972,22 +9976,23 @@ async fn run_seaorm_user_adapter(
 
     Ok(orm_adapter_run(
         state,
-        "seaorm",
-        namespace,
-        cache_key,
-        tags,
-        first_source,
-        second_source,
-        loader_calls_before,
-        first_user,
-        second_user,
-        flow_id,
+        OrmAdapterRunInput {
+            adapter: "seaorm",
+            namespace,
+            cache_key,
+            tags,
+            first_source,
+            second_source,
+            loader_calls_before,
+            first_user,
+            second_user,
+            flow_id,
+        },
     )
     .await)
 }
 
-async fn orm_adapter_run(
-    state: &SandboxState,
+struct OrmAdapterRunInput<'a> {
     adapter: &'static str,
     namespace: &'static str,
     cache_key: String,
@@ -9997,39 +10002,44 @@ async fn orm_adapter_run(
     loader_calls_before: u64,
     first_user: User,
     second_user: User,
-    flow_id: &str,
-) -> OrmAdapterRun {
-    let loader_calls_delta = state.loader_calls.load(Ordering::SeqCst) - loader_calls_before;
-    let passed = first_source == LoadSource::Loader
-        && second_source == LoadSource::Cache
+    flow_id: &'a str,
+}
+
+async fn orm_adapter_run(state: &SandboxState, input: OrmAdapterRunInput<'_>) -> OrmAdapterRun {
+    let loader_calls_delta = state.loader_calls.load(Ordering::SeqCst) - input.loader_calls_before;
+    let passed = input.first_source == LoadSource::Loader
+        && input.second_source == LoadSource::Cache
         && loader_calls_delta == 1
-        && first_user == second_user;
+        && input.first_user == input.second_user;
 
     record_event_with_flow(
         state,
-        if second_source == LoadSource::Cache {
+        if input.second_source == LoadSource::Cache {
             DemoEventKind::CacheHit
         } else {
             DemoEventKind::CacheLoad
         },
-        format!("{adapter} adapter comparison used {first_source:?} then {second_source:?}"),
-        Some(cache_key.clone()),
-        Some(format!("user:{}", first_user.id)),
-        Some(second_source),
-        Some(flow_id.to_owned()),
+        format!(
+            "{} adapter comparison used {:?} then {:?}",
+            input.adapter, input.first_source, input.second_source
+        ),
+        Some(input.cache_key.clone()),
+        Some(format!("user:{}", input.first_user.id)),
+        Some(input.second_source),
+        Some(input.flow_id.to_owned()),
     )
     .await;
 
     OrmAdapterRun {
-        adapter,
-        namespace,
-        cache_key,
-        tags,
-        first_source,
-        second_source,
+        adapter: input.adapter,
+        namespace: input.namespace,
+        cache_key: input.cache_key,
+        tags: input.tags,
+        first_source: input.first_source,
+        second_source: input.second_source,
         loader_calls_delta,
-        first_user,
-        second_user,
+        first_user: input.first_user,
+        second_user: input.second_user,
         passed,
     }
 }
