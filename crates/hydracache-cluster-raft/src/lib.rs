@@ -224,6 +224,91 @@ pub struct RaftMetadataRuntimeExport {
     pub commands: Vec<RaftMetadataCommandEnvelope>,
 }
 
+/// Storage seam for exported raft metadata snapshots.
+///
+/// This trait stores the materialized metadata snapshot returned by
+/// [`RaftMetadataRuntime::export_snapshot`]. It is not a replacement for the
+/// full raft-rs log storage yet; it gives applications and tests a stable seam
+/// for recovering committed membership metadata.
+///
+/// # Example
+///
+/// ```rust
+/// use std::sync::Arc;
+///
+/// use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration};
+/// use hydracache_cluster_raft::{
+///     InMemoryRaftMetadataStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
+/// };
+///
+/// # #[tokio::main]
+/// # async fn main() -> hydracache::CacheResult<()> {
+/// let store = Arc::new(InMemoryRaftMetadataStore::new());
+/// let runtime = RaftMetadataRuntime::with_config_and_metadata_store(
+///     RaftMetadataRuntimeConfig::single_node("orders", 1),
+///     store.clone(),
+/// )?;
+/// runtime
+///     .join_member(
+///         ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+///     )
+///     .await?;
+///
+/// let recovered = RaftMetadataRuntime::with_config_and_metadata_store(
+///     RaftMetadataRuntimeConfig::single_node("orders", 1),
+///     store,
+/// )?;
+/// assert_eq!(recovered.snapshot().commands_committed, 1);
+/// # Ok(())
+/// # }
+/// ```
+pub trait RaftMetadataStore: fmt::Debug + Send + Sync + 'static {
+    /// Load the latest exported metadata snapshot, if one exists.
+    fn load(&self) -> CacheResult<Option<RaftMetadataRuntimeExport>>;
+
+    /// Save the latest exported metadata snapshot.
+    fn save(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()>;
+}
+
+/// In-memory [`RaftMetadataStore`] for tests, demos, and sandbox flows.
+#[derive(Debug, Clone, Default)]
+pub struct InMemoryRaftMetadataStore {
+    snapshot: Arc<Mutex<Option<RaftMetadataRuntimeExport>>>,
+}
+
+impl InMemoryRaftMetadataStore {
+    /// Create an empty in-memory metadata store.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Create a store preloaded with an exported snapshot.
+    pub fn with_snapshot(snapshot: RaftMetadataRuntimeExport) -> Self {
+        Self {
+            snapshot: Arc::new(Mutex::new(Some(snapshot))),
+        }
+    }
+
+    /// Return the currently saved snapshot.
+    pub fn snapshot(&self) -> Option<RaftMetadataRuntimeExport> {
+        self.snapshot
+            .lock()
+            .expect("raft metadata store poisoned")
+            .clone()
+    }
+}
+
+impl RaftMetadataStore for InMemoryRaftMetadataStore {
+    fn load(&self) -> CacheResult<Option<RaftMetadataRuntimeExport>> {
+        Ok(self.snapshot())
+    }
+
+    fn save(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
+        *self.snapshot.lock().expect("raft metadata store poisoned") = Some(snapshot);
+        Ok(())
+    }
+}
+
 /// Stable debug-friendly view of raft-rs [`StateRole`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RaftRuntimeRole {
@@ -271,6 +356,7 @@ pub struct RaftMetadataRuntime {
     cluster: InMemoryCluster,
     raft_node_id: u64,
     raft: Mutex<RaftRuntimeState>,
+    metadata_store: Option<Arc<dyn RaftMetadataStore>>,
 }
 
 impl RaftMetadataRuntime {
@@ -284,6 +370,42 @@ impl RaftMetadataRuntime {
 
     /// Start a single-node raft-rs metadata runtime with explicit config.
     pub fn with_config(config: RaftMetadataRuntimeConfig) -> CacheResult<Self> {
+        Self::build_empty(config, None)
+    }
+
+    /// Start a single-node raft-rs metadata runtime backed by a metadata store.
+    pub fn single_node_with_metadata_store(
+        cluster_name: impl Into<String>,
+        raft_node_id: u64,
+        store: Arc<dyn RaftMetadataStore>,
+    ) -> CacheResult<Self> {
+        Self::with_config_and_metadata_store(
+            RaftMetadataRuntimeConfig::single_node(cluster_name, raft_node_id),
+            store,
+        )
+    }
+
+    /// Start a raft-rs metadata runtime from config and recover any stored
+    /// materialized metadata snapshot.
+    pub fn with_config_and_metadata_store(
+        config: RaftMetadataRuntimeConfig,
+        store: Arc<dyn RaftMetadataStore>,
+    ) -> CacheResult<Self> {
+        let stored = store.load()?;
+        if let Some(snapshot) = stored.as_ref() {
+            validate_snapshot_identity(&config, snapshot)?;
+        }
+        let runtime = Self::build_empty(config, Some(store))?;
+        if let Some(snapshot) = stored {
+            runtime.restore_export(snapshot)?;
+        }
+        Ok(runtime)
+    }
+
+    fn build_empty(
+        config: RaftMetadataRuntimeConfig,
+        metadata_store: Option<Arc<dyn RaftMetadataStore>>,
+    ) -> CacheResult<Self> {
         let cluster_name = config.cluster_name.clone();
         let raft_node_id = config.raft_node_id;
         let storage = MemStorage::new_with_conf_state((vec![raft_node_id], vec![]));
@@ -307,6 +429,7 @@ impl RaftMetadataRuntime {
             cluster: InMemoryCluster::new(cluster_name),
             raft_node_id,
             raft: Mutex::new(state),
+            metadata_store,
         })
     }
 
@@ -399,18 +522,23 @@ impl RaftMetadataRuntime {
 
     /// Rebuild a single-node runtime from an exported metadata snapshot.
     pub fn from_snapshot(snapshot: RaftMetadataRuntimeExport) -> CacheResult<Self> {
-        let runtime = Self::single_node(snapshot.cluster_name, snapshot.raft_node_id)?;
+        let runtime = Self::single_node(snapshot.cluster_name.clone(), snapshot.raft_node_id)?;
+        runtime.restore_export(snapshot)?;
+        Ok(runtime)
+    }
+
+    fn restore_export(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
         {
-            let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+            let mut state = self.raft.lock().expect("raft metadata state poisoned");
             state.commands.clear();
             state.applied_command_ids.clear();
             state.results.clear();
             state.applied_index = snapshot.applied_index;
         }
         for envelope in snapshot.commands {
-            runtime.apply_recovered_envelope(envelope)?;
+            self.apply_recovered_envelope(envelope)?;
         }
-        Ok(runtime)
+        Ok(())
     }
 
     fn commit_command(
@@ -435,6 +563,13 @@ impl RaftMetadataRuntime {
             .insert(envelope.command_id.clone())
         {
             state.commands.push(envelope);
+        }
+        Ok(())
+    }
+
+    fn persist_metadata(&self) -> CacheResult<()> {
+        if let Some(store) = &self.metadata_store {
+            store.save(self.export_snapshot())?;
         }
         Ok(())
     }
@@ -472,6 +607,25 @@ fn command_id_for(command: &RaftMetadataCommand) -> String {
             format!("node-left:{}:{}", command_id_node(node_id), epoch.value())
         }
     }
+}
+
+fn validate_snapshot_identity(
+    config: &RaftMetadataRuntimeConfig,
+    snapshot: &RaftMetadataRuntimeExport,
+) -> CacheResult<()> {
+    if snapshot.cluster_name != config.cluster_name {
+        return Err(CacheError::Backend(format!(
+            "raft metadata store snapshot cluster '{}' does not match configured cluster '{}'",
+            snapshot.cluster_name, config.cluster_name
+        )));
+    }
+    if snapshot.raft_node_id != config.raft_node_id {
+        return Err(CacheError::Backend(format!(
+            "raft metadata store snapshot node {} does not match configured node {}",
+            snapshot.raft_node_id, config.raft_node_id
+        )));
+    }
+    Ok(())
 }
 
 fn command_id_node(node_id: &ClusterNodeId) -> String {
@@ -703,7 +857,9 @@ impl ClusterControlPlane for RaftMetadataRuntime {
                 return Ok(member);
             }
         }
-        self.cluster.join_member(candidate)
+        let member = self.cluster.join_member(candidate)?;
+        self.persist_metadata()?;
+        Ok(member)
     }
 
     async fn join_client(&self, candidate: ClusterCandidate) -> CacheResult<ClusterMember> {
@@ -723,7 +879,9 @@ impl ClusterControlPlane for RaftMetadataRuntime {
                 return Ok(member);
             }
         }
-        self.cluster.join_client(candidate)
+        let member = self.cluster.join_client(candidate)?;
+        self.persist_metadata()?;
+        Ok(member)
     }
 
     async fn validate_generation(
@@ -755,7 +913,9 @@ impl ClusterControlPlane for RaftMetadataRuntime {
         if result.status == RaftCommandStatus::Duplicate {
             return Ok(None);
         }
-        self.cluster.leave(node_id, generation)
+        let event = self.cluster.leave(node_id, generation)?;
+        self.persist_metadata()?;
+        Ok(event)
     }
 
     fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
@@ -985,6 +1145,84 @@ mod tests {
             recovered.snapshot().applied_index,
             runtime.snapshot().applied_index
         );
+    }
+
+    #[tokio::test]
+    async fn metadata_store_saves_committed_membership_and_recovers_runtime() {
+        let store = Arc::new(InMemoryRaftMetadataStore::new());
+        let runtime = RaftMetadataRuntime::with_config_and_metadata_store(
+            RaftMetadataRuntimeConfig::single_node("orders", 1),
+            store.clone(),
+        )
+        .unwrap();
+
+        runtime
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+            .await
+            .unwrap();
+        runtime
+            .join_client(ClusterCandidate::client("client-a").generation(ClusterGeneration::new(1)))
+            .await
+            .unwrap();
+
+        let stored = store.snapshot().expect("snapshot saved");
+        assert_eq!(stored.cluster_name, "orders");
+        assert_eq!(stored.raft_node_id, 1);
+        assert_eq!(stored.commands.len(), 2);
+
+        let recovered = RaftMetadataRuntime::with_config_and_metadata_store(
+            RaftMetadataRuntimeConfig::single_node("orders", 1),
+            store,
+        )
+        .unwrap();
+
+        assert_eq!(recovered.snapshot().commands_committed, 2);
+        assert_eq!(recovered.cluster.members().len(), 1);
+        assert_eq!(recovered.cluster.clients().len(), 1);
+    }
+
+    #[test]
+    fn metadata_store_rejects_snapshot_for_another_cluster_or_node() {
+        let snapshot = RaftMetadataRuntimeExport {
+            cluster_name: "orders".to_owned(),
+            raft_node_id: 1,
+            applied_index: 0,
+            commands: Vec::new(),
+        };
+        let wrong_cluster = Arc::new(InMemoryRaftMetadataStore::with_snapshot(snapshot.clone()));
+        let error = RaftMetadataRuntime::with_config_and_metadata_store(
+            RaftMetadataRuntimeConfig::single_node("billing", 1),
+            wrong_cluster,
+        )
+        .unwrap_err();
+        assert!(error.to_string().contains("snapshot cluster"));
+
+        let wrong_node = Arc::new(InMemoryRaftMetadataStore::with_snapshot(snapshot));
+        let error = RaftMetadataRuntime::with_config_and_metadata_store(
+            RaftMetadataRuntimeConfig::single_node("orders", 2),
+            wrong_node,
+        )
+        .unwrap_err();
+        assert!(error.to_string().contains("snapshot node"));
+    }
+
+    #[tokio::test]
+    async fn metadata_store_does_not_save_failed_proposals() {
+        let store = Arc::new(InMemoryRaftMetadataStore::new());
+        let runtime = RaftMetadataRuntime::with_config_and_metadata_store(
+            RaftMetadataRuntimeConfig::single_node("orders", 1),
+            store.clone(),
+        )
+        .unwrap();
+        runtime.fail_next_proposal_for_test();
+
+        let result = runtime
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+            .await;
+
+        assert!(result.is_err());
+        assert!(store.snapshot().is_none());
+        assert_eq!(runtime.snapshot().commands_committed, 0);
     }
 
     #[tokio::test]
