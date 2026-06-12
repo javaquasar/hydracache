@@ -106,5 +106,5 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 - [x] README and generated docs examples updated.
 - [x] Testing and publishing docs updated.
 - [x] External consumer check includes Diesel and SeaORM crates.
-- [ ] Workspace bumped to `0.31.0`.
+- [x] Workspace bumped to `0.31.0`.
 - [ ] Full release gate passes.
