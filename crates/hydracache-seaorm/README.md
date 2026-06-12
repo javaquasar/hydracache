@@ -16,14 +16,15 @@ let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
 let value = queries
     .entity::<String>("user", 42)
     .collection_tag("users")
-    .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>(Some("Ada".to_owned())) })
+    .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>("Ada".to_owned()) })
     .await?;
 
-assert_eq!(value, Some("Ada".to_owned()));
+assert_eq!(value, "Ada");
 # Ok(())
 # }
 ```
 
-`sea_one`, `sea_value`, and `sea_all` execute the async loader only on a cache
-miss. The loader should contain the ordinary SeaORM call, such as
-`Entity::find_by_id(id).one(&db).await` or `Entity::find().all(&db).await`.
+`sea_one`, `sea_optional`, and `sea_all` execute the async loader only on a
+cache miss. Use `sea_optional` for ordinary SeaORM
+`Entity::find_by_id(id).one(&db).await` calls, and use `sea_all` for
+`Entity::find().all(&db).await` collection queries.

@@ -94,9 +94,9 @@ The current v0 line includes:
 - tag-generation invalidation safety
 - Moka-backed local storage
 - database-neutral query result-cache descriptors
-- SQLx helper methods: `fetch_one`, `fetch_optional`, and `fetch_all`
-- Diesel helper methods: `diesel_first`, `diesel_optional`, and `diesel_all`
-- SeaORM helper methods: `sea_one`, `sea_value`, and `sea_all`
+- SQLx helper methods: `sqlx_one`, `sqlx_optional`, and `sqlx_all`
+- Diesel helper methods: `diesel_one`, `diesel_optional`, and `diesel_all`
+- SeaORM helper methods: `sea_one`, `sea_optional`, and `sea_all`
 - database query ergonomics: `entity`, `collection`, `for_entity`, and
   `collection_tag`
 - `CacheEntity` metadata for domain-shaped database cache descriptors
@@ -1425,7 +1425,7 @@ let queries = DbCache::new(local, "db");
 let (id, name): (i64, String) = queries
     .entity::<(i64, String)>("user", 42)
     .collection_tag("users")
-    .fetch_one(
+    .sqlx_one(
         pool.clone(),
         sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
     )
@@ -1436,7 +1436,7 @@ assert!(!name.is_empty());
 
 let users: Vec<(i64, String)> = queries
     .collection::<(i64, String)>("users")
-    .fetch_all(
+    .sqlx_all(
         pool.clone(),
         sqlx::query_as("select id, name from users order by id"),
     )
@@ -1447,8 +1447,8 @@ assert!(!users.is_empty());
 # }
 ```
 
-`SqlxQueryExt` adds `fetch_one`, `fetch_optional`, and `fetch_all` for common
-pool-backed reads. `fetch_optional` caches `None`, and `fetch_all` caches empty
+`SqlxQueryExt` adds `sqlx_one`, `sqlx_optional`, and `sqlx_all` for common
+pool-backed reads. `sqlx_optional` caches `None`, and `sqlx_all` caches empty
 vectors, so repeated misses do not keep hitting the database. Use `fetch_with`
 when you need `sqlx::query!`, `sqlx::query_as!`, transactions, or repository
 methods at the call site. Use `named::<T>("load-user")` when you want a
@@ -1608,7 +1608,7 @@ let queries = DieselCache::new(HydraCache::local().build(), "diesel");
 let user_name = queries
     .entity::<String>("user", 42)
     .collection_tag("users")
-    .diesel_first(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
+    .diesel_one(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
     .await?;
 
 assert_eq!(user_name, "Ada");
@@ -1628,7 +1628,7 @@ let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
 let user_name = queries
     .entity::<String>("user", 42)
     .collection_tag("users")
-    .sea_value(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>("Ada".to_owned()) })
+    .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>("Ada".to_owned()) })
     .await?;
 
 assert_eq!(user_name, "Ada");
@@ -1639,8 +1639,8 @@ assert_eq!(user_name, "Ada");
 The manual sandbox exposes
 `POST /demo/query/users/{id}/orm-comparison` in Swagger. It runs SQLx, Diesel,
 and SeaORM-style adapter paths against the same selected sandbox backing row
-and reports whether each adapter did `loader` on the first call and `cache` on
-the second call.
+and reports helper/API path, cache key, tags, TTL, first/second source,
+loader-call delta, pass/fail state, and the explicit invalidation result.
 
 Testing and coverage commands are documented in
 [docs/TESTING.md](docs/TESTING.md).
@@ -1682,9 +1682,9 @@ lines should be investigated before release.
 - `hydracache-cluster-raft` - use this when you want the real raft-rs metadata runtime behind `ClusterControlPlane`.
 - `hydracache-cluster-transport-axum` - use this when cluster members should expose HTTP peer-fetch over encoded cache bytes or use read-through near-cache hydration.
 - `hydracache-db` - use this when wrapping database or repository calls with explicit query-result caching.
-- `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `fetch_one`/`fetch_optional`/`fetch_all` helpers.
-- `hydracache-diesel` - use this if you want Diesel-facing aliases, re-exports, and blocking `diesel_first`/`diesel_optional`/`diesel_all` helpers.
-- `hydracache-seaorm` - use this if you want SeaORM-facing aliases, re-exports, and async `sea_one`/`sea_value`/`sea_all` helpers.
+- `hydracache-sqlx` - use this if you want the SQLx-facing crate, SQLx re-export, and `sqlx_one`/`sqlx_optional`/`sqlx_all` helpers.
+- `hydracache-diesel` - use this if you want Diesel-facing aliases, re-exports, and blocking `diesel_one`/`diesel_optional`/`diesel_all` helpers.
+- `hydracache-seaorm` - use this if you want SeaORM-facing aliases, re-exports, and async `sea_one`/`sea_optional`/`sea_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/adapter crates.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
 - `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, Postgres Docker, scenario labs, and real cluster-adapter checks.
@@ -1694,9 +1694,10 @@ lines should be investigated before release.
 Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
-- [docs/releases/0.31.1.md](docs/releases/0.31.1.md) - latest patch notes.
+- [docs/releases/0.32.0.md](docs/releases/0.32.0.md) - database adapter parity release.
+- [docs/releases/0.31.1.md](docs/releases/0.31.1.md) - latest published patch notes.
 - [docs/releases/0.31.0.md](docs/releases/0.31.0.md) - Diesel and SeaORM adapter release.
-- [docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md](docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md) - current ORM adapter plan.
+- [docs/plans/V0_32_DATABASE_ADAPTER_PARITY_PLAN.md](docs/plans/V0_32_DATABASE_ADAPTER_PARITY_PLAN.md) - current ORM adapter parity plan.
 - [docs/PRODUCTION_CLUSTER_READINESS.md](docs/PRODUCTION_CLUSTER_READINESS.md) - cluster readiness boundaries.
 - [docs/PUBLISHING.md](docs/PUBLISHING.md) - staged publish and post-publish checks.
 - [docs/TESTING.md](docs/TESTING.md) - test, coverage, and CI guidance.

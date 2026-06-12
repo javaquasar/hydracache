@@ -16,7 +16,7 @@ let queries = DieselCache::new(HydraCache::local().build(), "diesel");
 let value = queries
     .entity::<String>("user", 42)
     .collection_tag("users")
-    .diesel_first(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
+    .diesel_one(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
     .await?;
 
 assert_eq!(value, "Ada");
@@ -24,7 +24,7 @@ assert_eq!(value, "Ada");
 # }
 ```
 
-`diesel_first`, `diesel_optional`, and `diesel_all` run the supplied Diesel
+`diesel_one`, `diesel_optional`, and `diesel_all` run the supplied Diesel
 loader with `tokio::task::spawn_blocking`. Pass an owned pool handle or another
 owned connection source into the closure; do not hold a borrowed Diesel
 connection across an async cache boundary.

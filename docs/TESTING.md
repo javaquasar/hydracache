@@ -226,6 +226,21 @@ cargo test -p hydracache-sandbox --lib --locked sqlite_memory_sandbox_routes_use
 .\scripts\verify-crates-io-consumer.ps1 -Version 0.31.0 -LocalPath . -WorkDir target\consumer-check-0.31.0-local
 ```
 
+For the 0.32 database adapter parity layer specifically, run all three adapter
+crates plus the sandbox comparison route that reports helper/API path, first
+miss, second hit, TTL, tags, and explicit invalidation:
+
+```powershell
+cargo test -p hydracache-sqlx --locked
+cargo test -p hydracache-diesel --locked
+cargo test -p hydracache-seaorm --locked
+cargo test -p hydracache-sandbox --lib --locked orm_comparison_route_is_repeatable_and_deduplicates_tags
+cargo test -p hydracache-sandbox --lib --locked openapi_document_describes_demo_and_actuator_routes
+cargo test --doc -p hydracache-sqlx --locked
+cargo test --doc -p hydracache-diesel --locked
+cargo test --doc -p hydracache-seaorm --locked
+```
+
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
 test executable under `target\debug\deps` is locked by the OS, rerun the
 workspace suite with a fresh target directory:
