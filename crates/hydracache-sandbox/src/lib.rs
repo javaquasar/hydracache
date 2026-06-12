@@ -3011,14 +3011,25 @@ struct LoadUserResponse {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct OrmAdapterRun {
     adapter: &'static str,
+    helper: &'static str,
+    shape: &'static str,
     namespace: &'static str,
     cache_key: String,
     tags: Vec<String>,
+    ttl_ms: Option<u64>,
     first_source: LoadSource,
     second_source: LoadSource,
     loader_calls_delta: u64,
     first_user: User,
     second_user: User,
+    passed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct OrmInvalidationReport {
+    tag: String,
+    removed: u64,
+    expected_removed: u64,
     passed: bool,
 }
 
@@ -3029,6 +3040,7 @@ struct OrmComparisonResponse {
     user_id: i64,
     same_backing_row: bool,
     passed: bool,
+    invalidation: OrmInvalidationReport,
     adapters: Vec<OrmAdapterRun>,
     loader_calls: u64,
     diagnostics: DemoDiagnostics,
@@ -9769,7 +9781,16 @@ async fn run_user_orm_comparison(
     let same_backing_row = adapters
         .iter()
         .all(|adapter| adapter.first_user == backing_user && adapter.second_user == backing_user);
-    let passed = same_backing_row && adapters.iter().all(|adapter| adapter.passed);
+    let invalidation_tag = format!("user:{id}");
+    let removed = state.cache.invalidate_tag(&invalidation_tag).await?;
+    let invalidation = OrmInvalidationReport {
+        tag: invalidation_tag,
+        removed,
+        expected_removed: adapters.len() as u64,
+        passed: removed == adapters.len() as u64,
+    };
+    let passed =
+        same_backing_row && adapters.iter().all(|adapter| adapter.passed) && invalidation.passed;
 
     record_event_with_flow(
         state,
@@ -9792,6 +9813,7 @@ async fn run_user_orm_comparison(
         user_id: id,
         same_backing_row,
         passed,
+        invalidation,
         adapters,
         loader_calls: state.loader_calls.load(Ordering::SeqCst),
         diagnostics: diagnostics(state).await,
@@ -9860,9 +9882,12 @@ async fn run_sqlx_user_adapter(
         state,
         OrmAdapterRunInput {
             adapter: "sqlx",
+            helper: "fetch_with",
+            shape: "one",
             namespace,
             cache_key,
             tags,
+            ttl_ms: request.ttl_ms,
             first_source,
             second_source,
             loader_calls_before,
@@ -9928,9 +9953,12 @@ async fn run_diesel_user_adapter(
         state,
         OrmAdapterRunInput {
             adapter: "diesel",
+            helper: "diesel_one",
+            shape: "one",
             namespace,
             cache_key,
             tags,
+            ttl_ms: request.ttl_ms,
             first_source,
             second_source,
             loader_calls_before,
@@ -9992,9 +10020,12 @@ async fn run_seaorm_user_adapter(
         state,
         OrmAdapterRunInput {
             adapter: "seaorm",
+            helper: "sea_one",
+            shape: "one",
             namespace,
             cache_key,
             tags,
+            ttl_ms: request.ttl_ms,
             first_source,
             second_source,
             loader_calls_before,
@@ -10008,9 +10039,12 @@ async fn run_seaorm_user_adapter(
 
 struct OrmAdapterRunInput<'a> {
     adapter: &'static str,
+    helper: &'static str,
+    shape: &'static str,
     namespace: &'static str,
     cache_key: String,
     tags: Vec<String>,
+    ttl_ms: Option<u64>,
     first_source: LoadSource,
     second_source: LoadSource,
     loader_calls_before: u64,
@@ -10046,9 +10080,12 @@ async fn orm_adapter_run(state: &SandboxState, input: OrmAdapterRunInput<'_>) ->
 
     OrmAdapterRun {
         adapter: input.adapter,
+        helper: input.helper,
+        shape: input.shape,
         namespace: input.namespace,
         cache_key: input.cache_key,
         tags: input.tags,
+        ttl_ms: input.ttl_ms,
         first_source: input.first_source,
         second_source: input.second_source,
         loader_calls_delta,
@@ -12486,6 +12523,7 @@ mod tests {
         assert!(schemas.contains_key("OrderSummary"));
         assert!(schemas.contains_key("OrmComparisonRequest"));
         assert!(schemas.contains_key("OrmAdapterRun"));
+        assert!(schemas.contains_key("OrmInvalidationReport"));
         assert!(schemas.contains_key("OrmComparisonResponse"));
         assert!(schemas.contains_key("ListenerDemoRequest"));
         assert!(schemas.contains_key("ListenerEventReport"));
@@ -12693,10 +12731,16 @@ mod tests {
         for response in [&first, &second] {
             assert_eq!(response["passed"], true);
             assert_eq!(response["same_backing_row"], true);
+            assert_eq!(response["invalidation"]["tag"], "user:42");
+            assert_eq!(response["invalidation"]["removed"], 3);
+            assert_eq!(response["invalidation"]["expected_removed"], 3);
+            assert_eq!(response["invalidation"]["passed"], true);
 
             let adapters = response["adapters"].as_array().unwrap();
             assert_eq!(adapters.len(), 3);
             for adapter in adapters {
+                assert_eq!(adapter["shape"], "one");
+                assert_eq!(adapter["ttl_ms"], 5000);
                 assert_eq!(adapter["first_source"], "loader");
                 assert_eq!(adapter["second_source"], "cache");
                 assert_eq!(adapter["loader_calls_delta"], 1);
@@ -12705,6 +12749,9 @@ mod tests {
                 assert_eq!(adapter["tags"][2], "tenant:demo");
                 assert_eq!(adapter["tags"].as_array().unwrap().len(), 3);
             }
+            assert_eq!(adapters[0]["helper"], "fetch_with");
+            assert_eq!(adapters[1]["helper"], "diesel_one");
+            assert_eq!(adapters[2]["helper"], "sea_one");
         }
 
         assert!(second["loader_calls"].as_u64().unwrap() > first["loader_calls"].as_u64().unwrap());
