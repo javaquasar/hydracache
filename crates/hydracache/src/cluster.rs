@@ -1652,11 +1652,23 @@ struct ClusterAdmissionSnapshot {
     role: ClusterRole,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct ClusterAdmissionBridgeState {
     admitted: BTreeMap<ClusterNodeId, ClusterAdmissionSnapshot>,
     events: Vec<ClusterAdmissionBridgeEvent>,
     diagnostics: ClusterAdmissionBridgeDiagnostics,
+    lifecycle: ClusterLifecycleDiagnostics,
+}
+
+impl Default for ClusterAdmissionBridgeState {
+    fn default() -> Self {
+        Self {
+            admitted: BTreeMap::new(),
+            events: Vec::new(),
+            diagnostics: ClusterAdmissionBridgeDiagnostics::default(),
+            lifecycle: ClusterLifecycleDiagnostics::idle("cluster-admission-bridge"),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -1749,6 +1761,39 @@ impl ClusterAdmissionBridge {
             .clone()
     }
 
+    /// Return lifecycle diagnostics for the background polling loop.
+    ///
+    /// `run_once` does not change lifecycle status. The lifecycle snapshot
+    /// describes only the optional background task started by [`Self::start`].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use hydracache::{
+    ///     ClusterAdmissionBridge, ClusterLifecycleStatus, InMemoryCluster,
+    ///     InMemoryClusterDiscovery,
+    /// };
+    ///
+    /// let discovery = Arc::new(InMemoryClusterDiscovery::new());
+    /// let control_plane = Arc::new(InMemoryCluster::new("orders"));
+    /// let bridge = ClusterAdmissionBridge::new(discovery, control_plane);
+    ///
+    /// assert_eq!(
+    ///     bridge.lifecycle_diagnostics().status,
+    ///     ClusterLifecycleStatus::Idle,
+    /// );
+    /// ```
+    pub fn lifecycle_diagnostics(&self) -> ClusterLifecycleDiagnostics {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .lifecycle
+            .clone()
+    }
+
     /// Return bridge events recorded so far.
     pub fn events(&self) -> Vec<ClusterAdmissionBridgeEvent> {
         self.inner
@@ -1780,6 +1825,7 @@ impl ClusterAdmissionBridge {
     pub fn start(&self) -> ClusterAdmissionBridgeHandle {
         let bridge = self.clone();
         let (shutdown, mut shutdown_rx) = tokio::sync::watch::channel(false);
+        self.record_lifecycle_start();
         let task = tokio::spawn(async move {
             let mut interval = tokio::time::interval(bridge.config().normalized_poll_interval());
             loop {
@@ -1787,6 +1833,7 @@ impl ClusterAdmissionBridge {
                     changed = shutdown_rx.changed() => {
                         if changed.is_err() || *shutdown_rx.borrow() {
                             bridge.record_event(ClusterAdmissionBridgeEvent::BridgeStopped);
+                            bridge.record_lifecycle_graceful_stop();
                             break;
                         }
                     }
@@ -1797,7 +1844,11 @@ impl ClusterAdmissionBridge {
             }
         });
 
-        ClusterAdmissionBridgeHandle { shutdown, task }
+        ClusterAdmissionBridgeHandle {
+            bridge: self.clone(),
+            shutdown: Some(shutdown),
+            task: Some(task),
+        }
     }
 
     async fn admit_candidate(&self, candidate: ClusterCandidate) {
@@ -1910,21 +1961,74 @@ impl ClusterAdmissionBridge {
         state.diagnostics.record_event(&event);
         state.events.push(event);
     }
+
+    fn record_lifecycle_start(&self) {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .lifecycle
+            .record_start();
+    }
+
+    fn record_lifecycle_shutdown_requested(&self) {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .lifecycle
+            .record_shutdown_requested();
+    }
+
+    fn record_lifecycle_graceful_stop(&self) {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .lifecycle
+            .record_graceful_stop();
+    }
+
+    fn record_lifecycle_failure(&self, error: impl Into<String>) {
+        self.inner
+            .state
+            .lock()
+            .expect("cluster admission bridge state poisoned")
+            .lifecycle
+            .record_failure(error);
+    }
 }
 
 /// Handle for a background [`ClusterAdmissionBridge`] polling task.
 #[must_use]
 #[derive(Debug)]
 pub struct ClusterAdmissionBridgeHandle {
-    shutdown: tokio::sync::watch::Sender<bool>,
-    task: tokio::task::JoinHandle<()>,
+    bridge: ClusterAdmissionBridge,
+    shutdown: Option<tokio::sync::watch::Sender<bool>>,
+    task: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl ClusterAdmissionBridgeHandle {
     /// Ask the polling task to stop and wait until it exits.
-    pub async fn shutdown(self) {
-        let _ = self.shutdown.send(true);
-        let _ = self.task.await;
+    pub async fn shutdown(mut self) {
+        self.bridge.record_lifecycle_shutdown_requested();
+        if let Some(shutdown) = self.shutdown.take() {
+            let _ = shutdown.send(true);
+        }
+        if let Some(task) = self.task.take() {
+            if let Err(error) = task.await {
+                self.bridge.record_lifecycle_failure(error.to_string());
+            }
+        }
+    }
+}
+
+impl Drop for ClusterAdmissionBridgeHandle {
+    fn drop(&mut self) {
+        if let Some(shutdown) = self.shutdown.take() {
+            self.bridge.record_lifecycle_shutdown_requested();
+            let _ = shutdown.send(true);
+        }
     }
 }
 
@@ -3568,7 +3672,13 @@ mod tests {
         );
 
         discovery.announce(ClusterCandidate::member("member-a"));
+        assert_eq!(
+            bridge.lifecycle_diagnostics().status,
+            ClusterLifecycleStatus::Idle
+        );
         let handle = bridge.start();
+        assert!(bridge.lifecycle_diagnostics().is_running());
+        assert_eq!(bridge.lifecycle_diagnostics().start_count, 1);
 
         tokio::time::timeout(Duration::from_secs(1), async {
             loop {
@@ -3584,10 +3694,46 @@ mod tests {
         handle.shutdown().await;
 
         assert_eq!(control_plane.members().len(), 1);
+        let lifecycle = bridge.lifecycle_diagnostics();
+        assert!(lifecycle.is_stopped());
+        assert_eq!(lifecycle.stop_count, 1);
+        assert!(lifecycle.shutdown_requested);
         assert!(matches!(
             bridge.events().last(),
             Some(ClusterAdmissionBridgeEvent::BridgeStopped)
         ));
+    }
+
+    #[tokio::test]
+    async fn admission_bridge_handle_drop_requests_shutdown_and_records_stop() {
+        let discovery = Arc::new(InMemoryClusterDiscovery::new());
+        let control_plane = Arc::new(InMemoryCluster::new("orders"));
+        let bridge = ClusterAdmissionBridge::with_config(
+            discovery,
+            control_plane,
+            ClusterAdmissionBridgeConfig::default().poll_interval(Duration::from_millis(1)),
+        );
+
+        let handle = bridge.start();
+        assert!(bridge.lifecycle_diagnostics().is_running());
+
+        drop(handle);
+        let lifecycle = bridge.lifecycle_diagnostics();
+        assert!(lifecycle.is_stopping() || lifecycle.is_stopped());
+        assert!(lifecycle.shutdown_requested);
+
+        tokio::time::timeout(Duration::from_secs(1), async {
+            loop {
+                if bridge.lifecycle_diagnostics().is_stopped() {
+                    return;
+                }
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        })
+        .await
+        .expect("dropped bridge handle should stop the task");
+
+        assert_eq!(bridge.lifecycle_diagnostics().stop_count, 1);
     }
 
     #[test]
