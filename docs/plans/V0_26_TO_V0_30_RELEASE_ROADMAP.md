@@ -12,7 +12,7 @@ integrate, and more operationally explainable."
 | Release | Theme | Primary Outcome |
 |---|---|---|
 | `0.26.0` | Hot path and allocation hardening | Event/listener diagnostics stop charging allocations when nothing can observe them. |
-| `0.27.0` | Prepared query cache policies | Repeated DB repository methods can reuse precomputed cache metadata. |
+| `0.27.0` | Prepared query cache policies | Repeated DB repository methods reuse precomputed cache metadata and bind only dynamic ids on the hot path. |
 | `0.28.0` | Cluster runtime lifecycle | Background cluster components gain explicit start/stop/status/diagnostics boundaries. |
 | `0.29.0` | Hot remote cache and owner pressure control | Remote owner reads can use a bounded near-cache policy separate from owned values. |
 | `0.30.0` | Production cluster readiness pass | Security, compatibility, durable metadata seams, and post-publish consumer checks become first-class. |
@@ -50,6 +50,10 @@ Planned work:
 - document the adapter-neutral contract for future Diesel and SeaORM wrappers;
 - cover prepared query flows with unit tests and real Postgres/SQLite
   integration tests.
+
+Primary plan:
+
+- [Prepared query policies plan](./V0_27_PREPARED_QUERY_POLICIES_PLAN.md)
 
 ## 0.28.0: Cluster Runtime Lifecycle
 
