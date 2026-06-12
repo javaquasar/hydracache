@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use hydracache::HydraCache;
 use hydracache_sqlx::{HydraCacheEntity, PreparedQueryPolicy, SqlxCache, SqlxQueryExt};
 use serde::{Deserialize, Serialize};
@@ -231,6 +233,76 @@ async fn sqlite_fetch_all_reloads_after_collection_invalidation() -> TestResult 
 
     assert_eq!(reloaded.len(), 3);
     assert_eq!(reloaded[2], (99, "New".to_owned()));
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn sqlite_sqlx_one_reloads_after_ttl_expiration() -> TestResult {
+    let pool = sqlite_users().await?;
+    let queries = SqlxCache::new(HydraCache::local().build(), "sqlite");
+
+    let first = queries
+        .entity::<(i64, String)>("sqlite-user", 42)
+        .ttl(Duration::from_millis(20))
+        .sqlx_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = ?").bind(42_i64),
+        )
+        .await?;
+
+    sqlx::query("update users set name = ? where id = ?")
+        .bind("AfterTtl")
+        .bind(42_i64)
+        .execute(&pool)
+        .await?;
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    let reloaded = queries
+        .entity::<(i64, String)>("sqlite-user", 42)
+        .ttl(Duration::from_millis(20))
+        .sqlx_one(
+            pool,
+            sqlx::query_as("select id, name from users where id = ?").bind(42_i64),
+        )
+        .await?;
+
+    assert_eq!(first, (42, "Ada".to_owned()));
+    assert_eq!(reloaded, (42, "AfterTtl".to_owned()));
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn sqlite_sqlx_all_caches_empty_collections() -> TestResult {
+    let pool = sqlite_users().await?;
+    let queries = SqlxCache::new(HydraCache::local().build(), "sqlite");
+
+    let first = queries
+        .collection::<(i64, String)>("sqlite-users-empty")
+        .sqlx_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id < ? order by id").bind(0_i64),
+        )
+        .await?;
+
+    sqlx::query("insert into users (id, name) values (?, ?)")
+        .bind(-1_i64)
+        .bind("Negative")
+        .execute(&pool)
+        .await?;
+
+    let cached = queries
+        .collection::<(i64, String)>("sqlite-users-empty")
+        .sqlx_all(
+            pool,
+            sqlx::query_as("select id, name from users where id < ? order by id").bind(0_i64),
+        )
+        .await?;
+
+    assert!(first.is_empty());
+    assert!(cached.is_empty());
 
     Ok(())
 }

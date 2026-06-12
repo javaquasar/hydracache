@@ -163,6 +163,7 @@ where
 mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::{Arc, Mutex};
+    use std::time::Duration;
 
     use diesel::prelude::*;
     use diesel::result::Error as DieselError;
@@ -356,6 +357,74 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn diesel_one_reloads_after_ttl_expiration() {
+        let connection = sqlite_users();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let first = queries
+            .entity::<User>("diesel-user", 42)
+            .ttl(Duration::from_millis(20))
+            .diesel_one(diesel_user_loader(connection.clone(), calls.clone(), 42))
+            .await
+            .unwrap();
+
+        diesel::sql_query("update users set name = 'AfterTtl' where id = 42")
+            .execute(&mut *connection.lock().unwrap())
+            .unwrap();
+
+        tokio::time::sleep(Duration::from_millis(40)).await;
+
+        let reloaded = queries
+            .entity::<User>("diesel-user", 42)
+            .ttl(Duration::from_millis(20))
+            .diesel_one(diesel_user_loader(connection, calls.clone(), 42))
+            .await
+            .unwrap();
+
+        assert_eq!(first.name, "Ada");
+        assert_eq!(reloaded.name, "AfterTtl");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn diesel_one_concurrent_same_key_joins_single_flight() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let first = queries.entity::<User>("diesel-user", 900).diesel_one({
+            let calls = calls.clone();
+            move || {
+                std::thread::sleep(Duration::from_millis(25));
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, DieselError>(User {
+                    id: 900,
+                    name: "single-flight".to_owned(),
+                })
+            }
+        });
+        let second = queries.entity::<User>("diesel-user", 900).diesel_one({
+            let calls = calls.clone();
+            move || {
+                std::thread::sleep(Duration::from_millis(25));
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, DieselError>(User {
+                    id: 900,
+                    name: "duplicate-loader".to_owned(),
+                })
+            }
+        });
+
+        let (first, second) = tokio::join!(first, second);
+        let first = first.unwrap();
+        let second = second.unwrap();
+
+        assert_eq!(first, second);
+        assert_eq!(first.name, "single-flight");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
     async fn diesel_optional_found_value_is_cached_until_invalidated() {
         let connection = sqlite_users();
         let calls = Arc::new(AtomicUsize::new(0));
@@ -484,6 +553,46 @@ mod tests {
 
         assert_eq!(reloaded.len(), 3);
         assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn diesel_all_caches_empty_collections() {
+        let connection = sqlite_users();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let load_empty = || {
+            let connection = connection.clone();
+            let calls = calls.clone();
+            move || {
+                calls.fetch_add(1, Ordering::SeqCst);
+                let mut connection = connection.lock().expect("sqlite connection poisoned");
+                users::table
+                    .filter(users::id.lt(0_i64))
+                    .order(users::id.asc())
+                    .load::<User>(&mut *connection)
+            }
+        };
+
+        let first = queries
+            .collection::<User>("diesel-users-empty")
+            .diesel_all(load_empty())
+            .await
+            .unwrap();
+
+        diesel::sql_query("insert into users (id, name) values (-1, 'Negative')")
+            .execute(&mut *connection.lock().unwrap())
+            .unwrap();
+
+        let cached = queries
+            .collection::<User>("diesel-users-empty")
+            .diesel_all(load_empty())
+            .await
+            .unwrap();
+
+        assert!(first.is_empty());
+        assert!(cached.is_empty());
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
 
     #[test]

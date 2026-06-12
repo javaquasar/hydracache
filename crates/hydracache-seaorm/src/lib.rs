@@ -136,10 +136,14 @@ where
 mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
+    use std::time::Duration;
 
     use hydracache::HydraCache;
     use sea_orm::entity::prelude::*;
-    use sea_orm::{ConnectionTrait, Database, DatabaseBackend, EntityTrait, QueryOrder, Set};
+    use sea_orm::{
+        ColumnTrait, ConnectionTrait, Database, DatabaseBackend, EntityTrait, QueryFilter,
+        QueryOrder, Set,
+    };
     use serde::{Deserialize, Serialize};
 
     use super::{
@@ -382,6 +386,94 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn sea_optional_reloads_after_ttl_expiration() {
+        let db = sqlite_users().await;
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let first = queries
+            .entity::<user::Model>("seaorm-user", 42)
+            .ttl(Duration::from_millis(20))
+            .sea_optional({
+                let db = db.clone();
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    user::Entity::find_by_id(42).one(&db).await
+                }
+            })
+            .await
+            .unwrap()
+            .expect("seeded user should exist");
+
+        user::Entity::update(user::ActiveModel {
+            id: Set(42),
+            name: Set("AfterTtl".to_owned()),
+        })
+        .exec(&db)
+        .await
+        .unwrap();
+
+        tokio::time::sleep(Duration::from_millis(40)).await;
+
+        let reloaded = queries
+            .entity::<user::Model>("seaorm-user", 42)
+            .ttl(Duration::from_millis(20))
+            .sea_optional({
+                let db = db.clone();
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    user::Entity::find_by_id(42).one(&db).await
+                }
+            })
+            .await
+            .unwrap()
+            .expect("expired user should reload");
+
+        assert_eq!(first.name, "Ada");
+        assert_eq!(reloaded.name, "AfterTtl");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn sea_one_concurrent_same_key_joins_single_flight() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let first = queries.entity::<user::Model>("seaorm-user", 900).sea_one({
+            let calls = calls.clone();
+            move || async move {
+                tokio::time::sleep(Duration::from_millis(25)).await;
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, DbErr>(user::Model {
+                    id: 900,
+                    name: "single-flight".to_owned(),
+                })
+            }
+        });
+        let second = queries.entity::<user::Model>("seaorm-user", 900).sea_one({
+            let calls = calls.clone();
+            move || async move {
+                tokio::time::sleep(Duration::from_millis(25)).await;
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, DbErr>(user::Model {
+                    id: 900,
+                    name: "duplicate-loader".to_owned(),
+                })
+            }
+        });
+
+        let (first, second) = tokio::join!(first, second);
+        let first = first.unwrap();
+        let second = second.unwrap();
+
+        assert_eq!(first, second);
+        assert_eq!(first.name, "single-flight");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
     async fn sea_optional_found_value_is_cached_until_invalidated() {
         let db = sqlite_users().await;
         let calls = Arc::new(AtomicUsize::new(0));
@@ -545,6 +637,50 @@ mod tests {
 
         assert_eq!(reloaded.len(), 3);
         assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn sea_all_caches_empty_collections() {
+        let db = sqlite_users().await;
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let load_empty = || {
+            let db = db.clone();
+            let calls = calls.clone();
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                user::Entity::find()
+                    .filter(user::Column::Id.gt(99))
+                    .order_by_asc(user::Column::Id)
+                    .all(&db)
+                    .await
+            }
+        };
+
+        let first = queries
+            .collection::<user::Model>("seaorm-users-empty")
+            .sea_all(load_empty())
+            .await
+            .unwrap();
+
+        user::Entity::insert(user::ActiveModel {
+            id: Set(100),
+            name: Set("Later".to_owned()),
+        })
+        .exec(&db)
+        .await
+        .unwrap();
+
+        let cached = queries
+            .collection::<user::Model>("seaorm-users-empty")
+            .sea_all(load_empty())
+            .await
+            .unwrap();
+
+        assert!(first.is_empty());
+        assert!(cached.is_empty());
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
 
     #[test]
