@@ -1,0 +1,26 @@
+[package]
+name = "hydracache-seaorm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+description = "SeaORM adapter helpers for HydraCache query result caching."
+
+[dependencies]
+async-trait.workspace = true
+hydracache.workspace = true
+hydracache-core.workspace = true
+hydracache-db.workspace = true
+sea-orm.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+sea-orm = { workspace = true, features = ["macros", "runtime-tokio-rustls", "sqlx-sqlite"] }
+tokio.workspace = true
+
+[lints]
+workspace = true
