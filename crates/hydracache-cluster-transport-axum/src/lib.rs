@@ -1674,6 +1674,196 @@ pub enum PeerFetchReadThroughPolicy {
     OwnerOnly,
 }
 
+/// Bounded policy for remote values hydrated into a read-through near-cache.
+///
+/// This policy is intentionally scoped to [`PeerFetchReadThrough`]. The base
+/// [`HydraCache`] runtime does not know whether a caller inserted an owned
+/// value or remote owner bytes; the read-through helper does, so it owns this
+/// pressure-control surface.
+///
+/// # Example
+///
+/// ```rust
+/// use std::time::Duration;
+///
+/// use hydracache_cluster_transport_axum::HotRemoteCachePolicy;
+///
+/// let policy = HotRemoteCachePolicy::new()
+///     .ttl(Duration::from_secs(5))
+///     .max_entries(1_000);
+///
+/// assert!(policy.is_enabled());
+/// assert_eq!(policy.ttl_value(), Some(Duration::from_secs(5)));
+/// assert_eq!(policy.max_entries_value(), Some(1_000));
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HotRemoteCachePolicy {
+    enabled: bool,
+    ttl: Option<Duration>,
+    max_entries: Option<usize>,
+}
+
+impl Default for HotRemoteCachePolicy {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl HotRemoteCachePolicy {
+    /// Create a policy that preserves the previous read-through behavior:
+    /// hydrate remote hits, keep caller-provided TTLs, and do not enforce an
+    /// additional remote-entry capacity limit.
+    pub const fn new() -> Self {
+        Self {
+            enabled: true,
+            ttl: None,
+            max_entries: None,
+        }
+    }
+
+    /// Create a policy that never hydrates remote owner values locally.
+    pub const fn disabled() -> Self {
+        Self {
+            enabled: false,
+            ttl: None,
+            max_entries: None,
+        }
+    }
+
+    /// Enable or disable remote hydration.
+    pub const fn enabled(mut self, enabled: bool) -> Self {
+        self.enabled = enabled;
+        self
+    }
+
+    /// Set a TTL override used only for remote hydrated entries.
+    pub const fn ttl(mut self, ttl: Duration) -> Self {
+        self.ttl = Some(ttl);
+        self
+    }
+
+    /// Set a maximum number of tracked remote entries.
+    ///
+    /// `0` is treated as disabled hydration because a near-cache with no
+    /// remote slots would immediately evict every hydrated value.
+    pub const fn max_entries(mut self, max_entries: usize) -> Self {
+        self.max_entries = Some(max_entries);
+        self
+    }
+
+    /// Return whether remote hydration is enabled and has at least one slot.
+    pub const fn is_enabled(&self) -> bool {
+        self.enabled && !matches!(self.max_entries, Some(0))
+    }
+
+    /// Return the optional remote-entry TTL override.
+    pub const fn ttl_value(&self) -> Option<Duration> {
+        self.ttl
+    }
+
+    /// Return the optional remote-entry capacity limit.
+    pub const fn max_entries_value(&self) -> Option<usize> {
+        self.max_entries
+    }
+
+    fn cache_options(&self, options: CacheOptions) -> CacheOptions {
+        match self.ttl {
+            Some(ttl) => options.ttl(ttl),
+            None => options,
+        }
+    }
+}
+
+/// Point-in-time diagnostics for the hot-remote layer inside
+/// [`PeerFetchReadThrough`].
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct HotRemoteCacheDiagnostics {
+    /// Whether remote hydration is currently allowed.
+    pub enabled: bool,
+    /// Optional TTL override in milliseconds for remote hydrated entries.
+    pub ttl_millis: Option<u64>,
+    /// Optional maximum number of tracked remote entries.
+    pub max_entries: Option<usize>,
+    /// Number of remote keys currently tracked by this helper.
+    pub tracked_entries: usize,
+    /// Total remote values stored into the local near-cache.
+    pub hydrations: u64,
+    /// Hydrations skipped because remote hydration was disabled.
+    pub skipped_hydrations: u64,
+    /// Remote entries removed because the hot-remote capacity was exceeded.
+    pub pressure_evictions: u64,
+}
+
+impl HotRemoteCacheDiagnostics {
+    /// Return whether the policy is currently enforcing a finite capacity.
+    pub fn is_bounded(&self) -> bool {
+        self.max_entries.is_some()
+    }
+
+    /// Return whether the helper has had to evict remote entries under
+    /// pressure.
+    pub fn has_pressure_evictions(&self) -> bool {
+        self.pressure_evictions > 0
+    }
+}
+
+#[derive(Debug, Default)]
+struct HotRemoteCacheState {
+    tracked: BTreeMap<String, u64>,
+    next_sequence: u64,
+    hydrations: u64,
+    skipped_hydrations: u64,
+    pressure_evictions: u64,
+}
+
+impl HotRemoteCacheState {
+    fn snapshot(&self, policy: HotRemoteCachePolicy) -> HotRemoteCacheDiagnostics {
+        HotRemoteCacheDiagnostics {
+            enabled: policy.is_enabled(),
+            ttl_millis: policy
+                .ttl_value()
+                .map(|ttl| ttl.as_millis().min(u128::from(u64::MAX)) as u64),
+            max_entries: policy.max_entries_value(),
+            tracked_entries: self.tracked.len(),
+            hydrations: self.hydrations,
+            skipped_hydrations: self.skipped_hydrations,
+            pressure_evictions: self.pressure_evictions,
+        }
+    }
+
+    fn record_skipped_hydration(&mut self) {
+        self.skipped_hydrations = self.skipped_hydrations.saturating_add(1);
+    }
+
+    fn record_hydration(&mut self, key: String, policy: HotRemoteCachePolicy) -> Vec<String> {
+        self.hydrations = self.hydrations.saturating_add(1);
+        self.next_sequence = self.next_sequence.saturating_add(1);
+        self.tracked.insert(key, self.next_sequence);
+
+        let Some(max_entries) = policy.max_entries_value() else {
+            return Vec::new();
+        };
+
+        let mut evicted = Vec::new();
+        while self.tracked.len() > max_entries {
+            let Some((oldest_key, _)) = self
+                .tracked
+                .iter()
+                .min_by_key(|(_, sequence)| **sequence)
+                .map(|(key, sequence)| (key.clone(), *sequence))
+            else {
+                break;
+            };
+
+            self.tracked.remove(&oldest_key);
+            self.pressure_evictions = self.pressure_evictions.saturating_add(1);
+            evicted.push(oldest_key);
+        }
+
+        evicted
+    }
+}
+
 /// Outcome status produced by [`PeerFetchReadThrough`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PeerFetchReadThroughStatus {
@@ -1934,6 +2124,8 @@ where
     router: PeerFetchRouter,
     policy: PeerFetchReadThroughPolicy,
     hydrate_remote_hits: bool,
+    hot_remote_policy: HotRemoteCachePolicy,
+    hot_remote: Arc<Mutex<HotRemoteCacheState>>,
     diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
     in_flight: Arc<Mutex<BTreeMap<String, SharedReadThroughFuture>>>,
     owner_load_diagnostics: Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
@@ -1985,6 +2177,8 @@ where
             router,
             policy: PeerFetchReadThroughPolicy::default(),
             hydrate_remote_hits: true,
+            hot_remote_policy: HotRemoteCachePolicy::default(),
+            hot_remote: Arc::new(Mutex::new(HotRemoteCacheState::default())),
             diagnostics: Arc::new(Mutex::new(PeerFetchReadThroughDiagnostics::default())),
             in_flight: Arc::new(Mutex::new(BTreeMap::new())),
             owner_load_diagnostics: Arc::new(
@@ -2000,6 +2194,13 @@ where
         self
     }
 
+    /// Set the hot-remote near-cache policy used when remote owner values are
+    /// hydrated locally.
+    pub fn hot_remote_policy(mut self, policy: HotRemoteCachePolicy) -> Self {
+        self.hot_remote_policy = policy;
+        self
+    }
+
     /// Enable or disable local hydration after remote hits.
     pub fn hydrate_remote_hits(mut self, enabled: bool) -> Self {
         self.hydrate_remote_hits = enabled;
@@ -2008,7 +2209,8 @@ where
 
     /// Disable local hydration after remote hits.
     pub fn without_hydration(self) -> Self {
-        self.hydrate_remote_hits(false)
+        self.hot_remote_policy(HotRemoteCachePolicy::disabled())
+            .hydrate_remote_hits(false)
     }
 
     /// Return the local/near cache handle used by this helper.
@@ -2035,6 +2237,14 @@ where
             .owner_load_diagnostics
             .lock()
             .expect("owner-load read-through diagnostics poisoned")
+    }
+
+    /// Return current hot-remote near-cache diagnostics.
+    pub fn hot_remote_diagnostics(&self) -> HotRemoteCacheDiagnostics {
+        self.hot_remote
+            .lock()
+            .expect("hot-remote diagnostics poisoned")
+            .snapshot(self.hot_remote_policy)
     }
 
     /// Fetch encoded bytes through the configured local/owner policy.
@@ -2203,6 +2413,8 @@ where
                 let diagnostics = self.diagnostics.clone();
                 let policy = self.policy;
                 let hydrate_remote_hits = self.hydrate_remote_hits;
+                let hot_remote_policy = self.hot_remote_policy;
+                let hot_remote = self.hot_remote.clone();
                 let shared = async move {
                     Self::fetch_owner_once(
                         cache,
@@ -2210,6 +2422,8 @@ where
                         diagnostics,
                         policy,
                         hydrate_remote_hits,
+                        hot_remote_policy,
+                        hot_remote,
                         decision,
                         options,
                     )
@@ -2289,12 +2503,16 @@ where
                 let diagnostics = self.owner_load_diagnostics.clone();
                 let policy = self.policy;
                 let hydrate_remote_hits = self.hydrate_remote_hits;
+                let hot_remote_policy = self.hot_remote_policy;
+                let hot_remote = self.hot_remote.clone();
                 let shared = async move {
                     Self::owner_load_once(
                         cache,
                         diagnostics,
                         policy,
                         hydrate_remote_hits,
+                        hot_remote_policy,
+                        hot_remote,
                         decision,
                         descriptor,
                     )
@@ -2321,6 +2539,8 @@ where
         diagnostics: Arc<Mutex<PeerFetchReadThroughDiagnostics>>,
         policy: PeerFetchReadThroughPolicy,
         hydrate_remote_hits: bool,
+        hot_remote_policy: HotRemoteCachePolicy,
+        hot_remote: Arc<Mutex<HotRemoteCacheState>>,
         decision: ClusterOwnershipDecision,
         options: CacheOptions,
     ) -> CacheResult<PeerFetchReadThroughOutcome> {
@@ -2335,12 +2555,23 @@ where
                 });
                 if hydrate_remote_hits {
                     if let Some(value) = routed.value.clone() {
-                        cache.put_encoded(&routed.key, value, options).await?;
-                        hydrated = true;
-                        Self::record_read_through(&diagnostics, |diagnostics| {
-                            diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
-                        });
+                        hydrated = Self::hydrate_remote_entry(
+                            &cache,
+                            &routed.key,
+                            value,
+                            options,
+                            hot_remote_policy,
+                            &hot_remote,
+                        )
+                        .await?;
+                        if hydrated {
+                            Self::record_read_through(&diagnostics, |diagnostics| {
+                                diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
+                            });
+                        }
                     }
+                } else {
+                    Self::record_hot_remote_skip(&hot_remote);
                 }
             }
             PeerFetchRouterStatus::Miss => {
@@ -2375,6 +2606,8 @@ where
         diagnostics: Arc<Mutex<OwnerLoadReadThroughDiagnostics>>,
         policy: PeerFetchReadThroughPolicy,
         hydrate_remote_hits: bool,
+        hot_remote_policy: HotRemoteCachePolicy,
+        hot_remote: Arc<Mutex<HotRemoteCacheState>>,
         decision: ClusterOwnershipDecision,
         descriptor: OwnerLoadDescriptor,
     ) -> CacheResult<OwnerLoadReadThroughOutcome> {
@@ -2481,12 +2714,23 @@ where
                     )
                 {
                     if let Some(bytes) = value.clone() {
-                        cache.put_encoded(&key, bytes, options).await?;
-                        hydrated = true;
-                        Self::record_owner_load(&diagnostics, |diagnostics| {
-                            diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
-                        });
+                        hydrated = Self::hydrate_remote_entry(
+                            &cache,
+                            &key,
+                            bytes,
+                            options,
+                            hot_remote_policy,
+                            &hot_remote,
+                        )
+                        .await?;
+                        if hydrated {
+                            Self::record_owner_load(&diagnostics, |diagnostics| {
+                                diagnostics.hydrations = diagnostics.hydrations.saturating_add(1);
+                            });
+                        }
                     }
+                } else if value.is_some() {
+                    Self::record_hot_remote_skip(&hot_remote);
                 }
 
                 Ok(OwnerLoadReadThroughOutcome {
@@ -2518,6 +2762,44 @@ where
                 })
             }
         }
+    }
+
+    async fn hydrate_remote_entry(
+        cache: &HydraCache<C>,
+        key: &str,
+        value: Bytes,
+        options: CacheOptions,
+        policy: HotRemoteCachePolicy,
+        hot_remote: &Arc<Mutex<HotRemoteCacheState>>,
+    ) -> CacheResult<bool> {
+        if !policy.is_enabled() {
+            Self::record_hot_remote_skip(hot_remote);
+            return Ok(false);
+        }
+
+        cache
+            .put_encoded(key, value, policy.cache_options(options))
+            .await?;
+
+        let evicted = {
+            hot_remote
+                .lock()
+                .expect("hot-remote state poisoned")
+                .record_hydration(key.to_owned(), policy)
+        };
+
+        for evicted_key in evicted {
+            cache.remove(&evicted_key).await?;
+        }
+
+        Ok(true)
+    }
+
+    fn record_hot_remote_skip(hot_remote: &Arc<Mutex<HotRemoteCacheState>>) {
+        hot_remote
+            .lock()
+            .expect("hot-remote state poisoned")
+            .record_skipped_hydration();
     }
 
     fn record_read_through(
@@ -3732,6 +4014,35 @@ mod tests {
         assert!(!encoded.is_empty());
     }
 
+    #[test]
+    fn hot_remote_policy_and_diagnostics_describe_pressure_shape() {
+        let disabled = HotRemoteCachePolicy::disabled();
+        assert!(!disabled.is_enabled());
+        assert_eq!(disabled.ttl_value(), None);
+        assert_eq!(disabled.max_entries_value(), None);
+
+        let policy = HotRemoteCachePolicy::new()
+            .ttl(Duration::from_millis(25))
+            .max_entries(2);
+
+        assert!(policy.is_enabled());
+        assert_eq!(policy.ttl_value(), Some(Duration::from_millis(25)));
+        assert_eq!(policy.max_entries_value(), Some(2));
+
+        let diagnostics = HotRemoteCacheDiagnostics {
+            enabled: true,
+            ttl_millis: Some(25),
+            max_entries: Some(2),
+            tracked_entries: 1,
+            hydrations: 3,
+            skipped_hydrations: 0,
+            pressure_evictions: 1,
+        };
+
+        assert!(diagnostics.is_bounded());
+        assert!(diagnostics.has_pressure_evictions());
+    }
+
     #[tokio::test]
     async fn read_through_local_hit_does_not_call_router() {
         let cache = HydraCache::local().build();
@@ -3783,6 +4094,7 @@ mod tests {
         assert!(outcome.hydrated);
         assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
         assert_eq!(cache.invalidate_tag("answers").await.unwrap(), 1);
+        assert!(!cache.contains_key("answer").await);
 
         let diagnostics = read_through.diagnostics();
         assert_eq!(diagnostics.attempts, 1);
@@ -3790,6 +4102,94 @@ mod tests {
         assert_eq!(diagnostics.remote_hits, 1);
         assert_eq!(diagnostics.hydrations, 1);
         assert!(!diagnostics.has_router_errors());
+
+        let hot_remote = read_through.hot_remote_diagnostics();
+        assert!(hot_remote.enabled);
+        assert_eq!(hot_remote.hydrations, 1);
+        assert_eq!(hot_remote.tracked_entries, 1);
+        assert_eq!(hot_remote.skipped_hydrations, 0);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn hot_remote_ttl_override_expires_hydrated_remote_entry() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer", encoded_u64(42).await);
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone()).hot_remote_policy(
+            HotRemoteCachePolicy::new()
+                .ttl(Duration::from_millis(20))
+                .max_entries(10),
+        );
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                CacheOptions::new()
+                    .ttl(Duration::from_secs(60))
+                    .tag("answers"),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteHit);
+        assert!(outcome.hydrated);
+        assert_eq!(cache.get::<u64>("answer").await.unwrap(), Some(42));
+
+        tokio::time::sleep(Duration::from_millis(40)).await;
+        assert!(!cache.contains_key("answer").await);
+
+        let hot_remote = read_through.hot_remote_diagnostics();
+        assert_eq!(hot_remote.ttl_millis, Some(20));
+        assert_eq!(hot_remote.max_entries, Some(10));
+        assert_eq!(hot_remote.hydrations, 1);
+        assert_eq!(hot_remote.pressure_evictions, 0);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn hot_remote_capacity_evicts_oldest_hydrated_remote_entry() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer:a", encoded_u64(1).await);
+        store.put("answer:b", encoded_u64(2).await);
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone())
+            .hot_remote_policy(HotRemoteCachePolicy::new().max_entries(1));
+
+        let first = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer:a", 7),
+                CacheOptions::new().tag("answers"),
+            )
+            .await
+            .unwrap();
+        assert_eq!(first.status, PeerFetchReadThroughStatus::RemoteHit);
+        assert!(cache.contains_key("answer:a").await);
+
+        let second = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer:b", 7),
+                CacheOptions::new().tag("answers"),
+            )
+            .await
+            .unwrap();
+        assert_eq!(second.status, PeerFetchReadThroughStatus::RemoteHit);
+
+        assert!(!cache.contains_key("answer:a").await);
+        assert_eq!(cache.get::<u64>("answer:b").await.unwrap(), Some(2));
+
+        let hot_remote = read_through.hot_remote_diagnostics();
+        assert_eq!(hot_remote.max_entries, Some(1));
+        assert_eq!(hot_remote.tracked_entries, 1);
+        assert_eq!(hot_remote.hydrations, 2);
+        assert_eq!(hot_remote.pressure_evictions, 1);
+        assert!(hot_remote.has_pressure_evictions());
 
         shutdown.send(()).unwrap();
         server.await.unwrap();
@@ -3824,6 +4224,46 @@ mod tests {
         let diagnostics = read_through.diagnostics();
         assert_eq!(diagnostics.remote_hits, 1);
         assert_eq!(diagnostics.hydrations, 0);
+
+        let hot_remote = read_through.hot_remote_diagnostics();
+        assert!(!hot_remote.enabled);
+        assert_eq!(hot_remote.hydrations, 0);
+        assert_eq!(hot_remote.skipped_hydrations, 1);
+        assert_eq!(hot_remote.tracked_entries, 0);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn hot_remote_disabled_policy_skips_hydration_without_legacy_toggle() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer", encoded_u64(42).await);
+        let (base_url, shutdown, server) = spawn_server(service_with_store(store).routes()).await;
+        let cache = HydraCache::local().build();
+        let read_through = PeerFetchReadThrough::new(cache.clone())
+            .hot_remote_policy(HotRemoteCachePolicy::disabled());
+
+        let outcome = read_through
+            .fetch_encoded(
+                decision_with_endpoint(&base_url, "answer", 7),
+                CacheOptions::new().tag("answers"),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(outcome.status, PeerFetchReadThroughStatus::RemoteHit);
+        assert!(!outcome.hydrated);
+        assert!(!cache.contains_key("answer").await);
+
+        let diagnostics = read_through.diagnostics();
+        assert_eq!(diagnostics.remote_hits, 1);
+        assert_eq!(diagnostics.hydrations, 0);
+
+        let hot_remote = read_through.hot_remote_diagnostics();
+        assert!(!hot_remote.enabled);
+        assert_eq!(hot_remote.skipped_hydrations, 1);
+        assert_eq!(hot_remote.tracked_entries, 0);
 
         shutdown.send(()).unwrap();
         server.await.unwrap();
@@ -4260,6 +4700,11 @@ mod tests {
         assert_eq!(diagnostics.remote_loaded, 1);
         assert_eq!(diagnostics.hydrations, 1);
         assert_eq!(diagnostics.total_hits(), 2);
+
+        let hot_remote = read_through.hot_remote_diagnostics();
+        assert!(hot_remote.enabled);
+        assert_eq!(hot_remote.hydrations, 1);
+        assert_eq!(hot_remote.tracked_entries, 1);
 
         shutdown.send(()).unwrap();
         server.await.unwrap();

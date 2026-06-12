@@ -97,9 +97,9 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 ## Checklist
 
 - [x] Release plan documented.
-- [ ] Hot remote cache policy added and tested.
-- [ ] Remote entry diagnostics added and tested.
-- [ ] Invalidation and owner-pressure tests added.
+- [x] Hot remote cache policy added and tested.
+- [x] Remote entry diagnostics added and tested.
+- [x] Invalidation and owner-pressure tests added.
 - [ ] Sandbox/OpenAPI reports updated and tested.
 - [ ] README updated.
 - [ ] Rustdoc examples compile.
