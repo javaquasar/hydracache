@@ -83,12 +83,14 @@ extern crate self as hydracache_db;
 mod entity;
 mod error;
 mod policy;
+mod prepared;
 mod query;
 
 pub use entity::CacheEntity;
 pub use error::{DbCacheError, Result};
 pub use hydracache_macros::{query_cache_policy, HydraCacheEntity};
 pub use policy::QueryCachePolicy;
+pub use prepared::PreparedQueryPolicy;
 pub use query::{DbCache, DbQuery};
 
 #[cfg(test)]
