@@ -93,8 +93,8 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 ## Checklist
 
 - [x] Release plan documented.
-- [ ] HTTP auth boundary implemented and tested.
-- [ ] Wire-version compatibility implemented and tested.
+- [x] HTTP auth boundary implemented and tested.
+- [x] Wire-version compatibility implemented and tested.
 - [ ] Durable raft metadata storage seam implemented and tested.
 - [ ] Consumer verification docs added.
 - [ ] Production readiness docs added.

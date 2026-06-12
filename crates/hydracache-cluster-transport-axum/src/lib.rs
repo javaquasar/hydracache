@@ -59,7 +59,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use axum::extract::State;
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use axum::{Json, Router};
@@ -81,6 +81,235 @@ pub const DEFAULT_PEER_FETCH_PATH: &str = "/cluster/peer-fetch";
 
 /// Default HTTP path reserved for owner-side load requests.
 pub const DEFAULT_OWNER_LOAD_PATH: &str = "/cluster/owner-load";
+
+/// Current HydraCache HTTP transport wire version.
+pub const HYDRACACHE_HTTP_WIRE_VERSION: u16 = 1;
+
+/// HTTP header that carries the HydraCache transport wire version.
+pub const HYDRACACHE_WIRE_VERSION_HEADER: &str = "x-hydracache-wire-version";
+
+/// Default token header for simple non-browser cluster transport auth.
+pub const HYDRACACHE_TOKEN_HEADER: &str = "x-hydracache-token";
+
+/// Optional authentication boundary for HydraCache HTTP transport routes.
+///
+/// This is intentionally small: HydraCache does not manage TLS, certificates,
+/// identities, or token rotation. Put this behind HTTPS/mTLS or a trusted
+/// private network when evaluating cluster transport in staging.
+///
+/// # Example
+///
+/// ```
+/// use hydracache_cluster_transport_axum::HttpTransportAuth;
+///
+/// let bearer = HttpTransportAuth::bearer("staging-token");
+/// assert_eq!(bearer.header_name(), "authorization");
+/// assert_eq!(bearer.header_value(), "Bearer staging-token");
+///
+/// let token = HttpTransportAuth::token("secret");
+/// assert_eq!(token.header_name(), "x-hydracache-token");
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HttpTransportAuth {
+    header_name: String,
+    header_value: String,
+}
+
+impl HttpTransportAuth {
+    /// Require `Authorization: Bearer <token>`.
+    pub fn bearer(token: impl AsRef<str>) -> Self {
+        Self::header("authorization", format!("Bearer {}", token.as_ref()))
+            .expect("static authorization header name is valid")
+    }
+
+    /// Require `x-hydracache-token: <token>`.
+    pub fn token(token: impl AsRef<str>) -> Self {
+        Self::header(HYDRACACHE_TOKEN_HEADER, token.as_ref())
+            .expect("static token header name is valid")
+    }
+
+    /// Require an explicit header/value pair.
+    pub fn header(name: impl AsRef<str>, value: impl AsRef<str>) -> CacheResult<Self> {
+        let name = name.as_ref().trim().to_ascii_lowercase();
+        let value = value.as_ref().to_owned();
+        HeaderName::from_bytes(name.as_bytes()).map_err(|error| {
+            CacheError::Backend(format!("invalid HydraCache auth header name: {error}"))
+        })?;
+        HeaderValue::from_str(&value).map_err(|error| {
+            CacheError::Backend(format!("invalid HydraCache auth header value: {error}"))
+        })?;
+
+        Ok(Self {
+            header_name: name,
+            header_value: value,
+        })
+    }
+
+    /// Header name expected by routes and attached by clients.
+    pub fn header_name(&self) -> &str {
+        &self.header_name
+    }
+
+    /// Header value expected by routes and attached by clients.
+    pub fn header_value(&self) -> &str {
+        &self.header_value
+    }
+
+    fn matches(&self, headers: &HeaderMap) -> bool {
+        headers
+            .get(self.header_name.as_str())
+            .and_then(|value| value.to_str().ok())
+            == Some(self.header_value.as_str())
+    }
+
+    fn apply(&self, request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        request.header(self.header_name.as_str(), self.header_value.as_str())
+    }
+}
+
+/// Wire-version compatibility policy for HydraCache HTTP transport.
+///
+/// By default routes accept missing wire headers for compatibility with older
+/// local tests and demos, but they reject incompatible versions when a header is
+/// present. Use [`HttpWireCompatibility::strict_current`] when staging routes
+/// should require an explicit version header from every caller.
+///
+/// # Example
+///
+/// ```
+/// use hydracache_cluster_transport_axum::{
+///     HttpWireCompatibility, HYDRACACHE_HTTP_WIRE_VERSION,
+/// };
+///
+/// let strict = HttpWireCompatibility::strict_current();
+/// assert_eq!(strict.wire_version(), HYDRACACHE_HTTP_WIRE_VERSION);
+/// assert!(strict.requires_header());
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HttpWireCompatibility {
+    wire_version: u16,
+    require_header: bool,
+}
+
+impl Default for HttpWireCompatibility {
+    fn default() -> Self {
+        Self::current()
+    }
+}
+
+impl HttpWireCompatibility {
+    /// Current wire version, accepting missing headers for compatibility.
+    pub const fn current() -> Self {
+        Self {
+            wire_version: HYDRACACHE_HTTP_WIRE_VERSION,
+            require_header: false,
+        }
+    }
+
+    /// Current wire version, requiring the version header.
+    pub const fn strict_current() -> Self {
+        Self {
+            wire_version: HYDRACACHE_HTTP_WIRE_VERSION,
+            require_header: true,
+        }
+    }
+
+    /// Custom wire version policy, primarily useful for compatibility tests.
+    pub const fn version(wire_version: u16) -> Self {
+        Self {
+            wire_version,
+            require_header: false,
+        }
+    }
+
+    /// Set whether a missing wire-version header is rejected.
+    pub const fn require_header(mut self, require_header: bool) -> Self {
+        self.require_header = require_header;
+        self
+    }
+
+    /// Wire version expected by routes and sent by clients.
+    pub const fn wire_version(&self) -> u16 {
+        self.wire_version
+    }
+
+    /// Whether routes reject requests that omit the wire-version header.
+    pub const fn requires_header(&self) -> bool {
+        self.require_header
+    }
+
+    fn apply(&self, request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
+        request.header(
+            HYDRACACHE_WIRE_VERSION_HEADER,
+            self.wire_version.to_string(),
+        )
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct HttpTransportRejection {
+    status: StatusCode,
+    code: &'static str,
+    message: String,
+}
+
+fn validate_http_transport(
+    headers: &HeaderMap,
+    auth: Option<&HttpTransportAuth>,
+    wire: HttpWireCompatibility,
+) -> Result<(), HttpTransportRejection> {
+    if let Some(auth) = auth {
+        if !auth.matches(headers) {
+            return Err(HttpTransportRejection {
+                status: StatusCode::UNAUTHORIZED,
+                code: "unauthorized",
+                message: format!(
+                    "missing or invalid HydraCache transport auth header '{}'",
+                    auth.header_name()
+                ),
+            });
+        }
+    }
+
+    match headers.get(HYDRACACHE_WIRE_VERSION_HEADER) {
+        Some(value) => {
+            let value = value.to_str().map_err(|error| HttpTransportRejection {
+                status: StatusCode::BAD_REQUEST,
+                code: "invalid-wire-version",
+                message: format!("invalid HydraCache wire-version header: {error}"),
+            })?;
+            let requested = value
+                .parse::<u16>()
+                .map_err(|error| HttpTransportRejection {
+                    status: StatusCode::BAD_REQUEST,
+                    code: "invalid-wire-version",
+                    message: format!("invalid HydraCache wire-version value '{value}': {error}"),
+                })?;
+            if requested != wire.wire_version() {
+                return Err(HttpTransportRejection {
+                    status: StatusCode::UPGRADE_REQUIRED,
+                    code: "wire-version-mismatch",
+                    message: format!(
+                        "requested HydraCache wire version {requested} does not match supported version {}",
+                        wire.wire_version()
+                    ),
+                });
+            }
+        }
+        None if wire.requires_header() => {
+            return Err(HttpTransportRejection {
+                status: StatusCode::UPGRADE_REQUIRED,
+                code: "missing-wire-version",
+                message: format!(
+                    "missing required HydraCache wire-version header '{HYDRACACHE_WIRE_VERSION_HEADER}'"
+                ),
+            });
+        }
+        None => {}
+    }
+
+    Ok(())
+}
 
 /// One typed argument passed to a registered owner-side loader.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1196,6 +1425,8 @@ where
     C: CacheCodec,
 {
     service: OwnerLoadService<C>,
+    auth: Option<HttpTransportAuth>,
+    wire: HttpWireCompatibility,
 }
 
 /// Axum route factory for serving owner-side load requests from one member.
@@ -1205,6 +1436,8 @@ where
     C: CacheCodec,
 {
     service: OwnerLoadService<C>,
+    auth: Option<HttpTransportAuth>,
+    wire: HttpWireCompatibility,
 }
 
 impl<C> fmt::Debug for AxumOwnerLoadService<C>
@@ -1216,6 +1449,8 @@ where
             .debug_struct("AxumOwnerLoadService")
             .field("owner", &self.service.owner())
             .field("generation", &self.service.generation())
+            .field("auth_enabled", &self.auth.is_some())
+            .field("wire", &self.wire)
             .finish_non_exhaustive()
     }
 }
@@ -1226,12 +1461,44 @@ where
 {
     /// Create an Axum owner-load route factory.
     pub fn new(service: OwnerLoadService<C>) -> Self {
-        Self { service }
+        Self {
+            service,
+            auth: None,
+            wire: HttpWireCompatibility::default(),
+        }
+    }
+
+    /// Require an auth header before owner-load requests reach the service.
+    pub fn with_auth(self, auth: HttpTransportAuth) -> Self {
+        Self {
+            service: self.service,
+            auth: Some(auth),
+            wire: self.wire,
+        }
+    }
+
+    /// Set the HTTP wire compatibility policy for this route factory.
+    pub fn with_wire_compatibility(self, wire: HttpWireCompatibility) -> Self {
+        Self {
+            service: self.service,
+            auth: self.auth,
+            wire,
+        }
     }
 
     /// Return the underlying owner-load service.
     pub fn service(&self) -> &OwnerLoadService<C> {
         &self.service
+    }
+
+    /// Return the configured auth boundary, if any.
+    pub fn auth(&self) -> Option<&HttpTransportAuth> {
+        self.auth.as_ref()
+    }
+
+    /// Return the configured wire compatibility policy.
+    pub fn wire(&self) -> HttpWireCompatibility {
+        self.wire
     }
 
     /// Build the Axum router with `POST /cluster/owner-load`.
@@ -1240,19 +1507,34 @@ where
             .route(DEFAULT_OWNER_LOAD_PATH, post(handle_owner_load::<C>))
             .with_state(OwnerLoadHttpState {
                 service: self.service.clone(),
+                auth: self.auth.clone(),
+                wire: self.wire,
             })
     }
 }
 
 async fn handle_owner_load<C>(
     State(state): State<OwnerLoadHttpState<C>>,
+    headers: HeaderMap,
     Json(request): Json<OwnerLoadRequest>,
 ) -> Response
 where
     C: CacheCodec + Send + Sync + 'static,
 {
+    if let Err(rejection) = validate_http_transport(&headers, state.auth.as_ref(), state.wire) {
+        return owner_load_transport_rejection(rejection);
+    }
+
     let response = state.service.load(request).await;
     (owner_load_http_status(&response), Json(response)).into_response()
+}
+
+fn owner_load_transport_rejection(rejection: HttpTransportRejection) -> Response {
+    let response = OwnerLoadResponse::Rejected(OwnerLoadRejection::new(
+        OwnerLoadRejectionCode::InvalidRequest,
+        rejection.message,
+    ));
+    (rejection.status, Json(response)).into_response()
 }
 
 fn owner_load_http_status(response: &OwnerLoadResponse) -> StatusCode {
@@ -1288,6 +1570,8 @@ fn owner_load_http_status(response: &OwnerLoadResponse) -> StatusCode {
 pub struct HttpOwnerLoad {
     endpoint: String,
     client: reqwest::Client,
+    auth: Option<HttpTransportAuth>,
+    wire: HttpWireCompatibility,
 }
 
 impl HttpOwnerLoad {
@@ -1296,6 +1580,8 @@ impl HttpOwnerLoad {
         Self {
             endpoint: endpoint.into(),
             client: reqwest::Client::new(),
+            auth: None,
+            wire: HttpWireCompatibility::default(),
         }
     }
 
@@ -1312,14 +1598,28 @@ impl HttpOwnerLoad {
         &self.endpoint
     }
 
+    /// Attach an auth header to every owner-load request.
+    pub fn with_auth(mut self, auth: HttpTransportAuth) -> Self {
+        self.auth = Some(auth);
+        self
+    }
+
+    /// Set the wire version header sent with owner-load requests.
+    pub fn with_wire_compatibility(mut self, wire: HttpWireCompatibility) -> Self {
+        self.wire = wire;
+        self
+    }
+
     /// Send one owner-load request.
     pub async fn load(&self, request: OwnerLoadRequest) -> CacheResult<OwnerLoadResponse> {
         let expected_owner = request.owner.clone();
         let expected_key = request.key.clone();
-        let response = self
-            .client
-            .post(&self.endpoint)
-            .json(&request)
+        let mut builder = self.client.post(&self.endpoint).json(&request);
+        builder = self.wire.apply(builder);
+        if let Some(auth) = &self.auth {
+            builder = auth.apply(builder);
+        }
+        let response = builder
             .send()
             .await
             .map_err(|error| CacheError::Backend(format!("owner-load request failed: {error}")))?;
@@ -2945,6 +3245,8 @@ struct PeerFetchState {
     owner: ClusterNodeId,
     generation: ClusterGeneration,
     store: Arc<dyn PeerFetchStore>,
+    auth: Option<HttpTransportAuth>,
+    wire: HttpWireCompatibility,
 }
 
 /// Axum route factory for serving peer-fetch requests from one member.
@@ -2959,6 +3261,8 @@ impl fmt::Debug for AxumPeerFetchService {
             .debug_struct("AxumPeerFetchService")
             .field("owner", &self.state.owner)
             .field("generation", &self.state.generation)
+            .field("auth_enabled", &self.state.auth.is_some())
+            .field("wire", &self.state.wire)
             .finish_non_exhaustive()
     }
 }
@@ -2975,8 +3279,22 @@ impl AxumPeerFetchService {
                 owner: owner.into(),
                 generation,
                 store,
+                auth: None,
+                wire: HttpWireCompatibility::default(),
             },
         }
+    }
+
+    /// Require an auth header before peer-fetch requests reach the store.
+    pub fn with_auth(mut self, auth: HttpTransportAuth) -> Self {
+        self.state.auth = Some(auth);
+        self
+    }
+
+    /// Set the HTTP wire compatibility policy for this route factory.
+    pub fn with_wire_compatibility(mut self, wire: HttpWireCompatibility) -> Self {
+        self.state.wire = wire;
+        self
     }
 
     /// Return the owner node id served by this route.
@@ -2987,6 +3305,16 @@ impl AxumPeerFetchService {
     /// Return the owner generation served by this route.
     pub fn generation(&self) -> ClusterGeneration {
         self.state.generation
+    }
+
+    /// Return the configured auth boundary, if any.
+    pub fn auth(&self) -> Option<&HttpTransportAuth> {
+        self.state.auth.as_ref()
+    }
+
+    /// Return the configured wire compatibility policy.
+    pub fn wire(&self) -> HttpWireCompatibility {
+        self.state.wire
     }
 
     /// Build the Axum router with `POST /cluster/peer-fetch`.
@@ -3083,8 +3411,19 @@ pub struct PeerFetchHttpErrorBody {
 
 async fn handle_peer_fetch(
     State(state): State<PeerFetchState>,
+    headers: HeaderMap,
     Json(request): Json<PeerFetchHttpRequest>,
 ) -> Response {
+    if let Err(rejection) = validate_http_transport(&headers, state.auth.as_ref(), state.wire) {
+        return error_response(
+            rejection.status,
+            rejection.code,
+            rejection.message,
+            request.generation,
+            Some(state.generation.value()),
+        );
+    }
+
     if request.owner != state.owner.as_str() {
         return error_response(
             StatusCode::NOT_FOUND,
@@ -3158,6 +3497,8 @@ fn error_response(
 pub struct HttpPeerFetch {
     endpoint: String,
     client: reqwest::Client,
+    auth: Option<HttpTransportAuth>,
+    wire: HttpWireCompatibility,
 }
 
 impl HttpPeerFetch {
@@ -3166,6 +3507,8 @@ impl HttpPeerFetch {
         Self {
             endpoint: endpoint.into(),
             client: reqwest::Client::new(),
+            auth: None,
+            wire: HttpWireCompatibility::default(),
         }
     }
 
@@ -3181,6 +3524,18 @@ impl HttpPeerFetch {
     pub fn endpoint(&self) -> &str {
         &self.endpoint
     }
+
+    /// Attach an auth header to every peer-fetch request.
+    pub fn with_auth(mut self, auth: HttpTransportAuth) -> Self {
+        self.auth = Some(auth);
+        self
+    }
+
+    /// Set the wire version header sent with peer-fetch requests.
+    pub fn with_wire_compatibility(mut self, wire: HttpWireCompatibility) -> Self {
+        self.wire = wire;
+        self
+    }
 }
 
 #[async_trait::async_trait]
@@ -3192,10 +3547,12 @@ impl ClusterPeerFetch for HttpPeerFetch {
         let expected_owner = request.owner.clone();
         let expected_key = request.key.clone();
         let http_request = PeerFetchHttpRequest::from_peer_request(&request);
-        let response = self
-            .client
-            .post(&self.endpoint)
-            .json(&http_request)
+        let mut builder = self.client.post(&self.endpoint).json(&http_request);
+        builder = self.wire.apply(builder);
+        if let Some(auth) = &self.auth {
+            builder = auth.apply(builder);
+        }
+        let response = builder
             .send()
             .await
             .map_err(|error| CacheError::Backend(format!("peer-fetch request failed: {error}")))?;
@@ -3794,6 +4151,61 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn auth_peer_fetch_route_rejects_missing_token() {
+        let app = service_with_store(MemoryPeerFetchStore::new())
+            .with_auth(HttpTransportAuth::token("secret"))
+            .routes();
+
+        let response = app
+            .oneshot(json_request(PeerFetchHttpRequest {
+                owner: "member-a".to_owned(),
+                key: "answer".to_owned(),
+                generation: Some(7),
+            }))
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+        let body: PeerFetchHttpErrorBody = response_json(response).await;
+        assert_eq!(body.code, "unauthorized");
+        assert_eq!(body.current_generation, Some(7));
+    }
+
+    #[tokio::test]
+    async fn wire_peer_fetch_route_rejects_missing_and_mismatched_versions() {
+        let app = service_with_store(MemoryPeerFetchStore::new())
+            .with_wire_compatibility(HttpWireCompatibility::strict_current())
+            .routes();
+
+        let missing = app
+            .clone()
+            .oneshot(json_request(PeerFetchHttpRequest {
+                owner: "member-a".to_owned(),
+                key: "answer".to_owned(),
+                generation: Some(7),
+            }))
+            .await
+            .unwrap();
+        assert_eq!(missing.status(), StatusCode::UPGRADE_REQUIRED);
+        let missing: PeerFetchHttpErrorBody = response_json(missing).await;
+        assert_eq!(missing.code, "missing-wire-version");
+
+        let mut mismatched = json_request(PeerFetchHttpRequest {
+            owner: "member-a".to_owned(),
+            key: "answer".to_owned(),
+            generation: Some(7),
+        });
+        mismatched.headers_mut().insert(
+            HYDRACACHE_WIRE_VERSION_HEADER,
+            HeaderValue::from_static("2"),
+        );
+        let response = app.oneshot(mismatched).await.unwrap();
+        assert_eq!(response.status(), StatusCode::UPGRADE_REQUIRED);
+        let body: PeerFetchHttpErrorBody = response_json(response).await;
+        assert_eq!(body.code, "wire-version-mismatch");
+    }
+
+    #[tokio::test]
     async fn http_peer_fetch_round_trips_against_axum_server() {
         let store = MemoryPeerFetchStore::new();
         store.put("user:42", Bytes::from_static(b"encoded-user"));
@@ -3817,6 +4229,32 @@ mod tests {
         assert_eq!(response.owner.as_str(), "member-a");
         assert_eq!(response.key, "user:42");
         assert_eq!(response.value.unwrap().as_ref(), b"encoded-user");
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn auth_and_strict_wire_peer_fetch_client_round_trips() {
+        let store = MemoryPeerFetchStore::new();
+        store.put("answer", Bytes::from_static(b"encoded"));
+        let auth = HttpTransportAuth::bearer("secret");
+        let app = service_with_store(store)
+            .with_auth(auth.clone())
+            .with_wire_compatibility(HttpWireCompatibility::strict_current())
+            .routes();
+        let (base_url, shutdown, server) = spawn_server(app).await;
+        let peer_fetch = HttpPeerFetch::for_base_url(&base_url).with_auth(auth);
+
+        let response = peer_fetch
+            .fetch(
+                ClusterPeerFetchRequest::new("member-a", "answer")
+                    .generation(ClusterGeneration::new(7)),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.value, Some(Bytes::from_static(b"encoded")));
 
         shutdown.send(()).unwrap();
         server.await.unwrap();
@@ -4629,6 +5067,54 @@ mod tests {
         assert_eq!(diagnostics.loaded, 1);
         assert_eq!(diagnostics.owner_hits, 1);
         assert_eq!(diagnostics.rejections, 1);
+
+        shutdown.send(()).unwrap();
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn auth_and_strict_wire_owner_load_route_and_client_round_trip() {
+        let registry = OwnerLoadRegistry::new().register("answers.by-id", |request| async move {
+            Ok(Some(OwnerLoadValue::encoded(
+                Bytes::from_static(b"encoded"),
+                request.cache_options(),
+            )))
+        });
+        let service = OwnerLoadService::new(
+            "member-a",
+            ClusterGeneration::new(7),
+            HydraCache::local().build(),
+            registry,
+        );
+        let auth = HttpTransportAuth::token("secret");
+        let route = AxumOwnerLoadService::new(service)
+            .with_auth(auth.clone())
+            .with_wire_compatibility(HttpWireCompatibility::strict_current());
+
+        assert!(route.auth().is_some());
+        assert!(route.wire().requires_header());
+
+        let missing = route
+            .routes()
+            .oneshot(owner_load_json_request(owner_load_request(
+                "answer",
+                "answers.by-id",
+                7,
+            )))
+            .await
+            .unwrap();
+        assert_eq!(missing.status(), StatusCode::UNAUTHORIZED);
+        let missing: OwnerLoadResponse = response_json(missing).await;
+        assert!(missing.is_rejected());
+
+        let (base_url, shutdown, server) = spawn_server(route.routes()).await;
+        let client = HttpOwnerLoad::for_base_url(&base_url).with_auth(auth);
+        let response = client
+            .load(owner_load_request("answer", "answers.by-id", 7))
+            .await
+            .unwrap();
+
+        assert!(matches!(response, OwnerLoadResponse::Loaded(_)));
 
         shutdown.send(()).unwrap();
         server.await.unwrap();
