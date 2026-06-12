@@ -68,6 +68,10 @@ Planned work:
 - test graceful shutdown, restart, and failure reporting;
 - add actuator and sandbox read-only cluster health snapshots.
 
+Primary plan:
+
+- [Cluster runtime lifecycle plan](./V0_28_CLUSTER_RUNTIME_LIFECYCLE_PLAN.md)
+
 ## 0.29.0: Hot Remote Cache And Owner Pressure Control
 
 Goal: reduce pressure on owner members without pretending that HydraCache is a
