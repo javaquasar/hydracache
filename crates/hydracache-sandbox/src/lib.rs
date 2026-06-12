@@ -75,9 +75,9 @@ use chitchat::transport::ChannelTransport;
 use hydracache::{
     CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
     CacheEventSubscriber, CacheOptions, CacheResult, ClusterAdmissionBridge,
-    ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason,
-    ClusterAdmissionRejectReason, ClusterCandidate, ClusterDiagnostics, ClusterDiscovery,
-    ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterGeneration, ClusterMembershipEvent,
+    ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
+    ClusterCandidate, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
+    ClusterDiscoveryEvent, ClusterGeneration, ClusterLifecycleDiagnostics, ClusterMembershipEvent,
     ClusterOwnershipDecision, ClusterOwnershipDiagnostics, ClusterPeerFetch,
     ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole, HydraCache,
     InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus, InMemoryPeerFetch,
@@ -2507,6 +2507,21 @@ struct ClusterLifecycleTimelineStep {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ClusterLifecycleReport {
+    component: String,
+    status: &'static str,
+    start_count: u64,
+    stop_count: u64,
+    shutdown_requested: bool,
+    last_error: Option<String>,
+    running: bool,
+    stopping: bool,
+    stopped: bool,
+    failed: bool,
+    terminal: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 struct ClusterRuntimeReport {
     cluster: String,
     role: &'static str,
@@ -2530,6 +2545,7 @@ struct ClusterRuntimeReport {
     has_membership_subscribers: bool,
     has_multiple_participants: bool,
     operational: bool,
+    lifecycle: ClusterLifecycleReport,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -2863,6 +2879,7 @@ struct ClusterAdmissionBridgeReport {
     last_candidate: Option<String>,
     last_admitted: Option<String>,
     last_error: Option<String>,
+    lifecycle: ClusterLifecycleReport,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -8259,7 +8276,7 @@ async fn run_real_cluster_adapters_demo_with_request(
 
     let candidates_processed_first_run = bridge.run_once().await;
     let candidates_processed_second_run = bridge.run_once().await;
-    let bridge_report = cluster_admission_bridge_report(bridge.diagnostics());
+    let bridge_report = cluster_admission_bridge_report(&bridge);
     let bridge_events = bridge
         .events()
         .iter()
@@ -8447,7 +8464,36 @@ fn cluster_runtime_report_with_ownership(
         has_membership_subscribers,
         has_multiple_participants,
         operational,
+        lifecycle: cluster_lifecycle_report(diagnostics.lifecycle),
         bootstrap: diagnostics.bootstrap,
+    }
+}
+
+fn cluster_lifecycle_report(diagnostics: ClusterLifecycleDiagnostics) -> ClusterLifecycleReport {
+    let running = diagnostics.is_running();
+    let stopping = diagnostics.is_stopping();
+    let stopped = diagnostics.is_stopped();
+    let failed = diagnostics.has_failed();
+    let terminal = diagnostics.is_terminal();
+
+    ClusterLifecycleReport {
+        component: diagnostics.component,
+        status: match diagnostics.status {
+            hydracache::ClusterLifecycleStatus::Idle => "idle",
+            hydracache::ClusterLifecycleStatus::Running => "running",
+            hydracache::ClusterLifecycleStatus::Stopping => "stopping",
+            hydracache::ClusterLifecycleStatus::Stopped => "stopped",
+            hydracache::ClusterLifecycleStatus::Failed => "failed",
+        },
+        start_count: diagnostics.start_count,
+        stop_count: diagnostics.stop_count,
+        shutdown_requested: diagnostics.shutdown_requested,
+        last_error: diagnostics.last_error,
+        running,
+        stopping,
+        stopped,
+        failed,
+        terminal,
     }
 }
 
@@ -8790,8 +8836,9 @@ fn decision_with_owner_node_id(
 }
 
 fn cluster_admission_bridge_report(
-    diagnostics: ClusterAdmissionBridgeDiagnostics,
+    bridge: &ClusterAdmissionBridge,
 ) -> ClusterAdmissionBridgeReport {
+    let diagnostics = bridge.diagnostics();
     ClusterAdmissionBridgeReport {
         candidates_seen: diagnostics.candidates_seen,
         candidates_admitted: diagnostics.candidates_admitted,
@@ -8807,6 +8854,7 @@ fn cluster_admission_bridge_report(
             .map(|node_id| node_id.to_string()),
         last_admitted: diagnostics.last_admitted.map(|node_id| node_id.to_string()),
         last_error: diagnostics.last_error,
+        lifecycle: cluster_lifecycle_report(bridge.lifecycle_diagnostics()),
     }
 }
 
@@ -11282,6 +11330,7 @@ fn actuator_stats_doc() {}
             DistributedInvalidationDemoRequest,
             DistributedInvalidationDemoResponse,
             ClusterLifecycleTimelineStep,
+            ClusterLifecycleReport,
             ClusterLifecycleDemoRequest,
             ClusterRuntimeReport,
             ClusterDiscoveryReport,
