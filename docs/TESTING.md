@@ -159,6 +159,19 @@ cargo test --doc -p hydracache-sqlx --locked
 need Docker. `postgres_testcontainers` uses Docker when available and exits
 successfully with a skip message when Docker is unavailable.
 
+For the 0.28 cluster lifecycle layer specifically, run the lifecycle diagnostics
+unit tests, admission bridge shutdown tests, runtime snapshot tests, sandbox
+OpenAPI route coverage, and rustdoc examples:
+
+```powershell
+cargo test -p hydracache --lib --locked lifecycle
+cargo test -p hydracache --lib --locked admission_bridge
+cargo test -p hydracache --lib --locked cluster
+cargo test -p hydracache-sandbox --lib --locked openapi_document_describes_demo_and_actuator_routes
+cargo test -p hydracache-sandbox --lib --locked swagger_api_exercises_library_features_and_reports
+cargo test --doc -p hydracache --locked
+```
+
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
 test executable under `target\debug\deps` is locked by the OS, rerun the
 workspace suite with a fresh target directory:

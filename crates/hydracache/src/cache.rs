@@ -172,6 +172,32 @@ where
     /// Return cluster diagnostics when this cache was built as a client or member.
     ///
     /// Local caches return `None`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::sync::Arc;
+    ///
+    /// use hydracache::{HydraCache, InMemoryCluster};
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cluster = Arc::new(InMemoryCluster::new("orders"));
+    /// let client = HydraCache::client()
+    ///     .shared_cluster(cluster)
+    ///     .node_id("client-a")
+    ///     .connect()
+    ///     .await?;
+    ///
+    /// let diagnostics = client.cluster_diagnostics().expect("cluster runtime");
+    /// assert_eq!(diagnostics.client_count, 1);
+    /// assert!(diagnostics.lifecycle.is_running());
+    ///
+    /// client.leave_cluster().await?;
+    /// assert!(client.cluster_diagnostics().unwrap().lifecycle.is_stopped());
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn cluster_diagnostics(&self) -> Option<ClusterDiagnostics> {
         self.inner
             .cluster_runtime
@@ -304,6 +330,7 @@ where
     ///         ..
     ///     }
     /// ));
+    /// assert!(client.cluster_diagnostics().unwrap().lifecycle.is_stopped());
     /// # Ok(())
     /// # }
     /// ```

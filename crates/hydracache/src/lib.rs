@@ -379,7 +379,11 @@
 //! let diagnostics = client.cluster_diagnostics().expect("cluster runtime");
 //! assert_eq!(diagnostics.member_count, 1);
 //! assert_eq!(diagnostics.client_count, 1);
+//! assert!(diagnostics.lifecycle.is_running());
 //! assert_eq!(discovery.candidates().len(), 2);
+//!
+//! client.leave_cluster().await?;
+//! assert!(client.cluster_diagnostics().unwrap().lifecycle.is_stopped());
 //! # Ok(())
 //! # }
 //! ```

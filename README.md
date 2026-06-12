@@ -632,6 +632,10 @@ processes with an older generation cannot leave a newer runtime or publish
 cluster invalidations after a node id is reused by a restart. Real discovery
 and raft-rs metadata support live in optional cluster crates, so local-only
 applications do not pull those dependencies.
+From `0.28.0`, cluster diagnostics also include a local runtime lifecycle
+snapshot with status, start/stop counters, shutdown-request state, and failure
+details. This gives applications and actuator-style endpoints a cheap way to
+tell whether a client/member runtime is running, stopping, stopped, or failed.
 
 `0.20.0` also adds the `ClusterControlPlane` seam. The default path still uses
 `InMemoryCluster`, but advanced users and future HydraCache crates can pass a
@@ -735,6 +739,7 @@ assert_eq!(diagnostics.client_count, 1);
 assert_eq!(diagnostics.participant_count(), 2);
 assert!(diagnostics.is_client_role());
 assert!(diagnostics.has_bootstrap());
+assert!(diagnostics.lifecycle.is_running());
 assert!(diagnostics.is_operational());
 assert_eq!(
     client
@@ -748,6 +753,7 @@ assert_eq!(discovery.candidates().len(), 2);
 let left = client.leave_cluster().await?;
 assert!(left.is_some());
 assert_eq!(client.cluster_diagnostics().unwrap().client_count, 0);
+assert!(client.cluster_diagnostics().unwrap().lifecycle.is_stopped());
 # Ok(())
 # }
 ```
@@ -770,7 +776,8 @@ committed membership commands and snapshots.
 `has_bootstrap()`, `has_multiple_participants()`, and `is_operational()`. These
 helpers are intentionally derived from the existing snapshot so applications can
 render dashboards or health reports without doing their own repetitive count
-logic.
+logic. `is_operational()` also requires the local lifecycle to be running, so a
+client/member that already left the cluster no longer reports as operational.
 
 ## Cluster Ownership Resolver
 
@@ -1277,8 +1284,10 @@ in-memory bus and verifies tag, key, and flush propagation. The cluster
 lifecycle demo creates a temporary member/client pair, records discovery
 candidates, verifies remote invalidation in both directions, calls
 `leave_cluster()` for both runtimes, and confirms local cache contents are not
-cleared by leaving membership. The cluster ownership lab resolves an owner for a
-key, exercises the transport-neutral peer-fetch seam, and verifies that
+cleared by leaving membership. Its response includes lifecycle reports for the
+member and client before and after leave, so the Swagger UI shows running and
+stopped transitions without reading logs. The cluster ownership lab resolves an
+owner for a key, exercises the transport-neutral peer-fetch seam, and verifies that
 owner-originated tag invalidation reaches a client near-cache. The ownership
 transfer lab then removes the selected owner, verifies ownership moves to the
 survivor, demonstrates peer-fetch miss/hit behavior around the transfer, and
@@ -1300,6 +1309,9 @@ The real-adapters demo connects
 `hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
 `hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
 full discovery-to-metadata path can be inspected without Docker or UDP ports.
+The real-adapters response also includes admission bridge lifecycle diagnostics,
+which is useful when checking whether the bridge is idle, running as a
+background task, shutting down gracefully, or failed.
 
 `/demo/ui` is a small local no-CDN developer console on top of the same API. It
 can run the golden flow, negative scenarios, readiness checks, reset the demo
@@ -1400,6 +1412,11 @@ Cluster lifecycle demo payload:
   "flow_id": "cluster-flow"
 }
 ```
+
+The response contains `member_before_leave.lifecycle`,
+`client_before_leave.lifecycle`, `member_after_leave.lifecycle`, and
+`client_after_leave.lifecycle`. The first two should report `running`; the last
+two should report `stopped` after `leave_cluster()` completes.
 
 Cluster ownership demo with `curl`:
 

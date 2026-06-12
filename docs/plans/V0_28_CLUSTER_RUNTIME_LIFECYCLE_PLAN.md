@@ -131,7 +131,7 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 - [x] Admission bridge lifecycle added and tested.
 - [x] Runtime lifecycle snapshot added and tested.
 - [x] Sandbox/actuator-style reports updated and tested.
-- [ ] README updated.
-- [ ] Rustdoc examples compile.
-- [ ] Release notes updated.
+- [x] README updated.
+- [x] Rustdoc examples compile.
+- [x] Release notes updated.
 - [ ] Full release gate passes.
