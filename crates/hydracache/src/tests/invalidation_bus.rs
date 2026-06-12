@@ -13,8 +13,9 @@ use crate::tests::common::{user, User};
 use crate::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
     CacheInvalidationReceiver, ClusterCandidate, ClusterControlPlane, ClusterDiagnostics,
-    ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent, ClusterNodeId,
-    ClusterRole, HydraCache, InMemoryFramedInvalidationBus, InMemoryInvalidationBus,
+    ClusterEpoch, ClusterGeneration, ClusterLifecycleDiagnostics, ClusterMember,
+    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache, InMemoryFramedInvalidationBus,
+    InMemoryInvalidationBus,
 };
 
 #[derive(Debug, Clone)]
@@ -208,6 +209,7 @@ impl ClusterControlPlane for FramedGenerationControlPlane {
             connected: true,
             invalidation_subscribers: self.bus.receiver_count(),
             membership_subscribers: 0,
+            lifecycle: ClusterLifecycleDiagnostics::running("test-control-plane"),
         }
     }
 }

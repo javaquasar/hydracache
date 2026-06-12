@@ -1315,6 +1315,8 @@ pub struct ClusterDiagnostics {
     pub invalidation_subscribers: usize,
     /// Number of active cluster membership event subscribers.
     pub membership_subscribers: usize,
+    /// Local embedded runtime lifecycle snapshot.
+    pub lifecycle: ClusterLifecycleDiagnostics,
 }
 
 impl ClusterDiagnostics {
@@ -1375,7 +1377,7 @@ impl ClusterDiagnostics {
 
     /// Return whether this runtime appears connected to a usable cluster view.
     pub fn is_operational(&self) -> bool {
-        self.connected && self.participant_count() > 0
+        self.connected && self.lifecycle.is_running() && self.participant_count() > 0
     }
 }
 
@@ -2563,6 +2565,7 @@ impl InMemoryCluster {
             connected: true,
             invalidation_subscribers: self.invalidation_bus.receiver_count(),
             membership_subscribers: self.membership_events.receiver_count(),
+            lifecycle: ClusterLifecycleDiagnostics::running("cluster-runtime"),
         }
     }
 }
@@ -2713,6 +2716,7 @@ pub(crate) struct ClusterRuntime {
     node_id: ClusterNodeId,
     generation: ClusterGeneration,
     bootstrap: Vec<String>,
+    lifecycle: Arc<Mutex<ClusterLifecycleDiagnostics>>,
 }
 
 impl ClusterRuntime {
@@ -2724,6 +2728,8 @@ impl ClusterRuntime {
         generation: ClusterGeneration,
         bootstrap: Vec<String>,
     ) -> Self {
+        let mut lifecycle = ClusterLifecycleDiagnostics::idle(runtime_lifecycle_component(role));
+        lifecycle.record_start();
         Self {
             control_plane,
             discovery,
@@ -2731,16 +2737,23 @@ impl ClusterRuntime {
             node_id,
             generation,
             bootstrap,
+            lifecycle: Arc::new(Mutex::new(lifecycle)),
         }
     }
 
     pub(crate) fn diagnostics(&self) -> ClusterDiagnostics {
-        self.control_plane.diagnostics_for(
+        let mut diagnostics = self.control_plane.diagnostics_for(
             self.role,
             self.node_id.clone(),
             self.generation,
             self.bootstrap.clone(),
-        )
+        );
+        diagnostics.lifecycle = self
+            .lifecycle
+            .lock()
+            .expect("cluster runtime lifecycle poisoned")
+            .clone();
+        diagnostics
     }
 
     pub(crate) fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
@@ -2781,9 +2794,27 @@ impl ClusterRuntime {
     }
 
     pub(crate) async fn leave(&self) -> Result<Option<ClusterMembershipEvent>> {
-        self.control_plane
+        let event = self
+            .control_plane
             .leave(&self.node_id, self.generation)
-            .await
+            .await?;
+        if event.is_some() {
+            let mut lifecycle = self
+                .lifecycle
+                .lock()
+                .expect("cluster runtime lifecycle poisoned");
+            lifecycle.record_shutdown_requested();
+            lifecycle.record_graceful_stop();
+        }
+        Ok(event)
+    }
+}
+
+fn runtime_lifecycle_component(role: ClusterRole) -> &'static str {
+    match role {
+        ClusterRole::Local => "cluster-runtime:local",
+        ClusterRole::Client => "cluster-runtime:client",
+        ClusterRole::Member => "cluster-runtime:member",
     }
 }
 

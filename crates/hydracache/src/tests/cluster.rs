@@ -9,8 +9,8 @@ use crate::{
     CacheError, CacheEventSubscriber, CacheInvalidation, CacheInvalidationBus,
     CacheInvalidationMessage, ChitchatStyleDiscovery, ClusterCandidate, ClusterControlPlane,
     ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryEvent, ClusterEpoch, ClusterGeneration,
-    ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache, InMemoryCluster,
-    InMemoryClusterDiscovery, InMemoryInvalidationBus, RaftMetadataCommand,
+    ClusterLifecycleDiagnostics, ClusterMembershipEvent, ClusterNodeId, ClusterRole, HydraCache,
+    InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus, RaftMetadataCommand,
     RaftStyleMetadataControlPlane,
 };
 
@@ -89,6 +89,9 @@ async fn member_and_client_builders_connect_to_shared_cluster() {
     assert!(!member_diag.has_bootstrap());
     assert!(member_diag.has_multiple_participants());
     assert!(member_diag.is_operational());
+    assert_eq!(member_diag.lifecycle.component, "cluster-runtime:member");
+    assert!(member_diag.lifecycle.is_running());
+    assert_eq!(member_diag.lifecycle.start_count, 1);
 
     let client_diag = client.cluster_diagnostics().unwrap();
     assert_eq!(client_diag.role, ClusterRole::Client);
@@ -96,6 +99,8 @@ async fn member_and_client_builders_connect_to_shared_cluster() {
     assert!(client_diag.is_client_role());
     assert_eq!(client_diag.bootstrap_count(), 1);
     assert!(client_diag.has_bootstrap());
+    assert_eq!(client_diag.lifecycle.component, "cluster-runtime:client");
+    assert!(client_diag.lifecycle.is_running());
     assert_eq!(client.invalidation_node_id(), "client-a");
     assert!(client_diag.invalidation_subscribers >= 2);
 
@@ -535,6 +540,7 @@ async fn stale_runtime_cannot_leave_newer_generation() {
     assert!(error.to_string().contains("stale cluster generation"));
     assert_eq!(cluster.members().len(), 1);
     assert_eq!(cluster.members()[0].generation.value(), 2);
+    assert!(stale.cluster_diagnostics().unwrap().lifecycle.is_running());
     assert_eq!(current.cluster_diagnostics().unwrap().member_count, 1);
 }
 
@@ -664,6 +670,10 @@ async fn client_and_member_can_leave_cluster_without_clearing_local_cache() {
     assert_eq!(cluster.clients().len(), 0);
     assert_eq!(cluster.members().len(), 1);
     assert!(client.get::<User>("user:42").await.unwrap().is_some());
+    let client_diagnostics = client.cluster_diagnostics().unwrap();
+    assert!(client_diagnostics.lifecycle.is_stopped());
+    assert_eq!(client_diagnostics.lifecycle.stop_count, 1);
+    assert!(!client_diagnostics.is_operational());
 
     let member_left = member.leave_cluster().await.unwrap().unwrap();
     assert!(matches!(
@@ -676,7 +686,10 @@ async fn client_and_member_can_leave_cluster_without_clearing_local_cache() {
     ));
     assert_eq!(cluster.members().len(), 0);
     assert!(member.leave_cluster().await.unwrap().is_none());
-    assert_eq!(member.cluster_diagnostics().unwrap().member_count, 0);
+    let member_diagnostics = member.cluster_diagnostics().unwrap();
+    assert_eq!(member_diagnostics.member_count, 0);
+    assert!(member_diagnostics.lifecycle.is_stopped());
+    assert_eq!(member_diagnostics.lifecycle.stop_count, 1);
 }
 
 #[tokio::test]
@@ -998,6 +1011,7 @@ impl ClusterControlPlane for RejectingControlPlane {
             connected: false,
             invalidation_subscribers: self.bus.receiver_count(),
             membership_subscribers: 0,
+            lifecycle: ClusterLifecycleDiagnostics::idle("rejecting-control-plane"),
         }
     }
 }
