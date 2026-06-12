@@ -172,6 +172,17 @@ cargo test -p hydracache-sandbox --lib --locked swagger_api_exercises_library_fe
 cargo test --doc -p hydracache --locked
 ```
 
+For the 0.29 hot-remote cache layer specifically, run the transport hot-remote
+policy tests, read-through regression tests, sandbox OpenAPI route coverage, and
+transport rustdoc examples:
+
+```powershell
+cargo test -p hydracache-cluster-transport-axum --locked hot_remote
+cargo test -p hydracache-cluster-transport-axum --locked read_through
+cargo test -p hydracache-sandbox --lib --locked swagger_api_exercises_library_features_and_reports
+cargo test --doc -p hydracache-cluster-transport-axum --locked
+```
+
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
 test executable under `target\debug\deps` is locked by the OS, rerun the
 workspace suite with a fresh target directory:

@@ -101,7 +101,7 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 - [x] Remote entry diagnostics added and tested.
 - [x] Invalidation and owner-pressure tests added.
 - [x] Sandbox/OpenAPI reports updated and tested.
-- [ ] README updated.
-- [ ] Rustdoc examples compile.
-- [ ] Release notes updated.
+- [x] README updated.
+- [x] Rustdoc examples compile.
+- [x] Release notes updated.
 - [ ] Full release gate passes.

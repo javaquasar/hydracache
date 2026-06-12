@@ -2141,8 +2141,10 @@ where
     /// # Example
     ///
     /// ```no_run
+    /// use std::time::Duration;
+    ///
     /// use hydracache::{CacheOptions, ClusterCandidate, ClusterGeneration, HydraCache, InMemoryCluster};
-    /// use hydracache_cluster_transport_axum::PeerFetchReadThrough;
+    /// use hydracache_cluster_transport_axum::{HotRemoteCachePolicy, PeerFetchReadThrough};
     ///
     /// # async fn example() -> hydracache::CacheResult<()> {
     /// let near_cache = HydraCache::local().build();
@@ -2153,7 +2155,14 @@ where
     ///         .peer_fetch_base_url("http://127.0.0.1:3000"),
     /// )?;
     ///
-    /// let outcome = PeerFetchReadThrough::new(near_cache)
+    /// let read_through = PeerFetchReadThrough::new(near_cache)
+    ///     .hot_remote_policy(
+    ///         HotRemoteCachePolicy::new()
+    ///             .ttl(Duration::from_secs(30))
+    ///             .max_entries(1_000),
+    ///     );
+    ///
+    /// let outcome = read_through
     ///     .fetch_encoded(
     ///         cluster.owner_for_key("user:42"),
     ///         CacheOptions::new().tag("user:42"),
@@ -2163,6 +2172,9 @@ where
     /// if outcome.is_remote_hit() {
     ///     assert!(outcome.hydrated);
     /// }
+    ///
+    /// let hot_remote = read_through.hot_remote_diagnostics();
+    /// assert_eq!(hot_remote.max_entries, Some(1_000));
     /// # Ok(())
     /// # }
     /// ```
@@ -2196,6 +2208,9 @@ where
 
     /// Set the hot-remote near-cache policy used when remote owner values are
     /// hydrated locally.
+    ///
+    /// The policy is helper-local: it controls only remote copies inserted by
+    /// this read-through helper and does not change owner-side cache entries.
     pub fn hot_remote_policy(mut self, policy: HotRemoteCachePolicy) -> Self {
         self.hot_remote_policy = policy;
         self

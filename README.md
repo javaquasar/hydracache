@@ -899,9 +899,11 @@ the local cache according to a policy, routes misses to the advertised owner,
 and hydrates the local cache when the owner returns encoded bytes:
 
 ```rust
+use std::time::Duration;
+
 use hydracache::{CacheOptions, ClusterCandidate, ClusterGeneration, HydraCache, InMemoryCluster};
 use hydracache_cluster_transport_axum::{
-    PeerFetchReadThrough, PeerFetchReadThroughStatus,
+    HotRemoteCachePolicy, PeerFetchReadThrough, PeerFetchReadThroughStatus,
 };
 
 # async fn example() -> hydracache::CacheResult<()> {
@@ -913,7 +915,12 @@ cluster.join_member(
         .peer_fetch_base_url("http://127.0.0.1:3000"),
 )?;
 
-let read_through = PeerFetchReadThrough::new(near_cache.clone());
+let read_through = PeerFetchReadThrough::new(near_cache.clone())
+    .hot_remote_policy(
+        HotRemoteCachePolicy::new()
+            .ttl(Duration::from_secs(30))
+            .max_entries(1_000),
+    );
 let outcome = read_through
     .fetch_encoded(
         cluster.owner_for_key("user:42"),
@@ -930,6 +937,10 @@ assert!(matches!(
 
 let diagnostics = read_through.diagnostics();
 assert_eq!(diagnostics.attempts, 1);
+
+let hot_remote = read_through.hot_remote_diagnostics();
+assert!(hot_remote.enabled);
+assert_eq!(hot_remote.max_entries, Some(1_000));
 # Ok(())
 # }
 ```
@@ -937,9 +948,15 @@ assert_eq!(diagnostics.attempts, 1);
 The default policy is `LocalThenOwner`: local hit, otherwise owner fetch. The
 helper also supports `OwnerThenLocal` and `OwnerOnly`. Remote hits hydrate the
 near cache by default through `HydraCache::put_encoded`; generation mismatches
-and transport errors never hydrate stale bytes. The sandbox route
+and transport errors never hydrate stale bytes. `HotRemoteCachePolicy` lets a
+client/member bound those remote hydrated copies separately from owner values:
+set a short remote-entry TTL, cap tracked remote keys, or disable hydration
+entirely through `HotRemoteCachePolicy::disabled()`/`without_hydration()`.
+`hot_remote_diagnostics()` reports tracked remote entries, skipped hydrations,
+and pressure evictions. The sandbox route
 `POST /demo/cluster/read-through/run` demonstrates the complete flow:
-local miss -> owner remote hit -> local hydration -> second read local hit.
+local miss -> owner remote hit -> bounded local hydration -> second read local
+hit.
 
 For owner-side load-on-miss, keep using `PeerFetchReadThrough`, but pass an
 `OwnerLoadDescriptor` instead of raw `CacheOptions`. The client still sends only
@@ -992,13 +1009,21 @@ assert!(outcome.is_hit());
 # }
 ```
 
-Use plain peer-fetch read-through when the owner should only return bytes that
-are already cached. Use owner-load read-through when the owner is allowed to run
-one of your named loaders on miss and then store the encoded result locally. The
-sandbox route `POST /demo/cluster/owner-load/run` demonstrates:
+Choose the cluster read path by how much work the owner may do:
+
+- Use plain peer fetch through `PeerFetchRouter` when you only need to ask the
+  owner for already-cached encoded bytes.
+- Use `PeerFetchReadThrough::fetch_encoded` when the client/member should keep a
+  bounded hot-remote near-cache copy after a remote hit.
+- Use `PeerFetchReadThrough::get_or_load_encoded` with `OwnerLoadDescriptor`
+  when the owner is allowed to run one of your named loaders on miss and then
+  store the encoded result locally.
+
+The sandbox route `POST /demo/cluster/owner-load/run` demonstrates:
 client miss -> owner miss -> registered owner loader -> owner store -> client
-hydrate -> second read local hit, plus concurrent same-key sharing and
-structured rejections for missing loader, stale generation, and wrong owner.
+hydrate -> second read local hit, plus concurrent same-key sharing, hot-remote
+diagnostics, and structured rejections for missing loader, stale generation,
+and wrong owner.
 
 Ownership counters live in a separate diagnostics snapshot so the original
 `ClusterDiagnostics` struct can remain backwards-compatible for users that
@@ -1019,7 +1044,7 @@ assert_eq!(ownership.owner_found(), 1);
 
 ## Cluster Support Boundaries
 
-The current `0.25.x` cluster support is intentionally an embedded coordination
+The current cluster support is intentionally an embedded coordination
 surface, not a production distributed data grid. It includes:
 
 - local, client, and member cache roles;
