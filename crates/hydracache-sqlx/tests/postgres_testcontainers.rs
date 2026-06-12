@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 use hydracache::HydraCache;
-use hydracache_sqlx::{HydraCacheEntity, SqlxCache, SqlxQueryExt};
+use hydracache_sqlx::{HydraCacheEntity, PreparedQueryPolicy, SqlxCache, SqlxQueryExt};
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use testcontainers_modules::{
@@ -263,6 +263,67 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let cache_entity_reloaded = load_user_with_cache_entity(&queries, &pool).await?;
     assert_eq!(cache_entity_reloaded.name, "Rosalind");
+
+    let prepared_user = queries.prepare::<(i64, String)>(
+        PreparedQueryPolicy::for_cache_entity::<User>().with_name("prepared-load-user"),
+    );
+
+    let prepared_first = prepared_user
+        .for_id(42)
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(prepared_first, (42, "Rosalind".to_owned()));
+
+    sqlx::query("update users set name = $1 where id = $2")
+        .bind("Hedy")
+        .bind(42_i64)
+        .execute(&pool)
+        .await?;
+
+    let prepared_cached = prepared_user
+        .for_id(42)
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(prepared_cached, (42, "Rosalind".to_owned()));
+
+    assert_eq!(
+        queries.cache().invalidate_tag("cache-entity-users").await?,
+        1
+    );
+
+    let prepared_reloaded = prepared_user
+        .for_id(42)
+        .fetch_one(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
+        )
+        .await?;
+    assert_eq!(prepared_reloaded, (42, "Hedy".to_owned()));
+
+    let prepared_collection = queries.prepare::<(i64, String)>(
+        PreparedQueryPolicy::named("prepared-list-users").collection("prepared-users:all"),
+    );
+    let prepared_collection_first = prepared_collection
+        .to_query()
+        .fetch_all(
+            pool.clone(),
+            sqlx::query_as("select id, name from users where id > $1 order by id").bind(0_i64),
+        )
+        .await?;
+    assert_eq!(
+        prepared_collection_first,
+        vec![
+            (7, "Barbara".to_owned()),
+            (42, "Hedy".to_owned()),
+            (99, "New".to_owned())
+        ]
+    );
 
     let no_users = queries
         .cached::<(i64, String)>()

@@ -19,6 +19,6 @@ sqlx.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
-sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls"] }
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "sqlite"] }
 testcontainers-modules.workspace = true
 tokio.workspace = true

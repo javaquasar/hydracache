@@ -58,7 +58,7 @@ mod query_ext;
 pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
     query_cache_policy, CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity,
-    QueryCachePolicy, Result as DbResult,
+    PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 
@@ -80,7 +80,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use sqlx::postgres::PgPoolOptions;
 
-    use crate::{DbCache, QueryCachePolicy, SqlxCache, SqlxQueryExt};
+    use crate::{DbCache, PreparedQueryPolicy, QueryCachePolicy, SqlxCache, SqlxQueryExt};
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
     struct User {
@@ -112,6 +112,23 @@ mod tests {
 
         assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
         assert_eq!(query.tags_value(), &["user:1".to_owned()]);
+    }
+
+    #[tokio::test]
+    async fn prepared_query_policy_reexport_is_available_from_sqlx_crate() {
+        let prepared = DbCache::new(HydraCache::local().build(), "db").prepare::<User>(
+            PreparedQueryPolicy::for_entity("user")
+                .with_name("load-user")
+                .collection_tag("users"),
+        );
+
+        let query = prepared.for_id(1);
+        assert_eq!(query.name(), Some("load-user"));
+        assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
+        assert_eq!(
+            query.tags_value(),
+            &["users".to_owned(), "user:1".to_owned()]
+        );
     }
 
     #[tokio::test]
