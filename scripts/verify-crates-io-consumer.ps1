@@ -121,14 +121,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let diesel_user = DieselCache::new(cache.clone(), "diesel")
         .cached::<User>()
         .key("user:diesel")
-        .diesel_first(|| Ok::<_, hydracache_diesel::diesel::result::Error>(User { id: 7 }))
+        .diesel_one(|| Ok::<_, hydracache_diesel::diesel::result::Error>(User { id: 7 }))
         .await?;
     assert_eq!(diesel_user.id, 7);
 
     let seaorm_user = SeaOrmCache::new(cache.clone(), "seaorm")
         .cached::<User>()
         .key("user:seaorm")
-        .sea_value(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>(User { id: 8 }) })
+        .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>(User { id: 8 }) })
         .await?;
     assert_eq!(seaorm_user.id, 8);
 
