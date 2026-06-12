@@ -105,6 +105,10 @@ Planned work:
 - write a clear production-readiness document that separates stable local/DB
   APIs from experimental cluster surfaces.
 
+Primary plan:
+
+- [Production cluster readiness plan](./V0_30_PRODUCTION_CLUSTER_READINESS_PLAN.md)
+
 ## Guiding Constraints
 
 - Local caching remains the center of gravity.
