@@ -1540,7 +1540,12 @@ use hydracache_db::QueryCachePolicy;
 
 let policy = QueryCachePolicy::read_mostly()
     .for_cache_entity::<User>(42)
-    .with_name("load-user");
+    .with_name("load-user")
+    .refresh_policy(
+        hydracache_db::RefreshPolicy::new()
+            .refresh_ahead(std::time::Duration::from_secs(10))
+            .stale_while_revalidate(std::time::Duration::from_secs(300)),
+    );
 
 let user = queries
     .cached_with::<User>(policy)

@@ -414,6 +414,17 @@ where
         self.policy.ttl_value()
     }
 
+    /// Return the configured refresh/stale policy.
+    pub fn refresh_policy_value(&self) -> Option<hydracache::RefreshOptions> {
+        self.policy.refresh_policy_value()
+    }
+
+    /// Replace refresh/stale behavior for this prepared descriptor.
+    pub fn refresh_policy(mut self, refresh: hydracache::RefreshOptions) -> Self {
+        self.policy = self.policy.refresh_policy(refresh);
+        self
+    }
+
     /// Create a runtime query from a static prepared policy.
     ///
     /// Entity-id policies should usually use [`PreparedDbQuery::for_id`] so the
@@ -562,6 +573,11 @@ where
     /// Return the configured per-entry TTL.
     pub fn ttl_value(&self) -> Option<Duration> {
         self.policy.ttl_value()
+    }
+
+    /// Return the configured refresh/stale policy.
+    pub fn refresh_policy_value(&self) -> Option<hydracache::RefreshOptions> {
+        self.policy.refresh_policy_value()
     }
 
     /// Set the logical cache key for this query result.
@@ -725,6 +741,12 @@ where
         self
     }
 
+    /// Set refresh/stale behavior for this query result.
+    pub fn refresh_policy(mut self, refresh: hydracache::RefreshOptions) -> Self {
+        self.policy = self.policy.refresh_policy(refresh);
+        self
+    }
+
     /// Fetch a cached value or run the supplied repository/database loader on
     /// miss.
     ///
@@ -769,11 +791,20 @@ where
         Fut: Future<Output = std::result::Result<U, E>> + Send + 'static,
     {
         let key = self.required_physical_key()?;
+        let options = self.options();
 
-        self.cache
-            .get_or_load(&key, self.options(), loader)
-            .await
-            .map_err(DbCacheError::from)
+        match self.policy.refresh_policy_value() {
+            Some(refresh) => self
+                .cache
+                .get_or_load_with_refresh(&key, options, refresh, loader)
+                .await
+                .map_err(DbCacheError::from),
+            None => self
+                .cache
+                .get_or_load(&key, options, loader)
+                .await
+                .map_err(DbCacheError::from),
+        }
     }
 
     fn options(&self) -> CacheOptions {

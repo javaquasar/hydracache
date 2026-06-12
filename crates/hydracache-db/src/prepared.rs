@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use hydracache::{CacheKeyBuilder, TagSet};
+use hydracache::{CacheKeyBuilder, RefreshOptions, TagSet};
 
 use crate::policy::collection_tag;
 use crate::{CacheEntity, QueryCachePolicy};
@@ -49,6 +49,7 @@ pub struct PreparedQueryPolicy {
     key: PreparedQueryKey,
     tags: TagSet,
     ttl: Option<Duration>,
+    refresh: Option<RefreshOptions>,
 }
 
 impl Default for PreparedQueryPolicy {
@@ -58,6 +59,7 @@ impl Default for PreparedQueryPolicy {
             key: PreparedQueryKey::Missing,
             tags: TagSet::new(),
             ttl: None,
+            refresh: None,
         }
     }
 }
@@ -168,6 +170,11 @@ impl PreparedQueryPolicy {
         self.ttl
     }
 
+    /// Return the optional refresh/stale policy.
+    pub fn refresh_policy_value(&self) -> Option<RefreshOptions> {
+        self.refresh
+    }
+
     /// Set or replace the diagnostic operation name.
     pub fn with_name(mut self, name: impl Into<String>) -> Self {
         self.name = Some(name.into());
@@ -269,6 +276,12 @@ impl PreparedQueryPolicy {
         self
     }
 
+    /// Set refresh/stale behavior for this prepared query result.
+    pub fn refresh_policy(mut self, refresh: RefreshOptions) -> Self {
+        self.refresh = Some(refresh);
+        self
+    }
+
     /// Convert this prepared policy into a runtime [`QueryCachePolicy`].
     ///
     /// Entity-id policies still need [`PreparedQueryPolicy::bind_id`] to set a
@@ -302,6 +315,9 @@ impl PreparedQueryPolicy {
         }
         if let Some(ttl) = self.ttl {
             policy = policy.ttl(ttl);
+        }
+        if let Some(refresh) = self.refresh {
+            policy = policy.refresh_policy(refresh);
         }
         policy
     }

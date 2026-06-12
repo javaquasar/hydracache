@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     CacheEntity, DbCache, DbCacheError, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy,
+    RefreshPolicy,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -145,6 +146,129 @@ async fn query_cache_policy_presets_compose_with_entity_and_collection_metadata(
     assert_eq!(collection.key_value(), Some("users%3Aactive"));
     assert_eq!(collection.tags_value(), &["users%3Aactive".to_owned()]);
     assert_eq!(collection.ttl_value(), Some(Duration::from_secs(300)));
+}
+
+#[tokio::test]
+async fn query_cache_policy_stores_refresh_policy_metadata() {
+    let refresh = RefreshPolicy::new()
+        .refresh_ahead(Duration::from_secs(10))
+        .stale_while_revalidate(Duration::from_secs(60));
+    let policy = QueryCachePolicy::read_mostly()
+        .for_cache_entity::<User>(42)
+        .refresh_policy(refresh);
+
+    assert_eq!(policy.refresh_policy_value(), Some(refresh));
+}
+
+#[tokio::test]
+async fn prepared_query_policy_preserves_refresh_policy_when_binding_id() {
+    let refresh = RefreshPolicy::new().stale_on_loader_error(Duration::from_secs(120));
+    let prepared = PreparedQueryPolicy::per_entity()
+        .cache_entity::<User>()
+        .refresh_policy(refresh);
+
+    assert_eq!(prepared.refresh_policy_value(), Some(refresh));
+
+    let query = adapter().prepare::<User>(prepared).for_id(42);
+    assert_eq!(query.refresh_policy_value(), Some(refresh));
+}
+
+#[tokio::test]
+async fn db_query_refresh_policy_serves_stale_and_refreshes_in_background() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+    let base_policy = QueryCachePolicy::new()
+        .key("user:refresh")
+        .tag("users")
+        .refresh_policy(RefreshPolicy::new().stale_while_revalidate(Duration::from_millis(200)));
+    let initial_policy = base_policy.clone().ttl(Duration::from_millis(20));
+    let refresh_policy = base_policy.ttl(Duration::from_millis(500));
+
+    let first = cache
+        .cached_with::<User>(initial_policy)
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(1))
+            }
+        })
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(45)).await;
+
+    let stale = cache
+        .cached_with::<User>(refresh_policy.clone())
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(2))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, user(1));
+    assert_eq!(stale, user(1));
+
+    tokio::time::sleep(Duration::from_millis(80)).await;
+
+    let refreshed = cache
+        .cached_with::<User>(refresh_policy)
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(3))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(refreshed, user(2));
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+async fn db_query_stale_on_loader_error_uses_bounded_fallback() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+    let policy = QueryCachePolicy::new()
+        .key("user:stale-if-error")
+        .ttl(Duration::from_millis(20))
+        .refresh_policy(RefreshPolicy::new().stale_on_loader_error(Duration::from_millis(200)));
+
+    let first = cache
+        .cached_with::<User>(policy.clone())
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(1))
+            }
+        })
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(45)).await;
+
+    let fallback = cache
+        .cached_with::<User>(policy)
+        .load({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Err::<User, _>(LoadError)
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, user(1));
+    assert_eq!(fallback, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
 }
 
 #[tokio::test]

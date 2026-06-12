@@ -44,7 +44,8 @@ use thiserror::Error;
 
 pub use hydracache_db::{
     query_cache_policy, CacheEntity, DbCache, DbCacheError, DbQuery as GenericDbQuery,
-    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, Result as DbResult,
+    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+    Result as DbResult,
 };
 
 /// Diesel-specific compatibility name for [`DbCache`].
@@ -173,7 +174,7 @@ mod tests {
 
     use super::{
         query_cache_policy, CacheEntity, DieselCache, DieselQueryExt, HydraCacheEntity,
-        PreparedQueryPolicy, QueryCachePolicy,
+        PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
     };
 
     diesel::table! {
@@ -613,7 +614,11 @@ mod tests {
         let bound = prepared.bind_id(7);
         assert_eq!(bound.key_value(), Some("diesel-user:7"));
 
-        let manual = QueryCachePolicy::new().for_cache_entity::<User>(42);
+        let refresh = RefreshPolicy::new().stale_while_revalidate(Duration::from_secs(5));
+        let manual = QueryCachePolicy::new()
+            .for_cache_entity::<User>(42)
+            .refresh_policy(refresh);
         assert_eq!(manual.key_value(), Some("diesel-user:42"));
+        assert_eq!(manual.refresh_policy_value(), Some(refresh));
     }
 }

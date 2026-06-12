@@ -9,7 +9,9 @@
 //!
 //! ```rust
 //! use hydracache::HydraCache;
-//! use hydracache_db::{DbCache, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy};
+//! use hydracache_db::{
+//!     DbCache, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+//! };
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -31,7 +33,12 @@
 //! let policy = QueryCachePolicy::read_mostly()
 //!     // Metadata helper: key "user:42", tag "user:42", and tag "users".
 //!     .for_cache_entity::<User>(42)
-//!     .with_name("load-user");
+//!     .with_name("load-user")
+//!     .refresh_policy(
+//!         RefreshPolicy::new()
+//!             .refresh_ahead(std::time::Duration::from_secs(10))
+//!             .stale_while_revalidate(std::time::Duration::from_secs(300)),
+//!     );
 //!
 //! let user = queries
 //!     .cached_with::<User>(policy)
@@ -128,6 +135,9 @@ pub use hydracache_macros::{query_cache_policy, HydraCacheEntity};
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
 pub use query::{DbCache, DbQuery, PreparedDbQuery};
+
+/// Database-facing alias for local cache refresh/stale behavior.
+pub type RefreshPolicy = hydracache::RefreshOptions;
 
 #[cfg(test)]
 mod tests;

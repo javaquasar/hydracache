@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use hydracache::{CacheKeyBuilder, CacheOptions, TagSet};
+use hydracache::{CacheKeyBuilder, CacheOptions, RefreshOptions, TagSet};
 
 use crate::CacheEntity;
 
@@ -42,6 +42,7 @@ pub struct QueryCachePolicy {
     key: Option<String>,
     tags: TagSet,
     ttl: Option<Duration>,
+    refresh: Option<RefreshOptions>,
 }
 
 impl QueryCachePolicy {
@@ -130,6 +131,11 @@ impl QueryCachePolicy {
         self.ttl
     }
 
+    /// Return the optional refresh/stale policy.
+    pub fn refresh_policy_value(&self) -> Option<RefreshOptions> {
+        self.refresh
+    }
+
     /// Set or replace the diagnostic operation name.
     pub fn with_name(mut self, name: impl Into<String>) -> Self {
         self.name = Some(name.into());
@@ -206,6 +212,12 @@ impl QueryCachePolicy {
     /// Set a per-entry TTL.
     pub fn ttl(mut self, ttl: Duration) -> Self {
         self.ttl = Some(ttl);
+        self
+    }
+
+    /// Set refresh/stale behavior for this query result.
+    pub fn refresh_policy(mut self, refresh: RefreshOptions) -> Self {
+        self.refresh = Some(refresh);
         self
     }
 
