@@ -8,9 +8,10 @@ optional cluster synchronization.
 
 HydraCache is in early development. The current implementation provides the
 local async cache runtime, observability snapshots, optional Axum actuator
-routes, an in-process distributed invalidation bus, the first client/member
-cluster API shape, plus the database result-cache adapters `hydracache-db` and
-`hydracache-sqlx`, `hydracache-diesel`, and `hydracache-seaorm`.
+routes, an in-process distributed invalidation bus, embedded client/member
+cluster APIs, optional chitchat/raft/HTTP cluster adapter crates, plus the
+database result-cache adapters `hydracache-db`, `hydracache-sqlx`,
+`hydracache-diesel`, and `hydracache-seaorm`.
 
 ## Why HydraCache?
 
@@ -73,8 +74,7 @@ The current v0 line includes:
   to a cluster runtime
 - `HydraCache::member()` for in-process cluster members that route
   invalidation intent and expose cluster diagnostics
-- `InMemoryCluster` for tests, demos, and the first cluster API surface before
-  real discovery/Raft transports are introduced
+- `InMemoryCluster` for tests, demos, and local embedded cluster coordination
 - `InMemoryClusterDiscovery` for recording discovered candidates and liveness
   events before authoritative membership admission
 - optional `hydracache-cluster-chitchat` crate for real chitchat-backed
@@ -95,6 +95,8 @@ The current v0 line includes:
 - Moka-backed local storage
 - database-neutral query result-cache descriptors
 - SQLx helper methods: `fetch_one`, `fetch_optional`, and `fetch_all`
+- Diesel helper methods: `diesel_first`, `diesel_optional`, and `diesel_all`
+- SeaORM helper methods: `sea_one`, `sea_value`, and `sea_all`
 - database query ergonomics: `entity`, `collection`, `for_entity`, and
   `collection_tag`
 - `CacheEntity` metadata for domain-shaped database cache descriptors
@@ -110,9 +112,10 @@ Out of scope for v0:
 - SQL parsing or query-generation macros
 - external invalidation transports such as Postgres LISTEN/NOTIFY, Redis, or
   NATS
-- production multi-node Raft transport, durable metadata storage, ownership,
-  routing, and failover decisions
-- production value replication or remote owner-side query execution
+- production multi-node Raft networking, full durable Raft log storage, or
+  automated failover repair
+- production value replication, transparent remote query execution, or remote
+  closures
 - additional discovery adapters such as libp2p
 - write-enabled actuator/admin endpoints
 - persistence
@@ -623,23 +626,23 @@ impl CacheInvalidationReceiver for MyReceiver {
 
 ## Client And Member Cluster Mode
 
-`HydraCache::client()` and `HydraCache::member()` are the first public cluster
-shape. They are intentionally small: a client is an application-side near-cache,
-and a member is a cluster participant. In `0.20.0` both can join an
-`InMemoryCluster`, share its invalidation bus, and expose role/generation/epoch
-diagnostics. Cluster generations are part of the safety contract: stale
-processes with an older generation cannot leave a newer runtime or publish
-cluster invalidations after a node id is reused by a restart. Real discovery
-and raft-rs metadata support live in optional cluster crates, so local-only
-applications do not pull those dependencies.
-From `0.28.0`, cluster diagnostics also include a local runtime lifecycle
-snapshot with status, start/stop counters, shutdown-request state, and failure
-details. This gives applications and actuator-style endpoints a cheap way to
-tell whether a client/member runtime is running, stopping, stopped, or failed.
+`HydraCache::client()` and `HydraCache::member()` are the public embedded
+cluster shape. A client is an application-side near-cache, and a member is a
+cluster participant. Both can join an `InMemoryCluster`, share its invalidation
+bus, and expose role/generation/epoch diagnostics. Cluster generations are part
+of the safety contract: stale processes with an older generation cannot leave a
+newer runtime or publish cluster invalidations after a node id is reused by a
+restart. Real discovery and raft-rs metadata support live in optional cluster
+crates, so local-only applications do not pull those dependencies.
 
-`0.20.0` also adds the `ClusterControlPlane` seam. The default path still uses
-`InMemoryCluster`, but advanced users and future HydraCache crates can pass a
-custom adapter through `.control_plane(...)`:
+Cluster diagnostics also include a local runtime lifecycle snapshot with
+status, start/stop counters, shutdown-request state, and failure details. This
+gives applications and actuator-style endpoints a cheap way to tell whether a
+client/member runtime is running, stopping, stopped, or failed.
+
+The `ClusterControlPlane` seam lets advanced users pass a custom membership
+adapter through `.control_plane(...)`. The default embedded path still uses
+`InMemoryCluster`:
 
 ```rust
 # use std::sync::Arc;
@@ -1114,23 +1117,13 @@ peer-fetch seams. See
 [`docs/PRODUCTION_CLUSTER_READINESS.md`](docs/PRODUCTION_CLUSTER_READINESS.md)
 for the staging checklist and the current cluster non-goals.
 
-## Upgrading From 0.20 To 0.21
+## Cluster Discovery And Metadata Adapters
 
-The local cache, DB adapter, listener, and macro APIs remain source-compatible.
-The main additions are cluster-facing:
-
-- `hydracache-cluster-chitchat`, `hydracache-cluster-raft`, and
-  `hydracache-cluster` are now included in the normal publish/post-publish
-  verification flow.
-- `InMemoryCluster::owner_for_key(...)` and `ClusterPeerFetch` provide the
-  first ownership and encoded-byte peer-fetch seams.
-- `HydraCache::cluster_ownership_diagnostics()` exposes ownership counters
-  without adding fields to the existing `ClusterDiagnostics` struct.
-- The sandbox includes ownership and ownership-transfer labs for manual checks.
-
-If you publish or validate from source, run the staged package checks from
-`docs/PUBLISHING.md` because downstream crates can only package after freshly
-published HydraCache dependencies are visible in the crates.io index.
+The cluster APIs are split into small optional crates so applications can adopt
+only the pieces they need. Start with `InMemoryCluster` for local tests and
+demos, add chitchat discovery when nodes should find candidates dynamically,
+and add the raft metadata runtime when membership decisions need a control
+plane seam.
 
 Client/member caches can also observe authoritative membership changes through
 `subscribe_cluster_membership()`. The stream is bounded and non-blocking:
@@ -1331,343 +1324,42 @@ image:
 docker compose -f crates/hydracache-sandbox/compose/docker-compose.yml --profile full up --build
 ```
 
-After startup:
+After startup, open the interactive surfaces:
 
 ```text
 http://127.0.0.1:3000/demo/ui
 http://127.0.0.1:3000/swagger-ui
 http://127.0.0.1:3000/openapi.json
 http://127.0.0.1:3000/ready
-http://127.0.0.1:3000/demo/config
-http://127.0.0.1:3000/demo/presets
-http://127.0.0.1:3000/demo/report
-http://127.0.0.1:3000/demo/events
-http://127.0.0.1:3000/demo/events/summary
-http://127.0.0.1:3000/demo/export
-http://127.0.0.1:3000/demo/scenarios/files
-http://127.0.0.1:3000/demo/scenarios/catalog
-http://127.0.0.1:3000/demo/scenarios/file/run
-http://127.0.0.1:3000/demo/scenarios/suite/file/run
-http://127.0.0.1:3000/demo/scenarios/document/run
-http://127.0.0.1:3000/demo/flows
-http://127.0.0.1:3000/demo/benchmarks/compare
-http://127.0.0.1:3000/demo/distributed/invalidation/run
-http://127.0.0.1:3000/demo/cluster/lifecycle/run
-http://127.0.0.1:3000/demo/cluster/ownership/run
-http://127.0.0.1:3000/demo/cluster/ownership-transfer/run
-http://127.0.0.1:3000/demo/cluster/routed-peer-fetch/run
-http://127.0.0.1:3000/demo/cluster/read-through/run
-http://127.0.0.1:3000/demo/cluster/owner-load/run
-http://127.0.0.1:3000/demo/cluster/real-adapters/run
-http://127.0.0.1:3000/demo/events/preflight/run
-http://127.0.0.1:3000/demo/observability/prometheus
-http://127.0.0.1:3000/demo/openapi/client-smoke
-http://127.0.0.1:3000/demo/security
 http://127.0.0.1:3000/actuator/hydracache/health
-http://127.0.0.1:3000/actuator/hydracache/caches/main/diagnostics
 ```
 
-The OpenAPI document is generated from Rust route/schema declarations through
-`utoipa`. Swagger UI is served from local embedded assets through
-`utoipa-swagger-ui`; it does not depend on a CDN. The Swagger surface is meant
-to be an interactive HydraCache lab, not only reference documentation. It can
-exercise raw local-cache operations, typed-cache namespacing, database-backed
-query caching, cached non-database functions, TTL expiry, single-flight, and
-invalidation/load race safety. It also includes a listener demo that captures
-mutation, access, key, tag, and callback events produced by one cache flow, plus
-a distributed invalidation demo that creates two temporary cache nodes on one
-in-memory bus and verifies tag, key, and flush propagation. The cluster
-lifecycle demo creates a temporary member/client pair, records discovery
-candidates, verifies remote invalidation in both directions, calls
-`leave_cluster()` for both runtimes, and confirms local cache contents are not
-cleared by leaving membership. Its response includes lifecycle reports for the
-member and client before and after leave, so the Swagger UI shows running and
-stopped transitions without reading logs. The cluster ownership lab resolves an
-owner for a key, exercises the transport-neutral peer-fetch seam, and verifies that
-owner-originated tag invalidation reaches a client near-cache. The ownership
-transfer lab then removes the selected owner, verifies ownership moves to the
-survivor, demonstrates peer-fetch miss/hit behavior around the transfer, and
-shows the original owner rejoining with a newer generation. The routed
-peer-fetch lab starts two temporary HTTP peer-fetch services, advertises their
-base URLs through member metadata, resolves the key owner, and verifies that
-`PeerFetchRouter` fetches the encoded value from the advertised owner endpoint.
-The read-through lab builds on that route by hydrating a client near-cache from
-the owner response and proving that the second read is a local hit. The
-owner-load lab goes one step further: on owner miss it executes a registered
-named loader on the selected owner, stores the encoded value there, hydrates the
-client near-cache, verifies concurrent same-key sharing, and reports structured
-missing-loader, stale-generation, and wrong-owner rejections.
-The event preflight lab demonstrates listener cost boundaries: no-subscriber
-operations publish nothing, mutation subscribers see only mutation events,
-disabled access subscribers do not turn on hit/miss streams, and enabled access
-subscribers receive access events.
-The real-adapters demo connects
-`hydracache-cluster-chitchat` to `ClusterAdmissionBridge` and
-`hydracache-cluster-raft` using chitchat's in-memory `ChannelTransport`, so the
-full discovery-to-metadata path can be inspected without Docker or UDP ports.
-The real-adapters response also includes admission bridge lifecycle diagnostics,
-which is useful when checking whether the bridge is idle, running as a
-background task, shutting down gracefully, or failed.
+The sandbox is an interactive lab rather than production API surface. Use it to
+exercise local cache operations, typed-cache namespacing, database-backed query
+caching, cached non-database functions, TTL expiry, single-flight,
+invalidation/load race safety, listeners, distributed invalidation, cluster
+membership, ownership, peer-fetch, read-through hydration, owner-load, and real
+chitchat + raft adapter flows.
 
-`/demo/ui` is a small local no-CDN developer console on top of the same API. It
-can run the golden flow, negative scenarios, readiness checks, reset the demo
-state, show structured events, run the built-in self-test, export a portable
-report bundle, inspect grouped event summaries, compare local profiles, replay named scenarios, run fault
-injection, launch a manual benchmark, run JSON/YAML scenario documents, compare
-benchmark reports, catalog and run committed scenario files/suites, replay retained flow
-contexts, inspect seeded product/order query-cache demos, run generated-client
-smoke checks, inspect Prometheus-style metrics, and display small hit/miss/load
-counters with a visual flow timeline. The dashboard also includes a textarea
-scenario editor for quickly pasting JSON/YAML recipes and a one-click listener
-demo for verifying subscriptions manually. It also includes one-click
-distributed invalidation and cluster lifecycle flows that render remote bus
-events and membership timelines in the output, cluster ownership flows that
-render owner selection, transfer, advertised endpoint routing, peer-fetch
-results, and read-through hydration, plus a real chitchat + raft adapter flow
-that shows bridge diagnostics and committed metadata commands.
+Swagger UI is generated from Rust route/schema declarations through `utoipa` and
+served from local embedded assets through `utoipa-swagger-ui`, so it does not
+need a CDN. For the complete endpoint list and request/response schemas, use
+`/swagger-ui` or `/openapi.json` instead of treating this README as an API
+catalog.
 
-Useful Swagger/API groups:
+Useful committed assets:
 
-```text
-GET  /ready
-GET  /demo/ui
-GET  /demo/config
-GET  /demo/presets
-GET  /demo/events
-GET  /demo/events/summary
-GET  /demo/events?kind=cache-hit
-GET  /demo/events?flow_id=manual-flow&limit=10
-GET  /demo/export
-GET  /demo/flows
-GET  /demo/flows/{flow_id}/timeline
-POST /demo/flows/{flow_id}/replay
-GET  /demo/observability/prometheus
-GET  /demo/observability/traces/latest
-GET  /demo/db/seed-report
-GET  /demo/openapi/client-check
-GET  /demo/openapi/client-smoke
-GET  /demo/security
-POST /demo/import
-POST /demo/self-test
-POST /demo/scenarios/run
-GET  /demo/scenarios/files
-GET  /demo/scenarios/catalog
-POST /demo/scenarios/file/run
-POST /demo/scenarios/suite/run
-POST /demo/scenarios/suite/file/run
-POST /demo/scenarios/document/parse
-POST /demo/scenarios/document/run
-POST /demo/profiles/compare
-POST /demo/replay
-POST /demo/faults/run
-POST /demo/benchmarks/manual
-POST /demo/benchmarks/compare
-POST /demo/events/clear
-POST /demo/reset
-POST /demo/cache/put
-POST /demo/cache/get
-POST /demo/cache/get-or-load
-POST /demo/cache/contains
-POST /demo/cache/remove
-POST /demo/cache/invalidate-tag
-POST /demo/listeners/run
-POST /demo/events/preflight/run
-POST /demo/distributed/invalidation/run
-POST /demo/cluster/lifecycle/run
-POST /demo/cluster/ownership/run
-POST /demo/cluster/ownership-transfer/run
-POST /demo/cluster/routed-peer-fetch/run
-POST /demo/cluster/read-through/run
-POST /demo/cluster/real-adapters/run
-POST /demo/query/users/{id}/load
-POST /demo/query/products/{id}/load
-POST /demo/query/orders/{id}/summary/load
-POST /demo/typed/users/{id}/load
-POST /demo/functions/double/{input}
-POST /demo/scenarios/ttl
-POST /demo/scenarios/single-flight
-POST /demo/scenarios/invalidation-race
-POST /demo/negative/missing-key
-POST /demo/negative/missing-user
-POST /demo/negative/loader-error
-POST /demo/negative/expired-entry
-POST /demo/negative/invalidation-miss
-GET  /demo/report
-```
+- `crates/hydracache-sandbox/http/sandbox.http` - editor-friendly HTTP requests.
+- `crates/hydracache-sandbox/scripts/run-demo-flow.ps1` - scripted golden flow.
+- `crates/hydracache-sandbox/scripts/start-profile.ps1` - profile launcher.
+- `crates/hydracache-sandbox/scenarios/` - JSON/YAML scenario recipes and suites.
+- `crates/hydracache-sandbox/openapi/generated-client.js` - minimal generated-client shape.
+- `crates/hydracache-sandbox/migrations/` and `crates/hydracache-sandbox/seeds/` - SQLite/Postgres demo data.
 
-Cluster lifecycle demo payload:
-
-```json
-{
-  "cluster": "sandbox-orders",
-  "key": "cluster:user:42",
-  "second_key": "cluster:user:99",
-  "retained_key": "cluster:retained",
-  "tag": "cluster-users",
-  "value": "Ada",
-  "flow_id": "cluster-flow"
-}
-```
-
-The response contains `member_before_leave.lifecycle`,
-`client_before_leave.lifecycle`, `member_after_leave.lifecycle`, and
-`client_after_leave.lifecycle`. The first two should report `running`; the last
-two should report `stopped` after `leave_cluster()` completes.
-
-Cluster ownership demo with `curl`:
-
-```bash
-curl -X POST http://127.0.0.1:3000/demo/cluster/ownership/run \
-  -H "content-type: application/json" \
-  -d '{"cluster":"manual-ownership","key":"manual:user:42","tag":"manual-users","value":"Ada","flow_id":"manual-ownership"}'
-```
-
-The same ownership-transfer scenario from PowerShell:
-
-```powershell
-$body = @{
-  cluster = 'manual-transfer'
-  key = 'manual:user:42'
-  tag = 'manual-users'
-  value = 'Ada'
-  flow_id = 'manual-transfer'
-} | ConvertTo-Json
-
-Invoke-RestMethod `
-  -Method Post `
-  -Uri 'http://127.0.0.1:3000/demo/cluster/ownership-transfer/run' `
-  -ContentType 'application/json' `
-  -Body $body
-```
-
-Routed peer-fetch demo payload:
-
-```json
-{
-  "cluster": "manual-routed",
-  "key": "manual:user:42",
-  "value": "Ada",
-  "flow_id": "manual-routed"
-}
-```
-
-The response includes `owner`, `routed_peer_fetch`, `router_diagnostics`, both
-temporary member endpoints, a three-step timeline, and `passed: true` when the
-owner endpoint was discovered from metadata and the HTTP fetch returned the
-expected encoded value.
-
-Read-through hydration demo payload:
-
-```json
-{
-  "cluster": "manual-read-through",
-  "key": "manual:user:42",
-  "value": "Ada",
-  "flow_id": "manual-read-through"
-}
-```
-
-The response includes `first_read`, `second_read`,
-`read_through_diagnostics`, `router_diagnostics`, and hydrated decoded values.
-`passed: true` means the first call was a remote owner hit, the value was
-hydrated into the client near-cache, and the second call was served locally.
-
-`/demo/report` returns a cumulative application report with active profile,
-backend, loader counters, function counters, retained event count,
-capabilities, and cache diagnostics. `/demo/events` returns the bounded
-structured event log for recent cache hits, misses, loads, invalidations,
-scenario runs, resets, and expected errors. It can be filtered by exact
-`kind`, `key`, `tag`, `flow_id`, and capped with `limit`.
-`/demo/events/summary` groups the retained log by event kind, load source, flow
-id, key, and tag, which is useful when a manual run generated a lot of output.
-`/demo/export` combines sandbox info, readiness, config, report, and events into one bundle;
-`POST /demo/self-test` runs a built-in smoke scenario and returns step-level
-results plus a filtered event log for that self-test flow.
-
-The scenario lab endpoints turn the sandbox into a reproducible cache behavior
-workbench:
-
-```text
-POST /demo/scenarios/run        # golden-path, ttl, single-flight, invalidation-race, negative-suite, self-test
-GET  /demo/scenarios/files      # committed JSON/YAML recipes
-GET  /demo/scenarios/catalog    # parsed recipe/suite metadata and run endpoints
-POST /demo/scenarios/file/run   # run one committed recipe
-POST /demo/scenarios/suite/run  # run an inline scenario suite
-POST /demo/scenarios/suite/file/run
-GET  /demo/flows                # retained flow ids that can be replayed
-GET  /demo/flows/{flow_id}/timeline
-POST /demo/flows/{flow_id}/replay
-POST /demo/profiles/compare    # memory/sqlite-memory/sqlite-file; Postgres is reported as skipped
-POST /demo/replay              # rerun a named scenario and link it to a previous flow id
-POST /demo/faults/run          # loader errors, loader delays, invalidation timing
-POST /demo/benchmarks/manual   # small request/concurrency/key-distribution workload
-POST /demo/benchmarks/compare  # baseline/candidate latency, throughput, loader-call/p95 diff, verdict
-```
-
-Scenario documents can be kept as JSON or a small YAML subset in
-`crates/hydracache-sandbox/scenarios/`. They describe steps plus pass/fail
-assertions and optional timeline assertions, so a manual demo can become a
-reusable regression recipe:
-
-```json
-{
-  "name": "golden-path-json",
-  "flow_id": "file-json-golden",
-  "reset": true,
-  "steps": [
-    {"name": "first load", "action": "load-user", "id": 42, "expected_source": "loader"},
-    {"name": "second load", "action": "load-user", "id": 42, "expected_source": "cache"}
-  ],
-  "assertions": [
-    {"name": "cache hit observed", "metric": "cache-hits", "op": "gte", "value": 1},
-    {"name": "loader called once", "metric": "loader-calls", "op": "eq", "value": 1}
-  ],
-  "timeline_assertions": [
-    {"name": "load before hit", "assertion": "kind-before-kind", "before": "cache-load", "after": "cache-hit"}
-  ]
-}
-```
-
-Use `POST /demo/scenarios/document/parse` for YAML text normalization and
-`POST /demo/scenarios/document/run` for execution. Use
-`POST /demo/scenarios/file/run` for a committed recipe and
-`POST /demo/scenarios/suite/file/run` for a committed suite such as
-`crates/hydracache-sandbox/scenarios/regression-suite.json`. The bundled YAML
-example is at `crates/hydracache-sandbox/scenarios/golden-path.yaml`.
-
-Latency is recorded on demo events where the sandbox controls the operation.
-`/demo/report`, `/demo/events`, `/demo/export`, scenario responses, timelines,
-and benchmark responses include min/max/average/p50/p95/p99-style summaries.
-Benchmark comparison responses also include loader-call ratio deltas, p95
-latency deltas, and a compact verdict (`candidate-better`,
-`candidate-worse`, or `mixed`).
-
-For observability demos, `/demo/observability/prometheus` emits dependency-free
-Prometheus text metrics and `/demo/observability/traces/latest` returns an
-OpenTelemetry-style teaching view derived from the retained event log. The
-sandbox also includes SQLite/Postgres schema and seed files under
-`crates/hydracache-sandbox/migrations/` and `crates/hydracache-sandbox/seeds/`;
-`GET /demo/db/seed-report` summarizes those assets. The seeded query-cache demo
-now covers users, products, and order summaries:
-
-```text
-POST /demo/query/users/42/load
-POST /demo/query/products/100/load
-POST /demo/query/orders/5000/summary/load
-```
-
-`GET /demo/openapi/client-check` verifies that representative generated-client
-paths exist in the current OpenAPI document. `GET
-/demo/openapi/client-smoke` checks that the committed minimal fetch client still
-contains the expected methods for scenarios, suites, flows, products, orders,
-benchmarks, export, and import.
-`crates/hydracache-sandbox/openapi/generated-client.js` shows a minimal fetch
-client shape.
-
-The read-only actuator remains available for operational views:
-`/actuator/hydracache/health`,
-`/actuator/hydracache/caches`, `/actuator/hydracache/caches/main/stats`, and
-`/actuator/hydracache/caches/main/diagnostics`.
+The sandbox also includes an optional Postgres Docker smoke test. If Docker is
+available, it runs the cache/invalidate/reload flow against a real Postgres
+container. If Docker is unavailable, it prints a skip message and exits
+successfully.
 
 Golden demo path:
 
@@ -1995,33 +1687,22 @@ lines should be investigated before release.
 - `hydracache-seaorm` - use this if you want SeaORM-facing aliases, re-exports, and async `sea_one`/`sea_value`/`sea_all` helpers.
 - `hydracache-macros` - usually use this through local-cache macros from `hydracache` or macro re-exports from `hydracache-db`/adapter crates.
 - `hydracache-core` - use this only if you need core shared types without the runtime.
-- `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, Postgres Docker, and real cluster-adapter checks.
+- `hydracache-sandbox` - non-published manual sandbox for local actuator, Swagger, memory, SQLite, Postgres Docker, scenario labs, and real cluster-adapter checks.
 
-## Release Plan
+## Roadmap And Release Notes
 
-The v0 release plan is maintained here:
+Keep the README focused on the current product surface. Detailed release
+history and old implementation plans live under `docs/`:
 
-- [docs/plans/V0_RELEASE_PLAN.md](docs/plans/V0_RELEASE_PLAN.md)
-- [docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md](docs/plans/V0_3_LOCAL_ERGONOMICS_PLAN.md)
-- [docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md](docs/plans/V0_7_SQLX_RUNTIME_ADAPTER_PLAN.md)
-- [docs/plans/V0_8_SQLX_HELPERS_PLAN.md](docs/plans/V0_8_SQLX_HELPERS_PLAN.md)
-- [docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md](docs/plans/V0_9_QUERY_API_ERGONOMICS_PLAN.md)
-- [docs/plans/V0_10_CACHE_ENTITY_PLAN.md](docs/plans/V0_10_CACHE_ENTITY_PLAN.md)
-- [docs/plans/V0_11_ENTITY_DERIVE_PLAN.md](docs/plans/V0_11_ENTITY_DERIVE_PLAN.md)
-- [docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md](docs/plans/V0_14_CACHEABLE_FUNCTIONS_IDEA.md)
-- [docs/plans/V0_15_CACHEABLE_ERGONOMICS_PLAN.md](docs/plans/V0_15_CACHEABLE_ERGONOMICS_PLAN.md)
-- [docs/plans/V0_16_OBSERVABILITY_PLAN.md](docs/plans/V0_16_OBSERVABILITY_PLAN.md)
-- [docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md](docs/plans/V0_20_CLUSTER_FORMATION_LIBRARY_ANALYSIS.md)
-- [docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md](docs/plans/V0_20_CHITCHAT_RAFT_CLUSTER_IDEA.md)
-- [docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md](docs/plans/V0_20_CLUSTER_CLIENT_ROADMAP.md)
-- [docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md](docs/plans/V0_20_CLUSTER_DISCOVERY_ADAPTER_PLAN.md)
-- [docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md](docs/plans/V0_20_CLUSTER_CONTROL_PLANE_PLAN.md)
-- [docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md](docs/plans/V0_20_CLUSTER_NEXT_STEPS_PLAN.md)
-- [docs/plans/V0_22_REMOTE_PEER_FETCH_PLAN.md](docs/plans/V0_22_REMOTE_PEER_FETCH_PLAN.md)
-- [docs/plans/V0_23_PEER_FETCH_ROUTING_PLAN.md](docs/plans/V0_23_PEER_FETCH_ROUTING_PLAN.md)
-- [docs/plans/V0_24_CLUSTER_READ_THROUGH_PLAN.md](docs/plans/V0_24_CLUSTER_READ_THROUGH_PLAN.md)
-- [docs/plans/V0_25_COMBINED_HARDENING_AND_OWNER_LOADING_PLAN.md](docs/plans/V0_25_COMBINED_HARDENING_AND_OWNER_LOADING_PLAN.md)
-- [docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md](docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md)
+- [docs/releases/0.31.1.md](docs/releases/0.31.1.md) - latest patch notes.
+- [docs/releases/0.31.0.md](docs/releases/0.31.0.md) - Diesel and SeaORM adapter release.
+- [docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md](docs/plans/V0_31_DIESEL_SEAORM_ADAPTERS_PLAN.md) - current ORM adapter plan.
+- [docs/PRODUCTION_CLUSTER_READINESS.md](docs/PRODUCTION_CLUSTER_READINESS.md) - cluster readiness boundaries.
+- [docs/PUBLISHING.md](docs/PUBLISHING.md) - staged publish and post-publish checks.
+- [docs/TESTING.md](docs/TESTING.md) - test, coverage, and CI guidance.
+
+Older `docs/plans/V0_*` files are retained as project history, but they are not
+the primary way to understand the current public API.
 
 ## Workspace
 
@@ -2033,7 +1714,7 @@ The v0 release plan is maintained here:
 - `crates/hydracache-cluster-transport-axum` - optional Axum/HTTP peer-fetch transport and read-through near-cache hydration for encoded member values
 - `crates/hydracache-observability` - framework-neutral cache registry and serializable diagnostic snapshots
 - `crates/hydracache-actuator-axum` - optional read-only Axum actuator routes
-- `crates/hydracache-sandbox` - non-published manual backend for exercising actuator and database modes
+- `crates/hydracache-sandbox` - non-published manual backend for exercising actuator, database, scenario, listener, and cluster modes
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
 - `crates/hydracache-diesel` - Diesel-facing integration crate and re-exports
 - `crates/hydracache-macros` - procedural macros such as `cacheable!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
@@ -2063,4 +1744,5 @@ types into:
 - `options.rs` - `CacheOptions`
 - `stats.rs` - `CacheStats` and `CacheDiagnostics`
 - `codec.rs` - `CacheCodec` and `PostcardCodec`
+- `events.rs` - cache event kinds, origins, filters, subscribers, and value modes
 - `error.rs` - `CacheError`
