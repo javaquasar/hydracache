@@ -215,6 +215,13 @@ The scenario compiles a fresh binary crate that touches the local cache,
 database-neutral adapter, SQLx re-export, actuator crate, chitchat/raft cluster
 crates, and the Axum HTTP transport auth/wire APIs.
 
+When dependency boundaries change, run the feature/crate matrix before staged
+package checks:
+
+```powershell
+.\scripts\verify-feature-matrix.ps1
+```
+
 Release verification can leave several large generated directories under
 `target`, such as `consumer-check-*`, `release-gate*`, `msrv-*`,
 `llvm-cov-target`, and `semver-checks`. After the release is verified, clean

@@ -82,6 +82,20 @@ are published, and `-Set adapters` should be run after `hydracache` is
 published. Use `-AllowDirty` only when validating an intentionally uncommitted
 release diff before the final commit.
 
+When changing dependencies or adapter boundaries, run the feature/crate matrix
+check as a faster dependency-surface gate:
+
+```powershell
+.\scripts\verify-feature-matrix.ps1
+```
+
+Use `-DryRun` when reviewing CI wiring or release plans without compiling every
+package:
+
+```powershell
+.\scripts\verify-feature-matrix.ps1 -DryRun
+```
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.

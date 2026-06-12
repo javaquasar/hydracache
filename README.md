@@ -53,6 +53,9 @@ invalidation, refresh/stale behavior, and diagnostics, see
 For stable stats, diagnostics, and actuator response expectations, see
 [`docs/OBSERVABILITY_CONTRACT.md`](docs/OBSERVABILITY_CONTRACT.md).
 
+For dependency selection and package-level verification, see
+[`docs/FEATURE_MATRIX.md`](docs/FEATURE_MATRIX.md).
+
 ## v0 Scope
 
 The current v0 line includes:
