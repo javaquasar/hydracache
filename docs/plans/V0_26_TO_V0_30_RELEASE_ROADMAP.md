@@ -87,6 +87,10 @@ Planned work:
 - document when to use plain peer fetch, read-through hydration, and
   owner-side load-on-miss.
 
+Primary plan:
+
+- [Hot remote cache and owner pressure plan](./V0_29_HOT_REMOTE_CACHE_PRESSURE_PLAN.md)
+
 ## 0.30.0: Production Cluster Readiness Pass
 
 Goal: make the cluster story safer to evaluate in staging.
