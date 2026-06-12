@@ -215,6 +215,16 @@ The scenario compiles a fresh binary crate that touches the local cache,
 database-neutral adapter, SQLx re-export, actuator crate, chitchat/raft cluster
 crates, and the Axum HTTP transport auth/wire APIs.
 
+Release verification can leave several large generated directories under
+`target`, such as `consumer-check-*`, `release-gate*`, `msrv-*`,
+`llvm-cov-target`, and `semver-checks`. After the release is verified, clean
+only those generated directories with:
+
+```powershell
+.\scripts\clean-generated-targets.ps1 -WhatIf
+.\scripts\clean-generated-targets.ps1
+```
+
 ## Publishing an update
 
 Published versions cannot be overwritten. For any fix after `0.1.0`, bump the

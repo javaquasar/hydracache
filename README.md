@@ -43,6 +43,9 @@ The long-term direction is:
 simple local cache -> database result-cache adapter -> optional distributed synchronization
 ```
 
+For production usage guidance, see
+[`docs/PRODUCTION_GUIDE.md`](docs/PRODUCTION_GUIDE.md).
+
 ## v0 Scope
 
 The current v0 line includes:

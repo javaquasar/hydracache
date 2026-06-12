@@ -771,10 +771,10 @@ where
                 return Ok(value);
             }
 
-            let stale_entry =
-                stale_entry_in_window(&entry, refresh_options.stale_while_revalidate_value());
+            let in_stale_while_revalidate_window =
+                entry_in_stale_window(&entry, refresh_options.stale_while_revalidate_value());
 
-            if stale_entry.is_some() {
+            if in_stale_while_revalidate_window {
                 match self.decode_cached_hit(key, &entry).await {
                     Ok(value) => {
                         self.spawn_background_refresh(
@@ -797,7 +797,8 @@ where
             let fallback = refresh_options
                 .serve_stale_on_loader_error_value()
                 .then(|| {
-                    stale_entry_in_window(&entry, refresh_options.stale_on_loader_error_window())
+                    entry_in_stale_window(&entry, refresh_options.stale_on_loader_error_window())
+                        .then(|| entry.clone())
                 })
                 .flatten();
 
@@ -1561,13 +1562,10 @@ where
     }
 }
 
-fn stale_entry_in_window(
-    entry: &CacheEntry,
-    window: Option<std::time::Duration>,
-) -> Option<CacheEntry> {
+fn entry_in_stale_window(entry: &CacheEntry, window: Option<std::time::Duration>) -> bool {
     window
-        .filter(|window| entry.stale_window_contains_now(*window))
-        .map(|_| entry.clone())
+        .map(|window| entry.stale_window_contains_now(window))
+        .unwrap_or(false)
 }
 
 fn take_loader<F>(loader: &mut Option<F>) -> F {

@@ -211,6 +211,29 @@ checks the crates.io versions that downstream users will resolve:
 .\scripts\verify-crates-io-consumer.ps1 -Version 0.30.0
 ```
 
+For the 0.33 production ergonomics layer specifically, run the local refresh
+tests, database-neutral refresh policy tests, adapter re-export/integration
+tests, and rustdoc examples:
+
+```powershell
+cargo test -p hydracache --locked refresh
+cargo test -p hydracache-db --locked refresh
+cargo test -p hydracache-sqlx --locked
+cargo test -p hydracache-diesel --locked
+cargo test -p hydracache-seaorm --locked
+cargo test --doc -p hydracache --locked
+cargo test --doc -p hydracache-db --locked
+```
+
+Release, coverage, MSRV, and consumer checks intentionally create isolated
+directories under `target`. To reclaim that generated space without deleting
+ordinary `target/debug` incrementals, preview and then run:
+
+```powershell
+.\scripts\clean-generated-targets.ps1 -WhatIf
+.\scripts\clean-generated-targets.ps1
+```
+
 For the 0.31 Diesel and SeaORM adapter layer specifically, run the focused
 adapter tests, rustdoc examples, sandbox OpenAPI comparison coverage, and the
 external consumer check in local-path mode:
