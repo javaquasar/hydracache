@@ -106,6 +106,85 @@ async fn query_cache_policy_exposes_reusable_metadata() {
 }
 
 #[tokio::test]
+async fn query_cache_policy_presets_encode_common_ttl_intent() {
+    assert_eq!(
+        QueryCachePolicy::short_lived().ttl_value(),
+        Some(Duration::from_secs(30))
+    );
+    assert_eq!(
+        QueryCachePolicy::read_mostly().ttl_value(),
+        Some(Duration::from_secs(300))
+    );
+    assert_eq!(
+        QueryCachePolicy::per_entity().ttl_value(),
+        Some(Duration::from_secs(300))
+    );
+    assert_eq!(
+        QueryCachePolicy::no_ttl_explicit_invalidation().ttl_value(),
+        None
+    );
+    assert_eq!(
+        QueryCachePolicy::negative_cache().ttl_value(),
+        Some(Duration::from_secs(30))
+    );
+}
+
+#[tokio::test]
+async fn query_cache_policy_presets_compose_with_entity_and_collection_metadata() {
+    let entity = QueryCachePolicy::per_entity().for_cache_entity::<User>(42);
+
+    assert_eq!(entity.key_value(), Some("user:42"));
+    assert_eq!(
+        entity.tags_value(),
+        &["user:42".to_owned(), "users".to_owned()]
+    );
+    assert_eq!(entity.ttl_value(), Some(Duration::from_secs(300)));
+
+    let collection = QueryCachePolicy::read_mostly().collection("users:active");
+
+    assert_eq!(collection.key_value(), Some("users%3Aactive"));
+    assert_eq!(collection.tags_value(), &["users%3Aactive".to_owned()]);
+    assert_eq!(collection.ttl_value(), Some(Duration::from_secs(300)));
+}
+
+#[tokio::test]
+async fn negative_cache_preset_caches_absence_briefly() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+    let policy = QueryCachePolicy::negative_cache()
+        .key("user:not-found:404")
+        .tag("users");
+
+    let first: Option<User> = cache
+        .cached_with::<User>(policy.clone())
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(None)
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached: Option<User> = cache
+        .cached_with::<User>(policy)
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(Some(user(404)))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, None);
+    assert_eq!(cached, None);
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
 async fn cached_with_applies_reusable_query_cache_policy() {
     let policy = QueryCachePolicy::named("load-user")
         .for_cache_entity::<User>(42)

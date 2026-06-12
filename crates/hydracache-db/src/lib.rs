@@ -8,8 +8,6 @@
 //! # Example
 //!
 //! ```rust
-//! use std::time::Duration;
-//!
 //! use hydracache::HydraCache;
 //! use hydracache_db::{DbCache, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy};
 //! use serde::{Deserialize, Serialize};
@@ -30,10 +28,10 @@
 //! // "db:user:42".
 //! let queries = DbCache::new(local, "db");
 //!
-//! let policy = QueryCachePolicy::new()
+//! let policy = QueryCachePolicy::read_mostly()
 //!     // Metadata helper: key "user:42", tag "user:42", and tag "users".
 //!     .for_cache_entity::<User>(42)
-//!     .ttl(Duration::from_secs(60));
+//!     .with_name("load-user");
 //!
 //! let user = queries
 //!     .cached_with::<User>(policy)
@@ -56,8 +54,6 @@
 //! dynamic id on each call:
 //!
 //! ```rust
-//! use std::time::Duration;
-//!
 //! use hydracache::HydraCache;
 //! use hydracache_db::{DbCache, HydraCacheEntity, PreparedQueryPolicy};
 //! use serde::{Deserialize, Serialize};
@@ -73,9 +69,9 @@
 //! # async fn main() -> hydracache_db::Result<()> {
 //! let queries = DbCache::new(HydraCache::local().build(), "db");
 //! let load_user = queries.prepare::<User>(
-//!     PreparedQueryPolicy::for_cache_entity::<User>()
-//!         .with_name("load-user")
-//!         .ttl(Duration::from_secs(60)),
+//!     PreparedQueryPolicy::per_entity()
+//!         .cache_entity::<User>()
+//!         .with_name("load-user"),
 //! );
 //!
 //! let user = load_user

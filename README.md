@@ -1503,16 +1503,15 @@ top of the same descriptor model.
 
 For repository-style code or future ORM adapters, move the cache metadata into
 a reusable `QueryCachePolicy` and keep the loader itself fully under your
-control:
+control. Start with an intent preset, then add the key/tag metadata that makes
+the value safe to invalidate:
 
 ```rust
-use std::time::Duration;
-
 use hydracache_db::QueryCachePolicy;
 
-let policy = QueryCachePolicy::named("load-user")
+let policy = QueryCachePolicy::read_mostly()
     .for_cache_entity::<User>(42)
-    .ttl(Duration::from_secs(60));
+    .with_name("load-user");
 
 let user = queries
     .cached_with::<User>(policy)
@@ -1533,14 +1532,12 @@ TTLs, entity key prefixes, and collection tags, then produces ordinary
 wrappers because the prepared contract is database-neutral.
 
 ```rust
-use std::time::Duration;
-
 use hydracache_db::PreparedQueryPolicy;
 
 let load_user = queries.prepare::<User>(
-    PreparedQueryPolicy::for_cache_entity::<User>()
-        .with_name("load-user")
-        .ttl(Duration::from_secs(60)),
+    PreparedQueryPolicy::per_entity()
+        .cache_entity::<User>()
+        .with_name("load-user"),
 );
 
 let user = load_user
@@ -1553,6 +1550,16 @@ let user = load_user
     })
     .await?;
 ```
+
+Available presets cover the common cases:
+
+- `short_lived()` - 30 second TTL for burst smoothing.
+- `read_mostly()` - 5 minute TTL for data that changes rarely but still has
+  explicit invalidation tags.
+- `per_entity()` - 5 minute TTL intended for entity-keyed values.
+- `no_ttl_explicit_invalidation()` - no TTL; rely on key/tag invalidation and
+  backend capacity.
+- `negative_cache()` - 30 second TTL for cached absence such as `Option::None`.
 
 When the policy is mostly declarative, `query_cache_policy!` can generate it
 from compact metadata:

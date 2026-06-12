@@ -4,6 +4,11 @@ use hydracache::{CacheKeyBuilder, CacheOptions, TagSet};
 
 use crate::CacheEntity;
 
+const SHORT_LIVED_TTL: Duration = Duration::from_secs(30);
+const READ_MOSTLY_TTL: Duration = Duration::from_secs(300);
+const PER_ENTITY_TTL: Duration = Duration::from_secs(300);
+const NEGATIVE_CACHE_TTL: Duration = Duration::from_secs(30);
+
 /// Reusable cache metadata for one database query result.
 ///
 /// `QueryCachePolicy` contains the database-neutral parts of query result
@@ -43,6 +48,61 @@ impl QueryCachePolicy {
     /// Create an empty cache policy.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Create a short-lived policy for values that should smooth brief bursts.
+    ///
+    /// The preset uses a 30 second TTL and leaves key/tags to the caller.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    ///
+    /// use hydracache_db::QueryCachePolicy;
+    ///
+    /// let policy = QueryCachePolicy::short_lived().key("user:42");
+    ///
+    /// assert_eq!(policy.ttl_value(), Some(Duration::from_secs(30)));
+    /// assert_eq!(policy.key_value(), Some("user:42"));
+    /// ```
+    pub fn short_lived() -> Self {
+        Self::new().ttl(SHORT_LIVED_TTL)
+    }
+
+    /// Create a read-mostly policy for values that change rarely.
+    ///
+    /// The preset uses a 5 minute TTL. Pair it with entity or collection tags
+    /// so writes can still invalidate cached results explicitly.
+    pub fn read_mostly() -> Self {
+        Self::new().ttl(READ_MOSTLY_TTL)
+    }
+
+    /// Create a policy intended for one entity-shaped result.
+    ///
+    /// The preset uses a 5 minute TTL and expects the caller to add an entity
+    /// key/tag with [`QueryCachePolicy::for_entity`] or
+    /// [`QueryCachePolicy::for_cache_entity`].
+    pub fn per_entity() -> Self {
+        Self::new().ttl(PER_ENTITY_TTL)
+    }
+
+    /// Create a policy for explicit-invalidation-only values.
+    ///
+    /// No TTL is configured. The value remains cached until the caller
+    /// invalidates a key/tag, removes it, flushes the cache, or the backend
+    /// evicts it due to capacity pressure.
+    pub fn no_ttl_explicit_invalidation() -> Self {
+        Self::new()
+    }
+
+    /// Create a policy for caching negative lookups briefly.
+    ///
+    /// Use this for `Option<T>` or domain-specific "not found" results where
+    /// repeated misses are expensive but long-lived absence would be unsafe.
+    /// The preset uses a 30 second TTL.
+    pub fn negative_cache() -> Self {
+        Self::new().ttl(NEGATIVE_CACHE_TTL)
     }
 
     /// Create a cache policy with a diagnostic operation name.

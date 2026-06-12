@@ -5,6 +5,11 @@ use hydracache::{CacheKeyBuilder, TagSet};
 use crate::policy::collection_tag;
 use crate::{CacheEntity, QueryCachePolicy};
 
+const SHORT_LIVED_TTL: Duration = Duration::from_secs(30);
+const READ_MOSTLY_TTL: Duration = Duration::from_secs(300);
+const PER_ENTITY_TTL: Duration = Duration::from_secs(300);
+const NEGATIVE_CACHE_TTL: Duration = Duration::from_secs(30);
+
 /// Prepared database query cache metadata.
 ///
 /// `PreparedQueryPolicy` stores stable query-cache metadata once and binds only
@@ -63,6 +68,47 @@ impl PreparedQueryPolicy {
         Self::default()
     }
 
+    /// Create a short-lived prepared policy for burst smoothing.
+    ///
+    /// The preset uses a 30 second TTL and leaves key/tags to the caller.
+    pub fn short_lived() -> Self {
+        Self::new().ttl(SHORT_LIVED_TTL)
+    }
+
+    /// Create a read-mostly prepared policy for values that change rarely.
+    ///
+    /// The preset uses a 5 minute TTL. Pair it with entity or collection tags
+    /// so writes can still invalidate cached results explicitly.
+    pub fn read_mostly() -> Self {
+        Self::new().ttl(READ_MOSTLY_TTL)
+    }
+
+    /// Create a prepared policy intended for one entity-shaped result.
+    ///
+    /// The preset uses a 5 minute TTL and expects the caller to add an entity
+    /// prefix with [`PreparedQueryPolicy::entity`] or to start from
+    /// [`PreparedQueryPolicy::for_cache_entity`].
+    pub fn per_entity() -> Self {
+        Self::new().ttl(PER_ENTITY_TTL)
+    }
+
+    /// Create a prepared policy for explicit-invalidation-only values.
+    ///
+    /// No TTL is configured. The value remains cached until invalidated,
+    /// removed, flushed, or evicted due to capacity pressure.
+    pub fn no_ttl_explicit_invalidation() -> Self {
+        Self::new()
+    }
+
+    /// Create a prepared policy for caching negative lookups briefly.
+    ///
+    /// Use this for `Option<T>` or domain-specific "not found" results where
+    /// repeated misses are expensive but long-lived absence would be unsafe.
+    /// The preset uses a 30 second TTL.
+    pub fn negative_cache() -> Self {
+        Self::new().ttl(NEGATIVE_CACHE_TTL)
+    }
+
     /// Create a prepared policy with a diagnostic operation name.
     pub fn named(name: impl Into<String>) -> Self {
         Self::new().with_name(name)
@@ -83,11 +129,7 @@ impl PreparedQueryPolicy {
     where
         T: CacheEntity,
     {
-        let mut policy = Self::for_entity(T::ENTITY);
-        if let Some(tag) = T::COLLECTION {
-            policy = policy.collection_tag(tag);
-        }
-        policy
+        Self::new().cache_entity::<T>()
     }
 
     /// Return the optional diagnostic operation name.
@@ -147,6 +189,42 @@ impl PreparedQueryPolicy {
     pub fn entity(mut self, kind: impl ToString) -> Self {
         self.key = PreparedQueryKey::EntityPrefix(escaped_segment(kind));
         self
+    }
+
+    /// Set an entity-id key prefix and optional collection tag from
+    /// [`CacheEntity`] metadata while preserving preset TTL/name settings.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    ///
+    /// use hydracache_db::{CacheEntity, PreparedQueryPolicy};
+    ///
+    /// struct User;
+    ///
+    /// impl CacheEntity for User {
+    ///     type Id = i64;
+    ///
+    ///     const ENTITY: &'static str = "user";
+    ///     const COLLECTION: Option<&'static str> = Some("users");
+    /// }
+    ///
+    /// let policy = PreparedQueryPolicy::per_entity().cache_entity::<User>();
+    ///
+    /// assert_eq!(policy.entity_key_prefix(), Some("user"));
+    /// assert_eq!(policy.tags_value(), &["users".to_owned()]);
+    /// assert_eq!(policy.ttl_value(), Some(Duration::from_secs(300)));
+    /// ```
+    pub fn cache_entity<T>(self) -> Self
+    where
+        T: CacheEntity,
+    {
+        let mut policy = self.entity(T::ENTITY);
+        if let Some(tag) = T::COLLECTION {
+            policy = policy.collection_tag(tag);
+        }
+        policy
     }
 
     /// Set a static collection key and add the same collection invalidation tag.
@@ -274,6 +352,64 @@ mod tests {
         assert_eq!(policy.key_value(), Some("users%3Aactive"));
         assert_eq!(policy.tags_value(), &["users%3Aactive".to_owned()]);
         assert_eq!(policy.ttl_value(), Some(Duration::from_secs(30)));
+    }
+
+    #[test]
+    fn prepared_presets_encode_common_ttl_intent() {
+        assert_eq!(
+            PreparedQueryPolicy::short_lived().ttl_value(),
+            Some(Duration::from_secs(30))
+        );
+        assert_eq!(
+            PreparedQueryPolicy::read_mostly().ttl_value(),
+            Some(Duration::from_secs(300))
+        );
+        assert_eq!(
+            PreparedQueryPolicy::per_entity().ttl_value(),
+            Some(Duration::from_secs(300))
+        );
+        assert_eq!(
+            PreparedQueryPolicy::no_ttl_explicit_invalidation().ttl_value(),
+            None
+        );
+        assert_eq!(
+            PreparedQueryPolicy::negative_cache().ttl_value(),
+            Some(Duration::from_secs(30))
+        );
+    }
+
+    #[test]
+    fn prepared_presets_compose_with_bound_entity_metadata() {
+        let prepared = PreparedQueryPolicy::per_entity()
+            .entity("user")
+            .collection_tag("users");
+        let policy = prepared.bind_id(42);
+
+        assert_eq!(policy.key_value(), Some("user:42"));
+        assert_eq!(
+            policy.tags_value(),
+            &["users".to_owned(), "user:42".to_owned()]
+        );
+        assert_eq!(policy.ttl_value(), Some(Duration::from_secs(300)));
+    }
+
+    #[test]
+    fn prepared_cache_entity_composes_with_presets() {
+        let prepared = PreparedQueryPolicy::per_entity()
+            .cache_entity::<User>()
+            .with_name("load-user");
+
+        assert_eq!(prepared.name(), Some("load-user"));
+        assert_eq!(prepared.entity_key_prefix(), Some("user"));
+        assert_eq!(prepared.tags_value(), &["users".to_owned()]);
+        assert_eq!(prepared.ttl_value(), Some(Duration::from_secs(300)));
+
+        let policy = prepared.bind_id(42);
+        assert_eq!(policy.key_value(), Some("user:42"));
+        assert_eq!(
+            policy.tags_value(),
+            &["users".to_owned(), "user:42".to_owned()]
+        );
     }
 
     #[test]
