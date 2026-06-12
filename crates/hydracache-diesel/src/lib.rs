@@ -165,6 +165,7 @@ mod tests {
     use std::sync::{Arc, Mutex};
 
     use diesel::prelude::*;
+    use diesel::result::Error as DieselError;
     use diesel::sqlite::SqliteConnection;
     use hydracache::HydraCache;
     use serde::{Deserialize, Serialize};
@@ -284,6 +285,106 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn missing_key_fails_before_running_diesel_loader() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let result = queries
+            .cached::<User>()
+            .diesel_first({
+                let calls = calls.clone();
+                move || {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Err(DieselError::NotFound)
+                }
+            })
+            .await;
+
+        let error = result.expect_err("query without a key should fail");
+        assert!(error.to_string().contains("missing an explicit cache key"));
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn diesel_first_loader_errors_are_not_cached_and_can_retry() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let failed = queries
+            .entity::<User>("diesel-user", 500)
+            .diesel_first({
+                let calls = calls.clone();
+                move || {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Err(DieselError::NotFound)
+                }
+            })
+            .await;
+        assert!(failed.is_err());
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        let recovered = queries
+            .entity::<User>("diesel-user", 500)
+            .diesel_first({
+                let calls = calls.clone();
+                move || {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, DieselError>(User {
+                        id: 500,
+                        name: "Recovered".to_owned(),
+                    })
+                }
+            })
+            .await
+            .unwrap();
+        assert_eq!(recovered.name, "Recovered");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+
+        let cached = queries
+            .entity::<User>("diesel-user", 500)
+            .diesel_first({
+                let calls = calls.clone();
+                move || {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Err(DieselError::NotFound)
+                }
+            })
+            .await
+            .unwrap();
+        assert_eq!(cached.name, "Recovered");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn diesel_optional_found_value_is_cached_until_invalidated() {
+        let connection = sqlite_users();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let first = queries
+            .entity::<User>("diesel-user", 42)
+            .diesel_optional(diesel_user_loader(connection.clone(), calls.clone(), 42))
+            .await
+            .unwrap()
+            .expect("seeded user should exist");
+
+        diesel::sql_query("update users set name = 'Updated' where id = 42")
+            .execute(&mut *connection.lock().unwrap())
+            .unwrap();
+
+        let cached = queries
+            .entity::<User>("diesel-user", 42)
+            .diesel_optional(diesel_user_loader(connection, calls.clone(), 42))
+            .await
+            .unwrap()
+            .expect("cached user should still exist");
+
+        assert_eq!(first.name, "Ada");
+        assert_eq!(cached.name, "Ada");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
     async fn diesel_all_caches_collection_results() {
         let connection = sqlite_users();
         let calls = Arc::new(AtomicUsize::new(0));
@@ -327,6 +428,62 @@ mod tests {
         assert_eq!(first.len(), 2);
         assert_eq!(cached.len(), 2);
         assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn diesel_all_reloads_after_collection_tag_invalidation() {
+        let connection = sqlite_users();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let load_all = || {
+            let connection = connection.clone();
+            let calls = calls.clone();
+            move || {
+                calls.fetch_add(1, Ordering::SeqCst);
+                let mut connection = connection.lock().expect("sqlite connection poisoned");
+                users::table
+                    .order(users::id.asc())
+                    .load::<User>(&mut *connection)
+            }
+        };
+
+        let first = queries
+            .collection::<User>("diesel-users-all")
+            .diesel_all(load_all())
+            .await
+            .unwrap();
+
+        diesel::sql_query("insert into users (id, name) values (100, 'Lin')")
+            .execute(&mut *connection.lock().unwrap())
+            .unwrap();
+
+        let cached = queries
+            .collection::<User>("diesel-users-all")
+            .diesel_all(load_all())
+            .await
+            .unwrap();
+
+        assert_eq!(first.len(), 2);
+        assert_eq!(cached.len(), 2);
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(
+            queries
+                .cache()
+                .invalidate_tag("diesel-users-all")
+                .await
+                .unwrap(),
+            1
+        );
+
+        let reloaded = queries
+            .collection::<User>("diesel-users-all")
+            .diesel_all(load_all())
+            .await
+            .unwrap();
+
+        assert_eq!(reloaded.len(), 3);
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
 
     #[test]

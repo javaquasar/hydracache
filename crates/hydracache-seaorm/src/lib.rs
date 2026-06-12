@@ -308,6 +308,127 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn missing_key_fails_before_running_seaorm_loader() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let result = queries
+            .cached::<user::Model>()
+            .sea_value({
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, DbErr>(user::Model {
+                        id: 42,
+                        name: "Ada".to_owned(),
+                    })
+                }
+            })
+            .await;
+
+        let error = result.expect_err("query without a key should fail");
+        assert!(error.to_string().contains("missing an explicit cache key"));
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn sea_value_loader_errors_are_not_cached_and_can_retry() {
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let failed = queries
+            .entity::<user::Model>("seaorm-user", 500)
+            .sea_value({
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Err::<user::Model, _>(DbErr::Custom("boom".to_owned()))
+                }
+            })
+            .await;
+        assert!(failed.is_err());
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        let recovered = queries
+            .entity::<user::Model>("seaorm-user", 500)
+            .sea_value({
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, DbErr>(user::Model {
+                        id: 500,
+                        name: "Recovered".to_owned(),
+                    })
+                }
+            })
+            .await
+            .unwrap();
+        assert_eq!(recovered.name, "Recovered");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+
+        let cached = queries
+            .entity::<user::Model>("seaorm-user", 500)
+            .sea_value({
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Err::<user::Model, _>(DbErr::Custom("should not run".to_owned()))
+                }
+            })
+            .await
+            .unwrap();
+        assert_eq!(cached.name, "Recovered");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn sea_one_found_value_is_cached_until_invalidated() {
+        let db = sqlite_users().await;
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let first = queries
+            .entity::<user::Model>("seaorm-user", 42)
+            .sea_one({
+                let db = db.clone();
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    user::Entity::find_by_id(42).one(&db).await
+                }
+            })
+            .await
+            .unwrap()
+            .expect("seeded user should exist");
+
+        user::Entity::update(user::ActiveModel {
+            id: Set(42),
+            name: Set("Updated".to_owned()),
+        })
+        .exec(&db)
+        .await
+        .unwrap();
+
+        let cached = queries
+            .entity::<user::Model>("seaorm-user", 42)
+            .sea_one({
+                let db = db.clone();
+                let calls = calls.clone();
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    user::Entity::find_by_id(42).one(&db).await
+                }
+            })
+            .await
+            .unwrap()
+            .expect("cached user should still exist");
+
+        assert_eq!(first.name, "Ada");
+        assert_eq!(cached.name, "Ada");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
     async fn sea_all_and_sea_value_cache_collection_shapes() {
         let db = sqlite_users().await;
         let calls = Arc::new(AtomicUsize::new(0));
@@ -364,6 +485,66 @@ mod tests {
         assert_eq!(cached.len(), 2);
         assert_eq!(scalar, "cached-value");
         assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn sea_all_reloads_after_collection_tag_invalidation() {
+        let db = sqlite_users().await;
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let load_all = || {
+            let db = db.clone();
+            let calls = calls.clone();
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                user::Entity::find()
+                    .order_by_asc(user::Column::Id)
+                    .all(&db)
+                    .await
+            }
+        };
+
+        let first = queries
+            .collection::<user::Model>("seaorm-users-all")
+            .sea_all(load_all())
+            .await
+            .unwrap();
+
+        user::Entity::insert(user::ActiveModel {
+            id: Set(100),
+            name: Set("Lin".to_owned()),
+        })
+        .exec(&db)
+        .await
+        .unwrap();
+
+        let cached = queries
+            .collection::<user::Model>("seaorm-users-all")
+            .sea_all(load_all())
+            .await
+            .unwrap();
+
+        assert_eq!(first.len(), 2);
+        assert_eq!(cached.len(), 2);
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        assert_eq!(
+            queries
+                .cache()
+                .invalidate_tag("seaorm-users-all")
+                .await
+                .unwrap(),
+            1
+        );
+
+        let reloaded = queries
+            .collection::<user::Model>("seaorm-users-all")
+            .sea_all(load_all())
+            .await
+            .unwrap();
+
+        assert_eq!(reloaded.len(), 3);
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
 
     #[test]

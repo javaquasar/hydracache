@@ -9758,6 +9758,8 @@ async fn run_user_orm_comparison(
         .clone()
         .unwrap_or_else(|| format!("orm-comparison-{id}"));
 
+    reset_orm_comparison_keys(state, id).await?;
+
     let sqlx = run_sqlx_user_adapter(state, id, &request, backing_user.clone(), &flow_id).await?;
     let diesel =
         run_diesel_user_adapter(state, id, &request, backing_user.clone(), &flow_id).await?;
@@ -9794,6 +9796,18 @@ async fn run_user_orm_comparison(
         loader_calls: state.loader_calls.load(Ordering::SeqCst),
         diagnostics: diagnostics(state).await,
     })
+}
+
+const ORM_COMPARISON_NAMESPACES: [&str; 3] = ["orm-sqlx", "orm-diesel", "orm-seaorm"];
+
+async fn reset_orm_comparison_keys(state: &SandboxState, id: i64) -> Result<(), SandboxHttpError> {
+    for namespace in ORM_COMPARISON_NAMESPACES {
+        let _ = state
+            .cache
+            .remove(&format!("{namespace}:user:{id}"))
+            .await?;
+    }
+    Ok(())
 }
 
 async fn run_sqlx_user_adapter(
@@ -12644,6 +12658,59 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn orm_comparison_route_is_repeatable_and_deduplicates_tags() {
+        let app = build_sandbox(SandboxConfig::default())
+            .await
+            .unwrap()
+            .router;
+
+        let first = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/users/42/orm-comparison",
+                Body::from(
+                    r#"{"ttl_ms":5000,"tags":["users","user:42","tenant:demo","tenant:demo"],"flow_id":"repeatable-orm"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+
+        let second = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/users/42/orm-comparison",
+                Body::from(
+                    r#"{"ttl_ms":5000,"tags":["users","user:42","tenant:demo","tenant:demo"],"flow_id":"repeatable-orm"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+
+        for response in [&first, &second] {
+            assert_eq!(response["passed"], true);
+            assert_eq!(response["same_backing_row"], true);
+
+            let adapters = response["adapters"].as_array().unwrap();
+            assert_eq!(adapters.len(), 3);
+            for adapter in adapters {
+                assert_eq!(adapter["first_source"], "loader");
+                assert_eq!(adapter["second_source"], "cache");
+                assert_eq!(adapter["loader_calls_delta"], 1);
+                assert_eq!(adapter["tags"][0], "user:42");
+                assert_eq!(adapter["tags"][1], "users");
+                assert_eq!(adapter["tags"][2], "tenant:demo");
+                assert_eq!(adapter["tags"].as_array().unwrap().len(), 3);
+            }
+        }
+
+        assert!(second["loader_calls"].as_u64().unwrap() > first["loader_calls"].as_u64().unwrap());
+    }
+
+    #[tokio::test]
     async fn swagger_api_exercises_library_features_and_reports() {
         let app = build_sandbox(SandboxConfig::default())
             .await
@@ -14025,6 +14092,21 @@ mod tests {
             .unwrap();
         let missing_order = error_body(missing_order, StatusCode::NOT_FOUND).await;
         assert!(missing_order["error"]
+            .as_str()
+            .unwrap()
+            .contains("not found"));
+
+        let missing_orm_comparison = app
+            .clone()
+            .oneshot(post(
+                "/demo/query/users/999/orm-comparison",
+                Body::from(r#"{"ttl_ms":5000}"#),
+            ))
+            .await
+            .unwrap();
+        let missing_orm_comparison =
+            error_body(missing_orm_comparison, StatusCode::NOT_FOUND).await;
+        assert!(missing_orm_comparison["error"]
             .as_str()
             .unwrap()
             .contains("not found"));
