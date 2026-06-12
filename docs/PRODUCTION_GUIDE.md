@@ -179,6 +179,9 @@ Use the optional actuator crate when an Axum service should expose read-only
 cache health and stats over HTTP. Keep write-enabled admin routes out of the
 default production surface until there is a clear authorization model.
 
+The stable v0 fields and actuator response shapes are documented in
+[`OBSERVABILITY_CONTRACT.md`](OBSERVABILITY_CONTRACT.md).
+
 ## Release Checklist For Cache Behavior
 
 Before shipping cache-sensitive changes:

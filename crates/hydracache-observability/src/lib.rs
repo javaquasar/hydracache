@@ -332,8 +332,12 @@ impl fmt::Debug for HydraCacheRegistry {
 #[cfg(test)]
 mod tests {
     use hydracache::{CacheOptions, HydraCache};
+    use serde_json::Value;
 
-    use super::{CacheStatsSnapshot, HydraCacheProbe, HydraCacheRegistry};
+    use super::{
+        CacheDiagnosticsSnapshot, CacheStatsSnapshot, HydraCacheOverview, HydraCacheProbe,
+        HydraCacheRegistry,
+    };
 
     #[tokio::test]
     async fn registry_reports_named_cache_diagnostics() {
@@ -429,10 +433,80 @@ mod tests {
     }
 
     #[test]
+    fn serializable_snapshot_contract_contains_required_fields() {
+        let stats = CacheStatsSnapshot::from_stats(hydracache_core::CacheStats {
+            hits: 2,
+            misses: 1,
+            loads: 1,
+            single_flight_joins: 1,
+            stale_load_discards: 1,
+            invalidations: 1,
+            events_published: 1,
+            distributed_invalidation_publish_failures: 1,
+            ..hydracache_core::CacheStats::default()
+        });
+        let diagnostics = CacheDiagnosticsSnapshot {
+            name: "main".to_owned(),
+            stats,
+            estimated_entries: 1,
+            empty: false,
+        };
+        let overview = HydraCacheOverview {
+            caches: vec![diagnostics.clone()],
+        };
+
+        assert_json_fields(
+            serde_json::to_value(&diagnostics.stats).unwrap(),
+            &[
+                "hits",
+                "misses",
+                "loads",
+                "single_flight_joins",
+                "stale_load_discards",
+                "invalidations",
+                "evictions",
+                "events_published",
+                "event_subscriber_lagged",
+                "distributed_invalidations_published",
+                "distributed_invalidations_received",
+                "distributed_invalidations_applied",
+                "distributed_invalidation_lagged",
+                "distributed_invalidation_decode_errors",
+                "distributed_invalidation_publish_failures",
+                "distributed_invalidation_receiver_closed",
+                "total_requests",
+                "hit_ratio",
+                "single_flight_active",
+                "stale_load_discards_seen",
+                "event_subscriber_lag_seen",
+                "distributed_invalidation_active",
+                "distributed_invalidation_bus_issues",
+            ],
+        );
+        assert_json_fields(
+            serde_json::to_value(&diagnostics).unwrap(),
+            &["name", "stats", "estimated_entries", "empty"],
+        );
+        assert_json_fields(serde_json::to_value(&overview).unwrap(), &["caches"]);
+    }
+
+    #[test]
     fn hydra_cache_probe_exposes_underlying_cache_handle() {
         let cache = HydraCache::local().build();
         let probe = HydraCacheProbe::new("main", cache);
 
         assert_eq!(probe.cache().stats().total_requests(), 0);
+    }
+
+    fn assert_json_fields(value: Value, fields: &[&str]) {
+        let object = value
+            .as_object()
+            .expect("snapshot should serialize as object");
+        for field in fields {
+            assert!(
+                object.contains_key(*field),
+                "snapshot is missing required field `{field}`"
+            );
+        }
     }
 }

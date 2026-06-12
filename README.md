@@ -50,6 +50,9 @@ For a full production-style flow that combines database-cache policies,
 invalidation, refresh/stale behavior, and diagnostics, see
 [`docs/PRODUCTION_EXAMPLE.md`](docs/PRODUCTION_EXAMPLE.md).
 
+For stable stats, diagnostics, and actuator response expectations, see
+[`docs/OBSERVABILITY_CONTRACT.md`](docs/OBSERVABILITY_CONTRACT.md).
+
 ## v0 Scope
 
 The current v0 line includes:
