@@ -26,6 +26,7 @@ use crate::inflight::{InFlightMap, SharedLoadFuture};
 use crate::invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
 };
+use crate::refresh::RefreshOptions;
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
 use crate::typed::TypedCache;
@@ -689,6 +690,132 @@ where
         self.inner.codec.decode(&bytes)
     }
 
+    /// Get a value with explicit refresh/stale behavior.
+    ///
+    /// This is the production-oriented sibling of [`HydraCache::get_or_load`].
+    /// It keeps the same single-flight and invalidation-safety semantics, but
+    /// can return a stale value while refreshing it in the background.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    ///
+    /// use hydracache::{CacheOptions, HydraCache, RefreshOptions};
+    /// use serde::{Deserialize, Serialize};
+    ///
+    /// #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+    /// struct User {
+    ///     id: u64,
+    /// }
+    ///
+    /// #[derive(Debug)]
+    /// struct LoaderError;
+    ///
+    /// impl std::fmt::Display for LoaderError {
+    ///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    ///         f.write_str("loader failed")
+    ///     }
+    /// }
+    ///
+    /// impl std::error::Error for LoaderError {}
+    ///
+    /// # #[tokio::main]
+    /// # async fn main() -> hydracache::CacheResult<()> {
+    /// let cache = HydraCache::local().build();
+    ///
+    /// let user = cache
+    ///     .get_or_load_with_refresh(
+    ///         "user:1",
+    ///         CacheOptions::new().ttl(Duration::from_secs(60)).tag("user:1"),
+    ///         RefreshOptions::new()
+    ///             .refresh_ahead(Duration::from_secs(10))
+    ///             .stale_while_revalidate(Duration::from_secs(300))
+    ///             .serve_stale_on_loader_error(true),
+    ///         || async { Ok::<_, LoaderError>(User { id: 1 }) },
+    ///     )
+    ///     .await?;
+    ///
+    /// assert_eq!(user, User { id: 1 });
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn get_or_load_with_refresh<T, E, F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        refresh_options: RefreshOptions,
+        loader: F,
+    ) -> Result<T>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        let mut loader = Some(loader);
+
+        if let Some(entry) = self.inner.store.get(key).await {
+            if !entry.is_expired() {
+                let value = self.decode_cached_hit(key, &entry).await?;
+                if refresh_options
+                    .refresh_ahead_value()
+                    .is_some_and(|threshold| entry.refresh_ahead_due(threshold))
+                {
+                    self.spawn_background_refresh(
+                        key.to_owned(),
+                        options,
+                        take_loader(&mut loader),
+                    );
+                }
+                return Ok(value);
+            }
+
+            let stale_entry =
+                stale_entry_in_window(&entry, refresh_options.stale_while_revalidate_value());
+
+            if stale_entry.is_some() {
+                match self.decode_cached_hit(key, &entry).await {
+                    Ok(value) => {
+                        self.spawn_background_refresh(
+                            key.to_owned(),
+                            options,
+                            take_loader(&mut loader),
+                        );
+                        return Ok(value);
+                    }
+                    Err(_) => {
+                        self.remove_entry(key, &entry).await;
+                    }
+                }
+            } else {
+                self.remove_expired(key, &entry).await;
+            }
+
+            self.record_miss(key, || entry.tags.clone());
+
+            let fallback = refresh_options
+                .serve_stale_on_loader_error_value()
+                .then(|| {
+                    stale_entry_in_window(&entry, refresh_options.stale_on_loader_error_window())
+                })
+                .flatten();
+
+            return self
+                .load_and_decode_with_stale_fallback(
+                    key,
+                    options,
+                    take_loader(&mut loader),
+                    fallback,
+                )
+                .await;
+        }
+
+        self.record_miss(key, Vec::<String>::new);
+        self.load_and_decode_with_stale_fallback(key, options, take_loader(&mut loader), None)
+            .await
+    }
+
     /// Get a value, or compute and cache it with an infallible async loader.
     ///
     /// This is the most ergonomic local-cache spelling for loaders that cannot
@@ -910,6 +1037,103 @@ where
         CacheDiagnostics {
             stats: self.stats(),
             estimated_entries: self.inner.store.entry_count(),
+        }
+    }
+
+    async fn decode_cached_hit<T>(&self, key: &str, entry: &CacheEntry) -> Result<T>
+    where
+        T: DeserializeOwned,
+    {
+        match self.inner.codec.decode::<T>(&entry.value) {
+            Ok(value) => {
+                self.inner.stats.hits.fetch_add(1, Ordering::Relaxed);
+                self.publish_key_event_with_tags(
+                    CacheEventKind::Hit,
+                    key,
+                    CacheEventOrigin::LocalApi,
+                    || entry.tags.clone(),
+                );
+                Ok(value)
+            }
+            Err(error) => {
+                self.remove_entry(key, entry).await;
+                self.record_miss(key, || entry.tags.clone());
+                Err(error)
+            }
+        }
+    }
+
+    fn record_miss<I, S>(&self, key: &str, tags: I)
+    where
+        I: FnOnce() -> S,
+        S: IntoIterator,
+        S::Item: Into<String>,
+    {
+        self.inner.stats.misses.fetch_add(1, Ordering::Relaxed);
+        self.publish_key_event_with_tags(
+            CacheEventKind::Miss,
+            key,
+            CacheEventOrigin::LocalApi,
+            tags,
+        );
+    }
+
+    fn spawn_background_refresh<T, E, F, Fut>(&self, key: String, options: CacheOptions, loader: F)
+    where
+        T: Serialize + Send + 'static,
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        let cache = self.clone();
+        tokio::spawn(async move {
+            let shared = cache
+                .shared_load(&key, options, move |cache| async move {
+                    cache.inner.stats.loads.fetch_add(1, Ordering::Relaxed);
+                    let value = loader().await.map_err(CacheError::loader)?;
+                    let bytes = cache.inner.codec.encode(&value)?;
+                    Ok(bytes)
+                })
+                .await;
+            let _ = shared.await;
+        });
+    }
+
+    async fn load_and_decode_with_stale_fallback<T, E, F, Fut>(
+        &self,
+        key: &str,
+        options: CacheOptions,
+        loader: F,
+        stale_entry: Option<CacheEntry>,
+    ) -> Result<T>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        let shared = self
+            .shared_load(key, options, move |cache| async move {
+                cache.inner.stats.loads.fetch_add(1, Ordering::Relaxed);
+                let value = loader().await.map_err(CacheError::loader)?;
+                let bytes = cache.inner.codec.encode(&value)?;
+                Ok(bytes)
+            })
+            .await;
+
+        match shared.await {
+            Ok(bytes) => self.inner.codec.decode(&bytes),
+            Err(error) => {
+                if let Some(entry) = stale_entry {
+                    match self.decode_cached_hit(key, &entry).await {
+                        Ok(value) => return Ok(value),
+                        Err(_) => {
+                            self.remove_entry(key, &entry).await;
+                        }
+                    }
+                }
+                Err((*error).clone())
+            }
         }
     }
 
@@ -1335,6 +1559,21 @@ where
             .fetch_add(1, Ordering::Relaxed);
         Ok(())
     }
+}
+
+fn stale_entry_in_window(
+    entry: &CacheEntry,
+    window: Option<std::time::Duration>,
+) -> Option<CacheEntry> {
+    window
+        .filter(|window| entry.stale_window_contains_now(*window))
+        .map(|_| entry.clone())
+}
+
+fn take_loader<F>(loader: &mut Option<F>) -> F {
+    loader
+        .take()
+        .expect("refresh loader is consumed exactly once per cache call")
 }
 
 #[cfg(test)]

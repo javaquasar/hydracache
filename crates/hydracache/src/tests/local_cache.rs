@@ -7,7 +7,7 @@ use hydracache_core::{CacheCodec, CacheError, CacheOptions, PostcardCodec, Resul
 use std::sync::atomic::AtomicUsize;
 
 use crate::tests::common::{user, LoaderError, User};
-use crate::HydraCache;
+use crate::{HydraCache, RefreshOptions};
 
 #[tokio::test]
 async fn put_then_get() {
@@ -195,6 +195,219 @@ async fn get_or_load_loads_on_miss_and_uses_hit_afterward() {
 
     assert_eq!(loaded, user(1));
     assert_eq!(hit, user(1));
+    assert_eq!(cache.stats().loads, 1);
+}
+
+#[tokio::test]
+async fn refresh_options_do_not_change_fresh_hits_before_refresh_ahead_threshold() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:fresh",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(200)),
+        )
+        .await
+        .unwrap();
+
+    let cached = cache
+        .get_or_load_with_refresh(
+            "user:fresh",
+            CacheOptions::new().ttl(Duration::from_millis(200)),
+            RefreshOptions::new().refresh_ahead(Duration::from_millis(10)),
+            {
+                let calls = Arc::clone(&calls);
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, LoaderError>(user(2))
+                }
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(cached, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    assert_eq!(cache.stats().hits, 1);
+}
+
+#[tokio::test]
+async fn refresh_ahead_returns_fresh_hit_and_refreshes_in_background() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:refresh-ahead",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(500)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    let cached = cache
+        .get_or_load_with_refresh(
+            "user:refresh-ahead",
+            CacheOptions::new().ttl(Duration::from_millis(1_000)),
+            RefreshOptions::new().refresh_ahead(Duration::from_millis(450)),
+            {
+                let calls = Arc::clone(&calls);
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, LoaderError>(user(2))
+                }
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(cached, user(1));
+    tokio::time::sleep(Duration::from_millis(80)).await;
+
+    let refreshed: Option<User> = cache.get("user:refresh-ahead").await.unwrap();
+    assert_eq!(refreshed, Some(user(2)));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn stale_while_revalidate_returns_stale_and_refreshes_in_background() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:stale",
+            user(1),
+            CacheOptions::new()
+                .ttl(Duration::from_millis(20))
+                .tag("users"),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(45)).await;
+
+    let stale = cache
+        .get_or_load_with_refresh(
+            "user:stale",
+            CacheOptions::new()
+                .ttl(Duration::from_millis(500))
+                .tag("users"),
+            RefreshOptions::new().stale_while_revalidate(Duration::from_millis(200)),
+            {
+                let calls = Arc::clone(&calls);
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok::<_, LoaderError>(user(2))
+                }
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(stale, user(1));
+    tokio::time::sleep(Duration::from_millis(80)).await;
+
+    let refreshed: Option<User> = cache.get("user:stale").await.unwrap();
+    assert_eq!(refreshed, Some(user(2)));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn stale_on_loader_error_returns_stale_when_refresh_fails() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:stale-if-error",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(20)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(45)).await;
+
+    let stale = cache
+        .get_or_load_with_refresh(
+            "user:stale-if-error",
+            CacheOptions::new().ttl(Duration::from_millis(500)),
+            RefreshOptions::new().stale_on_loader_error(Duration::from_millis(200)),
+            {
+                let calls = Arc::clone(&calls);
+                move || async move {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Err::<User, _>(LoaderError)
+                }
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(stale, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+    assert_eq!(cache.stats().loads, 1);
+}
+
+#[tokio::test]
+async fn loader_error_without_stale_fallback_returns_error() {
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:error-no-fallback",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(20)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(45)).await;
+
+    let result = cache
+        .get_or_load_with_refresh(
+            "user:error-no-fallback",
+            CacheOptions::new().ttl(Duration::from_millis(500)),
+            RefreshOptions::new(),
+            || async { Err::<User, _>(LoaderError) },
+        )
+        .await;
+
+    assert!(matches!(result, Err(CacheError::Loader(_))));
+    assert!(!cache.contains_key("user:error-no-fallback").await);
+}
+
+#[tokio::test]
+async fn stale_window_expiry_forces_foreground_reload() {
+    let cache = HydraCache::local().build();
+
+    cache
+        .put(
+            "user:stale-window-expired",
+            user(1),
+            CacheOptions::new().ttl(Duration::from_millis(20)),
+        )
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(90)).await;
+
+    let reloaded = cache
+        .get_or_load_with_refresh(
+            "user:stale-window-expired",
+            CacheOptions::new().ttl(Duration::from_millis(500)),
+            RefreshOptions::new().stale_while_revalidate(Duration::from_millis(30)),
+            || async { Ok::<_, LoaderError>(user(2)) },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(reloaded, user(2));
     assert_eq!(cache.stats().loads, 1);
 }
 

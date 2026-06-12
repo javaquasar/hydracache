@@ -425,6 +425,7 @@ mod entry;
 mod events;
 mod inflight;
 mod invalidation_bus;
+mod refresh;
 mod stats;
 mod tag_index;
 mod typed;
@@ -458,6 +459,7 @@ pub use invalidation_bus::{
     CacheInvalidationReceive, CacheInvalidationReceiver, InMemoryFramedInvalidationBus,
     InMemoryInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
 };
+pub use refresh::RefreshOptions;
 pub use typed::TypedCache;
 
 pub use hydracache_core::{

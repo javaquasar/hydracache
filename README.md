@@ -52,6 +52,7 @@ The current v0 line includes:
 - `get`
 - `put`
 - `get_or_load`
+- `get_or_load_with_refresh` for explicit refresh-ahead and stale reads
 - `get_or_insert_with`
 - `try_get_or_insert_with`
 - `TypedCache<T>` namespaced typed view
@@ -188,6 +189,34 @@ This is the full-control API: you choose the key, tags, TTL, and loader. Cache
 hits return the decoded value immediately. Cache misses run the loader once per
 key under local single-flight, store the result, and share that result with
 concurrent callers.
+
+For production paths that can tolerate a recently expired value, opt into
+refresh behavior explicitly:
+
+```rust
+use std::time::Duration;
+
+use hydracache::{CacheOptions, HydraCache, RefreshOptions};
+
+# async fn example(cache: HydraCache) -> hydracache::CacheResult<()> {
+let user = cache
+    .get_or_load_with_refresh(
+        "user:42",
+        CacheOptions::new()
+            .ttl(Duration::from_secs(60))
+            .tags(["user:42", "users"]),
+        RefreshOptions::new()
+            .refresh_ahead(Duration::from_secs(10))
+            .stale_while_revalidate(Duration::from_secs(300))
+            .stale_on_loader_error(Duration::from_secs(600)),
+        || async { Ok::<_, std::io::Error>("Ada".to_owned()) },
+    )
+    .await?;
+
+assert_eq!(user, "Ada");
+# Ok(())
+# }
+```
 
 ## Cacheable Function Macros
 
