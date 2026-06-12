@@ -96,10 +96,10 @@ $env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked
 - [x] HTTP auth boundary implemented and tested.
 - [x] Wire-version compatibility implemented and tested.
 - [x] Durable raft metadata storage seam implemented and tested.
-- [ ] Consumer verification docs added.
-- [ ] Production readiness docs added.
-- [ ] README updated.
-- [ ] Rustdoc examples compile.
-- [ ] Release notes updated.
+- [x] Consumer verification docs added.
+- [x] Production readiness docs added.
+- [x] README updated.
+- [x] Rustdoc examples compile.
+- [x] Release notes updated.
 - [ ] Workspace bumped to `0.30.0`.
 - [ ] Full release gate passes.

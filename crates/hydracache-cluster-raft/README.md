@@ -16,10 +16,16 @@ control plane:
 use std::sync::Arc;
 
 use hydracache::{ClusterAdmissionBridge, ClusterCandidate, ClusterDiscovery};
-use hydracache_cluster_raft::RaftMetadataRuntime;
+use hydracache_cluster_raft::{
+    InMemoryRaftMetadataStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
+};
 
 # async fn example(discovery: Arc<dyn ClusterDiscovery>) -> hydracache::CacheResult<()> {
-let control_plane = Arc::new(RaftMetadataRuntime::single_node("orders", 1)?);
+let metadata_store = Arc::new(InMemoryRaftMetadataStore::new());
+let control_plane = Arc::new(RaftMetadataRuntime::with_config_and_metadata_store(
+    RaftMetadataRuntimeConfig::single_node("orders", 1),
+    metadata_store.clone(),
+)?);
 let bridge = ClusterAdmissionBridge::new(discovery.clone(), control_plane.clone());
 
 discovery
@@ -28,6 +34,7 @@ discovery
 bridge.run_once().await;
 
 assert_eq!(control_plane.snapshot().commands_committed, 1);
+assert!(metadata_store.snapshot().is_some());
 # Ok(())
 # }
 ```
@@ -46,8 +53,11 @@ materialized membership view:
   not append another command;
 - membership is materialized only after a successful Raft commit;
 - `export_snapshot()` and `from_snapshot(...)` rebuild the in-memory
-  materialized view from applied command envelopes.
+  materialized view from applied command envelopes;
+- `RaftMetadataStore` lets applications plug in snapshot storage, with
+  `InMemoryRaftMetadataStore` provided for tests, demos, and sandbox flows.
 
 This is still a single-node runtime, not a networked multi-node Raft cluster.
-The snapshot format is an in-memory recovery boundary for tests and demos, not
-a durable on-disk log format yet.
+The snapshot store persists materialized metadata snapshots, not the complete
+durable Raft log. Treat it as a recovery seam for staging adapters until a full
+multi-node durable log runtime exists.

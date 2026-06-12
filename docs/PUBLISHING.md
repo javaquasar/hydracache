@@ -191,6 +191,24 @@ the published version. It creates a fresh consumer crate and installs
 adapter crates, peer-fetch transport crate, and DB adapter crates from
 crates.io.
 
+For `0.30.0` and later, also run the local external-consumer script. Before
+publication it can validate the consumer scenario against the current checkout:
+
+```powershell
+.\scripts\verify-crates-io-consumer.ps1 -Version 0.30.0 -LocalPath . -WorkDir target\consumer-check-0.30.0-local
+```
+
+After every publishable crate is visible in the crates.io index, run the same
+scenario without `-LocalPath` so Cargo resolves real registry packages:
+
+```powershell
+.\scripts\verify-crates-io-consumer.ps1 -Version 0.30.0
+```
+
+The scenario compiles a fresh binary crate that touches the local cache,
+database-neutral adapter, SQLx re-export, actuator crate, chitchat/raft cluster
+crates, and the Axum HTTP transport auth/wire APIs.
+
 ## Publishing an update
 
 Published versions cannot be overwritten. For any fix after `0.1.0`, bump the
@@ -257,6 +275,12 @@ Then tag and push the new version:
 ```powershell
 git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
+```
+
+After the crates.io index catches up, run:
+
+```powershell
+.\scripts\verify-crates-io-consumer.ps1 -Version X.Y.Z
 ```
 
 After the tag is pushed, run the `Post Publish Verification` workflow manually

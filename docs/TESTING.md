@@ -183,6 +183,26 @@ cargo test -p hydracache-sandbox --lib --locked swagger_api_exercises_library_fe
 cargo test --doc -p hydracache-cluster-transport-axum --locked
 ```
 
+For the 0.30 production cluster readiness layer specifically, run the HTTP auth
+boundary tests, wire-version compatibility tests, raft metadata-store tests,
+cluster rustdoc examples, and the external consumer check in local-path mode:
+
+```powershell
+cargo test -p hydracache-cluster-transport-axum --locked auth
+cargo test -p hydracache-cluster-transport-axum --locked wire
+cargo test -p hydracache-cluster-raft --locked metadata_store
+cargo test --doc -p hydracache-cluster-transport-axum --locked
+cargo test --doc -p hydracache-cluster-raft --locked
+.\scripts\verify-crates-io-consumer.ps1 -Version 0.30.0 -LocalPath . -WorkDir target\consumer-check-0.30.0-local
+```
+
+After publication, rerun the same consumer scenario without `-LocalPath` so it
+checks the crates.io versions that downstream users will resolve:
+
+```powershell
+.\scripts\verify-crates-io-consumer.ps1 -Version 0.30.0
+```
+
 On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
 test executable under `target\debug\deps` is locked by the OS, rerun the
 workspace suite with a fresh target directory:

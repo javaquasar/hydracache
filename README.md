@@ -856,7 +856,37 @@ assert_eq!(
 
 The HTTP transport validates owner id and generation before returning bytes, so
 stale clients do not silently read from a restarted owner. Owner-side automatic
-query execution, TLS, and authentication remain future work.
+query execution and TLS remain future work. For staging or private-network
+deployments, configure the optional header/token boundary and strict wire
+version checks on both sides:
+
+```rust
+use std::sync::Arc;
+
+use hydracache::ClusterGeneration;
+use hydracache_cluster_transport_axum::{
+    AxumPeerFetchService, HttpPeerFetch, HttpTransportAuth, HttpWireCompatibility,
+    MemoryPeerFetchStore,
+};
+
+let auth = HttpTransportAuth::bearer("staging-token");
+let wire = HttpWireCompatibility::strict_current();
+let store = Arc::new(MemoryPeerFetchStore::new());
+
+let routes = AxumPeerFetchService::new(
+    "member-a",
+    ClusterGeneration::new(1),
+    store,
+)
+.with_auth(auth.clone())
+.with_wire_compatibility(wire)
+.routes();
+
+let peer_fetch = HttpPeerFetch::for_base_url("http://127.0.0.1:3000")
+    .with_auth(auth)
+    .with_wire_compatibility(wire);
+# let _ = (routes, peer_fetch);
+```
 
 When members advertise their peer-fetch base URL, `PeerFetchRouter` can connect
 the ownership decision to the HTTP transport automatically:
@@ -1061,22 +1091,28 @@ surface, not a production distributed data grid. It includes:
   owner cached bytes;
 - explicit owner-side loader registry, owner-load HTTP route/client, and
   read-through load-on-miss helper for named loaders;
+- optional HTTP token/header authentication and wire-version compatibility
+  checks for peer-fetch and owner-load transports;
+- a raft metadata snapshot store seam for restart recovery tests and staging
+  adapters;
 - diagnostics counters for membership, invalidation, ownership, peer-fetch,
   routed peer-fetch, read-through, and owner-load activity.
 
 It intentionally does not yet include:
 
-- production multi-node Raft networking or durable metadata storage;
+- production multi-node Raft networking or full durable Raft log storage;
 - transparent remote closures, raw SQL execution, or arbitrary executable code;
 - value replication, backup ownership, or failover repair;
 - external invalidation transports such as Redis, NATS, or Postgres
   LISTEN/NOTIFY;
-- cluster security, authentication, or write-enabled admin APIs.
+- TLS/certificate management, external identity, or write-enabled admin APIs.
 
 This boundary is deliberate: applications can adopt local caching, explicit
 invalidation, DB result caching, and cluster-aware diagnostics now, while the
 future remote-value layer can evolve behind the existing ownership and
-peer-fetch seams.
+peer-fetch seams. See
+[`docs/PRODUCTION_CLUSTER_READINESS.md`](docs/PRODUCTION_CLUSTER_READINESS.md)
+for the staging checklist and the current cluster non-goals.
 
 ## Upgrading From 0.20 To 0.21
 
@@ -1131,6 +1167,41 @@ commands, drains `Ready`, appends stable log entries, and applies committed
 membership commands. Command ids make retries idempotent, and membership is
 materialized only after a successful Raft commit. The runtime can also export
 and import an in-memory metadata snapshot for recovery tests and demos.
+
+For restart recovery experiments, provide a `RaftMetadataStore`. The included
+in-memory store is for tests and demos; production deployments should implement
+the trait with their own durable storage before depending on restart recovery:
+
+```rust
+use std::sync::Arc;
+
+use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration};
+use hydracache_cluster_raft::{
+    InMemoryRaftMetadataStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
+};
+
+# async fn example() -> hydracache::CacheResult<()> {
+let store = Arc::new(InMemoryRaftMetadataStore::new());
+let runtime = RaftMetadataRuntime::with_config_and_metadata_store(
+    RaftMetadataRuntimeConfig::single_node("orders", 1),
+    store.clone(),
+)?;
+
+runtime
+    .join_member(
+        ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+    )
+    .await?;
+
+let recovered = RaftMetadataRuntime::with_config_and_metadata_store(
+    RaftMetadataRuntimeConfig::single_node("orders", 1),
+    store,
+)?;
+
+assert_eq!(recovered.snapshot().commands_committed, 1);
+# Ok(())
+# }
+```
 
 If you want the standard chitchat + raft composition without wiring every
 adapter manually, use `hydracache-cluster`:
