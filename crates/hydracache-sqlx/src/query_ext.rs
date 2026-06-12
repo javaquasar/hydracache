@@ -18,7 +18,7 @@ where
     C: CacheCodec,
 {
     /// Execute a SQLx query on miss and cache exactly one row.
-    async fn fetch_one<'q, DB, A, E>(self, executor: E, query: QueryAs<'q, DB, T, A>) -> Result<T>
+    async fn sqlx_one<'q, DB, A, E>(self, executor: E, query: QueryAs<'q, DB, T, A>) -> Result<T>
     where
         'q: 'static,
         T: Serialize + DeserializeOwned + Send + Unpin + for<'r> FromRow<'r, DB::Row> + 'static,
@@ -28,7 +28,7 @@ where
         for<'c> &'c E: Executor<'c, Database = DB>;
 
     /// Execute a SQLx query on miss and cache either one row or `None`.
-    async fn fetch_optional<'q, DB, A, E>(
+    async fn sqlx_optional<'q, DB, A, E>(
         self,
         executor: E,
         query: QueryAs<'q, DB, T, A>,
@@ -42,7 +42,7 @@ where
         for<'c> &'c E: Executor<'c, Database = DB>;
 
     /// Execute a SQLx query on miss and cache all returned rows.
-    async fn fetch_all<'q, DB, A, E>(
+    async fn sqlx_all<'q, DB, A, E>(
         self,
         executor: E,
         query: QueryAs<'q, DB, T, A>,
@@ -61,7 +61,7 @@ impl<T, C> SqlxQueryExt<T, C> for DbQuery<T, C>
 where
     C: CacheCodec,
 {
-    async fn fetch_one<'q, DB, A, E>(self, executor: E, query: QueryAs<'q, DB, T, A>) -> Result<T>
+    async fn sqlx_one<'q, DB, A, E>(self, executor: E, query: QueryAs<'q, DB, T, A>) -> Result<T>
     where
         'q: 'static,
         T: Serialize + DeserializeOwned + Send + Unpin + for<'r> FromRow<'r, DB::Row> + 'static,
@@ -75,7 +75,7 @@ where
             .map_err(Into::into)
     }
 
-    async fn fetch_optional<'q, DB, A, E>(
+    async fn sqlx_optional<'q, DB, A, E>(
         self,
         executor: E,
         query: QueryAs<'q, DB, T, A>,
@@ -93,7 +93,7 @@ where
             .map_err(Into::into)
     }
 
-    async fn fetch_all<'q, DB, A, E>(
+    async fn sqlx_all<'q, DB, A, E>(
         self,
         executor: E,
         query: QueryAs<'q, DB, T, A>,

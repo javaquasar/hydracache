@@ -16,10 +16,10 @@
 //! let user_name = queries
 //!     .entity::<String>("user", 42)
 //!     .collection_tag("users")
-//!     .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>(Some("Ada".to_owned())) })
+//!     .sea_one(|| async { Ok::<_, hydracache_seaorm::sea_orm::DbErr>("Ada".to_owned()) })
 //!     .await?;
 //!
-//! assert_eq!(user_name, Some("Ada".to_owned()));
+//! assert_eq!(user_name, "Ada");
 //! # Ok(())
 //! # }
 //! ```
@@ -76,20 +76,20 @@ pub trait SeaOrmQueryExt<T, C>
 where
     C: CacheCodec,
 {
-    /// Execute an async SeaORM loader on miss and cache either one row or
-    /// `None`.
-    async fn sea_one<F, Fut>(self, loader: F) -> Result<Option<T>>
-    where
-        T: Serialize + DeserializeOwned + Send + 'static,
-        F: FnOnce() -> Fut + Send + 'static,
-        Fut: Future<Output = std::result::Result<Option<T>, DbErr>> + Send + 'static;
-
     /// Execute an async SeaORM loader on miss and cache exactly one value.
-    async fn sea_value<F, Fut>(self, loader: F) -> Result<T>
+    async fn sea_one<F, Fut>(self, loader: F) -> Result<T>
     where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<T, DbErr>> + Send + 'static;
+
+    /// Execute an async SeaORM loader on miss and cache either one row or
+    /// `None`.
+    async fn sea_optional<F, Fut>(self, loader: F) -> Result<Option<T>>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<Option<T>, DbErr>> + Send + 'static;
 
     /// Execute an async SeaORM loader on miss and cache all returned rows.
     async fn sea_all<F, Fut>(self, loader: F) -> Result<Vec<T>>
@@ -104,20 +104,20 @@ impl<T, C> SeaOrmQueryExt<T, C> for DbQuery<T, C>
 where
     C: CacheCodec,
 {
-    async fn sea_one<F, Fut>(self, loader: F) -> Result<Option<T>>
-    where
-        T: Serialize + DeserializeOwned + Send + 'static,
-        F: FnOnce() -> Fut + Send + 'static,
-        Fut: Future<Output = std::result::Result<Option<T>, DbErr>> + Send + 'static,
-    {
-        self.fetch_value_with(loader).await.map_err(Into::into)
-    }
-
-    async fn sea_value<F, Fut>(self, loader: F) -> Result<T>
+    async fn sea_one<F, Fut>(self, loader: F) -> Result<T>
     where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<T, DbErr>> + Send + 'static,
+    {
+        self.fetch_value_with(loader).await.map_err(Into::into)
+    }
+
+    async fn sea_optional<F, Fut>(self, loader: F) -> Result<Option<T>>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = std::result::Result<Option<T>, DbErr>> + Send + 'static,
     {
         self.fetch_value_with(loader).await.map_err(Into::into)
     }
@@ -195,7 +195,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn sea_one_caches_real_sqlite_query_until_invalidation() {
+    async fn sea_optional_caches_real_sqlite_query_until_invalidation() {
         let db = sqlite_users().await;
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
@@ -203,7 +203,7 @@ mod tests {
         let first = queries
             .entity::<user::Model>("seaorm-user", 42)
             .collection_tag("seaorm-users")
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -228,7 +228,7 @@ mod tests {
         let cached = queries
             .entity::<user::Model>("seaorm-user", 42)
             .collection_tag("seaorm-users")
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -255,7 +255,7 @@ mod tests {
         let reloaded = queries
             .entity::<user::Model>("seaorm-user", 42)
             .collection_tag("seaorm-users")
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -272,14 +272,14 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn sea_one_caches_none_without_reloading() {
+    async fn sea_optional_caches_none_without_reloading() {
         let db = sqlite_users().await;
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
 
         let missing = queries
             .entity::<user::Model>("seaorm-user", 404)
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -291,7 +291,7 @@ mod tests {
             .unwrap();
         let cached_missing = queries
             .entity::<user::Model>("seaorm-user", 404)
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -314,7 +314,7 @@ mod tests {
 
         let result = queries
             .cached::<user::Model>()
-            .sea_value({
+            .sea_one({
                 let calls = calls.clone();
                 move || async move {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -332,13 +332,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn sea_value_loader_errors_are_not_cached_and_can_retry() {
+    async fn sea_one_loader_errors_are_not_cached_and_can_retry() {
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
 
         let failed = queries
             .entity::<user::Model>("seaorm-user", 500)
-            .sea_value({
+            .sea_one({
                 let calls = calls.clone();
                 move || async move {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -351,7 +351,7 @@ mod tests {
 
         let recovered = queries
             .entity::<user::Model>("seaorm-user", 500)
-            .sea_value({
+            .sea_one({
                 let calls = calls.clone();
                 move || async move {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -368,7 +368,7 @@ mod tests {
 
         let cached = queries
             .entity::<user::Model>("seaorm-user", 500)
-            .sea_value({
+            .sea_one({
                 let calls = calls.clone();
                 move || async move {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -382,14 +382,14 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn sea_one_found_value_is_cached_until_invalidated() {
+    async fn sea_optional_found_value_is_cached_until_invalidated() {
         let db = sqlite_users().await;
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
 
         let first = queries
             .entity::<user::Model>("seaorm-user", 42)
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -411,7 +411,7 @@ mod tests {
 
         let cached = queries
             .entity::<user::Model>("seaorm-user", 42)
-            .sea_one({
+            .sea_optional({
                 let db = db.clone();
                 let calls = calls.clone();
                 move || async move {
@@ -429,7 +429,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn sea_all_and_sea_value_cache_collection_shapes() {
+    async fn sea_all_and_sea_one_cache_collection_shapes() {
         let db = sqlite_users().await;
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
@@ -477,7 +477,7 @@ mod tests {
         let scalar = queries
             .cached::<String>()
             .key("seaorm:scalar")
-            .sea_value(|| async { Ok::<_, DbErr>("cached-value".to_owned()) })
+            .sea_one(|| async { Ok::<_, DbErr>("cached-value".to_owned()) })
             .await
             .unwrap();
 

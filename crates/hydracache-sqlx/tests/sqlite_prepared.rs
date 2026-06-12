@@ -48,7 +48,7 @@ async fn prepared_sqlite_queries_cache_real_in_memory_database_results(
 
     let first = prepared_user
         .for_id(42)
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(42_i64),
         )
@@ -63,7 +63,7 @@ async fn prepared_sqlite_queries_cache_real_in_memory_database_results(
 
     let cached = prepared_user
         .for_id(42)
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(42_i64),
         )
@@ -74,7 +74,7 @@ async fn prepared_sqlite_queries_cache_real_in_memory_database_results(
 
     let reloaded = prepared_user
         .for_id(42)
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(42_i64),
         )
@@ -87,7 +87,7 @@ async fn prepared_sqlite_queries_cache_real_in_memory_database_results(
 
     let listed = prepared_list
         .to_query()
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -105,7 +105,7 @@ async fn prepared_sqlite_queries_cache_real_in_memory_database_results(
 
     let listed_cached = prepared_list
         .to_query()
-        .fetch_all(
+        .sqlx_all(
             pool,
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -128,7 +128,7 @@ async fn sqlite_fetch_optional_caches_some_and_none_results() -> TestResult {
 
     let first = prepared_user
         .for_id(7)
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(7_i64),
         )
@@ -143,7 +143,7 @@ async fn sqlite_fetch_optional_caches_some_and_none_results() -> TestResult {
 
     let cached_some = prepared_user
         .for_id(7)
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(7_i64),
         )
@@ -152,7 +152,7 @@ async fn sqlite_fetch_optional_caches_some_and_none_results() -> TestResult {
 
     let missing = prepared_user
         .for_id(999)
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(999_i64),
         )
@@ -167,7 +167,7 @@ async fn sqlite_fetch_optional_caches_some_and_none_results() -> TestResult {
 
     let cached_none = prepared_user
         .for_id(999)
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = ?").bind(999_i64),
         )
@@ -177,7 +177,7 @@ async fn sqlite_fetch_optional_caches_some_and_none_results() -> TestResult {
 
     let reloaded = prepared_user
         .for_id(999)
-        .fetch_optional(
+        .sqlx_optional(
             pool,
             sqlx::query_as("select id, name from users where id = ?").bind(999_i64),
         )
@@ -197,7 +197,7 @@ async fn sqlite_fetch_all_reloads_after_collection_invalidation() -> TestResult 
 
     let first = prepared_list
         .to_query()
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -211,7 +211,7 @@ async fn sqlite_fetch_all_reloads_after_collection_invalidation() -> TestResult 
 
     let cached = prepared_list
         .to_query()
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -223,7 +223,7 @@ async fn sqlite_fetch_all_reloads_after_collection_invalidation() -> TestResult 
 
     let reloaded = prepared_list
         .to_query()
-        .fetch_all(
+        .sqlx_all(
             pool,
             sqlx::query_as("select id, name from users order by id"),
         )

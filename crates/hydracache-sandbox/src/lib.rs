@@ -9894,7 +9894,7 @@ async fn run_diesel_user_adapter(
         let user = backing_user.clone();
         let query = orm_user_query(queries.entity::<User>("user", id), id, request);
         query
-            .diesel_first(move || {
+            .diesel_one(move || {
                 if loader_delay_ms > 0 {
                     std::thread::sleep(Duration::from_millis(loader_delay_ms));
                 }
@@ -9912,7 +9912,7 @@ async fn run_diesel_user_adapter(
         let user = backing_user;
         let query = orm_user_query(queries.entity::<User>("user", id), id, request);
         query
-            .diesel_first(move || {
+            .diesel_one(move || {
                 if loader_delay_ms > 0 {
                     std::thread::sleep(Duration::from_millis(loader_delay_ms));
                 }
@@ -9962,7 +9962,7 @@ async fn run_seaorm_user_adapter(
         let user = backing_user.clone();
         let query = orm_user_query(queries.entity::<User>("user", id), id, request);
         query
-            .sea_value(move || async move {
+            .sea_one(move || async move {
                 sleep(Duration::from_millis(loader_delay_ms)).await;
                 loader_calls.fetch_add(1, Ordering::SeqCst);
                 Ok::<_, hydracache_seaorm::sea_orm::DbErr>(user)
@@ -9978,7 +9978,7 @@ async fn run_seaorm_user_adapter(
         let user = backing_user;
         let query = orm_user_query(queries.entity::<User>("user", id), id, request);
         query
-            .sea_value(move || async move {
+            .sea_one(move || async move {
                 sleep(Duration::from_millis(loader_delay_ms)).await;
                 loader_calls.fetch_add(1, Ordering::SeqCst);
                 Ok::<_, hydracache_seaorm::sea_orm::DbErr>(user)

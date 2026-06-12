@@ -65,7 +65,7 @@
 //!
 //! let (id, name) = load_user
 //!     .for_id(42)
-//!     .fetch_one(
+//!     .sqlx_one(
 //!         pool.clone(),
 //!         sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
 //!     )
@@ -174,7 +174,7 @@ mod tests {
 
         let result = DbCache::new(HydraCache::local().build(), "db")
             .cached::<(i64,)>()
-            .fetch_one(pool, sqlx::query_as("select 1"))
+            .sqlx_one(pool, sqlx::query_as("select 1"))
             .await;
 
         let error = result.unwrap_err();

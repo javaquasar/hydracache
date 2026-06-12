@@ -78,7 +78,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:user:42")
         .tag("user:42")
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -95,7 +95,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:user:42")
         .tag("user:42")
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -105,7 +105,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
     let entity_helper_first = queries
         .entity::<(i64, String)>("helper-user", 42)
         .collection_tag("helper-users")
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -121,7 +121,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
     let entity_helper_cached = queries
         .entity::<(i64, String)>("helper-user", 42)
         .collection_tag("helper-users")
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -133,7 +133,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
     let entity_helper_reloaded = queries
         .entity::<(i64, String)>("helper-user", 42)
         .collection_tag("helper-users")
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -144,7 +144,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:user:missing")
         .tag("user:missing")
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(999_i64),
         )
@@ -155,7 +155,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:user:7")
         .tag("user:7")
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(7_i64),
         )
@@ -172,7 +172,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:user:7")
         .tag("user:7")
-        .fetch_optional(
+        .sqlx_optional(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(7_i64),
         )
@@ -183,7 +183,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:users:all")
         .tag("users")
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -195,7 +195,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let collection_helper_first = queries
         .collection::<(i64, String)>("helper-users:all")
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -213,7 +213,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let collection_helper_cached = queries
         .collection::<(i64, String)>("helper-users:all")
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -230,7 +230,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let collection_helper_reloaded = queries
         .collection::<(i64, String)>("helper-users:all")
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users order by id"),
         )
@@ -270,7 +270,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let prepared_first = prepared_user
         .for_id(42)
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -285,7 +285,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let prepared_cached = prepared_user
         .for_id(42)
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -299,7 +299,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
 
     let prepared_reloaded = prepared_user
         .for_id(42)
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, name from users where id = $1").bind(42_i64),
         )
@@ -311,7 +311,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
     );
     let prepared_collection_first = prepared_collection
         .to_query()
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users where id > $1 order by id").bind(0_i64),
         )
@@ -329,7 +329,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:users:none")
         .tag("users:none")
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users where id < $1 order by id").bind(0_i64),
         )
@@ -346,7 +346,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
         .cached::<(i64, String)>()
         .key("helper:users:none")
         .tag("users:none")
-        .fetch_all(
+        .sqlx_all(
             pool.clone(),
             sqlx::query_as("select id, name from users where id < $1 order by id").bind(0_i64),
         )
@@ -356,7 +356,7 @@ async fn sqlx_adapter_caches_real_postgres_query_results_when_docker_is_availabl
     let failed = queries
         .cached::<(i64, String)>()
         .key("helper:broken")
-        .fetch_one(
+        .sqlx_one(
             pool.clone(),
             sqlx::query_as("select id, missing_column from users where id = $1").bind(42_i64),
         )

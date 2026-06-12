@@ -20,7 +20,7 @@
 //! let user_name = queries
 //!     .entity::<String>("user", 42)
 //!     .collection_tag("users")
-//!     .diesel_first(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
+//!     .diesel_one(move || Ok::<_, hydracache_diesel::diesel::result::Error>("Ada".to_owned()))
 //!     .await?;
 //!
 //! assert_eq!(user_name, "Ada");
@@ -87,7 +87,7 @@ where
     C: CacheCodec,
 {
     /// Execute a blocking Diesel loader on miss and cache exactly one row.
-    async fn diesel_first<F>(self, loader: F) -> Result<T>
+    async fn diesel_one<F>(self, loader: F) -> Result<T>
     where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> diesel::QueryResult<T> + Send + 'static;
@@ -111,7 +111,7 @@ impl<T, C> DieselQueryExt<T, C> for DbQuery<T, C>
 where
     C: CacheCodec,
 {
-    async fn diesel_first<F>(self, loader: F) -> Result<T>
+    async fn diesel_one<F>(self, loader: F) -> Result<T>
     where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> diesel::QueryResult<T> + Send + 'static,
@@ -213,7 +213,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn diesel_first_caches_real_sqlite_query_until_invalidation() {
+    async fn diesel_one_caches_real_sqlite_query_until_invalidation() {
         let connection = sqlite_users();
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = DieselCache::new(HydraCache::local().build(), "diesel");
@@ -221,7 +221,7 @@ mod tests {
         let first = queries
             .entity::<User>("diesel-user", 42)
             .collection_tag("diesel-users")
-            .diesel_first(diesel_user_loader(connection.clone(), calls.clone(), 42))
+            .diesel_one(diesel_user_loader(connection.clone(), calls.clone(), 42))
             .await
             .unwrap();
 
@@ -235,7 +235,7 @@ mod tests {
         let cached = queries
             .entity::<User>("diesel-user", 42)
             .collection_tag("diesel-users")
-            .diesel_first(diesel_user_loader(connection.clone(), calls.clone(), 42))
+            .diesel_one(diesel_user_loader(connection.clone(), calls.clone(), 42))
             .await
             .unwrap();
 
@@ -254,7 +254,7 @@ mod tests {
         let reloaded = queries
             .entity::<User>("diesel-user", 42)
             .collection_tag("diesel-users")
-            .diesel_first(diesel_user_loader(connection, calls.clone(), 42))
+            .diesel_one(diesel_user_loader(connection, calls.clone(), 42))
             .await
             .unwrap();
 
@@ -291,7 +291,7 @@ mod tests {
 
         let result = queries
             .cached::<User>()
-            .diesel_first({
+            .diesel_one({
                 let calls = calls.clone();
                 move || {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -306,13 +306,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn diesel_first_loader_errors_are_not_cached_and_can_retry() {
+    async fn diesel_one_loader_errors_are_not_cached_and_can_retry() {
         let calls = Arc::new(AtomicUsize::new(0));
         let queries = DieselCache::new(HydraCache::local().build(), "diesel");
 
         let failed = queries
             .entity::<User>("diesel-user", 500)
-            .diesel_first({
+            .diesel_one({
                 let calls = calls.clone();
                 move || {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -325,7 +325,7 @@ mod tests {
 
         let recovered = queries
             .entity::<User>("diesel-user", 500)
-            .diesel_first({
+            .diesel_one({
                 let calls = calls.clone();
                 move || {
                     calls.fetch_add(1, Ordering::SeqCst);
@@ -342,7 +342,7 @@ mod tests {
 
         let cached = queries
             .entity::<User>("diesel-user", 500)
-            .diesel_first({
+            .diesel_one({
                 let calls = calls.clone();
                 move || {
                     calls.fetch_add(1, Ordering::SeqCst);
