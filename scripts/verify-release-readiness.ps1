@@ -34,6 +34,7 @@ $gateCommands = @(
     @("cargo", @("test", "--workspace", "--all-targets", "--locked")),
     @("cargo", @("clippy", "--workspace", "--all-targets", "--all-features", "--locked", "--", "-D", "warnings")),
     @("cargo", @("test", "--doc", "--workspace", "--locked")),
+    @("powershell", @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "`$env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked")),
     @("powershell", @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify-feature-matrix.ps1")),
     @("powershell", @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\package-publishable.ps1", "-Set", "bootstrap", "-AllowDirty"))
 )
