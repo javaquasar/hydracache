@@ -91,7 +91,7 @@ pub use error::{DbCacheError, Result};
 pub use hydracache_macros::{query_cache_policy, HydraCacheEntity};
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
-pub use query::{DbCache, DbQuery};
+pub use query::{DbCache, DbQuery, PreparedDbQuery};
 
 #[cfg(test)]
 mod tests;

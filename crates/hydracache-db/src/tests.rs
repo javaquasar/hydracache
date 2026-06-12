@@ -5,7 +5,9 @@ use std::time::Duration;
 use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
-use crate::{CacheEntity, DbCache, DbCacheError, HydraCacheEntity, QueryCachePolicy};
+use crate::{
+    CacheEntity, DbCache, DbCacheError, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
 #[hydracache(entity = "user", collection = "users", id = u64)]
@@ -120,6 +122,152 @@ async fn cached_with_applies_reusable_query_cache_policy() {
     );
     assert_eq!(first.ttl_value(), Some(Duration::from_secs(30)));
     assert_eq!(second.physical_key(), Some("db:user:42".to_owned()));
+}
+
+#[tokio::test]
+async fn prepared_query_policy_descriptor_binds_entity_ids() {
+    let prepared = adapter().prepare::<User>(
+        PreparedQueryPolicy::for_cache_entity::<User>()
+            .with_name("load-user")
+            .ttl(Duration::from_secs(30)),
+    );
+
+    assert_eq!(prepared.namespace(), "db");
+    assert_eq!(prepared.name(), Some("load-user"));
+    assert!(prepared.requires_id());
+    assert_eq!(prepared.entity_key_prefix(), Some("user"));
+    assert_eq!(prepared.tags_value(), &["users".to_owned()]);
+    assert_eq!(prepared.ttl_value(), Some(Duration::from_secs(30)));
+
+    let query = prepared.for_id(42);
+    assert_eq!(query.name(), Some("load-user"));
+    assert_eq!(query.key_value(), Some("user:42"));
+    assert_eq!(query.physical_key(), Some("db:user:42".to_owned()));
+    assert_eq!(
+        query.tags_value(),
+        &["users".to_owned(), "user:42".to_owned()]
+    );
+    assert_eq!(query.ttl_value(), Some(Duration::from_secs(30)));
+}
+
+#[tokio::test]
+async fn prepared_query_load_id_caches_and_invalidates_entity_result() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+    let prepared = cache
+        .prepare::<User>(PreparedQueryPolicy::for_cache_entity::<User>().with_name("load-user"));
+
+    let first = prepared
+        .load_id(1, {
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(1))
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached = prepared
+        .load_id(1, {
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(user(2))
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, user(1));
+    assert_eq!(cached, user(1));
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    assert_eq!(cache.cache().invalidate_tag("users").await.unwrap(), 1);
+
+    let reloaded = prepared
+        .load_id(1, || async { Ok::<_, LoadError>(user(2)) })
+        .await
+        .unwrap();
+
+    assert_eq!(reloaded, user(2));
+}
+
+#[tokio::test]
+async fn prepared_static_query_loads_collection_values() {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let cache = adapter();
+    let prepared = cache.prepare::<User>(
+        PreparedQueryPolicy::named("list-users")
+            .collection("users:active")
+            .ttl(Duration::from_secs(30)),
+    );
+
+    assert!(!prepared.requires_id());
+    assert_eq!(prepared.static_key_value(), Some("users%3Aactive"));
+
+    let first: Vec<User> = prepared
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(vec![user(1)])
+            }
+        })
+        .await
+        .unwrap();
+
+    let cached: Vec<User> = prepared
+        .fetch_value_with({
+            let calls = Arc::clone(&calls);
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, LoadError>(vec![user(2)])
+            }
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(first, vec![user(1)]);
+    assert_eq!(cached, vec![user(1)]);
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+    assert_eq!(
+        prepared
+            .cache()
+            .invalidate_tag("users%3Aactive")
+            .await
+            .unwrap(),
+        1
+    );
+}
+
+#[tokio::test]
+async fn prepared_entity_helper_uses_cache_entity_metadata() {
+    let prepared = adapter().prepare_entity::<User>();
+
+    assert!(prepared.requires_id());
+    assert_eq!(prepared.entity_key_prefix(), Some("user"));
+    assert_eq!(prepared.tags_value(), &["users".to_owned()]);
+
+    let query = prepared.for_id(7);
+    assert_eq!(query.physical_key(), Some("db:user:7".to_owned()));
+    assert_eq!(
+        query.tags_value(),
+        &["users".to_owned(), "user:7".to_owned()]
+    );
+}
+
+#[tokio::test]
+async fn prepared_entity_without_bound_id_reports_missing_key() {
+    let result = adapter()
+        .prepare::<User>(PreparedQueryPolicy::for_cache_entity::<User>().with_name("load-user"))
+        .load(|| async { Ok::<_, LoadError>(user(1)) })
+        .await;
+
+    assert!(matches!(
+        result,
+        Err(DbCacheError::MissingKey { operation }) if operation == "load-user"
+    ));
 }
 
 #[tokio::test]
