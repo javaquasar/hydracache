@@ -86,6 +86,38 @@ pub fn prepared_query_policy(input: TokenStream) -> TokenStream {
         .into()
 }
 
+/// Cache an ordinary async function with explicit local-cache metadata.
+///
+/// The decorated function must be async, return `Result<T, E>`, and receive the
+/// cache as an explicit argument referenced by `cache = ...`. The generated
+/// wrapper returns `hydracache::CacheResult<T>` because cache errors can also be
+/// produced outside the user loader.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use hydracache::{cacheable, HydraCache};
+///
+/// #[cacheable(
+///     cache = cache,
+///     key_segments = ["profile", profile_id],
+///     tag_segments = [["profile", profile_id], ["profiles"]],
+///     ttl_secs = 60
+/// )]
+/// async fn load_profile(
+///     cache: &HydraCache,
+///     profile_id: u64,
+/// ) -> Result<Profile, LoadError> {
+///     repo_load_profile(profile_id).await
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn cacheable(args: TokenStream, item: TokenStream) -> TokenStream {
+    cacheable::expand_attribute(args.into(), item.into())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
 /// Cache an ordinary fallible async loader with explicit local-cache metadata.
 ///
 /// The macro builds `CacheOptions` and calls `HydraCache::get_or_load`.
@@ -96,13 +128,13 @@ pub fn prepared_query_policy(input: TokenStream) -> TokenStream {
 /// # Example
 ///
 /// ```rust,ignore
-/// use hydracache::{cacheable, CacheKeyBuilder, HydraCache, TagSet};
+/// use hydracache::{cacheable_loader, CacheKeyBuilder, HydraCache, TagSet};
 ///
 /// let cache = HydraCache::local().build();
 /// let user_id = 42_u64;
 /// let key = CacheKeyBuilder::new().entity("user", user_id).build_string();
 ///
-/// let value = cacheable!(
+/// let value = cacheable_loader!(
 ///     cache = cache,
 ///     key = key.as_str(),
 ///     tags = TagSet::new().tag("users").entity("user", user_id),
@@ -112,8 +144,8 @@ pub fn prepared_query_policy(input: TokenStream) -> TokenStream {
 /// .await?;
 /// ```
 #[proc_macro]
-pub fn cacheable(input: TokenStream) -> TokenStream {
-    cacheable::expand(input.into())
+pub fn cacheable_loader(input: TokenStream) -> TokenStream {
+    cacheable::expand_loader(input.into())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

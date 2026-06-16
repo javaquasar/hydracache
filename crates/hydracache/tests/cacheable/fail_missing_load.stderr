@@ -1,11 +1,11 @@
-error: cacheable requires load
+error: cacheable_loader requires load
  --> tests/cacheable/fail_missing_load.rs:5:19
   |
-5 |       let _future = cacheable!(
+5 |       let _future = cacheable_loader!(
   |  ___________________^
 6 | |         cache = cache,
 7 | |         key = "value:1",
 8 | |     );
   | |_____^
   |
-  = note: this error originates in the macro `cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the macro `cacheable_loader` (in Nightly builds, run with -Z macro-backtrace for more info)

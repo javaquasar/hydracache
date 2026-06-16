@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache::{cacheable, cacheable_infallible, HydraCache, TagSet};
+use hydracache::{cacheable_infallible, cacheable_loader, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -23,12 +23,27 @@ impl Display for LoadError {
 
 impl Error for LoadError {}
 
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["attribute", value_id],
+    tag_segments = [["attribute", value_id], ["attribute-values"]],
+    ttl_secs = 60
+)]
+async fn load_attribute_value(
+    cache: &HydraCache,
+    calls: Arc<AtomicUsize>,
+    value_id: u64,
+) -> Result<ExpensiveValue, LoadError> {
+    calls.fetch_add(1, Ordering::SeqCst);
+    Ok(ExpensiveValue { id: value_id })
+}
+
 #[tokio::test]
 async fn cacheable_macro_caches_loader_result() {
     let cache = HydraCache::local().build();
     let calls = Arc::new(AtomicUsize::new(0));
 
-    let first: ExpensiveValue = cacheable!(
+    let first: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "expensive:1",
         tag = "expensive",
@@ -44,7 +59,7 @@ async fn cacheable_macro_caches_loader_result() {
     .await
     .unwrap();
 
-    let second: ExpensiveValue = cacheable!(
+    let second: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "expensive:1",
         tag = "expensive",
@@ -70,7 +85,7 @@ async fn cacheable_macro_applies_tags_and_ttl() {
     let cache = HydraCache::local().build();
     let ttl_calls = Arc::new(AtomicUsize::new(0));
 
-    let first: ExpensiveValue = cacheable!(
+    let first: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "expiring:1",
         tag = "expiring",
@@ -88,7 +103,7 @@ async fn cacheable_macro_applies_tags_and_ttl() {
 
     tokio::time::sleep(Duration::from_millis(30)).await;
 
-    let second: ExpensiveValue = cacheable!(
+    let second: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "expiring:1",
         tag = "expiring",
@@ -117,7 +132,7 @@ async fn cacheable_macro_accepts_tags_expression() {
     let cache = HydraCache::local().build();
     let calls = Arc::new(AtomicUsize::new(0));
 
-    let first: ExpensiveValue = cacheable!(
+    let first: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "tag-list:1",
         tags = ["tag-list", "tag-list:1"],
@@ -132,7 +147,7 @@ async fn cacheable_macro_accepts_tags_expression() {
     .await
     .unwrap();
 
-    let second: ExpensiveValue = cacheable!(
+    let second: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "tag-list:1",
         tags = ["tag-list", "tag-list:1"],
@@ -159,7 +174,7 @@ async fn cacheable_macro_accepts_tags_expression() {
 async fn cacheable_macro_accepts_tag_set_expression() {
     let cache = HydraCache::local().build();
 
-    let value: ExpensiveValue = cacheable!(
+    let value: ExpensiveValue = cacheable_loader!(
         cache = cache,
         key = "tag-set:1",
         tags = TagSet::new().tag("tag-set").entity("value", 1),
@@ -172,6 +187,26 @@ async fn cacheable_macro_accepts_tag_set_expression() {
 
     cache.invalidate_tag("value:1").await.unwrap();
     assert!(!cache.contains_key("tag-set:1").await);
+}
+
+#[tokio::test]
+async fn cacheable_attribute_caches_function_result() {
+    let cache = HydraCache::local().build();
+    let calls = Arc::new(AtomicUsize::new(0));
+
+    let first = load_attribute_value(&cache, Arc::clone(&calls), 7)
+        .await
+        .unwrap();
+    let second = load_attribute_value(&cache, Arc::clone(&calls), 7)
+        .await
+        .unwrap();
+
+    assert_eq!(first, ExpensiveValue { id: 7 });
+    assert_eq!(second, ExpensiveValue { id: 7 });
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+    cache.invalidate_tag("attribute:7").await.unwrap();
+    assert!(!cache.contains_key("attribute:7").await);
 }
 
 #[tokio::test]

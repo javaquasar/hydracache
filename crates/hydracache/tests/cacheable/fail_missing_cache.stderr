@@ -1,11 +1,11 @@
-error: cacheable requires cache
+error: cacheable_loader requires cache
  --> tests/cacheable/fail_missing_cache.rs:4:19
   |
-4 |       let _future = cacheable!(
+4 |       let _future = cacheable_loader!(
   |  ___________________^
 5 | |         key = "value:1",
 6 | |         load = || async { Ok::<_, std::io::Error>(1_u64) },
 7 | |     );
   | |_____^
   |
-  = note: this error originates in the macro `cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the macro `cacheable_loader` (in Nightly builds, run with -Z macro-backtrace for more info)

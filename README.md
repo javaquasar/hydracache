@@ -122,8 +122,8 @@ The current v0 line includes:
   `collection_tag`
 - `CacheEntity` metadata for domain-shaped database cache descriptors
 - `HydraCacheEntity` derive macro for generating `CacheEntity` impls
-- `cacheable!` macro for ordinary async function/result caching without DB
-  adapter concepts
+- `#[cacheable(...)]` attribute macro and `cacheable_loader!` loader macro for
+  ordinary async function/result caching without DB adapter concepts
 - `cacheable_infallible!` macro for ordinary async loaders that cannot fail
 - `tags = [...]` macro shorthand for attaching several invalidation tags at
   once
@@ -240,11 +240,11 @@ assert_eq!(user, "Ada");
 
 ## Cacheable Function Macros
 
-Use `cacheable!` when you want the same explicit cache boundary with less
+Use `cacheable_loader!` when you want the same explicit cache boundary with less
 boilerplate at ordinary async function call sites.
 
 ```rust
-use hydracache::{cacheable, CacheKeyBuilder, HydraCache, TagSet};
+use hydracache::{cacheable_loader, CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -260,7 +260,7 @@ let key = CacheKeyBuilder::new()
     .entity("profile", profile_id)
     .build_string();
 
-let profile = cacheable!(
+let profile = cacheable_loader!(
     cache = cache,
     key = key.as_str(),
     tags = TagSet::new().tag("profiles").entity("profile", profile_id),
@@ -279,6 +279,58 @@ cache.invalidate_tag("profile:42").await?;
 # Ok(())
 # }
 ```
+
+`#[cacheable]` is the function-level spelling for the same boundary. The cache
+is still an explicit function argument; the macro does not discover global
+state. The decorated function returns `hydracache::CacheResult<T>` after
+expansion because cache errors can occur outside the loader:
+
+```rust
+use hydracache::{cacheable, HydraCache};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Profile {
+    id: u64,
+}
+
+# struct LoadError;
+# impl std::fmt::Debug for LoadError {
+#     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+#         f.write_str("load failed")
+#     }
+# }
+# impl std::fmt::Display for LoadError {
+#     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+#         f.write_str("load failed")
+#     }
+# }
+# impl std::error::Error for LoadError {}
+#[cacheable(
+    cache = cache,
+    key_segments = ["profile", profile_id],
+    tag_segments = [["profile", profile_id], ["profiles"]],
+    ttl_secs = 60
+)]
+async fn load_profile(
+    cache: &HydraCache,
+    profile_id: u64,
+) -> Result<Profile, LoadError> {
+    Ok(Profile { id: profile_id })
+}
+
+# async fn example() -> hydracache::CacheResult<()> {
+let cache = HydraCache::local().build();
+let profile = load_profile(&cache, 42).await?;
+
+assert_eq!(profile.id, 42);
+# Ok(())
+# }
+```
+
+Breaking change in `0.36.0`: the old fallible function-like macro name
+`cacheable!(...)` is now `cacheable_loader!(...)`. The `cacheable` name is
+reserved for the attribute macro.
 
 Use `cacheable_infallible!` when the loader cannot fail and writing
 `Ok::<_, Error>(value)` would be only ceremony:
@@ -317,17 +369,17 @@ generate keys from function arguments, or hide the loader. They only build
 
 `try_get_or_insert_with` is the fallible-loader spelling. It behaves the same as `get_or_load`.
 
-For ordinary expensive async work, `cacheable!` is the compact macro form of
+For ordinary expensive async work, `cacheable_loader!` is the compact macro form of
 `get_or_load`. It stays local-cache focused: you still pass the cache, key, TTL,
 tags, and loader explicitly, and it does not introduce database query metadata.
 
 ```rust
-use hydracache::{cacheable, cacheable_infallible, HydraCache};
+use hydracache::{cacheable_loader, cacheable_infallible, HydraCache};
 
 # async fn example() -> hydracache::CacheResult<()> {
 let cache = HydraCache::local().build();
 
-let value = cacheable!(
+let value = cacheable_loader!(
     cache = cache,
     key = "expensive:42",
     tags = ["expensive", "expensive:42"],
@@ -353,13 +405,13 @@ assert_eq!(total, 1);
 ```
 
 When the loader captures request state, pool handles, or other non-`Copy`
-values, prefer `move || async move { ... }`. `cacheable!` expands to
+values, prefer `move || async move { ... }`. `cacheable_loader!` expands to
 `HydraCache::get_or_load`, so the loader follows the same `Send + 'static`
 bounds as the explicit API. `cacheable_infallible!` follows
 `get_or_insert_with` and avoids the `Ok::<_, Error>(...)` wrapper for loaders
 that cannot fail.
 
-`cacheable!` supports both repeated `tag = ...` entries and a single
+`cacheable_loader!` supports both repeated `tag = ...` entries and a single
 `tags = ...` expression. Prefer `tags = [...]` for simple lists and
 `tags = TagSet::new()...` when the tags are built from the same domain metadata
 as the key.
@@ -1843,7 +1895,7 @@ lines should be investigated before release.
 
 ## Which Crate Should I Use?
 
-- `hydracache` - use this for the local async cache, `cacheable!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, stats, and diagnostics.
+- `hydracache` - use this for the local async cache, `cacheable_loader!`, `cacheable_infallible!`, typed cache, TTLs, tags, single-flight, stats, and diagnostics.
 - `hydracache-observability` - use this for a framework-neutral registry and serializable cache diagnostic snapshots.
 - `hydracache-actuator-axum` - use this when exposing read-only HydraCache diagnostics through Axum routes.
 - `hydracache-cluster` - use this when you want the standard chitchat + raft adapter composition without wiring every handle manually.
@@ -1889,7 +1941,7 @@ the primary way to understand the current public API.
 - `crates/hydracache-sandbox` - non-published manual backend for exercising actuator, database, scenario, listener, and cluster modes
 - `crates/hydracache-db` - database-neutral query result-cache adapter API
 - `crates/hydracache-diesel` - Diesel-facing integration crate and re-exports
-- `crates/hydracache-macros` - procedural macros such as `cacheable!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
+- `crates/hydracache-macros` - procedural macros such as `cacheable_loader!`, `cacheable_infallible!`, `HydraCacheEntity`, and `query_cache_policy!`
 - `crates/hydracache-seaorm` - SeaORM-facing integration crate and re-exports
 - `crates/hydracache-sqlx` - SQLx-facing integration crate and re-exports
 

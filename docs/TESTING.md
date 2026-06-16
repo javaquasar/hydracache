@@ -296,7 +296,7 @@ This does not relax the release gate; it avoids a stale locked `.exe` while
 running the same test graph.
 
 `hydracache` and `hydracache-db` also run `trybuild` compile-pass and
-compile-fail tests for `cacheable!(...)`, `cacheable_infallible!(...)`,
+compile-fail tests for `cacheable_loader!(...)`, `cacheable_infallible!(...)`,
 `#[derive(HydraCacheEntity)]`, and `query_cache_policy!(...)`. To run only the
 macro UI tests:
 

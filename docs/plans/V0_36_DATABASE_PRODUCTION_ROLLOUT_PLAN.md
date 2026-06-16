@@ -279,7 +279,7 @@ The current macros are safe and honest:
 
 - `HydraCacheEntity` removes manual `CacheEntity` implementations;
 - `query_cache_policy!` shortens declarative `QueryCachePolicy` construction;
-- `cacheable!` and `cacheable_infallible!` shorten local-cache call sites.
+- `cacheable_loader!` and `cacheable_infallible!` shorten local-cache call sites.
 
 The remaining user pain is around repeated metadata:
 
@@ -586,17 +586,24 @@ database transactions, and loader ownership remain in repository code.
 
 ### 7.5 Attribute Macro For Ordinary Functions
 
+Status: implemented as a breaking macro-name cleanup. The old fallible
+function-like macro is now `cacheable_loader!(...)`; `cacheable` is reserved for
+the attribute macro. The attribute requires an explicit cache expression, leaves
+the cache as a function argument, and rewrites the public return type to
+`hydracache::CacheResult<T>` because cache errors can occur outside the user
+loader.
+
 #### Current Shape
 
 Today ordinary function caching uses a function-like macro around a loader:
 
 ```rust
-use hydracache::{cacheable, HydraCache};
+use hydracache::{cacheable_loader, HydraCache};
 
 let cache = HydraCache::local().build();
 let profile_id = 42_u64;
 
-let profile = cacheable!(
+let profile = cacheable_loader!(
     cache = cache,
     key = format!("profile:{profile_id}"),
     tags = ["profiles"],
@@ -624,7 +631,10 @@ use hydracache::cacheable;
     tags = ["profiles"],
     ttl_secs = 60
 )]
-async fn load_profile(profile_id: u64) -> Result<Profile, LoadError> {
+async fn load_profile(
+    cache: &HydraCache,
+    profile_id: u64,
+) -> Result<Profile, LoadError> {
     repo.load_profile(profile_id).await
 }
 ```
@@ -636,12 +646,12 @@ write by hand.
 
 #### Acceptance Criteria
 
-- The attribute macro requires an explicit cache expression or an explicit
+- [x] The attribute macro requires an explicit cache expression or an explicit
   generated-argument convention.
-- It supports explicit `key`, `key_segments`, `tags`, and TTL options.
-- It does not target SQLx/Diesel/SeaORM query functions until the transaction
+- [x] It supports explicit `key`, `key_segments`, `tags`, and TTL options.
+- [x] It does not target SQLx/Diesel/SeaORM query functions until the transaction
   and loader ownership story is reviewed.
-- Compile-fail tests cover missing cache, missing key metadata, unsupported
+- [x] Compile-fail tests cover missing cache, missing key metadata, unsupported
   options, and conflicting TTL/key options.
 
 ### Testing Requirements For Macro Work

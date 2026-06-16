@@ -9,7 +9,7 @@ These surfaces are the stable product core:
 
 - local embedded cache with TTL, tags, single-flight loading, explicit
   invalidation, typed wrappers, listener subscriptions, and diagnostics;
-- function memoization through `cacheable!(...)` and
+- function memoization through `cacheable_loader!(...)` and
   `cacheable_infallible!(...)`;
 - database-neutral result caching through `hydracache-db`;
 - SQLx convenience helpers through `hydracache-sqlx`;

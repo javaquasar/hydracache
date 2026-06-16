@@ -1,7 +1,7 @@
-error: cacheable accepts only one TTL option: ttl or ttl_secs
+error: cacheable_loader accepts only one TTL option: ttl or ttl_secs
   --> tests/cacheable/fail_conflicting_ttl.rs:10:19
    |
-10 |       let _future = cacheable!(
+10 |       let _future = cacheable_loader!(
    |  ___________________^
 11 | |         cache = cache,
 12 | |         key = "value:1",
@@ -11,4 +11,4 @@ error: cacheable accepts only one TTL option: ttl or ttl_secs
 16 | |     );
    | |_____^
    |
-   = note: this error originates in the macro `cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `cacheable_loader` (in Nightly builds, run with -Z macro-backtrace for more info)

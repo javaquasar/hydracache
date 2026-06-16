@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use hydracache::{cacheable, cacheable_infallible, CacheKeyBuilder, HydraCache, TagSet};
+use hydracache::{cacheable_infallible, cacheable_loader, CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -19,7 +19,7 @@ async fn main() -> hydracache::CacheResult<()> {
         .entity("profile", profile_id)
         .build_string();
 
-    let first: Profile = cacheable!(
+    let first: Profile = cacheable_loader!(
         cache = cache,
         key = key.as_str(),
         tags = TagSet::new().tag("profiles").entity("profile", profile_id),
@@ -37,7 +37,7 @@ async fn main() -> hydracache::CacheResult<()> {
     )
     .await?;
 
-    let second: Profile = cacheable!(
+    let second: Profile = cacheable_loader!(
         cache = cache,
         key = key.as_str(),
         tags = TagSet::new().tag("profiles").entity("profile", profile_id),

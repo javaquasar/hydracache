@@ -1,0 +1,11 @@
+error: cacheable attribute accepts only one key source: key or key_segments
+ --> tests/cacheable/fail_attribute_conflicting_key.rs:1:1
+  |
+1 | / #[hydracache::cacheable(
+2 | |     cache = cache,
+3 | |     key = "value:1",
+4 | |     key_segments = ["value", 1],
+5 | | )]
+  | |__^
+  |
+  = note: this error originates in the attribute macro `hydracache::cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)

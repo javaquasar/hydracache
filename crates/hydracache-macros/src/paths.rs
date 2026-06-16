@@ -26,6 +26,14 @@ pub(crate) fn cache_options_path() -> TokenStream2 {
     resolve_runtime_type_path(crate_name("hydracache").ok(), "CacheOptions")
 }
 
+pub(crate) fn cache_result_path() -> TokenStream2 {
+    resolve_runtime_type_path(crate_name("hydracache").ok(), "CacheResult")
+}
+
+pub(crate) fn runtime_cache_key_builder_path() -> TokenStream2 {
+    resolve_runtime_type_path(crate_name("hydracache").ok(), "CacheKeyBuilder")
+}
+
 fn resolve_runtime_type_path(
     runtime_crate: Option<FoundCrate>,
     exported_type: &str,
@@ -149,6 +157,14 @@ mod tests {
         assert_eq!(
             cache_options_path().to_string(),
             ":: hydracache :: CacheOptions"
+        );
+        assert_eq!(
+            cache_result_path().to_string(),
+            ":: hydracache :: CacheResult"
+        );
+        assert_eq!(
+            runtime_cache_key_builder_path().to_string(),
+            ":: hydracache :: CacheKeyBuilder"
         );
     }
 

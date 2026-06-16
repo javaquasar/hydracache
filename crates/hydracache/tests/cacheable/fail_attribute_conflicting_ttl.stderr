@@ -1,0 +1,12 @@
+error: cacheable attribute accepts only one TTL option: ttl or ttl_secs
+ --> tests/cacheable/fail_attribute_conflicting_ttl.rs:1:1
+  |
+1 | / #[hydracache::cacheable(
+2 | |     cache = cache,
+3 | |     key = "value:1",
+4 | |     ttl = std::time::Duration::from_secs(60),
+5 | |     ttl_secs = 60,
+6 | | )]
+  | |__^
+  |
+  = note: this error originates in the attribute macro `hydracache::cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)

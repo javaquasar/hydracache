@@ -1,0 +1,5 @@
+error: unsupported cacheable attribute option
+ --> tests/cacheable/fail_attribute_unknown_option.rs:4:5
+  |
+4 |     loader = loader,
+  |     ^^^^^^

@@ -42,15 +42,15 @@
 //!
 //! # Cacheable functions
 //!
-//! Use [`cacheable!`] when an ordinary async function or expensive operation
+//! Use [`cacheable_loader!`] when an ordinary async function or expensive operation
 //! should be cached without introducing database-result-cache concepts.
-//! `cacheable!` wraps fallible loaders. [`cacheable_infallible!`] wraps loaders
+//! `cacheable_loader!` wraps fallible loaders. [`cacheable_infallible!`] wraps loaders
 //! that return a value directly.
 //!
 //! ```rust
 //! use std::time::Duration;
 //!
-//! use hydracache::{cacheable, cacheable_infallible, HydraCache};
+//! use hydracache::{cacheable_loader, cacheable_infallible, HydraCache};
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -73,7 +73,7 @@
 //! # async fn main() -> hydracache::CacheResult<()> {
 //! let cache = HydraCache::local().build();
 //!
-//! let report = cacheable!(
+//! let report = cacheable_loader!(
 //!     cache = cache,
 //!     key = "report:42",
 //!     tags = ["reports", "report:42"],
@@ -102,7 +102,7 @@
 //! generated from the same domain metadata:
 //!
 //! ```rust
-//! use hydracache::{cacheable, CacheKeyBuilder, HydraCache, TagSet};
+//! use hydracache::{cacheable_loader, CacheKeyBuilder, HydraCache, TagSet};
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -129,7 +129,7 @@
 //!     .entity("profile", profile_id)
 //!     .build_string();
 //!
-//! let profile = cacheable!(
+//! let profile = cacheable_loader!(
 //!     cache = cache,
 //!     key = key.as_str(),
 //!     tags = TagSet::new().tag("profiles").entity("profile", profile_id),
@@ -142,6 +142,53 @@
 //!
 //! assert_eq!(profile.id, 42);
 //! cache.invalidate_tag("profile:42").await?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! Use [`cacheable`] when the cached operation is naturally an async function.
+//! The cache remains an explicit argument; the generated wrapper returns
+//! [`CacheResult`] because cache errors can occur outside the user loader:
+//!
+//! ```rust
+//! use hydracache::{cacheable, HydraCache};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+//! struct Profile {
+//!     id: u64,
+//! }
+//!
+//! #[derive(Debug)]
+//! struct LoadError;
+//!
+//! impl std::fmt::Display for LoadError {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!         f.write_str("load failed")
+//!     }
+//! }
+//!
+//! impl std::error::Error for LoadError {}
+//!
+//! #[cacheable(
+//!     cache = cache,
+//!     key_segments = ["profile", profile_id],
+//!     tag_segments = [["profile", profile_id], ["profiles"]],
+//!     ttl_secs = 60
+//! )]
+//! async fn load_profile(
+//!     cache: &HydraCache,
+//!     profile_id: u64,
+//! ) -> Result<Profile, LoadError> {
+//!     Ok(Profile { id: profile_id })
+//! }
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//! let profile = load_profile(&cache, 42).await?;
+//!
+//! assert_eq!(profile.id, 42);
 //! # Ok(())
 //! # }
 //! ```
@@ -453,7 +500,7 @@ pub use hydracache_core::{
     CacheEventScope, CacheEventValueMode, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,
     PostcardCodec, TagSet,
 };
-pub use hydracache_macros::{cacheable, cacheable_infallible};
+pub use hydracache_macros::{cacheable, cacheable_infallible, cacheable_loader};
 pub use invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
     CacheInvalidationReceive, CacheInvalidationReceiver, InMemoryFramedInvalidationBus,
