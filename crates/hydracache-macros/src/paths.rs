@@ -10,6 +10,10 @@ pub(crate) fn query_cache_policy_path() -> TokenStream2 {
     resolve_database_exported_type_path("QueryCachePolicy")
 }
 
+pub(crate) fn prepared_query_policy_path() -> TokenStream2 {
+    resolve_database_exported_type_path("PreparedQueryPolicy")
+}
+
 pub(crate) fn refresh_policy_path() -> TokenStream2 {
     resolve_database_exported_type_path("RefreshPolicy")
 }
@@ -125,6 +129,10 @@ mod tests {
         assert_eq!(
             query_cache_policy_path().to_string(),
             ":: hydracache_db :: QueryCachePolicy"
+        );
+        assert_eq!(
+            prepared_query_policy_path().to_string(),
+            ":: hydracache_db :: PreparedQueryPolicy"
         );
         assert_eq!(
             refresh_policy_path().to_string(),

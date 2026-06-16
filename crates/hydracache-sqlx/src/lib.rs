@@ -94,9 +94,9 @@ mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind, DbCache, DbCacheError,
-    DbOperationContext, DbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery,
-    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
+    prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind,
+    DbCache, DbCacheError, DbOperationContext, DbQuery, DbResultShape, HydraCacheEntity,
+    PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 
@@ -119,8 +119,8 @@ mod tests {
     use sqlx::postgres::PgPoolOptions;
 
     use crate::{
-        query_cache_policy, CacheKeyBuilder, DbCache, PreparedQueryPolicy, QueryCachePolicy,
-        RefreshPolicy, SqlxCache, SqlxQueryExt,
+        prepared_query_policy, query_cache_policy, CacheKeyBuilder, DbCache, PreparedQueryPolicy,
+        QueryCachePolicy, RefreshPolicy, SqlxCache, SqlxQueryExt,
     };
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -186,11 +186,17 @@ mod tests {
 
     #[tokio::test]
     async fn prepared_query_policy_reexport_is_available_from_sqlx_crate() {
-        let prepared = DbCache::new(HydraCache::local().build(), "db").prepare::<User>(
-            PreparedQueryPolicy::for_entity("user")
-                .with_name("load-user")
-                .collection_tag("users"),
+        let policy = prepared_query_policy!(
+            entity = "user",
+            name = "load-user",
+            collection_tag = "users",
         );
+        let expected = PreparedQueryPolicy::for_entity("user")
+            .with_name("load-user")
+            .collection_tag("users");
+        assert_eq!(policy, expected);
+
+        let prepared = DbCache::new(HydraCache::local().build(), "db").prepare::<User>(policy);
 
         let query = prepared.for_id(1);
         assert_eq!(query.name(), Some("load-user"));

@@ -1637,6 +1637,29 @@ let user = load_user
     .await?;
 ```
 
+The same prepared metadata can be declared with `prepared_query_policy!`:
+
+```rust
+use hydracache_db::prepared_query_policy;
+
+let load_user = prepared_query_policy!(
+    per_entity = User,
+    name = "load-user",
+    ttl_secs = 300,
+);
+
+let user = queries
+    .prepare::<User>(load_user)
+    .load_id(user_id, move || async move {
+        // Query execution and transaction ownership stay in repository code.
+        Ok::<_, std::io::Error>(User {
+            id: user_id,
+            name: "Ada".to_owned(),
+        })
+    })
+    .await?;
+```
+
 Available presets cover the common cases:
 
 - `short_lived()` - 30 second TTL for burst smoothing.

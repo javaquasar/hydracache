@@ -1,0 +1,7 @@
+error: prepared_query_policy requires one key source: per_entity, entity, collection, key, or key_segments
+ --> tests/policy/fail_prepared_missing_key_source.rs:4:19
+  |
+4 |     let _policy = prepared_query_policy!(name = "load-user");
+  |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `prepared_query_policy` (in Nightly builds, run with -Z macro-backtrace for more info)

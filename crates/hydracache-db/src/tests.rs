@@ -6,8 +6,8 @@ use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbResultShape,
-    HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+    prepared_query_policy, query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError,
+    DbResultShape, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -277,6 +277,80 @@ fn query_cache_policy_macro_builds_segmented_keys_and_tags() {
     assert_eq!(generated.key_value(), Some(expected_key.as_str()));
     assert_eq!(generated.tags_value(), expected_tags.as_slice());
     assert_eq!(generated.ttl_value(), Some(Duration::from_secs(30)));
+}
+
+#[test]
+fn prepared_query_policy_macro_builds_entity_collection_and_manual_forms() {
+    let entity = prepared_query_policy!(
+        per_entity = User,
+        name = "load-user",
+        ttl_secs = 300,
+        stale_on_loader_error_secs = 120,
+    );
+    let entity_refresh = RefreshPolicy::new().stale_on_loader_error(Duration::from_secs(120));
+    let expected_entity = PreparedQueryPolicy::per_entity()
+        .cache_entity::<User>()
+        .with_name("load-user")
+        .ttl(Duration::from_secs(300))
+        .refresh_policy(entity_refresh);
+
+    assert_eq!(entity, expected_entity);
+    assert_eq!(entity.bind_id(42).key_value(), Some("user:42"));
+    assert_eq!(
+        entity.bind_id(42).tags_value(),
+        &["users".to_owned(), "user:42".to_owned()]
+    );
+
+    let collection = prepared_query_policy!(
+        collection = "users:active",
+        name = "list-users",
+        tag_segments = [["tenant", 7_u64]],
+        refresh_ahead_secs = 10,
+    );
+    let collection_refresh = RefreshPolicy::new().refresh_ahead(Duration::from_secs(10));
+    let expected_collection = PreparedQueryPolicy::new()
+        .collection("users:active")
+        .with_name("list-users")
+        .tag(
+            CacheKeyBuilder::new()
+                .segment("tenant")
+                .segment(7_u64)
+                .build_string(),
+        )
+        .refresh_policy(collection_refresh);
+
+    assert_eq!(collection, expected_collection);
+    assert_eq!(collection.to_policy().key_value(), Some("users%3Aactive"));
+
+    let tenant_id = 7_u64;
+    let query = "ada:lovelace";
+    let manual = prepared_query_policy!(
+        key_segments = ["tenant", tenant_id, "q", query],
+        tag_segments = [["tenant", tenant_id], ["users"]],
+        ttl_secs = 30,
+    );
+    let expected_manual = PreparedQueryPolicy::new()
+        .key_builder(
+            CacheKeyBuilder::new()
+                .segment("tenant")
+                .segment(tenant_id)
+                .segment("q")
+                .segment(query),
+        )
+        .tag(
+            CacheKeyBuilder::new()
+                .segment("tenant")
+                .segment(tenant_id)
+                .build_string(),
+        )
+        .tag(CacheKeyBuilder::new().segment("users").build_string())
+        .ttl(Duration::from_secs(30));
+
+    assert_eq!(manual, expected_manual);
+    assert_eq!(
+        manual.to_policy().key_value(),
+        Some("tenant:7:q:ada%3Alovelace")
+    );
 }
 
 #[tokio::test]

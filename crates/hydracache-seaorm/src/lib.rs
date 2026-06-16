@@ -42,9 +42,10 @@ use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind, DbCache, DbCacheError,
-    DbOperationContext, DbQuery as GenericDbQuery, DbResultShape, HydraCacheEntity,
-    PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
+    prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind,
+    DbCache, DbCacheError, DbOperationContext, DbQuery as GenericDbQuery, DbResultShape,
+    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+    Result as DbResult,
 };
 
 /// SeaORM-specific compatibility name for [`DbCache`].
@@ -157,8 +158,8 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     use super::{
-        query_cache_policy, CacheEntity, CacheKeyBuilder, HydraCacheEntity, PreparedQueryPolicy,
-        QueryCachePolicy, RefreshPolicy, SeaOrmCache, SeaOrmQueryExt,
+        prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, HydraCacheEntity,
+        PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, SeaOrmCache, SeaOrmQueryExt,
     };
 
     mod user {
@@ -805,6 +806,17 @@ mod tests {
             .refresh_policy(refresh);
         assert_eq!(manual.key_value(), Some("seaorm-user:42"));
         assert_eq!(manual.refresh_policy_value(), Some(refresh));
+
+        let prepared_from_macro = prepared_query_policy!(
+            per_entity = user::Model,
+            name = "prepared-seaorm-user",
+            ttl_secs = 60,
+        );
+        let expected_prepared = PreparedQueryPolicy::per_entity()
+            .cache_entity::<user::Model>()
+            .with_name("prepared-seaorm-user")
+            .ttl(Duration::from_secs(60));
+        assert_eq!(prepared_from_macro, expected_prepared);
 
         let segmented = query_cache_policy!(
             name = "search-seaorm-users",

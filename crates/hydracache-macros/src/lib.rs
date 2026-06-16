@@ -6,6 +6,7 @@ mod config;
 mod entity;
 mod paths;
 mod policy;
+mod prepared_policy;
 
 /// Derive `CacheEntity` metadata for database result-cache helpers.
 ///
@@ -61,6 +62,26 @@ pub fn derive_hydracache_entity(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn query_cache_policy(input: TokenStream) -> TokenStream {
     policy::expand(input.into())
+        .unwrap_or_else(syn::Error::into_compile_error)
+        .into()
+}
+
+/// Build a reusable `PreparedQueryPolicy` with less boilerplate.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use hydracache_db::prepared_query_policy;
+///
+/// let load_user = prepared_query_policy!(
+///     per_entity = User,
+///     name = "load-user",
+///     ttl_secs = 300,
+/// );
+/// ```
+#[proc_macro]
+pub fn prepared_query_policy(input: TokenStream) -> TokenStream {
+    prepared_policy::expand(input.into())
         .unwrap_or_else(syn::Error::into_compile_error)
         .into()
 }

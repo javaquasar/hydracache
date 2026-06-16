@@ -520,6 +520,12 @@ The macro should build through the same escaping rules as `CacheKeyBuilder` and
 
 ### 7.4 Prepared Policy Macro
 
+Status: implemented. `prepared_query_policy!` now builds reusable
+`PreparedQueryPolicy` values for cache-entity, manual entity-prefix,
+collection, manual key, and segmented-key prepared forms. The macro stays
+metadata-only; callers still pass the policy to `DbCache::prepare` and own query
+execution explicitly.
+
 #### Current Shape
 
 Today hot repository methods can prepare stable metadata with builder code:
@@ -570,12 +576,12 @@ database transactions, and loader ownership remain in repository code.
 
 #### Acceptance Criteria
 
-- The macro supports entity, collection, and manual-key prepared policy forms.
-- Generated prepared policies match explicit `PreparedQueryPolicy` builder
+- [x] The macro supports entity, collection, and manual-key prepared policy forms.
+- [x] Generated prepared policies match explicit `PreparedQueryPolicy` builder
   output in tests.
-- The macro is re-exported from `hydracache-db` and adapter crates where it is
+- [x] The macro is re-exported from `hydracache-db` and adapter crates where it is
   useful.
-- Compile-fail tests cover missing key source, conflicting key sources,
+- [x] Compile-fail tests cover missing key source, conflicting key sources,
   duplicate options, and unsupported options.
 
 ### 7.5 Attribute Macro For Ordinary Functions
