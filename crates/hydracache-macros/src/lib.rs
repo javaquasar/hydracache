@@ -39,14 +39,16 @@ pub fn derive_hydracache_entity(input: TokenStream) -> TokenStream {
 /// # Example
 ///
 /// ```rust,ignore
-/// use hydracache_db::{query_cache_policy, QueryCachePolicy};
+/// use hydracache_db::query_cache_policy;
 ///
 /// let user_id = 42_i64;
 /// let policy = query_cache_policy!(
+///     preset = read_mostly,
 ///     name = "load-user",
 ///     entity = User,
 ///     id = user_id,
-///     ttl_secs = 60,
+///     refresh_ahead_secs = 10,
+///     stale_while_revalidate_secs = 300,
 /// );
 /// ```
 #[proc_macro]

@@ -364,6 +364,11 @@ fields.
 
 ### 7.2 `query_cache_policy!` Presets And Freshness
 
+Status: implemented. `query_cache_policy!` now accepts `preset = ...` for the
+documented `QueryCachePolicy` presets and `refresh_ahead_secs`,
+`stale_while_revalidate_secs`, and `stale_on_loader_error_secs` for bounded
+freshness budgets.
+
 #### Current Shape
 
 Today `query_cache_policy!` can express key/tag/TTL metadata:
@@ -408,14 +413,15 @@ The macro should remain declarative. It should produce the same
 
 #### Acceptance Criteria
 
-- `preset = short_lived`, `read_mostly`, `per_entity`,
+- [x] `preset = short_lived`, `read_mostly`, `per_entity`,
   `no_ttl_explicit_invalidation`, and `negative_cache` map to the documented
   policy presets.
-- `refresh_ahead_secs`, `stale_while_revalidate_secs`, and
+- [x] `refresh_ahead_secs`, `stale_while_revalidate_secs`, and
   `stale_on_loader_error_secs` map to `RefreshPolicy`/`RefreshOptions` without
   changing runtime semantics.
-- Conflicting freshness options produce compile-fail diagnostics.
-- Runtime tests verify that generated policies encode the same TTL/stale
+- [x] Conflicting TTL/preset options and unsupported presets produce
+  compile-fail diagnostics.
+- [x] Runtime tests verify that generated policies encode the same TTL/stale
   behavior as explicit builder code.
 
 ### 7.3 Safe Key And Tag Segment DSL

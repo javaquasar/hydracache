@@ -3,19 +3,15 @@ use proc_macro_crate::{crate_name, FoundCrate};
 use quote::quote;
 
 pub(crate) fn cache_entity_trait_path() -> TokenStream2 {
-    resolve_exported_type_path(
-        crate_name("hydracache-db").ok(),
-        crate_name("hydracache-sqlx").ok(),
-        "CacheEntity",
-    )
+    resolve_database_exported_type_path("CacheEntity")
 }
 
 pub(crate) fn query_cache_policy_path() -> TokenStream2 {
-    resolve_exported_type_path(
-        crate_name("hydracache-db").ok(),
-        crate_name("hydracache-sqlx").ok(),
-        "QueryCachePolicy",
-    )
+    resolve_database_exported_type_path("QueryCachePolicy")
+}
+
+pub(crate) fn refresh_policy_path() -> TokenStream2 {
+    resolve_database_exported_type_path("RefreshPolicy")
 }
 
 pub(crate) fn cache_options_path() -> TokenStream2 {
@@ -34,19 +30,33 @@ fn resolve_runtime_type_path(
     }
 }
 
+fn resolve_database_exported_type_path(exported_type: &str) -> TokenStream2 {
+    resolve_exported_type_path(
+        &[
+            ("hydracache_db", crate_name("hydracache-db").ok()),
+            ("hydracache_sqlx", crate_name("hydracache-sqlx").ok()),
+            ("hydracache_diesel", crate_name("hydracache-diesel").ok()),
+            ("hydracache_seaorm", crate_name("hydracache-seaorm").ok()),
+        ],
+        "hydracache_db",
+        exported_type,
+    )
+}
+
 fn resolve_exported_type_path(
-    db_crate: Option<FoundCrate>,
-    sqlx_crate: Option<FoundCrate>,
+    candidates: &[(&str, Option<FoundCrate>)],
+    fallback_default_name: &str,
     exported_type: &str,
 ) -> TokenStream2 {
-    if let Some(found) = db_crate {
-        exported_type_path_for("hydracache_db", found, exported_type)
-    } else if let Some(found) = sqlx_crate {
-        exported_type_path_for("hydracache_sqlx", found, exported_type)
-    } else {
-        let exported_type = syn::Ident::new(exported_type, Span::call_site());
-        quote!(::hydracache_db::#exported_type)
+    for (default_name, found) in candidates {
+        if let Some(found) = found {
+            return exported_type_path_for(default_name, found.clone(), exported_type);
+        }
     }
+
+    let fallback = syn::Ident::new(fallback_default_name, Span::call_site());
+    let exported_type = syn::Ident::new(exported_type, Span::call_site());
+    quote!(::#fallback::#exported_type)
 }
 
 fn exported_type_path_for(
@@ -112,6 +122,10 @@ mod tests {
             query_cache_policy_path().to_string(),
             ":: hydracache_db :: QueryCachePolicy"
         );
+        assert_eq!(
+            refresh_policy_path().to_string(),
+            ":: hydracache_db :: RefreshPolicy"
+        );
     }
 
     #[test]
@@ -146,8 +160,17 @@ mod tests {
     fn resolver_prefers_database_neutral_crate() {
         assert_eq!(
             resolve_exported_type_path(
-                Some(FoundCrate::Name("cache-db".to_owned())),
-                Some(FoundCrate::Name("cache-sqlx".to_owned())),
+                &[
+                    (
+                        "hydracache_db",
+                        Some(FoundCrate::Name("cache-db".to_owned()))
+                    ),
+                    (
+                        "hydracache_sqlx",
+                        Some(FoundCrate::Name("cache-sqlx".to_owned()))
+                    ),
+                ],
+                "hydracache_db",
                 "QueryCachePolicy",
             )
             .to_string(),
@@ -159,12 +182,38 @@ mod tests {
     fn resolver_falls_back_to_sqlx_adapter_crate() {
         assert_eq!(
             resolve_exported_type_path(
-                None,
-                Some(FoundCrate::Name("cache-sqlx".to_owned())),
+                &[
+                    ("hydracache_db", None),
+                    (
+                        "hydracache_sqlx",
+                        Some(FoundCrate::Name("cache-sqlx".to_owned()))
+                    ),
+                ],
+                "hydracache_db",
                 "QueryCachePolicy",
             )
             .to_string(),
             ":: cache_sqlx :: QueryCachePolicy"
+        );
+    }
+
+    #[test]
+    fn resolver_can_use_diesel_adapter_reexports() {
+        assert_eq!(
+            resolve_exported_type_path(
+                &[
+                    ("hydracache_db", None),
+                    ("hydracache_sqlx", None),
+                    (
+                        "hydracache_diesel",
+                        Some(FoundCrate::Name("cache-diesel".to_owned()))
+                    ),
+                ],
+                "hydracache_db",
+                "RefreshPolicy",
+            )
+            .to_string(),
+            ":: cache_diesel :: RefreshPolicy"
         );
     }
 }

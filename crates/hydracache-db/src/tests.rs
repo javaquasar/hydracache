@@ -6,8 +6,8 @@ use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbResultShape, HydraCacheEntity,
-    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbResultShape,
+    HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -158,6 +158,32 @@ async fn query_cache_policy_stores_refresh_policy_metadata() {
         .refresh_policy(refresh);
 
     assert_eq!(policy.refresh_policy_value(), Some(refresh));
+}
+
+#[test]
+fn query_cache_policy_macro_encodes_preset_and_freshness_budget() {
+    let generated = query_cache_policy!(
+        preset = read_mostly,
+        name = "load-catalog",
+        key = "catalog:active",
+        tag = "catalog",
+        refresh_ahead_secs = 10,
+        stale_while_revalidate_secs = 300,
+        stale_on_loader_error_secs = 600,
+    );
+
+    let refresh = RefreshPolicy::new()
+        .refresh_ahead(Duration::from_secs(10))
+        .stale_while_revalidate(Duration::from_secs(300))
+        .stale_on_loader_error(Duration::from_secs(600));
+    let expected = QueryCachePolicy::read_mostly()
+        .with_name("load-catalog")
+        .key("catalog:active")
+        .tag("catalog")
+        .refresh_policy(refresh);
+
+    assert_eq!(generated, expected);
+    assert_eq!(generated.refresh_policy_value(), Some(refresh));
 }
 
 #[tokio::test]

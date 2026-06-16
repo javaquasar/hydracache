@@ -113,14 +113,17 @@
 //!
 //! let user_id = 42_i64;
 //! let policy = query_cache_policy!(
+//!     preset = read_mostly,
 //!     name = "load-user",
 //!     entity = User,
 //!     id = user_id,
-//!     ttl_secs = 60,
+//!     refresh_ahead_secs = 10,
+//!     stale_while_revalidate_secs = 300,
 //! );
 //!
 //! assert_eq!(policy.name(), Some("load-user"));
 //! assert_eq!(policy.key_value(), Some("user:42"));
+//! assert!(policy.refresh_policy_value().is_some());
 //! ```
 
 extern crate self as hydracache_db;

@@ -13,7 +13,10 @@ fn proc_macro_compile_tests() {
     tests.compile_fail("tests/derive/fail_unknown_option.rs");
     tests.pass("tests/policy/pass_entity_policy.rs");
     tests.pass("tests/policy/pass_key_policy.rs");
+    tests.pass("tests/policy/pass_preset_refresh_policy.rs");
     tests.compile_fail("tests/policy/fail_conflicting_key_sources.rs");
     tests.compile_fail("tests/policy/fail_entity_missing_id.rs");
     tests.compile_fail("tests/policy/fail_missing_key_source.rs");
+    tests.compile_fail("tests/policy/fail_preset_with_ttl.rs");
+    tests.compile_fail("tests/policy/fail_unknown_preset.rs");
 }

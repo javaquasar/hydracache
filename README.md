@@ -1655,11 +1655,13 @@ use hydracache_db::query_cache_policy;
 
 let user_id = 42_i64;
 let policy = query_cache_policy!(
+    preset = read_mostly,
     name = "load-user",
     entity = User,
     id = user_id,
     tag = "tenant:7",
-    ttl_secs = 60,
+    refresh_ahead_secs = 10,
+    stale_while_revalidate_secs = 300,
 );
 
 let user = queries
