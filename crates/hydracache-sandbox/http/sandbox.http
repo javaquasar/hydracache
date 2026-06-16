@@ -15,6 +15,18 @@ GET {{baseUrl}}/demo/presets
 ### Release 36 ergonomics examples: verbose API vs sugar
 GET {{baseUrl}}/demo/ergonomics/examples
 
+### Release 36 rollout comparison: uncached vs cached canary reads
+POST {{baseUrl}}/demo/rollout/compare
+Content-Type: application/json
+
+{
+  "id": 42,
+  "reads": 2,
+  "ttl_ms": 5000,
+  "tags": ["rollout"],
+  "flow_id": "rollout-canary"
+}
+
 ### OpenAPI document
 GET {{baseUrl}}/openapi.json
 

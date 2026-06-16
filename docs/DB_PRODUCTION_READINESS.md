@@ -49,6 +49,143 @@ Before caching one database query:
 - watch hit ratio, loader count, invalidation count, stale fallback, and load
   failures.
 
+## Production Rollout Playbook
+
+Use this playbook for one read-heavy repository method at a time. Keep the
+uncached path callable until the cache policy, invalidation path, and dashboards
+have survived real traffic.
+
+### 1. Choose One Canary Query
+
+Pick a query that is:
+
+- read-heavy enough that avoided loader calls matter;
+- deterministic for the same tenant, principal, filters, page, sort, locale,
+  region, feature flag, and time window;
+- safe to invalidate with known entity and collection tags;
+- not security-sensitive enough to require stronger freshness than the chosen
+  TTL/stale budget.
+
+Document the repository method, SQL text or ORM query, key dimensions, tags,
+TTL, stale behavior, and write paths before enabling the flag.
+
+### 2. Wire A Feature Flag
+
+Keep the cached and uncached variants adjacent in repository/service code:
+
+```rust
+# async fn example(
+#     cache_enabled: bool,
+#     queries: hydracache_db::DbCache,
+# ) -> hydracache_db::Result<String> {
+if cache_enabled {
+    queries
+        .named::<String>("load-user-name")
+        .key("tenant:7:user:42:name")
+        .tag("tenant:7")
+        .tag("user:42")
+        .load(|| async {
+            // repository.load_user_name(tenant_id, user_id).await
+            Ok::<_, std::io::Error>("Ada".to_owned())
+        })
+        .await
+} else {
+    // The database client/repository remains the fallback authority.
+    Ok("Ada".to_owned())
+}
+# }
+```
+
+The flag should be controllable without a deploy. A service can expose separate
+flags for `cache_read_enabled`, `cache_read_bypass`, and `cache_stale_enabled`
+when incident response needs finer control.
+
+### 3. Compare Cached And Uncached Behavior
+
+During canary, compare:
+
+- returned values for sampled requests;
+- uncached backing-store calls versus cached loader calls;
+- hit ratio after warmup;
+- loader error and stale fallback rates;
+- invalidation counts after writes.
+
+The manual sandbox has a deterministic comparison route:
+
+```text
+POST /demo/rollout/compare
+```
+
+It executes the selected user read through both the backing store and the cache
+path, then reports `uncached_backing_reads`, `cached_loader_calls`,
+`loader_calls_avoided`, per-read `source`, and diagnostics. Use it as the local
+smoke shape for service-specific canary checks.
+
+### 4. Start Narrow
+
+Suggested rollout sequence:
+
+1. local test or sandbox profile;
+2. staging with production-like data;
+3. one internal tenant or a small allow-list;
+4. 1 percent of eligible traffic;
+5. 10 percent after at least one write/invalidation cycle;
+6. 50 percent after hit ratio and loader errors are stable;
+7. 100 percent only after rollback has been exercised.
+
+Do not widen rollout if cache hit ratio collapses, loader errors increase,
+stale fallback appears on paths that should be fresh, or invalidation volume is
+unexpectedly high.
+
+### 5. Bypass And Roll Back
+
+Bypass means route reads to the uncached path while leaving the cache entries in
+place. Use it for debugging, incident response, or canary comparison.
+
+Rollback means disable cached reads and keep invalidation code harmless. If a
+bad key or stale policy may have stored unsafe data, flush the affected keys or
+tags after disabling reads:
+
+```rust
+# async fn example(cache: hydracache::HydraCache) -> hydracache::CacheResult<()> {
+cache.invalidate_tag("tenant:7").await?;
+cache.invalidate_tag("users").await?;
+# Ok(())
+# }
+```
+
+Rollback checklist:
+
+- turn off the cached-read flag;
+- leave the uncached read path serving traffic;
+- disable stale fallback if it is masking loader failures;
+- invalidate affected tenant/entity/collection tags if cached data might be
+  unsafe;
+- keep metrics and logs enabled until the service is stable;
+- write down whether the issue was key shape, invalidation timing, TTL/stale
+  budget, loader failure, or adapter misuse.
+
+### 6. Dashboard Panels And Alerts
+
+Recommended panels:
+
+- total requests, hits, misses, and hit ratio;
+- loader executions and loader errors;
+- single-flight joins for hot keys;
+- stale fallback or stale-load-discard counters;
+- invalidation counts by key/tag path when the service exposes that breakdown;
+- p50/p95/p99 latency for cached and uncached variants;
+- estimated cache entries for local smoke checks.
+
+Recommended low-noise alerts:
+
+- loader errors above the service baseline;
+- hit ratio collapse after warmup;
+- stale fallback on sensitive reads;
+- unexpected invalidation spikes or zero invalidations after known writes;
+- single-flight joins absent on a known hot key during a load spike;
+- distributed invalidation bus issues when using clustered invalidation.
+
 ## Invalidate After Commit
 
 Invalidate cache entries after the database commit succeeds. Do not invalidate

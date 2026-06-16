@@ -1861,11 +1861,14 @@ assert_eq!(user_name, "Ada");
 # }
 ```
 
-The manual sandbox exposes
-`POST /demo/query/users/{id}/orm-comparison` in Swagger. It runs SQLx, Diesel,
-and SeaORM-style adapter paths against the same selected sandbox backing row
-and reports helper/API path, cache key, tags, TTL, first/second source,
-loader-call delta, pass/fail state, and the explicit invalidation result.
+The manual sandbox exposes `POST /demo/rollout/compare` for cached-vs-uncached
+canary checks and `POST /demo/query/users/{id}/orm-comparison` for adapter
+comparison in Swagger. The rollout route reports backing-store reads, cached
+loader calls, avoided loader calls, per-read source, and diagnostics. The ORM
+comparison route runs SQLx, Diesel, and SeaORM-style adapter paths against the
+same selected sandbox backing row and reports helper/API path, cache key, tags,
+TTL, first/second source, loader-call delta, pass/fail state, and the explicit
+invalidation result.
 
 Testing and coverage commands are documented in
 [docs/TESTING.md](docs/TESTING.md).

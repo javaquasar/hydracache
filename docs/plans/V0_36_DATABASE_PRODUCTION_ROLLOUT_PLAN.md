@@ -57,6 +57,13 @@ This means:
 
 ## 1. Rollout Playbook And Feature-Flag Pattern
 
+Status: implemented. `docs/DB_PRODUCTION_READINESS.md` now includes a
+step-by-step production rollout playbook with feature-flagged enablement,
+bypass mode, canary sizing, rollback instructions, dashboard panels, and alert
+examples. The sandbox exposes `POST /demo/rollout/compare` so local and manual
+checks can compare uncached backing-store reads with cached canary reads and
+report avoided loader calls.
+
 ### Problem
 
 `0.35.0` explains how to cache a database query safely. Production teams also
@@ -89,10 +96,10 @@ Add a database-cache rollout playbook that covers:
 
 ### Acceptance Criteria
 
-- Documentation includes a step-by-step rollout checklist.
-- The checklist includes explicit rollback and bypass instructions.
-- A test or sandbox scenario demonstrates cached vs uncached comparison.
-- Release notes call out the rollout playbook.
+- [x] Documentation includes a step-by-step rollout checklist.
+- [x] The checklist includes explicit rollback and bypass instructions.
+- [x] A test or sandbox scenario demonstrates cached vs uncached comparison.
+- [x] Release notes call out the rollout playbook.
 
 ## 2. Repository Transaction And Invalidation Guardrails
 

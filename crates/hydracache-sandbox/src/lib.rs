@@ -30,6 +30,7 @@
 //! http://127.0.0.1:3000/demo/config
 //! http://127.0.0.1:3000/demo/presets
 //! http://127.0.0.1:3000/demo/ergonomics/examples
+//! http://127.0.0.1:3000/demo/rollout/compare
 //! http://127.0.0.1:3000/demo/report
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/events/summary
@@ -566,6 +567,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/config", get(config_info))
         .route("/demo/presets", get(presets))
         .route("/demo/ergonomics/examples", get(ergonomics_examples))
+        .route("/demo/rollout/compare", post(rollout_compare))
         .route("/demo/export", get(export_bundle))
         .route("/demo/import", post(import_session))
         .route("/demo/self-test", post(self_test))
@@ -1468,6 +1470,46 @@ struct ErgonomicsExample {
     sugar_code: &'static str,
     removes: Vec<&'static str>,
     notes: Vec<&'static str>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"id": 42, "reads": 2, "ttl_ms": 5000, "tags": ["rollout"], "flow_id": "rollout-canary"}))]
+struct RolloutCompareRequest {
+    #[serde(default = "default_rollout_user_id")]
+    id: i64,
+    #[serde(default = "default_rollout_reads")]
+    reads: u16,
+    #[serde(default)]
+    ttl_ms: Option<u64>,
+    #[serde(default)]
+    tags: Vec<String>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct RolloutReadReport {
+    sequence: u16,
+    source: LoadSource,
+    user: User,
+    duration_ms: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct RolloutCompareResponse {
+    flow_id: String,
+    user_id: i64,
+    reads: u16,
+    cache_key: String,
+    tags: Vec<String>,
+    same_user: bool,
+    passed: bool,
+    uncached_backing_reads: u16,
+    cached_loader_calls: u64,
+    loader_calls_avoided: u64,
+    uncached_reads: Vec<RolloutReadReport>,
+    cached_reads: Vec<RolloutReadReport>,
+    diagnostics: DemoDiagnostics,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -3294,6 +3336,14 @@ fn sandbox_urls() -> SandboxUrls {
     }
 }
 
+fn default_rollout_user_id() -> i64 {
+    42
+}
+
+fn default_rollout_reads() -> u16 {
+    2
+}
+
 fn sandbox_info(state: &SandboxState) -> SandboxInfo {
     SandboxInfo {
         name: "hydracache-sandbox",
@@ -3418,6 +3468,20 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
             description:
                 "Compare verbose API usage with equivalent release-36 sugar snippets.",
             body: None,
+        },
+        ScenarioPreset {
+            name: "rollout-compare",
+            method: "POST",
+            path: "/demo/rollout/compare",
+            description:
+                "Compare uncached backing-store reads with feature-flag-style cached reads for one canary path.",
+            body: Some(json!({
+                "id": 42,
+                "reads": 2,
+                "ttl_ms": 5000,
+                "tags": ["rollout"],
+                "flow_id": "rollout-canary"
+            })),
         },
         ScenarioPreset {
             name: "listener-demo",
@@ -4115,6 +4179,127 @@ async fn presets() -> Json<PresetResponse> {
 )]
 async fn ergonomics_examples() -> Json<ErgonomicsExamplesResponse> {
     Json(ergonomics_examples_catalog())
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/rollout/compare",
+    tag = "query-cache",
+    request_body = RolloutCompareRequest,
+    responses(
+        (status = 200, description = "Compare uncached backing-store reads with cached canary reads", body = RolloutCompareResponse),
+        (status = 404, description = "User not found", body = ErrorResponse)
+    )
+)]
+async fn rollout_compare(
+    State(state): State<SandboxState>,
+    Json(request): Json<RolloutCompareRequest>,
+) -> Result<Json<RolloutCompareResponse>, SandboxHttpError> {
+    let reads = request.reads.clamp(1, 16);
+    let flow_id = request
+        .flow_id
+        .clone()
+        .unwrap_or_else(|| format!("rollout-compare-{}", request.id));
+    let cache_key = format!("user:{}", request.id);
+    let _ = state.cache.remove(&cache_key).await?;
+
+    let mut uncached_reads = Vec::with_capacity(reads as usize);
+    for sequence in 1..=reads {
+        let started = Instant::now();
+        let user = state.storage.load_user(request.id).await?;
+        record_event_with_flow_and_duration(
+            &state,
+            DemoEventKind::BackingStoreRead,
+            format!(
+                "rollout comparison uncached read {sequence} for user {}",
+                request.id
+            ),
+            Some(cache_key.clone()),
+            Some(format!("user:{}", request.id)),
+            Some(LoadSource::Loader),
+            Some(flow_id.clone()),
+            Some(elapsed_ms(started)),
+        )
+        .await;
+        uncached_reads.push(RolloutReadReport {
+            sequence,
+            source: LoadSource::Loader,
+            user,
+            duration_ms: elapsed_ms(started),
+        });
+    }
+
+    let loader_calls_before = state.loader_calls.load(Ordering::SeqCst);
+    let mut cached_reads = Vec::with_capacity(reads as usize);
+    for sequence in 1..=reads {
+        let started = Instant::now();
+        let response = load_user_with_options(
+            &state,
+            request.id,
+            CacheLoadOptionsRequest {
+                ttl_ms: request.ttl_ms,
+                tags: request.tags.clone(),
+                loader_delay_ms: None,
+                flow_id: Some(flow_id.clone()),
+            },
+        )
+        .await?;
+        cached_reads.push(RolloutReadReport {
+            sequence,
+            source: response.source,
+            user: response.user,
+            duration_ms: elapsed_ms(started),
+        });
+    }
+    let cached_loader_calls = state.loader_calls.load(Ordering::SeqCst) - loader_calls_before;
+    let loader_calls_avoided = u64::from(reads).saturating_sub(cached_loader_calls);
+    let expected_user = uncached_reads.first().map(|read| read.user.clone());
+    let same_user = expected_user.as_ref().is_some_and(|expected| {
+        uncached_reads.iter().all(|read| &read.user == expected)
+            && cached_reads.iter().all(|read| &read.user == expected)
+    });
+    let cached_hit_seen = cached_reads
+        .iter()
+        .any(|read| read.source == LoadSource::Cache);
+    let passed = same_user
+        && cached_loader_calls == 1
+        && loader_calls_avoided == u64::from(reads.saturating_sub(1))
+        && (reads == 1 || cached_hit_seen);
+    let tags = user_tags(request.id, &request.tags);
+
+    record_event_with_flow(
+        &state,
+        if passed {
+            DemoEventKind::CacheHit
+        } else {
+            DemoEventKind::CacheLoad
+        },
+        format!(
+            "rollout comparison completed for user {} with {loader_calls_avoided} avoided loader calls",
+            request.id
+        ),
+        Some(cache_key.clone()),
+        Some(format!("user:{}", request.id)),
+        None,
+        Some(flow_id.clone()),
+    )
+    .await;
+
+    Ok(Json(RolloutCompareResponse {
+        flow_id,
+        user_id: request.id,
+        reads,
+        cache_key,
+        tags,
+        same_user,
+        passed,
+        uncached_backing_reads: reads,
+        cached_loader_calls,
+        loader_calls_avoided,
+        uncached_reads,
+        cached_reads,
+        diagnostics: diagnostics(&state).await,
+    }))
 }
 
 #[utoipa::path(
@@ -6451,6 +6636,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/events/summary".to_owned(),
         "/demo/events/preflight/run".to_owned(),
         "/demo/import".to_owned(),
+        "/demo/rollout/compare".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
         "/demo/query/orders/{id}/summary/load".to_owned(),
         "/demo/db/seed-report".to_owned(),
@@ -6482,6 +6668,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "runScenarioSuiteFile(path",
         "eventSummary()",
         "runEventPreflight(",
+        "rolloutCompare(",
         "compareBenchmarks(baseline, candidate)",
         "flows()",
         "replayFlow(flowId",
@@ -6502,6 +6689,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/benchmarks/compare",
         "/demo/events/summary",
         "/demo/events/preflight/run",
+        "/demo/rollout/compare",
         "/demo/cluster/routed-peer-fetch/run",
         "/demo/cluster/read-through/run",
         "/demo/cluster/owner-load/run",
@@ -11570,6 +11758,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="show('/demo/config')">Config</button>
       <button onclick="show('/demo/presets')">Presets</button>
       <button onclick="show('/demo/ergonomics/examples')">Ergonomics examples</button>
+      <button onclick="post('/demo/rollout/compare', {id:42, reads:2, ttl_ms:5000, tags:['ui-rollout'], flow_id:`ui-rollout-${Date.now()}`})">Rollout compare</button>
       <button onclick="show('/demo/report')">Application report</button>
       <button onclick="show('/demo/events')">Event log</button>
       <button onclick="show('/demo/events/summary')">Event summary</button>
@@ -11924,6 +12113,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Compare verbose cache/query implementations with equivalent release-36 sugar snippets side by side.",
         },
         CapabilityReport {
+            name: "database rollout comparison",
+            endpoint: "/demo/rollout/compare",
+            description: "Compare uncached backing-store reads with cached canary reads and report avoided loader calls.",
+        },
+        CapabilityReport {
             name: "local cache put/get/remove",
             endpoint: "/demo/cache/*",
             description: "Exercise raw HydraCache keys, TTL, tags, contains, remove, and tag invalidation.",
@@ -12133,6 +12327,7 @@ fn actuator_stats_doc() {}
         config_info,
         presets,
         ergonomics_examples,
+        rollout_compare,
         export_bundle,
         import_session,
         self_test,
@@ -12225,6 +12420,9 @@ fn actuator_stats_doc() {}
             PresetResponse,
             ErgonomicsExamplesResponse,
             ErgonomicsExample,
+            RolloutCompareRequest,
+            RolloutReadReport,
+            RolloutCompareResponse,
             ExportBundle,
             SelfTestResponse,
             SelfTestStep,
@@ -12886,6 +13084,7 @@ mod tests {
         assert!(paths.contains_key("/demo/config"));
         assert!(paths.contains_key("/demo/presets"));
         assert!(paths.contains_key("/demo/ergonomics/examples"));
+        assert!(paths.contains_key("/demo/rollout/compare"));
         assert!(paths.contains_key("/demo/export"));
         assert!(paths.contains_key("/demo/import"));
         assert!(paths.contains_key("/demo/self-test"));
@@ -12953,6 +13152,9 @@ mod tests {
         assert!(schemas.contains_key("PresetResponse"));
         assert!(schemas.contains_key("ErgonomicsExamplesResponse"));
         assert!(schemas.contains_key("ErgonomicsExample"));
+        assert!(schemas.contains_key("RolloutCompareRequest"));
+        assert!(schemas.contains_key("RolloutReadReport"));
+        assert!(schemas.contains_key("RolloutCompareResponse"));
         assert!(schemas.contains_key("ExportBundle"));
         assert!(schemas.contains_key("SelfTestResponse"));
         assert!(schemas.contains_key("ScenarioName"));
@@ -13238,6 +13440,26 @@ mod tests {
                     .as_str()
                     .unwrap()
                     .contains("#[hydracache::cacheable(")));
+
+        let rollout = app
+            .clone()
+            .oneshot(post(
+                "/demo/rollout/compare",
+                Body::from(
+                    r#"{"id":42,"reads":2,"ttl_ms":5000,"tags":["rollout"],"flow_id":"test-rollout"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(rollout["passed"], true);
+        assert_eq!(rollout["same_user"], true);
+        assert_eq!(rollout["uncached_backing_reads"], 2);
+        assert_eq!(rollout["cached_loader_calls"], 1);
+        assert_eq!(rollout["loader_calls_avoided"], 1);
+        assert_eq!(rollout["cached_reads"][0]["source"], "loader");
+        assert_eq!(rollout["cached_reads"][1]["source"], "cache");
 
         let swagger = app.oneshot(get("/swagger-ui/")).await.unwrap();
         assert_eq!(swagger.status(), StatusCode::OK);
@@ -13925,6 +14147,7 @@ mod tests {
         assert!(body.contains("HydraCache manual sandbox"));
         assert!(body.contains("/demo/report"));
         assert!(body.contains("/demo/ergonomics/examples"));
+        assert!(body.contains("/demo/rollout/compare"));
         assert!(body.contains("/demo/self-test"));
         assert!(body.contains("/demo/scenarios/run"));
         assert!(body.contains("/demo/scenarios/document/run"));
@@ -13977,6 +14200,11 @@ mod tests {
             .map(json_body)
             .unwrap()
             .await;
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|preset| preset["name"] == "rollout-compare"));
         assert!(presets["presets"]
             .as_array()
             .unwrap()
