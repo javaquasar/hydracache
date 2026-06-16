@@ -518,6 +518,34 @@ application code.
 `hydracache-seaorm` accepts async SeaORM loaders and shares the same
 database-neutral policy model.
 
+## Adapter Runtime Matrix
+
+Matrix labels:
+
+- **tested in local gate** - deterministic tests run without Docker or external
+  services and are expected to pass on Windows.
+- **optional Docker smoke** - test runs when Docker is available and exits
+  successfully with a skip message when Docker is unavailable.
+- **adapter contract** - the adapter API is database-neutral for that backend,
+  but this workspace does not claim runtime coverage for that database.
+- **out of scope** - not promised by this release.
+
+| Adapter path | Runtime/database | Status | Release command or evidence |
+| --- | --- | --- | --- |
+| `hydracache-db` | database-neutral repository loaders | tested in local gate | `cargo test -p hydracache-db --locked` |
+| `hydracache-sqlx` | SQLite in-memory | tested in local gate | `cargo test -p hydracache-sqlx --test sqlite_prepared --locked` |
+| `hydracache-sqlx` | Postgres via testcontainers | optional Docker smoke | `cargo test -p hydracache-sqlx --test postgres_testcontainers --locked` |
+| `hydracache-sandbox` | Postgres Docker backend | optional Docker smoke | `cargo test -p hydracache-sandbox --test postgres_smoke --locked` |
+| `hydracache-diesel` | SQLite in-memory | tested in local gate | `cargo test -p hydracache-diesel --locked` |
+| `hydracache-diesel` | Postgres/MySQL | adapter contract | Diesel owns the query/connection; HydraCache tests the blocking loader boundary, not each Diesel backend. |
+| `hydracache-seaorm` | SQLite in-memory | tested in local gate | `cargo test -p hydracache-seaorm --locked` |
+| `hydracache-seaorm` | Postgres/MySQL | adapter contract | SeaORM owns the query/connection; HydraCache tests the async loader boundary, not each SeaORM backend. |
+| transparent SQL interception | any database | out of scope | HydraCache does not parse SQL or infer table dependencies. |
+
+The Windows-stable release gate should prefer the deterministic rows. Docker
+rows are useful pre-release confidence checks but must stay optional and
+non-fatal when Docker is absent.
+
 ## Error Context
 
 Database cache errors include cache-side operation context:

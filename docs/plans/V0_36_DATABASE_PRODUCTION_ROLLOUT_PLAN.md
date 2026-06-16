@@ -227,6 +227,13 @@ Document and test freshness budget patterns:
 
 ## 5. Adapter Runtime Matrix
 
+Status: implemented. `docs/DB_PRODUCTION_READINESS.md` and
+`docs/FEATURE_MATRIX.md` now distinguish deterministic local-gate coverage,
+optional Docker smoke coverage, adapter-contract-only backends, and out-of-scope
+transparent SQL interception. The matrix documents SQLx SQLite, SQLx Postgres
+testcontainers, sandbox Postgres Docker, Diesel SQLite, SeaORM SQLite, and the
+non-tested Postgres/MySQL ORM backend boundaries.
+
 ### Problem
 
 SQLx, Diesel, and SeaORM have parity coverage, but production confidence still
@@ -252,11 +259,11 @@ The matrix should be honest:
 
 ### Acceptance Criteria
 
-- The docs distinguish "tested in CI/local gate" from "expected by adapter
+- [x] The docs distinguish "tested in CI/local gate" from "expected by adapter
   contract".
-- SQLx Postgres smoke coverage remains optional and skips gracefully.
-- Adapter parity tests stay deterministic on Windows.
-- Release notes list the tested matrix.
+- [x] SQLx Postgres smoke coverage remains optional and skips gracefully.
+- [x] Adapter parity tests stay deterministic on Windows.
+- [x] Release notes list the tested matrix.
 
 ## 6. Soak And Load Validation
 

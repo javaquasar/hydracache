@@ -29,6 +29,26 @@ opt-in.
 many optional pieces together for manual exploration, Swagger/OpenAPI, scenario
 labs, and release validation.
 
+## Adapter Runtime Verification Matrix
+
+This matrix describes release-test confidence. It does not expand the library
+contract beyond explicit query-result caching with caller-owned database
+clients and transactions.
+
+| Adapter path | Runtime/database | Verification level | Command |
+| --- | --- | --- | --- |
+| `hydracache-db` | repository/custom loaders | deterministic local gate | `cargo test -p hydracache-db --locked` |
+| `hydracache-sqlx` | SQLite in-memory | deterministic local gate | `cargo test -p hydracache-sqlx --test sqlite_prepared --locked` |
+| `hydracache-sqlx` | Postgres testcontainers | optional Docker smoke | `cargo test -p hydracache-sqlx --test postgres_testcontainers --locked` |
+| `hydracache-sandbox` | Postgres Docker profile | optional Docker smoke | `cargo test -p hydracache-sandbox --test postgres_smoke --locked` |
+| `hydracache-diesel` | SQLite in-memory | deterministic local gate | `cargo test -p hydracache-diesel --locked` |
+| `hydracache-diesel` | Postgres/MySQL | adapter contract only | User-owned Diesel loader/connection path; not runtime-tested here. |
+| `hydracache-seaorm` | SQLite in-memory | deterministic local gate | `cargo test -p hydracache-seaorm --locked` |
+| `hydracache-seaorm` | Postgres/MySQL | adapter contract only | User-owned SeaORM loader/connection path; not runtime-tested here. |
+
+Docker-backed rows must skip gracefully when Docker is unavailable. They should
+not make the Windows local gate flaky.
+
 ## Verification Script
 
 Run the matrix check locally:
