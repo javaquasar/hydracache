@@ -32,6 +32,7 @@ $gateCommands = @(
     @("cargo", @("fmt", "--all", "--", "--check")),
     @("cargo", @("check", "--workspace", "--all-targets", "--locked")),
     @("cargo", @("test", "--workspace", "--all-targets", "--locked")),
+    @("powershell", @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "`$env:CARGO_BUILD_JOBS='1'; cargo test -p hydracache-sandbox db_soak_route_reports_release_validation_counters --locked")),
     @("cargo", @("clippy", "--workspace", "--all-targets", "--all-features", "--locked", "--", "-D", "warnings")),
     @("cargo", @("test", "--doc", "--workspace", "--locked")),
     @("powershell", @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "`$env:RUSTDOCFLAGS='-D warnings'; cargo doc --workspace --no-deps --locked")),
@@ -155,6 +156,7 @@ try {
     foreach ($command in $gateCommands) {
         Write-Host (" - {0} {1}" -f $command[0], ($command[1] -join " "))
     }
+    Write-Host "Windows LNK1104 workaround: set CARGO_BUILD_JOBS=1 before -RunGate, or rerun the failed cargo command with a fresh --target-dir."
 
     Write-Host ""
     Write-Host "Post-publish consumer check:"

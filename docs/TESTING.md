@@ -102,6 +102,14 @@ Release readiness can also be dry-run before the final version bump and tag:
 .\scripts\verify-release-readiness.ps1 -Version 0.34.0 -DryRun
 ```
 
+On Windows release machines, prefer a serial cargo build before running the
+full gate if linker file locks have appeared recently:
+
+```powershell
+$env:CARGO_BUILD_JOBS = '1'
+.\scripts\verify-release-readiness.ps1 -Version 0.36.0 -RunGate
+```
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers. If Docker is unavailable, the test logs a skip message and exits
 successfully.
@@ -121,6 +129,21 @@ directly when changing sandbox or cluster-operability behavior:
 ```powershell
 cargo test -p hydracache-sandbox --locked
 ```
+
+For the 0.36 database rollout layer specifically, run the deterministic DB
+soak route test. It covers miss, hit, write, invalidate, reload, rollback,
+loader failure, stale-on-loader-error fallback, stale-load discard,
+single-flight, and the machine-readable summary counters used by the release
+gate:
+
+```powershell
+$env:CARGO_BUILD_JOBS = '1'
+cargo test -p hydracache-sandbox db_soak_route_reports_release_validation_counters --locked
+```
+
+For a longer manual pre-release soak, start the sandbox and post the long shape
+from `crates/hydracache-sandbox/http/sandbox.http` to
+`POST /demo/db/soak/run`.
 
 For the 0.23 peer-fetch routing layer specifically, run the transport crate
 tests plus rustdoc examples before the full workspace gate:
@@ -284,9 +307,9 @@ cargo test --doc -p hydracache-diesel --locked
 cargo test --doc -p hydracache-seaorm --locked
 ```
 
-On Windows, if `cargo test --workspace --locked` fails with `LNK1104` because a
-test executable under `target\debug\deps` is locked by the OS, rerun the
-workspace suite with a fresh target directory:
+On Windows, if `cargo test --workspace --locked` still fails with `LNK1104`
+because a test executable under `target\debug\deps` is locked by the OS, rerun
+the workspace suite with a fresh target directory:
 
 ```powershell
 cargo test --workspace --locked --target-dir target\release-gate-test

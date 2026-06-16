@@ -751,6 +751,12 @@ At minimum, macro implementation work should pass:
 
 ## 8. Release Gate Updates
 
+Status: implemented. `scripts/verify-release-readiness.ps1` now lists and runs
+the deterministic sandbox DB soak route test as an explicit release-gate command
+when `-RunGate` is used. `docs/TESTING.md` and `docs/PUBLISHING.md` document
+the Windows `CARGO_BUILD_JOBS=1` serial-build workaround and the fresh
+`--target-dir` fallback for intermittent MSVC `LNK1104` locks.
+
 ### Problem
 
 `0.35.0` hardened the release gate and exposed Windows/Cargo stderr edge cases.
@@ -771,9 +777,9 @@ too slow or flaky.
 
 ### Acceptance Criteria
 
-- Full release readiness still passes on Windows.
-- The release guide explains the serial build workaround.
-- DB rollout validation is included or documented with a clear command.
+- [x] Full release readiness still passes on Windows.
+- [x] The release guide explains the serial build workaround.
+- [x] DB rollout validation is included or documented with a clear command.
 
 ## Proposed Verification
 
@@ -786,7 +792,7 @@ too slow or flaky.
 - `cargo test --doc --workspace --locked`
 - `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --locked`
 - `.\scripts\verify-release-readiness.ps1 -Version 0.36.0 -RunGate`
-- DB rollout/soak validation command added during the release.
+- `cargo test -p hydracache-sandbox db_soak_route_reports_release_validation_counters --locked`
 - Macro-specific tests for every implemented macro ergonomics item.
 
 Optional checks:

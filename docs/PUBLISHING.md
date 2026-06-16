@@ -89,6 +89,15 @@ To also execute the full local release gate from the same script:
 .\scripts\verify-release-readiness.ps1 -Version 0.34.0 -RunGate
 ```
 
+On Windows, set `CARGO_BUILD_JOBS=1` before `-RunGate` if the machine has
+recently hit MSVC `LNK1104` file locks. The release script also includes the
+short DB soak route test used by the `0.36.0` database rollout gate:
+
+```powershell
+$env:CARGO_BUILD_JOBS = '1'
+.\scripts\verify-release-readiness.ps1 -Version 0.36.0 -RunGate
+```
+
 ```powershell
 cd C:\Workspace\prj\jq\cashe\hydracache
 
