@@ -29,6 +29,7 @@
 //! http://127.0.0.1:3000/ready
 //! http://127.0.0.1:3000/demo/config
 //! http://127.0.0.1:3000/demo/presets
+//! http://127.0.0.1:3000/demo/ergonomics/examples
 //! http://127.0.0.1:3000/demo/report
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/events/summary
@@ -564,6 +565,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/ui", get(dashboard_ui))
         .route("/demo/config", get(config_info))
         .route("/demo/presets", get(presets))
+        .route("/demo/ergonomics/examples", get(ergonomics_examples))
         .route("/demo/export", get(export_bundle))
         .route("/demo/import", post(import_session))
         .route("/demo/self-test", post(self_test))
@@ -1444,6 +1446,28 @@ struct ScenarioPreset {
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 struct PresetResponse {
     presets: Vec<ScenarioPreset>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ErgonomicsExamplesResponse {
+    release: &'static str,
+    summary: &'static str,
+    comparison_axis: &'static str,
+    examples: Vec<ErgonomicsExample>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct ErgonomicsExample {
+    id: &'static str,
+    area: &'static str,
+    title: &'static str,
+    production_value: &'static str,
+    verbose_label: &'static str,
+    verbose_code: &'static str,
+    sugar_label: &'static str,
+    sugar_code: &'static str,
+    removes: Vec<&'static str>,
+    notes: Vec<&'static str>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -3388,6 +3412,14 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
             body: None,
         },
         ScenarioPreset {
+            name: "ergonomics-examples",
+            method: "GET",
+            path: "/demo/ergonomics/examples",
+            description:
+                "Compare verbose API usage with equivalent release-36 sugar snippets.",
+            body: None,
+        },
+        ScenarioPreset {
             name: "listener-demo",
             method: "POST",
             path: "/demo/listeners/run",
@@ -3621,6 +3653,413 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
     ]
 }
 
+fn ergonomics_examples_catalog() -> ErgonomicsExamplesResponse {
+    ErgonomicsExamplesResponse {
+        release: "0.36.0",
+        summary: "Side-by-side examples for verbose HydraCache production code and equivalent release-36 sugar.",
+        comparison_axis:
+            "Each pair keeps the same explicit cache boundary, key dimensions, tags, TTL, and freshness intent.",
+        examples: vec![
+            ErgonomicsExample {
+                id: "entity-manual-impl-to-derive",
+                area: "database-entity-metadata",
+                title: "Manual CacheEntity implementation vs HydraCacheEntity derive",
+                production_value:
+                    "Keeps entity keys and collection tags reviewable while removing repeated trait boilerplate.",
+                verbose_label: "Verbose: hand-written CacheEntity impl",
+                verbose_code: r#"use hydracache_db::CacheEntity;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct User {
+    id: i64,
+    name: String,
+}
+
+impl CacheEntity for User {
+    type Id = i64;
+
+    const ENTITY: &'static str = "user";
+    const COLLECTION: Option<&'static str> = Some("users");
+}
+"#,
+                sugar_label: "Sugar: derive CacheEntity metadata from attributes",
+                sugar_code: r#"use hydracache_db::HydraCacheEntity;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users")]
+struct User {
+    #[hydracache(id)]
+    id: i64,
+    name: String,
+}
+"#,
+                removes: vec![
+                    "manual associated Id type",
+                    "manual ENTITY and COLLECTION constants",
+                    "manual cache_key_for/entity_tag_for wiring",
+                ],
+                notes: vec![
+                    "The cache entity name and collection tag stay explicit at the struct boundary.",
+                    "The id type is inferred from the field marked with #[hydracache(id)].",
+                ],
+            },
+            ErgonomicsExample {
+                id: "entity-id-field-inference",
+                area: "database-entity-metadata",
+                title: "Explicit derive id type vs field-level id inference",
+                production_value:
+                    "Prevents the struct field type and macro id type from drifting apart during refactors.",
+                verbose_label: "Verbose: id type repeated in the container attribute",
+                verbose_code: r#"use hydracache_db::HydraCacheEntity;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users", id = i64)]
+struct User {
+    id: i64,
+    name: String,
+}
+"#,
+                sugar_label: "Sugar: id type inferred from the marked field",
+                sugar_code: r#"use hydracache_db::HydraCacheEntity;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users")]
+struct User {
+    #[hydracache(id)]
+    id: i64,
+    name: String,
+}
+"#,
+                removes: vec![
+                    "duplicate id = i64 metadata",
+                    "the risk of changing the field type but not the macro metadata",
+                ],
+                notes: vec![
+                    "Exactly one #[hydracache(id)] field is accepted.",
+                    "Explicit id = Type remains useful when the id is not represented by a named field.",
+                ],
+            },
+            ErgonomicsExample {
+                id: "query-policy-freshness-preset",
+                area: "database-query-policy",
+                title: "Manual QueryCachePolicy freshness vs query_cache_policy! preset",
+                production_value:
+                    "Makes the production freshness budget visible at the call site without hiding the key.",
+                verbose_label: "Verbose: builder chain with explicit RefreshPolicy",
+                verbose_code: r#"use std::time::Duration;
+
+use hydracache_db::{QueryCachePolicy, RefreshPolicy};
+
+let policy = QueryCachePolicy::read_mostly()
+    .for_cache_entity::<User>(user_id)
+    .with_name("load-user")
+    .refresh_policy(
+        RefreshPolicy::new()
+            .refresh_ahead(Duration::from_secs(10))
+            .stale_while_revalidate(Duration::from_secs(300)),
+    );
+"#,
+                sugar_label: "Sugar: preset and freshness budget in one macro",
+                sugar_code: r#"use hydracache_db::query_cache_policy;
+
+let policy = query_cache_policy!(
+    preset = read_mostly,
+    name = "load-user",
+    entity = User,
+    id = user_id,
+    refresh_ahead_secs = 10,
+    stale_while_revalidate_secs = 300,
+);
+"#,
+                removes: vec![
+                    "Duration imports at every call site",
+                    "manual RefreshPolicy builder noise",
+                    "separate for_cache_entity/with_name chain",
+                ],
+                notes: vec![
+                    "The preset still requires explicit entity + id dimensions.",
+                    "The macro rejects conflicting TTL and preset options.",
+                ],
+            },
+            ErgonomicsExample {
+                id: "query-policy-key-tag-segments",
+                area: "database-query-policy",
+                title: "Manual key/tag builders vs key_segments/tag_segments",
+                production_value:
+                    "Turns review-sensitive cache dimensions into a compact ordered list instead of format strings.",
+                verbose_label: "Verbose: build key and tags by hand",
+                verbose_code: r#"use std::time::Duration;
+
+use hydracache::{CacheKeyBuilder, TagSet};
+use hydracache_db::QueryCachePolicy;
+
+let key = CacheKeyBuilder::new()
+    .segment("tenant")
+    .segment(tenant_id)
+    .segment("permission")
+    .segment(permission_hash)
+    .segment("q")
+    .segment(query)
+    .segment("page")
+    .segment(page)
+    .segment("sort")
+    .segment(sort)
+    .build_string();
+
+let tags = TagSet::new()
+    .tag(
+        CacheKeyBuilder::new()
+            .segment("tenant")
+            .segment(tenant_id)
+            .build_string(),
+    )
+    .tag("users");
+
+let policy = QueryCachePolicy::named("search-users")
+    .key(key)
+    .tag_set(tags)
+    .ttl(Duration::from_secs(30));
+"#,
+                sugar_label: "Sugar: key/tag dimensions stay inline and escaped",
+                sugar_code: r#"use hydracache_db::query_cache_policy;
+
+let policy = query_cache_policy!(
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "q", query,
+        "page", page,
+        "sort", sort,
+    ],
+    tag_segments = [["tenant", tenant_id], ["users"]],
+    ttl_secs = 30,
+);
+"#,
+                removes: vec![
+                    "manual CacheKeyBuilder plumbing",
+                    "format-string key construction",
+                    "separate TagSet setup for simple dimensions",
+                ],
+                notes: vec![
+                    "Segments are escaped consistently by the runtime key builder.",
+                    "Keeping every dimension in the macro improves code review for tenant/security keys.",
+                ],
+            },
+            ErgonomicsExample {
+                id: "prepared-query-policy",
+                area: "database-query-policy",
+                title: "Manual PreparedQueryPolicy builder vs prepared_query_policy!",
+                production_value:
+                    "Precomputes stable repository-method metadata and leaves only the dynamic id on the hot path.",
+                verbose_label: "Verbose: builder chain passed into DbCache::prepare",
+                verbose_code: r#"use std::time::Duration;
+
+use hydracache_db::{PreparedQueryPolicy, RefreshPolicy};
+
+let load_user = queries.prepare::<User>(
+    PreparedQueryPolicy::per_entity()
+        .cache_entity::<User>()
+        .with_name("load-user")
+        .ttl(Duration::from_secs(300))
+        .refresh_policy(
+            RefreshPolicy::new()
+                .refresh_ahead(Duration::from_secs(10))
+                .stale_while_revalidate(Duration::from_secs(300)),
+        ),
+);
+
+let user = load_user
+    .load_id(user_id, move || async move { repository.load_user(user_id).await })
+    .await?;
+"#,
+                sugar_label: "Sugar: prepared metadata declared once",
+                sugar_code: r#"use hydracache_db::prepared_query_policy;
+
+let load_user = queries.prepare::<User>(prepared_query_policy!(
+    per_entity = User,
+    name = "load-user",
+    ttl_secs = 300,
+    refresh_ahead_secs = 10,
+    stale_while_revalidate_secs = 300,
+));
+
+let user = load_user
+    .load_id(user_id, move || async move { repository.load_user(user_id).await })
+    .await?;
+"#,
+                removes: vec![
+                    "manual PreparedQueryPolicy builder noise",
+                    "Duration imports at the repository setup point",
+                    "repeated stable metadata in hot repository methods",
+                ],
+                notes: vec![
+                    "The loader remains explicit and async.",
+                    "The macro returns a PreparedQueryPolicy; DbCache::prepare still owns adapter binding.",
+                ],
+            },
+            ErgonomicsExample {
+                id: "cacheable-loader",
+                area: "local-cache-function",
+                title: "Manual get_or_load vs cacheable_loader!",
+                production_value:
+                    "Shortens ordinary fallible cached work while keeping cache, key, tags, TTL, and loader visible.",
+                verbose_label: "Verbose: key/options/get_or_load written by hand",
+                verbose_code: r#"use std::time::Duration;
+
+use hydracache::{CacheKeyBuilder, CacheOptions};
+
+let key = CacheKeyBuilder::new()
+    .segment("profile")
+    .segment(profile_id)
+    .build_string();
+
+let profile = cache
+    .get_or_load(
+        &key,
+        CacheOptions::new()
+            .ttl(Duration::from_secs(60))
+            .tag("profiles")
+            .tag(format!("profile:{profile_id}")),
+        move || async move { repository.load_profile(profile_id).await },
+    )
+    .await?;
+"#,
+                sugar_label: "Sugar: fallible loader macro",
+                sugar_code: r#"use hydracache::cacheable_loader;
+
+let profile = cacheable_loader!(
+    cache = cache,
+    key_segments = ["profile", profile_id],
+    tag_segments = [["profile", profile_id], ["profiles"]],
+    ttl_secs = 60,
+    load = move || async move { repository.load_profile(profile_id).await },
+)
+.await?;
+"#,
+                removes: vec![
+                    "temporary key variable",
+                    "manual CacheOptions builder",
+                    "manual tag formatting for segmented tags",
+                ],
+                notes: vec![
+                    "This is the renamed fallible function-like macro in 0.36.0.",
+                    "The old cacheable!(...) spelling became cacheable_loader!(...).",
+                ],
+            },
+            ErgonomicsExample {
+                id: "cacheable-infallible",
+                area: "local-cache-function",
+                title: "Manual get_or_insert_with vs cacheable_infallible!",
+                production_value:
+                    "Keeps pure computed values cacheable without forcing an artificial loader error type.",
+                verbose_label: "Verbose: infallible loader through get_or_insert_with",
+                verbose_code: r#"use std::time::Duration;
+
+use hydracache::{CacheKeyBuilder, CacheOptions};
+
+let key = CacheKeyBuilder::new()
+    .segment("score")
+    .segment(input)
+    .build_string();
+
+let score = cache
+    .get_or_insert_with(
+        &key,
+        CacheOptions::new().ttl(Duration::from_secs(30)).tag("scores"),
+        move || async move { compute_score(input) },
+    )
+    .await?;
+"#,
+                sugar_label: "Sugar: infallible loader macro",
+                sugar_code: r#"use hydracache::cacheable_infallible;
+
+let score = cacheable_infallible!(
+    cache = cache,
+    key_segments = ["score", input],
+    tag = "scores",
+    ttl_secs = 30,
+    load = move || async move { compute_score(input) },
+)
+.await?;
+"#,
+                removes: vec![
+                    "manual key builder",
+                    "manual CacheOptions builder",
+                    "synthetic Result wrapper around pure computation",
+                ],
+                notes: vec![
+                    "Use this only when the loader itself cannot fail.",
+                    "Use cacheable_loader! for fallible loaders.",
+                ],
+            },
+            ErgonomicsExample {
+                id: "cacheable-attribute",
+                area: "local-cache-function",
+                title: "Hand-written cached function wrapper vs #[hydracache::cacheable]",
+                production_value:
+                    "Gives ordinary async functions a cached boundary without hiding cache ownership or key dimensions.",
+                verbose_label: "Verbose: wrapper function owns key/options/get_or_load",
+                verbose_code: r#"use std::time::Duration;
+
+use hydracache::{CacheKeyBuilder, CacheOptions, CacheResult, HydraCache};
+
+async fn load_profile(
+    cache: &HydraCache,
+    profile_id: u64,
+) -> CacheResult<Profile> {
+    let key = CacheKeyBuilder::new()
+        .segment("profile")
+        .segment(profile_id)
+        .build_string();
+
+    cache
+        .get_or_load(
+            &key,
+            CacheOptions::new()
+                .ttl(Duration::from_secs(60))
+                .tag("profiles")
+                .tag(format!("profile:{profile_id}")),
+            move || async move { repository_load_profile(profile_id).await },
+        )
+        .await
+}
+"#,
+                sugar_label: "Sugar: attribute macro on the ordinary async fn",
+                sugar_code: r#"use hydracache::HydraCache;
+
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["profile", profile_id],
+    tag_segments = [["profile", profile_id], ["profiles"]],
+    ttl_secs = 60
+)]
+async fn load_profile(
+    cache: &HydraCache,
+    profile_id: u64,
+) -> Result<Profile, LoadError> {
+    repository_load_profile(profile_id).await
+}
+"#,
+                removes: vec![
+                    "wrapper boilerplate around the original function body",
+                    "manual get_or_load call",
+                    "manual CacheResult conversion at the call site",
+                ],
+                notes: vec![
+                    "The cache argument is explicit; no global cache lookup is performed.",
+                    "The generated wrapper returns hydracache::CacheResult<Profile>.",
+                    "The macro does not enter database transactions or hide repository boundaries.",
+                ],
+            },
+        ],
+    }
+}
+
 #[utoipa::path(
     get,
     path = "/",
@@ -3666,6 +4105,16 @@ async fn presets() -> Json<PresetResponse> {
     Json(PresetResponse {
         presets: scenario_presets(),
     })
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/ergonomics/examples",
+    tag = "sandbox",
+    responses((status = 200, description = "Side-by-side verbose and sugar API examples for release 36 ergonomics", body = ErgonomicsExamplesResponse))
+)]
+async fn ergonomics_examples() -> Json<ErgonomicsExamplesResponse> {
+    Json(ergonomics_examples_catalog())
 }
 
 #[utoipa::path(
@@ -11120,6 +11569,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="show('/ready')">Readiness</button>
       <button onclick="show('/demo/config')">Config</button>
       <button onclick="show('/demo/presets')">Presets</button>
+      <button onclick="show('/demo/ergonomics/examples')">Ergonomics examples</button>
       <button onclick="show('/demo/report')">Application report</button>
       <button onclick="show('/demo/events')">Event log</button>
       <button onclick="show('/demo/events/summary')">Event summary</button>
@@ -11469,6 +11919,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Check that the selected memory, SQLite, or Postgres backing store is ready.",
         },
         CapabilityReport {
+            name: "ergonomics examples",
+            endpoint: "/demo/ergonomics/examples",
+            description: "Compare verbose cache/query implementations with equivalent release-36 sugar snippets side by side.",
+        },
+        CapabilityReport {
             name: "local cache put/get/remove",
             endpoint: "/demo/cache/*",
             description: "Exercise raw HydraCache keys, TTL, tags, contains, remove, and tag invalidation.",
@@ -11677,6 +12132,7 @@ fn actuator_stats_doc() {}
         dashboard_ui,
         config_info,
         presets,
+        ergonomics_examples,
         export_bundle,
         import_session,
         self_test,
@@ -11767,6 +12223,8 @@ fn actuator_stats_doc() {}
             ClearEventsResponse,
             ScenarioPreset,
             PresetResponse,
+            ErgonomicsExamplesResponse,
+            ErgonomicsExample,
             ExportBundle,
             SelfTestResponse,
             SelfTestStep,
@@ -12427,6 +12885,7 @@ mod tests {
         assert!(paths.contains_key("/demo/ui"));
         assert!(paths.contains_key("/demo/config"));
         assert!(paths.contains_key("/demo/presets"));
+        assert!(paths.contains_key("/demo/ergonomics/examples"));
         assert!(paths.contains_key("/demo/export"));
         assert!(paths.contains_key("/demo/import"));
         assert!(paths.contains_key("/demo/self-test"));
@@ -12492,6 +12951,8 @@ mod tests {
         assert!(schemas.contains_key("EventSummaryResponse"));
         assert!(schemas.contains_key("ScenarioCatalogResponse"));
         assert!(schemas.contains_key("PresetResponse"));
+        assert!(schemas.contains_key("ErgonomicsExamplesResponse"));
+        assert!(schemas.contains_key("ErgonomicsExample"));
         assert!(schemas.contains_key("ExportBundle"));
         assert!(schemas.contains_key("SelfTestResponse"));
         assert!(schemas.contains_key("ScenarioName"));
@@ -12574,6 +13035,78 @@ mod tests {
             schemas["CachePutRequest"]["example"]["flow_id"],
             "manual-flow"
         );
+    }
+
+    #[test]
+    fn ergonomics_examples_catalog_covers_release_36_sugar_pairs() {
+        let catalog = super::ergonomics_examples_catalog();
+
+        assert_eq!(catalog.release, "0.36.0");
+        assert_eq!(catalog.examples.len(), 8);
+
+        for required_id in [
+            "entity-manual-impl-to-derive",
+            "entity-id-field-inference",
+            "query-policy-freshness-preset",
+            "query-policy-key-tag-segments",
+            "prepared-query-policy",
+            "cacheable-loader",
+            "cacheable-infallible",
+            "cacheable-attribute",
+        ] {
+            assert!(
+                catalog
+                    .examples
+                    .iter()
+                    .any(|example| example.id == required_id),
+                "missing ergonomics example `{required_id}`"
+            );
+        }
+
+        for example in &catalog.examples {
+            assert!(
+                !example.verbose_code.trim().is_empty(),
+                "missing verbose code for {}",
+                example.id
+            );
+            assert!(
+                !example.sugar_code.trim().is_empty(),
+                "missing sugar code for {}",
+                example.id
+            );
+            assert!(
+                !example.removes.is_empty(),
+                "missing removed-boilerplate notes for {}",
+                example.id
+            );
+            assert!(
+                !example.notes.is_empty(),
+                "missing usage notes for {}",
+                example.id
+            );
+        }
+
+        let all_sugar = catalog
+            .examples
+            .iter()
+            .map(|example| example.sugar_code)
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        for expected in [
+            "HydraCacheEntity",
+            "#[hydracache(id)]",
+            "query_cache_policy!",
+            "prepared_query_policy!",
+            "cacheable_loader!",
+            "cacheable_infallible!",
+            "#[hydracache::cacheable(",
+        ] {
+            assert!(
+                all_sugar.contains(expected),
+                "missing sugar snippet containing `{expected}`"
+            );
+        }
     }
 
     #[test]
@@ -12686,6 +13219,25 @@ mod tests {
             .unwrap()
             .await;
         assert_eq!(openapi["openapi"], "3.1.0");
+
+        let ergonomics = app
+            .clone()
+            .oneshot(get("/demo/ergonomics/examples"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+        assert_eq!(ergonomics["release"], "0.36.0");
+        assert_eq!(ergonomics["examples"].as_array().unwrap().len(), 8);
+        assert!(ergonomics["examples"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|example| example["id"] == "cacheable-attribute"
+                && example["sugar_code"]
+                    .as_str()
+                    .unwrap()
+                    .contains("#[hydracache::cacheable(")));
 
         let swagger = app.oneshot(get("/swagger-ui/")).await.unwrap();
         assert_eq!(swagger.status(), StatusCode::OK);
@@ -13372,6 +13924,7 @@ mod tests {
         let body = String::from_utf8_lossy(&body);
         assert!(body.contains("HydraCache manual sandbox"));
         assert!(body.contains("/demo/report"));
+        assert!(body.contains("/demo/ergonomics/examples"));
         assert!(body.contains("/demo/self-test"));
         assert!(body.contains("/demo/scenarios/run"));
         assert!(body.contains("/demo/scenarios/document/run"));

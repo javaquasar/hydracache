@@ -12,6 +12,9 @@ GET {{baseUrl}}/demo/config
 ### Copyable scenario presets
 GET {{baseUrl}}/demo/presets
 
+### Release 36 ergonomics examples: verbose API vs sugar
+GET {{baseUrl}}/demo/ergonomics/examples
+
 ### OpenAPI document
 GET {{baseUrl}}/openapi.json
 

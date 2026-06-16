@@ -1433,6 +1433,7 @@ http://127.0.0.1:3000/swagger-ui
 http://127.0.0.1:3000/openapi.json
 http://127.0.0.1:3000/ready
 http://127.0.0.1:3000/actuator/hydracache/health
+http://127.0.0.1:3000/demo/ergonomics/examples
 ```
 
 The sandbox is an interactive lab rather than production API surface. Use it to
@@ -1440,7 +1441,10 @@ exercise local cache operations, typed-cache namespacing, database-backed query
 caching, cached non-database functions, TTL expiry, single-flight,
 invalidation/load race safety, listeners, distributed invalidation, cluster
 membership, ownership, peer-fetch, read-through hydration, owner-load, and real
-chitchat + raft adapter flows.
+chitchat + raft adapter flows. The `/demo/ergonomics/examples` route exposes
+side-by-side release-36 snippets for verbose API usage and equivalent sugar:
+entity metadata, query policies, prepared policies, loader macros, and the
+function attribute macro.
 
 Swagger UI is generated from Rust route/schema declarations through `utoipa` and
 served from local embedded assets through `utoipa-swagger-ui`, so it does not

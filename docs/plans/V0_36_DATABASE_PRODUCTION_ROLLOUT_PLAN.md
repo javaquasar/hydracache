@@ -654,6 +654,32 @@ write by hand.
 - [x] Compile-fail tests cover missing cache, missing key metadata, unsupported
   options, and conflicting TTL/key options.
 
+### 7.6 Sandbox Side-By-Side Ergonomics Examples
+
+Status: implemented. The manual sandbox exposes
+`GET /demo/ergonomics/examples` as a copyable catalog of release-36 ergonomics
+examples. Each entry shows the verbose implementation next to the equivalent
+sugar form and lists the boilerplate removed by that sugar.
+
+The catalog covers:
+
+- manual `CacheEntity` impls vs `HydraCacheEntity`;
+- explicit derive `id = Type` vs field-level `#[hydracache(id)]` inference;
+- manual `QueryCachePolicy` freshness setup vs `query_cache_policy!` presets;
+- manual `CacheKeyBuilder`/`TagSet` key reviews vs `key_segments` and
+  `tag_segments`;
+- manual `PreparedQueryPolicy` builders vs `prepared_query_policy!`;
+- manual local-cache function wrappers vs `cacheable_loader!`;
+- infallible computed values via `cacheable_infallible!`;
+- ordinary async functions via `#[hydracache::cacheable(...)]`.
+
+Acceptance criteria:
+
+- [x] The examples are visible through the sandbox dashboard, presets, OpenAPI,
+  and `crates/hydracache-sandbox/http/sandbox.http`.
+- [x] Tests assert the catalog includes every release-36 sugar pair and that the
+  HTTP route, dashboard link, and OpenAPI schema stay present.
+
 ### Testing Requirements For Macro Work
 
 Every new macro feature in `0.36.0` must land with tests. Documentation-only
