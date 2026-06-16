@@ -32,3 +32,30 @@ cache miss. Use `sea_optional` for ordinary SeaORM
 Keep SeaORM transactions in application code. Invalidate entity and collection
 tags only after `commit()` succeeds. A rollback path should not invalidate
 because existing cached values still describe the last committed database state.
+
+Stage invalidations next to the write, but execute them only after the SeaORM
+transaction commits:
+
+```rust
+use hydracache_seaorm::InvalidationPlan;
+
+# async fn example(
+#     db: sea_orm::DatabaseConnection,
+#     queries: hydracache_seaorm::SeaOrmCache,
+# ) -> hydracache::CacheResult<()> {
+let tx = db.begin().await.expect("begin transaction");
+let pending = InvalidationPlan::new()
+    .tag("seaorm-user:42")
+    .tag("seaorm-users");
+
+// user::Entity::update(...).exec(&tx).await?;
+
+tx.commit().await.expect("commit transaction");
+pending.execute(queries.cache()).await?;
+# Ok(())
+# }
+```
+
+If `rollback()` is called or the transaction returns an error, drop the pending
+plan and keep the cached value that still matches the last committed database
+state.

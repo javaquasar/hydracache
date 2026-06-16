@@ -96,7 +96,8 @@ pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
     prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind,
     DbCache, DbCacheError, DbOperationContext, DbQuery, DbResultShape, HydraCacheEntity,
-    PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
+    InvalidationPlan, InvalidationReport, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy,
+    RefreshPolicy, Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 
@@ -119,8 +120,8 @@ mod tests {
     use sqlx::postgres::PgPoolOptions;
 
     use crate::{
-        prepared_query_policy, query_cache_policy, CacheKeyBuilder, DbCache, PreparedQueryPolicy,
-        QueryCachePolicy, RefreshPolicy, SqlxCache, SqlxQueryExt,
+        prepared_query_policy, query_cache_policy, CacheKeyBuilder, DbCache, InvalidationPlan,
+        PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, SqlxCache, SqlxQueryExt,
     };
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -144,6 +145,9 @@ mod tests {
             .key("user:1");
 
         assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
+
+        let pending = InvalidationPlan::new().tag("user:1");
+        assert_eq!(pending.tag_values().collect::<Vec<_>>(), vec!["user:1"]);
     }
 
     #[tokio::test]

@@ -196,20 +196,31 @@ The recommended write path is:
 
 1. start the database transaction in SQLx, Diesel, SeaORM, or repository code;
 2. perform the write;
-3. commit successfully;
-4. invalidate affected entity and collection tags;
-5. optionally run a read-after-write smoke check for critical flows.
+3. stage affected entity and collection invalidations in repository code;
+4. commit successfully;
+5. execute staged invalidations;
+6. optionally run a read-after-write smoke check for critical flows.
 
 Example shape:
 
 ```rust
+use hydracache_db::{HydraCacheEntity, InvalidationPlan};
+
+#[derive(HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users")]
+struct User {
+    #[hydracache(id)]
+    id: i64,
+}
+
 # async fn example(cache: hydracache::HydraCache) -> hydracache::CacheResult<()> {
+let pending = InvalidationPlan::new().cache_entity::<User>(42);
+
 // The transaction belongs to the database library or repository.
 // tx.update_user_name(42, "Grace").await?;
 // tx.commit().await?;
 
-cache.invalidate_tag("user:42").await?;
-cache.invalidate_tag("users").await?;
+pending.execute(&cache).await?;
 # Ok(())
 # }
 ```
@@ -243,12 +254,86 @@ For rollback, do not invalidate:
 
 ```rust
 # async fn example() -> Result<(), std::io::Error> {
+// let pending = InvalidationPlan::new().cache_entity::<User>(42);
 // tx.update_user_name(42, "Grace").await?;
 // tx.rollback().await?;
+// drop(pending);
 // Existing cached values still describe the committed database state.
 # Ok(())
 # }
 ```
+
+### Adapter Transaction Shapes
+
+`InvalidationPlan` is database-neutral. It is only a staging helper for keys and
+tags; SQLx, Diesel, SeaORM, or your repository still owns transactions and
+commit/rollback behavior.
+
+SQLx:
+
+```rust
+# async fn example(pool: sqlx::SqlitePool, cache: hydracache::HydraCache) -> Result<(), Box<dyn std::error::Error>> {
+let mut tx = pool.begin().await?;
+let pending = hydracache_db::InvalidationPlan::new().tag("user:42").tag("users");
+
+sqlx::query("update users set name = ? where id = ?")
+    .bind("Grace")
+    .bind(42_i64)
+    .execute(&mut *tx)
+    .await?;
+
+tx.commit().await?;
+pending.execute(&cache).await?;
+# Ok(())
+# }
+```
+
+Diesel:
+
+```rust
+# fn write_with_diesel(
+#     connection: &mut diesel::sqlite::SqliteConnection,
+#     cache: hydracache::HydraCache,
+# ) -> Result<hydracache_db::InvalidationPlan, diesel::result::Error> {
+let pending = hydracache_db::InvalidationPlan::new().tag("diesel-user:42").tag("diesel-users");
+
+connection.transaction::<_, diesel::result::Error, _>(|connection| {
+    diesel::sql_query("update users set name = 'Grace' where id = 42")
+        .execute(connection)?;
+    Ok(())
+})?;
+
+# let _ = cache;
+Ok(pending)
+# }
+```
+
+Call `pending.execute(&cache).await` after the blocking Diesel transaction has
+returned successfully to async service code. If the transaction returns an
+error, drop the plan.
+
+SeaORM:
+
+```rust
+# async fn example(
+#     db: sea_orm::DatabaseConnection,
+#     cache: hydracache::HydraCache,
+# ) -> Result<(), Box<dyn std::error::Error>> {
+let tx = db.begin().await?;
+let pending = hydracache_db::InvalidationPlan::new().tag("seaorm-user:42").tag("seaorm-users");
+
+// user::Entity::update(...).exec(&tx).await?;
+
+tx.commit().await?;
+pending.execute(&cache).await?;
+# Ok(())
+# }
+```
+
+External writers are outside HydraCache's control. If another service, a batch
+job, or a database console changes rows, it must publish the same entity and
+collection invalidation intent, or cached readers can continue serving the last
+committed value they observed.
 
 ## Key Safety Checklist
 

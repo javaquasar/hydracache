@@ -1576,6 +1576,9 @@ only after `commit()` succeeds:
 
 ```rust
 # async fn example(pool: sqlx::SqlitePool, queries: hydracache_sqlx::DbCache) -> hydracache_sqlx::Result<()> {
+let pending = hydracache_sqlx::InvalidationPlan::new()
+    .tag("user:42")
+    .tag("users");
 let mut tx = pool.begin().await?;
 
 sqlx::query("update users set name = ? where id = ?")
@@ -1586,14 +1589,14 @@ sqlx::query("update users set name = ? where id = ?")
 
 tx.commit().await?;
 
-queries.cache().invalidate_tag("user:42").await?;
-queries.cache().invalidate_tag("users").await?;
+pending.execute(queries.cache()).await?;
 # Ok(())
 # }
 ```
 
 A rollback path should not invalidate; the cached value still describes the
-last committed database state.
+last committed database state. Drop the staged `InvalidationPlan` when the
+transaction fails or rolls back.
 
 When the same entity metadata is used in several places, derive or implement
 `CacheEntity` once and use `for_entity::<T>(id)`. `CacheEntity` and

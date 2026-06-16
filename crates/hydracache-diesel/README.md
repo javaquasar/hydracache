@@ -33,3 +33,28 @@ Keep Diesel transactions in application code. Invalidate entity and collection
 tags only after a write transaction commits successfully. A rollback path should
 leave existing cached values alone because the committed database state did not
 change.
+
+Stage invalidations while building the write path, then execute them only after
+the Diesel transaction succeeds:
+
+```rust
+use hydracache_diesel::InvalidationPlan;
+
+# fn example() -> Result<InvalidationPlan, diesel::result::Error> {
+let pending = InvalidationPlan::new()
+    .tag("diesel-user:42")
+    .tag("diesel-users");
+
+// connection.transaction::<_, diesel::result::Error, _>(|connection| {
+//     diesel::sql_query("update users set name = 'Grace' where id = 42")
+//         .execute(connection)?;
+//     Ok(())
+// })?;
+
+Ok(pending)
+# }
+```
+
+After the blocking transaction returns to async service code, call
+`pending.execute(queries.cache()).await`. If Diesel rolls back or returns an
+error, drop `pending` and keep the previous cached value.

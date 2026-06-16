@@ -103,6 +103,12 @@ Add a database-cache rollout playbook that covers:
 
 ## 2. Repository Transaction And Invalidation Guardrails
 
+Status: implemented. `hydracache-db` now exposes the database-neutral
+`InvalidationPlan`/`InvalidationReport` staging helper. Repository code can
+collect key/tag invalidations during a write transaction, execute them only
+after commit, and drop the plan on rollback. SQLx, Diesel, and SeaORM adapter
+docs show the pattern without taking ownership of transactions.
+
 ### Problem
 
 HydraCache intentionally does not own database transactions. That keeps the
@@ -134,9 +140,10 @@ The release should provide a small transaction/invalidation guide that shows:
 
 ### Acceptance Criteria
 
-- The docs show a repository-level pattern for staged invalidation.
-- Adapter examples demonstrate the pattern without hiding transaction ownership.
-- Tests cover commit, rollback, external write caveat, and repeated
+- [x] The docs show a repository-level pattern for staged invalidation.
+- [x] Adapter examples demonstrate the pattern without hiding transaction
+  ownership.
+- [x] Tests cover commit, rollback, external write caveat, and repeated
   invalidation idempotency.
 
 ## 3. Cache-Key Review Checklist

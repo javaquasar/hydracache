@@ -44,8 +44,8 @@ use thiserror::Error;
 pub use hydracache_db::{
     prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind,
     DbCache, DbCacheError, DbOperationContext, DbQuery as GenericDbQuery, DbResultShape,
-    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
-    Result as DbResult,
+    HydraCacheEntity, InvalidationPlan, InvalidationReport, PreparedDbQuery, PreparedQueryPolicy,
+    QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 
 /// SeaORM-specific compatibility name for [`DbCache`].
@@ -159,7 +159,8 @@ mod tests {
 
     use super::{
         prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, HydraCacheEntity,
-        PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, SeaOrmCache, SeaOrmQueryExt,
+        InvalidationPlan, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, SeaOrmCache,
+        SeaOrmQueryExt,
     };
 
     mod user {
@@ -835,6 +836,12 @@ mod tests {
         assert_eq!(
             segmented.tags_value(),
             &["tenant:7".to_owned(), "seaorm-users".to_owned()]
+        );
+
+        let pending = InvalidationPlan::new().cache_entity::<user::Model>(42);
+        assert_eq!(
+            pending.tag_values().collect::<Vec<_>>(),
+            vec!["seaorm-user:42", "seaorm-users"]
         );
     }
 }

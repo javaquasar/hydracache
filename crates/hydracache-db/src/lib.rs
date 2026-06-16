@@ -138,11 +138,41 @@
 //! );
 //! assert_eq!(search.tags_value(), &["tenant:7".to_owned(), "users".to_owned()]);
 //! ```
+//!
+//! For write paths, stage invalidations during repository work and execute them
+//! only after the database transaction commits:
+//!
+//! ```rust
+//! use hydracache::HydraCache;
+//! use hydracache_db::{HydraCacheEntity, InvalidationPlan};
+//! use serde::{Deserialize, Serialize};
+//!
+//! #[derive(Debug, Clone, Serialize, Deserialize, HydraCacheEntity)]
+//! #[hydracache(entity = "user", collection = "users")]
+//! struct User {
+//!     #[hydracache(id)]
+//!     id: i64,
+//! }
+//!
+//! # #[tokio::main]
+//! # async fn main() -> hydracache::CacheResult<()> {
+//! let cache = HydraCache::local().build();
+//! let pending = InvalidationPlan::new().cache_entity::<User>(42);
+//!
+//! // tx.update_user(42).await?;
+//! // tx.commit().await?;
+//!
+//! let report = pending.execute(&cache).await?;
+//! assert_eq!(report.tag_count, 2);
+//! # Ok(())
+//! # }
+//! ```
 
 extern crate self as hydracache_db;
 
 mod entity;
 mod error;
+mod invalidation;
 mod policy;
 mod prepared;
 mod query;
@@ -151,6 +181,7 @@ pub use entity::CacheEntity;
 pub use error::{DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape, Result};
 pub use hydracache::CacheKeyBuilder;
 pub use hydracache_macros::{prepared_query_policy, query_cache_policy, HydraCacheEntity};
+pub use invalidation::{InvalidationPlan, InvalidationReport};
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
 pub use query::{DbCache, DbQuery, PreparedDbQuery};

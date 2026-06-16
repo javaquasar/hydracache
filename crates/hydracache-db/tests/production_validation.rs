@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use hydracache::HydraCache;
-use hydracache_db::{DbCache, HydraCacheEntity, QueryCachePolicy, RefreshPolicy};
+use hydracache_db::{DbCache, HydraCacheEntity, InvalidationPlan, QueryCachePolicy, RefreshPolicy};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{oneshot, Notify, RwLock};
 
@@ -254,6 +254,77 @@ async fn committed_update_invalidates_entity_and_reloads() {
 
     let reloaded = cached_user(&queries, &repository, 42).await.unwrap();
     assert_eq!(reloaded.name, "Grace");
+    assert_eq!(repository.load_calls(), 2);
+}
+
+#[tokio::test]
+async fn staged_invalidation_plan_executes_only_after_commit() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    let mut tx = repository.begin().await;
+    tx.upsert(42, "Grace");
+    let pending = InvalidationPlan::new().cache_entity::<User>(42);
+    tx.commit().await;
+
+    let report = pending.execute(&cache).await.unwrap();
+    assert_eq!(report.tag_count, 2);
+    assert_eq!(report.tags_removed, 1);
+
+    let reloaded = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(reloaded.name, "Grace");
+    assert_eq!(repository.load_calls(), 2);
+}
+
+#[tokio::test]
+async fn rollback_drops_staged_invalidation_plan_without_evicting() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    let mut tx = repository.begin().await;
+    tx.upsert(42, "RolledBack");
+    let pending = InvalidationPlan::new().cache_entity::<User>(42);
+    tx.rollback().await;
+    drop(pending);
+
+    let still_cached = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(still_cached.name, "Ada");
+    assert_eq!(repository.load_calls(), 1);
+    assert_eq!(cache.diagnostics().await.stats.invalidations, 0);
+}
+
+#[tokio::test]
+async fn external_write_requires_compensating_invalidation_plan() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    repository.upsert(42, "ExternalWriter").await;
+
+    let stale_without_external_invalidation = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(stale_without_external_invalidation.name, "Ada");
+    assert_eq!(repository.load_calls(), 1);
+
+    let report = InvalidationPlan::new()
+        .cache_entity::<User>(42)
+        .execute(&cache)
+        .await
+        .unwrap();
+    assert_eq!(report.tags_removed, 1);
+
+    let reloaded = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(reloaded.name, "ExternalWriter");
     assert_eq!(repository.load_calls(), 2);
 }
 

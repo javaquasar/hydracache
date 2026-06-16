@@ -45,8 +45,8 @@ use thiserror::Error;
 pub use hydracache_db::{
     prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind,
     DbCache, DbCacheError, DbOperationContext, DbQuery as GenericDbQuery, DbResultShape,
-    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
-    Result as DbResult,
+    HydraCacheEntity, InvalidationPlan, InvalidationReport, PreparedDbQuery, PreparedQueryPolicy,
+    QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 
 /// Diesel-specific compatibility name for [`DbCache`].
@@ -178,7 +178,8 @@ mod tests {
 
     use super::{
         prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DieselCache,
-        DieselQueryExt, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+        DieselQueryExt, HydraCacheEntity, InvalidationPlan, PreparedQueryPolicy, QueryCachePolicy,
+        RefreshPolicy,
     };
 
     diesel::table! {
@@ -732,6 +733,12 @@ mod tests {
         assert_eq!(
             segmented.tags_value(),
             &["tenant:7".to_owned(), "diesel-users".to_owned()]
+        );
+
+        let pending = InvalidationPlan::new().cache_entity::<User>(42);
+        assert_eq!(
+            pending.tag_values().collect::<Vec<_>>(),
+            vec!["diesel-user:42", "diesel-users"]
         );
     }
 }

@@ -2,12 +2,13 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
+use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     prepared_query_policy, query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError,
-    DbResultShape, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+    DbResultShape, HydraCacheEntity, InvalidationPlan, PreparedQueryPolicy, QueryCachePolicy,
+    RefreshPolicy,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -158,6 +159,103 @@ async fn query_cache_policy_stores_refresh_policy_metadata() {
         .refresh_policy(refresh);
 
     assert_eq!(policy.refresh_policy_value(), Some(refresh));
+}
+
+#[test]
+fn invalidation_plan_stages_entity_collection_keys_and_tags_deterministically() {
+    let plan = InvalidationPlan::new()
+        .cache_entity::<User>(42)
+        .tag("users")
+        .tags(["tenant:7", "users"])
+        .key("db:user:42")
+        .keys(["db:user:42", "db:users:active"]);
+
+    assert!(!plan.is_empty());
+    assert_eq!(plan.key_count(), 2);
+    assert_eq!(plan.tag_count(), 3);
+    assert_eq!(
+        plan.key_values().collect::<Vec<_>>(),
+        vec!["db:user:42", "db:users:active"]
+    );
+    assert_eq!(
+        plan.tag_values().collect::<Vec<_>>(),
+        vec!["tenant:7", "user:42", "users"]
+    );
+}
+
+#[tokio::test]
+async fn invalidation_plan_executes_after_commit_and_reports_removed_entries() {
+    let cache = HydraCache::local().build();
+    cache
+        .put(
+            "db:user:42",
+            user(42),
+            CacheOptions::new().tags(["user:42", "users"]),
+        )
+        .await
+        .unwrap();
+    cache
+        .put(
+            "db:users:active",
+            vec![user(42)],
+            CacheOptions::new().tag("users"),
+        )
+        .await
+        .unwrap();
+
+    let plan = InvalidationPlan::new()
+        .cache_entity::<User>(42)
+        .key("db:missing");
+    let report = plan.execute(&cache).await.unwrap();
+
+    assert_eq!(report.key_count, 1);
+    assert_eq!(report.tag_count, 2);
+    assert_eq!(report.keys_removed, 0);
+    assert_eq!(report.tags_removed, 2);
+    assert_eq!(report.removed_entries(), 2);
+    assert!(cache.get::<User>("db:user:42").await.unwrap().is_none());
+    assert!(cache
+        .get::<Vec<User>>("db:users:active")
+        .await
+        .unwrap()
+        .is_none());
+}
+
+#[tokio::test]
+async fn dropped_invalidation_plan_leaves_cached_values_for_rollback() {
+    let cache = HydraCache::local().build();
+    cache
+        .put(
+            "db:user:42",
+            user(42),
+            CacheOptions::new().tags(["user:42", "users"]),
+        )
+        .await
+        .unwrap();
+
+    let rollback_plan = InvalidationPlan::new().cache_entity::<User>(42);
+    drop(rollback_plan);
+
+    let cached = cache.get::<User>("db:user:42").await.unwrap();
+    assert_eq!(cached, Some(user(42)));
+    assert_eq!(cache.diagnostics().await.stats.invalidations, 0);
+}
+
+#[tokio::test]
+async fn repeated_invalidation_plan_execution_is_idempotent() {
+    let cache = HydraCache::local().build();
+    cache
+        .put("db:user:42", user(42), CacheOptions::new().tag("user:42"))
+        .await
+        .unwrap();
+
+    let plan = InvalidationPlan::new().tag("user:42");
+    let first = plan.clone().execute(&cache).await.unwrap();
+    let second = plan.execute(&cache).await.unwrap();
+
+    assert_eq!(first.tags_removed, 1);
+    assert_eq!(second.tags_removed, 0);
+    assert_eq!(cache.diagnostics().await.stats.invalidations, 1);
 }
 
 #[test]
