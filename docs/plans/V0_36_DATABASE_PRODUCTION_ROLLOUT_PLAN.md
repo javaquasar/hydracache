@@ -189,6 +189,13 @@ new cached query in production.
 
 ## 4. Freshness Budgets For Stale And Refresh Policies
 
+Status: implemented. `docs/POLICY_GUIDE.md` now includes a freshness-budget
+decision table for negative caching, read-mostly refresh-ahead,
+stale-while-revalidate, stale-on-loader-error, security-sensitive reads, and
+explicit-invalidation reference data. `docs/OBSERVABILITY_CONTRACT.md`
+describes the metrics and incident signals for refresh and stale behavior, and
+policy-guide tests encode the intended TTL/stale shapes.
+
 ### Problem
 
 Stale-on-loader-error and refresh-ahead are production features only when teams
@@ -214,9 +221,9 @@ Document and test freshness budget patterns:
 
 ### Acceptance Criteria
 
-- Docs include a freshness decision table.
-- Tests prove each policy shape encodes the intended TTL/stale behavior.
-- Observability docs explain how to spot stale fallback and refresh activity.
+- [x] Docs include a freshness decision table.
+- [x] Tests prove each policy shape encodes the intended TTL/stale behavior.
+- [x] Observability docs explain how to spot stale fallback and refresh activity.
 
 ## 5. Adapter Runtime Matrix
 

@@ -21,6 +21,8 @@ HydraCache database caching is production-candidate when all of these are true:
   invalidation model;
 - the freshness model is explicit: short TTL, read-mostly TTL, negative-cache
   TTL, stale policy, or explicit invalidation only;
+- stale and refresh policies have a documented freshness budget from
+  [`docs/POLICY_GUIDE.md`](POLICY_GUIDE.md#freshness-budget-decision-table);
 - every write path invalidates affected keys or tags after a successful commit;
 - writes outside the service have an external invalidation path;
 - operators can observe hits, misses, loader executions, invalidations,

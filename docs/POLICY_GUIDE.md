@@ -28,6 +28,52 @@ Tags help invalidate values, but they are not a substitute for a unique key.
 | Reference/config data | `no_ttl_explicit_invalidation()` | stable config key | config group tags | Use only with reliable invalidation |
 | Fragile upstream | `read_mostly()` plus refresh policy | entity or query key | entity/list tags | `stale_on_loader_error` can protect availability |
 
+## Freshness Budget Decision Table
+
+Freshness policy is a production SLO decision, not only a cache tuning choice.
+Every stale or refresh option should name the maximum age the service can
+tolerate and the metric that proves the behavior is visible.
+
+| Scenario | Policy shape | Maximum stale budget | Do not use when | Operational signal |
+| --- | --- | --- | --- | --- |
+| Missing row / optional absence | `negative_cache()` | TTL only, normally 30 seconds or less | New rows must appear immediately | repeated misses stop hitting the loader; no stale fallback events expected |
+| Read-mostly catalog/reference data | `read_mostly()` plus `refresh_ahead` and optional `stale_while_revalidate` | bounded by explicit stale window | writes are frequent or invalidation is unreliable | refresh loads may happen before expiry; hit ratio should stay stable |
+| Fragile upstream or degraded DB path | `read_mostly()` plus `stale_on_loader_error` | bounded by explicit stale-on-error window | stale data is worse than an error | loader failures increase while stale values keep serving |
+| Security-sensitive permission/read | `short_lived()` with no stale policy | none | permission state can tolerate eventual consistency | loader errors surface instead of stale fallback |
+| Explicit-invalidation reference data | `no_ttl_explicit_invalidation()` | none from TTL; bounded only by invalidation discipline | external writers cannot publish invalidation | low misses after warmup; invalidation count follows writes |
+
+Examples:
+
+```rust
+use std::time::Duration;
+
+use hydracache_db::{QueryCachePolicy, RefreshPolicy};
+
+let negative = QueryCachePolicy::negative_cache()
+    .for_entity("user", 404)
+    .collection_tag("users");
+
+assert_eq!(negative.ttl_value(), Some(Duration::from_secs(30)));
+assert_eq!(negative.refresh_policy_value(), None);
+
+let catalog = QueryCachePolicy::read_mostly()
+    .for_entity("product", 7)
+    .collection_tag("products")
+    .refresh_policy(
+        RefreshPolicy::new()
+            .refresh_ahead(Duration::from_secs(30))
+            .stale_while_revalidate(Duration::from_secs(300)),
+    );
+
+assert!(catalog.refresh_policy_value().is_some());
+
+let permission = QueryCachePolicy::short_lived()
+    .key("tenant:7:permission:principal=42:resource=document%3A99:action=read")
+    .tag("principal:42");
+
+assert_eq!(permission.refresh_policy_value(), None);
+```
+
 ## Entity By Id
 
 Use entity metadata when the cached result is naturally owned by one row or

@@ -386,6 +386,53 @@ fn negative_and_explicit_invalidation_policies_encode_different_freshness_intent
 }
 
 #[test]
+fn freshness_budget_policy_shapes_encode_production_intent() {
+    let negative = QueryCachePolicy::negative_cache()
+        .for_entity("user", 404)
+        .collection_tag("users");
+    assert_eq!(negative.ttl_value(), Some(Duration::from_secs(30)));
+    assert_eq!(negative.refresh_policy_value(), None);
+
+    let fragile_refresh = RefreshPolicy::new().stale_on_loader_error(Duration::from_secs(120));
+    let fragile_upstream = QueryCachePolicy::read_mostly()
+        .for_entity("profile", 42)
+        .refresh_policy(fragile_refresh);
+    assert_eq!(fragile_upstream.ttl_value(), Some(Duration::from_secs(300)));
+    assert_eq!(
+        fragile_upstream.refresh_policy_value(),
+        Some(fragile_refresh)
+    );
+
+    let catalog_refresh = RefreshPolicy::new()
+        .refresh_ahead(Duration::from_secs(30))
+        .stale_while_revalidate(Duration::from_secs(300));
+    let read_mostly_catalog = QueryCachePolicy::read_mostly()
+        .for_entity("product", 7)
+        .collection_tag("products")
+        .refresh_policy(catalog_refresh);
+    assert_eq!(
+        read_mostly_catalog.refresh_policy_value(),
+        Some(catalog_refresh)
+    );
+
+    let security_sensitive = QueryCachePolicy::short_lived()
+        .key_builder(
+            CacheKeyBuilder::new()
+                .tenant(7)
+                .segment("permission")
+                .segment("principal=42")
+                .segment("resource=document:99")
+                .segment("action=read"),
+        )
+        .tag("principal:42");
+    assert_eq!(
+        security_sensitive.ttl_value(),
+        Some(Duration::from_secs(30))
+    );
+    assert_eq!(security_sensitive.refresh_policy_value(), None);
+}
+
+#[test]
 fn fragile_upstream_policy_has_bounded_stale_on_loader_error() {
     let refresh = RefreshPolicy::new().stale_on_loader_error(Duration::from_secs(300));
     let policy = QueryCachePolicy::read_mostly()

@@ -128,6 +128,26 @@ because the database loader was attempted. Pair that counter with application
 logs from the database client or repository so stale fallback is treated as an
 availability signal, not as a hidden success.
 
+## Freshness And Incident Signals
+
+Refresh and stale policies should have service-level budgets attached to them:
+
+- `refresh_ahead` can increase `loads` before the visible TTL expires. During a
+  healthy warm cache, hit ratio should remain stable while loader executions
+  happen ahead of expiry for hot keys.
+- `stale_while_revalidate` should be visible as background loader activity
+  after entries become eligible for refresh. A stale value served during this
+  window is acceptable only inside the documented freshness budget.
+- `stale_on_loader_error` should coincide with repository/database loader error
+  logs. Treat it as an incident-availability signal: users are getting a value,
+  but the loader path is failing.
+- Security-sensitive reads should not enable stale fallback unless the service
+  explicitly accepts eventual consistency. For those paths, loader errors should
+  surface instead of being hidden behind stale values.
+- `stale_load_discards` indicates invalidation won a race against an in-flight
+  load. That is a safety signal, but recurring discards can point to hot write
+  paths or over-broad tags.
+
 The sandbox DB routes expose these concepts through user-load and
 ORM-comparison responses:
 
