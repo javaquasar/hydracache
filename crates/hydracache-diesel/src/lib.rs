@@ -464,6 +464,79 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn diesel_transaction_commit_then_invalidate_and_rollback_keeps_cached_value() {
+        let connection = sqlite_users();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = DieselCache::new(HydraCache::local().build(), "diesel");
+
+        let first = queries
+            .for_entity::<User>(42)
+            .diesel_one(diesel_user_loader(connection.clone(), calls.clone(), 42))
+            .await
+            .unwrap();
+        assert_eq!(first.name, "Ada");
+
+        {
+            let mut connection = connection.lock().expect("sqlite connection poisoned");
+            diesel::sql_query("begin transaction")
+                .execute(&mut *connection)
+                .unwrap();
+            diesel::sql_query("update users set name = 'RolledBack' where id = 42")
+                .execute(&mut *connection)
+                .unwrap();
+            diesel::sql_query("rollback")
+                .execute(&mut *connection)
+                .unwrap();
+        }
+
+        let after_rollback = queries
+            .for_entity::<User>(42)
+            .diesel_one(diesel_user_loader(connection.clone(), calls.clone(), 42))
+            .await
+            .unwrap();
+        assert_eq!(after_rollback.name, "Ada");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        {
+            let mut connection = connection.lock().expect("sqlite connection poisoned");
+            diesel::sql_query("begin transaction")
+                .execute(&mut *connection)
+                .unwrap();
+            diesel::sql_query("update users set name = 'Committed' where id = 42")
+                .execute(&mut *connection)
+                .unwrap();
+            diesel::sql_query("commit")
+                .execute(&mut *connection)
+                .unwrap();
+        }
+
+        assert_eq!(
+            queries
+                .cache()
+                .invalidate_tag("diesel-user:42")
+                .await
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            queries
+                .cache()
+                .invalidate_tag("diesel-users")
+                .await
+                .unwrap(),
+            0
+        );
+
+        let reloaded = queries
+            .for_entity::<User>(42)
+            .diesel_one(diesel_user_loader(connection, calls.clone(), 42))
+            .await
+            .unwrap();
+        assert_eq!(reloaded.name, "Committed");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
     async fn diesel_all_caches_collection_results() {
         let connection = sqlite_users();
         let calls = Arc::new(AtomicUsize::new(0));

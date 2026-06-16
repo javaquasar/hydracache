@@ -28,3 +28,7 @@ assert_eq!(value, "Ada");
 cache miss. Use `sea_optional` for ordinary SeaORM
 `Entity::find_by_id(id).one(&db).await` calls, and use `sea_all` for
 `Entity::find().all(&db).await` collection queries.
+
+Keep SeaORM transactions in application code. Invalidate entity and collection
+tags only after `commit()` succeeds. A rollback path should not invalidate
+because existing cached values still describe the last committed database state.

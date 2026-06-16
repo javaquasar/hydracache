@@ -152,7 +152,7 @@ mod tests {
     use sea_orm::entity::prelude::*;
     use sea_orm::{
         ColumnTrait, ConnectionTrait, Database, DatabaseBackend, EntityTrait, QueryFilter,
-        QueryOrder, Set,
+        QueryOrder, Set, TransactionTrait,
     };
     use serde::{Deserialize, Serialize};
 
@@ -534,6 +534,85 @@ mod tests {
         assert_eq!(first.name, "Ada");
         assert_eq!(cached.name, "Ada");
         assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn seaorm_transaction_commit_then_invalidate_and_rollback_keeps_cached_value() {
+        let db = sqlite_users().await;
+        let calls = Arc::new(AtomicUsize::new(0));
+        let queries = SeaOrmCache::new(HydraCache::local().build(), "seaorm");
+
+        let load_user = || {
+            let db = db.clone();
+            let calls = calls.clone();
+            move || async move {
+                calls.fetch_add(1, Ordering::SeqCst);
+                user::Entity::find_by_id(42).one(&db).await
+            }
+        };
+
+        let first = queries
+            .for_entity::<user::Model>(42)
+            .sea_optional(load_user())
+            .await
+            .unwrap()
+            .expect("seeded user should exist");
+        assert_eq!(first.name, "Ada");
+
+        let rollback_tx = db.begin().await.unwrap();
+        user::Entity::update(user::ActiveModel {
+            id: Set(42),
+            name: Set("RolledBack".to_owned()),
+        })
+        .exec(&rollback_tx)
+        .await
+        .unwrap();
+        rollback_tx.rollback().await.unwrap();
+
+        let after_rollback = queries
+            .for_entity::<user::Model>(42)
+            .sea_optional(load_user())
+            .await
+            .unwrap()
+            .expect("cached user should still exist");
+        assert_eq!(after_rollback.name, "Ada");
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+
+        let commit_tx = db.begin().await.unwrap();
+        user::Entity::update(user::ActiveModel {
+            id: Set(42),
+            name: Set("Committed".to_owned()),
+        })
+        .exec(&commit_tx)
+        .await
+        .unwrap();
+        commit_tx.commit().await.unwrap();
+
+        assert_eq!(
+            queries
+                .cache()
+                .invalidate_tag("seaorm-user:42")
+                .await
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            queries
+                .cache()
+                .invalidate_tag("seaorm-users")
+                .await
+                .unwrap(),
+            0
+        );
+
+        let reloaded = queries
+            .for_entity::<user::Model>(42)
+            .sea_optional(load_user())
+            .await
+            .unwrap()
+            .expect("reloaded user should exist");
+        assert_eq!(reloaded.name, "Committed");
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
     }
 
     #[tokio::test]
