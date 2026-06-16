@@ -50,6 +50,13 @@ pub fn derive_hydracache_entity(input: TokenStream) -> TokenStream {
 ///     refresh_ahead_secs = 10,
 ///     stale_while_revalidate_secs = 300,
 /// );
+///
+/// let search = query_cache_policy!(
+///     name = "search-users",
+///     key_segments = ["tenant", tenant_id, "q", query, "page", page],
+///     tag_segments = [["tenant", tenant_id], ["users"]],
+///     ttl_secs = 30,
+/// );
 /// ```
 #[proc_macro]
 pub fn query_cache_policy(input: TokenStream) -> TokenStream {

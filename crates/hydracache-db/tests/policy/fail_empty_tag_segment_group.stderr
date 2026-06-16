@@ -1,0 +1,13 @@
+error: query_cache_policy segment list cannot be empty
+ --> tests/policy/fail_empty_tag_segment_group.rs:4:19
+  |
+4 |       let _policy = query_cache_policy!(
+  |  ___________________^
+5 | |         key = "users",
+6 | |         tag_segments = [
+7 | |             [],
+8 | |         ],
+9 | |     );
+  | |_____^
+  |
+  = note: this error originates in the macro `query_cache_policy` (in Nightly builds, run with -Z macro-backtrace for more info)

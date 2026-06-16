@@ -1,4 +1,4 @@
-error: query_cache_policy accepts only one key source: key, collection, or entity + id
+error: query_cache_policy accepts only one key source: key, key_segments, collection, or entity + id
  --> tests/policy/fail_conflicting_key_sources.rs:4:19
   |
 4 |       let _policy = query_cache_policy!(

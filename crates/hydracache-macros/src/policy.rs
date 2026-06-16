@@ -3,7 +3,7 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{Expr, Ident, Token, Type};
 
-use crate::paths::{query_cache_policy_path, refresh_policy_path};
+use crate::paths::{cache_key_builder_path, query_cache_policy_path, refresh_policy_path};
 
 pub(crate) fn expand(input: TokenStream2) -> syn::Result<TokenStream2> {
     let config: PolicyConfig = syn::parse2(input)?;
@@ -16,6 +16,7 @@ struct PolicyConfig {
     preset: Option<Ident>,
     name: Option<Expr>,
     key: Option<Expr>,
+    key_segments: Option<SegmentList>,
     collection: Option<Expr>,
     entity: Option<Type>,
     id: Option<Expr>,
@@ -25,6 +26,7 @@ struct PolicyConfig {
     stale_while_revalidate_secs: Option<Expr>,
     stale_on_loader_error_secs: Option<Expr>,
     tags: Vec<Expr>,
+    tag_segments: Vec<SegmentList>,
     collection_tags: Vec<Expr>,
 }
 
@@ -40,6 +42,9 @@ impl Parse for PolicyConfig {
                 "preset" => parse_unique_ident(input, &mut config.preset, &option)?,
                 "name" => parse_unique_expr(input, &mut config.name, &option)?,
                 "key" => parse_unique_expr(input, &mut config.key, &option)?,
+                "key_segments" => {
+                    parse_unique_segment_list(input, &mut config.key_segments, &option)?
+                }
                 "collection" => parse_unique_expr(input, &mut config.collection, &option)?,
                 "entity" => parse_unique_type(input, &mut config.entity, &option)?,
                 "id" => parse_unique_expr(input, &mut config.id, &option)?,
@@ -55,6 +60,11 @@ impl Parse for PolicyConfig {
                     parse_unique_expr(input, &mut config.stale_on_loader_error_secs, &option)?
                 }
                 "tag" => config.tags.push(input.parse()?),
+                "tag_segments" => {
+                    config
+                        .tag_segments
+                        .extend(input.parse::<SegmentGroups>()?.groups);
+                }
                 "collection_tag" => config.collection_tags.push(input.parse()?),
                 _ => {
                     return Err(syn::Error::new(
@@ -95,6 +105,7 @@ impl PolicyConfig {
 
         let key_sources = [
             self.key.is_some(),
+            self.key_segments.is_some(),
             self.collection.is_some(),
             self.entity.is_some(),
         ]
@@ -105,14 +116,14 @@ impl PolicyConfig {
         if key_sources == 0 {
             return Err(syn::Error::new(
                 proc_macro2::Span::call_site(),
-                "query_cache_policy requires one key source: key, collection, or entity + id",
+                "query_cache_policy requires one key source: key, key_segments, collection, or entity + id",
             ));
         }
 
         if key_sources > 1 {
             return Err(syn::Error::new(
                 proc_macro2::Span::call_site(),
-                "query_cache_policy accepts only one key source: key, collection, or entity + id",
+                "query_cache_policy accepts only one key source: key, key_segments, collection, or entity + id",
             ));
         }
 
@@ -138,6 +149,7 @@ impl PolicyConfig {
     fn expand(&self) -> TokenStream2 {
         let policy_path = query_cache_policy_path();
         let refresh_path = refresh_policy_path();
+        let key_builder_path = cache_key_builder_path();
         let base = match &self.preset {
             Some(preset) => {
                 let preset_call = preset_call(preset);
@@ -156,6 +168,9 @@ impl PolicyConfig {
 
         let key_source = if let Some(key) = &self.key {
             quote!(.key(#key))
+        } else if let Some(key_segments) = &self.key_segments {
+            let key_builder = segment_builder_tokens(&key_builder_path, &key_segments.segments);
+            quote!(.key_builder(#key_builder))
         } else if let Some(collection) = &self.collection {
             quote!(.collection(#collection))
         } else {
@@ -165,6 +180,10 @@ impl PolicyConfig {
         };
 
         let tags = self.tags.iter().map(|tag| quote!(.tag(#tag)));
+        let segment_tags = self.tag_segments.iter().map(|tag_segments| {
+            let tag_builder = segment_builder_tokens(&key_builder_path, &tag_segments.segments);
+            quote!(.tag(#tag_builder.build_string()))
+        });
         let collection_tags = self
             .collection_tags
             .iter()
@@ -181,6 +200,7 @@ impl PolicyConfig {
                 #preset_name
                 #key_source
                 #(#tags)*
+                #(#segment_tags)*
                 #(#collection_tags)*
                 #ttl
                 #ttl_secs
@@ -218,9 +238,104 @@ impl PolicyConfig {
     }
 }
 
+struct SegmentList {
+    segments: Vec<Expr>,
+}
+
+impl Parse for SegmentList {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let content;
+        syn::bracketed!(content in input);
+        let segments =
+            parse_segment_exprs(&content, "query_cache_policy segment list cannot be empty")?;
+
+        Ok(Self { segments })
+    }
+}
+
+struct SegmentGroups {
+    groups: Vec<SegmentList>,
+}
+
+impl Parse for SegmentGroups {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let content;
+        syn::bracketed!(content in input);
+
+        if content.is_empty() {
+            return Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "query_cache_policy tag_segments requires at least one segment group",
+            ));
+        }
+
+        let mut groups = Vec::new();
+        while !content.is_empty() {
+            if !content.peek(syn::token::Bracket) {
+                return Err(content.error(
+                    "query_cache_policy tag_segments expects nested segment groups like [[...], [...]]",
+                ));
+            }
+
+            groups.push(content.parse()?);
+
+            if content.peek(Token![,]) {
+                content.parse::<Token![,]>()?;
+            } else if !content.is_empty() {
+                return Err(content.error(
+                    "query_cache_policy tag_segments expects comma-separated segment groups",
+                ));
+            }
+        }
+
+        Ok(Self { groups })
+    }
+}
+
+fn parse_segment_exprs(input: ParseStream<'_>, empty_message: &str) -> syn::Result<Vec<Expr>> {
+    let mut segments = Vec::new();
+
+    while !input.is_empty() {
+        segments.push(input.parse()?);
+
+        if input.peek(Token![,]) {
+            input.parse::<Token![,]>()?;
+        } else if !input.is_empty() {
+            return Err(
+                input.error("query_cache_policy segment list expects comma-separated expressions")
+            );
+        }
+    }
+
+    if segments.is_empty() {
+        Err(syn::Error::new(
+            proc_macro2::Span::call_site(),
+            empty_message,
+        ))
+    } else {
+        Ok(segments)
+    }
+}
+
+fn segment_builder_tokens(builder_path: &TokenStream2, segments: &[Expr]) -> TokenStream2 {
+    let segments = segments.iter().map(|segment| quote!(.segment(#segment)));
+
+    quote!(#builder_path::new()#(#segments)*)
+}
+
 fn parse_unique_ident(
     input: ParseStream<'_>,
     current: &mut Option<Ident>,
+    option: &Ident,
+) -> syn::Result<()> {
+    reject_duplicate(current, option)?;
+    *current = Some(input.parse()?);
+    Ok(())
+}
+
+fn parse_unique_segment_list(
+    input: ParseStream<'_>,
+    current: &mut Option<SegmentList>,
     option: &Ident,
 ) -> syn::Result<()> {
     reject_duplicate(current, option)?;
@@ -337,6 +452,24 @@ mod tests {
     }
 
     #[test]
+    fn expands_segmented_key_and_tags() {
+        let output = expand_to_string(quote! {
+            name = "search-users",
+            key_segments = ["tenant", tenant_id, "q", query, "page", page],
+            tag_segments = [["tenant", tenant_id], ["users"]],
+            ttl_secs = 30,
+        });
+
+        assert!(output.contains("CacheKeyBuilder :: new"));
+        assert!(output.contains(". key_builder"));
+        assert!(output.contains(". segment (\"tenant\")"));
+        assert!(output.contains(". segment (tenant_id)"));
+        assert!(output.contains(". tag"));
+        assert!(output.contains(". build_string"));
+        assert!(output.contains("Duration :: from_secs (30)"));
+    }
+
+    #[test]
     fn expands_collection_policy() {
         let output = expand_to_string(quote! {
             collection = "users",
@@ -354,7 +487,7 @@ mod tests {
 
     #[test]
     fn rejects_conflicting_key_sources() {
-        let error = expand(quote!(key = "user:1", collection = "users")).unwrap_err();
+        let error = expand(quote!(key = "user:1", key_segments = ["user", 1])).unwrap_err();
 
         assert!(error.to_string().contains("accepts only one key source"));
     }
@@ -428,5 +561,25 @@ mod tests {
         assert!(error
             .to_string()
             .contains("preset cannot be combined with ttl or ttl_secs"));
+    }
+
+    #[test]
+    fn rejects_empty_key_segments() {
+        let error = expand(quote!(key_segments = [])).unwrap_err();
+
+        assert!(error.to_string().contains("segment list cannot be empty"));
+    }
+
+    #[test]
+    fn rejects_flat_tag_segments() {
+        let error = expand(quote! {
+            key = "users",
+            tag_segments = ["tenant", tenant_id],
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("tag_segments expects nested segment groups"));
     }
 }

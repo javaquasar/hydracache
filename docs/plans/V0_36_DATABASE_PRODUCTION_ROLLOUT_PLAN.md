@@ -426,6 +426,12 @@ The macro should remain declarative. It should produce the same
 
 ### 7.3 Safe Key And Tag Segment DSL
 
+Status: implemented. `query_cache_policy!` now accepts `key_segments = [...]`
+for escaped logical keys and `tag_segments = [[...], [...]]` for escaped
+dimension tags. Both paths build through `CacheKeyBuilder`; `key`,
+`key_segments`, `collection`, and `entity + id` remain mutually exclusive key
+sources.
+
 #### Current Shape
 
 For list/search queries, the safest current approach is explicit but verbose:
@@ -504,12 +510,12 @@ The macro should build through the same escaping rules as `CacheKeyBuilder` and
 
 #### Acceptance Criteria
 
-- `key_segments = [...]` generates a physical key through `CacheKeyBuilder`.
-- `tag_segments = [[...], [...]]` generates tags through the same segment
+- [x] `key_segments = [...]` generates a physical key through `CacheKeyBuilder`.
+- [x] `tag_segments = [[...], [...]]` generates tags through the same segment
   escaping rules.
-- The macro rejects `key` plus `key_segments` conflicts.
-- The macro rejects malformed segment groups with clear compile diagnostics.
-- Tests cover tenant, permission, filter, pagination, sort, locale, region,
+- [x] The macro rejects `key` plus `key_segments` conflicts.
+- [x] The macro rejects malformed segment groups with clear compile diagnostics.
+- [x] Tests cover tenant, permission, filter, pagination, sort, locale, region,
   feature flag, and time-window examples.
 
 ### 7.4 Prepared Policy Macro

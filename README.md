@@ -1675,6 +1675,57 @@ let user = queries
     .await?;
 ```
 
+For list or search queries, segment keys keep all result-shaping dimensions
+visible without hand-built strings. Before v0.36, this meant explicit builder
+boilerplate:
+
+```rust
+use hydracache::CacheKeyBuilder;
+use hydracache_db::query_cache_policy;
+
+let key = CacheKeyBuilder::new()
+    .segment("tenant")
+    .segment(tenant_id)
+    .segment("permission")
+    .segment(permission_hash)
+    .segment("q")
+    .segment(query)
+    .segment("page")
+    .segment(page)
+    .segment("sort")
+    .segment(sort)
+    .build_string();
+
+let policy = query_cache_policy!(
+    name = "search-users",
+    key = key,
+    collection_tag = "users",
+    ttl_secs = 30,
+);
+```
+
+The macro can now build escaped keys and tags directly from dimensions:
+
+```rust
+use hydracache_db::query_cache_policy;
+
+let policy = query_cache_policy!(
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "q", query,
+        "page", page,
+        "sort", sort,
+    ],
+    tag_segments = [
+        ["tenant", tenant_id],
+        ["users"],
+    ],
+    ttl_secs = 30,
+);
+```
+
 `hydracache-sqlx` includes a Postgres integration test backed by
 testcontainers and a real SQLite in-memory integration test for prepared query
 policies. When Docker is available, the Postgres test verifies cache hits, tag

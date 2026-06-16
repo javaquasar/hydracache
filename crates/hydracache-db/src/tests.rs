@@ -186,6 +186,99 @@ fn query_cache_policy_macro_encodes_preset_and_freshness_budget() {
     assert_eq!(generated.refresh_policy_value(), Some(refresh));
 }
 
+#[test]
+fn query_cache_policy_macro_builds_segmented_keys_and_tags() {
+    let tenant_id = 7_u64;
+    let permission_hash = "perm:read%v2";
+    let query = "ada:lovelace";
+    let page = 2_u32;
+    let sort = "name:asc";
+    let locale = "en-US";
+    let region = "eu:west";
+    let feature_flag = "beta%search";
+    let window_start = "2026-06-16T00:00:00Z";
+    let window_end = "2026-06-16T01:00:00Z";
+
+    let generated = query_cache_policy!(
+        name = "search-users",
+        key_segments = [
+            "tenant",
+            tenant_id,
+            "permission",
+            permission_hash,
+            "q",
+            query,
+            "page",
+            page,
+            "sort",
+            sort,
+            "locale",
+            locale,
+            "region",
+            region,
+            "feature",
+            feature_flag,
+            "window",
+            window_start,
+            window_end,
+        ],
+        tag_segments = [
+            ["tenant", tenant_id],
+            ["permission", permission_hash],
+            ["users"],
+            ["region", region],
+            ["feature", feature_flag],
+        ],
+        ttl_secs = 30,
+    );
+
+    let expected_key = CacheKeyBuilder::new()
+        .segment("tenant")
+        .segment(tenant_id)
+        .segment("permission")
+        .segment(permission_hash)
+        .segment("q")
+        .segment(query)
+        .segment("page")
+        .segment(page)
+        .segment("sort")
+        .segment(sort)
+        .segment("locale")
+        .segment(locale)
+        .segment("region")
+        .segment(region)
+        .segment("feature")
+        .segment(feature_flag)
+        .segment("window")
+        .segment(window_start)
+        .segment(window_end)
+        .build_string();
+    let expected_tags = [
+        CacheKeyBuilder::new()
+            .segment("tenant")
+            .segment(tenant_id)
+            .build_string(),
+        CacheKeyBuilder::new()
+            .segment("permission")
+            .segment(permission_hash)
+            .build_string(),
+        CacheKeyBuilder::new().segment("users").build_string(),
+        CacheKeyBuilder::new()
+            .segment("region")
+            .segment(region)
+            .build_string(),
+        CacheKeyBuilder::new()
+            .segment("feature")
+            .segment(feature_flag)
+            .build_string(),
+    ];
+
+    assert_eq!(generated.name(), Some("search-users"));
+    assert_eq!(generated.key_value(), Some(expected_key.as_str()));
+    assert_eq!(generated.tags_value(), expected_tags.as_slice());
+    assert_eq!(generated.ttl_value(), Some(Duration::from_secs(30)));
+}
+
 #[tokio::test]
 async fn prepared_query_policy_preserves_refresh_policy_when_binding_id() {
     let refresh = RefreshPolicy::new().stale_on_loader_error(Duration::from_secs(120));

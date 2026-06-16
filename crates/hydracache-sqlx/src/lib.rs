@@ -94,9 +94,9 @@ mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbOperationContext,
-    DbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy,
-    QueryCachePolicy, RefreshPolicy, Result as DbResult,
+    query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind, DbCache, DbCacheError,
+    DbOperationContext, DbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery,
+    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 
@@ -119,7 +119,8 @@ mod tests {
     use sqlx::postgres::PgPoolOptions;
 
     use crate::{
-        DbCache, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, SqlxCache, SqlxQueryExt,
+        query_cache_policy, CacheKeyBuilder, DbCache, PreparedQueryPolicy, QueryCachePolicy,
+        RefreshPolicy, SqlxCache, SqlxQueryExt,
     };
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -158,6 +159,29 @@ mod tests {
         assert_eq!(query.physical_key(), Some("db:user:1".to_owned()));
         assert_eq!(query.tags_value(), &["user:1".to_owned()]);
         assert_eq!(query.refresh_policy_value(), Some(refresh));
+    }
+
+    #[test]
+    fn query_policy_segment_macro_reexport_uses_sqlx_crate_paths() {
+        let policy = query_cache_policy!(
+            name = "search-users",
+            key_segments = ["tenant", 7_u64, "q", "ada:lovelace"],
+            tag_segments = [["tenant", 7_u64], ["users"]],
+            ttl_secs = 30,
+        );
+        let expected_key = CacheKeyBuilder::new()
+            .segment("tenant")
+            .segment(7_u64)
+            .segment("q")
+            .segment("ada:lovelace")
+            .build_string();
+
+        assert_eq!(policy.name(), Some("search-users"));
+        assert_eq!(policy.key_value(), Some(expected_key.as_str()));
+        assert_eq!(
+            policy.tags_value(),
+            &["tenant:7".to_owned(), "users".to_owned()]
+        );
     }
 
     #[tokio::test]

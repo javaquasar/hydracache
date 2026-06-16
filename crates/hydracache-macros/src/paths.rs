@@ -14,6 +14,10 @@ pub(crate) fn refresh_policy_path() -> TokenStream2 {
     resolve_database_exported_type_path("RefreshPolicy")
 }
 
+pub(crate) fn cache_key_builder_path() -> TokenStream2 {
+    resolve_database_exported_type_path("CacheKeyBuilder")
+}
+
 pub(crate) fn cache_options_path() -> TokenStream2 {
     resolve_runtime_type_path(crate_name("hydracache").ok(), "CacheOptions")
 }
@@ -125,6 +129,10 @@ mod tests {
         assert_eq!(
             refresh_policy_path().to_string(),
             ":: hydracache_db :: RefreshPolicy"
+        );
+        assert_eq!(
+            cache_key_builder_path().to_string(),
+            ":: hydracache_db :: CacheKeyBuilder"
         );
     }
 

@@ -42,9 +42,9 @@ use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbOperationContext,
-    DbQuery as GenericDbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery,
-    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
+    query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind, DbCache, DbCacheError,
+    DbOperationContext, DbQuery as GenericDbQuery, DbResultShape, HydraCacheEntity,
+    PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 
 /// SeaORM-specific compatibility name for [`DbCache`].
@@ -157,8 +157,8 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     use super::{
-        query_cache_policy, CacheEntity, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy,
-        RefreshPolicy, SeaOrmCache, SeaOrmQueryExt,
+        query_cache_policy, CacheEntity, CacheKeyBuilder, HydraCacheEntity, PreparedQueryPolicy,
+        QueryCachePolicy, RefreshPolicy, SeaOrmCache, SeaOrmQueryExt,
     };
 
     mod user {
@@ -805,5 +805,24 @@ mod tests {
             .refresh_policy(refresh);
         assert_eq!(manual.key_value(), Some("seaorm-user:42"));
         assert_eq!(manual.refresh_policy_value(), Some(refresh));
+
+        let segmented = query_cache_policy!(
+            name = "search-seaorm-users",
+            key_segments = ["tenant", 7_u64, "q", "ada:lovelace"],
+            tag_segments = [["tenant", 7_u64], ["seaorm-users"]],
+            ttl_secs = 30,
+        );
+        let expected_key = CacheKeyBuilder::new()
+            .segment("tenant")
+            .segment(7_u64)
+            .segment("q")
+            .segment("ada:lovelace")
+            .build_string();
+        assert_eq!(segmented.name(), Some("search-seaorm-users"));
+        assert_eq!(segmented.key_value(), Some(expected_key.as_str()));
+        assert_eq!(
+            segmented.tags_value(),
+            &["tenant:7".to_owned(), "seaorm-users".to_owned()]
+        );
     }
 }

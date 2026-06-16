@@ -124,6 +124,19 @@
 //! assert_eq!(policy.name(), Some("load-user"));
 //! assert_eq!(policy.key_value(), Some("user:42"));
 //! assert!(policy.refresh_policy_value().is_some());
+//!
+//! let search = query_cache_policy!(
+//!     name = "search-users",
+//!     key_segments = ["tenant", 7_u64, "q", "ada:lovelace", "page", 1_u32],
+//!     tag_segments = [["tenant", 7_u64], ["users"]],
+//!     ttl_secs = 30,
+//! );
+//!
+//! assert_eq!(
+//!     search.key_value(),
+//!     Some("tenant:7:q:ada%3Alovelace:page:1")
+//! );
+//! assert_eq!(search.tags_value(), &["tenant:7".to_owned(), "users".to_owned()]);
 //! ```
 
 extern crate self as hydracache_db;
@@ -136,6 +149,7 @@ mod query;
 
 pub use entity::CacheEntity;
 pub use error::{DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape, Result};
+pub use hydracache::CacheKeyBuilder;
 pub use hydracache_macros::{query_cache_policy, HydraCacheEntity};
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
