@@ -130,7 +130,7 @@ mod prepared;
 mod query;
 
 pub use entity::CacheEntity;
-pub use error::{DbCacheError, Result};
+pub use error::{DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape, Result};
 pub use hydracache_macros::{query_cache_policy, HydraCacheEntity};
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;

@@ -43,9 +43,9 @@ use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, DbCache, DbCacheError, DbQuery as GenericDbQuery,
-    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
-    Result as DbResult,
+    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbOperationContext,
+    DbQuery as GenericDbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery,
+    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 
 /// Diesel-specific compatibility name for [`DbCache`].
@@ -117,7 +117,8 @@ where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> diesel::QueryResult<T> + Send + 'static,
     {
-        self.fetch_value_with(move || async move { run_blocking(loader).await })
+        self.adapter_context(DbAdapterKind::Diesel, DbResultShape::One)
+            .fetch_value_with(move || async move { run_blocking(loader).await })
             .await
             .map_err(Into::into)
     }
@@ -127,15 +128,16 @@ where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> diesel::QueryResult<T> + Send + 'static,
     {
-        self.fetch_value_with(move || async move {
-            match run_blocking(loader).await {
-                Ok(value) => Ok(Some(value)),
-                Err(DieselLoaderError::Query(DieselError::NotFound)) => Ok(None),
-                Err(error) => Err(error),
-            }
-        })
-        .await
-        .map_err(Into::into)
+        self.adapter_context(DbAdapterKind::Diesel, DbResultShape::Optional)
+            .fetch_value_with(move || async move {
+                match run_blocking(loader).await {
+                    Ok(value) => Ok(Some(value)),
+                    Err(DieselLoaderError::Query(DieselError::NotFound)) => Ok(None),
+                    Err(error) => Err(error),
+                }
+            })
+            .await
+            .map_err(Into::into)
     }
 
     async fn diesel_all<F>(self, loader: F) -> Result<Vec<T>>
@@ -143,7 +145,8 @@ where
         T: Serialize + DeserializeOwned + Send + 'static,
         F: FnOnce() -> diesel::QueryResult<Vec<T>> + Send + 'static,
     {
-        self.fetch_value_with(move || async move { run_blocking(loader).await })
+        self.adapter_context(DbAdapterKind::Diesel, DbResultShape::All)
+            .fetch_value_with(move || async move { run_blocking(loader).await })
             .await
             .map_err(Into::into)
     }
@@ -304,6 +307,8 @@ mod tests {
 
         let error = result.expect_err("query without a key should fail");
         assert!(error.to_string().contains("missing an explicit cache key"));
+        assert!(error.to_string().contains("adapter=diesel"));
+        assert!(error.to_string().contains("result_shape=one"));
         assert_eq!(calls.load(Ordering::SeqCst), 0);
     }
 
@@ -322,7 +327,11 @@ mod tests {
                 }
             })
             .await;
-        assert!(failed.is_err());
+        let error = failed.expect_err("loader error should include adapter context");
+        let message = error.to_string();
+        assert!(message.contains("adapter=diesel"));
+        assert!(message.contains("key=diesel:diesel-user:500"));
+        assert!(message.contains("result_shape=one"));
         assert_eq!(calls.load(Ordering::SeqCst), 1);
 
         let recovered = queries

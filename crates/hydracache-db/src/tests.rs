@@ -6,8 +6,8 @@ use hydracache::{CacheKeyBuilder, HydraCache, TagSet};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    CacheEntity, DbCache, DbCacheError, HydraCacheEntity, PreparedQueryPolicy, QueryCachePolicy,
-    RefreshPolicy,
+    CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbResultShape, HydraCacheEntity,
+    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -57,7 +57,7 @@ async fn fetch_with_requires_explicit_key() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "db:unnamed"
+        Err(DbCacheError::MissingKey { operation, .. }) if operation == "db:unnamed"
     ));
 }
 
@@ -469,7 +469,7 @@ async fn prepared_entity_without_bound_id_reports_missing_key() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "load-user"
+        Err(DbCacheError::MissingKey { operation, .. }) if operation == "load-user"
     ));
 }
 
@@ -920,8 +920,74 @@ async fn missing_key_error_uses_available_context() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "load-profile"
+        Err(DbCacheError::MissingKey { operation, .. }) if operation == "load-profile"
     ));
+}
+
+#[tokio::test]
+async fn missing_key_error_includes_operation_adapter_and_shape_context() {
+    let result: crate::Result<Option<User>> = adapter()
+        .named::<User>("load-profile")
+        .adapter_context(DbAdapterKind::Sqlx, DbResultShape::Optional)
+        .fetch_value_with(|| async { Ok::<_, LoadError>(None) })
+        .await;
+
+    match result.expect_err("query without key should fail") {
+        DbCacheError::MissingKey {
+            operation,
+            adapter,
+            namespace,
+            result_shape,
+        } => {
+            assert_eq!(operation, "load-profile");
+            assert_eq!(adapter, DbAdapterKind::Sqlx);
+            assert_eq!(namespace, "db");
+            assert_eq!(result_shape, DbResultShape::Optional);
+        }
+        other => panic!("expected missing-key error, got {other:?}"),
+    }
+}
+
+#[tokio::test]
+async fn adapter_error_display_contains_operation_context() {
+    let result = adapter()
+        .named::<User>("load-user")
+        .key("user:1")
+        .adapter_context(DbAdapterKind::Generic, DbResultShape::One)
+        .fetch_with(|| async { Err::<User, _>(LoadError) })
+        .await;
+
+    match result.expect_err("loader error should include database cache context") {
+        DbCacheError::Operation {
+            operation,
+            context,
+            source,
+        } => {
+            assert_eq!(operation, "load-user");
+            assert_eq!(context.adapter, DbAdapterKind::Generic);
+            assert_eq!(context.namespace, "db");
+            assert_eq!(context.physical_key.as_deref(), Some("db:user:1"));
+            assert_eq!(context.result_shape, DbResultShape::One);
+            assert!(matches!(source, hydracache::CacheError::Loader(_)));
+        }
+        other => panic!("expected contextual operation error, got {other:?}"),
+    }
+
+    let error = adapter()
+        .named::<User>("load-user")
+        .key("user:1")
+        .adapter_context(DbAdapterKind::Generic, DbResultShape::One)
+        .fetch_with(|| async { Err::<User, _>(LoadError) })
+        .await
+        .expect_err("loader error should include database cache context");
+    let message = error.to_string();
+
+    assert!(message.contains("database cached operation `load-user` failed"));
+    assert!(message.contains("adapter=generic"));
+    assert!(message.contains("namespace=db"));
+    assert!(message.contains("key=db:user:1"));
+    assert!(message.contains("result_shape=one"));
+    assert!(message.contains("cache loader error: load failed"));
 }
 
 #[tokio::test]
@@ -933,7 +999,7 @@ async fn missing_key_error_uses_key_context_for_unnamed_queries() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "unnamed"
+        Err(DbCacheError::MissingKey { operation, .. }) if operation == "unnamed"
     ));
 
     let result = adapter()
@@ -943,7 +1009,7 @@ async fn missing_key_error_uses_key_context_for_unnamed_queries() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "db:unnamed"
+        Err(DbCacheError::MissingKey { operation, .. }) if operation == "db:unnamed"
     ));
 
     let result = DbCache::new(HydraCache::local().build(), "db")
@@ -954,7 +1020,7 @@ async fn missing_key_error_uses_key_context_for_unnamed_queries() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation.is_empty()
+        Err(DbCacheError::MissingKey { operation, .. }) if operation.is_empty()
     ));
 }
 
@@ -1039,7 +1105,7 @@ async fn fetch_value_with_requires_explicit_key() {
 
     assert!(matches!(
         result,
-        Err(DbCacheError::MissingKey { operation }) if operation == "db:unnamed"
+        Err(DbCacheError::MissingKey { operation, .. }) if operation == "db:unnamed"
     ));
 }
 

@@ -92,8 +92,9 @@ mod query_ext;
 
 pub use error::{Result, SqlxCacheError};
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, DbCache, DbCacheError, DbQuery, HydraCacheEntity,
-    PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
+    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbOperationContext,
+    DbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy,
+    QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 pub use query_ext::SqlxQueryExt;
 
@@ -188,7 +189,7 @@ mod tests {
         let error = result.unwrap_err();
         assert_eq!(
             error.to_string(),
-            "database cached operation `db:unnamed` is missing an explicit cache key"
+            "database cached operation `db:unnamed` is missing an explicit cache key (adapter=sqlx, namespace=db, result_shape=one)"
         );
     }
 
@@ -196,12 +197,15 @@ mod tests {
     async fn sqlx_cache_error_wraps_db_cache_errors() {
         let error = hydracache_db::DbCacheError::MissingKey {
             operation: "load-user".to_owned(),
+            adapter: hydracache_db::DbAdapterKind::Sqlx,
+            namespace: "db".to_owned(),
+            result_shape: hydracache_db::DbResultShape::One,
         };
         let error = crate::SqlxCacheError::from(error);
 
         assert_eq!(
             error.to_string(),
-            "database cached operation `load-user` is missing an explicit cache key"
+            "database cached operation `load-user` is missing an explicit cache key (adapter=sqlx, namespace=db, result_shape=one)"
         );
     }
 }

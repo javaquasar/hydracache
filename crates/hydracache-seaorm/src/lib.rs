@@ -42,9 +42,9 @@ use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 
 pub use hydracache_db::{
-    query_cache_policy, CacheEntity, DbCache, DbCacheError, DbQuery as GenericDbQuery,
-    HydraCacheEntity, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
-    Result as DbResult,
+    query_cache_policy, CacheEntity, DbAdapterKind, DbCache, DbCacheError, DbOperationContext,
+    DbQuery as GenericDbQuery, DbResultShape, HydraCacheEntity, PreparedDbQuery,
+    PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy, Result as DbResult,
 };
 
 /// SeaORM-specific compatibility name for [`DbCache`].
@@ -111,7 +111,10 @@ where
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<T, DbErr>> + Send + 'static,
     {
-        self.fetch_value_with(loader).await.map_err(Into::into)
+        self.adapter_context(DbAdapterKind::SeaOrm, DbResultShape::One)
+            .fetch_value_with(loader)
+            .await
+            .map_err(Into::into)
     }
 
     async fn sea_optional<F, Fut>(self, loader: F) -> Result<Option<T>>
@@ -120,7 +123,10 @@ where
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<Option<T>, DbErr>> + Send + 'static,
     {
-        self.fetch_value_with(loader).await.map_err(Into::into)
+        self.adapter_context(DbAdapterKind::SeaOrm, DbResultShape::Optional)
+            .fetch_value_with(loader)
+            .await
+            .map_err(Into::into)
     }
 
     async fn sea_all<F, Fut>(self, loader: F) -> Result<Vec<T>>
@@ -129,7 +135,10 @@ where
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = std::result::Result<Vec<T>, DbErr>> + Send + 'static,
     {
-        self.fetch_value_with(loader).await.map_err(Into::into)
+        self.adapter_context(DbAdapterKind::SeaOrm, DbResultShape::All)
+            .fetch_value_with(loader)
+            .await
+            .map_err(Into::into)
     }
 }
 
@@ -333,6 +342,8 @@ mod tests {
 
         let error = result.expect_err("query without a key should fail");
         assert!(error.to_string().contains("missing an explicit cache key"));
+        assert!(error.to_string().contains("adapter=seaorm"));
+        assert!(error.to_string().contains("result_shape=one"));
         assert_eq!(calls.load(Ordering::SeqCst), 0);
     }
 
@@ -351,7 +362,11 @@ mod tests {
                 }
             })
             .await;
-        assert!(failed.is_err());
+        let error = failed.expect_err("loader error should include adapter context");
+        let message = error.to_string();
+        assert!(message.contains("adapter=seaorm"));
+        assert!(message.contains("key=seaorm:seaorm-user:500"));
+        assert!(message.contains("result_shape=one"));
         assert_eq!(calls.load(Ordering::SeqCst), 1);
 
         let recovered = queries

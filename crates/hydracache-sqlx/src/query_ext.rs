@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use hydracache_core::CacheCodec;
-use hydracache_db::DbQuery;
+use hydracache_db::{DbAdapterKind, DbQuery, DbResultShape};
 use serde::{de::DeserializeOwned, Serialize};
 use sqlx::{query::QueryAs, Database, Executor, FromRow, IntoArguments};
 
@@ -70,7 +70,8 @@ where
         E: Send + Sync + 'static,
         for<'c> &'c E: Executor<'c, Database = DB>,
     {
-        self.fetch_value_with(move || async move { query.fetch_one(&executor).await })
+        self.adapter_context(DbAdapterKind::Sqlx, DbResultShape::One)
+            .fetch_value_with(move || async move { query.fetch_one(&executor).await })
             .await
             .map_err(Into::into)
     }
@@ -88,7 +89,8 @@ where
         E: Send + Sync + 'static,
         for<'c> &'c E: Executor<'c, Database = DB>,
     {
-        self.fetch_value_with(move || async move { query.fetch_optional(&executor).await })
+        self.adapter_context(DbAdapterKind::Sqlx, DbResultShape::Optional)
+            .fetch_value_with(move || async move { query.fetch_optional(&executor).await })
             .await
             .map_err(Into::into)
     }
@@ -106,7 +108,8 @@ where
         E: Send + Sync + 'static,
         for<'c> &'c E: Executor<'c, Database = DB>,
     {
-        self.fetch_value_with(move || async move { query.fetch_all(&executor).await })
+        self.adapter_context(DbAdapterKind::Sqlx, DbResultShape::All)
+            .fetch_value_with(move || async move { query.fetch_all(&executor).await })
             .await
             .map_err(Into::into)
     }

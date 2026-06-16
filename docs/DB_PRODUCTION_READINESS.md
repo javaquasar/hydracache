@@ -207,6 +207,25 @@ application code.
 `hydracache-seaorm` accepts async SeaORM loaders and shares the same
 database-neutral policy model.
 
+## Error Context
+
+Database cache errors include cache-side operation context:
+
+- adapter kind: `generic`, `sqlx`, `diesel`, or `seaorm`;
+- operation name;
+- cache namespace;
+- physical cache key when available;
+- result shape: `one`, `optional`, `all`, or `custom`.
+
+Missing-key errors are raised before the loader runs. Loader, codec, and
+cache-layer failures are reported with the same operation context so logs can
+connect a failure to the adapter helper and physical cache key involved.
+
+HydraCache does not turn SQLx, Diesel, or SeaORM errors into a new typed
+database error hierarchy. The database client or repository remains the owner of
+typed recovery. The cache-side context is intended for production logs,
+diagnostics, and retry investigation.
+
 ## Observability
 
 For database cache paths:

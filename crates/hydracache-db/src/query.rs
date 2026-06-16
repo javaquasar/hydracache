@@ -8,7 +8,10 @@ use hydracache::{CacheKeyBuilder, CacheOptions, HydraCache, PostcardCodec, TagSe
 use hydracache_core::CacheCodec;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{CacheEntity, DbCacheError, PreparedQueryPolicy, QueryCachePolicy, Result};
+use crate::{
+    CacheEntity, DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape,
+    PreparedQueryPolicy, QueryCachePolicy, Result,
+};
 
 /// A database-oriented view over a [`HydraCache`] instance.
 ///
@@ -119,6 +122,8 @@ where
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
             policy: QueryCachePolicy::new(),
+            adapter: DbAdapterKind::Generic,
+            result_shape: DbResultShape::Custom,
             value: PhantomData,
         }
     }
@@ -293,6 +298,8 @@ where
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
             policy: QueryCachePolicy::named(name),
+            adapter: DbAdapterKind::Generic,
+            result_shape: DbResultShape::Custom,
             value: PhantomData,
         }
     }
@@ -320,6 +327,8 @@ where
     cache: HydraCache<C>,
     namespace: String,
     policy: QueryCachePolicy,
+    adapter: DbAdapterKind,
+    result_shape: DbResultShape,
     value: PhantomData<fn() -> T>,
 }
 
@@ -487,6 +496,8 @@ where
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
             policy,
+            adapter: DbAdapterKind::Generic,
+            result_shape: DbResultShape::Custom,
             value: PhantomData,
         }
     }
@@ -501,6 +512,8 @@ where
             cache: self.cache.clone(),
             namespace: self.namespace.clone(),
             policy: self.policy.clone(),
+            adapter: self.adapter,
+            result_shape: self.result_shape,
             value: PhantomData,
         }
     }
@@ -515,6 +528,8 @@ where
             .debug_struct("DbQuery")
             .field("namespace", &self.namespace)
             .field("policy", &self.policy)
+            .field("adapter", &self.adapter)
+            .field("result_shape", &self.result_shape)
             .finish_non_exhaustive()
     }
 }
@@ -578,6 +593,27 @@ where
     /// Return the configured refresh/stale policy.
     pub fn refresh_policy_value(&self) -> Option<hydracache::RefreshOptions> {
         self.policy.refresh_policy_value()
+    }
+
+    /// Return the database adapter kind used for operation diagnostics.
+    pub fn adapter_kind(&self) -> DbAdapterKind {
+        self.adapter
+    }
+
+    /// Return the result shape used for operation diagnostics.
+    pub fn result_shape(&self) -> DbResultShape {
+        self.result_shape
+    }
+
+    /// Set database adapter and result-shape context for diagnostics.
+    ///
+    /// Most users do not need to call this directly. Adapter crates use it to
+    /// label errors from helpers such as `sqlx_one`, `diesel_optional`, or
+    /// `sea_all` without changing the cache key, tags, TTL, or loader.
+    pub fn adapter_context(mut self, adapter: DbAdapterKind, result_shape: DbResultShape) -> Self {
+        self.adapter = adapter;
+        self.result_shape = result_shape;
+        self
     }
 
     /// Set the logical cache key for this query result.
@@ -792,18 +828,19 @@ where
     {
         let key = self.required_physical_key()?;
         let options = self.options();
+        let context = self.operation_context(Some(key.clone()));
 
         match self.policy.refresh_policy_value() {
             Some(refresh) => self
                 .cache
                 .get_or_load_with_refresh(&key, options, refresh, loader)
                 .await
-                .map_err(DbCacheError::from),
+                .map_err(|source| DbCacheError::operation(context, source)),
             None => self
                 .cache
                 .get_or_load(&key, options, loader)
                 .await
-                .map_err(DbCacheError::from),
+                .map_err(|source| DbCacheError::operation(context, source)),
         }
     }
 
@@ -812,9 +849,25 @@ where
     }
 
     fn required_physical_key(&self) -> Result<String> {
-        self.physical_key().ok_or_else(|| DbCacheError::MissingKey {
-            operation: self.operation_label(),
+        self.physical_key().ok_or_else(|| {
+            let context = self.operation_context(None);
+            DbCacheError::MissingKey {
+                operation: context.operation,
+                adapter: context.adapter,
+                namespace: context.namespace,
+                result_shape: context.result_shape,
+            }
         })
+    }
+
+    fn operation_context(&self, physical_key: Option<String>) -> DbOperationContext {
+        DbOperationContext {
+            adapter: self.adapter,
+            operation: self.operation_label(),
+            namespace: self.namespace.clone(),
+            physical_key,
+            result_shape: self.result_shape,
+        }
     }
 
     fn operation_label(&self) -> String {
