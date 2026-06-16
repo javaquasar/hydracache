@@ -41,6 +41,8 @@ This means:
 - reviewers have a checklist for cache keys, tags, TTLs, and write paths;
 - repository code has a documented transaction/invalidation pattern;
 - stale behavior is tied to explicit service-level freshness budgets;
+- macro ergonomics remove repetitive key/tag/policy boilerplate without hiding
+  cache boundaries;
 - adapter tests cover more database/runtime combinations where practical;
 - release validation includes a deterministic soak/load scenario.
 
@@ -266,7 +268,386 @@ It should report:
 - The scenario covers miss, hit, write, invalidate, reload, rollback, loader
   failure, and stale fallback.
 
-## 7. Release Gate Updates
+## 7. Macro Ergonomics And Boilerplate Reduction
+
+### Problem
+
+`0.35.0` makes database caching explicit enough for production review, but the
+macro layer still removes only part of the user-facing ceremony.
+
+The current macros are safe and honest:
+
+- `HydraCacheEntity` removes manual `CacheEntity` implementations;
+- `query_cache_policy!` shortens declarative `QueryCachePolicy` construction;
+- `cacheable!` and `cacheable_infallible!` shorten local-cache call sites.
+
+The remaining user pain is around repeated metadata:
+
+- entity id types are repeated in `#[hydracache(..., id = Type)]`;
+- key and tag dimensions are still often built with strings or `format!`;
+- freshness intent is separate from `query_cache_policy!`;
+- hot repository methods still need explicit prepared-policy builder chains;
+- ordinary function caching still requires a function-like macro around a
+  loader closure instead of a function attribute.
+
+The goal is not to make HydraCache magical. The macro layer should remain sugar
+over the explicit API. It should not discover a global cache, infer database
+transactions, parse SQL, hide tenant/security dimensions, or bypass the
+repository/service layer.
+
+### Desired Outcome
+
+Improve macro ergonomics enough that a production user can express common
+cache policies declaratively, while reviewers can still see every key, tag,
+TTL, stale budget, and invalidation dimension.
+
+The target state is:
+
+- less repeated metadata;
+- fewer raw string/`format!` key constructions;
+- policy macros that encode freshness intent;
+- prepared repository metadata that is easy to declare once;
+- optional function attributes for non-database expensive work;
+- compile-time diagnostics and tests for every new macro form.
+
+### 7.1 `HydraCacheEntity` Id Inference
+
+#### Current Shape
+
+Today users repeat the id type in the macro attribute:
+
+```rust
+use hydracache_db::HydraCacheEntity;
+
+#[derive(HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users", id = i64)]
+struct User {
+    id: i64,
+}
+```
+
+This works, but it repeats the same fact twice. If the field type changes and
+the attribute does not, the generated metadata can drift away from the domain
+model.
+
+#### Target Shape
+
+Allow an id field marker so the derive macro can infer the id type:
+
+```rust
+use hydracache_db::HydraCacheEntity;
+
+#[derive(HydraCacheEntity)]
+#[hydracache(entity = "user", collection = "users")]
+struct User {
+    #[hydracache(id)]
+    id: i64,
+}
+```
+
+The explicit `id = Type` form should remain supported for tuple structs,
+computed ids, generated models, or teams that prefer keeping metadata outside
+fields.
+
+#### Acceptance Criteria
+
+- `#[hydracache(id)]` infers `CacheEntity::Id` from a named struct field.
+- The old `id = Type` form remains supported and documented.
+- The derive rejects multiple `#[hydracache(id)]` fields.
+- The derive rejects missing id metadata when neither form is present.
+- The derive rejects conflicting `id = Type` plus field marker unless a clear
+  compatibility rule is chosen and tested.
+
+### 7.2 `query_cache_policy!` Presets And Freshness
+
+#### Current Shape
+
+Today `query_cache_policy!` can express key/tag/TTL metadata:
+
+```rust
+use hydracache_db::query_cache_policy;
+
+let policy = query_cache_policy!(
+    name = "load-user",
+    entity = User,
+    id = user_id,
+    tag = format!("tenant:{tenant_id}"),
+    ttl_secs = 60,
+);
+```
+
+The production freshness model still has to be added outside the macro with
+builder calls. That makes the macro less useful for `0.36.0` freshness-budget
+guidance.
+
+#### Target Shape
+
+Let the policy macro encode common presets and bounded stale/refresh intent:
+
+```rust
+use hydracache_db::query_cache_policy;
+
+let policy = query_cache_policy!(
+    preset = read_mostly,
+    name = "load-user",
+    entity = User,
+    id = user_id,
+    tag = format!("tenant:{tenant_id}"),
+    refresh_ahead_secs = 10,
+    stale_while_revalidate_secs = 300,
+);
+```
+
+The macro should remain declarative. It should produce the same
+`QueryCachePolicy` a user could build by hand with `QueryCachePolicy` and
+`RefreshPolicy`.
+
+#### Acceptance Criteria
+
+- `preset = short_lived`, `read_mostly`, `per_entity`,
+  `no_ttl_explicit_invalidation`, and `negative_cache` map to the documented
+  policy presets.
+- `refresh_ahead_secs`, `stale_while_revalidate_secs`, and
+  `stale_on_loader_error_secs` map to `RefreshPolicy`/`RefreshOptions` without
+  changing runtime semantics.
+- Conflicting freshness options produce compile-fail diagnostics.
+- Runtime tests verify that generated policies encode the same TTL/stale
+  behavior as explicit builder code.
+
+### 7.3 Safe Key And Tag Segment DSL
+
+#### Current Shape
+
+For list/search queries, the safest current approach is explicit but verbose:
+
+```rust
+use hydracache::CacheKeyBuilder;
+use hydracache_db::query_cache_policy;
+
+let key = CacheKeyBuilder::new()
+    .segment("tenant")
+    .segment(tenant_id)
+    .segment("permission")
+    .segment(permission_hash)
+    .segment("q")
+    .segment(query)
+    .segment("page")
+    .segment(page)
+    .segment("sort")
+    .segment(sort)
+    .build_string();
+
+let policy = query_cache_policy!(
+    name = "search-users",
+    key = key,
+    collection_tag = "users",
+    ttl_secs = 30,
+);
+```
+
+This is reviewable, but it invites repeated `format!` usage and makes it easy
+to forget result-shaping dimensions.
+
+#### Target Shape
+
+Add segment-oriented macro options for keys and tags:
+
+```rust
+use hydracache_db::query_cache_policy;
+
+let policy = query_cache_policy!(
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "q", query,
+        "page", page,
+        "sort", sort,
+    ],
+    collection_tag = "users",
+    ttl_secs = 30,
+);
+```
+
+For richer invalidation metadata, support tag segment groups:
+
+```rust
+let policy = query_cache_policy!(
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "q", query,
+        "page", page,
+        "sort", sort,
+    ],
+    tag_segments = [
+        ["tenant", tenant_id],
+        ["users"],
+    ],
+    ttl_secs = 30,
+);
+```
+
+The macro should build through the same escaping rules as `CacheKeyBuilder` and
+`TagSet`, so the segment DSL is safer than manual string concatenation.
+
+#### Acceptance Criteria
+
+- `key_segments = [...]` generates a physical key through `CacheKeyBuilder`.
+- `tag_segments = [[...], [...]]` generates tags through the same segment
+  escaping rules.
+- The macro rejects `key` plus `key_segments` conflicts.
+- The macro rejects malformed segment groups with clear compile diagnostics.
+- Tests cover tenant, permission, filter, pagination, sort, locale, region,
+  feature flag, and time-window examples.
+
+### 7.4 Prepared Policy Macro
+
+#### Current Shape
+
+Today hot repository methods can prepare stable metadata with builder code:
+
+```rust
+use hydracache_db::PreparedQueryPolicy;
+
+let load_user = queries.prepare::<User>(
+    PreparedQueryPolicy::per_entity()
+        .cache_entity::<User>()
+        .with_name("load-user")
+        .ttl(std::time::Duration::from_secs(300)),
+);
+
+let user = load_user
+    .load_id(user_id, move || async move {
+        Ok::<_, std::io::Error>(repo.load_user(user_id).await?)
+    })
+    .await?;
+```
+
+This is clear but still repetitive when many repository methods share the same
+shape.
+
+#### Target Shape
+
+Add a declarative prepared-policy macro:
+
+```rust
+use hydracache_db::prepared_query_policy;
+
+let load_user = prepared_query_policy!(
+    per_entity = User,
+    name = "load-user",
+    ttl_secs = 300,
+);
+
+let user = queries
+    .prepare::<User>(load_user)
+    .load_id(user_id, move || async move {
+        Ok::<_, std::io::Error>(repo.load_user(user_id).await?)
+    })
+    .await?;
+```
+
+The macro should only declare reusable cache metadata. Query execution,
+database transactions, and loader ownership remain in repository code.
+
+#### Acceptance Criteria
+
+- The macro supports entity, collection, and manual-key prepared policy forms.
+- Generated prepared policies match explicit `PreparedQueryPolicy` builder
+  output in tests.
+- The macro is re-exported from `hydracache-db` and adapter crates where it is
+  useful.
+- Compile-fail tests cover missing key source, conflicting key sources,
+  duplicate options, and unsupported options.
+
+### 7.5 Attribute Macro For Ordinary Functions
+
+#### Current Shape
+
+Today ordinary function caching uses a function-like macro around a loader:
+
+```rust
+use hydracache::{cacheable, HydraCache};
+
+let cache = HydraCache::local().build();
+let profile_id = 42_u64;
+
+let profile = cacheable!(
+    cache = cache,
+    key = format!("profile:{profile_id}"),
+    tags = ["profiles"],
+    ttl_secs = 60,
+    load = move || async move {
+        Ok::<_, LoadError>(load_profile(profile_id).await?)
+    },
+)
+.await?;
+```
+
+This keeps the boundary explicit, but the call site still needs a loader
+closure and repeated key/tag metadata.
+
+#### Target Shape
+
+Explore an attribute macro for ordinary expensive async functions:
+
+```rust
+use hydracache::cacheable;
+
+#[cacheable(
+    cache = cache,
+    key_segments = ["profile", profile_id],
+    tags = ["profiles"],
+    ttl_secs = 60
+)]
+async fn load_profile(profile_id: u64) -> Result<Profile, LoadError> {
+    repo.load_profile(profile_id).await
+}
+```
+
+This should be treated as the highest-risk macro ergonomics item. It must not
+discover a global cache, hide key dimensions, or interfere with database
+transactions. It should be sugar over the same explicit cache call a user would
+write by hand.
+
+#### Acceptance Criteria
+
+- The attribute macro requires an explicit cache expression or an explicit
+  generated-argument convention.
+- It supports explicit `key`, `key_segments`, `tags`, and TTL options.
+- It does not target SQLx/Diesel/SeaORM query functions until the transaction
+  and loader ownership story is reviewed.
+- Compile-fail tests cover missing cache, missing key metadata, unsupported
+  options, and conflicting TTL/key options.
+
+### Testing Requirements For Macro Work
+
+Every new macro feature in `0.36.0` must land with tests. Documentation-only
+examples are not enough for macro work.
+
+Required test layers:
+
+- Unit tests in `crates/hydracache-macros` for parsing, validation, and token
+  generation.
+- `trybuild` pass fixtures for the public user-facing syntax.
+- `trybuild` compile-fail fixtures for diagnostics and invalid combinations.
+- Runtime tests in `hydracache`, `hydracache-db`, or adapter crates when the
+  generated code affects cache behavior.
+- Re-export tests for `hydracache-db`, `hydracache-sqlx`,
+  `hydracache-diesel`, and `hydracache-seaorm` when a new macro is intended to
+  be available through those crates.
+- README or crate-doc examples for stable syntax after implementation.
+
+At minimum, macro implementation work should pass:
+
+- `cargo test -p hydracache-macros --locked`
+- `cargo test -p hydracache --test cacheable_ui --locked`
+- `cargo test -p hydracache-db --test derive_ui --locked`
+- the runtime tests for whichever crate receives generated behavior.
+
+## 8. Release Gate Updates
 
 ### Problem
 
@@ -304,10 +685,10 @@ too slow or flaky.
 - `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --locked`
 - `.\scripts\verify-release-readiness.ps1 -Version 0.36.0 -RunGate`
 - DB rollout/soak validation command added during the release.
+- Macro-specific tests for every implemented macro ergonomics item.
 
 Optional checks:
 
 - SQLx Postgres testcontainers smoke test.
 - Longer DB soak/load scenario.
 - Consumer check after crates.io publish.
-
