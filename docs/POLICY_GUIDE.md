@@ -10,6 +10,12 @@ For production database result caching, pair this guide with
 checklist covers tenant/security key dimensions, transaction-safe invalidation,
 adapter boundaries, and observability expectations.
 
+Before enabling a new cached query behind a rollout flag, run the
+pre-rollout cache-key review template in
+[`DB_PRODUCTION_READINESS.md`](DB_PRODUCTION_READINESS.md#pre-rollout-cache-key-review-template).
+The key must include every dimension that changes result visibility or shape.
+Tags help invalidate values, but they are not a substitute for a unique key.
+
 ## Quick Decision Table
 
 | Scenario | Recommended preset | Key shape | Tags | Refresh/stale |
@@ -87,10 +93,14 @@ Use `short_lived()` for list/search results unless invalidation is extremely
 well understood. Include every input that changes the result in the key:
 
 - tenant id,
+- authorization scope,
 - normalized query text,
 - filters,
 - page/cursor,
 - sort order,
+- locale and region,
+- feature flag or experiment variant,
+- time window or as-of version,
 - caller-visible permissions if they affect rows.
 
 ```rust
@@ -140,6 +150,18 @@ let safe_policy = QueryCachePolicy::short_lived()
     .tag("tenant:7");
 
 assert_ne!(unsafe_policy.key_value(), safe_policy.key_value());
+```
+
+Another unsafe key:
+
+```text
+users:search:q=ada
+```
+
+Safer segmented key:
+
+```text
+tenant:7:authorization:principal=42%3Apolicy=3:filter:status=active:page:1:sort:name_asc:locale:en-US:region:eu-west:feature:search-v2:window:2026-06-16T00%3A00%3A00Z:2026-06-16T01%3A00%3A00Z
 ```
 
 ## Permission Checks

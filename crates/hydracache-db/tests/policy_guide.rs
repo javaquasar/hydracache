@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::time::Duration;
 
 use hydracache::{CacheKeyBuilder, HydraCache};
@@ -185,6 +186,139 @@ fn pagination_and_sort_are_part_of_list_key() {
     assert_eq!(
         policy.key_value(),
         Some("tenant:7:users:status=active:page=2:limit=50:sort=name_desc")
+    );
+}
+
+#[test]
+fn review_checklist_dimensions_each_change_search_policy_key() {
+    #[derive(Clone)]
+    struct SearchReviewInput {
+        tenant_id: u64,
+        authorization_scope: &'static str,
+        filter: &'static str,
+        page: u32,
+        sort: &'static str,
+        locale: &'static str,
+        region: &'static str,
+        feature_flag: &'static str,
+        window_start: &'static str,
+        window_end: &'static str,
+    }
+
+    fn reviewed_search_policy(input: &SearchReviewInput) -> QueryCachePolicy {
+        QueryCachePolicy::short_lived()
+            .key_builder(
+                CacheKeyBuilder::new()
+                    .segment("tenant")
+                    .segment(input.tenant_id)
+                    .segment("authorization")
+                    .segment(input.authorization_scope)
+                    .segment("filter")
+                    .segment(input.filter)
+                    .segment("page")
+                    .segment(input.page)
+                    .segment("sort")
+                    .segment(input.sort)
+                    .segment("locale")
+                    .segment(input.locale)
+                    .segment("region")
+                    .segment(input.region)
+                    .segment("feature")
+                    .segment(input.feature_flag)
+                    .segment("window")
+                    .segment(input.window_start)
+                    .segment(input.window_end),
+            )
+            .collection_tag("users")
+            .tag(format!("tenant:{}", input.tenant_id))
+    }
+
+    let base = SearchReviewInput {
+        tenant_id: 7,
+        authorization_scope: "principal=42:policy=3",
+        filter: "status=active",
+        page: 1,
+        sort: "name_asc",
+        locale: "en-US",
+        region: "eu-west",
+        feature_flag: "search-v2",
+        window_start: "2026-06-16T00:00:00Z",
+        window_end: "2026-06-16T01:00:00Z",
+    };
+    let base_policy = reviewed_search_policy(&base);
+    let base_key = base_policy.key_value().unwrap().to_owned();
+
+    for expected_fragment in [
+        "tenant:7",
+        "authorization:principal=42%3Apolicy=3",
+        "filter:status=active",
+        "page:1",
+        "sort:name_asc",
+        "locale:en-US",
+        "region:eu-west",
+        "feature:search-v2",
+        "window:2026-06-16T00%3A00%3A00Z:2026-06-16T01%3A00%3A00Z",
+    ] {
+        assert!(
+            base_key.contains(expected_fragment),
+            "reviewed key `{base_key}` is missing `{expected_fragment}`"
+        );
+    }
+
+    let variants = [
+        SearchReviewInput {
+            tenant_id: 8,
+            ..base.clone()
+        },
+        SearchReviewInput {
+            authorization_scope: "principal=99:policy=3",
+            ..base.clone()
+        },
+        SearchReviewInput {
+            filter: "status=disabled",
+            ..base.clone()
+        },
+        SearchReviewInput {
+            page: 2,
+            ..base.clone()
+        },
+        SearchReviewInput {
+            sort: "created_desc",
+            ..base.clone()
+        },
+        SearchReviewInput {
+            locale: "fr-FR",
+            ..base.clone()
+        },
+        SearchReviewInput {
+            region: "us-east",
+            ..base.clone()
+        },
+        SearchReviewInput {
+            feature_flag: "search-v1",
+            ..base.clone()
+        },
+        SearchReviewInput {
+            window_start: "2026-06-16T01:00:00Z",
+            window_end: "2026-06-16T02:00:00Z",
+            ..base
+        },
+    ];
+
+    let mut keys = BTreeSet::from([base_key.clone()]);
+    for variant in variants {
+        let key = reviewed_search_policy(&variant)
+            .key_value()
+            .unwrap()
+            .to_owned();
+        assert_ne!(key, base_key);
+        keys.insert(key);
+    }
+
+    assert_eq!(keys.len(), 10);
+    assert_eq!(
+        base_policy.tags_value(),
+        &["users".to_owned(), "tenant:7".to_owned()]
     );
 }
 

@@ -148,6 +148,14 @@ The release should provide a small transaction/invalidation guide that shows:
 
 ## 3. Cache-Key Review Checklist
 
+Status: implemented. `docs/DB_PRODUCTION_READINESS.md` now includes a
+pre-rollout cache-key review template that maps tenant, authorization, filters,
+pagination, sort, locale, region, feature flags, time windows, key/tag split,
+and write-side ownership to concrete production risks and required review
+evidence. `docs/POLICY_GUIDE.md` links to the checklist from policy selection
+guidance, and tests assert that each reviewed dimension changes the generated
+key.
+
 ### Problem
 
 The biggest production correctness risk is an unsafe key:
@@ -174,10 +182,10 @@ new cached query in production.
 
 ### Acceptance Criteria
 
-- Each review item maps to a concrete production risk.
-- Examples include tenant, authorization, filter, sort, pagination, locale,
+- [x] Each review item maps to a concrete production risk.
+- [x] Examples include tenant, authorization, filter, sort, pagination, locale,
   region, feature flag, and time-window dimensions.
-- Release notes describe the checklist as a pre-rollout guardrail.
+- [x] Release notes describe the checklist as a pre-rollout guardrail.
 
 ## 4. Freshness Budgets For Stale And Refresh Policies
 

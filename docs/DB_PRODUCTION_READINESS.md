@@ -355,6 +355,69 @@ Include these dimensions when they affect the result:
 - soft-delete visibility;
 - time bucket for time-windowed queries.
 
+### Pre-Rollout Cache-Key Review Template
+
+Use this template in code review before turning on a cached query:
+
+| Review item | Production risk if missing | Evidence to require |
+| --- | --- | --- |
+| Tenant/account dimension | Cross-tenant data exposure or incorrect hit reuse | Key includes tenant/account id for every multi-tenant query. |
+| Authorization scope | User can receive rows visible to a different principal or policy version | Key includes principal, role, permission hash/version, resource, and action when visibility changes results. |
+| Filters and search text | Different list/search results collapse into one cached value | Key includes normalized filters and normalized query text. |
+| Pagination and limits | Page 1 can be served for page 2 or a different limit | Key includes cursor/page and limit. |
+| Sort order | Same filters but different ordering reuse the wrong result | Key includes sort column and direction. |
+| Locale and region | Localized or regional data crosses request boundaries | Key includes locale and region when formatting, pricing, content, or availability differs. |
+| Feature flag or experiment | A/B variant or rollout mode leaks into another cohort | Key includes feature flag, experiment variant, or policy version. |
+| Time window or as-of version | Time-bounded results reuse a different window | Key includes window start/end, bucket, or as-of revision. |
+| Key/tag split | Collection tag accidentally becomes the unique cache key | Key uniquely identifies the result; tags are only invalidation handles. |
+| Write-side owner | Stale data survives successful writes | Write path stages entity and collection invalidations after commit. |
+
+Test helper pattern:
+
+```rust
+use hydracache::CacheKeyBuilder;
+
+fn reviewed_search_key(
+    tenant_id: u64,
+    authorization_scope: &str,
+    filter: &str,
+    page: u32,
+    sort: &str,
+    locale: &str,
+    region: &str,
+    feature_flag: &str,
+    window_start: &str,
+    window_end: &str,
+) -> String {
+    CacheKeyBuilder::new()
+        .segment("tenant")
+        .segment(tenant_id)
+        .segment("authorization")
+        .segment(authorization_scope)
+        .segment("filter")
+        .segment(filter)
+        .segment("page")
+        .segment(page)
+        .segment("sort")
+        .segment(sort)
+        .segment("locale")
+        .segment(locale)
+        .segment("region")
+        .segment(region)
+        .segment("feature")
+        .segment(feature_flag)
+        .segment("window")
+        .segment(window_start)
+        .segment(window_end)
+        .build_string()
+}
+```
+
+In service tests, build a baseline key and then change one dimension at a time.
+Each variant should produce a different key. This catches accidental omission of
+tenant, authorization, filter, page, sort, locale, region, feature, or
+time-window dimensions before the rollout flag is enabled.
+
 Use `CacheKeyBuilder` for escaped segmented keys:
 
 ```rust
@@ -393,6 +456,30 @@ Safer permission key:
 
 ```text
 tenant:7:permission:principal=42:policy_version=3:resource=document%3A99:action=read
+```
+
+Unsafe time-window key:
+
+```text
+tenant:7:orders:recent
+```
+
+Safer time-window key:
+
+```text
+tenant:7:orders:window:2026-06-16T00%3A00%3A00Z:2026-06-16T01%3A00%3A00Z
+```
+
+Unsafe feature-flag key:
+
+```text
+tenant:7:search:q=ada
+```
+
+Safer feature-flag key:
+
+```text
+tenant:7:search:q=ada:feature:search-v2
 ```
 
 The runtime cannot infer whether `users:active` is safe. Treat this as an
