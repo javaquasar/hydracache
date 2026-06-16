@@ -1,0 +1,5 @@
+error: conflicting hydracache id metadata; use either #[hydracache(id = Type)] on the struct or one #[hydracache(id)] field
+ --> tests/derive/fail_conflicting_id_metadata.rs:5:8
+  |
+5 | struct User {
+  |        ^^^^

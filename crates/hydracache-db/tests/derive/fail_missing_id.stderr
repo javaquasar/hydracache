@@ -1,4 +1,4 @@
-error: missing #[hydracache(id = Type)]
+error: missing #[hydracache(id = Type)] or #[hydracache(id)] field
  --> tests/derive/fail_missing_id.rs:5:8
   |
 5 | struct User;

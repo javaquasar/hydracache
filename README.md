@@ -1549,8 +1549,9 @@ use hydracache_db::{CacheEntity, HydraCacheEntity};
 use hydracache_sqlx::DbCache;
 
 #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
-#[hydracache(entity = "user", collection = "users", id = i64)]
+#[hydracache(entity = "user", collection = "users")]
 struct User {
+    #[hydracache(id)]
     id: i64,
     name: String,
 }
@@ -1574,6 +1575,8 @@ assert_eq!(User::collection_tag(), Some("users".to_owned()));
 
 Manual `CacheEntity` implementations remain supported when you prefer no
 proc-macro dependency or want to generate metadata from your own macro layer.
+The explicit `#[hydracache(id = Type)]` form also remains available when the
+id type is not represented by one named field.
 
 The older `.cached::<T>().key(...).tag(...)` style remains available and is the
 full-control API. The ergonomic helpers only generate common keys and tags on

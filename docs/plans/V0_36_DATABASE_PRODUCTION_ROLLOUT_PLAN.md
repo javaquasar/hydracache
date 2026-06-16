@@ -312,6 +312,11 @@ The target state is:
 
 ### 7.1 `HydraCacheEntity` Id Inference
 
+Status: implemented. `HydraCacheEntity` now accepts one
+`#[hydracache(id)]` marker on a named struct field and infers
+`CacheEntity::Id` from that field type. The explicit struct-level
+`#[hydracache(id = Type)]` form remains supported.
+
 #### Current Shape
 
 Today users repeat the id type in the macro attribute:
@@ -351,12 +356,11 @@ fields.
 
 #### Acceptance Criteria
 
-- `#[hydracache(id)]` infers `CacheEntity::Id` from a named struct field.
-- The old `id = Type` form remains supported and documented.
-- The derive rejects multiple `#[hydracache(id)]` fields.
-- The derive rejects missing id metadata when neither form is present.
-- The derive rejects conflicting `id = Type` plus field marker unless a clear
-  compatibility rule is chosen and tested.
+- [x] `#[hydracache(id)]` infers `CacheEntity::Id` from a named struct field.
+- [x] The old `id = Type` form remains supported and documented.
+- [x] The derive rejects multiple `#[hydracache(id)]` fields.
+- [x] The derive rejects missing id metadata when neither form is present.
+- [x] The derive rejects conflicting `id = Type` plus field marker.
 
 ### 7.2 `query_cache_policy!` Presets And Freshness
 

@@ -15,8 +15,9 @@
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
-//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! #[hydracache(entity = "user", collection = "users")]
 //! struct User {
+//!     #[hydracache(id)]
 //!     id: i64,
 //!     name: String,
 //! }
@@ -66,8 +67,9 @@
 //! use serde::{Deserialize, Serialize};
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
-//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! #[hydracache(entity = "user", collection = "users")]
 //! struct User {
+//!     #[hydracache(id)]
 //!     id: i64,
 //!     name: String,
 //! }

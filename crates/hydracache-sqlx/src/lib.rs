@@ -11,8 +11,9 @@
 //! use hydracache_sqlx::{DbCache, HydraCacheEntity, PreparedQueryPolicy, SqlxQueryExt};
 //!
 //! #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
-//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! #[hydracache(entity = "user", collection = "users")]
 //! struct User {
+//!     #[hydracache(id)]
 //!     id: i64,
 //!     name: String,
 //! }
@@ -51,8 +52,9 @@
 //! use hydracache_sqlx::{DbCache, HydraCacheEntity, PreparedQueryPolicy, SqlxQueryExt};
 //!
 //! #[derive(serde::Serialize, serde::Deserialize, HydraCacheEntity)]
-//! #[hydracache(entity = "user", collection = "users", id = i64)]
+//! #[hydracache(entity = "user", collection = "users")]
 //! struct User {
+//!     #[hydracache(id)]
 //!     id: i64,
 //!     name: String,
 //! }

@@ -55,7 +55,26 @@ mod tests {
 
         assert!(error
             .to_string()
-            .contains("missing #[hydracache(id = Type)]"));
+            .contains("missing #[hydracache(id = Type)] or #[hydracache(id)] field"));
+    }
+
+    #[test]
+    fn expands_id_from_named_field_marker() {
+        let input: DeriveInput = parse_quote! {
+            #[hydracache(entity = "user", collection = "users")]
+            struct User {
+                #[hydracache(id)]
+                id: i64,
+                name: String,
+            }
+        };
+
+        let output = expand(input).unwrap().to_string();
+
+        assert!(output.contains("CacheEntity for User"));
+        assert!(output.contains("type Id = i64"));
+        assert!(output.contains("\"user\""));
+        assert!(output.contains("Some (\"users\")"));
     }
 
     #[test]

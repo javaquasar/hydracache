@@ -1,0 +1,5 @@
+error: unsupported hydracache field option; expected id
+ --> tests/derive/fail_unknown_field_option.rs:6:18
+  |
+6 |     #[hydracache(primary_key)]
+  |                  ^^^^^^^^^^^

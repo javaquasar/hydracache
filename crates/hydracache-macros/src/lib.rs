@@ -15,14 +15,18 @@ mod policy;
 /// use hydracache_db::{CacheEntity, HydraCacheEntity};
 ///
 /// #[derive(HydraCacheEntity)]
-/// #[hydracache(entity = "user", collection = "users", id = i64)]
+/// #[hydracache(entity = "user", collection = "users")]
 /// struct User {
+///     #[hydracache(id)]
 ///     id: i64,
 ///     name: String,
 /// }
 ///
 /// assert_eq!(User::cache_key_for(&42), "user:42");
 /// ```
+///
+/// `#[hydracache(id = Type)]` on the struct remains supported when the id type
+/// cannot be inferred from one named field.
 #[proc_macro_derive(HydraCacheEntity, attributes(hydracache))]
 pub fn derive_hydracache_entity(input: TokenStream) -> TokenStream {
     entity::expand(parse_macro_input!(input as DeriveInput))

@@ -11,13 +11,19 @@ use hydracache::CacheKeyBuilder;
 /// use hydracache_db::{CacheEntity, HydraCacheEntity};
 ///
 /// #[derive(HydraCacheEntity)]
-/// #[hydracache(entity = "user", collection = "users", id = i64)]
-/// struct User;
+/// #[hydracache(entity = "user", collection = "users")]
+/// struct User {
+///     #[hydracache(id)]
+///     id: i64,
+/// }
 ///
 /// assert_eq!(User::cache_key_for(&42), "user:42");
 /// assert_eq!(User::entity_tag_for(&42), "user:42");
 /// assert_eq!(User::collection_tag(), Some("users".to_owned()));
 /// ```
+///
+/// Use `#[hydracache(id = Type)]` on the struct when the id type is generated
+/// or otherwise not represented by one named field.
 pub trait CacheEntity {
     /// Identifier type used to build entity keys and tags.
     type Id: ToString;
