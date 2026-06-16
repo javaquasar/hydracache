@@ -1515,6 +1515,30 @@ entity. It generates logical key `user:42` and tag `user:42`. Use
 group. Use `collection_tag("users")` when an entity result should also be
 invalidated together with a broader collection.
 
+When a SQLx write is transactional, keep the transaction in SQLx and invalidate
+only after `commit()` succeeds:
+
+```rust
+# async fn example(pool: sqlx::SqlitePool, queries: hydracache_sqlx::DbCache) -> hydracache_sqlx::Result<()> {
+let mut tx = pool.begin().await?;
+
+sqlx::query("update users set name = ? where id = ?")
+    .bind("Grace")
+    .bind(42_i64)
+    .execute(&mut *tx)
+    .await?;
+
+tx.commit().await?;
+
+queries.cache().invalidate_tag("user:42").await?;
+queries.cache().invalidate_tag("users").await?;
+# Ok(())
+# }
+```
+
+A rollback path should not invalidate; the cached value still describes the
+last committed database state.
+
 When the same entity metadata is used in several places, derive or implement
 `CacheEntity` once and use `for_entity::<T>(id)`. `CacheEntity` and
 `HydraCacheEntity` live in `hydracache-db`; `hydracache-sqlx` only re-exports
