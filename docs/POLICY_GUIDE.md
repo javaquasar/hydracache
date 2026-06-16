@@ -5,6 +5,11 @@ more invalidation tags, an optional TTL, and optional refresh/stale behavior.
 
 Use this guide when choosing between the `0.33+` policy presets.
 
+For production database result caching, pair this guide with
+[`DB_PRODUCTION_READINESS.md`](DB_PRODUCTION_READINESS.md). The production
+checklist covers tenant/security key dimensions, transaction-safe invalidation,
+adapter boundaries, and observability expectations.
+
 ## Quick Decision Table
 
 | Scenario | Recommended preset | Key shape | Tags | Refresh/stale |

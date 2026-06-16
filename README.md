@@ -46,6 +46,10 @@ simple local cache -> database result-cache adapter -> optional distributed sync
 For production usage guidance, see
 [`docs/PRODUCTION_GUIDE.md`](docs/PRODUCTION_GUIDE.md).
 
+For database production-readiness rules around keys, tags, transactions,
+adapter boundaries, and observability, see
+[`docs/DB_PRODUCTION_READINESS.md`](docs/DB_PRODUCTION_READINESS.md).
+
 For a full production-style flow that combines database-cache policies,
 invalidation, refresh/stale behavior, and diagnostics, see
 [`docs/PRODUCTION_EXAMPLE.md`](docs/PRODUCTION_EXAMPLE.md).
@@ -1455,6 +1459,11 @@ your database client responsible for pools, transactions, queries, and row
 mapping, while HydraCache owns the explicit cache boundary: key, tags, TTL,
 single-flight, and storage.
 
+Before enabling a database cache path in production, use
+[`docs/DB_PRODUCTION_READINESS.md`](docs/DB_PRODUCTION_READINESS.md) to review
+cache-key dimensions, tag design, transaction timing, adapter boundaries, and
+diagnostics.
+
 `hydracache-sqlx` re-exports the same API for SQLx users and keeps SQLx as an
 adapter dependency instead of making the generic database cache API depend on
 SQLx.
@@ -1751,9 +1760,11 @@ lines should be investigated before release.
 Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
+- [docs/releases/0.35.0.md](docs/releases/0.35.0.md) - database production-readiness release.
 - [docs/releases/0.32.0.md](docs/releases/0.32.0.md) - database adapter parity release.
 - [docs/releases/0.31.1.md](docs/releases/0.31.1.md) - latest published patch notes.
 - [docs/releases/0.31.0.md](docs/releases/0.31.0.md) - Diesel and SeaORM adapter release.
+- [docs/plans/V0_35_DATABASE_PRODUCTION_READINESS_PLAN.md](docs/plans/V0_35_DATABASE_PRODUCTION_READINESS_PLAN.md) - current database production-readiness plan.
 - [docs/plans/V0_32_DATABASE_ADAPTER_PARITY_PLAN.md](docs/plans/V0_32_DATABASE_ADAPTER_PARITY_PLAN.md) - current ORM adapter parity plan.
 - [docs/PRODUCTION_CLUSTER_READINESS.md](docs/PRODUCTION_CLUSTER_READINESS.md) - cluster readiness boundaries.
 - [docs/PUBLISHING.md](docs/PUBLISHING.md) - staged publish and post-publish checks.
