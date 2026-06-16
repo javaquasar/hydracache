@@ -52,6 +52,21 @@ impl UserRepository {
         );
     }
 
+    async fn begin(&self) -> UserTransaction {
+        UserTransaction {
+            repository: self.clone(),
+            staged_rows: self.rows.read().await.clone(),
+        }
+    }
+
+    async fn failed_write(
+        &self,
+        _id: i64,
+        _name: impl Into<String>,
+    ) -> Result<(), RepositoryError> {
+        Err(RepositoryError::Unavailable)
+    }
+
     fn fail_loads(&self, fail: bool) {
         self.fail_loads.store(fail, Ordering::SeqCst);
     }
@@ -73,6 +88,44 @@ impl UserRepository {
             .cloned()
             .ok_or(RepositoryError::NotFound(id))
     }
+
+    async fn list_users(&self) -> Result<Vec<User>, RepositoryError> {
+        self.calls.fetch_add(1, Ordering::SeqCst);
+        if self.fail_loads.load(Ordering::SeqCst) {
+            return Err(RepositoryError::Unavailable);
+        }
+
+        let mut users = self.rows.read().await.values().cloned().collect::<Vec<_>>();
+        users.sort_by_key(|user| user.id);
+        Ok(users)
+    }
+}
+
+struct UserTransaction {
+    repository: UserRepository,
+    staged_rows: HashMap<i64, User>,
+}
+
+impl UserTransaction {
+    fn upsert(&mut self, id: i64, name: impl Into<String>) {
+        self.staged_rows.insert(
+            id,
+            User {
+                id,
+                name: name.into(),
+            },
+        );
+    }
+
+    fn delete(&mut self, id: i64) {
+        self.staged_rows.remove(&id);
+    }
+
+    async fn commit(self) {
+        *self.repository.rows.write().await = self.staged_rows;
+    }
+
+    async fn rollback(self) {}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -113,6 +166,13 @@ fn stale_on_error_policy(id: i64) -> QueryCachePolicy {
         .refresh_policy(RefreshPolicy::new().stale_on_loader_error(Duration::from_millis(250)))
 }
 
+fn users_policy() -> QueryCachePolicy {
+    QueryCachePolicy::short_lived()
+        .collection("users")
+        .with_name("production-list-users")
+        .ttl(Duration::from_millis(120))
+}
+
 async fn cached_user_with_policy(
     queries: &DbCache,
     repository: &UserRepository,
@@ -134,6 +194,17 @@ async fn cached_user(
     cached_user_with_policy(queries, repository, id, user_policy(id)).await
 }
 
+async fn cached_users(
+    queries: &DbCache,
+    repository: &UserRepository,
+) -> hydracache_db::Result<Vec<User>> {
+    let repository = repository.clone();
+    queries
+        .cached_with::<Vec<User>>(users_policy())
+        .load(move || async move { repository.list_users().await })
+        .await
+}
+
 async fn wait_for_cached_name(cache: &HydraCache, key: &str, expected: &str) {
     for _ in 0..30 {
         if let Some(user) = cache.get::<User>(key).await.unwrap() {
@@ -146,6 +217,135 @@ async fn wait_for_cached_name(cache: &HydraCache, key: &str, expected: &str) {
     }
 
     panic!("cached value `{key}` did not become `{expected}`");
+}
+
+#[tokio::test]
+async fn failed_write_does_not_invalidate_cached_entity() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache, "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+    assert_eq!(repository.load_calls(), 1);
+
+    let failed = repository.failed_write(42, "Grace").await;
+    assert!(matches!(failed, Err(RepositoryError::Unavailable)));
+
+    let still_cached = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(still_cached.name, "Ada");
+    assert_eq!(repository.load_calls(), 1);
+}
+
+#[tokio::test]
+async fn committed_update_invalidates_entity_and_reloads() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    let mut tx = repository.begin().await;
+    tx.upsert(42, "Grace");
+    tx.commit().await;
+
+    assert_eq!(cache.invalidate_tag("user:42").await.unwrap(), 1);
+
+    let reloaded = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(reloaded.name, "Grace");
+    assert_eq!(repository.load_calls(), 2);
+}
+
+#[tokio::test]
+async fn committed_insert_invalidates_collection() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_users(&queries, &repository).await.unwrap();
+    assert_eq!(
+        first.iter().map(|user| user.id).collect::<Vec<_>>(),
+        vec![42]
+    );
+
+    let mut tx = repository.begin().await;
+    tx.upsert(43, "Linus");
+    tx.commit().await;
+
+    assert_eq!(cache.invalidate_tag("users").await.unwrap(), 1);
+
+    let reloaded = cached_users(&queries, &repository).await.unwrap();
+    assert_eq!(
+        reloaded
+            .iter()
+            .map(|user| (user.id, user.name.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(42, "Ada"), (43, "Linus")]
+    );
+    assert_eq!(repository.load_calls(), 2);
+}
+
+#[tokio::test]
+async fn committed_delete_invalidates_entity_and_collection() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let cached = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(cached.name, "Ada");
+    let users = cached_users(&queries, &repository).await.unwrap();
+    assert_eq!(users.len(), 1);
+
+    let mut tx = repository.begin().await;
+    tx.delete(42);
+    tx.commit().await;
+
+    assert_eq!(cache.invalidate_tag("user:42").await.unwrap(), 1);
+    assert_eq!(cache.invalidate_tag("users").await.unwrap(), 1);
+
+    let reloaded = cached_users(&queries, &repository).await.unwrap();
+    assert!(reloaded.is_empty());
+    assert!(cached_user(&queries, &repository, 42).await.is_err());
+}
+
+#[tokio::test]
+async fn rollback_keeps_existing_cached_value() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache, "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    let mut tx = repository.begin().await;
+    tx.upsert(42, "RolledBack");
+    tx.rollback().await;
+
+    let still_cached = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(still_cached.name, "Ada");
+    assert_eq!(repository.load_calls(), 1);
+}
+
+#[tokio::test]
+async fn double_invalidation_after_commit_is_idempotent() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    let mut tx = repository.begin().await;
+    tx.upsert(42, "Grace");
+    tx.commit().await;
+
+    assert_eq!(cache.invalidate_tag("user:42").await.unwrap(), 1);
+    assert_eq!(cache.invalidate_tag("user:42").await.unwrap(), 0);
+
+    let reloaded = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(reloaded.name, "Grace");
+    assert_eq!(repository.load_calls(), 2);
 }
 
 #[tokio::test]
