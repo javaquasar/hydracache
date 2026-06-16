@@ -1,0 +1,11 @@
+error: cacheable attribute segment list cannot be empty
+ --> tests/cacheable/fail_attribute_empty_key_segments.rs:1:1
+  |
+1 | / #[hydracache::cacheable(
+2 | |     cache = cache,
+3 | |     key_segments = [],
+4 | |     ttl_secs = 60
+5 | | )]
+  | |__^
+  |
+  = note: this error originates in the attribute macro `hydracache::cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)

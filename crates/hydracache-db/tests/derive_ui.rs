@@ -26,6 +26,10 @@ fn proc_macro_compile_tests() {
     tests.compile_fail("tests/policy/fail_unknown_preset.rs");
     tests.compile_fail("tests/policy/fail_prepared_conflicting_key_sources.rs");
     tests.compile_fail("tests/policy/fail_prepared_duplicate_option.rs");
+    tests.compile_fail("tests/policy/fail_prepared_empty_key_segments.rs");
+    tests.compile_fail("tests/policy/fail_prepared_empty_tag_segment_group.rs");
+    tests.compile_fail("tests/policy/fail_prepared_empty_tag_segments.rs");
+    tests.compile_fail("tests/policy/fail_prepared_flat_tag_segments.rs");
     tests.compile_fail("tests/policy/fail_prepared_missing_key_source.rs");
     tests.compile_fail("tests/policy/fail_prepared_unknown_option.rs");
 }

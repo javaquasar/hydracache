@@ -1,0 +1,5 @@
+error: cacheable attribute requires Result<T, E> return type
+ --> tests/cacheable/fail_attribute_non_result.rs:6:65
+  |
+6 | async fn load_value(cache: &hydracache::HydraCache, id: u64) -> u64 {
+  |                                                                 ^^^

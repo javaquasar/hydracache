@@ -1,0 +1,5 @@
+error: cacheable attribute tag_segments expects nested segment groups like [[...], [...]]
+ --> tests/cacheable/fail_attribute_flat_tag_segments.rs:4:21
+  |
+4 |     tag_segments = ["value", id],
+  |                     ^^^^^^^

@@ -1,0 +1,12 @@
+error: cacheable attribute tag_segments requires at least one segment group
+ --> tests/cacheable/fail_attribute_empty_tag_segments.rs:1:1
+  |
+1 | / #[hydracache::cacheable(
+2 | |     cache = cache,
+3 | |     key_segments = ["value", id],
+4 | |     tag_segments = [],
+5 | |     ttl_secs = 60
+6 | | )]
+  | |__^
+  |
+  = note: this error originates in the attribute macro `hydracache::cacheable` (in Nightly builds, run with -Z macro-backtrace for more info)

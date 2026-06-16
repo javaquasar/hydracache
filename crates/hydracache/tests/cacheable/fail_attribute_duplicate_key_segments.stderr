@@ -1,0 +1,5 @@
+error: duplicate cacheable key_segments option
+ --> tests/cacheable/fail_attribute_duplicate_key_segments.rs:4:5
+  |
+4 |     key_segments = ["duplicate", id],
+  |     ^^^^^^^^^^^^

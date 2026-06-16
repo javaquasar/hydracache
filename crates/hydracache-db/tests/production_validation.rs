@@ -8,7 +8,7 @@ use std::time::Duration;
 use hydracache::HydraCache;
 use hydracache_db::{DbCache, HydraCacheEntity, QueryCachePolicy, RefreshPolicy};
 use serde::{Deserialize, Serialize};
-use tokio::sync::{oneshot, RwLock};
+use tokio::sync::{oneshot, Notify, RwLock};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
 #[hydracache(entity = "user", collection = "users", id = i64)]
@@ -373,39 +373,61 @@ async fn db_flow_records_single_flight_joins() {
     let cache = HydraCache::local().build();
     let queries = DbCache::new(cache.clone(), "production-db");
     let calls = Arc::new(AtomicUsize::new(0));
+    let loader_started = Arc::new(Notify::new());
+    let release_loader = Arc::new(Notify::new());
 
-    let first = queries
-        .entity::<User>("user", 42)
-        .collection_tag("users")
-        .load({
-            let calls = calls.clone();
-            move || async move {
-                tokio::time::sleep(Duration::from_millis(25)).await;
-                calls.fetch_add(1, Ordering::SeqCst);
+    let first_queries = queries.clone();
+    let first_calls = calls.clone();
+    let first_started = loader_started.clone();
+    let first_release = release_loader.clone();
+    let first = tokio::spawn(async move {
+        first_queries
+            .entity::<User>("user", 42)
+            .collection_tag("users")
+            .load(move || async move {
+                first_calls.fetch_add(1, Ordering::SeqCst);
+                first_started.notify_one();
+                first_release.notified().await;
                 Ok::<_, RepositoryError>(User {
                     id: 42,
                     name: "single-flight".to_owned(),
                 })
-            }
-        });
-    let second = queries
-        .entity::<User>("user", 42)
-        .collection_tag("users")
-        .load({
-            let calls = calls.clone();
-            move || async move {
-                tokio::time::sleep(Duration::from_millis(25)).await;
-                calls.fetch_add(1, Ordering::SeqCst);
+            })
+            .await
+    });
+
+    tokio::time::timeout(Duration::from_secs(1), loader_started.notified())
+        .await
+        .expect("first loader should start before joining request");
+
+    let second_queries = queries.clone();
+    let second_calls = calls.clone();
+    let second = tokio::spawn(async move {
+        second_queries
+            .entity::<User>("user", 42)
+            .collection_tag("users")
+            .load(move || async move {
+                second_calls.fetch_add(1, Ordering::SeqCst);
                 Ok::<_, RepositoryError>(User {
                     id: 42,
                     name: "duplicate".to_owned(),
                 })
-            }
-        });
+            })
+            .await
+    });
 
-    let (first, second) = tokio::join!(first, second);
-    let first = first.unwrap();
-    let second = second.unwrap();
+    tokio::time::timeout(Duration::from_secs(1), async {
+        while cache.diagnostics().await.stats.single_flight_joins == 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("second request should join the in-flight load");
+
+    release_loader.notify_one();
+
+    let first = first.await.unwrap().unwrap();
+    let second = second.await.unwrap().unwrap();
 
     assert_eq!(first, second);
     assert_eq!(first.name, "single-flight");
