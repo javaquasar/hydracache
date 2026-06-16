@@ -72,9 +72,29 @@ function Invoke-CheckedCommand {
         return
     }
 
-    & $Executable @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $Executable $($Arguments -join ' ')"
+    $previousErrorActionPreference = $ErrorActionPreference
+    $hasNativeCommandErrorActionPreference = Test-Path -Path Variable:\PSNativeCommandUseErrorActionPreference
+    if ($hasNativeCommandErrorActionPreference) {
+        $previousNativeCommandErrorActionPreference = $PSNativeCommandUseErrorActionPreference
+    }
+
+    try {
+        $ErrorActionPreference = "Continue"
+        if ($hasNativeCommandErrorActionPreference) {
+            $PSNativeCommandUseErrorActionPreference = $false
+        }
+
+        & $Executable @Arguments
+        $exitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+        if ($hasNativeCommandErrorActionPreference) {
+            $PSNativeCommandUseErrorActionPreference = $previousNativeCommandErrorActionPreference
+        }
+    }
+
+    if ($exitCode -ne 0) {
+        throw "Command failed with exit code ${exitCode}: $Executable $($Arguments -join ' ')"
     }
 }
 

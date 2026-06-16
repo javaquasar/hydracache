@@ -111,10 +111,10 @@ pub enum DbCacheError {
         /// Diagnostic operation name.
         operation: String,
         /// Database cache operation context.
-        context: DbOperationContext,
+        context: Box<DbOperationContext>,
         /// Underlying cache-layer error.
         #[source]
-        source: hydracache::CacheError,
+        source: Box<hydracache::CacheError>,
     },
 
     /// The underlying HydraCache operation failed.
@@ -126,8 +126,8 @@ impl DbCacheError {
     pub(crate) fn operation(context: DbOperationContext, source: hydracache::CacheError) -> Self {
         Self::Operation {
             operation: context.operation.clone(),
-            context,
-            source,
+            context: Box::new(context),
+            source: Box::new(source),
         }
     }
 }

@@ -968,7 +968,7 @@ async fn adapter_error_display_contains_operation_context() {
             assert_eq!(context.namespace, "db");
             assert_eq!(context.physical_key.as_deref(), Some("db:user:1"));
             assert_eq!(context.result_shape, DbResultShape::One);
-            assert!(matches!(source, hydracache::CacheError::Loader(_)));
+            assert!(matches!(*source, hydracache::CacheError::Loader(_)));
         }
         other => panic!("expected contextual operation error, got {other:?}"),
     }
@@ -988,6 +988,14 @@ async fn adapter_error_display_contains_operation_context() {
     assert!(message.contains("key=db:user:1"));
     assert!(message.contains("result_shape=one"));
     assert!(message.contains("cache loader error: load failed"));
+}
+
+#[test]
+fn db_cache_error_stays_small_enough_for_result_returns() {
+    assert!(
+        std::mem::size_of::<DbCacheError>() <= 80,
+        "DbCacheError should box large context/source fields"
+    );
 }
 
 #[tokio::test]
