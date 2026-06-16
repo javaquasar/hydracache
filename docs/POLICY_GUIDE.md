@@ -115,6 +115,33 @@ assert!(policy.key_value().unwrap().contains("search"));
 
 Prefer invalidating collection tags on writes that affect list membership.
 
+Do not use the collection tag as the whole key when the result has filters,
+pagination, sorting, tenant scope, or caller-specific visibility:
+
+```rust
+use hydracache::CacheKeyBuilder;
+use hydracache_db::QueryCachePolicy;
+
+let unsafe_policy = QueryCachePolicy::short_lived()
+    .key("users:active")
+    .collection_tag("users");
+
+let safe_key = CacheKeyBuilder::new()
+    .tenant(7)
+    .segment("users")
+    .segment("status=active")
+    .segment("page=1")
+    .segment("sort=name_asc")
+    .build_string();
+
+let safe_policy = QueryCachePolicy::short_lived()
+    .key(safe_key)
+    .collection_tag("users")
+    .tag("tenant:7");
+
+assert_ne!(unsafe_policy.key_value(), safe_policy.key_value());
+```
+
 ## Permission Checks
 
 Permission checks are easy to cache incorrectly. The key must include all
@@ -142,6 +169,10 @@ assert_eq!(policy.ttl_value(), Some(std::time::Duration::from_secs(30)));
 
 Avoid long stale windows for authorization unless the application explicitly
 accepts eventual consistency.
+
+When permissions depend on mutable policy state, include a permission or policy
+version in the key. Tags such as `principal:42` or `document:99` are useful for
+invalidation, but they do not make the physical key unique.
 
 ## Negative Cache
 

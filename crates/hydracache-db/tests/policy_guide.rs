@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use hydracache::CacheKeyBuilder;
-use hydracache_db::{HydraCacheEntity, QueryCachePolicy, RefreshPolicy};
+use hydracache::{CacheKeyBuilder, HydraCache};
+use hydracache_db::{DbCache, HydraCacheEntity, QueryCachePolicy, RefreshPolicy};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
@@ -93,6 +93,144 @@ fn permission_policy_key_contains_security_dimensions() {
         policy.tags_value(),
         &["principal:42".to_owned(), "document:99".to_owned()]
     );
+}
+
+#[test]
+fn tenant_dimension_changes_physical_key() {
+    let queries = DbCache::new(HydraCache::local().build(), "db");
+    let tenant_7 = QueryCachePolicy::short_lived()
+        .key_builder(CacheKeyBuilder::new().tenant(7).entity("user", 42))
+        .tag("tenant:7");
+    let tenant_8 = QueryCachePolicy::short_lived()
+        .key_builder(CacheKeyBuilder::new().tenant(8).entity("user", 42))
+        .tag("tenant:8");
+
+    let key_7 = queries.cached_with::<User>(tenant_7).physical_key();
+    let key_8 = queries.cached_with::<User>(tenant_8).physical_key();
+
+    assert_eq!(key_7, Some("db:tenant:7:user:42".to_owned()));
+    assert_eq!(key_8, Some("db:tenant:8:user:42".to_owned()));
+    assert_ne!(key_7, key_8);
+}
+
+#[test]
+fn permission_dimension_changes_physical_key() {
+    let queries = DbCache::new(HydraCache::local().build(), "db");
+    let version_3 = QueryCachePolicy::short_lived().key_builder(
+        CacheKeyBuilder::new()
+            .tenant(7)
+            .segment("permission")
+            .segment("principal=42")
+            .segment("policy_version=3")
+            .segment("resource=document:99")
+            .segment("action=read"),
+    );
+    let version_4 = QueryCachePolicy::short_lived().key_builder(
+        CacheKeyBuilder::new()
+            .tenant(7)
+            .segment("permission")
+            .segment("principal=42")
+            .segment("policy_version=4")
+            .segment("resource=document:99")
+            .segment("action=read"),
+    );
+
+    let key_3 = queries.cached_with::<bool>(version_3).physical_key();
+    let key_4 = queries.cached_with::<bool>(version_4).physical_key();
+
+    assert_eq!(
+        key_3,
+        Some(
+            "db:tenant:7:permission:principal=42:policy_version=3:resource=document%3A99:action=read"
+                .to_owned()
+        )
+    );
+    assert_ne!(key_3, key_4);
+}
+
+#[test]
+fn filters_are_escaped_as_key_segments() {
+    let key = CacheKeyBuilder::new()
+        .tenant(7)
+        .segment("users")
+        .segment("status:active")
+        .segment("email_like=100%")
+        .build_string();
+
+    let policy = QueryCachePolicy::short_lived()
+        .key(key)
+        .collection_tag("users");
+
+    assert_eq!(
+        policy.key_value(),
+        Some("tenant:7:users:status%3Aactive:email_like=100%25")
+    );
+}
+
+#[test]
+fn pagination_and_sort_are_part_of_list_key() {
+    let key = CacheKeyBuilder::new()
+        .tenant(7)
+        .segment("users")
+        .segment("status=active")
+        .segment("page=2")
+        .segment("limit=50")
+        .segment("sort=name_desc")
+        .build_string();
+
+    let policy = QueryCachePolicy::short_lived()
+        .key(key)
+        .collection_tag("users");
+
+    assert_eq!(
+        policy.key_value(),
+        Some("tenant:7:users:status=active:page=2:limit=50:sort=name_desc")
+    );
+}
+
+#[test]
+fn collection_tag_does_not_replace_unique_key() {
+    let key = CacheKeyBuilder::new()
+        .tenant(7)
+        .segment("users")
+        .segment("status=active")
+        .segment("page=1")
+        .build_string();
+    let policy = QueryCachePolicy::short_lived()
+        .key(key)
+        .collection_tag("users");
+
+    assert_eq!(
+        policy.key_value(),
+        Some("tenant:7:users:status=active:page=1")
+    );
+    assert_eq!(policy.tags_value(), &["users".to_owned()]);
+    assert_ne!(policy.key_value(), Some("users"));
+}
+
+#[test]
+fn unsafe_key_examples_are_documented_not_runtime_enforced() {
+    let unsafe_policy = QueryCachePolicy::short_lived()
+        .key("users:active")
+        .collection_tag("users");
+    let safe_policy = QueryCachePolicy::short_lived()
+        .key_builder(
+            CacheKeyBuilder::new()
+                .tenant(7)
+                .segment("users")
+                .segment("status=active")
+                .segment("page=1")
+                .segment("sort=name_asc"),
+        )
+        .collection_tag("users")
+        .tag("tenant:7");
+
+    assert_eq!(unsafe_policy.key_value(), Some("users:active"));
+    assert_eq!(
+        safe_policy.key_value(),
+        Some("tenant:7:users:status=active:page=1:sort=name_asc")
+    );
+    assert_ne!(unsafe_policy.key_value(), safe_policy.key_value());
 }
 
 #[test]

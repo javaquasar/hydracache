@@ -149,6 +149,34 @@ let key = CacheKeyBuilder::new()
 assert!(key.contains("tenant:7"));
 ```
 
+Unsafe key:
+
+```text
+users:active
+```
+
+Safer key:
+
+```text
+tenant:7:users:status=active:page=1:sort=name_asc
+```
+
+Unsafe permission key:
+
+```text
+permission:document:99:read
+```
+
+Safer permission key:
+
+```text
+tenant:7:permission:principal=42:policy_version=3:resource=document%3A99:action=read
+```
+
+The runtime cannot infer whether `users:active` is safe. Treat this as an
+engineering checklist and code-review requirement, not a runtime security
+policy.
+
 ## Tag Checklist
 
 Attach every invalidation handle the write side can use:
