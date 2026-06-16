@@ -188,6 +188,62 @@ Recommended low-noise alerts:
 - single-flight joins absent on a known hot key during a load spike;
 - distributed invalidation bus issues when using clustered invalidation.
 
+## Soak And Load Validation
+
+The sandbox exposes a deterministic database-cache soak endpoint:
+
+```text
+POST /demo/db/soak/run
+```
+
+The short release-gate shape is:
+
+```json
+{
+  "iterations": 12,
+  "concurrency": 8,
+  "ttl_ms": 5000,
+  "loader_delay_ms": 1,
+  "flow_id": "db-soak-short"
+}
+```
+
+It resets the sandbox, then covers miss, hit, committed write, explicit
+invalidation, reload, rolled-back write without invalidation, repeated cached
+reads, loader failure, stale-on-loader-error fallback, stale-load discard, and
+single-flight. The response is machine-readable and includes:
+
+- `summary.total_requests` and `summary.hit_ratio`;
+- `summary.db_cache_reads`, `summary.db_loader_calls`, and
+  `summary.loader_calls_avoided`;
+- `summary.single_flight_joins`, `summary.invalidations`, and
+  `summary.stale_load_discards`;
+- `summary.stale_fallbacks`, `summary.loader_failures`, and
+  `summary.retries`;
+- `summary.writes`, `summary.rollbacks`, and `summary.reloads`;
+- `operation_latency` with min, max, average, p50, p95, and p99 duration
+  fields;
+- correlated `events` for the returned `flow_id`.
+
+For a longer manual pre-release run, start the sandbox and post:
+
+```json
+{
+  "iterations": 500,
+  "concurrency": 16,
+  "ttl_ms": 5000,
+  "loader_delay_ms": 2,
+  "flow_id": "db-soak-long"
+}
+```
+
+The committed `crates/hydracache-sandbox/http/sandbox.http` file contains both
+requests. Treat `summary.passed = true`, non-zero avoided loader calls,
+non-zero invalidations, non-zero stale fallback/discard counters, and visible
+single-flight joins as the local release-validation signal. Service-specific
+soak tests should keep the same counters but use real repository methods,
+production-like key dimensions, and service-owned retry policy.
+
 ## Invalidate After Commit
 
 Invalidate cache entries after the database commit succeeds. Do not invalidate

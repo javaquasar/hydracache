@@ -1446,6 +1446,16 @@ side-by-side release-36 snippets for verbose API usage and equivalent sugar:
 entity metadata, query policies, prepared policies, loader macros, and the
 function attribute macro.
 
+For release-36 database rollout checks, `POST /demo/db/soak/run` executes a
+deterministic DB-cache soak. The short default covers miss, hit, write,
+invalidate, reload, rollback without invalidation, loader failure,
+stale-on-loader-error fallback, stale-load discard, and single-flight. Its JSON
+summary reports total requests, hit ratio, DB cache reads, DB loader calls,
+loader calls avoided, invalidations, stale fallback/discard counts, loader
+failures, retries, writes, rollbacks, reloads, and latency distribution. The
+committed `crates/hydracache-sandbox/http/sandbox.http` file includes both the
+short release-gate request and a longer manual pre-release request.
+
 Swagger UI is generated from Rust route/schema declarations through `utoipa` and
 served from local embedded assets through `utoipa-swagger-ui`, so it does not
 need a CDN. For the complete endpoint list and request/response schemas, use
@@ -1865,13 +1875,16 @@ assert_eq!(user_name, "Ada");
 ```
 
 The manual sandbox exposes `POST /demo/rollout/compare` for cached-vs-uncached
-canary checks and `POST /demo/query/users/{id}/orm-comparison` for adapter
+canary checks, `POST /demo/db/soak/run` for deterministic release-36 DB-cache
+soak validation, and `POST /demo/query/users/{id}/orm-comparison` for adapter
 comparison in Swagger. The rollout route reports backing-store reads, cached
-loader calls, avoided loader calls, per-read source, and diagnostics. The ORM
-comparison route runs SQLx, Diesel, and SeaORM-style adapter paths against the
-same selected sandbox backing row and reports helper/API path, cache key, tags,
-TTL, first/second source, loader-call delta, pass/fail state, and the explicit
-invalidation result.
+loader calls, avoided loader calls, per-read source, and diagnostics. The soak
+route reports requests, hit ratio, avoided loader calls, invalidations,
+single-flight joins, stale fallback/discard counters, loader failures,
+rollbacks, and latency. The ORM comparison route runs SQLx, Diesel, and
+SeaORM-style adapter paths against the same selected sandbox backing row and
+reports helper/API path, cache key, tags, TTL, first/second source,
+loader-call delta, pass/fail state, and the explicit invalidation result.
 
 Testing and coverage commands are documented in
 [docs/TESTING.md](docs/TESTING.md).

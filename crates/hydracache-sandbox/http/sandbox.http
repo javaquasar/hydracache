@@ -27,6 +27,30 @@ Content-Type: application/json
   "flow_id": "rollout-canary"
 }
 
+### Release 36 DB soak: short deterministic gate
+POST {{baseUrl}}/demo/db/soak/run
+Content-Type: application/json
+
+{
+  "iterations": 12,
+  "concurrency": 8,
+  "ttl_ms": 5000,
+  "loader_delay_ms": 1,
+  "flow_id": "db-soak-short"
+}
+
+### Release 36 DB soak: longer manual pre-release run
+POST {{baseUrl}}/demo/db/soak/run
+Content-Type: application/json
+
+{
+  "iterations": 500,
+  "concurrency": 16,
+  "ttl_ms": 5000,
+  "loader_delay_ms": 2,
+  "flow_id": "db-soak-long"
+}
+
 ### OpenAPI document
 GET {{baseUrl}}/openapi.json
 

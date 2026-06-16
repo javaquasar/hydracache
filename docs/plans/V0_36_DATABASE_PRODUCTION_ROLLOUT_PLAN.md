@@ -267,6 +267,14 @@ The matrix should be honest:
 
 ## 6. Soak And Load Validation
 
+Status: implemented. The sandbox now exposes `POST /demo/db/soak/run` with a
+short deterministic default and configurable longer runs. The route resets the
+sandbox and covers miss, hit, write, invalidate, reload, rollback without
+invalidation, repeated cached reads, loader failure, stale-on-loader-error
+fallback, stale-load discard, and single-flight. Its JSON response includes a
+machine-readable `summary`, operation latency distribution, diagnostics, and
+correlated flow events.
+
 ### Problem
 
 Unit and integration tests prove correctness boundaries, but they do not show
@@ -297,11 +305,11 @@ It should report:
 
 ### Acceptance Criteria
 
-- Short soak scenario runs in the release gate or as a documented release
+- [x] Short soak scenario runs in the release gate or as a documented release
   validation command.
-- Long soak command is documented for manual pre-release validation.
-- The summary includes enough counters to compare cached vs uncached behavior.
-- The scenario covers miss, hit, write, invalidate, reload, rollback, loader
+- [x] Long soak command is documented for manual pre-release validation.
+- [x] The summary includes enough counters to compare cached vs uncached behavior.
+- [x] The scenario covers miss, hit, write, invalidate, reload, rollback, loader
   failure, and stale fallback.
 
 ## 7. Macro Ergonomics And Boilerplate Reduction

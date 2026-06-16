@@ -31,6 +31,7 @@
 //! http://127.0.0.1:3000/demo/presets
 //! http://127.0.0.1:3000/demo/ergonomics/examples
 //! http://127.0.0.1:3000/demo/rollout/compare
+//! http://127.0.0.1:3000/demo/db/soak/run
 //! http://127.0.0.1:3000/demo/report
 //! http://127.0.0.1:3000/demo/events
 //! http://127.0.0.1:3000/demo/events/summary
@@ -83,7 +84,7 @@ use hydracache::{
     ClusterOwnershipDecision, ClusterOwnershipDiagnostics, ClusterPeerFetch,
     ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole, HydraCache,
     InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus, InMemoryPeerFetch,
-    RaftMetadataCommand,
+    RaftMetadataCommand, RefreshOptions,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
@@ -519,6 +520,14 @@ fn default_benchmark_unique_keys() -> u16 {
     4
 }
 
+fn default_soak_iterations() -> u16 {
+    12
+}
+
+fn default_soak_concurrency() -> u16 {
+    8
+}
+
 fn help_text() -> String {
     [
         "HydraCache manual sandbox",
@@ -568,6 +577,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/presets", get(presets))
         .route("/demo/ergonomics/examples", get(ergonomics_examples))
         .route("/demo/rollout/compare", post(rollout_compare))
+        .route("/demo/db/soak/run", post(run_db_soak))
         .route("/demo/export", get(export_bundle))
         .route("/demo/import", post(import_session))
         .route("/demo/self-test", post(self_test))
@@ -927,6 +937,44 @@ impl SandboxStorage {
                 .execute(pool)
                 .await?;
                 Ok(User { id, name })
+            }
+        }
+    }
+
+    async fn rollback_user_update(&self, id: i64, name: String) -> Result<User, SandboxError> {
+        match self {
+            Self::Memory(users) => {
+                let original = self.load_user(id).await?;
+                let mut users = users.write().await;
+                users.insert(id, User { id, name });
+                users.insert(id, original.clone());
+                Ok(original)
+            }
+            Self::Sqlite(pool) => {
+                let mut tx = pool.begin().await?;
+                sqlx::query(
+                    "insert into users (id, name) values (?, ?) \
+                     on conflict(id) do update set name = excluded.name",
+                )
+                .bind(id)
+                .bind(&name)
+                .execute(&mut *tx)
+                .await?;
+                tx.rollback().await?;
+                self.load_user(id).await
+            }
+            Self::Postgres(pool) => {
+                let mut tx = pool.begin().await?;
+                sqlx::query(
+                    "insert into users (id, name) values ($1, $2) \
+                     on conflict(id) do update set name = excluded.name",
+                )
+                .bind(id)
+                .bind(&name)
+                .execute(&mut *tx)
+                .await?;
+                tx.rollback().await?;
+                self.load_user(id).await
             }
         }
     }
@@ -1510,6 +1558,58 @@ struct RolloutCompareResponse {
     uncached_reads: Vec<RolloutReadReport>,
     cached_reads: Vec<RolloutReadReport>,
     diagnostics: DemoDiagnostics,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"iterations": 12, "concurrency": 8, "ttl_ms": 5000, "loader_delay_ms": 1, "flow_id": "db-soak-short"}))]
+struct DbSoakRunRequest {
+    #[serde(default = "default_soak_iterations")]
+    iterations: u16,
+    #[serde(default = "default_soak_concurrency")]
+    concurrency: u16,
+    #[serde(default)]
+    ttl_ms: Option<u64>,
+    #[serde(default)]
+    loader_delay_ms: Option<u64>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct DbSoakSummary {
+    total_requests: u64,
+    hit_ratio: Option<f64>,
+    hits: u64,
+    misses: u64,
+    db_cache_reads: u64,
+    db_loader_calls: u64,
+    loader_calls_avoided: u64,
+    single_flight_joins: u64,
+    invalidations: u64,
+    stale_fallbacks: u64,
+    stale_load_discards: u64,
+    loader_failures: u64,
+    retries: u64,
+    writes: u64,
+    rollbacks: u64,
+    reloads: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct DbSoakRunResponse {
+    flow_id: String,
+    backend: String,
+    passed: bool,
+    iterations: u16,
+    concurrency: u16,
+    ttl_ms: u64,
+    loader_delay_ms: u64,
+    covered_scenarios: Vec<String>,
+    steps: Vec<SelfTestStep>,
+    summary: DbSoakSummary,
+    operation_latency: LatencySummary,
+    diagnostics: DemoDiagnostics,
+    events: EventLogResponse,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -3484,6 +3584,20 @@ fn scenario_presets() -> Vec<ScenarioPreset> {
             })),
         },
         ScenarioPreset {
+            name: "db-soak-short",
+            method: "POST",
+            path: "/demo/db/soak/run",
+            description:
+                "Run the short deterministic release gate soak for DB cache rollout counters.",
+            body: Some(json!({
+                "iterations": 12,
+                "concurrency": 8,
+                "ttl_ms": 5000,
+                "loader_delay_ms": 1,
+                "flow_id": "db-soak-short"
+            })),
+        },
+        ScenarioPreset {
             name: "listener-demo",
             method: "POST",
             path: "/demo/listeners/run",
@@ -4299,6 +4413,395 @@ async fn rollout_compare(
         uncached_reads,
         cached_reads,
         diagnostics: diagnostics(&state).await,
+    }))
+}
+
+#[utoipa::path(
+    post,
+    path = "/demo/db/soak/run",
+    tag = "reports",
+    request_body = DbSoakRunRequest,
+    responses(
+        (status = 200, description = "Deterministic database-cache soak/load validation summary", body = DbSoakRunResponse),
+        (status = 500, description = "Soak validation failed before it could produce a report", body = ErrorResponse)
+    )
+)]
+async fn run_db_soak(
+    State(state): State<SandboxState>,
+    Json(request): Json<DbSoakRunRequest>,
+) -> Result<Json<DbSoakRunResponse>, SandboxHttpError> {
+    let flow_id = request
+        .flow_id
+        .unwrap_or_else(|| format!("db-soak-{}", state.next_event_id.load(Ordering::SeqCst) + 1));
+    let iterations = request.iterations.clamp(4, 2_000);
+    let concurrency = request.concurrency.clamp(2, 64);
+    let ttl_ms = request.ttl_ms.unwrap_or(5_000).max(1);
+    let loader_delay_ms = request.loader_delay_ms.unwrap_or(1);
+    let run_started = Instant::now();
+    let mut operation_durations = Vec::new();
+    let mut steps = Vec::new();
+    let mut db_cache_reads = 0_u64;
+    let mut writes = 0_u64;
+    let mut rollbacks = 0_u64;
+    let mut reloads = 0_u64;
+    let mut loader_failures = 0_u64;
+    let mut stale_fallbacks = 0_u64;
+    let retries = 0_u64;
+
+    reset_demo_state_with_flow(&state, Some(flow_id.clone())).await?;
+    let diagnostics_before = diagnostics(&state).await;
+    let db_loader_calls_before = state.loader_calls.load(Ordering::SeqCst);
+
+    let load_options = CacheLoadOptionsRequest {
+        ttl_ms: Some(ttl_ms),
+        tags: vec!["db-soak".to_owned()],
+        loader_delay_ms: Some(loader_delay_ms),
+        flow_id: Some(flow_id.clone()),
+    };
+
+    let started = Instant::now();
+    let first = load_user_with_options(&state, 42, load_options.clone()).await?;
+    operation_durations.push(elapsed_ms(started));
+    db_cache_reads += 1;
+    steps.push(scenario_step(
+        "miss",
+        first.source == LoadSource::Loader && first.user.name == "Ada",
+        format!("first read source was {:?}", first.source),
+    ));
+
+    let started = Instant::now();
+    let second = load_user_with_options(&state, 42, load_options.clone()).await?;
+    operation_durations.push(elapsed_ms(started));
+    db_cache_reads += 1;
+    steps.push(scenario_step(
+        "hit",
+        second.source == LoadSource::Cache && second.user == first.user,
+        format!("second read source was {:?}", second.source),
+    ));
+
+    let started = Instant::now();
+    let updated = state.storage.upsert_user(42, "Grace".to_owned()).await?;
+    writes += 1;
+    record_event_with_flow_and_duration(
+        &state,
+        DemoEventKind::BackingStoreWrite,
+        "db soak committed update for user 42",
+        Some("user:42".to_owned()),
+        None,
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(started)),
+    )
+    .await;
+    let invalidate_started = Instant::now();
+    let removed = state.cache.invalidate_tag("user:42").await?;
+    operation_durations.push(elapsed_ms(invalidate_started));
+    record_event_with_flow_and_duration(
+        &state,
+        DemoEventKind::CacheInvalidate,
+        format!("db soak invalidated user:42 and removed {removed} entries"),
+        None,
+        Some("user:42".to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(invalidate_started)),
+    )
+    .await;
+    let reload_started = Instant::now();
+    let reloaded = load_user_with_options(&state, 42, load_options.clone()).await?;
+    operation_durations.push(elapsed_ms(reload_started));
+    db_cache_reads += 1;
+    reloads += 1;
+    steps.push(scenario_step(
+        "write-invalidate-reload",
+        updated.name == "Grace"
+            && removed > 0
+            && reloaded.source == LoadSource::Loader
+            && reloaded.user.name == "Grace",
+        format!(
+            "removed {removed} entries and reloaded {} from {:?}",
+            reloaded.user.name, reloaded.source
+        ),
+    ));
+
+    let rollback_started = Instant::now();
+    let after_rollback = state
+        .storage
+        .rollback_user_update(42, "RolledBack".to_owned())
+        .await?;
+    rollbacks += 1;
+    record_event_with_flow_and_duration(
+        &state,
+        DemoEventKind::BackingStoreWrite,
+        "db soak rolled back an attempted user 42 update without invalidating",
+        Some("user:42".to_owned()),
+        None,
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(rollback_started)),
+    )
+    .await;
+    let rollback_read_started = Instant::now();
+    let rollback_read = load_user_with_options(&state, 42, load_options.clone()).await?;
+    operation_durations.push(elapsed_ms(rollback_read_started));
+    db_cache_reads += 1;
+    steps.push(scenario_step(
+        "rollback-keeps-cache",
+        after_rollback.name == "Grace"
+            && rollback_read.source == LoadSource::Cache
+            && rollback_read.user.name == "Grace",
+        format!(
+            "rollback backing row is {}, cache read source was {:?}",
+            after_rollback.name, rollback_read.source
+        ),
+    ));
+
+    let repeated_started = Instant::now();
+    for _ in 0..iterations {
+        let read = load_user_with_options(&state, 42, load_options.clone()).await?;
+        db_cache_reads += 1;
+        if read.source != LoadSource::Cache || read.user.name != "Grace" {
+            steps.push(scenario_step(
+                "repeated-read",
+                false,
+                format!(
+                    "unexpected source {:?} or user {}",
+                    read.source, read.user.name
+                ),
+            ));
+            break;
+        }
+    }
+    operation_durations.push(elapsed_ms(repeated_started));
+    if !steps.iter().any(|step| step.name == "repeated-read") {
+        steps.push(scenario_step(
+            "repeated-read",
+            true,
+            format!("{iterations} repeated reads stayed on cache"),
+        ));
+    }
+
+    let single_flight_started = Instant::now();
+    let single_flight = single_flight_scenario(
+        State(state.clone()),
+        Json(SingleFlightScenarioRequest {
+            key: "db-soak:single-flight".to_owned(),
+            loader_value: "shared".to_owned(),
+            concurrency,
+            loader_delay_ms: loader_delay_ms.max(10),
+            ttl_ms: Some(ttl_ms),
+            tags: vec!["db-soak".to_owned()],
+            flow_id: Some(flow_id.clone()),
+        }),
+    )
+    .await?
+    .0;
+    operation_durations.push(elapsed_ms(single_flight_started));
+    steps.push(scenario_step(
+        "single-flight",
+        single_flight.loader_invocations == 1
+            && single_flight.returned_values.len() == usize::from(concurrency),
+        format!(
+            "{} loader invocation(s) served {} callers",
+            single_flight.loader_invocations,
+            single_flight.returned_values.len()
+        ),
+    ));
+
+    let loader_failure_started = Instant::now();
+    let loader_failure = negative_loader_error(
+        State(state.clone()),
+        Json(NegativeLoaderErrorRequest {
+            key: "db-soak:loader-error".to_owned(),
+            error: "db soak simulated loader failure".to_owned(),
+            flow_id: Some(flow_id.clone()),
+        }),
+    )
+    .await?
+    .0;
+    operation_durations.push(elapsed_ms(loader_failure_started));
+    if loader_failure.expected_failure {
+        loader_failures += 1;
+    }
+    steps.push(scenario_step(
+        "loader-failure",
+        loader_failure.expected_failure,
+        loader_failure.message,
+    ));
+
+    let stale_started = Instant::now();
+    state
+        .cache
+        .put(
+            "db-soak:stale-on-error",
+            "stale-profile".to_owned(),
+            CacheOptions::new()
+                .ttl(Duration::from_millis(5))
+                .tag("db-soak-stale"),
+        )
+        .await?;
+    sleep(Duration::from_millis(15)).await;
+    let stale_value = state
+        .cache
+        .get_or_load_with_refresh(
+            "db-soak:stale-on-error",
+            CacheOptions::new()
+                .ttl(Duration::from_millis(ttl_ms))
+                .tag("db-soak-stale"),
+            RefreshOptions::new().stale_on_loader_error(Duration::from_millis(250)),
+            || async {
+                Err::<String, _>(SandboxError::config(
+                    "db soak stale fallback loader failure",
+                ))
+            },
+        )
+        .await?;
+    operation_durations.push(elapsed_ms(stale_started));
+    loader_failures += 1;
+    if stale_value == "stale-profile" {
+        stale_fallbacks += 1;
+    }
+    record_event_with_flow_and_duration(
+        &state,
+        DemoEventKind::ScenarioRun,
+        "db soak served stale value after loader error",
+        Some("db-soak:stale-on-error".to_owned()),
+        Some("db-soak-stale".to_owned()),
+        Some(LoadSource::Cache),
+        Some(flow_id.clone()),
+        Some(elapsed_ms(stale_started)),
+    )
+    .await;
+    steps.push(scenario_step(
+        "stale-on-loader-error",
+        stale_value == "stale-profile",
+        format!("returned `{stale_value}` after simulated loader failure"),
+    ));
+
+    let race_started = Instant::now();
+    let race = invalidation_race_scenario(
+        State(state.clone()),
+        Json(InvalidationRaceScenarioRequest {
+            key: "db-soak:race".to_owned(),
+            loader_value: "discarded-stale".to_owned(),
+            tag: "db-soak-race".to_owned(),
+            loader_delay_ms: loader_delay_ms.max(20),
+            invalidate_after_ms: 5,
+            flow_id: Some(flow_id.clone()),
+        }),
+    )
+    .await?
+    .0;
+    operation_durations.push(elapsed_ms(race_started));
+    steps.push(scenario_step(
+        "stale-load-discard",
+        race.stale_result_discarded,
+        format!("stale result discarded: {}", race.stale_result_discarded),
+    ));
+
+    let diagnostics_after = diagnostics(&state).await;
+    let delta_hits = diagnostics_after
+        .hits
+        .saturating_sub(diagnostics_before.hits);
+    let delta_misses = diagnostics_after
+        .misses
+        .saturating_sub(diagnostics_before.misses);
+    let total_requests = diagnostics_after
+        .total_requests
+        .saturating_sub(diagnostics_before.total_requests);
+    let db_loader_calls = state
+        .loader_calls
+        .load(Ordering::SeqCst)
+        .saturating_sub(db_loader_calls_before);
+    let loader_calls_avoided = db_cache_reads.saturating_sub(db_loader_calls);
+    let hit_ratio = if delta_hits + delta_misses == 0 {
+        None
+    } else {
+        Some(delta_hits as f64 / (delta_hits + delta_misses) as f64)
+    };
+    let summary = DbSoakSummary {
+        total_requests,
+        hit_ratio,
+        hits: delta_hits,
+        misses: delta_misses,
+        db_cache_reads,
+        db_loader_calls,
+        loader_calls_avoided,
+        single_flight_joins: diagnostics_after
+            .single_flight_joins
+            .saturating_sub(diagnostics_before.single_flight_joins),
+        invalidations: diagnostics_after
+            .invalidations
+            .saturating_sub(diagnostics_before.invalidations),
+        stale_fallbacks,
+        stale_load_discards: diagnostics_after
+            .stale_load_discards
+            .saturating_sub(diagnostics_before.stale_load_discards),
+        loader_failures,
+        retries,
+        writes,
+        rollbacks,
+        reloads,
+    };
+    let passed = steps.iter().all(|step| step.passed)
+        && summary.loader_calls_avoided > 0
+        && summary.single_flight_joins > 0
+        && summary.invalidations > 0
+        && summary.stale_fallbacks > 0
+        && summary.stale_load_discards > 0
+        && summary.loader_failures >= 2;
+    record_event_with_flow_and_duration(
+        &state,
+        if passed {
+            DemoEventKind::ScenarioRun
+        } else {
+            DemoEventKind::Error
+        },
+        format!(
+            "db soak completed with {} avoided DB loader calls",
+            summary.loader_calls_avoided
+        ),
+        Some("user:42".to_owned()),
+        Some("db-soak".to_owned()),
+        None,
+        Some(flow_id.clone()),
+        Some(elapsed_ms(run_started)),
+    )
+    .await;
+    let events = event_log(
+        &state,
+        &EventQuery {
+            flow_id: Some(flow_id.clone()),
+            ..EventQuery::default()
+        },
+    )
+    .await;
+
+    Ok(Json(DbSoakRunResponse {
+        flow_id,
+        backend: state.backend.label(),
+        passed,
+        iterations,
+        concurrency,
+        ttl_ms,
+        loader_delay_ms,
+        covered_scenarios: vec![
+            "miss".to_owned(),
+            "hit".to_owned(),
+            "write".to_owned(),
+            "invalidate".to_owned(),
+            "reload".to_owned(),
+            "rollback".to_owned(),
+            "loader-failure".to_owned(),
+            "stale-on-loader-error".to_owned(),
+            "stale-load-discard".to_owned(),
+            "single-flight".to_owned(),
+        ],
+        steps,
+        summary,
+        operation_latency: latency_for_durations(&operation_durations),
+        diagnostics: diagnostics_after,
+        events,
     }))
 }
 
@@ -6637,6 +7140,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/events/preflight/run".to_owned(),
         "/demo/import".to_owned(),
         "/demo/rollout/compare".to_owned(),
+        "/demo/db/soak/run".to_owned(),
         "/demo/query/products/{id}/load".to_owned(),
         "/demo/query/orders/{id}/summary/load".to_owned(),
         "/demo/db/seed-report".to_owned(),
@@ -6669,6 +7173,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "eventSummary()",
         "runEventPreflight(",
         "rolloutCompare(",
+        "runDbSoak(",
         "compareBenchmarks(baseline, candidate)",
         "flows()",
         "replayFlow(flowId",
@@ -6690,6 +7195,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/events/summary",
         "/demo/events/preflight/run",
         "/demo/rollout/compare",
+        "/demo/db/soak/run",
         "/demo/cluster/routed-peer-fetch/run",
         "/demo/cluster/read-through/run",
         "/demo/cluster/owner-load/run",
@@ -11759,6 +12265,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="show('/demo/presets')">Presets</button>
       <button onclick="show('/demo/ergonomics/examples')">Ergonomics examples</button>
       <button onclick="post('/demo/rollout/compare', {id:42, reads:2, ttl_ms:5000, tags:['ui-rollout'], flow_id:`ui-rollout-${Date.now()}`})">Rollout compare</button>
+      <button onclick="post('/demo/db/soak/run', {iterations:12, concurrency:8, ttl_ms:5000, loader_delay_ms:1, flow_id:`ui-db-soak-${Date.now()}`})">DB soak</button>
       <button onclick="show('/demo/report')">Application report</button>
       <button onclick="show('/demo/events')">Event log</button>
       <button onclick="show('/demo/events/summary')">Event summary</button>
@@ -12118,6 +12625,11 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Compare uncached backing-store reads with cached canary reads and report avoided loader calls.",
         },
         CapabilityReport {
+            name: "database soak validation",
+            endpoint: "/demo/db/soak/run",
+            description: "Run a deterministic DB-cache soak covering miss, hit, write, invalidation, reload, rollback, loader failure, stale fallback, and diagnostics counters.",
+        },
+        CapabilityReport {
             name: "local cache put/get/remove",
             endpoint: "/demo/cache/*",
             description: "Exercise raw HydraCache keys, TTL, tags, contains, remove, and tag invalidation.",
@@ -12328,6 +12840,7 @@ fn actuator_stats_doc() {}
         presets,
         ergonomics_examples,
         rollout_compare,
+        run_db_soak,
         export_bundle,
         import_session,
         self_test,
@@ -12423,6 +12936,9 @@ fn actuator_stats_doc() {}
             RolloutCompareRequest,
             RolloutReadReport,
             RolloutCompareResponse,
+            DbSoakRunRequest,
+            DbSoakSummary,
+            DbSoakRunResponse,
             ExportBundle,
             SelfTestResponse,
             SelfTestStep,
@@ -12972,6 +13488,8 @@ mod tests {
         assert_eq!(super::default_benchmark_requests(), 64);
         assert_eq!(super::default_benchmark_concurrency(), 8);
         assert_eq!(super::default_benchmark_unique_keys(), 4);
+        assert_eq!(super::default_soak_iterations(), 12);
+        assert_eq!(super::default_soak_concurrency(), 8);
         assert_eq!(super::default_bind().port(), 3000);
         assert_eq!(
             super::default_postgres_database_url(),
@@ -13025,6 +13543,9 @@ mod tests {
         assert!(super::capabilities()
             .iter()
             .any(|capability| capability.name == "cluster owner-load lab"));
+        assert!(super::capabilities()
+            .iter()
+            .any(|capability| capability.name == "database soak validation"));
 
         let http_error = super::SandboxHttpError::bad_request("bad input").into_response();
         assert_eq!(http_error.status(), StatusCode::BAD_REQUEST);
@@ -13085,6 +13606,7 @@ mod tests {
         assert!(paths.contains_key("/demo/presets"));
         assert!(paths.contains_key("/demo/ergonomics/examples"));
         assert!(paths.contains_key("/demo/rollout/compare"));
+        assert!(paths.contains_key("/demo/db/soak/run"));
         assert!(paths.contains_key("/demo/export"));
         assert!(paths.contains_key("/demo/import"));
         assert!(paths.contains_key("/demo/self-test"));
@@ -13155,6 +13677,9 @@ mod tests {
         assert!(schemas.contains_key("RolloutCompareRequest"));
         assert!(schemas.contains_key("RolloutReadReport"));
         assert!(schemas.contains_key("RolloutCompareResponse"));
+        assert!(schemas.contains_key("DbSoakRunRequest"));
+        assert!(schemas.contains_key("DbSoakSummary"));
+        assert!(schemas.contains_key("DbSoakRunResponse"));
         assert!(schemas.contains_key("ExportBundle"));
         assert!(schemas.contains_key("SelfTestResponse"));
         assert!(schemas.contains_key("ScenarioName"));
@@ -13467,6 +13992,56 @@ mod tests {
         let body = String::from_utf8_lossy(&body);
         assert!(body.to_ascii_lowercase().contains("swagger"));
         assert!(!body.contains("unpkg.com"));
+    }
+
+    #[tokio::test]
+    async fn db_soak_route_reports_release_validation_counters() {
+        let app = build_sandbox(SandboxConfig::default())
+            .await
+            .unwrap()
+            .router;
+
+        let soak = app
+            .oneshot(post(
+                "/demo/db/soak/run",
+                Body::from(
+                    r#"{"iterations":4,"concurrency":4,"ttl_ms":5000,"loader_delay_ms":1,"flow_id":"test-db-soak"}"#,
+                ),
+            ))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+
+        assert_eq!(soak["flow_id"], "test-db-soak");
+        assert_eq!(soak["passed"], true);
+        assert_eq!(soak["iterations"], 4);
+        assert_eq!(soak["concurrency"], 4);
+        assert!(soak["covered_scenarios"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|scenario| scenario.as_str() == Some("rollback")));
+        assert_eq!(soak["summary"]["db_cache_reads"], 8);
+        assert_eq!(soak["summary"]["db_loader_calls"], 2);
+        assert!(soak["summary"]["loader_calls_avoided"].as_u64().unwrap() >= 6);
+        assert!(soak["summary"]["hit_ratio"].as_f64().unwrap() > 0.0);
+        assert!(soak["summary"]["single_flight_joins"].as_u64().unwrap() >= 1);
+        assert!(soak["summary"]["invalidations"].as_u64().unwrap() >= 1);
+        assert_eq!(soak["summary"]["stale_fallbacks"], 1);
+        assert!(soak["summary"]["stale_load_discards"].as_u64().unwrap() >= 1);
+        assert_eq!(soak["summary"]["loader_failures"], 2);
+        assert_eq!(soak["summary"]["retries"], 0);
+        assert_eq!(soak["summary"]["writes"], 1);
+        assert_eq!(soak["summary"]["rollbacks"], 1);
+        assert_eq!(soak["summary"]["reloads"], 1);
+        assert!(
+            soak["operation_latency"]["measured_events"]
+                .as_u64()
+                .unwrap()
+                > 0
+        );
+        assert!(soak["events"]["returned"].as_u64().unwrap() > 0);
     }
 
     #[tokio::test]
@@ -14148,6 +14723,7 @@ mod tests {
         assert!(body.contains("/demo/report"));
         assert!(body.contains("/demo/ergonomics/examples"));
         assert!(body.contains("/demo/rollout/compare"));
+        assert!(body.contains("/demo/db/soak/run"));
         assert!(body.contains("/demo/self-test"));
         assert!(body.contains("/demo/scenarios/run"));
         assert!(body.contains("/demo/scenarios/document/run"));
@@ -14205,6 +14781,11 @@ mod tests {
             .unwrap()
             .iter()
             .any(|preset| preset["name"] == "rollout-compare"));
+        assert!(presets["presets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|preset| preset["name"] == "db-soak-short"));
         assert!(presets["presets"]
             .as_array()
             .unwrap()

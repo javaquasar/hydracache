@@ -64,6 +64,10 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/rollout/compare", options);
   }
 
+  runDbSoak(options = {}) {
+    return this.post("/demo/db/soak/run", options);
+  }
+
   compareBenchmarks(baseline, candidate) {
     return this.post("/demo/benchmarks/compare", { baseline, candidate });
   }

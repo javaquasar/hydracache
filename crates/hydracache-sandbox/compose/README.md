@@ -39,6 +39,7 @@ http://127.0.0.1:3000/demo/scenarios/file/run
 http://127.0.0.1:3000/demo/scenarios/suite/file/run
 http://127.0.0.1:3000/demo/scenarios/document/run
 http://127.0.0.1:3000/demo/flows
+http://127.0.0.1:3000/demo/db/soak/run
 http://127.0.0.1:3000/demo/benchmarks/compare
 http://127.0.0.1:3000/demo/distributed/invalidation/run
 http://127.0.0.1:3000/demo/cluster/lifecycle/run
@@ -57,7 +58,8 @@ scenario and returns step-level results plus correlated events. The same
 sandbox API also exposes scenario runner, committed scenario files/suites,
 scenario catalog, timeline, flow catalog/replay, event summary, profile
 comparison, replay, fault-injection, scenario document DSL, benchmark
-comparison, Prometheus/trace demo, DB seed report, seeded
+comparison, deterministic DB-cache soak validation, Prometheus/trace demo, DB
+seed report, seeded
 users/products/order-summary query-cache demos, session import, OpenAPI client
 smoke, distributed invalidation bus demo, cluster lifecycle demo, real
 chitchat/raft cluster-adapter demo, routed HTTP peer-fetch demo, read-through
