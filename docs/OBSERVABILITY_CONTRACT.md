@@ -105,6 +105,37 @@ fields:
 
 - `caches`
 
+## Database Cache Interpretation
+
+For `hydracache-db`, `hydracache-sqlx`, `hydracache-diesel`, and
+`hydracache-seaorm`, the same runtime counters can be read as database-cache
+signals:
+
+- `hits` means the database, ORM, or repository loader was avoided.
+- `misses` means the cache lookup did not return a usable value and a loader
+  may run.
+- `loads` means the database, ORM, or repository loader executed.
+- `single_flight_joins` means concurrent same-key database work was suppressed.
+- `stale_load_discards` means invalidation won a race against an in-flight
+  database load, so the stale loaded value was not stored.
+- `invalidations` means explicit key or tag invalidation removed cached query
+  results.
+- `LoadFailed` events should be correlated with database client, ORM, or
+  repository errors.
+
+When `stale_on_loader_error` serves a stale value, `loads` still increases
+because the database loader was attempted. Pair that counter with application
+logs from the database client or repository so stale fallback is treated as an
+availability signal, not as a hidden success.
+
+The sandbox DB routes expose these concepts through user-load and
+ORM-comparison responses:
+
+- `source = "loader"` for the first miss;
+- `source = "cache"` for the second hit;
+- `loader_calls` or `loader_calls_delta` for avoided database work;
+- `diagnostics` snapshots for hit/miss/load/invalidation counters.
+
 ## Axum Actuator Routes
 
 `hydracache-actuator-axum` exposes read-only routes that can be nested under an

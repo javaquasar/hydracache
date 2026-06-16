@@ -8,7 +8,7 @@ use std::time::Duration;
 use hydracache::HydraCache;
 use hydracache_db::{DbCache, HydraCacheEntity, QueryCachePolicy, RefreshPolicy};
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
+use tokio::sync::{oneshot, RwLock};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, HydraCacheEntity)]
 #[hydracache(entity = "user", collection = "users", id = i64)]
@@ -346,6 +346,158 @@ async fn double_invalidation_after_commit_is_idempotent() {
     let reloaded = cached_user(&queries, &repository, 42).await.unwrap();
     assert_eq!(reloaded.name, "Grace");
     assert_eq!(repository.load_calls(), 2);
+}
+
+#[tokio::test]
+async fn db_flow_updates_hit_miss_load_counters() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    let second = cached_user(&queries, &repository, 42).await.unwrap();
+
+    assert_eq!(first, second);
+    assert_eq!(repository.load_calls(), 1);
+
+    let diagnostics = cache.diagnostics().await;
+    assert_eq!(diagnostics.stats.misses, 1);
+    assert_eq!(diagnostics.stats.hits, 1);
+    assert_eq!(diagnostics.stats.loads, 1);
+    assert_eq!(diagnostics.total_requests(), 2);
+    assert_eq!(diagnostics.hit_ratio(), Some(0.5));
+}
+
+#[tokio::test]
+async fn db_flow_records_single_flight_joins() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let calls = Arc::new(AtomicUsize::new(0));
+
+    let first = queries
+        .entity::<User>("user", 42)
+        .collection_tag("users")
+        .load({
+            let calls = calls.clone();
+            move || async move {
+                tokio::time::sleep(Duration::from_millis(25)).await;
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, RepositoryError>(User {
+                    id: 42,
+                    name: "single-flight".to_owned(),
+                })
+            }
+        });
+    let second = queries
+        .entity::<User>("user", 42)
+        .collection_tag("users")
+        .load({
+            let calls = calls.clone();
+            move || async move {
+                tokio::time::sleep(Duration::from_millis(25)).await;
+                calls.fetch_add(1, Ordering::SeqCst);
+                Ok::<_, RepositoryError>(User {
+                    id: 42,
+                    name: "duplicate".to_owned(),
+                })
+            }
+        });
+
+    let (first, second) = tokio::join!(first, second);
+    let first = first.unwrap();
+    let second = second.unwrap();
+
+    assert_eq!(first, second);
+    assert_eq!(first.name, "single-flight");
+    assert_eq!(calls.load(Ordering::SeqCst), 1);
+    assert_eq!(cache.diagnostics().await.stats.single_flight_joins, 1);
+}
+
+#[tokio::test]
+async fn db_flow_records_invalidation_count() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+
+    let first = cached_user(&queries, &repository, 42).await.unwrap();
+    assert_eq!(first.name, "Ada");
+
+    assert_eq!(cache.invalidate_tag("user:42").await.unwrap(), 1);
+    assert_eq!(cache.diagnostics().await.stats.invalidations, 1);
+}
+
+#[tokio::test]
+async fn db_flow_records_stale_load_discard_when_invalidated_during_load() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let (started_tx, started_rx) = oneshot::channel();
+    let (release_tx, release_rx) = oneshot::channel();
+
+    let task = tokio::spawn({
+        let queries = queries.clone();
+        async move {
+            queries
+                .cached_with::<User>(
+                    QueryCachePolicy::read_mostly()
+                        .key("race:user:42")
+                        .tag("users")
+                        .with_name("race-load-user"),
+                )
+                .load(move || async move {
+                    let _ = started_tx.send(());
+                    let _ = release_rx.await;
+                    Ok::<_, RepositoryError>(User {
+                        id: 42,
+                        name: "stale".to_owned(),
+                    })
+                })
+                .await
+        }
+    });
+
+    started_rx.await.unwrap();
+    assert_eq!(cache.invalidate_tag("users").await.unwrap(), 0);
+    let _ = release_tx.send(());
+    let loaded = task.await.unwrap().unwrap();
+    assert_eq!(loaded.name, "stale");
+
+    assert!(cache
+        .get::<User>("production-db:race:user:42")
+        .await
+        .unwrap()
+        .is_none());
+    assert_eq!(cache.diagnostics().await.stats.stale_load_discards, 1);
+}
+
+#[tokio::test]
+async fn db_flow_records_stale_fallback_when_loader_fails() {
+    let cache = HydraCache::local().build();
+    let queries = DbCache::new(cache.clone(), "production-db");
+    let repository = UserRepository::seeded();
+    let fallback_policy = QueryCachePolicy::read_mostly()
+        .for_cache_entity::<User>(42)
+        .with_name("short-stale-fallback")
+        .ttl(Duration::from_millis(20))
+        .refresh_policy(RefreshPolicy::new().stale_on_loader_error(Duration::from_millis(250)));
+
+    let first = cached_user_with_policy(&queries, &repository, 42, fallback_policy.clone())
+        .await
+        .unwrap();
+    assert_eq!(first.name, "Ada");
+    let loads_before_failure = cache.diagnostics().await.stats.loads;
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+    repository.fail_loads(true);
+
+    let stale = cached_user_with_policy(&queries, &repository, 42, fallback_policy)
+        .await
+        .unwrap();
+    assert_eq!(stale.name, "Ada");
+    assert_eq!(repository.load_calls(), 2);
+    assert_eq!(
+        cache.diagnostics().await.stats.loads,
+        loads_before_failure + 1
+    );
 }
 
 #[tokio::test]
