@@ -152,6 +152,252 @@ The metadata should be inspectable by tests, diagnostics, and review tooling.
 Optional SQL linting can compare declared dependencies with best-effort parsed
 SQL, but explicit declarations remain the production source of truth.
 
+### Direction: Explicit Metadata First, Adapter Hints Second
+
+SQLx, Diesel, and SeaORM can all provide useful signals, but none of them should
+be treated as the production source of truth for cache invalidation.
+
+SQLx macros validate SQL against a live database or `.sqlx` offline metadata.
+That is valuable for type safety and schema drift detection, but it does not
+expose a stable public dependency graph that says which tables, views, triggers,
+row-level-security policies, or external write paths must invalidate a cached
+result. SQLx can help lint obvious misses for literal SQL, but it cannot replace
+explicit cache dependency metadata.
+
+Diesel builds typed query ASTs, and `debug_query` can render SQL for a backend.
+That can help debug and potentially lint simple queries, but it is not a stable
+cross-backend invalidation graph. Diesel join queries, custom SQL, boxed
+queries, backend-specific SQL, and repository abstractions still need explicit
+dependency declarations.
+
+SeaORM entities expose table identity more directly through `EntityTrait`, so
+HydraCache can add convenience helpers such as `depends_on_sea_entity`.
+However, relations, joins, raw SQL, views, and custom repository queries still
+need explicit dependencies.
+
+The intended design is:
+
+- `hydracache-db` owns the adapter-neutral dependency metadata model.
+- SQLx, Diesel, and SeaORM re-export the same model for user convenience.
+- ORM-specific helpers may reduce boilerplate for obvious entity/table cases.
+- Optional linting can warn about mismatches.
+- Runtime correctness depends on explicit `depends_on` declarations, not on
+  ORM internals.
+
+### Why This Helps
+
+This moves the user from review-by-reading-query-code to review-by-inspecting
+cache policy metadata.
+
+The production benefit is:
+
+- less chance that a join table is forgotten during invalidation review;
+- clearer pull-request diffs when a cached query starts depending on another
+  table;
+- diagnostics can show which cached policies have missing or suspicious
+  dependencies;
+- sandbox and tests can compare declared dependencies against expected
+  production policy;
+- SQLx/Diesel/SeaORM users get the same mental model instead of three different
+  cache-invalidation stories.
+
+### Current To Target Examples
+
+#### SQLx
+
+Current `0.36.0` shape:
+
+```rust
+let user: User = queries
+    .for_entity::<User>(user_id)
+    .fetch_with(move || async move {
+        sqlx::query_as::<_, User>(
+            "select id, name from users where id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&pool)
+        .await
+    })
+    .await?;
+```
+
+Target `0.37.0` shape:
+
+```rust
+let user: User = queries
+    .for_entity::<User>(user_id)
+    .depends_on(table("users"))
+    .fetch_with(move || async move {
+        sqlx::query_as::<_, User>(
+            "select id, name from users where id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&pool)
+        .await
+    })
+    .await?;
+```
+
+For joins, the declared dependencies must include every result-shaping table:
+
+```rust
+let policy = query_cache_policy!(
+    name = "load-user-permissions",
+    entity = UserPermissions,
+    id = user_id,
+    tag_segments = [["tenant", tenant_id, "users"]],
+    depends_on = [
+        table("users"),
+        table("user_roles"),
+        table("roles"),
+    ],
+    ttl_secs = 300,
+);
+```
+
+SQLx-specific linting may later inspect the SQL literal or `.sqlx` metadata and
+warn if `user_roles` or `roles` looks missing, but the declared list remains the
+reviewable contract.
+
+#### Diesel
+
+Current `0.36.0` shape:
+
+```rust
+let user = queries
+    .entity::<User>("diesel-user", user_id)
+    .collection_tag("diesel-users")
+    .diesel_one(move || {
+        users::table
+            .find(user_id)
+            .first::<User>(&mut conn)
+    })
+    .await?;
+```
+
+Target `0.37.0` shape:
+
+```rust
+let user = queries
+    .entity::<User>("diesel-user", user_id)
+    .collection_tag("diesel-users")
+    .depends_on(table("users"))
+    .diesel_one(move || {
+        users::table
+            .find(user_id)
+            .first::<User>(&mut conn)
+    })
+    .await?;
+```
+
+For Diesel joins, every table that can change the visible result should be
+declared:
+
+```rust
+let users = queries
+    .cached::<Vec<User>>()
+    .key_segments(["tenant", tenant_id, "role", role_id])
+    .tag_segments([["tenant", tenant_id, "users"]])
+    .depends_on(table("users"))
+    .depends_on(table("user_roles"))
+    .diesel_all(move || {
+        users::table
+            .inner_join(user_roles::table)
+            .filter(user_roles::role_id.eq(role_id))
+            .load::<User>(&mut conn)
+    })
+    .await?;
+```
+
+Candidate Diesel sugar can be added only where it stays honest:
+
+```rust
+let user = queries
+    .entity::<User>("diesel-user", user_id)
+    .collection_tag("diesel-users")
+    .depends_on_diesel_table(users::table)
+    .diesel_one(move || {
+        users::table.find(user_id).first::<User>(&mut conn)
+    })
+    .await?;
+```
+
+That helper should only reduce string repetition. It should not imply that
+HydraCache can infer all Diesel joins or raw SQL dependencies automatically.
+
+#### SeaORM
+
+Current `0.36.0` shape:
+
+```rust
+let user = queries
+    .entity::<user::Model>("seaorm-user", user_id)
+    .collection_tag("seaorm-users")
+    .sea_optional({
+        let db = db.clone();
+        move || async move {
+            user::Entity::find_by_id(user_id).one(&db).await
+        }
+    })
+    .await?;
+```
+
+Target `0.37.0` shape:
+
+```rust
+let user = queries
+    .entity::<user::Model>("seaorm-user", user_id)
+    .collection_tag("seaorm-users")
+    .depends_on(table("users"))
+    .sea_optional({
+        let db = db.clone();
+        move || async move {
+            user::Entity::find_by_id(user_id).one(&db).await
+        }
+    })
+    .await?;
+```
+
+SeaORM can also get a useful entity-table helper:
+
+```rust
+let user = queries
+    .for_entity::<user::Model>(user_id)
+    .depends_on_sea_entity::<user::Entity>()
+    .sea_optional({
+        let db = db.clone();
+        move || async move {
+            user::Entity::find_by_id(user_id).one(&db).await
+        }
+    })
+    .await?;
+```
+
+For SeaORM relations or joins, the helper should be composable and explicit:
+
+```rust
+let users = queries
+    .cached::<Vec<user::Model>>()
+    .key_segments(["tenant", tenant_id, "role", role_id])
+    .tag_segments([["tenant", tenant_id, "users"]])
+    .depends_on_sea_entity::<user::Entity>()
+    .depends_on_sea_entity::<user_role::Entity>()
+    .sea_all({
+        let db = db.clone();
+        move || async move {
+            user::Entity::find()
+                .join(sea_orm::JoinType::InnerJoin, user::Relation::UserRole.def())
+                .filter(user_role::Column::RoleId.eq(role_id))
+                .all(&db)
+                .await
+        }
+    })
+    .await?;
+```
+
+The gain is the same as SQLx and Diesel: table/entity dependencies become part
+of the cache policy instead of being hidden inside repository code.
+
 ### Proposed API Shape
 
 The exact names can change during implementation, but the intended user shape
@@ -206,6 +452,17 @@ let policy = QueryCachePolicy::new("search-users", key)
   `depends_on = [...]` form.
 - Add diagnostics output that exposes dependency metadata without exposing
   cached values.
+- Add SQLx documentation explaining that compile-time query checking validates
+  SQL shape and Rust mapping, but does not provide a cache invalidation
+  dependency graph.
+- Add Diesel examples for explicit `depends_on(table(...))` on simple queries
+  and joins.
+- Evaluate a small Diesel table helper only if it reduces string repetition
+  without implying automatic join detection.
+- Add SeaORM examples for explicit `depends_on(table(...))` and a candidate
+  `depends_on_sea_entity::<Entity>()` helper.
+- Make ORM-specific helpers compose with adapter-neutral `SqlDependency` so the
+  diagnostics and tests stay shared across SQLx, Diesel, and SeaORM.
 - Add an optional feature-gated SQL lint helper that can parse simple SQL and
   compare best-effort table references against declared dependencies.
 - Keep SQL linting out of the default runtime path.
@@ -244,6 +501,14 @@ Lint failures should be review signals, not runtime invalidation behavior.
 - Negative lint tests where declared dependencies miss a parsed table.
 - Tests proving the default build does not require the SQL parser feature.
 - Diagnostics tests proving dependency metadata appears in safe review output.
+- SQLx documentation/example tests showing dependency metadata next to SQLx
+  query execution.
+- Diesel tests showing explicit dependencies for entity lookup and join query
+  policies.
+- SeaORM tests showing explicit dependencies and any entity-table helper that
+  is added.
+- Tests proving ORM-specific helpers produce the same adapter-neutral metadata
+  as manual `depends_on(table(...))` declarations.
 
 ### Documentation
 
@@ -251,6 +516,12 @@ Lint failures should be review signals, not runtime invalidation behavior.
   checklist.
 - Extend `docs/POLICY_GUIDE.md` with examples for entity, collection, join, and
   search queries.
+- Add "from 0.36 to 0.37" examples for SQLx, Diesel, and SeaORM so users can see
+  the boilerplate added intentionally for reviewability.
+- Document the benefit of the new metadata: reviewable dependencies, safer
+  invalidation design, better diagnostics, and shared adapter behavior.
+- Document SQLx, Diesel, and SeaORM introspection limits clearly so users do not
+  mistake lint hints for automatic invalidation.
 - Document that dependency metadata helps review but does not invalidate
   anything by itself.
 
@@ -260,6 +531,10 @@ Lint failures should be review signals, not runtime invalidation behavior.
   forms.
 - [ ] Prepared policies can declare the same dependency metadata.
 - [ ] Dependency metadata is visible in diagnostics/review output.
+- [ ] SQLx, Diesel, and SeaORM examples show the `0.36.0` style and the
+  intended `0.37.0` style side by side.
+- [ ] ORM-specific helper APIs, if added, produce the same metadata as the
+  adapter-neutral builder API.
 - [ ] Optional linting can flag obvious mismatches for simple SQL.
 - [ ] Dynamic SQL limitations are documented clearly.
 - [ ] Every new dependency metadata path has tests.
