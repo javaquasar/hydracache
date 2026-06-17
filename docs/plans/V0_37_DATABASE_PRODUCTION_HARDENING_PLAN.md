@@ -937,6 +937,22 @@ Add optional runtime tests that validate Diesel and SeaORM behavior against
 Postgres and MySQL where practical. Keep these tests optional so normal local
 development is not blocked by Docker availability.
 
+The release should move these labels:
+
+```text
+before:
+  Diesel Postgres/MySQL: adapter contract only
+  SeaORM Postgres/MySQL: adapter contract only
+
+after:
+  Diesel Postgres/MySQL: optional Docker runtime smoke
+  SeaORM Postgres/MySQL: optional Docker runtime smoke
+```
+
+This is a documentation promise change, so the tests must be real runtime tests:
+they should connect to the database, create schema, write rows, execute ORM
+queries through HydraCache, and verify invalidation behavior.
+
 ### Candidate Matrix
 
 Deterministic local gate:
@@ -956,6 +972,47 @@ Optional Docker-backed gate:
 - SeaORM MySQL runtime tests.
 - Sandbox Postgres smoke.
 
+### Test Files To Add
+
+Add one test file per adapter/backend pair:
+
+```text
+crates/hydracache-diesel/tests/postgres_testcontainers.rs
+crates/hydracache-diesel/tests/mysql_testcontainers.rs
+crates/hydracache-seaorm/tests/postgres_testcontainers.rs
+crates/hydracache-seaorm/tests/mysql_testcontainers.rs
+```
+
+Each file should be self-contained enough that a failure identifies the adapter
+and backend immediately. Shared helpers are allowed, but not at the cost of
+hiding which backend failed.
+
+### Dependency And Feature Work
+
+Diesel currently has deterministic SQLite test coverage. To add runtime tests:
+
+- add optional dev/test features for Diesel Postgres and MySQL;
+- add `testcontainers-modules` dev dependency with Postgres and MySQL modules;
+- add the required native-client dependency notes for Diesel backend features;
+- make sure default local tests still compile without Postgres/MySQL client
+  requirements when the optional matrix is not requested;
+- keep Diesel tests `#[ignore]` or feature-gated so `cargo test --workspace`
+  does not require Docker or local native database libraries unexpectedly.
+
+SeaORM currently has SQLite dev features. To add runtime tests:
+
+- extend dev dependencies/features to include `sqlx-postgres` and `sqlx-mysql`
+  for test builds;
+- add `testcontainers-modules` dev dependency with Postgres and MySQL modules;
+- keep default local tests independent from Docker;
+- ensure runtime tests are `#[ignore]` or feature-gated behind a documented
+  command.
+
+If native Diesel MySQL/Postgres linking makes a clean optional setup too costly
+for `0.37.0`, document the exact blocker and keep the release label as deferred
+for that pair. Do not claim optional runtime coverage unless the test exists and
+can be run by command.
+
 ### Required Runtime Scenarios
 
 Each ORM/database pair should cover the same behavior where the ORM supports it:
@@ -973,13 +1030,121 @@ Each ORM/database pair should cover the same behavior where the ORM supports it:
 - policy metadata survives prepared policy reuse;
 - diagnostics expose hits, misses, invalidations, and failures.
 
+For this specific release, each of the four new files should include at least
+these named scenario groups:
+
+- `miss_calls_loader_and_returns_database_value`
+  - seed a row;
+  - load through the adapter;
+  - assert the loader/query path ran exactly once;
+  - assert the returned value came from the database.
+- `hit_uses_cache_without_second_loader_call`
+  - load once;
+  - mutate an in-memory counter or query wrapper;
+  - load again with the same key;
+  - assert the second call is served from cache.
+- `commit_invalidate_reload_returns_updated_value`
+  - cache a row;
+  - update the row in a committed transaction;
+  - execute the invalidation plan after commit;
+  - load again;
+  - assert the updated value is returned.
+- `rollback_does_not_invalidate_cached_value`
+  - cache a row;
+  - update inside a transaction;
+  - rollback;
+  - drop the staged invalidation plan;
+  - load again;
+  - assert the old cached value remains and loader count did not increase.
+- `optional_miss_is_cached_when_policy_allows_negative_cache`
+  - request a missing row through `diesel_optional` or `sea_optional`;
+  - assert `None`;
+  - request again;
+  - assert the loader is not called again while TTL is active.
+- `list_result_is_cached_and_invalidated_by_collection_tag`
+  - cache a list query;
+  - insert/update a row affecting the list;
+  - invalidate the collection tag;
+  - assert reload sees the new list shape.
+- `loader_error_includes_adapter_operation_and_shape_context`
+  - execute an intentionally failing query or broken loader;
+  - assert the error mentions Diesel or SeaORM, operation name, namespace, and
+    result shape.
+- `external_invalidation_plan_reloads_value`
+  - cache a row;
+  - mutate the database outside the repository helper path;
+  - execute an explicit compensating `InvalidationPlan`;
+  - assert the next read reloads the fresh database value.
+
+Optional, if release-37 outbox work lands before this matrix:
+
+- `outbox_external_writer_reloads_value`
+  - cache a row;
+  - mutate the database through raw SQL;
+  - insert outbox invalidation intent;
+  - run one publisher iteration;
+  - assert reload returns the fresh value.
+
+### Backend Setup Details
+
+Each test file should follow the same structure:
+
+1. Start the backend with testcontainers.
+2. Build a unique database/schema/table name where needed.
+3. Apply minimal schema:
+   - `users(id, name, tenant_id)` for entity and list tests;
+   - `user_roles(user_id, role_id)` if a join/list test needs it.
+4. Seed deterministic rows.
+5. Create `HydraCache::local().build()` and adapter-specific `DbCache`.
+6. Run runtime scenarios.
+7. Drop schema or rely on container cleanup.
+
+The schema should intentionally stay tiny. The purpose is not to test Diesel or
+SeaORM deeply; it is to prove HydraCache adapter behavior against real backend
+connections and transaction semantics.
+
+### Skip And Runtime Behavior
+
+Docker-backed tests should be optional but honest:
+
+- default `cargo test --workspace --all-targets --locked` must not start Docker;
+- ignored tests should say which command enables them;
+- if Docker is unavailable, tests should skip with a clear message only when
+  explicitly designed to skip; otherwise the optional gate should fail loudly;
+- release documentation should not call a pair covered unless its command has
+  passed during release validation;
+- CI can run the optional matrix in a separate job from the deterministic local
+  gate.
+
+Suggested commands:
+
+```powershell
+cargo test -p hydracache-diesel --test postgres_testcontainers --locked -- --ignored
+cargo test -p hydracache-diesel --test mysql_testcontainers --locked -- --ignored
+cargo test -p hydracache-seaorm --test postgres_testcontainers --locked -- --ignored
+cargo test -p hydracache-seaorm --test mysql_testcontainers --locked -- --ignored
+```
+
+If feature flags are needed for native client dependencies, document commands in
+their final form, for example:
+
+```powershell
+cargo test -p hydracache-diesel --features diesel-postgres-tests --test postgres_testcontainers --locked -- --ignored
+```
+
 ### Candidate Work
 
 - Add Docker/testcontainers helpers shared across adapter crates where possible.
-- Add Diesel Postgres and MySQL test modules behind ignored or feature-gated
-  test targets.
-- Add SeaORM Postgres and MySQL test modules behind ignored or feature-gated
-  test targets.
+- Add `crates/hydracache-diesel/tests/postgres_testcontainers.rs`.
+- Add `crates/hydracache-diesel/tests/mysql_testcontainers.rs`.
+- Add `crates/hydracache-seaorm/tests/postgres_testcontainers.rs`.
+- Add `crates/hydracache-seaorm/tests/mysql_testcontainers.rs`.
+- Add Diesel Postgres/MySQL test features or ignored targets without making
+  native DB clients mandatory for local default tests.
+- Add SeaORM Postgres/MySQL test features without making Docker mandatory for
+  local default tests.
+- Add adapter/backend-specific setup helpers for schema creation, seed data,
+  transaction helpers, and loader counters.
 - Add CI/documented commands for running the optional matrix.
 - Update `docs/DB_PRODUCTION_READINESS.md`, `docs/FEATURE_MATRIX.md`, and
   release notes with exact support labels.
@@ -992,6 +1157,21 @@ Each ORM/database pair should cover the same behavior where the ORM supports it:
   requested.
 - Each runtime test must create its schema, seed data, execute cache behavior,
   and clean up its container/database.
+- Diesel Postgres tests must cover miss, hit, commit/invalidate/reload,
+  rollback/no invalidation, optional/list result, loader error context, and
+  external invalidation plan.
+- Diesel MySQL tests must cover the same scenarios or document backend-specific
+  limitations directly in the test module and release matrix.
+- SeaORM Postgres tests must cover miss, hit, commit/invalidate/reload,
+  rollback/no invalidation, optional/list result, loader error context, and
+  external invalidation plan.
+- SeaORM MySQL tests must cover the same scenarios or document backend-specific
+  limitations directly in the test module and release matrix.
+- Loader counters must prove cache hits avoid a second database loader call.
+- Transaction tests must prove rollback does not execute staged invalidation and
+  does not evict the cached value.
+- External invalidation tests must prove a write outside the cached repository
+  path becomes visible after explicit invalidation.
 - Matrix tests must fail loudly if a claimed combination regresses.
 - Documentation tests should assert the published matrix labels where possible.
 
@@ -1007,6 +1187,12 @@ Each ORM/database pair should cover the same behavior where the ORM supports it:
   documented reason.
 - [ ] The feature matrix distinguishes local gate, optional Docker gate,
   adapter contract coverage, and unsupported combinations.
+- [ ] Release docs replace "adapter contract only" with "optional Docker
+  runtime smoke" only for combinations whose Docker command passed.
+- [ ] Each added runtime test file contains the required miss, hit,
+  commit/reload, rollback, optional/list, loader-error, and external
+  invalidation scenarios.
+- [ ] Default local test commands remain Docker-free.
 - [ ] Every new runtime test path is documented with the command to run it.
 
 ## 4. Cross-Node Read-After-Write Barrier
