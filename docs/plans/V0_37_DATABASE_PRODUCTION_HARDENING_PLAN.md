@@ -29,7 +29,7 @@ explicit, read-heavy database result caching. It is strongest when a service
 owns the read path, write path, cache key dimensions, invalidation tags, and
 freshness budgets.
 
-`0.37.0` should raise confidence by adding production hardening around six
+`0.37.0` should raise confidence by adding production hardening around seven
 remaining gaps:
 
 - **Declared SQL dependencies plus optional linting.** Keep explicit
@@ -45,6 +45,9 @@ remaining gaps:
   into reviewable, tested policy shapes so tenant, permission, filter,
   pagination, sort, locale, region, and feature-flag dimensions are not hidden
   in hand-built strings.
+- **Prepared repository method contracts.** Make hot repository-method cache
+  policies read like explicit contracts instead of repeated builder boilerplate,
+  while keeping loaders, ids, keys, and cache ownership visible.
 - **Cross-node read-after-write barrier.** Do not promise serializable cache
   consistency, but provide an explicit invalidation receipt/barrier API so a
   service can wait for local or cluster propagation before serving a dependent
@@ -67,6 +70,8 @@ This means:
   degraded-mode story;
 - search/list cache keys are assembled from explicit dimensions instead of
   fragile ad hoc strings;
+- hot repository methods can reuse prepared policies without repeating builder
+  boilerplate at every call site;
 - adapter runtime support is backed by real database tests, not only API
   contract coverage;
 - observability surfaces outbox lag, dependency metadata, barrier waits,
@@ -104,6 +109,8 @@ For `0.37.0`, "production-hardened database caching" means:
   optional Docker-backed database/runtime tests, and unsupported combinations.
 - Search/list query policies can be reviewed and tested for every result-shaping
   dimension.
+- Prepared repository-method policies can be declared once, tested once, and
+  reused across call sites without hiding the loader.
 - Release gates include enough automated coverage to make the new correctness
   claims honest.
 
@@ -1554,7 +1561,304 @@ Sandbox tests:
 - [ ] Every new helper or macro option added for this item has unit, runtime,
   and `trybuild` tests where applicable.
 
-## 5. Cross-Node Read-After-Write Barrier
+## 5. Prepared Repository Method Contracts
+
+Status: planned.
+
+### Problem
+
+Hot repository methods often need the same cache policy every time they are
+called:
+
+- `load_user(user_id)`;
+- `load_profile(profile_id)`;
+- `load_tenant_settings(tenant_id)`;
+- `load_permissions(user_id, tenant_id)`;
+- `list_user_roles(user_id)`.
+
+`0.36.0` added prepared query policy ergonomics, but `0.37.0` should make the
+repository-method pattern more explicit, better documented, and better tested.
+The goal is to turn repeated builder setup into a readable repository-level
+contract:
+
+```text
+this method caches User by id,
+uses this ttl/freshness budget,
+depends on these database tables,
+invalidates through these tags,
+and still executes this explicit loader on miss.
+```
+
+This is not about hiding the database or finding a global cache. It is about
+removing repetitive policy construction while keeping the important production
+dimensions visible.
+
+### Current 0.36 Shape
+
+Today a user can prepare a policy with the builder API:
+
+```rust
+use hydracache_db::PreparedQueryPolicy;
+
+let load_user = queries.prepare::<User>(
+    PreparedQueryPolicy::per_entity()
+        .cache_entity::<User>()
+        .with_name("load-user"),
+);
+
+let user = load_user
+    .load_id(user_id, move || async move {
+        Ok::<_, std::io::Error>(repo.load_user(user_id).await?)
+    })
+    .await?;
+```
+
+This is explicit and safe, but it has drawbacks:
+
+- repeated builder boilerplate hides the policy shape;
+- it is easy to forget `name`, TTL, freshness, collection tag, dependencies, or
+  stale behavior;
+- policy setup is visually mixed with runtime cache preparation;
+- different call sites can drift if they rebuild the same policy manually;
+- tests must inspect the prepared runtime query instead of a simple policy
+  declaration.
+
+### Target 0.37 Shape
+
+The target is a prepared repository-method declaration that can be reviewed and
+tested independently:
+
+```rust
+let load_user = prepared_query_policy!(
+    name = "load-user",
+    preset = per_entity,
+    entity = User,
+    ttl_secs = 300,
+);
+```
+
+The call site should stay explicit:
+
+```rust
+let user = queries
+    .prepared(load_user)
+    .load_id(user_id, move || async move {
+        Ok::<_, LoadError>(repo.load_user(user_id).await?)
+    })
+    .await?;
+```
+
+For production DB usage, the same declaration should compose with `0.37`
+metadata:
+
+```rust
+let load_user = prepared_query_policy!(
+    name = "load-user",
+    preset = per_entity,
+    entity = User,
+    ttl_secs = 300,
+    refresh_ahead_secs = 30,
+    depends_on = [table("users")],
+);
+```
+
+For a list repository method:
+
+```rust
+let list_user_roles = prepared_query_policy!(
+    name = "list-user-roles",
+    key_segments = ["user", "{id}", "roles"],
+    tag_segments = [["users"], ["roles"]],
+    depends_on = [table("users"), table("user_roles"), table("roles")],
+    ttl_secs = 120,
+);
+```
+
+The placeholder syntax above is only a candidate. The implementation should
+choose a form that is simple, type-checkable, and does not hide runtime values.
+If placeholders are too magical, prefer a prepared policy that binds runtime
+segments explicitly:
+
+```rust
+let roles = queries
+    .prepared(list_user_roles)
+    .bind_segments(["user", user_id, "roles"])
+    .load(move || async move {
+        repo.list_user_roles(user_id).await
+    })
+    .await?;
+```
+
+### Why This Helps
+
+The value is not magic; it is consistency and reviewability.
+
+Prepared repository-method contracts provide:
+
+- less repeated builder code in hot repository paths;
+- one policy declaration that can be reviewed for name, entity, TTL, freshness,
+  dependencies, tags, and key shape;
+- lower risk that two call sites for the same repository method drift apart;
+- tests that can assert policy metadata without executing the database loader;
+- a cleaner call site where the important runtime part is the loader;
+- a natural place to attach `0.37` dependency metadata and freshness budgets;
+- better sandbox examples for "verbose builder" versus "prepared policy macro".
+
+The constraints are equally important:
+
+- do not look up a global cache;
+- do not hide the id/key dimensions;
+- do not hide the loader;
+- do not own database transactions;
+- do not infer database dependencies automatically;
+- do not create a macro that makes the repository method look uncached.
+
+### Candidate Work
+
+- Audit the existing `prepared_query_policy!` syntax and decide whether `0.37`
+  needs additive syntax or only docs/tests around the repository-method pattern.
+- Add or refine a `queries.prepared(policy)` convenience if it improves
+  readability over `queries.prepare::<T>(policy)` without changing behavior.
+- Ensure prepared policies compose with:
+  - `entity = User` / `per_entity = User`;
+  - `ttl_secs`;
+  - freshness options;
+  - `tag_segments`;
+  - `key_segments` or explicit bindable runtime segments;
+  - dependency metadata from point 1.
+- Add examples for entity-by-id, optional load, list load, and permission-aware
+  repository methods.
+- Add sandbox examples showing:
+  - verbose `PreparedQueryPolicy` builder;
+  - equivalent `prepared_query_policy!` declaration;
+  - prepared policy with dependency metadata;
+  - prepared policy with freshness budget.
+- Keep the loader as an explicit closure at the call site.
+- Document when prepared policies are useful:
+  - hot methods;
+  - repeated repository methods;
+  - shared policy review;
+  - stable names/TTL/freshness/dependencies.
+- Document when prepared policies are not worth it:
+  - one-off query;
+  - highly dynamic query shape;
+  - policy dimensions only known inside complex business logic.
+
+### Required Tests
+
+Policy construction tests:
+
+- `prepared_policy_macro_matches_verbose_builder`
+  - build a policy with `PreparedQueryPolicy` builder;
+  - build the same policy with `prepared_query_policy!`;
+  - assert equality of name, key/entity metadata, tags, TTL, and refresh policy.
+- `prepared_entity_policy_sets_key_and_entity_tags`
+  - declare `entity = User`;
+  - bind `user_id`;
+  - assert the generated key and entity tag match `CacheEntity`.
+- `prepared_policy_preserves_collection_tag`
+  - declare a collection tag;
+  - bind an id;
+  - assert entity and collection tags are both present.
+- `prepared_policy_preserves_freshness_budget`
+  - include `ttl_secs`, `refresh_ahead_secs`, and stale options if supported;
+  - assert the bound runtime query keeps the refresh policy.
+- `prepared_policy_preserves_dependency_metadata`
+  - include `depends_on = [table("users")]`;
+  - assert the prepared and bound query expose the dependency metadata.
+
+Runtime behavior tests:
+
+- `prepared_load_id_miss_calls_loader`
+  - call a prepared entity policy on an empty cache;
+  - assert the loader runs and value is cached.
+- `prepared_load_id_hit_avoids_loader`
+  - call the same prepared policy twice;
+  - assert the second call does not execute the loader.
+- `prepared_load_id_invalidation_reloads`
+  - cache a value;
+  - invalidate the entity tag;
+  - assert the next call reloads.
+- `prepared_optional_negative_cache_respects_ttl`
+  - return `None` from an optional prepared load;
+  - call again within TTL;
+  - assert loader count does not increase.
+- `prepared_list_policy_caches_and_invalidates_collection`
+  - cache a list repository method;
+  - invalidate the collection tag;
+  - assert the list reloads.
+- `two_prepared_policies_do_not_share_keys`
+  - prepare `load-user` and `load-profile` with the same id value;
+  - assert they produce different keys and do not share cached values.
+- `same_prepared_policy_reused_across_call_sites_stays_consistent`
+  - reuse one policy in two call sites;
+  - assert both bind to the same key/tag/freshness metadata.
+
+Macro compile tests:
+
+- passing `trybuild` test for `prepared_query_policy!(preset = per_entity,
+  entity = User, ttl_secs = 300)`.
+- passing `trybuild` test for prepared policy with `tag_segments`.
+- passing `trybuild` test for prepared policy with freshness options.
+- passing `trybuild` test for prepared policy with `depends_on` if point 1 is
+  implemented first.
+- failing `trybuild` test for missing key/entity source.
+- failing `trybuild` test for conflicting key sources.
+- failing `trybuild` test for unknown preset.
+- failing `trybuild` test for duplicate options.
+- failing `trybuild` test for placeholder/bind syntax misuse if bindable
+  segments are added.
+
+Repository-pattern tests:
+
+- `prepared_repository_method_keeps_loader_explicit`
+  - example test should show the loader closure directly at the call site;
+  - no global cache lookup or hidden repository invocation.
+- `prepared_repository_method_does_not_own_transaction`
+  - use a loader that receives or captures a transaction/executor explicitly;
+  - assert the prepared policy does not commit/rollback or mutate transaction
+    ownership.
+- `prepared_policy_can_be_tested_without_database_loader`
+  - assert metadata on the policy directly without running the loader.
+
+Sandbox tests:
+
+- route test for verbose builder versus prepared macro example.
+- route test for prepared policy with freshness/dependency metadata.
+- JSON shape test proving the sandbox reports policy name, key/tag preview,
+  TTL/freshness, dependencies, hit/miss, and loader-call count.
+
+### Documentation
+
+- Add a prepared repository-method section to `docs/POLICY_GUIDE.md`.
+- Add examples to `docs/DB_PRODUCTION_READINESS.md` for hot repository methods.
+- Document the user-facing benefit:
+  - policy as a repository-level contract;
+  - less builder boilerplate;
+  - easier review;
+  - less drift across call sites;
+  - loader remains explicit.
+- Document the non-goals:
+  - no global cache discovery;
+  - no hidden DB query;
+  - no hidden transaction handling;
+  - no automatic dependency inference.
+
+### Acceptance Criteria
+
+- [ ] Docs show verbose `PreparedQueryPolicy` builder style and target
+  `prepared_query_policy!` style side by side.
+- [ ] Prepared repository-method examples keep the loader explicit.
+- [ ] Prepared policies compose with TTL/freshness, tags, and dependency
+  metadata.
+- [ ] Runtime tests prove miss, hit, invalidation, optional negative caching,
+  and list invalidation behavior.
+- [ ] Macro `trybuild` tests cover valid and invalid prepared policy syntax.
+- [ ] Sandbox exposes verbose versus prepared macro examples.
+- [ ] Tests prove prepared policy metadata can be reviewed without executing a
+  database loader.
+
+## 6. Cross-Node Read-After-Write Barrier
 
 Status: planned.
 
@@ -1674,7 +1978,7 @@ let value = cache
 - [ ] Documentation says exactly what is and is not guaranteed.
 - [ ] Tests cover success, timeout, degraded mode, and default eventual mode.
 
-## 6. External Writer Contract, Trigger Bridge, And CDC Path
+## 7. External Writer Contract, Trigger Bridge, And CDC Path
 
 Status: planned.
 
@@ -1793,7 +2097,7 @@ contract.
 - [ ] Docs clearly say that writers bypassing the contract can still serve
   stale data until TTL or manual invalidation.
 
-## 7. Observability And Actuator Hardening
+## 8. Observability And Actuator Hardening
 
 Status: planned.
 
@@ -1801,8 +2105,8 @@ Status: planned.
 
 The new production-hardening features are only useful if operators can see
 their health. `0.37.0` should add diagnostics for dependency metadata, outbox
-publishing, search/list key dimensions, external writers, and invalidation
-barriers.
+publishing, search/list key dimensions, prepared repository policies, external
+writers, and invalidation barriers.
 
 ### Desired Outcome
 
@@ -1816,12 +2120,15 @@ Expose enough counters and snapshots that an operator can answer:
 - Are read-after-write barriers timing out?
 - Which cache policies are serving stale values during an upstream incident?
 - Which search/list policies are missing reviewed key-dimension metadata?
+- Which prepared repository policies are reused, and are their loaders avoided
+  on cache hits?
 
 ### Candidate Metrics
 
 - `hydracache_db_dependency_missing_total`
 - `hydracache_db_dependency_lint_warning_total`
 - `hydracache_db_search_policy_missing_dimension_total`
+- `hydracache_db_prepared_policy_reuse_total`
 - `hydracache_db_outbox_pending`
 - `hydracache_db_outbox_oldest_age_ms`
 - `hydracache_db_outbox_publish_attempt_total`
@@ -1841,8 +2148,9 @@ should be this explicit.
 - Extend observability snapshots with DB hardening counters.
 - Add actuator output for outbox backlog and barrier health where the actuator
   crate can remain read-only.
-- Add sandbox routes that demonstrate search/list key review, outbox lag,
-  external invalidation, and barrier timeout behavior.
+- Add sandbox routes that demonstrate search/list key review, prepared
+  repository policies, outbox lag, external invalidation, and barrier timeout
+  behavior.
 - Document dashboard panels and alert examples.
 
 ### Required Tests
@@ -1860,9 +2168,11 @@ should be this explicit.
 - [ ] Dependency metadata/lint warnings are visible.
 - [ ] Search/list missing-dimension warnings are visible if dimension metadata
   is added.
+- [ ] Prepared repository policy reuse is visible if prepared-policy counters
+  are added.
 - [ ] Actuator output remains read-only.
 
-## 8. Documentation, Sandbox, And Examples
+## 9. Documentation, Sandbox, And Examples
 
 Status: planned.
 
@@ -1870,7 +2180,8 @@ Status: planned.
 
 The production-hardening features will add new concepts. Users need to see the
 verbose implementation and the safe helper path side by side, especially for
-search/list keys, outbox, external writers, and barriers.
+search/list keys, prepared repository methods, outbox, external writers, and
+barriers.
 
 ### Desired Outcome
 
@@ -1885,6 +2196,8 @@ the pieces compose.
   - trigger/outbox external writer invalidation;
   - search/list verbose key builder versus `key_segments`;
   - search/list omitted-dimension warning;
+  - prepared repository method verbose builder versus prepared macro;
+  - prepared repository method with freshness and dependency metadata;
   - dependency metadata review;
   - optional SQL lint warning;
   - cross-node read-after-write barrier success;
@@ -1903,13 +2216,13 @@ the pieces compose.
 
 ### Acceptance Criteria
 
-- [ ] Sandbox examples cover all six release-37 hardening themes.
+- [ ] Sandbox examples cover all seven release-37 hardening themes.
 - [ ] Each example shows explicit keys, tags, dependencies, and freshness.
 - [ ] Each new route has tests.
 - [ ] Docs link to the sandbox examples from the relevant production guide
   sections.
 
-## 9. Release Gates
+## 10. Release Gates
 
 Status: planned.
 
@@ -1989,11 +2302,12 @@ The release should be implemented in small commits:
    worker, metrics, docs, and tests.
 5. Add Diesel/SeaORM Postgres/MySQL optional runtime matrix.
 6. Add search/list key-safety docs, sandbox examples, diagnostics, and tests.
-7. Add cross-node invalidation receipt/barrier API and tests.
-8. Add external writer trigger/outbox bridge examples and tests.
-9. Add observability/actuator/sandbox hardening examples and tests.
-10. Update release notes and release gates.
-11. Bump versions, verify, tag, package, publish, and clean build artifacts.
+7. Add prepared repository-method contracts, docs, sandbox examples, and tests.
+8. Add cross-node invalidation receipt/barrier API and tests.
+9. Add external writer trigger/outbox bridge examples and tests.
+10. Add observability/actuator/sandbox hardening examples and tests.
+11. Update release notes and release gates.
+12. Bump versions, verify, tag, package, publish, and clean build artifacts.
 
 After each implementation commit, run the narrowest meaningful test set first.
 Before the release commit, run the full local release gate.
@@ -2006,6 +2320,8 @@ statements are true:
 - dependency metadata is explicit and test-covered;
 - outbox invalidation survives rollback, retry, and process-crash windows;
 - search/list key policies have tested dimension coverage and escaping;
+- prepared repository-method policies reduce boilerplate while keeping loaders
+  explicit and test-covered;
 - external writer invalidation has a tested path;
 - cross-node read-after-write behavior has an explicit barrier and timeout
   story;
