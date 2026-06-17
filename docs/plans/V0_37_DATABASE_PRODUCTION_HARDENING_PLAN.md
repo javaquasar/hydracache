@@ -29,7 +29,7 @@ explicit, read-heavy database result caching. It is strongest when a service
 owns the read path, write path, cache key dimensions, invalidation tags, and
 freshness budgets.
 
-`0.37.0` should raise confidence by adding production hardening around seven
+`0.37.0` should raise confidence by adding production hardening around eight
 remaining gaps:
 
 - **Declared SQL dependencies plus optional linting.** Keep explicit
@@ -48,6 +48,10 @@ remaining gaps:
 - **Prepared repository method contracts.** Make hot repository-method cache
   policies read like explicit contracts instead of repeated builder boilerplate,
   while keeping loaders, ids, keys, and cache ownership visible.
+- **Attribute macro for repository functions.** Take the existing ordinary
+  async-function `#[hydracache::cacheable]` ergonomics and harden it into the
+  clearest opt-in wrapper for repository functions, with explicit cache, keys,
+  tags, freshness, and no hidden database transaction behavior.
 - **Cross-node read-after-write barrier.** Do not promise serializable cache
   consistency, but provide an explicit invalidation receipt/barrier API so a
   service can wait for local or cluster propagation before serving a dependent
@@ -72,6 +76,8 @@ This means:
   fragile ad hoc strings;
 - hot repository methods can reuse prepared policies without repeating builder
   boilerplate at every call site;
+- ordinary repository functions can opt into caching with an attribute macro
+  without hiding cache ownership or key dimensions;
 - adapter runtime support is backed by real database tests, not only API
   contract coverage;
 - observability surfaces outbox lag, dependency metadata, barrier waits,
@@ -111,6 +117,8 @@ For `0.37.0`, "production-hardened database caching" means:
   dimension.
 - Prepared repository-method policies can be declared once, tested once, and
   reused across call sites without hiding the loader.
+- Attribute-macro caching is documented as explicit syntactic sugar over the
+  same cache/key/tag/freshness model, not as transparent DB interception.
 - Release gates include enough automated coverage to make the new correctness
   claims honest.
 
@@ -1858,7 +1866,377 @@ Sandbox tests:
 - [ ] Tests prove prepared policy metadata can be reviewed without executing a
   database loader.
 
-## 6. Cross-Node Read-After-Write Barrier
+## 6. Attribute Macro For Repository Functions
+
+Status: planned.
+
+### Problem
+
+The most ergonomic user-facing form is an attribute on the function that should
+be cached:
+
+```rust
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["tenant", tenant_id, "profile", profile_id],
+    tag_segments = [["tenant", tenant_id], ["profile", profile_id], ["profiles"]],
+    ttl_secs = 60
+)]
+async fn load_profile(
+    cache: &HydraCache,
+    tenant_id: i64,
+    profile_id: i64,
+) -> Result<Profile, LoadError> {
+    repo.load_profile(tenant_id, profile_id).await
+}
+```
+
+`0.36.0` already introduced a basic `#[hydracache::cacheable(...)]` attribute
+for ordinary async functions. `0.37.0` should harden this into a documented,
+tested, production-friendly repository-function pattern.
+
+The key distinction:
+
+- already available: ordinary async function caching with explicit cache,
+  key/key-segments, tags/tag-segments, and TTL;
+- `0.37.0` target: make this the clearest opt-in UX for repository functions,
+  compose it with DB production metadata where appropriate, and document the
+  safe boundaries.
+
+The risk is over-magic. Attribute macros can become too implicit if they hide
+cache ownership, key dimensions, invalidation tags, database dependencies, or
+transaction behavior. HydraCache should keep those explicit.
+
+### Why This Is Valuable
+
+This is the lowest-boilerplate form for application code:
+
+- the function body remains the real loader;
+- callers just call `load_profile(...).await`;
+- cache key, tags, TTL, and freshness live next to the function signature;
+- repository methods are easier to review because cache metadata is attached to
+  the method declaration;
+- teams can remove repetitive `cacheable_loader!` or `get_or_load` wrapping at
+  every call site;
+- tests can prove the function body runs only on misses;
+- explicit `key_segments` makes tenant/profile dimensions visible in the code
+  that owns the function.
+
+The production benefit is strongest for:
+
+- read-heavy profile/settings/catalog/reference-data loaders;
+- service methods that are already naturally async functions;
+- functions where the safe cache dimensions are known at the function boundary;
+- methods where a reviewer should see the cache contract before reading the
+  body.
+
+### Current 0.36 Shape
+
+Without the attribute, users write the wrapper manually:
+
+```rust
+async fn load_profile_cached(
+    cache: &HydraCache,
+    tenant_id: i64,
+    profile_id: i64,
+) -> hydracache::CacheResult<Profile> {
+    cacheable_loader!(
+        cache = cache,
+        key_segments = ["tenant", tenant_id, "profile", profile_id],
+        tag_segments = [["tenant", tenant_id], ["profile", profile_id], ["profiles"]],
+        ttl_secs = 60,
+        load = || async {
+            repo.load_profile(tenant_id, profile_id).await
+        },
+    )
+    .await
+}
+```
+
+This is explicit, but the wrapper adds noise around the real repository call.
+
+The existing `0.36.0` attribute form is already closer:
+
+```rust
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["profile", profile_id],
+    tag_segments = [["profile", profile_id], ["profiles"]],
+    ttl_secs = 60
+)]
+async fn load_profile(
+    cache: &HydraCache,
+    profile_id: u64,
+) -> Result<Profile, LoadError> {
+    repo_load_profile(profile_id).await
+}
+```
+
+`0.37.0` should make the DB/repository version of this pattern first-class in
+docs, tests, sandbox examples, and release guidance.
+
+### Target 0.37 Shape
+
+Free-function form should keep the cache explicit as a parameter:
+
+```rust
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["tenant", tenant_id, "profile", profile_id],
+    tag_segments = [["tenant", tenant_id], ["profile", profile_id], ["profiles"]],
+    ttl_secs = 60
+)]
+async fn load_profile(
+    cache: &HydraCache,
+    repo: &ProfileRepository,
+    tenant_id: i64,
+    profile_id: i64,
+) -> Result<Profile, LoadError> {
+    repo.load_profile(tenant_id, profile_id).await
+}
+```
+
+Method form should be considered if it stays explicit:
+
+```rust
+impl ProfileService {
+    #[hydracache::cacheable(
+        cache = self.cache,
+        key_segments = ["tenant", tenant_id, "profile", profile_id],
+        tag_segments = [["tenant", tenant_id], ["profile", profile_id], ["profiles"]],
+        ttl_secs = 60
+    )]
+    async fn load_profile(
+        &self,
+        tenant_id: i64,
+        profile_id: i64,
+    ) -> Result<Profile, LoadError> {
+        self.repo.load_profile(tenant_id, profile_id).await
+    }
+}
+```
+
+If direct `self.cache` support is difficult or ambiguous, prefer a documented
+safe pattern:
+
+```rust
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["tenant", tenant_id, "profile", profile_id],
+    tag_segments = [["tenant", tenant_id], ["profile", profile_id], ["profiles"]],
+    ttl_secs = 60
+)]
+async fn load_profile_cached(
+    cache: &HydraCache,
+    repo: &ProfileRepository,
+    tenant_id: i64,
+    profile_id: i64,
+) -> Result<Profile, LoadError> {
+    repo.load_profile(tenant_id, profile_id).await
+}
+```
+
+### DB Metadata Direction
+
+The attribute should remain explicit syntactic sugar over the same cache API.
+For DB/repository use cases, evaluate additive metadata:
+
+```rust
+#[hydracache::cacheable(
+    cache = cache,
+    key_segments = ["tenant", tenant_id, "profile", profile_id],
+    tag_segments = [["tenant", tenant_id], ["profile", profile_id], ["profiles"]],
+    ttl_secs = 60,
+    depends_on = [table("profiles")]
+)]
+async fn load_profile(...) -> Result<Profile, LoadError> {
+    ...
+}
+```
+
+If adding `depends_on` to `hydracache::cacheable` would couple the core local
+cache crate too tightly to database metadata, use one of these alternatives:
+
+- keep `#[hydracache::cacheable]` for local-cache function caching only;
+- add docs showing it can be used around repository functions while dependency
+  metadata lives in a separate `prepared_query_policy!`;
+- add a DB-specific attribute later, for example
+  `#[hydracache_db::cacheable_query(...)]`, only if it can stay explicit and
+  well-tested.
+
+The release should choose the smallest honest API. Do not add DB-shaped
+attribute syntax unless the metadata can be represented without muddying the
+core crate boundary.
+
+### Non-Goals
+
+- Do not find a global cache.
+- Do not make `cache = ...` optional.
+- Do not hide tenant/profile/query/key dimensions.
+- Do not infer tags automatically from SQL or ORM metadata.
+- Do not own database transactions.
+- Do not wrap writes.
+- Do not support synchronous functions in the first DB/repository-focused pass.
+- Do not silently cache non-`Result<T, E>` functions unless an explicit
+  infallible variant is designed and tested.
+
+### Candidate Work
+
+- Audit the existing `#[hydracache::cacheable]` implementation against
+  repository-function use cases.
+- Document the current baseline clearly: the attribute already exists for
+  ordinary async functions.
+- Add DB/repository examples to `docs/POLICY_GUIDE.md` and
+  `docs/DB_PRODUCTION_READINESS.md`.
+- Add sandbox examples showing:
+  - manual `cacheable_loader!` wrapper;
+  - equivalent `#[hydracache::cacheable]` function;
+  - tenant/profile key segments;
+  - multiple tag segment groups;
+  - invalidation and reload behavior.
+- Decide whether method receivers are supported:
+  - `&self` with `cache = self.cache`;
+  - `&self` with `cache = self.cache.clone()`;
+  - or documented free-function/wrapper-only support for `0.37.0`.
+- Decide whether DB dependency metadata belongs in the existing attribute or
+  stays outside it.
+- Add clearer compiler errors for:
+  - missing `cache`;
+  - missing key source;
+  - conflicting key sources;
+  - conflicting TTL options;
+  - non-async function;
+  - non-`Result<T, E>` return type;
+  - invalid `self.cache` usage if method receivers are not supported.
+- Ensure generated code preserves:
+  - function visibility;
+  - generics and where clauses;
+  - lifetimes;
+  - argument order;
+  - error type behavior;
+  - `Send`/async bounds already required by the cache API.
+
+### Required Tests
+
+Runtime behavior tests:
+
+- `cacheable_attribute_repository_miss_calls_loader`
+  - decorate a repository-style function;
+  - call it on an empty cache;
+  - assert the function body/loader counter runs once.
+- `cacheable_attribute_repository_hit_skips_loader`
+  - call the same function twice with the same key segments;
+  - assert the second call returns cached value and the loader counter stays at
+    one.
+- `cacheable_attribute_different_tenants_do_not_share_value`
+  - call with the same profile id but different tenant ids;
+  - assert distinct cache keys and distinct values.
+- `cacheable_attribute_different_profile_ids_do_not_share_value`
+  - call with same tenant but different profile ids;
+  - assert distinct cache keys and values.
+- `cacheable_attribute_tag_invalidation_reloads_profile`
+  - cache a profile;
+  - invalidate `profile:{profile_id}` tag;
+  - assert the next call reloads.
+- `cacheable_attribute_collection_invalidation_reloads_profiles`
+  - cache multiple profiles;
+  - invalidate `profiles` tag;
+  - assert all affected calls reload.
+- `cacheable_attribute_ttl_expiry_reloads`
+  - use a short TTL;
+  - assert the function reloads after expiry.
+- `cacheable_attribute_loader_error_is_not_cached`
+  - first call returns `Err`;
+  - second call succeeds;
+  - assert the error was not cached.
+
+Key/tag tests:
+
+- `cacheable_attribute_key_segments_match_cache_key_builder`
+  - compare generated key with manual `CacheKeyBuilder`.
+- `cacheable_attribute_tag_segments_match_expected_tags`
+  - assert all nested tag groups are generated and escaped.
+- `cacheable_attribute_segment_escaping_prevents_collisions`
+  - use tenant/profile values containing separators or whitespace;
+  - assert no key collision.
+
+Method receiver tests, if supported:
+
+- `cacheable_attribute_method_uses_self_cache`
+  - decorate an `impl` method with `cache = self.cache`;
+  - assert caching works.
+- `cacheable_attribute_method_preserves_self_receiver`
+  - test `&self` method call ergonomics and borrow behavior.
+- `cacheable_attribute_method_error_when_self_cache_unsupported`
+  - if method support is deferred, add a compile-fail test with a clear error.
+
+Macro compile tests:
+
+- passing `trybuild` test for free function with `cache` parameter,
+  `key_segments`, `tag_segments`, and `ttl_secs`.
+- passing `trybuild` test for `key = ...` expression.
+- passing `trybuild` test for `tags = vec![...]` expression.
+- passing `trybuild` test preserving visibility/generics/where clause.
+- failing `trybuild` test for missing `cache`.
+- failing `trybuild` test for missing key source.
+- failing `trybuild` test for both `key` and `key_segments`.
+- failing `trybuild` test for both `ttl` and `ttl_secs`.
+- failing `trybuild` test for empty `key_segments`.
+- failing `trybuild` test for malformed `tag_segments`.
+- failing `trybuild` test for non-async function.
+- failing `trybuild` test for non-`Result<T, E>` return type.
+- failing `trybuild` test for unknown option.
+
+DB/repository integration tests:
+
+- `attribute_cached_repository_function_wraps_sqlite_loader`
+  - use a tiny SQLite-backed repository or fake DB loader;
+  - decorate the async function;
+  - prove miss/hit/invalidate/reload behavior.
+- `attribute_does_not_own_transaction`
+  - pass an executor/transaction-like dependency into the function explicitly;
+  - assert the macro does not commit, rollback, or reorder transaction logic.
+- `attribute_external_invalidation_plan_reloads`
+  - mutate backing data outside the function;
+  - run explicit invalidation;
+  - assert the function reloads fresh data.
+
+Sandbox tests:
+
+- route test for manual `cacheable_loader!` versus attribute macro example.
+- route test for tenant/profile key and tag preview.
+- route test for invalidation/reload behavior.
+- JSON shape test with key, tags, TTL, hit/miss, loader calls, and reload count.
+
+### Documentation
+
+- Add an attribute macro section to `docs/POLICY_GUIDE.md`.
+- Add DB/repository usage examples to `docs/DB_PRODUCTION_READINESS.md`.
+- Document that `cache = ...` is intentionally explicit.
+- Document free-function and method support status.
+- Document that key/tag dimensions remain the user's responsibility.
+- Document that the attribute macro is sugar over explicit cache APIs, not
+  transparent database interception.
+- Show side-by-side examples:
+  - manual `cacheable_loader!`;
+  - `#[hydracache::cacheable]`;
+  - optional prepared policy when dependency metadata needs separate review.
+
+### Acceptance Criteria
+
+- [ ] Plan and docs state that the base attribute macro exists in `0.36.0`.
+- [ ] `0.37.0` docs show repository-function attribute macro examples with
+  explicit cache, key segments, tags, and TTL.
+- [ ] Tests prove miss, hit, TTL expiry, invalidation, loader error, and
+  tenant/profile key isolation behavior.
+- [ ] Compile tests cover valid and invalid attribute syntax.
+- [ ] Method receiver support is either implemented and tested or explicitly
+  deferred with a clear compile error and docs.
+- [ ] Sandbox exposes manual wrapper versus attribute macro side by side.
+- [ ] Docs clearly state that the attribute macro does not own transactions,
+  infer DB dependencies, or use global cache state.
+
+## 7. Cross-Node Read-After-Write Barrier
 
 Status: planned.
 
@@ -1978,7 +2356,7 @@ let value = cache
 - [ ] Documentation says exactly what is and is not guaranteed.
 - [ ] Tests cover success, timeout, degraded mode, and default eventual mode.
 
-## 7. External Writer Contract, Trigger Bridge, And CDC Path
+## 8. External Writer Contract, Trigger Bridge, And CDC Path
 
 Status: planned.
 
@@ -2097,7 +2475,7 @@ contract.
 - [ ] Docs clearly say that writers bypassing the contract can still serve
   stale data until TTL or manual invalidation.
 
-## 8. Observability And Actuator Hardening
+## 9. Observability And Actuator Hardening
 
 Status: planned.
 
@@ -2172,7 +2550,7 @@ should be this explicit.
   are added.
 - [ ] Actuator output remains read-only.
 
-## 9. Documentation, Sandbox, And Examples
+## 10. Documentation, Sandbox, And Examples
 
 Status: planned.
 
@@ -2180,8 +2558,8 @@ Status: planned.
 
 The production-hardening features will add new concepts. Users need to see the
 verbose implementation and the safe helper path side by side, especially for
-search/list keys, prepared repository methods, outbox, external writers, and
-barriers.
+search/list keys, prepared repository methods, attribute-macro functions,
+outbox, external writers, and barriers.
 
 ### Desired Outcome
 
@@ -2198,6 +2576,9 @@ the pieces compose.
   - search/list omitted-dimension warning;
   - prepared repository method verbose builder versus prepared macro;
   - prepared repository method with freshness and dependency metadata;
+  - manual `cacheable_loader!` wrapper versus `#[hydracache::cacheable]`;
+  - attribute macro tenant/profile key and tag preview;
+  - attribute macro invalidation and reload behavior;
   - dependency metadata review;
   - optional SQL lint warning;
   - cross-node read-after-write barrier success;
@@ -2216,13 +2597,13 @@ the pieces compose.
 
 ### Acceptance Criteria
 
-- [ ] Sandbox examples cover all seven release-37 hardening themes.
+- [ ] Sandbox examples cover all eight release-37 hardening themes.
 - [ ] Each example shows explicit keys, tags, dependencies, and freshness.
 - [ ] Each new route has tests.
 - [ ] Docs link to the sandbox examples from the relevant production guide
   sections.
 
-## 10. Release Gates
+## 11. Release Gates
 
 Status: planned.
 
@@ -2256,6 +2637,7 @@ cargo test -p hydracache-sqlx --locked
 cargo test -p hydracache-diesel --locked
 cargo test -p hydracache-seaorm --locked
 cargo test -p hydracache-sandbox --locked db_
+cargo test -p hydracache --locked cacheable
 cargo test -p hydracache --locked invalidation
 ```
 
@@ -2303,11 +2685,12 @@ The release should be implemented in small commits:
 5. Add Diesel/SeaORM Postgres/MySQL optional runtime matrix.
 6. Add search/list key-safety docs, sandbox examples, diagnostics, and tests.
 7. Add prepared repository-method contracts, docs, sandbox examples, and tests.
-8. Add cross-node invalidation receipt/barrier API and tests.
-9. Add external writer trigger/outbox bridge examples and tests.
-10. Add observability/actuator/sandbox hardening examples and tests.
-11. Update release notes and release gates.
-12. Bump versions, verify, tag, package, publish, and clean build artifacts.
+8. Add attribute-macro repository-function docs, sandbox examples, and tests.
+9. Add cross-node invalidation receipt/barrier API and tests.
+10. Add external writer trigger/outbox bridge examples and tests.
+11. Add observability/actuator/sandbox hardening examples and tests.
+12. Update release notes and release gates.
+13. Bump versions, verify, tag, package, publish, and clean build artifacts.
 
 After each implementation commit, run the narrowest meaningful test set first.
 Before the release commit, run the full local release gate.
@@ -2322,6 +2705,8 @@ statements are true:
 - search/list key policies have tested dimension coverage and escaping;
 - prepared repository-method policies reduce boilerplate while keeping loaders
   explicit and test-covered;
+- attribute-macro repository functions are explicit about cache/key/tags and
+  have runtime and compile-fail coverage;
 - external writer invalidation has a tested path;
 - cross-node read-after-write behavior has an explicit barrier and timeout
   story;
