@@ -665,6 +665,70 @@ The tradeoff is also explicit:
 - correctness still depends on every writer using the outbox/trigger/CDC
   contract.
 
+### Opt-In Design And Schema Cost
+
+Writing invalidation intent into the application database is a production
+hardening technique, not a free default.
+
+The benefit is durable invalidation:
+
+- the data write and invalidation intent commit atomically;
+- rollback removes both the data change and the intent;
+- a process crash after commit does not lose the intent;
+- external writers can participate through direct inserts, triggers, or CDC;
+- lag, retries, and failed publishes become observable database state.
+
+The cost is real:
+
+- applications need a migration for `hydracache_invalidation_outbox`;
+- the outbox schema becomes a versioned contract;
+- multiple services writing the same database must agree on that contract;
+- published rows need retention, cleanup, or archiving;
+- high-write workloads add write amplification and polling/claiming load;
+- services must run a worker, bridge, or external publisher;
+- production teams need alerts for backlog, lag, and dead-letter rows.
+
+Therefore the API should support three adoption levels:
+
+```text
+default path:
+  InvalidationPlan after commit
+  no DB schema changes
+  good for simple services and low-risk local-first caching
+
+production durable path:
+  hydracache_invalidation_outbox table
+  explicit migration
+  outbox worker
+  good for crash-proof invalidation and multi-writer databases
+
+custom enterprise path:
+  user-provided outbox adapter or existing application outbox
+  HydraCache maps InvalidationIntent into the user's durable transport
+  good for teams that already have a standard outbox/CDC platform
+```
+
+HydraCache should not run migrations automatically. It should provide:
+
+- copyable SQL migrations for SQLite, Postgres, and MySQL;
+- a startup schema check that reports missing/old/incompatible outbox schema;
+- a stable minimal writer contract for external systems;
+- a trait-based adapter so users can plug an existing application outbox;
+- cleanup helpers or documented retention queries;
+- clear docs that `InvalidationPlan` remains valid when the schema cost is not
+  worth paying.
+
+The schema should be intentionally stable:
+
+- one shared table, not one table per entity;
+- no foreign keys into business tables;
+- `namespace` required for multi-cache/multi-service safety;
+- simple key/tag columns for common cases;
+- `payload_json` for extension data instead of frequent `ALTER TABLE`;
+- a schema version marker or startup-compatible migration check;
+- indexes for `published_at_ms`, `available_at_ms`, `claim_owner`, and
+  `dedupe_key` where supported.
+
 ### Proposed Schema Shape
 
 The first implementation can be SQLx/SQLite-first and documented as the
@@ -743,6 +807,14 @@ let report = worker.run_once().await?;
 - Keep Diesel and SeaORM integration as explicit examples unless generic
   transaction typing stays simple.
 - Add migration snippets for SQLite, Postgres, and MySQL.
+- Add startup schema validation:
+  - table missing;
+  - required column missing;
+  - incompatible schema version;
+  - supported newer schema with backward-compatible columns.
+- Add documented cleanup/retention behavior for published rows.
+- Add a trait-based custom outbox adapter so teams with an existing app outbox
+  can persist `InvalidationIntent` without adopting HydraCache's table shape.
 - Add a minimal SQL contract for external writers:
   `kind = key|tag|entity|collection` plus `value`, mapped into the normalized
   outbox schema.
@@ -765,6 +837,24 @@ let report = worker.run_once().await?;
 - Rollback test: data write rollback also removes outbox row.
 - Crash-window simulation: after commit but before publish, a new worker can
   still publish the durable outbox row.
+- Default-path test: `InvalidationPlan` after commit still works without any
+  outbox table or schema migration.
+- Missing-schema test: outbox mode reports a clear startup/runtime error when
+  the table is absent.
+- Schema-version test: startup validation accepts the current schema and rejects
+  incompatible required-column/schema-version mismatches.
+- Migration smoke tests: SQLite migration creates the expected table, indexes,
+  and schema marker.
+- Retention test: published rows older than the configured retention window are
+  removed or archived without touching pending rows.
+- High-volume batching test: many committed rows are published in bounded
+  batches without loading the full table into memory.
+- Polling order test: rows are claimed by `available_at_ms`/creation order so
+  older invalidations do not starve.
+- Namespace isolation test: a worker for one namespace does not publish rows for
+  another namespace.
+- Custom adapter test: a fake app outbox implementation can persist and replay
+  `InvalidationIntent` through the public trait.
 - Publish test: committed outbox row invalidates the expected key/tag.
 - Direct SQL writer test: inserting a minimal `kind`/`value` intent row is
   normalized and published correctly.
@@ -785,6 +875,15 @@ let report = worker.run_once().await?;
 
 - Add an outbox section to `docs/DB_PRODUCTION_READINESS.md`.
 - Add a "0.36 staged invalidation vs 0.37 transactional outbox" comparison.
+- Document the opt-in decision:
+  - when `InvalidationPlan` is enough;
+  - when the outbox table is worth the schema cost;
+  - when to adapt an existing application outbox instead.
+- Document schema ownership:
+  - HydraCache provides migrations and checks;
+  - the application owns applying migrations;
+  - HydraCache does not mutate production schemas automatically.
+- Document retention/cleanup guidance for published rows.
 - Add transaction diagrams showing write, outbox insert, commit, publish, retry,
   and rollback paths.
 - Add repository examples for SQLx.
@@ -795,6 +894,15 @@ let report = worker.run_once().await?;
 
 - [ ] A service can persist invalidation intent in the same transaction as a
   database write.
+- [ ] Users can keep using `InvalidationPlan` without any DB schema changes.
+- [ ] Outbox mode is explicitly opt-in and documented as a production hardening
+  path.
+- [ ] Startup/schema validation reports missing or incompatible outbox schema
+  clearly.
+- [ ] Published outbox rows have documented and tested cleanup/retention
+  behavior.
+- [ ] A custom outbox adapter can use an existing application outbox without
+  adopting HydraCache's table shape.
 - [ ] A rollback cannot publish invalidation intent.
 - [ ] A process crash after commit can be recovered by the outbox worker.
 - [ ] A legacy writer can publish invalidation by inserting a documented
