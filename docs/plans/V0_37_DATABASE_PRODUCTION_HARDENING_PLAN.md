@@ -568,6 +568,103 @@ Add a database-backed invalidation outbox pattern:
 - the publisher invalidates keys/tags through HydraCache;
 - rows are marked published, retried, or dead-lettered with observable state.
 
+### Current 0.36 Flow
+
+In `0.36.0`, the recommended production pattern is staged invalidation:
+
+```rust
+let invalidations = InvalidationPlan::new()
+    .tag(User::cache_tag(user_id))
+    .tag(User::collection_tag());
+
+sqlx::query!("UPDATE users SET email = ? WHERE id = ?", email, user_id)
+    .execute(&mut *tx)
+    .await?;
+
+tx.commit().await?;
+invalidations.execute(cache.clone()).await?;
+```
+
+This is correct for commit/rollback timing:
+
+- if the transaction rolls back, invalidation is not executed;
+- if the transaction commits, invalidation happens after commit;
+- repository code remains explicit about affected keys and tags.
+
+The remaining production problem is the gap between `commit` and
+`execute(cache)`. If the process crashes, is killed during deployment, or loses
+network access after commit but before invalidation, the data change is durable
+but the invalidation event is lost. External database writers are also still
+invisible unless they manually call the same application code path.
+
+### Target 0.37 Flow
+
+`0.37.0` should move invalidation intent into the database transaction itself:
+
+```rust
+let invalidations = InvalidationIntentBatch::new("user-email-update")
+    .invalidate_tag(User::cache_tag(user_id))
+    .invalidate_tag(User::collection_tag());
+
+sqlx::query!("UPDATE users SET email = ? WHERE id = ?", email, user_id)
+    .execute(&mut *tx)
+    .await?;
+
+outbox.enqueue_sqlx(&mut tx, invalidations).await?;
+tx.commit().await?;
+```
+
+Then a worker publishes only committed rows:
+
+```rust
+InvalidationOutbox::sqlx(pool)
+    .poll_and_publish(cache.clone())
+    .await?;
+```
+
+For the simplest SQL-facing contract, a writer can insert intent directly:
+
+```sql
+INSERT INTO hydracache_invalidation_outbox(kind, value)
+VALUES ('tag', 'user:42'), ('tag', 'users');
+```
+
+The production-friendly path is:
+
+- during a write, persist invalidation intent in the same DB transaction;
+- after commit, a worker reads the outbox and publishes invalidation into the
+  cache or distributed invalidation bus;
+- for legacy writers, add SQL triggers that write the same outbox rows;
+- for CDC systems, bridge CDC events into the same outbox or publish the same
+  intent envelope;
+- if the service crashes after commit, the intent remains in the database and
+  can be replayed.
+
+### Why This Is Worth The Change
+
+The outbox changes invalidation from "best effort after commit" to "durable
+intent committed with the data".
+
+The user benefit is:
+
+- external DB writes stop being invisible when they write outbox rows or fire
+  triggers;
+- deployment restarts and process crashes do not silently lose invalidations;
+- invalidation lag becomes observable as database backlog instead of hidden
+  stale-cache risk;
+- retry and idempotency become library behavior instead of each service
+  reinventing a worker;
+- the same mechanism works for repository writes, legacy SQL writers, triggers,
+  and CDC bridges.
+
+The tradeoff is also explicit:
+
+- users must create the outbox table;
+- services must run a publisher worker or bridge;
+- very simple applications may keep using `InvalidationPlan` directly;
+- correctness still depends on every writer using the outbox/trigger/CDC
+  contract.
+
 ### Proposed Schema Shape
 
 The first implementation can be SQLx/SQLite-first and documented as the
@@ -599,6 +696,8 @@ CREATE TABLE hydracache_invalidation_outbox (
 Important properties:
 
 - `id` is stable and unique.
+- `intent_kind`/`cache_key`/`cache_tag` are the normalized library shape, while
+  docs may also show a minimal `kind`/`value` SQL sketch for legacy writers.
 - `dedupe_key` lets a writer avoid flooding the outbox during repeated writes.
 - `available_at_ms` supports retry backoff.
 - `claim_owner` and `claimed_at_ms` support safe polling workers.
@@ -644,6 +743,15 @@ let report = worker.run_once().await?;
 - Keep Diesel and SeaORM integration as explicit examples unless generic
   transaction typing stays simple.
 - Add migration snippets for SQLite, Postgres, and MySQL.
+- Add a minimal SQL contract for external writers:
+  `kind = key|tag|entity|collection` plus `value`, mapped into the normalized
+  outbox schema.
+- Add docs showing how a legacy writer can insert directly into
+  `hydracache_invalidation_outbox` without linking HydraCache.
+- Add trigger examples that insert outbox rows for row updates and collection
+  membership changes.
+- Add a CDC bridge design that converts external change events into the same
+  invalidation intent envelope.
 - Add idempotent publish behavior: publishing the same intent twice must not
   corrupt cache state.
 - Add retry/backoff and claim timeout behavior.
@@ -655,7 +763,15 @@ let report = worker.run_once().await?;
 
 - Commit test: data write plus outbox row commit together.
 - Rollback test: data write rollback also removes outbox row.
+- Crash-window simulation: after commit but before publish, a new worker can
+  still publish the durable outbox row.
 - Publish test: committed outbox row invalidates the expected key/tag.
+- Direct SQL writer test: inserting a minimal `kind`/`value` intent row is
+  normalized and published correctly.
+- Trigger test: a raw SQL update outside repository code writes an outbox row
+  and the worker invalidates the cached value.
+- CDC bridge unit test: an external change event maps to the same
+  `InvalidationIntent` representation as repository code.
 - Retry test: a failing publisher leaves the row available for retry.
 - Idempotency test: publishing the same intent twice is safe.
 - Claim timeout test: a stuck claim becomes publishable again after timeout.
@@ -668,9 +784,11 @@ let report = worker.run_once().await?;
 ### Documentation
 
 - Add an outbox section to `docs/DB_PRODUCTION_READINESS.md`.
+- Add a "0.36 staged invalidation vs 0.37 transactional outbox" comparison.
 - Add transaction diagrams showing write, outbox insert, commit, publish, retry,
   and rollback paths.
 - Add repository examples for SQLx.
+- Add examples for legacy SQL writers, database triggers, and CDC bridges.
 - Document how to operate the outbox worker and alert on lag.
 
 ### Acceptance Criteria
@@ -679,6 +797,12 @@ let report = worker.run_once().await?;
   database write.
 - [ ] A rollback cannot publish invalidation intent.
 - [ ] A process crash after commit can be recovered by the outbox worker.
+- [ ] A legacy writer can publish invalidation by inserting a documented
+  `kind`/`value` intent row.
+- [ ] A trigger-based writer can publish invalidation without calling Rust
+  application code.
+- [ ] A CDC bridge can map an external change event into the same invalidation
+  intent type.
 - [ ] The worker is idempotent and retryable.
 - [ ] Outbox lag and publish failures are observable.
 - [ ] New outbox code has unit and integration tests.
