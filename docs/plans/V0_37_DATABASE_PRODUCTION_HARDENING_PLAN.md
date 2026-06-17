@@ -29,7 +29,7 @@ explicit, read-heavy database result caching. It is strongest when a service
 owns the read path, write path, cache key dimensions, invalidation tags, and
 freshness budgets.
 
-`0.37.0` should raise confidence by adding production hardening around five
+`0.37.0` should raise confidence by adding production hardening around six
 remaining gaps:
 
 - **Declared SQL dependencies plus optional linting.** Keep explicit
@@ -41,6 +41,10 @@ remaining gaps:
 - **Diesel/SeaORM Postgres/MySQL runtime matrix.** Move the documented adapter
   matrix beyond SQLite and contract tests by adding optional Docker-backed
   runtime tests for Postgres and MySQL where practical.
+- **Search/list query key safety.** Turn dimension-heavy list/search policies
+  into reviewable, tested policy shapes so tenant, permission, filter,
+  pagination, sort, locale, region, and feature-flag dimensions are not hidden
+  in hand-built strings.
 - **Cross-node read-after-write barrier.** Do not promise serializable cache
   consistency, but provide an explicit invalidation receipt/barrier API so a
   service can wait for local or cluster propagation before serving a dependent
@@ -61,6 +65,8 @@ This means:
 - external database writers have a documented invalidation protocol;
 - multi-node read-after-write behavior has an explicit barrier, timeout, and
   degraded-mode story;
+- search/list cache keys are assembled from explicit dimensions instead of
+  fragile ad hoc strings;
 - adapter runtime support is backed by real database tests, not only API
   contract coverage;
 - observability surfaces outbox lag, dependency metadata, barrier waits,
@@ -96,6 +102,8 @@ For `0.37.0`, "production-hardened database caching" means:
   explicit invalidation receipt/barrier API.
 - SQLx, Diesel, and SeaORM docs clearly distinguish deterministic local gates,
   optional Docker-backed database/runtime tests, and unsupported combinations.
+- Search/list query policies can be reviewed and tested for every result-shaping
+  dimension.
 - Release gates include enough automated coverage to make the new correctness
   claims honest.
 
@@ -1195,7 +1203,358 @@ cargo test -p hydracache-diesel --features diesel-postgres-tests --test postgres
 - [ ] Default local test commands remain Docker-free.
 - [ ] Every new runtime test path is documented with the command to run it.
 
-## 4. Cross-Node Read-After-Write Barrier
+## 4. Search/List Query Key Safety
+
+Status: planned.
+
+### Problem
+
+Search and list queries are the easiest database cache policies to get subtly
+wrong. An entity-by-id policy usually has one obvious key dimension. A
+search/list query often has many dimensions:
+
+- tenant;
+- account or organization;
+- permission/authorization scope;
+- principal or role hash;
+- query text;
+- normalized filters;
+- pagination cursor or page number;
+- page size;
+- sort field and direction;
+- locale;
+- region;
+- feature flags;
+- time window or "as of" timestamp;
+- soft-delete visibility;
+- include/exclude switches.
+
+If any result-shaping dimension is missing from the key, users can see cached
+results from another tenant, permission scope, filter, page, sort, locale, or
+feature-flag state. This is one of the highest production risks for database
+result caching.
+
+`0.36.0` added `CacheKeyBuilder` and `query_cache_policy!(key_segments = [...])`
+ergonomics. `0.37.0` should make search/list query policies more reviewable,
+better documented, and more thoroughly tested so users can see exactly which
+dimensions are in the key and which invalidation tags apply.
+
+### Current 0.36 Manual Shape
+
+The safe key can be built manually, but it is verbose and easy to review poorly:
+
+```rust
+let key = CacheKeyBuilder::new()
+    .segment("tenant")
+    .segment(tenant_id)
+    .segment("permission")
+    .segment(permission_hash)
+    .segment("users")
+    .segment("search")
+    .segment(query)
+    .segment("page")
+    .segment(page)
+    .segment("sort")
+    .segment(sort)
+    .build_string();
+
+let policy = query_cache_policy!(
+    name = "search-users",
+    key = key,
+    collection_tag = "users",
+    ttl_secs = 30,
+);
+```
+
+This works, but it has review problems:
+
+- reviewers must mentally pair labels and values;
+- missing dimensions are not obvious in a long builder chain;
+- unsafe `format!` keys can sneak back into code;
+- collection tags can be too broad if tenant/account scope is not included;
+- there is no first-class policy metadata explaining the intended dimensions.
+
+### Target 0.37 Baseline Shape
+
+The baseline target is to make the dimension list the primary policy surface:
+
+```rust
+let policy = query_cache_policy!(
+    preset = short_lived,
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "users", "search",
+        "query", query,
+        "page", page,
+        "sort", sort,
+    ],
+    collection_tag = "users",
+    ttl_secs = 30,
+);
+```
+
+For tenant-scoped invalidation, prefer explicit tag segments:
+
+```rust
+let policy = query_cache_policy!(
+    preset = short_lived,
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "users", "search",
+        "query", query,
+        "page", page,
+        "sort", sort,
+    ],
+    tag_segments = [
+        ["tenant", tenant_id, "users"],
+        ["tenant", tenant_id, "users", "search"],
+    ],
+    ttl_secs = 30,
+);
+```
+
+For a cursor-based list:
+
+```rust
+let policy = query_cache_policy!(
+    preset = short_lived,
+    name = "list-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "users", "list",
+        "cursor", cursor,
+        "limit", limit,
+        "sort", sort,
+    ],
+    tag_segments = [["tenant", tenant_id, "users"]],
+    ttl_secs = 30,
+);
+```
+
+For filtered search, normalized filters must be included explicitly:
+
+```rust
+let policy = query_cache_policy!(
+    preset = short_lived,
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "users", "search",
+        "query", normalized_query,
+        "status", status_filter,
+        "created_from", created_from,
+        "created_to", created_to,
+        "page", page,
+        "sort", sort,
+    ],
+    tag_segments = [["tenant", tenant_id, "users"]],
+    ttl_secs = 30,
+);
+```
+
+### Possible 0.37 Enhancements
+
+`key_segments = [...]` is already a strong improvement. `0.37.0` should decide
+how far to go toward first-class search/list policy metadata.
+
+Candidate additive helpers:
+
+```rust
+let policy = search_query_policy!(
+    name = "search-users",
+    collection = "users",
+    tenant = tenant_id,
+    permission = permission_hash,
+    query = normalized_query,
+    page = page,
+    sort = sort,
+    ttl_secs = 30,
+);
+```
+
+Or keep one macro but add review metadata:
+
+```rust
+let policy = query_cache_policy!(
+    preset = short_lived,
+    name = "search-users",
+    key_segments = [
+        "tenant", tenant_id,
+        "permission", permission_hash,
+        "users", "search",
+        "query", normalized_query,
+        "page", page,
+        "sort", sort,
+    ],
+    required_dimensions = ["tenant", "permission", "query", "page", "sort"],
+    tag_segments = [["tenant", tenant_id, "users"]],
+    ttl_secs = 30,
+);
+```
+
+If `required_dimensions` is added, it should be a review/test helper, not a
+false runtime proof. It can assert that the labels are present in
+`key_segments`, expose metadata in diagnostics, and give teams a place to encode
+their review checklist.
+
+### Desired Outcome
+
+The release should make search/list policies:
+
+- easy to write without `format!`;
+- easy to review in pull requests;
+- safe against delimiter collisions through `CacheKeyBuilder` escaping;
+- explicit about tenant, permission, filter, pagination, sort, and locale
+  dimensions;
+- explicit about unique key versus broad collection tag;
+- testable with table-driven dimension-change tests;
+- visible in diagnostics without exposing sensitive values where possible.
+
+### Candidate Work
+
+- Expand `docs/POLICY_GUIDE.md` with a search/list policy section.
+- Expand `docs/DB_PRODUCTION_READINESS.md` with a search/list key review
+  checklist.
+- Add sandbox examples showing:
+  - verbose `CacheKeyBuilder` implementation;
+  - equivalent `query_cache_policy!(key_segments = [...])` implementation;
+  - unsafe missing-dimension example;
+  - tenant-scoped tag example.
+- Consider adding policy metadata for key dimension labels.
+- Consider adding `required_dimensions = [...]` to `query_cache_policy!` if it
+  can stay simple and testable.
+- Consider adding a dedicated `search_query_policy!` only if it removes real
+  repetition without hiding cache keys, tags, or freshness.
+- Ensure `collection_tag` examples do not imply the collection tag is a unique
+  key.
+- Add docs that recommend hashing permission scopes rather than serializing
+  large or sensitive permission structures into the key.
+- Add examples for page-number pagination and cursor pagination.
+- Add examples for locale, region, feature flag, and time-window dimensions.
+
+### Required Tests
+
+Unit tests for key construction:
+
+- `search_policy_includes_tenant_permission_query_page_and_sort`
+  - build a search policy;
+  - assert the physical key contains escaped tenant, permission, query, page,
+    and sort segments in stable order.
+- `each_search_dimension_changes_the_key`
+  - change tenant, permission, query, page, sort, filter, locale, region,
+    feature flag, and time window one at a time;
+  - assert every change produces a different key.
+- `segment_escaping_prevents_delimiter_collisions`
+  - compare values containing `:`, `/`, whitespace, empty strings, and reserved
+    words;
+  - assert different segment arrays cannot collapse to the same key.
+- `key_segments_are_equivalent_to_manual_cache_key_builder`
+  - build the same search key with `CacheKeyBuilder` and
+    `query_cache_policy!(key_segments = [...])`;
+  - assert equality.
+- `collection_tag_does_not_replace_unique_search_key`
+  - assert a search policy has both a unique key and the expected collection
+    tag.
+- `tenant_scoped_collection_tag_uses_tag_segments`
+  - assert tenant-scoped tags are built from `tag_segments`, not broad global
+    tags.
+
+Macro and compile tests:
+
+- passing `trybuild` test for a complete search policy with `key_segments`.
+- passing `trybuild` test for tenant-scoped `tag_segments`.
+- failing `trybuild` test for empty `key_segments`.
+- failing `trybuild` test for malformed `tag_segments`.
+- failing `trybuild` test for conflicting `key` and `key_segments`.
+- if `required_dimensions` is added:
+  - passing test when all required labels exist;
+  - failing test when a required label is missing;
+  - failing test when `required_dimensions` is used without `key_segments`.
+
+Runtime cache behavior tests:
+
+- `search_list_hit_avoids_second_loader_call`
+  - load a list once;
+  - request the same policy again;
+  - assert loader count remains one.
+- `different_pages_do_not_share_cached_results`
+  - page 1 and page 2 use the same query and sort but different page segment;
+  - assert they produce different keys and cache entries.
+- `different_permission_hashes_do_not_share_cached_results`
+  - same tenant/query/page/sort but different permission hash;
+  - assert different cached values.
+- `different_tenants_do_not_share_cached_results`
+  - same query/page/sort but different tenant;
+  - assert different cached values.
+- `collection_tag_invalidation_reloads_all_search_pages`
+  - cache page 1 and page 2;
+  - invalidate the collection tag;
+  - assert both pages reload.
+- `tenant_tag_invalidation_only_reloads_that_tenant`
+  - cache tenant A and tenant B;
+  - invalidate tenant A tag;
+  - assert tenant A reloads and tenant B remains cached.
+
+Policy review tests:
+
+- `unsafe_key_examples_are_documented_not_runtime_enforced`
+  - include examples of missing tenant/permission/page/sort;
+  - assert docs/tests explain the risk without pretending HydraCache can know
+    every business dimension automatically.
+- `search_policy_diagnostics_include_dimension_labels`
+  - if dimension metadata is added, assert diagnostics include labels such as
+    tenant, permission, query, page, and sort without requiring raw sensitive
+    values.
+
+Sandbox tests:
+
+- route test for side-by-side verbose versus macro search policy examples.
+- route test for omitted-dimension warning example.
+- route test for tenant-scoped invalidation example.
+- JSON shape test proving the sandbox reports key, tags, dimensions, hit/miss,
+  invalidation, and reload behavior.
+
+### Documentation
+
+- Add a "Search/List Query Keys" section to `docs/POLICY_GUIDE.md`.
+- Add a search/list checklist to `docs/DB_PRODUCTION_READINESS.md`.
+- Add examples for:
+  - search text;
+  - filters;
+  - pagination;
+  - cursor pagination;
+  - sorting;
+  - tenant/account;
+  - permission/authorization hash;
+  - locale/region;
+  - feature flags;
+  - time windows.
+- Explain that `key_segments` solves escaping/reviewability, but the user still
+  must know the business dimensions that shape the result.
+- Explain when to use broad collection tags versus tenant-scoped tags.
+
+### Acceptance Criteria
+
+- [ ] Search/list examples show the manual `CacheKeyBuilder` style and the
+  target `query_cache_policy!(key_segments = [...])` style side by side.
+- [ ] Tests prove every documented search/list dimension changes the key.
+- [ ] Tests prove segment escaping prevents delimiter collisions.
+- [ ] Tests prove collection/list cached results reload after tag invalidation.
+- [ ] Tests prove tenant- or permission-scoped results do not share cache
+  entries.
+- [ ] Sandbox exposes side-by-side verbose and macro examples.
+- [ ] Documentation explains the production risk: forgotten dimensions in a
+  search/list key can leak or serve incorrect data.
+- [ ] Every new helper or macro option added for this item has unit, runtime,
+  and `trybuild` tests where applicable.
+
+## 5. Cross-Node Read-After-Write Barrier
 
 Status: planned.
 
@@ -1315,7 +1674,7 @@ let value = cache
 - [ ] Documentation says exactly what is and is not guaranteed.
 - [ ] Tests cover success, timeout, degraded mode, and default eventual mode.
 
-## 5. External Writer Contract, Trigger Bridge, And CDC Path
+## 6. External Writer Contract, Trigger Bridge, And CDC Path
 
 Status: planned.
 
@@ -1434,7 +1793,7 @@ contract.
 - [ ] Docs clearly say that writers bypassing the contract can still serve
   stale data until TTL or manual invalidation.
 
-## 6. Observability And Actuator Hardening
+## 7. Observability And Actuator Hardening
 
 Status: planned.
 
@@ -1442,7 +1801,8 @@ Status: planned.
 
 The new production-hardening features are only useful if operators can see
 their health. `0.37.0` should add diagnostics for dependency metadata, outbox
-publishing, external writers, and invalidation barriers.
+publishing, search/list key dimensions, external writers, and invalidation
+barriers.
 
 ### Desired Outcome
 
@@ -1455,11 +1815,13 @@ Expose enough counters and snapshots that an operator can answer:
 - Are external writer invalidations flowing?
 - Are read-after-write barriers timing out?
 - Which cache policies are serving stale values during an upstream incident?
+- Which search/list policies are missing reviewed key-dimension metadata?
 
 ### Candidate Metrics
 
 - `hydracache_db_dependency_missing_total`
 - `hydracache_db_dependency_lint_warning_total`
+- `hydracache_db_search_policy_missing_dimension_total`
 - `hydracache_db_outbox_pending`
 - `hydracache_db_outbox_oldest_age_ms`
 - `hydracache_db_outbox_publish_attempt_total`
@@ -1479,8 +1841,8 @@ should be this explicit.
 - Extend observability snapshots with DB hardening counters.
 - Add actuator output for outbox backlog and barrier health where the actuator
   crate can remain read-only.
-- Add sandbox routes that demonstrate outbox lag, external invalidation, and
-  barrier timeout behavior.
+- Add sandbox routes that demonstrate search/list key review, outbox lag,
+  external invalidation, and barrier timeout behavior.
 - Document dashboard panels and alert examples.
 
 ### Required Tests
@@ -1496,9 +1858,11 @@ should be this explicit.
 - [ ] Barrier waits and timeouts are visible.
 - [ ] External invalidation volume is visible.
 - [ ] Dependency metadata/lint warnings are visible.
+- [ ] Search/list missing-dimension warnings are visible if dimension metadata
+  is added.
 - [ ] Actuator output remains read-only.
 
-## 7. Documentation, Sandbox, And Examples
+## 8. Documentation, Sandbox, And Examples
 
 Status: planned.
 
@@ -1506,7 +1870,7 @@ Status: planned.
 
 The production-hardening features will add new concepts. Users need to see the
 verbose implementation and the safe helper path side by side, especially for
-outbox, external writers, and barriers.
+search/list keys, outbox, external writers, and barriers.
 
 ### Desired Outcome
 
@@ -1519,6 +1883,8 @@ the pieces compose.
   - manual staged invalidation;
   - transactional outbox invalidation;
   - trigger/outbox external writer invalidation;
+  - search/list verbose key builder versus `key_segments`;
+  - search/list omitted-dimension warning;
   - dependency metadata review;
   - optional SQL lint warning;
   - cross-node read-after-write barrier success;
@@ -1537,13 +1903,13 @@ the pieces compose.
 
 ### Acceptance Criteria
 
-- [ ] Sandbox examples cover all five release-37 hardening themes.
+- [ ] Sandbox examples cover all six release-37 hardening themes.
 - [ ] Each example shows explicit keys, tags, dependencies, and freshness.
 - [ ] Each new route has tests.
 - [ ] Docs link to the sandbox examples from the relevant production guide
   sections.
 
-## 8. Release Gates
+## 9. Release Gates
 
 Status: planned.
 
@@ -1586,10 +1952,10 @@ The exact test names can change, but the release should document commands like:
 
 ```powershell
 cargo test -p hydracache-sqlx --test postgres_testcontainers --locked -- --ignored
-cargo test -p hydracache-diesel --test postgres_runtime --locked -- --ignored
-cargo test -p hydracache-diesel --test mysql_runtime --locked -- --ignored
-cargo test -p hydracache-seaorm --test postgres_runtime --locked -- --ignored
-cargo test -p hydracache-seaorm --test mysql_runtime --locked -- --ignored
+cargo test -p hydracache-diesel --test postgres_testcontainers --locked -- --ignored
+cargo test -p hydracache-diesel --test mysql_testcontainers --locked -- --ignored
+cargo test -p hydracache-seaorm --test postgres_testcontainers --locked -- --ignored
+cargo test -p hydracache-seaorm --test mysql_testcontainers --locked -- --ignored
 ```
 
 ### Packaging Gate
@@ -1621,12 +1987,13 @@ The release should be implemented in small commits:
 3. Add optional SQL dependency linting, docs, and tests.
 4. Add transactional invalidation outbox schema, SQLx SQLite implementation,
    worker, metrics, docs, and tests.
-5. Add external writer trigger/outbox bridge examples and tests.
-6. Add cross-node invalidation receipt/barrier API and tests.
-7. Add Diesel/SeaORM Postgres/MySQL optional runtime matrix.
-8. Add observability/actuator/sandbox hardening examples and tests.
-9. Update release notes and release gates.
-10. Bump versions, verify, tag, package, publish, and clean build artifacts.
+5. Add Diesel/SeaORM Postgres/MySQL optional runtime matrix.
+6. Add search/list key-safety docs, sandbox examples, diagnostics, and tests.
+7. Add cross-node invalidation receipt/barrier API and tests.
+8. Add external writer trigger/outbox bridge examples and tests.
+9. Add observability/actuator/sandbox hardening examples and tests.
+10. Update release notes and release gates.
+11. Bump versions, verify, tag, package, publish, and clean build artifacts.
 
 After each implementation commit, run the narrowest meaningful test set first.
 Before the release commit, run the full local release gate.
@@ -1638,6 +2005,7 @@ statements are true:
 
 - dependency metadata is explicit and test-covered;
 - outbox invalidation survives rollback, retry, and process-crash windows;
+- search/list key policies have tested dimension coverage and escaping;
 - external writer invalidation has a tested path;
 - cross-node read-after-write behavior has an explicit barrier and timeout
   story;
