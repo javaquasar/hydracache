@@ -204,6 +204,7 @@ where
                 in_flight: InFlightMap::default(),
                 codec: self.codec,
                 default_ttl: self.default_ttl,
+                max_entry_bytes,
                 stats: Arc::new(StatsCounters::default()),
                 events: EventBus::new(self.event_buffer_capacity, self.access_events),
                 invalidation_bus: self.invalidation_bus,

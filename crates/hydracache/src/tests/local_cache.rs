@@ -31,13 +31,58 @@ async fn builder_options_accept_small_limits_and_custom_codec() {
         .codec(hydracache_core::PostcardCodec)
         .build();
 
-    cache
-        .put("user:1", user(1), CacheOptions::new())
+    cache.put("small", 0_u8, CacheOptions::new()).await.unwrap();
+
+    let cached: Option<u8> = cache.get("small").await.unwrap();
+    assert_eq!(cached, Some(0));
+}
+
+#[tokio::test]
+async fn put_rejects_encoded_entry_larger_than_max_entry_bytes() {
+    let cache = HydraCache::local().max_entry_bytes(8).build();
+
+    let error = cache
+        .put("too-large", vec![7_u8; 64], CacheOptions::new())
+        .await
+        .unwrap_err();
+
+    assert!(error.to_string().contains("max_entry_bytes"));
+    assert_eq!(cache.get_encoded("too-large").await.unwrap(), None);
+    assert_eq!(cache.stats().oversize_rejections, 1);
+    assert_eq!(cache.stats().evictions, 0);
+}
+
+#[tokio::test]
+async fn get_or_load_returns_oversize_value_without_storing_it() {
+    let cache = HydraCache::local().max_entry_bytes(8).build();
+    let loads = Arc::new(AtomicUsize::new(0));
+
+    let first = cache
+        .get_or_load("too-large", CacheOptions::new(), {
+            let loads = loads.clone();
+            move || async move {
+                loads.fetch_add(1, Ordering::Relaxed);
+                Ok::<_, LoaderError>(vec![7_u8; 64])
+            }
+        })
+        .await
+        .unwrap();
+    let second = cache
+        .get_or_load("too-large", CacheOptions::new(), {
+            let loads = loads.clone();
+            move || async move {
+                loads.fetch_add(1, Ordering::Relaxed);
+                Ok::<_, LoaderError>(vec![8_u8; 64])
+            }
+        })
         .await
         .unwrap();
 
-    let cached: Option<User> = cache.get("user:1").await.unwrap();
-    assert_eq!(cached, Some(user(1)));
+    assert_eq!(first, vec![7_u8; 64]);
+    assert_eq!(second, vec![8_u8; 64]);
+    assert_eq!(loads.load(Ordering::Relaxed), 2);
+    assert_eq!(cache.get_encoded("too-large").await.unwrap(), None);
+    assert_eq!(cache.stats().oversize_rejections, 2);
 }
 
 #[tokio::test]

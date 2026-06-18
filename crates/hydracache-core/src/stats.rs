@@ -11,6 +11,7 @@
 /// let stats = CacheStats::default();
 /// assert_eq!(stats.hits, 0);
 /// assert_eq!(stats.single_flight_joins, 0);
+/// assert_eq!(stats.oversize_rejections, 0);
 /// assert_eq!(stats.events_published, 0);
 /// assert_eq!(stats.distributed_invalidations_published, 0);
 /// assert_eq!(stats.distributed_invalidation_lagged, 0);
@@ -36,6 +37,9 @@ pub struct CacheStats {
     ///
     /// v0 does not wire backend eviction listeners yet, so this remains zero.
     pub evictions: u64,
+    /// Entries rejected before insertion because encoded bytes exceeded
+    /// `max_entry_bytes`.
+    pub oversize_rejections: u64,
     /// Cache events delivered to at least one subscriber.
     pub events_published: u64,
     /// Event notifications skipped by slow subscribers.
@@ -116,6 +120,11 @@ impl CacheStats {
     /// Return whether a stale loader result was discarded after invalidation.
     pub fn has_stale_load_discards(&self) -> bool {
         self.stale_load_discards > 0
+    }
+
+    /// Return whether at least one encoded value was rejected before insertion.
+    pub fn has_oversize_rejections(&self) -> bool {
+        self.oversize_rejections > 0
     }
 
     /// Return whether at least one event subscriber lagged behind the event bus.
@@ -215,6 +224,7 @@ mod tests {
             misses: 1,
             single_flight_joins: 2,
             stale_load_discards: 1,
+            oversize_rejections: 1,
             event_subscriber_lagged: 1,
             distributed_invalidations_published: 1,
             distributed_invalidations_received: 1,
@@ -229,6 +239,7 @@ mod tests {
         assert_eq!(active.hit_ratio(), Some(0.75));
         assert!(active.has_single_flight_activity());
         assert!(active.has_stale_load_discards());
+        assert!(active.has_oversize_rejections());
         assert!(active.has_event_subscriber_lag());
         assert!(active.has_distributed_invalidation_activity());
         assert!(active.has_distributed_invalidation_bus_issues());

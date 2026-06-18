@@ -447,6 +447,7 @@ fn sum_stats(caches: &[HydraCache]) -> CacheStats {
             total.stale_load_discards += stats.stale_load_discards;
             total.invalidations += stats.invalidations;
             total.evictions += stats.evictions;
+            total.oversize_rejections += stats.oversize_rejections;
             total.events_published += stats.events_published;
             total.event_subscriber_lagged += stats.event_subscriber_lagged;
             total.distributed_invalidations_published += stats.distributed_invalidations_published;

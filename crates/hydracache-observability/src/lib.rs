@@ -60,6 +60,9 @@ pub struct CacheStatsSnapshot {
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
     pub evictions: u64,
+    /// Entries rejected before insertion because encoded bytes exceeded
+    /// `max_entry_bytes`.
+    pub oversize_rejections: u64,
     /// Cache events delivered to at least one subscriber.
     pub events_published: u64,
     /// Event notifications skipped by slow subscribers.
@@ -105,6 +108,7 @@ impl CacheStatsSnapshot {
             stale_load_discards: stats.stale_load_discards,
             invalidations: stats.invalidations,
             evictions: stats.evictions,
+            oversize_rejections: stats.oversize_rejections,
             events_published: stats.events_published,
             event_subscriber_lagged: stats.event_subscriber_lagged,
             distributed_invalidations_published: stats.distributed_invalidations_published,
@@ -465,6 +469,7 @@ mod tests {
                 "stale_load_discards",
                 "invalidations",
                 "evictions",
+                "oversize_rejections",
                 "events_published",
                 "event_subscriber_lagged",
                 "distributed_invalidations_published",

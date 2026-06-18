@@ -77,6 +77,7 @@ where
     pub(crate) in_flight: InFlightMap,
     pub(crate) codec: C,
     pub(crate) default_ttl: std::time::Duration,
+    pub(crate) max_entry_bytes: usize,
     pub(crate) stats: Arc<StatsCounters>,
     pub(crate) events: EventBus,
     pub(crate) invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
@@ -1155,6 +1156,10 @@ where
         options: CacheOptions,
         origin: CacheEventOrigin,
     ) -> Result<()> {
+        if self.exceeds_max_entry_bytes(value.len()) {
+            return Err(self.oversize_rejection_error(value.len()));
+        }
+
         let ttl = options.ttl_value().unwrap_or(self.inner.default_ttl);
         let tags = options.tags_value().to_vec();
         let entry = CacheEntry {
@@ -1180,6 +1185,11 @@ where
         options: CacheOptions,
         generation: &LoadGenerationSnapshot,
     ) -> Result<bool> {
+        if self.exceeds_max_entry_bytes(value.len()) {
+            self.record_oversize_rejection();
+            return Ok(false);
+        }
+
         if !self.inner.tag_index.is_current(generation).await {
             self.inner
                 .stats
@@ -1315,6 +1325,25 @@ where
         }
 
         shared
+    }
+
+    fn exceeds_max_entry_bytes(&self, encoded_len: usize) -> bool {
+        encoded_len > self.inner.max_entry_bytes
+    }
+
+    fn record_oversize_rejection(&self) {
+        self.inner
+            .stats
+            .oversize_rejections
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn oversize_rejection_error(&self, encoded_len: usize) -> CacheError {
+        self.record_oversize_rejection();
+        CacheError::Backend(format!(
+            "encoded cache entry is {encoded_len} bytes, exceeding max_entry_bytes={}",
+            self.inner.max_entry_bytes
+        ))
     }
 
     async fn remove_expired(&self, key: &str, entry: &CacheEntry) {
