@@ -1,6 +1,15 @@
+use std::collections::BTreeMap;
+use std::fmt;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use async_trait::async_trait;
 use sha2::{Digest, Sha256};
 
-use hydracache::{CacheInvalidation, CacheKeyBuilder};
+use hydracache::{CacheInvalidation, CacheKeyBuilder, HydraCache};
+use hydracache_core::CacheCodec;
+
+use crate::{DbCacheError, Result};
 
 /// Stable SHA-256 hash of a normalized invalidation target.
 pub type InvalidationTargetHash = [u8; 32];
@@ -240,6 +249,505 @@ impl From<&str> for CommitPosition {
     }
 }
 
+/// Durable lifecycle state of one outbox row.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum OutboxState {
+    /// Row is eligible for claim once `available_at_ms` is reached.
+    Pending,
+    /// Row was applied and marked published.
+    Published,
+    /// Row exceeded the retry budget and needs operator attention.
+    Dead,
+}
+
+/// One durable invalidation intent row.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OutboxRow {
+    /// Stable row id.
+    pub id: String,
+    /// Cache namespace this row belongs to.
+    pub namespace: String,
+    /// Database commit identity used for idempotency.
+    pub commit_position: CommitPosition,
+    /// Hex SHA-256 of the normalized target.
+    pub target_hash: String,
+    /// Invalidation intent to apply.
+    pub intent: InvalidationIntent,
+    /// Operator-facing write reason.
+    pub reason: String,
+    /// Creation timestamp in Unix milliseconds.
+    pub created_at_ms: u64,
+    /// Earliest claim timestamp in Unix milliseconds.
+    pub available_at_ms: u64,
+    /// Last claim timestamp in Unix milliseconds.
+    pub claimed_at_ms: Option<u64>,
+    /// Last claim owner.
+    pub claim_owner: Option<String>,
+    /// Publish timestamp in Unix milliseconds.
+    pub published_at_ms: Option<u64>,
+    /// Failed publish attempts.
+    pub attempts: u32,
+    /// Current durable state.
+    pub state: OutboxState,
+    /// Last publish/apply error.
+    pub last_error: Option<String>,
+}
+
+impl OutboxRow {
+    /// Return whether this row has been marked published.
+    pub fn is_published(&self) -> bool {
+        self.state == OutboxState::Published
+    }
+
+    /// Return whether this row is dead-lettered.
+    pub fn is_dead_lettered(&self) -> bool {
+        self.state == OutboxState::Dead
+    }
+}
+
+/// Read-only worker/backlog status.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct OutboxStatus {
+    /// Pending rows in the namespace.
+    pub pending: u64,
+    /// Age of the oldest pending row.
+    pub oldest_pending_age_ms: u64,
+    /// Dead-lettered rows in the namespace.
+    pub dead_lettered: u64,
+    /// Most recent publish timestamp in the namespace.
+    pub last_published_at_ms: Option<u64>,
+    /// Sum of failed publish attempts in the namespace.
+    pub failed_attempts: u64,
+}
+
+/// Durable outbox storage abstraction.
+#[async_trait]
+pub trait InvalidationOutbox: fmt::Debug + Send + Sync + 'static {
+    /// Enqueue a batch for a namespace and commit position.
+    async fn enqueue(
+        &self,
+        namespace: &str,
+        commit_position: &CommitPosition,
+        batch: &InvalidationIntentBatch,
+    ) -> Result<usize>;
+
+    /// Claim up to `limit` rows for a worker owner.
+    async fn claim(
+        &self,
+        namespace: &str,
+        owner: &str,
+        limit: usize,
+        claim_ttl: Duration,
+    ) -> Result<Vec<OutboxRow>>;
+
+    /// Mark rows published after invalidation was applied.
+    async fn mark_published(&self, ids: &[String]) -> Result<()>;
+
+    /// Mark one row failed, with retry backoff or dead-letter state.
+    async fn mark_failed(&self, id: &str, error: &str, backoff: Duration, dead: bool)
+        -> Result<()>;
+
+    /// Re-enable all dead-lettered rows for a namespace.
+    async fn reset_dead_letters(&self, namespace: &str) -> Result<u64>;
+
+    /// Read-only status snapshot for operators.
+    async fn status(&self, namespace: &str) -> Result<OutboxStatus>;
+}
+
+/// In-memory outbox adapter for tests, demos, and custom-adapter examples.
+#[derive(Clone, Default)]
+pub struct InMemoryInvalidationOutbox {
+    inner: Arc<Mutex<InMemoryOutboxInner>>,
+}
+
+impl InMemoryInvalidationOutbox {
+    /// Create an empty in-memory outbox.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Return one row by id.
+    pub fn row(&self, id: &str) -> Option<OutboxRow> {
+        self.inner.lock().ok()?.rows.get(id).cloned()
+    }
+
+    /// Return all rows for diagnostics and tests.
+    pub fn rows(&self) -> Vec<OutboxRow> {
+        self.inner
+            .lock()
+            .map(|inner| inner.rows.values().cloned().collect())
+            .unwrap_or_default()
+    }
+}
+
+impl fmt::Debug for InMemoryInvalidationOutbox {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("InMemoryInvalidationOutbox")
+            .field("rows", &self.rows().len())
+            .finish()
+    }
+}
+
+#[derive(Default)]
+struct InMemoryOutboxInner {
+    rows: BTreeMap<String, OutboxRow>,
+}
+
+#[async_trait]
+impl InvalidationOutbox for InMemoryInvalidationOutbox {
+    async fn enqueue(
+        &self,
+        namespace: &str,
+        commit_position: &CommitPosition,
+        batch: &InvalidationIntentBatch,
+    ) -> Result<usize> {
+        let mut inner = self.lock_inner()?;
+        let now = now_ms();
+        let mut inserted = 0;
+
+        for intent in batch.intents() {
+            let target_hash = intent.target_hash_hex();
+            let id = outbox_row_id(namespace, commit_position.as_str(), &target_hash);
+            if inner.rows.contains_key(&id) {
+                continue;
+            }
+
+            inner.rows.insert(
+                id.clone(),
+                OutboxRow {
+                    id,
+                    namespace: namespace.to_owned(),
+                    commit_position: commit_position.clone(),
+                    target_hash,
+                    intent: intent.clone(),
+                    reason: batch.reason().to_owned(),
+                    created_at_ms: now,
+                    available_at_ms: now,
+                    claimed_at_ms: None,
+                    claim_owner: None,
+                    published_at_ms: None,
+                    attempts: 0,
+                    state: OutboxState::Pending,
+                    last_error: None,
+                },
+            );
+            inserted += 1;
+        }
+
+        Ok(inserted)
+    }
+
+    async fn claim(
+        &self,
+        namespace: &str,
+        owner: &str,
+        limit: usize,
+        claim_ttl: Duration,
+    ) -> Result<Vec<OutboxRow>> {
+        if limit == 0 {
+            return Ok(Vec::new());
+        }
+
+        let mut inner = self.lock_inner()?;
+        let now = now_ms();
+        let claim_ttl_ms = duration_ms(claim_ttl);
+        let mut candidates = inner
+            .rows
+            .values()
+            .filter(|row| {
+                row.namespace == namespace
+                    && row.state == OutboxState::Pending
+                    && row.available_at_ms <= now
+                    && claim_is_available(row, now, claim_ttl_ms)
+            })
+            .map(|row| (row.available_at_ms, row.created_at_ms, row.id.clone()))
+            .collect::<Vec<_>>();
+        candidates.sort();
+
+        let ids = candidates
+            .into_iter()
+            .take(limit)
+            .map(|(_, _, id)| id)
+            .collect::<Vec<_>>();
+        let mut claimed = Vec::with_capacity(ids.len());
+
+        for id in ids {
+            if let Some(row) = inner.rows.get_mut(&id) {
+                row.claimed_at_ms = Some(now);
+                row.claim_owner = Some(owner.to_owned());
+                claimed.push(row.clone());
+            }
+        }
+
+        Ok(claimed)
+    }
+
+    async fn mark_published(&self, ids: &[String]) -> Result<()> {
+        let mut inner = self.lock_inner()?;
+        let now = now_ms();
+
+        for id in ids {
+            let Some(row) = inner.rows.get_mut(id) else {
+                continue;
+            };
+            row.state = OutboxState::Published;
+            row.published_at_ms = Some(now);
+            row.claimed_at_ms = None;
+            row.claim_owner = None;
+            row.last_error = None;
+        }
+
+        Ok(())
+    }
+
+    async fn mark_failed(
+        &self,
+        id: &str,
+        error: &str,
+        backoff: Duration,
+        dead: bool,
+    ) -> Result<()> {
+        let mut inner = self.lock_inner()?;
+        let Some(row) = inner.rows.get_mut(id) else {
+            return Ok(());
+        };
+        let now = now_ms();
+
+        row.attempts = row.attempts.saturating_add(1);
+        row.last_error = Some(error.to_owned());
+        row.claimed_at_ms = None;
+        row.claim_owner = None;
+        if dead {
+            row.state = OutboxState::Dead;
+        } else {
+            row.state = OutboxState::Pending;
+            row.available_at_ms = now.saturating_add(duration_ms(backoff));
+        }
+
+        Ok(())
+    }
+
+    async fn reset_dead_letters(&self, namespace: &str) -> Result<u64> {
+        let mut inner = self.lock_inner()?;
+        let now = now_ms();
+        let mut reset = 0;
+
+        for row in inner.rows.values_mut() {
+            if row.namespace == namespace && row.state == OutboxState::Dead {
+                row.state = OutboxState::Pending;
+                row.available_at_ms = now;
+                row.claimed_at_ms = None;
+                row.claim_owner = None;
+                row.attempts = 0;
+                row.last_error = None;
+                reset += 1;
+            }
+        }
+
+        Ok(reset)
+    }
+
+    async fn status(&self, namespace: &str) -> Result<OutboxStatus> {
+        let inner = self.lock_inner()?;
+        let now = now_ms();
+        let mut status = OutboxStatus::default();
+        let mut oldest_pending = None::<u64>;
+
+        for row in inner.rows.values().filter(|row| row.namespace == namespace) {
+            status.failed_attempts += u64::from(row.attempts);
+            match row.state {
+                OutboxState::Pending => {
+                    status.pending += 1;
+                    oldest_pending = Some(
+                        oldest_pending
+                            .map_or(row.created_at_ms, |oldest| oldest.min(row.created_at_ms)),
+                    );
+                }
+                OutboxState::Published => {
+                    status.last_published_at_ms =
+                        match (status.last_published_at_ms, row.published_at_ms) {
+                            (Some(current), Some(candidate)) => Some(current.max(candidate)),
+                            (None, Some(candidate)) => Some(candidate),
+                            (current, None) => current,
+                        };
+                }
+                OutboxState::Dead => {
+                    status.dead_lettered += 1;
+                }
+            }
+        }
+
+        status.oldest_pending_age_ms = oldest_pending
+            .map(|created_at| now.saturating_sub(created_at))
+            .unwrap_or_default();
+
+        Ok(status)
+    }
+}
+
+impl InMemoryInvalidationOutbox {
+    fn lock_inner(&self) -> Result<std::sync::MutexGuard<'_, InMemoryOutboxInner>> {
+        self.inner
+            .lock()
+            .map_err(|_| backend_error("in-memory invalidation outbox mutex was poisoned"))
+    }
+}
+
+/// Applies one outbox invalidation intent.
+#[async_trait]
+pub trait InvalidationApplier: Send + Sync + 'static {
+    /// Apply an invalidation intent after it has been claimed.
+    async fn apply_invalidation(&self, intent: &InvalidationIntent) -> hydracache::CacheResult<()>;
+}
+
+#[async_trait]
+impl<C> InvalidationApplier for HydraCache<C>
+where
+    C: CacheCodec,
+{
+    async fn apply_invalidation(&self, intent: &InvalidationIntent) -> hydracache::CacheResult<()> {
+        match intent.to_cache_invalidation() {
+            CacheInvalidation::Key { key } => {
+                self.invalidate_key(&key).await?;
+            }
+            CacheInvalidation::Tag { tag } => {
+                self.invalidate_tag(&tag).await?;
+            }
+            CacheInvalidation::Flush => {
+                self.flush().await?;
+            }
+        }
+        Ok(())
+    }
+}
+
+/// Result of one outbox worker drain iteration.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct OutboxPublishReport {
+    /// Rows claimed for this iteration.
+    pub claimed: usize,
+    /// Rows successfully applied and marked published.
+    pub published: usize,
+    /// Rows returned to pending with backoff.
+    pub retried: usize,
+    /// Rows moved to dead-letter state.
+    pub dead_lettered: usize,
+}
+
+/// Circuit-breaker drain worker for invalidation outbox rows.
+#[derive(Debug, Clone)]
+pub struct InvalidationOutboxWorker<O, A> {
+    outbox: O,
+    applier: A,
+    namespace: String,
+    owner: String,
+    batch_size: usize,
+    claim_ttl: Duration,
+    backoff: Duration,
+    max_attempts: u32,
+}
+
+impl<O, A> InvalidationOutboxWorker<O, A> {
+    /// Create a worker with conservative defaults.
+    pub fn new(outbox: O, applier: A, namespace: impl Into<String>) -> Self {
+        Self {
+            outbox,
+            applier,
+            namespace: namespace.into(),
+            owner: "hydracache-outbox-worker".to_owned(),
+            batch_size: 64,
+            claim_ttl: Duration::from_secs(30),
+            backoff: Duration::from_secs(1),
+            max_attempts: 5,
+        }
+    }
+
+    /// Override the claim owner written to rows.
+    pub fn owner(mut self, owner: impl Into<String>) -> Self {
+        self.owner = owner.into();
+        self
+    }
+
+    /// Override the maximum rows claimed in one iteration.
+    pub fn batch_size(mut self, batch_size: usize) -> Self {
+        self.batch_size = batch_size.max(1);
+        self
+    }
+
+    /// Override the claim timeout used to recover abandoned claims.
+    pub fn claim_ttl(mut self, claim_ttl: Duration) -> Self {
+        self.claim_ttl = claim_ttl;
+        self
+    }
+
+    /// Override retry backoff after an apply/publish failure.
+    pub fn backoff(mut self, backoff: Duration) -> Self {
+        self.backoff = backoff;
+        self
+    }
+
+    /// Override maximum failed attempts before dead-lettering.
+    pub fn max_attempts(mut self, max_attempts: u32) -> Self {
+        self.max_attempts = max_attempts.max(1);
+        self
+    }
+
+    /// Run one claim -> apply -> mark-published iteration.
+    pub async fn run_once(&self) -> Result<OutboxPublishReport>
+    where
+        O: InvalidationOutbox,
+        A: InvalidationApplier,
+    {
+        let rows = self
+            .outbox
+            .claim(
+                &self.namespace,
+                &self.owner,
+                self.batch_size,
+                self.claim_ttl,
+            )
+            .await?;
+        let mut report = OutboxPublishReport {
+            claimed: rows.len(),
+            ..OutboxPublishReport::default()
+        };
+
+        for row in rows {
+            match self.applier.apply_invalidation(&row.intent).await {
+                Ok(()) => {
+                    self.outbox
+                        .mark_published(std::slice::from_ref(&row.id))
+                        .await?;
+                    report.published += 1;
+                }
+                Err(error) => {
+                    let dead = row.attempts.saturating_add(1) >= self.max_attempts;
+                    self.outbox
+                        .mark_failed(&row.id, &error.to_string(), self.backoff, dead)
+                        .await?;
+                    if dead {
+                        report.dead_lettered += 1;
+                    } else {
+                        report.retried += 1;
+                    }
+                }
+            }
+        }
+
+        Ok(report)
+    }
+
+    /// Operator reset; re-enables all dead-lettered rows for this namespace.
+    pub async fn reset_dead_letters(&self) -> Result<u64>
+    where
+        O: InvalidationOutbox,
+    {
+        self.outbox.reset_dead_letters(&self.namespace).await
+    }
+}
+
 fn write_hash_part(hasher: &mut Sha256, bytes: &[u8]) {
     hasher.update((bytes.len() as u64).to_be_bytes());
     hasher.update(bytes);
@@ -266,9 +774,45 @@ fn hex_encode(bytes: &[u8; 32]) -> String {
     out
 }
 
+fn outbox_row_id(namespace: &str, commit_position: &str, target_hash: &str) -> String {
+    let mut hasher = Sha256::new();
+    write_hash_part(&mut hasher, b"hydracache-outbox-row-id-v1");
+    write_hash_part(&mut hasher, namespace.as_bytes());
+    write_hash_part(&mut hasher, commit_position.as_bytes());
+    write_hash_part(&mut hasher, target_hash.as_bytes());
+    hex_encode(&hasher.finalize().into())
+}
+
+fn claim_is_available(row: &OutboxRow, now: u64, claim_ttl_ms: u64) -> bool {
+    match row.claimed_at_ms {
+        Some(claimed_at) => claimed_at.saturating_add(claim_ttl_ms) <= now,
+        None => true,
+    }
+}
+
+fn duration_ms(duration: Duration) -> u64 {
+    u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
+}
+
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+        .try_into()
+        .unwrap_or(u64::MAX)
+}
+
+fn backend_error(message: impl Into<String>) -> DbCacheError {
+    hydracache::CacheError::Backend(message.into()).into()
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{CommitPosition, InvalidationIntent, InvalidationIntentBatch};
+    use super::{
+        CommitPosition, InMemoryInvalidationOutbox, InvalidationIntent, InvalidationIntentBatch,
+        InvalidationOutbox, OutboxState,
+    };
 
     #[test]
     fn intent_target_hash_is_stable() {
@@ -337,5 +881,20 @@ mod tests {
         assert_eq!(position.as_str(), "pg:123");
         assert_eq!(position.clone().into_string(), "pg:123");
         assert_eq!(CommitPosition::from("pg:123"), position);
+    }
+
+    #[tokio::test]
+    async fn in_memory_outbox_enqueue_is_idempotent_for_same_commit_and_target() {
+        let outbox = InMemoryInvalidationOutbox::new();
+        let commit = CommitPosition::new("sqlite:1");
+        let batch = InvalidationIntentBatch::new("write").invalidate_tag("users");
+
+        assert_eq!(outbox.enqueue("db", &commit, &batch).await.unwrap(), 1);
+        assert_eq!(outbox.enqueue("db", &commit, &batch).await.unwrap(), 0);
+
+        let rows = outbox.rows();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].state, OutboxState::Pending);
+        assert_eq!(rows[0].namespace, "db");
     }
 }

@@ -184,7 +184,9 @@ pub use hydracache::CacheKeyBuilder;
 pub use hydracache_macros::{prepared_query_policy, query_cache_policy, HydraCacheEntity};
 pub use invalidation::{InvalidationPlan, InvalidationReport};
 pub use outbox::{
-    CommitPosition, InvalidationIntent, InvalidationIntentBatch, InvalidationTargetHash,
+    CommitPosition, InMemoryInvalidationOutbox, InvalidationApplier, InvalidationIntent,
+    InvalidationIntentBatch, InvalidationOutbox, InvalidationOutboxWorker, InvalidationTargetHash,
+    OutboxPublishReport, OutboxRow, OutboxState, OutboxStatus,
 };
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;

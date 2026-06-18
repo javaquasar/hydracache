@@ -10,6 +10,7 @@ readme.workspace = true
 description = "Database-neutral query result cache adapter for HydraCache."
 
 [dependencies]
+async-trait.workspace = true
 hydracache.workspace = true
 hydracache-core.workspace = true
 hydracache-macros.workspace = true

@@ -1366,6 +1366,7 @@ dependencies = [
 name = "hydracache-db"
 version = "0.36.0"
 dependencies = [
+ "async-trait",
  "hydracache",
  "hydracache-core",
  "hydracache-macros",
