@@ -196,7 +196,9 @@ pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
 pub use query::{DbCache, DbQuery, PreparedDbQuery};
 #[cfg(feature = "sqlx-outbox")]
-pub use sqlx_outbox::{SqlxInvalidationOutbox, OUTBOX_SCHEMA_VERSION};
+pub use sqlx_outbox::{
+    PgNotifyIntent, PgNotifyIntentSource, SqlxInvalidationOutbox, OUTBOX_SCHEMA_VERSION,
+};
 
 /// Database-facing alias for local cache refresh/stale behavior.
 pub type RefreshPolicy = hydracache::RefreshOptions;

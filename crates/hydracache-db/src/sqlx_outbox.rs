@@ -2,7 +2,7 @@ use std::fmt;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use sqlx::postgres::PgRow;
+use sqlx::postgres::{PgListener, PgRow};
 use sqlx::sqlite::SqliteRow;
 use sqlx::{PgPool, Postgres, Row, Sqlite, SqlitePool, Transaction};
 
@@ -15,6 +15,83 @@ use crate::{
 pub const OUTBOX_SCHEMA_VERSION: i64 = 1;
 
 const SCHEMA_ARTIFACT: &str = "hydracache_invalidation_outbox";
+
+/// One Postgres LISTEN/NOTIFY wake-up payload.
+///
+/// This is a latency hint only. Durable correctness must still come from the
+/// invalidation outbox because Postgres notifications are at-most-once.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PgNotifyIntent {
+    channel: String,
+    payload: String,
+}
+
+impl PgNotifyIntent {
+    /// Create a notification intent from channel and payload strings.
+    pub fn new(channel: impl Into<String>, payload: impl Into<String>) -> Self {
+        Self {
+            channel: channel.into(),
+            payload: payload.into(),
+        }
+    }
+
+    /// Return the Postgres notification channel.
+    pub fn channel(&self) -> &str {
+        &self.channel
+    }
+
+    /// Return the Postgres notification payload.
+    pub fn payload(&self) -> &str {
+        &self.payload
+    }
+}
+
+/// Thin sqlx `PgListener` wrapper for invalidation wake-ups.
+///
+/// The source intentionally does not apply invalidation by itself. It lets a
+/// worker wake up and drain the durable outbox sooner; missed notifications are
+/// recovered by the normal polling path.
+pub struct PgNotifyIntentSource {
+    listener: PgListener,
+    channel: String,
+}
+
+impl PgNotifyIntentSource {
+    /// Connect a listener and subscribe to one channel.
+    pub async fn connect(database_url: &str, channel: &str) -> Result<Self> {
+        let mut listener = PgListener::connect(database_url)
+            .await
+            .map_err(sqlx_error)?;
+        listener.listen(channel).await.map_err(sqlx_error)?;
+        Ok(Self {
+            listener,
+            channel: channel.to_owned(),
+        })
+    }
+
+    /// Return the subscribed channel.
+    pub fn channel(&self) -> &str {
+        &self.channel
+    }
+
+    /// Receive the next notification intent.
+    pub async fn recv(&mut self) -> Result<PgNotifyIntent> {
+        let notification = self.listener.recv().await.map_err(sqlx_error)?;
+        Ok(PgNotifyIntent::new(
+            notification.channel(),
+            notification.payload(),
+        ))
+    }
+}
+
+impl fmt::Debug for PgNotifyIntentSource {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("PgNotifyIntentSource")
+            .field("channel", &self.channel)
+            .finish_non_exhaustive()
+    }
+}
 
 /// SQLx-backed invalidation outbox.
 #[derive(Clone)]
