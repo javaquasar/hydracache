@@ -22,8 +22,8 @@ serde.workspace = true
 sha2.workspace = true
 sqlx = { workspace = true, optional = true, features = ["postgres", "runtime-tokio-rustls", "sqlite"] }
 thiserror.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true
-tokio.workspace = true
 trybuild.workspace = true

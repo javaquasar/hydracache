@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -342,6 +343,278 @@ pub struct OutboxStatus {
     pub failed_attempts: u64,
 }
 
+/// Cumulative in-process outbox worker counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct OutboxWorkerDiagnostics {
+    /// Completed worker iterations.
+    pub iterations: u64,
+    /// Rows claimed by the worker.
+    pub claimed: u64,
+    /// Rows successfully published.
+    pub published: u64,
+    /// Rows returned to pending with backoff.
+    pub retried: u64,
+    /// Rows moved to dead-letter state.
+    pub dead_lettered: u64,
+}
+
+#[derive(Debug, Default)]
+struct OutboxWorkerCounters {
+    iterations: AtomicU64,
+    claimed: AtomicU64,
+    published: AtomicU64,
+    retried: AtomicU64,
+    dead_lettered: AtomicU64,
+}
+
+impl OutboxWorkerCounters {
+    fn snapshot(&self) -> OutboxWorkerDiagnostics {
+        OutboxWorkerDiagnostics {
+            iterations: self.iterations.load(Ordering::Relaxed),
+            claimed: self.claimed.load(Ordering::Relaxed),
+            published: self.published.load(Ordering::Relaxed),
+            retried: self.retried.load(Ordering::Relaxed),
+            dead_lettered: self.dead_lettered.load(Ordering::Relaxed),
+        }
+    }
+
+    fn record(&self, report: OutboxPublishReport) {
+        self.iterations.fetch_add(1, Ordering::Relaxed);
+        self.claimed
+            .fetch_add(report.claimed as u64, Ordering::Relaxed);
+        self.published
+            .fetch_add(report.published as u64, Ordering::Relaxed);
+        self.retried
+            .fetch_add(report.retried as u64, Ordering::Relaxed);
+        self.dead_lettered
+            .fetch_add(report.dead_lettered as u64, Ordering::Relaxed);
+    }
+}
+
+/// Read-after-write wait mode for durable invalidation outbox users.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum ConsistencyMode {
+    /// Do not wait for local invalidation publishing.
+    NoWait,
+    /// Wait for the local namespace outbox to drain.
+    Local,
+    /// Wait locally until timeout, then report degraded instead of hiding it.
+    BestEffort,
+}
+
+/// Receipt returned by write paths after enqueueing durable invalidation intent.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InvalidationReceipt {
+    namespace: String,
+    commit_position: CommitPosition,
+    created_at_ms: u64,
+}
+
+impl InvalidationReceipt {
+    /// Create a receipt for a committed write.
+    pub fn new(namespace: impl Into<String>, commit_position: CommitPosition) -> Self {
+        Self {
+            namespace: namespace.into(),
+            commit_position,
+            created_at_ms: now_ms(),
+        }
+    }
+
+    /// Cache namespace of the invalidation write.
+    pub fn namespace(&self) -> &str {
+        &self.namespace
+    }
+
+    /// Database commit identity associated with this invalidation write.
+    pub fn commit_position(&self) -> &CommitPosition {
+        &self.commit_position
+    }
+
+    /// Receipt creation timestamp in Unix milliseconds.
+    pub fn created_at_ms(&self) -> u64 {
+        self.created_at_ms
+    }
+}
+
+/// Outcome of a read-after-write invalidation wait.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct InvalidationWaitOutcome {
+    /// Requested wait mode.
+    pub mode: ConsistencyMode,
+    /// Whether the outbox was drained before returning.
+    pub satisfied: bool,
+    /// Whether the caller should treat the result as degraded.
+    pub degraded: bool,
+    /// Whether waiting stopped because the timeout elapsed.
+    pub timed_out: bool,
+    /// Pending rows still visible when the wait completed.
+    pub pending: u64,
+    /// Elapsed wait time in milliseconds.
+    pub elapsed_ms: u64,
+}
+
+/// Cumulative in-process read-after-write wait counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct InvalidationWaitDiagnostics {
+    /// Wait calls.
+    pub waits: u64,
+    /// Waits that observed a drained outbox.
+    pub satisfied: u64,
+    /// Waits that elapsed their timeout.
+    pub timed_out: u64,
+    /// Waits that returned a degraded outcome.
+    pub degraded: u64,
+}
+
+#[derive(Debug, Default)]
+struct InvalidationWaitCounters {
+    waits: AtomicU64,
+    satisfied: AtomicU64,
+    timed_out: AtomicU64,
+    degraded: AtomicU64,
+}
+
+impl InvalidationWaitCounters {
+    fn snapshot(&self) -> InvalidationWaitDiagnostics {
+        InvalidationWaitDiagnostics {
+            waits: self.waits.load(Ordering::Relaxed),
+            satisfied: self.satisfied.load(Ordering::Relaxed),
+            timed_out: self.timed_out.load(Ordering::Relaxed),
+            degraded: self.degraded.load(Ordering::Relaxed),
+        }
+    }
+
+    fn record(&self, outcome: InvalidationWaitOutcome) {
+        self.waits.fetch_add(1, Ordering::Relaxed);
+        if outcome.satisfied {
+            self.satisfied.fetch_add(1, Ordering::Relaxed);
+        }
+        if outcome.timed_out {
+            self.timed_out.fetch_add(1, Ordering::Relaxed);
+        }
+        if outcome.degraded {
+            self.degraded.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+}
+
+/// Read-after-write helper that waits for durable invalidation publishing.
+#[derive(Debug, Clone)]
+pub struct InvalidationWait {
+    mode: ConsistencyMode,
+    timeout: Duration,
+    poll_interval: Duration,
+    counters: Arc<InvalidationWaitCounters>,
+}
+
+impl InvalidationWait {
+    /// Create a wait helper that returns immediately.
+    pub fn no_wait() -> Self {
+        Self {
+            mode: ConsistencyMode::NoWait,
+            timeout: Duration::ZERO,
+            poll_interval: Duration::from_millis(10),
+            counters: Arc::default(),
+        }
+    }
+
+    /// Create a local wait helper with a timeout.
+    pub fn local(timeout: Duration) -> Self {
+        Self {
+            mode: ConsistencyMode::Local,
+            timeout,
+            poll_interval: Duration::from_millis(10),
+            counters: Arc::default(),
+        }
+    }
+
+    /// Create a best-effort wait helper with a timeout.
+    pub fn best_effort(timeout: Duration) -> Self {
+        Self {
+            mode: ConsistencyMode::BestEffort,
+            timeout,
+            poll_interval: Duration::from_millis(10),
+            counters: Arc::default(),
+        }
+    }
+
+    /// Override polling interval.
+    pub fn poll_interval(mut self, poll_interval: Duration) -> Self {
+        self.poll_interval = poll_interval;
+        self
+    }
+
+    /// Return configured wait mode.
+    pub fn mode(&self) -> ConsistencyMode {
+        self.mode
+    }
+
+    /// Return cumulative wait diagnostics.
+    pub fn diagnostics(&self) -> InvalidationWaitDiagnostics {
+        self.counters.snapshot()
+    }
+
+    /// Wait until the namespace outbox is drained, timeout is reached, or mode
+    /// is [`ConsistencyMode::NoWait`].
+    pub async fn wait<O>(
+        &self,
+        outbox: &O,
+        receipt: &InvalidationReceipt,
+    ) -> Result<InvalidationWaitOutcome>
+    where
+        O: InvalidationOutbox,
+    {
+        let start = tokio::time::Instant::now();
+
+        if self.mode == ConsistencyMode::NoWait {
+            let outcome = InvalidationWaitOutcome {
+                mode: self.mode,
+                satisfied: true,
+                degraded: false,
+                timed_out: false,
+                pending: 0,
+                elapsed_ms: elapsed_ms(start),
+            };
+            self.counters.record(outcome);
+            return Ok(outcome);
+        }
+
+        loop {
+            let status = outbox.status(receipt.namespace()).await?;
+            if status.pending == 0 {
+                let outcome = InvalidationWaitOutcome {
+                    mode: self.mode,
+                    satisfied: true,
+                    degraded: false,
+                    timed_out: false,
+                    pending: 0,
+                    elapsed_ms: elapsed_ms(start),
+                };
+                self.counters.record(outcome);
+                return Ok(outcome);
+            }
+
+            let elapsed = start.elapsed();
+            if elapsed >= self.timeout {
+                let outcome = InvalidationWaitOutcome {
+                    mode: self.mode,
+                    satisfied: false,
+                    degraded: true,
+                    timed_out: true,
+                    pending: status.pending,
+                    elapsed_ms: duration_ms(elapsed),
+                };
+                self.counters.record(outcome);
+                return Ok(outcome);
+            }
+
+            let remaining = self.timeout.saturating_sub(elapsed);
+            tokio::time::sleep(self.poll_interval.min(remaining)).await;
+        }
+    }
+}
+
 /// Durable outbox storage abstraction.
 #[async_trait]
 pub trait InvalidationOutbox: fmt::Debug + Send + Sync + 'static {
@@ -668,6 +941,7 @@ pub struct InvalidationOutboxWorker<O, A> {
     claim_ttl: Duration,
     backoff: Duration,
     max_attempts: u32,
+    counters: Arc<OutboxWorkerCounters>,
 }
 
 impl<O, A> InvalidationOutboxWorker<O, A> {
@@ -682,6 +956,7 @@ impl<O, A> InvalidationOutboxWorker<O, A> {
             claim_ttl: Duration::from_secs(30),
             backoff: Duration::from_secs(1),
             max_attempts: 5,
+            counters: Arc::default(),
         }
     }
 
@@ -713,6 +988,11 @@ impl<O, A> InvalidationOutboxWorker<O, A> {
     pub fn max_attempts(mut self, max_attempts: u32) -> Self {
         self.max_attempts = max_attempts.max(1);
         self
+    }
+
+    /// Return cumulative in-process worker diagnostics.
+    pub fn diagnostics(&self) -> OutboxWorkerDiagnostics {
+        self.counters.snapshot()
     }
 
     /// Run one claim -> apply -> mark-published iteration.
@@ -757,6 +1037,7 @@ impl<O, A> InvalidationOutboxWorker<O, A> {
             }
         }
 
+        self.counters.record(report);
         Ok(report)
     }
 
@@ -813,6 +1094,10 @@ fn claim_is_available(row: &OutboxRow, now: u64, claim_ttl_ms: u64) -> bool {
 
 fn duration_ms(duration: Duration) -> u64 {
     u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
+}
+
+fn elapsed_ms(start: tokio::time::Instant) -> u64 {
+    duration_ms(start.elapsed())
 }
 
 fn now_ms() -> u64 {
