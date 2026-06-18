@@ -1,7 +1,9 @@
+use std::collections::BTreeSet;
+
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{Expr, Ident, Token, Type};
+use syn::{Expr, Ident, Lit, LitStr, Token, Type};
 
 use crate::paths::{cache_key_builder_path, query_cache_policy_path, refresh_policy_path};
 
@@ -28,6 +30,7 @@ struct PolicyConfig {
     tags: Vec<Expr>,
     tag_segments: Vec<SegmentList>,
     collection_tags: Vec<Expr>,
+    required_dimensions: Option<DimensionList>,
 }
 
 impl Parse for PolicyConfig {
@@ -66,6 +69,9 @@ impl Parse for PolicyConfig {
                         .extend(input.parse::<SegmentGroups>()?.groups);
                 }
                 "collection_tag" => config.collection_tags.push(input.parse()?),
+                "required_dimensions" => {
+                    parse_unique_dimension_list(input, &mut config.required_dimensions, &option)?
+                }
                 _ => {
                     return Err(syn::Error::new(
                         option.span(),
@@ -143,6 +149,8 @@ impl PolicyConfig {
             ));
         }
 
+        self.validate_required_dimensions()?;
+
         Ok(())
     }
 
@@ -193,6 +201,10 @@ impl PolicyConfig {
             .ttl_secs
             .as_ref()
             .map(|ttl_secs| quote!(.ttl(::std::time::Duration::from_secs(#ttl_secs))));
+        let required_dimensions = self.required_dimensions.as_ref().map(|dimensions| {
+            let dimensions = dimensions.labels.iter();
+            quote!(.required_dimensions([#(#dimensions),*]))
+        });
         let refresh_policy = self.refresh_policy_tokens(&refresh_path);
 
         quote! {
@@ -204,8 +216,41 @@ impl PolicyConfig {
                 #(#collection_tags)*
                 #ttl
                 #ttl_secs
+                #required_dimensions
                 #refresh_policy
         }
+    }
+
+    fn validate_required_dimensions(&self) -> syn::Result<()> {
+        let Some(required_dimensions) = &self.required_dimensions else {
+            return Ok(());
+        };
+
+        let Some(key_segments) = &self.key_segments else {
+            let span = required_dimensions
+                .labels
+                .first()
+                .map_or(proc_macro2::Span::call_site(), LitStr::span);
+            return Err(syn::Error::new(
+                span,
+                "query_cache_policy required_dimensions requires key_segments",
+            ));
+        };
+
+        let labels = key_segments.dimension_labels();
+        for required in &required_dimensions.labels {
+            if !labels.contains(&required.value()) {
+                return Err(syn::Error::new(
+                    required.span(),
+                    format!(
+                        "query_cache_policy required dimension `{}` is missing from key_segments",
+                        required.value()
+                    ),
+                ));
+            }
+        }
+
+        Ok(())
     }
 
     fn refresh_policy_tokens(&self, refresh_path: &TokenStream2) -> Option<TokenStream2> {
@@ -242,6 +287,16 @@ struct SegmentList {
     segments: Vec<Expr>,
 }
 
+impl SegmentList {
+    fn dimension_labels(&self) -> BTreeSet<String> {
+        self.segments
+            .iter()
+            .step_by(2)
+            .filter_map(string_literal_expr)
+            .collect()
+    }
+}
+
 impl Parse for SegmentList {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let content;
@@ -255,6 +310,53 @@ impl Parse for SegmentList {
 
 struct SegmentGroups {
     groups: Vec<SegmentList>,
+}
+
+struct DimensionList {
+    labels: Vec<LitStr>,
+}
+
+impl Parse for DimensionList {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let content;
+        syn::bracketed!(content in input);
+        let mut labels = Vec::new();
+        let mut seen = BTreeSet::new();
+
+        while !content.is_empty() {
+            let label: LitStr = content.parse()?;
+            if label.value().is_empty() {
+                return Err(syn::Error::new(
+                    label.span(),
+                    "query_cache_policy required_dimensions labels cannot be empty",
+                ));
+            }
+            if !seen.insert(label.value()) {
+                return Err(syn::Error::new(
+                    label.span(),
+                    "duplicate query_cache_policy required_dimensions label",
+                ));
+            }
+            labels.push(label);
+
+            if content.peek(Token![,]) {
+                content.parse::<Token![,]>()?;
+            } else if !content.is_empty() {
+                return Err(content.error(
+                    "query_cache_policy required_dimensions expects comma-separated string labels",
+                ));
+            }
+        }
+
+        if labels.is_empty() {
+            Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "query_cache_policy required_dimensions cannot be empty",
+            ))
+        } else {
+            Ok(Self { labels })
+        }
+    }
 }
 
 impl Parse for SegmentGroups {
@@ -343,6 +445,16 @@ fn parse_unique_segment_list(
     Ok(())
 }
 
+fn parse_unique_dimension_list(
+    input: ParseStream<'_>,
+    current: &mut Option<DimensionList>,
+    option: &Ident,
+) -> syn::Result<()> {
+    reject_duplicate(current, option)?;
+    *current = Some(input.parse()?);
+    Ok(())
+}
+
 fn parse_unique_expr(
     input: ParseStream<'_>,
     current: &mut Option<Expr>,
@@ -391,6 +503,16 @@ fn validate_preset(preset: &Ident) -> syn::Result<()> {
 fn preset_call(preset: &Ident) -> Ident {
     let name = preset.to_string();
     Ident::new(&name, preset.span())
+}
+
+fn string_literal_expr(expr: &Expr) -> Option<String> {
+    match expr {
+        Expr::Lit(lit) => match &lit.lit {
+            Lit::Str(value) => Some(value.value()),
+            _ => None,
+        },
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -467,6 +589,21 @@ mod tests {
         assert!(output.contains(". tag"));
         assert!(output.contains(". build_string"));
         assert!(output.contains("Duration :: from_secs (30)"));
+    }
+
+    #[test]
+    fn expands_required_dimensions_for_segmented_key() {
+        let output = expand_to_string(quote! {
+            name = "search-users",
+            key_segments = ["tenant", tenant_id, "q", query, "page", page],
+            required_dimensions = ["tenant", "q", "page"],
+            ttl_secs = 30,
+        });
+
+        assert!(output.contains(". required_dimensions"));
+        assert!(output.contains("\"tenant\""));
+        assert!(output.contains("\"q\""));
+        assert!(output.contains("\"page\""));
     }
 
     #[test]
@@ -568,6 +705,45 @@ mod tests {
         let error = expand(quote!(key_segments = [])).unwrap_err();
 
         assert!(error.to_string().contains("segment list cannot be empty"));
+    }
+
+    #[test]
+    fn rejects_required_dimensions_without_key_segments() {
+        let error = expand(quote! {
+            key = "users",
+            required_dimensions = ["tenant"],
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("required_dimensions requires key_segments"));
+    }
+
+    #[test]
+    fn rejects_missing_required_dimension_label() {
+        let error = expand(quote! {
+            key_segments = ["tenant", tenant_id, "page", page],
+            required_dimensions = ["tenant", "permission"],
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("required dimension `permission` is missing from key_segments"));
+    }
+
+    #[test]
+    fn rejects_duplicate_required_dimension_labels() {
+        let error = expand(quote! {
+            key_segments = ["tenant", tenant_id],
+            required_dimensions = ["tenant", "tenant"],
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("duplicate query_cache_policy required_dimensions label"));
     }
 
     #[test]

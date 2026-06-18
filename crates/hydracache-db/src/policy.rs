@@ -43,6 +43,7 @@ pub struct QueryCachePolicy {
     tags: TagSet,
     ttl: Option<Duration>,
     refresh: Option<RefreshOptions>,
+    required_dimensions: Vec<String>,
 }
 
 impl QueryCachePolicy {
@@ -136,6 +137,13 @@ impl QueryCachePolicy {
         self.refresh
     }
 
+    /// Return statically declared key dimensions required by this policy.
+    ///
+    /// These labels are diagnostics only; values are intentionally not stored.
+    pub fn required_dimensions_value(&self) -> &[String] {
+        &self.required_dimensions
+    }
+
     /// Set or replace the diagnostic operation name.
     pub fn with_name(mut self, name: impl Into<String>) -> Self {
         self.name = Some(name.into());
@@ -218,6 +226,22 @@ impl QueryCachePolicy {
     /// Set refresh/stale behavior for this query result.
     pub fn refresh_policy(mut self, refresh: RefreshOptions) -> Self {
         self.refresh = Some(refresh);
+        self
+    }
+
+    /// Store statically declared key dimensions for diagnostics and review.
+    pub fn required_dimensions<I, S>(mut self, dimensions: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.required_dimensions = dimensions.into_iter().map(Into::into).collect();
+        self
+    }
+
+    /// Add one statically declared key dimension for diagnostics and review.
+    pub fn required_dimension(mut self, dimension: impl Into<String>) -> Self {
+        self.required_dimensions.push(dimension.into());
         self
     }
 

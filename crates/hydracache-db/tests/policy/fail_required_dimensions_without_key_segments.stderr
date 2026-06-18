@@ -1,0 +1,5 @@
+error: query_cache_policy required_dimensions requires key_segments
+ --> tests/policy/fail_required_dimensions_without_key_segments.rs:6:32
+  |
+6 |         required_dimensions = ["tenant"],
+  |                                ^^^^^^^^

@@ -1,0 +1,5 @@
+error: query_cache_policy required dimension `permission` is missing from key_segments
+ --> tests/policy/fail_required_dimensions_missing_label.rs:9:42
+  |
+9 |         required_dimensions = ["tenant", "permission"],
+  |                                          ^^^^^^^^^^^^
