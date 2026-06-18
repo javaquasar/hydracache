@@ -173,6 +173,7 @@ extern crate self as hydracache_db;
 mod entity;
 mod error;
 mod invalidation;
+mod outbox;
 mod policy;
 mod prepared;
 mod query;
@@ -182,6 +183,9 @@ pub use error::{DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape, 
 pub use hydracache::CacheKeyBuilder;
 pub use hydracache_macros::{prepared_query_policy, query_cache_policy, HydraCacheEntity};
 pub use invalidation::{InvalidationPlan, InvalidationReport};
+pub use outbox::{
+    CommitPosition, InvalidationIntent, InvalidationIntentBatch, InvalidationTargetHash,
+};
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
 pub use query::{DbCache, DbQuery, PreparedDbQuery};

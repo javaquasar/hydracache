@@ -63,6 +63,7 @@ reqwest = { version = "0.12", default-features = false, features = ["json"] }
 sea-orm = { version = "1.1.17", default-features = false }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1"
+sha2 = "0.10.9"
 slog = "2.7"
 sqlx = { version = "0.8", default-features = false }
 syn = { version = "2", features = ["full"] }
@@ -72,5 +73,6 @@ tokio = { version = "1.52.3", features = ["macros", "net", "rt-multi-thread", "s
 tokio-stream = "0.1"
 tower = { version = "0.5", features = ["util"] }
 trybuild = "1"
+proptest = "1"
 utoipa = "5"
 utoipa-swagger-ui = { version = "9", features = ["axum"] }
