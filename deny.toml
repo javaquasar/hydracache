@@ -29,6 +29,11 @@ wildcards = "allow"
 workspace-default-features = "allow"
 external-default-features = "allow"
 
+[[bans.deny]]
+name = "sqlparser"
+wrappers = []
+reason = "SQL parsing is allowed only in future lint/dev tooling; it must not enter HydraCache runtime crates."
+
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"
