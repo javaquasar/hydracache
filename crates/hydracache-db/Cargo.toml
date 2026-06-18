@@ -9,6 +9,10 @@ homepage.workspace = true
 readme.workspace = true
 description = "Database-neutral query result cache adapter for HydraCache."
 
+[features]
+default = []
+sqlx-outbox = ["dep:sqlx"]
+
 [dependencies]
 async-trait.workspace = true
 hydracache.workspace = true
@@ -16,6 +20,7 @@ hydracache-core.workspace = true
 hydracache-macros.workspace = true
 serde.workspace = true
 sha2.workspace = true
+sqlx = { workspace = true, optional = true, features = ["postgres", "runtime-tokio-rustls", "sqlite"] }
 thiserror.workspace = true
 
 [dev-dependencies]

@@ -177,6 +177,8 @@ mod outbox;
 mod policy;
 mod prepared;
 mod query;
+#[cfg(feature = "sqlx-outbox")]
+mod sqlx_outbox;
 
 pub use entity::CacheEntity;
 pub use error::{DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape, Result};
@@ -191,6 +193,8 @@ pub use outbox::{
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
 pub use query::{DbCache, DbQuery, PreparedDbQuery};
+#[cfg(feature = "sqlx-outbox")]
+pub use sqlx_outbox::{SqlxInvalidationOutbox, OUTBOX_SCHEMA_VERSION};
 
 /// Database-facing alias for local cache refresh/stale behavior.
 pub type RefreshPolicy = hydracache::RefreshOptions;

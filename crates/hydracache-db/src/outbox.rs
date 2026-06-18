@@ -261,6 +261,27 @@ pub enum OutboxState {
     Dead,
 }
 
+impl OutboxState {
+    /// Return the stable storage representation.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Pending => "pending",
+            Self::Published => "published",
+            Self::Dead => "dead",
+        }
+    }
+
+    /// Parse a storage representation.
+    pub fn from_storage(value: &str) -> Option<Self> {
+        match value {
+            "pending" => Some(Self::Pending),
+            "published" => Some(Self::Published),
+            "dead" => Some(Self::Dead),
+            _ => None,
+        }
+    }
+}
+
 /// One durable invalidation intent row.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutboxRow {
