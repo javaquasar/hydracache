@@ -57,6 +57,7 @@
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
+//! http://127.0.0.1:3000/demo/correctness
 //! ```
 
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
@@ -610,6 +611,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route("/demo/openapi/client-smoke", get(openapi_client_smoke))
         .route("/demo/security", get(security_info))
         .route("/demo/report", get(report))
+        .route("/demo/correctness", get(correctness_report))
         .route("/demo/events", get(events))
         .route("/demo/events/summary", get(events_summary))
         .route("/demo/events/clear", post(clear_events))
@@ -1315,6 +1317,7 @@ struct SandboxInfo {
     config: &'static str,
     presets: &'static str,
     report: &'static str,
+    correctness: &'static str,
     events: &'static str,
     events_summary: &'static str,
     scenario_catalog: &'static str,
@@ -1347,6 +1350,7 @@ struct SandboxUrls {
     openapi: &'static str,
     readiness: &'static str,
     report: &'static str,
+    correctness: &'static str,
     events: &'static str,
     events_summary: &'static str,
     scenario_catalog: &'static str,
@@ -3316,6 +3320,23 @@ struct CapabilityReport {
     description: &'static str,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct CorrectnessCheck {
+    name: &'static str,
+    status: &'static str,
+    signal: &'static str,
+    benefit: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
+struct CorrectnessReport {
+    release: &'static str,
+    mode: &'static str,
+    backend: String,
+    actuator_endpoint: &'static str,
+    checks: Vec<CorrectnessCheck>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "kebab-case")]
 enum LoadSource {
@@ -3429,6 +3450,7 @@ fn sandbox_urls() -> SandboxUrls {
         openapi: "/openapi.json",
         readiness: "/ready",
         report: "/demo/report",
+        correctness: "/demo/correctness",
         events: "/demo/events",
         events_summary: "/demo/events/summary",
         scenario_catalog: "/demo/scenarios/catalog",
@@ -3458,6 +3480,7 @@ fn sandbox_info(state: &SandboxState) -> SandboxInfo {
         config: "/demo/config",
         presets: "/demo/presets",
         report: "/demo/report",
+        correctness: "/demo/correctness",
         events: "/demo/events",
         events_summary: "/demo/events/summary",
         scenario_catalog: "/demo/scenarios/catalog",
@@ -7254,6 +7277,60 @@ async fn dashboard_ui() -> Html<&'static str> {
 )]
 async fn report(State(state): State<SandboxState>) -> Json<ApplicationReport> {
     Json(application_report(&state).await)
+}
+
+#[utoipa::path(
+    get,
+    path = "/demo/correctness",
+    tag = "reports",
+    responses((status = 200, description = "Release-38 correctness automation report", body = CorrectnessReport))
+)]
+async fn correctness_report(State(state): State<SandboxState>) -> Json<CorrectnessReport> {
+    Json(CorrectnessReport {
+        release: "0.38",
+        mode: "assisted",
+        backend: state.backend.label(),
+        actuator_endpoint: "/actuator/hydracache/correctness",
+        checks: vec![
+            CorrectnessCheck {
+                name: "sql dependency lint",
+                status: "available",
+                signal: "declared dependencies compared with SQL evidence in CI",
+                benefit: "missing table dependencies become reviewable before release",
+            },
+            CorrectnessCheck {
+                name: "generated hooks and durable outbox",
+                status: "available",
+                signal: "hook schema version plus outbox pending/dead-letter rows",
+                benefit: "external writes stop being invisible when hooks/outbox are installed",
+            },
+            CorrectnessCheck {
+                name: "named consistency modes",
+                status: "available",
+                signal: "success, timeout, degraded, and fail-closed counters",
+                benefit: "read-after-write behavior is explicit instead of implied",
+            },
+            CorrectnessCheck {
+                name: "dimension profiles",
+                status: "available",
+                signal: "required labels and key/tag link validation",
+                benefit:
+                    "forgotten tenant, permission, page, or search dimensions are caught early",
+            },
+            CorrectnessCheck {
+                name: "transaction companion",
+                status: "sqlx-ready",
+                signal: "commit, rollback, enqueue failure, and commit failure reports",
+                benefit: "write plus invalidation intent follows one tested transaction pattern",
+            },
+            CorrectnessCheck {
+                name: "reconciliation",
+                status: "available",
+                signal: "mandatory outbox lag and hook/schema drift checks",
+                benefit: "staging can fail loudly when invalidation machinery drifts",
+            },
+        ],
+    })
 }
 
 #[utoipa::path(
@@ -12269,6 +12346,7 @@ const DASHBOARD_HTML: &str = r#"<!doctype html>
       <button onclick="post('/demo/rollout/compare', {id:42, reads:2, ttl_ms:5000, tags:['ui-rollout'], flow_id:`ui-rollout-${Date.now()}`})">Rollout compare</button>
       <button onclick="post('/demo/db/soak/run', {iterations:12, concurrency:8, ttl_ms:5000, loader_delay_ms:1, flow_id:`ui-db-soak-${Date.now()}`})">DB soak</button>
       <button onclick="show('/demo/report')">Application report</button>
+      <button onclick="show('/demo/correctness')">Correctness</button>
       <button onclick="show('/demo/events')">Event log</button>
       <button onclick="show('/demo/events/summary')">Event summary</button>
       <button onclick="show('/demo/events?kind=cache-hit')">Cache hits</button>
@@ -12778,8 +12856,8 @@ fn capabilities() -> Vec<CapabilityReport> {
         },
         CapabilityReport {
             name: "operation reports",
-            endpoint: "/demo/report, /demo/events, /demo/events/summary, and /actuator/hydracache/*",
-            description: "Read cumulative diagnostics, loader counters, function counters, structured events, grouped event summaries, health, cache list, stats, and actuator snapshots.",
+            endpoint: "/demo/report, /demo/correctness, /demo/events, /demo/events/summary, and /actuator/hydracache/*",
+            description: "Read cumulative diagnostics, correctness gates, loader counters, function counters, structured events, grouped event summaries, health, cache list, stats, and actuator snapshots.",
         },
         CapabilityReport {
             name: "reset",
@@ -12869,6 +12947,7 @@ fn actuator_stats_doc() {}
         openapi_client_smoke,
         security_info,
         report,
+        correctness_report,
         events,
         events_summary,
         clear_events,
@@ -13086,6 +13165,8 @@ fn actuator_stats_doc() {}
             NegativeScenarioReport,
             ApplicationReport,
             CapabilityReport,
+            CorrectnessCheck,
+            CorrectnessReport,
             LoadSource,
             DemoDiagnostics,
             InvalidateResponse,
@@ -13664,6 +13745,7 @@ mod tests {
         assert!(paths.contains_key("/demo/negative/expired-entry"));
         assert!(paths.contains_key("/demo/negative/invalidation-miss"));
         assert!(paths.contains_key("/demo/report"));
+        assert!(paths.contains_key("/demo/correctness"));
         assert!(paths.contains_key("/demo/flush"));
         assert!(paths.contains_key("/actuator/hydracache/health"));
         assert!(paths.contains_key("/actuator/hydracache/caches/{name}/diagnostics"));
@@ -13708,6 +13790,8 @@ mod tests {
         assert!(schemas.contains_key("SessionImportResponse"));
         assert!(schemas.contains_key("OpenApiClientCheckResponse"));
         assert!(schemas.contains_key("OpenApiClientSmokeResponse"));
+        assert!(schemas.contains_key("CorrectnessReport"));
+        assert!(schemas.contains_key("CorrectnessCheck"));
         assert!(schemas.contains_key("LatencySummary"));
         assert!(schemas.contains_key("Product"));
         assert!(schemas.contains_key("OrderSummary"));
@@ -14701,6 +14785,33 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn correctness_route_returns_expected_report() {
+        let app = build_sandbox(SandboxConfig::default())
+            .await
+            .unwrap()
+            .router;
+
+        let report = app
+            .oneshot(get("/demo/correctness"))
+            .await
+            .map(json_body)
+            .unwrap()
+            .await;
+
+        assert_eq!(report["release"], "0.38");
+        assert_eq!(report["mode"], "assisted");
+        assert_eq!(
+            report["actuator_endpoint"],
+            "/actuator/hydracache/correctness"
+        );
+        let checks = report["checks"].as_array().unwrap();
+        assert!(checks.iter().any(|check| check["name"] == "reconciliation"));
+        assert!(checks
+            .iter()
+            .any(|check| check["name"] == "transaction companion"));
+    }
+
+    #[tokio::test]
     async fn developer_console_routes_cover_readiness_events_reset_and_negative_scenarios() {
         let app = build_sandbox(SandboxConfig::default())
             .await
@@ -14723,6 +14834,7 @@ mod tests {
         let body = String::from_utf8_lossy(&body);
         assert!(body.contains("HydraCache manual sandbox"));
         assert!(body.contains("/demo/report"));
+        assert!(body.contains("/demo/correctness"));
         assert!(body.contains("/demo/ergonomics/examples"));
         assert!(body.contains("/demo/rollout/compare"));
         assert!(body.contains("/demo/db/soak/run"));

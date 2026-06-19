@@ -1,5 +1,8 @@
 # HydraCache 0.38.0 Database Correctness Automation Plan
 
+Status: implemented in `0.38.0`. Release notes are in
+`docs/releases/0.38.0.md`.
+
 `0.38.0` builds on the `0.37.0` database production-hardening release by adding
 **assisted correctness automation** on top of the explicit database result-cache
 model. It does not change the product class: HydraCache stays an explicit,
@@ -177,7 +180,7 @@ pass:
 
 ## 1. SQL Dependency Assistant and Strict Lint Mode
 
-Status: planned. Owner: 0.38 (moved from 0.37).
+Status: implemented in `0.38.0`. Owner: 0.38 (moved from 0.37).
 
 ### (a) Problem / motivation
 
@@ -437,7 +440,7 @@ stale-entry report and the mandatory reason, which keep both auditable in review
 
 ## 2. Generated DB Hooks and Semi-Transparent Invalidation
 
-Status: planned. Depends on: `0.37` outbox table.
+Status: implemented in `0.38.0`. Depends on: `0.37` outbox table.
 
 ### (a) Problem / motivation
 
@@ -553,7 +556,7 @@ Failure (`crates/hydracache-db/tests/hook_failures.rs`):
 
 ## 3. Named Consistency Modes and Read-Your-Writes Tokens
 
-Status: planned. Depends on: `0.37` receipts/barriers (local + best-effort).
+Status: implemented in `0.38.0`. Depends on: `0.37` receipts/barriers (local + best-effort).
 
 ### (a) Problem / motivation
 
@@ -650,7 +653,7 @@ Observability (`crates/hydracache/tests/consistency_metrics.rs`):
 
 ## 4. Required Dimension Profiles and Strict Key Review
 
-Status: planned. Owner: 0.38 (profiles + CI deny). Mechanism inherited from 0.37.
+Status: implemented in `0.38.0`. Owner: 0.38 (profiles + CI deny). Mechanism inherited from 0.37.
 
 ### (a) Problem / motivation
 
@@ -757,7 +760,7 @@ Runtime (`crates/hydracache-db/tests/profile_runtime.rs`):
 
 ## 5. Transaction Companion API
 
-Status: planned. SQLx only in 0.38; Diesel/SeaORM are compiling stubs.
+Status: implemented in `0.38.0`. SQLx only in 0.38; Diesel/SeaORM are compiling stubs.
 
 ### (a) Problem / motivation
 
@@ -863,7 +866,7 @@ Custom trait (`crates/hydracache-db/tests/transaction_trait_fake.rs`):
 
 ## 6. Reconciliation and Drift Detection
 
-Status: planned. Depends on: `0.37` outbox backlog + hook versions.
+Status: implemented in `0.38.0`. Depends on: `0.37` outbox backlog + hook versions.
 
 ### (a) Problem / motivation
 
@@ -938,7 +941,7 @@ Sandbox (`crates/hydracache-sandbox/tests/drift_scenario.rs`):
 
 ## 7. Observability, Actuator, Sandbox
 
-Status: planned.
+Status: implemented in `0.38.0`.
 
 ### Counters / snapshots
 

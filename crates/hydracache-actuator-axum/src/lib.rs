@@ -27,6 +27,7 @@
 //! GET /caches
 //! GET /caches/{name}/diagnostics
 //! GET /caches/{name}/stats
+//! GET /correctness
 //! GET /
 //! ```
 
@@ -43,12 +44,22 @@ use serde::Serialize;
 #[derive(Debug, Clone)]
 pub struct HydraCacheActuator {
     registry: HydraCacheRegistry,
+    correctness: ActuatorCorrectnessSnapshot,
 }
 
 impl HydraCacheActuator {
     /// Create a new actuator from a framework-neutral cache registry.
     pub fn new(registry: HydraCacheRegistry) -> Self {
-        Self { registry }
+        Self {
+            registry,
+            correctness: ActuatorCorrectnessSnapshot::default(),
+        }
+    }
+
+    /// Override the correctness snapshot exposed by `/correctness`.
+    pub fn with_correctness_snapshot(mut self, correctness: ActuatorCorrectnessSnapshot) -> Self {
+        self.correctness = correctness;
+        self
     }
 
     /// Build routes for nesting under an application-controlled prefix.
@@ -69,19 +80,33 @@ impl HydraCacheActuator {
     /// # let _ = app;
     /// ```
     pub fn routes(self) -> Router {
-        Self::routes_for(self.registry)
+        Self::routes_for_state(ActuatorState {
+            registry: self.registry,
+            correctness: self.correctness,
+        })
     }
 
     /// Build routes directly from a registry.
     pub fn routes_for(registry: HydraCacheRegistry) -> Router {
+        Self::new(registry).routes()
+    }
+
+    fn routes_for_state(state: ActuatorState) -> Router {
         Router::new()
             .route("/", get(overview))
             .route("/health", get(health))
             .route("/caches", get(caches))
             .route("/caches/{name}/diagnostics", get(cache_diagnostics))
             .route("/caches/{name}/stats", get(cache_stats))
-            .with_state(registry)
+            .route("/correctness", get(correctness))
+            .with_state(state)
     }
+}
+
+#[derive(Debug, Clone)]
+struct ActuatorState {
+    registry: HydraCacheRegistry,
+    correctness: ActuatorCorrectnessSnapshot,
 }
 
 /// Health response for the read-only actuator.
@@ -100,28 +125,105 @@ pub struct CacheList {
     pub caches: Vec<String>,
 }
 
-async fn overview(State(registry): State<HydraCacheRegistry>) -> Json<HydraCacheOverview> {
-    Json(registry.overview().await)
+/// Correctness-oriented snapshot for staging/release gates.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+pub struct ActuatorCorrectnessSnapshot {
+    /// SQL dependency-lint status.
+    pub dependency_lint: DependencyLintSnapshot,
+    /// Generated database hook status.
+    pub generated_hooks: GeneratedHooksSnapshot,
+    /// Durable invalidation outbox status.
+    pub outbox: OutboxCorrectnessSnapshot,
+    /// Named consistency-mode status.
+    pub consistency: ConsistencyCorrectnessSnapshot,
+    /// Required dimension-profile status.
+    pub dimensions: DimensionProfileSnapshot,
+    /// SQLx transaction companion status.
+    pub transaction_companion: TransactionCompanionSnapshot,
+    /// Reconciliation/drift status.
+    pub reconciliation: ReconciliationSnapshot,
 }
 
-async fn health(State(registry): State<HydraCacheRegistry>) -> Json<ActuatorHealth> {
+/// Dependency-lint counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct DependencyLintSnapshot {
+    pub warnings: u64,
+    pub errors: u64,
+    pub inconclusive: u64,
+}
+
+/// Generated hook counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct GeneratedHooksSnapshot {
+    pub generated_plans: u64,
+    pub runtime_rows: u64,
+    pub schema_mismatches: u64,
+}
+
+/// Outbox correctness counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct OutboxCorrectnessSnapshot {
+    pub pending: u64,
+    pub dead_lettered: u64,
+    pub oldest_pending_age_ms: u64,
+}
+
+/// Consistency-mode counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct ConsistencyCorrectnessSnapshot {
+    pub successes: u64,
+    pub timeouts: u64,
+    pub degraded: u64,
+    pub fail_closed: u64,
+}
+
+/// Required dimension-profile counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct DimensionProfileSnapshot {
+    pub warnings: u64,
+    pub denied: u64,
+    pub allowed: u64,
+}
+
+/// SQLx transaction companion counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct TransactionCompanionSnapshot {
+    pub commits: u64,
+    pub rollbacks: u64,
+    pub enqueue_failures: u64,
+    pub commit_failures: u64,
+}
+
+/// Reconciliation counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
+pub struct ReconciliationSnapshot {
+    pub clean: u64,
+    pub drift: u64,
+}
+
+async fn overview(State(state): State<ActuatorState>) -> Json<HydraCacheOverview> {
+    Json(state.registry.overview().await)
+}
+
+async fn health(State(state): State<ActuatorState>) -> Json<ActuatorHealth> {
     Json(ActuatorHealth {
         status: "UP",
-        cache_count: registry.len(),
+        cache_count: state.registry.len(),
     })
 }
 
-async fn caches(State(registry): State<HydraCacheRegistry>) -> Json<CacheList> {
+async fn caches(State(state): State<ActuatorState>) -> Json<CacheList> {
     Json(CacheList {
-        caches: registry.cache_names(),
+        caches: state.registry.cache_names(),
     })
 }
 
 async fn cache_diagnostics(
-    State(registry): State<HydraCacheRegistry>,
+    State(state): State<ActuatorState>,
     Path(name): Path<String>,
 ) -> Result<Json<CacheDiagnosticsSnapshot>, StatusCode> {
-    registry
+    state
+        .registry
         .diagnostics(&name)
         .await
         .map(Json)
@@ -129,14 +231,19 @@ async fn cache_diagnostics(
 }
 
 async fn cache_stats(
-    State(registry): State<HydraCacheRegistry>,
+    State(state): State<ActuatorState>,
     Path(name): Path<String>,
 ) -> Result<Json<CacheStatsSnapshot>, StatusCode> {
-    let diagnostics = registry
+    let diagnostics = state
+        .registry
         .diagnostics(&name)
         .await
         .ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(diagnostics.stats))
+}
+
+async fn correctness(State(state): State<ActuatorState>) -> Json<ActuatorCorrectnessSnapshot> {
+    Json(state.correctness)
 }
 
 #[cfg(test)]
@@ -148,7 +255,10 @@ mod tests {
     use serde_json::Value;
     use tower::ServiceExt;
 
-    use super::HydraCacheActuator;
+    use super::{
+        ActuatorCorrectnessSnapshot, HydraCacheActuator, ReconciliationSnapshot,
+        TransactionCompanionSnapshot,
+    };
 
     #[tokio::test]
     async fn actuator_routes_return_read_only_cache_diagnostics() {
@@ -227,6 +337,33 @@ mod tests {
             .await;
         assert_eq!(stats["loads"], 0);
         assert_eq!(stats["total_requests"], 0);
+    }
+
+    #[tokio::test]
+    async fn actuator_exposes_correctness_counters() {
+        let registry = HydraCacheRegistry::new();
+        let correctness = ActuatorCorrectnessSnapshot {
+            transaction_companion: TransactionCompanionSnapshot {
+                commits: 2,
+                rollbacks: 1,
+                enqueue_failures: 0,
+                commit_failures: 0,
+            },
+            reconciliation: ReconciliationSnapshot { clean: 1, drift: 0 },
+            ..ActuatorCorrectnessSnapshot::default()
+        };
+        let app = HydraCacheActuator::new(registry)
+            .with_correctness_snapshot(correctness)
+            .routes();
+
+        let response = app.oneshot(request("/correctness")).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = json_body(response).await;
+
+        assert_eq!(body["transaction_companion"]["commits"], 2);
+        assert_eq!(body["transaction_companion"]["rollbacks"], 1);
+        assert_eq!(body["reconciliation"]["clean"], 1);
+        assert_eq!(body["dependency_lint"]["warnings"], 0);
     }
 
     #[tokio::test]
