@@ -57,6 +57,11 @@ pub type SeaOrmQuery<T, C = hydracache::PostcardCodec> = DbQuery<T, C>;
 /// Re-export the SeaORM crate used by this adapter.
 pub use sea_orm;
 
+/// Message used by SeaORM transaction companion deferred stubs.
+pub const SEAORM_TRANSACTION_COMPANION_DEFERRED: &str =
+    "HydraCache transaction companion for SeaORM is deferred after 0.38; \
+     use SQLx companion or manual SeaORM transaction plus InvalidationCollector/outbox enqueue.";
+
 /// Error type returned by SeaORM-facing cache helpers.
 #[derive(Debug, Error)]
 pub enum SeaOrmCacheError {
@@ -67,6 +72,33 @@ pub enum SeaOrmCacheError {
 
 /// SeaORM adapter result type.
 pub type Result<T> = std::result::Result<T, SeaOrmCacheError>;
+
+/// Error returned by deferred SeaORM transaction companion stubs.
+#[derive(Debug, Error)]
+pub enum SeaOrmTransactionCompanionError {
+    /// SeaORM transaction companion is intentionally deferred.
+    #[error("{0}")]
+    NotImplemented(&'static str),
+}
+
+/// Runtime-visible SeaORM transaction companion stub.
+pub fn transaction_companion_deferred() -> std::result::Result<(), SeaOrmTransactionCompanionError>
+{
+    Err(SeaOrmTransactionCompanionError::NotImplemented(
+        SEAORM_TRANSACTION_COMPANION_DEFERRED,
+    ))
+}
+
+/// Compile-time SeaORM transaction companion stub.
+#[macro_export]
+macro_rules! seaorm_transaction_companion {
+    ($($tt:tt)*) => {
+        compile_error!(
+            "HydraCache transaction companion for SeaORM is deferred after 0.38; \
+             use SQLx companion or manual SeaORM transaction plus InvalidationCollector/outbox enqueue."
+        );
+    };
+}
 
 /// Convenience SeaORM execution methods for [`DbQuery`].
 ///
@@ -843,5 +875,12 @@ mod tests {
             pending.tag_values().collect::<Vec<_>>(),
             vec!["seaorm-user:42", "seaorm-users"]
         );
+    }
+
+    #[test]
+    fn seaorm_transaction_companion_stub_is_explicit() {
+        let error = super::transaction_companion_deferred().unwrap_err();
+        assert!(error.to_string().contains("deferred after 0.38"));
+        assert!(error.to_string().contains("manual SeaORM transaction"));
     }
 }

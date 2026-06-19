@@ -13,9 +13,9 @@ description = "SQLx adapter helpers for HydraCache query result caching."
 async-trait.workspace = true
 hydracache.workspace = true
 hydracache-core.workspace = true
-hydracache-db.workspace = true
+hydracache-db = { workspace = true, features = ["sqlx-outbox"] }
 serde.workspace = true
-sqlx.workspace = true
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "sqlite"] }
 thiserror.workspace = true
 
 [dev-dependencies]

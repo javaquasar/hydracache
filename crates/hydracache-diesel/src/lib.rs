@@ -58,6 +58,11 @@ pub type DieselQuery<T, C = hydracache::PostcardCodec> = DbQuery<T, C>;
 /// Re-export the Diesel crate used by this adapter.
 pub use diesel;
 
+/// Message used by Diesel transaction companion deferred stubs.
+pub const DIESEL_TRANSACTION_COMPANION_DEFERRED: &str =
+    "HydraCache transaction companion for Diesel is deferred after 0.38; \
+     use SQLx companion or manual Diesel transaction plus InvalidationCollector/outbox enqueue.";
+
 /// Error type returned by Diesel-facing cache helpers.
 #[derive(Debug, Error)]
 pub enum DieselCacheError {
@@ -68,6 +73,33 @@ pub enum DieselCacheError {
 
 /// Diesel adapter result type.
 pub type Result<T> = std::result::Result<T, DieselCacheError>;
+
+/// Error returned by deferred Diesel transaction companion stubs.
+#[derive(Debug, Error)]
+pub enum DieselTransactionCompanionError {
+    /// Diesel transaction companion is intentionally deferred.
+    #[error("{0}")]
+    NotImplemented(&'static str),
+}
+
+/// Runtime-visible Diesel transaction companion stub.
+pub fn transaction_companion_deferred() -> std::result::Result<(), DieselTransactionCompanionError>
+{
+    Err(DieselTransactionCompanionError::NotImplemented(
+        DIESEL_TRANSACTION_COMPANION_DEFERRED,
+    ))
+}
+
+/// Compile-time Diesel transaction companion stub.
+#[macro_export]
+macro_rules! diesel_transaction_companion {
+    ($($tt:tt)*) => {
+        compile_error!(
+            "HydraCache transaction companion for Diesel is deferred after 0.38; \
+             use SQLx companion or manual Diesel transaction plus InvalidationCollector/outbox enqueue."
+        );
+    };
+}
 
 #[derive(Debug, Error)]
 enum DieselLoaderError {
@@ -740,5 +772,12 @@ mod tests {
             pending.tag_values().collect::<Vec<_>>(),
             vec!["diesel-user:42", "diesel-users"]
         );
+    }
+
+    #[test]
+    fn diesel_transaction_companion_stub_is_explicit() {
+        let error = super::transaction_companion_deferred().unwrap_err();
+        assert!(error.to_string().contains("deferred after 0.38"));
+        assert!(error.to_string().contains("manual Diesel transaction"));
     }
 }

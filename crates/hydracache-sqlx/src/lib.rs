@@ -91,15 +91,21 @@ extern crate self as hydracache_sqlx;
 
 mod error;
 mod query_ext;
+mod transaction;
 
-pub use error::{Result, SqlxCacheError};
+pub use error::{Result, SqlxCacheError, SqlxTransactionError, TransactionResult};
 pub use hydracache_db::{
     prepared_query_policy, query_cache_policy, CacheEntity, CacheKeyBuilder, DbAdapterKind,
     DbCache, DbCacheError, DbOperationContext, DbQuery, DbResultShape, HydraCacheEntity,
-    InvalidationPlan, InvalidationReport, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy,
-    RefreshPolicy, Result as DbResult,
+    InvalidationCollector, InvalidationPlan, InvalidationReport, PgNotifyIntent,
+    PgNotifyIntentSource, PreparedDbQuery, PreparedQueryPolicy, QueryCachePolicy, RefreshPolicy,
+    Result as DbResult, SqlxInvalidationOutbox, OUTBOX_SCHEMA_VERSION,
 };
 pub use query_ext::SqlxQueryExt;
+pub use transaction::{
+    SqlxTransactionCompanion, SqlxTransactionDiagnostics, SqlxTransactionExt,
+    SqlxTransactionFuture, SqlxTransactionReport,
+};
 
 /// SQLx-specific compatibility name for [`DbCache`].
 pub type SqlxCache<C = hydracache::PostcardCodec> = DbCache<C>;
