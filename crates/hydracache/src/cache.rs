@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::future::Future;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -82,6 +82,7 @@ where
     pub(crate) events: EventBus,
     pub(crate) invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
     pub(crate) invalidation_node_id: String,
+    pub(crate) consistency_generation: AtomicU64,
     pub(crate) bus_shutdown: Option<watch::Sender<bool>>,
     pub(crate) cluster_runtime: Option<ClusterRuntime>,
 }

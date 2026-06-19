@@ -1,6 +1,7 @@
 mod cluster;
 mod common;
 mod concurrency;
+mod consistency;
 mod events;
 mod invalidation_bus;
 mod invalidation_safety;

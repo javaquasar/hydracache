@@ -12,6 +12,7 @@
 /// assert_eq!(stats.hits, 0);
 /// assert_eq!(stats.single_flight_joins, 0);
 /// assert_eq!(stats.oversize_rejections, 0);
+/// assert_eq!(stats.consistency_wait_successes, 0);
 /// assert_eq!(stats.events_published, 0);
 /// assert_eq!(stats.distributed_invalidations_published, 0);
 /// assert_eq!(stats.distributed_invalidation_lagged, 0);
@@ -58,6 +59,14 @@ pub struct CacheStats {
     pub distributed_invalidation_publish_failures: u64,
     /// Times an attached bus receiver reported that the stream closed.
     pub distributed_invalidation_receiver_closed: u64,
+    /// Consistency-token waits that observed the requested generation.
+    pub consistency_wait_successes: u64,
+    /// Consistency-token waits that timed out.
+    pub consistency_wait_timeouts: u64,
+    /// Consistency-token reads that returned a degraded value.
+    pub consistency_degraded_reads: u64,
+    /// Consistency-token reads that failed closed instead of serving stale data.
+    pub consistency_fail_closed: u64,
 }
 
 impl CacheStats {

@@ -21,6 +21,10 @@ pub(crate) struct StatsCounters {
     pub(crate) distributed_invalidation_decode_errors: AtomicU64,
     pub(crate) distributed_invalidation_publish_failures: AtomicU64,
     pub(crate) distributed_invalidation_receiver_closed: AtomicU64,
+    pub(crate) consistency_wait_successes: AtomicU64,
+    pub(crate) consistency_wait_timeouts: AtomicU64,
+    pub(crate) consistency_degraded_reads: AtomicU64,
+    pub(crate) consistency_fail_closed: AtomicU64,
 }
 
 impl StatsCounters {
@@ -57,6 +61,10 @@ impl StatsCounters {
             distributed_invalidation_receiver_closed: self
                 .distributed_invalidation_receiver_closed
                 .load(Ordering::Relaxed),
+            consistency_wait_successes: self.consistency_wait_successes.load(Ordering::Relaxed),
+            consistency_wait_timeouts: self.consistency_wait_timeouts.load(Ordering::Relaxed),
+            consistency_degraded_reads: self.consistency_degraded_reads.load(Ordering::Relaxed),
+            consistency_fail_closed: self.consistency_fail_closed.load(Ordering::Relaxed),
         }
     }
 }

@@ -468,6 +468,7 @@ extern crate self as hydracache;
 mod builder;
 mod cache;
 mod cluster;
+mod consistency;
 mod entry;
 mod events;
 mod inflight;
@@ -493,6 +494,9 @@ pub use cluster::{
     HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
     RaftMetadataCommand, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
     RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
+};
+pub use consistency::{
+    ConsistencyInvalidate, ConsistencyMode, ConsistencyOutcome, ConsistencyToken, DegradeReason,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

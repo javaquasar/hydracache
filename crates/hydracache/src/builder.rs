@@ -209,6 +209,7 @@ where
                 events: EventBus::new(self.event_buffer_capacity, self.access_events),
                 invalidation_bus: self.invalidation_bus,
                 invalidation_node_id,
+                consistency_generation: AtomicU64::new(0),
                 bus_shutdown,
                 cluster_runtime: self.cluster_runtime,
             }),
