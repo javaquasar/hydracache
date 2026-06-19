@@ -547,6 +547,10 @@ impl CacheInvalidationReceiver for InMemoryInvalidationReceiver {
 }
 
 #[cfg(test)]
+#[path = "tests/frame_version_compat.rs"]
+mod frame_version_compat;
+
+#[cfg(test)]
 mod tests {
     use super::{
         CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
