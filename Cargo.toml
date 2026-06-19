@@ -16,6 +16,7 @@ members = [
     "crates/hydracache-seaorm",
     "crates/hydracache-sql-lint",
     "crates/hydracache-sqlx",
+    "crates/xtask",
 ]
 resolver = "2"
 
@@ -77,6 +78,7 @@ testcontainers-modules = { version = "0.15.0", features = ["postgres"] }
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
 tokio-stream = "0.1"
+toml = "0.9"
 tower = { version = "0.5", features = ["util"] }
 trybuild = "1"
 proptest = "1"

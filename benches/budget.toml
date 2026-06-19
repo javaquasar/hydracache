@@ -12,3 +12,5 @@ max_ns_absolute = 50
 
 [outbox_write.write_with_vs_without]
 max_amplification_x = 2.5
+numerator = "outbox_write/write_with_outbox"
+denominator = "outbox_write/write_without_outbox"
