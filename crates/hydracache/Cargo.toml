@@ -22,8 +22,13 @@ serde.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
+criterion.workspace = true
 loom.workspace = true
 trybuild.workspace = true
+
+[[bench]]
+name = "cache_hot_path"
+harness = false
 
 [lints]
 workspace = true

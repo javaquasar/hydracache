@@ -181,10 +181,7 @@ async fn double_drain_is_idempotent() -> TestResult {
     assert_eq!(first.published, 1);
     assert_eq!(second.claimed, 0);
     assert!(rows.is_empty());
-    assert_eq!(
-        outbox.status("db").await?.last_published_at_ms.is_some(),
-        true
-    );
+    assert!(outbox.status("db").await?.last_published_at_ms.is_some());
     Ok(())
 }
 

@@ -1,5 +1,8 @@
 # HydraCache 0.37.0 Database Production Hardening Plan
 
+Status: implemented in `0.37.0`. Release notes are in
+`docs/releases/0.37.0.md`.
+
 `0.37.0` closes the remaining database-production gaps left after the `0.35.0`
 readiness release and the `0.36.0` rollout release, but it does so with a
 deliberately narrowed scope. The review of releases `0.37`–`0.41`

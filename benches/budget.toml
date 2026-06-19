@@ -1,0 +1,14 @@
+[hot_path.hit]
+max_regression_pct = 5
+
+[hot_path.miss]
+max_regression_pct = 5
+
+[hot_path.single_flight_16]
+max_regression_pct = 8
+
+[hot_path.event_publish_no_subscriber]
+max_ns_absolute = 50
+
+[outbox_write.write_with_vs_without]
+max_amplification_x = 2.5

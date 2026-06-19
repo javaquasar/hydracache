@@ -25,5 +25,10 @@ thiserror.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
+criterion.workspace = true
 proptest.workspace = true
 trybuild.workspace = true
+
+[[bench]]
+name = "outbox_write"
+harness = false
