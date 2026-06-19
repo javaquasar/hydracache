@@ -7,21 +7,20 @@ use hydracache_core::{CacheOptions, Result};
 
 use crate::{CacheError, HydraCache};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum ConsistencyMode {
+    #[default]
     Eventual,
     LocalReadYourWrites,
-    ClusterReadYourWrites { timeout: Duration },
-    Quorum { timeout: Duration },
+    ClusterReadYourWrites {
+        timeout: Duration,
+    },
+    Quorum {
+        timeout: Duration,
+    },
     Leader,
     FailClosed,
     DegradedOk,
-}
-
-impl Default for ConsistencyMode {
-    fn default() -> Self {
-        Self::Eventual
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

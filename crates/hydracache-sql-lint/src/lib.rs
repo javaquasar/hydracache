@@ -354,7 +354,7 @@ fn collect_select_relations(
         }
     }
     if let Some(selection) = &select.selection {
-        collect_expr_relations(selection, cte_names, relations);
+        collect_expr_relations(selection, relations);
     }
 }
 
@@ -391,11 +391,7 @@ fn collect_table_factor_relations(
     }
 }
 
-fn collect_expr_relations(
-    expr: &Expr,
-    cte_names: &BTreeSet<String>,
-    relations: &mut BTreeSet<Relation>,
-) {
+fn collect_expr_relations(expr: &Expr, relations: &mut BTreeSet<Relation>) {
     match expr {
         Expr::Subquery(query)
         | Expr::Exists {
@@ -405,18 +401,18 @@ fn collect_expr_relations(
         }
         Expr::InSubquery { subquery, .. } => collect_query_relations(subquery, relations),
         Expr::BinaryOp { left, right, .. } => {
-            collect_expr_relations(left, cte_names, relations);
-            collect_expr_relations(right, cte_names, relations);
+            collect_expr_relations(left, relations);
+            collect_expr_relations(right, relations);
         }
         Expr::UnaryOp { expr, .. } | Expr::Nested(expr) | Expr::Cast { expr, .. } => {
-            collect_expr_relations(expr, cte_names, relations)
+            collect_expr_relations(expr, relations)
         }
         Expr::Between {
             expr, low, high, ..
         } => {
-            collect_expr_relations(expr, cte_names, relations);
-            collect_expr_relations(low, cte_names, relations);
-            collect_expr_relations(high, cte_names, relations);
+            collect_expr_relations(expr, relations);
+            collect_expr_relations(low, relations);
+            collect_expr_relations(high, relations);
         }
         _ => {}
     }

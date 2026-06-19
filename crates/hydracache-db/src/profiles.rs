@@ -115,16 +115,11 @@ impl DimensionRequirement {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum DimensionValidationMode {
+    #[default]
     Warn,
     Deny,
-}
-
-impl Default for DimensionValidationMode {
-    fn default() -> Self {
-        Self::Warn
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
