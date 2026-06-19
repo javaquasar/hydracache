@@ -2,7 +2,10 @@ use std::time::Duration;
 
 use hydracache::{CacheKeyBuilder, CacheOptions, RefreshOptions, TagSet};
 
-use crate::{CacheEntity, DeclaredLintMode, DeclaredRelation, LintFinding, PolicyLintMetadata};
+use crate::{
+    CacheEntity, DeclaredLintMode, DeclaredRelation, DimensionAllow, DimensionProfile,
+    DimensionValidationMode, LintFinding, PolicyLintMetadata, ProfileValidation,
+};
 
 const SHORT_LIVED_TTL: Duration = Duration::from_secs(30);
 const READ_MOSTLY_TTL: Duration = Duration::from_secs(300);
@@ -44,6 +47,11 @@ pub struct QueryCachePolicy {
     ttl: Option<Duration>,
     refresh: Option<RefreshOptions>,
     required_dimensions: Vec<String>,
+    key_dimension_labels: Vec<String>,
+    tag_dimension_labels: Vec<String>,
+    dimension_profile: Option<DimensionProfile>,
+    dimension_validation_mode: DimensionValidationMode,
+    dimension_allow: Vec<DimensionAllow>,
     lint_metadata: Option<PolicyLintMetadata>,
 }
 
@@ -143,6 +151,26 @@ impl QueryCachePolicy {
     /// These labels are diagnostics only; values are intentionally not stored.
     pub fn required_dimensions_value(&self) -> &[String] {
         &self.required_dimensions
+    }
+
+    /// Return static key dimension labels recorded by macro/profile tooling.
+    pub fn key_dimension_labels(&self) -> &[String] {
+        &self.key_dimension_labels
+    }
+
+    /// Return static tag dimension labels recorded by macro/profile tooling.
+    pub fn tag_dimension_labels(&self) -> &[String] {
+        &self.tag_dimension_labels
+    }
+
+    /// Return the optional required-dimension profile.
+    pub fn dimension_profile(&self) -> Option<&DimensionProfile> {
+        self.dimension_profile.as_ref()
+    }
+
+    /// Return the profile validation mode.
+    pub fn dimension_validation_mode(&self) -> DimensionValidationMode {
+        self.dimension_validation_mode
     }
 
     /// Return optional SQL dependency-lint metadata for CI/build-time tooling.
@@ -251,6 +279,96 @@ impl QueryCachePolicy {
         self
     }
 
+    /// Store key dimension labels for profile validation.
+    pub fn with_key_dimension_labels<I, S>(mut self, labels: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.key_dimension_labels = labels.into_iter().map(Into::into).collect();
+        self
+    }
+
+    /// Store tag dimension labels for profile validation.
+    pub fn with_tag_dimension_labels<I, S>(mut self, labels: I) -> Self
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        self.tag_dimension_labels = labels.into_iter().map(Into::into).collect();
+        self
+    }
+
+    /// Attach a reusable required-dimension profile.
+    pub fn with_dimension_profile(mut self, profile: DimensionProfile) -> Self {
+        let required = profile
+            .requirements()
+            .into_iter()
+            .map(|requirement| requirement.label().to_owned());
+        self.required_dimensions.extend(required);
+        self.dimension_profile = Some(profile);
+        self
+    }
+
+    /// Set whether profile violations should warn or fail a CI/release gate.
+    pub fn with_dimension_validation_mode(mut self, mode: DimensionValidationMode) -> Self {
+        self.dimension_validation_mode = mode;
+        self
+    }
+
+    /// Allow one profile dimension violation with an explicit review reason.
+    pub fn allow_dimension_violation(
+        mut self,
+        label: impl Into<String>,
+        reason: impl Into<String>,
+    ) -> std::result::Result<Self, crate::DimensionAllowError> {
+        self.dimension_allow
+            .push(DimensionAllow::new(label, reason)?);
+        Ok(self)
+    }
+
+    /// Validate the configured profile against recorded key/tag labels.
+    pub fn validate_dimension_profile(&self) -> ProfileValidation {
+        let Some(profile) = &self.dimension_profile else {
+            return ProfileValidation::Pass;
+        };
+
+        let mut missing = Vec::new();
+        let mut unlinked = Vec::new();
+        for requirement in profile.requirements() {
+            let label = requirement.label();
+            if !self.key_dimension_labels.iter().any(|known| known == label) {
+                missing.push(label.to_owned());
+            } else if requirement.require_key_tag_link()
+                && !self.tag_dimension_labels.iter().any(|known| known == label)
+            {
+                unlinked.push(label.to_owned());
+            }
+        }
+
+        let status = if !missing.is_empty() {
+            ProfileValidation::MissingDimensions(missing)
+        } else if !unlinked.is_empty() {
+            ProfileValidation::UnlinkedDimensions(unlinked)
+        } else {
+            ProfileValidation::Pass
+        };
+
+        self.apply_dimension_allow(status)
+    }
+
+    /// Return an error when profile validation is in deny mode and fails.
+    pub fn enforce_dimension_profile(&self) -> crate::Result<()> {
+        let status = self.validate_dimension_profile();
+        if self.dimension_validation_mode == DimensionValidationMode::Deny && !status.is_pass() {
+            return Err(hydracache::CacheError::Backend(format!(
+                "query cache policy dimension profile violation: {status}"
+            ))
+            .into());
+        }
+        Ok(())
+    }
+
     /// Attach SQL text for off-runtime dependency linting.
     pub fn lint_sql(mut self, sql: impl Into<String>) -> Self {
         self.lint_metadata_mut().sql = Some(sql.into());
@@ -297,6 +415,27 @@ impl QueryCachePolicy {
     fn lint_metadata_mut(&mut self) -> &mut PolicyLintMetadata {
         self.lint_metadata
             .get_or_insert_with(PolicyLintMetadata::default)
+    }
+
+    fn apply_dimension_allow(&self, status: ProfileValidation) -> ProfileValidation {
+        let labels = match &status {
+            ProfileValidation::MissingDimensions(labels)
+            | ProfileValidation::UnlinkedDimensions(labels) => labels,
+            _ => return status,
+        };
+
+        let Some(allow) = self
+            .dimension_allow
+            .iter()
+            .find(|allow| labels.iter().any(|label| label == allow.label()))
+        else {
+            return status;
+        };
+
+        ProfileValidation::Allowed {
+            status: Box::new(status),
+            reason: allow.reason().to_owned(),
+        }
     }
 }
 

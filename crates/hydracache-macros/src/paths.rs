@@ -22,6 +22,14 @@ pub(crate) fn declared_lint_mode_path() -> TokenStream2 {
     resolve_database_exported_type_path("DeclaredLintMode")
 }
 
+pub(crate) fn dimension_profile_path() -> TokenStream2 {
+    resolve_database_exported_type_path("DimensionProfile")
+}
+
+pub(crate) fn dimension_validation_mode_path() -> TokenStream2 {
+    resolve_database_exported_type_path("DimensionValidationMode")
+}
+
 pub(crate) fn cache_key_builder_path() -> TokenStream2 {
     resolve_database_exported_type_path("CacheKeyBuilder")
 }
@@ -153,6 +161,14 @@ mod tests {
         assert_eq!(
             declared_lint_mode_path().to_string(),
             ":: hydracache_db :: DeclaredLintMode"
+        );
+        assert_eq!(
+            dimension_profile_path().to_string(),
+            ":: hydracache_db :: DimensionProfile"
+        );
+        assert_eq!(
+            dimension_validation_mode_path().to_string(),
+            ":: hydracache_db :: DimensionValidationMode"
         );
         assert_eq!(
             cache_key_builder_path().to_string(),

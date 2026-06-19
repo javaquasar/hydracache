@@ -6,7 +6,8 @@ use syn::parse::{Parse, ParseStream};
 use syn::{Expr, Ident, Lit, LitStr, Token, Type};
 
 use crate::paths::{
-    cache_key_builder_path, declared_lint_mode_path, query_cache_policy_path, refresh_policy_path,
+    cache_key_builder_path, declared_lint_mode_path, dimension_profile_path,
+    dimension_validation_mode_path, query_cache_policy_path, refresh_policy_path,
 };
 
 pub(crate) fn expand(input: TokenStream2) -> syn::Result<TokenStream2> {
@@ -33,6 +34,8 @@ struct PolicyConfig {
     tag_segments: Vec<SegmentList>,
     collection_tags: Vec<Expr>,
     required_dimensions: Option<DimensionList>,
+    profile: Option<Ident>,
+    dimension_validation: Option<Ident>,
     sql: Option<Expr>,
     depends_on: Vec<Expr>,
     dependency_lint: Option<Ident>,
@@ -77,6 +80,10 @@ impl Parse for PolicyConfig {
                 "collection_tag" => config.collection_tags.push(input.parse()?),
                 "required_dimensions" => {
                     parse_unique_dimension_list(input, &mut config.required_dimensions, &option)?
+                }
+                "profile" => parse_unique_ident(input, &mut config.profile, &option)?,
+                "dimension_validation" => {
+                    parse_unique_ident(input, &mut config.dimension_validation, &option)?
                 }
                 "sql" => parse_unique_expr(input, &mut config.sql, &option)?,
                 "depends_on" => parse_unique_expr_list(input, &mut config.depends_on, &option)?,
@@ -165,6 +172,7 @@ impl PolicyConfig {
 
         self.validate_required_dimensions()?;
         self.validate_dependency_lint()?;
+        self.validate_profile()?;
 
         Ok(())
     }
@@ -173,6 +181,8 @@ impl PolicyConfig {
         let policy_path = query_cache_policy_path();
         let refresh_path = refresh_policy_path();
         let lint_mode_path = declared_lint_mode_path();
+        let dimension_profile_path = dimension_profile_path();
+        let dimension_validation_mode_path = dimension_validation_mode_path();
         let key_builder_path = cache_key_builder_path();
         let base = match &self.preset {
             Some(preset) => {
@@ -221,6 +231,32 @@ impl PolicyConfig {
             let dimensions = dimensions.labels.iter();
             quote!(.required_dimensions([#(#dimensions),*]))
         });
+        let key_dimension_labels = self.key_segments.as_ref().map(|segments| {
+            let labels: Vec<_> = segments
+                .dimension_labels()
+                .into_iter()
+                .map(|label| LitStr::new(&label, proc_macro2::Span::call_site()))
+                .collect();
+            quote!(.with_key_dimension_labels([#(#labels),*]))
+        });
+        let tag_labels = tag_dimension_labels(&self.tag_segments);
+        let tag_dimension_labels = if tag_labels.is_empty() {
+            None
+        } else {
+            let labels: Vec<_> = tag_labels
+                .into_iter()
+                .map(|label| LitStr::new(&label, proc_macro2::Span::call_site()))
+                .collect();
+            Some(quote!(.with_tag_dimension_labels([#(#labels),*])))
+        };
+        let profile = self.profile.as_ref().map(|profile| {
+            let variant = dimension_profile_variant(profile);
+            quote!(.with_dimension_profile(#dimension_profile_path::#variant))
+        });
+        let dimension_validation = self.dimension_validation.as_ref().map(|mode| {
+            let variant = dimension_validation_variant(mode);
+            quote!(.with_dimension_validation_mode(#dimension_validation_mode_path::#variant))
+        });
         let sql = self.sql.as_ref().map(|sql| quote!(.lint_sql(#sql)));
         let depends_on = self
             .depends_on
@@ -247,6 +283,10 @@ impl PolicyConfig {
                 #ttl
                 #ttl_secs
                 #required_dimensions
+                #key_dimension_labels
+                #tag_dimension_labels
+                #profile
+                #dimension_validation
                 #sql
                 #(#depends_on)*
                 #dependency_lint
@@ -311,6 +351,24 @@ impl PolicyConfig {
             ));
         }
 
+        Ok(())
+    }
+
+    fn validate_profile(&self) -> syn::Result<()> {
+        if let Some(profile) = &self.profile {
+            validate_dimension_profile(profile)?;
+        }
+        if let Some(mode) = &self.dimension_validation {
+            match mode.to_string().as_str() {
+                "warn" | "deny" => {}
+                _ => {
+                    return Err(syn::Error::new(
+                        mode.span(),
+                        "unsupported query_cache_policy dimension_validation mode",
+                    ));
+                }
+            }
+        }
         Ok(())
     }
 
@@ -508,6 +566,13 @@ fn segment_builder_tokens(builder_path: &TokenStream2, segments: &[Expr]) -> Tok
     quote!(#builder_path::new()#(#segments)*)
 }
 
+fn tag_dimension_labels(tag_segments: &[SegmentList]) -> BTreeSet<String> {
+    tag_segments
+        .iter()
+        .flat_map(SegmentList::dimension_labels)
+        .collect()
+}
+
 fn parse_unique_ident(
     input: ParseStream<'_>,
     current: &mut Option<Ident>,
@@ -654,6 +719,23 @@ fn validate_preset(preset: &Ident) -> syn::Result<()> {
     }
 }
 
+fn validate_dimension_profile(profile: &Ident) -> syn::Result<()> {
+    match profile.to_string().as_str() {
+        "tenant_scoped"
+        | "permission_scoped"
+        | "tenant_permission_scoped"
+        | "tenant_permission_search"
+        | "paged_search"
+        | "cursor_list"
+        | "locale_region_scoped"
+        | "feature_flag_scoped" => Ok(()),
+        _ => Err(syn::Error::new(
+            profile.span(),
+            "unsupported query_cache_policy dimension profile",
+        )),
+    }
+}
+
 fn preset_call(preset: &Ident) -> Ident {
     let name = preset.to_string();
     Ident::new(&name, preset.span())
@@ -664,6 +746,30 @@ fn dependency_lint_variant(mode: &Ident) -> Ident {
         "warn" => "Warn",
         "deny_missing_dependencies" => "DenyMissingDependencies",
         _ => unreachable!("dependency lint mode validated"),
+    };
+    Ident::new(variant, mode.span())
+}
+
+fn dimension_profile_variant(profile: &Ident) -> Ident {
+    let variant = match profile.to_string().as_str() {
+        "tenant_scoped" => "TenantScoped",
+        "permission_scoped" => "PermissionScoped",
+        "tenant_permission_scoped" => "TenantPermissionScoped",
+        "tenant_permission_search" => "TenantPermissionSearch",
+        "paged_search" => "PagedSearch",
+        "cursor_list" => "CursorList",
+        "locale_region_scoped" => "LocaleRegionScoped",
+        "feature_flag_scoped" => "FeatureFlagScoped",
+        _ => unreachable!("dimension profile validated"),
+    };
+    Ident::new(variant, profile.span())
+}
+
+fn dimension_validation_variant(mode: &Ident) -> Ident {
+    let variant = match mode.to_string().as_str() {
+        "warn" => "Warn",
+        "deny" => "Deny",
+        _ => unreachable!("dimension validation mode validated"),
     };
     Ident::new(variant, mode.span())
 }
@@ -788,6 +894,23 @@ mod tests {
     }
 
     #[test]
+    fn expands_dimension_profile_metadata() {
+        let output = expand_to_string(quote! {
+            name = "search-users",
+            key_segments = ["tenant", tenant_id, "permission", permission_hash, "q", query, "page", page, "sort", sort],
+            tag_segments = [["tenant", tenant_id], ["permission", permission_hash], ["q", query], ["page", page], ["sort", sort]],
+            profile = tenant_permission_search,
+            dimension_validation = deny,
+            ttl_secs = 30,
+        });
+
+        assert!(output.contains(". with_key_dimension_labels"));
+        assert!(output.contains(". with_tag_dimension_labels"));
+        assert!(output.contains("DimensionProfile :: TenantPermissionSearch"));
+        assert!(output.contains("DimensionValidationMode :: Deny"));
+    }
+
+    #[test]
     fn expands_collection_policy() {
         let output = expand_to_string(quote! {
             collection = "users",
@@ -879,6 +1002,19 @@ mod tests {
         assert!(error
             .to_string()
             .contains("unsupported query_cache_policy dependency_lint mode"));
+    }
+
+    #[test]
+    fn rejects_unknown_dimension_profile() {
+        let error = expand(quote! {
+            key = "one",
+            profile = everything,
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("unsupported query_cache_policy dimension profile"));
     }
 
     #[test]

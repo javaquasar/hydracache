@@ -1,0 +1,5 @@
+error: unsupported query_cache_policy dimension profile
+ --> tests/policy/fail_unknown_builtin_profile.rs:6:19
+  |
+6 |         profile = global_magic,
+  |                   ^^^^^^^^^^^^

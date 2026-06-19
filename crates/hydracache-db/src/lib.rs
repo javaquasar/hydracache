@@ -178,6 +178,7 @@ mod lint;
 mod outbox;
 mod policy;
 mod prepared;
+mod profiles;
 mod query;
 #[cfg(feature = "sqlx-outbox")]
 mod sqlx_outbox;
@@ -204,6 +205,10 @@ pub use outbox::{
 };
 pub use policy::QueryCachePolicy;
 pub use prepared::PreparedQueryPolicy;
+pub use profiles::{
+    CustomProfile, DimensionAllow, DimensionAllowError, DimensionProfile, DimensionRequirement,
+    DimensionValidationMode, ProfileValidation,
+};
 pub use query::{DbCache, DbQuery, PreparedDbQuery};
 #[cfg(feature = "sqlx-outbox")]
 pub use sqlx_outbox::{
