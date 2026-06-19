@@ -180,6 +180,7 @@ mod policy;
 mod prepared;
 mod profiles;
 mod query;
+mod reconcile;
 #[cfg(feature = "sqlx-outbox")]
 mod sqlx_outbox;
 mod transaction;
@@ -211,6 +212,12 @@ pub use profiles::{
     DimensionValidationMode, ProfileValidation,
 };
 pub use query::{DbCache, DbQuery, PreparedDbQuery};
+#[cfg(feature = "sqlx-outbox")]
+pub use reconcile::sqlite_hook_drift;
+pub use reconcile::{
+    CdcOffsetLag, DriftReason, DriftStatus, GenerationDrift, HookDrift, OutboxLag, OutboxLagPolicy,
+    ReconciliationReport,
+};
 #[cfg(feature = "sqlx-outbox")]
 pub use sqlx_outbox::{
     PgNotifyIntent, PgNotifyIntentSource, SqlxInvalidationOutbox, OUTBOX_SCHEMA_VERSION,
