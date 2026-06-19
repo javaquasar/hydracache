@@ -5,7 +5,9 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{Expr, Ident, Lit, LitStr, Token, Type};
 
-use crate::paths::{cache_key_builder_path, query_cache_policy_path, refresh_policy_path};
+use crate::paths::{
+    cache_key_builder_path, declared_lint_mode_path, query_cache_policy_path, refresh_policy_path,
+};
 
 pub(crate) fn expand(input: TokenStream2) -> syn::Result<TokenStream2> {
     let config: PolicyConfig = syn::parse2(input)?;
@@ -31,6 +33,10 @@ struct PolicyConfig {
     tag_segments: Vec<SegmentList>,
     collection_tags: Vec<Expr>,
     required_dimensions: Option<DimensionList>,
+    sql: Option<Expr>,
+    depends_on: Vec<Expr>,
+    dependency_lint: Option<Ident>,
+    lint_allow: Vec<LintAllow>,
 }
 
 impl Parse for PolicyConfig {
@@ -71,6 +77,14 @@ impl Parse for PolicyConfig {
                 "collection_tag" => config.collection_tags.push(input.parse()?),
                 "required_dimensions" => {
                     parse_unique_dimension_list(input, &mut config.required_dimensions, &option)?
+                }
+                "sql" => parse_unique_expr(input, &mut config.sql, &option)?,
+                "depends_on" => parse_unique_expr_list(input, &mut config.depends_on, &option)?,
+                "dependency_lint" => {
+                    parse_unique_ident(input, &mut config.dependency_lint, &option)?
+                }
+                "lint_allow" => {
+                    parse_unique_lint_allow_list(input, &mut config.lint_allow, &option)?
                 }
                 _ => {
                     return Err(syn::Error::new(
@@ -150,6 +164,7 @@ impl PolicyConfig {
         }
 
         self.validate_required_dimensions()?;
+        self.validate_dependency_lint()?;
 
         Ok(())
     }
@@ -157,6 +172,7 @@ impl PolicyConfig {
     fn expand(&self) -> TokenStream2 {
         let policy_path = query_cache_policy_path();
         let refresh_path = refresh_policy_path();
+        let lint_mode_path = declared_lint_mode_path();
         let key_builder_path = cache_key_builder_path();
         let base = match &self.preset {
             Some(preset) => {
@@ -205,6 +221,20 @@ impl PolicyConfig {
             let dimensions = dimensions.labels.iter();
             quote!(.required_dimensions([#(#dimensions),*]))
         });
+        let sql = self.sql.as_ref().map(|sql| quote!(.lint_sql(#sql)));
+        let depends_on = self
+            .depends_on
+            .iter()
+            .map(|relation| quote!(.declared_dependency(#relation)));
+        let dependency_lint = self.dependency_lint.as_ref().map(|mode| {
+            let mode = dependency_lint_variant(mode);
+            quote!(.dependency_lint_mode(#lint_mode_path::#mode))
+        });
+        let lint_allow = self.lint_allow.iter().map(|allow| {
+            let finding = &allow.finding;
+            let reason = &allow.reason;
+            quote!(.lint_allow(#finding, #reason))
+        });
         let refresh_policy = self.refresh_policy_tokens(&refresh_path);
 
         quote! {
@@ -217,6 +247,10 @@ impl PolicyConfig {
                 #ttl
                 #ttl_secs
                 #required_dimensions
+                #sql
+                #(#depends_on)*
+                #dependency_lint
+                #(#lint_allow)*
                 #refresh_policy
         }
     }
@@ -248,6 +282,33 @@ impl PolicyConfig {
                     ),
                 ));
             }
+        }
+
+        Ok(())
+    }
+
+    fn validate_dependency_lint(&self) -> syn::Result<()> {
+        if let Some(mode) = &self.dependency_lint {
+            match mode.to_string().as_str() {
+                "warn" | "deny_missing_dependencies" => {}
+                _ => {
+                    return Err(syn::Error::new(
+                        mode.span(),
+                        "unsupported query_cache_policy dependency_lint mode",
+                    ));
+                }
+            }
+        }
+
+        if self.dependency_lint.is_some() && self.sql.is_none() {
+            let span = self
+                .dependency_lint
+                .as_ref()
+                .map_or(proc_macro2::Span::call_site(), Ident::span);
+            return Err(syn::Error::new(
+                span,
+                "query_cache_policy dependency_lint requires sql",
+            ));
         }
 
         Ok(())
@@ -314,6 +375,11 @@ struct SegmentGroups {
 
 struct DimensionList {
     labels: Vec<LitStr>,
+}
+
+struct LintAllow {
+    finding: Expr,
+    reason: LitStr,
 }
 
 impl Parse for DimensionList {
@@ -394,6 +460,23 @@ impl Parse for SegmentGroups {
     }
 }
 
+impl Parse for LintAllow {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let content;
+        syn::parenthesized!(content in input);
+        let finding: Expr = content.parse()?;
+        content.parse::<Token![,]>()?;
+        let reason: LitStr = content.parse()?;
+        if reason.value().trim().is_empty() {
+            return Err(syn::Error::new(
+                reason.span(),
+                "query_cache_policy lint_allow reason cannot be empty",
+            ));
+        }
+        Ok(Self { finding, reason })
+    }
+}
+
 fn parse_segment_exprs(input: ParseStream<'_>, empty_message: &str) -> syn::Result<Vec<Expr>> {
     let mut segments = Vec::new();
 
@@ -455,6 +538,77 @@ fn parse_unique_dimension_list(
     Ok(())
 }
 
+fn parse_unique_expr_list(
+    input: ParseStream<'_>,
+    current: &mut Vec<Expr>,
+    option: &Ident,
+) -> syn::Result<()> {
+    if !current.is_empty() {
+        return Err(syn::Error::new(
+            option.span(),
+            format!("duplicate query_cache_policy {} option", option),
+        ));
+    }
+
+    let content;
+    syn::bracketed!(content in input);
+    while !content.is_empty() {
+        current.push(content.parse()?);
+        if content.peek(Token![,]) {
+            content.parse::<Token![,]>()?;
+        } else if !content.is_empty() {
+            return Err(content.error(format!(
+                "query_cache_policy {} expects comma-separated expressions",
+                option
+            )));
+        }
+    }
+
+    if current.is_empty() {
+        Err(syn::Error::new(
+            option.span(),
+            format!("query_cache_policy {} cannot be empty", option),
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn parse_unique_lint_allow_list(
+    input: ParseStream<'_>,
+    current: &mut Vec<LintAllow>,
+    option: &Ident,
+) -> syn::Result<()> {
+    if !current.is_empty() {
+        return Err(syn::Error::new(
+            option.span(),
+            "duplicate query_cache_policy lint_allow option",
+        ));
+    }
+
+    let content;
+    syn::bracketed!(content in input);
+    while !content.is_empty() {
+        current.push(content.parse()?);
+        if content.peek(Token![,]) {
+            content.parse::<Token![,]>()?;
+        } else if !content.is_empty() {
+            return Err(
+                content.error("query_cache_policy lint_allow expects comma-separated pairs")
+            );
+        }
+    }
+
+    if current.is_empty() {
+        Err(syn::Error::new(
+            option.span(),
+            "query_cache_policy lint_allow cannot be empty",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
 fn parse_unique_expr(
     input: ParseStream<'_>,
     current: &mut Option<Expr>,
@@ -503,6 +657,15 @@ fn validate_preset(preset: &Ident) -> syn::Result<()> {
 fn preset_call(preset: &Ident) -> Ident {
     let name = preset.to_string();
     Ident::new(&name, preset.span())
+}
+
+fn dependency_lint_variant(mode: &Ident) -> Ident {
+    let variant = match mode.to_string().as_str() {
+        "warn" => "Warn",
+        "deny_missing_dependencies" => "DenyMissingDependencies",
+        _ => unreachable!("dependency lint mode validated"),
+    };
+    Ident::new(variant, mode.span())
 }
 
 fn string_literal_expr(expr: &Expr) -> Option<String> {
@@ -607,6 +770,24 @@ mod tests {
     }
 
     #[test]
+    fn expands_sql_dependency_lint_metadata() {
+        let output = expand_to_string(quote! {
+            name = "load-user-permissions",
+            key_segments = ["tenant", tenant_id, "user", user_id],
+            sql = "select * from users join user_roles on true",
+            depends_on = [table("users"), table("user_roles")],
+            dependency_lint = deny_missing_dependencies,
+            lint_allow = [(LintFinding::Inconclusive, "dynamic fragment audited")],
+            ttl_secs = 30,
+        });
+
+        assert!(output.contains(". lint_sql"));
+        assert!(output.contains(". declared_dependency"));
+        assert!(output.contains("DeclaredLintMode :: DenyMissingDependencies"));
+        assert!(output.contains(". lint_allow"));
+    }
+
+    #[test]
     fn expands_collection_policy() {
         let output = expand_to_string(quote! {
             collection = "users",
@@ -684,6 +865,58 @@ mod tests {
         assert!(error
             .to_string()
             .contains("unsupported query_cache_policy preset"));
+    }
+
+    #[test]
+    fn rejects_unknown_dependency_lint_mode() {
+        let error = expand(quote! {
+            key = "one",
+            sql = "select * from users",
+            dependency_lint = strict,
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("unsupported query_cache_policy dependency_lint mode"));
+    }
+
+    #[test]
+    fn rejects_dependency_lint_without_sql() {
+        let error = expand(quote! {
+            key = "one",
+            dependency_lint = warn,
+        })
+        .unwrap_err();
+
+        assert!(error.to_string().contains("dependency_lint requires sql"));
+    }
+
+    #[test]
+    fn rejects_duplicate_sql() {
+        let error = expand(quote! {
+            key = "one",
+            sql = "select 1",
+            sql = "select 2",
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("duplicate query_cache_policy sql option"));
+    }
+
+    #[test]
+    fn rejects_empty_lint_allow_reason() {
+        let error = expand(quote! {
+            key = "one",
+            lint_allow = [(LintFinding::Inconclusive, "")],
+        })
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("lint_allow reason cannot be empty"));
     }
 
     #[test]

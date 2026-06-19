@@ -1,0 +1,24 @@
+[package]
+name = "hydracache-sql-lint"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+description = "Build-time SQL dependency linting for HydraCache query policies."
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+sqlparser.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[[bin]]
+name = "lint"
+path = "src/bin/lint.rs"

@@ -1,0 +1,5 @@
+error: duplicate query_cache_policy sql option
+ --> tests/policy/fail_duplicate_sql.rs:7:9
+  |
+7 |         sql = "select * from roles",
+  |         ^^^

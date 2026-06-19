@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use hydracache::{CacheKeyBuilder, CacheOptions, RefreshOptions, TagSet};
 
-use crate::CacheEntity;
+use crate::{CacheEntity, DeclaredLintMode, DeclaredRelation, LintFinding, PolicyLintMetadata};
 
 const SHORT_LIVED_TTL: Duration = Duration::from_secs(30);
 const READ_MOSTLY_TTL: Duration = Duration::from_secs(300);
@@ -44,6 +44,7 @@ pub struct QueryCachePolicy {
     ttl: Option<Duration>,
     refresh: Option<RefreshOptions>,
     required_dimensions: Vec<String>,
+    lint_metadata: Option<PolicyLintMetadata>,
 }
 
 impl QueryCachePolicy {
@@ -142,6 +143,11 @@ impl QueryCachePolicy {
     /// These labels are diagnostics only; values are intentionally not stored.
     pub fn required_dimensions_value(&self) -> &[String] {
         &self.required_dimensions
+    }
+
+    /// Return optional SQL dependency-lint metadata for CI/build-time tooling.
+    pub fn lint_metadata(&self) -> Option<&PolicyLintMetadata> {
+        self.lint_metadata.as_ref()
     }
 
     /// Set or replace the diagnostic operation name.
@@ -245,12 +251,52 @@ impl QueryCachePolicy {
         self
     }
 
+    /// Attach SQL text for off-runtime dependency linting.
+    pub fn lint_sql(mut self, sql: impl Into<String>) -> Self {
+        self.lint_metadata_mut().sql = Some(sql.into());
+        self
+    }
+
+    /// Set the lint mode used by CI/build-time dependency checking.
+    pub fn dependency_lint_mode(mut self, mode: DeclaredLintMode) -> Self {
+        self.lint_metadata_mut().mode = mode;
+        self
+    }
+
+    /// Declare one relation that the query is expected to read.
+    pub fn declared_dependency(mut self, relation: DeclaredRelation) -> Self {
+        self.lint_metadata_mut().declared.push(relation);
+        self
+    }
+
+    /// Declare several relations that the query is expected to read.
+    pub fn declared_dependencies<I>(mut self, relations: I) -> Self
+    where
+        I: IntoIterator<Item = DeclaredRelation>,
+    {
+        self.lint_metadata_mut().declared.extend(relations);
+        self
+    }
+
+    /// Suppress one dependency-lint finding with an explicit reason.
+    pub fn lint_allow(mut self, finding: LintFinding, reason: impl Into<String>) -> Self {
+        self.lint_metadata_mut()
+            .suppressions
+            .push(crate::LintSuppression::new(finding, reason));
+        self
+    }
+
     pub(crate) fn cache_options(&self) -> CacheOptions {
         let mut options = CacheOptions::new().tag_set(self.tags.clone());
         if let Some(ttl) = self.ttl {
             options = options.ttl(ttl);
         }
         options
+    }
+
+    fn lint_metadata_mut(&mut self) -> &mut PolicyLintMetadata {
+        self.lint_metadata
+            .get_or_insert_with(PolicyLintMetadata::default)
     }
 }
 

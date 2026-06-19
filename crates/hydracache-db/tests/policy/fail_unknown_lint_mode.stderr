@@ -1,0 +1,5 @@
+error: unsupported query_cache_policy dependency_lint mode
+ --> tests/policy/fail_unknown_lint_mode.rs:7:27
+  |
+7 |         dependency_lint = strict,
+  |                           ^^^^^^
