@@ -1,6 +1,6 @@
 #[test]
-#[ignore = "requires HYDRACACHE_TEST_POSTGRES_URL and catalog grants"]
-fn pg_view_dependency_expansion() {
+#[ignore = "requires a Postgres test container and HYDRACACHE_TEST_POSTGRES_URL"]
+fn pg_trigger_outbox_worker_end_to_end() {
     let Ok(url) = std::env::var("HYDRACACHE_TEST_POSTGRES_URL") else {
         return;
     };
@@ -8,8 +8,8 @@ fn pg_view_dependency_expansion() {
 }
 
 #[test]
-#[ignore = "requires HYDRACACHE_TEST_POSTGRES_URL and a readonly role"]
-fn pg_missing_permission_clear_error() {
+#[ignore = "requires a Postgres test container and HYDRACACHE_TEST_POSTGRES_URL"]
+fn pg_listen_notify_wakeup() {
     let Ok(url) = std::env::var("HYDRACACHE_TEST_POSTGRES_URL") else {
         return;
     };

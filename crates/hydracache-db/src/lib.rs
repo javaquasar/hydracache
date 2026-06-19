@@ -172,6 +172,7 @@ extern crate self as hydracache_db;
 
 mod entity;
 mod error;
+mod hooks;
 mod invalidation;
 mod lint;
 mod outbox;
@@ -183,6 +184,10 @@ mod sqlx_outbox;
 
 pub use entity::CacheEntity;
 pub use error::{DbAdapterKind, DbCacheError, DbOperationContext, DbResultShape, Result};
+pub use hooks::{
+    HookDialect, HookError, HookInvalidationTarget, HookOperation, HookPlan, HookSchemaVersion,
+    HOOK_SCHEMA_ARTIFACT, HOOK_SCHEMA_VERSION,
+};
 pub use hydracache::CacheKeyBuilder;
 pub use hydracache_macros::{prepared_query_policy, query_cache_policy, HydraCacheEntity};
 pub use invalidation::{InvalidationPlan, InvalidationReport};

@@ -1451,6 +1451,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-cdc-postgres"
+version = "0.37.0"
+dependencies = [
+ "hydracache-db",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "hydracache-cluster"
 version = "0.37.0"
 dependencies = [

@@ -1,0 +1,17 @@
+[package]
+name = "hydracache-cdc-postgres"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+description = "Postgres CDC invalidation-intent connector stub for HydraCache."
+
+[dependencies]
+hydracache-db.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
