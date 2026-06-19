@@ -6,6 +6,9 @@ on:
       - main
       - master
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
 
 permissions:
   contents: read
@@ -27,11 +30,32 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Format
         run: cargo fmt --all -- --check
 
       - name: Check
         run: cargo check --workspace --all-targets --locked
+
+      - name: Check benchmark targets
+        run: |
+          cargo check -p hydracache --benches --locked
+          cargo check -p hydracache-db --benches --locked
+
+      - name: Dependency bans
+        run: cargo deny check bans
+
+      - name: SQL lint baseline drift
+        run: |
+          cargo test -p hydracache-sql-lint --test lint_cli --locked
+          cargo run -p hydracache-sql-lint --bin lint --locked -- --check-baseline --baseline lint-baseline.json
+
+      - name: Performance budget contract
+        run: |
+          cargo test -p xtask --test bench_budget --locked
+          cargo run -p xtask --locked -- bench-budget --current benches/baseline/0_37.json
 
       - name: Test
         run: cargo test --workspace --locked
@@ -43,6 +67,31 @@ jobs:
 
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+  performance-budget:
+    name: Performance Budget
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: performance-budget
+
+      - name: Run criterion benchmarks
+        run: |
+          cargo bench -p hydracache --bench cache_hot_path --locked
+          cargo bench -p hydracache-db --bench outbox_write --locked
+
+      - name: Enforce performance budget
+        run: cargo run -p xtask --locked -- bench-budget --current target/criterion
 
   msrv:
     name: MSRV 1.88.0
