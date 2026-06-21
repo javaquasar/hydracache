@@ -36,7 +36,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use hydracache::HydraCache;
+use hydracache::{ClusterStagingHealth, HydraCache};
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
 
@@ -199,6 +199,9 @@ pub trait CacheProbe: Send + Sync {
 
     /// Return a serializable diagnostic snapshot.
     async fn diagnostics(&self) -> CacheDiagnosticsSnapshot;
+
+    /// Return cluster staging health when this probe wraps a cluster cache.
+    fn cluster_staging_health(&self) -> Option<ClusterStagingHealth>;
 }
 
 /// [`HydraCache`] implementation of [`CacheProbe`].
@@ -243,6 +246,10 @@ where
             self.name.clone(),
             self.cache.diagnostics().await,
         )
+    }
+
+    fn cluster_staging_health(&self) -> Option<ClusterStagingHealth> {
+        self.cache.cluster_staging_health()
     }
 }
 
@@ -314,6 +321,23 @@ impl HydraCacheRegistry {
         Some(probe.diagnostics().await)
     }
 
+    /// Return cluster staging health for one registered cache.
+    pub fn cluster_staging_health(&self, name: &str) -> Option<ClusterStagingHealth> {
+        self.probes.get(name)?.cluster_staging_health()
+    }
+
+    /// Return staging health for every registered cluster cache.
+    pub fn cluster_staging_healths(&self) -> Vec<(String, ClusterStagingHealth)> {
+        self.probes
+            .iter()
+            .filter_map(|(name, probe)| {
+                probe
+                    .cluster_staging_health()
+                    .map(|health| (name.clone(), health))
+            })
+            .collect()
+    }
+
     /// Return diagnostic snapshots for all registered caches.
     pub async fn overview(&self) -> HydraCacheOverview {
         let mut caches = Vec::with_capacity(self.probes.len());
@@ -335,7 +359,11 @@ impl fmt::Debug for HydraCacheRegistry {
 
 #[cfg(test)]
 mod tests {
-    use hydracache::{CacheOptions, HydraCache};
+    use std::sync::Arc;
+
+    use hydracache::{
+        CacheOptions, ClusterGeneration, ClusterHealthState, HydraCache, InMemoryCluster,
+    };
     use serde_json::Value;
 
     use super::{
@@ -400,6 +428,41 @@ mod tests {
         assert_eq!(registry.len(), 1);
         assert!(!registry.is_empty());
         assert!(format!("{registry:?}").contains("main"));
+    }
+
+    #[tokio::test]
+    async fn registry_exposes_cluster_staging_health_for_cluster_caches() {
+        let cluster = Arc::new(InMemoryCluster::new("orders"));
+        let member = HydraCache::member()
+            .shared_cluster(cluster)
+            .node_id("member-a")
+            .generation(ClusterGeneration::new(3))
+            .start()
+            .await
+            .unwrap();
+        member.record_cluster_owner_load_success();
+        member.record_cluster_remote_fetch_success();
+        member.record_cluster_hot_cache_hit();
+
+        let registry = HydraCacheRegistry::new()
+            .with_cache("local", HydraCache::local().build())
+            .with_cache("member", member);
+
+        assert!(registry.cluster_staging_health("local").is_none());
+
+        let health = registry
+            .cluster_staging_health("member")
+            .expect("member staging health");
+        assert_eq!(health.state, ClusterHealthState::Healthy);
+        assert_eq!(health.node_id, "member-a");
+        assert_eq!(health.generation, 3);
+        assert_eq!(health.owner_load_success, 1);
+        assert_eq!(health.remote_fetch_success, 1);
+        assert_eq!(health.hot_cache_hits, 1);
+
+        let all = registry.cluster_staging_healths();
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].0, "member");
     }
 
     #[test]

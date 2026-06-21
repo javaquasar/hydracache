@@ -2711,6 +2711,7 @@ where
                 Self::record_read_through(&self.diagnostics, |diagnostics| {
                     diagnostics.local_hits = diagnostics.local_hits.saturating_add(1);
                 });
+                self.cache.record_cluster_hot_cache_hit();
                 Ok(Some(PeerFetchReadThroughOutcome {
                     key: decision.key.clone(),
                     policy: self.policy,
@@ -2796,6 +2797,7 @@ where
                 Self::record_owner_load(&self.owner_load_diagnostics, |diagnostics| {
                     diagnostics.local_hits = diagnostics.local_hits.saturating_add(1);
                 });
+                self.cache.record_cluster_hot_cache_hit();
                 Ok(Some(OwnerLoadReadThroughOutcome {
                     key,
                     policy: self.policy,
@@ -2883,6 +2885,7 @@ where
                 Self::record_read_through(&execution.diagnostics, |diagnostics| {
                     diagnostics.remote_hits = diagnostics.remote_hits.saturating_add(1);
                 });
+                execution.cache.record_cluster_remote_fetch_success();
                 if execution.hydrate_remote_hits {
                     if let Some(value) = routed.value.clone() {
                         hydrated = Self::hydrate_remote_entry(
@@ -2916,6 +2919,7 @@ where
                 Self::record_read_through(&execution.diagnostics, |diagnostics| {
                     diagnostics.router_errors = diagnostics.router_errors.saturating_add(1);
                 });
+                execution.cache.record_cluster_remote_fetch_error();
             }
         }
 
@@ -2944,6 +2948,7 @@ where
             Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                 diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
             });
+            execution.cache.record_cluster_owner_load_error();
             return Ok(OwnerLoadReadThroughOutcome {
                 key,
                 policy: execution.policy,
@@ -2961,6 +2966,7 @@ where
             Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                 diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
             });
+            execution.cache.record_cluster_owner_load_error();
             return Ok(OwnerLoadReadThroughOutcome {
                 key,
                 policy: execution.policy,
@@ -2981,6 +2987,7 @@ where
                 Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                     diagnostics.routing_errors = diagnostics.routing_errors.saturating_add(1);
                 });
+                execution.cache.record_cluster_owner_load_error();
                 return Ok(OwnerLoadReadThroughOutcome {
                     key,
                     policy: execution.policy,
@@ -3008,11 +3015,13 @@ where
                         Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.remote_hits = diagnostics.remote_hits.saturating_add(1);
                         });
+                        execution.cache.record_cluster_remote_fetch_success();
                     }
                     OwnerLoadResponse::Loaded(_) => {
                         Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.remote_loaded = diagnostics.remote_loaded.saturating_add(1);
                         });
+                        execution.cache.record_cluster_owner_load_success();
                     }
                     OwnerLoadResponse::Miss(_) => {
                         Self::record_owner_load(&execution.diagnostics, |diagnostics| {
@@ -3023,11 +3032,13 @@ where
                         Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.rejections = diagnostics.rejections.saturating_add(1);
                         });
+                        execution.cache.record_cluster_owner_load_error();
                     }
                     OwnerLoadResponse::Failed(_) => {
                         Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                             diagnostics.failures = diagnostics.failures.saturating_add(1);
                         });
+                        execution.cache.record_cluster_owner_load_error();
                     }
                 }
 
@@ -3074,6 +3085,7 @@ where
                 Self::record_owner_load(&execution.diagnostics, |diagnostics| {
                     diagnostics.transport_errors = diagnostics.transport_errors.saturating_add(1);
                 });
+                execution.cache.record_cluster_owner_load_error();
                 Ok(OwnerLoadReadThroughOutcome {
                     key,
                     policy: execution.policy,
@@ -4572,6 +4584,13 @@ mod tests {
         assert_eq!(hot_remote.tracked_entries, 1);
         assert_eq!(hot_remote.skipped_hydrations, 0);
 
+        let fill = cache.cluster_fill_counters();
+        assert_eq!(fill.owner_load_success, 0);
+        assert_eq!(fill.owner_load_errors, 0);
+        assert_eq!(fill.remote_fetch_success, 1);
+        assert_eq!(fill.remote_fetch_errors, 0);
+        assert_eq!(fill.hot_cache_hits, 0);
+
         shutdown.send(()).unwrap();
         server.await.unwrap();
     }
@@ -5216,6 +5235,13 @@ mod tests {
         assert!(hot_remote.enabled);
         assert_eq!(hot_remote.hydrations, 1);
         assert_eq!(hot_remote.tracked_entries, 1);
+
+        let fill = cache.cluster_fill_counters();
+        assert_eq!(fill.owner_load_success, 1);
+        assert_eq!(fill.owner_load_errors, 0);
+        assert_eq!(fill.remote_fetch_success, 0);
+        assert_eq!(fill.remote_fetch_errors, 0);
+        assert_eq!(fill.hot_cache_hits, 1);
 
         shutdown.send(()).unwrap();
         server.await.unwrap();

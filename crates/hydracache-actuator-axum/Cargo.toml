@@ -13,11 +13,11 @@ description = "Axum read-only actuator endpoints for HydraCache diagnostics."
 
 [dependencies]
 axum.workspace = true
+hydracache.workspace = true
 hydracache-observability.workspace = true
 serde.workspace = true
 
 [dev-dependencies]
-hydracache.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 tower.workspace = true

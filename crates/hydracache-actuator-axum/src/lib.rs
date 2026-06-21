@@ -27,6 +27,7 @@
 //! GET /caches
 //! GET /caches/{name}/diagnostics
 //! GET /caches/{name}/stats
+//! GET /cluster/staging-health
 //! GET /correctness
 //! GET /
 //! ```
@@ -35,6 +36,7 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::get;
 use axum::{Json, Router};
+use hydracache::ClusterStagingHealth;
 use hydracache_observability::{
     CacheDiagnosticsSnapshot, CacheStatsSnapshot, HydraCacheOverview, HydraCacheRegistry,
 };
@@ -98,6 +100,7 @@ impl HydraCacheActuator {
             .route("/caches", get(caches))
             .route("/caches/{name}/diagnostics", get(cache_diagnostics))
             .route("/caches/{name}/stats", get(cache_stats))
+            .route("/cluster/staging-health", get(cluster_staging_health))
             .route("/correctness", get(correctness))
             .with_state(state)
     }
@@ -123,6 +126,22 @@ pub struct ActuatorHealth {
 pub struct CacheList {
     /// Registered cache names in stable sorted order.
     pub caches: Vec<String>,
+}
+
+/// Named cluster staging health snapshot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NamedClusterStagingHealth {
+    /// Registered cache name.
+    pub name: String,
+    /// Staging health summary for that cache.
+    pub health: ClusterStagingHealth,
+}
+
+/// Cluster staging health response for actuator endpoints.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClusterStagingHealthResponse {
+    /// Cluster caches that can expose staging health.
+    pub caches: Vec<NamedClusterStagingHealth>,
 }
 
 /// Correctness-oriented snapshot for staging/release gates.
@@ -240,6 +259,19 @@ async fn cache_stats(
         .await
         .ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(diagnostics.stats))
+}
+
+async fn cluster_staging_health(
+    State(state): State<ActuatorState>,
+) -> Json<ClusterStagingHealthResponse> {
+    Json(ClusterStagingHealthResponse {
+        caches: state
+            .registry
+            .cluster_staging_healths()
+            .into_iter()
+            .map(|(name, health)| NamedClusterStagingHealth { name, health })
+            .collect(),
+    })
 }
 
 async fn correctness(State(state): State<ActuatorState>) -> Json<ActuatorCorrectnessSnapshot> {
