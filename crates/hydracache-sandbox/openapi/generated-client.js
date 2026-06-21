@@ -112,6 +112,22 @@ export class HydraCacheSandboxClient {
     return this.post("/demo/cluster/real-adapters/run", options);
   }
 
+  runClusterStagingGate(options = {}) {
+    return this.post("/sandbox/cluster/staging-gate", options);
+  }
+
+  runClusterLeaveRejoin(options = {}) {
+    return this.post("/sandbox/cluster/leave-rejoin", options);
+  }
+
+  runClusterStaleGeneration(options = {}) {
+    return this.post("/sandbox/cluster/stale-generation", options);
+  }
+
+  runClusterPeerFetchAuthWire(options = {}) {
+    return this.post("/sandbox/cluster/peer-fetch-auth-wire", options);
+  }
+
   exportSession() {
     return this.json("/demo/export");
   }
