@@ -476,6 +476,7 @@ mod invalidation_bus;
 mod refresh;
 mod stats;
 mod tag_index;
+pub mod testing;
 mod typed;
 
 pub use builder::HydraCacheBuilder;

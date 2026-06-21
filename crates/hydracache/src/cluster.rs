@@ -1716,7 +1716,6 @@ impl ClusterStagingHealth {
 
 /// Structured cluster load report used by deterministic staging gates.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[non_exhaustive]
 pub struct ClusterLoadReport {
     /// Number of cluster nodes participating in the scenario.
     pub nodes: usize,
@@ -1742,6 +1741,10 @@ pub struct ClusterLoadReport {
     pub receiver_closed: u64,
     /// Stale-generation attempts rejected by fencing.
     pub stale_generation_rejected: u64,
+    /// Peer-fetch or owner-load auth failures observed by the gate probes.
+    pub peer_fetch_auth_failures: u64,
+    /// Peer-fetch or owner-load wire-version rejections observed by the gate probes.
+    pub wire_version_rejections: u64,
     /// Owner-side origin load successes.
     pub owner_load_success: u64,
     /// Remote peer-fetch successes.
@@ -3972,6 +3975,8 @@ mod tests {
             publish_failures: 0,
             receiver_closed: 0,
             stale_generation_rejected: 1,
+            peer_fetch_auth_failures: 1,
+            wire_version_rejections: 1,
             owner_load_success: 5,
             remote_fetch_success: 3,
             hot_cache_hits: 7,
@@ -3986,6 +3991,8 @@ mod tests {
         assert_eq!(value["requests"], 240);
         assert_eq!(value["published"], 12);
         assert_eq!(value["stale_generation_rejected"], 1);
+        assert_eq!(value["peer_fetch_auth_failures"], 1);
+        assert_eq!(value["wire_version_rejections"], 1);
         assert_eq!(value["elapsed_ms"], 320);
     }
 
