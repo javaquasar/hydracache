@@ -55,6 +55,10 @@
 //! http://127.0.0.1:3000/demo/cluster/read-through/run
 //! http://127.0.0.1:3000/demo/cluster/owner-load/run
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
+//! http://127.0.0.1:3000/sandbox/cluster/staging-gate
+//! http://127.0.0.1:3000/sandbox/cluster/leave-rejoin
+//! http://127.0.0.1:3000/sandbox/cluster/stale-generation
+//! http://127.0.0.1:3000/sandbox/cluster/peer-fetch-auth-wire
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
 //! http://127.0.0.1:3000/demo/correctness
@@ -76,16 +80,17 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use chitchat::transport::ChannelTransport;
+use hydracache::testing::{StagingClusterHarness, StagingGateOutcome};
 use hydracache::{
     CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
     CacheEventSubscriber, CacheOptions, CacheResult, ClusterAdmissionBridge,
     ClusterAdmissionBridgeEvent, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
     ClusterCandidate, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
-    ClusterDiscoveryEvent, ClusterGeneration, ClusterLifecycleDiagnostics, ClusterMembershipEvent,
-    ClusterOwnershipDecision, ClusterOwnershipDiagnostics, ClusterPeerFetch,
-    ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole, HydraCache,
-    InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus, InMemoryPeerFetch,
-    RaftMetadataCommand, RefreshOptions,
+    ClusterDiscoveryEvent, ClusterGeneration, ClusterHealthState, ClusterLifecycleDiagnostics,
+    ClusterMembershipEvent, ClusterOwnershipDecision, ClusterOwnershipDiagnostics,
+    ClusterPeerFetch, ClusterPeerFetchDiagnostics, ClusterPeerFetchResponse, ClusterRole,
+    HydraCache, InMemoryCluster, InMemoryClusterDiscovery, InMemoryInvalidationBus,
+    InMemoryPeerFetch, RaftMetadataCommand, RefreshOptions,
 };
 use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
@@ -648,6 +653,22 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/demo/cluster/real-adapters/run",
             post(run_real_cluster_adapters_demo),
+        )
+        .route(
+            "/sandbox/cluster/staging-gate",
+            post(run_cluster_staging_gate),
+        )
+        .route(
+            "/sandbox/cluster/leave-rejoin",
+            post(run_cluster_leave_rejoin_gate),
+        )
+        .route(
+            "/sandbox/cluster/stale-generation",
+            post(run_cluster_stale_generation_gate),
+        )
+        .route(
+            "/sandbox/cluster/peer-fetch-auth-wire",
+            post(run_cluster_peer_fetch_auth_wire_gate),
         )
         .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
@@ -2465,6 +2486,59 @@ struct RealClusterAdaptersDemoRequest {
     client_node_id: Option<String>,
     #[serde(default)]
     flow_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
+#[schema(example = json!({"cluster": "sandbox-staging", "members": 2, "clients": 2, "invalidations": 8, "flow_id": "staging-gate"}))]
+struct ClusterStagingGateRequest {
+    #[serde(default)]
+    cluster: Option<String>,
+    #[serde(default)]
+    members: Option<usize>,
+    #[serde(default)]
+    clients: Option<usize>,
+    #[serde(default)]
+    invalidations: Option<usize>,
+    #[serde(default)]
+    flow_id: Option<String>,
+}
+
+impl ClusterStagingGateRequest {
+    fn cluster_name(&self, scenario: &str) -> String {
+        self.cluster
+            .clone()
+            .unwrap_or_else(|| format!("sandbox-{scenario}"))
+    }
+
+    fn flow_id(&self, scenario: &str) -> String {
+        self.flow_id.clone().unwrap_or_else(|| scenario.to_owned())
+    }
+
+    fn members(&self) -> usize {
+        self.members.unwrap_or(2).clamp(1, 8)
+    }
+
+    fn clients(&self) -> usize {
+        self.clients.unwrap_or(2).clamp(1, 8)
+    }
+
+    fn invalidations(&self) -> usize {
+        self.invalidations.unwrap_or(8).clamp(1, 256)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterStagingGateResponse {
+    flow_id: String,
+    scenario: &'static str,
+    runbook: &'static str,
+    passed: bool,
+    #[schema(value_type = Object)]
+    report: Value,
+    #[schema(value_type = Object)]
+    health: Value,
+    #[schema(value_type = Object)]
+    staging_health: Value,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
@@ -7160,6 +7234,10 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/demo/cluster/read-through/run".to_owned(),
         "/demo/cluster/owner-load/run".to_owned(),
         "/demo/cluster/real-adapters/run".to_owned(),
+        "/sandbox/cluster/staging-gate".to_owned(),
+        "/sandbox/cluster/leave-rejoin".to_owned(),
+        "/sandbox/cluster/stale-generation".to_owned(),
+        "/sandbox/cluster/peer-fetch-auth-wire".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
         "/demo/events/preflight/run".to_owned(),
@@ -7225,6 +7303,10 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/demo/cluster/read-through/run",
         "/demo/cluster/owner-load/run",
         "/demo/cluster/real-adapters/run",
+        "/sandbox/cluster/staging-gate",
+        "/sandbox/cluster/leave-rejoin",
+        "/sandbox/cluster/stale-generation",
+        "/sandbox/cluster/peer-fetch-auth-wire",
         "/demo/flows",
         "/demo/query/products/",
         "/demo/query/orders/",
@@ -7917,6 +7999,112 @@ fn distributed_timeline_step(
         tag,
         detail,
     }
+}
+
+#[utoipa::path(
+    post,
+    path = "/sandbox/cluster/staging-gate",
+    tag = "cluster",
+    request_body = ClusterStagingGateRequest,
+    responses((status = 200, description = "Run the deterministic cluster staging gate", body = ClusterStagingGateResponse))
+)]
+async fn run_cluster_staging_gate(
+    Json(request): Json<ClusterStagingGateRequest>,
+) -> Result<Json<ClusterStagingGateResponse>, SandboxHttpError> {
+    let scenario = "staging-gate";
+    let flow_id = request.flow_id(scenario);
+    let harness = staging_harness(&request, scenario).await;
+    let outcome = harness.run_full_gate().await;
+    cluster_staging_gate_response(flow_id, scenario, outcome)
+}
+
+#[utoipa::path(
+    post,
+    path = "/sandbox/cluster/leave-rejoin",
+    tag = "cluster",
+    request_body = ClusterStagingGateRequest,
+    responses((status = 200, description = "Run only the leave/rejoin generation-fencing staging scenario", body = ClusterStagingGateResponse))
+)]
+async fn run_cluster_leave_rejoin_gate(
+    Json(request): Json<ClusterStagingGateRequest>,
+) -> Result<Json<ClusterStagingGateResponse>, SandboxHttpError> {
+    let scenario = "leave-rejoin";
+    let flow_id = request.flow_id(scenario);
+    let mut harness = staging_harness(&request, scenario).await;
+    harness.drive_leave_rejoin_with_newer_generation().await;
+    cluster_staging_gate_response(flow_id, scenario, harness.outcome())
+}
+
+#[utoipa::path(
+    post,
+    path = "/sandbox/cluster/stale-generation",
+    tag = "cluster",
+    request_body = ClusterStagingGateRequest,
+    responses((status = 200, description = "Run only the stale-generation fencing staging scenario", body = ClusterStagingGateResponse))
+)]
+async fn run_cluster_stale_generation_gate(
+    Json(request): Json<ClusterStagingGateRequest>,
+) -> Result<Json<ClusterStagingGateResponse>, SandboxHttpError> {
+    let scenario = "stale-generation";
+    let flow_id = request.flow_id(scenario);
+    let mut harness = staging_harness(&request, scenario).await;
+    harness.attempt_stale_generation_publish().await;
+    cluster_staging_gate_response(flow_id, scenario, harness.outcome())
+}
+
+#[utoipa::path(
+    post,
+    path = "/sandbox/cluster/peer-fetch-auth-wire",
+    tag = "cluster",
+    request_body = ClusterStagingGateRequest,
+    responses((status = 200, description = "Run only the peer-fetch auth and wire-version staging scenario", body = ClusterStagingGateResponse))
+)]
+async fn run_cluster_peer_fetch_auth_wire_gate(
+    Json(request): Json<ClusterStagingGateRequest>,
+) -> Result<Json<ClusterStagingGateResponse>, SandboxHttpError> {
+    let scenario = "peer-fetch-auth-wire";
+    let flow_id = request.flow_id(scenario);
+    let mut harness = staging_harness(&request, scenario).await;
+    harness.drive_peer_fetch_auth_matrix().await;
+    harness.drive_wire_version_matrix().await;
+    cluster_staging_gate_response(flow_id, scenario, harness.outcome())
+}
+
+async fn staging_harness(
+    request: &ClusterStagingGateRequest,
+    scenario: &str,
+) -> StagingClusterHarness {
+    StagingClusterHarness::builder()
+        .cluster_name(request.cluster_name(scenario))
+        .members(request.members())
+        .clients(request.clients())
+        .invalidations(request.invalidations())
+        .build()
+        .await
+}
+
+fn cluster_staging_gate_response(
+    flow_id: String,
+    scenario: &'static str,
+    outcome: StagingGateOutcome,
+) -> Result<Json<ClusterStagingGateResponse>, SandboxHttpError> {
+    let passed = outcome.report.totals_match_requests()
+        && outcome.report.has_clean_invalidation_health()
+        && outcome.report.published == outcome.report.received
+        && outcome.report.received == outcome.report.applied
+        && matches!(outcome.health, ClusterHealthState::Healthy);
+    Ok(Json(ClusterStagingGateResponse {
+        flow_id,
+        scenario,
+        runbook: "docs/PRODUCTION_CLUSTER_READINESS.md#cluster-staging-gate-039",
+        passed,
+        report: serde_json::to_value(&outcome.report)
+            .map_err(|error| SandboxHttpError::internal(error.to_string()))?,
+        health: serde_json::to_value(&outcome.health)
+            .map_err(|error| SandboxHttpError::internal(error.to_string()))?,
+        staging_health: serde_json::to_value(&outcome.staging_health)
+            .map_err(|error| SandboxHttpError::internal(error.to_string()))?,
+    }))
 }
 
 #[utoipa::path(
@@ -12830,6 +13018,16 @@ fn capabilities() -> Vec<CapabilityReport> {
             description: "Connect real chitchat-backed discovery to the polling admission bridge and commit membership metadata through the raft-rs runtime.",
         },
         CapabilityReport {
+            name: "cluster staging gate",
+            endpoint: "/sandbox/cluster/staging-gate",
+            description: "Replay the deterministic 0.39 cluster staging gate and export the structured logical counter report.",
+        },
+        CapabilityReport {
+            name: "cluster staging sub-scenarios",
+            endpoint: "/sandbox/cluster/leave-rejoin, /sandbox/cluster/stale-generation, and /sandbox/cluster/peer-fetch-auth-wire",
+            description: "Replay focused generation fencing and transport compatibility checks from the cluster staging gate.",
+        },
+        CapabilityReport {
             name: "observability demo",
             endpoint: "/demo/observability/prometheus and /demo/observability/traces/latest",
             description: "Expose Prometheus text metrics and OpenTelemetry-style spans derived from sandbox events.",
@@ -12961,6 +13159,10 @@ fn actuator_stats_doc() {}
         run_cluster_read_through_demo,
         run_cluster_owner_load_demo,
         run_real_cluster_adapters_demo,
+        run_cluster_staging_gate,
+        run_cluster_leave_rejoin_gate,
+        run_cluster_stale_generation_gate,
+        run_cluster_peer_fetch_auth_wire_gate,
         reset_demo,
         cache_put,
         cache_get,
@@ -13152,6 +13354,8 @@ fn actuator_stats_doc() {}
             RaftMetadataRuntimeReport,
             RealClusterAdaptersTimelineStep,
             RealClusterAdaptersDemoResponse,
+            ClusterStagingGateRequest,
+            ClusterStagingGateResponse,
             LoadUserResponse,
             OrmAdapterRun,
             OrmComparisonResponse,
@@ -13727,6 +13931,10 @@ mod tests {
         assert!(paths.contains_key("/demo/cluster/read-through/run"));
         assert!(paths.contains_key("/demo/cluster/owner-load/run"));
         assert!(paths.contains_key("/demo/cluster/real-adapters/run"));
+        assert!(paths.contains_key("/sandbox/cluster/staging-gate"));
+        assert!(paths.contains_key("/sandbox/cluster/leave-rejoin"));
+        assert!(paths.contains_key("/sandbox/cluster/stale-generation"));
+        assert!(paths.contains_key("/sandbox/cluster/peer-fetch-auth-wire"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));
