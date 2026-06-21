@@ -109,6 +109,9 @@ jobs:
         with:
           shared-key: msrv-1.88.0
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Check MSRV
         run: cargo check --workspace --all-targets --locked
 
