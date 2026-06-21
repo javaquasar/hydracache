@@ -1433,6 +1433,7 @@ dependencies = [
  "loom",
  "moka",
  "serde",
+ "serde_json",
  "tokio",
  "trybuild",
 ]

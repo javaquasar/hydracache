@@ -5,7 +5,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use bytes::Bytes;
-use hydracache_core::{CacheCodec, CacheError, PostcardCodec, Result};
+use hydracache_core::{CacheCodec, CacheError, CacheStats, PostcardCodec, Result};
+use serde::{Deserialize, Serialize};
 
 use crate::builder::HydraCacheBuilder;
 use crate::cache::HydraCache;
@@ -37,7 +38,7 @@ fn next_member_id() -> ClusterNodeId {
 /// The id is separate from transport-level identities. A future libp2p adapter
 /// can map this value to a `PeerId`, while a server deployment can map it to a
 /// configured node name.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ClusterNodeId(String);
 
 impl ClusterNodeId {
@@ -75,7 +76,9 @@ impl From<String> for ClusterNodeId {
 /// A restarted process should use a larger generation than the previous
 /// process. This lets the cluster reject stale clients or members that still
 /// emit invalidation messages after a restart.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct ClusterGeneration(u64);
 
 impl ClusterGeneration {
@@ -99,7 +102,9 @@ impl ClusterGeneration {
 ///
 /// In v0.20 this is simulated by [`InMemoryCluster`]. A future Raft-backed
 /// adapter should advance this value only after committed membership changes.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 pub struct ClusterEpoch(u64);
 
 impl ClusterEpoch {
@@ -119,7 +124,8 @@ impl ClusterEpoch {
 }
 
 /// Runtime role of a HydraCache instance.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ClusterRole {
     /// No distributed behavior.
     Local,
@@ -157,7 +163,8 @@ impl ClusterRole {
 /// lifecycle.record_graceful_stop();
 /// assert!(lifecycle.is_stopped());
 /// ```
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ClusterLifecycleStatus {
     /// The component has not been started yet.
     #[default]
@@ -217,7 +224,7 @@ impl ClusterLifecycleStatus {
 ///     Some("listener closed unexpectedly"),
 /// );
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClusterLifecycleDiagnostics {
     /// Stable component name used in diagnostics and sandbox reports.
     pub component: String,
@@ -305,6 +312,130 @@ impl ClusterLifecycleDiagnostics {
     /// Return whether this component reached a terminal status.
     pub fn is_terminal(&self) -> bool {
         self.status.is_terminal()
+    }
+}
+
+/// Error returned by a background cluster component.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterComponentError {
+    component: &'static str,
+    message: String,
+}
+
+impl ClusterComponentError {
+    /// Create a component error with a stable component name.
+    pub fn new(component: &'static str, message: impl Into<String>) -> Self {
+        Self {
+            component,
+            message: message.into(),
+        }
+    }
+
+    /// Return the stable component name.
+    pub fn component(&self) -> &'static str {
+        self.component
+    }
+
+    /// Return the human-readable error message.
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+}
+
+impl fmt::Display for ClusterComponentError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "cluster component '{}' failed: {}",
+            self.component, self.message
+        )
+    }
+}
+
+impl std::error::Error for ClusterComponentError {}
+
+/// Uniform lifecycle surface for background cluster components.
+#[async_trait::async_trait]
+pub trait ClusterComponent: Send + Sync {
+    /// Stable name for diagnostics.
+    fn name(&self) -> &'static str;
+
+    /// Start background work. Implementations should be idempotent.
+    async fn start(&self) -> std::result::Result<(), ClusterComponentError>;
+
+    /// Request a graceful stop. Implementations should be idempotent.
+    async fn stop(&self) -> std::result::Result<(), ClusterComponentError>;
+
+    /// Return a point-in-time lifecycle diagnostics snapshot.
+    fn diagnostics(&self) -> ClusterLifecycleDiagnostics;
+
+    /// Return the most recent error, if one was recorded.
+    fn last_error(&self) -> Option<String>;
+}
+
+/// Minimal reusable lifecycle component for adapters that already own work.
+#[derive(Debug, Clone)]
+pub struct ClusterLifecycleComponent {
+    name: &'static str,
+    state: Arc<Mutex<ClusterLifecycleDiagnostics>>,
+}
+
+impl ClusterLifecycleComponent {
+    /// Create an idle component with a stable diagnostic name.
+    pub fn new(name: &'static str) -> Self {
+        Self {
+            name,
+            state: Arc::new(Mutex::new(ClusterLifecycleDiagnostics::idle(name))),
+        }
+    }
+
+    /// Record a component failure.
+    pub fn fail(&self, message: impl Into<String>) {
+        self.state
+            .lock()
+            .expect("cluster component lifecycle poisoned")
+            .record_failure(message);
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterComponent for ClusterLifecycleComponent {
+    fn name(&self) -> &'static str {
+        self.name
+    }
+
+    async fn start(&self) -> std::result::Result<(), ClusterComponentError> {
+        let mut diagnostics = self
+            .state
+            .lock()
+            .expect("cluster component lifecycle poisoned");
+        if !diagnostics.is_running() {
+            diagnostics.record_start();
+        }
+        Ok(())
+    }
+
+    async fn stop(&self) -> std::result::Result<(), ClusterComponentError> {
+        let mut diagnostics = self
+            .state
+            .lock()
+            .expect("cluster component lifecycle poisoned");
+        if !diagnostics.is_stopped() {
+            diagnostics.record_shutdown_requested();
+            diagnostics.record_graceful_stop();
+        }
+        Ok(())
+    }
+
+    fn diagnostics(&self) -> ClusterLifecycleDiagnostics {
+        self.state
+            .lock()
+            .expect("cluster component lifecycle poisoned")
+            .clone()
+    }
+
+    fn last_error(&self) -> Option<String> {
+        self.diagnostics().last_error
     }
 }
 
@@ -1378,6 +1509,329 @@ impl ClusterDiagnostics {
     /// Return whether this runtime appears connected to a usable cluster view.
     pub fn is_operational(&self) -> bool {
         self.connected && self.lifecycle.is_running() && self.participant_count() > 0
+    }
+}
+
+/// Machine-readable reason used by [`ClusterHealthState`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum ClusterHealthReason {
+    /// At least one background cluster component is not running.
+    LifecycleNotRunning,
+    /// The runtime sees no admitted members or connected clients.
+    NoParticipants,
+    /// The distributed invalidation receiver lagged behind its source stream.
+    LaggedReceivers { count: u64 },
+    /// Transport frames could not be decoded.
+    DecodeErrors { count: u64 },
+    /// Publishing an invalidation to the bus failed.
+    PublishFailures { count: u64 },
+    /// The invalidation receiver stream closed.
+    ReceiverClosed { count: u64 },
+    /// A stale process generation was fenced off.
+    StaleGenerationRejections { count: u64 },
+    /// Peer-fetch or owner-load transport auth rejected a caller.
+    PeerFetchAuthFailures { count: u64 },
+    /// Peer-fetch or owner-load transport wire compatibility rejected a caller.
+    WireVersionRejections { count: u64 },
+    /// Gossip state was reset recently enough to matter for staging.
+    GossipResetRecent {
+        /// Age of the most recent observed tombstone/reset signal.
+        tombstone_age_ms: u64,
+        /// Number of observed gossip resets since process start.
+        reset_count: u64,
+    },
+}
+
+/// Derived staging health state with machine-readable reasons.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "state", rename_all = "snake_case")]
+#[non_exhaustive]
+pub enum ClusterHealthState {
+    /// All checked staging invariants hold.
+    Healthy,
+    /// The runtime is usable, but at least one soft signal is degraded.
+    Degraded { reasons: Vec<ClusterHealthReason> },
+    /// The runtime is not safe to run staging traffic against.
+    NotReady { reasons: Vec<ClusterHealthReason> },
+}
+
+impl ClusterHealthState {
+    /// Return `true` only when the derived state is healthy.
+    pub fn ready_for_staging(&self) -> bool {
+        matches!(self, Self::Healthy)
+    }
+
+    /// Return the machine-readable reasons, if the state is not healthy.
+    pub fn reasons(&self) -> &[ClusterHealthReason] {
+        match self {
+            Self::Healthy => &[],
+            Self::Degraded { reasons } | Self::NotReady { reasons } => reasons,
+        }
+    }
+}
+
+/// Point-in-time owner/remote/hot fill counters for cluster staging.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterFillCounters {
+    /// This node owned the key and loaded it from the origin.
+    pub owner_load_success: u64,
+    /// Owner-side origin loads that returned an error.
+    pub owner_load_errors: u64,
+    /// This node fetched encoded bytes from the owner over peer-fetch.
+    pub remote_fetch_success: u64,
+    /// Remote peer-fetch attempts that failed.
+    pub remote_fetch_errors: u64,
+    /// This node served a non-owned hot-copy without contacting the owner.
+    pub hot_cache_hits: u64,
+}
+
+impl ClusterFillCounters {
+    /// Return the total number of successful fill/hit observations.
+    pub fn successful_events(&self) -> u64 {
+        self.owner_load_success
+            .saturating_add(self.remote_fetch_success)
+            .saturating_add(self.hot_cache_hits)
+    }
+
+    /// Return the total number of owner/remote fill errors.
+    pub fn error_events(&self) -> u64 {
+        self.owner_load_errors
+            .saturating_add(self.remote_fetch_errors)
+    }
+}
+
+/// Additional staging counters that do not belong to local cache stats.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterStagingCounters {
+    /// Peer-fetch/owner-load auth failures observed by the staging gate.
+    pub peer_fetch_auth_failures: u64,
+    /// Wire-version rejections observed by the staging gate.
+    pub wire_version_rejections: u64,
+    /// Stale-generation publish/admission attempts rejected by fencing.
+    pub stale_generation_rejected: u64,
+    /// Age of the most recent gossip tombstone/reset signal.
+    pub tombstone_age_ms: u64,
+    /// Number of observed gossip resets since process start.
+    pub gossip_reset_count: u64,
+}
+
+/// Staging-focused health summary derived from diagnostics and counters.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterStagingHealth {
+    /// Local runtime role.
+    pub role: ClusterRole,
+    /// Local node id.
+    pub node_id: String,
+    /// Whether this runtime is connected to a cluster view.
+    pub connected: bool,
+    /// Number of admitted member nodes.
+    pub member_count: usize,
+    /// Number of connected clients.
+    pub client_count: usize,
+    /// Current metadata epoch.
+    pub epoch: u64,
+    /// Local process generation.
+    pub generation: u64,
+    /// Invalidation messages published by this cache.
+    pub invalidations_published: u64,
+    /// Invalidation messages received by this cache.
+    pub invalidations_received: u64,
+    /// Invalidation messages applied by this cache.
+    pub invalidations_applied: u64,
+    /// Invalidation receiver lag events.
+    pub lagged_receivers: u64,
+    /// Invalidation decode errors.
+    pub decode_errors: u64,
+    /// Invalidation publish failures.
+    pub publish_failures: u64,
+    /// Invalidation receiver closed events.
+    pub receiver_closed: u64,
+    /// Owner-side origin loads that returned a value.
+    pub owner_load_success: u64,
+    /// Owner-side origin loads that returned an error.
+    pub owner_load_errors: u64,
+    /// Remote peer-fetch calls that returned a value.
+    pub remote_fetch_success: u64,
+    /// Remote peer-fetch calls that failed.
+    pub remote_fetch_errors: u64,
+    /// Hot near-cache hits for non-owned values.
+    pub hot_cache_hits: u64,
+    /// Auth failures observed by peer-fetch/owner-load staging checks.
+    pub peer_fetch_auth_failures: u64,
+    /// Wire-version rejections observed by staging checks.
+    pub wire_version_rejections: u64,
+    /// Stale-generation attempts rejected by fencing.
+    pub stale_generation_rejected: u64,
+    /// Age of the most recent gossip tombstone/reset signal.
+    pub tombstone_age_ms: u64,
+    /// Number of observed gossip resets since process start.
+    pub gossip_reset_count: u64,
+    /// Derived overall staging health state.
+    pub state: ClusterHealthState,
+}
+
+impl ClusterStagingHealth {
+    /// Derive staging health from cluster diagnostics and logical counters.
+    pub fn from_parts(
+        diagnostics: ClusterDiagnostics,
+        stats: CacheStats,
+        fill: ClusterFillCounters,
+        staging: ClusterStagingCounters,
+    ) -> Self {
+        let state = derive_cluster_health_state(&diagnostics, &stats, &staging);
+        Self {
+            role: diagnostics.role,
+            node_id: diagnostics.node_id.to_string(),
+            connected: diagnostics.connected,
+            member_count: diagnostics.member_count,
+            client_count: diagnostics.client_count,
+            epoch: diagnostics.epoch.value(),
+            generation: diagnostics.generation.value(),
+            invalidations_published: stats.distributed_invalidations_published,
+            invalidations_received: stats.distributed_invalidations_received,
+            invalidations_applied: stats.distributed_invalidations_applied,
+            lagged_receivers: stats.distributed_invalidation_lagged,
+            decode_errors: stats.distributed_invalidation_decode_errors,
+            publish_failures: stats.distributed_invalidation_publish_failures,
+            receiver_closed: stats.distributed_invalidation_receiver_closed,
+            owner_load_success: fill.owner_load_success,
+            owner_load_errors: fill.owner_load_errors,
+            remote_fetch_success: fill.remote_fetch_success,
+            remote_fetch_errors: fill.remote_fetch_errors,
+            hot_cache_hits: fill.hot_cache_hits,
+            peer_fetch_auth_failures: staging.peer_fetch_auth_failures,
+            wire_version_rejections: staging.wire_version_rejections,
+            stale_generation_rejected: staging.stale_generation_rejected,
+            tombstone_age_ms: staging.tombstone_age_ms,
+            gossip_reset_count: staging.gossip_reset_count,
+            state,
+        }
+    }
+}
+
+/// Structured cluster load report used by deterministic staging gates.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterLoadReport {
+    /// Number of cluster nodes participating in the scenario.
+    pub nodes: usize,
+    /// Total logical operations driven by the scenario.
+    pub requests: usize,
+    /// Logical read operations.
+    pub read_ops: usize,
+    /// Logical invalidation operations.
+    pub invalidation_ops: usize,
+    /// Invalidation messages published.
+    pub published: u64,
+    /// Invalidation messages received.
+    pub received: u64,
+    /// Invalidation messages applied.
+    pub applied: u64,
+    /// Receiver lag events.
+    pub lagged: u64,
+    /// Decode errors.
+    pub decode_errors: u64,
+    /// Publish failures.
+    pub publish_failures: u64,
+    /// Receiver closed events.
+    pub receiver_closed: u64,
+    /// Stale-generation attempts rejected by fencing.
+    pub stale_generation_rejected: u64,
+    /// Owner-side origin load successes.
+    pub owner_load_success: u64,
+    /// Remote peer-fetch successes.
+    pub remote_fetch_success: u64,
+    /// Hot near-cache hits for non-owned values.
+    pub hot_cache_hits: u64,
+    /// Recorded wall-clock duration. Deterministic gates must not assert on it.
+    pub elapsed_ms: u64,
+}
+
+impl ClusterLoadReport {
+    /// Return whether read + invalidation operations match total requests.
+    pub fn totals_match_requests(&self) -> bool {
+        self.read_ops.saturating_add(self.invalidation_ops) == self.requests
+    }
+
+    /// Return whether the invalidation health counters are clean.
+    pub fn has_clean_invalidation_health(&self) -> bool {
+        self.lagged == 0
+            && self.decode_errors == 0
+            && self.publish_failures == 0
+            && self.receiver_closed == 0
+    }
+}
+
+fn derive_cluster_health_state(
+    diagnostics: &ClusterDiagnostics,
+    stats: &CacheStats,
+    staging: &ClusterStagingCounters,
+) -> ClusterHealthState {
+    let mut hard_reasons = Vec::new();
+    let mut soft_reasons = Vec::new();
+
+    if !diagnostics.lifecycle.is_running() {
+        hard_reasons.push(ClusterHealthReason::LifecycleNotRunning);
+    }
+    if diagnostics.participant_count() == 0 {
+        hard_reasons.push(ClusterHealthReason::NoParticipants);
+    }
+    if stats.distributed_invalidation_decode_errors > 0 {
+        hard_reasons.push(ClusterHealthReason::DecodeErrors {
+            count: stats.distributed_invalidation_decode_errors,
+        });
+    }
+    if stats.distributed_invalidation_publish_failures > 0 {
+        hard_reasons.push(ClusterHealthReason::PublishFailures {
+            count: stats.distributed_invalidation_publish_failures,
+        });
+    }
+    if stats.distributed_invalidation_receiver_closed > 0 {
+        hard_reasons.push(ClusterHealthReason::ReceiverClosed {
+            count: stats.distributed_invalidation_receiver_closed,
+        });
+    }
+
+    if stats.distributed_invalidation_lagged > 0 {
+        soft_reasons.push(ClusterHealthReason::LaggedReceivers {
+            count: stats.distributed_invalidation_lagged,
+        });
+    }
+    if staging.peer_fetch_auth_failures > 0 {
+        soft_reasons.push(ClusterHealthReason::PeerFetchAuthFailures {
+            count: staging.peer_fetch_auth_failures,
+        });
+    }
+    if staging.wire_version_rejections > 0 {
+        soft_reasons.push(ClusterHealthReason::WireVersionRejections {
+            count: staging.wire_version_rejections,
+        });
+    }
+    if staging.gossip_reset_count > 0 {
+        soft_reasons.push(ClusterHealthReason::GossipResetRecent {
+            tombstone_age_ms: staging.tombstone_age_ms,
+            reset_count: staging.gossip_reset_count,
+        });
+    }
+
+    if hard_reasons.is_empty() {
+        if soft_reasons.is_empty() {
+            ClusterHealthState::Healthy
+        } else {
+            ClusterHealthState::Degraded {
+                reasons: soft_reasons,
+            }
+        }
+    } else {
+        hard_reasons.extend(soft_reasons);
+        ClusterHealthState::NotReady {
+            reasons: hard_reasons,
+        }
     }
 }
 
@@ -3200,16 +3654,20 @@ mod tests {
         ChitchatStyleDiscovery, ClusterAdmissionBridge, ClusterAdmissionBridgeConfig,
         ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
         ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate,
-        ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent,
-        ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterLifecycleDiagnostics,
-        ClusterLifecycleStatus, ClusterMember, ClusterMembershipEvent, ClusterMembershipEventBus,
+        ClusterComponent, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
+        ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch,
+        ClusterFillCounters, ClusterGeneration, ClusterHealthReason, ClusterHealthState,
+        ClusterLifecycleComponent, ClusterLifecycleDiagnostics, ClusterLifecycleStatus,
+        ClusterLoadReport, ClusterMember, ClusterMembershipEvent, ClusterMembershipEventBus,
         ClusterMembershipRecvError, ClusterNodeId, ClusterOwnershipDecision,
         ClusterOwnershipResolver, ClusterPeerFetch, ClusterPeerFetchGenerationMismatch,
-        ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, InMemoryCluster,
-        InMemoryClusterDiscovery, InMemoryPeerFetch, RendezvousClusterOwnership,
-        CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
+        ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterRole, ClusterStagingCounters,
+        ClusterStagingHealth, InMemoryCluster, InMemoryClusterDiscovery, InMemoryPeerFetch,
+        RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
     };
+    use crate::HydraCache;
     use bytes::Bytes;
+    use hydracache_core::CacheStats;
 
     #[test]
     fn node_id_formats_and_converts_from_strings() {
@@ -3275,6 +3733,277 @@ mod tests {
         lifecycle.record_shutdown_requested();
         assert!(lifecycle.has_failed());
         assert!(lifecycle.shutdown_requested);
+    }
+
+    #[tokio::test]
+    async fn component_start_is_idempotent() {
+        let component = ClusterLifecycleComponent::new("invalidation-pump");
+
+        component.start().await.unwrap();
+        component.start().await.unwrap();
+
+        let diagnostics = component.diagnostics();
+        assert_eq!(component.name(), "invalidation-pump");
+        assert!(diagnostics.is_running());
+        assert_eq!(diagnostics.start_count, 1);
+    }
+
+    #[tokio::test]
+    async fn component_stop_records_graceful_stop() {
+        let component = ClusterLifecycleComponent::new("transport-server");
+
+        component.start().await.unwrap();
+        component.stop().await.unwrap();
+        component.stop().await.unwrap();
+
+        let diagnostics = component.diagnostics();
+        assert!(diagnostics.is_stopped());
+        assert_eq!(diagnostics.stop_count, 1);
+        assert!(component.last_error().is_none());
+    }
+
+    #[tokio::test]
+    async fn component_failure_sets_last_error_and_failed_status() {
+        let component = ClusterLifecycleComponent::new("discovery-bridge");
+
+        component.start().await.unwrap();
+        component.fail("listener closed");
+
+        let diagnostics = component.diagnostics();
+        assert!(diagnostics.has_failed());
+        assert_eq!(component.last_error().as_deref(), Some("listener closed"));
+    }
+
+    #[test]
+    fn staging_health_healthy_cluster_is_healthy() {
+        let health = ClusterStagingHealth::from_parts(
+            staging_diagnostics(ClusterLifecycleDiagnostics::running("cluster-runtime")),
+            CacheStats::default(),
+            ClusterFillCounters::default(),
+            ClusterStagingCounters::default(),
+        );
+
+        assert_eq!(health.state, ClusterHealthState::Healthy);
+        assert!(health.state.ready_for_staging());
+        assert!(health.state.reasons().is_empty());
+    }
+
+    #[test]
+    fn staging_health_lagged_receiver_is_degraded() {
+        let health = ClusterStagingHealth::from_parts(
+            staging_diagnostics(ClusterLifecycleDiagnostics::running("cluster-runtime")),
+            CacheStats {
+                distributed_invalidation_lagged: 1,
+                ..CacheStats::default()
+            },
+            ClusterFillCounters::default(),
+            ClusterStagingCounters::default(),
+        );
+
+        assert_eq!(
+            health.state,
+            ClusterHealthState::Degraded {
+                reasons: vec![ClusterHealthReason::LaggedReceivers { count: 1 }]
+            }
+        );
+        assert!(!health.state.ready_for_staging());
+    }
+
+    #[test]
+    fn staging_health_decode_error_is_not_ready() {
+        let health = ClusterStagingHealth::from_parts(
+            staging_diagnostics(ClusterLifecycleDiagnostics::running("cluster-runtime")),
+            CacheStats {
+                distributed_invalidation_decode_errors: 1,
+                ..CacheStats::default()
+            },
+            ClusterFillCounters::default(),
+            ClusterStagingCounters::default(),
+        );
+
+        assert_eq!(
+            health.state,
+            ClusterHealthState::NotReady {
+                reasons: vec![ClusterHealthReason::DecodeErrors { count: 1 }]
+            }
+        );
+    }
+
+    #[test]
+    fn staging_health_stale_generation_alone_stays_healthy() {
+        let health = ClusterStagingHealth::from_parts(
+            staging_diagnostics(ClusterLifecycleDiagnostics::running("cluster-runtime")),
+            CacheStats::default(),
+            ClusterFillCounters::default(),
+            ClusterStagingCounters {
+                stale_generation_rejected: 1,
+                ..ClusterStagingCounters::default()
+            },
+        );
+
+        assert_eq!(health.stale_generation_rejected, 1);
+        assert_eq!(health.state, ClusterHealthState::Healthy);
+    }
+
+    #[test]
+    fn staging_health_stopped_lifecycle_is_not_ready() {
+        let mut lifecycle = ClusterLifecycleDiagnostics::running("cluster-runtime");
+        lifecycle.record_shutdown_requested();
+        lifecycle.record_graceful_stop();
+
+        let health = ClusterStagingHealth::from_parts(
+            staging_diagnostics(lifecycle),
+            CacheStats::default(),
+            ClusterFillCounters::default(),
+            ClusterStagingCounters::default(),
+        );
+
+        assert_eq!(
+            health.state,
+            ClusterHealthState::NotReady {
+                reasons: vec![ClusterHealthReason::LifecycleNotRunning]
+            }
+        );
+    }
+
+    #[test]
+    fn recent_gossip_reset_downgrades_health_to_degraded() {
+        let health = ClusterStagingHealth::from_parts(
+            staging_diagnostics(ClusterLifecycleDiagnostics::running("cluster-runtime")),
+            CacheStats::default(),
+            ClusterFillCounters::default(),
+            ClusterStagingCounters {
+                tombstone_age_ms: 42,
+                gossip_reset_count: 1,
+                ..ClusterStagingCounters::default()
+            },
+        );
+
+        assert_eq!(
+            health.state,
+            ClusterHealthState::Degraded {
+                reasons: vec![ClusterHealthReason::GossipResetRecent {
+                    tombstone_age_ms: 42,
+                    reset_count: 1,
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn staging_health_local_role_returns_none() {
+        let cache = HydraCache::local().build();
+
+        assert!(cache.cluster_staging_health().is_none());
+    }
+
+    #[test]
+    fn fill_owner_load_increments_only_owner_counter() {
+        let cache = HydraCache::local().build();
+
+        cache.record_cluster_owner_load_success();
+
+        assert_eq!(
+            cache.cluster_fill_counters(),
+            ClusterFillCounters {
+                owner_load_success: 1,
+                ..ClusterFillCounters::default()
+            }
+        );
+    }
+
+    #[test]
+    fn fill_remote_fetch_increments_only_remote_counter() {
+        let cache = HydraCache::local().build();
+
+        cache.record_cluster_remote_fetch_success();
+
+        assert_eq!(
+            cache.cluster_fill_counters(),
+            ClusterFillCounters {
+                remote_fetch_success: 1,
+                ..ClusterFillCounters::default()
+            }
+        );
+    }
+
+    #[test]
+    fn fill_hot_cache_hit_increments_only_hot_counter() {
+        let cache = HydraCache::local().build();
+
+        cache.record_cluster_hot_cache_hit();
+
+        assert_eq!(
+            cache.cluster_fill_counters(),
+            ClusterFillCounters {
+                hot_cache_hits: 1,
+                ..ClusterFillCounters::default()
+            }
+        );
+    }
+
+    #[test]
+    fn fill_counters_are_mutually_exclusive_per_event() {
+        let owner = HydraCache::local().build();
+        let remote = HydraCache::local().build();
+        let hot = HydraCache::local().build();
+
+        owner.record_cluster_owner_load_success();
+        remote.record_cluster_remote_fetch_success();
+        hot.record_cluster_hot_cache_hit();
+
+        assert_eq!(owner.cluster_fill_counters().successful_events(), 1);
+        assert_eq!(remote.cluster_fill_counters().successful_events(), 1);
+        assert_eq!(hot.cluster_fill_counters().successful_events(), 1);
+    }
+
+    #[test]
+    fn load_report_totals_health_and_json_shape_are_stable() {
+        let report = ClusterLoadReport {
+            nodes: 4,
+            requests: 240,
+            read_ops: 228,
+            invalidation_ops: 12,
+            published: 12,
+            received: 24,
+            applied: 24,
+            lagged: 0,
+            decode_errors: 0,
+            publish_failures: 0,
+            receiver_closed: 0,
+            stale_generation_rejected: 1,
+            owner_load_success: 5,
+            remote_fetch_success: 3,
+            hot_cache_hits: 7,
+            elapsed_ms: 320,
+        };
+
+        assert!(report.totals_match_requests());
+        assert!(report.has_clean_invalidation_health());
+
+        let value = serde_json::to_value(&report).unwrap();
+        assert_eq!(value["nodes"], 4);
+        assert_eq!(value["requests"], 240);
+        assert_eq!(value["published"], 12);
+        assert_eq!(value["stale_generation_rejected"], 1);
+        assert_eq!(value["elapsed_ms"], 320);
+    }
+
+    fn staging_diagnostics(lifecycle: ClusterLifecycleDiagnostics) -> ClusterDiagnostics {
+        ClusterDiagnostics {
+            cluster_name: "orders".to_owned(),
+            role: ClusterRole::Member,
+            node_id: ClusterNodeId::from("member-a"),
+            generation: ClusterGeneration::new(3),
+            epoch: ClusterEpoch::new(7),
+            member_count: 1,
+            client_count: 1,
+            bootstrap: vec!["127.0.0.1:7000".to_owned()],
+            connected: true,
+            invalidation_subscribers: 1,
+            membership_subscribers: 1,
+            lifecycle,
+        }
     }
 
     #[test]

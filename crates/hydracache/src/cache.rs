@@ -16,9 +16,9 @@ use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
-    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterMembershipEvent,
+    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterFillCounters, ClusterMembershipEvent,
     ClusterMembershipSubscriber, ClusterNodeId, ClusterOwnershipDiagnostics, ClusterRuntime,
-    HydraCacheClientBuilder, HydraCacheMemberBuilder,
+    ClusterStagingCounters, ClusterStagingHealth, HydraCacheClientBuilder, HydraCacheMemberBuilder,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -254,6 +254,158 @@ where
             .cluster_runtime
             .as_ref()
             .and_then(ClusterRuntime::discovery_diagnostics)
+    }
+
+    /// Return owner-load, remote-fetch, and hot-cache hit counters.
+    pub fn cluster_fill_counters(&self) -> ClusterFillCounters {
+        ClusterFillCounters {
+            owner_load_success: self
+                .inner
+                .stats
+                .cluster_owner_load_success
+                .load(Ordering::Relaxed),
+            owner_load_errors: self
+                .inner
+                .stats
+                .cluster_owner_load_errors
+                .load(Ordering::Relaxed),
+            remote_fetch_success: self
+                .inner
+                .stats
+                .cluster_remote_fetch_success
+                .load(Ordering::Relaxed),
+            remote_fetch_errors: self
+                .inner
+                .stats
+                .cluster_remote_fetch_errors
+                .load(Ordering::Relaxed),
+            hot_cache_hits: self
+                .inner
+                .stats
+                .cluster_hot_cache_hits
+                .load(Ordering::Relaxed),
+        }
+    }
+
+    /// Return cluster staging counters that are not part of local cache stats.
+    pub fn cluster_staging_counters(&self) -> ClusterStagingCounters {
+        ClusterStagingCounters {
+            peer_fetch_auth_failures: self
+                .inner
+                .stats
+                .cluster_peer_fetch_auth_failures
+                .load(Ordering::Relaxed),
+            wire_version_rejections: self
+                .inner
+                .stats
+                .cluster_wire_version_rejections
+                .load(Ordering::Relaxed),
+            stale_generation_rejected: self
+                .inner
+                .stats
+                .cluster_stale_generation_rejected
+                .load(Ordering::Relaxed),
+            tombstone_age_ms: self
+                .inner
+                .stats
+                .cluster_gossip_tombstone_age_ms
+                .load(Ordering::Relaxed),
+            gossip_reset_count: self
+                .inner
+                .stats
+                .cluster_gossip_reset_count
+                .load(Ordering::Relaxed),
+        }
+    }
+
+    /// Return a staging-focused cluster health summary.
+    ///
+    /// Local caches return `None`; client/member caches return a derived
+    /// machine-readable health state and all counters used to compute it.
+    pub fn cluster_staging_health(&self) -> Option<ClusterStagingHealth> {
+        let diagnostics = self.cluster_diagnostics()?;
+        Some(ClusterStagingHealth::from_parts(
+            diagnostics,
+            self.stats(),
+            self.cluster_fill_counters(),
+            self.cluster_staging_counters(),
+        ))
+    }
+
+    /// Record a successful owner-side origin load for staging diagnostics.
+    pub fn record_cluster_owner_load_success(&self) {
+        self.inner
+            .stats
+            .cluster_owner_load_success
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a failed owner-side origin load for staging diagnostics.
+    pub fn record_cluster_owner_load_error(&self) {
+        self.inner
+            .stats
+            .cluster_owner_load_errors
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a successful remote peer-fetch for staging diagnostics.
+    pub fn record_cluster_remote_fetch_success(&self) {
+        self.inner
+            .stats
+            .cluster_remote_fetch_success
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a failed remote peer-fetch for staging diagnostics.
+    pub fn record_cluster_remote_fetch_error(&self) {
+        self.inner
+            .stats
+            .cluster_remote_fetch_errors
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a hot near-cache hit for a non-owned value.
+    pub fn record_cluster_hot_cache_hit(&self) {
+        self.inner
+            .stats
+            .cluster_hot_cache_hits
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a peer-fetch or owner-load auth failure.
+    pub fn record_cluster_peer_fetch_auth_failure(&self) {
+        self.inner
+            .stats
+            .cluster_peer_fetch_auth_failures
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a peer-fetch or owner-load wire-version rejection.
+    pub fn record_cluster_wire_version_rejection(&self) {
+        self.inner
+            .stats
+            .cluster_wire_version_rejections
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a stale-generation rejection observed by staging fencing checks.
+    pub fn record_cluster_stale_generation_rejected(&self) {
+        self.inner
+            .stats
+            .cluster_stale_generation_rejected
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a gossip reset/tombstone diagnostic.
+    pub fn record_cluster_gossip_reset(&self, tombstone_age_ms: u64) {
+        self.inner
+            .stats
+            .cluster_gossip_tombstone_age_ms
+            .store(tombstone_age_ms, Ordering::Relaxed);
+        self.inner
+            .stats
+            .cluster_gossip_reset_count
+            .fetch_add(1, Ordering::Relaxed);
     }
 
     /// Subscribe to membership events for this cache's attached cluster runtime.
