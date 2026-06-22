@@ -128,6 +128,10 @@ export class HydraCacheSandboxClient {
     return this.post("/sandbox/cluster/peer-fetch-auth-wire", options);
   }
 
+  runClusterPilotReport(options = {}) {
+    return this.post("/sandbox/cluster/pilot-report", options);
+  }
+
   exportSession() {
     return this.json("/demo/export");
   }

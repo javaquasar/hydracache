@@ -7308,6 +7308,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "runClusterLeaveRejoin(",
         "runClusterStaleGeneration(",
         "runClusterPeerFetchAuthWire(",
+        "runClusterPilotReport(",
         "exportSession()",
         "importSession(bundle",
         "/demo/scenarios/document/run",
