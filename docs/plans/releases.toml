@@ -1,0 +1,88 @@
+# HydraCache release manifest — the authoritative release order, status, and
+# dependencies. Mirrored for humans in docs/plans/INDEX.md.
+#
+# Validated by `cargo xtask doc-check`:
+#   - every `file` must exist on disk;
+#   - no two non-draft/non-superseded entries may share a `version`;
+#   - every `depends_on` entry must reference a `version` present here;
+#   - `status` must be one of: shipped | in-progress | planned | draft | superseded;
+#   - `version` may be "TBD" only for draft/superseded entries.
+#
+# Keep this file in sync when a release changes status or a plan is added/renamed.
+
+[[release]]
+version = "0.37.0"
+file = "docs/plans/V0_37_DATABASE_PRODUCTION_HARDENING_PLAN.md"
+status = "shipped"
+theme = "Database production hardening — transactional outbox, read-after-write barrier, LISTEN/NOTIFY, observability, criterion benches + perf budget, byte weigher, required dimensions, deny.toml, COMPAT discipline"
+depends_on = []
+
+[[release]]
+version = "0.38.0"
+file = "docs/plans/V0_38_DATABASE_CORRECTNESS_AUTOMATION_PLAN.md"
+status = "shipped"
+theme = "Database correctness automation — SQL dependency lint, generated DB hooks + CDC, named consistency modes, dimension profiles, SQLx transaction companion, reconciliation drift"
+depends_on = ["0.37.0"]
+
+[[release]]
+version = "0.39.0"
+file = "docs/plans/V0_39_CLUSTER_STAGING_HARDENING_PLAN.md"
+status = "shipped"
+theme = "Cluster staging hardening — deterministic gate, health-state enum, structured load report, staging runbook"
+depends_on = ["0.38.0"]
+
+[[release]]
+version = "0.40.0"
+file = "docs/plans/V0_40_CLUSTER_INTERNAL_PRODUCTION_PILOT_PLAN.md"
+status = "shipped"
+theme = "Cluster internal production pilot — transport posture, restart/rejoin property test, quorum barrier maturity, B-items early, minimal epoch fence"
+depends_on = ["0.39.0"]
+
+[[release]]
+version = "0.41.0"
+file = "docs/plans/V0_41_DISTRIBUTED_CACHE_GRID_ROADMAP_PLAN.md"
+status = "shipped"
+theme = "Distributed cache grid roadmap + first safe slice — ADRs, epoch fence, RaftLogStore trait, replication strategy, rebalance-as-data, versioned tombstones, value-replication prototype, B-items"
+depends_on = ["0.40.0"]
+
+[[release]]
+version = "0.42.0"
+file = "docs/plans/V0_42_PRODUCTION_GRID_HARDENING_PLAN.md"
+status = "shipped"
+theme = "Production grid hardening — durable multi-node Raft, durable replicated values, replication/failover under load, split-brain detection + merge, grid read-your-writes, node identity + authz, operator surface"
+depends_on = ["0.41.0"]
+
+[[release]]
+version = "0.43.0"
+file = "docs/plans/V0_43_GEO_DISTRIBUTION_AND_ELASTICITY_PLAN.md"
+status = "shipped"
+theme = "Geo-distribution & elasticity — zone/region-aware placement, online resharding, locality + hedged reads, tiered storage, narrow atomic-invalidation slice, operational self-healing"
+depends_on = ["0.42.0"]
+
+[[release]]
+version = "0.44.0"
+file = "docs/plans/V0_44_ACTIVE_ACTIVE_MULTIREGION_PLAN.md"
+status = "planned"
+theme = "Active-active multi-region — bounded-staleness writes, CRDT value types, WAN transport + cross-region anti-entropy, region failover/DR, capacity signals, geo observability"
+depends_on = ["0.43.0"]
+
+[[release]]
+version = "0.45.0"
+file = "docs/plans/V0_45_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md"
+status = "planned"
+theme = "Cluster resilience & coordination — tunable consistency levels, hinted handoff, incremental Merkle repair, phi-accrual failure detector, single-key conditional writes + fenced lock, durable replayable invalidation stream"
+depends_on = ["0.44.0"]
+
+[[release]]
+version = "0.46.0"
+file = "docs/plans/V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md"
+status = "planned"
+theme = "Cross-region session consistency (causal+) — session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence + bounded staleness, session lifecycle"
+depends_on = ["0.45.0"]
+
+[[release]]
+version = "TBD"
+file = "docs/plans/DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md"
+status = "draft"
+theme = "Ecosystem & external consumers (target 0.47+) — stable client protocol, Hibernate L2 provider, multi-language SDKs, multi-tenancy/quotas, data-residency, consumer observability/audit"
+depends_on = ["0.44.0"]
