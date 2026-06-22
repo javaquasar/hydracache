@@ -35,6 +35,41 @@ fn locality_reads_eventual_read_prefers_local_zone() {
 }
 
 #[test]
+fn locality_reads_eventual_read_prefers_local_zone_live() {
+    let local = NodeTopology::new("eu", "az-a");
+    let mut scorer = ReplicaScorer::new();
+    for observation in [
+        ReplicaObservation::healthy(
+            "remote-fast",
+            NodeTopology::new("eu", "az-b"),
+            1,
+            2,
+            ClusterEpoch::new(4),
+        ),
+        ReplicaObservation::healthy(
+            "local-slower",
+            NodeTopology::new("eu", "az-a"),
+            25,
+            2,
+            ClusterEpoch::new(4),
+        ),
+    ] {
+        scorer.observe(observation);
+    }
+
+    let ordered = scorer.order(
+        &[
+            ClusterNodeId::from("remote-fast"),
+            ClusterNodeId::from("local-slower"),
+        ],
+        &local,
+        ReplicaSelection::NearestZone,
+    );
+
+    assert_eq!(ordered[0], ClusterNodeId::from("local-slower"));
+}
+
+#[test]
 fn locality_reads_quorum_read_still_contacts_read_quorum() {
     let ordered = vec![
         ClusterNodeId::from("a"),
@@ -69,6 +104,29 @@ fn locality_reads_slow_replica_triggers_hedge_and_returns_fresh() {
         vec![ClusterNodeId::from("fresh"), ClusterNodeId::from("stale")]
     );
     assert_eq!(winner.version, 11);
+}
+
+#[test]
+fn locality_reads_slow_replica_triggers_hedge_returns_fresh_live() {
+    let ordered = vec![
+        ClusterNodeId::from("slow"),
+        ClusterNodeId::from("fresh"),
+        ClusterNodeId::from("stale"),
+    ];
+    let plan = plan_hedged_read(&ordered, 1, 100, &[10, 20, 30], HedgePolicy::new(50, 2, 5));
+    let winner = hedge_winner([
+        ReplicatedValueRecord::value(PartitionId::new(1), 10, ClusterEpoch::new(1), b"slow"),
+        ReplicatedValueRecord::value(PartitionId::new(1), 12, ClusterEpoch::new(2), b"fresh"),
+        ReplicatedValueRecord::value(PartitionId::new(1), 11, ClusterEpoch::new(1), b"stale"),
+    ])
+    .expect("winner");
+
+    assert_eq!(
+        plan.hedges,
+        vec![ClusterNodeId::from("fresh"), ClusterNodeId::from("stale")]
+    );
+    assert_eq!(winner.version, 12);
+    assert_eq!(winner.epoch, ClusterEpoch::new(2));
 }
 
 #[test]
