@@ -12,7 +12,7 @@ mod prepared_policy;
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use hydracache_db::{CacheEntity, HydraCacheEntity};
 ///
 /// #[derive(HydraCacheEntity)]
@@ -39,7 +39,7 @@ pub fn derive_hydracache_entity(input: TokenStream) -> TokenStream {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use hydracache_db::query_cache_policy;
 ///
 /// let user_id = 42_i64;
@@ -70,7 +70,7 @@ pub fn query_cache_policy(input: TokenStream) -> TokenStream {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use hydracache_db::prepared_query_policy;
 ///
 /// let load_user = prepared_query_policy!(
@@ -95,7 +95,7 @@ pub fn prepared_query_policy(input: TokenStream) -> TokenStream {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use hydracache::{cacheable, HydraCache};
 ///
 /// #[cacheable(
@@ -127,7 +127,7 @@ pub fn cacheable(args: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use hydracache::{cacheable_loader, CacheKeyBuilder, HydraCache, TagSet};
 ///
 /// let cache = HydraCache::local().build();
@@ -157,7 +157,7 @@ pub fn cacheable_loader(input: TokenStream) -> TokenStream {
 ///
 /// # Example
 ///
-/// ```rust,ignore
+/// ```text
 /// use hydracache::{cacheable_infallible, HydraCache};
 ///
 /// let cache = HydraCache::local().build();
