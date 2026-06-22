@@ -144,8 +144,7 @@ impl ReplicationConfig {
         if self.read_quorum == 0 || self.write_quorum == 0 {
             return Err(ReplicationConfigError::QuorumZero);
         }
-        if self.read_quorum > self.replication_factor
-            || self.write_quorum > self.replication_factor
+        if self.read_quorum > self.replication_factor || self.write_quorum > self.replication_factor
         {
             return Err(ReplicationConfigError::QuorumExceedsReplicationFactor);
         }
@@ -217,7 +216,12 @@ impl ClusterReplicationStrategy for RendezvousClusterOwnership {
         let mut ranked = members
             .iter()
             .filter(|member| member.is_member())
-            .map(|member| (grid_rendezvous_score(key, &member.node_id), member.node_id.clone()))
+            .map(|member| {
+                (
+                    grid_rendezvous_score(key, &member.node_id),
+                    member.node_id.clone(),
+                )
+            })
             .collect::<Vec<_>>();
         ranked.sort_by(|(left_score, left_node), (right_score, right_node)| {
             right_score
@@ -728,12 +732,16 @@ pub fn select_backup_promotion(
     partition: PartitionId,
     replicas: &Replicas,
 ) -> Option<BackupPromotion> {
-    replicas.backups.first().cloned().map(|new_primary| BackupPromotion {
-        partition,
-        departing_primary: replicas.primary.clone(),
-        new_primary,
-        phase: PromotionPhase::Before,
-    })
+    replicas
+        .backups
+        .first()
+        .cloned()
+        .map(|new_primary| BackupPromotion {
+            partition,
+            departing_primary: replicas.primary.clone(),
+            new_primary,
+            phase: PromotionPhase::Before,
+        })
 }
 
 /// Per-replica version table used by anti-entropy.

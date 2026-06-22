@@ -12,7 +12,10 @@ fn diff_produces_expected_move_tasks() {
     ));
     let new = EffectiveReplicationMap::new(Replicas::new(
         "member-c",
-        vec![ClusterNodeId::from("member-b"), ClusterNodeId::from("member-d")],
+        vec![
+            ClusterNodeId::from("member-b"),
+            ClusterNodeId::from("member-d"),
+        ],
     ));
 
     let tasks = diff_effective_maps(partition, &old, &new);

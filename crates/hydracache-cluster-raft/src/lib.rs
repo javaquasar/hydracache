@@ -96,11 +96,9 @@ use hydracache::{
 };
 mod log_store;
 
-pub use log_store::{
-    InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult,
-};
 #[cfg(feature = "sled-log-store")]
 pub use log_store::SledRaftLogStore;
+pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult};
 
 use raft::eraftpb::{Entry, EntryType};
 use raft::{Config, RawNode, StateRole};

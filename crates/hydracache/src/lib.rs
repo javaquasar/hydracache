@@ -501,22 +501,22 @@ pub use cluster::{
     RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
     TopologyFence, TransportPosture, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
-pub use grid::{
-    cluster_grid_metric_descriptors, prepare_replicated_payload, replicated_slot_version,
-    select_backup_promotion, AntiEntropyTask, BackupPromotion, ClusterGridCounters,
-    ClusterGridDiagnostics, ClusterMetricDescriptor, ClusterReplicationStrategy,
-    EffectiveReplicationMap, HotCacheDirectory, PartitionReplicaVersions, PromotionPhase,
-    RedactReplicatedValue, RebalancePlan, RebalanceTask, RebalanceTaskAck, ReplicatedSlot,
-    ReplicatedValueSecurityPosture, Replication, ReplicationConfig, ReplicationConfigError,
-    ReplicationCryptoError, ReplicationKeyProvider, ReplicationPayload, RepairingTask, Replicas,
-    SharedReplicationKeyProvider, TombstoneAdmission, TombstoneBudget, TombstoneTracker,
-    diff_effective_maps,
-};
 pub use consistency::{
     ConsistencyInvalidate, ConsistencyMode, ConsistencyOutcome, ConsistencyToken, DegradeReason,
     WriteBarrierToken,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
+pub use grid::{
+    cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
+    replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
+    ClusterGridCounters, ClusterGridDiagnostics, ClusterMetricDescriptor,
+    ClusterReplicationStrategy, EffectiveReplicationMap, HotCacheDirectory,
+    PartitionReplicaVersions, PromotionPhase, RebalancePlan, RebalanceTask, RebalanceTaskAck,
+    RedactReplicatedValue, RepairingTask, Replicas, ReplicatedSlot, ReplicatedValueSecurityPosture,
+    Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
+    ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
+    TombstoneBudget, TombstoneTracker,
+};
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
     CacheEventScope, CacheEventValueMode, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,

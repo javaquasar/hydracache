@@ -59,8 +59,14 @@ fn concurrent_value_and_tombstone_resolve_by_version() {
 fn gc_blocked_until_repair_confirmation() {
     let mut tracker = TombstoneTracker::new(TombstoneBudget::new(2, 1024));
 
-    assert_eq!(tracker.admit("user:1", 1, 64, None), TombstoneAdmission::Stored);
-    assert_eq!(tracker.admit("user:2", 2, 64, None), TombstoneAdmission::Stored);
+    assert_eq!(
+        tracker.admit("user:1", 1, 64, None),
+        TombstoneAdmission::Stored
+    );
+    assert_eq!(
+        tracker.admit("user:2", 2, 64, None),
+        TombstoneAdmission::Stored
+    );
     assert!(tracker.contains_key("user:1"));
     assert!(tracker.contains_key("user:2"));
 

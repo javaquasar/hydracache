@@ -36,6 +36,9 @@ fn full_fanout_reaches_all_holders() {
 
     assert_eq!(
         holders,
-        vec![ClusterNodeId::from("member-b"), ClusterNodeId::from("member-c")]
+        vec![
+            ClusterNodeId::from("member-b"),
+            ClusterNodeId::from("member-c")
+        ]
     );
 }

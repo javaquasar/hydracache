@@ -47,7 +47,10 @@ async fn replication_current_wire_version_round_trips_encoded_bytes() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let response: PeerFetchHttpResponse = response_json(response).await;
-    assert_eq!(response.decode_value().unwrap(), Some(Bytes::from_static(b"encoded-user")));
+    assert_eq!(
+        response.decode_value().unwrap(),
+        Some(Bytes::from_static(b"encoded-user"))
+    );
 }
 
 fn peer_fetch_request(key: &str, wire_version: u16) -> Request<Body> {

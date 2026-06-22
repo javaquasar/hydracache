@@ -11,8 +11,8 @@ fn repo_root() -> PathBuf {
 #[test]
 fn adr_presence_files_exist_and_are_linked() {
     let root = repo_root();
-    let readiness = fs::read_to_string(root.join("docs/cluster/readiness.md"))
-        .expect("cluster readiness doc");
+    let readiness =
+        fs::read_to_string(root.join("docs/cluster/readiness.md")).expect("cluster readiness doc");
     let adr_files = [
         "0001-gossip-liveness-vs-raft-topology.md",
         "0002-raft-log-store-durability-contract.md",

@@ -263,8 +263,7 @@ where
 
     /// Set the maximum encoded entry size accepted for replication.
     pub fn max_replicated_entry_bytes(mut self, max_replicated_entry_bytes: usize) -> Self {
-        self.replication_config.max_replicated_entry_bytes =
-            max_replicated_entry_bytes.max(1);
+        self.replication_config.max_replicated_entry_bytes = max_replicated_entry_bytes.max(1);
         self
     }
 

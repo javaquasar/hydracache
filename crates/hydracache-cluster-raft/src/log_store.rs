@@ -192,7 +192,11 @@ impl Storage for InMemoryRaftLogStore {
             return Err(RaftError::Store(StorageError::Compacted));
         }
         if high > last_index.saturating_add(1) {
-            panic!("index out of bound (last: {}, high: {})", last_index + 1, high);
+            panic!(
+                "index out of bound (last: {}, high: {})",
+                last_index + 1,
+                high
+            );
         }
         if low == high {
             return Ok(Vec::new());
@@ -241,7 +245,9 @@ impl Storage for InMemoryRaftLogStore {
     }
 
     fn last_index(&self) -> RaftResult<u64> {
-        Ok(last_index(&self.state.read().expect("raft log store poisoned")))
+        Ok(last_index(
+            &self.state.read().expect("raft log store poisoned"),
+        ))
     }
 
     fn snapshot(&self, request_index: u64, _to: u64) -> RaftResult<Snapshot> {
@@ -311,8 +317,11 @@ impl RaftLogStore for InMemoryRaftLogStore {
         let snapshot_index = snapshot.get_metadata().index;
         state.snapshot = snapshot.clone();
         state.raft_state.conf_state = snapshot.get_metadata().get_conf_state().clone();
-        state.raft_state.hard_state.term =
-            state.raft_state.hard_state.term.max(snapshot.get_metadata().term);
+        state.raft_state.hard_state.term = state
+            .raft_state
+            .hard_state
+            .term
+            .max(snapshot.get_metadata().term);
         state.raft_state.hard_state.commit = state.raft_state.hard_state.commit.max(snapshot_index);
         state.entries.retain(|entry| entry.index > snapshot_index);
         if preserve_log_entries < state.entries.len() {

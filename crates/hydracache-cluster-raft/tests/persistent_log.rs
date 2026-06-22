@@ -44,9 +44,7 @@ fn persistent_log_snapshot_recovery_after_restart() {
     let store = InMemoryRaftLogStore::new_with_conf_state((vec![1], vec![]));
     let snapshot = snapshot(7, 3, vec![1]);
 
-    store
-        .save_snapshot(&snapshot, 0)
-        .expect("snapshot saved");
+    store.save_snapshot(&snapshot, 0).expect("snapshot saved");
 
     let state = store.initial_state().expect("initial state");
     assert_eq!(state.hard_state.commit, 7);
@@ -59,15 +57,11 @@ fn persistent_log_snapshot_recovery_after_restart() {
 async fn persistent_log_duplicate_command_id_is_idempotent_after_replay() {
     let runtime = RaftMetadataRuntime::single_node("orders", 1).expect("runtime");
     runtime
-        .join_member(
-            ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
-        )
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
         .await
         .expect("member");
     runtime
-        .join_member(
-            ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
-        )
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
         .await
         .expect("duplicate member");
 
@@ -75,8 +69,8 @@ async fn persistent_log_duplicate_command_id_is_idempotent_after_replay() {
     assert_eq!(snapshot.commands_committed, 1);
     assert_eq!(snapshot.duplicate_commands, 1);
 
-    let recovered = RaftMetadataRuntime::from_snapshot(runtime.export_snapshot())
-        .expect("recovered runtime");
+    let recovered =
+        RaftMetadataRuntime::from_snapshot(runtime.export_snapshot()).expect("recovered runtime");
     assert_eq!(recovered.snapshot().commands_committed, 1);
 }
 
@@ -111,7 +105,9 @@ fn persistent_log_snapshot_temporarily_unavailable_is_allowed() {
     let store = InMemoryRaftLogStore::new();
     store.trigger_snapshot_temporarily_unavailable();
 
-    let error = store.snapshot(0, 0).expect_err("snapshot should be unavailable once");
+    let error = store
+        .snapshot(0, 0)
+        .expect_err("snapshot should be unavailable once");
     assert!(matches!(
         error,
         RaftError::Store(StorageError::SnapshotTemporarilyUnavailable)

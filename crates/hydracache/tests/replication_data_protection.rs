@@ -30,14 +30,9 @@ impl RedactReplicatedValue for PrefixRedactor {
 
 #[test]
 fn local_only_value_is_cached_but_never_replicated() {
-    let payload = prepare_replicated_payload(
-        b"secret-profile",
-        Replication::LocalOnly,
-        false,
-        None,
-        None,
-    )
-    .expect("prepare payload");
+    let payload =
+        prepare_replicated_payload(b"secret-profile", Replication::LocalOnly, false, None, None)
+            .expect("prepare payload");
 
     assert!(payload.is_none());
 }

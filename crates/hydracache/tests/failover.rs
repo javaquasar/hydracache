@@ -1,5 +1,5 @@
 use hydracache::{
-    select_backup_promotion, ClusterNodeId, PartitionId, PromotionPhase, ReplicatedSlot, Replicas,
+    select_backup_promotion, ClusterNodeId, PartitionId, PromotionPhase, Replicas, ReplicatedSlot,
 };
 
 #[test]
@@ -13,7 +13,10 @@ fn no_backup_owner_reports_degraded() {
 fn primary_leaves_backup_is_selected_for_promotion() {
     let replicas = Replicas::new(
         "member-a",
-        vec![ClusterNodeId::from("member-b"), ClusterNodeId::from("member-c")],
+        vec![
+            ClusterNodeId::from("member-b"),
+            ClusterNodeId::from("member-c"),
+        ],
     );
 
     let promotion = select_backup_promotion(PartitionId::new(8), &replicas).unwrap();
@@ -41,7 +44,10 @@ fn invalidation_during_promotion_beats_stale_value() {
 fn replication_factor_restored_after_finalize() {
     let restored = Replicas::new(
         "member-b",
-        vec![ClusterNodeId::from("member-c"), ClusterNodeId::from("member-d")],
+        vec![
+            ClusterNodeId::from("member-c"),
+            ClusterNodeId::from("member-d"),
+        ],
     );
 
     assert_eq!(restored.copy_count(), 3);

@@ -15,9 +15,7 @@ fn seed_replays_identical_fault_schedule() {
     let mut first = FaultInjector::new(42);
     let mut second = FaultInjector::new(42);
 
-    let first_faults = (0..8)
-        .map(|_| first.next_fault(&nodes))
-        .collect::<Vec<_>>();
+    let first_faults = (0..8).map(|_| first.next_fault(&nodes)).collect::<Vec<_>>();
     let second_faults = (0..8)
         .map(|_| second.next_fault(&nodes))
         .collect::<Vec<_>>();
