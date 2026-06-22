@@ -1,5 +1,8 @@
 # HydraCache 0.39.0 Cluster Staging Hardening Plan
 
+Status: implemented in `0.39.0`. Release notes are in
+`docs/releases/0.39.0.md`.
+
 `0.39.0` raises the existing cluster invalidation and diagnostics surface from
 "usable in staging experiments" to a "repeatable staging gate". The release does
 not claim that HydraCache is a production distributed data grid; it makes the
@@ -798,22 +801,22 @@ $env:RUSTDOCFLAGS = "-D warnings"; cargo doc --workspace --no-deps --locked
 `0.39.0` ships only when **all** of the following boolean conditions hold. There
 is no numeric self-score.
 
-- [ ] The deterministic staging gate passes using only logical-counter
+- [x] The deterministic staging gate passes using only logical-counter
       assertions (`published == received == applied`, zero
       decode/publish/closed errors).
-- [ ] `ClusterHealthState` returns `Healthy` for a clean in-memory cluster, with
+- [x] `ClusterHealthState` returns `Healthy` for a clean in-memory cluster, with
       machine-readable reasons for `Degraded`/`NotReady` cases.
-- [ ] The actuator JSON snapshot for `ClusterStagingHealth` is stable and locked
+- [x] The actuator JSON snapshot for `ClusterStagingHealth` is stable and locked
       by a golden test.
-- [ ] owner-load, remote-fetch, and hot-cache-hit are exported as three separate
+- [x] owner-load, remote-fetch, and hot-cache-hit are exported as three separate
       counters, with a mutual-exclusivity test.
-- [ ] The gossip-reset diagnostic (tombstone age + reset count) appears in the
+- [x] The gossip-reset diagnostic (tombstone age + reset count) appears in the
       health summary and downgrades to `Degraded` on a recent reset.
-- [ ] The `ClusterComponent` lifecycle abstraction is implemented for background
+- [x] The `ClusterComponent` lifecycle abstraction is implemented for background
       components, and the local hot path is unchanged (non-goal respected).
-- [ ] Sandbox routes replay every gate scenario and export the structured report.
-- [ ] The staging runbook has copyable commands and still rejects production
+- [x] Sandbox routes replay every gate scenario and export the structured report.
+- [x] The staging runbook has copyable commands and still rejects production
       data-grid claims (no auto-merge, no replication, no durable multi-node
       Raft).
-- [ ] The `#[ignore]`-d soak is the **only** place that asserts wall-clock
+- [x] The `#[ignore]`-d soak is the **only** place that asserts wall-clock
       budgets.

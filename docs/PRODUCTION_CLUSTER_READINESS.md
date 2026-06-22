@@ -121,6 +121,146 @@ assert_eq!(recovered.snapshot().commands_committed, 1);
 The store persists materialized metadata snapshots. It is not a replacement for
 a full multi-node durable Raft log.
 
+## Cluster Staging Gate 0.39
+
+`0.39.0` adds a deterministic staging gate for cluster evaluation. The gate is a
+repeatable checklist for the current optional cluster surface: in-memory
+members/clients, generation-safe invalidation, rendezvous ownership, HTTP
+peer-fetch/owner-load seams, auth/wire compatibility checks, raft metadata smoke
+coverage, actuator health, and sandbox replay routes.
+
+The label is intentionally **staging-ready**, not production data grid. The gate
+does not add auto-merge, value replication, full multi-node durable Raft, TLS or
+mTLS management, distributed transactions, or transparent database CDC.
+
+### Required Gate Commands
+
+Run these focused gates before a controlled staging rollout:
+
+```powershell
+cargo test -p hydracache --test cluster_staging_gate --locked
+cargo test -p hydracache --test cluster_component_lifecycle --locked
+cargo test -p hydracache cluster::tests::staging_health --locked
+cargo test -p hydracache cluster::tests::fill_ --locked
+cargo test -p hydracache-actuator-axum --test cluster_staging_health_snapshot --locked
+cargo test -p hydracache-cluster-transport-axum --test staging_gate --locked
+cargo test -p hydracache-cluster-raft --test staging_gate --locked
+cargo test -p hydracache-sandbox --test cluster_staging_routes --locked
+```
+
+Run the normal workspace checks as release gates:
+
+```powershell
+cargo fmt --all -- --check
+cargo check --workspace --all-targets --locked
+cargo test --workspace --all-targets --locked
+cargo test --doc --workspace --locked
+$env:RUSTDOCFLAGS = "-D warnings"; cargo doc --workspace --no-deps --locked
+```
+
+The ignored soak is manual. It is the only place where wall-clock duration is a
+pass/fail threshold:
+
+```powershell
+$env:HC_SOAK_REQUESTS = "10000"
+$env:HC_SOAK_CONCURRENCY = "32"
+cargo test -p hydracache --test cluster_staging_gate --locked -- --ignored cluster_staging_gate_soak_under_sustained_load
+```
+
+### Expected Health
+
+`HydraCache::cluster_staging_health()` returns `None` for local caches and
+`Some(ClusterStagingHealth)` for client/member caches. The derived
+`ClusterHealthState` is:
+
+- `Healthy` when lifecycle is running, at least one participant exists, and the
+  checked counters are clean.
+- `Degraded` for soft staging signals: lagged receivers, peer-fetch auth
+  failures, wire-version rejections, or a recent gossip reset.
+- `NotReady` for hard failures: lifecycle not running, no participants,
+  invalidation decode errors, publish failures, or receiver closure.
+
+`stale_generation_rejected` is allowed and expected during fencing checks. By
+itself it does not degrade health; it proves stale processes were rejected.
+
+These counters must be zero in a clean deterministic gate:
+
+- `lagged`
+- `decode_errors`
+- `publish_failures`
+- `receiver_closed`
+
+The three fill counters are intentionally separate:
+
+- `owner_load_success`: owner-side origin load succeeded.
+- `remote_fetch_success`: a caller fetched encoded bytes from the owner.
+- `hot_cache_hits`: a caller served a previously hydrated non-owned hot copy.
+
+Do not collapse these counters in dashboards. They identify different staging
+failure modes.
+
+### Actuator And Sandbox
+
+The actuator exposes staging health at:
+
+```text
+GET /actuator/hydracache/cluster/staging-health
+```
+
+The sandbox can replay the full gate and each focused sub-scenario:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:3000/sandbox/cluster/staging-gate -H "content-type: application/json" -d "{\"cluster\":\"sandbox-staging\",\"invalidations\":8}"
+curl.exe -X POST http://127.0.0.1:3000/sandbox/cluster/leave-rejoin -H "content-type: application/json" -d "{}"
+curl.exe -X POST http://127.0.0.1:3000/sandbox/cluster/stale-generation -H "content-type: application/json" -d "{}"
+curl.exe -X POST http://127.0.0.1:3000/sandbox/cluster/peer-fetch-auth-wire -H "content-type: application/json" -d "{}"
+```
+
+Each response includes:
+
+- `passed`: boolean derived from logical counters and `ClusterHealthState`.
+- `report`: `ClusterLoadReport` with published/received/applied and fill
+  counters.
+- `health`: derived `ClusterHealthState`.
+- `staging_health`: full primary-member `ClusterStagingHealth`.
+- `runbook`: this document.
+
+### Transport Setup
+
+For staging traffic, configure the same auth and wire policy on HTTP routes and
+clients:
+
+```rust
+use hydracache_cluster_transport_axum::{
+    HttpPeerFetch, HttpTransportAuth, HttpWireCompatibility,
+};
+
+let auth = HttpTransportAuth::token("shared-staging-secret");
+let wire = HttpWireCompatibility::strict_current();
+
+let client = HttpPeerFetch::for_base_url("http://10.0.0.42:3000")
+    .with_auth(auth)
+    .with_wire_compatibility(wire);
+# let _ = client;
+```
+
+Put the transport behind TLS, mTLS, or a trusted private network boundary. The
+HydraCache HTTP transport does not manage certificates or token rotation.
+
+### Failure Map
+
+- `LifecycleNotRunning`: background cluster component has stopped or was never
+  started.
+- `NoParticipants`: the runtime does not see any admitted member/client.
+- `LaggedReceivers`: invalidation receiver fell behind; inspect bus pressure.
+- `DecodeErrors`: incompatible or corrupt invalidation frames; stop rollout.
+- `PublishFailures`: local publish path failed; check bus/control-plane health.
+- `ReceiverClosed`: invalidation receive stream closed unexpectedly.
+- `PeerFetchAuthFailures`: auth boundary rejected a caller; verify shared token
+  and route/client configuration.
+- `WireVersionRejections`: mixed incompatible HTTP transport versions.
+- `GossipResetRecent`: discovery churn/tombstone reset was observed recently.
+
 ## Not Yet Production Data Grid Features
 
 HydraCache is not yet a Hazelcast-style distributed data grid. The cluster
