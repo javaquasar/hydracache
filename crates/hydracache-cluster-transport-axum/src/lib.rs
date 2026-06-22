@@ -388,6 +388,7 @@ pub struct ClusterRouteAuth {
     authorizer: Arc<dyn Authorizer>,
     insecure_acknowledged: bool,
     rejected_total: Arc<Mutex<u64>>,
+    rejected_by_route: Arc<Mutex<BTreeMap<ClusterRoute, u64>>>,
 }
 
 impl fmt::Debug for ClusterRouteAuth {
@@ -397,6 +398,7 @@ impl fmt::Debug for ClusterRouteAuth {
             .field("identity_configured", &self.identity.is_some())
             .field("insecure_acknowledged", &self.insecure_acknowledged)
             .field("rejected_total", &self.rejected_total())
+            .field("rejected_by_route", &self.rejected_by_route())
             .finish()
     }
 }
@@ -412,6 +414,7 @@ impl ClusterRouteAuth {
             authorizer,
             insecure_acknowledged: false,
             rejected_total: Arc::new(Mutex::new(0)),
+            rejected_by_route: Arc::new(Mutex::new(BTreeMap::new())),
         }
     }
 
@@ -422,6 +425,7 @@ impl ClusterRouteAuth {
             authorizer: Arc::new(AllowAllAuthorizer),
             insecure_acknowledged: false,
             rejected_total: Arc::new(Mutex::new(0)),
+            rejected_by_route: Arc::new(Mutex::new(BTreeMap::new())),
         }
     }
 
@@ -446,21 +450,21 @@ impl ClusterRouteAuth {
             if self.insecure_acknowledged {
                 return Ok(ClusterNodeId::from("insecure-trust-boundary"));
             }
-            self.record_rejection();
+            self.record_rejection(route);
             return Err(ClusterAuthError::unauthenticated(
                 "HydraCache node identity provider is not configured",
             ));
         };
 
         let credential = credential_from_headers(headers).ok_or_else(|| {
-            self.record_rejection();
+            self.record_rejection(route);
             ClusterAuthError::unauthenticated("missing HydraCache node credential")
         })?;
         let who = identity.verify(&credential).inspect_err(|_| {
-            self.record_rejection();
+            self.record_rejection(route);
         })?;
         if !self.authorizer.allow(&who, route) {
-            self.record_rejection();
+            self.record_rejection(route);
             return Err(ClusterAuthError::unauthorized(format!(
                 "node {who} is not authorized for route {}",
                 route.as_str()
@@ -493,12 +497,37 @@ impl ClusterRouteAuth {
             .expect("cluster auth diagnostics poisoned")
     }
 
-    fn record_rejection(&self) {
+    /// Return rejected call count for a specific route.
+    pub fn rejected_total_for_route(&self, route: ClusterRoute) -> u64 {
+        *self
+            .rejected_by_route
+            .lock()
+            .expect("cluster auth route diagnostics poisoned")
+            .get(&route)
+            .unwrap_or(&0)
+    }
+
+    /// Return the bounded route-level rejection counters.
+    pub fn rejected_by_route(&self) -> BTreeMap<ClusterRoute, u64> {
+        self.rejected_by_route
+            .lock()
+            .expect("cluster auth route diagnostics poisoned")
+            .clone()
+    }
+
+    fn record_rejection(&self, route: ClusterRoute) {
         let mut rejected = self
             .rejected_total
             .lock()
             .expect("cluster auth diagnostics poisoned");
         *rejected = rejected.saturating_add(1);
+
+        let mut by_route = self
+            .rejected_by_route
+            .lock()
+            .expect("cluster auth route diagnostics poisoned");
+        let entry = by_route.entry(route).or_insert(0);
+        *entry = entry.saturating_add(1);
     }
 }
 

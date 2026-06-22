@@ -40,6 +40,8 @@ fn cluster_auth_unauthenticated_peer_fetch_is_rejected() {
     assert_eq!(error.status, StatusCode::UNAUTHORIZED);
     assert_eq!(error.code, "unauthenticated");
     assert_eq!(auth.rejected_total(), 1);
+    assert_eq!(auth.rejected_total_for_route(ClusterRoute::PeerFetch), 1);
+    assert_eq!(auth.rejected_total_for_route(ClusterRoute::Replicate), 0);
 }
 
 #[test]
@@ -59,6 +61,7 @@ fn cluster_auth_unauthorized_route_is_denied() {
     assert_eq!(error.status, StatusCode::FORBIDDEN);
     assert_eq!(error.code, "unauthorized");
     assert_eq!(auth.rejected_total(), 1);
+    assert_eq!(auth.rejected_total_for_route(ClusterRoute::Admin), 1);
 }
 
 #[test]
@@ -98,6 +101,7 @@ fn cluster_auth_missing_provider_refuses_replication_routes_unless_acked() {
     assert!(missing
         .verify(ClusterRoute::Replicate, &HeaderMap::new())
         .is_err());
+    assert_eq!(missing.rejected_total_for_route(ClusterRoute::Replicate), 1);
 
     let acknowledged =
         ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true);
@@ -120,6 +124,7 @@ fn cluster_auth_raft_transport_requires_identity() {
 
     assert_eq!(error.status, StatusCode::UNAUTHORIZED);
     assert_eq!(auth.rejected_total(), 1);
+    assert_eq!(auth.rejected_total_for_route(ClusterRoute::RaftAppend), 1);
 }
 
 #[test]
@@ -139,8 +144,9 @@ fn cluster_auth_outbound_headers_present_current_credential() {
 
 #[tokio::test]
 async fn cluster_auth_unauthenticated_raft_append_is_rejected() {
+    let auth = secure_auth();
     let handler = Arc::new(MemoryClusterMessageHandler::new("member-b"));
-    let app = AxumClusterMessageService::new("member-b", handler, secure_auth()).routes();
+    let app = AxumClusterMessageService::new("member-b", handler, auth.clone()).routes();
     let body = serde_json::to_vec(&ClusterOpaqueMessage::new(
         "member-a", "member-b", 1, b"append",
     ))
@@ -163,6 +169,8 @@ async fn cluster_auth_unauthenticated_raft_append_is_rejected() {
     let error: ClusterRouteErrorBody = serde_json::from_slice(&body).unwrap();
     assert_eq!(error.code, "unauthenticated");
     assert_eq!(error.route, ClusterRoute::RaftAppend.as_str());
+    assert_eq!(auth.rejected_total(), 1);
+    assert_eq!(auth.rejected_total_for_route(ClusterRoute::RaftAppend), 1);
 }
 
 #[tokio::test]
@@ -176,6 +184,7 @@ async fn cluster_auth_unauthorized_replication_is_denied() {
         Arc::new(DenyRouteAuthorizer::new(ClusterRoute::Replicate)),
     );
     let handler = Arc::new(MemoryClusterMessageHandler::new("member-b"));
+    let auth_for_assertions = auth.clone();
     let app = AxumClusterMessageService::new("member-b", handler, auth).routes();
     let body = serde_json::to_vec(&ClusterOpaqueMessage::new(
         "member-a",
@@ -204,4 +213,9 @@ async fn cluster_auth_unauthorized_replication_is_denied() {
     let error: ClusterRouteErrorBody = serde_json::from_slice(&body).unwrap();
     assert_eq!(error.code, "unauthorized");
     assert_eq!(error.route, ClusterRoute::Replicate.as_str());
+    assert_eq!(auth_for_assertions.rejected_total(), 1);
+    assert_eq!(
+        auth_for_assertions.rejected_total_for_route(ClusterRoute::Replicate),
+        1
+    );
 }
