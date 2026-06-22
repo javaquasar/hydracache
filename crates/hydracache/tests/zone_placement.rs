@@ -1,4 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::time::Duration;
+
+mod support;
+use support::fault_injector::{Fault, FaultInjector};
 
 use hydracache::{
     ClusterEndpoints, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterNodeId,
@@ -73,6 +77,65 @@ fn zone_placement_single_zone_loss_keeps_write_quorum() {
         .readiness_for_key("orders:42", &members, 2)
         .expect("readiness");
     assert!(readiness.is_ready());
+}
+
+#[test]
+#[ignore = "chaos gate: run with -- --ignored when exercising live zone-loss placement"]
+fn zone_placement_live_single_zone_loss_keeps_quorum() {
+    let members = members(&["a1", "b1", "c1"]);
+    let authority = authority(&[
+        ("a1", "eu", "az-a"),
+        ("b1", "eu", "az-b"),
+        ("c1", "eu", "az-c"),
+    ]);
+    let strategy = ZoneAwareReplicationStrategy::new(authority.committed_map(), 3, 3);
+    let replicas = strategy
+        .zone_replicas_for_key("orders:42", &members)
+        .unwrap();
+    let mut fault_injector = FaultInjector::new(43);
+    let nodes = replicas.all_nodes();
+    let partition_fault = fault_injector.next_fault(&nodes).expect("partition fault");
+    let Fault::Partition {
+        from,
+        to,
+        symmetric: _,
+    } = partition_fault
+    else {
+        panic!("expected partition fault");
+    };
+    assert_ne!(from, to);
+    fault_injector.partition("a1", "b1", true);
+    assert!(!fault_injector.can_deliver(&ClusterNodeId::from("a1"), &ClusterNodeId::from("b1")));
+    fault_injector.inject_latency("c1", Duration::from_millis(7));
+    assert_eq!(
+        fault_injector.observed_latency(&ClusterNodeId::from("c1")),
+        Duration::from_millis(7)
+    );
+    let latency_fault = Fault::Latency {
+        node: ClusterNodeId::from("c1"),
+        latency: Duration::from_millis(7),
+    };
+    let Fault::Latency { node, latency } = latency_fault else {
+        panic!("expected latency fault");
+    };
+    assert_eq!(node.as_str(), "c1");
+    assert_eq!(latency, Duration::from_millis(7));
+
+    let fault = fault_injector.lose_zone("az-a", vec![ClusterNodeId::from("a1")]);
+    let Fault::ZoneLoss { zone, nodes } = fault else {
+        panic!("expected zone-loss fault");
+    };
+    let lost = fault_injector.zone_lost_nodes(&zone);
+    let surviving_replicas = replicas
+        .all_nodes()
+        .into_iter()
+        .filter(|node| !lost.contains(node))
+        .count();
+
+    assert_eq!(zone, "az-a");
+    assert_eq!(nodes, vec![ClusterNodeId::from("a1")]);
+    assert_eq!(surviving_replicas, 2);
+    assert!(replicas.single_zone_loss_keeps_write_quorum(2));
 }
 
 #[test]
