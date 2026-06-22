@@ -7,6 +7,8 @@
 #   - every `depends_on` entry must reference a `version` present here;
 #   - `status` must be one of: shipped | in-progress | planned | draft | superseded;
 #   - `version` may be "TBD" only for draft/superseded entries.
+#   - shipped 0.43.0 must explicitly set `networked_control_plane = true` so
+#     modeled-vs-networked control-plane drift cannot be silently marked shipped.
 #
 # Keep this file in sync when a release changes status or a plan is added/renamed.
 
@@ -58,6 +60,7 @@ file = "docs/plans/V0_43_GEO_DISTRIBUTION_AND_ELASTICITY_PLAN.md"
 status = "shipped"
 theme = "Geo-distribution & elasticity — zone/region-aware placement, online resharding, locality + hedged reads, tiered storage, narrow atomic-invalidation slice, operational self-healing"
 depends_on = ["0.42.0"]
+networked_control_plane = true
 
 [[release]]
 version = "0.44.0"

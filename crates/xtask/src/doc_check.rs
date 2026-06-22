@@ -8,6 +8,9 @@
 //! - every `depends_on` value resolves to a `version` present in the manifest;
 //! - `status` is one of the allowed values;
 //! - `version = "TBD"` is only allowed for `draft` / `superseded` entries.
+//! - a shipped `0.43.0` entry must explicitly confirm that the networked control
+//!   plane is wired, so a modeled-vs-networked gap cannot be marked shipped by
+//!   accident.
 //!
 //! This turns the "release sequencing is recorded, not implied" rule into an
 //! executable gate so doc drift (e.g. two plans claiming the same version, or a
@@ -37,6 +40,8 @@ struct Release {
     theme: String,
     #[serde(default)]
     depends_on: Vec<String>,
+    #[serde(default)]
+    networked_control_plane: Option<bool>,
 }
 
 /// Locate the repository root by ascending from the cargo manifest dir and the
@@ -95,6 +100,21 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         if r.version == "TBD" && !is_draftish {
             problems.push(format!(
                 "{}: version 'TBD' is only allowed for draft/superseded entries",
+                r.file
+            ));
+        }
+
+        if r.status == "shipped" && r.networked_control_plane == Some(false) {
+            problems.push(format!(
+                "{}: shipped release cannot set networked_control_plane = false",
+                r.file
+            ));
+        }
+
+        if r.version == "0.43.0" && r.status == "shipped" && r.networked_control_plane != Some(true)
+        {
+            problems.push(format!(
+                "{}: shipped 0.43.0 must set networked_control_plane = true",
                 r.file
             ));
         }

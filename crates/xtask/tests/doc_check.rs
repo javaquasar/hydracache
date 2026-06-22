@@ -109,3 +109,44 @@ depends_on = []
         "missing TBD-on-non-draft check: {joined}"
     );
 }
+
+#[test]
+fn detects_shipped_043_without_networked_control_plane_sentinel() {
+    let manifest = r#"
+[[release]]
+version = "0.43.0"
+file = "docs/plans/V0_43.md"
+status = "shipped"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_43.md"]);
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("shipped 0.43.0 must set networked_control_plane = true"),
+        "missing 0.43 sentinel check: {joined}"
+    );
+}
+
+#[test]
+fn detects_shipped_release_with_false_networked_control_plane_sentinel() {
+    let manifest = r#"
+[[release]]
+version = "0.43.0"
+file = "docs/plans/V0_43.md"
+status = "shipped"
+networked_control_plane = false
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_43.md"]);
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("shipped release cannot set networked_control_plane = false"),
+        "missing false-sentinel check: {joined}"
+    );
+}
