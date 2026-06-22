@@ -1,7 +1,8 @@
 use hydracache::{
-    prepare_replicated_payload, ClusterEpoch, EffectiveReplicationMap,
+    prepare_replicated_payload, ClusterEpoch, CompatVersion, EffectiveReplicationMap,
     InMemoryReplicatedValueStore, PartitionId, Replicas, ReplicatedValueRecord,
     ReplicatedValueStore, Replication, ReplicationCryptoError, ReplicationKeyProvider,
+    UpgradeGuard, UpgradeStep, CACHE_INVALIDATION_FRAME_VERSION,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
 
@@ -155,6 +156,33 @@ fn durable_replicated_values_tombstone_persisted_blocks_resurrection_after_resta
 #[test]
 fn durable_replicated_values_format_version_round_trips() {
     assert_eq!(REPLICATED_VALUE_RECORD_FORMAT_VERSION, 1);
+
+    let record = ReplicatedValueRecord::value(
+        PartitionId::new(9),
+        17,
+        ClusterEpoch::new(4),
+        b"sealed-current-format".to_vec(),
+    );
+    let encoded = serde_json::to_string(&record).unwrap();
+    let decoded: ReplicatedValueRecord = serde_json::from_str(&encoded).unwrap();
+
+    assert_eq!(decoded, record);
+}
+
+#[test]
+fn durable_replicated_values_future_format_is_rejected_by_upgrade_guard() {
+    let guard = UpgradeGuard::current();
+    let step = UpgradeStep {
+        from: CompatVersion::new(0, 42, 0),
+        to: CompatVersion::new(0, 43, 0),
+        raft_log_format: 1,
+        value_record_format: REPLICATED_VALUE_RECORD_FORMAT_VERSION + 1,
+        wire_frame_version: CACHE_INVALIDATION_FRAME_VERSION,
+    };
+
+    let error = guard.check(step).unwrap_err();
+
+    assert!(error.to_string().contains("incompatible persisted"));
 }
 
 #[test]

@@ -3,7 +3,8 @@ use std::collections::BTreeMap;
 use hydracache::{
     restore_topology_from_snapshot, AutoRepairPolicy, ClusterEpoch, ClusterNodeId, CompatVersion,
     ControlPlaneSnapshot, InMemorySnapshotSink, NodeTopology, RepairAction, RepairMode,
-    SnapshotSink, UpgradeGuard, UpgradeStep,
+    SnapshotSink, UpgradeGuard, UpgradeStep, CACHE_INVALIDATION_FRAME_VERSION,
+    CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
 
 #[test]
@@ -58,6 +59,53 @@ fn self_heal_control_plane_restore_rebuilds_topology() {
 
     assert_eq!(restored.epoch(), ClusterEpoch::new(7));
     assert_eq!(restored.committed_map(), snapshot.topology);
+}
+
+#[test]
+fn self_heal_control_plane_snapshot_current_format_round_trips() {
+    assert_eq!(CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, 1);
+
+    let mut snapshot = ControlPlaneSnapshot::new(ClusterEpoch::new(8));
+    snapshot.topology.insert(
+        ClusterNodeId::from("node-current"),
+        NodeTopology::new("eu", "az-a"),
+    );
+    let mut sink = InMemorySnapshotSink::new();
+
+    sink.put(snapshot.clone()).unwrap();
+
+    assert_eq!(sink.latest().unwrap(), Some(snapshot));
+}
+
+#[test]
+fn self_heal_control_plane_snapshot_future_format_fails_loud() {
+    let mut snapshot = ControlPlaneSnapshot::new(ClusterEpoch::new(8));
+    snapshot.format_version = CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION + 1;
+    snapshot.topology.insert(
+        ClusterNodeId::from("node-future"),
+        NodeTopology::new("eu", "az-a"),
+    );
+    let mut sink = InMemorySnapshotSink::new();
+
+    let put_error = sink.put(snapshot.clone()).unwrap_err();
+    let restore_error = restore_topology_from_snapshot(&snapshot).unwrap_err();
+
+    assert!(put_error.to_string().contains("newer than this binary"));
+    assert!(restore_error.to_string().contains("newer than this binary"));
+}
+
+#[test]
+fn self_heal_upgrade_guard_accepts_042_to_043_registered_formats() {
+    let guard = UpgradeGuard::current();
+    let step = UpgradeStep {
+        from: CompatVersion::new(0, 42, 0),
+        to: CompatVersion::new(0, 43, 0),
+        raft_log_format: 1,
+        value_record_format: REPLICATED_VALUE_RECORD_FORMAT_VERSION,
+        wire_frame_version: CACHE_INVALIDATION_FRAME_VERSION,
+    };
+
+    guard.check(step).unwrap();
 }
 
 #[test]

@@ -14,6 +14,22 @@ fn entry(index: u64, data: &[u8]) -> Entry {
 }
 
 #[test]
+fn durable_control_plane_registered_log_format_reopens_for_rolling_upgrade_pairing() {
+    assert_eq!(RAFT_LOG_FORMAT_VERSION, 1);
+
+    let directory = DurableRaftLogDirectory::new();
+    let store = directory.open().unwrap();
+    store.append(&[entry(1, b"0.42-writer")]).unwrap();
+    drop(store);
+
+    let reopened_by_new_reader = directory.open().unwrap();
+    assert_eq!(
+        reopened_by_new_reader.retained_payloads(),
+        vec![b"0.42-writer".to_vec()]
+    );
+}
+
+#[test]
 fn durable_control_plane_append_then_replay_recovers_committed_log() {
     let directory = DurableRaftLogDirectory::new();
     let store = directory.open().unwrap();
