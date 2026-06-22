@@ -71,7 +71,7 @@ fn under_replication_reported_until_plan_completes() {
     };
 
     assert_eq!(plan.pending_task_count(&[]), 2);
-    assert_eq!(plan.pending_task_count(&[first_ack.clone()]), 1);
+    assert_eq!(plan.pending_task_count(std::slice::from_ref(&first_ack)), 1);
     assert!(!plan.is_complete(&[first_ack]));
 
     let all_acks = plan

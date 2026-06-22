@@ -103,4 +103,9 @@ depends_on = []
     assert!(
         joined.contains("depends_on '9.9.9'"),
         "missing dangling-dep check: {joined}"
-    )
+    );
+    assert!(
+        joined.contains("version 'TBD' is only allowed"),
+        "missing TBD-on-non-draft check: {joined}"
+    );
+}

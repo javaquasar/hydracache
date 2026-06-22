@@ -38,6 +38,26 @@ The cluster surface is now suitable for controlled staging experiments:
 The cluster crates are still optional. A user who only needs local caching or
 database result caching does not pay for cluster dependencies.
 
+## Networked Control-Plane Continuation 0.43
+
+The 0.43 continuation closes several modeled-only gaps without claiming that
+HydraCache has become a transparent distributed database:
+
+- `RaftMetadataRuntime::durable(...)` recovers committed metadata from the
+  durable raft log seam after restart.
+- `hydracache-cluster-transport-axum` exposes authz-gated raft append, vote,
+  snapshot, and replication routes for networked control-plane integration.
+- `RaftWireMessage` serializes real `raft::eraftpb::Message` payloads, keeping
+  the raft crate and HTTP transport crate decoupled.
+- `SledRaftLogStore` is a real optional sled-backed engine, covered by an
+  on-disk reopen test.
+- Live split-brain, read-your-writes, and replication helpers exercise the
+  algorithms as integration boundaries instead of isolated pure functions only.
+
+The remaining production boundary is the full always-on multi-node consensus
+runtime loop: applications still need explicit topology/runtime integration
+before treating the cluster as a production distributed data grid.
+
 ## New 0.30 Safety Boundaries
 
 `hydracache-cluster-transport-axum` exposes two explicit transport hardening

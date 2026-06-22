@@ -75,4 +75,6 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    println!("verify: all gates passed")
+    println!("verify: all gates passed");
+    Ok(())
+}

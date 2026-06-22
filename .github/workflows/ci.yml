@@ -47,6 +47,11 @@ jobs:
       - name: Dependency bans
         run: cargo deny check bans
 
+      - name: Docs consistency
+        run: |
+          cargo test -p xtask --test doc_check --locked
+          cargo run -p xtask --locked -- doc-check
+
       - name: SQL lint baseline drift
         run: |
           cargo test -p hydracache-sql-lint --test lint_cli --locked

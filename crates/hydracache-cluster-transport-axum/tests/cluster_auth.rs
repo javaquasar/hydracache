@@ -1,12 +1,15 @@
 use std::sync::Arc;
 
+use axum::body::{to_bytes, Body};
 use axum::http::{HeaderMap, StatusCode};
 use hydracache::ClusterNodeId;
 use hydracache_cluster_transport_axum::{
-    AllowAllAuthorizer, ClusterRoute, ClusterRouteAuth, DenyRouteAuthorizer, NodeCredential,
-    NodeIdentityProvider, StaticNodeIdentityProvider, HYDRACACHE_NODE_KEY_ID_HEADER,
-    HYDRACACHE_NODE_TOKEN_HEADER,
+    AllowAllAuthorizer, AxumClusterMessageService, ClusterOpaqueMessage, ClusterRoute,
+    ClusterRouteAuth, ClusterRouteErrorBody, DenyRouteAuthorizer, MemoryClusterMessageHandler,
+    NodeCredential, NodeIdentityProvider, StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH,
+    DEFAULT_REPLICATION_PATH, HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
 };
+use tower::ServiceExt;
 
 fn secure_auth() -> ClusterRouteAuth {
     ClusterRouteAuth::secure(
@@ -132,4 +135,73 @@ fn cluster_auth_outbound_headers_present_current_credential() {
         auth.verify(ClusterRoute::OwnerLoad, &headers).unwrap(),
         ClusterNodeId::from("member-a")
     );
+}
+
+#[tokio::test]
+async fn cluster_auth_unauthenticated_raft_append_is_rejected() {
+    let handler = Arc::new(MemoryClusterMessageHandler::new("member-b"));
+    let app = AxumClusterMessageService::new("member-b", handler, secure_auth()).routes();
+    let body = serde_json::to_vec(&ClusterOpaqueMessage::new(
+        "member-a", "member-b", 1, b"append",
+    ))
+    .unwrap();
+
+    let response = app
+        .oneshot(
+            axum::http::Request::builder()
+                .method("POST")
+                .uri(DEFAULT_RAFT_APPEND_PATH)
+                .header("content-type", "application/json")
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let error: ClusterRouteErrorBody = serde_json::from_slice(&body).unwrap();
+    assert_eq!(error.code, "unauthenticated");
+    assert_eq!(error.route, ClusterRoute::RaftAppend.as_str());
+}
+
+#[tokio::test]
+async fn cluster_auth_unauthorized_replication_is_denied() {
+    let auth = ClusterRouteAuth::secure(
+        Arc::new(StaticNodeIdentityProvider::new(
+            ClusterNodeId::from("member-a"),
+            "k1",
+            "secret",
+        )),
+        Arc::new(DenyRouteAuthorizer::new(ClusterRoute::Replicate)),
+    );
+    let handler = Arc::new(MemoryClusterMessageHandler::new("member-b"));
+    let app = AxumClusterMessageService::new("member-b", handler, auth).routes();
+    let body = serde_json::to_vec(&ClusterOpaqueMessage::new(
+        "member-a",
+        "member-b",
+        1,
+        b"replicate",
+    ))
+    .unwrap();
+
+    let response = app
+        .oneshot(
+            axum::http::Request::builder()
+                .method("POST")
+                .uri(DEFAULT_REPLICATION_PATH)
+                .header("content-type", "application/json")
+                .header(HYDRACACHE_NODE_KEY_ID_HEADER, "k1")
+                .header(HYDRACACHE_NODE_TOKEN_HEADER, "secret")
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    let error: ClusterRouteErrorBody = serde_json::from_slice(&body).unwrap();
+    assert_eq!(error.code, "unauthorized");
+    assert_eq!(error.route, ClusterRoute::Replicate.as_str());
 }

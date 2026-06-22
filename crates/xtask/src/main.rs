@@ -16,4 +16,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn print_usage() {
     println!(
         "Usage:\n  \
-         ca
+         cargo xtask verify        # run the fast release gates (see docs/GATES.md)\n  \
+         cargo xtask doc-check     # validate docs/plans/releases.toml (RULES R-11)\n  \
+         cargo xtask bench-budget [--budget benches/budget.toml] [--baseline benches/baseline/0_37.json] [--current target/criterion]\n\n\
+         (The `cargo xtask` alias is defined in .cargo/config.toml; `cargo run -p xtask -- <cmd>` also works.)"
+    );
+}

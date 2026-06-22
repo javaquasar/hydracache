@@ -3,7 +3,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-use crate::cluster::{ClusterEpoch, PartitionId};
+use crate::cluster::{ClusterEpoch, ClusterNodeId, PartitionId};
 use crate::grid::{EffectiveReplicationMap, ReplicatedSlot, ReplicationConfig};
 
 /// Monotonic version used by replicated value records.
@@ -554,4 +554,146 @@ impl PromotionFreezeWindow {
     pub fn is_bounded(self) -> bool {
         self.observed_ms <= self.bound_ms
     }
+}
+
+/// Result of resolving a healed split-brain against live side snapshots.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LiveSplitBrainResolution {
+    /// Winning authority epoch.
+    pub winner_epoch: ClusterEpoch,
+    /// Losing authority epoch.
+    pub loser_epoch: ClusterEpoch,
+    /// Merge outcome that should be committed as the topology operation.
+    pub outcome: ClusterMergeOutcome,
+}
+
+/// Resolve a healed split-brain from two live side snapshots.
+///
+/// The higher committed epoch wins. Value reconciliation still delegates to the
+/// supplied [`MergePolicy`], so tombstone dominance and custom policy behavior
+/// stay identical to the isolated merge primitive.
+pub fn resolve_live_split_brain(
+    left_epoch: ClusterEpoch,
+    left_records: BTreeMap<String, ReplicatedValueRecord>,
+    right_epoch: ClusterEpoch,
+    right_records: BTreeMap<String, ReplicatedValueRecord>,
+    policy: &dyn MergePolicy,
+) -> LiveSplitBrainResolution {
+    let left_wins = left_epoch >= right_epoch;
+    let (winner_epoch, loser_epoch) = split_brain_winner(left_epoch, right_epoch);
+    let (winner_records, loser_records) = if left_wins {
+        (left_records, right_records)
+    } else {
+        (right_records, left_records)
+    };
+    let outcome = merge_split_brain_records(
+        winner_epoch,
+        loser_epoch,
+        winner_records,
+        loser_records,
+        policy,
+    );
+    LiveSplitBrainResolution {
+        winner_epoch,
+        loser_epoch,
+        outcome,
+    }
+}
+
+/// Live read-path decision, including readiness posture.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LiveReadYourWritesDecision {
+    /// Quorum posture advertised by the current replication config.
+    pub posture: QuorumPosture,
+    /// Selected quorum-read decision.
+    pub decision: QuorumReadDecision,
+}
+
+/// Apply the read-your-writes quorum rule using the live replication config.
+pub fn live_read_your_writes(
+    config: ReplicationConfig,
+    watermark: WriteWatermark,
+    replicas: impl IntoIterator<Item = ReplicatedValueRecord>,
+) -> LiveReadYourWritesDecision {
+    LiveReadYourWritesDecision {
+        posture: config.quorum_posture(),
+        decision: quorum_read_your_writes(watermark, replicas, config.read_quorum),
+    }
+}
+
+/// Outcome of one live replication send attempt.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LiveReplicationSend {
+    /// Whether the peer window admitted the send.
+    pub admitted: bool,
+    /// Window limit after the send acknowledgement, if admitted.
+    pub max_in_flight: usize,
+}
+
+/// Peer-local replication stream state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LiveReplicationPeer {
+    node: ClusterNodeId,
+    window: AdaptiveWindow,
+}
+
+impl LiveReplicationPeer {
+    /// Create a peer replication stream with an AIMD window.
+    pub fn new(node: impl Into<ClusterNodeId>, window: AdaptiveWindow) -> Self {
+        Self {
+            node: node.into(),
+            window,
+        }
+    }
+
+    /// Return peer node id.
+    pub fn node(&self) -> &ClusterNodeId {
+        &self.node
+    }
+
+    /// Return current peer window.
+    pub fn window(&self) -> AdaptiveWindow {
+        self.window
+    }
+
+    /// Send one record to the backup store if the peer window admits it.
+    pub fn send_record<S>(
+        &mut self,
+        backup: &mut S,
+        key: impl Into<String>,
+        record: ReplicatedValueRecord,
+        rtt_ok: bool,
+    ) -> Result<LiveReplicationSend, ValueStoreError>
+    where
+        S: ReplicatedValueStore,
+    {
+        if !self.window.try_acquire() {
+            return Ok(LiveReplicationSend {
+                admitted: false,
+                max_in_flight: self.window.max_in_flight(),
+            });
+        }
+        backup.upsert(key, record)?;
+        self.window.on_ack(rtt_ok);
+        Ok(LiveReplicationSend {
+            admitted: true,
+            max_in_flight: self.window.max_in_flight(),
+        })
+    }
+}
+
+/// Repair a backup from a primary snapshot after anti-entropy detects lag.
+pub fn anti_entropy_repair<S>(
+    backup: &mut S,
+    records: impl IntoIterator<Item = (String, ReplicatedValueRecord)>,
+) -> Result<u64, ValueStoreError>
+where
+    S: ReplicatedValueStore,
+{
+    let mut repaired = 0_u64;
+    for (key, record) in records {
+        backup.upsert(key, record)?;
+        repaired = repaired.saturating_add(1);
+    }
+    Ok(repaired)
 }

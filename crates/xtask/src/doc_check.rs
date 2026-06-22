@@ -154,4 +154,6 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         for problem in &problems {
             eprintln!("doc-check: {problem}");
         }
-        Err(format!("doc-check fo
+        Err(format!("doc-check found {} problem(s)", problems.len()).into())
+    }
+}

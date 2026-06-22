@@ -573,10 +573,11 @@ pub enum Replication {
 }
 
 /// Replicated payload confidentiality posture.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ReplicatedValueSecurityPosture {
     /// Value replication is disabled.
+    #[default]
     Disabled,
     /// Payloads are sealed by an operator-supplied provider.
     Encrypted,
@@ -584,12 +585,6 @@ pub enum ReplicatedValueSecurityPosture {
     PlaintextAcknowledged,
     /// Unsafe posture: replication is on but plaintext was not acknowledged.
     PlaintextUnacknowledged,
-}
-
-impl Default for ReplicatedValueSecurityPosture {
-    fn default() -> Self {
-        Self::Disabled
-    }
 }
 
 impl ReplicatedValueSecurityPosture {

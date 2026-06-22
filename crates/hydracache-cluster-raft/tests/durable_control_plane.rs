@@ -5,11 +5,12 @@ use raft::eraftpb::{Entry, HardState, Snapshot};
 use raft::storage::Storage;
 
 fn entry(index: u64, data: &[u8]) -> Entry {
-    let mut entry = Entry::default();
-    entry.index = index;
-    entry.term = 1;
-    entry.data = data.to_vec().into();
-    entry
+    Entry {
+        index,
+        term: 1,
+        data: data.to_vec().into(),
+        ..Entry::default()
+    }
 }
 
 #[test]
@@ -19,9 +20,11 @@ fn durable_control_plane_append_then_replay_recovers_committed_log() {
     store
         .append(&[entry(1, b"join-a"), entry(2, b"join-b")])
         .unwrap();
-    let mut hard_state = HardState::default();
-    hard_state.term = 1;
-    hard_state.commit = 2;
+    let hard_state = HardState {
+        term: 1,
+        commit: 2,
+        ..HardState::default()
+    };
     store.save_hard_state(&hard_state).unwrap();
     drop(store);
 
@@ -74,9 +77,11 @@ fn durable_control_plane_must_sync_persists_before_ack() {
     assert!(store.must_sync());
 
     store.append(&[entry(1, b"acked")]).unwrap();
-    let mut hard_state = HardState::default();
-    hard_state.term = 1;
-    hard_state.commit = 1;
+    let hard_state = HardState {
+        term: 1,
+        commit: 1,
+        ..HardState::default()
+    };
     store.save_hard_state(&hard_state).unwrap();
 
     assert_eq!(directory.fsync_count(), 1);

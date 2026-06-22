@@ -5,11 +5,12 @@ use raft::storage::{GetEntriesContext, Storage};
 use raft::{Error as RaftError, StorageError};
 
 fn entry(index: u64, term: u64, data: &'static [u8]) -> Entry {
-    let mut entry = Entry::default();
-    entry.index = index;
-    entry.term = term;
-    entry.data = data.to_vec().into();
-    entry
+    Entry {
+        index,
+        term,
+        data: data.to_vec().into(),
+        ..Entry::default()
+    }
 }
 
 fn snapshot(index: u64, term: u64, voters: Vec<u64>) -> Snapshot {

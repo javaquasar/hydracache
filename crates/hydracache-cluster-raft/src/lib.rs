@@ -105,7 +105,9 @@ pub use log_store::{
 };
 pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult};
 
-use raft::eraftpb::{Entry, EntryType};
+use protobuf::Message as ProtobufMessage;
+use raft::eraftpb::{Entry, EntryType, Message as RaftMessage};
+use raft::storage::Storage;
 use raft::{Config, RawNode, StateRole};
 use slog::{o, Logger};
 
@@ -215,6 +217,73 @@ pub enum RaftCommandStatus {
     Committed,
     /// Command id was already applied and was skipped.
     Duplicate,
+}
+
+/// Serialized Raft message envelope used by network transports.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RaftWireMessage {
+    /// Source Raft node id.
+    pub from: u64,
+    /// Destination Raft node id.
+    pub to: u64,
+    /// Message term.
+    pub term: u64,
+    /// Protobuf-encoded `raft::eraftpb::Message`.
+    pub payload: Vec<u8>,
+}
+
+impl RaftWireMessage {
+    /// Serialize a raft-rs message for transport.
+    pub fn encode(message: &RaftMessage) -> CacheResult<Self> {
+        Ok(Self {
+            from: message.from,
+            to: message.to,
+            term: message.term,
+            payload: message.write_to_bytes().map_err(|error| {
+                CacheError::Encode(format!("failed to encode raft message: {error}"))
+            })?,
+        })
+    }
+
+    /// Decode the protobuf payload back into a raft-rs message.
+    pub fn decode(&self) -> CacheResult<RaftMessage> {
+        RaftMessage::parse_from_bytes(&self.payload)
+            .map_err(|error| CacheError::Decode(format!("failed to decode raft message: {error}")))
+    }
+}
+
+/// Transport seam for sending serialized Raft messages to peers.
+#[async_trait::async_trait]
+pub trait RaftMessageSink: Send + Sync {
+    /// Send one serialized raft message.
+    async fn send(&self, message: RaftWireMessage) -> CacheResult<()>;
+}
+
+/// In-memory sink used by tests and local harnesses.
+#[derive(Debug, Clone, Default)]
+pub struct InMemoryRaftMessageSink {
+    messages: Arc<Mutex<Vec<RaftWireMessage>>>,
+}
+
+impl InMemoryRaftMessageSink {
+    /// Return captured messages.
+    pub fn messages(&self) -> Vec<RaftWireMessage> {
+        self.messages
+            .lock()
+            .expect("raft message sink poisoned")
+            .clone()
+    }
+}
+
+#[async_trait::async_trait]
+impl RaftMessageSink for InMemoryRaftMessageSink {
+    async fn send(&self, message: RaftWireMessage) -> CacheResult<()> {
+        self.messages
+            .lock()
+            .expect("raft message sink poisoned")
+            .push(message);
+        Ok(())
+    }
 }
 
 /// Exported in-memory metadata snapshot for recovery tests and demos.
@@ -340,8 +409,11 @@ impl From<StateRole> for RaftRuntimeRole {
     }
 }
 
-struct RaftRuntimeState {
-    raw_node: RawNode<InMemoryRaftLogStore>,
+struct RaftRuntimeState<S>
+where
+    S: RaftLogStore,
+{
+    raw_node: RawNode<S>,
     commands: Vec<RaftMetadataCommandEnvelope>,
     applied_command_ids: BTreeSet<String>,
     results: Vec<RaftCommandResult>,
@@ -350,7 +422,10 @@ struct RaftRuntimeState {
     fail_next_proposal: bool,
 }
 
-impl fmt::Debug for RaftRuntimeState {
+impl<S> fmt::Debug for RaftRuntimeState<S>
+where
+    S: RaftLogStore,
+{
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter
             .debug_struct("RaftRuntimeState")
@@ -361,15 +436,31 @@ impl fmt::Debug for RaftRuntimeState {
 }
 
 /// Single-node raft-rs metadata control plane.
-#[derive(Debug)]
-pub struct RaftMetadataRuntime {
+pub struct RaftMetadataRuntime<S = InMemoryRaftLogStore>
+where
+    S: RaftLogStore,
+{
     cluster: InMemoryCluster,
     raft_node_id: u64,
-    raft: Mutex<RaftRuntimeState>,
+    raft: Mutex<RaftRuntimeState<S>>,
     metadata_store: Option<Arc<dyn RaftMetadataStore>>,
 }
 
-impl RaftMetadataRuntime {
+impl<S> fmt::Debug for RaftMetadataRuntime<S>
+where
+    S: RaftLogStore,
+{
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RaftMetadataRuntime")
+            .field("cluster", &self.cluster.name())
+            .field("raft_node_id", &self.raft_node_id)
+            .field("snapshot", &self.snapshot())
+            .finish_non_exhaustive()
+    }
+}
+
+impl RaftMetadataRuntime<InMemoryRaftLogStore> {
     /// Start a single-node raft-rs metadata runtime.
     pub fn single_node(cluster_name: impl Into<String>, raft_node_id: u64) -> CacheResult<Self> {
         Self::with_config(RaftMetadataRuntimeConfig::single_node(
@@ -416,9 +507,60 @@ impl RaftMetadataRuntime {
         config: RaftMetadataRuntimeConfig,
         metadata_store: Option<Arc<dyn RaftMetadataStore>>,
     ) -> CacheResult<Self> {
+        let storage =
+            InMemoryRaftLogStore::new_with_conf_state((vec![config.raft_node_id], vec![]));
+        Self::build_with_storage(config, storage, metadata_store)
+    }
+
+    /// Rebuild a single-node runtime from an exported metadata snapshot.
+    pub fn from_snapshot(snapshot: RaftMetadataRuntimeExport) -> CacheResult<Self> {
+        let runtime = Self::single_node(snapshot.cluster_name.clone(), snapshot.raft_node_id)?;
+        runtime.restore_export(snapshot)?;
+        Ok(runtime)
+    }
+}
+
+#[cfg(feature = "durable-log")]
+impl RaftMetadataRuntime<DurableRaftLogStore> {
+    /// Open or create a single-node runtime backed by a durable raft log.
+    pub fn durable(
+        cluster_name: impl Into<String>,
+        raft_node_id: u64,
+        directory: DurableRaftLogDirectory,
+    ) -> CacheResult<Self> {
+        let config = RaftMetadataRuntimeConfig::single_node(cluster_name, raft_node_id);
+        let storage = directory.open().map_err(to_cache_error)?;
+        if storage
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .voters
+            .is_empty()
+        {
+            storage.initialize_with_conf_state((vec![config.raft_node_id], vec![]));
+        }
+        Self::build_with_storage(config, storage, None)
+    }
+}
+
+impl<S> RaftMetadataRuntime<S>
+where
+    S: RaftLogStore,
+{
+    /// Start a raft-rs metadata runtime over an explicit log store.
+    pub fn with_storage(config: RaftMetadataRuntimeConfig, storage: S) -> CacheResult<Self> {
+        Self::build_with_storage(config, storage, None)
+    }
+
+    fn build_with_storage(
+        config: RaftMetadataRuntimeConfig,
+        storage: S,
+        metadata_store: Option<Arc<dyn RaftMetadataStore>>,
+    ) -> CacheResult<Self> {
         let cluster_name = config.cluster_name.clone();
         let raft_node_id = config.raft_node_id;
-        let storage = InMemoryRaftLogStore::new_with_conf_state((vec![raft_node_id], vec![]));
+        let initial_state = storage.initial_state().map_err(to_cache_error)?;
+        let retained_entries = storage.retained_entries().map_err(to_cache_error)?;
         let logger = Logger::root(slog::Discard, o!());
         let mut raw_node =
             RawNode::new(&config.raft_config(), storage, &logger).map_err(to_cache_error)?;
@@ -435,12 +577,16 @@ impl RaftMetadataRuntime {
         };
         state.drain_ready()?;
 
-        Ok(Self {
+        let runtime = Self {
             cluster: InMemoryCluster::new(cluster_name),
             raft_node_id,
             raft: Mutex::new(state),
             metadata_store,
-        })
+        };
+        if initial_state.hard_state.commit > 0 {
+            runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
+        }
+        Ok(runtime)
     }
 
     /// Return applied metadata commands.
@@ -530,13 +676,6 @@ impl RaftMetadataRuntime {
         }
     }
 
-    /// Rebuild a single-node runtime from an exported metadata snapshot.
-    pub fn from_snapshot(snapshot: RaftMetadataRuntimeExport) -> CacheResult<Self> {
-        let runtime = Self::single_node(snapshot.cluster_name.clone(), snapshot.raft_node_id)?;
-        runtime.restore_export(snapshot)?;
-        Ok(runtime)
-    }
-
     fn restore_export(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
         {
             let mut state = self.raft.lock().expect("raft metadata state poisoned");
@@ -548,6 +687,28 @@ impl RaftMetadataRuntime {
         for envelope in snapshot.commands {
             self.apply_recovered_envelope(envelope)?;
         }
+        Ok(())
+    }
+
+    fn restore_committed_entries(&self, entries: Vec<Entry>, commit_index: u64) -> CacheResult<()> {
+        {
+            let mut state = self.raft.lock().expect("raft metadata state poisoned");
+            state.commands.clear();
+            state.applied_command_ids.clear();
+            state.results.clear();
+            state.applied_index = 0;
+        }
+        for entry in entries {
+            if entry.index > commit_index
+                || entry.data.is_empty()
+                || entry.get_entry_type() != EntryType::EntryNormal
+            {
+                continue;
+            }
+            self.apply_recovered_envelope_at(decode_envelope(entry.data.as_ref())?, entry.index)?;
+        }
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.applied_index = state.applied_index.max(commit_index);
         Ok(())
     }
 
@@ -566,6 +727,14 @@ impl RaftMetadataRuntime {
     }
 
     fn apply_recovered_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
+        self.apply_recovered_envelope_at(envelope, 0)
+    }
+
+    fn apply_recovered_envelope_at(
+        &self,
+        envelope: RaftMetadataCommandEnvelope,
+        index: u64,
+    ) -> CacheResult<()> {
         materialize_command(&self.cluster, &envelope.command)?;
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
         if state
@@ -574,6 +743,7 @@ impl RaftMetadataRuntime {
         {
             state.commands.push(envelope);
         }
+        state.applied_index = state.applied_index.max(index);
         Ok(())
     }
 
@@ -766,7 +936,10 @@ fn materialize_command(
     }
 }
 
-impl RaftRuntimeState {
+impl<S> RaftRuntimeState<S>
+where
+    S: RaftLogStore,
+{
     fn commit_command(
         &mut self,
         envelope: RaftMetadataCommandEnvelope,
@@ -826,7 +999,7 @@ impl RaftRuntimeState {
 
             let mut light_ready = self.raw_node.advance(ready);
             if let Some(commit) = light_ready.commit_index() {
-                store.set_commit(commit);
+                store.set_commit(commit).map_err(to_cache_error)?;
             }
             self.apply_committed_entries(light_ready.take_committed_entries())?;
             store.mark_applied(self.applied_index);
@@ -851,7 +1024,10 @@ impl RaftRuntimeState {
 }
 
 #[async_trait::async_trait]
-impl ClusterControlPlane for RaftMetadataRuntime {
+impl<S> ClusterControlPlane for RaftMetadataRuntime<S>
+where
+    S: RaftLogStore,
+{
     fn name(&self) -> String {
         self.cluster.name().to_owned()
     }

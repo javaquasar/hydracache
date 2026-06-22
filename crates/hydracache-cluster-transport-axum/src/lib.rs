@@ -82,6 +82,18 @@ pub const DEFAULT_PEER_FETCH_PATH: &str = "/cluster/peer-fetch";
 /// Default HTTP path reserved for owner-side load requests.
 pub const DEFAULT_OWNER_LOAD_PATH: &str = "/cluster/owner-load";
 
+/// Default HTTP path used for Raft append-entries messages.
+pub const DEFAULT_RAFT_APPEND_PATH: &str = "/cluster/raft/append";
+
+/// Default HTTP path used for Raft vote messages.
+pub const DEFAULT_RAFT_VOTE_PATH: &str = "/cluster/raft/vote";
+
+/// Default HTTP path used for Raft snapshot installation messages.
+pub const DEFAULT_RAFT_SNAPSHOT_PATH: &str = "/cluster/raft/snapshot";
+
+/// Default HTTP path used for replicated-value and anti-entropy messages.
+pub const DEFAULT_REPLICATION_PATH: &str = "/cluster/replicate";
+
 /// Current HydraCache HTTP transport wire version.
 pub const HYDRACACHE_HTTP_WIRE_VERSION: u16 = 1;
 
@@ -444,9 +456,8 @@ impl ClusterRouteAuth {
             self.record_rejection();
             ClusterAuthError::unauthenticated("missing HydraCache node credential")
         })?;
-        let who = identity.verify(&credential).map_err(|error| {
+        let who = identity.verify(&credential).inspect_err(|_| {
             self.record_rejection();
-            error
         })?;
         if !self.authorizer.allow(&who, route) {
             self.record_rejection();
@@ -488,6 +499,133 @@ impl ClusterRouteAuth {
             .lock()
             .expect("cluster auth diagnostics poisoned");
         *rejected = rejected.saturating_add(1);
+    }
+}
+
+/// Opaque network message carried by raft and replication routes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClusterOpaqueMessage {
+    /// Logical sender node.
+    pub from: String,
+    /// Logical destination node.
+    pub to: String,
+    /// Sender-observed term or authority epoch.
+    pub term: u64,
+    /// Base64-encoded transport payload.
+    pub payload_base64: String,
+}
+
+impl ClusterOpaqueMessage {
+    /// Build a message from raw bytes.
+    pub fn new(
+        from: impl Into<String>,
+        to: impl Into<String>,
+        term: u64,
+        payload: impl AsRef<[u8]>,
+    ) -> Self {
+        Self {
+            from: from.into(),
+            to: to.into(),
+            term,
+            payload_base64: BASE64_STANDARD.encode(payload.as_ref()),
+        }
+    }
+
+    /// Decode the payload bytes.
+    pub fn decode_payload(&self) -> CacheResult<Bytes> {
+        BASE64_STANDARD
+            .decode(self.payload_base64.as_bytes())
+            .map(Bytes::from)
+            .map_err(|error| CacheError::Decode(format!("invalid cluster payload: {error}")))
+    }
+}
+
+/// Acknowledgement returned by raft and replication routes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClusterMessageAck {
+    /// Route that accepted the message.
+    pub route: ClusterRoute,
+    /// Local node that handled the message.
+    pub handled_by: String,
+    /// Number of decoded payload bytes.
+    pub payload_len: usize,
+}
+
+impl ClusterMessageAck {
+    /// Create an acknowledgement.
+    pub fn new(route: ClusterRoute, handled_by: impl Into<String>, payload_len: usize) -> Self {
+        Self {
+            route,
+            handled_by: handled_by.into(),
+            payload_len,
+        }
+    }
+}
+
+/// JSON error body returned by protected raft/replication routes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClusterRouteErrorBody {
+    /// Stable machine-readable error code.
+    pub code: String,
+    /// Human-readable detail.
+    pub message: String,
+    /// Route that rejected the call.
+    pub route: String,
+}
+
+/// Handler invoked after network route auth and wire-version checks pass.
+#[async_trait::async_trait]
+pub trait ClusterMessageHandler: Send + Sync + 'static {
+    /// Handle an opaque raft or replication message.
+    async fn handle(
+        &self,
+        route: ClusterRoute,
+        message: ClusterOpaqueMessage,
+    ) -> CacheResult<ClusterMessageAck>;
+}
+
+/// In-memory message handler for route tests and local control-plane harnesses.
+#[derive(Debug, Clone)]
+pub struct MemoryClusterMessageHandler {
+    handled_by: String,
+    messages: Arc<Mutex<Vec<(ClusterRoute, ClusterOpaqueMessage)>>>,
+}
+
+impl MemoryClusterMessageHandler {
+    /// Create an empty handler.
+    pub fn new(handled_by: impl Into<String>) -> Self {
+        Self {
+            handled_by: handled_by.into(),
+            messages: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    /// Return received messages.
+    pub fn messages(&self) -> Vec<(ClusterRoute, ClusterOpaqueMessage)> {
+        self.messages
+            .lock()
+            .expect("cluster message handler poisoned")
+            .clone()
+    }
+}
+
+#[async_trait::async_trait]
+impl ClusterMessageHandler for MemoryClusterMessageHandler {
+    async fn handle(
+        &self,
+        route: ClusterRoute,
+        message: ClusterOpaqueMessage,
+    ) -> CacheResult<ClusterMessageAck> {
+        let payload_len = message.decode_payload()?.len();
+        self.messages
+            .lock()
+            .expect("cluster message handler poisoned")
+            .push((route, message));
+        Ok(ClusterMessageAck::new(
+            route,
+            self.handled_by.clone(),
+            payload_len,
+        ))
     }
 }
 
@@ -1894,6 +2032,148 @@ fn owner_load_http_status(response: &OwnerLoadResponse) -> StatusCode {
         },
         OwnerLoadResponse::Failed(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
+}
+
+#[derive(Clone)]
+struct ClusterMessageRouteState {
+    node_id: ClusterNodeId,
+    handler: Arc<dyn ClusterMessageHandler>,
+    auth: ClusterRouteAuth,
+    wire: HttpWireCompatibility,
+}
+
+/// Axum route factory for protected raft and replicated-value messages.
+#[derive(Clone)]
+pub struct AxumClusterMessageService {
+    state: ClusterMessageRouteState,
+}
+
+impl fmt::Debug for AxumClusterMessageService {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("AxumClusterMessageService")
+            .field("node_id", &self.state.node_id)
+            .field("auth", &self.state.auth)
+            .field("wire", &self.state.wire)
+            .finish_non_exhaustive()
+    }
+}
+
+impl AxumClusterMessageService {
+    /// Create a route factory for one cluster node.
+    pub fn new(
+        node_id: impl Into<ClusterNodeId>,
+        handler: Arc<dyn ClusterMessageHandler>,
+        auth: ClusterRouteAuth,
+    ) -> Self {
+        Self {
+            state: ClusterMessageRouteState {
+                node_id: node_id.into(),
+                handler,
+                auth,
+                wire: HttpWireCompatibility::default(),
+            },
+        }
+    }
+
+    /// Set the HTTP wire compatibility policy for these routes.
+    pub fn with_wire_compatibility(mut self, wire: HttpWireCompatibility) -> Self {
+        self.state.wire = wire;
+        self
+    }
+
+    /// Build routes for `POST /cluster/raft/*` and `POST /cluster/replicate`.
+    pub fn routes(&self) -> Router {
+        Router::new()
+            .route(DEFAULT_RAFT_APPEND_PATH, post(handle_raft_append))
+            .route(DEFAULT_RAFT_VOTE_PATH, post(handle_raft_vote))
+            .route(DEFAULT_RAFT_SNAPSHOT_PATH, post(handle_raft_snapshot))
+            .route(DEFAULT_REPLICATION_PATH, post(handle_replication_message))
+            .with_state(self.state.clone())
+    }
+}
+
+async fn handle_raft_append(
+    State(state): State<ClusterMessageRouteState>,
+    headers: HeaderMap,
+    Json(message): Json<ClusterOpaqueMessage>,
+) -> Response {
+    handle_cluster_message(state, headers, ClusterRoute::RaftAppend, message).await
+}
+
+async fn handle_raft_vote(
+    State(state): State<ClusterMessageRouteState>,
+    headers: HeaderMap,
+    Json(message): Json<ClusterOpaqueMessage>,
+) -> Response {
+    handle_cluster_message(state, headers, ClusterRoute::RaftVote, message).await
+}
+
+async fn handle_raft_snapshot(
+    State(state): State<ClusterMessageRouteState>,
+    headers: HeaderMap,
+    Json(message): Json<ClusterOpaqueMessage>,
+) -> Response {
+    handle_cluster_message(state, headers, ClusterRoute::Snapshot, message).await
+}
+
+async fn handle_replication_message(
+    State(state): State<ClusterMessageRouteState>,
+    headers: HeaderMap,
+    Json(message): Json<ClusterOpaqueMessage>,
+) -> Response {
+    handle_cluster_message(state, headers, ClusterRoute::Replicate, message).await
+}
+
+async fn handle_cluster_message(
+    state: ClusterMessageRouteState,
+    headers: HeaderMap,
+    route: ClusterRoute,
+    message: ClusterOpaqueMessage,
+) -> Response {
+    if let Err(rejection) = validate_http_transport(&headers, None, state.wire) {
+        return cluster_route_error(rejection.status, rejection.code, rejection.message, route);
+    }
+    if let Err(error) = state.auth.verify(route, &headers) {
+        return cluster_route_error(error.status, error.code, error.message, route);
+    }
+    if message.to != state.node_id.as_str() {
+        return cluster_route_error(
+            StatusCode::NOT_FOUND,
+            "wrong-destination",
+            format!(
+                "cluster route on node '{}' cannot handle message for '{}'",
+                state.node_id, message.to
+            ),
+            route,
+        );
+    }
+    match state.handler.handle(route, message).await {
+        Ok(ack) => (StatusCode::OK, Json(ack)).into_response(),
+        Err(error) => cluster_route_error(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "handler-error",
+            error.to_string(),
+            route,
+        ),
+    }
+}
+
+fn cluster_route_error(
+    status: StatusCode,
+    code: impl Into<String>,
+    message: impl Into<String>,
+    route: ClusterRoute,
+) -> Response {
+    (
+        status,
+        Json(ClusterRouteErrorBody {
+            code: code.into(),
+            message: message.into(),
+            route: route.as_str().to_owned(),
+        }),
+    )
+        .into_response()
 }
 
 /// HTTP client for owner-side load requests.

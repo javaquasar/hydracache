@@ -1,8 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+#[cfg(feature = "sled-log-store")]
+use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 
+#[cfg(feature = "sled-log-store")]
+use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{ConfState, Entry, HardState, Snapshot};
 use raft::storage::{GetEntriesContext, RaftState, Storage};
 use raft::{Error as RaftError, Result as RaftResult, StorageError};
@@ -67,27 +71,28 @@ pub trait RaftLogStore: Storage + Clone + Send + Sync + 'static {
     fn must_sync(&self) -> bool {
         false
     }
+
+    /// Return retained entries in index order for runtime recovery.
+    fn retained_entries(&self) -> RaftStoreResult<Vec<Entry>>;
+
+    /// Mark entries through `index` as applied.
+    fn mark_applied(&self, index: u64);
+
+    /// Update the persisted commit index after raft light-ready advance.
+    fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        let mut state = self.initial_state().map_err(RaftStoreError::from)?;
+        state.hard_state.commit = commit;
+        self.save_hard_state(&state.hard_state)
+    }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct InMemoryRaftLogState {
     raft_state: RaftState,
     entries: Vec<Entry>,
     snapshot: Snapshot,
     applied_index: u64,
     snapshot_unavailable_once: bool,
-}
-
-impl Default for InMemoryRaftLogState {
-    fn default() -> Self {
-        Self {
-            raft_state: RaftState::default(),
-            entries: Vec::new(),
-            snapshot: Snapshot::default(),
-            applied_index: 0,
-            snapshot_unavailable_once: false,
-        }
-    }
 }
 
 /// Deterministic in-memory [`RaftLogStore`] used by tests and the default
@@ -347,6 +352,19 @@ impl RaftLogStore for InMemoryRaftLogStore {
         state.entries.retain(|entry| entry.index >= index);
         Ok(())
     }
+
+    fn retained_entries(&self) -> RaftStoreResult<Vec<Entry>> {
+        Ok(self.all_entries())
+    }
+
+    fn mark_applied(&self, index: u64) {
+        Self::mark_applied(self, index);
+    }
+
+    fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        Self::set_commit(self, commit);
+        Ok(())
+    }
 }
 
 /// Restartable in-process directory for the supported 0.42 durable log seam.
@@ -435,6 +453,19 @@ impl DurableRaftLogStore {
         self.inner.mark_applied(index);
     }
 
+    /// Return retained entries in index order.
+    pub fn retained_entries(&self) -> Vec<Entry> {
+        self.inner.all_entries()
+    }
+
+    /// Initialize raft configuration state when creating a fresh directory.
+    pub fn initialize_with_conf_state<T>(&self, conf_state: T)
+    where
+        ConfState: From<T>,
+    {
+        self.inner.initialize_with_conf_state(conf_state);
+    }
+
     fn record_sync(&self) {
         self.fsync_count.fetch_add(1, Ordering::Relaxed);
     }
@@ -504,6 +535,19 @@ impl RaftLogStore for DurableRaftLogStore {
     fn must_sync(&self) -> bool {
         true
     }
+
+    fn retained_entries(&self) -> RaftStoreResult<Vec<Entry>> {
+        Ok(self.retained_entries())
+    }
+
+    fn mark_applied(&self, index: u64) {
+        Self::mark_applied(self, index);
+    }
+
+    fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        self.inner.set_commit(commit);
+        Ok(())
+    }
 }
 
 /// Tiny deterministic multi-node control-plane model used by 0.42 release gates.
@@ -565,13 +609,17 @@ impl DurableControlPlaneCluster {
         }
         let index = self.committed.len() as u64 + 1;
         let payload = data.into();
-        let mut entry = Entry::default();
-        entry.index = index;
-        entry.term = 1;
-        entry.data = payload.clone().into();
-        let mut hard_state = HardState::default();
-        hard_state.commit = index;
-        hard_state.term = 1;
+        let entry = Entry {
+            index,
+            term: 1,
+            data: payload.clone().into(),
+            ..Entry::default()
+        };
+        let hard_state = HardState {
+            commit: index,
+            term: 1,
+            ..HardState::default()
+        };
 
         for node_id in &self.reachable {
             let store = self
@@ -579,7 +627,7 @@ impl DurableControlPlaneCluster {
                 .get(node_id)
                 .expect("reachable node must exist")
                 .open()?;
-            store.append(&[entry.clone()])?;
+            store.append(std::slice::from_ref(&entry))?;
             store.save_hard_state(&hard_state)?;
             store.mark_applied(index);
         }
@@ -642,21 +690,71 @@ fn limit_entries_size(entries: &mut Vec<Entry>, max_size: u64) {
     entries.truncate(keep.max(1));
 }
 
-/// Feature-gated durable-engine example placeholder.
-///
-/// The public type exists behind `sled-log-store` so integration and docs can
-/// compile the alternate engine path without making it the default.
+/// Feature-gated sled-backed durable log store.
 #[cfg(feature = "sled-log-store")]
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct SledRaftLogStore {
     inner: InMemoryRaftLogStore,
+    db: sled::Db,
 }
 
 #[cfg(feature = "sled-log-store")]
 impl SledRaftLogStore {
-    /// Create the feature-gated example store.
+    /// Open or create a sled-backed log store under `path`.
+    pub fn open(path: impl AsRef<Path>) -> RaftStoreResult<Self> {
+        let db = sled::open(path).map_err(|error| {
+            RaftStoreError::new(format!("failed to open sled raft log store: {error}"))
+        })?;
+        let store = Self {
+            inner: InMemoryRaftLogStore::new(),
+            db,
+        };
+        store.replay_from_sled()?;
+        Ok(store)
+    }
+
+    /// Create a temporary sled-backed store for tests and examples.
     pub fn new_for_tests() -> Self {
-        Self::default()
+        let db = sled::Config::new()
+            .temporary(true)
+            .open()
+            .expect("temporary sled raft log store opens");
+        Self {
+            inner: InMemoryRaftLogStore::new(),
+            db,
+        }
+    }
+
+    fn replay_from_sled(&self) -> RaftStoreResult<()> {
+        if let Some(bytes) = self.db.get(SLED_HARD_STATE_KEY).map_err(sled_error)? {
+            self.inner.save_hard_state(&decode_hard_state(&bytes)?)?;
+        }
+        if let Some(bytes) = self.db.get(SLED_SNAPSHOT_KEY).map_err(sled_error)? {
+            self.inner
+                .save_snapshot(&decode_snapshot(&bytes)?, usize::MAX)?;
+        }
+        let entries = self
+            .db
+            .scan_prefix(SLED_ENTRY_PREFIX)
+            .map(|item| {
+                let (_, value) = item.map_err(sled_error)?;
+                decode_entry(&value)
+            })
+            .collect::<RaftStoreResult<Vec<_>>>()?;
+        if !entries.is_empty() {
+            self.inner.append(&entries)?;
+        }
+        if let Some(bytes) = self.db.get(SLED_APPLIED_KEY).map_err(sled_error)? {
+            self.inner.mark_applied(decode_u64(&bytes)?);
+        }
+        Ok(())
+    }
+
+    fn sync(&self) -> RaftStoreResult<()> {
+        self.db
+            .flush()
+            .map(|_| ())
+            .map_err(|error| RaftStoreError::new(format!("failed to flush sled raft log: {error}")))
     }
 }
 
@@ -696,15 +794,50 @@ impl Storage for SledRaftLogStore {
 #[cfg(feature = "sled-log-store")]
 impl RaftLogStore for SledRaftLogStore {
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
-        self.inner.save_hard_state(hard_state)
+        self.inner.save_hard_state(hard_state)?;
+        self.db
+            .insert(SLED_HARD_STATE_KEY, encode_hard_state(hard_state)?)
+            .map_err(sled_error)?;
+        self.sync()
     }
 
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
-        self.inner.append(entries)
+        if let Some(first) = entries.first() {
+            let keys = self
+                .db
+                .scan_prefix(SLED_ENTRY_PREFIX)
+                .keys()
+                .map(|key| key.map_err(sled_error))
+                .collect::<RaftStoreResult<Vec<_>>>()?;
+            for key in keys {
+                if decode_entry_index_key(&key)? >= first.index {
+                    self.db.remove(key).map_err(sled_error)?;
+                }
+            }
+        }
+        self.inner.append(entries)?;
+        for entry in entries {
+            self.db
+                .insert(entry_key(entry.index), encode_entry(entry)?)
+                .map_err(sled_error)?;
+        }
+        self.sync()
     }
 
     fn truncate_suffix(&self, from_index: u64) -> RaftStoreResult<()> {
-        self.inner.truncate_suffix(from_index)
+        self.inner.truncate_suffix(from_index)?;
+        let keys = self
+            .db
+            .scan_prefix(SLED_ENTRY_PREFIX)
+            .keys()
+            .map(|key| key.map_err(sled_error))
+            .collect::<RaftStoreResult<Vec<_>>>()?;
+        for key in keys {
+            if decode_entry_index_key(&key)? >= from_index {
+                self.db.remove(key).map_err(sled_error)?;
+            }
+        }
+        self.sync()
     }
 
     fn save_snapshot(
@@ -712,10 +845,151 @@ impl RaftLogStore for SledRaftLogStore {
         snapshot: &Snapshot,
         preserve_log_entries: usize,
     ) -> RaftStoreResult<()> {
-        self.inner.save_snapshot(snapshot, preserve_log_entries)
+        self.inner.save_snapshot(snapshot, preserve_log_entries)?;
+        self.db
+            .insert(SLED_SNAPSHOT_KEY, encode_snapshot(snapshot)?)
+            .map_err(sled_error)?;
+        self.rewrite_entries_from_inner()?;
+        self.sync()
     }
 
     fn compact_to(&self, index: u64) -> RaftStoreResult<()> {
-        self.inner.compact_to(index)
+        self.inner.compact_to(index)?;
+        let keys = self
+            .db
+            .scan_prefix(SLED_ENTRY_PREFIX)
+            .keys()
+            .map(|key| key.map_err(sled_error))
+            .collect::<RaftStoreResult<Vec<_>>>()?;
+        for key in keys {
+            if decode_entry_index_key(&key)? < index {
+                self.db.remove(key).map_err(sled_error)?;
+            }
+        }
+        self.sync()
     }
+
+    fn must_sync(&self) -> bool {
+        true
+    }
+
+    fn retained_entries(&self) -> RaftStoreResult<Vec<Entry>> {
+        Ok(self.inner.all_entries())
+    }
+
+    fn mark_applied(&self, index: u64) {
+        self.inner.mark_applied(index);
+        let _ = self.db.insert(SLED_APPLIED_KEY, encode_u64(index).to_vec());
+        let _ = self.db.flush();
+    }
+
+    fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        self.inner.set_commit(commit);
+        let mut state = self.initial_state().map_err(RaftStoreError::from)?;
+        state.hard_state.commit = commit;
+        self.db
+            .insert(SLED_HARD_STATE_KEY, encode_hard_state(&state.hard_state)?)
+            .map_err(sled_error)?;
+        self.sync()
+    }
+}
+
+#[cfg(feature = "sled-log-store")]
+impl SledRaftLogStore {
+    fn rewrite_entries_from_inner(&self) -> RaftStoreResult<()> {
+        let keys = self
+            .db
+            .scan_prefix(SLED_ENTRY_PREFIX)
+            .keys()
+            .map(|key| key.map_err(sled_error))
+            .collect::<RaftStoreResult<Vec<_>>>()?;
+        for key in keys {
+            self.db.remove(key).map_err(sled_error)?;
+        }
+        for entry in self.inner.all_entries() {
+            self.db
+                .insert(entry_key(entry.index), encode_entry(&entry)?)
+                .map_err(sled_error)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(feature = "sled-log-store")]
+const SLED_HARD_STATE_KEY: &[u8] = b"meta:hard_state";
+#[cfg(feature = "sled-log-store")]
+const SLED_SNAPSHOT_KEY: &[u8] = b"meta:snapshot";
+#[cfg(feature = "sled-log-store")]
+const SLED_APPLIED_KEY: &[u8] = b"meta:applied";
+#[cfg(feature = "sled-log-store")]
+const SLED_ENTRY_PREFIX: &[u8] = b"entry:";
+
+#[cfg(feature = "sled-log-store")]
+fn sled_error(error: sled::Error) -> RaftStoreError {
+    RaftStoreError::new(format!("sled raft log error: {error}"))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn entry_key(index: u64) -> Vec<u8> {
+    let mut key = Vec::with_capacity(SLED_ENTRY_PREFIX.len() + 8);
+    key.extend_from_slice(SLED_ENTRY_PREFIX);
+    key.extend_from_slice(&index.to_be_bytes());
+    key
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_entry_index_key(key: &[u8]) -> RaftStoreResult<u64> {
+    let index = key
+        .strip_prefix(SLED_ENTRY_PREFIX)
+        .ok_or_else(|| RaftStoreError::new("invalid sled raft entry key prefix"))?;
+    decode_u64(index)
+}
+
+#[cfg(feature = "sled-log-store")]
+fn encode_u64(value: u64) -> [u8; 8] {
+    value.to_be_bytes()
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_u64(bytes: &[u8]) -> RaftStoreResult<u64> {
+    let bytes: [u8; 8] = bytes
+        .try_into()
+        .map_err(|_| RaftStoreError::new("invalid sled raft u64 value"))?;
+    Ok(u64::from_be_bytes(bytes))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn encode_entry(entry: &Entry) -> RaftStoreResult<Vec<u8>> {
+    protobuf::Message::write_to_bytes(entry)
+        .map_err(|error| RaftStoreError::new(format!("failed to encode raft entry: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_entry(bytes: &[u8]) -> RaftStoreResult<Entry> {
+    Entry::parse_from_bytes(bytes)
+        .map_err(|error| RaftStoreError::new(format!("failed to decode raft entry: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn encode_hard_state(hard_state: &HardState) -> RaftStoreResult<Vec<u8>> {
+    protobuf::Message::write_to_bytes(hard_state)
+        .map_err(|error| RaftStoreError::new(format!("failed to encode hard state: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_hard_state(bytes: &[u8]) -> RaftStoreResult<HardState> {
+    HardState::parse_from_bytes(bytes)
+        .map_err(|error| RaftStoreError::new(format!("failed to decode hard state: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn encode_snapshot(snapshot: &Snapshot) -> RaftStoreResult<Vec<u8>> {
+    protobuf::Message::write_to_bytes(snapshot)
+        .map_err(|error| RaftStoreError::new(format!("failed to encode raft snapshot: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_snapshot(bytes: &[u8]) -> RaftStoreResult<Snapshot> {
+    Snapshot::parse_from_bytes(bytes)
+        .map_err(|error| RaftStoreError::new(format!("failed to decode raft snapshot: {error}")))
 }

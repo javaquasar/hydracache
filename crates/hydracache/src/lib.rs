@@ -532,11 +532,13 @@ pub use grid_elasticity::{
     NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
 pub use grid_hardening::{
-    merge_split_brain_records, quorum_read_your_writes, split_brain_winner, AdaptiveWindow,
-    ClusterMergeOutcome, DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore,
-    MergePolicy, PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision,
-    ReadConsistency, ReplicatedValueRecord, ReplicatedValueStore, SealedBytes, SplitBrainReport,
-    ValueStoreError, ValueVersion, WriteWatermark, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
+    anti_entropy_repair, live_read_your_writes, merge_split_brain_records, quorum_read_your_writes,
+    resolve_live_split_brain, split_brain_winner, AdaptiveWindow, ClusterMergeOutcome,
+    DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore, LiveReadYourWritesDecision,
+    LiveReplicationPeer, LiveReplicationSend, LiveSplitBrainResolution, MergePolicy,
+    PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision, ReadConsistency,
+    ReplicatedValueRecord, ReplicatedValueStore, SealedBytes, SplitBrainReport, ValueStoreError,
+    ValueVersion, WriteWatermark, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,

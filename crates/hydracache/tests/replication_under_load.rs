@@ -40,7 +40,7 @@ fn replication_under_load_anti_entropy_converges_after_partition_heals() {
     versions.set_version(partition, primary.clone(), 9);
     versions.set_version(partition, backup.clone(), 3);
     assert_eq!(
-        versions.lagging_replicas(partition, &primary, &[backup.clone()]),
+        versions.lagging_replicas(partition, &primary, std::slice::from_ref(&backup)),
         vec![backup.clone()]
     );
 

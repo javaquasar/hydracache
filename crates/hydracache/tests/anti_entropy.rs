@@ -12,7 +12,7 @@ fn lagging_backup_is_caught_up_by_task() {
     versions.set_version(partition, primary.clone(), 10);
     versions.set_version(partition, backup.clone(), 7);
 
-    let lagging = versions.lagging_replicas(partition, &primary, &[backup.clone()]);
+    let lagging = versions.lagging_replicas(partition, &primary, std::slice::from_ref(&backup));
     assert_eq!(lagging, vec![backup.clone()]);
 
     versions.set_version(partition, backup.clone(), 10);

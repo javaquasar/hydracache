@@ -11,15 +11,21 @@ readme = "README.md"
 [features]
 default = ["durable-log"]
 durable-log = []
-sled-log-store = []
+sled-log-store = ["dep:sled"]
 
 [dependencies]
 async-trait.workspace = true
 hydracache.workspace = true
+protobuf.workspace = true
 raft.workspace = true
+sled = { workspace = true, optional = true }
 slog.workspace = true
 
 [dev-dependencies]
+axum.workspace = true
 chitchat.workspace = true
 hydracache-cluster-chitchat.workspace = true
+hydracache-cluster-transport-axum.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
+tower.workspace = true

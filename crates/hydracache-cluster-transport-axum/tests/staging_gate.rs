@@ -69,7 +69,7 @@ async fn staging_gate_wire_version_accept_and_reject() {
         .unwrap();
     assert_eq!(accepted.status(), StatusCode::OK);
     let accepted: PeerFetchHttpResponse = response_json(accepted).await;
-    assert_eq!(accepted.value_base64.is_some(), true);
+    assert!(accepted.value_base64.is_some());
 }
 
 fn peer_fetch_request(key: &str, include_wire: bool, include_token: bool) -> Request<Body> {
