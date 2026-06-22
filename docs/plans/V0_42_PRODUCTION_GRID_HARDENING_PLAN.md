@@ -1,5 +1,8 @@
 # HydraCache 0.42.0 Production Grid Hardening Plan
 
+Status: implemented in `0.42.0`. Release notes:
+[`docs/releases/0.42.0.md`](../releases/0.42.0.md).
+
 `0.42.0` is the release that **earns the production distributed-data-grid claim**
 that `0.41.0` deliberately refused to make. Where `0.41.0` shipped a correctness
 *skeleton* (the `RaftLogStore` trait with an in-memory fake plus one

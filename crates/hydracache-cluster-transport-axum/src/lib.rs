@@ -91,6 +91,12 @@ pub const HYDRACACHE_WIRE_VERSION_HEADER: &str = "x-hydracache-wire-version";
 /// Default token header for simple non-browser cluster transport auth.
 pub const HYDRACACHE_TOKEN_HEADER: &str = "x-hydracache-token";
 
+/// Header carrying the HydraCache node-identity key id.
+pub const HYDRACACHE_NODE_KEY_ID_HEADER: &str = "x-hydracache-node-key-id";
+
+/// Header carrying the HydraCache node-identity token.
+pub const HYDRACACHE_NODE_TOKEN_HEADER: &str = "x-hydracache-node-token";
+
 /// Optional authentication boundary for HydraCache HTTP transport routes.
 ///
 /// This is intentionally small: HydraCache does not manage TLS, certificates,
@@ -165,6 +171,343 @@ impl HttpTransportAuth {
     fn apply(&self, request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
         request.header(self.header_name.as_str(), self.header_value.as_str())
     }
+}
+
+/// Cluster route protected by node identity and authorization.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ClusterRoute {
+    /// Peer-fetch read-through route.
+    PeerFetch,
+    /// Owner-load route.
+    OwnerLoad,
+    /// Value replication route.
+    Replicate,
+    /// Raft append-entries route.
+    RaftAppend,
+    /// Raft vote route.
+    RaftVote,
+    /// Raft snapshot route.
+    Snapshot,
+    /// Administrative/actuator route.
+    Admin,
+}
+
+impl ClusterRoute {
+    /// Stable metric/documentation label.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::PeerFetch => "peer_fetch",
+            Self::OwnerLoad => "owner_load",
+            Self::Replicate => "replicate",
+            Self::RaftAppend => "raft_append",
+            Self::RaftVote => "raft_vote",
+            Self::Snapshot => "snapshot",
+            Self::Admin => "admin",
+        }
+    }
+}
+
+/// Presented node credential.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NodeCredential {
+    /// Rotation key id.
+    pub key_id: String,
+    /// Opaque operator-supplied token.
+    pub token: String,
+}
+
+impl NodeCredential {
+    /// Create a credential.
+    pub fn new(key_id: impl Into<String>, token: impl Into<String>) -> Self {
+        Self {
+            key_id: key_id.into(),
+            token: token.into(),
+        }
+    }
+}
+
+/// Provider for cluster node identity. HydraCache does not own KMS/mTLS; the
+/// operator supplies this boundary.
+pub trait NodeIdentityProvider: Send + Sync {
+    /// Credential attached to outbound calls.
+    fn present(&self) -> NodeCredential;
+
+    /// Verify an inbound credential and return the logical node id.
+    fn verify(&self, credential: &NodeCredential) -> Result<ClusterNodeId, ClusterAuthError>;
+
+    /// Current plus previous key ids accepted during rotation.
+    fn accepted(&self) -> Vec<String>;
+}
+
+/// Static token provider with a current and optional previous credential.
+#[derive(Debug, Clone)]
+pub struct StaticNodeIdentityProvider {
+    node_id: ClusterNodeId,
+    current: NodeCredential,
+    previous: Option<NodeCredential>,
+}
+
+impl StaticNodeIdentityProvider {
+    /// Create a provider with only the current credential.
+    pub fn new(
+        node_id: impl Into<ClusterNodeId>,
+        key_id: impl Into<String>,
+        token: impl Into<String>,
+    ) -> Self {
+        Self {
+            node_id: node_id.into(),
+            current: NodeCredential::new(key_id, token),
+            previous: None,
+        }
+    }
+
+    /// Add a previous credential accepted during rotation.
+    pub fn with_previous(mut self, key_id: impl Into<String>, token: impl Into<String>) -> Self {
+        self.previous = Some(NodeCredential::new(key_id, token));
+        self
+    }
+
+    fn matches(&self, credential: &NodeCredential) -> bool {
+        credential == &self.current || self.previous.as_ref() == Some(credential)
+    }
+}
+
+impl NodeIdentityProvider for StaticNodeIdentityProvider {
+    fn present(&self) -> NodeCredential {
+        self.current.clone()
+    }
+
+    fn verify(&self, credential: &NodeCredential) -> Result<ClusterNodeId, ClusterAuthError> {
+        if self.matches(credential) {
+            Ok(self.node_id.clone())
+        } else {
+            Err(ClusterAuthError::unauthenticated(
+                "invalid HydraCache node credential",
+            ))
+        }
+    }
+
+    fn accepted(&self) -> Vec<String> {
+        let mut accepted = vec![self.current.key_id.clone()];
+        if let Some(previous) = &self.previous {
+            accepted.push(previous.key_id.clone());
+        }
+        accepted
+    }
+}
+
+/// Route-level authorization policy.
+pub trait Authorizer: Send + Sync {
+    /// Return whether `who` may access `route`.
+    fn allow(&self, who: &ClusterNodeId, route: ClusterRoute) -> bool;
+}
+
+/// Authorizer that allows every authenticated node.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AllowAllAuthorizer;
+
+impl Authorizer for AllowAllAuthorizer {
+    fn allow(&self, _who: &ClusterNodeId, _route: ClusterRoute) -> bool {
+        true
+    }
+}
+
+/// Authorizer that denies one route, useful for tests and locked-down admin.
+#[derive(Debug, Clone, Copy)]
+pub struct DenyRouteAuthorizer {
+    denied: ClusterRoute,
+}
+
+impl DenyRouteAuthorizer {
+    /// Create an authorizer that denies `denied`.
+    pub const fn new(denied: ClusterRoute) -> Self {
+        Self { denied }
+    }
+}
+
+impl Authorizer for DenyRouteAuthorizer {
+    fn allow(&self, _who: &ClusterNodeId, route: ClusterRoute) -> bool {
+        route != self.denied
+    }
+}
+
+/// Auth failure returned before a cluster route acts.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClusterAuthError {
+    /// HTTP-style status for adapters.
+    pub status: StatusCode,
+    /// Stable error code.
+    pub code: &'static str,
+    /// Human-readable message.
+    pub message: String,
+}
+
+impl ClusterAuthError {
+    fn unauthenticated(message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::UNAUTHORIZED,
+            code: "unauthenticated",
+            message: message.into(),
+        }
+    }
+
+    fn unauthorized(message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::FORBIDDEN,
+            code: "unauthorized",
+            message: message.into(),
+        }
+    }
+}
+
+impl fmt::Display for ClusterAuthError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(&self.message)
+    }
+}
+
+impl Error for ClusterAuthError {}
+
+/// Enforced cluster-route identity and authorization boundary.
+#[derive(Clone)]
+pub struct ClusterRouteAuth {
+    identity: Option<Arc<dyn NodeIdentityProvider>>,
+    authorizer: Arc<dyn Authorizer>,
+    insecure_acknowledged: bool,
+    rejected_total: Arc<Mutex<u64>>,
+}
+
+impl fmt::Debug for ClusterRouteAuth {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("ClusterRouteAuth")
+            .field("identity_configured", &self.identity.is_some())
+            .field("insecure_acknowledged", &self.insecure_acknowledged)
+            .field("rejected_total", &self.rejected_total())
+            .finish()
+    }
+}
+
+impl ClusterRouteAuth {
+    /// Create a secure route boundary.
+    pub fn secure(
+        identity: Arc<dyn NodeIdentityProvider>,
+        authorizer: Arc<dyn Authorizer>,
+    ) -> Self {
+        Self {
+            identity: Some(identity),
+            authorizer,
+            insecure_acknowledged: false,
+            rejected_total: Arc::new(Mutex::new(0)),
+        }
+    }
+
+    /// Create a missing-provider boundary that refuses protected routes.
+    pub fn missing_provider() -> Self {
+        Self {
+            identity: None,
+            authorizer: Arc::new(AllowAllAuthorizer),
+            insecure_acknowledged: false,
+            rejected_total: Arc::new(Mutex::new(0)),
+        }
+    }
+
+    /// Explicitly acknowledge an insecure trust boundary.
+    pub fn acknowledge_insecure_trust_boundary(mut self, acknowledged: bool) -> Self {
+        self.insecure_acknowledged = acknowledged;
+        self
+    }
+
+    /// Return whether the route can be enabled.
+    pub fn route_enabled(&self, _route: ClusterRoute) -> bool {
+        self.identity.is_some() || self.insecure_acknowledged
+    }
+
+    /// Verify headers for a protected route.
+    pub fn verify(
+        &self,
+        route: ClusterRoute,
+        headers: &HeaderMap,
+    ) -> Result<ClusterNodeId, ClusterAuthError> {
+        let Some(identity) = &self.identity else {
+            if self.insecure_acknowledged {
+                return Ok(ClusterNodeId::from("insecure-trust-boundary"));
+            }
+            self.record_rejection();
+            return Err(ClusterAuthError::unauthenticated(
+                "HydraCache node identity provider is not configured",
+            ));
+        };
+
+        let credential = credential_from_headers(headers).ok_or_else(|| {
+            self.record_rejection();
+            ClusterAuthError::unauthenticated("missing HydraCache node credential")
+        })?;
+        let who = identity.verify(&credential).map_err(|error| {
+            self.record_rejection();
+            error
+        })?;
+        if !self.authorizer.allow(&who, route) {
+            self.record_rejection();
+            return Err(ClusterAuthError::unauthorized(format!(
+                "node {who} is not authorized for route {}",
+                route.as_str()
+            )));
+        }
+        Ok(who)
+    }
+
+    /// Add the current outbound credential headers.
+    pub fn apply_outbound_headers(&self, headers: &mut HeaderMap) -> Result<(), ClusterAuthError> {
+        let Some(identity) = &self.identity else {
+            if self.insecure_acknowledged {
+                return Ok(());
+            }
+            return Err(ClusterAuthError::unauthenticated(
+                "HydraCache node identity provider is not configured",
+            ));
+        };
+        let credential = identity.present();
+        insert_header(headers, HYDRACACHE_NODE_KEY_ID_HEADER, &credential.key_id)?;
+        insert_header(headers, HYDRACACHE_NODE_TOKEN_HEADER, &credential.token)?;
+        Ok(())
+    }
+
+    /// Return rejected call count.
+    pub fn rejected_total(&self) -> u64 {
+        *self
+            .rejected_total
+            .lock()
+            .expect("cluster auth diagnostics poisoned")
+    }
+
+    fn record_rejection(&self) {
+        let mut rejected = self
+            .rejected_total
+            .lock()
+            .expect("cluster auth diagnostics poisoned");
+        *rejected = rejected.saturating_add(1);
+    }
+}
+
+fn credential_from_headers(headers: &HeaderMap) -> Option<NodeCredential> {
+    let key_id = headers
+        .get(HYDRACACHE_NODE_KEY_ID_HEADER)
+        .and_then(|value| value.to_str().ok())?;
+    let token = headers
+        .get(HYDRACACHE_NODE_TOKEN_HEADER)
+        .and_then(|value| value.to_str().ok())?;
+    Some(NodeCredential::new(key_id, token))
+}
+
+fn insert_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<(), ClusterAuthError> {
+    let name = HeaderName::from_bytes(name.as_bytes())
+        .map_err(|error| ClusterAuthError::unauthenticated(error.to_string()))?;
+    let value = HeaderValue::from_str(value)
+        .map_err(|error| ClusterAuthError::unauthenticated(error.to_string()))?;
+    headers.insert(name, value);
+    Ok(())
 }
 
 /// Wire-version compatibility policy for HydraCache HTTP transport.

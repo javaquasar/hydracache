@@ -1,0 +1,26 @@
+{
+  "title": "HydraCache Grid",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "title": "Repair Debt",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_tombstone_repair_debt" }]
+    },
+    {
+      "title": "Replication Lag",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_replication_lag" }]
+    },
+    {
+      "title": "Auth Rejections",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_cluster_auth_rejected_total" }]
+    },
+    {
+      "title": "Split Brain",
+      "type": "stat",
+      "targets": [{ "expr": "hydracache_split_brain_detected_total" }]
+    }
+  ]
+}

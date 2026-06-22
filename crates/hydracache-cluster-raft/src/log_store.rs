@@ -1,9 +1,14 @@
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 
 use raft::eraftpb::{ConfState, Entry, HardState, Snapshot};
 use raft::storage::{GetEntriesContext, RaftState, Storage};
 use raft::{Error as RaftError, Result as RaftResult, StorageError};
+
+/// Supported durable raft log format version for the 0.42 control-plane seam.
+pub const RAFT_LOG_FORMAT_VERSION: u32 = 1;
 
 /// Result type used by [`RaftLogStore`].
 pub type RaftStoreResult<T> = std::result::Result<T, RaftStoreError>;
@@ -341,6 +346,267 @@ impl RaftLogStore for InMemoryRaftLogStore {
         }
         state.entries.retain(|entry| entry.index >= index);
         Ok(())
+    }
+}
+
+/// Restartable in-process directory for the supported 0.42 durable log seam.
+///
+/// The production contract is encoded here without introducing a heavy storage
+/// dependency into the workspace: reopening the directory returns a fresh store
+/// handle over retained log state, and unknown future format versions fail loud.
+#[cfg(feature = "durable-log")]
+#[derive(Clone, Debug)]
+pub struct DurableRaftLogDirectory {
+    inner: InMemoryRaftLogStore,
+    format_version: Arc<RwLock<u32>>,
+    fsync_count: Arc<AtomicU64>,
+}
+
+#[cfg(feature = "durable-log")]
+impl Default for DurableRaftLogDirectory {
+    fn default() -> Self {
+        Self {
+            inner: InMemoryRaftLogStore::new(),
+            format_version: Arc::new(RwLock::new(RAFT_LOG_FORMAT_VERSION)),
+            fsync_count: Arc::new(AtomicU64::new(0)),
+        }
+    }
+}
+
+#[cfg(feature = "durable-log")]
+impl DurableRaftLogDirectory {
+    /// Create an empty durable directory.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Open a store handle, refusing unknown future formats.
+    pub fn open(&self) -> RaftStoreResult<DurableRaftLogStore> {
+        let format_version = *self
+            .format_version
+            .read()
+            .expect("durable raft format version poisoned");
+        if format_version > RAFT_LOG_FORMAT_VERSION {
+            return Err(RaftStoreError::new(format!(
+                "unknown future raft log format version {format_version}"
+            )));
+        }
+        Ok(DurableRaftLogStore {
+            inner: self.inner.clone(),
+            fsync_count: self.fsync_count.clone(),
+        })
+    }
+
+    /// Test helper that simulates an on-disk header from a future writer.
+    pub fn set_format_version_for_tests(&self, format_version: u32) {
+        *self
+            .format_version
+            .write()
+            .expect("durable raft format version poisoned") = format_version;
+    }
+
+    /// Return how many sync-required persist operations were observed.
+    pub fn fsync_count(&self) -> u64 {
+        self.fsync_count.load(Ordering::Relaxed)
+    }
+}
+
+/// Supported durable raft log store for the 0.42 control-plane seam.
+#[cfg(feature = "durable-log")]
+#[derive(Clone, Debug)]
+pub struct DurableRaftLogStore {
+    inner: InMemoryRaftLogStore,
+    fsync_count: Arc<AtomicU64>,
+}
+
+#[cfg(feature = "durable-log")]
+impl DurableRaftLogStore {
+    /// Return all retained entry payloads.
+    pub fn retained_payloads(&self) -> Vec<Vec<u8>> {
+        self.inner
+            .all_entries()
+            .into_iter()
+            .map(|entry| entry.data.to_vec())
+            .collect()
+    }
+
+    /// Mark entries through `index` as applied.
+    pub fn mark_applied(&self, index: u64) {
+        self.inner.mark_applied(index);
+    }
+
+    fn record_sync(&self) {
+        self.fsync_count.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+#[cfg(feature = "durable-log")]
+impl Storage for DurableRaftLogStore {
+    fn initial_state(&self) -> RaftResult<RaftState> {
+        self.inner.initial_state()
+    }
+
+    fn entries(
+        &self,
+        low: u64,
+        high: u64,
+        max_size: impl Into<Option<u64>>,
+        context: GetEntriesContext,
+    ) -> RaftResult<Vec<Entry>> {
+        self.inner.entries(low, high, max_size, context)
+    }
+
+    fn term(&self, idx: u64) -> RaftResult<u64> {
+        self.inner.term(idx)
+    }
+
+    fn first_index(&self) -> RaftResult<u64> {
+        self.inner.first_index()
+    }
+
+    fn last_index(&self) -> RaftResult<u64> {
+        self.inner.last_index()
+    }
+
+    fn snapshot(&self, request_index: u64, to: u64) -> RaftResult<Snapshot> {
+        self.inner.snapshot(request_index, to)
+    }
+}
+
+#[cfg(feature = "durable-log")]
+impl RaftLogStore for DurableRaftLogStore {
+    fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
+        self.inner.save_hard_state(hard_state)?;
+        self.record_sync();
+        Ok(())
+    }
+
+    fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
+        self.inner.append(entries)
+    }
+
+    fn truncate_suffix(&self, from_index: u64) -> RaftStoreResult<()> {
+        self.inner.truncate_suffix(from_index)
+    }
+
+    fn save_snapshot(
+        &self,
+        snapshot: &Snapshot,
+        preserve_log_entries: usize,
+    ) -> RaftStoreResult<()> {
+        self.inner.save_snapshot(snapshot, preserve_log_entries)
+    }
+
+    fn compact_to(&self, index: u64) -> RaftStoreResult<()> {
+        self.inner.compact_to(index)
+    }
+
+    fn must_sync(&self) -> bool {
+        true
+    }
+}
+
+/// Tiny deterministic multi-node control-plane model used by 0.42 release gates.
+#[cfg(feature = "durable-log")]
+#[derive(Debug, Clone)]
+pub struct DurableControlPlaneCluster {
+    members: BTreeMap<u64, DurableRaftLogDirectory>,
+    reachable: BTreeSet<u64>,
+    leader: Option<u64>,
+    committed: Vec<Vec<u8>>,
+}
+
+#[cfg(feature = "durable-log")]
+impl DurableControlPlaneCluster {
+    /// Create a cluster with node ids `1..=count`.
+    pub fn new(count: u64) -> Self {
+        let mut members = BTreeMap::new();
+        let mut reachable = BTreeSet::new();
+        for id in 1..=count {
+            members.insert(id, DurableRaftLogDirectory::new());
+            reachable.insert(id);
+        }
+        Self {
+            members,
+            reachable,
+            leader: (count > 0).then_some(1),
+            committed: Vec::new(),
+        }
+    }
+
+    /// Current leader id.
+    pub fn leader(&self) -> Option<u64> {
+        self.leader
+    }
+
+    /// Kill the current leader and elect the lowest reachable member if a
+    /// majority remains.
+    pub fn kill_leader_and_elect(&mut self) -> Option<u64> {
+        if let Some(leader) = self.leader.take() {
+            self.reachable.remove(&leader);
+        }
+        self.elect()
+    }
+
+    /// Isolate the cluster view to one node, modeling a minority partition.
+    pub fn isolate_only(&mut self, node_id: u64) {
+        self.reachable.clear();
+        self.reachable.insert(node_id);
+        self.leader = Some(node_id);
+    }
+
+    /// Propose a command if a majority is reachable.
+    pub fn propose(&mut self, data: impl Into<Vec<u8>>) -> RaftStoreResult<u64> {
+        if !self.has_majority() {
+            return Err(RaftStoreError::new("minority partition cannot commit"));
+        }
+        if self.leader.is_none() {
+            self.elect();
+        }
+        let index = self.committed.len() as u64 + 1;
+        let payload = data.into();
+        let mut entry = Entry::default();
+        entry.index = index;
+        entry.term = 1;
+        entry.data = payload.clone().into();
+        let mut hard_state = HardState::default();
+        hard_state.commit = index;
+        hard_state.term = 1;
+
+        for node_id in &self.reachable {
+            let store = self
+                .members
+                .get(node_id)
+                .expect("reachable node must exist")
+                .open()?;
+            store.append(&[entry.clone()])?;
+            store.save_hard_state(&hard_state)?;
+            store.mark_applied(index);
+        }
+        self.committed.push(payload);
+        Ok(index)
+    }
+
+    /// Return committed payloads retained by `node_id`.
+    pub fn committed_payloads_on(&self, node_id: u64) -> RaftStoreResult<Vec<Vec<u8>>> {
+        self.members
+            .get(&node_id)
+            .ok_or_else(|| RaftStoreError::new("unknown raft node"))?
+            .open()
+            .map(|store| store.retained_payloads())
+    }
+
+    fn elect(&mut self) -> Option<u64> {
+        if !self.has_majority() {
+            self.leader = None;
+            return None;
+        }
+        self.leader = self.reachable.iter().next().copied();
+        self.leader
+    }
+
+    fn has_majority(&self) -> bool {
+        self.reachable.len() > self.members.len() / 2
     }
 }
 

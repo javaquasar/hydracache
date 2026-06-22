@@ -13,6 +13,8 @@ they are persisted or transmitted across processes.
 | `hydracache_hook_schema` schema | `1` | `hydracache-db` generated hook installers | Reconciliation expects version `1` for installed hook plans. Missing or mismatched rows report drift. | Staging/release gates can fail before silently trusting disabled or stale hooks. |
 | `RaftLogStore` in-memory format | `1` | `hydracache-cluster-raft` metadata runtime | 0.41 tests cover append/replay, snapshot recovery, suffix truncation, and compaction guard semantics. Future durable engines must register their own format before rollout. | Runtime fails loud on store errors; unknown future durable formats must refuse startup. |
 | HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
+| `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
+| `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
 
 ## Upgrade Rules
 
@@ -47,3 +49,11 @@ version `1` for encoded replicated/peer value transport. The release ships an
 in-memory store and feature-gated example path only; production durable engine
 selection remains future hardening work and must add its concrete on-disk format
 to this register.
+
+## 0.42 Grid Hardening
+
+`0.42.0` registers the supported durable raft-log format version `1` and the
+replicated value-record format version `1`. The durable raft seam refuses unknown
+future format versions before opening a store. Replicated value records persist
+sealed bytes plus `(partition, version, epoch)` and tombstone state so restart and
+anti-entropy can converge without resurrecting deleted keys.

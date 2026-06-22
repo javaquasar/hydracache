@@ -98,6 +98,11 @@ mod log_store;
 
 #[cfg(feature = "sled-log-store")]
 pub use log_store::SledRaftLogStore;
+#[cfg(feature = "durable-log")]
+pub use log_store::{
+    DurableControlPlaneCluster, DurableRaftLogDirectory, DurableRaftLogStore,
+    RAFT_LOG_FORMAT_VERSION,
+};
 pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult};
 
 use raft::eraftpb::{Entry, EntryType};

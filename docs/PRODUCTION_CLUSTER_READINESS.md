@@ -448,15 +448,44 @@ cargo test -p hydracache-cluster-raft --locked --features sled-log-store persist
 cargo test -p hydracache-observability --locked cardinality
 ```
 
+## Production Grid Hardening Slice 0.42
+
+`0.42.0` hardens the 0.41 grid primitives with durable seams, enforced route-auth
+primitives, and an operator surface.
+
+New hardening capabilities:
+
+- `durable-log` raft control-plane store semantics with restart replay,
+  `must_sync` accounting, minority-commit rejection, leader-loss election model,
+  and unknown future-format refusal.
+- Durable replicated value records with sealed bytes, total-byte budget
+  rejection, persisted tombstones, and restart/anti-entropy convergence tests.
+- Adaptive replication flow control through `AdaptiveWindow` and bounded
+  promotion-freeze accounting.
+- Split-brain detection/merge policy primitives with `HigherVersionWins`,
+  `PutIfAbsent`, `DiscardLoser`, and `SplitBrainReport`.
+- Grid read-your-writes helpers: `WriteWatermark`, `ReadConsistency`, and
+  `QuorumPosture`.
+- Node identity and authorization primitives for all cluster route classes,
+  including rotation windows and explicit insecure trust-boundary acknowledgement.
+- Operator surface: `ClusterStatus`, repair-debt degraded mode, Prometheus alert
+  rules, Grafana dashboard JSON, and a repair runbook.
+
+Still outside the 0.42 scope:
+
+- distributed transactions;
+- KMS, TLS termination, certificate lifecycle, or mTLS ownership;
+- multi-region / zone-aware placement;
+- transparent remote closure execution or arbitrary SQL execution on owner
+  members.
+
 ## Not Yet Production Data Grid Features
 
-HydraCache is not yet a Hazelcast-style distributed data grid. The cluster
-surface intentionally does not yet include:
+HydraCache is not a distributed transaction coordinator or an infrastructure
+identity platform. The cluster surface intentionally does not yet include:
 
 - TLS termination, certificate rotation, or mTLS identity management;
-- full multi-node Raft networking and production durable Raft log storage;
-- production-grade durable value replication, backup ownership, or failover
-  repair;
+- multi-region / zone-aware placement;
 - cross-process lock leasing or distributed transactions;
 - automatic database CDC invalidation;
 - write-enabled remote admin APIs;

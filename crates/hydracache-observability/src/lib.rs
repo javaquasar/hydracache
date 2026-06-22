@@ -36,7 +36,10 @@ use std::fmt;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use hydracache::{ClusterPilotReport, ClusterStagingHealth, HydraCache};
+use hydracache::{
+    ClusterEpoch, ClusterGridDiagnostics, ClusterNodeId, ClusterPilotReport, ClusterStagingHealth,
+    HydraCache, QuorumPosture, SplitBrainReport,
+};
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
 
@@ -177,6 +180,92 @@ impl CacheDiagnosticsSnapshot {
 pub struct HydraCacheOverview {
     /// One diagnostic snapshot per registered cache.
     pub caches: Vec<CacheDiagnosticsSnapshot>,
+}
+
+/// Per-member status entry for the grid operator surface.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct MemberStatus {
+    /// Logical member id.
+    pub node_id: ClusterNodeId,
+    /// Whether the member is currently reachable according to diagnostics.
+    pub reachable: bool,
+}
+
+/// Read-only production-grid status snapshot.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct ClusterStatus {
+    /// Committed authority epoch.
+    pub committed_epoch: ClusterEpoch,
+    /// Current raft/grid leader when known.
+    pub leader: Option<ClusterNodeId>,
+    /// Members in the committed topology.
+    pub members: Vec<MemberStatus>,
+    /// Aggregate under-replicated partition/key count.
+    pub partitions_under_replicated: u64,
+    /// Aggregate tombstone/repair debt.
+    pub repair_debt: u64,
+    /// Strong or degraded read-your-writes posture.
+    pub quorum_posture: QuorumPosture,
+    /// Last split-brain report retained in diagnostics.
+    pub last_split_brain: Option<SplitBrainReport>,
+    /// Prominent non-goal surfaced to operators.
+    pub still_not_distributed_transactions: bool,
+}
+
+impl ClusterStatus {
+    /// Build a status snapshot from bounded diagnostics.
+    pub fn from_grid_diagnostics(
+        committed_epoch: ClusterEpoch,
+        leader: Option<ClusterNodeId>,
+        members: Vec<MemberStatus>,
+        grid: ClusterGridDiagnostics,
+        quorum_posture: QuorumPosture,
+    ) -> Self {
+        Self {
+            committed_epoch,
+            leader,
+            members,
+            partitions_under_replicated: grid.counters.under_replicated_keys,
+            repair_debt: grid.counters.tombstone_repair_debt,
+            quorum_posture,
+            last_split_brain: grid.last_split_brain,
+            still_not_distributed_transactions: true,
+        }
+    }
+}
+
+/// Repair-debt degraded mode.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RepairDebtMode {
+    /// Normal replication admission.
+    Healthy,
+    /// Replication admission should throttle and anti-entropy should be prioritized.
+    Degraded,
+}
+
+/// Threshold-driven repair-debt controller.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RepairDebtController {
+    threshold: u64,
+}
+
+impl RepairDebtController {
+    /// Create a controller with a normalized threshold.
+    pub fn new(threshold: u64) -> Self {
+        Self {
+            threshold: threshold.max(1),
+        }
+    }
+
+    /// Observe diagnostics and return the resulting mode.
+    pub fn observe(&self, diagnostics: &ClusterGridDiagnostics) -> RepairDebtMode {
+        if diagnostics.counters.tombstone_repair_debt >= self.threshold {
+            RepairDebtMode::Degraded
+        } else {
+            RepairDebtMode::Healthy
+        }
+    }
 }
 
 impl HydraCacheOverview {

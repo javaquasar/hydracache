@@ -419,6 +419,12 @@ where
                 .stats
                 .cluster_tombstone_repair_debt
                 .load(Ordering::Relaxed),
+            replicated_value_rejected_total: 0,
+            split_brain_detected_total: 0,
+            merge_discarded_entries_total: 0,
+            merge_unresolved_conflicts_total: 0,
+            cluster_auth_rejected_total: 0,
+            repair_debt_degraded_mode: 0,
         }
     }
 

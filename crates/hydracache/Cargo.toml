@@ -13,6 +13,7 @@ description = "User-facing HydraCache runtime crate."
 
 [features]
 default = []
+durable-values = []
 testing = []
 
 [dependencies]

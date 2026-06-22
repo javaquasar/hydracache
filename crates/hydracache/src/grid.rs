@@ -866,6 +866,18 @@ pub struct ClusterGridCounters {
     pub topology_fence_rejected_total: u64,
     /// Tombstones blocked by repair debt.
     pub tombstone_repair_debt: u64,
+    /// Durable replicated values rejected by total-byte budget.
+    pub replicated_value_rejected_total: u64,
+    /// Split-brain detections.
+    pub split_brain_detected_total: u64,
+    /// Loser-side entries discarded during merge.
+    pub merge_discarded_entries_total: u64,
+    /// Merge conflicts that could not be resolved deterministically.
+    pub merge_unresolved_conflicts_total: u64,
+    /// Cluster-route authentication or authorization rejections.
+    pub cluster_auth_rejected_total: u64,
+    /// Whether repair-debt degraded mode is active.
+    pub repair_debt_degraded_mode: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -912,6 +924,42 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
             name: "hydracache_tombstone_repair_debt",
             labels: &[],
         },
+        ClusterMetricDescriptor {
+            name: "hydracache_replicated_value_rejected_total",
+            labels: &["reason"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_replication_window_size",
+            labels: &["role"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_promotion_freeze_window_ms",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_replication_lag",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_split_brain_detected_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_merge_discarded_entries_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_merge_unresolved_conflicts_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_cluster_auth_rejected_total",
+            labels: &["route"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_repair_debt_degraded_mode",
+            labels: &[],
+        },
     ];
     DESCRIPTORS
 }
@@ -925,6 +973,8 @@ pub struct ClusterGridDiagnostics {
     pub counters: ClusterGridCounters,
     /// Replicated value confidentiality posture.
     pub replicated_value_security: ReplicatedValueSecurityPosture,
+    /// Last split-brain report retained for operator diagnostics.
+    pub last_split_brain: Option<crate::grid_hardening::SplitBrainReport>,
 }
 
 /// Shared pointer alias for operator-provided key providers.

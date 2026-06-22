@@ -472,6 +472,7 @@ mod consistency;
 mod entry;
 mod events;
 mod grid;
+mod grid_hardening;
 mod inflight;
 mod invalidation_bus;
 mod refresh;
@@ -516,6 +517,13 @@ pub use grid::{
     Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
     ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
     TombstoneBudget, TombstoneTracker,
+};
+pub use grid_hardening::{
+    merge_split_brain_records, quorum_read_your_writes, split_brain_winner, AdaptiveWindow,
+    ClusterMergeOutcome, DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore,
+    MergePolicy, PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision,
+    ReadConsistency, ReplicatedValueRecord, ReplicatedValueStore, SealedBytes, SplitBrainReport,
+    ValueStoreError, ValueVersion, WriteWatermark, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
