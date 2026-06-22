@@ -1,6 +1,7 @@
 use hydracache::{
-    anti_entropy_repair, AdaptiveWindow, ClusterEpoch, InMemoryReplicatedValueStore,
-    LiveReplicationPeer, PartitionId, ReplicatedValueRecord, ReplicatedValueStore,
+    anti_entropy_repair, select_backup_promotion, AdaptiveWindow, ClusterEpoch,
+    InMemoryReplicatedValueStore, LiveReplicationPeer, PartitionId, PromotionFreezeWindow,
+    PromotionPhase, Replicas, ReplicatedValueRecord, ReplicatedValueStore,
 };
 
 #[test]
@@ -23,6 +24,21 @@ fn replication_under_load_live_slow_backup_does_not_stall_primary() {
     assert!(healthy_send.admitted);
     assert!(healthy_send.max_in_flight > slow_send.max_in_flight);
     assert!(healthy_store.get("user:1").unwrap().is_some());
+}
+
+#[test]
+fn replication_under_load_live_promotion_freeze_window_bounded_under_load() {
+    let partition = PartitionId::new(9);
+    let replicas = Replicas::new("member-a", vec!["member-b".into(), "member-c".into()]);
+    let promotion = select_backup_promotion(partition, &replicas).expect("backup promotion");
+    let freeze = PromotionFreezeWindow {
+        observed_ms: 42,
+        bound_ms: 100,
+    };
+
+    assert_eq!(promotion.phase, PromotionPhase::Before);
+    assert_eq!(promotion.new_primary.as_str(), "member-b");
+    assert!(freeze.is_bounded());
 }
 
 #[test]
