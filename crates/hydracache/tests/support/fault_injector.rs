@@ -14,6 +14,10 @@ pub enum Fault {
         node: ClusterNodeId,
         latency: Duration,
     },
+    ZoneLoss {
+        zone: String,
+        nodes: Vec<ClusterNodeId>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -21,6 +25,7 @@ pub struct FaultInjector {
     state: u64,
     dropped_edges: BTreeSet<(ClusterNodeId, ClusterNodeId)>,
     latency: BTreeMap<ClusterNodeId, Duration>,
+    lost_zones: BTreeMap<String, BTreeSet<ClusterNodeId>>,
 }
 
 impl FaultInjector {
@@ -29,6 +34,7 @@ impl FaultInjector {
             state: seed,
             dropped_edges: BTreeSet::new(),
             latency: BTreeMap::new(),
+            lost_zones: BTreeMap::new(),
         }
     }
 
@@ -73,6 +79,27 @@ impl FaultInjector {
 
     pub fn observed_latency(&self, node: &ClusterNodeId) -> Duration {
         self.latency.get(node).copied().unwrap_or_default()
+    }
+
+    pub fn lose_zone(
+        &mut self,
+        zone: impl Into<String>,
+        nodes: impl IntoIterator<Item = ClusterNodeId>,
+    ) -> Fault {
+        let zone = zone.into();
+        let nodes = nodes.into_iter().collect::<BTreeSet<_>>();
+        self.lost_zones.insert(zone.clone(), nodes.clone());
+        Fault::ZoneLoss {
+            zone,
+            nodes: nodes.into_iter().collect(),
+        }
+    }
+
+    pub fn zone_lost_nodes(&self, zone: &str) -> Vec<ClusterNodeId> {
+        self.lost_zones
+            .get(zone)
+            .map(|nodes| nodes.iter().cloned().collect())
+            .unwrap_or_default()
     }
 
     fn next_index(&mut self, upper: usize) -> usize {

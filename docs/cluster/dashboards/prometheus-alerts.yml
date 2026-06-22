@@ -36,3 +36,31 @@ groups:
           severity: warning
         annotations:
           summary: HydraCache entered repair-debt degraded mode.
+      - alert: HydraCachePlacementZoneUnderspread
+        expr: hydracache_placement_zone_underspread > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: HydraCache placement cannot satisfy requested zone spread.
+      - alert: HydraCacheReshardBackfillLag
+        expr: hydracache_reshard_backfill_lag > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache online resharding backfill lag is non-zero.
+      - alert: HydraCacheInvalidationSagaPending
+        expr: hydracache_invalidation_saga_pending > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache invalidation saga fan-out is still pending.
+      - alert: HydraCacheAutoRepairActive
+        expr: hydracache_auto_repair_active_total > 0
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: HydraCache auto-repair scheduled active repair work.

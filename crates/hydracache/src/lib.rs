@@ -472,6 +472,7 @@ mod consistency;
 mod entry;
 mod events;
 mod grid;
+mod grid_elasticity;
 mod grid_hardening;
 mod inflight;
 mod invalidation_bus;
@@ -517,6 +518,18 @@ pub use grid::{
     Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
     ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
     TombstoneBudget, TombstoneTracker,
+};
+pub use grid_elasticity::{
+    hedge_winner, plan_hedged_read, restore_topology_from_snapshot, topology_from_member_metadata,
+    validate_move_preserves_zone_quorum, AtomicInvalidationError, AutoRepairDecision,
+    AutoRepairPolicy, BatchInvalidationState, CompatVersion, ControlPlaneSnapshot, HedgePolicy,
+    HedgedReadPlan, InMemorySnapshotSink, InvalidateBatch, InvalidationSaga, InvalidationTarget,
+    MovePhase, NodeTopology, PartitionMove, RegionId, RepairAction, RepairMode, ReplicaObservation,
+    ReplicaScorer, ReplicaSelection, ReshardPlan, ReshardPlanError, SnapshotError, SnapshotSink,
+    TieredValueStore, TopologyAuthority, UpgradeGuard, UpgradeGuardError, UpgradeStep,
+    ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId, ZonePlacementReadiness,
+    CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
+    NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
 pub use grid_hardening::{
     merge_split_brain_records, quorum_read_your_writes, split_brain_winner, AdaptiveWindow,

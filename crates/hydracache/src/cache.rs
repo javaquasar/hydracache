@@ -425,6 +425,18 @@ where
             merge_unresolved_conflicts_total: 0,
             cluster_auth_rejected_total: 0,
             repair_debt_degraded_mode: 0,
+            placement_zone_underspread: 0,
+            reshard_moves_inflight: 0,
+            reshard_backfill_lag: 0,
+            read_local_zone_total: 0,
+            read_hedged_total: 0,
+            read_hedge_win_total: 0,
+            value_tier_promotions_total: 0,
+            value_tier_demotions_total: 0,
+            invalidate_batch_total: 0,
+            invalidation_saga_pending: 0,
+            auto_repair_active_total: 0,
+            auto_repair_advisory_total: 0,
         }
     }
 

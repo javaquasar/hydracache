@@ -479,14 +479,59 @@ Still outside the 0.42 scope:
 - transparent remote closure execution or arbitrary SQL execution on owner
   members.
 
+## Geo-Distribution And Elasticity Slice 0.43
+
+`0.43.0` extends the production-grid claim into a supported zone/region-aware
+and elastically resizable shape. The implementation remains explicit and
+operator-driven: topology is committed, resharding is a resumable plan, and
+cross-partition invalidation is a saga rather than a distributed transaction.
+
+New 0.43 capabilities:
+
+- Zone/region-aware replica placement through `NodeTopology`,
+  `TopologyAuthority`, and `ZoneAwareReplicationStrategy`.
+- Online resharding primitives through `PartitionMove` and `ReshardPlan`, with
+  write-shadowing, backfill progress, drain plans, and zone-spread validation.
+- Locality-aware and hedged reads through `ReplicaScorer`, `HedgePolicy`,
+  `plan_hedged_read`, and max-version hedge winner selection.
+- Tiered value storage through `TieredValueStore`, with bounded hot bytes,
+  cold-hit promotion, hot eviction demotion, and tombstone-wins semantics across
+  tiers.
+- Narrow invalidation atomicity: `InvalidateBatch` is atomic only inside one
+  partition; `InvalidationSaga` is at-least-once, idempotent, eventual fan-out
+  and is explicitly not serializable.
+- Operational self-healing seams: `AutoRepairPolicy`, `ControlPlaneSnapshot`,
+  `SnapshotSink`, `InMemorySnapshotSink`, and `UpgradeGuard`.
+- Whole-zone-loss fault modeling in the deterministic test harness.
+
+Focused 0.43 gates:
+
+```powershell
+cargo test -p hydracache --locked zone_placement
+cargo test -p hydracache --locked online_reshard
+cargo test -p hydracache --locked locality_reads
+cargo test -p hydracache --locked tiered_values
+cargo test -p hydracache --locked atomic_invalidation
+cargo test -p hydracache --locked self_heal
+cargo test -p hydracache --locked fault_injector_selftest
+```
+
+Still outside the 0.43 scope:
+
+- serializable cross-partition distributed transactions;
+- active-active multi-region writes and bounded cross-region staleness SLAs;
+- CRDT/vector-clock conflict-free convergence;
+- automatic capacity planning or autoscaler ownership;
+- KMS, TLS termination, certificate lifecycle, or mTLS ownership.
+
 ## Not Yet Production Data Grid Features
 
 HydraCache is not a distributed transaction coordinator or an infrastructure
 identity platform. The cluster surface intentionally does not yet include:
 
 - TLS termination, certificate rotation, or mTLS identity management;
-- multi-region / zone-aware placement;
 - cross-process lock leasing or distributed transactions;
+- active-active multi-region writes or CRDT convergence;
 - automatic database CDC invalidation;
 - write-enabled remote admin APIs;
 - transparent remote closure execution or arbitrary SQL execution on owner

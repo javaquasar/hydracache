@@ -21,6 +21,38 @@
       "title": "Split Brain",
       "type": "stat",
       "targets": [{ "expr": "hydracache_split_brain_detected_total" }]
+    },
+    {
+      "title": "Zone Underspread",
+      "type": "stat",
+      "targets": [{ "expr": "hydracache_placement_zone_underspread" }]
+    },
+    {
+      "title": "Reshard Backfill Lag",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_reshard_backfill_lag" }]
+    },
+    {
+      "title": "Locality And Hedged Reads",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "hydracache_read_local_zone_total" },
+        { "expr": "hydracache_read_hedged_total" },
+        { "expr": "hydracache_read_hedge_win_total" }
+      ]
+    },
+    {
+      "title": "Tiered Value Movement",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "hydracache_value_tier_promotions_total" },
+        { "expr": "hydracache_value_tier_demotions_total" }
+      ]
+    },
+    {
+      "title": "Invalidation Saga Pending",
+      "type": "stat",
+      "targets": [{ "expr": "hydracache_invalidation_saga_pending" }]
     }
   ]
 }

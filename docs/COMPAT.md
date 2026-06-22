@@ -15,6 +15,7 @@ they are persisted or transmitted across processes.
 | HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
+| `ControlPlaneSnapshot` format | `1` | `hydracache` self-heal snapshot helpers | Readers accept format `1` and refuse unknown future versions before restore. | Restore fails loud before rebuilding topology from an unsupported snapshot. |
 
 ## Upgrade Rules
 
@@ -57,3 +58,11 @@ replicated value-record format version `1`. The durable raft seam refuses unknow
 future format versions before opening a store. Replicated value records persist
 sealed bytes plus `(partition, version, epoch)` and tombstone state so restart and
 anti-entropy can converge without resurrecting deleted keys.
+
+## 0.43 Geo-Distribution And Elasticity
+
+`0.43.0` registers control-plane snapshot format version `1` for operational
+self-healing backup/restore. Upgrade checks keep the 0.42 -> 0.43 rolling window
+bounded to raft-log format `1`, replicated value-record format `1`, and
+invalidation wire frame version `1`; incompatible jumps fail loud before a mixed
+cluster step is accepted.

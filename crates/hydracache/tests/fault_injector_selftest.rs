@@ -54,3 +54,31 @@ fn injected_latency_is_observed_by_target_only() {
     assert_eq!(injector.observed_latency(&a), Duration::from_millis(25));
     assert_eq!(injector.observed_latency(&b), Duration::ZERO);
 }
+
+#[test]
+fn fault_injector_selftest_release_gate_filter_runs() {
+    let nodes = vec![
+        ClusterNodeId::from("member-a"),
+        ClusterNodeId::from("member-b"),
+    ];
+    let mut injector = FaultInjector::new(43);
+
+    assert!(matches!(
+        injector.next_fault(&nodes),
+        Some(Fault::Partition { .. })
+    ));
+}
+
+#[test]
+fn fault_injector_selftest_zone_loss_is_enumerated() {
+    let nodes = vec![
+        ClusterNodeId::from("member-a"),
+        ClusterNodeId::from("member-b"),
+    ];
+    let mut injector = FaultInjector::new(43);
+
+    let fault = injector.lose_zone("az-a", nodes.clone());
+
+    assert!(matches!(fault, Fault::ZoneLoss { ref zone, .. } if zone == "az-a"));
+    assert_eq!(injector.zone_lost_nodes("az-a"), nodes);
+}

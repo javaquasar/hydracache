@@ -1,5 +1,8 @@
 # HydraCache 0.43.0 Geo-Distribution & Elasticity Plan
 
+Status: implemented in `0.43.0`. Release notes:
+[`docs/releases/0.43.0.md`](../releases/0.43.0.md).
+
 `0.43.0` builds on the production-grid claim that `0.42.0` earned. Where `0.42`
 proved production readiness for a **single, flat topology** (durable multi-node
 Raft control plane, durable replicated values, hardened failover, split-brain

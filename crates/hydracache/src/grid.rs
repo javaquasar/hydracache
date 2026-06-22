@@ -878,6 +878,30 @@ pub struct ClusterGridCounters {
     pub cluster_auth_rejected_total: u64,
     /// Whether repair-debt degraded mode is active.
     pub repair_debt_degraded_mode: u64,
+    /// Placements that could not span the requested number of zones.
+    pub placement_zone_underspread: u64,
+    /// Online reshard moves currently in flight.
+    pub reshard_moves_inflight: u64,
+    /// Aggregate reshard backfill lag.
+    pub reshard_backfill_lag: u64,
+    /// Local-zone read hits.
+    pub read_local_zone_total: u64,
+    /// Hedged read requests.
+    pub read_hedged_total: u64,
+    /// Hedged reads where a hedge response won.
+    pub read_hedge_win_total: u64,
+    /// Tiered-value promotions from cold to hot.
+    pub value_tier_promotions_total: u64,
+    /// Tiered-value demotions from hot to cold.
+    pub value_tier_demotions_total: u64,
+    /// Single-partition invalidation batches.
+    pub invalidate_batch_total: u64,
+    /// Pending invalidation saga targets.
+    pub invalidation_saga_pending: u64,
+    /// Auto-repair actions scheduled in active mode.
+    pub auto_repair_active_total: u64,
+    /// Auto-repair recommendations emitted in advisory mode.
+    pub auto_repair_advisory_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -958,6 +982,54 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         },
         ClusterMetricDescriptor {
             name: "hydracache_repair_debt_degraded_mode",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_placement_zone_underspread",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_reshard_moves_inflight",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_reshard_backfill_lag",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_read_local_zone_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_read_hedged_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_read_hedge_win_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_value_tier_promotions_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_value_tier_demotions_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_invalidate_batch_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_invalidation_saga_pending",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_auto_repair_active_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_auto_repair_advisory_total",
             labels: &[],
         },
     ];

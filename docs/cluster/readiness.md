@@ -1,10 +1,11 @@
 # HydraCache Cluster Readiness
 
-`0.42.0` hardens the `0.41.0` distributed cache grid roadmap slice with durable
-control-plane/value-store seams, split-brain merge policy, quorum
-read-your-writes helpers, enforced route-auth primitives, and an operator
-surface. It still does not add distributed transactions, KMS ownership, or
-multi-region placement.
+`0.43.0` extends the `0.42.0` production-grid hardening slice with
+zone/region-aware placement, online resharding primitives, locality-aware reads,
+tiered value storage, a narrow atomic-invalidation slice, and operational
+self-healing seams. It still does not add full distributed transactions,
+active-active multi-region writes, CRDT convergence, KMS ownership, or
+TLS/certificate lifecycle management.
 
 ## 0.41 Architecture Decisions
 
@@ -62,5 +63,34 @@ The following remain outside 0.42:
 
 - distributed transactions;
 - KMS, certificate lifecycle, or TLS termination ownership;
-- multi-region / zone-aware placement, deferred to 0.43;
+- multi-region / zone-aware placement, addressed by the 0.43 slice;
 - remote execution of SQL/expression/load closures.
+
+## 0.43 Geo-Distribution And Elasticity Slice
+
+The 0.43 slice adds:
+
+- `NodeTopology`, `TopologyAuthority`, and `ZoneAwareReplicationStrategy` so
+  committed topology, not gossip-only metadata, drives zone-spread placement;
+- online resharding primitives (`PartitionMove`, `ReshardPlan`) with
+  write-shadowing, persisted progress, zone-spread validation, and drain plans;
+- locality-aware and hedged read helpers (`ReplicaScorer`, `HedgePolicy`,
+  `plan_hedged_read`) that preserve the quorum count while reducing local-zone
+  and tail-latency cost;
+- `TieredValueStore` over the 0.42 replicated value-store seam, with bounded hot
+  bytes, cold promotion, hot demotion, and tombstone-wins merge semantics;
+- `InvalidateBatch` for single-partition multi-key atomic invalidation and
+  `InvalidationSaga` for explicitly non-serializable cross-partition fan-out;
+  see [atomic-invalidation.md](atomic-invalidation.md);
+- `AutoRepairPolicy`, `ControlPlaneSnapshot`, `SnapshotSink`, and `UpgradeGuard`
+  for advisory/active self-healing, snapshot restore, and compatibility-window
+  enforcement;
+- a whole-zone-loss fault in the deterministic fault harness.
+
+The following remain outside 0.43:
+
+- serializable cross-partition distributed transactions;
+- active-active multi-region writes and bounded cross-region staleness SLAs;
+- CRDT/vector-clock conflict-free convergence;
+- automatic capacity planning/autoscaler ownership;
+- KMS, certificate lifecycle, or TLS termination ownership.

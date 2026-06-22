@@ -1,8 +1,8 @@
 # HydraCache Grid Repair Runbook
 
-HydraCache grid hardening in 0.42 is still not distributed transactions. A repair
-runbook helps operators restore cache-grid health; it does not make cross-key or
-cross-node application writes atomic.
+HydraCache grid hardening in 0.42/0.43 is still not distributed transactions. A
+repair runbook helps operators restore cache-grid health; it does not make
+cross-key or cross-node application writes atomic.
 
 ## Repair Debt
 
@@ -48,3 +48,54 @@ Action:
 2. During rolling rotation, keep the previous credential in the accepted window.
 3. Remove the previous credential only after every member has restarted or
    reloaded credentials.
+
+## Zone Loss
+
+Signal: `hydracache_placement_zone_underspread` or a zone-loss fault in staging.
+
+Action:
+
+1. Confirm the lost zone from diagnostics snapshots; do not infer it from a
+   high-cardinality metric label.
+2. Verify `ZoneAwareReplicationStrategy` still reports write quorum across the
+   surviving zones.
+3. Keep `AutoRepairPolicy` in `Advisory` mode until the hot path is stable.
+4. Move to `Active` only when repair debt and replication lag are within the
+   documented cap, then let bounded re-replication restore target RF.
+
+## Online Resharding
+
+Signal: `hydracache_reshard_moves_inflight` or
+`hydracache_reshard_backfill_lag`.
+
+Action:
+
+1. Inspect the committed `ReshardPlan`; each `PartitionMove` should progress
+   through `Prepare -> Backfill -> Commit -> Cleanup`.
+2. If lag rises, lower `max_concurrent` before starting new moves.
+3. Never commit a move that fails `validate_move_preserves_zone_quorum`.
+4. On coordinator restart, resume from the persisted plan progress instead of
+   creating a fresh plan for the same partitions.
+
+## Control-Plane Restore
+
+Signal: lost control-plane state or failed restore rehearsal.
+
+Action:
+
+1. Load the latest `ControlPlaneSnapshot` from the operator-supplied
+   `SnapshotSink`.
+2. Refuse restore if `format_version` is newer than the current binary.
+3. Rebuild `TopologyAuthority` with `restore_topology_from_snapshot`.
+4. Re-run placement readiness and quorum checks before admitting writes.
+
+## Upgrade Guard
+
+Signal: `UpgradeGuard` rejects a rolling step.
+
+Action:
+
+1. Check `docs/COMPAT.md` for raft-log, value-record, snapshot, and wire-frame
+   versions.
+2. Upgrade only within the registered 0.42 -> 0.43 window.
+3. Do not bypass a format mismatch; stop the rollout and upgrade readers first.
