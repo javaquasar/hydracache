@@ -16,9 +16,11 @@ use tokio::sync::watch;
 
 use crate::builder::HydraCacheBuilder;
 use crate::cluster::{
-    ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterFillCounters, ClusterMembershipEvent,
-    ClusterMembershipSubscriber, ClusterNodeId, ClusterOwnershipDiagnostics, ClusterRuntime,
+    ClusterCacheCounters, ClusterDiagnostics, ClusterDiscoveryDiagnostics, ClusterFillCounters,
+    ClusterMembershipEvent, ClusterMembershipSubscriber, ClusterNodeId,
+    ClusterOwnershipDiagnostics, ClusterPilotReadiness, ClusterPilotReport, ClusterRuntime,
     ClusterStagingCounters, ClusterStagingHealth, HydraCacheClientBuilder, HydraCacheMemberBuilder,
+    RoutingMode, TopologyFence, TransportPosture,
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
@@ -85,6 +87,9 @@ where
     pub(crate) consistency_generation: AtomicU64,
     pub(crate) bus_shutdown: Option<watch::Sender<bool>>,
     pub(crate) cluster_runtime: Option<ClusterRuntime>,
+    pub(crate) transport_posture: TransportPosture,
+    pub(crate) routing_mode: RoutingMode,
+    pub(crate) read_through_enabled: bool,
 }
 
 impl<C> Drop for HydraCacheInner<C>
@@ -315,6 +320,133 @@ where
                 .stats
                 .cluster_gossip_reset_count
                 .load(Ordering::Relaxed),
+            barrier_timeouts: self
+                .inner
+                .stats
+                .cluster_barrier_timeouts
+                .load(Ordering::Relaxed),
+            near_cache_conservative_invalidations: self
+                .inner
+                .stats
+                .cluster_near_cache_conservative_invalidations
+                .load(Ordering::Relaxed),
+            lifecycle_stop_count: self
+                .inner
+                .stats
+                .cluster_lifecycle_stop_count
+                .load(Ordering::Relaxed),
+            lifecycle_restart_count: self
+                .inner
+                .stats
+                .cluster_lifecycle_restart_count
+                .load(Ordering::Relaxed),
+        }
+    }
+
+    /// Return the declared transport-security posture.
+    pub fn transport_posture(&self) -> TransportPosture {
+        self.inner.transport_posture
+    }
+
+    /// Return the configured client routing mode.
+    pub fn routing_mode(&self) -> RoutingMode {
+        self.inner.routing_mode
+    }
+
+    /// Return whether cluster read-through / remote peer-fetch is enabled.
+    pub fn read_through_enabled(&self) -> bool {
+        self.inner.read_through_enabled
+    }
+
+    /// Return a topology fence from the latest cluster diagnostics.
+    pub fn cluster_topology_fence(&self) -> TopologyFence {
+        let committed_epoch = self
+            .cluster_diagnostics()
+            .map(|diagnostics| diagnostics.epoch)
+            .unwrap_or_default();
+        TopologyFence::new(committed_epoch)
+    }
+
+    /// Return the boolean pilot readiness contract.
+    pub fn cluster_pilot_readiness(&self) -> ClusterPilotReadiness {
+        let diagnostics = self.cluster_diagnostics();
+        let stats = self.stats();
+        let member_count = diagnostics
+            .as_ref()
+            .map(|diagnostics| diagnostics.member_count)
+            .unwrap_or_default();
+        let lifecycle_operational = diagnostics
+            .as_ref()
+            .map(|diagnostics| diagnostics.lifecycle.is_running())
+            .unwrap_or(false);
+        let topology_committed = diagnostics
+            .as_ref()
+            .map(|diagnostics| diagnostics.epoch > Default::default())
+            .unwrap_or(false);
+
+        ClusterPilotReadiness {
+            transport_posture: self.transport_posture(),
+            has_members: member_count > 0,
+            member_count,
+            within_supported_size: (2..=5).contains(&member_count),
+            strict_wire_compatibility: self.transport_posture().wire_strict,
+            diagnostics_clean: stats.distributed_invalidation_decode_errors == 0
+                && stats.distributed_invalidation_publish_failures == 0
+                && stats.distributed_invalidation_receiver_closed == 0,
+            lifecycle_operational,
+            topology_committed,
+        }
+    }
+
+    /// Return a dashboard-ready pilot report.
+    pub fn cluster_pilot_report(&self) -> ClusterPilotReport {
+        let readiness = self.cluster_pilot_readiness();
+        let diagnostics = self.cluster_diagnostics();
+        let ownership = self.cluster_ownership_diagnostics();
+        let stats = self.stats();
+        let fill = self.cluster_fill_counters();
+        let staging = self.cluster_staging_counters();
+        let transport_posture = self.transport_posture();
+
+        ClusterPilotReport {
+            readiness,
+            counters: ClusterCacheCounters::from(fill),
+            epoch: diagnostics
+                .as_ref()
+                .map(|diagnostics| diagnostics.epoch.value())
+                .unwrap_or_default(),
+            generation: diagnostics
+                .as_ref()
+                .map(|diagnostics| diagnostics.generation.value())
+                .unwrap_or_default(),
+            stamp: ownership
+                .as_ref()
+                .map(|diagnostics| diagnostics.stamp)
+                .unwrap_or_default(),
+            invalidations_published: stats.distributed_invalidations_published,
+            invalidations_received: stats.distributed_invalidations_received,
+            invalidations_applied: stats.distributed_invalidations_applied,
+            invalidation_lagged: stats.distributed_invalidation_lagged,
+            decode_errors: stats.distributed_invalidation_decode_errors,
+            publish_failures: stats.distributed_invalidation_publish_failures,
+            receiver_closed: stats.distributed_invalidation_receiver_closed,
+            owner_load_success: fill.owner_load_success,
+            owner_load_errors: fill.owner_load_errors,
+            remote_fetch_success: fill.remote_fetch_success,
+            remote_fetch_errors: fill.remote_fetch_errors,
+            auth_failures: staging.peer_fetch_auth_failures,
+            wire_version_failures: staging.wire_version_rejections,
+            stale_generation_rejections: staging.stale_generation_rejected,
+            barrier_timeouts: staging.barrier_timeouts,
+            near_cache_conservative_invalidations: staging.near_cache_conservative_invalidations,
+            lifecycle_stop_count: staging.lifecycle_stop_count,
+            lifecycle_restart_count: staging.lifecycle_restart_count,
+            transport_posture,
+            highlights: transport_posture
+                .highlight()
+                .into_iter()
+                .map(str::to_owned)
+                .collect(),
         }
     }
 
@@ -406,6 +538,50 @@ where
             .stats
             .cluster_gossip_reset_count
             .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a read-after-write/quorum barrier timeout.
+    pub fn record_cluster_barrier_timeout(&self) {
+        self.inner
+            .stats
+            .cluster_barrier_timeouts
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a conservative invalidation caused by near-cache repair.
+    pub fn record_cluster_near_cache_conservative_invalidation(&self) {
+        self.inner
+            .stats
+            .cluster_near_cache_conservative_invalidations
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a lifecycle stop observed by a pilot probe.
+    pub fn record_cluster_lifecycle_stop(&self) {
+        self.inner
+            .stats
+            .cluster_lifecycle_stop_count
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a lifecycle restart/rejoin observed by a pilot probe.
+    pub fn record_cluster_lifecycle_restart(&self) {
+        self.inner
+            .stats
+            .cluster_lifecycle_restart_count
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a synthetic direct-routing remote fetch for pilot routing tests.
+    pub fn record_cluster_direct_remote_fetch(&self) -> Result<()> {
+        if !self.read_through_enabled() {
+            return Ok(());
+        }
+        match self.routing_mode() {
+            RoutingMode::Direct => self.record_cluster_remote_fetch_success(),
+            RoutingMode::SingleEndpoint => self.record_cluster_hot_cache_hit(),
+        }
+        Ok(())
     }
 
     /// Subscribe to membership events for this cache's attached cluster runtime.

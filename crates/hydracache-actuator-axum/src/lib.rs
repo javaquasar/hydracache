@@ -28,6 +28,7 @@
 //! GET /caches/{name}/diagnostics
 //! GET /caches/{name}/stats
 //! GET /cluster/staging-health
+//! GET /cluster/pilot-report
 //! GET /correctness
 //! GET /
 //! ```
@@ -36,7 +37,7 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::get;
 use axum::{Json, Router};
-use hydracache::ClusterStagingHealth;
+use hydracache::{ClusterPilotReport, ClusterStagingHealth};
 use hydracache_observability::{
     CacheDiagnosticsSnapshot, CacheStatsSnapshot, HydraCacheOverview, HydraCacheRegistry,
 };
@@ -101,6 +102,7 @@ impl HydraCacheActuator {
             .route("/caches/{name}/diagnostics", get(cache_diagnostics))
             .route("/caches/{name}/stats", get(cache_stats))
             .route("/cluster/staging-health", get(cluster_staging_health))
+            .route("/cluster/pilot-report", get(cluster_pilot_report))
             .route("/correctness", get(correctness))
             .with_state(state)
     }
@@ -142,6 +144,24 @@ pub struct NamedClusterStagingHealth {
 pub struct ClusterStagingHealthResponse {
     /// Cluster caches that can expose staging health.
     pub caches: Vec<NamedClusterStagingHealth>,
+}
+
+/// Named cluster pilot report snapshot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct NamedClusterPilotReport {
+    /// Registered cache name.
+    pub name: String,
+    /// Pilot report summary for that cache.
+    pub report: ClusterPilotReport,
+}
+
+/// Cluster pilot report response for actuator endpoints.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClusterPilotReportResponse {
+    /// Registered caches with pilot reports.
+    pub caches: Vec<NamedClusterPilotReport>,
+    /// Aggregated loud highlights across all reports.
+    pub highlights: Vec<String>,
 }
 
 /// Correctness-oriented snapshot for staging/release gates.
@@ -272,6 +292,25 @@ async fn cluster_staging_health(
             .map(|(name, health)| NamedClusterStagingHealth { name, health })
             .collect(),
     })
+}
+
+async fn cluster_pilot_report(
+    State(state): State<ActuatorState>,
+) -> Json<ClusterPilotReportResponse> {
+    let caches = state
+        .registry
+        .cluster_pilot_reports()
+        .into_iter()
+        .map(|(name, report)| NamedClusterPilotReport { name, report })
+        .collect::<Vec<_>>();
+    let mut highlights = caches
+        .iter()
+        .flat_map(|cache| cache.report.highlights.iter().cloned())
+        .collect::<Vec<_>>();
+    highlights.sort();
+    highlights.dedup();
+
+    Json(ClusterPilotReportResponse { caches, highlights })
 }
 
 async fn correctness(State(state): State<ActuatorState>) -> Json<ActuatorCorrectnessSnapshot> {

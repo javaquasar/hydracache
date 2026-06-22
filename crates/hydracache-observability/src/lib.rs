@@ -36,7 +36,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use hydracache::{ClusterStagingHealth, HydraCache};
+use hydracache::{ClusterPilotReport, ClusterStagingHealth, HydraCache};
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
 
@@ -202,6 +202,11 @@ pub trait CacheProbe: Send + Sync {
 
     /// Return cluster staging health when this probe wraps a cluster cache.
     fn cluster_staging_health(&self) -> Option<ClusterStagingHealth>;
+
+    /// Return the pilot report for this probe when available.
+    fn cluster_pilot_report(&self) -> Option<ClusterPilotReport> {
+        None
+    }
 }
 
 /// [`HydraCache`] implementation of [`CacheProbe`].
@@ -250,6 +255,10 @@ where
 
     fn cluster_staging_health(&self) -> Option<ClusterStagingHealth> {
         self.cache.cluster_staging_health()
+    }
+
+    fn cluster_pilot_report(&self) -> Option<ClusterPilotReport> {
+        Some(self.cache.cluster_pilot_report())
     }
 }
 
@@ -334,6 +343,18 @@ impl HydraCacheRegistry {
                 probe
                     .cluster_staging_health()
                     .map(|health| (name.clone(), health))
+            })
+            .collect()
+    }
+
+    /// Return pilot reports for every registered cache.
+    pub fn cluster_pilot_reports(&self) -> Vec<(String, ClusterPilotReport)> {
+        self.probes
+            .iter()
+            .filter_map(|(name, probe)| {
+                probe
+                    .cluster_pilot_report()
+                    .map(|report| (name.clone(), report))
             })
             .collect()
     }

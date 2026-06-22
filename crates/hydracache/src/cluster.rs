@@ -142,6 +142,90 @@ impl ClusterRole {
     }
 }
 
+/// Transport-security posture declared for a controlled cluster pilot.
+///
+/// HydraCache does not terminate TLS or manage certificates. This structure is
+/// a loud, machine-readable contract that says whether the embedded HTTP
+/// transport is protected by HydraCache auth headers or by an explicitly
+/// declared external mesh/mTLS boundary.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TransportPosture {
+    /// Whether HydraCache transport auth is configured on routes and clients.
+    pub auth: bool,
+    /// Whether strict current wire-version compatibility is enforced.
+    pub wire_strict: bool,
+    /// Whether an operator declared that an external mesh/mTLS boundary handles
+    /// identity and transport security.
+    pub mesh_declared: bool,
+}
+
+impl TransportPosture {
+    /// Create a posture from explicit booleans.
+    pub const fn new(auth: bool, wire_strict: bool, mesh_declared: bool) -> Self {
+        Self {
+            auth,
+            wire_strict,
+            mesh_declared,
+        }
+    }
+
+    /// Return whether the posture is acceptable for the 0.40 pilot gate.
+    pub fn is_safe(&self) -> bool {
+        (self.auth && self.wire_strict) || self.mesh_declared
+    }
+
+    /// Return the actuator highlight for an unsafe missing-auth posture.
+    pub fn highlight(&self) -> Option<&'static str> {
+        if !self.auth && !self.mesh_declared {
+            Some("AUTH MISSING")
+        } else {
+            None
+        }
+    }
+}
+
+/// Client-side routing behavior for owner peer-fetch traffic.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RoutingMode {
+    /// Smart routing: resolve the owner for each key and contact that owner.
+    #[default]
+    Direct,
+    /// Unisocket routing: always send owner traffic through a configured
+    /// gateway/single endpoint.
+    SingleEndpoint,
+}
+
+/// Minimal epoch fence for topology-authoritative decisions.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TopologyFence {
+    committed_epoch: ClusterEpoch,
+}
+
+impl TopologyFence {
+    /// Create a fence at the provided committed epoch.
+    pub const fn new(committed_epoch: ClusterEpoch) -> Self {
+        Self { committed_epoch }
+    }
+
+    /// Return the latest committed topology epoch known to this fence.
+    pub fn committed_epoch(&self) -> ClusterEpoch {
+        self.committed_epoch
+    }
+
+    /// Return whether a message stamped with `msg_epoch` is still admissible.
+    pub fn admit(&self, msg_epoch: ClusterEpoch) -> bool {
+        msg_epoch >= self.committed_epoch
+    }
+
+    /// Advance the fence. Older epochs never move it backwards.
+    pub fn commit(&mut self, epoch: ClusterEpoch) {
+        if epoch > self.committed_epoch {
+            self.committed_epoch = epoch;
+        }
+    }
+}
+
 /// Lifecycle state for an embedded cluster component.
 ///
 /// The lifecycle model is diagnostic, not supervisory: HydraCache records what
@@ -746,6 +830,146 @@ fn rendezvous_score(key: &str, node_id: &ClusterNodeId) -> u64 {
         hash = hash.wrapping_mul(FNV_PRIME);
     }
     hash
+}
+
+/// Stable partition id used as a thin indirection over rendezvous ownership.
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
+pub struct PartitionId(u32);
+
+impl PartitionId {
+    /// Create a partition id from its numeric value.
+    pub const fn new(value: u32) -> Self {
+        Self(value)
+    }
+
+    /// Return the numeric partition id.
+    pub const fn value(self) -> u32 {
+        self.0
+    }
+}
+
+/// Return the deterministic partition for a key.
+///
+/// A zero `partition_count` is normalized to one partition so callers cannot
+/// accidentally divide by zero while validating a partially built config.
+pub fn partition_for_key(key: impl AsRef<str>, partition_count: u32) -> PartitionId {
+    let partition_count = partition_count.max(1);
+    PartitionId((stable_key_hash(key.as_ref()) % u64::from(partition_count)) as u32)
+}
+
+fn stable_key_hash(key: &str) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x100000001b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in key.bytes() {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash
+}
+
+/// Replica/quorum pilot configuration error.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ClusterReplicaConfigError {
+    /// `min_replica` must be at least one.
+    MinReplicaZero,
+    /// `quorum` must be at least one.
+    QuorumZero,
+    /// `quorum` cannot exceed `replication_factor`.
+    QuorumExceedsReplication,
+}
+
+impl fmt::Display for ClusterReplicaConfigError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let message = match self {
+            Self::MinReplicaZero => "min_replica must be at least 1",
+            Self::QuorumZero => "quorum must be at least 1",
+            Self::QuorumExceedsReplication => "quorum cannot exceed replication_factor",
+        };
+        formatter.write_str(message)
+    }
+}
+
+impl std::error::Error for ClusterReplicaConfigError {}
+
+/// Validate the narrow 0.40 pilot replica/quorum shape.
+///
+/// Value replication still lands in a later release, but validating these
+/// values now makes invalid future topology config fail early.
+pub fn validate_replica_config(
+    min_replica: usize,
+    replication_factor: usize,
+    quorum: usize,
+) -> std::result::Result<(), ClusterReplicaConfigError> {
+    if min_replica < 1 {
+        return Err(ClusterReplicaConfigError::MinReplicaZero);
+    }
+    if quorum == 0 {
+        return Err(ClusterReplicaConfigError::QuorumZero);
+    }
+    if quorum > replication_factor {
+        return Err(ClusterReplicaConfigError::QuorumExceedsReplication);
+    }
+    Ok(())
+}
+
+/// Action selected by near-cache watermark repair.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NearCacheRepairAction {
+    /// Apply the frame normally.
+    Apply,
+    /// Owner generation changed; clear the partition before applying/refreshing.
+    ClearPartition,
+    /// A sequence gap was observed; invalidate conservatively.
+    InvalidateConservatively,
+}
+
+/// Per-partition near-cache watermark metadata.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MetaDataContainer {
+    last_uuid: Option<ClusterGeneration>,
+    last_seq: u64,
+}
+
+impl MetaDataContainer {
+    /// Return the last owner generation observed for this partition.
+    pub fn last_uuid(&self) -> Option<ClusterGeneration> {
+        self.last_uuid
+    }
+
+    /// Return the last applied invalidation sequence.
+    pub fn last_seq(&self) -> u64 {
+        self.last_seq
+    }
+
+    /// Update the watermark from an invalidation frame.
+    pub fn on_watermark(
+        &mut self,
+        generation: Option<ClusterGeneration>,
+        message_id: Option<u64>,
+    ) -> NearCacheRepairAction {
+        let generation = generation.unwrap_or_default();
+        let seq = message_id.unwrap_or_default();
+
+        if self.last_uuid != Some(generation) {
+            self.last_uuid = Some(generation);
+            self.last_seq = seq;
+            return NearCacheRepairAction::ClearPartition;
+        }
+
+        if seq > self.last_seq.saturating_add(1) {
+            self.last_seq = seq;
+            return NearCacheRepairAction::InvalidateConservatively;
+        }
+
+        self.last_seq = self.last_seq.max(seq);
+        NearCacheRepairAction::Apply
+    }
 }
 
 /// Request for fetching an encoded cache value from an owner member.
@@ -1603,6 +1827,28 @@ impl ClusterFillCounters {
     }
 }
 
+/// Three-part groupcache-style counters for pilot dashboards.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterCacheCounters {
+    /// This node loaded a key for which it was the owner.
+    pub owner_load_total: u64,
+    /// This node fetched encoded bytes from another owner.
+    pub remote_fetch_total: u64,
+    /// This node served a borrowed hot near-cache copy.
+    pub hot_cache_hit_total: u64,
+}
+
+impl From<ClusterFillCounters> for ClusterCacheCounters {
+    fn from(value: ClusterFillCounters) -> Self {
+        Self {
+            owner_load_total: value.owner_load_success,
+            remote_fetch_total: value.remote_fetch_success,
+            hot_cache_hit_total: value.hot_cache_hits,
+        }
+    }
+}
+
 /// Additional staging counters that do not belong to local cache stats.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[non_exhaustive]
@@ -1617,6 +1863,110 @@ pub struct ClusterStagingCounters {
     pub tombstone_age_ms: u64,
     /// Number of observed gossip resets since process start.
     pub gossip_reset_count: u64,
+    /// Quorum/read-after-write barrier timeouts observed by pilot reads.
+    pub barrier_timeouts: u64,
+    /// Near-cache conservative invalidations caused by watermark repair.
+    pub near_cache_conservative_invalidations: u64,
+    /// Lifecycle graceful stop events observed by pilot probes.
+    pub lifecycle_stop_count: u64,
+    /// Lifecycle restart/rejoin events observed by pilot probes.
+    pub lifecycle_restart_count: u64,
+}
+
+/// Boolean readiness contract for a controlled internal production pilot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterPilotReadiness {
+    /// Declared transport-security posture.
+    pub transport_posture: TransportPosture,
+    /// Whether at least one member is admitted.
+    pub has_members: bool,
+    /// Number of admitted member nodes.
+    pub member_count: usize,
+    /// Whether the member count is inside the supported 2..=5 pilot range.
+    pub within_supported_size: bool,
+    /// Whether strict current wire compatibility is enabled.
+    pub strict_wire_compatibility: bool,
+    /// Whether invalidation diagnostics are free of hard errors.
+    pub diagnostics_clean: bool,
+    /// Whether the local cluster runtime lifecycle is running.
+    pub lifecycle_operational: bool,
+    /// Whether at least one authoritative topology epoch has been committed.
+    pub topology_committed: bool,
+}
+
+impl ClusterPilotReadiness {
+    /// Single boolean gate used by tests, actuator, and release docs.
+    pub fn is_pilot_ready(&self) -> bool {
+        self.transport_posture.is_safe()
+            && self.has_members
+            && self.within_supported_size
+            && self.strict_wire_compatibility
+            && self.diagnostics_clean
+            && self.lifecycle_operational
+            && self.topology_committed
+    }
+
+    /// Human-facing highlights that should be rendered loudly by adapters.
+    pub fn highlights(&self) -> Vec<&'static str> {
+        self.transport_posture.highlight().into_iter().collect()
+    }
+}
+
+/// Dashboard-ready pilot snapshot.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct ClusterPilotReport {
+    /// Boolean readiness gates.
+    pub readiness: ClusterPilotReadiness,
+    /// Three-part owner/remote/hot cache counters.
+    pub counters: ClusterCacheCounters,
+    /// Current metadata epoch.
+    pub epoch: u64,
+    /// Local process generation.
+    pub generation: u64,
+    /// Partition-table stamp for ownership-view drift detection.
+    pub stamp: u64,
+    /// Invalidation messages published by this cache.
+    pub invalidations_published: u64,
+    /// Invalidation messages received by this cache.
+    pub invalidations_received: u64,
+    /// Invalidation messages applied by this cache.
+    pub invalidations_applied: u64,
+    /// Invalidation receiver lag events.
+    pub invalidation_lagged: u64,
+    /// Invalidation decode errors.
+    pub decode_errors: u64,
+    /// Invalidation publish failures.
+    pub publish_failures: u64,
+    /// Invalidation receiver closed events.
+    pub receiver_closed: u64,
+    /// Owner-load successes.
+    pub owner_load_success: u64,
+    /// Owner-load errors.
+    pub owner_load_errors: u64,
+    /// Remote peer-fetch successes.
+    pub remote_fetch_success: u64,
+    /// Remote peer-fetch errors.
+    pub remote_fetch_errors: u64,
+    /// Auth failures observed by pilot probes.
+    pub auth_failures: u64,
+    /// Wire-version failures observed by pilot probes.
+    pub wire_version_failures: u64,
+    /// Stale-generation rejections.
+    pub stale_generation_rejections: u64,
+    /// Barrier timeouts.
+    pub barrier_timeouts: u64,
+    /// Near-cache conservative invalidations caused by repair.
+    pub near_cache_conservative_invalidations: u64,
+    /// Lifecycle stop count.
+    pub lifecycle_stop_count: u64,
+    /// Lifecycle restart count.
+    pub lifecycle_restart_count: u64,
+    /// Declared transport-security posture.
+    pub transport_posture: TransportPosture,
+    /// Loud actuator highlights such as `AUTH MISSING`.
+    pub highlights: Vec<String>,
 }
 
 /// Staging-focused health summary derived from diagnostics and counters.
@@ -1671,6 +2021,14 @@ pub struct ClusterStagingHealth {
     pub tombstone_age_ms: u64,
     /// Number of observed gossip resets since process start.
     pub gossip_reset_count: u64,
+    /// Quorum/read-after-write barrier timeouts observed by pilot reads.
+    pub barrier_timeouts: u64,
+    /// Near-cache conservative invalidations caused by watermark repair.
+    pub near_cache_conservative_invalidations: u64,
+    /// Lifecycle graceful stop events observed by pilot probes.
+    pub lifecycle_stop_count: u64,
+    /// Lifecycle restart/rejoin events observed by pilot probes.
+    pub lifecycle_restart_count: u64,
     /// Derived overall staging health state.
     pub state: ClusterHealthState,
 }
@@ -1709,6 +2067,10 @@ impl ClusterStagingHealth {
             stale_generation_rejected: staging.stale_generation_rejected,
             tombstone_age_ms: staging.tombstone_age_ms,
             gossip_reset_count: staging.gossip_reset_count,
+            barrier_timeouts: staging.barrier_timeouts,
+            near_cache_conservative_invalidations: staging.near_cache_conservative_invalidations,
+            lifecycle_stop_count: staging.lifecycle_stop_count,
+            lifecycle_restart_count: staging.lifecycle_restart_count,
             state,
         }
     }
@@ -1843,7 +2205,7 @@ fn derive_cluster_health_state(
 /// This is intentionally separate from [`ClusterDiagnostics`] so ownership
 /// counters can evolve without adding fields to the externally constructible
 /// runtime diagnostics snapshot.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct ClusterOwnershipDiagnostics {
     /// Resolver name used by the control plane.
@@ -1852,15 +2214,18 @@ pub struct ClusterOwnershipDiagnostics {
     pub resolutions: u64,
     /// Number of ownership resolutions that found no admitted member owner.
     pub no_owner: u64,
+    /// Monotonic ownership table stamp for stale-view detection.
+    pub stamp: u64,
 }
 
 impl ClusterOwnershipDiagnostics {
     /// Create an ownership diagnostics snapshot.
-    pub fn new(resolver: &'static str, resolutions: u64, no_owner: u64) -> Self {
+    pub fn new(resolver: &'static str, resolutions: u64, no_owner: u64, stamp: u64) -> Self {
         Self {
             resolver,
             resolutions,
             no_owner,
+            stamp,
         }
     }
 
@@ -2549,7 +2914,7 @@ pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
 
     /// Return ownership-specific diagnostics for this control plane.
     fn ownership_diagnostics(&self) -> ClusterOwnershipDiagnostics {
-        ClusterOwnershipDiagnostics::new("unknown", 0, 0)
+        ClusterOwnershipDiagnostics::new("unknown", 0, 0, 0)
     }
 }
 
@@ -2586,6 +2951,13 @@ pub enum RaftMetadataCommand {
         role: ClusterRole,
         /// Cluster epoch observed after removal.
         epoch: ClusterEpoch,
+    },
+    /// A topology table was explicitly committed as authoritative.
+    CommitTopology {
+        /// Committed topology epoch.
+        epoch: ClusterEpoch,
+        /// Authoritative member ids in stable order.
+        members: Vec<ClusterNodeId>,
     },
 }
 
@@ -2704,6 +3076,22 @@ impl RaftStyleMetadataControlPlane {
         metadata.commit_index = metadata.commit_index.saturating_add(1);
         metadata.commands.push(command);
     }
+
+    /// Commit the current admitted member table as authoritative topology.
+    pub fn commit_topology(&self) -> RaftMetadataSnapshot {
+        let mut members = self
+            .cluster
+            .members()
+            .into_iter()
+            .map(|member| member.node_id)
+            .collect::<Vec<_>>();
+        members.sort();
+        self.append_command(RaftMetadataCommand::CommitTopology {
+            epoch: self.cluster.epoch(),
+            members,
+        });
+        self.snapshot()
+    }
 }
 
 impl Default for RaftStyleMetadataControlPlane {
@@ -2796,6 +3184,7 @@ impl ClusterControlPlane for RaftStyleMetadataControlPlane {
 #[derive(Debug, Default)]
 struct InMemoryClusterState {
     epoch: ClusterEpoch,
+    topology_stamp: u64,
     members: BTreeMap<ClusterNodeId, ClusterMember>,
     clients: BTreeMap<ClusterNodeId, ClusterMember>,
     events: Vec<ClusterMembershipEvent>,
@@ -2877,6 +3266,7 @@ impl InMemoryCluster {
                     .unwrap_or(true);
                 if should_advance_epoch {
                     state.epoch.advance();
+                    state.topology_stamp = state.topology_stamp.saturating_add(1);
                 }
                 state.clients.remove(&candidate.node_id);
                 let member = ClusterMember::from_candidate(candidate, state.epoch);
@@ -2917,6 +3307,7 @@ impl InMemoryCluster {
         };
         if removed.role == ClusterRole::Member {
             state.epoch.advance();
+            state.topology_stamp = state.topology_stamp.saturating_add(1);
         }
         let event = ClusterMembershipEvent::NodeLeft {
             node_id: removed.node_id,
@@ -2985,6 +3376,7 @@ impl InMemoryCluster {
             RendezvousClusterOwnership.name(),
             state.ownership_resolutions,
             state.ownership_no_owner,
+            state.topology_stamp,
         )
     }
 
@@ -3409,6 +3801,36 @@ where
         self
     }
 
+    /// Declare whether HydraCache transport auth is configured.
+    pub fn transport_auth_configured(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.transport_auth_configured(enabled);
+        self
+    }
+
+    /// Declare whether strict current wire compatibility is configured.
+    pub fn strict_wire_compatibility(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.strict_wire_compatibility(enabled);
+        self
+    }
+
+    /// Declare that an external mesh/mTLS boundary handles transport identity.
+    pub fn declare_mesh_boundary(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.declare_mesh_boundary(enabled);
+        self
+    }
+
+    /// Set the cluster client routing mode.
+    pub fn routing_mode(mut self, routing_mode: RoutingMode) -> Self {
+        self.cache_builder = self.cache_builder.routing_mode(routing_mode);
+        self
+    }
+
+    /// Enable or disable cluster read-through/remote peer-fetch paths.
+    pub fn read_through_enabled(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.read_through_enabled(enabled);
+        self
+    }
+
     /// Set the bounded event buffer capacity.
     pub fn event_buffer_capacity(mut self, capacity: usize) -> Self {
         self.cache_builder = self.cache_builder.event_buffer_capacity(capacity);
@@ -3591,6 +4013,36 @@ where
     /// Enable high-volume access events on the member local cache.
     pub fn enable_access_events(mut self, enabled: bool) -> Self {
         self.cache_builder = self.cache_builder.enable_access_events(enabled);
+        self
+    }
+
+    /// Declare whether HydraCache transport auth is configured.
+    pub fn transport_auth_configured(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.transport_auth_configured(enabled);
+        self
+    }
+
+    /// Declare whether strict current wire compatibility is configured.
+    pub fn strict_wire_compatibility(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.strict_wire_compatibility(enabled);
+        self
+    }
+
+    /// Declare that an external mesh/mTLS boundary handles transport identity.
+    pub fn declare_mesh_boundary(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.declare_mesh_boundary(enabled);
+        self
+    }
+
+    /// Set the member routing mode.
+    pub fn routing_mode(mut self, routing_mode: RoutingMode) -> Self {
+        self.cache_builder = self.cache_builder.routing_mode(routing_mode);
+        self
+    }
+
+    /// Enable or disable cluster read-through/remote peer-fetch paths.
+    pub fn read_through_enabled(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.read_through_enabled(enabled);
         self
     }
 

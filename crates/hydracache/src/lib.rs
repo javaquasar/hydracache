@@ -482,24 +482,27 @@ mod typed;
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{
-    ChitchatStyleDiscovery, ClusterAdmissionBridge, ClusterAdmissionBridgeConfig,
-    ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent, ClusterAdmissionBridgeHandle,
-    ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason, ClusterCandidate, ClusterComponent,
-    ClusterComponentError, ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery,
-    ClusterDiscoveryDiagnostics, ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch,
-    ClusterFillCounters, ClusterGeneration, ClusterHealthReason, ClusterHealthState,
-    ClusterLifecycleComponent, ClusterLifecycleDiagnostics, ClusterLifecycleStatus,
-    ClusterLoadReport, ClusterMember, ClusterMembershipEvent, ClusterMembershipRecvError,
-    ClusterMembershipSubscriber, ClusterNodeId, ClusterOwnershipDecision,
-    ClusterOwnershipDiagnostics, ClusterOwnershipResolver, ClusterPeerFetch,
-    ClusterPeerFetchDiagnostics, ClusterPeerFetchGenerationMismatch, ClusterPeerFetchRequest,
-    ClusterPeerFetchResponse, ClusterRole, ClusterStagingCounters, ClusterStagingHealth,
+    partition_for_key, validate_replica_config, ChitchatStyleDiscovery, ClusterAdmissionBridge,
+    ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics, ClusterAdmissionBridgeEvent,
+    ClusterAdmissionBridgeHandle, ClusterAdmissionIgnoreReason, ClusterAdmissionRejectReason,
+    ClusterCacheCounters, ClusterCandidate, ClusterComponent, ClusterComponentError,
+    ClusterControlPlane, ClusterDiagnostics, ClusterDiscovery, ClusterDiscoveryDiagnostics,
+    ClusterDiscoveryEvent, ClusterEndpoints, ClusterEpoch, ClusterFillCounters, ClusterGeneration,
+    ClusterHealthReason, ClusterHealthState, ClusterLifecycleComponent,
+    ClusterLifecycleDiagnostics, ClusterLifecycleStatus, ClusterLoadReport, ClusterMember,
+    ClusterMembershipEvent, ClusterMembershipRecvError, ClusterMembershipSubscriber, ClusterNodeId,
+    ClusterOwnershipDecision, ClusterOwnershipDiagnostics, ClusterOwnershipResolver,
+    ClusterPeerFetch, ClusterPeerFetchDiagnostics, ClusterPeerFetchGenerationMismatch,
+    ClusterPeerFetchRequest, ClusterPeerFetchResponse, ClusterPilotReadiness, ClusterPilotReport,
+    ClusterReplicaConfigError, ClusterRole, ClusterStagingCounters, ClusterStagingHealth,
     HydraCacheClientBuilder, HydraCacheMemberBuilder, InMemoryCluster, InMemoryClusterDiscovery,
-    InMemoryPeerFetch, RaftMetadataCommand, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
-    RendezvousClusterOwnership, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
+    InMemoryPeerFetch, MetaDataContainer, NearCacheRepairAction, PartitionId, RaftMetadataCommand,
+    RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
+    TopologyFence, TransportPosture, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
 pub use consistency::{
     ConsistencyInvalidate, ConsistencyMode, ConsistencyOutcome, ConsistencyToken, DegradeReason,
+    WriteBarrierToken,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
 pub use hydracache_core::{

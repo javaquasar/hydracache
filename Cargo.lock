@@ -1432,6 +1432,7 @@ dependencies = [
  "hydracache-macros",
  "loom",
  "moka",
+ "proptest",
  "serde",
  "serde_json",
  "tokio",

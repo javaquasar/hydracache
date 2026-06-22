@@ -59,6 +59,7 @@
 //! http://127.0.0.1:3000/sandbox/cluster/leave-rejoin
 //! http://127.0.0.1:3000/sandbox/cluster/stale-generation
 //! http://127.0.0.1:3000/sandbox/cluster/peer-fetch-auth-wire
+//! http://127.0.0.1:3000/sandbox/cluster/pilot-report
 //! http://127.0.0.1:3000/demo/observability/prometheus
 //! http://127.0.0.1:3000/demo/security
 //! http://127.0.0.1:3000/demo/correctness
@@ -669,6 +670,10 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         .route(
             "/sandbox/cluster/peer-fetch-auth-wire",
             post(run_cluster_peer_fetch_auth_wire_gate),
+        )
+        .route(
+            "/sandbox/cluster/pilot-report",
+            post(run_cluster_pilot_report),
         )
         .route("/demo/reset", post(reset_demo))
         .route("/demo/cache/put", post(cache_put))
@@ -2539,6 +2544,16 @@ struct ClusterStagingGateResponse {
     health: Value,
     #[schema(value_type = Object)]
     staging_health: Value,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+struct ClusterPilotReportSandboxResponse {
+    flow_id: String,
+    scenario: &'static str,
+    runbook: &'static str,
+    passed: bool,
+    #[schema(value_type = Object)]
+    report: Value,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, ToSchema)]
@@ -7238,6 +7253,7 @@ fn openapi_client_check_response() -> OpenApiClientCheckResponse {
         "/sandbox/cluster/leave-rejoin".to_owned(),
         "/sandbox/cluster/stale-generation".to_owned(),
         "/sandbox/cluster/peer-fetch-auth-wire".to_owned(),
+        "/sandbox/cluster/pilot-report".to_owned(),
         "/demo/observability/prometheus".to_owned(),
         "/demo/events/summary".to_owned(),
         "/demo/events/preflight/run".to_owned(),
@@ -7311,6 +7327,7 @@ fn openapi_client_smoke_response() -> OpenApiClientSmokeResponse {
         "/sandbox/cluster/leave-rejoin",
         "/sandbox/cluster/stale-generation",
         "/sandbox/cluster/peer-fetch-auth-wire",
+        "/sandbox/cluster/pilot-report",
         "/demo/flows",
         "/demo/query/products/",
         "/demo/query/orders/",
@@ -8072,6 +8089,67 @@ async fn run_cluster_peer_fetch_auth_wire_gate(
     harness.drive_peer_fetch_auth_matrix().await;
     harness.drive_wire_version_matrix().await;
     cluster_staging_gate_response(flow_id, scenario, harness.outcome())
+}
+
+#[utoipa::path(
+    post,
+    path = "/sandbox/cluster/pilot-report",
+    tag = "cluster",
+    request_body = ClusterStagingGateRequest,
+    responses((status = 200, description = "Build a controlled pilot topology and return the 0.40 pilot readiness report", body = ClusterPilotReportSandboxResponse))
+)]
+async fn run_cluster_pilot_report(
+    Json(request): Json<ClusterStagingGateRequest>,
+) -> Result<Json<ClusterPilotReportSandboxResponse>, SandboxHttpError> {
+    let scenario = "pilot-report";
+    let flow_id = request.flow_id(scenario);
+    let cluster_name = request.cluster_name(scenario);
+    let member_count = request.members().clamp(2, 5);
+    let cluster = Arc::new(InMemoryCluster::new(cluster_name.clone()));
+    let mut members = Vec::with_capacity(member_count);
+
+    for index in 0..member_count {
+        let member = HydraCache::member()
+            .cluster(cluster_name.clone())
+            .shared_cluster(cluster.clone())
+            .node_id(format!("pilot-member-{index}"))
+            .generation(ClusterGeneration::new(1))
+            .transport_auth_configured(true)
+            .strict_wire_compatibility(true)
+            .start()
+            .await?;
+        members.push(member);
+    }
+
+    let _client = HydraCache::client()
+        .cluster(cluster_name)
+        .shared_cluster(cluster)
+        .node_id("pilot-client-a")
+        .generation(ClusterGeneration::new(1))
+        .transport_auth_configured(true)
+        .strict_wire_compatibility(true)
+        .connect()
+        .await?;
+
+    let observed = members
+        .first()
+        .expect("member_count is clamped to at least two")
+        .clone();
+    observed.record_cluster_owner_load_success();
+    observed.record_cluster_remote_fetch_success();
+    observed.record_cluster_hot_cache_hit();
+    observed.record_cluster_barrier_timeout();
+
+    let report = observed.cluster_pilot_report();
+    let passed = report.readiness.is_pilot_ready();
+    Ok(Json(ClusterPilotReportSandboxResponse {
+        flow_id,
+        scenario,
+        runbook: "docs/PRODUCTION_CLUSTER_READINESS.md#cluster-pilot-gate-040",
+        passed,
+        report: serde_json::to_value(report)
+            .map_err(|error| SandboxHttpError::internal(error.to_string()))?,
+    }))
 }
 
 async fn staging_harness(
@@ -10529,6 +10607,13 @@ fn raft_command_report(command: &RaftMetadataCommand) -> RaftMetadataCommandRepo
             kind: "node-left",
             node_id: node_id.to_string(),
             role: Some(cluster_role_label(*role)),
+            generation: None,
+            epoch: epoch.value(),
+        },
+        RaftMetadataCommand::CommitTopology { epoch, .. } => RaftMetadataCommandReport {
+            kind: "commit-topology",
+            node_id: String::new(),
+            role: None,
             generation: None,
             epoch: epoch.value(),
         },
@@ -13167,6 +13252,7 @@ fn actuator_stats_doc() {}
         run_cluster_leave_rejoin_gate,
         run_cluster_stale_generation_gate,
         run_cluster_peer_fetch_auth_wire_gate,
+        run_cluster_pilot_report,
         reset_demo,
         cache_put,
         cache_get,
@@ -13360,6 +13446,7 @@ fn actuator_stats_doc() {}
             RealClusterAdaptersDemoResponse,
             ClusterStagingGateRequest,
             ClusterStagingGateResponse,
+            ClusterPilotReportSandboxResponse,
             LoadUserResponse,
             OrmAdapterRun,
             OrmComparisonResponse,
@@ -13939,6 +14026,7 @@ mod tests {
         assert!(paths.contains_key("/sandbox/cluster/leave-rejoin"));
         assert!(paths.contains_key("/sandbox/cluster/stale-generation"));
         assert!(paths.contains_key("/sandbox/cluster/peer-fetch-auth-wire"));
+        assert!(paths.contains_key("/sandbox/cluster/pilot-report"));
         assert!(paths.contains_key("/demo/reset"));
         assert!(paths.contains_key("/demo/load/{id}"));
         assert!(paths.contains_key("/demo/cache/put"));

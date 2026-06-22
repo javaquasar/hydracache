@@ -167,7 +167,7 @@ async fn degraded_mode_returns_stale_value_with_reason() {
 }
 
 #[tokio::test]
-async fn quorum_and_leader_fail_closed_until_cluster_supports_them() {
+async fn quorum_waits_while_leader_still_fails_closed() {
     let cache = HydraCache::local().build();
     let token = ConsistencyToken::new(1, "local", "other-node");
 
@@ -194,19 +194,15 @@ async fn quorum_and_leader_fail_closed_until_cluster_supports_them() {
         .await
         .unwrap();
 
-    assert_eq!(
-        quorum,
-        ConsistencyOutcome::FailedClosed {
-            reason: DegradeReason::UnsupportedMode("quorum")
-        }
-    );
+    assert_eq!(quorum, ConsistencyOutcome::TimedOut);
     assert_eq!(
         leader,
         ConsistencyOutcome::FailedClosed {
             reason: DegradeReason::UnsupportedMode("leader")
         }
     );
-    assert_eq!(cache.stats().consistency_fail_closed, 2);
+    assert_eq!(cache.stats().consistency_wait_timeouts, 1);
+    assert_eq!(cache.stats().consistency_fail_closed, 1);
 }
 
 #[tokio::test]

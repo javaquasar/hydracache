@@ -98,6 +98,33 @@ async fn sandbox_peer_fetch_auth_wire_route_reports_rejections() {
     assert_eq!(body["report"]["wire_version_rejections"], 1);
 }
 
+#[tokio::test]
+async fn sandbox_pilot_report_route_returns_ready_report() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+
+    let body = json_post(
+        app,
+        "/sandbox/cluster/pilot-report",
+        r#"{"cluster":"route-pilot-report","members":3,"flow_id":"route-pilot-report"}"#,
+    )
+    .await;
+
+    assert_eq!(body["flow_id"], "route-pilot-report");
+    assert_eq!(body["scenario"], "pilot-report");
+    assert_eq!(body["passed"], true);
+    assert_eq!(body["report"]["readiness"]["member_count"], 3);
+    assert_eq!(
+        body["report"]["readiness"]["strict_wire_compatibility"],
+        true
+    );
+    assert_eq!(body["report"]["transport_posture"]["auth"], true);
+    assert_eq!(body["report"]["transport_posture"]["wire_strict"], true);
+    assert_eq!(body["report"]["highlights"].as_array().unwrap().len(), 0);
+}
+
 async fn json_post(app: axum::Router, uri: &str, body: &'static str) -> Value {
     let response = app
         .oneshot(

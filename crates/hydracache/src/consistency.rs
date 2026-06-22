@@ -5,7 +5,7 @@ use tokio::time::sleep;
 
 use hydracache_core::{CacheOptions, Result};
 
-use crate::{CacheError, HydraCache};
+use crate::{CacheError, ClusterGeneration, HydraCache};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub enum ConsistencyMode {
@@ -28,6 +28,29 @@ pub struct ConsistencyToken {
     generation: u64,
     namespace: String,
     origin_node: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WriteBarrierToken {
+    generation: ClusterGeneration,
+    message_id: u64,
+}
+
+impl WriteBarrierToken {
+    pub fn new(generation: ClusterGeneration, message_id: u64) -> Self {
+        Self {
+            generation,
+            message_id,
+        }
+    }
+
+    pub fn generation(&self) -> ClusterGeneration {
+        self.generation
+    }
+
+    pub fn message_id(&self) -> u64 {
+        self.message_id
+    }
 }
 
 impl ConsistencyToken {
@@ -210,14 +233,9 @@ where
                     })
                 }
             }
-            ConsistencyMode::Quorum { .. } => {
-                self.inner
-                    .stats
-                    .consistency_fail_closed
-                    .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                Ok(ConsistencyOutcome::FailedClosed {
-                    reason: DegradeReason::UnsupportedMode("quorum"),
-                })
+            ConsistencyMode::Quorum { timeout } => {
+                self.get_after_wait_or_timeout(key, token, timeout, options, loader)
+                    .await
             }
             ConsistencyMode::Leader => {
                 self.inner
@@ -229,6 +247,65 @@ where
                 })
             }
         }
+    }
+
+    pub fn write_barrier_token(&self) -> WriteBarrierToken {
+        let message_id = self
+            .inner
+            .consistency_generation
+            .fetch_add(1, std::sync::atomic::Ordering::SeqCst)
+            .saturating_add(1);
+        let generation = self
+            .cluster_diagnostics()
+            .map(|diagnostics| diagnostics.generation)
+            .unwrap_or_default();
+        WriteBarrierToken::new(generation, message_id)
+    }
+
+    pub fn record_applied_write_barrier(&self, token: WriteBarrierToken) {
+        self.inner
+            .consistency_generation
+            .fetch_max(token.message_id(), std::sync::atomic::Ordering::SeqCst);
+    }
+
+    pub async fn read_after_write<T, E, F, Fut>(
+        &self,
+        key: &str,
+        token: WriteBarrierToken,
+        timeout: Duration,
+        options: CacheOptions,
+        loader: F,
+    ) -> Result<ConsistencyOutcome<T>>
+    where
+        T: Serialize + DeserializeOwned + Clone,
+        E: std::error::Error + Send + Sync + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = std::result::Result<T, E>> + Send + 'static,
+    {
+        if self.wait_write_barrier(token, timeout).await {
+            self.inner
+                .stats
+                .consistency_wait_successes
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            return Ok(ConsistencyOutcome::Fresh(
+                self.get_or_load(key, options, loader).await?,
+            ));
+        }
+
+        self.inner
+            .stats
+            .consistency_wait_timeouts
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.record_cluster_barrier_timeout();
+
+        if !self.read_through_enabled() {
+            return Ok(ConsistencyOutcome::TimedOut);
+        }
+
+        self.record_cluster_remote_fetch_success();
+        let value = loader().await.map_err(CacheError::loader)?;
+        self.put(key, value.clone(), options).await?;
+        Ok(ConsistencyOutcome::Fresh(value))
     }
 
     async fn get_after_wait_or_timeout<T, E, F, Fut>(
@@ -278,6 +355,32 @@ where
             }
         }
         false
+    }
+
+    async fn wait_write_barrier(&self, token: WriteBarrierToken, timeout: Duration) -> bool {
+        if self.write_barrier_satisfied(token) {
+            return true;
+        }
+        if timeout.is_zero() {
+            return false;
+        }
+
+        let deadline = Instant::now() + timeout;
+        while Instant::now() < deadline {
+            sleep(Duration::from_millis(2)).await;
+            if self.write_barrier_satisfied(token) {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn write_barrier_satisfied(&self, token: WriteBarrierToken) -> bool {
+        let generation_matches = self
+            .cluster_diagnostics()
+            .map(|diagnostics| diagnostics.generation == token.generation())
+            .unwrap_or_else(|| token.generation() == ClusterGeneration::default());
+        generation_matches && self.consistency_generation() >= token.message_id()
     }
 
     pub fn unsupported_consistency_mode_error(mode: &'static str) -> CacheError {

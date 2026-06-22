@@ -7,7 +7,7 @@ use moka::future::Cache;
 use tokio::sync::watch;
 
 use crate::cache::{HydraCache, HydraCacheInner};
-use crate::cluster::ClusterRuntime;
+use crate::cluster::{ClusterRuntime, RoutingMode, TransportPosture};
 use crate::entry::CacheEntry;
 use crate::events::EventBus;
 use crate::inflight::InFlightMap;
@@ -51,6 +51,9 @@ where
     invalidation_bus: Option<Arc<dyn CacheInvalidationBus>>,
     invalidation_node_id: Option<String>,
     cluster_runtime: Option<ClusterRuntime>,
+    transport_posture: TransportPosture,
+    routing_mode: RoutingMode,
+    read_through_enabled: bool,
     codec: C,
 }
 
@@ -167,12 +170,45 @@ where
             invalidation_bus: self.invalidation_bus,
             invalidation_node_id: self.invalidation_node_id,
             cluster_runtime: self.cluster_runtime,
+            transport_posture: self.transport_posture,
+            routing_mode: self.routing_mode,
+            read_through_enabled: self.read_through_enabled,
             codec,
         }
     }
 
     pub(crate) fn cluster_runtime(mut self, runtime: ClusterRuntime) -> Self {
         self.cluster_runtime = Some(runtime);
+        self
+    }
+
+    /// Declare whether HydraCache transport auth is configured for this cache.
+    pub fn transport_auth_configured(mut self, enabled: bool) -> Self {
+        self.transport_posture.auth = enabled;
+        self
+    }
+
+    /// Declare whether strict current wire compatibility is configured.
+    pub fn strict_wire_compatibility(mut self, enabled: bool) -> Self {
+        self.transport_posture.wire_strict = enabled;
+        self
+    }
+
+    /// Declare that an external mesh/mTLS boundary handles transport identity.
+    pub fn declare_mesh_boundary(mut self, enabled: bool) -> Self {
+        self.transport_posture.mesh_declared = enabled;
+        self
+    }
+
+    /// Set the pilot routing mode used for diagnostics and routed reads.
+    pub fn routing_mode(mut self, routing_mode: RoutingMode) -> Self {
+        self.routing_mode = routing_mode;
+        self
+    }
+
+    /// Enable or disable cluster read-through/remote peer-fetch paths.
+    pub fn read_through_enabled(mut self, enabled: bool) -> Self {
+        self.read_through_enabled = enabled;
         self
     }
 
@@ -212,6 +248,9 @@ where
                 consistency_generation: AtomicU64::new(0),
                 bus_shutdown,
                 cluster_runtime: self.cluster_runtime,
+                transport_posture: self.transport_posture,
+                routing_mode: self.routing_mode,
+                read_through_enabled: self.read_through_enabled,
             }),
         };
 
@@ -234,6 +273,9 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             invalidation_bus: None,
             invalidation_node_id: None,
             cluster_runtime: None,
+            transport_posture: TransportPosture::default(),
+            routing_mode: RoutingMode::default(),
+            read_through_enabled: true,
             codec: PostcardCodec,
         }
     }

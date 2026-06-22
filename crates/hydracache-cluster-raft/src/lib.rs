@@ -606,6 +606,15 @@ fn command_id_for(command: &RaftMetadataCommand) -> String {
         RaftMetadataCommand::NodeLeft { node_id, epoch, .. } => {
             format!("node-left:{}:{}", command_id_node(node_id), epoch.value())
         }
+        RaftMetadataCommand::CommitTopology { epoch, members } => format!(
+            "commit-topology:{}:{}",
+            epoch.value(),
+            members
+                .iter()
+                .map(command_id_node)
+                .collect::<Vec<_>>()
+                .join(",")
+        ),
     }
 }
 
@@ -743,6 +752,7 @@ fn materialize_command(
                 Ok(None)
             }
         }
+        RaftMetadataCommand::CommitTopology { .. } => Ok(None),
     }
 }
 
@@ -951,6 +961,16 @@ fn encode_command(command: &RaftMetadataCommand) -> Vec<u8> {
             role,
             epoch,
         } => format!("left|{node_id}|{}|{}", role_to_str(*role), epoch.value()).into_bytes(),
+        RaftMetadataCommand::CommitTopology { epoch, members } => format!(
+            "topology|{}|{}",
+            epoch.value(),
+            members
+                .iter()
+                .map(ClusterNodeId::as_str)
+                .collect::<Vec<_>>()
+                .join(",")
+        )
+        .into_bytes(),
     }
 }
 
@@ -1000,6 +1020,14 @@ fn decode_command(data: &[u8]) -> CacheResult<RaftMetadataCommand> {
             node_id: ClusterNodeId::from((*node_id).to_owned()),
             role: parse_role(role)?,
             epoch: hydracache::ClusterEpoch::new(parse_u64(epoch, "epoch")?),
+        }),
+        ["topology", epoch, members] => Ok(RaftMetadataCommand::CommitTopology {
+            epoch: hydracache::ClusterEpoch::new(parse_u64(epoch, "epoch")?),
+            members: members
+                .split(',')
+                .filter(|member| !member.is_empty())
+                .map(|member| ClusterNodeId::from(member.to_owned()))
+                .collect(),
         }),
         _ => Err(CacheError::Backend(format!(
             "invalid raft metadata command: {text}"
