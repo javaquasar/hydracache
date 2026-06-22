@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use hydracache_core::{CacheCodec, PostcardCodec};
+use hydracache_core::{CacheCodec, CacheError, PostcardCodec, Result};
 use moka::future::Cache;
 use tokio::sync::watch;
 
@@ -10,6 +10,7 @@ use crate::cache::{HydraCache, HydraCacheInner};
 use crate::cluster::{ClusterRuntime, RoutingMode, TransportPosture};
 use crate::entry::CacheEntry;
 use crate::events::EventBus;
+use crate::grid::{ReplicatedValueSecurityPosture, ReplicationConfig};
 use crate::inflight::InFlightMap;
 use crate::invalidation_bus::CacheInvalidationBus;
 use crate::stats::StatsCounters;
@@ -54,6 +55,8 @@ where
     transport_posture: TransportPosture,
     routing_mode: RoutingMode,
     read_through_enabled: bool,
+    replication_config: ReplicationConfig,
+    replicated_value_security: ReplicatedValueSecurityPosture,
     codec: C,
 }
 
@@ -173,6 +176,8 @@ where
             transport_posture: self.transport_posture,
             routing_mode: self.routing_mode,
             read_through_enabled: self.read_through_enabled,
+            replication_config: self.replication_config,
+            replicated_value_security: self.replicated_value_security,
             codec,
         }
     }
@@ -210,6 +215,82 @@ where
     pub fn read_through_enabled(mut self, enabled: bool) -> Self {
         self.read_through_enabled = enabled;
         self
+    }
+
+    /// Enable or disable the opt-in 0.41 value-replication prototype.
+    ///
+    /// Replication is off by default and remains bounded by
+    /// [`Self::max_replicated_entry_bytes`].
+    pub fn replicate_values(mut self, enabled: bool) -> Self {
+        self.replication_config.replicate_values = enabled;
+        self.replicated_value_security = if enabled {
+            ReplicatedValueSecurityPosture::PlaintextUnacknowledged
+        } else {
+            ReplicatedValueSecurityPosture::Disabled
+        };
+        self
+    }
+
+    /// Set the desired replication factor, including the primary copy.
+    pub fn replication_factor(mut self, replication_factor: usize) -> Self {
+        self.replication_config.replication_factor = replication_factor.max(1);
+        self
+    }
+
+    /// Set the read quorum.
+    pub fn read_quorum(mut self, read_quorum: usize) -> Self {
+        self.replication_config.read_quorum = read_quorum.max(1);
+        self
+    }
+
+    /// Set the write quorum.
+    pub fn write_quorum(mut self, write_quorum: usize) -> Self {
+        self.replication_config.write_quorum = write_quorum.max(1);
+        self
+    }
+
+    /// Set the number of synchronous backups.
+    pub fn sync_backups(mut self, sync_backups: usize) -> Self {
+        self.replication_config.sync_backups = sync_backups;
+        self
+    }
+
+    /// Set the number of asynchronous backups.
+    pub fn async_backups(mut self, async_backups: usize) -> Self {
+        self.replication_config.async_backups = async_backups;
+        self
+    }
+
+    /// Set the maximum encoded entry size accepted for replication.
+    pub fn max_replicated_entry_bytes(mut self, max_replicated_entry_bytes: usize) -> Self {
+        self.replication_config.max_replicated_entry_bytes =
+            max_replicated_entry_bytes.max(1);
+        self
+    }
+
+    /// Explicitly acknowledge plaintext replicated values on the trust boundary.
+    pub fn acknowledge_plaintext_replicated_values(mut self, acknowledged: bool) -> Self {
+        if self.replication_config.replicate_values && acknowledged {
+            self.replicated_value_security = ReplicatedValueSecurityPosture::PlaintextAcknowledged;
+        } else if self.replication_config.replicate_values {
+            self.replicated_value_security =
+                ReplicatedValueSecurityPosture::PlaintextUnacknowledged;
+        }
+        self
+    }
+
+    /// Mark replicated values as encrypted by an operator-supplied boundary.
+    pub fn replicated_values_encrypted(mut self, encrypted: bool) -> Self {
+        if self.replication_config.replicate_values && encrypted {
+            self.replicated_value_security = ReplicatedValueSecurityPosture::Encrypted;
+        }
+        self
+    }
+
+    pub(crate) fn validate_replication_config(&self) -> Result<()> {
+        self.replication_config
+            .validate()
+            .map_err(|error| CacheError::Backend(format!("invalid replication config: {error}")))
     }
 
     /// Build the local cache.
@@ -251,6 +332,8 @@ where
                 transport_posture: self.transport_posture,
                 routing_mode: self.routing_mode,
                 read_through_enabled: self.read_through_enabled,
+                replication_config: self.replication_config,
+                replicated_value_security: self.replicated_value_security,
             }),
         };
 
@@ -276,6 +359,8 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             transport_posture: TransportPosture::default(),
             routing_mode: RoutingMode::default(),
             read_through_enabled: true,
+            replication_config: ReplicationConfig::default(),
+            replicated_value_security: ReplicatedValueSecurityPosture::Disabled,
             codec: PostcardCodec,
         }
     }

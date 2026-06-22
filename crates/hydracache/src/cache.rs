@@ -24,6 +24,7 @@ use crate::cluster::{
 };
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
+use crate::grid::{ClusterGridCounters, ReplicatedValueSecurityPosture, ReplicationConfig};
 use crate::inflight::{InFlightMap, SharedLoadFuture};
 use crate::invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
@@ -90,6 +91,8 @@ where
     pub(crate) transport_posture: TransportPosture,
     pub(crate) routing_mode: RoutingMode,
     pub(crate) read_through_enabled: bool,
+    pub(crate) replication_config: ReplicationConfig,
+    pub(crate) replicated_value_security: ReplicatedValueSecurityPosture,
 }
 
 impl<C> Drop for HydraCacheInner<C>
@@ -343,6 +346,92 @@ where
         }
     }
 
+    /// Return aggregate 0.41 distributed-grid counters.
+    pub fn cluster_grid_counters(&self) -> ClusterGridCounters {
+        ClusterGridCounters {
+            replication_success_total: self
+                .inner
+                .stats
+                .cluster_replication_success_total
+                .load(Ordering::Relaxed),
+            replication_failure_total: self
+                .inner
+                .stats
+                .cluster_replication_failure_total
+                .load(Ordering::Relaxed),
+            bytes_replicated_total: self
+                .inner
+                .stats
+                .cluster_bytes_replicated_total
+                .load(Ordering::Relaxed),
+            replication_backpressure_total: self
+                .inner
+                .stats
+                .cluster_replication_backpressure_total
+                .load(Ordering::Relaxed),
+            replication_oversized_rejected_total: self
+                .inner
+                .stats
+                .cluster_replication_oversized_rejected_total
+                .load(Ordering::Relaxed),
+            replication_decrypt_failure_total: self
+                .inner
+                .stats
+                .cluster_replication_decrypt_failure_total
+                .load(Ordering::Relaxed),
+            under_replicated_keys: self
+                .inner
+                .stats
+                .cluster_under_replicated_keys
+                .load(Ordering::Relaxed),
+            failover_total: self
+                .inner
+                .stats
+                .cluster_failover_total
+                .load(Ordering::Relaxed),
+            repair_task_total: self
+                .inner
+                .stats
+                .cluster_repair_task_total
+                .load(Ordering::Relaxed),
+            repair_failure_total: self
+                .inner
+                .stats
+                .cluster_repair_failure_total
+                .load(Ordering::Relaxed),
+            rebalance_plan_total: self
+                .inner
+                .stats
+                .cluster_rebalance_plan_total
+                .load(Ordering::Relaxed),
+            rebalance_task_ack_total: self
+                .inner
+                .stats
+                .cluster_rebalance_task_ack_total
+                .load(Ordering::Relaxed),
+            topology_fence_rejected_total: self
+                .inner
+                .stats
+                .cluster_topology_fence_rejected_total
+                .load(Ordering::Relaxed),
+            tombstone_repair_debt: self
+                .inner
+                .stats
+                .cluster_tombstone_repair_debt
+                .load(Ordering::Relaxed),
+        }
+    }
+
+    /// Return the configured value-replication shape.
+    pub fn replication_config(&self) -> ReplicationConfig {
+        self.inner.replication_config
+    }
+
+    /// Return the replicated-value confidentiality posture.
+    pub fn replicated_value_security_posture(&self) -> ReplicatedValueSecurityPosture {
+        self.inner.replicated_value_security
+    }
+
     /// Return the declared transport-security posture.
     pub fn transport_posture(&self) -> TransportPosture {
         self.inner.transport_posture
@@ -445,6 +534,7 @@ where
             highlights: transport_posture
                 .highlight()
                 .into_iter()
+                .chain(self.replicated_value_security_posture().highlight())
                 .map(str::to_owned)
                 .collect(),
         }
@@ -554,6 +644,74 @@ where
             .stats
             .cluster_near_cache_conservative_invalidations
             .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a successful replicated value/tombstone send.
+    pub fn record_cluster_replication_success(&self, bytes: u64) {
+        self.inner
+            .stats
+            .cluster_replication_success_total
+            .fetch_add(1, Ordering::Relaxed);
+        self.inner
+            .stats
+            .cluster_bytes_replicated_total
+            .fetch_add(bytes, Ordering::Relaxed);
+    }
+
+    /// Record a failed replicated value/tombstone send.
+    pub fn record_cluster_replication_failure(&self) {
+        self.inner
+            .stats
+            .cluster_replication_failure_total
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record replication queue backpressure.
+    pub fn record_cluster_replication_backpressure(&self) {
+        self.inner
+            .stats
+            .cluster_replication_backpressure_total
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a value rejected by the replication byte cap.
+    pub fn record_cluster_replication_oversized_rejected(&self) {
+        self.inner
+            .stats
+            .cluster_replication_oversized_rejected_total
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Record a replicated payload decrypt/open failure.
+    pub fn record_cluster_replication_decrypt_failure(&self) {
+        self.inner
+            .stats
+            .cluster_replication_decrypt_failure_total
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Set the aggregate under-replicated key gauge.
+    pub fn set_cluster_under_replicated_keys(&self, value: u64) {
+        self.inner
+            .stats
+            .cluster_under_replicated_keys
+            .store(value, Ordering::Relaxed);
+    }
+
+    /// Record a topology-fence rejection.
+    pub fn record_cluster_topology_fence_rejected(&self) {
+        self.inner
+            .stats
+            .cluster_topology_fence_rejected_total
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Set the aggregate tombstone repair-debt gauge.
+    pub fn set_cluster_tombstone_repair_debt(&self, value: u64) {
+        self.inner
+            .stats
+            .cluster_tombstone_repair_debt
+            .store(value, Ordering::Relaxed);
     }
 
     /// Record a lifecycle stop observed by a pilot probe.

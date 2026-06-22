@@ -471,6 +471,7 @@ mod cluster;
 mod consistency;
 mod entry;
 mod events;
+mod grid;
 mod inflight;
 mod invalidation_bus;
 mod refresh;
@@ -499,6 +500,17 @@ pub use cluster::{
     InMemoryPeerFetch, MetaDataContainer, NearCacheRepairAction, PartitionId, RaftMetadataCommand,
     RaftMetadataSnapshot, RaftStyleMetadataControlPlane, RendezvousClusterOwnership, RoutingMode,
     TopologyFence, TransportPosture, CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
+};
+pub use grid::{
+    cluster_grid_metric_descriptors, prepare_replicated_payload, replicated_slot_version,
+    select_backup_promotion, AntiEntropyTask, BackupPromotion, ClusterGridCounters,
+    ClusterGridDiagnostics, ClusterMetricDescriptor, ClusterReplicationStrategy,
+    EffectiveReplicationMap, HotCacheDirectory, PartitionReplicaVersions, PromotionPhase,
+    RedactReplicatedValue, RebalancePlan, RebalanceTask, RebalanceTaskAck, ReplicatedSlot,
+    ReplicatedValueSecurityPosture, Replication, ReplicationConfig, ReplicationConfigError,
+    ReplicationCryptoError, ReplicationKeyProvider, ReplicationPayload, RepairingTask, Replicas,
+    SharedReplicationKeyProvider, TombstoneAdmission, TombstoneBudget, TombstoneTracker,
+    diff_effective_maps,
 };
 pub use consistency::{
     ConsistencyInvalidate, ConsistencyMode, ConsistencyOutcome, ConsistencyToken, DegradeReason,

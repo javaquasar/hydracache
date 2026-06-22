@@ -3831,6 +3831,58 @@ where
         self
     }
 
+    /// Enable or disable the opt-in 0.41 value-replication prototype.
+    pub fn replicate_values(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.replicate_values(enabled);
+        self
+    }
+
+    /// Set the desired replication factor, including the primary copy.
+    pub fn replication_factor(mut self, replication_factor: usize) -> Self {
+        self.cache_builder = self.cache_builder.replication_factor(replication_factor);
+        self
+    }
+
+    /// Set the read quorum.
+    pub fn read_quorum(mut self, read_quorum: usize) -> Self {
+        self.cache_builder = self.cache_builder.read_quorum(read_quorum);
+        self
+    }
+
+    /// Set the write quorum.
+    pub fn write_quorum(mut self, write_quorum: usize) -> Self {
+        self.cache_builder = self.cache_builder.write_quorum(write_quorum);
+        self
+    }
+
+    /// Set the number of synchronous backups.
+    pub fn sync_backups(mut self, sync_backups: usize) -> Self {
+        self.cache_builder = self.cache_builder.sync_backups(sync_backups);
+        self
+    }
+
+    /// Set the number of asynchronous backups.
+    pub fn async_backups(mut self, async_backups: usize) -> Self {
+        self.cache_builder = self.cache_builder.async_backups(async_backups);
+        self
+    }
+
+    /// Set the maximum encoded entry size accepted for replication.
+    pub fn max_replicated_entry_bytes(mut self, max_replicated_entry_bytes: usize) -> Self {
+        self.cache_builder = self
+            .cache_builder
+            .max_replicated_entry_bytes(max_replicated_entry_bytes);
+        self
+    }
+
+    /// Explicitly acknowledge plaintext replicated values on this trust boundary.
+    pub fn acknowledge_plaintext_replicated_values(mut self, acknowledged: bool) -> Self {
+        self.cache_builder = self
+            .cache_builder
+            .acknowledge_plaintext_replicated_values(acknowledged);
+        self
+    }
+
     /// Set the bounded event buffer capacity.
     pub fn event_buffer_capacity(mut self, capacity: usize) -> Self {
         self.cache_builder = self.cache_builder.event_buffer_capacity(capacity);
@@ -3856,6 +3908,7 @@ where
 
     /// Connect the client near-cache.
     pub async fn connect(self) -> Result<HydraCache<C>> {
+        self.cache_builder.validate_replication_config()?;
         let control_plane = self
             .control_plane
             .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
@@ -4046,6 +4099,58 @@ where
         self
     }
 
+    /// Enable or disable the opt-in 0.41 value-replication prototype.
+    pub fn replicate_values(mut self, enabled: bool) -> Self {
+        self.cache_builder = self.cache_builder.replicate_values(enabled);
+        self
+    }
+
+    /// Set the desired replication factor, including the primary copy.
+    pub fn replication_factor(mut self, replication_factor: usize) -> Self {
+        self.cache_builder = self.cache_builder.replication_factor(replication_factor);
+        self
+    }
+
+    /// Set the read quorum.
+    pub fn read_quorum(mut self, read_quorum: usize) -> Self {
+        self.cache_builder = self.cache_builder.read_quorum(read_quorum);
+        self
+    }
+
+    /// Set the write quorum.
+    pub fn write_quorum(mut self, write_quorum: usize) -> Self {
+        self.cache_builder = self.cache_builder.write_quorum(write_quorum);
+        self
+    }
+
+    /// Set the number of synchronous backups.
+    pub fn sync_backups(mut self, sync_backups: usize) -> Self {
+        self.cache_builder = self.cache_builder.sync_backups(sync_backups);
+        self
+    }
+
+    /// Set the number of asynchronous backups.
+    pub fn async_backups(mut self, async_backups: usize) -> Self {
+        self.cache_builder = self.cache_builder.async_backups(async_backups);
+        self
+    }
+
+    /// Set the maximum encoded entry size accepted for replication.
+    pub fn max_replicated_entry_bytes(mut self, max_replicated_entry_bytes: usize) -> Self {
+        self.cache_builder = self
+            .cache_builder
+            .max_replicated_entry_bytes(max_replicated_entry_bytes);
+        self
+    }
+
+    /// Explicitly acknowledge plaintext replicated values on this trust boundary.
+    pub fn acknowledge_plaintext_replicated_values(mut self, acknowledged: bool) -> Self {
+        self.cache_builder = self
+            .cache_builder
+            .acknowledge_plaintext_replicated_values(acknowledged);
+        self
+    }
+
     /// Set the bounded event buffer capacity.
     pub fn event_buffer_capacity(mut self, capacity: usize) -> Self {
         self.cache_builder = self.cache_builder.event_buffer_capacity(capacity);
@@ -4071,6 +4176,7 @@ where
 
     /// Start the member runtime.
     pub async fn start(self) -> Result<HydraCache<C>> {
+        self.cache_builder.validate_replication_config()?;
         let control_plane = self
             .control_plane
             .unwrap_or_else(|| default_control_plane(self.cluster_name.clone()));
