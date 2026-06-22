@@ -38,10 +38,11 @@ The cluster surface is now suitable for controlled staging experiments:
 The cluster crates are still optional. A user who only needs local caching or
 database result caching does not pay for cluster dependencies.
 
-## Networked Control-Plane Continuation 0.43
+## Networked Control Plane 0.43
 
-The 0.43 continuation closes several modeled-only gaps without claiming that
-HydraCache has become a transparent distributed database:
+The 0.43 continuation and debt-closure gates close the modeled-only gap for the
+0.42/0.43 production-grid claims without claiming that HydraCache has become a
+transparent distributed database:
 
 - `RaftMetadataRuntime::durable(...)` recovers committed metadata from the
   durable raft log seam after restart.
@@ -54,9 +55,10 @@ HydraCache has become a transparent distributed database:
 - Live split-brain, read-your-writes, and replication helpers exercise the
   algorithms as integration boundaries instead of isolated pure functions only.
 
-The remaining production boundary is the full always-on multi-node consensus
-runtime loop: applications still need explicit topology/runtime integration
-before treating the cluster as a production distributed data grid.
+The production boundary is now operational rather than model-vs-networked:
+deployments still need explicit topology/runtime integration, durable storage
+configuration, authentication, supervision, capacity limits, and runbooks before
+the cluster is treated as a production distributed data grid.
 
 ## New 0.30 Safety Boundaries
 

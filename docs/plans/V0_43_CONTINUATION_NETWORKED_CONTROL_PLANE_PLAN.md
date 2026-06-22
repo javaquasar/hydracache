@@ -377,9 +377,10 @@ The `0.42` production distributed-data-grid claim may move from
 - C7: identity/authz is enforced on the new raft + replication routes; `cluster_auth`
   covers them.
 
-Until then, `docs/releases/0.42.0.md` and the production-grid wording should state
-plainly that multi-node behavior is currently validated by deterministic models and
-algorithmic tests, with networked validation tracked here.
+The 0.43 debt-closure Phase F gates have now satisfied these conditions. The
+production-grid wording may state that the multi-node and multi-zone behavior is
+validated over a real networked transport, while keeping distributed transactions
+and transparent database-write invalidation as explicit non-goals.
 
 ## Implementation Status
 
@@ -389,9 +390,9 @@ Status: **implemented as the 0.43 continuation slice.**
   `RaftLogStore` runtime wiring, committed-entry replay, and
   `durable_runtime_recovers_committed_metadata_after_reopen`.
 - C2 is covered at the executable wire boundary by `RaftWireMessage`,
-  `RaftMessageSink`, and axum raft routes that carry serialized payloads over
-  HTTP. The full always-on multi-node Raft loop remains an explicit integration
-  boundary rather than hidden magic.
+  `RaftMessageSink`, `networked_raft`, and axum raft routes that carry serialized
+  payloads over HTTP. The implementation remains explicit and opt-in rather than
+  hidden global infrastructure.
 - C3 is covered by `resolve_live_split_brain(...)` and `split_brain_live`.
 - C4 is covered by `live_read_your_writes(...)` and
   `read_your_writes_live`.

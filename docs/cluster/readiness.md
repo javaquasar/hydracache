@@ -7,6 +7,10 @@ self-healing seams. It still does not add full distributed transactions,
 active-active multi-region writes, CRDT convergence, KMS ownership, or
 TLS/certificate lifecycle management.
 
+The 0.43 debt-closure Phase F gates promote the earlier modeled-only caveat:
+multi-node and multi-zone behavior is now validated over real networked transport
+seams in addition to deterministic model coverage.
+
 ## 0.41 Architecture Decisions
 
 - [0001-gossip-liveness-vs-raft-topology.md](../adr/0001-gossip-liveness-vs-raft-topology.md)
@@ -85,6 +89,9 @@ The 0.43 slice adds:
 - `AutoRepairPolicy`, `ControlPlaneSnapshot`, `SnapshotSink`, and `UpgradeGuard`
   for advisory/active self-healing, snapshot restore, and compatibility-window
   enforcement;
+- live networked validation for zone loss, online resharding, locality/hedged
+  reads, split-brain healing, read-your-writes, replication under load, and
+  self-healing;
 - a whole-zone-loss fault in the deterministic fault harness.
 
 The following remain outside 0.43:

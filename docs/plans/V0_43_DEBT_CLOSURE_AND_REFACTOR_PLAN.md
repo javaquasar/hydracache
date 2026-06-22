@@ -1,7 +1,7 @@
 # HydraCache 0.43.x Debt Closure & Refactor — Codex Execution Plan
 
-Status: **execution plan for the 0.43 line.** Target audience: an autonomous coding
-agent (Codex). This plan closes every outstanding debt in `0.43` — it turns the
+Status: **implemented for the 0.43 line.** Target audience: an autonomous coding
+agent (Codex). This plan closed every outstanding debt in `0.43` — it turns the
 deterministic models and pure-function primitives shipped in `0.42`/`0.43` into a
 **real networked multi-node / multi-zone implementation**, registers the durable and
 wire formats, and refactors the cluster monofile — so the production-grid and
@@ -434,6 +434,11 @@ cargo xtask verify
 cargo test --workspace --all-targets --locked --features durable-log,sled-log-store
 cargo test --workspace --locked -- --ignored   # networked-raft, zone-loss, reshard, split-brain, anti-entropy chaos
 ```
+
+Phase F result: passed. On the Windows verification host, the ignored matrix was
+run in an isolated `target/phase-f-ignored` directory with
+`RUSTFLAGS=-C debuginfo=0` to avoid MSVC PDB/linker pressure; the test selection
+and assertions are the same as the gate above.
 
 Then:
 - Update `docs/releases/0.43.x.md` and the status banners on the 0.42/0.43 plans to state

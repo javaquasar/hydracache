@@ -1,5 +1,14 @@
 # HydraCache 0.43.0 Geo-Distribution & Elasticity Plan
 
+> **At a glance**
+> - **What:** zone/region-aware placement, online resharding, locality + hedged reads, tiered value storage, narrow atomic-invalidation slice, operational self-healing.
+> - **Why:** survive a zone loss and reshard online without a maintenance window.
+> - **After (depends on):** 0.42.
+> - **Unblocks:** 0.44 (active-active multi-region).
+> - **Status:** shipped — Phase F gates validate multi-node/zone behavior over a real networked transport; see [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md).
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.43.0`. Release notes:
 [`docs/releases/0.43.0.md`](../releases/0.43.0.md).
 

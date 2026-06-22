@@ -1,5 +1,14 @@
 # HydraCache 0.42.0 Production Grid Hardening Plan
 
+> **At a glance**
+> - **What:** durable multi-node Raft, durable replicated values, replication/failover under load, split-brain detection + merge, grid read-your-writes, node identity + authz, operator surface.
+> - **Why:** turn the 0.41 prototypes into supported, durable, restart-survivable features.
+> - **After (depends on):** 0.41.
+> - **Unblocks:** 0.43 (geo/elasticity).
+> - **Status:** shipped — the 0.43 debt-closure Phase F gates now validate the multi-node production-grid claim over a real networked transport; see [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md).
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.42.0`. Release notes:
 [`docs/releases/0.42.0.md`](../releases/0.42.0.md).
 
