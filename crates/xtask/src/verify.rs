@@ -5,6 +5,7 @@
 //! and intentionally excluded here.
 
 use std::error::Error;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::doc_check;
@@ -94,6 +95,10 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
     gates
 }
 
+fn windows_verify_target_dir(root: &Path) -> PathBuf {
+    root.join("target").join("xtask-verify")
+}
+
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = doc_check::find_repo_root()?;
 
@@ -108,10 +113,16 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     println!("doc-check: OK");
 
-    for Gate { label, args, env } in gates_for_platform(cfg!(windows)) {
+    let is_windows = cfg!(windows);
+    let windows_target_dir = is_windows.then(|| windows_verify_target_dir(&root));
+
+    for Gate { label, args, env } in gates_for_platform(is_windows) {
         println!("== {label} ==");
         let mut cmd = Command::new("cargo");
         cmd.args(args).current_dir(&root);
+        if let Some(target_dir) = &windows_target_dir {
+            cmd.env("CARGO_TARGET_DIR", target_dir);
+        }
         if let Some((key, value)) = env {
             cmd.env(key, value);
         }
@@ -129,7 +140,9 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{gates_for_platform, Gate};
+    use std::path::{Path, PathBuf};
+
+    use super::{gates_for_platform, windows_verify_target_dir, Gate};
 
     fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
         gates
@@ -175,5 +188,15 @@ mod tests {
         assert!(!gates
             .iter()
             .any(|gate| gate.label == "tests" && gate.args == ["test", "--workspace", "--locked"]));
+    }
+
+    #[test]
+    fn windows_verify_target_dir_is_inside_repo_target() {
+        let root = Path::new("repo");
+
+        assert_eq!(
+            windows_verify_target_dir(root),
+            PathBuf::from("repo").join("target").join("xtask-verify")
+        );
     }
 }
