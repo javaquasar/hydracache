@@ -261,6 +261,132 @@ HydraCache HTTP transport does not manage certificates or token rotation.
 - `WireVersionRejections`: mixed incompatible HTTP transport versions.
 - `GossipResetRecent`: discovery churn/tombstone reset was observed recently.
 
+## Cluster Pilot Gate 0.40
+
+`0.40.0` adds a controlled internal production pilot gate for a small fixed
+cluster: 2-5 members, application near-caches as clients, explicit invalidation
+propagation, single-owner rendezvous ownership, strict current wire
+compatibility, and either HydraCache transport auth or an explicitly declared
+external mesh/mTLS boundary.
+
+The claim is **controlled internal production pilot**, not full distributed data
+grid. `0.40.0` still does not provide value replication, backup owners,
+multi-node durable Raft, distributed transactions, TLS termination, certificate
+management, split-brain auto-merge, or transparent invalidation from arbitrary
+external writers.
+
+### Required Pilot Gate Commands
+
+Run these focused gates before an internal pilot:
+
+```powershell
+cargo test -p hydracache --test cluster_staging_gate --locked
+cargo test -p hydracache --test cluster_pilot_readiness --locked
+cargo test -p hydracache --test cluster_restart_rejoin_property --locked
+cargo test -p hydracache --test cluster_quorum_barrier --locked
+cargo test -p hydracache --test cluster_counters_partition --locked
+cargo test -p hydracache --test cluster_pilot_observability --locked
+cargo test -p hydracache --test cluster_ownership_stamp --locked
+cargo test -p hydracache --test cluster_routing_mode --locked
+cargo test -p hydracache --test cluster_near_cache_repair --locked
+cargo test -p hydracache --test cluster_topology_fence --locked
+cargo test -p hydracache --test cluster_rollback_bypass --locked
+cargo test -p hydracache-actuator-axum --test cluster_pilot_report_snapshot --locked
+cargo test -p hydracache-sandbox --test cluster_staging_routes --locked
+```
+
+Run the ignored pilot soak only on demand:
+
+```powershell
+cargo test -p hydracache --test cluster_pilot_soak --locked -- --ignored --nocapture
+```
+
+### Readiness Contract
+
+`HydraCache::cluster_pilot_readiness().is_pilot_ready()` is the single boolean
+pilot gate. It is true only when all checkable conditions are true:
+
+- transport posture is safe: `(auth && strict wire)` or declared external
+  mesh/mTLS boundary;
+- at least one member exists, and member count is in the supported `2..=5`
+  range;
+- strict current wire compatibility is configured;
+- invalidation diagnostics have no decode, publish, or receiver-closed errors;
+- lifecycle is running;
+- a topology epoch has been committed.
+
+`TransportPosture::highlight()` returns `AUTH MISSING` when neither HydraCache
+auth nor an external mesh boundary is declared. Actuator and sandbox responses
+surface this highlight as structured data so dashboards can render it loudly.
+
+### Pilot Report
+
+`HydraCache::cluster_pilot_report()` returns:
+
+- `readiness`: the boolean gate inputs and `is_pilot_ready()` result;
+- `transport_posture` and `highlights`;
+- `epoch`, `generation`, and ownership table `stamp`;
+- invalidation published/received/applied, lag, decode, publish, and receiver
+  counters;
+- `owner_load_total`, `remote_fetch_total`, and `hot_cache_hit_total`;
+- owner-load and remote-fetch success/error counters;
+- auth failures, wire-version failures, stale-generation rejections;
+- barrier timeouts and near-cache conservative invalidations;
+- lifecycle stop/restart counters.
+
+The ownership `stamp` is a drift signal, not authority. The authority boundary
+is `TopologyFence { committed_epoch }`: messages or ownership decisions stamped
+with an older epoch must be dropped.
+
+### Actuator And Sandbox
+
+The actuator exposes pilot reports at:
+
+```text
+GET /actuator/hydracache/cluster/pilot-report
+```
+
+The sandbox exposes a ready pilot topology replay:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:3000/sandbox/cluster/pilot-report -H "content-type: application/json" -d "{\"cluster\":\"sandbox-pilot\",\"members\":3}"
+```
+
+The response includes:
+
+- `passed`: `cluster_pilot_readiness().is_pilot_ready()`;
+- `report`: serialized `ClusterPilotReport`;
+- `runbook`: this document.
+
+### Quorum / Read-After-Write Barrier
+
+`WriteBarrierToken` and `HydraCache::read_after_write` mature the deferred
+quorum barrier from the database hardening plans. The read waits for the local
+watermark to satisfy the token. If the timeout elapses, it falls back to the
+owner/read-through path and refreshes from the loader instead of serving known
+stale local data. `ConsistencyMode::Quorum` now waits and times out;
+`ConsistencyMode::Leader` remains unsupported and fail-closed.
+
+### Near-Cache Repair
+
+`MetaDataContainer` implements the early near-cache repair slice:
+
+- generation/UUID change -> clear the partition;
+- sequence gap -> conservative invalidate;
+- duplicate or reordered older frames do not move the watermark backwards.
+
+The full periodic repairing task is not part of `0.40.0`.
+
+### Rollback / Bypass
+
+Rollback from pilot mode to local-only operation is intentionally boring:
+
+- disable cluster read-through / remote peer-fetch;
+- keep local explicit invalidation;
+- invalidate local entries during rollback;
+- bypass owner-load routes;
+- drain or ignore peer-fetch endpoints until the cluster report is healthy.
+
 ## Not Yet Production Data Grid Features
 
 HydraCache is not yet a Hazelcast-style distributed data grid. The cluster

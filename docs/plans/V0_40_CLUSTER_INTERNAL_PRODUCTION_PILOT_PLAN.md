@@ -1,5 +1,8 @@
 # HydraCache 0.40.0 Cluster Internal Production Pilot Plan
 
+Status: implemented in `0.40.0`. Release notes are in
+`docs/releases/0.40.0.md`.
+
 `0.40.0` raises the HydraCache cluster surface from *staging-ready* to a
 **controlled internal production pilot**. The pilot target is a small, fixed
 cluster (2–5 members) running behind a trusted network or service mesh, with
