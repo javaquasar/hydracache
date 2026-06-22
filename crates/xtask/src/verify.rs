@@ -9,42 +9,79 @@ use std::process::Command;
 
 use crate::doc_check;
 
-/// Each gate: a human label, the `cargo` arguments, and an optional extra env var.
-type Gate = (
-    &'static str,
-    &'static [&'static str],
-    Option<(&'static str, &'static str)>,
-);
+/// A release gate: a human label, the `cargo` arguments, and optional env vars.
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct Gate {
+    label: &'static str,
+    args: Vec<&'static str>,
+    env: Option<(&'static str, &'static str)>,
+}
 
-const GATES: &[Gate] = &[
-    ("format", &["fmt", "--all", "--", "--check"], None),
-    (
-        "clippy",
-        &[
+fn gate(
+    label: &'static str,
+    args: impl Into<Vec<&'static str>>,
+    env: Option<(&'static str, &'static str)>,
+) -> Gate {
+    Gate {
+        label,
+        args: args.into(),
+        env,
+    }
+}
+
+fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
+    let mut gates = vec![
+        gate("format", ["fmt", "--all", "--", "--check"], None),
+        gate(
             "clippy",
-            "--workspace",
-            "--all-targets",
-            "--all-features",
-            "--locked",
-            "--",
-            "-D",
-            "warnings",
-        ],
-        None,
-    ),
-    ("dependency bans", &["deny", "check", "bans"], None),
-    ("tests", &["test", "--workspace", "--locked"], None),
-    (
-        "docs",
-        &["doc", "--workspace", "--no-deps", "--locked"],
-        Some(("RUSTDOCFLAGS", "-D warnings")),
-    ),
-    (
-        "performance budget contract",
-        &["test", "-p", "xtask", "--test", "bench_budget", "--locked"],
-        None,
-    ),
-];
+            [
+                "clippy",
+                "--workspace",
+                "--all-targets",
+                "--all-features",
+                "--locked",
+                "--",
+                "-D",
+                "warnings",
+            ],
+            None,
+        ),
+        gate("dependency bans", ["deny", "check", "bans"], None),
+    ];
+
+    if is_windows {
+        // A running `target/debug/xtask.exe` cannot be overwritten on Windows.
+        // Test the rest of the workspace first, then run xtask lib/integration
+        // tests without rebuilding the xtask binary target.
+        gates.push(gate(
+            "tests (workspace excluding xtask)",
+            ["test", "--workspace", "--exclude", "xtask", "--locked"],
+            None,
+        ));
+        gates.push(gate(
+            "tests (xtask lib/integration)",
+            ["test", "-p", "xtask", "--lib", "--tests", "--locked"],
+            None,
+        ));
+    } else {
+        gates.push(gate("tests", ["test", "--workspace", "--locked"], None));
+    }
+
+    gates.extend([
+        gate(
+            "docs",
+            ["doc", "--workspace", "--no-deps", "--locked"],
+            Some(("RUSTDOCFLAGS", "-D warnings")),
+        ),
+        gate(
+            "performance budget contract",
+            ["test", "-p", "xtask", "--test", "bench_budget", "--locked"],
+            None,
+        ),
+    ]);
+
+    gates
+}
 
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = doc_check::find_repo_root()?;
@@ -60,7 +97,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
     }
     println!("doc-check: OK");
 
-    for &(label, args, env) in GATES {
+    for Gate { label, args, env } in gates_for_platform(cfg!(windows)) {
         println!("== {label} ==");
         let mut cmd = Command::new("cargo");
         cmd.args(args).current_dir(&root);
@@ -77,4 +114,47 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
     println!("verify: all gates passed");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{gates_for_platform, Gate};
+
+    fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
+        gates
+            .iter()
+            .find(|gate| gate.label == label)
+            .map(|gate| gate.args.as_slice())
+            .expect("gate exists")
+    }
+
+    #[test]
+    fn non_windows_uses_single_workspace_test_gate() {
+        let gates = gates_for_platform(false);
+
+        assert_eq!(
+            args_for(&gates, "tests"),
+            ["test", "--workspace", "--locked"]
+        );
+        assert!(!gates
+            .iter()
+            .any(|gate| gate.label == "tests (workspace excluding xtask)"));
+    }
+
+    #[test]
+    fn windows_test_gates_avoid_rebuilding_running_xtask_binary() {
+        let gates = gates_for_platform(true);
+
+        assert_eq!(
+            args_for(&gates, "tests (workspace excluding xtask)"),
+            ["test", "--workspace", "--exclude", "xtask", "--locked"]
+        );
+        assert_eq!(
+            args_for(&gates, "tests (xtask lib/integration)"),
+            ["test", "-p", "xtask", "--lib", "--tests", "--locked"]
+        );
+        assert!(!gates
+            .iter()
+            .any(|gate| gate.label == "tests" && gate.args == ["test", "--workspace", "--locked"]));
+    }
 }
