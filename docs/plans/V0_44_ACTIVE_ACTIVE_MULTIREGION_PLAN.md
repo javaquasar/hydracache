@@ -522,13 +522,19 @@ piggy-back on the W3 anti-entropy digests rather than dedicated probes.
 
 ---
 
-## Deferred To 0.45+ (Explicit)
+## Deferred To Later Releases (Explicit)
+
+Sequencing note: `0.45` is the cluster-resilience release
+(`V0_45_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`, the Hazelcast/ScyllaDB
+primitives `0.44` relies on), and `0.46` is cross-region session consistency
+(`V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`), which picks up the causal+ work
+deferred here.
 
 - **Full distributed transactions** (serializable cross-node/cross-region multi-key
   commit). Still a hard non-goal; `0.44` adds no transaction semantics.
 - **Causal+ / session-guarantee consistency across regions** (read-your-writes,
   monotonic reads spanning regions). `0.44` gives intra-region strong + cross-region
-  bounded-staleness; formal cross-region session guarantees are future work.
+  bounded-staleness; the formal cross-region session guarantees land in `0.46`.
 - **Automatic region placement / latency-based home assignment.** `0.44` assigns
   home regions explicitly; auto-placing homes by observed traffic is deferred.
 - **Cloud-provider-native autoscaler controllers.** `0.44` emits capacity signals +
