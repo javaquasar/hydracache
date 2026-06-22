@@ -69,6 +69,42 @@ fn operational_surface_repair_debt_threshold_enters_degraded_mode() {
 }
 
 #[test]
+fn operational_surface_live_status_reflects_grid_repair_signals() {
+    let controller = RepairDebtController::new(3);
+    let mut counters = ClusterGridCounters::default();
+    counters.under_replicated_keys = 4;
+    counters.tombstone_repair_debt = 3;
+    counters.repair_debt_degraded_mode = 1;
+    let diagnostics = ClusterGridDiagnostics {
+        counters,
+        ..ClusterGridDiagnostics::default()
+    };
+
+    let status = ClusterStatus::from_grid_diagnostics(
+        ClusterEpoch::new(11),
+        Some(ClusterNodeId::from("leader-a")),
+        vec![
+            MemberStatus {
+                node_id: ClusterNodeId::from("leader-a"),
+                reachable: true,
+            },
+            MemberStatus {
+                node_id: ClusterNodeId::from("backup-b"),
+                reachable: false,
+            },
+        ],
+        diagnostics.clone(),
+        QuorumPosture::DegradedSessionRyow,
+    );
+
+    assert_eq!(controller.observe(&diagnostics), RepairDebtMode::Degraded);
+    assert_eq!(status.partitions_under_replicated, 4);
+    assert_eq!(status.repair_debt, 3);
+    assert_eq!(status.quorum_posture, QuorumPosture::DegradedSessionRyow);
+    assert_eq!(status.members.len(), 2);
+}
+
+#[test]
 fn operational_surface_status_honors_cardinality_rule() {
     let mut diagnostics = ClusterGridDiagnostics::default();
     diagnostics.partition_replica_versions.insert(

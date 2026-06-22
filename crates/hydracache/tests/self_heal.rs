@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
 
 use hydracache::{
-    restore_topology_from_snapshot, AutoRepairPolicy, ClusterEpoch, ClusterNodeId, CompatVersion,
-    ControlPlaneSnapshot, InMemorySnapshotSink, NodeTopology, RepairAction, RepairMode,
-    SnapshotSink, UpgradeGuard, UpgradeStep, CACHE_INVALIDATION_FRAME_VERSION,
-    CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
+    restore_topology_from_snapshot, AutoRepairPolicy, ClusterEpoch, ClusterGridCounters,
+    ClusterNodeId, CompatVersion, ControlPlaneSnapshot, InMemorySnapshotSink, NodeTopology,
+    RepairAction, RepairMode, SnapshotSink, UpgradeGuard, UpgradeStep,
+    CACHE_INVALIDATION_FRAME_VERSION, CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION,
+    REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
 
 #[test]
@@ -59,6 +60,47 @@ fn self_heal_control_plane_restore_rebuilds_topology() {
 
     assert_eq!(restored.epoch(), ClusterEpoch::new(7));
     assert_eq!(restored.committed_map(), snapshot.topology);
+}
+
+#[test]
+fn control_plane_restore_rebuilds_topology_live() {
+    let mut snapshot = ControlPlaneSnapshot::new(ClusterEpoch::new(12));
+    snapshot.topology.insert(
+        ClusterNodeId::from("live-a"),
+        NodeTopology::new("eu-west", "az-a"),
+    );
+    snapshot.topology.insert(
+        ClusterNodeId::from("live-b"),
+        NodeTopology::new("eu-west", "az-b"),
+    );
+    snapshot.topology.insert(
+        ClusterNodeId::from("live-c"),
+        NodeTopology::new("eu-west", "az-c"),
+    );
+    let mut sink = InMemorySnapshotSink::new();
+    sink.put(snapshot.clone()).unwrap();
+
+    let latest = sink.latest().unwrap().expect("live snapshot");
+    let restored = restore_topology_from_snapshot(&latest).unwrap();
+
+    assert_eq!(restored.epoch(), ClusterEpoch::new(12));
+    assert_eq!(restored.committed_map(), snapshot.topology);
+}
+
+#[test]
+fn self_heal_live_repair_debt_and_lag_schedule_bounded_action() {
+    let mut counters = ClusterGridCounters::default();
+    counters.tombstone_repair_debt = 4;
+    counters.reshard_backfill_lag = 50;
+    let policy = AutoRepairPolicy::new(RepairMode::Active, 3, 100, 1);
+
+    let decision = policy.evaluate(
+        counters.tombstone_repair_debt,
+        counters.reshard_backfill_lag,
+    );
+
+    assert_eq!(decision.scheduled, vec![RepairAction::AntiEntropy]);
+    assert_eq!(decision.scheduled.len(), decision.capped_at);
 }
 
 #[test]
