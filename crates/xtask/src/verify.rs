@@ -52,15 +52,26 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
     if is_windows {
         // A running `target/debug/xtask.exe` cannot be overwritten on Windows.
         // Test the rest of the workspace first, then run xtask lib/integration
-        // tests without rebuilding the xtask binary target.
+        // tests without rebuilding the xtask binary target. Serializing the
+        // Windows test build also avoids transient linker locks on test EXEs.
         gates.push(gate(
             "tests (workspace excluding xtask)",
-            ["test", "--workspace", "--exclude", "xtask", "--locked"],
+            [
+                "test",
+                "--workspace",
+                "--exclude",
+                "xtask",
+                "--locked",
+                "-j",
+                "1",
+            ],
             None,
         ));
         gates.push(gate(
             "tests (xtask lib/integration)",
-            ["test", "-p", "xtask", "--lib", "--tests", "--locked"],
+            [
+                "test", "-p", "xtask", "--lib", "--tests", "--locked", "-j", "1",
+            ],
             None,
         ));
     } else {
@@ -147,11 +158,19 @@ mod tests {
 
         assert_eq!(
             args_for(&gates, "tests (workspace excluding xtask)"),
-            ["test", "--workspace", "--exclude", "xtask", "--locked"]
+            [
+                "test",
+                "--workspace",
+                "--exclude",
+                "xtask",
+                "--locked",
+                "-j",
+                "1"
+            ]
         );
         assert_eq!(
             args_for(&gates, "tests (xtask lib/integration)"),
-            ["test", "-p", "xtask", "--lib", "--tests", "--locked"]
+            ["test", "-p", "xtask", "--lib", "--tests", "--locked", "-j", "1"]
         );
         assert!(!gates
             .iter()

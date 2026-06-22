@@ -20,9 +20,10 @@ chaos/soak, Docker/testcontainers) are nightly / scheduled and are **not** part 
 `verify`.
 
 On Windows, `cargo xtask verify` splits the test gate into
-`cargo test --workspace --exclude xtask --locked` and
-`cargo test -p xtask --lib --tests --locked`. This keeps the same coverage while
-avoiding the OS lock on the currently running `target/debug/xtask.exe`.
+`cargo test --workspace --exclude xtask --locked -j 1` and
+`cargo test -p xtask --lib --tests --locked -j 1`. This keeps the same coverage while
+avoiding the OS lock on the currently running `target/debug/xtask.exe` and transient
+linker locks on test binaries.
 
 ## Gate registry
 
@@ -36,7 +37,7 @@ avoiding the OS lock on the currently running `target/debug/xtask.exe`.
 | Docs consistency | `cargo xtask doc-check` | CI + verify | `releases.toml` integrity (RULES R-11): file existence, version uniqueness, `depends_on` resolution, status validity |
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
 | Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
-| Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests) | CI + verify | unit + integration (RULES R-8) |
+| Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
 | Clippy | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | CI + verify | lints |
 | MSRV | `cargo check` + `cargo test` on Rust 1.88.0 | CI (separate job) | minimum supported Rust |
