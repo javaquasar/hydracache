@@ -11,6 +11,8 @@ they are persisted or transmitted across processes.
 | `CacheInvalidationFrame` | `1` | `hydracache` invalidation bus publishers | Readers accept version `1` only. Unknown versions are rejected before apply. | Decode error is reported and the receiver continues. |
 | `hydracache_invalidation_outbox` schema | `1` | `hydracache-db` outbox writers or application SQL writers | Workers accept schema version `1`. Unknown future versions must fail loud before draining. | Worker refuses to start; intent is left durable and pending. |
 | `hydracache_hook_schema` schema | `1` | `hydracache-db` generated hook installers | Reconciliation expects version `1` for installed hook plans. Missing or mismatched rows report drift. | Staging/release gates can fail before silently trusting disabled or stale hooks. |
+| `RaftLogStore` in-memory format | `1` | `hydracache-cluster-raft` metadata runtime | 0.41 tests cover append/replay, snapshot recovery, suffix truncation, and compaction guard semantics. Future durable engines must register their own format before rollout. | Runtime fails loud on store errors; unknown future durable formats must refuse startup. |
+| HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
 
 ## Upgrade Rules
 
@@ -36,3 +38,12 @@ reports. These reports are assisted-mode guardrails: they make missing hook
 schema rows, mismatched hook versions, outbox backlog, and dead-lettered rows
 visible to CI/staging gates. They do not make HydraCache a transparent DB proxy
 and do not remove the need to install hooks/outbox migrations in the database.
+
+## 0.41 Grid Slice
+
+`0.41.0` registers the first distributed-grid durable and wire-visible seams:
+`RaftLogStore` format version `1` for the metadata log seam and HTTP wire
+version `1` for encoded replicated/peer value transport. The release ships an
+in-memory store and feature-gated example path only; production durable engine
+selection remains future hardening work and must add its concrete on-disk format
+to this register.

@@ -1,5 +1,8 @@
 # HydraCache 0.41.0 Distributed Cache Grid Roadmap Plan
 
+Status: implemented in `0.41.0`. Release notes:
+[`docs/releases/0.41.0.md`](../releases/0.41.0.md).
+
 `0.41.0` defines the roadmap and the first *safe* implementation slice toward a
 production distributed cache grid. It is deliberately a roadmap release: a true
 production data grid spans multiple releases and changes the product class.

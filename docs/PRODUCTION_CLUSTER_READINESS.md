@@ -387,14 +387,76 @@ Rollback from pilot mode to local-only operation is intentionally boring:
 - bypass owner-load routes;
 - drain or ignore peer-fetch endpoints until the cluster report is healthy.
 
+## Distributed Grid First Slice 0.41
+
+`0.41.0` moves the optional cluster surface from a controlled internal pilot
+toward a distributed cache grid, but it deliberately does **not** claim full
+production data-grid readiness.
+
+New safe-slice capabilities:
+
+- ADR-backed authority rule: gossip/discovery is liveness, Raft-committed
+  topology is authority.
+- `RaftLogStore` seam for the metadata runtime, with deterministic in-memory
+  append/replay, snapshot, truncation, and compaction-guard tests.
+- Deterministic primary plus backup placement via
+  `ClusterReplicationStrategy`, `Replicas`, and `EffectiveReplicationMap`.
+- Rebalance as plan data through `RebalancePlan`, `RebalanceTask`, and
+  `RebalanceTaskAck`.
+- Versioned `ReplicatedSlot` tombstones with tombstone-wins-on-tie ordering and
+  repair-gated GC budget tracking.
+- Opt-in value-replication configuration with mandatory byte cap validation for
+  member/client startup.
+- Replicated-value confidentiality posture: `Replication::LocalOnly`,
+  operator-supplied `ReplicationKeyProvider`, redaction hook, and loud
+  `REPLICATED VALUES PLAINTEXT` readiness highlight when plaintext replication
+  is not acknowledged.
+- Near-cache `RepairingTask`, backup promotion primitive, per-replica
+  anti-entropy table, authoritative hot-copy invalidation directory, and
+  aggregate grid counters.
+- Metric-cardinality discipline: per-key/partition/replica detail is diagnostic
+  snapshot data, not exported metric labels.
+
+Still outside the 0.41 claim:
+
+- production multi-node durable Raft engine selection;
+- durable replicated value storage across process restarts;
+- split-brain auto-merge;
+- distributed transactions;
+- transparent invalidation from arbitrary external database writes;
+- automatic SQL dependency detection;
+- TLS, mTLS, certificate, identity, or KMS management.
+
+Focused 0.41 gates:
+
+```powershell
+cargo test -p hydracache --locked adr_presence
+cargo test -p hydracache --locked topology_fence
+cargo test -p hydracache --locked placement
+cargo test -p hydracache --locked rebalance
+cargo test -p hydracache --locked tombstone_replication
+cargo test -p hydracache --locked replication
+cargo test -p hydracache --locked replication_data_protection
+cargo test -p hydracache --locked near_cache_repair
+cargo test -p hydracache --locked failover
+cargo test -p hydracache --locked anti_entropy
+cargo test -p hydracache --locked hot_cache_invalidation
+cargo test -p hydracache --locked fault_injector_selftest
+cargo test -p hydracache-cluster-transport-axum --locked replication
+cargo test -p hydracache-cluster-raft --locked persistent_log
+cargo test -p hydracache-cluster-raft --locked --features sled-log-store persistent_log
+cargo test -p hydracache-observability --locked cardinality
+```
+
 ## Not Yet Production Data Grid Features
 
 HydraCache is not yet a Hazelcast-style distributed data grid. The cluster
 surface intentionally does not yet include:
 
 - TLS termination, certificate rotation, or mTLS identity management;
-- full multi-node Raft networking and durable Raft log storage;
-- value replication, backup ownership, or failover repair;
+- full multi-node Raft networking and production durable Raft log storage;
+- production-grade durable value replication, backup ownership, or failover
+  repair;
 - cross-process lock leasing or distributed transactions;
 - automatic database CDC invalidation;
 - write-enabled remote admin APIs;
