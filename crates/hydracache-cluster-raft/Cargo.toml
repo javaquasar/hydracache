@@ -8,6 +8,10 @@ repository.workspace = true
 description = "raft-rs metadata control-plane runtime for HydraCache cluster mode"
 readme = "README.md"
 
+[features]
+default = []
+sled-log-store = []
+
 [dependencies]
 async-trait.workspace = true
 hydracache.workspace = true

@@ -94,8 +94,15 @@ use hydracache::{
     ClusterDiagnostics, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
     ClusterMembershipSubscriber, ClusterNodeId, ClusterRole, InMemoryCluster, RaftMetadataCommand,
 };
+mod log_store;
+
+pub use log_store::{
+    InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult,
+};
+#[cfg(feature = "sled-log-store")]
+pub use log_store::SledRaftLogStore;
+
 use raft::eraftpb::{Entry, EntryType};
-use raft::storage::MemStorage;
 use raft::{Config, RawNode, StateRole};
 use slog::{o, Logger};
 
@@ -331,7 +338,7 @@ impl From<StateRole> for RaftRuntimeRole {
 }
 
 struct RaftRuntimeState {
-    raw_node: RawNode<MemStorage>,
+    raw_node: RawNode<InMemoryRaftLogStore>,
     commands: Vec<RaftMetadataCommandEnvelope>,
     applied_command_ids: BTreeSet<String>,
     results: Vec<RaftCommandResult>,
@@ -408,7 +415,7 @@ impl RaftMetadataRuntime {
     ) -> CacheResult<Self> {
         let cluster_name = config.cluster_name.clone();
         let raft_node_id = config.raft_node_id;
-        let storage = MemStorage::new_with_conf_state((vec![raft_node_id], vec![]));
+        let storage = InMemoryRaftLogStore::new_with_conf_state((vec![raft_node_id], vec![]));
         let logger = Logger::root(slog::Discard, o!());
         let mut raw_node =
             RawNode::new(&config.raft_config(), storage, &logger).map_err(to_cache_error)?;
@@ -798,28 +805,28 @@ impl RaftRuntimeState {
 
             if !ready.snapshot().is_empty() {
                 store
-                    .wl()
-                    .apply_snapshot(ready.snapshot().clone())
+                    .save_snapshot(ready.snapshot(), 0)
                     .map_err(to_cache_error)?;
             }
 
             let committed_entries = ready.take_committed_entries();
 
             if !ready.entries().is_empty() {
-                store.wl().append(ready.entries()).map_err(to_cache_error)?;
+                store.append(ready.entries()).map_err(to_cache_error)?;
             }
 
             if let Some(hard_state) = ready.hs() {
-                store.wl().set_hardstate(hard_state.clone());
+                store.save_hard_state(hard_state).map_err(to_cache_error)?;
             }
 
             self.apply_committed_entries(committed_entries)?;
 
             let mut light_ready = self.raw_node.advance(ready);
             if let Some(commit) = light_ready.commit_index() {
-                store.wl().mut_hard_state().set_commit(commit);
+                store.set_commit(commit);
             }
             self.apply_committed_entries(light_ready.take_committed_entries())?;
+            store.mark_applied(self.applied_index);
             self.raw_node.advance_apply();
         }
         Ok(())
