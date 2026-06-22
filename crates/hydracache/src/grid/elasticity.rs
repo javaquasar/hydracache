@@ -7,11 +7,11 @@ use crate::cluster::{
     partition_for_key, ClusterEpoch, ClusterMember, ClusterNodeId, PartitionId,
     RendezvousClusterOwnership,
 };
-use crate::grid::{ClusterReplicationStrategy, EffectiveReplicationMap, Replicas};
-use crate::grid_hardening::{
+use crate::grid::hardening::{
     ReplicatedValueRecord, ReplicatedValueStore, ValueStoreError, ValueVersion, WriteWatermark,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
+use crate::grid::{ClusterReplicationStrategy, EffectiveReplicationMap, Replicas};
 use crate::invalidation_bus::CACHE_INVALIDATION_FRAME_VERSION;
 
 /// Metadata key used for a node's authoritative region.

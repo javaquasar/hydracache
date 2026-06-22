@@ -5,6 +5,9 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
+pub(crate) mod elasticity;
+pub(crate) mod hardening;
+
 use crate::cluster::{
     ClusterEpoch, ClusterGeneration, ClusterMember, ClusterNodeId, PartitionId,
     RendezvousClusterOwnership,
@@ -1041,7 +1044,7 @@ pub struct ClusterGridDiagnostics {
     /// Replicated value confidentiality posture.
     pub replicated_value_security: ReplicatedValueSecurityPosture,
     /// Last split-brain report retained for operator diagnostics.
-    pub last_split_brain: Option<crate::grid_hardening::SplitBrainReport>,
+    pub last_split_brain: Option<hardening::SplitBrainReport>,
 }
 
 /// Shared pointer alias for operator-provided key providers.

@@ -472,8 +472,6 @@ mod consistency;
 mod entry;
 mod events;
 mod grid;
-mod grid_elasticity;
-mod grid_hardening;
 mod inflight;
 mod invalidation_bus;
 mod refresh;
@@ -508,18 +506,7 @@ pub use consistency::{
     WriteBarrierToken,
 };
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
-pub use grid::{
-    cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
-    replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
-    ClusterGridCounters, ClusterGridDiagnostics, ClusterMetricDescriptor,
-    ClusterReplicationStrategy, EffectiveReplicationMap, HotCacheDirectory,
-    PartitionReplicaVersions, PromotionPhase, RebalancePlan, RebalanceTask, RebalanceTaskAck,
-    RedactReplicatedValue, RepairingTask, Replicas, ReplicatedSlot, ReplicatedValueSecurityPosture,
-    Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
-    ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
-    TombstoneBudget, TombstoneTracker,
-};
-pub use grid_elasticity::{
+pub use grid::elasticity::{
     hedge_winner, plan_hedged_read, restore_topology_from_snapshot, topology_from_member_metadata,
     validate_move_preserves_zone_quorum, AtomicInvalidationError, AutoRepairDecision,
     AutoRepairPolicy, BatchInvalidationState, CompatVersion, ControlPlaneSnapshot, HedgePolicy,
@@ -531,7 +518,7 @@ pub use grid_elasticity::{
     CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
     NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
-pub use grid_hardening::{
+pub use grid::hardening::{
     anti_entropy_repair, live_read_your_writes, merge_split_brain_records, quorum_read_your_writes,
     resolve_live_split_brain, split_brain_winner, AdaptiveWindow, ClusterMergeOutcome,
     DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore, LiveReadYourWritesDecision,
@@ -539,6 +526,17 @@ pub use grid_hardening::{
     PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision, ReadConsistency,
     ReplicatedValueRecord, ReplicatedValueStore, SealedBytes, SplitBrainReport, ValueStoreError,
     ValueVersion, WriteWatermark, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
+};
+pub use grid::{
+    cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
+    replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
+    ClusterGridCounters, ClusterGridDiagnostics, ClusterMetricDescriptor,
+    ClusterReplicationStrategy, EffectiveReplicationMap, HotCacheDirectory,
+    PartitionReplicaVersions, PromotionPhase, RebalancePlan, RebalanceTask, RebalanceTaskAck,
+    RedactReplicatedValue, RepairingTask, Replicas, ReplicatedSlot, ReplicatedValueSecurityPosture,
+    Replication, ReplicationConfig, ReplicationConfigError, ReplicationCryptoError,
+    ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
+    TombstoneBudget, TombstoneTracker,
 };
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
