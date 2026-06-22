@@ -1,0 +1,57 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Building a Local-First Distributed Cache in Rust"
+  subtitle: "Designing HydraCache from local cache core to distributed coordination"
+  author: "Artur Buzov"
+  date: today
+  chapters:
+    - index.qmd
+    - 01_why-caching-is-hard.qmd
+    - 02_local-cache-core.qmd
+    - 03_invalidation.qmd
+    - 04_query-result-caching.qmd
+    - 05_distributed-cache-coordination.qmd
+    - 06_performance-hot-path.qmd
+  appendices:
+    - appendix_reference-projects.qmd
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme:
+      - cosmo
+      - styles/book.scss
+    code-copy: true
+    code-overflow: wrap
+
+  pdf:
+    documentclass: scrbook
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+    colorlinks: true
+    linkcolor: black
+    urlcolor: blue
+    mermaid-format: png
+    highlight-style: github
+    code-block-bg: "#f7f7f7"
+    code-block-border-left: false
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=28mm
+      - right=28mm
+
+execute:
+  freeze: auto
+
+crossref:
+  fig-title: "Figure"
+  tbl-title: "Table"
+  lst-title: "Listing"

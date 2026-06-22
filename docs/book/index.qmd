@@ -1,0 +1,36 @@
+---
+title: "Building a Local-First Distributed Cache in Rust"
+subtitle: "Designing HydraCache from local cache core to distributed coordination"
+author: "Artur Buzov"
+---
+
+# Preface {.unnumbered}
+
+This book follows the design and implementation of HydraCache: a Rust-native cache library that starts as a convenient local cache and grows toward database result caching and distributed synchronization.
+
+The goal is not only to document HydraCache. The goal is to explain the systems ideas behind it:
+
+- local cache ergonomics
+- key design
+- TTL and eviction
+- invalidation
+- query result caching
+- duplicate load suppression
+- distributed cache coordination
+
+The source material lives next to the code:
+
+- [Knowledge process](../KNOWLEDGE_PROCESS.md)
+- [Learning track](../learning/00_learning_track.md)
+- [Unified architecture](../../HYDRACACHE_UNIFIED_ARCHITECTURE.md)
+- [Reference reread index](../../HYDRACACHE_REFERENCE_REREAD_INDEX.md)
+
+```{mermaid}
+%%| label: fig-book-pipeline
+%%| fig-cap: "How project knowledge becomes book material."
+flowchart LR
+  A[Development Work] --> B[Development Log]
+  B --> C[Learning Notes]
+  C --> D[ADR and Synthesis]
+  D --> E[Book Chapter]
+```

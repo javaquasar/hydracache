@@ -1,0 +1,30 @@
+/*-- scss:defaults --*/
+
+$font-family-serif: Georgia, "Times New Roman", serif;
+$font-family-sans-serif: "Segoe UI", sans-serif;
+$font-family-monospace: "JetBrains Mono", "Cascadia Code", monospace;
+
+$body-color: #242424;
+$link-color: #2368a2;
+$code-block-bg: #f7f7f7;
+
+/*-- scss:rules --*/
+
+body {
+  line-height: 1.62;
+}
+
+h1,
+h2,
+h3 {
+  font-family: $font-family-serif;
+}
+
+pre code {
+  font-size: 0.92rem;
+}
+
+.quarto-figure {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}

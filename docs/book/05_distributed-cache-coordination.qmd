@@ -1,0 +1,35 @@
+# Distributed Cache Coordination
+
+HydraCache should grow toward distributed synchronization without becoming a database or a full distributed map.
+
+The future role model is explicit:
+
+- `Local`: no distributed dependencies
+- `Client`: local near-cache plus synchronization with members
+- `Member`: participates in ownership and serves peer fetches
+
+```{mermaid}
+%%| label: fig-cluster-roles
+%%| fig-cap: "HydraCache cluster roles."
+flowchart LR
+  A[Application Node] --> B{Cluster Mode}
+  B --> C[Local]
+  B --> D[Client]
+  B --> E[Member]
+  D --> F[Near Cache]
+  D --> G[Invalidation Bus]
+  E --> H[Owned Keys]
+  E --> I[Peer Fetch Service]
+```
+
+Phase 2 adds distributed invalidation. Phase 3 adds member/client ownership and distributed fill coordination.
+
+## Source Notes
+
+Use these files when expanding this chapter:
+
+- [Distributed coordination note](../learning/distributed-cache-coordination.md)
+- [Groupcache reread](../../../groupcache/GROUPCACHE_HYDRACACHE_REREAD.md)
+- [Hazelcast reread](../../../hazelcast/HAZELCAST_HYDRACACHE_REREAD.md)
+- [Olric reread](../../../olric/OLRIC_HYDRACACHE_REREAD.md)
+- [Coerce-rs reread](../../../coerce-rs/COERCE_RS_HYDRACACHE_REREAD.md)

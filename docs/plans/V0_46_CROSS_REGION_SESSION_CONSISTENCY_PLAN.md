@@ -1,5 +1,14 @@
 # HydraCache 0.46.0 Cross-Region Session Consistency (Causal+) Plan
 
+> **At a glance**
+> - **What:** session context/watermark, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence + bounded staleness, session lifecycle.
+> - **Why:** make the active-active grid usable for real application **sessions** (causal+), not just eventual reads.
+> - **After (depends on):** 0.45.
+> - **Unblocks:** 0.47+ ecosystem / external consumers.
+> - **Status:** planned.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 `0.46.0` closes the consistency gap that active-active multi-region (`0.44`) opened
 and that the cluster-resilience primitives (`0.45`) made tractable. Through `0.45`
 the grid offered two ends of a spectrum: strong read-your-writes **within** a region

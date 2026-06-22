@@ -1,0 +1,33 @@
+# Why Caching Is Harder Than It Looks
+
+Caching starts with a comforting promise: avoid doing the same expensive work twice.
+
+The hard parts appear immediately after that:
+
+- How do we know two requests mean the same thing?
+- How long can a value stay fresh?
+- Who removes stale values?
+- What happens when ten callers miss at the same time?
+- What changes when the application runs on more than one node?
+
+HydraCache is designed around this progression. It starts with a local cache, then adds query adapters, then distributed synchronization.
+
+```{mermaid}
+%%| label: fig-cache-problem-space
+%%| fig-cap: "The main problem areas HydraCache has to address."
+flowchart TD
+  A[Cache Lookup] --> B[Key Design]
+  A --> C[Value Storage]
+  A --> D[TTL and Eviction]
+  A --> E[Invalidation]
+  E --> F[Multi-node Synchronization]
+  F --> G[Client and Member Roles]
+```
+
+## Source Notes
+
+Use these files when expanding this chapter:
+
+- [Local cache core](../learning/local-cache-core.md)
+- [Cache invalidation](../learning/cache-invalidation.md)
+- [Unified architecture](../../HYDRACACHE_UNIFIED_ARCHITECTURE.md)

@@ -1,0 +1,38 @@
+# Performance Hot Path
+
+The common case must stay cheap.
+
+For HydraCache, the common case is a local cache hit:
+
+```text
+logical key -> cache lookup -> decode -> return
+```
+
+Everything else should pay its own cost:
+
+- loader execution
+- tag invalidation
+- metrics
+- distributed synchronization
+- DB adapter work
+
+```{mermaid}
+%%| label: fig-hot-path-boundary
+%%| fig-cap: "Keep optional work out of the local hit path."
+flowchart LR
+  A[Cache Hit] --> B[Moka Lookup]
+  B --> C[Decode]
+  C --> D[Return]
+  E[Invalidation] -.outside hot path.-> B
+  F[Cluster Sync] -.outside hot path.-> B
+  G[DB Adapter] -.miss path only.-> B
+```
+
+## Source Notes
+
+Use these files when expanding this chapter:
+
+- [Performance hot path note](../learning/performance-hot-path.md)
+- [Moka reread](../../../moka/MOKA_HYDRACACHE_REREAD.md)
+- [Caffeine reread](../../../caffeine/CAFFEINE_HYDRACACHE_REREAD.md)
+- [HikariCP reread](../../../hikaricp/HIKARICP_HYDRACACHE_REREAD.md)

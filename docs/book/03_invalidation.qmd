@@ -1,0 +1,39 @@
+# Invalidation
+
+Invalidation is the center of the cache design, not an afterthought.
+
+HydraCache starts with explicit invalidation:
+
+- values may have tags
+- tags map back to cache keys
+- callers invalidate tags after writes
+- TTL bounds the damage when invalidation is missed
+
+```rust
+cache.invalidate_tag("user:42").await?;
+cache.invalidate_tag("users_table").await?;
+```
+
+```{mermaid}
+%%| label: fig-invalidation-load-race
+%%| fig-cap: "The invalidation/load race."
+sequenceDiagram
+  participant A as Reader
+  participant B as Writer
+  participant C as Cache
+  A->>C: miss, start loader
+  B->>C: invalidate tag user:42
+  C-->>B: tag removed
+  A->>C: store loaded old value
+  C-->>A: return value
+```
+
+Generation counters are the likely Phase 1 mitigation for workloads that need stronger behavior around concurrent writes and reads.
+
+## Source Notes
+
+Use these files when expanding this chapter:
+
+- [Cache invalidation note](../learning/cache-invalidation.md)
+- [ReadySet reread](../../../readyset/READYSET_HYDRACACHE_REREAD.md)
+- [Olric reread](../../../olric/OLRIC_HYDRACACHE_REREAD.md)

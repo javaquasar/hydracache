@@ -1,14 +1,5 @@
 # HydraCache 0.45.0 Cluster Resilience & Coordination Plan
 
-> **At a glance**
-> - **What:** tunable per-operation consistency levels, hinted handoff, incremental Merkle repair, phi-accrual failure detector, single-key conditional writes + fenced lock, durable replayable invalidation stream.
-> - **Why:** make the cluster resilient under the messy middle — brief outages, flapping liveness, lost invalidations — using proven Hazelcast/ScyllaDB primitives.
-> - **After (depends on):** 0.44.
-> - **Unblocks:** 0.46 (causal+ sessions reuse tunable levels, repair, and the invalidation ring).
-> - **Status:** planned.
->
-> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
-
 `0.45.0` deepens the **cluster itself**. Releases `0.42`–`0.44` built the shape of a
 production grid — durable multi-node Raft (`0.42`), zone/region-aware placement and
 online resharding (`0.43`), and active-active multi-region with CRDTs and a WAN
@@ -560,14 +551,12 @@ gauge, and the fell-behind counter tells operators when to grow it.
 
 - **Full distributed transactions** (serializable cross-node/cross-region multi-key
   commit). Still a hard non-goal; W5 is single-key only.
-- **Causal+ / cross-region session guarantees** (read-your-writes / monotonic reads
-  spanning regions for a session). Picked up next in `0.46`
-  (`V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`); it builds directly on W1 (tunable
-  levels), W3 (read-repair), and W6 (invalidation ring).
 - **Ecosystem / external consumers** (stable client protocol, Hibernate L2 provider,
   SDKs, multi-tenancy, residency). Drafted in
-  `DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`; slotted after the consistency work
-  (target 0.47+).
+  `DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`; slotted after the cluster-resilience
+  work.
+- **Causal+ / cross-region session guarantees** (read-your-writes / monotonic reads
+  spanning regions for a session). Deferred from `0.44`.
 - **Automatic home-region placement / latency-based home assignment** and
   **provider-specific autoscaler controllers.** Deferred from `0.44`.
 - **Compute-near-data / entry processors.** Out of scope (RCE non-goal).
@@ -654,9 +643,9 @@ adopted) only if **all** of the following boolean conditions hold:
 - The fault model adds liveness flapping, outage-window boundaries, far-behind
   subscriber, and lock pause/resume, and all those suites pass.
 - Docs keep the prominent **"still not distributed transactions"** warning (W5 is
-  single-key only) and list causal+ session guarantees (`0.46`), ecosystem/external
-  consumers (0.47+), auto home-placement, and provider-specific autoscaler controllers
-  as deferred.
+  single-key only) and list ecosystem/external consumers, causal+ session guarantees,
+  auto home-placement, and provider-specific autoscaler controllers as deferred to
+  0.46+.
 
 If any condition fails, `0.45.0` ships **without** the corresponding claim, documents
 exactly which work item(s) did not land, and the claim moves to a later release.

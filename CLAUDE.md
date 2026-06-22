@@ -40,7 +40,10 @@ roles). Crates live under `crates/`; the workspace version is in the root
 | Compatibility register (durable/wire artifacts) | `docs/COMPAT.md` |
 | Architecture decision records | `docs/adr/` |
 | Architecture overview | `ARCHITECTURE.md`, `docs/architecture/` |
+| Market positioning ("why not Redis?") | `docs/POSITIONING.md` |
 | Cross-project review (Hazelcast/ScyllaDB/etc.) | `docs/plans/V0_37_41_REVIEW_AND_IMPROVEMENTS.md` |
+| Competitive analysis + evolution (cluster) | `docs/COMPETITIVE_ANALYSIS_AND_EVOLUTION.md` |
+| Storage engine + data-platform evolution | `docs/STORAGE_AND_DATA_PLATFORM_EVOLUTION.md` |
 | Testing conventions | `docs/TESTING.md` |
 | Observability contract | `docs/OBSERVABILITY_CONTRACT.md` |
 | Feature matrix | `docs/FEATURE_MATRIX.md` |

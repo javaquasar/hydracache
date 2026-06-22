@@ -1,0 +1,43 @@
+# Query Result Caching
+
+Database result caching is a major HydraCache use case, but it is not the entire product.
+
+The core rule is simple:
+
+```text
+HydraCache core stays independent of SQLx.
+SQLx integration lives in an adapter crate.
+```
+
+The first adapter is `hydracache-sqlx`, because SQLx gives Rust applications compile-time SQL validation and typed result mapping.
+
+```rust
+let user: User = cached_query_as!(
+    User,
+    cache,
+    "SELECT id, name FROM users WHERE id = $1",
+    CacheOptions::new()
+        .ttl(Duration::from_secs(300))
+        .tags(["user:42"]),
+    user_id
+)
+.await?;
+```
+
+```{mermaid}
+%%| label: fig-query-adapter-boundary
+%%| fig-cap: "DB query caching is an adapter layer above the cache core."
+flowchart TD
+  A[Application] --> B[hydracache-sqlx]
+  B --> C[SQLx compile-time validation]
+  B --> D[HydraCache core]
+  D --> E[Moka local backend]
+```
+
+## Source Notes
+
+Use these files when expanding this chapter:
+
+- [Query result caching note](../learning/query-result-caching.md)
+- [SQLx reread](../../../sqlx/SQLX_HYDRACACHE_REREAD.md)
+- [ReadySet reread](../../../readyset/READYSET_HYDRACACHE_REREAD.md)

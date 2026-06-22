@@ -1,5 +1,14 @@
 # HydraCache 0.44.0 Active-Active Multi-Region Plan
 
+> **At a glance**
+> - **What:** bounded-staleness multi-region writes, CRDT value types, WAN transport + cross-region anti-entropy, region failover/DR, capacity signals, geo observability.
+> - **Why:** give globally-distributed callers local-latency writes under a documented, monitored staleness contract.
+> - **After (depends on):** 0.43.
+> - **Unblocks:** 0.45 (cluster resilience) and 0.46 (causal+ sessions).
+> - **Status:** planned.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 `0.44.0` builds on the zone/region-aware, elastically-resizable grid that
 `0.43.0` delivered. Where `0.43` made placement **zone/region-aware** (replicas
 spread so a zone loss never loses a quorum), reads **locality-aware**, membership

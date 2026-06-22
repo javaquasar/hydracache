@@ -1,0 +1,25 @@
+# Reference Projects {.appendix}
+
+HydraCache's design is informed by several reference projects.
+
+The living index is here:
+
+- [HydraCache reference reread index](../../HYDRACACHE_REFERENCE_REREAD_INDEX.md)
+
+## Local Cache Core
+
+- [Moka reread](../../../moka/MOKA_HYDRACACHE_REREAD.md)
+- [Caffeine reread](../../../caffeine/CAFFEINE_HYDRACACHE_REREAD.md)
+- [HikariCP reread](../../../hikaricp/HIKARICP_HYDRACACHE_REREAD.md)
+
+## Distributed Coordination
+
+- [Groupcache reread](../../../groupcache/GROUPCACHE_HYDRACACHE_REREAD.md)
+- [Hazelcast reread](../../../hazelcast/HAZELCAST_HYDRACACHE_REREAD.md)
+- [Olric reread](../../../olric/OLRIC_HYDRACACHE_REREAD.md)
+- [Coerce-rs reread](../../../coerce-rs/COERCE_RS_HYDRACACHE_REREAD.md)
+
+## DB Adapter Boundary
+
+- [SQLx reread](../../../sqlx/SQLX_HYDRACACHE_REREAD.md)
+- [ReadySet reread](../../../readyset/READYSET_HYDRACACHE_REREAD.md)

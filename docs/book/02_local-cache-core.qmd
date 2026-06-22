@@ -1,0 +1,50 @@
+# Local Cache Core
+
+HydraCache must be useful before any database adapter or distributed feature exists.
+
+The Phase 0 promise is intentionally small:
+
+- create a cache
+- get a value
+- put a value
+- load on miss
+- attach TTL and tags
+- invalidate by key or tag
+
+```rust
+let cache = HydraCache::local()
+    .default_ttl(Duration::from_secs(300))
+    .max_capacity(100_000)
+    .build()?;
+
+let profile = cache
+    .get_or_load(
+        "profile:user:42",
+        CacheOptions::new()
+            .ttl(Duration::from_secs(300))
+            .tags(["user:42", "users_table"]),
+        || async { load_profile(user_id).await },
+    )
+    .await?;
+```
+
+```{mermaid}
+%%| label: fig-local-cache-flow
+%%| fig-cap: "The local cache-aside flow."
+flowchart LR
+  A[Caller] --> B[HydraCache get_or_load]
+  B --> C{Cache hit?}
+  C -->|yes| D[Decode and return]
+  C -->|no| E[Run loader]
+  E --> F[Store value with TTL and tags]
+  F --> D
+```
+
+## Source Notes
+
+Use these files when expanding this chapter:
+
+- [Local cache core note](../learning/local-cache-core.md)
+- [Moka reread](../../../moka/MOKA_HYDRACACHE_REREAD.md)
+- [Caffeine reread](../../../caffeine/CAFFEINE_HYDRACACHE_REREAD.md)
+- [HikariCP reread](../../../hikaricp/HIKARICP_HYDRACACHE_REREAD.md)
