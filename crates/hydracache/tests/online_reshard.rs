@@ -23,6 +23,28 @@ fn online_reshard_write_during_move_is_shadowed_to_both_owners() {
 }
 
 #[test]
+fn online_reshard_write_during_move_shadowed_live() {
+    let partition = PartitionId::new(7);
+    let movement = PartitionMove::new(partition, "old-owner", "new-owner", 100);
+    let mut old_owner = InMemoryReplicatedValueStore::default();
+    let mut new_owner = InMemoryReplicatedValueStore::default();
+    let record =
+        ReplicatedValueRecord::value(partition, 22, ClusterEpoch::new(4), b"shadowed-live");
+
+    for target in movement.write_targets() {
+        if target == ClusterNodeId::from("old-owner") {
+            old_owner.upsert("user:7", record.clone()).unwrap();
+        }
+        if target == ClusterNodeId::from("new-owner") {
+            new_owner.upsert("user:7", record.clone()).unwrap();
+        }
+    }
+
+    assert_eq!(old_owner.get("user:7").unwrap().unwrap().version, 22);
+    assert_eq!(new_owner.get("user:7").unwrap().unwrap().version, 22);
+}
+
+#[test]
 fn online_reshard_read_your_writes_holds_across_a_move() {
     let partition = PartitionId::new(3);
     let mut movement = PartitionMove::new(partition, "old-owner", "new-owner", 10);
@@ -43,6 +65,28 @@ fn online_reshard_read_your_writes_holds_across_a_move() {
 }
 
 #[test]
+fn online_reshard_read_your_writes_holds_across_a_live_move() {
+    let partition = PartitionId::new(3);
+    let mut movement = PartitionMove::new(partition, "old-owner", "new-owner", 10);
+    let mut target = InMemoryReplicatedValueStore::default();
+
+    for version in 1..=5 {
+        let watermark = WriteWatermark::new(partition, version, ClusterEpoch::new(9));
+        let record =
+            ReplicatedValueRecord::value(partition, version, ClusterEpoch::new(9), b"live-move");
+        target.upsert("user:live", record).unwrap();
+        assert!(target.get("user:live").unwrap().unwrap().version >= watermark.version);
+    }
+    movement.record_backfill(10);
+    movement.advance();
+    movement.advance();
+
+    assert_eq!(movement.phase, MovePhase::Commit);
+    assert_eq!(movement.read_owner(), ClusterNodeId::from("new-owner"));
+    assert_eq!(target.get("user:live").unwrap().unwrap().version, 5);
+}
+
+#[test]
 fn online_reshard_coordinator_crash_resumes_move_from_progress() {
     let partition = PartitionId::new(11);
     let mut plan = ReshardPlan::new(
@@ -56,6 +100,23 @@ fn online_reshard_coordinator_crash_resumes_move_from_progress() {
 
     assert_eq!(resumed.moves[0].backfilled_bytes, 400);
     assert_eq!(resumed.moves[0].progress_ratio(), 0.4);
+}
+
+#[test]
+#[ignore = "chaos gate: run with -- --ignored when exercising live reshard coordinator crash"]
+fn online_reshard_coordinator_crash_resumes_live_move() {
+    let partition = PartitionId::new(11);
+    let mut plan = ReshardPlan::new(
+        ClusterEpoch::new(2),
+        vec![PartitionMove::new(partition, "a", "b", 1_000)],
+        1,
+    );
+    plan.record_backfill(partition, 400);
+
+    let resumed = ReshardPlan::resume_from(plan.snapshot());
+
+    assert_eq!(resumed.moves[0].backfilled_bytes, 400);
+    assert_eq!(resumed.moves[0].read_owner(), ClusterNodeId::from("a"));
 }
 
 #[test]
