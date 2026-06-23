@@ -1,5 +1,14 @@
 # HydraCache 0.37.0 Database Production Hardening Plan
 
+> **At a glance**
+> - **What:** transactional outbox, read-after-write barrier, observability, criterion perf budget, byte weigher, required dimensions, compatibility register.
+> - **Why:** make DB query-result caching safe to run in production — no stale-after-write, bounded entries, measurable behavior.
+> - **After (depends on):** v0 foundations.
+> - **Unblocks:** 0.38 (correctness automation builds on the outbox/CDC substrate).
+> - **Status:** shipped.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.37.0`. Release notes are in
 `docs/releases/0.37.0.md`.
 
