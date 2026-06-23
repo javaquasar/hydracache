@@ -541,6 +541,10 @@ pub use grid::hardening::{
     WriteWatermark, REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
+pub use grid::region_link::{
+    anti_entropy_diff, CrdtMetadataGcGate, GeoBatch, GeoBatchApplyReport, IdempotencyKey,
+    PartitionDigest, RegionLink, RegionLinkError, VersionSummary,
+};
 pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
     replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
