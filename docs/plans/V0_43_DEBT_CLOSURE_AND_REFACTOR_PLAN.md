@@ -1,5 +1,14 @@
 # HydraCache 0.43.x Debt Closure & Refactor — Codex Execution Plan
 
+> **At a glance**
+> - **Kind:** execution plan (Codex agent), not a release version.
+> - **What:** close the 0.43 debt — wire the durable runtime, real networked raft transport, online reshard, split-brain from real heal, and refactor the `cluster.rs` monofile.
+> - **Why:** turn the modeled / pure-function multi-node behavior of `0.42`/`0.43` into a real networked implementation.
+> - **After (depends on):** 0.43 shipped; supersedes/absorbs `V0_43_CONTINUATION_NETWORKED_CONTROL_PLANE_PLAN.md`.
+> - **Status:** implemented — Phase F validated the `0.42`/`0.43` grid claims over a real networked transport.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: **implemented for the 0.43 line.** Target audience: an autonomous coding
 agent (Codex). This plan closed every outstanding debt in `0.43` — it turns the
 deterministic models and pure-function primitives shipped in `0.42`/`0.43` into a
