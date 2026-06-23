@@ -1636,6 +1636,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-sim"
+version = "0.43.0"
+dependencies = [
+ "hydracache",
+ "rand_chacha 0.9.0",
+ "rand_core 0.9.5",
+]
+
+[[package]]
 name = "hydracache-sql-lint"
 version = "0.43.0"
 dependencies = [
