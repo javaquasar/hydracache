@@ -71,9 +71,9 @@ depends_on = ["0.43.0"]
 
 [[release]]
 version = "0.45.0"
-file = "docs/plans/V0_45_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md"
+file = "docs/plans/V0_45_ACTIVE_ACTIVE_MULTIREGION_PLAN.md"
 status = "planned"
-theme = "Cluster resilience & coordination — tunable consistency levels, hinted handoff, incremental Merkle repair, phi-accrual failure detector, single-key conditional writes + fenced lock, durable replayable invalidation stream"
+theme = "Active-active multi-region — bounded-staleness writes, CRDT value types, WAN transport + cross-region anti-entropy, region failover/DR, capacity signals, geo observability"
 depends_on = ["0.44.0"]
 
 [[release]]
