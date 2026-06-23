@@ -1,5 +1,13 @@
 # HydraCache 0.42.x Continuation — Networked Control Plane & End-to-End Integration
 
+> **At a glance**
+> - **Kind:** supporting note — **superseded**.
+> - **What:** the original enumeration of the `0.42` networked-control-plane gaps (the C-items).
+> - **Why:** kept for history; the actionable plan now lives elsewhere.
+> - **Status:** superseded — absorbed into [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md); use that as the source of truth.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: **continuation work for the `0.42` line.** The `0.42.0` release shipped the
 full set of production-grid *types, algorithms, and gate tests* (see
 [`V0_42_PRODUCTION_GRID_HARDENING_PLAN.md`](V0_42_PRODUCTION_GRID_HARDENING_PLAN.md)
