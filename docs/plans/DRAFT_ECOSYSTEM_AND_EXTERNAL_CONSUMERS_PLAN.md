@@ -1,10 +1,19 @@
-> **STATUS: DRAFT / BACKLOG (target 0.47+).** The 0.45 slot is the cluster-resilience release (`V0_45_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`) and 0.46 is cross-region session consistency (`V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`). The version numbers inside this document are tentative ("the ecosystem release"), not 0.45.
+> **STATUS: DRAFT / BACKLOG (target 0.49+).** The 0.46 slot is the cluster-resilience release (`V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`) and 0.47 is cross-region session consistency (`V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`). The version numbers inside this document are tentative ("the ecosystem release"), not 0.46.
 
 
-# HydraCache Ecosystem & External Consumers Plan (Draft — target 0.47+)
+# HydraCache Ecosystem & External Consumers Plan (Draft — target 0.49+)
 
-This document builds on the active-active multi-region grid that `0.44.0` delivered.
-Through `0.44`, HydraCache was consumed two ways: **embedded** (a Rust crate in
+> **At a glance**
+> - **Kind:** draft / backlog plan (target 0.49+), not a scheduled release.
+> - **What:** stable client wire protocol, Hibernate L2 provider, multi-language SDKs, multi-tenancy/quotas, data-residency, consumer observability/audit.
+> - **Why:** let non-Rust stacks use the grid as a backend, safely and multi-tenant.
+> - **After (depends on):** 0.45 (and the cluster line through 0.47); not started.
+> - **Status:** draft — version TBD (0.49+).
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
+This document builds on the active-active multi-region grid that `0.45.0` delivered.
+Through `0.45`, HydraCache was consumed two ways: **embedded** (a Rust crate in
 the caller's process) and **cluster-internal** (members talking over
 `hydracache-cluster-transport-axum`). What it never had was a **stable, versioned,
 external client surface** so that a process — or a stack in another language — can
@@ -16,7 +25,7 @@ backpressure), data-residency governance pinning, and the consumer-facing
 observability/audit needed to operate a shared grid.
 
 The release keeps the same authority/dissemination resolution rule from
-`0.41`–`0.44`:
+`0.41`–`0.45`:
 
 > **Authority** (who owns a key, which topology is valid, which version is newer)
 > is the ScyllaDB model: Raft + monotonic epoch. **Dissemination** (how staleness
@@ -25,8 +34,8 @@ The release keeps the same authority/dissemination resolution rule from
 > conservative refresh/invalidate.
 
 Readiness is described in prose and asserted as boolean release gates. There is no
-numeric self-score. This release does **not** weaken any `0.44` guarantee: the external
-surface is opt-in, embedded and active-active deployments keep `0.44` behavior
+numeric self-score. This release does **not** weaken any `0.45` guarantee: the external
+surface is opt-in, embedded and active-active deployments keep `0.45` behavior
 byte-for-byte, and every external consumer is authenticated, quota-bounded, and
 isolated by default.
 
@@ -38,7 +47,7 @@ consumer any way to break the grid's correctness, isolation, or data-residency
 guarantees.
 
 The work is six items (W1–W6) plus explicit deferrals. Each builds on a named
-`0.37`–`0.44` artifact and turns "internal-only / embedded" into "external,
+`0.37`–`0.45` artifact and turns "internal-only / embedded" into "external,
 multi-tenant, governed".
 
 ## Non-Goals
@@ -59,8 +68,8 @@ multi-tenant, governed".
   binding on the external protocol.
 - **No implicit consistency upgrade for remote clients.** A remote client gets the
   same consistency contract as the region it talks to (intra-region `0.42` W5
-  strong RYOW; cross-region `0.44` bounded staleness; session guarantees only if the
-  `0.46` causal+ work is deployed). The protocol never silently promises more than the
+  strong RYOW; cross-region `0.45` bounded staleness; session guarantees only if the
+  `0.47` causal+ work is deployed). The protocol never silently promises more than the
   grid delivers.
 - **No unauthenticated external access.** There is no anonymous external mode; an
   external consumer without identity is refused (escalation of the `0.42` W6
@@ -70,18 +79,18 @@ multi-tenant, governed".
 
 ## Inherited Boundary From Prior Releases
 
-This release only extends `0.37`–`0.46`; it must not redesign them.
+This release only extends `0.37`–`0.47`; it must not redesign them.
 
 - **`hydracache-cluster-transport-axum` (member↔member)** carried internal cluster
   traffic. **A separate, stable, versioned client protocol** for external consumers
   is W1 — distinct from the internal transport, with its own COMPAT entry.
 - **The `0.42` W6 `NodeIdentityProvider` / `Authorizer`** authenticated *nodes*.
   **Consumer identity, tenancy, quotas, and fair-share** are W4.
-- **`0.44` W1 home regions + W3 WAN transport** decided where values live and how
+- **`0.45` W1 home regions + W3 WAN transport** decided where values live and how
   they cross regions. **Operator/policy-declared residency pinning** that *forbids*
-  a value from crossing a region boundary is W5 (distinct from `0.44`'s
+  a value from crossing a region boundary is W5 (distinct from `0.45`'s
   performance-driven placement and from deferred auto-placement).
-- **`0.42` W7 operator surface + `0.44` W6 geo-observability** were operator-facing.
+- **`0.42` W7 operator surface + `0.45` W6 geo-observability** were operator-facing.
   **Consumer-facing status, per-tenant metrics, and an audit log** are W6.
 - **`0.38` named consistency modes + invalidation** and **`0.41` B1 near-cache
   `MetaDataContainer` watermark** are the semantics the Hibernate provider (W2) and
@@ -94,8 +103,8 @@ This release only extends `0.37`–`0.46`; it must not redesign them.
 W1 + 0.38 consistency modes ──────────► W2 Hibernate L2 cache provider (JVM)
 W1 ───────────────────────────────────► W3 multi-language client SDKs
 0.37 byte budgets + 0.42 W6 + 0.41 ───► W4 consumer isolation (quotas/namespaces)
-0.44 W1 regions + 0.44 W3 WAN xport ──► W5 data-residency governance pinning
-0.42 W7 + 0.44 W6 observability ──────► W6 consumer observability + audit
+0.45 W1 regions + 0.45 W3 WAN xport ──► W5 data-residency governance pinning
+0.42 W7 + 0.45 W6 observability ──────► W6 consumer observability + audit
 W1 (the external surface) ────────────► W2, W3, W4, W6   (everything rides the protocol)
 ```
 
@@ -108,7 +117,7 @@ contain.
 
 ## W1. Stable Client Wire Protocol & Versioning
 
-**Problem / motivation.** HydraCache's only network surface through `0.44` was
+**Problem / motivation.** HydraCache's only network surface through `0.45` was
 member↔member cluster traffic on `hydracache-cluster-transport-axum`, which is
 free to change shape release-to-release. An external consumer needs a **stable,
 versioned** protocol with explicit compatibility guarantees, or every HydraCache
@@ -418,18 +427,18 @@ is retryable rather than fatal.
 
 ## W5. Data-Residency Governance Pinning
 
-**Problem / motivation.** `0.44` placed home regions and crossed regions for
+**Problem / motivation.** `0.45` placed home regions and crossed regions for
 **performance**. External consumers in regulated domains have the opposite, hard
 requirement: some data must **never** leave a region/jurisdiction (GDPR-style
 residency). The grid must be able to *forbid* replication of a tagged value across a
-boundary — distinct from `0.44`'s performance placement and from the deferred
+boundary — distinct from `0.45`'s performance placement and from the deferred
 auto-placement, which decide *where it's efficient* to put data, not *where it is
 legally allowed*.
 
 **Design / contract.** Add a `ResidencyPolicy` declared per namespace (and
 overridable per key) that pins data to an allowed set of regions/zones. Enforcement
-is at two points: placement (the `0.43` W1 / `0.44` W1 strategy must not choose a
-home or backup outside the allowed set) and the WAN transport (`0.44` W3
+is at two points: placement (the `0.43` W1 / `0.45` W1 strategy must not choose a
+home or backup outside the allowed set) and the WAN transport (`0.45` W3
 `RegionLink` must **refuse** to ship a pinned value across a forbidden link — a
 governance rejection, counted, never silently shipped). A `Put` that cannot be
 placed within the allowed regions at the required RF is **rejected loud** (not
@@ -447,7 +456,7 @@ pub struct ResidencyPolicy {
 
 pub enum ResidencyDecision { Allow, RejectPlacement { reason: String }, RefuseCrossBoundary { link: RegionId } }
 
-// enforced in placement (0.43 W1 / 0.44 W1) and in RegionLink (0.44 W3)
+// enforced in placement (0.43 W1 / 0.45 W1) and in RegionLink (0.45 W3)
 ```
 
 **Step-by-step implementation.**
@@ -465,10 +474,10 @@ pub enum ResidencyDecision { Allow, RejectPlacement { reason: String }, RefuseCr
 **Testing.** `crates/hydracache/tests/residency.rs`
 
 - `pinned_value_is_not_placed_outside_allowed_regions` (integration).
-- `pinned_value_is_refused_crossing_a_forbidden_link` (integration): ties to `0.44`
+- `pinned_value_is_refused_crossing_a_forbidden_link` (integration): ties to `0.45`
   W3; assert the value never leaves the boundary.
 - `unsatisfiable_rf_in_policy_rejects_put_loud` (unit): not a silent under-replicate.
-- `residency_holds_under_region_failover` (**chaos**, `#[ignore]`): a `0.44` W4
+- `residency_holds_under_region_failover` (**chaos**, `#[ignore]`): a `0.45` W4
   failover must never promote a home outside the allowed set; if none survives in
   policy, report degraded rather than violate residency.
 - `residency_violation_is_audited` (integration): ties to W6.
@@ -485,7 +494,7 @@ silently violating the policy — availability never overrides residency.
 
 ## W6. Consumer Observability & Audit
 
-**Problem / motivation.** `0.42` W7 and `0.44` W6 were operator-facing. External,
+**Problem / motivation.** `0.42` W7 and `0.45` W6 were operator-facing. External,
 multi-tenant, governed consumption (W2–W5) adds new questions only a consumer-facing
 and audit surface can answer: how is *my* tenant doing, what governance/admin actions
 happened, who accessed what. Regulated residency (W5) in particular needs an audit
@@ -499,7 +508,7 @@ W4, identity/authz failures W1, region failover W4, policy changes) shipped to a
 operator-supplied `AuditSink`. Per-tenant metrics obey the `0.41` cardinality rule
 (tenant id is a bounded label by roster; per-key detail stays in snapshots/audit, not
 metrics). Ship consumer dashboards/alerts as artifacts with the same drift-guard as
-`0.42` W7 / `0.44` W6 (alert rules must reference registered metrics).
+`0.42` W7 / `0.45` W6 (alert rules must reference registered metrics).
 
 **Rust sketch.**
 
@@ -555,16 +564,16 @@ control retention.
 - **Automatic home-region placement / latency-based home assignment.** Residency
   (W5) is operator/policy-declared; auto-placing homes by observed traffic remains
   deferred.
-- **Provider-specific autoscaler controllers.** `0.44` W5 emits capacity signals + a
+- **Provider-specific autoscaler controllers.** `0.45` W5 emits capacity signals + a
   guarded admission endpoint; shipping cloud-provider-specific controllers stays out
   of scope.
 
 ## Fault Model and Test Tiering
 
-This release reuses the `0.41`–`0.46` shared fault model and harness verbatim
+This release reuses the `0.41`–`0.47` shared fault model and harness verbatim
 (`crates/hydracache/tests/support/fault_injector.rs`) and its determinism contract
 (seeded, replayable, logical-signal assertions — never wall-clock pass/fail). The
-inherited model already includes the `0.44` additions — **whole-region loss**,
+inherited model already includes the `0.45` additions — **whole-region loss**,
 **cross-region partition**, and **lossy/metered WAN link** — and the W2/W5 suites
 compose them rather than re-implementing.
 
@@ -642,13 +651,4 @@ boolean conditions hold:
 - W6: a tenant-scoped read-only status and an append-only governance audit log
   exist; per-tenant metrics honor the cardinality rule; alert rules reference only
   registered metrics; `consumer_observability` passes.
-- The fault model adds the abusive client, protocol-mismatch client, and
-  governance-violating replication attempt, and all those suites pass.
-- Docs keep the prominent **"still not distributed transactions"** warning, document
-  that remote clients get the same (not stronger) consistency than the region they
-  talk to, and list auto home placement / provider-specific autoscaler controllers as
-  deferred.
-
-If any condition fails, this release ships **without** the corresponding claim,
-documents exactly which work item(s) did not land, and the claim moves to a later
-release.
+- The fault model adds the ab
