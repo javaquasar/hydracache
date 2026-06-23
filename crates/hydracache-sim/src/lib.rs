@@ -8,6 +8,7 @@ pub mod clock;
 pub mod network;
 pub mod rng;
 pub mod storage;
+pub mod world;
 
 pub use clock::SimClock;
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
@@ -15,3 +16,4 @@ pub use rng::SimRng;
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,
 };
+pub use world::{SimConfig, SimOutcome, SimWorld};
