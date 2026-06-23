@@ -91,6 +91,13 @@ theme = "Cross-region session consistency (causal+) — session context, read-yo
 depends_on = ["0.46.0"]
 
 [[release]]
+version = "0.48.0"
+file = "docs/plans/V0_48_PRODUCTION_DEPLOYMENT_AND_SECURITY_PLAN.md"
+status = "planned"
+theme = "Production deployment, security & operations — hydracache-server daemon, zero-downtime graceful upgrade, in-transit mTLS + cert/key lifecycle, encryption-at-rest, object-storage backup + PITR, Docker/Kubernetes artifacts, operator surface (metrics/dashboards/alerts/runbooks/admission)"
+depends_on = ["0.47.0"]
+
+[[release]]
 version = "TBD"
 file = "docs/plans/DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md"
 status = "draft"
