@@ -64,9 +64,9 @@ networked_control_plane = true
 
 [[release]]
 version = "0.44.0"
-file = "docs/plans/V0_44_ACTIVE_ACTIVE_MULTIREGION_PLAN.md"
+file = "docs/plans/V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md"
 status = "planned"
-theme = "Active-active multi-region — bounded-staleness writes, CRDT value types, WAN transport + cross-region anti-entropy, region failover/DR, capacity signals, geo observability"
+theme = "Deterministic simulation testing & storage fault model — TigerBeetle-style seeded whole-cluster simulator (hydracache-sim), sans-IO node seam, simulated network + fault-injecting storage, invariant + linearizability checkers, replay/shrinking, scrubber + checksums"
 depends_on = ["0.43.0"]
 
 [[release]]
