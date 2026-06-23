@@ -1,5 +1,14 @@
 # HydraCache 0.39.0 Cluster Staging Hardening Plan
 
+> **At a glance**
+> - **What:** deterministic staging gate, `ClusterHealthState` enum, structured cluster load report, staging runbook, three-part counters.
+> - **Why:** make the existing cluster observable and gate-able before any production use.
+> - **After (depends on):** 0.38.
+> - **Unblocks:** 0.40 (the internal production pilot).
+> - **Status:** shipped.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.39.0`. Release notes are in
 `docs/releases/0.39.0.md`.
 
