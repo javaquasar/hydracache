@@ -1,18 +1,22 @@
-> **STATUS: DRAFT / BACKLOG (target 0.49+).** The 0.46 slot is the cluster-resilience release (`V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`) and 0.47 is cross-region session consistency (`V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`). The version numbers inside this document are tentative ("the ecosystem release"), not 0.46.
-
-
-# HydraCache Ecosystem & External Consumers Plan (Draft — target 0.49+)
+# HydraCache 0.49.0 Ecosystem & External Consumers — Codex Execution Plan
 
 > **At a glance**
-> - **Kind:** draft / backlog plan (target 0.49+), not a scheduled release.
-> - **What:** stable client wire protocol, Hibernate L2 provider, multi-language SDKs, multi-tenancy/quotas, data-residency, consumer observability/audit.
-> - **Why:** let non-Rust stacks use the grid as a backend, safely and multi-tenant.
-> - **After (depends on):** 0.45 (and the cluster line through 0.47); not started.
-> - **Status:** draft — version TBD (0.49+).
+> - **What:** stable, versioned client wire protocol; Hibernate L2 cache provider; ≥1 non-JVM SDK + conformance suite; multi-tenant isolation (quotas/namespaces/fair-share); data-residency governance pinning; consumer-facing observability + audit.
+> - **Why:** let stacks **outside the Rust process** (incl. other languages) use the grid as a remote cache backend — safely, authenticated, multi-tenant, governed — turning HydraCache from "embeddable library" into "shared backend".
+> - **After (depends on):** 0.48 (needs the `hydracache-server` daemon + mTLS + cert lifecycle + ops); builds on the whole 0.37–0.48 stack.
+> - **Unblocks:** broad non-Rust adoption; the data-platform optional crates (SQL/vector) per `STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`.
+> - **Status:** planned.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
 
-This document builds on the active-active multi-region grid that `0.45.0` delivered.
+This plan is written for an autonomous coding agent (Codex). Read [`CLAUDE.md`](../../CLAUDE.md),
+[`docs/RULES.md`](../RULES.md), and [`docs/GATES.md`](../GATES.md) first. One work item =
+one commit/PR; after each, run its Definition of Done **and** `cargo xtask verify`;
+never push red. Any multi-node behavior gets coverage in the `0.44` `hydracache-sim`
+deterministic harness.
+
+This release builds on the production-deployable, secure server delivered by `0.48` and
+the active-active multi-region grid that `0.45.0` delivered.
 Through `0.45`, HydraCache was consumed two ways: **embedded** (a Rust crate in
 the caller's process) and **cluster-internal** (members talking over
 `hydracache-cluster-transport-axum`). What it never had was a **stable, versioned,

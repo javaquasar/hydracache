@@ -500,7 +500,7 @@ config, metadata is bounded + GC'd (W4), and active-session count is a gauge.
   not make them atomic/isolated.
 - **Cross-region linearizability.** Out of scope by design; causal+ is strictly weaker.
 - **Ecosystem / external consumers** (client protocol, Hibernate L2 provider, SDKs,
-  multi-tenancy, residency). Drafted in `DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`.
+  multi-tenancy, residency). Drafted in `V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`.
 - **Automatic home-region placement / latency-based home assignment** and
   **provider-specific autoscaler controllers.** Deferred from `0.45`.
 - **Compute-near-data / entry processors.** Out of scope (RCE non-goal).

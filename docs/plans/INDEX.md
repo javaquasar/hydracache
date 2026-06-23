@@ -63,7 +63,7 @@ v0 foundations
                               0.48 production deployment, security & operations
                                         │
                                         ▼
-                              0.49+ ecosystem & external consumers (DRAFT)
+                              0.49 ecosystem & external consumers
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -82,7 +82,7 @@ v0 foundations
 | [0.46.0](V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md) | planned | Tunable consistency levels, hinted handoff, Merkle repair, phi-accrual detector, single-key conditional + fenced lock, invalidation ring | Resilient under the messy middle: brief outages, flapping liveness, lost invalidations | 0.45 | 0.47 |
 | [0.47.0](V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md) | planned | Session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence, session lifecycle | Make active-active usable for real application **sessions** (causal+) | 0.46 | 0.48+ |
 | [0.48.0](V0_48_PRODUCTION_DEPLOYMENT_AND_SECURITY_PLAN.md) | planned | `hydracache-server` daemon, zero-downtime upgrade, mTLS + cert/key lifecycle, encryption-at-rest, object-storage backup + PITR, Docker/k8s artifacts, operator surface + admission | Make the correctness-proven core actually deployable, secure, backed-up and operable in production | 0.47 | 0.49+ |
-| [0.49+ (TBD)](DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) | draft | Stable client protocol, Hibernate L2 provider, SDKs, multi-tenancy/quotas, data-residency, consumer observability | Let non-Rust stacks use the grid as a backend, safely and multi-tenant | 0.48 | — |
+| [0.49.0](V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) | planned | Stable versioned client protocol, Hibernate L2 provider, multi-language SDKs + conformance, multi-tenancy/quotas, data-residency, consumer observability/audit | Let stacks outside the Rust process use the grid as a backend, safely and multi-tenant | 0.48 | — |
 
 `0.43` debt closure:
 [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)

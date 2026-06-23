@@ -566,7 +566,7 @@ gauge, and the fell-behind counter tells operators when to grow it.
   levels), W3 (read-repair), and W6 (invalidation ring).
 - **Ecosystem / external consumers** (stable client protocol, Hibernate L2 provider,
   SDKs, multi-tenancy, residency). Drafted in
-  `DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`; slotted after the consistency work
+  `V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`; slotted after the consistency work
   (target 0.48+).
 - **Automatic home-region placement / latency-based home assignment** and
   **provider-specific autoscaler controllers.** Deferred from `0.45`.
