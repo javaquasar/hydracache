@@ -524,12 +524,14 @@ pub use grid::elasticity::{
 };
 pub use grid::hardening::{
     anti_entropy_repair, live_read_your_writes, merge_split_brain_records, quorum_read_your_writes,
-    resolve_live_split_brain, split_brain_winner, AdaptiveWindow, ClusterMergeOutcome,
-    DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore, LiveReadYourWritesDecision,
-    LiveReplicationPeer, LiveReplicationSend, LiveSplitBrainResolution, MergePolicy,
-    PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision, ReadConsistency,
-    ReplicatedValueRecord, ReplicatedValueStore, SealedBytes, SplitBrainReport, ValueStoreError,
-    ValueVersion, WriteWatermark, REPLICATED_VALUE_RECORD_FORMAT_VERSION,
+    resolve_live_split_brain, split_brain_winner, AdaptiveWindow, ChecksummedReplicatedValueRecord,
+    ClusterMergeOutcome, DiscardLoser, HigherVersionWins, InMemoryReplicatedValueStore,
+    LiveReadYourWritesDecision, LiveReplicationPeer, LiveReplicationSend, LiveSplitBrainResolution,
+    MergePolicy, PromotionFreezeWindow, PutIfAbsent, QuorumPosture, QuorumReadDecision,
+    ReadConsistency, ReplicatedValueRecord, ReplicatedValueStore, ScrubError, ScrubErrorKind,
+    ScrubReport, Scrubber, SealedBytes, SplitBrainReport, ValueStoreError, ValueVersion,
+    WriteWatermark, REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
+    REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
 pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,

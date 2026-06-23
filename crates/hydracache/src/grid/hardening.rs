@@ -16,6 +16,9 @@ pub type SealedBytes = Vec<u8>;
 /// Durable value-store format version registered in `docs/COMPAT.md`.
 pub const REPLICATED_VALUE_RECORD_FORMAT_VERSION: u32 = 1;
 
+/// Checksummed durable envelope version registered in `docs/COMPAT.md`.
+pub const REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION: u32 = 1;
+
 /// Durable replicated value record keyed externally by cache key.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReplicatedValueRecord {
@@ -79,6 +82,35 @@ impl ReplicatedValueRecord {
         }
     }
 
+    /// Return a deterministic checksum over the durable record payload.
+    pub fn artifact_checksum(&self) -> u64 {
+        let mut checksum = ArtifactChecksum::new();
+        checksum.u32(REPLICATED_VALUE_RECORD_FORMAT_VERSION);
+        checksum.u32(self.partition.value());
+        checksum.u64(self.version);
+        checksum.u64(self.epoch.value());
+        match &self.state {
+            ReplicatedSlot::Value { value, version } => {
+                checksum.u8(1);
+                checksum.u64(*version);
+                checksum.bytes(value);
+            }
+            ReplicatedSlot::Tombstone {
+                version,
+                gc_eligible_after,
+            } => {
+                checksum.u8(2);
+                checksum.u64(*version);
+                checksum.u64(
+                    gc_eligible_after
+                        .map(ClusterEpoch::value)
+                        .unwrap_or(u64::MAX),
+                );
+            }
+        }
+        checksum.finish()
+    }
+
     /// Merge two records: higher `(version, epoch)` wins, and tombstones win
     /// ties so deletes cannot be undone by stale values.
     pub fn merge(self, other: Self) -> Self {
@@ -88,6 +120,223 @@ impl ReplicatedValueRecord {
             std::cmp::Ordering::Equal if self.is_tombstone() => self,
             std::cmp::Ordering::Equal => other,
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct ArtifactChecksum(u64);
+
+impl ArtifactChecksum {
+    const OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+    const PRIME: u64 = 0x0000_0100_0000_01b3;
+
+    fn new() -> Self {
+        Self(Self::OFFSET)
+    }
+
+    fn u8(&mut self, value: u8) {
+        self.0 ^= u64::from(value);
+        self.0 = self.0.wrapping_mul(Self::PRIME);
+    }
+
+    fn u32(&mut self, value: u32) {
+        self.bytes(&value.to_le_bytes());
+    }
+
+    fn u64(&mut self, value: u64) {
+        self.bytes(&value.to_le_bytes());
+    }
+
+    fn bytes(&mut self, bytes: &[u8]) {
+        for byte in bytes {
+            self.u8(*byte);
+        }
+    }
+
+    fn finish(self) -> u64 {
+        self.0
+    }
+}
+
+/// Durable replicated value record plus checksum metadata.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ChecksummedReplicatedValueRecord {
+    /// Envelope format version.
+    pub checksum_format: u32,
+    /// Durable replicated value record.
+    pub record: ReplicatedValueRecord,
+    /// Checksum over the durable record payload.
+    pub checksum: u64,
+}
+
+impl ChecksummedReplicatedValueRecord {
+    /// Create a checksummed envelope.
+    pub fn seal(record: ReplicatedValueRecord) -> Self {
+        let checksum = record.artifact_checksum();
+        Self {
+            checksum_format: REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
+            record,
+            checksum,
+        }
+    }
+
+    /// Recreate an envelope from durable parts.
+    pub fn from_parts(checksum_format: u32, record: ReplicatedValueRecord, checksum: u64) -> Self {
+        Self {
+            checksum_format,
+            record,
+            checksum,
+        }
+    }
+
+    /// Verify envelope version and checksum.
+    pub fn verify(&self) -> Result<(), ScrubErrorKind> {
+        if self.checksum_format != REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION {
+            return Err(ScrubErrorKind::UnsupportedChecksumFormat {
+                found: self.checksum_format,
+            });
+        }
+        let actual = self.record.artifact_checksum();
+        if actual != self.checksum {
+            return Err(ScrubErrorKind::ChecksumMismatch {
+                expected: self.checksum,
+                actual,
+            });
+        }
+        Ok(())
+    }
+
+    /// Return the verified record or a scrub error.
+    pub fn verified_record(
+        &self,
+        key: impl Into<String>,
+    ) -> Result<&ReplicatedValueRecord, ScrubError> {
+        self.verify().map_err(|kind| ScrubError {
+            key: key.into(),
+            kind,
+        })?;
+        Ok(&self.record)
+    }
+}
+
+/// Scrubber error kind.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScrubErrorKind {
+    /// Durable envelope uses an unsupported future format.
+    UnsupportedChecksumFormat { found: u32 },
+    /// Record checksum does not match payload.
+    ChecksumMismatch { expected: u64, actual: u64 },
+}
+
+/// Scrubber error with key context.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScrubError {
+    /// Corrupt key.
+    pub key: String,
+    /// Error kind.
+    pub kind: ScrubErrorKind,
+}
+
+impl fmt::Display for ScrubError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "scrub error for key '{}': {:?}",
+            self.key, self.kind
+        )
+    }
+}
+
+impl std::error::Error for ScrubError {}
+
+/// Scrubber run report.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ScrubReport {
+    /// Records checked.
+    pub checked: usize,
+    /// Corrupt records found.
+    pub corrupt: usize,
+    /// Records repaired from peers.
+    pub repaired: usize,
+    /// Corrupt records that could not be repaired.
+    pub unrepairable: usize,
+    /// Detailed errors.
+    pub errors: Vec<ScrubError>,
+}
+
+impl ScrubReport {
+    /// Return whether no unrepairable corruption remains.
+    pub fn is_ok(&self) -> bool {
+        self.unrepairable == 0
+    }
+}
+
+/// Rate-limited replicated-record scrubber.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Scrubber {
+    max_records_per_run: usize,
+}
+
+impl Scrubber {
+    /// Create a scrubber with a normalized per-run budget.
+    pub fn new(max_records_per_run: usize) -> Self {
+        Self {
+            max_records_per_run: max_records_per_run.max(1),
+        }
+    }
+
+    /// Verify primary records and repair corrupt ones from valid peer copies.
+    pub fn scrub_replicated_values(
+        &self,
+        primary: &mut BTreeMap<String, ChecksummedReplicatedValueRecord>,
+        peers: &[BTreeMap<String, ChecksummedReplicatedValueRecord>],
+    ) -> ScrubReport {
+        let keys = primary
+            .keys()
+            .take(self.max_records_per_run)
+            .cloned()
+            .collect::<Vec<_>>();
+        let mut report = ScrubReport::default();
+        for key in keys {
+            report.checked = report.checked.saturating_add(1);
+            let Some(record) = primary.get(&key) else {
+                continue;
+            };
+            if record.verify().is_ok() {
+                continue;
+            }
+            report.corrupt = report.corrupt.saturating_add(1);
+            if let Some(repair) = peers.iter().find_map(|peer| {
+                peer.get(&key)
+                    .filter(|candidate| candidate.verify().is_ok())
+                    .cloned()
+            }) {
+                primary.insert(key, repair);
+                report.repaired = report.repaired.saturating_add(1);
+            } else {
+                report.unrepairable = report.unrepairable.saturating_add(1);
+                let kind = record.verify().expect_err("record is known corrupt");
+                report.errors.push(ScrubError { key, kind });
+            }
+        }
+        report
+    }
+
+    /// Read one record only if its checksum verifies.
+    pub fn verified_get(
+        records: &BTreeMap<String, ChecksummedReplicatedValueRecord>,
+        key: &str,
+    ) -> Result<Option<ReplicatedValueRecord>, ScrubError> {
+        records
+            .get(key)
+            .map(|record| record.verified_record(key.to_owned()).cloned())
+            .transpose()
+    }
+}
+
+impl Default for Scrubber {
+    fn default() -> Self {
+        Self::new(128)
     }
 }
 

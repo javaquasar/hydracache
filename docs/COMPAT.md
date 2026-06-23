@@ -15,6 +15,7 @@ they are persisted or transmitted across processes.
 | HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
+| `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
 | `ControlPlaneSnapshot` format | `1` | `hydracache` self-heal snapshot helpers | Readers accept format `1` and refuse unknown future versions before restore. | Restore fails loud before rebuilding topology from an unsupported snapshot. |
 
 ## Upgrade Rules
@@ -66,3 +67,11 @@ self-healing backup/restore. Upgrade checks keep the 0.42 -> 0.43 rolling window
 bounded to raft-log format `1`, replicated value-record format `1`, and
 invalidation wire frame version `1`; incompatible jumps fail loud before a mixed
 cluster step is accepted.
+
+## 0.44 Deterministic Simulation And Scrubbing
+
+`0.44.0` adds checksummed replicated-value envelopes and a scrubber gate for
+durable value records. The underlying `ReplicatedValueRecord` payload format
+remains `1`; the new `ChecksummedReplicatedValueRecord` envelope format `1`
+detects corruption before serving and can repair a corrupt primary copy from a
+valid peer copy. Unknown future envelope formats fail closed.
