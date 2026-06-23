@@ -78,9 +78,9 @@ depends_on = ["0.44.0"]
 
 [[release]]
 version = "0.46.0"
-file = "docs/plans/V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md"
+file = "docs/plans/V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md"
 status = "planned"
-theme = "Cross-region session consistency (causal+) — session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence + bounded staleness, session lifecycle"
+theme = "Cluster resilience & coordination — tunable consistency levels, hinted handoff, incremental Merkle repair, phi-accrual failure detector, single-key conditional writes + fenced lock, durable replayable invalidation stream"
 depends_on = ["0.45.0"]
 
 [[release]]
