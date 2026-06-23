@@ -1,5 +1,14 @@
 # HydraCache 0.38.0 Database Correctness Automation Plan
 
+> **At a glance**
+> - **What:** SQL dependency lint, generated DB hooks + CDC connector, named consistency modes, dimension profiles, SQLx transaction companion, reconciliation drift.
+> - **Why:** make invalidation correctness **assisted and checkable**, not manual TTL guessing.
+> - **After (depends on):** 0.37.
+> - **Unblocks:** 0.39 (starts the cluster track).
+> - **Status:** shipped.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.38.0`. Release notes are in
 `docs/releases/0.38.0.md`.
 
