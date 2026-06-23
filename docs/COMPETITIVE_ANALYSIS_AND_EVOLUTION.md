@@ -311,12 +311,94 @@ target HydraCache's overload/backpressure weak spots.
   each partition is owned by one core. Large effort; treat as a long-horizon option,
   not near-term.
 
-> **tikv (not in checkout) — conceptual only:** had it been present, the highest-value
-> references would be its `raft-engine` (batched, group-committed raft WAL), the
-> `raftstore` **batch-system** (multi-raft: thousands of raft groups multiplexed over a
-> shared pool), and `yatp` (a priority/futures thread pool). These are worth pulling in
-> later if multi-raft (many partitions, each its own group) becomes the model. No file
-> references are given because the source is absent.
+> **tikv — now in the checkout:** its storage-layer lessons (`engine_traits` pluggable
+> engines, the hybrid in-memory-over-RocksDB engine, the dedicated `raft_log_engine`,
+> `resolved_ts` watermark, `resource_control`) are analyzed in
+> [`STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](STORAGE_AND_DATA_PLATFORM_EVOLUTION.md). For
+> the *cluster* layer specifically, the highest-value remaining references are its
+> `raft-engine` (batched, group-committed raft WAL) and the `raftstore` **batch-system**
+> (multi-raft: many raft groups multiplexed over a shared pool) — worth pulling in if
+> multi-raft (many partitions, each its own group) becomes the model.
+
+---
+
+## 6. tigerbeetle — consensus correctness as an engineering discipline
+
+tigerbeetle (Zig, financial transactions DB) is a different *school* of cluster
+building than the Raft/Hazelcast/Scylla lineage above. It is the strongest reference
+for **proving** a distributed system correct and for **surviving real disks**. It does
+not change HydraCache's committed `raft-rs` choice, but several of its ideas are
+directly transferable and would sharpen HydraCache's "correctness as a product
+feature" wedge.
+
+### 6.1 Deterministic Simulation Testing (the headline idea)
+
+- **Where:** `tigerbeetle/src/vopr.zig` (the seed-driven whole-cluster simulator),
+  `tigerbeetle/src/testing/cluster.zig` (simulated cluster + state checker),
+  `tigerbeetle/src/testing/packet_simulator.zig` (network partition / loss / reorder /
+  latency), `tigerbeetle/src/testing/storage.zig` (in-memory storage with **simulated
+  faults and latency**), `tigerbeetle/src/testing/time.zig` (deterministic clock).
+- **Idea:** the **entire** system — replicas, network, storage, clock — runs
+  deterministically from a single seed. One process simulates the whole cluster, injects
+  partitions/corruption/clock-skew, checks invariants every step, and any failure is
+  reproducible by replaying the seed. This finds consensus/storage bugs that
+  integration tests and even Jepsen miss, and it runs millions of "cluster-hours" in CI.
+- **HydraCache action:** this is the north star for the project's fault model (RULES
+  R-5). HydraCache already has a seeded `fault_injector` + logical-signal assertions;
+  evolve it toward a **real DST simulator** that drives the cluster, the (in-memory)
+  transport, and a fault-injecting storage under one seeded scheduler with a continuous
+  invariant checker. It is also the credible answer to the "external consistency
+  verification (Jepsen-class)" production-readiness gap — arguably stronger, and it
+  reinforces the differentiation in [`POSITIONING.md`](POSITIONING.md).
+
+### 6.2 Explicit storage fault model + background scrubbing
+
+- **Where:** `tigerbeetle/src/testing/storage.zig` (header: *"injects faults that a
+  fully-connected cluster can recover from"*), `tigerbeetle/src/vsr/grid_scrubber.zig`
+  (background bit-rot scrubber), `tigerbeetle/src/vsr/checksum.zig`.
+- **Idea:** disks lie (latent sector errors, bit-rot, torn writes). tigerbeetle treats
+  storage faults as a first-class part of the replication protocol: everything is
+  checksummed, a background **scrubber** re-reads and repairs from peers, and recovery
+  is protocol-aware.
+- **HydraCache action:** checksum every durable artifact (raft log, value records,
+  tombstones), add a **background scrubber** that detects corruption and repairs from
+  replicas (ties to the `0.45` Merkle repair), and add **simulated storage faults** to
+  the test harness (per §6.1). Register checksums/format in `docs/COMPAT.md`.
+
+### 6.3 Exactly-once client sessions (reply dedup)
+
+- **Where:** `tigerbeetle/src/vsr/client_sessions.zig`, `…/vsr/client_replies.zig`.
+- **Idea:** each client registers a **session**; requests carry monotonic numbers and
+  the cluster caches the latest reply per session, so a retried request returns the
+  cached reply instead of double-applying (exactly-once effect across retries).
+- **HydraCache action:** the model for idempotent writes/invalidations over the future
+  client protocol (ecosystem release) and for replication retries — complements the
+  `0.37` outbox idempotency key with a per-client session/reply cache.
+
+### 6.4 Static / bounded memory allocation
+
+- **Where:** `tigerbeetle/src/static_allocator.zig` (*"allocate at startup, then
+  disable to prevent accidental dynamic allocation at runtime"*).
+- **Idea:** allocate everything up front; forbid runtime allocation. Memory is bounded
+  and predictable; no allocator surprises under load.
+- **HydraCache action:** a discipline rather than a literal port — bound every pool,
+  queue, hint store, tombstone budget, and ring (which HydraCache already does in
+  spots); pairs with the scylladb admission/backlog control (§5) to make behavior under
+  pressure provable.
+
+### 6.5 Fault-tolerant clock (Marzullo), and VSR-vs-Raft
+
+- **Where:** `tigerbeetle/src/vsr/clock.zig`, `tigerbeetle/src/vsr/marzullo.zig`;
+  consensus core `tigerbeetle/src/vsr/replica.zig`,
+  `tigerbeetle/src/vsr/superblock_quorums.zig`.
+- **Idea:** tigerbeetle derives a *trustworthy bounded time* from the cluster
+  (Marzullo's algorithm) instead of trusting NTP; and it uses **VSR** (Viewstamped
+  Replication) rather than Raft, integrating storage faults and view changes tightly.
+- **HydraCache action:** keep authority on epoch/version (RULES R-1) — but if geo work
+  (`0.44`/`0.46`) ever needs a *bounded* clock for HLC skew, Marzullo is the principled
+  source. Record VSR as a **considered alternative** to `raft-rs` in an ADR (with the
+  TD-0002 raft/protobuf debt) — not a migration recommendation, but the trade-offs
+  (storage-fault integration, no protobuf) are worth documenting.
 
 ---
 
@@ -337,6 +419,10 @@ target HydraCache's overload/backpressure weak spots.
 | Object-storage DR/snapshots | arroyo `arroyo-storage` | `0.43 W6`/`0.44 W4` |
 | S3-FIFO eviction | qdrant `trififo` | local hot tier (bench-off vs moka) |
 | Thread-per-core (strategic) | scylladb shard-per-core; pingora no-steal runtime | long-horizon opt-in |
+| Deterministic simulation testing (DST) | tigerbeetle `vopr.zig`, `testing/{cluster,packet_simulator,storage}.zig` | evolve `fault_injector` → seeded whole-cluster sim (RULES R-5) |
+| Storage fault model + scrubbing + checksums | tigerbeetle `testing/storage.zig`, `vsr/grid_scrubber.zig`, `vsr/checksum.zig` | checksum durable artifacts + background scrub (ties `0.45` repair) |
+| Exactly-once client sessions | tigerbeetle `vsr/client_sessions.zig`, `vsr/client_replies.zig` | idempotent client protocol + replication retries |
+| Bounded / static allocation | tigerbeetle `static_allocator.zig` | bound every pool/queue/ring (with scylladb §5 admission) |
 
 ## Recommended evolution roadmap
 
@@ -351,6 +437,9 @@ target HydraCache's overload/backpressure weak spots.
 - Admission control + proportional backlog controller (scylladb §5.1–5.2) for
   overload and self-healing — a real differentiator under load.
 - Object-storage snapshot/DR backend (arroyo §4.2).
+- Begin a **deterministic simulation harness** + storage fault model + artifact
+  checksums (tigerbeetle §6.1–6.2) — the strongest correctness investment and the
+  Jepsen-class answer for production confidence.
 
 **Phase 2 — storage & hot-path excellence (be *interesting*, not just correct).**
 - `Directory`/`LogEngine` storage trait + SSTable format + explicit compaction
@@ -362,7 +451,10 @@ target HydraCache's overload/backpressure weak spots.
 **Phase 3 — extreme-scale & ecosystem (strategic).**
 - Optional thread-per-core / sharded executor (scylladb §5.3 + pingora §1.5).
 - Resolve `raft-rs`/protobuf debt (TD-0002); evaluate multi-raft if partition counts
-  grow (tikv conceptual).
+  grow (tikv conceptual). Record VSR as a considered consensus alternative in an ADR
+  (tigerbeetle §6.5).
+- Exactly-once client sessions + bounded/static allocation discipline (tigerbeetle
+  §6.3–6.4) as the client protocol and overload work mature.
 - External client surface (the deferred ecosystem release) so non-Rust stacks can use
   the grid.
 
@@ -384,4 +476,5 @@ references tell on their own.
 - `tantivy/` — search library (directory, indexer/merge_policy, sstable, ownedbytes, stacker).
 - `arroyo/` — stream processor (arroyo-state, arroyo-storage, arroyo-controller, k8s/docker).
 - `scylladb/` — wide-column store (reader_concurrency_semaphore, backlog_controller; shard-per-core).
-- `tikv/` — **not present in the checkout**; cited conceptually only.
+- `tigerbeetle/` — financial DB (VSR consensus `src/vsr/`, deterministic simulator `src/vopr.zig` + `src/testing/`, storage fault model + scrubber, client sessions, static allocator).
+- `tikv/` — present and analyzed in [`STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](STORAGE_AND_DATA_PLATFORM_EVOLUTION.md) (engine_traits, hybrid engine, raft_log_engine, resolved_ts, resource_control).
