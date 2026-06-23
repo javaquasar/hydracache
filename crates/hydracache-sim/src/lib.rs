@@ -6,6 +6,7 @@
 
 pub mod clock;
 pub mod invariants;
+pub mod linearizability;
 pub mod network;
 pub mod rng;
 pub mod storage;
@@ -16,6 +17,9 @@ pub use clock::SimClock;
 pub use invariants::{
     InvariantChecker, InvariantReport, InvariantViolation, LogEntry, LogOp, ReplicaSnapshot,
     ValueObservation, ValueState,
+};
+pub use linearizability::{
+    LinearizabilityChecker, LinearizabilityReport, LinearizabilityViolation,
 };
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 pub use rng::SimRng;
