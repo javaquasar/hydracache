@@ -6,8 +6,8 @@ use hydracache::{
 };
 
 use crate::{
-    History, SimClock, SimNetwork, SimRng, SimStorage, WorkloadConfig, WorkloadGenerator,
-    WorkloadOp, WorkloadResult,
+    History, InvariantChecker, InvariantReport, SimClock, SimNetwork, SimRng, SimStorage,
+    WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
 };
 
 /// Configuration for a deterministic simulation run.
@@ -55,6 +55,8 @@ pub struct SimOutcome {
     pub delivered_messages: u64,
     /// Stable hash of the recorded W4 trace.
     pub history_hash: u64,
+    /// Number of invariant violations in the latest step report.
+    pub invariant_violations: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -73,6 +75,8 @@ pub struct SimWorld {
     network: SimNetwork,
     workload: WorkloadGenerator,
     history: History,
+    invariant_checker: InvariantChecker,
+    invariant_report: InvariantReport,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     steps: u64,
     accepted_ops: u64,
@@ -120,6 +124,8 @@ impl SimWorld {
                 },
             ),
             history: History::new(),
+            invariant_checker: InvariantChecker,
+            invariant_report: InvariantReport::default(),
             nodes,
             steps: 0,
             accepted_ops: 0,
@@ -150,6 +156,7 @@ impl SimWorld {
         self.tick_nodes();
         self.issue_smoke_workload();
         self.drain_node_effects();
+        self.invariant_report = self.invariant_checker.check_history(&self.history);
     }
 
     /// Return a snapshot outcome without advancing the world.
@@ -160,6 +167,7 @@ impl SimWorld {
             accepted_ops: self.accepted_ops,
             delivered_messages: self.delivered_messages,
             history_hash: self.history.hash(),
+            invariant_violations: self.invariant_report.violations.len(),
         }
     }
 
@@ -171,6 +179,11 @@ impl SimWorld {
     /// Return the recorded workload history.
     pub fn history(&self) -> &History {
         &self.history
+    }
+
+    /// Return the latest invariant report.
+    pub fn invariant_report(&self) -> &InvariantReport {
+        &self.invariant_report
     }
 
     fn deliver_network(&mut self) {

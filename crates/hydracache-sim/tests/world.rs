@@ -29,4 +29,6 @@ fn world_healthy_cluster_makes_progress() {
     assert_eq!(outcome.accepted_ops, 8);
     assert!(outcome.delivered_messages > 0);
     assert_ne!(outcome.history_hash, 0);
+    assert_eq!(outcome.invariant_violations, 0);
+    assert!(world.invariant_report().is_ok());
 }

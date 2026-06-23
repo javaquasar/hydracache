@@ -5,6 +5,7 @@
 //! a seed and step count.
 
 pub mod clock;
+pub mod invariants;
 pub mod network;
 pub mod rng;
 pub mod storage;
@@ -12,6 +13,10 @@ pub mod workload;
 pub mod world;
 
 pub use clock::SimClock;
+pub use invariants::{
+    InvariantChecker, InvariantReport, InvariantViolation, LogEntry, LogOp, ReplicaSnapshot,
+    ValueObservation, ValueState,
+};
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 pub use rng::SimRng;
 pub use storage::{
