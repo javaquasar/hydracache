@@ -6,7 +6,7 @@
 > - **Why:** turn the correctness wedge into a *provable* one — find consensus/storage/consistency bugs that integration tests and even Jepsen miss, with millions of reproducible cluster-steps in CI (RULES R-5).
 > - **After (depends on):** 0.43 debt-closure (real networked control plane) — DST needs a sans-IO seam over that runtime.
 > - **Unblocks:** 0.45 active-active, 0.46 resilience, 0.47 causal+ — all developed *against* the simulator.
-> - **Status:** planned.
+> - **Status:** implemented.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · source analysis: [`../COMPETITIVE_ANALYSIS_AND_EVOLUTION.md`](../COMPETITIVE_ANALYSIS_AND_EVOLUTION.md) §6 (tigerbeetle).
 

@@ -48,6 +48,18 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             None,
         ),
         gate("dependency bans", ["deny", "check", "bans"], None),
+        gate(
+            "DST fast budget",
+            [
+                "test",
+                "-p",
+                "hydracache-sim",
+                "--test",
+                "dst_budget",
+                "--locked",
+            ],
+            None,
+        ),
     ];
 
     if is_windows {
@@ -197,6 +209,23 @@ mod tests {
         assert_eq!(
             windows_verify_target_dir(root),
             PathBuf::from("repo").join("target").join("xtask-verify")
+        );
+    }
+
+    #[test]
+    fn verify_includes_dst_fast_budget_gate() {
+        let gates = gates_for_platform(false);
+
+        assert_eq!(
+            args_for(&gates, "DST fast budget"),
+            [
+                "test",
+                "-p",
+                "hydracache-sim",
+                "--test",
+                "dst_budget",
+                "--locked"
+            ]
         );
     }
 }

@@ -14,7 +14,8 @@ cargo xtask verify
 
 Runs the fast, no-network gates in order and fails on the first red one:
 formatting, clippy, dependency bans, docs-consistency (`doc-check`), workspace
-tests, rustdoc (`-D warnings`), and the performance-budget contract test. Use it
+tests, rustdoc (`-D warnings`), the DST fast budget, and the performance-budget
+contract test. Use it
 before opening a PR. Network-/time-heavy suites (criterion benchmark runs,
 chaos/soak, Docker/testcontainers) are nightly / scheduled and are **not** part of
 `verify`.
@@ -35,6 +36,7 @@ cannot block the run.
 | Check | `cargo check --workspace --all-targets --locked` | CI | compiles |
 | Bench targets compile | `cargo check -p hydracache --benches` / `-p hydracache-db --benches` | CI | benches build |
 | Dependency bans | `cargo deny check bans` | CI + verify | `deny.toml` (incl. sqlparser runtime ban — RULES R-9) |
+| DST fast budget | `cargo test -p hydracache-sim --test dst_budget --locked` | CI + verify | bounded deterministic simulation seed matrix (RULES R-5/R-8) |
 | SQL lint baseline drift | `cargo test -p hydracache-sql-lint --test lint_cli` + `lint --check-baseline` | CI + verify | no new un-baselined SQL lint findings |
 | Docs consistency | `cargo xtask doc-check` | CI + verify | `releases.toml` integrity (RULES R-11): file existence, version uniqueness, `depends_on` resolution, status validity, 0.43 networked-control-plane status-drift sentinel |
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
@@ -50,6 +52,7 @@ Per RULES R-5 these run behind `#[ignore]` and are not in `verify`:
 
 ```powershell
 cargo test --workspace --locked -- --ignored
+cargo run -p hydracache-sim --bin vopr -- --seed 44 --steps 100000
 ```
 
 Each release plan lists its own focused gate block (the `cargo test -p … <suite>`
