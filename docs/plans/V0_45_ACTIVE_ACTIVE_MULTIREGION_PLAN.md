@@ -5,7 +5,7 @@
 > - **Why:** give globally-distributed callers local-latency writes under a documented, monitored staleness contract.
 > - **After (depends on):** 0.43.
 > - **Unblocks:** 0.46 (cluster resilience) and 0.47 (causal+ sessions).
-> - **Status:** planned.
+> - **Status:** in-progress (implementation complete; pending release cut).
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
 

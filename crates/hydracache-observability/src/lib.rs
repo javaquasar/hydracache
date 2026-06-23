@@ -38,7 +38,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use hydracache::{
     ClusterEpoch, ClusterGridDiagnostics, ClusterNodeId, ClusterPilotReport, ClusterStagingHealth,
-    HydraCache, QuorumPosture, SplitBrainReport,
+    HydraCache, QuorumPosture, RegionId, RegionState, SplitBrainReport,
 };
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
@@ -232,6 +232,186 @@ impl ClusterStatus {
             still_not_distributed_transactions: true,
         }
     }
+}
+
+/// Per-region active-active health used by `/cluster/geo` style endpoints.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct RegionHealth {
+    /// Region id.
+    pub region: RegionId,
+    /// Region failover state.
+    pub state: RegionState,
+    /// Aggregated replication lag observed for this region.
+    pub replication_lag: u64,
+    /// Observed bounded-staleness window in milliseconds.
+    pub staleness_window_ms: u64,
+}
+
+impl RegionHealth {
+    /// Create a region health entry.
+    pub fn new(
+        region: impl Into<RegionId>,
+        state: RegionState,
+        replication_lag: u64,
+        staleness_window_ms: u64,
+    ) -> Self {
+        Self {
+            region: region.into(),
+            state,
+            replication_lag,
+            staleness_window_ms,
+        }
+    }
+}
+
+/// Per-link WAN replication health used by geo status.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct LinkHealth {
+    /// Source region.
+    pub from: RegionId,
+    /// Target region.
+    pub to: RegionId,
+    /// Lag in queued batches/records, depending on exporter resolution.
+    pub lag: u64,
+    /// Current adaptive replication window.
+    pub window: usize,
+    /// Compressed bytes replicated across this link.
+    pub bytes_total: u64,
+    /// Whether the link is currently under backpressure.
+    pub backpressured: bool,
+}
+
+impl LinkHealth {
+    /// Create a link health entry.
+    pub fn new(
+        from: impl Into<RegionId>,
+        to: impl Into<RegionId>,
+        lag: u64,
+        window: usize,
+        bytes_total: u64,
+        backpressured: bool,
+    ) -> Self {
+        Self {
+            from: from.into(),
+            to: to.into(),
+            lag,
+            window,
+            bytes_total,
+            backpressured,
+        }
+    }
+
+    /// Return a bounded label for this region link.
+    pub fn link_label(&self) -> String {
+        format!("{}->{}", self.from.as_str(), self.to.as_str())
+    }
+}
+
+/// Staleness SLO definition for active-active geo status.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct GeoStalenessSlo {
+    /// Target maximum observed staleness window.
+    pub target_window_ms: u64,
+}
+
+impl GeoStalenessSlo {
+    /// Create an SLO with a normalized non-zero target.
+    pub fn new(target_window_ms: u64) -> Self {
+        Self {
+            target_window_ms: target_window_ms.max(1),
+        }
+    }
+
+    /// Evaluate one status snapshot.
+    pub fn evaluate(&self, status: &GeoStatus) -> GeoSloEvaluation {
+        GeoSloEvaluation {
+            target_window_ms: self.target_window_ms,
+            observed_window_ms: status.worst_staleness_window_ms,
+            breached: status.worst_staleness_window_ms > self.target_window_ms,
+        }
+    }
+}
+
+/// Result of evaluating a geo staleness SLO.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct GeoSloEvaluation {
+    /// Target maximum staleness window.
+    pub target_window_ms: u64,
+    /// Observed worst region staleness window.
+    pub observed_window_ms: u64,
+    /// Whether the SLO is breached.
+    pub breached: bool,
+}
+
+/// Read-only active-active geo status snapshot.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct GeoStatus {
+    /// Per-region state, lag, and staleness.
+    pub regions: Vec<RegionHealth>,
+    /// Per-WAN-link replication health.
+    pub links: Vec<LinkHealth>,
+    /// Whether active-active was explicitly acknowledged.
+    pub active_active_acked: bool,
+    /// Worst observed staleness window across regions.
+    pub worst_staleness_window_ms: u64,
+    /// CRDT metadata size retained for convergence/GC safety.
+    pub crdt_metadata_bytes: u64,
+    /// Configured staleness SLO target.
+    pub staleness_slo_target_ms: u64,
+    /// Whether the staleness SLO is breached.
+    pub staleness_slo_breached: bool,
+}
+
+impl GeoStatus {
+    /// Assemble a read-only geo status snapshot from bounded signals.
+    pub fn from_signals(
+        mut regions: Vec<RegionHealth>,
+        mut links: Vec<LinkHealth>,
+        active_active_acked: bool,
+        crdt_metadata_bytes: u64,
+        slo: GeoStalenessSlo,
+    ) -> Self {
+        regions.sort_by(|left, right| left.region.as_str().cmp(right.region.as_str()));
+        links.sort_by_key(LinkHealth::link_label);
+        let worst_staleness_window_ms = regions
+            .iter()
+            .map(|region| region.staleness_window_ms)
+            .max()
+            .unwrap_or_default();
+        let staleness_slo_breached = worst_staleness_window_ms > slo.target_window_ms;
+        Self {
+            regions,
+            links,
+            active_active_acked,
+            worst_staleness_window_ms,
+            crdt_metadata_bytes,
+            staleness_slo_target_ms: slo.target_window_ms,
+            staleness_slo_breached,
+        }
+    }
+
+    /// Return whether every region is up and no SLO is breached.
+    pub fn is_healthy(&self) -> bool {
+        self.active_active_acked
+            && !self.staleness_slo_breached
+            && self
+                .regions
+                .iter()
+                .all(|region| region.state == RegionState::Up)
+    }
+}
+
+/// Geo metric names shipped with the alert and dashboard artifacts.
+pub fn geo_metric_names() -> &'static [&'static str] {
+    &[
+        "hydracache_region_staleness_window_ms",
+        "hydracache_region_link_lag",
+        "hydracache_region_link_bytes_total",
+        "hydracache_region_link_window",
+        "hydracache_region_state",
+        "hydracache_region_restore_duration_ms",
+        "hydracache_crdt_metadata_bytes",
+    ]
 }
 
 /// Repair-debt degraded mode.

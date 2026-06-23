@@ -99,3 +99,48 @@ Action:
    versions.
 2. Upgrade only within the registered 0.42 -> 0.43 window.
 3. Do not bypass a format mismatch; stop the rollout and upgrade readers first.
+
+## Active-Active Geo Staleness
+
+Signal: `hydracache_region_staleness_window_ms` or
+`HydraCacheGeoStalenessSloBreach`.
+
+Action:
+
+1. Check the read-only geo status surface and confirm
+   `worst_staleness_window_ms`, `staleness_slo_target_ms`, and
+   `active_active_acked`.
+2. Inspect `hydracache_region_link_lag` for the affected bounded `link` label.
+3. Reduce write fan-out or temporarily route writes to the home region if the
+   WAN link remains behind the SLO.
+4. Let cross-region anti-entropy converge; do not claim cross-region
+   linearizability. Active-active is bounded staleness, not distributed
+   transactions.
+
+## Region Failover
+
+Signal: `hydracache_region_state{state="down"}` or a region-down operator
+declaration.
+
+Action:
+
+1. Confirm the old home region is explicitly `Down`, not only `Suspect`.
+2. Run the promotion sequence as one control-plane operation:
+   `freeze -> commit higher epoch -> anti-entropy converge -> unfreeze`.
+3. Confirm `hydracache_region_promotion_total` increments and the promoted
+   partitions have a surviving home region.
+4. If the old region rejoins with a lower epoch, keep it fenced and backfill it
+   from the current authority.
+
+## Active-Active Disable
+
+Signal: planned rollback or sustained SLO breach.
+
+Action:
+
+1. Stop admitting new remote active-active writes.
+2. Wait for `hydracache_region_link_lag` to drain to zero on every bounded link.
+3. Confirm anti-entropy has converged and CRDT metadata GC gates are satisfied.
+4. Switch affected caches back to home-region-only write authority.
+5. Keep geo alerts active until `hydracache_region_staleness_window_ms` remains
+   inside the target window for the full observation period.

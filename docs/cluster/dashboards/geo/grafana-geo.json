@@ -1,0 +1,41 @@
+{
+  "title": "HydraCache Geo",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "title": "Region Staleness Window",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_region_staleness_window_ms" }]
+    },
+    {
+      "title": "Region Link Lag",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_region_link_lag" }]
+    },
+    {
+      "title": "Region Link Bytes",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_region_link_bytes_total" }]
+    },
+    {
+      "title": "Region Link Window",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_region_link_window" }]
+    },
+    {
+      "title": "Region State",
+      "type": "stat",
+      "targets": [{ "expr": "hydracache_region_state" }]
+    },
+    {
+      "title": "Region Restore Duration",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_region_restore_duration_ms" }]
+    },
+    {
+      "title": "CRDT Metadata",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_crdt_metadata_bytes" }]
+    }
+  ]
+}

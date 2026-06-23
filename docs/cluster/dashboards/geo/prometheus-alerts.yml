@@ -1,0 +1,38 @@
+groups:
+  - name: hydracache-geo
+    rules:
+      - alert: HydraCacheGeoStalenessSloBreach
+        expr: hydracache_region_staleness_window_ms > 300000
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: HydraCache active-active staleness window exceeded the configured SLO.
+      - alert: HydraCacheRegionLinkBackpressure
+        expr: hydracache_region_link_lag > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache WAN region link is accumulating lag.
+      - alert: HydraCacheRegionDown
+        expr: hydracache_region_state{state="down"} > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: HydraCache region has been declared down.
+      - alert: HydraCacheCrdtMetadataGrowth
+        expr: hydracache_crdt_metadata_bytes > 104857600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache CRDT metadata retained for anti-entropy GC is growing.
+      - alert: HydraCacheRegionRestoreSlow
+        expr: hydracache_region_restore_duration_ms > 600000
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache region restore exceeded the operator runbook budget.

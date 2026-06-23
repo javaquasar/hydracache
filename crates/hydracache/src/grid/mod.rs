@@ -1035,6 +1035,46 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
             name: "hydracache_auto_repair_advisory_total",
             labels: &[],
         },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_staleness_window_ms",
+            labels: &["region"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_link_lag",
+            labels: &["link"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_link_bytes_total",
+            labels: &["link"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_link_window",
+            labels: &["link"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_state",
+            labels: &["region", "state"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_promotion_total",
+            labels: &["region"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_region_restore_duration_ms",
+            labels: &["region"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_crdt_metadata_bytes",
+            labels: &["region"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_capacity_recommendation",
+            labels: &["region", "recommendation"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_scale_actions_total",
+            labels: &["region", "action"],
+        },
     ];
     DESCRIPTORS
 }
