@@ -1,5 +1,14 @@
 # HydraCache 0.41.0 Distributed Cache Grid Roadmap Plan
 
+> **At a glance**
+> - **What:** ADRs, epoch fence, `RaftLogStore` trait, `ClusterReplicationStrategy`, rebalance-as-data, versioned tombstones, opt-in value-replication prototype, B-items.
+> - **Why:** lay the correctness **skeleton** for a distributed grid without claiming production-grid yet.
+> - **After (depends on):** 0.40.
+> - **Unblocks:** 0.42 (turns these prototypes into supported durable features).
+> - **Status:** shipped.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.41.0`. Release notes:
 [`docs/releases/0.41.0.md`](../releases/0.41.0.md).
 
