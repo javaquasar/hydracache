@@ -514,6 +514,12 @@ pub use grid::active_active::{
     choose_hlc_tiebreak, ActiveActiveAcknowledgement, ActiveActiveConfig, ActiveActiveConfigError,
     ActiveActiveState, GeoWrite, GeoWriteAck, HybridLogicalClock, WriteAuthority,
 };
+pub use grid::capacity::{
+    admit_autoscaler_intent, evaluate_capacity, scale_in_removal_allowed,
+    scale_out_counts_toward_quorum, AutoscalerAdmission, AutoscalerAdmissionPolicy,
+    AutoscalerIntent, AutoscalerIntentError, CapacityAutoscalerMetrics, CapacitySample,
+    CapacitySignal, CapacityThresholds, ScaleAction, ScaleRecommendation,
+};
 pub use grid::crdt::{
     tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
     OrSetTag, PnCounter, TombstoneCrdtDecision,
