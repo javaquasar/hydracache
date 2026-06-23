@@ -13,8 +13,10 @@ discipline in [`../GATES.md`](../GATES.md); they do not redefine those rules.
 ## How to read this roadmap
 
 - **Two tracks.** `0.37`–`0.38` are the **database** track (query-result caching
-  correctness). `0.39`→`0.46` are the **cluster/distributed** track. The cluster track
-  is strictly sequential: each release hardens or builds on the previous one.
+  correctness). `0.39`→`0.47` are the **cluster/distributed** track, with `0.44` a
+  **foundation** release (deterministic simulation testing) inserted before the
+  remaining features so they are developed against the simulator. The cluster track is
+  strictly sequential: each release hardens or builds on the previous one.
 - **"After what."** A release should not be started until its `depends_on` release is
   done. The dependency DAG below is the source of order.
 - **Status honesty (RULES R-7/R-11).** `shipped` means the release's gates passed.
@@ -46,16 +48,22 @@ v0 foundations
                               0.43 geo-distribution & elasticity
                                         │
                                         ▼
-                              0.44 active-active multi-region
+                              0.44 deterministic simulation testing (DST)  ◄ foundation
                                         │
                                         ▼
-                              0.45 cluster resilience & coordination
+                              0.45 active-active multi-region
                                         │
                                         ▼
-                              0.46 cross-region session consistency (causal+)
+                              0.46 cluster resilience & coordination
                                         │
                                         ▼
-                              0.47+ ecosystem & external consumers (DRAFT)
+                              0.47 cross-region session consistency (causal+)
+                                        │
+                                        ▼
+                              0.48 production deployment, security & operations
+                                        │
+                                        ▼
+                              0.49+ ecosystem & external consumers (DRAFT)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -69,10 +77,12 @@ v0 foundations
 | [0.41.0](V0_41_DISTRIBUTED_CACHE_GRID_ROADMAP_PLAN.md) | shipped | ADRs, epoch fence, `RaftLogStore` trait, replication strategy, rebalance-as-data, versioned tombstones, value-replication prototype | Lay the correctness **skeleton** without claiming production-grid yet | 0.40 | 0.42 |
 | [0.42.0](V0_42_PRODUCTION_GRID_HARDENING_PLAN.md) | shipped | Durable multi-node raft, durable values, replication/failover, split-brain + merge, grid RYOW, identity + authz, operator surface | Turn the 0.41 prototypes into supported durable features | 0.41 | 0.43 |
 | [0.43.0](V0_43_GEO_DISTRIBUTION_AND_ELASTICITY_PLAN.md) | shipped | Zone/region placement, online resharding, locality + hedged reads, tiered storage, atomic-invalidation slice, self-healing | Survive a zone loss; reshard online without a maintenance window | 0.42 | 0.44 |
-| [0.44.0](V0_44_ACTIVE_ACTIVE_MULTIREGION_PLAN.md) | planned | Bounded-staleness writes, CRDT value types, WAN transport + anti-entropy, region failover/DR, capacity signals, geo observability | Local-latency writes across regions under a documented staleness contract | 0.43 | 0.45 |
-| [0.45.0](V0_45_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md) | planned | Tunable consistency levels, hinted handoff, Merkle repair, phi-accrual detector, single-key conditional + fenced lock, invalidation ring | Resilient under the messy middle: brief outages, flapping liveness, lost invalidations | 0.44 | 0.46 |
-| [0.46.0](V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md) | planned | Session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence, session lifecycle | Make active-active usable for real application **sessions** (causal+) | 0.45 | 0.47+ |
-| [0.47+ (TBD)](DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) | draft | Stable client protocol, Hibernate L2 provider, SDKs, multi-tenancy/quotas, data-residency, consumer observability | Let non-Rust stacks use the grid as a backend, safely and multi-tenant | 0.44 | — |
+| [0.44.0](V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md) | planned | Seeded whole-cluster deterministic simulator (`hydracache-sim`), sans-IO node seam, simulated network + fault-injecting storage, invariant + linearizability checkers, replay/shrinking, scrubber + checksums | Make correctness *provable* — find consensus/storage/consistency bugs reproducibly (Jepsen-class), validate every later feature against it | 0.43 | 0.45 |
+| [0.45.0](V0_45_ACTIVE_ACTIVE_MULTIREGION_PLAN.md) | planned | Bounded-staleness writes, CRDT value types, WAN transport + anti-entropy, region failover/DR, capacity signals, geo observability | Local-latency writes across regions under a documented staleness contract | 0.44 | 0.46 |
+| [0.46.0](V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md) | planned | Tunable consistency levels, hinted handoff, Merkle repair, phi-accrual detector, single-key conditional + fenced lock, invalidation ring | Resilient under the messy middle: brief outages, flapping liveness, lost invalidations | 0.45 | 0.47 |
+| [0.47.0](V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md) | planned | Session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence, session lifecycle | Make active-active usable for real application **sessions** (causal+) | 0.46 | 0.48+ |
+| [0.48.0](V0_48_PRODUCTION_DEPLOYMENT_AND_SECURITY_PLAN.md) | planned | `hydracache-server` daemon, zero-downtime upgrade, mTLS + cert/key lifecycle, encryption-at-rest, object-storage backup + PITR, Docker/k8s artifacts, operator surface + admission | Make the correctness-proven core actually deployable, secure, backed-up and operable in production | 0.47 | 0.49+ |
+| [0.49+ (TBD)](DRAFT_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) | draft | Stable client protocol, Hibernate L2 provider, SDKs, multi-tenancy/quotas, data-residency, consumer observability | Let non-Rust stacks use the grid as a backend, safely and multi-tenant | 0.48 | — |
 
 `0.43` debt closure:
 [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)
