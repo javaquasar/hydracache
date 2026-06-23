@@ -514,6 +514,10 @@ pub use grid::active_active::{
     choose_hlc_tiebreak, ActiveActiveAcknowledgement, ActiveActiveConfig, ActiveActiveConfigError,
     ActiveActiveState, GeoWrite, GeoWriteAck, HybridLogicalClock, WriteAuthority,
 };
+pub use grid::crdt::{
+    tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
+    OrSetTag, PnCounter, TombstoneCrdtDecision,
+};
 pub use grid::elasticity::{
     hedge_winner, plan_hedged_read, restore_topology_from_snapshot, topology_from_member_metadata,
     validate_move_preserves_zone_quorum, AtomicInvalidationError, AutoRepairDecision,

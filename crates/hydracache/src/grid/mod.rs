@@ -6,6 +6,7 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 
 pub(crate) mod active_active;
+pub(crate) mod crdt;
 pub(crate) mod elasticity;
 pub(crate) mod hardening;
 
