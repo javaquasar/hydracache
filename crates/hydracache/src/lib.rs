@@ -541,6 +541,12 @@ pub use grid::hardening::{
     WriteWatermark, REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
+pub use grid::region_failover::{
+    promote_region_home, rejoining_region_authority, RegionFailoverError, RegionFailoverMetrics,
+    RegionObservation, RegionPromotion, RegionPromotionReport, RegionRestore, RegionRestoreError,
+    RegionRestoreOutcome, RegionRestoreReport, RegionState, RegionStateDetector,
+    RejoiningRegionDecision,
+};
 pub use grid::region_link::{
     anti_entropy_diff, CrdtMetadataGcGate, GeoBatch, GeoBatchApplyReport, IdempotencyKey,
     PartitionDigest, RegionLink, RegionLinkError, VersionSummary,

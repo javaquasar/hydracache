@@ -9,6 +9,7 @@ pub(crate) mod active_active;
 pub(crate) mod crdt;
 pub(crate) mod elasticity;
 pub(crate) mod hardening;
+pub(crate) mod region_failover;
 pub(crate) mod region_link;
 
 use crate::cluster::{
