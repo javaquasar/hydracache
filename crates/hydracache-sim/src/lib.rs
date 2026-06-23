@@ -9,6 +9,7 @@ pub mod invariants;
 pub mod linearizability;
 pub mod network;
 pub mod rng;
+pub mod schedule;
 pub mod storage;
 pub mod workload;
 pub mod world;
@@ -23,6 +24,9 @@ pub use linearizability::{
 };
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 pub use rng::SimRng;
+pub use schedule::{
+    FailureReport, FaultSchedule, ReplayOutcome, ReplayRunner, ScheduledFault, ScheduledFaultKind,
+};
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,
 };
