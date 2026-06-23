@@ -1,5 +1,14 @@
 # HydraCache 0.40.0 Cluster Internal Production Pilot Plan
 
+> **At a glance**
+> - **What:** transport posture (`AUTH MISSING`), restart/rejoin property test, quorum barrier maturity, B-items (near-cache repair) early, minimal epoch fence.
+> - **Why:** run a controlled 2–5 node internal pilot and surface safety red-flags before claiming anything.
+> - **After (depends on):** 0.39.
+> - **Unblocks:** 0.41 (the distributed-grid roadmap slice).
+> - **Status:** shipped.
+>
+> Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
+
 Status: implemented in `0.40.0`. Release notes are in
 `docs/releases/0.40.0.md`.
 
