@@ -1432,7 +1432,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hydracache"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1451,7 +1451,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-actuator-axum"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "axum",
  "hydracache",
@@ -1464,7 +1464,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cdc-postgres"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "hydracache-db",
  "thiserror 2.0.18",
@@ -1473,7 +1473,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "hydracache",
  "hydracache-cluster-chitchat",
@@ -1483,7 +1483,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-chitchat"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "chitchat",
@@ -1494,7 +1494,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-raft"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -1513,7 +1513,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-transport-axum"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -1531,7 +1531,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1542,7 +1542,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "criterion",
@@ -1560,7 +1560,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "diesel",
@@ -1575,7 +1575,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-macros"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -1585,7 +1585,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1597,7 +1597,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sandbox"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "axum",
  "chitchat",
@@ -1623,7 +1623,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -1637,7 +1637,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "hydracache",
  "rand_chacha 0.9.0",
@@ -1646,7 +1646,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sql-lint"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1658,7 +1658,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -4995,7 +4995,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.43.0"
+version = "0.44.0"
 dependencies = [
  "serde",
  "serde_json",

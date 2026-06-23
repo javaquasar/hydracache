@@ -65,7 +65,7 @@ networked_control_plane = true
 [[release]]
 version = "0.44.0"
 file = "docs/plans/V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "Deterministic simulation testing & storage fault model — TigerBeetle-style seeded whole-cluster simulator (hydracache-sim), sans-IO node seam, simulated network + fault-injecting storage, invariant + linearizability checkers, replay/shrinking, scrubber + checksums"
 depends_on = ["0.43.0"]
 
