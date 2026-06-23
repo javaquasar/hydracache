@@ -129,14 +129,14 @@ they depend on:
 cargo package -p hydracache-cluster-chitchat
 cargo publish -p hydracache-cluster-chitchat
 
+cargo package -p hydracache-cluster-transport-axum
+cargo publish -p hydracache-cluster-transport-axum
+
 cargo package -p hydracache-cluster-raft
 cargo publish -p hydracache-cluster-raft
 
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
-
-cargo package -p hydracache-cluster-transport-axum
-cargo publish -p hydracache-cluster-transport-axum
 
 cargo package -p hydracache-observability
 cargo publish -p hydracache-observability
@@ -146,6 +146,12 @@ cargo publish -p hydracache-actuator-axum
 
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
+
+cargo package -p hydracache-sql-lint
+cargo publish -p hydracache-sql-lint
+
+cargo package -p hydracache-cdc-postgres
+cargo publish -p hydracache-cdc-postgres
 
 cargo package -p hydracache-diesel
 cargo publish -p hydracache-diesel
@@ -294,14 +300,14 @@ cargo publish -p hydracache
 cargo package -p hydracache-cluster-chitchat
 cargo publish -p hydracache-cluster-chitchat
 
+cargo package -p hydracache-cluster-transport-axum
+cargo publish -p hydracache-cluster-transport-axum
+
 cargo package -p hydracache-cluster-raft
 cargo publish -p hydracache-cluster-raft
 
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
-
-cargo package -p hydracache-cluster-transport-axum
-cargo publish -p hydracache-cluster-transport-axum
 
 cargo package -p hydracache-observability
 cargo publish -p hydracache-observability
@@ -311,6 +317,12 @@ cargo publish -p hydracache-actuator-axum
 
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
+
+cargo package -p hydracache-sql-lint
+cargo publish -p hydracache-sql-lint
+
+cargo package -p hydracache-cdc-postgres
+cargo publish -p hydracache-cdc-postgres
 
 cargo package -p hydracache-diesel
 cargo publish -p hydracache-diesel
