@@ -8,6 +8,7 @@ pub mod clock;
 pub mod network;
 pub mod rng;
 pub mod storage;
+pub mod workload;
 pub mod world;
 
 pub use clock::SimClock;
@@ -15,5 +16,8 @@ pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 pub use rng::SimRng;
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,
+};
+pub use workload::{
+    EventId, History, HistoryEvent, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
 };
 pub use world::{SimConfig, SimOutcome, SimWorld};

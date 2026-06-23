@@ -1,12 +1,14 @@
 use std::collections::BTreeMap;
 
 use hydracache::{
-    ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration, LogicalTime,
-    OutboundClusterMessage,
+    ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
+    LogicalTime, OutboundClusterMessage,
 };
 
-use crate::storage::checksum;
-use crate::{SimClock, SimNetwork, SimRng, SimStorage};
+use crate::{
+    History, SimClock, SimNetwork, SimRng, SimStorage, WorkloadConfig, WorkloadGenerator,
+    WorkloadOp, WorkloadResult,
+};
 
 /// Configuration for a deterministic simulation run.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -69,6 +71,8 @@ pub struct SimWorld {
     rng: SimRng,
     clock: SimClock,
     network: SimNetwork,
+    workload: WorkloadGenerator,
+    history: History,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     steps: u64,
     accepted_ops: u64,
@@ -80,6 +84,7 @@ impl SimWorld {
     /// Build a world from a seed and config.
     pub fn new(seed: u64, cfg: SimConfig) -> Self {
         let cfg = cfg.normalized();
+        let key_count = cfg.key_count;
         let node_ids = node_ids(cfg.node_count);
         let mut nodes = BTreeMap::new();
         for node_id in &node_ids {
@@ -107,6 +112,14 @@ impl SimWorld {
             rng: SimRng::from_seed(seed),
             clock: SimClock::default(),
             network: SimNetwork::from_seed(seed ^ 0x44_44_44_44),
+            workload: WorkloadGenerator::new(
+                seed ^ 0x55_55_55_55,
+                WorkloadConfig {
+                    key_count,
+                    ..WorkloadConfig::default()
+                },
+            ),
+            history: History::new(),
             nodes,
             steps: 0,
             accepted_ops: 0,
@@ -146,13 +159,18 @@ impl SimWorld {
             steps: self.steps,
             accepted_ops: self.accepted_ops,
             delivered_messages: self.delivered_messages,
-            history_hash: self.history_hash(),
+            history_hash: self.history.hash(),
         }
     }
 
     /// Return the current logical time.
     pub fn now(&self) -> LogicalTime {
         self.clock.now()
+    }
+
+    /// Return the recorded workload history.
+    pub fn history(&self) -> &History {
+        &self.history
     }
 
     fn deliver_network(&mut self) {
@@ -186,16 +204,16 @@ impl SimWorld {
             .nth(node_index)
             .expect("node index is within node count")
             .clone();
-        let key = format!("sim:key:{}", self.steps % self.cfg.key_count);
-        let value = self.steps.to_le_bytes().to_vec();
-
+        let (client, op) = self.workload.next_invocation();
         if let Some(sim_node) = self.nodes.get_mut(&node_id) {
-            let ack = sim_node.node.handle_client(ClientOp::Put {
-                key: key.clone(),
-                value,
-            });
+            let event_id = self
+                .history
+                .record_invocation(client, op.clone(), self.clock.now());
+            let ack = sim_node.node.handle_client(client_op(op));
             self.accepted_ops = self.accepted_ops.saturating_add(1);
-            self.record(format!("client:{node_id}:{key}:{ack:?}"));
+            self.history
+                .record_response(event_id, self.clock.now(), workload_result(ack));
+            self.record(format!("client:{client}:{node_id}:{event_id:?}"));
         }
     }
 
@@ -232,14 +250,29 @@ impl SimWorld {
     fn record(&mut self, event: String) {
         self.trace.push(event);
     }
-
-    fn history_hash(&self) -> u64 {
-        checksum(self.trace.join("\n").as_bytes())
-    }
 }
 
 fn node_ids(count: usize) -> Vec<ClusterNodeId> {
     (0..count)
         .map(|index| ClusterNodeId::new(format!("node-{index}")))
         .collect()
+}
+
+fn client_op(op: WorkloadOp) -> ClientOp {
+    match op {
+        WorkloadOp::Get { key } | WorkloadOp::SessionRead { key } => ClientOp::Get { key },
+        WorkloadOp::Put { key, value } | WorkloadOp::CompareAndSet { key, value, .. } => {
+            ClientOp::Put { key, value }
+        }
+        WorkloadOp::Invalidate { key } => ClientOp::Invalidate { key },
+    }
+}
+
+fn workload_result(ack: ClientAck) -> WorkloadResult {
+    match ack {
+        ClientAck::Accepted { sequence } => WorkloadResult::Accepted { sequence },
+        ClientAck::PendingStorage { request_id } => WorkloadResult::Accepted {
+            sequence: request_id,
+        },
+    }
 }
