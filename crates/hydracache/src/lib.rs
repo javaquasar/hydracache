@@ -555,6 +555,10 @@ pub use grid::hinted_handoff::{
     apply_hint, replay_hints, Hint, HintBudget, HintError, HintMetrics, HintOutcome,
     HintReplayDecision, HintStore, InMemoryHintStore,
 };
+pub use grid::merkle_repair::{
+    foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
+    RepairReport, RepairSession, RepairToken,
+};
 pub use grid::region_failover::{
     promote_region_home, rejoining_region_authority, RegionFailoverError, RegionFailoverMetrics,
     RegionObservation, RegionPromotion, RegionPromotionReport, RegionRestore, RegionRestoreError,

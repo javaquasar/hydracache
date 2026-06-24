@@ -443,6 +443,9 @@ where
             hints_replayed_total: 0,
             hints_dropped_total: 0,
             hint_store_bytes: 0,
+            repair_ranges_exchanged_total: 0,
+            read_repair_total: 0,
+            repair_progress_ratio: 0,
         }
     }
 

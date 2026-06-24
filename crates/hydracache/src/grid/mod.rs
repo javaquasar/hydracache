@@ -12,6 +12,7 @@ pub(crate) mod crdt;
 pub(crate) mod elasticity;
 pub(crate) mod hardening;
 pub(crate) mod hinted_handoff;
+pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
 
@@ -919,6 +920,12 @@ pub struct ClusterGridCounters {
     pub hints_dropped_total: u64,
     /// Approximate retained hint bytes.
     pub hint_store_bytes: u64,
+    /// Merkle repair ranges exchanged.
+    pub repair_ranges_exchanged_total: u64,
+    /// Foreground read-repair executions.
+    pub read_repair_total: u64,
+    /// Last aggregate repair progress ratio, scaled 0..=10000.
+    pub repair_progress_ratio: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1112,6 +1119,22 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_hint_store_bytes",
             labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_repair_sessions_total",
+            labels: &["kind"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_repair_ranges_exchanged_total",
+            labels: &["kind"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_read_repair_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_repair_progress_ratio",
+            labels: &["partition"],
         },
     ];
     DESCRIPTORS
