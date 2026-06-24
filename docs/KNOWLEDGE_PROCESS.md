@@ -160,8 +160,8 @@ YYYY-MM-DD.md
 ADR:
 
 ```text
-ADR-0001-short-kebab-title.md
-ADR-0002-short-kebab-title.md
+0001-short-kebab-title.md
+0002-short-kebab-title.md
 ```
 
 Learning notes:

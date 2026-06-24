@@ -13,6 +13,8 @@
 //!   accident.
 //! - every in-prose `V0_*.md` plan reference under `docs/plans/` resolves to a
 //!   real plan file.
+//! - every ADR uses the single `0001-title.md` filename scheme, has a unique
+//!   number, and is listed from `docs/adr/README.md`.
 //!
 //! This turns the "release sequencing is recorded, not implied" rule into an
 //! executable gate so doc drift (e.g. two plans claiming the same version, or a
@@ -146,6 +148,7 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     }
 
     problems.extend(check_in_prose_plan_links(root)?);
+    problems.extend(check_adr_index(root)?);
 
     Ok(problems)
 }
@@ -213,6 +216,75 @@ fn is_plan_filename(candidate: &str) -> bool {
         && candidate
             .chars()
             .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-' | '.'))
+}
+
+fn check_adr_index(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let adr_dir = root.join("docs/adr");
+    if !adr_dir.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    let readme_path = adr_dir.join("README.md");
+    let readme = fs::read_to_string(&readme_path)
+        .map_err(|err| format!("reading {}: {err}", readme_path.display()))?;
+
+    let mut problems = Vec::new();
+    let mut numbers: HashMap<String, String> = HashMap::new();
+    for entry in
+        fs::read_dir(&adr_dir).map_err(|err| format!("reading {}: {err}", adr_dir.display()))?
+    {
+        let path = entry?.path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("md") {
+            continue;
+        }
+        let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+            continue;
+        };
+        if file_name == "README.md" {
+            continue;
+        }
+
+        let Some(number) = adr_number(file_name) else {
+            problems.push(format!(
+                "docs/adr/{file_name}: ADR filename must use NNNN-title.md"
+            ));
+            continue;
+        };
+        if let Some(existing) = numbers.insert(number.clone(), file_name.to_owned()) {
+            problems.push(format!(
+                "docs/adr/{file_name}: duplicate ADR number {number} already used by {existing}"
+            ));
+        }
+        if !readme.contains(file_name) {
+            problems.push(format!(
+                "docs/adr/README.md: missing ADR index entry for {file_name}"
+            ));
+        }
+
+        let text = fs::read_to_string(&path)
+            .map_err(|err| format!("reading {}: {err}", path.display()))?;
+        let expected_heading = format!("# ADR-{number}:");
+        if !text.starts_with(&expected_heading) {
+            problems.push(format!(
+                "docs/adr/{file_name}: heading must start with '{expected_heading}'"
+            ));
+        }
+    }
+
+    Ok(problems)
+}
+
+fn adr_number(file_name: &str) -> Option<String> {
+    let bytes = file_name.as_bytes();
+    if bytes.len() <= 8 || bytes.get(4) != Some(&b'-') || !file_name.ends_with(".md") {
+        return None;
+    }
+    let number = &file_name[..4];
+    if number.bytes().all(|byte| byte.is_ascii_digit()) {
+        Some(number.to_owned())
+    } else {
+        None
+    }
 }
 
 /// CLI entry point: `cargo xtask doc-check [--root <path>]`.

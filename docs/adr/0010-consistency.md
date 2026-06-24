@@ -1,4 +1,4 @@
-# ADR-0003: Database Cache Consistency Levels
+# ADR-0010: Database Cache Consistency Levels
 
 ## Status
 

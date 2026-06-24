@@ -1,4 +1,4 @@
-# ADR-0001: Cache Ownership Boundary
+# ADR-0008: Cache Ownership Boundary
 
 ## Status
 

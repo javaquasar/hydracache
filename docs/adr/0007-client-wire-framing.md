@@ -1,4 +1,4 @@
-# ADR 0007: External Client Wire Framing
+# ADR-0007: External Client Wire Framing
 
 ## Status
 

@@ -1,4 +1,4 @@
-# ADR-0005: Outbox Durability And Idempotency
+# ADR-0012: Outbox Durability And Idempotency
 
 ## Status
 

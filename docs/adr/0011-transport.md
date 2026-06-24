@@ -1,4 +1,4 @@
-# ADR-0004: Intent-Only Transport
+# ADR-0011: Intent-Only Transport
 
 ## Status
 

@@ -1,4 +1,4 @@
-# ADR-0038: Transaction Companion Adapter Scope
+# ADR-0015: Transaction Companion Adapter Scope
 
 ## Status
 

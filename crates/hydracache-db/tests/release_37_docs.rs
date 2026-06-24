@@ -17,11 +17,11 @@ fn read_doc(path: impl AsRef<Path>) -> String {
 fn release_37_adr_skeleton_exists_with_required_headings() {
     let root = repo_root();
     for file in [
-        "docs/adr/0001-ownership.md",
-        "docs/adr/0002-replication.md",
-        "docs/adr/0003-consistency.md",
-        "docs/adr/0004-transport.md",
-        "docs/adr/0005-durability.md",
+        "docs/adr/0008-ownership.md",
+        "docs/adr/0009-replication.md",
+        "docs/adr/0010-consistency.md",
+        "docs/adr/0011-transport.md",
+        "docs/adr/0012-durability.md",
     ] {
         let contents = read_doc(root.join(file));
         assert!(

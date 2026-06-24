@@ -823,7 +823,7 @@ impl DbCache {
 #[cfg(feature = "diesel")]
 compile_error!(
     "hydracache transaction companion for Diesel is deferred to a later release; \
-     see docs/adr/0038-transaction-companion-adapters.md. \
+     see docs/adr/0015-transaction-companion-adapters.md. \
      Use the SQLx companion or manual transaction + outbox enqueue."
 );
 ```
@@ -869,7 +869,7 @@ Custom trait (`crates/hydracache-db/tests/transaction_trait_fake.rs`):
 
 - Over-abstraction can hide semantics; ORM transaction models differ.
 - **Fallback**: SQLx companion is the deliverable; Diesel/SeaORM are
-  pre-committed `compile_error!` stubs + ADR `0038-transaction-companion-adapters.md`.
+  pre-committed `compile_error!` stubs + ADR `0015-transaction-companion-adapters.md`.
 
 ---
 

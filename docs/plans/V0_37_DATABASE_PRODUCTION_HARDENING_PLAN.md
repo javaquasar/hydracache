@@ -1019,13 +1019,13 @@ Status: planned. Start now, fill across `0.37`–`0.40`, finalize in `0.41`
 
 Create `docs/adr/` with skeletons (Context / Decision / Status: Proposed):
 
-- `0001-ownership.md` — rendezvous ownership (already in
+- `0008-ownership.md` — rendezvous ownership (already in
   `crates/hydracache/src/cluster.rs`).
-- `0002-replication.md` — values are never replicated by the bus.
-- `0003-consistency.md` — eventual default; local + best-effort barriers in
+- `0009-replication.md` — values are never replicated by the bus.
+- `0010-consistency.md` — eventual default; local + best-effort barriers in
   `0.37`; quorum deferred to `0.40`.
-- `0004-transport.md` — bus transport; LISTEN/NOTIFY intent-only.
-- `0005-durability.md` — outbox idempotency key `(commit_position, target_hash)`
+- `0011-transport.md` — bus transport; LISTEN/NOTIFY intent-only.
+- `0012-durability.md` — outbox idempotency key `(commit_position, target_hash)`
   + advance-after-apply.
 
 Each hedged/deferred decision in this plan records its ADR here.

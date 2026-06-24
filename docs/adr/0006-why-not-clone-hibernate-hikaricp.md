@@ -1,4 +1,4 @@
-# ADR 0006: Hibernate Provider Instead Of Hibernate Or HikariCP Clone
+# ADR-0006: Hibernate Provider Instead Of Hibernate Or HikariCP Clone
 
 ## Status
 

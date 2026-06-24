@@ -185,3 +185,42 @@ depends_on = []
         "existing in-prose plan link should not fail: {joined}"
     );
 }
+
+#[test]
+fn detects_duplicate_adr_numbers_old_scheme_and_missing_index_entries() {
+    let manifest = r#"
+[[release]]
+version = "0.50.0"
+file = "docs/plans/V0_50_EXISTING_PLAN.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_50_EXISTING_PLAN.md"]);
+    let adr_dir = root.join("docs/adr");
+    fs::create_dir_all(&adr_dir).unwrap();
+    fs::write(
+        adr_dir.join("README.md"),
+        "[ADR-0001](0001-first.md)\n[ADR-0002](0002-listed.md)\n",
+    )
+    .unwrap();
+    fs::write(adr_dir.join("0001-first.md"), "# ADR-0001: First\n").unwrap();
+    fs::write(adr_dir.join("0001-duplicate.md"), "# ADR-0001: Duplicate\n").unwrap();
+    fs::write(adr_dir.join("ADR-0002-old-scheme.md"), "# ADR-0002: Old\n").unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("duplicate ADR number 0001"),
+        "missing duplicate ADR number check: {joined}"
+    );
+    assert!(
+        joined.contains("ADR filename must use NNNN-title.md"),
+        "missing ADR filename scheme check: {joined}"
+    );
+    assert!(
+        joined.contains("missing ADR index entry for 0001-duplicate.md"),
+        "missing ADR index coverage check: {joined}"
+    );
+}

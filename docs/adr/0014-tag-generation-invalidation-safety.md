@@ -1,4 +1,4 @@
-# ADR-0002: Tag Generation Invalidation Safety
+# ADR-0014: Tag Generation Invalidation Safety
 
 > Status: accepted for 0.4.0.
 

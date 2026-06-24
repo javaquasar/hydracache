@@ -1,4 +1,4 @@
-# ADR-0002: Invalidation Bus Does Not Replicate Values
+# ADR-0009: Invalidation Bus Does Not Replicate Values
 
 ## Status
 
