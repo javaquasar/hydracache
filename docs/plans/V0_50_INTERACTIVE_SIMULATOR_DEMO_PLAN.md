@@ -329,4 +329,9 @@ if **all** hold:
   `InvariantChecker` (a broken history shows `Violated`).
 - W3–W5: the UI lets a visitor partition/crash/heal and shows committed-log, leader,
   consistency-level outcomes, convergence, and the live verdict; presets cover the honest
- 
+  failure/halt cases; seeds reproduce.
+- W6: the "real engine, seed X" banner is present; a guard test forbids demo-only
+  scenarios; the build+smoke CI job is green and publishes the static site.
+
+If any fails, the demo stays internal/unlinked and the gap is documented — it must never
+present a behavior the engine does not actually produce.
