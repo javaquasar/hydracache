@@ -1636,6 +1636,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-server"
+version = "0.45.0"
+dependencies = [
+ "hydracache",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "hydracache-sim"
 version = "0.45.0"
 dependencies = [

@@ -14,6 +14,7 @@ members = [
     "crates/hydracache-observability",
     "crates/hydracache-sandbox",
     "crates/hydracache-seaorm",
+    "crates/hydracache-server",
     "crates/hydracache-sim",
     "crates/hydracache-sql-lint",
     "crates/hydracache-sqlx",
@@ -56,6 +57,7 @@ hydracache-db = { path = "crates/hydracache-db", version = "0.45.0" }
 hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.45.0" }
 hydracache-macros = { path = "crates/hydracache-macros", version = "0.45.0" }
 hydracache-observability = { path = "crates/hydracache-observability", version = "0.45.0" }
+hydracache-server = { path = "crates/hydracache-server", version = "0.45.0" }
 hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.45.0" }
 hydracache-sql-lint = { path = "crates/hydracache-sql-lint", version = "0.45.0" }
 hydracache-sqlx = { path = "crates/hydracache-sqlx", version = "0.45.0" }
