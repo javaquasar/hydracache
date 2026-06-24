@@ -213,6 +213,14 @@ p {
   overflow-wrap: anywhere;
 }
 
+.hash {
+  margin-top: 10px;
+  color: var(--muted);
+  font-family: ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 dl {
   display: grid;
   grid-template-columns: 1fr auto;

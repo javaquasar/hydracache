@@ -1,3 +1,10 @@
+import {
+  readInitialState,
+  reproducerCommand,
+  snapshotHash,
+  writeUrlState,
+} from "./share.js";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CONSISTENCY_LEVELS = ["ONE", "LOCAL_QUORUM", "QUORUM", "EACH_QUORUM", "ALL"];
 
@@ -6,6 +13,7 @@ const state = {
   sim: null,
   snapshot: null,
   selectedLink: null,
+  scenario: "default",
   timer: null,
   playing: false,
 };
@@ -17,11 +25,13 @@ const el = {
   reset: document.querySelector("#reset-button"),
   step: document.querySelector("#step-button"),
   play: document.querySelector("#play-button"),
+  copy: document.querySelector("#copy-reproducer"),
   workload: document.querySelector("#workload-toggle"),
   speed: document.querySelector("#speed-input"),
   graph: document.querySelector("#cluster-graph"),
   selectedLink: document.querySelector("#selected-link"),
   progress: document.querySelector("#progress-panel"),
+  hash: document.querySelector("#snapshot-hash"),
   nodes: document.querySelector("#nodes-panel"),
   consistency: document.querySelector("#consistency-panel"),
   keys: document.querySelector("#keys-panel"),
@@ -29,6 +39,9 @@ const el = {
 };
 
 async function boot() {
+  const initial = readInitialState(window.location.search);
+  state.scenario = initial.scenario;
+  el.seedInput.value = String(initial.seed);
   bindEvents();
   try {
     const wasm = await import("./pkg/hydracache_sim_wasm.js");
@@ -36,19 +49,20 @@ async function boot() {
       await wasm.default();
     }
     state.SimHandle = wasm.SimHandle;
-    resetSimulation();
+    resetSimulation(initial.steps);
   } catch (error) {
     showEngineError(error);
   }
 }
 
 function bindEvents() {
-  el.reset.addEventListener("click", resetSimulation);
+  el.reset.addEventListener("click", () => resetSimulation());
   el.step.addEventListener("click", () => {
     state.sim?.step();
     refresh();
   });
   el.play.addEventListener("click", togglePlay);
+  el.copy.addEventListener("click", copyReproducer);
   el.workload.addEventListener("change", () => {
     state.sim?.set_workload_enabled(el.workload.checked);
     refresh();
@@ -64,7 +78,7 @@ function bindEvents() {
   }
 }
 
-function resetSimulation() {
+function resetSimulation(steps = 0) {
   if (!state.SimHandle) {
     return;
   }
@@ -72,6 +86,9 @@ function resetSimulation() {
   state.selectedLink = null;
   state.sim = new state.SimHandle(BigInt(readSeed()));
   state.sim.set_workload_enabled(el.workload.checked);
+  if (steps > 0) {
+    state.sim.run(BigInt(steps));
+  }
   refresh();
 }
 
@@ -80,6 +97,7 @@ function refresh() {
     return;
   }
   state.snapshot = JSON.parse(state.sim.snapshot_json());
+  writeUrlState(window.history, state.snapshot, state.scenario);
   render();
 }
 
@@ -102,7 +120,10 @@ function renderVerdict(snapshot) {
     el.verdict.textContent = `invariants hold @ seed ${snapshot.seed}`;
   } else {
     el.verdict.classList.add("bad");
-    el.verdict.textContent = `violation: ${snapshot.verdict.invariant} @ seed ${snapshot.seed}`;
+    el.verdict.textContent = `violation: ${snapshot.verdict.invariant} @ seed ${snapshot.seed}; ${reproducerCommand(
+      snapshot.seed,
+      snapshot.step,
+    )}`;
   }
 }
 
@@ -183,6 +204,7 @@ function renderProgress(snapshot) {
     term("Convergence", progress.convergence),
     desc(progress.convergence),
   );
+  el.hash.textContent = `snapshot ${snapshotHash(snapshot)}`;
 }
 
 function renderNodes(snapshot) {
@@ -271,6 +293,19 @@ function togglePlay() {
   }
 }
 
+async function copyReproducer() {
+  if (!state.snapshot) {
+    return;
+  }
+  const command = reproducerCommand(state.snapshot.seed, state.snapshot.step);
+  try {
+    await navigator.clipboard?.writeText(command);
+    el.banner.textContent = command;
+  } catch (_error) {
+    el.banner.textContent = command;
+  }
+}
+
 function startPlay() {
   if (!state.sim || state.playing) {
     return;
@@ -355,7 +390,7 @@ function showEngineError(error) {
   el.verdict.className = "verdict warn";
   el.verdict.textContent = "wasm package unavailable";
   el.banner.textContent = String(error?.message || error);
-  for (const button of [el.step, el.play, ...el.linkActions]) {
+  for (const button of [el.step, el.play, el.copy, ...el.linkActions]) {
     button.disabled = true;
   }
 }

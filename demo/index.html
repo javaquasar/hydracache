@@ -24,6 +24,9 @@
         <button id="reset-button" type="button" data-testid="reset">Reset</button>
         <button id="step-button" type="button" data-testid="step">Step</button>
         <button id="play-button" type="button" data-testid="play">Play</button>
+        <button id="copy-reproducer" type="button" data-testid="copy-reproducer">
+          Copy reproducer
+        </button>
         <label class="toggle">
           <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
           Workload
@@ -56,6 +59,7 @@
           <section>
             <h2>Progress</h2>
             <dl id="progress-panel" data-testid="progress-panel"></dl>
+            <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
           </section>
 
           <section>

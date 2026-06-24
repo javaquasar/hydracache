@@ -14,15 +14,22 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     let root = repo_root();
     let html = fs::read_to_string(root.join("demo/index.html")).expect("demo html exists");
     let js = fs::read_to_string(root.join("demo/app.js")).expect("demo app exists");
+    let share = fs::read_to_string(root.join("demo/share.js")).expect("demo share helper exists");
     let spec = fs::read_to_string(root.join("demo/tests/ui_smoke.spec.js"))
         .expect("nightly UI smoke spec exists");
+    let seed_spec = fs::read_to_string(root.join("demo/tests/seed_share.spec.js"))
+        .expect("nightly seed-share spec exists");
 
     assert!(html.contains("data-testid=\"verdict\""));
     assert!(html.contains("data-testid=\"partition-link\""));
     assert!(html.contains("data-testid=\"nodes-panel\""));
+    assert!(html.contains("data-testid=\"copy-reproducer\""));
+    assert!(html.contains("data-testid=\"snapshot-hash\""));
 
+    assert!(js.contains("from \"./share.js\""));
     assert!(js.contains("./pkg/hydracache_sim_wasm.js"));
     assert!(js.contains("new state.SimHandle"));
+    assert!(js.contains("state.sim.run(BigInt(steps))"));
     assert!(js.contains("snapshot_json()"));
     assert!(js.contains("set_workload_enabled"));
     assert!(js.contains("crash_node"));
@@ -32,9 +39,18 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("snapshot.nodes"));
     assert!(js.contains("snapshot.links"));
     assert!(js.contains("snapshot.keys"));
+    assert!(js.contains("writeUrlState(window.history"));
+    assert!(js.contains("snapshotHash(snapshot)"));
+    assert!(js.contains("reproducerCommand("));
+
+    assert!(share.contains("readInitialState"));
+    assert!(share.contains("writeUrlState"));
+    assert!(share.contains("reproducerCommand"));
+    assert!(share.contains("snapshotHash"));
 
     assert!(spec.contains("loads_steps_and_renders_verdict"));
     assert!(spec.contains("clicking_partition_updates_link_state"));
+    assert!(seed_spec.contains("url_seed_reproduces_identical_run"));
 }
 
 #[test]
