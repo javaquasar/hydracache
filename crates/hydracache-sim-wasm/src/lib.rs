@@ -85,6 +85,14 @@ impl SimHandle {
         }
     }
 
+    /// Replace the current world with a curated simulator scenario.
+    pub fn apply_scenario(&mut self, name: String) -> Result<(), JsValue> {
+        let run = hydracache_sim::run_scenario(&name)
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        self.world = run.world;
+        Ok(())
+    }
+
     /// Serialize the current canonical simulator snapshot as JSON.
     pub fn snapshot_json(&self) -> String {
         self.world.snapshot_json()
@@ -161,5 +169,19 @@ mod tests {
             .nodes
             .iter()
             .any(|node| node.id == "node-2" && node.crashed && !node.up));
+    }
+
+    #[test]
+    fn wasm_can_apply_curated_scenario() {
+        let mut handle = SimHandle::new(1);
+        handle
+            .apply_scenario("minority_partition_cannot_commit".to_owned())
+            .expect("scenario applies");
+
+        let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
+        assert_eq!(snapshot.seed, 5_001);
+        assert_eq!(snapshot.step, 6);
+        assert_eq!(snapshot.progress.committed_entries, 0);
+        assert_eq!(snapshot.verdict, VerdictView::Holding);
     }
 }

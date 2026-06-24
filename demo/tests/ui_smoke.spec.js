@@ -18,3 +18,12 @@ test("clicking_partition_updates_link_state", async ({ page }) => {
 
   await expect(page.getByTestId("selected-link")).toContainText("partitioned");
 });
+
+test("loading_scenario_uses_curated_engine_preset", async ({ page }) => {
+  await page.goto(demoUrl);
+  await page.getByTestId("scenario-select").selectOption("minority_partition_cannot_commit");
+  await page.getByTestId("load-scenario").click();
+
+  await expect(page.getByTestId("snapshot-hash")).toContainText("snapshot ");
+  await expect(page).toHaveURL(/scenario=minority_partition_cannot_commit/);
+});

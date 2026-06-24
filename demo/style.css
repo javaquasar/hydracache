@@ -29,7 +29,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -151,6 +152,16 @@ p {
   border-radius: 8px;
   padding: 0 10px;
   color: var(--ink);
+}
+
+#scenario-select {
+  width: 240px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--ink);
+  background: var(--panel);
 }
 
 .toggle {

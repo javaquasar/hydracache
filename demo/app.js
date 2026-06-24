@@ -4,6 +4,7 @@ import {
   snapshotHash,
   writeUrlState,
 } from "./share.js";
+import { SCENARIOS } from "./scenarios.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CONSISTENCY_LEVELS = ["ONE", "LOCAL_QUORUM", "QUORUM", "EACH_QUORUM", "ALL"];
@@ -22,6 +23,8 @@ const el = {
   banner: document.querySelector("#engine-banner"),
   verdict: document.querySelector("#verdict"),
   seedInput: document.querySelector("#seed-input"),
+  scenario: document.querySelector("#scenario-select"),
+  loadScenario: document.querySelector("#load-scenario"),
   reset: document.querySelector("#reset-button"),
   step: document.querySelector("#step-button"),
   play: document.querySelector("#play-button"),
@@ -42,6 +45,7 @@ async function boot() {
   const initial = readInitialState(window.location.search);
   state.scenario = initial.scenario;
   el.seedInput.value = String(initial.seed);
+  populateScenarios(initial.scenario);
   bindEvents();
   try {
     const wasm = await import("./pkg/hydracache_sim_wasm.js");
@@ -49,7 +53,11 @@ async function boot() {
       await wasm.default();
     }
     state.SimHandle = wasm.SimHandle;
-    resetSimulation(initial.steps);
+    if (initial.scenario === "default") {
+      resetSimulation(initial.steps);
+    } else {
+      loadScenario(initial.scenario, initial.steps);
+    }
   } catch (error) {
     showEngineError(error);
   }
@@ -57,6 +65,7 @@ async function boot() {
 
 function bindEvents() {
   el.reset.addEventListener("click", () => resetSimulation());
+  el.loadScenario.addEventListener("click", () => loadScenario(el.scenario.value));
   el.step.addEventListener("click", () => {
     state.sim?.step();
     refresh();
@@ -83,6 +92,8 @@ function resetSimulation(steps = 0) {
     return;
   }
   stopPlay();
+  state.scenario = "default";
+  el.scenario.value = state.scenario;
   state.selectedLink = null;
   state.sim = new state.SimHandle(BigInt(readSeed()));
   state.sim.set_workload_enabled(el.workload.checked);
@@ -90,6 +101,30 @@ function resetSimulation(steps = 0) {
     state.sim.run(BigInt(steps));
   }
   refresh();
+}
+
+function loadScenario(name, targetSteps = null) {
+  if (!state.SimHandle) {
+    return;
+  }
+  stopPlay();
+  state.selectedLink = null;
+  state.scenario = name || "default";
+  el.scenario.value = state.scenario;
+  if (state.scenario === "default") {
+    resetSimulation(Number.isInteger(targetSteps) ? targetSteps : 0);
+    return;
+  }
+  state.sim = new state.SimHandle(BigInt(0));
+  state.sim.apply_scenario(state.scenario);
+  if (Number.isInteger(targetSteps)) {
+    const snapshot = JSON.parse(state.sim.snapshot_json());
+    if (targetSteps > snapshot.step) {
+      state.sim.run(BigInt(targetSteps - snapshot.step));
+    }
+  }
+  refresh();
+  el.seedInput.value = String(state.snapshot.seed);
 }
 
 function refresh() {
@@ -104,6 +139,7 @@ function refresh() {
 function render() {
   const snapshot = state.snapshot;
   el.banner.textContent = `real engine, seed ${snapshot.seed}, step ${snapshot.step}`;
+  el.scenario.value = state.scenario;
   renderVerdict(snapshot);
   renderGraph(snapshot);
   renderSelectedLink();
@@ -386,11 +422,23 @@ function readSeed() {
   return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 80;
 }
 
+function populateScenarios(selected) {
+  el.scenario.replaceChildren();
+  for (const scenario of SCENARIOS) {
+    const option = document.createElement("option");
+    option.value = scenario.name;
+    option.textContent = scenario.title;
+    option.title = scenario.summary;
+    option.selected = scenario.name === selected;
+    el.scenario.append(option);
+  }
+}
+
 function showEngineError(error) {
   el.verdict.className = "verdict warn";
   el.verdict.textContent = "wasm package unavailable";
   el.banner.textContent = String(error?.message || error);
-  for (const button of [el.step, el.play, el.copy, ...el.linkActions]) {
+  for (const button of [el.step, el.play, el.copy, el.loadScenario, ...el.linkActions]) {
     button.disabled = true;
   }
 }

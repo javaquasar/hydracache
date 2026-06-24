@@ -9,6 +9,7 @@ pub mod invariants;
 pub mod linearizability;
 pub mod network;
 pub mod rng;
+pub mod scenarios;
 pub mod schedule;
 pub mod snapshot;
 pub mod storage;
@@ -27,6 +28,11 @@ pub use linearizability::{
 };
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 pub use rng::SimRng;
+pub use scenarios::{
+    run_scenario, scenario_matches_expectation, scenario_presets, ExpectedScenarioProgress,
+    ExpectedScenarioVerdict, ScenarioAction, ScenarioError, ScenarioPreset, ScenarioRun,
+    SIM_SCENARIO_SET_VERSION,
+};
 pub use schedule::{
     FailureReport, FaultSchedule, ReplayOutcome, ReplayRunner, ScheduledFault, ScheduledFaultKind,
 };
