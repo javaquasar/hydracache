@@ -71,7 +71,7 @@ fn encode_hex(bytes: &[u8]) -> String {
 }
 
 fn decode_hex(text: &str) -> Result<Vec<u8>, BackupError> {
-    if text.len() % 2 != 0 {
+    if !text.len().is_multiple_of(2) {
         return Err(BackupError::InvalidManifest("odd hex length".to_owned()));
     }
     let mut bytes = Vec::with_capacity(text.len() / 2);

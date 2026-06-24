@@ -5,7 +5,7 @@
 > - **Why:** after `0.44`–`0.47` the *distributed core is correctness-proven*, but it is **not deployable** — no server binary, no TLS, no cert lifecycle, no tested DR, no k8s. This release closes exactly the "what's missing to run in prod" gap and is the precondition for any external-facing use.
 > - **After (depends on):** 0.47 (the full cluster line, validated by the 0.44 simulator).
 > - **Unblocks:** 0.49+ ecosystem & external consumers (external protocol needs TLS, a server, and multi-tenant ops).
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gaps source: [`../POSITIONING.md`](../POSITIONING.md) ("honest weaknesses") and [`../COMPETITIVE_ANALYSIS_AND_EVOLUTION.md`](../COMPETITIVE_ANALYSIS_AND_EVOLUTION.md) (pingora §1.1, arroyo §4.2–4.3, scylladb §5).
 
@@ -372,3 +372,27 @@ cargo test --workspace --locked -- --ignored   # restore-under-faults, soak
 
 If any condition fails, the release ships **without** the corresponding claim, documents
 what landed, and the rest moves to a follow-up.
+
+## Implementation Status
+
+Implemented in the 0.48 release slice:
+
+- W1: `hydracache-server` crate with validated config, lifecycle, health/readiness
+  model, and graceful shutdown.
+- W2: deterministic graceful-upgrade model that keeps replacement readiness before
+  old-process drain and rejects incomplete handoff.
+- W3: cluster mTLS posture checks for peer certificate, CA, expiry, DNS boundary, and
+  non-loopback startup safety.
+- W4: operator-owned at-rest key provider, sealed artifact format, fail-closed open,
+  and certificate rotation window.
+- W5: object-store full backup manifest, PITR log, checksum validation, restore-to-point,
+  and `BackupManifest` format registration in `docs/COMPAT.md`.
+- W6: Dockerfile, Kubernetes StatefulSet/services/PDB, Helm chart, deployment docs, and
+  fast smoke tests plus ignored nightly Docker/kind hooks.
+- W7: Prometheus text exporter, registered metric drift checks, dashboards/alerts,
+  runbooks, and FIFO admission/backpressure controller.
+- W8: deterministic `hydracache-sim` deployment recovery gate for rolling upgrade,
+  cert rotation, backup corruption, and PITR restore.
+
+Nightly Docker/kind validation remains an integration-tier gate; the fast release
+gates listed above are covered by committed tests.
