@@ -531,6 +531,11 @@ pub use grid::consistency_level::{
     AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
     WriteOptions,
 };
+pub use grid::convergence_staleness::{
+    converge_replicated_values, resolve_session_read_mode, within_staleness_bound,
+    BoundedStalenessMetrics, SessionReadMode, StalenessBound, StalenessDecision,
+    StalenessEscalationReason,
+};
 pub use grid::crdt::{
     tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
     OrSetTag, PnCounter, TombstoneCrdtDecision,

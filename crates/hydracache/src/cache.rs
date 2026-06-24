@@ -466,6 +466,8 @@ where
             causal_writes_deferred_total: 0,
             causal_summary_coarsened_total: 0,
             causal_dependency_bytes: 0,
+            bounded_staleness_fast_serves_total: 0,
+            bounded_staleness_escalations_total: 0,
         }
     }
 

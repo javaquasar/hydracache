@@ -10,6 +10,7 @@ pub(crate) mod capacity;
 pub(crate) mod causal_consistency;
 pub(crate) mod conditional;
 pub(crate) mod consistency_level;
+pub(crate) mod convergence_staleness;
 pub(crate) mod crdt;
 pub(crate) mod elasticity;
 pub(crate) mod failure_detector;
@@ -973,6 +974,10 @@ pub struct ClusterGridCounters {
     pub causal_summary_coarsened_total: u64,
     /// Approximate causal dependency metadata bytes.
     pub causal_dependency_bytes: u64,
+    /// Reads served locally by explicit bounded staleness.
+    pub bounded_staleness_fast_serves_total: u64,
+    /// Bounded-staleness reads that had to escalate.
+    pub bounded_staleness_escalations_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1262,6 +1267,14 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_causal_dependency_bytes",
             labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_bounded_staleness_fast_serves_total",
+            labels: &["mode"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_bounded_staleness_escalations_total",
+            labels: &["reason"],
         },
     ];
     DESCRIPTORS
