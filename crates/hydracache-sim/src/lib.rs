@@ -11,6 +11,7 @@ pub mod network;
 pub mod rng;
 pub mod schedule;
 pub mod storage;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod upgrade_recovery;
 pub mod workload;
 pub mod world;
@@ -31,6 +32,7 @@ pub use schedule::{
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use upgrade_recovery::{
     run_upgrade_and_recovery, DeploymentFault, DeploymentInvariantReport,
     DeploymentRecoveryScenario,

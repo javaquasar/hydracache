@@ -18,13 +18,15 @@ tiered-values = []
 testing = []
 
 [dependencies]
+serde.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 async-trait.workspace = true
 bytes.workspace = true
 futures-util.workspace = true
 hydracache-core.workspace = true
 hydracache-macros.workspace = true
 moka.workspace = true
-serde.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 

@@ -465,36 +465,58 @@
 
 extern crate self as hydracache;
 
+#[cfg(not(target_arch = "wasm32"))]
 mod admission;
+#[cfg(not(target_arch = "wasm32"))]
 mod backup;
+#[cfg(not(target_arch = "wasm32"))]
 mod builder;
+#[cfg(not(target_arch = "wasm32"))]
 mod cache;
 mod cluster;
+#[cfg(not(target_arch = "wasm32"))]
 mod consistency;
+#[cfg(not(target_arch = "wasm32"))]
 mod entry;
+#[cfg(not(target_arch = "wasm32"))]
 mod events;
+#[cfg(not(target_arch = "wasm32"))]
 mod grid;
+#[cfg(not(target_arch = "wasm32"))]
 mod inflight;
+#[cfg(not(target_arch = "wasm32"))]
 mod invalidation_bus;
+#[cfg(not(target_arch = "wasm32"))]
 mod multitenancy;
+#[cfg(not(target_arch = "wasm32"))]
 mod refresh;
+#[cfg(not(target_arch = "wasm32"))]
 mod security;
+#[cfg(not(target_arch = "wasm32"))]
 mod stats;
+#[cfg(not(target_arch = "wasm32"))]
 mod tag_index;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod testing;
+#[cfg(not(target_arch = "wasm32"))]
 mod typed;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub use admission::{
     AdmissionController, AdmissionError, AdmissionLimits, AdmissionPermit, AdmissionQueueTicket,
     AdmissionRejectionReason, AdmissionSnapshot,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use backup::{
     read_manifest, restore_backup_to_point, write_full_backup, write_pitr_log, BackupDataset,
     BackupEntry, BackupError, BackupManifest, InMemoryObjectStore, ObjectStore, PitrLog,
     PitrRecord, BACKUP_MANIFEST_FORMAT_VERSION,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use builder::HydraCacheBuilder;
+#[cfg(not(target_arch = "wasm32"))]
 pub use cache::HydraCache;
+#[cfg(not(target_arch = "wasm32"))]
 pub use cluster::{
     partition_for_key, validate_replica_config, ChitchatStyleDiscovery, ClientAck, ClientOp,
     ClusterAdmissionBridge, ClusterAdmissionBridgeConfig, ClusterAdmissionBridgeDiagnostics,
@@ -518,41 +540,57 @@ pub use cluster::{
     StorageOpKind, StorageResult, TopologyFence, TransportPosture,
     CLUSTER_PEER_FETCH_BASE_URL_METADATA_KEY,
 };
+#[cfg(target_arch = "wasm32")]
+pub use cluster::{
+    ClientAck, ClientOp, ClusterClock, ClusterNode, ClusterNodeConfig, ClusterNodeId,
+    ClusterNodeMessage, ClusterStorage, InMemoryClusterStorage, LogicalDuration, LogicalTime,
+    ManualClusterClock, OutboundClusterMessage, StorageOp, StorageOpKind, StorageResult,
+};
+#[cfg(not(target_arch = "wasm32"))]
 pub use consistency::{
     ConsistencyInvalidate, ConsistencyMode, ConsistencyOutcome, ConsistencyToken, DegradeReason,
     WriteBarrierToken,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use events::{CacheEventListenerHandle, CacheEventRecvError, CacheEventSubscriber};
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::active_active::{
     choose_hlc_tiebreak, ActiveActiveAcknowledgement, ActiveActiveConfig, ActiveActiveConfigError,
     ActiveActiveState, GeoWrite, GeoWriteAck, HybridLogicalClock, WriteAuthority,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::capacity::{
     admit_autoscaler_intent, evaluate_capacity, scale_in_removal_allowed,
     scale_out_counts_toward_quorum, AutoscalerAdmission, AutoscalerAdmissionPolicy,
     AutoscalerIntent, AutoscalerIntentError, CapacityAutoscalerMetrics, CapacitySample,
     CapacitySignal, CapacityThresholds, ScaleAction, ScaleRecommendation,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::causal_consistency::{
     apply_causal_write, causal_apply, AppliedSet, ApplyDecision, CausalApplyDeferred,
     CausalConsistencyMetrics, CausalDependencyMissing, CausalSummary, CausalWrite,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::conditional::{
     CasResult, ConditionalError, ConditionalMetrics, FenceToken, SingleKeyConditionalStore,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::consistency_level::{
     AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
     WriteOptions,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::convergence_staleness::{
     converge_replicated_values, resolve_session_read_mode, within_staleness_bound,
     BoundedStalenessMetrics, SessionReadMode, StalenessBound, StalenessDecision,
     StalenessEscalationReason,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::crdt::{
     tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
     OrSetTag, PnCounter, TombstoneCrdtDecision,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::elasticity::{
     hedge_winner, plan_hedged_read, restore_topology_from_snapshot, topology_from_member_metadata,
     validate_move_preserves_zone_quorum, AtomicInvalidationError, AutoRepairDecision,
@@ -565,10 +603,12 @@ pub use grid::elasticity::{
     CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
     NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::failure_detector::{
     liveness_allows_ownership_change, liveness_allows_repair_or_handoff, FailureDetectorMetrics,
     Liveness, PhiAccrualConfig, PhiAccrualDetector,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::hardening::{
     anti_entropy_repair, live_read_your_writes, merge_split_brain_records, quorum_read_your_writes,
     resolve_live_split_brain, split_brain_winner, AdaptiveWindow, ChecksummedReplicatedValueRecord,
@@ -580,28 +620,34 @@ pub use grid::hardening::{
     WriteWatermark, REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::hinted_handoff::{
     apply_hint, replay_hints, Hint, HintBudget, HintError, HintMetrics, HintOutcome,
     HintReplayDecision, HintStore, InMemoryHintStore,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::invalidation_ring::{
     InvalidationEvent, InvalidationRing, InvalidationRingMetrics, InvalidationRingSnapshot,
     ReplayResult,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::merkle_repair::{
     foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
     RepairReport, RepairSession, RepairToken,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::region_failover::{
     promote_region_home, rejoining_region_authority, RegionFailoverError, RegionFailoverMetrics,
     RegionObservation, RegionPromotion, RegionPromotionReport, RegionRestore, RegionRestoreError,
     RegionRestoreOutcome, RegionRestoreReport, RegionState, RegionStateDetector,
     RejoiningRegionDecision,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::region_link::{
     anti_entropy_diff, CrdtMetadataGcGate, GeoBatch, GeoBatchApplyReport, IdempotencyKey,
     PartitionDigest, RegionLink, RegionLinkError, VersionSummary,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::residency::{
     ResidencyAuditAction, ResidencyAuditEvent, ResidencyDecision, ResidencyFailoverDecision,
     ResidencyLinkSendReport, ResidencyMetricsSnapshot, ResidencyNarrowingReport, ResidencyPolicy,
@@ -609,23 +655,28 @@ pub use grid::residency::{
     ResidencyRejectionKind, ResidencyRemediationAction, ResidencyValueLocation,
     RESIDENCY_POLICY_FORMAT_VERSION,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::session_context::{
     PartitionKey, SessionContextMetrics, SessionId, SessionRequest, SessionToken,
     SessionTokenError, SessionWatermark, VersionStamp,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::session_lifecycle::{
     rebuild_expired_sessionless, recover_session_after_failover, validate_session_lifecycle,
     SessionFailoverAction, SessionFailoverRecovery, SessionLifecycleDecision, SessionTtl,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::session_monotonic::{
     apply_monotonic_read, apply_monotonic_write, resolve_monotonic_read, resolve_monotonic_write,
     MonotonicReadDecision, MonotonicReadViolation, MonotonicWriteDecision, MonotonicWriteViolation,
     SessionMonotonicMetrics, SessionSequence, SessionWriteStamp,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::session_ryw::{
     resolve_session_read, serve_session_read, ReadEscalation, SessionGuaranteeUnmet,
     SessionReadBudget, SessionRywMetrics,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
     replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
@@ -637,32 +688,40 @@ pub use grid::{
     ReplicationKeyProvider, ReplicationPayload, SharedReplicationKeyProvider, TombstoneAdmission,
     TombstoneBudget, TombstoneTracker,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use hydracache_core::{
     CacheDiagnostics, CacheError, CacheEvent, CacheEventKind, CacheEventOptions, CacheEventOrigin,
     CacheEventScope, CacheEventValueMode, CacheKey, CacheKeyBuilder, CacheOptions, CacheStats,
     PostcardCodec, TagSet,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use hydracache_macros::{cacheable, cacheable_infallible, cacheable_loader};
+#[cfg(not(target_arch = "wasm32"))]
 pub use invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
     CacheInvalidationReceive, CacheInvalidationReceiver, InMemoryFramedInvalidationBus,
     InMemoryInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use multitenancy::{
     AdmissionRejection, ConsumerIsolation, ConsumerIsolationConfig, MultitenancyError,
     NamespaceQuota, Tenant, TenantId, TenantMetricsSnapshot, TenantResolver, TenantRoster,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use refresh::RefreshOptions;
+#[cfg(not(target_arch = "wasm32"))]
 pub use security::{
     AtRestKeyProvider, AtRestSealer, CertificateBundle, CertificateRotationWindow, KeyMaterial,
     SealedArtifact, SecurityError, StaticAtRestKeyProvider, AT_REST_ARTIFACT_FORMAT_VERSION,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use typed::TypedCache;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub use hydracache_core::{
     CacheDiagnostics as Diagnostics, CacheOptions as Options, CacheStats as Stats,
     Result as CacheResult,
 };
 
-#[cfg(test)]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests;
