@@ -6,6 +6,7 @@ use crate::cluster::{ClusterEpoch, PartitionId};
 use crate::grid::active_active::GeoWrite;
 use crate::grid::elasticity::RegionId;
 use crate::grid::hardening::{AdaptiveWindow, MergePolicy, ReplicatedValueRecord, ValueVersion};
+use crate::grid::residency::{ResidencyLinkSendReport, ResidencyPolicyEnforcer};
 
 /// Idempotency key attached to a cross-region replication write.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -179,6 +180,36 @@ impl RegionLink {
             self.lag = self.lag.saturating_add(1);
             false
         }
+    }
+
+    /// Admit a batch only if residency policy allows every value to cross this link.
+    pub fn try_send_with_residency<F>(
+        &mut self,
+        batch: &GeoBatch,
+        enforcer: &mut ResidencyPolicyEnforcer,
+        namespace_for_key: F,
+    ) -> ResidencyLinkSendReport
+    where
+        F: Fn(&str) -> Option<String>,
+    {
+        let mut report = ResidencyLinkSendReport::default();
+        for write in &batch.entries {
+            let Some(namespace) = namespace_for_key(&write.key) else {
+                continue;
+            };
+            report.checked = report.checked.saturating_add(1);
+            if enforcer
+                .guard_cross_boundary(&namespace, &write.key, &write.origin_region, &self.peer)
+                .is_err()
+            {
+                report.refused = report.refused.saturating_add(1);
+            }
+        }
+        if report.refused > 0 {
+            return report;
+        }
+        report.sent = self.try_send(batch);
+        report
     }
 
     /// Record a link acknowledgement and update backpressure.

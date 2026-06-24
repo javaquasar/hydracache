@@ -348,6 +348,45 @@ impl ZoneAwareReplicationStrategy {
         })
     }
 
+    /// Return a zone-aware replica set filtered to residency-allowed regions.
+    pub fn zone_replicas_for_key_in_regions(
+        &self,
+        key: &str,
+        members: &[ClusterMember],
+        allowed_regions: &BTreeSet<RegionId>,
+        min_replicas_in_policy: usize,
+    ) -> Option<ZoneAwareReplicaSet> {
+        let required = self.replication_factor.max(min_replicas_in_policy.max(1));
+        let filtered = members
+            .iter()
+            .filter(|member| {
+                self.topology_for_node(&member.node_id)
+                    .map(|topology| allowed_regions.contains(&topology.region))
+                    .unwrap_or(false)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        if filtered.len() < required {
+            return None;
+        }
+
+        let mut strategy = self.clone();
+        strategy.replication_factor = required;
+        let replicas = strategy.zone_replicas_for_key(key, &filtered)?;
+        if replicas.replicas.copy_count() < required {
+            return None;
+        }
+        if replicas
+            .topology
+            .values()
+            .all(|topology| allowed_regions.contains(&topology.region))
+        {
+            Some(replicas)
+        } else {
+            None
+        }
+    }
+
     /// Return a readiness report for one key.
     pub fn readiness_for_key(
         &self,

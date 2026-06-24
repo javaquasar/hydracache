@@ -20,6 +20,7 @@ pub(crate) mod invalidation_ring;
 pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
+pub(crate) mod residency;
 pub(crate) mod session_context;
 pub(crate) mod session_lifecycle;
 pub(crate) mod session_monotonic;
@@ -1142,6 +1143,14 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_region_restore_duration_ms",
             labels: &["region"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_residency_rejected_placement_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_residency_refused_crossing_total",
+            labels: &[],
         },
         ClusterMetricDescriptor {
             name: "hydracache_crdt_metadata_bytes",

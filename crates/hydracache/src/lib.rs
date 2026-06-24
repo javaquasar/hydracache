@@ -602,6 +602,13 @@ pub use grid::region_link::{
     anti_entropy_diff, CrdtMetadataGcGate, GeoBatch, GeoBatchApplyReport, IdempotencyKey,
     PartitionDigest, RegionLink, RegionLinkError, VersionSummary,
 };
+pub use grid::residency::{
+    ResidencyAuditAction, ResidencyAuditEvent, ResidencyDecision, ResidencyFailoverDecision,
+    ResidencyLinkSendReport, ResidencyMetricsSnapshot, ResidencyNarrowingReport, ResidencyPolicy,
+    ResidencyPolicyEnforcer, ResidencyPolicyError, ResidencyPolicySet, ResidencyRejection,
+    ResidencyRejectionKind, ResidencyRemediationAction, ResidencyValueLocation,
+    RESIDENCY_POLICY_FORMAT_VERSION,
+};
 pub use grid::session_context::{
     PartitionKey, SessionContextMetrics, SessionId, SessionRequest, SessionToken,
     SessionTokenError, SessionWatermark, VersionStamp,
