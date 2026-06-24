@@ -5,7 +5,7 @@
 > - **Why:** make the active-active grid usable for real application **sessions** (causal+), not just eventual reads.
 > - **After (depends on):** 0.46.
 > - **Unblocks:** 0.48+ ecosystem / external consumers.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
 
@@ -584,4 +584,4 @@ following boolean conditions hold:
   failover, session metrics honor the cardinality rule, and alert rules reference only
   registered metrics; `session_observability` passes (incl. failover chaos).
 - The fault model adds token replay/forgery, causal-metadata overflow, session migration,
-  and
+  and causal-anomaly injection; ignored chaos hooks are documented for nightly execution.

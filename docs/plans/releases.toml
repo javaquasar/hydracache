@@ -86,7 +86,7 @@ depends_on = ["0.45.0"]
 [[release]]
 version = "0.47.0"
 file = "docs/plans/V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "Cross-region session consistency (causal+) — session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence + bounded staleness, session lifecycle"
 depends_on = ["0.46.0"]
 
