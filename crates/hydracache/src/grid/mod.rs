@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 pub(crate) mod active_active;
 pub(crate) mod capacity;
+pub(crate) mod causal_consistency;
 pub(crate) mod conditional;
 pub(crate) mod consistency_level;
 pub(crate) mod crdt;
@@ -966,6 +967,12 @@ pub struct ClusterGridCounters {
     pub monotonic_read_violations_prevented_total: u64,
     /// Monotonic writes prevented from reordering or lowering their stamp.
     pub monotonic_write_reorders_prevented_total: u64,
+    /// Causal writes deferred until dependencies become visible locally.
+    pub causal_writes_deferred_total: u64,
+    /// Causal summary coarsening events.
+    pub causal_summary_coarsened_total: u64,
+    /// Approximate causal dependency metadata bytes.
+    pub causal_dependency_bytes: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1243,6 +1250,18 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_monotonic_write_reorders_prevented_total",
             labels: &["guarantee"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_causal_writes_deferred_total",
+            labels: &["reason"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_causal_summary_coarsened_total",
+            labels: &["reason"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_causal_dependency_bytes",
+            labels: &[],
         },
     ];
     DESCRIPTORS

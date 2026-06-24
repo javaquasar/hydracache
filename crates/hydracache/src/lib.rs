@@ -520,6 +520,10 @@ pub use grid::capacity::{
     AutoscalerIntent, AutoscalerIntentError, CapacityAutoscalerMetrics, CapacitySample,
     CapacitySignal, CapacityThresholds, ScaleAction, ScaleRecommendation,
 };
+pub use grid::causal_consistency::{
+    apply_causal_write, causal_apply, AppliedSet, ApplyDecision, CausalApplyDeferred,
+    CausalConsistencyMetrics, CausalDependencyMissing, CausalSummary, CausalWrite,
+};
 pub use grid::conditional::{
     CasResult, ConditionalError, ConditionalMetrics, FenceToken, SingleKeyConditionalStore,
 };

@@ -463,6 +463,9 @@ where
             session_guarantee_unmet_total: 0,
             monotonic_read_violations_prevented_total: 0,
             monotonic_write_reorders_prevented_total: 0,
+            causal_writes_deferred_total: 0,
+            causal_summary_coarsened_total: 0,
+            causal_dependency_bytes: 0,
         }
     }
 
