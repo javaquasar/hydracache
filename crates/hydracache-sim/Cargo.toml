@@ -16,3 +16,5 @@ categories.workspace = true
 hydracache = { workspace = true }
 rand_chacha = { workspace = true }
 rand_core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

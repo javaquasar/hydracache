@@ -387,6 +387,20 @@ impl SimStorage {
         self.zone_mut(zone.into()).crash();
     }
 
+    pub(crate) fn visible_checksums(&self) -> BTreeMap<String, u64> {
+        self.zones
+            .get(&StorageZoneId::default())
+            .map(|zone| {
+                zone.entries
+                    .iter()
+                    .filter_map(|(key, entry)| {
+                        entry.read().map(|value| (key.clone(), value.checksum()))
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     fn apply_fault(
         &mut self,
         zone: StorageZoneId,

@@ -6,8 +6,8 @@ use hydracache::{
 };
 
 use crate::{
-    History, InvariantChecker, InvariantReport, SimClock, SimNetwork, SimRng, SimStorage,
-    WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
+    History, InvariantChecker, InvariantReport, SimClock, SimNetwork, SimRng, SimSnapshot,
+    SimStorage, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
 };
 
 /// Configuration for a deterministic simulation run.
@@ -184,6 +184,75 @@ impl SimWorld {
     /// Return the latest invariant report.
     pub fn invariant_report(&self) -> &InvariantReport {
         &self.invariant_report
+    }
+
+    /// Return the canonical UI snapshot for the current simulator state.
+    pub fn snapshot(&self) -> SimSnapshot {
+        let node_ids = self.nodes.keys().cloned().collect::<Vec<_>>();
+        let committed_entries = self.history.completed().count() as u64;
+        let nodes = node_ids
+            .iter()
+            .map(|node_id| {
+                crate::snapshot::node_view(
+                    node_id.to_string(),
+                    committed_entries,
+                    committed_entries,
+                )
+            })
+            .collect();
+        let links = node_ids
+            .iter()
+            .flat_map(|from| {
+                node_ids
+                    .iter()
+                    .filter(move |to| *to != from)
+                    .map(move |to| {
+                        crate::snapshot::link_view(
+                            from.to_string(),
+                            to.to_string(),
+                            self.network.can_deliver(from, to),
+                            self.network
+                                .max_pending_delay(from, to, self.clock.now())
+                                .map(|duration| duration.as_millis()),
+                            self.network.in_flight_between(from, to),
+                        )
+                    })
+            })
+            .collect();
+        let mut key_observations = BTreeMap::<String, BTreeMap<String, u64>>::new();
+        for (node_id, sim_node) in &self.nodes {
+            for (key, checksum) in sim_node.storage.visible_checksums() {
+                key_observations
+                    .entry(key)
+                    .or_default()
+                    .insert(node_id.to_string(), checksum);
+            }
+        }
+
+        SimSnapshot {
+            schema_version: crate::snapshot::SIM_SNAPSHOT_SCHEMA_VERSION,
+            seed: self.seed,
+            step: self.steps,
+            logical_time_millis: crate::snapshot::logical_millis(self.clock.now()),
+            nodes,
+            links,
+            keys: crate::snapshot::key_views_from_storage(key_observations),
+            verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
+            progress: crate::snapshot::progress_from_report(
+                committed_entries,
+                &self.invariant_report,
+            ),
+        }
+    }
+
+    /// Serialize the canonical UI snapshot as JSON.
+    pub fn snapshot_json(&self) -> String {
+        self.snapshot().to_json()
+    }
+
+    /// Serialize the canonical invariant verdict as JSON.
+    pub fn verdict_json(&self) -> String {
+        self.snapshot().verdict_json()
     }
 
     fn deliver_network(&mut self) {

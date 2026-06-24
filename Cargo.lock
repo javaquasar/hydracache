@@ -1705,6 +1705,8 @@ dependencies = [
  "hydracache",
  "rand_chacha 0.9.0",
  "rand_core 0.9.5",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1712,7 +1714,6 @@ name = "hydracache-sim-wasm"
 version = "0.49.0"
 dependencies = [
  "hydracache-sim",
- "serde",
  "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-test",

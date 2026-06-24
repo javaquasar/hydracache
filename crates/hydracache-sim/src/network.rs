@@ -205,6 +205,35 @@ impl SimNetwork {
         !self.partitions.contains(&(from.clone(), to.clone()))
     }
 
+    /// Return packets currently in flight for one directed link.
+    pub fn in_flight_between(&self, from: &ClusterNodeId, to: &ClusterNodeId) -> usize {
+        self.in_flight
+            .values()
+            .filter(|packet| &packet.from == from && &packet.to == to)
+            .count()
+    }
+
+    /// Return the largest pending delay on one directed link at `now`.
+    pub fn max_pending_delay(
+        &self,
+        from: &ClusterNodeId,
+        to: &ClusterNodeId,
+        now: LogicalTime,
+    ) -> Option<LogicalDuration> {
+        self.in_flight
+            .values()
+            .filter(|packet| &packet.from == from && &packet.to == to && packet.deliver_at > now)
+            .map(|packet| {
+                LogicalDuration::from_millis(
+                    packet
+                        .deliver_at
+                        .as_millis()
+                        .saturating_sub(now.as_millis()),
+                )
+            })
+            .max()
+    }
+
     fn enqueue(
         &mut self,
         from: ClusterNodeId,

@@ -1,0 +1,362 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::fmt;
+
+use hydracache::LogicalTime;
+use serde::{Deserialize, Serialize};
+
+use crate::{History, InvariantChecker, InvariantReport, WorkloadOp, WorkloadResult};
+
+/// Current stable simulator snapshot JSON schema version.
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 1;
+
+/// Versioned browser/demo view over the real deterministic simulator state.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SimSnapshot {
+    /// Snapshot JSON schema version.
+    pub schema_version: u16,
+    /// Seed used to build the run.
+    pub seed: u64,
+    /// Executed scheduler step count.
+    pub step: u64,
+    /// Current logical time in milliseconds.
+    pub logical_time_millis: u64,
+    /// Nodes rendered by the UI.
+    pub nodes: Vec<NodeView>,
+    /// Directed links rendered by the UI.
+    pub links: Vec<LinkView>,
+    /// Sampled key state by replica.
+    pub keys: Vec<KeyView>,
+    /// Invariant verdict for the current state.
+    pub verdict: VerdictView,
+    /// Progress summary for dashboard panels.
+    pub progress: ProgressView,
+}
+
+impl SimSnapshot {
+    /// Build a minimal snapshot from a workload history and the real checker.
+    pub fn from_history(seed: u64, step: u64, history: &History) -> Self {
+        let report = InvariantChecker.check_history(history);
+        Self {
+            schema_version: SIM_SNAPSHOT_SCHEMA_VERSION,
+            seed,
+            step,
+            logical_time_millis: 0,
+            nodes: Vec::new(),
+            links: Vec::new(),
+            keys: keys_from_history(history),
+            verdict: VerdictView::from_report(&report),
+            progress: ProgressView {
+                committed_entries: history.completed().count() as u64,
+                last_leader_change: None,
+                convergence: convergence_from_report(&report),
+            },
+        }
+    }
+
+    /// Serialize this snapshot as canonical JSON.
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).expect("simulator snapshot serialization is infallible")
+    }
+
+    /// Serialize only the verdict panel view as JSON.
+    pub fn verdict_json(&self) -> String {
+        serde_json::to_string(&self.verdict).expect("simulator verdict serialization is infallible")
+    }
+
+    /// Decode a snapshot and reject unknown future schema versions loudly.
+    pub fn from_json(input: &str) -> Result<Self, SimSnapshotDecodeError> {
+        let header: SnapshotHeader =
+            serde_json::from_str(input).map_err(|error| SimSnapshotDecodeError::InvalidJson {
+                message: error.to_string(),
+            })?;
+        if header.schema_version > SIM_SNAPSHOT_SCHEMA_VERSION {
+            return Err(SimSnapshotDecodeError::UnsupportedVersion {
+                found: header.schema_version,
+                max_supported: SIM_SNAPSHOT_SCHEMA_VERSION,
+            });
+        }
+        if header.schema_version != SIM_SNAPSHOT_SCHEMA_VERSION {
+            return Err(SimSnapshotDecodeError::UnsupportedVersion {
+                found: header.schema_version,
+                max_supported: SIM_SNAPSHOT_SCHEMA_VERSION,
+            });
+        }
+        serde_json::from_str(input).map_err(|error| SimSnapshotDecodeError::InvalidJson {
+            message: error.to_string(),
+        })
+    }
+}
+
+/// UI node projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NodeView {
+    /// Stable node id.
+    pub id: String,
+    /// Region label used by the demo layout.
+    pub region: String,
+    /// Zone label used by the demo layout.
+    pub zone: String,
+    /// Human-readable role.
+    pub role: String,
+    /// Logical consensus term. The 0.44 simulator has no leader election yet.
+    pub term: u64,
+    /// Committed logical operation index visible to the simulator.
+    pub commit_index: u64,
+    /// Applied logical operation index visible to the simulator.
+    pub applied_index: u64,
+    /// Whether the node is currently up.
+    pub up: bool,
+    /// Whether the node is currently crashed.
+    pub crashed: bool,
+}
+
+/// UI directed-link projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LinkView {
+    /// Source node id.
+    pub from: String,
+    /// Destination node id.
+    pub to: String,
+    /// Link state.
+    pub state: LinkStateView,
+    /// Delay in milliseconds when [`LinkStateView::Delayed`].
+    pub delay_millis: Option<u64>,
+    /// Packets currently in flight on this directed link.
+    pub in_flight: u32,
+}
+
+/// Link state visible to the UI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LinkStateView {
+    /// Link can currently deliver packets.
+    Up,
+    /// Link is partitioned.
+    Partitioned,
+    /// Link has delayed packets in flight.
+    Delayed,
+}
+
+/// Sampled key projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct KeyView {
+    /// Cache key.
+    pub key: String,
+    /// Per-replica observations.
+    pub replicas: Vec<KeyReplicaView>,
+}
+
+/// Per-replica key observation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct KeyReplicaView {
+    /// Node id.
+    pub node_id: String,
+    /// Simulator-visible value version. For 0.44 storage this is the stored checksum.
+    pub version: u64,
+    /// Logical epoch. The 0.44 simulator does not model storage epochs yet.
+    pub epoch: u64,
+}
+
+/// Invariant verdict visible to the UI.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "snake_case")]
+pub enum VerdictView {
+    /// All checked invariants hold.
+    Holding,
+    /// At least one real invariant checker violation is present.
+    Violated {
+        /// First violated invariant name.
+        invariant: String,
+        /// Human-readable violation detail.
+        detail: String,
+    },
+}
+
+impl VerdictView {
+    /// Build a UI verdict from a real invariant report.
+    pub fn from_report(report: &InvariantReport) -> Self {
+        report
+            .violations
+            .first()
+            .map(|violation| Self::Violated {
+                invariant: violation.name.to_owned(),
+                detail: violation.message.clone(),
+            })
+            .unwrap_or(Self::Holding)
+    }
+}
+
+/// Progress panel projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProgressView {
+    /// Completed operations recorded by the simulator.
+    pub committed_entries: u64,
+    /// Last leader-change logical timestamp, when a leader model exists.
+    pub last_leader_change: Option<u64>,
+    /// Convergence status derived from the real invariant report.
+    pub convergence: ConvergenceView,
+}
+
+/// Convergence status visible to the UI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ConvergenceView {
+    /// No divergence was reported.
+    Converged,
+    /// The real checker reported a violation.
+    Diverged,
+}
+
+/// Error returned by strict snapshot JSON decoders.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SimSnapshotDecodeError {
+    /// JSON could not be parsed into the snapshot schema.
+    InvalidJson { message: String },
+    /// Snapshot schema version is not supported by this reader.
+    UnsupportedVersion { found: u16, max_supported: u16 },
+}
+
+impl fmt::Display for SimSnapshotDecodeError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidJson { message } => write!(formatter, "invalid snapshot JSON: {message}"),
+            Self::UnsupportedVersion {
+                found,
+                max_supported,
+            } => write!(
+                formatter,
+                "unsupported simulator snapshot schema version {found}; max supported is {max_supported}"
+            ),
+        }
+    }
+}
+
+impl std::error::Error for SimSnapshotDecodeError {}
+
+#[derive(Debug, Deserialize)]
+struct SnapshotHeader {
+    schema_version: u16,
+}
+
+pub(crate) fn node_view(id: String, committed_entries: u64, applied_entries: u64) -> NodeView {
+    NodeView {
+        id,
+        region: "local".to_owned(),
+        zone: "default".to_owned(),
+        role: "member".to_owned(),
+        term: 0,
+        commit_index: committed_entries,
+        applied_index: applied_entries,
+        up: true,
+        crashed: false,
+    }
+}
+
+pub(crate) fn link_view(
+    from: String,
+    to: String,
+    can_deliver: bool,
+    delay: Option<u64>,
+    in_flight: usize,
+) -> LinkView {
+    let state = if !can_deliver {
+        LinkStateView::Partitioned
+    } else if delay.is_some() {
+        LinkStateView::Delayed
+    } else {
+        LinkStateView::Up
+    };
+    LinkView {
+        from,
+        to,
+        state,
+        delay_millis: delay,
+        in_flight: in_flight.min(u32::MAX as usize) as u32,
+    }
+}
+
+pub(crate) fn key_views_from_storage(
+    observations: BTreeMap<String, BTreeMap<String, u64>>,
+) -> Vec<KeyView> {
+    observations
+        .into_iter()
+        .map(|(key, replicas)| KeyView {
+            key,
+            replicas: replicas
+                .into_iter()
+                .map(|(node_id, version)| KeyReplicaView {
+                    node_id,
+                    version,
+                    epoch: 0,
+                })
+                .collect(),
+        })
+        .collect()
+}
+
+pub(crate) fn progress_from_report(
+    committed_entries: u64,
+    report: &InvariantReport,
+) -> ProgressView {
+    ProgressView {
+        committed_entries,
+        last_leader_change: None,
+        convergence: convergence_from_report(report),
+    }
+}
+
+pub(crate) fn convergence_from_report(report: &InvariantReport) -> ConvergenceView {
+    if report.violations.is_empty() {
+        ConvergenceView::Converged
+    } else {
+        ConvergenceView::Diverged
+    }
+}
+
+fn keys_from_history(history: &History) -> Vec<KeyView> {
+    let mut versions = BTreeMap::<String, u64>::new();
+    let mut keys = BTreeSet::<String>::new();
+    for event in history.completed() {
+        match (&event.op, &event.result) {
+            (
+                WorkloadOp::Put { key, value } | WorkloadOp::CompareAndSet { key, value, .. },
+                Some(WorkloadResult::Accepted { .. }),
+            ) => {
+                let version = versions.entry(key.clone()).or_default();
+                *version = version
+                    .saturating_add(1)
+                    .max(crate::storage::checksum(value));
+                keys.insert(key.clone());
+            }
+            (WorkloadOp::Invalidate { key }, Some(WorkloadResult::Accepted { .. })) => {
+                let version = versions.entry(key.clone()).or_default();
+                *version = version.saturating_add(1);
+                keys.insert(key.clone());
+            }
+            (
+                WorkloadOp::Get { key } | WorkloadOp::SessionRead { key },
+                Some(WorkloadResult::Value(_)),
+            ) => {
+                keys.insert(key.clone());
+            }
+            _ => {}
+        }
+    }
+    keys.into_iter()
+        .map(|key| {
+            let version = versions.get(&key).copied().unwrap_or_default();
+            KeyView {
+                key,
+                replicas: vec![KeyReplicaView {
+                    node_id: "history".to_owned(),
+                    version,
+                    epoch: 0,
+                }],
+            }
+        })
+        .collect()
+}
+
+pub(crate) fn logical_millis(time: LogicalTime) -> u64 {
+    time.as_millis()
+}

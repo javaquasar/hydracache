@@ -34,6 +34,7 @@ they are persisted or transmitted across processes.
 | `ResidencyPolicy` control-plane format | `1` | `hydracache` residency governance | Policies are committed at a control-plane epoch per namespace with optional per-key overrides. Readers accept format `1`, enforce allowed regions at placement, WAN value movement, read serving, and include-value invalidation decisions, and report the enforced epoch. | Unknown future policy formats are rejected before commit. Unsatisfiable in-policy RF, forbidden boundary crossing, stale policy epochs, and forbidden-region reads fail loud and emit audit-ready events. |
 | Tenant status JSON schema | `1` | `hydracache-observability` and `/client/v1/status` | `TenantStatus` is scoped to the verified caller tenant and includes schema version, namespace usage/quota, rate/fair-share state, and near-cache/subscription health. | Unknown future status schema versions must be treated as incompatible by strict clients. Servers must not include other tenants in a caller-scoped status response. |
 | Consumer audit event schema | `1` | `hydracache-observability` audit recorders/sinks | Audit envelopes carry schema version `1` plus redacted governance/security/admin events. Keys are omitted or hashed; values are never logged. | Mandatory governance/security event sink failures fail closed. Future schema versions require an explicit compatibility entry before operator log readers accept them. |
+| Simulator snapshot JSON schema | `1` | `hydracache-sim` and `hydracache-sim-wasm` | `SimSnapshot` schema version `1` is the browser/demo and simulator-route view over real `SimWorld` state: seed, step, logical time, nodes, links, sampled keys, real invariant verdict, and progress. | Strict readers reject unknown future schema versions before rendering or replaying a shared seed. The demo must not synthesize a green verdict outside `InvariantChecker`. |
 
 ## Upgrade Rules
 
@@ -199,3 +200,12 @@ Actuator probes are allowed to build on protocol-v1 behavior. The toolkit must
 not imply Hazelcast wire or API compatibility. Unsupported Hazelcast APIs are
 listed in `unsupported_hazelcast_apis.txt` and must fail loud with migration
 hints instead of becoming silent no-ops.
+
+## 0.50 Interactive Simulator Demo
+
+`0.50.0` registers simulator snapshot JSON schema version `1`. The schema is a
+communication surface for the interactive demo and sandbox simulator routes, not
+a correctness gate. It serializes the real deterministic `SimWorld` state and
+the real `InvariantChecker` verdict. Unknown future schema versions are rejected
+loudly by strict readers before rendering, seed sharing, or route consumers treat
+the payload as compatible.
