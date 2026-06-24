@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 pub(crate) mod active_active;
 pub(crate) mod capacity;
+pub(crate) mod consistency_level;
 pub(crate) mod crdt;
 pub(crate) mod elasticity;
 pub(crate) mod hardening;
@@ -905,6 +906,10 @@ pub struct ClusterGridCounters {
     pub auto_repair_active_total: u64,
     /// Auto-repair recommendations emitted in advisory mode.
     pub auto_repair_advisory_total: u64,
+    /// Operations recorded with an explicit per-operation consistency level.
+    pub consistency_level_operations_total: u64,
+    /// Operations rejected because the requested consistency level was unsatisfiable.
+    pub consistency_unsatisfiable_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1074,6 +1079,14 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_scale_actions_total",
             labels: &["region", "action"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_op_consistency_level_total",
+            labels: &["operation", "level"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_consistency_unsatisfiable_total",
+            labels: &["operation", "level"],
         },
     ];
     DESCRIPTORS

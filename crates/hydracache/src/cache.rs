@@ -437,6 +437,8 @@ where
             invalidation_saga_pending: 0,
             auto_repair_active_total: 0,
             auto_repair_advisory_total: 0,
+            consistency_level_operations_total: 0,
+            consistency_unsatisfiable_total: 0,
         }
     }
 

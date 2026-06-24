@@ -520,6 +520,10 @@ pub use grid::capacity::{
     AutoscalerIntent, AutoscalerIntentError, CapacityAutoscalerMetrics, CapacitySample,
     CapacitySignal, CapacityThresholds, ScaleAction, ScaleRecommendation,
 };
+pub use grid::consistency_level::{
+    AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
+    WriteOptions,
+};
 pub use grid::crdt::{
     tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
     OrSetTag, PnCounter, TombstoneCrdtDecision,
