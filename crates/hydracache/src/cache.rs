@@ -448,6 +448,10 @@ where
             repair_progress_ratio: 0,
             peer_phi_scaled: 0,
             false_suspect_total: 0,
+            cas_applied_total: 0,
+            cas_mismatch_total: 0,
+            lock_acquired_total: 0,
+            lock_stale_token_rejected_total: 0,
         }
     }
 

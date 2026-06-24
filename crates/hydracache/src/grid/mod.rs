@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 pub(crate) mod active_active;
 pub(crate) mod capacity;
+pub(crate) mod conditional;
 pub(crate) mod consistency_level;
 pub(crate) mod crdt;
 pub(crate) mod elasticity;
@@ -931,6 +932,14 @@ pub struct ClusterGridCounters {
     pub peer_phi_scaled: u64,
     /// Suspicions later observed to recover without a real outage.
     pub false_suspect_total: u64,
+    /// Applied single-key compare-and-set operations.
+    pub cas_applied_total: u64,
+    /// Single-key compare-and-set mismatches.
+    pub cas_mismatch_total: u64,
+    /// Fenced lock acquisitions.
+    pub lock_acquired_total: u64,
+    /// Stale fenced lock tokens rejected.
+    pub lock_stale_token_rejected_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1147,6 +1156,22 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         },
         ClusterMetricDescriptor {
             name: "hydracache_false_suspect_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_cas_applied_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_cas_mismatch_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_lock_acquired_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_lock_stale_token_rejected_total",
             labels: &[],
         },
     ];

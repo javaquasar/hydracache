@@ -520,6 +520,9 @@ pub use grid::capacity::{
     AutoscalerIntent, AutoscalerIntentError, CapacityAutoscalerMetrics, CapacitySample,
     CapacitySignal, CapacityThresholds, ScaleAction, ScaleRecommendation,
 };
+pub use grid::conditional::{
+    CasResult, ConditionalError, ConditionalMetrics, FenceToken, SingleKeyConditionalStore,
+};
 pub use grid::consistency_level::{
     AckRequirement, ConsistencyLevel, ConsistencyReadiness, ConsistencyUnsatisfiable, ReadOptions,
     WriteOptions,
