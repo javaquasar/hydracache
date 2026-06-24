@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HydraCache Cluster Simulator</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="shell" data-testid="demo-shell">
+      <header class="topbar">
+        <div>
+          <h1>HydraCache Cluster Simulator</h1>
+          <p id="engine-banner" data-testid="engine-banner">real engine</p>
+        </div>
+        <div id="verdict" class="verdict" data-testid="verdict">loading</div>
+      </header>
+
+      <section class="controls" aria-label="simulation controls">
+        <label>
+          Seed
+          <input id="seed-input" data-testid="seed-input" inputmode="numeric" value="80" />
+        </label>
+        <button id="reset-button" type="button" data-testid="reset">Reset</button>
+        <button id="step-button" type="button" data-testid="step">Step</button>
+        <button id="play-button" type="button" data-testid="play">Play</button>
+        <label class="toggle">
+          <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
+          Workload
+        </label>
+        <label class="range">
+          Speed
+          <input id="speed-input" type="range" min="80" max="1200" step="40" value="360" />
+        </label>
+      </section>
+
+      <section class="workspace">
+        <section class="graph-panel" aria-label="cluster graph">
+          <svg id="cluster-graph" viewBox="0 0 800 520" role="img" aria-label="cluster graph"></svg>
+        </section>
+
+        <aside class="side-panel">
+          <section>
+            <h2>Link</h2>
+            <p id="selected-link" data-testid="selected-link">none</p>
+            <div class="button-row">
+              <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
+                Partition
+              </button>
+              <button id="delay-link" type="button" data-action="delay">Delay</button>
+              <button id="drop-link" type="button" data-action="drop">Drop</button>
+              <button id="heal-link" type="button" data-action="heal">Heal</button>
+            </div>
+          </section>
+
+          <section>
+            <h2>Progress</h2>
+            <dl id="progress-panel" data-testid="progress-panel"></dl>
+          </section>
+
+          <section>
+            <h2>Nodes</h2>
+            <div id="nodes-panel" data-testid="nodes-panel"></div>
+          </section>
+
+          <section>
+            <h2>Consistency</h2>
+            <div id="consistency-panel" data-testid="consistency-panel"></div>
+          </section>
+
+          <section>
+            <h2>Keys</h2>
+            <div id="keys-panel" data-testid="keys-panel"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -195,6 +195,11 @@ impl SimNetwork {
         self.partitions.clear();
     }
 
+    /// Clear one directed partition if present.
+    pub fn heal_link(&mut self, from: &ClusterNodeId, to: &ClusterNodeId) -> bool {
+        self.partitions.remove(&(from.clone(), to.clone()))
+    }
+
     /// Return the number of packets currently in flight.
     pub fn in_flight_len(&self) -> usize {
         self.in_flight.len()

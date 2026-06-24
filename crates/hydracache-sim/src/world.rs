@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use hydracache::{
     ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
@@ -6,8 +6,8 @@ use hydracache::{
 };
 
 use crate::{
-    History, InvariantChecker, InvariantReport, SimClock, SimNetwork, SimRng, SimSnapshot,
-    SimStorage, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
+    History, InvariantChecker, InvariantReport, LinkFault, PartitionSymmetry, SimClock, SimNetwork,
+    SimRng, SimSnapshot, SimStorage, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
 };
 
 /// Configuration for a deterministic simulation run.
@@ -78,6 +78,8 @@ pub struct SimWorld {
     invariant_checker: InvariantChecker,
     invariant_report: InvariantReport,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
+    crashed_nodes: BTreeSet<ClusterNodeId>,
+    workload_enabled: bool,
     steps: u64,
     accepted_ops: u64,
     delivered_messages: u64,
@@ -127,6 +129,8 @@ impl SimWorld {
             invariant_checker: InvariantChecker,
             invariant_report: InvariantReport::default(),
             nodes,
+            crashed_nodes: BTreeSet::new(),
+            workload_enabled: true,
             steps: 0,
             accepted_ops: 0,
             delivered_messages: 0,
@@ -186,6 +190,88 @@ impl SimWorld {
         &self.invariant_report
     }
 
+    /// Enable or disable the built-in smoke workload.
+    pub fn set_workload_enabled(&mut self, enabled: bool) {
+        self.workload_enabled = enabled;
+    }
+
+    /// Return whether the built-in smoke workload is enabled.
+    pub fn workload_enabled(&self) -> bool {
+        self.workload_enabled
+    }
+
+    /// Crash a node if it exists.
+    pub fn crash_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
+        let node_id = node_id.into();
+        if self.nodes.contains_key(&node_id) {
+            self.crashed_nodes.insert(node_id);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Restart a crashed node if it exists.
+    pub fn restart_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
+        let node_id = node_id.into();
+        self.crashed_nodes.remove(&node_id)
+    }
+
+    /// Partition one directed link.
+    pub fn partition_link(
+        &mut self,
+        from: impl Into<ClusterNodeId>,
+        to: impl Into<ClusterNodeId>,
+    ) -> bool {
+        let from = from.into();
+        let to = to.into();
+        if self.nodes.contains_key(&from) && self.nodes.contains_key(&to) && from != to {
+            self.network
+                .partition((&[from], &[to]), PartitionSymmetry::LeftToRight);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Heal one directed link.
+    pub fn heal_link(
+        &mut self,
+        from: impl Into<ClusterNodeId>,
+        to: impl Into<ClusterNodeId>,
+    ) -> bool {
+        self.network.heal_link(&from.into(), &to.into())
+    }
+
+    /// Drop the next packet on one directed link.
+    pub fn drop_next_on_link(
+        &mut self,
+        from: impl Into<ClusterNodeId>,
+        to: impl Into<ClusterNodeId>,
+    ) -> bool {
+        self.inject_link_fault(from, to, LinkFault::Drop)
+    }
+
+    /// Delay the next packet on one directed link.
+    pub fn delay_next_on_link(
+        &mut self,
+        from: impl Into<ClusterNodeId>,
+        to: impl Into<ClusterNodeId>,
+        delay: LogicalDuration,
+    ) -> bool {
+        self.inject_link_fault(from, to, LinkFault::Delay(delay))
+    }
+
+    /// Delay the next packet on one directed link by milliseconds.
+    pub fn delay_next_on_link_millis(
+        &mut self,
+        from: impl Into<ClusterNodeId>,
+        to: impl Into<ClusterNodeId>,
+        delay_millis: u64,
+    ) -> bool {
+        self.delay_next_on_link(from, to, LogicalDuration::from_millis(delay_millis))
+    }
+
     /// Return the canonical UI snapshot for the current simulator state.
     pub fn snapshot(&self) -> SimSnapshot {
         let node_ids = self.nodes.keys().cloned().collect::<Vec<_>>();
@@ -197,6 +283,7 @@ impl SimWorld {
                     node_id.to_string(),
                     committed_entries,
                     committed_entries,
+                    self.crashed_nodes.contains(node_id),
                 )
             })
             .collect();
@@ -262,6 +349,9 @@ impl SimWorld {
             .saturating_add(delivered.len() as u64);
         for (from, to, message) in delivered {
             self.record(format!("deliver:{from}->{to}:{message:?}"));
+            if self.crashed_nodes.contains(&to) {
+                continue;
+            }
             if let Some(target) = self.nodes.get_mut(&to) {
                 target.node.handle_message(from, message);
             }
@@ -269,23 +359,30 @@ impl SimWorld {
     }
 
     fn tick_nodes(&mut self) {
-        for sim_node in self.nodes.values_mut() {
+        for (node_id, sim_node) in self.nodes.iter_mut() {
+            if self.crashed_nodes.contains(node_id) {
+                continue;
+            }
             sim_node.node.tick(self.clock.now());
         }
     }
 
     fn issue_smoke_workload(&mut self) {
-        let node_count = self.nodes.len();
+        if !self.workload_enabled {
+            return;
+        }
+        let live_nodes = self
+            .nodes
+            .keys()
+            .filter(|node_id| !self.crashed_nodes.contains(*node_id))
+            .cloned()
+            .collect::<Vec<_>>();
+        let node_count = live_nodes.len();
         if node_count == 0 {
             return;
         }
         let node_index = self.rng.next_index(node_count);
-        let node_id = self
-            .nodes
-            .keys()
-            .nth(node_index)
-            .expect("node index is within node count")
-            .clone();
+        let node_id = live_nodes[node_index].clone();
         let (client, op) = self.workload.next_invocation();
         if let Some(sim_node) = self.nodes.get_mut(&node_id) {
             let event_id = self
@@ -301,7 +398,10 @@ impl SimWorld {
 
     fn drain_node_effects(&mut self) {
         let mut outbound = Vec::new();
-        for sim_node in self.nodes.values_mut() {
+        for (node_id, sim_node) in self.nodes.iter_mut() {
+            if self.crashed_nodes.contains(node_id) {
+                continue;
+            }
             outbound.extend(sim_node.node.take_outbound());
             for request in sim_node.node.storage_requests() {
                 let applied = sim_node
@@ -331,6 +431,22 @@ impl SimWorld {
 
     fn record(&mut self, event: String) {
         self.trace.push(event);
+    }
+
+    fn inject_link_fault(
+        &mut self,
+        from: impl Into<ClusterNodeId>,
+        to: impl Into<ClusterNodeId>,
+        fault: LinkFault,
+    ) -> bool {
+        let from = from.into();
+        let to = to.into();
+        if self.nodes.contains_key(&from) && self.nodes.contains_key(&to) && from != to {
+            self.network.inject_link_fault(from, to, fault);
+            true
+        } else {
+            false
+        }
     }
 }
 

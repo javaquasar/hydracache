@@ -238,7 +238,12 @@ struct SnapshotHeader {
     schema_version: u16,
 }
 
-pub(crate) fn node_view(id: String, committed_entries: u64, applied_entries: u64) -> NodeView {
+pub(crate) fn node_view(
+    id: String,
+    committed_entries: u64,
+    applied_entries: u64,
+    crashed: bool,
+) -> NodeView {
     NodeView {
         id,
         region: "local".to_owned(),
@@ -247,8 +252,8 @@ pub(crate) fn node_view(id: String, committed_entries: u64, applied_entries: u64
         term: 0,
         commit_index: committed_entries,
         applied_index: applied_entries,
-        up: true,
-        crashed: false,
+        up: !crashed,
+        crashed,
     }
 }
 

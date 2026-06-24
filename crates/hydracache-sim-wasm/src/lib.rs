@@ -34,6 +34,57 @@ impl SimHandle {
         self.world.outcome().seed
     }
 
+    /// Enable or disable the built-in workload generator.
+    pub fn set_workload_enabled(&mut self, enabled: bool) {
+        self.world.set_workload_enabled(enabled);
+    }
+
+    /// Crash a simulator node.
+    pub fn crash_node(&mut self, node_id: String) -> Result<(), JsValue> {
+        if self.world.crash_node(node_id.clone()) {
+            Ok(())
+        } else {
+            Err(JsValue::from_str(&format!("unknown node '{node_id}'")))
+        }
+    }
+
+    /// Restart a simulator node.
+    pub fn restart_node(&mut self, node_id: String) -> Result<(), JsValue> {
+        if self.world.restart_node(node_id.clone()) {
+            Ok(())
+        } else {
+            Err(JsValue::from_str(&format!(
+                "node '{node_id}' is not crashed"
+            )))
+        }
+    }
+
+    /// Apply an interactive link action.
+    pub fn inject(
+        &mut self,
+        action: String,
+        from: String,
+        to: String,
+        delay_millis: u64,
+    ) -> Result<(), JsValue> {
+        let applied = match action.as_str() {
+            "partition" => self.world.partition_link(from.clone(), to.clone()),
+            "heal" => self.world.heal_link(from.clone(), to.clone()),
+            "drop" => self.world.drop_next_on_link(from.clone(), to.clone()),
+            "delay" => self
+                .world
+                .delay_next_on_link_millis(from.clone(), to.clone(), delay_millis),
+            other => return Err(JsValue::from_str(&format!("unknown link action '{other}'"))),
+        };
+        if applied {
+            Ok(())
+        } else {
+            Err(JsValue::from_str(&format!(
+                "could not apply '{action}' to link {from}->{to}"
+            )))
+        }
+    }
+
     /// Serialize the current canonical simulator snapshot as JSON.
     pub fn snapshot_json(&self) -> String {
         self.world.snapshot_json()
@@ -84,5 +135,31 @@ mod tests {
             serde_json::from_str(&handle.verdict_json()).expect("valid verdict json");
 
         assert_eq!(verdict, VerdictView::Holding);
+    }
+
+    #[test]
+    fn wasm_controls_update_canonical_snapshot() {
+        let mut handle = SimHandle::new(9);
+
+        handle
+            .inject(
+                "partition".to_owned(),
+                "node-0".to_owned(),
+                "node-1".to_owned(),
+                0,
+            )
+            .expect("partition applies");
+        handle
+            .crash_node("node-2".to_owned())
+            .expect("node crash applies");
+
+        let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
+        assert!(snapshot.links.iter().any(|link| link.from == "node-0"
+            && link.to == "node-1"
+            && link.state == hydracache_sim::LinkStateView::Partitioned));
+        assert!(snapshot
+            .nodes
+            .iter()
+            .any(|node| node.id == "node-2" && node.crashed && !node.up));
     }
 }
