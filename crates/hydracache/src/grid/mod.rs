@@ -18,6 +18,7 @@ pub(crate) mod invalidation_ring;
 pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
+pub(crate) mod session_context;
 
 use crate::cluster::{
     ClusterEpoch, ClusterGeneration, ClusterMember, ClusterNodeId, PartitionId,
@@ -949,6 +950,12 @@ pub struct ClusterGridCounters {
     pub invalidation_fell_behind_total: u64,
     /// Invalidation events overwritten by a full ring.
     pub invalidation_ring_overrun_total: u64,
+    /// Current retained session watermark entries.
+    pub session_watermark_entries: u64,
+    /// Session watermark coarsening events.
+    pub session_watermark_coarsened_total: u64,
+    /// Rejected session tokens.
+    pub session_token_rejected_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1198,6 +1205,18 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_invalidation_ring_overrun_total",
             labels: &["partition"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_watermark_entries",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_watermark_coarsened_total",
+            labels: &["reason"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_token_rejected_total",
+            labels: &["reason"],
         },
     ];
     DESCRIPTORS

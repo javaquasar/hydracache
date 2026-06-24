@@ -456,6 +456,9 @@ where
             invalidation_replayed_total: 0,
             invalidation_fell_behind_total: 0,
             invalidation_ring_overrun_total: 0,
+            session_watermark_entries: 0,
+            session_watermark_coarsened_total: 0,
+            session_token_rejected_total: 0,
         }
     }
 

@@ -580,6 +580,10 @@ pub use grid::region_link::{
     anti_entropy_diff, CrdtMetadataGcGate, GeoBatch, GeoBatchApplyReport, IdempotencyKey,
     PartitionDigest, RegionLink, RegionLinkError, VersionSummary,
 };
+pub use grid::session_context::{
+    PartitionKey, SessionContextMetrics, SessionId, SessionRequest, SessionToken,
+    SessionTokenError, SessionWatermark, VersionStamp,
+};
 pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
     replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,
