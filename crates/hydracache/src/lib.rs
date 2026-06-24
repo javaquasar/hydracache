@@ -475,6 +475,7 @@ mod grid;
 mod inflight;
 mod invalidation_bus;
 mod refresh;
+mod security;
 mod stats;
 mod tag_index;
 pub mod testing;
@@ -629,6 +630,10 @@ pub use invalidation_bus::{
     InMemoryInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
 };
 pub use refresh::RefreshOptions;
+pub use security::{
+    AtRestKeyProvider, AtRestSealer, CertificateBundle, CertificateRotationWindow, KeyMaterial,
+    SealedArtifact, SecurityError, StaticAtRestKeyProvider, AT_REST_ARTIFACT_FORMAT_VERSION,
+};
 pub use typed::TypedCache;
 
 pub use hydracache_core::{
