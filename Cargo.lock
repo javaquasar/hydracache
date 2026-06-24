@@ -1472,6 +1472,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-client"
+version = "0.48.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "bytes",
+ "hydracache",
+ "hydracache-client-protocol",
+ "hydracache-client-transport-axum",
+ "proptest",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+]
+
+[[package]]
 name = "hydracache-client-protocol"
 version = "0.48.0"
 dependencies = [

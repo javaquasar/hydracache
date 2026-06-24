@@ -343,13 +343,18 @@ impl SubscriptionWatermarkTracker {
             return RepairAction::ClearPartition;
         };
 
-        self.last = Some(next);
         if next.source_generation != last.source_generation {
+            self.last = Some(next);
             return RepairAction::ClearPartition;
         }
         if next.message_id > last.message_id.saturating_add(1) {
+            self.last = Some(next);
             return RepairAction::InvalidateConservatively;
         }
+        self.last = Some(Watermark::new(
+            last.source_generation,
+            last.message_id.max(next.message_id),
+        ));
         RepairAction::Apply
     }
 }

@@ -21,6 +21,7 @@ they are persisted or transmitted across processes.
 | External client HTTP route boundary | `1` | `hydracache-client-transport-axum` | Public clients use `/client/v1/*`; internal member routes remain under `/cluster/*` and are not part of the public client compatibility surface. Unknown future client route versions are refused instead of falling through to member handlers. | Unauthenticated, oversized, malformed, or wrong-route requests are rejected before protocol dispatch or state mutation. |
 | HydraCache external client protocol | `1` | `hydracache-client-protocol` and `hydracache-client-transport-axum` | Protocol `1` uses custom length-prefixed binary frames over HTTP/2; the request payload is a typed HydraCache message carrying `protocol_version`, request id, context, deadline, idempotency key, stable operations, stable errors, and B1 watermark fields. See ADR `docs/adr/0007-client-wire-framing.md`. | Out-of-window versions, malformed/truncated frames, oversized frames, and unknown future protocol versions are refused loud before mutation. Region-scoped subscriptions narrow delivery, not correctness. |
 | Hibernate L2 provider contract | `1` | `hydracache-client-protocol::hibernate` and external `hydracache-hibernate` providers | Hibernate ORM 6.x providers map regions to HydraCache namespaces, access strategies to stable L2 consistency labels, and query cache regions to timestamp/bulk invalidation. See `docs/integrations/hibernate.md` and ADR `docs/adr/0006-why-not-clone-hibernate-hikaricp.md`. | Unsupported Hibernate versions, unsupported query-cache mode, or unknown future mapping versions must fail loud at provider bootstrap. HydraCache never joins JVM transactions. |
+| Client SDK conformance manifest | `1` | `hydracache-client` and `sdks/python` | `crates/hydracache-client/tests/fixtures/conformance/client_v1.json` is the language-agnostic scenario set for protocol-v1 SDKs. Rust and Python SDKs are supported only when their runners pass this manifest. | SDKs that do not pass the manifest are not claimed as supported. Manifest major changes require a new compatibility entry and SDK semver mapping. |
 
 ## Upgrade Rules
 
@@ -110,3 +111,9 @@ Hibernate ORM 6.x SPI and uses the W1 protocol. Regions map to namespaces,
 `best-effort-invalidate`, and `read-write` / `transactional` map to
 `invalidate-on-commit`. Query cache support is timestamp/bulk invalidation or a
 loud bootstrap refusal.
+
+W3 registers the client SDK conformance manifest version `1`. The Rust reference
+SDK (`hydracache-client`) and the Python SDK (`sdks/python`) use the same
+language-agnostic scenarios for protocol negotiation, get/put/invalidate,
+near-cache repair, deadlines/retry/idempotency, and stable W4/W5 error contracts.
+An SDK is not considered supported unless its runner passes the manifest.

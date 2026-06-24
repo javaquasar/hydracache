@@ -1,0 +1,67 @@
+{
+  "manifest_version": 1,
+  "protocol_version": 1,
+  "sdks": [
+    {
+      "language": "rust",
+      "package": "hydracache-client",
+      "supported": true
+    },
+    {
+      "language": "python",
+      "package": "hydracache-client",
+      "supported": true
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "version-handshake-v1",
+      "kind": "version-handshake",
+      "behavior": "client and server negotiate the highest common protocol version and reject incompatible ranges loud",
+      "requires": ["protocol-v1"]
+    },
+    {
+      "id": "get-put-invalidate-round-trip",
+      "kind": "cache-ops",
+      "behavior": "put stores bytes, get returns them, invalidate removes them",
+      "requires": ["get", "put", "invalidate"]
+    },
+    {
+      "id": "near-cache-b1-repair",
+      "kind": "near-cache",
+      "behavior": "generation changes clear the partition and sequence gaps invalidate conservatively",
+      "requires": ["b1-watermark", "repair-action"]
+    },
+    {
+      "id": "deadline-retry-idempotency",
+      "kind": "request-control",
+      "behavior": "expired deadlines are retryable stable errors and idempotency keys prevent duplicate mutations",
+      "requires": ["deadline", "retry", "idempotency-key"]
+    },
+    {
+      "id": "quota-backpressure-errors",
+      "kind": "w4-error-contract",
+      "behavior": "quota and rate-limit responses use stable retryable errors",
+      "requires": ["tenant-quota", "rate-limited"]
+    },
+    {
+      "id": "residency-denied-error",
+      "kind": "w5-error-contract",
+      "behavior": "residency denials use a stable non-retryable error",
+      "requires": ["residency-denied"]
+    }
+  ],
+  "errors": [
+    { "code": "incompatible_version", "retryable": false },
+    { "code": "unauthenticated", "retryable": false },
+    { "code": "unauthorized", "retryable": false },
+    { "code": "tenant_quota", "retryable": true },
+    { "code": "rate_limited", "retryable": true },
+    { "code": "residency_denied", "retryable": false },
+    { "code": "too_large", "retryable": false },
+    { "code": "deadline_exceeded", "retryable": true },
+    { "code": "conflict", "retryable": false },
+    { "code": "backend_unavailable", "retryable": true },
+    { "code": "malformed_frame", "retryable": false }
+  ]
+}

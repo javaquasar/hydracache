@@ -210,6 +210,18 @@ fn protocol_region_subscription_resume_and_gap_trigger_repair() {
 }
 
 #[test]
+fn protocol_subscription_repair_ignores_stale_reordered_frame() {
+    let mut tracker = SubscriptionWatermarkTracker::default();
+    let first = InvalidationEvent::new(ns(), key("1"), 1, 11);
+    let stale = InvalidationEvent::new(ns(), key("1"), 1, 0);
+    let next_old = InvalidationEvent::new(ns(), key("1"), 1, 2);
+
+    assert_eq!(tracker.on_event(&first), RepairAction::ClearPartition);
+    assert_eq!(tracker.on_event(&stale), RepairAction::Apply);
+    assert_eq!(tracker.on_event(&next_old), RepairAction::Apply);
+}
+
+#[test]
 fn protocol_wire_message_round_trips_inside_length_prefixed_frame() {
     let message = ClientWireMessage::Request(ClientRequestEnvelope::new(
         "get-1",
