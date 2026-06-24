@@ -5,7 +5,7 @@
 > - **Why:** make the cluster resilient under the messy middle — brief outages, flapping liveness, lost invalidations — using proven Hazelcast/ScyllaDB primitives.
 > - **After (depends on):** 0.45.
 > - **Unblocks:** 0.47 (causal+ sessions reuse tunable levels, repair, and the invalidation ring).
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
 
@@ -649,4 +649,6 @@ adopted) only if **all** of the following boolean conditions hold:
   refused below `Quorum`, multi-key attempts rejected loud (non-goal guard), and the
   fenced lock rejects stale tokens; `conditional_writes` passes (incl. chaos).
 - W6: the invalidation ring replays exact missed ranges within retention, falls back to
-  B1 `ClearPartition` (counted) beyond it, never blocks the write path, and remo
+  B1 `ClearPartition` (counted) beyond it, never blocks the write path, and remote
+  clients use the same replay semantics as embedded near-caches; `invalidation_ring`
+  passes.
