@@ -4,8 +4,9 @@
 //! separate from member-to-member cluster transport so public compatibility
 //! cannot accidentally inherit private cluster route semantics.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use axum::body::Bytes;
@@ -14,7 +15,11 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use hydracache_client_protocol::ClientFrame;
+use hydracache_client_protocol::{
+    BatchItemStatus, ClientErrorCode, ClientErrorEnvelope, ClientFrame, ClientRequest,
+    ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope, ClientWireMessage,
+    InvalidationEvent, Namespace, StructuredKey, VersionHandshake, PROTOCOL_VERSION,
+};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -178,6 +183,10 @@ pub struct ClientSurfaceState {
     rejected_anonymous: AtomicU64,
     rejected_oversized: AtomicU64,
     active_subscriptions: AtomicU64,
+    next_message_id: AtomicU64,
+    store: Mutex<BTreeMap<(String, String), Vec<u8>>>,
+    events: Mutex<Vec<InvalidationEvent>>,
+    idempotency_keys: Mutex<BTreeSet<String>>,
 }
 
 impl ClientSurfaceState {
@@ -191,6 +200,10 @@ impl ClientSurfaceState {
             rejected_anonymous: AtomicU64::new(0),
             rejected_oversized: AtomicU64::new(0),
             active_subscriptions: AtomicU64::new(0),
+            next_message_id: AtomicU64::new(1),
+            store: Mutex::new(BTreeMap::new()),
+            events: Mutex::new(Vec::new()),
+            idempotency_keys: Mutex::new(BTreeSet::new()),
         })
     }
 
@@ -243,6 +256,180 @@ impl ClientSurfaceState {
     fn drain_subscriptions(&self) -> u64 {
         self.active_subscriptions.swap(0, Ordering::SeqCst)
     }
+
+    fn handle_wire_message(
+        &self,
+        message: ClientWireMessage,
+    ) -> Result<ClientWireMessage, ClientSurfaceError> {
+        match message {
+            ClientWireMessage::Handshake(client) => {
+                let version = client
+                    .negotiate(VersionHandshake::default())
+                    .map_err(ClientSurfaceError::Protocol)?;
+                Ok(ClientWireMessage::Handshake(VersionHandshake::new(
+                    version, version,
+                )))
+            }
+            ClientWireMessage::Request(envelope) => {
+                let response = self.handle_request(envelope);
+                Ok(ClientWireMessage::Response(response))
+            }
+            ClientWireMessage::Response(_)
+            | ClientWireMessage::Invalidation(_)
+            | ClientWireMessage::Heartbeat(_) => Err(ClientSurfaceError::MalformedFrame(
+                "client data route accepts handshake or request frames".to_owned(),
+            )),
+        }
+    }
+
+    fn handle_request(&self, envelope: ClientRequestEnvelope) -> ClientResponseEnvelope {
+        if envelope.protocol_version != PROTOCOL_VERSION {
+            return ClientResponseEnvelope::error(
+                envelope.request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::IncompatibleVersion,
+                    false,
+                    "unsupported request protocol version",
+                ),
+            );
+        }
+        if envelope.deadline_expired(0) {
+            return ClientResponseEnvelope::error(
+                envelope.request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::DeadlineExceeded,
+                    true,
+                    "request deadline expired",
+                )
+                .with_retry_after_ms(1),
+            );
+        }
+
+        match envelope.request {
+            ClientRequest::Get { ns, key } => {
+                let value = self
+                    .store
+                    .lock()
+                    .expect("store mutex")
+                    .get(&store_key(&ns, &key))
+                    .cloned();
+                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Value { value })
+            }
+            ClientRequest::Put {
+                ns,
+                key,
+                value,
+                ttl_ms: _,
+                dimensions: _,
+            } => self.handle_put(
+                envelope.request_id,
+                envelope.idempotency_key,
+                ns,
+                key,
+                value,
+            ),
+            ClientRequest::Invalidate { ns, key } => {
+                self.store
+                    .lock()
+                    .expect("store mutex")
+                    .remove(&store_key(&ns, &key));
+                self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                self.record_invalidation(ns, key);
+                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
+            }
+            ClientRequest::BatchGet { ns, keys } => {
+                let store = self.store.lock().expect("store mutex");
+                let items = keys
+                    .iter()
+                    .enumerate()
+                    .map(|(index, key)| BatchItemStatus {
+                        index,
+                        result: Ok(store.get(&store_key(&ns, key)).cloned()),
+                    })
+                    .collect();
+                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
+            }
+            ClientRequest::BatchPut { ns, entries } => {
+                let mut store = self.store.lock().expect("store mutex");
+                let items = entries
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, entry)| {
+                        if entry.value.len() > self.limits.max_value_bytes {
+                            return BatchItemStatus {
+                                index,
+                                result: Err(ClientErrorEnvelope::new(
+                                    ClientErrorCode::TooLarge,
+                                    false,
+                                    "batch item value too large",
+                                )),
+                            };
+                        }
+                        store.insert(store_key(&ns, &entry.key), entry.value);
+                        self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                        BatchItemStatus {
+                            index,
+                            result: Ok(None),
+                        }
+                    })
+                    .collect();
+                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
+            }
+            ClientRequest::EvictRegion { ns } => {
+                self.store
+                    .lock()
+                    .expect("store mutex")
+                    .retain(|(stored_ns, _), _| stored_ns != ns.as_str());
+                self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Evicted)
+            }
+            ClientRequest::SubscribeInvalidations {
+                ns: _,
+                region: _,
+                from,
+                include_value: _,
+            } => {
+                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Subscribed { from })
+            }
+        }
+    }
+
+    fn handle_put(
+        &self,
+        request_id: String,
+        idempotency_key: Option<String>,
+        ns: Namespace,
+        key: StructuredKey,
+        value: Vec<u8>,
+    ) -> ClientResponseEnvelope {
+        if value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
+            );
+        }
+        if let Some(idempotency_key) = idempotency_key {
+            let mut keys = self.idempotency_keys.lock().expect("idempotency mutex");
+            if !keys.insert(idempotency_key) {
+                return ClientResponseEnvelope::ok(request_id, ClientResponse::Stored);
+            }
+        }
+        self.store
+            .lock()
+            .expect("store mutex")
+            .insert(store_key(&ns, &key), value);
+        self.state_mutations.fetch_add(1, Ordering::SeqCst);
+        self.record_invalidation(ns, key);
+        ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
+    }
+
+    fn record_invalidation(&self, ns: Namespace, key: StructuredKey) {
+        let message_id = self.next_message_id.fetch_add(1, Ordering::SeqCst);
+        self.events
+            .lock()
+            .expect("events mutex")
+            .push(InvalidationEvent::new(ns, key, 1, message_id));
+    }
 }
 
 /// Axum route owner for the external client surface.
@@ -287,12 +474,13 @@ async fn client_data(
     match validate_before_dispatch(&state, &headers, body.len()) {
         Ok(_identity) => {
             state.record_dispatch();
-            match ClientFrame::decode(&body, state.limits().max_frame_bytes) {
-                Ok(_frame) => (
-                    StatusCode::ACCEPTED,
-                    Json(ClientSurfaceReply::accepted("protocol_dispatch_reserved")),
-                )
-                    .into_response(),
+            match ClientFrame::decode(&body, state.limits().max_frame_bytes)
+                .and_then(|frame| frame.decode_message())
+                .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))
+                .and_then(|message| state.handle_wire_message(message))
+                .and_then(|response| encode_wire_message(&response))
+            {
+                Ok(bytes) => (StatusCode::OK, bytes).into_response(),
                 Err(error) => (
                     StatusCode::BAD_REQUEST,
                     Json(ClientSurfaceReply::rejected(error.to_string())),
@@ -365,6 +553,18 @@ fn header_value(headers: &HeaderMap, name: &'static str) -> Result<String, Clien
         .filter(|value| !value.trim().is_empty())
         .map(ToOwned::to_owned)
         .ok_or(ClientSurfaceError::Unauthenticated)
+}
+
+fn encode_wire_message(message: &ClientWireMessage) -> Result<Vec<u8>, ClientSurfaceError> {
+    Ok(ClientFrame::from_message(message)
+        .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
+        .encode()
+        .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
+        .to_vec())
+}
+
+fn store_key(ns: &Namespace, key: &StructuredKey) -> (String, String) {
+    (ns.as_str().to_owned(), key.stable_key())
 }
 
 /// Deterministic lifecycle model for long-lived client subscriptions.
@@ -501,6 +701,12 @@ pub enum ClientSurfaceError {
     /// Invalid zero limit.
     #[error("client surface limit {0} must be greater than zero")]
     InvalidLimit(&'static str),
+    /// Stable protocol request error.
+    #[error("client protocol error: {0:?}")]
+    Protocol(ClientErrorEnvelope),
+    /// Malformed frame or unexpected wire message.
+    #[error("malformed client frame: {0}")]
+    MalformedFrame(String),
 }
 
 impl IntoResponse for ClientSurfaceError {
@@ -511,6 +717,7 @@ impl IntoResponse for ClientSurfaceError {
             Self::TooManyStreams => StatusCode::TOO_MANY_REQUESTS,
             Self::Draining => StatusCode::SERVICE_UNAVAILABLE,
             Self::InvalidLimit(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Protocol(_) | Self::MalformedFrame(_) => StatusCode::BAD_REQUEST,
         };
         (status, Json(ClientSurfaceReply::rejected(self.to_string()))).into_response()
     }

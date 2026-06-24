@@ -13,6 +13,8 @@ description = "Stable external client protocol primitives for HydraCache."
 
 [dependencies]
 bytes.workspace = true
+postcard.workspace = true
+serde.workspace = true
 thiserror.workspace = true
 
 [lints]

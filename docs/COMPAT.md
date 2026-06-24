@@ -19,6 +19,7 @@ they are persisted or transmitted across processes.
 | `ControlPlaneSnapshot` format | `1` | `hydracache` self-heal snapshot helpers | Readers accept format `1` and refuse unknown future versions before restore. | Restore fails loud before rebuilding topology from an unsupported snapshot. |
 | `BackupManifest` format | `1` | `hydracache` object-store backup helpers | Readers accept manifest format `1`, verify object length/checksum, and refuse unknown future manifest versions before restore/PITR replay. | Restore fails loud; corrupt or unknown-format backups are not served. |
 | External client HTTP route boundary | `1` | `hydracache-client-transport-axum` | Public clients use `/client/v1/*`; internal member routes remain under `/cluster/*` and are not part of the public client compatibility surface. Unknown future client route versions are refused instead of falling through to member handlers. | Unauthenticated, oversized, malformed, or wrong-route requests are rejected before protocol dispatch or state mutation. |
+| HydraCache external client protocol | `1` | `hydracache-client-protocol` and `hydracache-client-transport-axum` | Protocol `1` uses custom length-prefixed binary frames over HTTP/2; the request payload is a typed HydraCache message carrying `protocol_version`, request id, context, deadline, idempotency key, stable operations, stable errors, and B1 watermark fields. See ADR `docs/adr/0007-client-wire-framing.md`. | Out-of-window versions, malformed/truncated frames, oversized frames, and unknown future protocol versions are refused loud before mutation. Region-scoped subscriptions narrow delivery, not correctness. |
 
 ## Upgrade Rules
 
@@ -93,3 +94,10 @@ public clients cannot hit member handlers by path confusion, and anonymous or
 oversized client requests are rejected before protocol dispatch or cache state
 mutation. The stable client wire protocol itself is registered as its own artifact
 when W1 publishes protocol version `1`.
+
+W1 registers the HydraCache external client protocol version `1`. Framing is a
+custom `u32 body_len | u16 protocol_version | postcard payload` binary envelope
+over the existing HTTP/2 route boundary, not gRPC. Readers reject unknown future
+protocol versions loud. Region-scoped `SubscribeInvalidations` is a dissemination
+filter: it may narrow delivery, but it never hides correctness-relevant
+cross-region invalidations, and `include_value` is residency-gated.

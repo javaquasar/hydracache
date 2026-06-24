@@ -1476,6 +1476,8 @@ name = "hydracache-client-protocol"
 version = "0.48.0"
 dependencies = [
  "bytes",
+ "postcard",
+ "serde",
  "thiserror 2.0.18",
 ]
 
