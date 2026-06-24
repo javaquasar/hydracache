@@ -19,6 +19,7 @@ pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
 pub(crate) mod session_context;
+pub(crate) mod session_ryw;
 
 use crate::cluster::{
     ClusterEpoch, ClusterGeneration, ClusterMember, ClusterNodeId, PartitionId,
@@ -956,6 +957,10 @@ pub struct ClusterGridCounters {
     pub session_watermark_coarsened_total: u64,
     /// Rejected session tokens.
     pub session_token_rejected_total: u64,
+    /// Session read-your-writes reads that had to escalate.
+    pub session_ryw_escalations_total: u64,
+    /// Session reads that failed rather than serving below the watermark.
+    pub session_guarantee_unmet_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1217,6 +1222,14 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_session_token_rejected_total",
             labels: &["reason"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_ryw_escalations_total",
+            labels: &["path"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_guarantee_unmet_total",
+            labels: &["guarantee"],
         },
     ];
     DESCRIPTORS

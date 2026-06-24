@@ -584,6 +584,10 @@ pub use grid::session_context::{
     PartitionKey, SessionContextMetrics, SessionId, SessionRequest, SessionToken,
     SessionTokenError, SessionWatermark, VersionStamp,
 };
+pub use grid::session_ryw::{
+    resolve_session_read, serve_session_read, ReadEscalation, SessionGuaranteeUnmet,
+    SessionReadBudget, SessionRywMetrics,
+};
 pub use grid::{
     cluster_grid_metric_descriptors, diff_effective_maps, prepare_replicated_payload,
     replicated_slot_version, select_backup_promotion, AntiEntropyTask, BackupPromotion,

@@ -459,6 +459,8 @@ where
             session_watermark_entries: 0,
             session_watermark_coarsened_total: 0,
             session_token_rejected_total: 0,
+            session_ryw_escalations_total: 0,
+            session_guarantee_unmet_total: 0,
         }
     }
 
