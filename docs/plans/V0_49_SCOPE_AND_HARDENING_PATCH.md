@@ -81,8 +81,8 @@ line â€” the same convention used for `0.50`/`0.51`. Do **not** renumber `0.46`â
 1. Rewrite the `0.49` "Scope note" to state the core/follow-on seam and reference this
    patch.
 2. Move the W3 and W7 sections (or, in the alternative, their stretch sub-items) into a
-   new `docs/plans/V0_52_JAVA_SPRING_MIGRATION_ECOSYSTEM_PLAN.md`, carrying their
-   problem/design/tests verbatim; leave a one-line pointer in `0.49`.
+   new future `0.52` Java/Spring migration plan, carrying their problem/design/tests
+   verbatim; leave a one-line pointer in `0.49`.
 3. Trim the `0.49` Dependency Graph and Final Decision to the core items; add the
    corresponding W-items to the `0.52` plan's own Final Decision.
 4. If split: add the `0.52` entry to `releases.toml` (`depends_on = ["0.49.0"]`) and a

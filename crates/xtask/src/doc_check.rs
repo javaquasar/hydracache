@@ -11,6 +11,8 @@
 //! - a shipped `0.43.0` entry must explicitly confirm that the networked control
 //!   plane is wired, so a modeled-vs-networked gap cannot be marked shipped by
 //!   accident.
+//! - every in-prose `V0_*.md` plan reference under `docs/plans/` resolves to a
+//!   real plan file.
 //!
 //! This turns the "release sequencing is recorded, not implied" rule into an
 //! executable gate so doc drift (e.g. two plans claiming the same version, or a
@@ -143,7 +145,74 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         }
     }
 
+    problems.extend(check_in_prose_plan_links(root)?);
+
     Ok(problems)
+}
+
+fn check_in_prose_plan_links(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let plan_dir = root.join("docs/plans");
+    if !plan_dir.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    let mut problems = Vec::new();
+    for entry in
+        fs::read_dir(&plan_dir).map_err(|err| format!("reading {}: {err}", plan_dir.display()))?
+    {
+        let path = entry?.path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("md") {
+            continue;
+        }
+        let text = fs::read_to_string(&path)
+            .map_err(|err| format!("reading {}: {err}", path.display()))?;
+        let source = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .display()
+            .to_string();
+        let mut seen = HashSet::new();
+        for link in extract_plan_links(&text) {
+            if !seen.insert(link.clone()) {
+                continue;
+            }
+            if !plan_dir.join(&link).is_file() {
+                problems.push(format!("{source}: references missing plan '{link}'"));
+            }
+        }
+    }
+
+    Ok(problems)
+}
+
+fn extract_plan_links(text: &str) -> Vec<String> {
+    let mut links = Vec::new();
+    let mut search_from = 0;
+
+    while let Some(offset) = text[search_from..].find("V0_") {
+        let start = search_from + offset;
+        let rest = &text[start..];
+        let Some(md_offset) = rest.find(".md") else {
+            break;
+        };
+        let end = start + md_offset + ".md".len();
+        let candidate = &text[start..end];
+        if is_plan_filename(candidate) {
+            links.push(candidate.to_owned());
+            search_from = end;
+        } else {
+            search_from = start + "V0_".len();
+        }
+    }
+
+    links
+}
+
+fn is_plan_filename(candidate: &str) -> bool {
+    candidate.ends_with(".md")
+        && candidate
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-' | '.'))
 }
 
 /// CLI entry point: `cargo xtask doc-check [--root <path>]`.

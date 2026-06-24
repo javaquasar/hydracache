@@ -534,9 +534,9 @@ piggy-back on the W3 anti-entropy digests rather than dedicated probes.
 ## Deferred To Later Releases (Explicit)
 
 Sequencing note: `0.46` is the cluster-resilience release
-(`V0_45_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`, the Hazelcast/ScyllaDB
+(`V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`, the Hazelcast/ScyllaDB
 primitives `0.45` relies on), and `0.47` is cross-region session consistency
-(`V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`), which picks up the causal+ work
+(`V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`), which picks up the causal+ work
 deferred here.
 
 - **Full distributed transactions** (serializable cross-node/cross-region multi-key

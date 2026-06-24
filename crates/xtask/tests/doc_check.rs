@@ -150,3 +150,38 @@ depends_on = []
         "missing false-sentinel check: {joined}"
     );
 }
+
+#[test]
+fn detects_dangling_in_prose_plan_links() {
+    let manifest = r#"
+[[release]]
+version = "0.50.0"
+file = "docs/plans/V0_50_EXISTING_PLAN.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_50_EXISTING_PLAN.md"]);
+    fs::write(
+        root.join("docs/plans/V0_50_EXISTING_PLAN.md"),
+        "See `V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md` and `V0_99_MISSING_PLAN.md`.\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/plans/V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md"),
+        "# existing plan\n",
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("references missing plan 'V0_99_MISSING_PLAN.md'"),
+        "missing in-prose plan-link check: {joined}"
+    );
+    assert!(
+        !joined.contains("V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md"),
+        "existing in-prose plan link should not fail: {joined}"
+    );
+}

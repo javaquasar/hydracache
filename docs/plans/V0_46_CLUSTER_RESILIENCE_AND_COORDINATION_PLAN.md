@@ -562,7 +562,7 @@ gauge, and the fell-behind counter tells operators when to grow it.
   commit). Still a hard non-goal; W5 is single-key only.
 - **Causal+ / cross-region session guarantees** (read-your-writes / monotonic reads
   spanning regions for a session). Picked up next in `0.47`
-  (`V0_46_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`); it builds directly on W1 (tunable
+  (`V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`); it builds directly on W1 (tunable
   levels), W3 (read-repair), and W6 (invalidation ring).
 - **Ecosystem / external consumers** (stable client protocol, Hibernate L2 provider,
   SDKs, multi-tenancy, residency). Drafted in
