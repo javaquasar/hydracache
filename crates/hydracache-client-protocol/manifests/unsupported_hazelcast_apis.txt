@@ -1,0 +1,15 @@
+# HydraCache Java migration unsupported Hazelcast API manifest.
+# Format: version=N, then API|migration hint.
+version=1
+HazelcastInstance.getCPSubsystem|HydraCache does not emulate Hazelcast CP structures; keep coordination in the database or an explicit coordination service.
+HazelcastInstance.getExecutorService|HydraCache does not run server-side application code; keep execution in the application JVM or job system.
+HazelcastInstance.getSql|HydraCache does not provide Hazelcast SQL; query the source database/search system and cache explicit results.
+IMap.lock|Distributed map locks are not cache operations; use database locks, fenced locks, or explicit conditional writes with reviewed semantics.
+IMap.tryLock|Distributed map locks are not cache operations; use database locks, fenced locks, or explicit conditional writes with reviewed semantics.
+IMap.executeOnKey|Entry processors execute code inside Hazelcast members; move logic to application services and write explicit cache updates/invalidations.
+IMap.addInterceptor|Server-side map interceptors are unsupported; use application-side decorators around HydraCacheMap.
+ReplicatedMap|HydraCache exposes cache namespaces and replication policy, not Hazelcast ReplicatedMap semantics; model data as a cache map or source-of-truth table.
+Ringbuffer|HydraCache invalidation streams are for near-cache repair, not a general event log; use Kafka/outbox for business events.
+ReliableTopic|HydraCache invalidation subscriptions are cache signals, not general pub/sub; use an event bus for business messages.
+PNCounter|HydraCache does not expose Hazelcast CRDT objects through the Java migration facade; use source-of-truth writes or a dedicated counter service.
+FencedLock|HydraCache does not expose Hazelcast CP FencedLock through the migration facade; use a dedicated coordination primitive.

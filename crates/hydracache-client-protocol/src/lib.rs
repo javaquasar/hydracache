@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub mod hibernate;
+pub mod java_migration;
 
 /// First supported external client protocol version.
 pub const PROTOCOL_VERSION: u16 = 1;
