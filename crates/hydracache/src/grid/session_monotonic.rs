@@ -123,9 +123,9 @@ impl std::error::Error for MonotonicReadViolation {}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MonotonicWriteViolation {
     /// Last accepted write.
-    pub accepted: SessionWriteStamp,
+    pub accepted: Box<SessionWriteStamp>,
     /// Incoming write that would break monotonicity.
-    pub incoming: SessionWriteStamp,
+    pub incoming: Box<SessionWriteStamp>,
     /// Guard decision explaining the violation.
     pub decision: MonotonicWriteDecision,
 }
@@ -227,10 +227,12 @@ pub fn apply_monotonic_write(
     match resolve_monotonic_write(accepted, &incoming) {
         MonotonicWriteDecision::Apply => Ok(incoming),
         decision => Err(MonotonicWriteViolation {
-            accepted: accepted
-                .expect("non-apply monotonic decisions require an accepted write")
-                .clone(),
-            incoming,
+            accepted: Box::new(
+                accepted
+                    .expect("non-apply monotonic decisions require an accepted write")
+                    .clone(),
+            ),
+            incoming: Box::new(incoming),
             decision,
         }),
     }
