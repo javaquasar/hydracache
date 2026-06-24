@@ -1,0 +1,21 @@
+{
+  "title": "HydraCache Production Overview",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "title": "Hit Ratio",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_cache_hit_ratio" }]
+    },
+    {
+      "title": "Replication Backpressure",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_replication_backpressure_total" }]
+    },
+    {
+      "title": "Admission Rejections",
+      "type": "timeseries",
+      "targets": [{ "expr": "hydracache_admission_rejected_total" }]
+    }
+  ]
+}

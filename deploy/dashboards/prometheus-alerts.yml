@@ -1,0 +1,24 @@
+groups:
+  - name: hydracache-production
+    rules:
+      - alert: HydraCacheLowHitRatio
+        expr: hydracache_cache_hit_ratio < 0.60
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache hit ratio dropped below the production budget.
+      - alert: HydraCacheReplicationBackpressure
+        expr: increase(hydracache_replication_backpressure_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache replication is applying backpressure.
+      - alert: HydraCacheAdmissionRejected
+        expr: increase(hydracache_admission_rejected_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache admission control is rejecting overload.

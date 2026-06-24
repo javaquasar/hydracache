@@ -44,6 +44,10 @@ use hydracache::{
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
 
+pub mod exporter;
+
+pub use exporter::{registered_metric_names, PrometheusExporter};
+
 /// Serializable snapshot of [`CacheStats`].
 ///
 /// `CacheStats` itself stays a lightweight runtime type. This DTO adds derived

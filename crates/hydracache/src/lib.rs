@@ -465,6 +465,7 @@
 
 extern crate self as hydracache;
 
+mod admission;
 mod backup;
 mod builder;
 mod cache;
@@ -482,6 +483,10 @@ mod tag_index;
 pub mod testing;
 mod typed;
 
+pub use admission::{
+    AdmissionController, AdmissionError, AdmissionLimits, AdmissionPermit, AdmissionQueueTicket,
+    AdmissionRejectionReason, AdmissionSnapshot,
+};
 pub use backup::{
     read_manifest, restore_backup_to_point, write_full_backup, write_pitr_log, BackupDataset,
     BackupEntry, BackupError, BackupManifest, InMemoryObjectStore, ObjectStore, PitrLog,
