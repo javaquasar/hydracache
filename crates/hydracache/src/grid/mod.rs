@@ -10,6 +10,7 @@ pub(crate) mod capacity;
 pub(crate) mod consistency_level;
 pub(crate) mod crdt;
 pub(crate) mod elasticity;
+pub(crate) mod failure_detector;
 pub(crate) mod hardening;
 pub(crate) mod hinted_handoff;
 pub(crate) mod merkle_repair;
@@ -926,6 +927,10 @@ pub struct ClusterGridCounters {
     pub read_repair_total: u64,
     /// Last aggregate repair progress ratio, scaled 0..=10000.
     pub repair_progress_ratio: u64,
+    /// Last aggregate phi suspicion value, scaled by 1000.
+    pub peer_phi_scaled: u64,
+    /// Suspicions later observed to recover without a real outage.
+    pub false_suspect_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1135,6 +1140,14 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_repair_progress_ratio",
             labels: &["partition"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_peer_phi",
+            labels: &["peer"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_false_suspect_total",
+            labels: &[],
         },
     ];
     DESCRIPTORS

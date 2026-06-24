@@ -446,6 +446,8 @@ where
             repair_ranges_exchanged_total: 0,
             read_repair_total: 0,
             repair_progress_ratio: 0,
+            peer_phi_scaled: 0,
+            false_suspect_total: 0,
         }
     }
 

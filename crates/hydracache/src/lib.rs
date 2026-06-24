@@ -540,6 +540,10 @@ pub use grid::elasticity::{
     CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
     NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
+pub use grid::failure_detector::{
+    liveness_allows_ownership_change, liveness_allows_repair_or_handoff, FailureDetectorMetrics,
+    Liveness, PhiAccrualConfig, PhiAccrualDetector,
+};
 pub use grid::hardening::{
     anti_entropy_repair, live_read_your_writes, merge_split_brain_records, quorum_read_your_writes,
     resolve_live_split_brain, split_brain_winner, AdaptiveWindow, ChecksummedReplicatedValueRecord,
