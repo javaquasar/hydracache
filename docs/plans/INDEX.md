@@ -67,6 +67,11 @@ v0 foundations
 
    0.44 ─┄ also feeds ┄► 0.50 interactive simulator demo (DevRel; depends only on
                           0.44, may be pulled forward — numbered last to avoid churn)
+
+   0.45 ─┄ also feeds ┄► 0.51 configurable per-namespace/region persistence
+                          (Hazelcast-style selective durability; builds on 0.43 tiered
+                          store + 0.45 regions, validated by 0.44 DST — foundational,
+                          may be pulled forward; numbered to avoid churn)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -87,6 +92,7 @@ v0 foundations
 | [0.48.0](V0_48_PRODUCTION_DEPLOYMENT_AND_SECURITY_PLAN.md) | shipped | `hydracache-server` daemon, zero-downtime upgrade, mTLS + cert/key lifecycle, encryption-at-rest, object-storage backup + PITR, Docker/k8s artifacts, operator surface + admission | Make the correctness-proven core actually deployable, secure, backed-up and operable in production | 0.47 | 0.49+ |
 | [0.49.0](V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) | planned | Stable versioned client protocol, Hibernate L2 provider, multi-language SDKs + conformance, multi-tenancy/quotas, data-residency, consumer observability/audit | Let stacks outside the Rust process use the grid as a backend, safely and multi-tenant | 0.48 | — |
 | [0.50.0](V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md) | planned | Seed-reproducible browser demo (WASM) over the 0.44 `hydracache-sim`: partition/crash/heal + live committed-log/leader/consistency-level/convergence + real invariant verdicts | Make "correctness as a product feature" visible/persuasive (TigerBeetle-style); pitch + onboarding asset | 0.44 | — |
+| [0.51.0](V0_51_CONFIGURABLE_PERSISTENCE_PLAN.md) | planned | On-disk `DurableValueStore`, per-namespace persistence policy (wildcard/prefix, opt-in, default RAM-only), per-region selection ("important regions" only), Sync/AsyncBounded write path + scheduled snapshots, fail-loud epoch-fenced full-restart recovery, declarative Hazelcast-style config | Today the value plane is RAM-only — a full cluster restart loses everything; give Hazelcast-style *selective* durability so important namespaces/regions survive a reboot while the rest stay lean | 0.45 | — |
 
 `0.43` debt closure:
 [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)

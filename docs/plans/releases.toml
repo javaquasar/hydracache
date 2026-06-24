@@ -110,3 +110,10 @@ file = "docs/plans/V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md"
 status = "planned"
 theme = "Interactive cluster simulator demo (DevRel) — seed-reproducible browser visualization over the 0.44 hydracache-sim engine (WASM), partition/crash/heal controls, live committed-log/leader/consistency-level/convergence + real invariant verdicts; depends only on 0.44 and may be pulled forward"
 depends_on = ["0.44.0"]
+
+[[release]]
+version = "0.51.0"
+file = "docs/plans/V0_51_CONFIGURABLE_PERSISTENCE_PLAN.md"
+status = "planned"
+theme = "Configurable per-namespace / per-region persistence (Hazelcast-style selective durability) — on-disk DurableValueStore backend, per-namespace policy with wildcard/prefix patterns (opt-in, default RAM-only), per-region selection (persist only important regions), Sync/AsyncBounded write path + scheduled snapshots, fail-loud epoch-fenced full-restart recovery, declarative config; builds on 0.43 tiered store + 0.45 regions, validated by 0.44 DST, may be pulled forward"
+depends_on = ["0.45.0"]
