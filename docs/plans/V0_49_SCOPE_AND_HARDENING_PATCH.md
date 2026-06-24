@@ -1,7 +1,7 @@
 # HydraCache 0.49 Scope & Hardening Patch — Codex Execution Plan
 
 > **At a glance**
-> - **What:** four structural corrections to [`V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`](V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) that the mechanical review left open: (P5) split the oversized scope into a shippable core + a follow-on migration release, (P6) fix the non-JVM SDK language now, (P7) make the wire-framing choice an ADR deliverable, (P8) route the multi-node faults through the `0.44` deterministic simulator.
+> - **What:** five corrections/additions to [`V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`](V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md): (P5) split the oversized scope into a shippable core + a follow-on migration release, (P6) fix the non-JVM SDK language now, (P7) make the wire-framing choice an ADR deliverable, (P8) route the multi-node faults through the `0.44` deterministic simulator, and (P9) add a region-scoped cache-change subscription to the W1 protocol contract.
 > - **Why:** the mechanical fixes (test names, dependency-graph dedup, R-id references) made `0.49` *internally consistent*, but did not address the four risks that can still make the release ship red or diverge in implementation: it is too large to land on one green gate, leaves two forever-decisions open (SDK language, protocol framing), and validates its hardest correctness claims (residency-under-failover, tenant fair-share) only as `#[ignore]` chaos instead of reproducibly.
 > - **After (depends on):** none new — this is a documentation/scoping patch over the existing `0.49` plan; it does not change `0.37`–`0.48`. It is a **supporting plan, not a release version** (not tracked in `releases.toml`).
 > - **Unblocks:** a `0.49` that can ship on a boolean gate (R-7) and an unambiguous Codex execution path.
@@ -30,7 +30,8 @@ P5 scope split ──► defines which work items stay in 0.49 vs move to a foll
         │
         ├──► P6 pin non-JVM SDK language (affects W3, and the follow-on if split)
         ├──► P7 pin wire framing via ADR (affects W1)
-        └──► P8 route multi-node faults through 0.44 DST (affects W4, W5 fault model)
+        ├──► P8 route multi-node faults through 0.44 DST (affects W4, W5 fault model)
+        └──► P9 region-scoped SubscribeInvalidations (affects W1 + storage-doc §3.1)
 ```
 
 ---
@@ -142,6 +143,20 @@ truth. Record gRPC/tonic as the considered alternative and the reason it was not
 > gRPC/tonic is the defensible opposite choice — but it must then be the *single* choice,
 > with the protobuf schema registered in COMPAT as the wire artifact.
 
+**Reversibility — choosing custom binary now is not a one-way door.** Because the
+operation set (`Get`/`Put`/`Invalidate`/batch/`SubscribeInvalidations`), the request/error
+envelopes, structured key segments, and the B1 watermark are defined by the Rust types —
+**independent of framing** — gRPC can be adopted later as a *second protocol major* (`v2`
+over gRPC/tonic) introduced **alongside** `v1`, not as an in-place swap: the server speaks
+both during the support window, version negotiation (W1) picks one, old clients keep `v1`,
+and the COMPAT register tracks both wire artifacts (R-4, forward-only). The cost is a
+`.proto` generated from the same operations + a transport adapter + running the W3
+conformance suite against both encodings — integration work, not a redesign. ADR `0007`
+must record this reversibility explicitly so the `v1` choice stays low-risk. The migration
+stays cheap **only if** `v1` never leaks framing details into semantics (no app logic
+depending on exact byte layout) — which the structured-key / typed-operation contract
+already enforces.
+
 **Steps (doc-only).**
 1. Replace the W1 "either/or" sentence with the pinned framing + a one-line rationale.
 2. Add an ADR deliverable to W1 steps: `docs/adr/0007-client-wire-framing.md` (decision,
@@ -196,10 +211,77 @@ variants remain as soak. No multi-node claim rests on `#[ignore]`-only evidence.
 
 ---
 
+## P9. Region-scoped cache-change subscription in the W1 contract
+
+**Target.** `0.49` W1 "Design / contract" + Rust sketch (`SubscribeInvalidations`,
+`InvalidationEvent`, `ClientContext`); the `STORAGE_AND_DATA_PLATFORM_EVOLUTION.md` §3.1
+change-stream note.
+
+**Problem.** W1 lets a client subscribe to cache-change events, but only
+**namespace-scoped** (`SubscribeInvalidations { ns, from }`). There is no way to subscribe
+to changes for a **specific region**, even though `0.45` made regions first-class and
+operators of active-active/geo deployments routinely want "stream me what changed in
+region X" (per-region near-cache, regional projections, regional audit).
+`ClientContext.preferred_region` only steers read routing, not subscription scope.
+Against etcd watch / Hazelcast listeners this is a real gap for geo consumers.
+
+**Change.** Add an optional region scope to the subscription with explicit,
+correctness-safe semantics.
+
+**Recommended decision.** Extend the contract to
+`SubscribeInvalidations { ns, region: Option<RegionId>, from: Option<Watermark>, include_value: bool }`:
+
+- **`region = None`** → current behavior (namespace-wide, all regions).
+- **`region = Some(r)`** → "**applied-in-region r**": events for keys as they are
+  applied/committed in r's replica, gated by **r's resolved-timestamp watermark**
+  (storage-doc §3.1), so the per-region stream is consistent and replayable — the
+  etcd-revision model, region-local.
+- **Correctness invariant (R-1):** a region filter must **never hide a cross-region
+  invalidation that affects the subscriber's view**. If a key the subscriber tracks is
+  invalidated under a newer epoch elsewhere, the region-scoped stream still emits it (or
+  advances the watermark and signals a gap that forces a conservative repair). Region is a
+  **dissemination** dimension; authority stays epoch/version. The filter narrows
+  *delivery*, never *correctness*.
+- **`include_value` + residency (R-3 / W5):** value-in-event is opt-in and must pass W5
+  residency — a pinned value is never shipped to a subscriber whose region/connection is
+  outside the allowed set; the event then degrades to invalidation-only (key + watermark),
+  counted, never silently dropped.
+
+Record region as a **dissemination filter, not an authority source** in the W1 contract
+and storage-doc §3.1.
+
+**Steps (doc-only over `0.49` + storage doc; code lands in the W1 PR).**
+1. Update the W1 `SubscribeInvalidations` contract + Rust sketch with
+   `region`/`include_value` and the applied-in-region semantics.
+2. Add the R-1 "filter narrows delivery, not correctness" invariant and the W5 residency
+   gate for `include_value` to the W1 design text.
+3. Cross-link `STORAGE_AND_DATA_PLATFORM_EVOLUTION.md` §3.1: the region-scoped stream is
+   the resolved-ts change-stream restricted to one region.
+4. Add the W1 Final-Decision condition + the tests below.
+
+**Testing.** add to `crates/hydracache-client-protocol/tests/protocol.rs`:
+- `region_scoped_subscription_streams_only_that_regions_applied_events` (integration,
+  2-region sim).
+- `region_filter_does_not_hide_cross_region_invalidation_affecting_subscriber`
+  (integration) — the R-1 hard case; run in the `0.44` simulator (ties P8).
+- `include_value_is_residency_gated_and_degrades_to_invalidation` (integration) — ties W5.
+- `region_subscription_resume_and_gap_trigger_repair` (property): per-region watermark
+  resume + gap → `RepairAction`, exactly like the namespace stream.
+- Run: `cargo test -p hydracache-client-protocol --locked protocol`.
+
+**Acceptance.** A client can subscribe to changes for one region; the region filter never
+suppresses a correctness-relevant cross-region invalidation; `include_value` honors
+residency; per-region resume/gap behaves like the namespace stream; the region semantics
+are documented in W1 and storage-doc §3.1 as dissemination-only.
+
+---
+
 ## Order of application
 
-1. **P6, P7** first (smallest, no roadmap impact): pin SDK + framing, add ADR `0007`.
-2. **P8** next: re-tier the multi-node faults (touches Fault Model + W4/W5 testing).
+1. **P6, P7, P9** first (W1/W3 contract, no roadmap impact): pin SDK + framing + ADR
+   `0007`, and add the region-scoped subscription to the W1 contract.
+2. **P8** next: re-tier the multi-node faults (touches Fault Model + W4/W5 testing); the
+   P9 cross-region invariant test lands in the same `0.44` sim work.
 3. **P5** last, **after user confirms the split option**: it is the only item that may
    create a new release (`0.52`) and edit `releases.toml`/`INDEX.md`; do it once the
    other three have settled the content that moves.
