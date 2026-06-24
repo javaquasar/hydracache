@@ -76,6 +76,8 @@ use hydracache::{
 use hydracache_core::CacheCodec;
 use serde::{Deserialize, Serialize};
 
+pub mod tls;
+
 /// Default HTTP path used by the peer-fetch route and client.
 pub const DEFAULT_PEER_FETCH_PATH: &str = "/cluster/peer-fetch";
 
