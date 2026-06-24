@@ -19,6 +19,7 @@ pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
 pub(crate) mod session_context;
+pub(crate) mod session_monotonic;
 pub(crate) mod session_ryw;
 
 use crate::cluster::{
@@ -961,6 +962,10 @@ pub struct ClusterGridCounters {
     pub session_ryw_escalations_total: u64,
     /// Session reads that failed rather than serving below the watermark.
     pub session_guarantee_unmet_total: u64,
+    /// Monotonic reads prevented from going backwards.
+    pub monotonic_read_violations_prevented_total: u64,
+    /// Monotonic writes prevented from reordering or lowering their stamp.
+    pub monotonic_write_reorders_prevented_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1229,6 +1234,14 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         },
         ClusterMetricDescriptor {
             name: "hydracache_session_guarantee_unmet_total",
+            labels: &["guarantee"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_monotonic_read_violations_prevented_total",
+            labels: &["guarantee"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_monotonic_write_reorders_prevented_total",
             labels: &["guarantee"],
         },
     ];

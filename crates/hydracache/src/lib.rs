@@ -584,6 +584,11 @@ pub use grid::session_context::{
     PartitionKey, SessionContextMetrics, SessionId, SessionRequest, SessionToken,
     SessionTokenError, SessionWatermark, VersionStamp,
 };
+pub use grid::session_monotonic::{
+    apply_monotonic_read, apply_monotonic_write, resolve_monotonic_read, resolve_monotonic_write,
+    MonotonicReadDecision, MonotonicReadViolation, MonotonicWriteDecision, MonotonicWriteViolation,
+    SessionMonotonicMetrics, SessionSequence, SessionWriteStamp,
+};
 pub use grid::session_ryw::{
     resolve_session_read, serve_session_read, ReadEscalation, SessionGuaranteeUnmet,
     SessionReadBudget, SessionRywMetrics,

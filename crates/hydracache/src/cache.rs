@@ -461,6 +461,8 @@ where
             session_token_rejected_total: 0,
             session_ryw_escalations_total: 0,
             session_guarantee_unmet_total: 0,
+            monotonic_read_violations_prevented_total: 0,
+            monotonic_write_reorders_prevented_total: 0,
         }
     }
 
