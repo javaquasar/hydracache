@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hydracache.fullname" . | default "hydracache" }}
+spec:
+  serviceName: {{ include "hydracache.fullname" . | default "hydracache" }}-headless
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hydracache
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hydracache
+    spec:
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: hydracache
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.httpPort }}
+            - name: cluster
+              containerPort: {{ .Values.service.clusterPort }}
+            - name: metrics
+              containerPort: {{ .Values.service.metricsPort }}
+          env:
+            - name: HYDRACACHE_ROLE
+              value: member
+            - name: HYDRACACHE_LISTEN_ADDR
+              value: "0.0.0.0:{{ .Values.service.httpPort }}"
+            - name: HYDRACACHE_CLUSTER_ADDR
+              value: "0.0.0.0:{{ .Values.service.clusterPort }}"
+            - name: HYDRACACHE_STORAGE_DIR
+              value: {{ .Values.storage.mountPath | quote }}
+            - name: HYDRACACHE_TLS_ENABLED
+              value: {{ .Values.tls.enabled | quote }}
+            - name: HYDRACACHE_TLS_CERT_PATH
+              value: {{ .Values.tls.certPath | quote }}
+            - name: HYDRACACHE_TLS_KEY_PATH
+              value: {{ .Values.tls.keyPath | quote }}
+            - name: HYDRACACHE_TLS_CA_PATH
+              value: {{ .Values.tls.caPath | quote }}
+            - name: HYDRACACHE_BACKUP_ENABLED
+              value: {{ .Values.backup.enabled | quote }}
+            - name: HYDRACACHE_BACKUP_LOCATION
+              value: {{ .Values.backup.location | quote }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.storage.mountPath | quote }}
+            - name: tls
+              mountPath: /etc/hydracache/tls
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: {{ .Values.tls.secretName }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.storage.size }}

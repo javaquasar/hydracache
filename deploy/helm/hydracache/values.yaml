@@ -1,0 +1,27 @@
+image:
+  repository: ghcr.io/javaquasar/hydracache-server
+  tag: "0.48.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 3
+replicationFactor: 3
+
+service:
+  httpPort: 8080
+  clusterPort: 7000
+  metricsPort: 9090
+
+storage:
+  size: 20Gi
+  mountPath: /var/lib/hydracache
+
+tls:
+  enabled: true
+  secretName: hydracache-mtls
+  certPath: /etc/hydracache/tls/tls.crt
+  keyPath: /etc/hydracache/tls/tls.key
+  caPath: /etc/hydracache/tls/ca.crt
+
+backup:
+  enabled: true
+  location: s3://hydracache-backups/prod

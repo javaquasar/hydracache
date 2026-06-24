@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hydracache
+description: Production deployment chart for HydraCache server
+type: application
+version: 0.48.0
+appVersion: "0.48.0"

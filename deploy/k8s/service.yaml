@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hydracache-headless
+  labels:
+    app.kubernetes.io/name: hydracache
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: hydracache
+  ports:
+    - name: cluster
+      port: 7000
+      targetPort: cluster
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hydracache
+  labels:
+    app.kubernetes.io/name: hydracache
+spec:
+  selector:
+    app.kubernetes.io/name: hydracache
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: metrics
+      port: 9090
+      targetPort: metrics

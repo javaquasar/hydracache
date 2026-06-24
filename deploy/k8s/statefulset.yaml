@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: hydracache
+  labels:
+    app.kubernetes.io/name: hydracache
+spec:
+  serviceName: hydracache-headless
+  replicas: 3
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hydracache
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hydracache
+    spec:
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: hydracache
+          image: ghcr.io/javaquasar/hydracache-server:0.48.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: cluster
+              containerPort: 7000
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: HYDRACACHE_ROLE
+              value: member
+            - name: HYDRACACHE_LISTEN_ADDR
+              value: 0.0.0.0:8080
+            - name: HYDRACACHE_CLUSTER_ADDR
+              value: 0.0.0.0:7000
+            - name: HYDRACACHE_SEEDS
+              value: hydracache-0.hydracache-headless:7000,hydracache-1.hydracache-headless:7000,hydracache-2.hydracache-headless:7000
+            - name: HYDRACACHE_STORAGE_DIR
+              value: /var/lib/hydracache
+            - name: HYDRACACHE_TLS_ENABLED
+              value: "true"
+            - name: HYDRACACHE_TLS_CERT_PATH
+              value: /etc/hydracache/tls/tls.crt
+            - name: HYDRACACHE_TLS_KEY_PATH
+              value: /etc/hydracache/tls/tls.key
+            - name: HYDRACACHE_TLS_CA_PATH
+              value: /etc/hydracache/tls/ca.crt
+            - name: HYDRACACHE_BACKUP_ENABLED
+              value: "true"
+            - name: HYDRACACHE_BACKUP_LOCATION
+              value: s3://hydracache-backups/prod
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 5
+            failureThreshold: 2
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/hydracache
+            - name: tls
+              mountPath: /etc/hydracache/tls
+              readOnly: true
+      volumes:
+        - name: tls
+          secret:
+            secretName: hydracache-mtls
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 20Gi

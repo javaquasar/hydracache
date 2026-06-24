@@ -141,6 +141,24 @@ impl ServerConfig {
         if env::var("HYDRACACHE_TLS_ACK_INSECURE").as_deref() == Ok("true") {
             config.tls.acknowledge_insecure = true;
         }
+        if env::var("HYDRACACHE_TLS_ENABLED").as_deref() == Ok("true") {
+            config.tls.enabled = true;
+        }
+        if let Ok(path) = env::var("HYDRACACHE_TLS_CERT_PATH") {
+            config.tls.cert_path = Some(PathBuf::from(path));
+        }
+        if let Ok(path) = env::var("HYDRACACHE_TLS_KEY_PATH") {
+            config.tls.key_path = Some(PathBuf::from(path));
+        }
+        if let Ok(path) = env::var("HYDRACACHE_TLS_CA_PATH") {
+            config.tls.ca_path = Some(PathBuf::from(path));
+        }
+        if env::var("HYDRACACHE_BACKUP_ENABLED").as_deref() == Ok("true") {
+            config.backup.enabled = true;
+        }
+        if let Ok(location) = env::var("HYDRACACHE_BACKUP_LOCATION") {
+            config.backup.location = Some(location);
+        }
         config.validate()?;
         Ok(config)
     }
