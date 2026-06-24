@@ -616,4 +616,517 @@ HydraCache migration target:
 hydracache:
   client:
     endpoints:
-      - https://cache-a
+      - https://cache-a.internal:8443
+      - https://cache-b.internal:8443
+    tenant: core
+    smart-routing: true
+  toolkit:
+    spring-cache:
+      mode: native   # lazy map-backed cache names for legacy CacheUtil code
+```
+
+Hibernate L2 migration target:
+
+```yaml
+hydracache:
+  toolkit:
+    hibernate:
+      l2:
+        enabled: true
+        extended-config: true
+        region-factory: HYDRACACHE_LOCAL
+        use-query-cache: false
+        use-statistics: true
+```
+
+Listener migration target:
+
+```java
+@Component
+@HydraCacheMapListener(map = "users", includeValue = false)
+public class UserCacheListener implements HydraCacheEntryInvalidatedListener<String> {
+    @Override
+    public void entryInvalidated(HydraCacheEntryEvent<String> event) {
+        // refresh local projections or invalidate application-local state
+    }
+}
+```
+
+**Step-by-step implementation.**
+
+1. Add Java client configuration and factory: endpoints, tenant, client name,
+   smart-routing toggle, TLS/token identity, retry/backoff, deadline, and customizer
+   hooks. Defaults are client-first; member mode is not supported for application
+   JVMs in 0.49.
+2. Add `HydraCacheMap<K,V>` as a migration facade for map-like cache operations:
+   `get`, `put`, `putIfAbsent`, `remove`, `containsKey`, `getAll`, `putAll`,
+   `invalidate`, `clearNamespace`/`evictRegion` where supported. Operations map to
+   W1 and never expose server-side code execution.
+3. Add codec/schema registration: a safe codec registry plus an annotation such as
+   `@HydraCacheCodec` / `@HydraCacheSchema` for package scanning. Java native
+   serialization is disabled by default; any legacy serializer bridge must be
+   explicit and documented as a migration-only risk.
+4. Add Spring Boot 2/3/4 starters with one shared runtime model and separate
+   auto-configuration classes for Boot generation differences.
+5. Add Spring Cache modes:
+   - `native`: lazy map-backed `HydraCacheSpringCacheManager` for legacy dynamic
+     cache names.
+   - `jcache`: `CacheManager` binding when `hydracache-jcache` is present.
+   - `none`: do not auto-configure a Spring `CacheManager`.
+6. Add Hibernate L2 starter integration that delegates to W2 and uses put-if-absent
+   property customization so existing `spring.jpa.properties.*` always wins.
+7. Add listener annotations and lifecycle: registration after Spring singletons,
+   deregistration on context shutdown, include-value toggle, stream resume, and
+   clear error when the bean implements an unsupported listener interface.
+8. Add Micrometer binders and an Actuator near-cache probe equivalent to the
+   Hazelcast toolkit model: load entity, reload for near-cache hit, evict/invalidate,
+   reload cold, and return structured status.
+9. Add migration docs:
+   - Hazelcast client/member topology to HydraCache client topology.
+   - Spring Cache `native` vs `jcache` vs `none`.
+   - Hibernate L2 mode selection.
+   - Dynamic cache-name behavior.
+   - Known unsupported Hazelcast APIs and replacements.
+
+**Testing.** A Rust-side migration *contract* (in the workspace, runs on every PR) plus
+the Java/Maven/Gradle tier (nightly Docker). The Rust contract is what the focused gate
+`java_migration_contract` refers to; the Java tests validate the toolkit against a live
+grid.
+
+Rust contract — `crates/hydracache-client-protocol/tests/java_migration_contract.rs`:
+- `protocol_errors_map_to_documented_java_exception_kinds` (unit): every stable W1
+  `ClientErrorCode` has a documented, retryability-preserving Java-exception mapping —
+  the contract the Java client (W7) and SDKs (W3) must honor.
+- `codec_registry_contract_rejects_ambiguous_or_reflective_serializer` (unit): the
+  codec/schema contract the Java side relies on fails loud on mismatch (R-3).
+- `unsupported_hazelcast_api_surface_is_a_checked_in_manifest` (unit): the refused-API
+  list the toolkit must fail-loud on is a non-empty, version-controlled manifest, so
+  "unsupported fails loud" is testable on both sides.
+- Run: `cargo test -p hydracache-client-protocol --locked java_migration_contract`.
+
+Java/Gradle tier (nightly Docker):
+
+- `java_client_maps_protocol_errors_to_stable_exceptions`: W1 stable errors become
+  Java exceptions with retryability and request id preserved.
+- `java_client_retry_does_not_duplicate_idempotent_put`: idempotency key survives
+  retry.
+- `spring_boot2_3_4_starters_create_client_from_properties`: each Boot starter
+  builds the same runtime config from YAML.
+- `native_spring_cache_lazily_resolves_dynamic_cache_name`: legacy
+  `getCache("cache.v2.playerSessionV2")` works without pre-creating a JCache cache.
+- `jcache_mode_requires_jcache_provider_or_fails_fast`: clear dependency message.
+- `user_defined_cache_manager_wins_in_all_modes`: application beans take
+  precedence.
+- `hibernate_l2_properties_are_put_if_absent`: existing JPA properties are not
+  overwritten.
+- `hibernate_l2_near_cache_probe_reports_hit_evict_cold_cycle`: Actuator probe
+  verifies near-cache/invalidation behavior.
+- `listener_registration_and_deregistration_are_lifecycle_safe`: no duplicate
+  listeners after context refresh/restart.
+- `codec_scanning_registers_explicit_before_reflective_and_rejects_mismatch`:
+  serializer/schema mismatch fails fast.
+- `unsupported_hazelcast_api_fails_loud_with_migration_hint`: no silent fake support
+  for locks/executors/CP/SQL.
+- Run nightly: `./gradlew test` for the Java toolkit modules against a live
+  HydraCache server started from W0.
+
+**Pros.** This directly targets the real adoption path: legacy Java services can
+keep Spring Cache and Hibernate mental models while moving the backend to
+HydraCache. It reduces migration risk by preserving lazy cache-name behavior,
+mode selection, typed customizers, diagnostics, and Boot-generation support.
+
+**Risks.** A broad Java facade can accidentally imply Hazelcast compatibility.
+Mitigation: document supported cache-only scope, make unsupported APIs fail loud,
+and test migration examples rather than pretending to be a full Hazelcast clone.
+
+---
+
+## W4. Consumer Isolation: Quotas, Namespaces & Backpressure
+
+**Problem / motivation.** Once external consumers share a grid, one tenant can evict
+another's working set, flood replication, or exhaust memory — a noisy-neighbor /
+abuse risk that did not exist when HydraCache was embedded in a single trusted
+process. The grid needs per-tenant isolation: bounded footprint, fair share, and
+backpressure that protects the grid rather than the abuser.
+
+**Design / contract.** Bind every W1 identity (`0.42` W6 `NodeIdentityProvider`
+extended to consumers) to a `Tenant`. Each tenant gets one or more `Namespace`s
+with per-namespace **byte and entry quotas** (reusing the `0.37` byte weigher /
+`max_entry_bytes`) and a per-tenant **rate limit** + **fair-share** admission so no
+tenant can monopolize the hot path or the replication window (`0.42` W3 adaptive
+flow control, now also per-tenant). Over-quota and over-rate are **rejected with a
+structured, retryable backpressure signal** (never a silent eviction of another
+tenant's data, never a silent drop). Eviction is scoped within a tenant's
+namespaces — a tenant's pressure never evicts another tenant's entries.
+
+Isolation is hierarchical: cluster global caps protect the process, tenant caps
+protect neighbors, and namespace caps protect applications inside one tenant. The
+tenant roster is a configured/authoritative set, so tenant ids may appear in
+metrics only after roster validation; unknown or unbounded tenant labels are
+refused before metric emission. Batch and subscription requests consume the same
+quota/rate budgets as single-key operations, so batching cannot bypass admission.
+
+**Rust sketch.**
+
+```rust
+// crates/hydracache/src/multitenancy.rs
+pub struct Tenant { pub id: TenantId, pub namespaces: SmallVec<[Namespace; 4]> }
+
+pub struct NamespaceQuota { pub max_bytes: u64, pub max_entries: u64 } // 0.37 weigher
+
+pub enum Admission {
+    Admit,
+    RejectQuota { ns: Namespace, retry_after: Duration },   // structured backpressure
+    RejectRate { tenant: TenantId, retry_after: Duration },
+}
+
+pub trait TenantResolver: Send + Sync { fn resolve(&self, id: &NodeCredential) -> Option<TenantId>; }
+```
+
+**Step-by-step implementation.**
+
+1. Add `Tenant`/`Namespace`/`NamespaceQuota`; resolve tenant from the W1 identity
+   via `TenantResolver`.
+2. Enforce per-namespace byte/entry quotas at `Put` admission using the `0.37`
+   weigher; scope eviction to the owning namespace only.
+3. Add per-tenant rate limit + fair-share over the hot path and the `0.42` W3
+   replication window; on limit, return `RejectRate`/`RejectQuota` (retryable),
+   never a silent drop.
+4. Make the protocol (W1) carry the structured backpressure response so SDKs (W3)
+   handle it uniformly.
+5. Add cluster-global guardrails (`max_value_bytes`, `max_request_bytes`,
+   `max_batch_items`, `max_subscriptions_per_tenant`) that run before per-tenant
+   admission when they protect process health.
+6. Validate tenant ids against the bounded tenant roster before using them as metric
+   labels or namespace owners.
+7. Export `tenant_bytes`, `tenant_entries`, `tenant_admission_rejected_total`
+   (bounded labels: tenant id is bounded by the tenant roster; cardinality rule **R-6**).
+
+**Testing.** `crates/hydracache/tests/multitenancy.rs`
+
+- `over_quota_put_is_rejected_not_silently_evicting_others` (integration): tenant A
+  over quota → `RejectQuota`; tenant B's entries untouched.
+- `tenant_eviction_is_namespace_scoped` (integration).
+- `rate_limit_returns_retryable_backpressure` (integration): ties to W1/W3.
+- `fair_share_prevents_one_tenant_starving_replication` (**property**): random
+  multi-tenant load; assert no tenant starves another past the fair-share bound.
+- `tenant_resolved_from_identity` (unit): unknown identity → no tenant → refused
+  (ties to W1 auth).
+- `oversized_payload_rejected_before_cache_mutation` (integration).
+- `batch_cannot_bypass_namespace_quota` (integration).
+- `subscription_flood_is_rate_limited_per_tenant` (integration).
+- `hot_key_hammering_does_not_starve_other_tenants` (**property**).
+- `unknown_tenant_never_creates_metric_label` (unit): cardinality guard.
+- Run: `cargo test -p hydracache --locked multitenancy`.
+
+**Pros.** Safe multi-tenant sharing; abuse is bounded and observable; backpressure
+protects the grid and is uniform across SDKs.
+
+**Risks.** Quota/fair-share tuning interacts with the hot path. Mitigation: quotas
+and limits are per-tenant config, the admission outcome is a metric, and rejection
+is retryable rather than fatal.
+
+---
+
+## W5. Data-Residency Governance Pinning
+
+**Problem / motivation.** `0.45` placed home regions and crossed regions for
+**performance**. External consumers in regulated domains have the opposite, hard
+requirement: some data must **never** leave a region/jurisdiction (GDPR-style
+residency). The grid must be able to *forbid* replication of a tagged value across a
+boundary — distinct from `0.45`'s performance placement and from the deferred
+auto-placement, which decide *where it's efficient* to put data, not *where it is
+legally allowed*.
+
+**Design / contract.** Add a `ResidencyPolicy` declared per namespace (and
+overridable per key) that pins data to an allowed set of regions/zones. Enforcement
+is at two points: placement (the `0.43` W1 / `0.45` W1 strategy must not choose a
+home or backup outside the allowed set) and the WAN transport (`0.45` W3
+`RegionLink` must **refuse** to ship a pinned value across a forbidden link — a
+governance rejection, counted, never silently shipped). A `Put` that cannot be
+placed within the allowed regions at the required RF is **rejected loud** (not
+silently degraded to fewer copies or a forbidden region). Residency violations are
+a first-class fault (see Fault Model) and surface in the audit log (W6).
+
+Policy changes have lifecycle semantics. Every policy has an epoch committed
+through the authoritative control plane; placement, WAN transport, reads, and
+client status report the epoch they enforced. If a policy is narrowed, existing
+data outside the new allowed set must be detected and either evicted, migrated
+inside policy, or marked as degraded with an audit event. Reads are also governed:
+a client routed through a forbidden region must not receive pinned values merely
+because a stale replica happens to exist there.
+
+**Rust sketch.**
+
+```rust
+// crates/hydracache/src/cluster/residency.rs
+pub struct ResidencyPolicy {
+    pub allowed_regions: SmallVec<[RegionId; 4]>,
+    pub min_replicas_in_policy: usize, // RF must be satisfiable inside allowed set
+}
+
+pub enum ResidencyDecision { Allow, RejectPlacement { reason: String }, RefuseCrossBoundary { link: RegionId } }
+
+// enforced in placement (0.43 W1 / 0.45 W1) and in RegionLink (0.45 W3)
+```
+
+**Step-by-step implementation.**
+
+1. Add `ResidencyPolicy` per namespace + per-key override; commit policy via Raft so
+   enforcement is authoritative, not gossip-derived.
+2. Enforce at placement: the zone/region strategy filters candidates to
+   `allowed_regions`; if RF unsatisfiable inside the set, reject the `Put` loud.
+3. Enforce at the WAN transport: `RegionLink` checks each value's policy before
+   sending; a forbidden destination → `RefuseCrossBoundary` + counter, never ship.
+4. Enforce at read/serve time: forbidden-region reads are rejected or rerouted to an
+   allowed region; they never serve an out-of-policy local copy.
+5. Add policy-change handling: narrowing a policy detects already-placed data,
+   produces migration/eviction/degraded actions, and audits every decision.
+6. Audit every residency rejection (W6).
+7. Export `residency_rejected_placement_total`, `residency_refused_crossing_total`
+   (bounded labels).
+
+**Testing.** `crates/hydracache/tests/residency.rs`
+
+- `pinned_value_is_not_placed_outside_allowed_regions` (integration).
+- `pinned_value_is_refused_crossing_a_forbidden_link` (integration): ties to `0.45`
+  W3; assert the value never leaves the boundary.
+- `unsatisfiable_rf_in_policy_rejects_put_loud` (unit): not a silent under-replicate.
+- `forbidden_region_read_does_not_serve_stale_replica` (integration).
+- `policy_epoch_is_enforced_and_reported` (unit/integration).
+- `policy_narrowing_evicts_or_marks_existing_out_of_policy_data` (integration).
+- `residency_holds_under_region_failover` (**chaos**, `#[ignore]`): a `0.45` W4
+  failover must never promote a home outside the allowed set; if none survives in
+  policy, report degraded rather than violate residency.
+- `residency_violation_is_audited` (integration): ties to W6.
+- Run: `cargo test -p hydracache --locked residency` and chaos with `-- --ignored`.
+
+**Pros.** Makes HydraCache usable in regulated, multi-region deployments; residency
+is enforced at both placement and transport, fail-closed (refuse), and auditable.
+
+**Risks.** Residency can conflict with availability (failover may have nowhere legal
+to go). Mitigation: the conflict is surfaced as a degraded report, never resolved by
+silently violating the policy — availability never overrides residency.
+
+---
+
+## W6. Consumer Observability & Audit
+
+**Problem / motivation.** `0.42` W7 and `0.45` W6 were operator-facing. External,
+multi-tenant, governed consumption (W2–W5) adds new questions only a consumer-facing
+and audit surface can answer: how is *my* tenant doing, what governance/admin actions
+happened, who accessed what. Regulated residency (W5) in particular needs an audit
+trail.
+
+**Design / contract.** Add (a) a per-tenant, read-only consumer status
+(`GET /client/status` scoped to the caller's tenant via W4 identity: their quotas,
+usage, rate-limit state, near-cache health) and (b) an **append-only audit log** of
+governance- and admin-relevant events (residency rejections W5, quota/rate rejections
+W4, identity/authz failures W1, region failover W4, policy changes) shipped to an
+operator-supplied `AuditSink`. Per-tenant metrics obey the cardinality rule **R-6**
+(tenant id is a bounded label by roster; per-key detail stays in snapshots/audit, not
+metrics). Ship consumer dashboards/alerts as artifacts with the same drift-guard as
+`0.42` W7 / `0.45` W6 (alert rules must reference registered metrics).
+
+Audit behavior is explicit. Governance/security events that prove an operation was
+refused (auth failure, residency denial, policy change) fail closed when the
+configured mandatory audit sink is unavailable; high-volume advisory events may be
+sampled or buffered only if marked non-mandatory. Audit payloads are redacted by
+default: keys are hashed or represented by structured dimensions according to
+operator policy, values are never logged, and per-key detail never appears in
+Prometheus labels.
+
+**Rust sketch.**
+
+```rust
+// crates/hydracache-observability/src/audit.rs
+pub enum AuditEvent {
+    AuthFailure { who: Option<TenantId>, route: ClientRoute },
+    QuotaRejected { tenant: TenantId, ns: Namespace },
+    ResidencyRefused { ns: Namespace, link: RegionId },
+    RegionFailover { from: RegionId, to: RegionId },
+    PolicyChanged { ns: Namespace, what: String },
+}
+
+pub trait AuditSink: Send + Sync { fn record(&self, ev: &AuditEvent) -> Result<(), AuditError>; }
+
+// GET /client/status -> TenantStatus (scoped to caller's tenant, read-only)
+```
+
+**Step-by-step implementation.**
+
+1. Add `TenantStatus` assembled from W4 counters; expose read-only
+   `GET /client/status` scoped to the caller's tenant (W1 identity).
+2. Add `AuditEvent` + `AuditSink`; emit on W1/W4/W5/W4-failover events; the audit
+   stream is append-only and operator-shipped.
+3. Add per-tenant bounded-label metrics; keep per-key detail in audit/snapshot only.
+4. Ship `docs/cluster/dashboards/consumer/` alert rules (quota exhaustion, rate
+   rejection spikes, residency refusals, auth-failure spikes) + Grafana JSON.
+5. Add audit-sink health/backpressure policy: mandatory governance events fail
+   closed, optional advisory events are bounded and observable.
+6. Add redaction policy for audit payloads and document which fields may contain
+   tenant, namespace, key hash, route, policy epoch, and request id.
+7. Add the drift guard test (alert rules reference only registered metrics).
+
+**Testing.** `crates/hydracache-observability/tests/consumer_observability.rs`
+
+- `client_status_is_scoped_to_caller_tenant` (integration): tenant A cannot see B.
+- `governance_events_are_audited_append_only` (integration): residency/quota/auth
+  events all reach the `AuditSink` and are not mutable.
+- `mandatory_audit_sink_failure_fails_closed_for_governance_event` (integration).
+- `audit_payloads_are_redacted_and_never_include_values` (unit).
+- `consumer_metrics_honor_cardinality_rule` (unit): no per-key label.
+- `consumer_alert_rules_reference_existing_metrics` (unit): drift guard.
+- Run: `cargo test -p hydracache-observability --locked consumer_observability`.
+
+**Pros.** Tenants can self-serve their status; governance/security actions are
+auditable (a hard requirement for regulated W5 deployments); dashboards stay
+honest via the drift guard.
+
+**Risks.** Audit volume can be large. Mitigation: audit only governance/admin/
+security events (not the data hot path), and shipping is operator-supplied so they
+control retention.
+
+---
+
+## Deferred (Explicit)
+
+- **Possible scope split (proposal, not yet applied).** The client-facing migration line
+  (W7 + JCache / Boot 4 starter / smart-routing) may move to its own follow-on release so
+  `0.49` stays shippable on a green gate rather than carrying a multi-release Java/Spring
+  toolkit (R-7). The decision, phasing, SDK/framing choices, and acceptance criteria live
+  in the companion [`V0_49_SCOPE_AND_HARDENING_PATCH.md`](V0_49_SCOPE_AND_HARDENING_PATCH.md).
+- **Full distributed transactions** (serializable cross-node/cross-region multi-key
+  commit). Still a hard non-goal; this release exposes no remote transaction.
+- **Automatic home-region placement / latency-based home assignment.** Residency
+  (W5) is operator/policy-declared; auto-placing homes by observed traffic remains
+  deferred.
+- **Provider-specific autoscaler controllers.** `0.45` W5 emits capacity signals + a
+  guarded admission endpoint; shipping cloud-provider-specific controllers stays out
+  of scope.
+
+## Fault Model and Test Tiering
+
+This release reuses the `0.41`–`0.47` shared fault model and harness verbatim
+(`crates/hydracache/tests/support/fault_injector.rs`) and its determinism contract
+(seeded, replayable, logical-signal assertions — never wall-clock pass/fail). The
+inherited model already includes the `0.45` additions — **whole-region loss**,
+**cross-region partition**, and **lossy/metered WAN link** — and the W2/W5 suites
+compose them rather than re-implementing.
+
+This release **adds** consumer-surface faults driven by the new trust boundary:
+
+- **abusive / noisy-neighbor client** (flood of requests, oversized payloads,
+  hot-key hammering) — drives W4 isolation/backpressure;
+- **protocol-version-mismatch client** (out-of-window handshake, truncated/garbled
+  frames) — drives W1 loud refusal and must never crash or corrupt the server;
+- **downgrade/replay/idempotency abuse** (old protocol ranges, repeated write frames,
+  expired deadlines) - drives W0/W1 request envelope and stable error handling;
+- **subscription flood / slow consumer** (many streams, no reads, resume gaps) -
+  drives W0 stream limits, W1 heartbeat/gap behavior, and W4 tenant fair-share;
+- **legacy Java migration mismatch** (dynamic Spring cache names, user-defined
+  cache manager precedence, missing JCache/native dependencies, unsupported
+  Hazelcast APIs) - drives W7 fail-fast diagnostics and migration tests;
+- **governance-violating replication attempt** (a value whose `ResidencyPolicy`
+  forbids the destination link) — drives W5 fail-closed refusal, asserted as a
+  refusal (counted/audited), not merely a tolerated fault.
+
+Clock skew remains injected only to stress logic, never as a correctness source;
+authority stays epoch/version.
+
+| Tier | Scope | When | Command shape |
+| --- | --- | --- | --- |
+| fast | unit + deterministic property (version handshake, quota admission, residency decision, near-cache reconciliation) | every PR | `cargo test --workspace --locked` |
+| integration | in-memory grid + client surface, multi-tenant isolation, residency, audit | every PR | `cargo test --workspace --locked` |
+| chaos/soak | seeded region loss + residency-under-failover, abusive-client soak, lossy WAN | nightly / pre-release | `cargo test --workspace --locked -- --ignored` |
+| Docker | testcontainers: Java Hibernate provider conformance, non-JVM SDK conformance against a live grid | nightly / pre-release | Docker + Maven gates |
+
+## Release Gates
+
+Focused:
+
+```powershell
+cargo test -p hydracache-server --locked client_surface_lifecycle
+cargo test -p hydracache-client-protocol --locked fixtures
+cargo test -p hydracache-client-protocol --locked protocol
+cargo test -p hydracache-client-protocol --locked hibernate_contract
+cargo test -p hydracache-client-transport-axum --locked client_surface
+cargo test -p hydracache-client --locked conformance
+cargo test -p hydracache-client-protocol --locked java_migration_contract
+cargo test -p hydracache --locked multitenancy
+cargo test -p hydracache --locked residency
+cargo test -p hydracache-observability --locked consumer_observability
+cargo test -p hydracache --locked fault_injector_selftest
+```
+
+Full:
+
+```powershell
+cargo fmt --all -- --check
+cargo check --workspace --all-targets --locked
+cargo test --workspace --all-targets --locked
+cargo test -p hydracache --all-targets --locked --features durable-values,tiered-values,testing
+cargo test -p hydracache-cluster-raft --all-targets --locked --features durable-log
+cargo test --workspace --locked -- --ignored   # region-loss / abusive-client / WAN chaos suites
+cargo test --doc --workspace --locked
+$env:RUSTDOCFLAGS = "-D warnings"; cargo doc --workspace --no-deps --locked
+# nightly Docker tier (separate gate): Hibernate provider + non-JVM SDK conformance
+# mvn -pl hibernate-provider test   # against a live HydraCache grid
+# ./gradlew test                    # Java/Spring migration toolkit against live HydraCache
+```
+
+If 0.49 introduces new feature flags such as `client-surface` or `active-active` at
+the workspace level, the plan must add them to the owning crate manifests before
+using them in release gates. Gates must not reference feature names that do not
+exist in the current workspace.
+
+## Final Release Decision
+
+This release may claim **external-consumer-ready cache grid** (stable protocol +
+Hibernate L2 provider + Java/Spring migration toolkit + governed multi-tenancy)
+only if **all** of the following boolean conditions hold:
+
+- W0: a long-running external client server surface exists; public client routes are
+  separated from internal member routes; anonymous data access is refused before
+  dispatch; request/stream limits are enforced; threat model and COMPAT route
+  entries exist; `client_surface_lifecycle` and `fixtures` pass.
+- W1: a stable, versioned client protocol exists, registered in `docs/COMPAT.md`;
+  version negotiation refuses out-of-window mismatches loud; stable error envelopes,
+  deadlines, idempotency, structured key segments, batch partial failures, session
+  context, and golden wire fixtures exist; remote requests respect authority + the
+  A1 fence; old/new pairings pass; `protocol` and `client_surface` pass.
+- W2: the Hibernate `RegionFactory` provider maps regions to namespaces and access
+  strategies to `0.38` consistency modes; HydraCache does not join the JVM
+  transaction; the supported Hibernate matrix is declared; query cache behavior is
+  implemented or refused loud; the ADR records why-not-clone; `hibernate_contract`
+  passes and the Java conformance suite is green in nightly Docker.
+- W3: a reference Rust remote client and one non-JVM SDK pass the shared conformance
+  suite; SDK packaging/version mapping exists; remote near-caches reconcile like
+  embedded ones; stable errors/deadlines/retries/session context match the manifest;
+  `conformance` passes.
+- W4: every external request is identity-bound to a tenant; per-namespace quotas and
+  per-tenant rate/fair-share are enforced; cluster-global request limits and roster
+  cardinality guards exist; over-limit returns retryable structured backpressure
+  and never silently evicts another tenant; abuse tests pass; `multitenancy` passes.
+- W5: residency policy is enforced at both placement and the WAN transport,
+  fail-closed (refuse, never silently ship or under-replicate), read serving honors
+  policy, policy epochs are reported, narrowing policies handle already-placed data,
+  failover never violates residency, and all decisions are audited; `residency`
+  passes (incl. chaos).
+- W6: a tenant-scoped read-only status and an append-only governance audit log
+  exist; mandatory audit-sink failure semantics are fail-closed for governance
+  events; audit payloads are redacted; per-tenant metrics honor the cardinality
+  rule; alert rules reference only registered metrics; `consumer_observability`
+  passes.
+- W7: Java/Spring migration artifacts exist; Boot 2/3/4 starters use one shared
+  runtime model; native Spring Cache mode lazily resolves dynamic cache names;
+  JCache and Hibernate L2 modes fail fast on missing dependencies; user-defined
+  cache managers and JPA properties win; listener lifecycle is safe; near-cache
+  Actuator probe verifies hit/evict/cold behavior; unsupported Hazelcast APIs fail
+  loud with migration hints; Java tests and `java_migration_contract` pass.
+- The fault model adds abusive-client, downgrade/replay/idempotency,
+  subscription-flood, protocol-version-mismatch, legacy-Java-migration mismatch,
+  and governance-violating replication faults; deterministic and ignored/nightly
+  gates cover them.
+- Full release gates do not reference undeclared feature names. Any newly planned
+  feature flag is added to the owning crate manifest before it appears in CI.

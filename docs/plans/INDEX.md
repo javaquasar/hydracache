@@ -53,4 +53,113 @@ v0 foundations
                                         ▼
                               0.45 active-active multi-region
                                         │
-  
+                                        ▼
+                              0.46 cluster resilience & coordination
+                                        │
+                                        ▼
+                              0.47 cross-region session consistency (causal+)
+                                        │
+                                        ▼
+                              0.48 production deployment, security & operations
+                                        │
+                                        ▼
+                              0.49 ecosystem & external consumers
+
+   0.44 ─┄ also feeds ┄► 0.50 interactive simulator demo (DevRel; depends only on
+                          0.44, may be pulled forward — numbered last to avoid churn)
+
+   0.45 ─┄ also feeds ┄► 0.51 configurable per-namespace/region persistence
+                          (Hazelcast-style selective durability; builds on 0.43 tiered
+                          store + 0.45 regions, validated by 0.44 DST — foundational,
+                          may be pulled forward; numbered to avoid churn)
+```
+
+## Roadmap status (what / why / after / unblocks)
+
+| Version | Status | What | Why | After | Unblocks |
+| --- | --- | --- | --- | --- | --- |
+| [0.37.0](V0_37_DATABASE_PRODUCTION_HARDENING_PLAN.md) | shipped | Transactional outbox, read-after-write barrier, observability, perf budget, byte weigher, required dimensions | Make DB query-result caching safe to run in prod: no stale-after-write, bounded entries, measurable | v0 | 0.38 |
+| [0.38.0](V0_38_DATABASE_CORRECTNESS_AUTOMATION_PLAN.md) | shipped | SQL dependency lint, generated hooks + CDC, named consistency modes, dimension profiles, SQLx tx companion, reconciliation | Make correctness **assisted and checkable**, not manual TTL guessing | 0.37 | 0.39 |
+| [0.39.0](V0_39_CLUSTER_STAGING_HARDENING_PLAN.md) | shipped | Deterministic staging gate, health-state enum, structured load report, runbook | Make the existing cluster observable & gate-able before any production use | 0.38 | 0.40 |
+| [0.40.0](V0_40_CLUSTER_INTERNAL_PRODUCTION_PILOT_PLAN.md) | shipped | Transport posture (`AUTH MISSING`), restart/rejoin, quorum barrier, B-items early, minimal epoch fence | Run a controlled 2–5 node pilot and surface safety red-flags | 0.39 | 0.41 |
+| [0.41.0](V0_41_DISTRIBUTED_CACHE_GRID_ROADMAP_PLAN.md) | shipped | ADRs, epoch fence, `RaftLogStore` trait, replication strategy, rebalance-as-data, versioned tombstones, value-replication prototype | Lay the correctness **skeleton** without claiming production-grid yet | 0.40 | 0.42 |
+| [0.42.0](V0_42_PRODUCTION_GRID_HARDENING_PLAN.md) | shipped | Durable multi-node raft, durable values, replication/failover, split-brain + merge, grid RYOW, identity + authz, operator surface | Turn the 0.41 prototypes into supported durable features | 0.41 | 0.43 |
+| [0.43.0](V0_43_GEO_DISTRIBUTION_AND_ELASTICITY_PLAN.md) | shipped | Zone/region placement, online resharding, locality + hedged reads, tiered storage, atomic-invalidation slice, self-healing | Survive a zone loss; reshard online without a maintenance window | 0.42 | 0.44 |
+| [0.44.0](V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md) | shipped | Seeded whole-cluster deterministic simulator (`hydracache-sim`), sans-IO node seam, simulated network + fault-injecting storage, invariant + linearizability checkers, replay/shrinking, scrubber + checksums | Make correctness *provable* — find consensus/storage/consistency bugs reproducibly (Jepsen-class), validate every later feature against it | 0.43 | 0.45 |
+| [0.45.0](V0_45_ACTIVE_ACTIVE_MULTIREGION_PLAN.md) | shipped | Bounded-staleness writes, CRDT value types, WAN transport + anti-entropy, region failover/DR, capacity signals, geo observability | Local-latency writes across regions under a documented staleness contract | 0.44 | 0.46 |
+| [0.46.0](V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md) | shipped | Tunable consistency levels, hinted handoff, Merkle repair, phi-accrual detector, single-key conditional + fenced lock, invalidation ring | Resilient under the messy middle: brief outages, flapping liveness, lost invalidations | 0.45 | 0.47 |
+| [0.47.0](V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md) | shipped | Session context, read-your-writes, monotonic reads/writes, writes-follow-reads, convergence, session lifecycle | Make active-active usable for real application **sessions** (causal+) | 0.46 | 0.48+ |
+| [0.48.0](V0_48_PRODUCTION_DEPLOYMENT_AND_SECURITY_PLAN.md) | shipped | `hydracache-server` daemon, zero-downtime upgrade, mTLS + cert/key lifecycle, encryption-at-rest, object-storage backup + PITR, Docker/k8s artifacts, operator surface + admission | Make the correctness-proven core actually deployable, secure, backed-up and operable in production | 0.47 | 0.49+ |
+| [0.49.0](V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md) | planned | Stable versioned client protocol, Hibernate L2 provider, multi-language SDKs + conformance, multi-tenancy/quotas, data-residency, consumer observability/audit | Let stacks outside the Rust process use the grid as a backend, safely and multi-tenant | 0.48 | — |
+| [0.50.0](V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md) | planned | Seed-reproducible browser demo (WASM) over the 0.44 `hydracache-sim`: partition/crash/heal + live committed-log/leader/consistency-level/convergence + real invariant verdicts | Make "correctness as a product feature" visible/persuasive (TigerBeetle-style); pitch + onboarding asset | 0.44 | — |
+| [0.51.0](V0_51_CONFIGURABLE_PERSISTENCE_PLAN.md) | planned | On-disk `DurableValueStore`, per-namespace persistence policy (wildcard/prefix, opt-in, default RAM-only), per-region selection ("important regions" only), Sync/AsyncBounded write path + scheduled snapshots, fail-loud epoch-fenced full-restart recovery, declarative Hazelcast-style config | Today the value plane is RAM-only — a full cluster restart loses everything; give Hazelcast-style *selective* durability so important namespaces/regions survive a reboot while the rest stay lean | 0.45 | — |
+
+`0.43` debt closure:
+[`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)
+records the Phase F validation that moved the `0.42`/`0.43` grid claims from
+model-only coverage to live networked transport coverage.
+
+## Execution / supporting plans (not release versions)
+
+- [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)
+  — the Codex-agent execution plan that closed the 0.43 debt (durable runtime, real
+  networked raft transport, online reshard, split-brain, refactor of `cluster.rs`).
+  Absorbs the older
+  [`V0_43_CONTINUATION_NETWORKED_CONTROL_PLANE_PLAN.md`](V0_43_CONTINUATION_NETWORKED_CONTROL_PLANE_PLAN.md).
+- [`V0_49_SCOPE_AND_HARDENING_PATCH.md`](V0_49_SCOPE_AND_HARDENING_PATCH.md) — patch over
+  the 0.49 plan: proposed scope split (core vs Java/Spring migration follow-on), pinned
+  non-JVM SDK + wire framing (ADR), and routing the multi-node residency/fair-share faults
+  through the 0.44 deterministic simulator.
+- [`V0_37_41_REVIEW_AND_IMPROVEMENTS.md`](V0_37_41_REVIEW_AND_IMPROVEMENTS.md) —
+  cross-project architecture review and the Hazelcast-vs-ScyllaDB decision driving the
+  cluster track.
+- [`V0_38_COMPLEXITY_NOTES.md`](V0_38_COMPLEXITY_NOTES.md) — internal complexity
+  estimates (the only place `/10`-style numbers are allowed; never release criteria —
+  RULES R-7).
+- Strategy: [`../POSITIONING.md`](../POSITIONING.md),
+  [`../COMPETITIVE_ANALYSIS_AND_EVOLUTION.md`](../COMPETITIVE_ANALYSIS_AND_EVOLUTION.md),
+  [`../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md).
+
+Older `V0_2x`/`V0_3x` plan files are historical/superseded and intentionally not
+tracked in `releases.toml`; move fully obsolete ones into an `archive/` subfolder.
+
+## How to read a release plan (anatomy)
+
+Every release plan follows the same structure so "what / why / after" is always
+findable in the same place:
+
+1. **Title + "At a glance" block** — the what/why/after/unblocks/status summary
+   (mirrors this index).
+2. **Intro + Release Theme** — *why* this release exists, in prose.
+3. **Non-Goals** — what it deliberately does **not** do (inherits RULES R-2).
+4. **Inherited Boundary From `<prev>`** — the *"after what"*: which prior artifacts it
+   builds on and must not redesign.
+5. **Dependency Graph** — the internal order of work items (which `Wn` unblocks which).
+6. **Work items `W1..Wn`** — each is: **Problem/motivation** (*why*), **Design/
+   contract** (*what*), **Rust sketch** (real types), **Step-by-step** (*how*),
+   **Testing** (concrete files + `cargo` lines), **Pros**, **Risks**.
+7. **Deferred** — what moves to a later release and *why now is too early*.
+8. **Release Gates** — the boolean conditions (PowerShell `cargo` blocks).
+9. **Final Release Decision** — the all-or-nothing claim check (RULES R-7).
+
+## "At a glance" template (every plan opens with this)
+
+```markdown
+> **At a glance**
+> - **What:** <one-line scope>
+> - **Why:** <the problem this release solves>
+> - **After (depends on):** <prior release, or — >
+> - **Unblocks:** <next release(s)>
+> - **Status:** <planned | shipped | draft>
+>
+> Roadmap & sequencing: [`docs/plans/INDEX.md`](INDEX.md) · rules: [`docs/RULES.md`](../RULES.md)
+```
+
+## Editing rules
+
+- Add or re-stage a release → edit `releases.toml` **and** this file **and** the plan's
+  "At a glance" block (keep all three consistent).
+- A plan must never claim a version already held by another non-draft entry.
+- Cross-references between plans (e.g. "0.45 W3") must point at the file that holds
+  that work item. `doc-check` validates file existence, version uniqueness, and
+  `depends_on` integrity on every CI run.
