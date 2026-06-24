@@ -20,7 +20,7 @@ test("copy_reproducer_uses_current_seed_and_step", async ({ page }) => {
   await page.goto(`${demoUrl}?seed=501&steps=3&scenario=default`);
   await page.getByTestId("copy-reproducer").click();
 
-  await expect(page.getByTestId("engine-banner")).toContainText(
+  await expect(page.getByTestId("copy-status")).toContainText(
     "cargo run -p hydracache-sim --bin vopr -- --seed 501 --steps 3",
   );
 });

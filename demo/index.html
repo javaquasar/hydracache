@@ -11,7 +11,9 @@
       <header class="topbar">
         <div>
           <h1>HydraCache Cluster Simulator</h1>
-          <p id="engine-banner" data-testid="engine-banner">real engine</p>
+          <p id="engine-banner" data-testid="engine-banner">
+            This runs the real hydracache-sim engine. Verdicts are produced by the actual invariant checker.
+          </p>
         </div>
         <div id="verdict" class="verdict" data-testid="verdict">loading</div>
       </header>
@@ -32,6 +34,7 @@
         <button id="copy-reproducer" type="button" data-testid="copy-reproducer">
           Copy reproducer
         </button>
+        <p id="copy-status" class="copy-status" data-testid="copy-status"></p>
         <label class="toggle">
           <input id="workload-toggle" type="checkbox" checked data-testid="workload-toggle" />
           Workload

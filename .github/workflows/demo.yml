@@ -1,0 +1,84 @@
+name: Simulator Demo
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+concurrency:
+  group: simulator-demo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and smoke demo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: simulator-demo
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
+
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Build WASM crate
+        run: cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked
+
+      - name: Build browser package
+        run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+
+      - name: Serve demo
+        run: |
+          python3 -m http.server 5173 --directory . &
+          echo $! > demo-server.pid
+
+      - name: Run headless smoke
+        env:
+          HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/
+        run: npx playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: demo
+
+  deploy:
+    name: Publish demo
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

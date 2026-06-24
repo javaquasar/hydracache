@@ -29,6 +29,7 @@ const el = {
   step: document.querySelector("#step-button"),
   play: document.querySelector("#play-button"),
   copy: document.querySelector("#copy-reproducer"),
+  copyStatus: document.querySelector("#copy-status"),
   workload: document.querySelector("#workload-toggle"),
   speed: document.querySelector("#speed-input"),
   graph: document.querySelector("#cluster-graph"),
@@ -138,7 +139,7 @@ function refresh() {
 
 function render() {
   const snapshot = state.snapshot;
-  el.banner.textContent = `real engine, seed ${snapshot.seed}, step ${snapshot.step}`;
+  el.banner.textContent = `This runs the real hydracache-sim engine, seed ${snapshot.seed}, step ${snapshot.step}. Verdicts are produced by the actual invariant checker.`;
   el.scenario.value = state.scenario;
   renderVerdict(snapshot);
   renderGraph(snapshot);
@@ -336,9 +337,9 @@ async function copyReproducer() {
   const command = reproducerCommand(state.snapshot.seed, state.snapshot.step);
   try {
     await navigator.clipboard?.writeText(command);
-    el.banner.textContent = command;
+    el.copyStatus.textContent = command;
   } catch (_error) {
-    el.banner.textContent = command;
+    el.copyStatus.textContent = command;
   }
 }
 

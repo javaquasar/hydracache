@@ -41,7 +41,11 @@ boolean release gates with no numeric self-scores, fail-loud / never-silently-de
 (R-3), versioned tombstones with repair-gated GC, per-operation consistency levels,
 a deterministic seeded fault model (R-5), and honest hard non-goals (no distributed
 transactions, R-2). The governance itself is executable in CI (`RULES.md`, `GATES.md`,
-`cargo xtask doc-check`). A cache you can *reason about and audit* is rare.
+`cargo xtask doc-check`). The browser-facing
+[`cluster simulator demo`](../demo/README.md) and
+[`GitHub Pages build`](https://javaquasar.github.io/hydracache/) show that same
+seeded engine and invariant checker to humans without replacing the release
+gates. A cache you can *reason about and audit* is rare.
 
 ### 3. One codepath: embedded → cluster → geo
 

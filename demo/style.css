@@ -164,6 +164,15 @@ p {
   background: var(--panel);
 }
 
+.copy-status {
+  flex-basis: 100%;
+  min-height: 1rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
 .toggle {
   grid-template-columns: auto auto;
   align-items: center;

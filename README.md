@@ -46,6 +46,12 @@ simple local cache -> database result-cache adapter -> optional distributed sync
 For production usage guidance, see
 [`docs/PRODUCTION_GUIDE.md`](docs/PRODUCTION_GUIDE.md).
 
+For a browser walkthrough of the real deterministic cluster simulator, see
+[`demo/README.md`](demo/README.md) or the GitHub Pages demo at
+[`javaquasar.github.io/hydracache`](https://javaquasar.github.io/hydracache/).
+The simulator page is a DevRel artifact over the real `hydracache-sim` engine,
+not a replacement for the release correctness gates.
+
 For database production-readiness rules around keys, tags, transactions,
 adapter boundaries, and observability, see
 [`docs/DB_PRODUCTION_READINESS.md`](docs/DB_PRODUCTION_READINESS.md).
