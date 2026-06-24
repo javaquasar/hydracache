@@ -5,7 +5,7 @@
 > - **Why:** the mechanical fixes (test names, dependency-graph dedup, R-id references) made `0.49` *internally consistent*, but did not address the four risks that can still make the release ship red or diverge in implementation: it is too large to land on one green gate, leaves two forever-decisions open (SDK language, protocol framing), and validates its hardest correctness claims (residency-under-failover, tenant fair-share) only as `#[ignore]` chaos instead of reproducibly.
 > - **After (depends on):** none new — this is a documentation/scoping patch over the existing `0.49` plan; it does not change `0.37`–`0.48`. It is a **supporting plan, not a release version** (not tracked in `releases.toml`).
 > - **Unblocks:** a `0.49` that can ship on a boolean gate (R-7) and an unambiguous Codex execution path.
-> - **Status:** proposal — apply after the user confirms the P5 split option.
+> - **Status:** applied - the user selected the single-release alternative for P5; P6-P9 were applied in 0.49.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · gates: [`../GATES.md`](../GATES.md)
 
@@ -13,6 +13,13 @@ This is a patch plan: each item names the **target section/anchor in the `0.49` 
 **change**, the **recommended decision**, and the **acceptance check**. One item = one
 commit/PR over the `0.49` plan document (and, where noted, `releases.toml`/`INDEX.md`).
 It introduces no code; it makes `0.49` smaller, more decided, and more verifiable.
+
+Implementation note: for the shipped 0.49 implementation, the user explicitly
+selected the single-release alternative for P5. W0-W7 therefore remain in 0.49;
+no 0.52 split release is created by this patch. P6 pins Python, P7 records the
+custom length-prefixed HTTP/2 framing ADR, P8 routes multi-node invariants through
+`hydracache-sim`, and P9 adds region-scoped subscriptions with residency-gated
+`include_value`.
 
 ## Why a patch, not a rewrite
 

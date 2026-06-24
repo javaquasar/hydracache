@@ -100,8 +100,8 @@ depends_on = ["0.47.0"]
 [[release]]
 version = "0.49.0"
 file = "docs/plans/V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md"
-status = "planned"
-theme = "Ecosystem & external consumers — stable versioned client wire protocol, Hibernate L2 provider, multi-language SDKs + conformance suite, multi-tenant isolation (quotas/namespaces/fair-share), data-residency governance pinning, consumer observability/audit"
+status = "shipped"
+theme = "Ecosystem & external consumers - stable versioned client wire protocol, Hibernate L2 provider, Rust/Python SDK conformance, Java/Spring migration contract, multi-tenant isolation (quotas/namespaces/fair-share), data-residency governance pinning, consumer observability/audit"
 depends_on = ["0.48.0"]
 
 [[release]]

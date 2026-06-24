@@ -5,7 +5,7 @@
 > - **Why:** let stacks **outside the Rust process** (incl. other languages) use the grid as a remote cache backend — safely, authenticated, multi-tenant, governed — turning HydraCache from "embeddable library" into "shared backend" while making legacy Java/Hazelcast migrations a configuration change plus targeted cache-mode choices, not a rewrite.
 > - **After (depends on):** 0.48 (needs the `hydracache-server` daemon + mTLS + cert lifecycle + ops); builds on the whole 0.37–0.48 stack.
 > - **Unblocks:** broad non-Rust adoption; the data-platform optional crates (SQL/vector) per `STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md)
 
