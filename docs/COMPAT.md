@@ -16,6 +16,14 @@ they are persisted or transmitted across processes.
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
+| CRDT value encoding | `1` | `hydracache` active-active CRDT helpers | The 0.45 serde shape for `GCounter`, `PnCounter`, `OrSet`, `LwwRegister`, and OR-set tags is the registered CRDT value encoding version `1`. Durable or replicated adapters must keep this shape stable or introduce a new explicit version before emitting a changed encoding. | Unknown future CRDT value encodings must fail closed before merge/apply so stale readers do not converge on different metadata. |
+| WAN `RegionLink` replication batch frame | `1` | `hydracache` active-active region-link helpers | The 0.45 serde shape for `GeoBatch`, `GeoWrite`, `IdempotencyKey`, and `GeoBatchApplyReport` is the registered WAN batch frame version `1`. Readers must preserve idempotency-key pairing and HLC/epoch/version fields. | Unknown future WAN frames must be rejected before apply; mismatched entry/idempotency vectors are already refused. |
+| Cross-region anti-entropy digest exchange | `1` | `hydracache` region-link anti-entropy helpers | The 0.45 serde shape for `PartitionDigest`, `VersionSummary`, and CRDT metadata GC confirmation is the registered digest exchange version `1`. Readers compare `(version, epoch)` summaries only within the matching partition. | Unknown future digest versions must fail loud before diffing so repair cannot silently skip or over-apply keys. |
+| Replayable invalidation stream snapshot | `1` | `hydracache` invalidation-ring durable adapters | The 0.46 `InvalidationRingSnapshot` shape is the registered retained-window format version `1`: partition, capacity, head sequence, next sequence, and retained invalidation events. Durable adapters must keep sequence semantics stable. | Unknown future stream snapshots must refuse restore before serving; subscribers outside retention fall back to clear-partition semantics. |
+| Hinted-handoff record format | `1` | `hydracache` hinted-handoff stores | The 0.46 serde shape for `Hint`, `HintBudget`, `HintOutcome`, `HintReplayDecision`, and `InMemoryHintStore` is the registered handoff record format version `1`. Readers must retain target, key, partition, version, epoch, sealed bytes, and creation time. | Unknown future hint records must be rejected before replay; over-budget or expired hints fall back to Merkle repair rather than silent loss. |
+| Merkle repair exchange format | `1` | `hydracache` Merkle repair helpers | The 0.46 serde shape for `MerkleTree`, `KeyRange`, `RepairToken`, `RepairSession`, and `RepairReport` is the registered repair exchange version `1`. Readers interpret ranges as inclusive key ranges and watermarks as incremental repaired-key cursors. | Unknown future repair exchanges must fail loud before applying foreground or scheduled repair. |
+| Session token wire format | `1` | `hydracache` causal/session helpers and client context carriers | The 0.47 serde shape for `SessionToken`, `SessionId`, `SessionRequest`, `SessionLifecycleDecision`, and failover recovery reports is the registered session-token wire format version `1`. Tokens carry a bounded watermark, nonce, issue time, and MAC. | Unknown future token formats, forged MACs, wrong-session tokens, replays, and expired tokens fail loud or downgrade through the documented sessionless rebuild path. |
+| Session watermark format | `1` | `hydracache` causal/session helpers | The 0.47 serde shape for `SessionWatermark`, `PartitionKey`, and `VersionStamp` is the registered watermark format version `1`. Readers preserve bounded coarsening semantics and compare `(version, epoch, HLC)` stamps. | Unknown future watermark formats must fail closed before using them to satisfy read-your-writes, monotonic-read, or causal-read guarantees. |
 | `ControlPlaneSnapshot` format | `1` | `hydracache` self-heal snapshot helpers | Readers accept format `1` and refuse unknown future versions before restore. | Restore fails loud before rebuilding topology from an unsupported snapshot. |
 | `BackupManifest` format | `1` | `hydracache` object-store backup helpers | Readers accept manifest format `1`, verify object length/checksum, and refuse unknown future manifest versions before restore/PITR replay. | Restore fails loud; corrupt or unknown-format backups are not served. |
 | External client HTTP route boundary | `1` | `hydracache-client-transport-axum` | Public clients use `/client/v1/*`; internal member routes remain under `/cluster/*` and are not part of the public client compatibility surface. Unknown future client route versions are refused instead of falling through to member handlers. | Unauthenticated, oversized, malformed, or wrong-route requests are rejected before protocol dispatch or state mutation. |
@@ -84,6 +92,50 @@ durable value records. The underlying `ReplicatedValueRecord` payload format
 remains `1`; the new `ChecksummedReplicatedValueRecord` envelope format `1`
 detects corruption before serving and can repair a corrupt primary copy from a
 valid peer copy. Unknown future envelope formats fail closed.
+
+## 0.45 Active-Active Multiregion
+
+`0.45.0` registers the first active-active cross-region data shapes as
+compatibility version `1`. CRDT values (`GCounter`, `PnCounter`, `OrSet`,
+`LwwRegister`) converge only if all durable and replicated adapters preserve the
+same metadata shape. WAN batches (`GeoBatch` / `GeoWrite`) carry HLC,
+origin-region, epoch/version, sealed value bytes, and one idempotency key per
+entry. Anti-entropy digests (`PartitionDigest` / `VersionSummary`) compare
+per-key `(version, epoch)` summaries for one partition.
+
+The 0.45 code exposes these as serde/runtime shapes rather than standalone
+codec wrappers. That shape is now registered as format `1`; any future external
+codec, durable adapter, or wire transport that changes it must introduce an
+explicit versioned envelope and reject unknown future versions before
+merge/apply/diff.
+
+## 0.46 Cluster Resilience And Coordination
+
+`0.46.0` registers the resilience artifacts that can survive a transient outage
+or cross-process repair path. The replayable invalidation stream snapshot
+retains partition, capacity, sequence window, and invalidation events. Hinted
+handoff records retain target, key, partition, version, epoch, sealed bytes, and
+creation time so replay can suppress stale writes and tombstone resurrection.
+Merkle repair exchanges carry inclusive key ranges, tree summaries, repair mode,
+and incremental repaired-key watermarks.
+
+The 0.46 shapes are registered as version `1`. Durable adapters must not restore
+unknown future invalidation-ring snapshots or hint records silently. Repair
+peers must reject unknown future exchange shapes before using them to decide
+which keys to exchange.
+
+## 0.47 Cross-Region Session Consistency
+
+`0.47.0` registers the client-visible session consistency formats as version
+`1`. Session tokens carry a stable session id, bounded watermark, nonce, logical
+issue time, and tamper-evident MAC. Session watermarks carry bounded
+partition/region stamps using `(version, epoch, HLC)` ordering and explicit
+coarsening accounting.
+
+These formats are part of the causal/read-your-writes contract. Unknown future
+token or watermark formats must fail closed before the reader treats them as
+evidence for session guarantees. Forged, replayed, wrong-session, or expired
+tokens already take the loud error or documented sessionless-rebuild path.
 
 ## 0.48 Production Deployment And Security
 
