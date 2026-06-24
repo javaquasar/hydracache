@@ -11,7 +11,9 @@ pub mod services;
 pub mod upgrade;
 
 pub use bootstrap::{ServerHealth, ServerReadiness, ServerRuntime, ServerState};
-pub use config::{BackupConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig};
+pub use config::{
+    BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+};
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{
     GracefulUpgrade, UpgradeError, UpgradePhase, UpgradePlan, UpgradeReport, UpgradeStrategy,

@@ -18,6 +18,7 @@ they are persisted or transmitted across processes.
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
 | `ControlPlaneSnapshot` format | `1` | `hydracache` self-heal snapshot helpers | Readers accept format `1` and refuse unknown future versions before restore. | Restore fails loud before rebuilding topology from an unsupported snapshot. |
 | `BackupManifest` format | `1` | `hydracache` object-store backup helpers | Readers accept manifest format `1`, verify object length/checksum, and refuse unknown future manifest versions before restore/PITR replay. | Restore fails loud; corrupt or unknown-format backups are not served. |
+| External client HTTP route boundary | `1` | `hydracache-client-transport-axum` | Public clients use `/client/v1/*`; internal member routes remain under `/cluster/*` and are not part of the public client compatibility surface. Unknown future client route versions are refused instead of falling through to member handlers. | Unauthenticated, oversized, malformed, or wrong-route requests are rejected before protocol dispatch or state mutation. |
 
 ## Upgrade Rules
 
@@ -83,3 +84,12 @@ valid peer copy. Unknown future envelope formats fail closed.
 backups and PITR restore. Restore validates manifest version, object length, and
 checksums before rebuilding a dataset, and refuses unknown future manifest
 formats before replaying PITR records.
+
+## 0.49 Ecosystem And External Consumers
+
+`0.49.0` reserves the external client HTTP route boundary at `/client/v1/*`.
+The boundary is intentionally separate from internal `/cluster/*` member routes:
+public clients cannot hit member handlers by path confusion, and anonymous or
+oversized client requests are rejected before protocol dispatch or cache state
+mutation. The stable client wire protocol itself is registered as its own artifact
+when W1 publishes protocol version `1`.

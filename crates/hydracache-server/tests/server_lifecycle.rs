@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use hydracache_server::{
-    BackupConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime, ServerState,
-    TlsConfig,
+    BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime,
+    ServerState, TlsConfig,
 };
 
 fn member_config() -> ServerConfig {
@@ -15,6 +15,7 @@ fn member_config() -> ServerConfig {
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
         backup: BackupConfig::default(),
+        client_api: ClientApiConfig::default(),
     }
 }
 

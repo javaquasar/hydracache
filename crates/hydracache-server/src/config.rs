@@ -4,6 +4,7 @@ use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use hydracache_client_transport_axum::ClientSurfaceLimits;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -52,6 +53,15 @@ pub struct BackupConfig {
     pub location: Option<String>,
 }
 
+/// External client API startup policy.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClientApiConfig {
+    /// Whether `/client/v1/*` routes are enabled.
+    pub enabled: bool,
+    /// External client request and stream limits.
+    pub limits: ClientSurfaceLimits,
+}
+
 /// Standalone daemon configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
@@ -72,6 +82,8 @@ pub struct ServerConfig {
     pub tls: TlsConfig,
     /// Backup policy.
     pub backup: BackupConfig,
+    /// External client API policy.
+    pub client_api: ClientApiConfig,
 }
 
 impl Default for ServerConfig {
@@ -89,6 +101,7 @@ impl Default for ServerConfig {
             drain_timeout_ms: 30_000,
             tls: TlsConfig::default(),
             backup: BackupConfig::default(),
+            client_api: ClientApiConfig::default(),
         }
     }
 }
@@ -159,6 +172,9 @@ impl ServerConfig {
         if let Ok(location) = env::var("HYDRACACHE_BACKUP_LOCATION") {
             config.backup.location = Some(location);
         }
+        if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
+            config.client_api.enabled = true;
+        }
         config.validate()?;
         Ok(config)
     }
@@ -190,6 +206,12 @@ impl ServerConfig {
         }
         if self.exposes_non_loopback() && !self.tls.enabled && !self.tls.acknowledge_insecure {
             return Err(ServerConfigError::NonLoopbackWithoutTls);
+        }
+        if self.client_api.enabled {
+            self.client_api
+                .limits
+                .validate()
+                .map_err(|error| ServerConfigError::InvalidClientApi(error.to_string()))?;
         }
         Ok(())
     }
@@ -243,6 +265,9 @@ pub enum ServerConfigError {
     /// External listener without TLS and without explicit acknowledgement.
     #[error("non-loopback listeners require TLS or acknowledge_insecure=true")]
     NonLoopbackWithoutTls,
+    /// External client API config is invalid.
+    #[error("invalid client_api config: {0}")]
+    InvalidClientApi(String),
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {

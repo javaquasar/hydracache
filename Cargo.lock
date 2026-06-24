@@ -1472,6 +1472,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-client-protocol"
+version = "0.48.0"
+dependencies = [
+ "bytes",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "hydracache-client-transport-axum"
+version = "0.48.0"
+dependencies = [
+ "axum",
+ "bytes",
+ "hydracache-client-protocol",
+ "serde",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+]
+
+[[package]]
 name = "hydracache-cluster"
 version = "0.48.0"
 dependencies = [
@@ -1640,12 +1661,16 @@ dependencies = [
 name = "hydracache-server"
 version = "0.48.0"
 dependencies = [
+ "axum",
  "hydracache",
+ "hydracache-client-protocol",
+ "hydracache-client-transport-axum",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
  "tokio",
  "toml",
+ "tower",
 ]
 
 [[package]]

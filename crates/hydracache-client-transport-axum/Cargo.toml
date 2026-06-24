@@ -1,5 +1,5 @@
 [package]
-name = "hydracache-server"
+name = "hydracache-client-transport-axum"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -9,20 +9,17 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Standalone production server daemon for HydraCache."
+description = "Axum route boundary for HydraCache external client traffic."
 
 [dependencies]
-hydracache.workspace = true
-hydracache-client-transport-axum.workspace = true
+axum.workspace = true
+bytes.workspace = true
+hydracache-client-protocol.workspace = true
 serde.workspace = true
 thiserror.workspace = true
-tokio.workspace = true
-toml.workspace = true
 
 [dev-dependencies]
-axum.workspace = true
-hydracache-client-protocol.workspace = true
-serde_json.workspace = true
+tokio.workspace = true
 tower.workspace = true
 
 [lints]

@@ -1,4 +1,5 @@
 use hydracache::HydraCache;
+use hydracache_client_transport_axum::{ClientSurfaceDrain, ClientSurfaceRuntime};
 use serde::Serialize;
 
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
@@ -38,6 +39,8 @@ pub struct ServerReadiness {
     pub cluster_ready: bool,
     /// Whether listeners are accepting new work.
     pub accepting: bool,
+    /// Whether the external client surface is accepting work.
+    pub client_surface_ready: bool,
 }
 
 /// Standalone server runtime.
@@ -51,12 +54,22 @@ pub struct ServerRuntime {
     cluster_ready: bool,
     accepting: bool,
     flushed: bool,
+    client_surface: Option<ClientSurfaceRuntime>,
+    last_client_surface_drain: Option<ClientSurfaceDrain>,
 }
 
 impl ServerRuntime {
     /// Validate config and construct a runtime.
     pub fn new(config: ServerConfig) -> Result<Self, ServerConfigError> {
         config.validate()?;
+        let client_surface = if config.client_api.enabled {
+            Some(
+                ClientSurfaceRuntime::new(config.client_api.limits)
+                    .map_err(|error| ServerConfigError::InvalidClientApi(error.to_string()))?,
+            )
+        } else {
+            None
+        };
         Ok(Self {
             config,
             cache: HydraCache::local().build(),
@@ -66,6 +79,8 @@ impl ServerRuntime {
             cluster_ready: false,
             accepting: false,
             flushed: false,
+            client_surface,
+            last_client_surface_drain: None,
         })
     }
 
@@ -77,6 +92,9 @@ impl ServerRuntime {
             ServerRole::Local | ServerRole::Member | ServerRole::Client
         );
         self.accepting = true;
+        if let Some(surface) = self.client_surface.as_mut() {
+            surface.start();
+        }
         self.services.start();
         self.state = ServerState::Running;
         self
@@ -104,6 +122,7 @@ impl ServerRuntime {
             storage_open: self.storage_open,
             cluster_ready: self.cluster_ready,
             accepting: self.accepting,
+            client_surface_ready: self.client_surface_ready(),
         }
     }
 
@@ -121,10 +140,39 @@ impl ServerRuntime {
         self.services.finish_request();
     }
 
+    /// Return whether the external client surface is accepting work.
+    pub fn client_surface_ready(&self) -> bool {
+        self.client_surface
+            .as_ref()
+            .is_some_and(ClientSurfaceRuntime::accepting)
+    }
+
+    /// Begin a modeled client subscription stream.
+    pub fn begin_client_subscription(&self) -> bool {
+        self.client_surface
+            .as_ref()
+            .is_some_and(|surface| surface.begin_subscription().is_ok())
+    }
+
+    /// Return active modeled client subscription streams.
+    pub fn client_active_subscriptions(&self) -> u64 {
+        self.client_surface
+            .as_ref()
+            .map_or(0, |surface| surface.state().active_subscriptions())
+    }
+
+    /// Return the last client-surface drain result, if the surface is enabled.
+    pub fn client_surface_drain(&self) -> Option<ClientSurfaceDrain> {
+        self.last_client_surface_drain
+    }
+
     /// Gracefully stop accepting, drain, flush, and stop services.
     pub fn shutdown(&mut self) -> DrainOutcome {
         self.accepting = false;
         self.state = ServerState::Draining;
+        if let Some(surface) = self.client_surface.as_mut() {
+            self.last_client_surface_drain = Some(surface.shutdown());
+        }
         let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.flushed = true;
         self.storage_open = false;
