@@ -465,6 +465,7 @@
 
 extern crate self as hydracache;
 
+mod backup;
 mod builder;
 mod cache;
 mod cluster;
@@ -481,6 +482,11 @@ mod tag_index;
 pub mod testing;
 mod typed;
 
+pub use backup::{
+    read_manifest, restore_backup_to_point, write_full_backup, write_pitr_log, BackupDataset,
+    BackupEntry, BackupError, BackupManifest, InMemoryObjectStore, ObjectStore, PitrLog,
+    PitrRecord, BACKUP_MANIFEST_FORMAT_VERSION,
+};
 pub use builder::HydraCacheBuilder;
 pub use cache::HydraCache;
 pub use cluster::{

@@ -17,6 +17,7 @@ they are persisted or transmitted across processes.
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
 | `ControlPlaneSnapshot` format | `1` | `hydracache` self-heal snapshot helpers | Readers accept format `1` and refuse unknown future versions before restore. | Restore fails loud before rebuilding topology from an unsupported snapshot. |
+| `BackupManifest` format | `1` | `hydracache` object-store backup helpers | Readers accept manifest format `1`, verify object length/checksum, and refuse unknown future manifest versions before restore/PITR replay. | Restore fails loud; corrupt or unknown-format backups are not served. |
 
 ## Upgrade Rules
 
@@ -75,3 +76,10 @@ durable value records. The underlying `ReplicatedValueRecord` payload format
 remains `1`; the new `ChecksummedReplicatedValueRecord` envelope format `1`
 detects corruption before serving and can repair a corrupt primary copy from a
 valid peer copy. Unknown future envelope formats fail closed.
+
+## 0.48 Production Deployment And Security
+
+`0.48.0` registers `BackupManifest` format version `1` for off-host full
+backups and PITR restore. Restore validates manifest version, object length, and
+checksums before rebuilding a dataset, and refuses unknown future manifest
+formats before replaying PITR records.
