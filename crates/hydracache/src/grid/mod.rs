@@ -21,6 +21,7 @@ pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
 pub(crate) mod session_context;
+pub(crate) mod session_lifecycle;
 pub(crate) mod session_monotonic;
 pub(crate) mod session_ryw;
 
@@ -956,6 +957,12 @@ pub struct ClusterGridCounters {
     pub invalidation_ring_overrun_total: u64,
     /// Current retained session watermark entries.
     pub session_watermark_entries: u64,
+    /// Current active session count.
+    pub session_active_sessions: u64,
+    /// P99 retained watermark entries across active sessions.
+    pub session_watermark_entries_p99: u64,
+    /// Worst observed session staleness in versions.
+    pub session_worst_staleness_versions: u64,
     /// Session watermark coarsening events.
     pub session_watermark_coarsened_total: u64,
     /// Rejected session tokens.
@@ -1230,6 +1237,18 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         },
         ClusterMetricDescriptor {
             name: "hydracache_session_watermark_entries",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_active_sessions",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_watermark_entries_p99",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_session_worst_staleness_versions",
             labels: &[],
         },
         ClusterMetricDescriptor {

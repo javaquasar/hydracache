@@ -593,6 +593,10 @@ pub use grid::session_context::{
     PartitionKey, SessionContextMetrics, SessionId, SessionRequest, SessionToken,
     SessionTokenError, SessionWatermark, VersionStamp,
 };
+pub use grid::session_lifecycle::{
+    rebuild_expired_sessionless, recover_session_after_failover, validate_session_lifecycle,
+    SessionFailoverAction, SessionFailoverRecovery, SessionLifecycleDecision, SessionTtl,
+};
 pub use grid::session_monotonic::{
     apply_monotonic_read, apply_monotonic_write, resolve_monotonic_read, resolve_monotonic_write,
     MonotonicReadDecision, MonotonicReadViolation, MonotonicWriteDecision, MonotonicWriteViolation,

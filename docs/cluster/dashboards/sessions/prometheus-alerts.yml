@@ -1,0 +1,31 @@
+groups:
+  - name: hydracache.sessions
+    rules:
+      - alert: HydraCacheSessionTokenRejected
+        expr: rate(hydracache_session_token_rejected_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache session tokens are being rejected.
+      - alert: HydraCacheSessionGuaranteeUnmet
+        expr: rate(hydracache_session_guarantee_unmet_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: HydraCache session guarantees are unmet.
+      - alert: HydraCacheCausalWritesDeferred
+        expr: hydracache_causal_writes_deferred_total > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache causal writes are waiting on dependencies.
+      - alert: HydraCacheSessionStalenessHigh
+        expr: hydracache_session_worst_staleness_versions > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: HydraCache session staleness exceeded the configured version budget.

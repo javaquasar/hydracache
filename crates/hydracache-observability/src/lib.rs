@@ -37,8 +37,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use hydracache::{
-    ClusterEpoch, ClusterGridDiagnostics, ClusterNodeId, ClusterPilotReport, ClusterStagingHealth,
-    HydraCache, QuorumPosture, RegionId, RegionState, SplitBrainReport,
+    ClusterEpoch, ClusterGridCounters, ClusterGridDiagnostics, ClusterNodeId, ClusterPilotReport,
+    ClusterStagingHealth, HydraCache, QuorumPosture, RegionId, RegionState, SplitBrainReport,
+    StalenessBound,
 };
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
@@ -399,6 +400,83 @@ impl GeoStatus {
                 .iter()
                 .all(|region| region.state == RegionState::Up)
     }
+}
+
+/// Aggregate causal+ session status for read-only operator endpoints.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct SessionStats {
+    /// Active session count. This is an aggregate gauge, never a session-id label.
+    pub active_sessions: u64,
+    /// P99 retained watermark entries across active sessions.
+    pub p99_watermark_entries: u64,
+    /// Ratio of guarantee-unmet events to session reads represented by this snapshot.
+    pub guarantee_unmet_rate: f64,
+    /// Worst observed session staleness bound.
+    pub worst_session_staleness: StalenessBound,
+    /// Current retained watermark entries.
+    pub watermark_entries: u64,
+    /// RYW escalations observed by the session layer.
+    pub read_your_writes_escalations: u64,
+    /// Causal writes currently deferred/missing dependencies.
+    pub causal_writes_deferred: u64,
+}
+
+impl SessionStats {
+    /// Build session stats from bounded grid counters.
+    pub fn from_grid_counters(counters: ClusterGridCounters, total_session_reads: u64) -> Self {
+        let guarantee_unmet_rate = if total_session_reads == 0 {
+            0.0
+        } else {
+            counters.session_guarantee_unmet_total as f64 / total_session_reads as f64
+        };
+        Self {
+            active_sessions: counters.session_active_sessions,
+            p99_watermark_entries: counters.session_watermark_entries_p99,
+            guarantee_unmet_rate,
+            worst_session_staleness: StalenessBound::versions(
+                counters.session_worst_staleness_versions,
+            ),
+            watermark_entries: counters.session_watermark_entries,
+            read_your_writes_escalations: counters.session_ryw_escalations_total,
+            causal_writes_deferred: counters.causal_writes_deferred_total,
+        }
+    }
+
+    /// Return whether session guarantees currently look healthy.
+    pub fn is_healthy(&self) -> bool {
+        self.guarantee_unmet_rate == 0.0 && self.causal_writes_deferred == 0
+    }
+}
+
+/// Metric names that make up the session observability surface.
+pub fn session_metric_names() -> &'static [&'static str] {
+    &[
+        "hydracache_session_active_sessions",
+        "hydracache_session_watermark_entries",
+        "hydracache_session_watermark_entries_p99",
+        "hydracache_session_worst_staleness_versions",
+        "hydracache_session_watermark_coarsened_total",
+        "hydracache_session_token_rejected_total",
+        "hydracache_session_ryw_escalations_total",
+        "hydracache_session_guarantee_unmet_total",
+        "hydracache_monotonic_read_violations_prevented_total",
+        "hydracache_monotonic_write_reorders_prevented_total",
+        "hydracache_causal_writes_deferred_total",
+        "hydracache_causal_summary_coarsened_total",
+        "hydracache_causal_dependency_bytes",
+        "hydracache_bounded_staleness_fast_serves_total",
+        "hydracache_bounded_staleness_escalations_total",
+    ]
+}
+
+/// Session alert metrics that must stay registered in the grid descriptor catalog.
+pub fn session_alert_metric_names() -> &'static [&'static str] {
+    &[
+        "hydracache_session_token_rejected_total",
+        "hydracache_session_guarantee_unmet_total",
+        "hydracache_causal_writes_deferred_total",
+        "hydracache_session_worst_staleness_versions",
+    ]
 }
 
 /// Geo metric names shipped with the alert and dashboard artifacts.
