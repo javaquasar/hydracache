@@ -8,6 +8,8 @@ use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod hibernate;
+
 /// First supported external client protocol version.
 pub const PROTOCOL_VERSION: u16 = 1;
 
