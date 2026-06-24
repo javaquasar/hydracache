@@ -501,8 +501,10 @@ config, metadata is bounded + GC'd (W4), and active-session count is a gauge.
 - **Cross-region linearizability.** Out of scope by design; causal+ is strictly weaker.
 - **Ecosystem / external consumers** (client protocol, Hibernate L2 provider, SDKs,
   multi-tenancy, residency). Drafted in `V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`.
-- **Automatic home-region placement / latency-based home assignment** and
-  **provider-specific autoscaler controllers.** Deferred from `0.45`.
+- **Automatic home-region placement and provider-specific autoscaler controllers.**
+  Tracked in
+  [`TD-0004`](../technical-debt/TD-0004-deferred-placement-and-autoscaling.md);
+  `0.47` adds session guarantees without taking ownership of placement automation.
 - **Compute-near-data / entry processors.** Out of scope (RCE non-goal).
 
 ## Fault Model and Test Tiering

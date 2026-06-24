@@ -12,3 +12,6 @@ Each item should explain:
 ## Open Items
 
 - [TD-0001: Historical MSRV-pinned SQLx/testcontainers transitive dependencies](TD-0001-msrv-pinned-sqlx-transitive-dependencies.md)
+- [TD-0002: Raft protobuf advisory](TD-0002-raft-protobuf-advisory.md)
+- [TD-0003: Dependency upgrade policy and backlog](TD-0003-dependency-upgrades.md)
+- [TD-0004: Deferred home-region placement and autoscaling controllers](TD-0004-deferred-placement-and-autoscaling.md)

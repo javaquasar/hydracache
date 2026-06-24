@@ -544,11 +544,10 @@ deferred here.
 - **Causal+ / session-guarantee consistency across regions** (read-your-writes,
   monotonic reads spanning regions). `0.45` gives intra-region strong + cross-region
   bounded-staleness; the formal cross-region session guarantees land in `0.47`.
-- **Automatic region placement / latency-based home assignment.** `0.45` assigns
-  home regions explicitly; auto-placing homes by observed traffic is deferred.
-- **Cloud-provider-native autoscaler controllers.** `0.45` emits capacity signals +
-  a guarded admission endpoint; shipping provider-specific controllers is out of
-  scope.
+- **Automatic home-region placement and provider-specific autoscaler controllers.**
+  Tracked in
+  [`TD-0004`](../technical-debt/TD-0004-deferred-placement-and-autoscaling.md);
+  `0.45` keeps explicit home regions and generic capacity/admission signals only.
 
 ## Fault Model and Test Tiering
 

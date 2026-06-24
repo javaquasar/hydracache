@@ -568,8 +568,10 @@ gauge, and the fell-behind counter tells operators when to grow it.
   SDKs, multi-tenancy, residency). Drafted in
   `V0_49_ECOSYSTEM_AND_EXTERNAL_CONSUMERS_PLAN.md`; slotted after the consistency work
   (target 0.48+).
-- **Automatic home-region placement / latency-based home assignment** and
-  **provider-specific autoscaler controllers.** Deferred from `0.45`.
+- **Automatic home-region placement and provider-specific autoscaler controllers.**
+  Tracked in
+  [`TD-0004`](../technical-debt/TD-0004-deferred-placement-and-autoscaling.md);
+  `0.46` does not change the explicit-placement boundary inherited from `0.45`.
 - **Compute-near-data / entry processors.** Out of scope (RCE non-goal).
 
 ## Fault Model and Test Tiering
