@@ -117,3 +117,8 @@ SDK (`hydracache-client`) and the Python SDK (`sdks/python`) use the same
 language-agnostic scenarios for protocol negotiation, get/put/invalidate,
 near-cache repair, deadlines/retry/idempotency, and stable W4/W5 error contracts.
 An SDK is not considered supported unless its runner passes the manifest.
+
+W4 binds public client identities to a bounded tenant roster before namespace
+ownership, quota accounting, or tenant-labelled metrics. Over-quota and over-rate
+conditions use the existing protocol-v1 stable errors `TenantQuota` and
+`RateLimited` with retry-after hints; unknown tenants are refused before dispatch.

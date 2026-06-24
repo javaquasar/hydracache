@@ -25,6 +25,7 @@ hydracache-core.workspace = true
 hydracache-macros.workspace = true
 moka.workspace = true
 serde.workspace = true
+thiserror.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]

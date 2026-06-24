@@ -15,10 +15,12 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use hydracache::{AdmissionRejection, ConsumerIsolation};
 use hydracache_client_protocol::{
-    BatchItemStatus, ClientErrorCode, ClientErrorEnvelope, ClientFrame, ClientRequest,
-    ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope, ClientWireMessage,
-    InvalidationEvent, Namespace, StructuredKey, VersionHandshake, PROTOCOL_VERSION,
+    BatchItemStatus, BatchPutEntry, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
+    ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
+    ClientWireMessage, InvalidationEvent, Namespace, StructuredKey, VersionHandshake,
+    PROTOCOL_VERSION,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -187,6 +189,7 @@ pub struct ClientSurfaceState {
     store: Mutex<BTreeMap<(String, String), Vec<u8>>>,
     events: Mutex<Vec<InvalidationEvent>>,
     idempotency_keys: Mutex<BTreeSet<String>>,
+    isolation: Option<Mutex<ConsumerIsolation>>,
 }
 
 impl ClientSurfaceState {
@@ -204,6 +207,28 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
+            isolation: None,
+        })
+    }
+
+    /// Create state with tenant isolation.
+    pub fn with_isolation(
+        limits: ClientSurfaceLimits,
+        isolation: ConsumerIsolation,
+    ) -> Result<Self, ClientSurfaceError> {
+        limits.validate()?;
+        Ok(Self {
+            limits,
+            dispatch_attempts: AtomicU64::new(0),
+            state_mutations: AtomicU64::new(0),
+            rejected_anonymous: AtomicU64::new(0),
+            rejected_oversized: AtomicU64::new(0),
+            active_subscriptions: AtomicU64::new(0),
+            next_message_id: AtomicU64::new(1),
+            store: Mutex::new(BTreeMap::new()),
+            events: Mutex::new(Vec::new()),
+            idempotency_keys: Mutex::new(BTreeSet::new()),
+            isolation: Some(Mutex::new(isolation)),
         })
     }
 
@@ -237,6 +262,23 @@ impl ClientSurfaceState {
         self.active_subscriptions.load(Ordering::SeqCst)
     }
 
+    fn validate_tenant_identity(
+        &self,
+        identity: &ClientIdentity,
+    ) -> Result<(), ClientSurfaceError> {
+        if let Some(isolation) = &self.isolation {
+            let tenant = isolation
+                .lock()
+                .expect("isolation mutex")
+                .resolve_tenant(identity.client_id())
+                .map_err(|_| ClientSurfaceError::Unauthorized)?;
+            if tenant.as_str() != identity.tenant() {
+                return Err(ClientSurfaceError::Unauthorized);
+            }
+        }
+        Ok(())
+    }
+
     fn reject_anonymous(&self) {
         self.rejected_anonymous.fetch_add(1, Ordering::SeqCst);
     }
@@ -259,6 +301,7 @@ impl ClientSurfaceState {
 
     fn handle_wire_message(
         &self,
+        identity: &ClientIdentity,
         message: ClientWireMessage,
     ) -> Result<ClientWireMessage, ClientSurfaceError> {
         match message {
@@ -271,7 +314,7 @@ impl ClientSurfaceState {
                 )))
             }
             ClientWireMessage::Request(envelope) => {
-                let response = self.handle_request(envelope);
+                let response = self.handle_request(identity, envelope);
                 Ok(ClientWireMessage::Response(response))
             }
             ClientWireMessage::Response(_)
@@ -282,7 +325,11 @@ impl ClientSurfaceState {
         }
     }
 
-    fn handle_request(&self, envelope: ClientRequestEnvelope) -> ClientResponseEnvelope {
+    fn handle_request(
+        &self,
+        identity: &ClientIdentity,
+        envelope: ClientRequestEnvelope,
+    ) -> ClientResponseEnvelope {
         if envelope.protocol_version != PROTOCOL_VERSION {
             return ClientResponseEnvelope::error(
                 envelope.request_id,
@@ -307,6 +354,9 @@ impl ClientSurfaceState {
 
         match envelope.request {
             ClientRequest::Get { ns, key } => {
+                if let Err(error) = self.admit_request(identity) {
+                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                }
                 let value = self
                     .store
                     .lock()
@@ -322,6 +372,7 @@ impl ClientSurfaceState {
                 ttl_ms: _,
                 dimensions: _,
             } => self.handle_put(
+                identity,
                 envelope.request_id,
                 envelope.idempotency_key,
                 ns,
@@ -329,6 +380,9 @@ impl ClientSurfaceState {
                 value,
             ),
             ClientRequest::Invalidate { ns, key } => {
+                if let Err(error) = self.admit_request(identity) {
+                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                }
                 self.store
                     .lock()
                     .expect("store mutex")
@@ -338,6 +392,9 @@ impl ClientSurfaceState {
                 ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
             }
             ClientRequest::BatchGet { ns, keys } => {
+                if let Err(error) = self.admit_request(identity) {
+                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                }
                 let store = self.store.lock().expect("store mutex");
                 let items = keys
                     .iter()
@@ -350,6 +407,9 @@ impl ClientSurfaceState {
                 ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
             }
             ClientRequest::BatchPut { ns, entries } => {
+                if let Err(error) = self.admit_batch_put(identity, &ns, &entries) {
+                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                }
                 let mut store = self.store.lock().expect("store mutex");
                 let items = entries
                     .into_iter()
@@ -376,6 +436,9 @@ impl ClientSurfaceState {
                 ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
             }
             ClientRequest::EvictRegion { ns } => {
+                if let Err(error) = self.admit_request(identity) {
+                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                }
                 self.store
                     .lock()
                     .expect("store mutex")
@@ -389,6 +452,9 @@ impl ClientSurfaceState {
                 from,
                 include_value: _,
             } => {
+                if let Err(error) = self.begin_tenant_subscription(identity) {
+                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                }
                 ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Subscribed { from })
             }
         }
@@ -396,6 +462,7 @@ impl ClientSurfaceState {
 
     fn handle_put(
         &self,
+        identity: &ClientIdentity,
         request_id: String,
         idempotency_key: Option<String>,
         ns: Namespace,
@@ -408,11 +475,20 @@ impl ClientSurfaceState {
                 ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
             );
         }
-        if let Some(idempotency_key) = idempotency_key {
-            let mut keys = self.idempotency_keys.lock().expect("idempotency mutex");
-            if !keys.insert(idempotency_key) {
+        if let Some(idempotency_key) = idempotency_key.as_ref() {
+            let keys = self.idempotency_keys.lock().expect("idempotency mutex");
+            if keys.contains(idempotency_key) {
                 return ClientResponseEnvelope::ok(request_id, ClientResponse::Stored);
             }
+        }
+        if let Err(error) = self.admit_put(identity, &ns, &key, value.len() as u64) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+        if let Some(idempotency_key) = idempotency_key {
+            self.idempotency_keys
+                .lock()
+                .expect("idempotency mutex")
+                .insert(idempotency_key);
         }
         self.store
             .lock()
@@ -421,6 +497,78 @@ impl ClientSurfaceState {
         self.state_mutations.fetch_add(1, Ordering::SeqCst);
         self.record_invalidation(ns, key);
         ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
+    }
+
+    fn admit_request(&self, identity: &ClientIdentity) -> Result<(), ClientErrorEnvelope> {
+        if let Some(isolation) = &self.isolation {
+            isolation
+                .lock()
+                .expect("isolation mutex")
+                .admit_request(identity.client_id())
+                .map(|_| ())
+                .map_err(admission_error)
+        } else {
+            Ok(())
+        }
+    }
+
+    fn admit_put(
+        &self,
+        identity: &ClientIdentity,
+        ns: &Namespace,
+        key: &StructuredKey,
+        value_bytes: u64,
+    ) -> Result<(), ClientErrorEnvelope> {
+        if let Some(isolation) = &self.isolation {
+            isolation
+                .lock()
+                .expect("isolation mutex")
+                .admit_put(
+                    identity.client_id(),
+                    ns.as_str(),
+                    &key.stable_key(),
+                    value_bytes,
+                )
+                .map_err(admission_error)
+        } else {
+            Ok(())
+        }
+    }
+
+    fn admit_batch_put(
+        &self,
+        identity: &ClientIdentity,
+        ns: &Namespace,
+        entries: &[BatchPutEntry],
+    ) -> Result<(), ClientErrorEnvelope> {
+        if let Some(isolation) = &self.isolation {
+            let entries = entries
+                .iter()
+                .map(|entry| (entry.key.stable_key(), entry.value.len() as u64))
+                .collect::<Vec<_>>();
+            isolation
+                .lock()
+                .expect("isolation mutex")
+                .admit_batch_put(identity.client_id(), ns.as_str(), &entries)
+                .map_err(admission_error)
+        } else {
+            Ok(())
+        }
+    }
+
+    fn begin_tenant_subscription(
+        &self,
+        identity: &ClientIdentity,
+    ) -> Result<(), ClientErrorEnvelope> {
+        if let Some(isolation) = &self.isolation {
+            isolation
+                .lock()
+                .expect("isolation mutex")
+                .begin_subscription(identity.client_id())
+                .map_err(admission_error)
+        } else {
+            Ok(())
+        }
     }
 
     fn record_invalidation(&self, ns: Namespace, key: StructuredKey) {
@@ -443,6 +591,16 @@ impl AxumClientSurface {
     pub fn new(limits: ClientSurfaceLimits) -> Result<Self, ClientSurfaceError> {
         Ok(Self {
             state: Arc::new(ClientSurfaceState::new(limits)?),
+        })
+    }
+
+    /// Create a route owner with tenant isolation.
+    pub fn with_isolation(
+        limits: ClientSurfaceLimits,
+        isolation: ConsumerIsolation,
+    ) -> Result<Self, ClientSurfaceError> {
+        Ok(Self {
+            state: Arc::new(ClientSurfaceState::with_isolation(limits, isolation)?),
         })
     }
 
@@ -472,12 +630,12 @@ async fn client_data(
     body: Bytes,
 ) -> Response {
     match validate_before_dispatch(&state, &headers, body.len()) {
-        Ok(_identity) => {
+        Ok(identity) => {
             state.record_dispatch();
             match ClientFrame::decode(&body, state.limits().max_frame_bytes)
                 .and_then(|frame| frame.decode_message())
                 .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))
-                .and_then(|message| state.handle_wire_message(message))
+                .and_then(|message| state.handle_wire_message(&identity, message))
                 .and_then(|response| encode_wire_message(&response))
             {
                 Ok(bytes) => (StatusCode::OK, bytes).into_response(),
@@ -543,6 +701,7 @@ fn validate_before_dispatch(
             max: state.limits().max_frame_bytes,
         });
     }
+    state.validate_tenant_identity(&identity)?;
     Ok(identity)
 }
 
@@ -561,6 +720,49 @@ fn encode_wire_message(message: &ClientWireMessage) -> Result<Vec<u8>, ClientSur
         .encode()
         .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
         .to_vec())
+}
+
+fn admission_error(error: AdmissionRejection) -> ClientErrorEnvelope {
+    match error {
+        AdmissionRejection::RejectQuota {
+            tenant,
+            namespace,
+            retry_after,
+        } => ClientErrorEnvelope::new(
+            ClientErrorCode::TenantQuota,
+            true,
+            format!(
+                "tenant {} namespace {namespace} quota exceeded",
+                tenant.as_str()
+            ),
+        )
+        .with_retry_after_ms(duration_millis_saturating(retry_after)),
+        AdmissionRejection::RejectRate {
+            tenant,
+            retry_after,
+        } => ClientErrorEnvelope::new(
+            ClientErrorCode::RateLimited,
+            true,
+            format!("tenant {} rate limited", tenant.as_str()),
+        )
+        .with_retry_after_ms(duration_millis_saturating(retry_after)),
+        AdmissionRejection::UnknownTenant | AdmissionRejection::UnknownNamespace { .. } => {
+            ClientErrorEnvelope::new(
+                ClientErrorCode::Unauthorized,
+                false,
+                "tenant is not authorized for this namespace",
+            )
+        }
+        AdmissionRejection::GlobalLimit { reason } => ClientErrorEnvelope::new(
+            ClientErrorCode::TooLarge,
+            false,
+            format!("request exceeds {reason}"),
+        ),
+    }
+}
+
+fn duration_millis_saturating(duration: Duration) -> u64 {
+    duration.as_millis().min(u128::from(u64::MAX)) as u64
 }
 
 fn store_key(ns: &Namespace, key: &StructuredKey) -> (String, String) {
@@ -684,6 +886,9 @@ pub enum ClientSurfaceError {
     /// Client identity was absent or incomplete.
     #[error("client identity is required before dispatch")]
     Unauthenticated,
+    /// Client identity is not allowed by the tenant roster.
+    #[error("client identity is not authorized for this tenant")]
+    Unauthorized,
     /// Frame exceeds configured limits.
     #[error("client frame is {actual} bytes, exceeding max_frame_bytes={max}")]
     FrameTooLarge {
@@ -713,6 +918,7 @@ impl IntoResponse for ClientSurfaceError {
     fn into_response(self) -> Response {
         let status = match self {
             Self::Unauthenticated => StatusCode::UNAUTHORIZED,
+            Self::Unauthorized => StatusCode::FORBIDDEN,
             Self::FrameTooLarge { .. } => StatusCode::PAYLOAD_TOO_LARGE,
             Self::TooManyStreams => StatusCode::TOO_MANY_REQUESTS,
             Self::Draining => StatusCode::SERVICE_UNAVAILABLE,

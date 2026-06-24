@@ -1,5 +1,8 @@
 use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
+use hydracache::{
+    ConsumerIsolation, ConsumerIsolationConfig, NamespaceQuota, Tenant, TenantRoster,
+};
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
     ClientResponse, ClientResponseEnvelope, ClientWireMessage, Namespace, StructuredKey,
@@ -16,6 +19,19 @@ fn ns() -> Namespace {
 
 fn key(id: &str) -> StructuredKey {
     StructuredKey::new(vec!["user".to_owned(), id.to_owned()]).unwrap()
+}
+
+fn isolated_surface(max_bytes: u64) -> AxumClientSurface {
+    let roster = TenantRoster::new(vec![Tenant::new("tenant-a")
+        .unwrap()
+        .allow_client("client-a")
+        .namespace("users", NamespaceQuota::new(max_bytes, 8))])
+    .unwrap();
+    AxumClientSurface::with_isolation(
+        ClientSurfaceLimits::default(),
+        ConsumerIsolation::new(roster, ConsumerIsolationConfig::default()),
+    )
+    .unwrap()
 }
 
 async fn send(
@@ -195,4 +211,38 @@ async fn client_surface_remote_request_respects_authority_and_fence() {
     let error = send(&surface, request).await.result.unwrap_err();
     assert_eq!(error.code, ClientErrorCode::IncompatibleVersion);
     assert_eq!(surface.state().state_mutations(), 0);
+}
+
+#[tokio::test]
+async fn client_surface_tenant_quota_returns_retryable_backpressure() {
+    let surface = isolated_surface(4);
+    let put = |request_id: &str, id: &str, value: &'static [u8]| {
+        ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::Put {
+                ns: ns(),
+                key: key(id),
+                value: value.to_vec(),
+                ttl_ms: None,
+                dimensions: Vec::new(),
+            },
+        )
+    };
+
+    assert!(matches!(
+        send(&surface, put("put-1", "1", b"okay"))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::Stored
+    ));
+
+    let error = send(&surface, put("put-2", "2", b"nope!"))
+        .await
+        .result
+        .unwrap_err();
+    assert_eq!(error.code, ClientErrorCode::TenantQuota);
+    assert!(error.retryable);
+    assert!(error.retry_after_ms.is_some());
+    assert_eq!(surface.state().state_mutations(), 1);
 }

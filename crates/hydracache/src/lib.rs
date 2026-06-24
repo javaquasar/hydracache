@@ -476,6 +476,7 @@ mod events;
 mod grid;
 mod inflight;
 mod invalidation_bus;
+mod multitenancy;
 mod refresh;
 mod security;
 mod stats;
@@ -639,6 +640,10 @@ pub use invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
     CacheInvalidationReceive, CacheInvalidationReceiver, InMemoryFramedInvalidationBus,
     InMemoryInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
+};
+pub use multitenancy::{
+    AdmissionRejection, ConsumerIsolation, ConsumerIsolationConfig, MultitenancyError,
+    NamespaceQuota, Tenant, TenantId, TenantMetricsSnapshot, TenantResolver, TenantRoster,
 };
 pub use refresh::RefreshOptions;
 pub use security::{
