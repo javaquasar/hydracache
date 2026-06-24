@@ -11,6 +11,7 @@ pub mod network;
 pub mod rng;
 pub mod schedule;
 pub mod storage;
+pub mod upgrade_recovery;
 pub mod workload;
 pub mod world;
 
@@ -29,6 +30,10 @@ pub use schedule::{
 };
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,
+};
+pub use upgrade_recovery::{
+    run_upgrade_and_recovery, DeploymentFault, DeploymentInvariantReport,
+    DeploymentRecoveryScenario,
 };
 pub use workload::{
     EventId, History, HistoryEvent, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
