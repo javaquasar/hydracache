@@ -11,12 +11,15 @@ const CONSISTENCY_LEVELS = ["ONE", "LOCAL_QUORUM", "QUORUM", "EACH_QUORUM", "ALL
 
 const state = {
   SimHandle: null,
+  engine: "wasm",
+  apiBase: "",
   sim: null,
   snapshot: null,
   selectedLink: null,
   scenario: "default",
   timer: null,
   playing: false,
+  tickPending: false,
 };
 
 const el = {
@@ -44,20 +47,24 @@ const el = {
 
 async function boot() {
   const initial = readInitialState(window.location.search);
+  state.engine = initial.engine;
+  state.apiBase = initial.apiBase;
   state.scenario = initial.scenario;
   el.seedInput.value = String(initial.seed);
   populateScenarios(initial.scenario);
   bindEvents();
   try {
-    const wasm = await import("./pkg/hydracache_sim_wasm.js");
-    if (typeof wasm.default === "function") {
-      await wasm.default();
+    if (state.engine === "wasm") {
+      const wasm = await import("./pkg/hydracache_sim_wasm.js");
+      if (typeof wasm.default === "function") {
+        await wasm.default();
+      }
+      state.SimHandle = wasm.SimHandle;
     }
-    state.SimHandle = wasm.SimHandle;
     if (initial.scenario === "default") {
-      resetSimulation(initial.steps);
+      await resetSimulation(initial.steps);
     } else {
-      loadScenario(initial.scenario, initial.steps);
+      await loadScenario(initial.scenario, initial.steps);
     }
   } catch (error) {
     showEngineError(error);
@@ -65,17 +72,17 @@ async function boot() {
 }
 
 function bindEvents() {
-  el.reset.addEventListener("click", () => resetSimulation());
-  el.loadScenario.addEventListener("click", () => loadScenario(el.scenario.value));
-  el.step.addEventListener("click", () => {
-    state.sim?.step();
-    refresh();
+  el.reset.addEventListener("click", () => void resetSimulation());
+  el.loadScenario.addEventListener("click", () => void loadScenario(el.scenario.value));
+  el.step.addEventListener("click", async () => {
+    await state.sim?.step();
+    await refresh();
   });
   el.play.addEventListener("click", togglePlay);
   el.copy.addEventListener("click", copyReproducer);
-  el.workload.addEventListener("change", () => {
-    state.sim?.set_workload_enabled(el.workload.checked);
-    refresh();
+  el.workload.addEventListener("change", async () => {
+    await state.sim?.set_workload_enabled(el.workload.checked);
+    await refresh();
   });
   el.speed.addEventListener("input", () => {
     if (state.playing) {
@@ -84,28 +91,28 @@ function bindEvents() {
     }
   });
   for (const button of el.linkActions) {
-    button.addEventListener("click", () => applyLinkAction(button.dataset.action));
+    button.addEventListener("click", () => void applyLinkAction(button.dataset.action));
   }
 }
 
-function resetSimulation(steps = 0) {
-  if (!state.SimHandle) {
+async function resetSimulation(steps = 0) {
+  if (state.engine === "wasm" && !state.SimHandle) {
     return;
   }
   stopPlay();
   state.scenario = "default";
   el.scenario.value = state.scenario;
   state.selectedLink = null;
-  state.sim = new state.SimHandle(BigInt(readSeed()));
-  state.sim.set_workload_enabled(el.workload.checked);
+  state.sim = await createSimulation(readSeed());
+  await state.sim.set_workload_enabled(el.workload.checked);
   if (steps > 0) {
-    state.sim.run(BigInt(steps));
+    await state.sim.run(steps);
   }
-  refresh();
+  await refresh();
 }
 
-function loadScenario(name, targetSteps = null) {
-  if (!state.SimHandle) {
+async function loadScenario(name, targetSteps = null) {
+  if (state.engine === "wasm" && !state.SimHandle) {
     return;
   }
   stopPlay();
@@ -113,27 +120,27 @@ function loadScenario(name, targetSteps = null) {
   state.scenario = name || "default";
   el.scenario.value = state.scenario;
   if (state.scenario === "default") {
-    resetSimulation(Number.isInteger(targetSteps) ? targetSteps : 0);
+    await resetSimulation(Number.isInteger(targetSteps) ? targetSteps : 0);
     return;
   }
-  state.sim = new state.SimHandle(BigInt(0));
-  state.sim.apply_scenario(state.scenario);
+  state.sim = await createSimulation(0);
+  await state.sim.apply_scenario(state.scenario);
   if (Number.isInteger(targetSteps)) {
-    const snapshot = JSON.parse(state.sim.snapshot_json());
+    const snapshot = JSON.parse(await state.sim.snapshot_json());
     if (targetSteps > snapshot.step) {
-      state.sim.run(BigInt(targetSteps - snapshot.step));
+      await state.sim.run(targetSteps - snapshot.step);
     }
   }
-  refresh();
+  await refresh();
   el.seedInput.value = String(state.snapshot.seed);
 }
 
-function refresh() {
+async function refresh() {
   if (!state.sim) {
     return;
   }
-  state.snapshot = JSON.parse(state.sim.snapshot_json());
-  writeUrlState(window.history, state.snapshot, state.scenario);
+  state.snapshot = JSON.parse(await state.sim.snapshot_json());
+  writeUrlState(window.history, state.snapshot, state.scenario, state.engine, state.apiBase);
   render();
 }
 
@@ -256,13 +263,13 @@ function renderNodes(snapshot) {
     button.type = "button";
     button.textContent = node.crashed ? "Restart" : "Crash";
     button.dataset.testid = node.crashed ? `restart-${node.id}` : `crash-${node.id}`;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       if (node.crashed) {
-        state.sim.restart_node(node.id);
+        await state.sim.restart_node(node.id);
       } else {
-        state.sim.crash_node(node.id);
+        await state.sim.crash_node(node.id);
       }
-      refresh();
+      await refresh();
     });
     row.append(label, button);
     list.append(row);
@@ -309,17 +316,17 @@ function renderKeys(snapshot) {
   el.keys.replaceChildren(list);
 }
 
-function applyLinkAction(action) {
+async function applyLinkAction(action) {
   const link = selectedLinkView();
   if (!link || !state.sim) {
     return;
   }
   const delay = action === "delay" ? BigInt(250) : BigInt(0);
-  state.sim.inject(action, link.from, link.to, delay);
+  await state.sim.inject(action, link.from, link.to, delay);
   if (action === "delay" || action === "drop") {
-    state.sim.step();
+    await state.sim.step();
   }
-  refresh();
+  await refresh();
 }
 
 function togglePlay() {
@@ -349,9 +356,17 @@ function startPlay() {
   }
   state.playing = true;
   el.play.textContent = "Pause";
-  state.timer = window.setInterval(() => {
-    state.sim.step();
-    refresh();
+  state.timer = window.setInterval(async () => {
+    if (state.tickPending) {
+      return;
+    }
+    state.tickPending = true;
+    try {
+      await state.sim.step();
+      await refresh();
+    } finally {
+      state.tickPending = false;
+    }
   }, Number(el.speed.value));
 }
 
@@ -435,9 +450,141 @@ function populateScenarios(selected) {
   }
 }
 
+async function createSimulation(seed) {
+  if (state.engine === "server") {
+    const sim = new ServerSimSession(state.apiBase);
+    await sim.reset(seed);
+    return sim;
+  }
+  return new WasmSimSession(new state.SimHandle(BigInt(seed)));
+}
+
+class WasmSimSession {
+  constructor(handle) {
+    this.handle = handle;
+  }
+
+  async set_workload_enabled(enabled) {
+    this.handle.set_workload_enabled(enabled);
+  }
+
+  async run(steps) {
+    this.handle.run(toBigInt(steps));
+  }
+
+  async step() {
+    this.handle.step();
+  }
+
+  async apply_scenario(name) {
+    this.handle.apply_scenario(name);
+  }
+
+  async snapshot_json() {
+    return this.handle.snapshot_json();
+  }
+
+  async restart_node(node) {
+    return this.handle.restart_node(node);
+  }
+
+  async crash_node(node) {
+    return this.handle.crash_node(node);
+  }
+
+  async inject(action, from, to, delay) {
+    return this.handle.inject(action, from, to, toBigInt(delay));
+  }
+}
+
+class ServerSimSession {
+  constructor(apiBase) {
+    this.apiBase = apiBase;
+    this.snapshot = null;
+  }
+
+  async reset(seed) {
+    this.snapshot = await this.post("/sim/new", { seed });
+  }
+
+  async set_workload_enabled(enabled) {
+    this.snapshot = await this.post("/sim/inject", { action: "workload", enabled });
+  }
+
+  async run(steps) {
+    this.snapshot = await this.post("/sim/step", { steps: toNumber(steps) });
+  }
+
+  async step() {
+    await this.run(1);
+  }
+
+  async apply_scenario(name) {
+    this.snapshot = await this.post("/sim/new", { scenario: name });
+  }
+
+  async snapshot_json() {
+    if (!this.snapshot) {
+      this.snapshot = await this.get("/sim/snapshot");
+    }
+    return JSON.stringify(this.snapshot);
+  }
+
+  async restart_node(node) {
+    this.snapshot = await this.post("/sim/inject", { action: "restart", node });
+    return true;
+  }
+
+  async crash_node(node) {
+    this.snapshot = await this.post("/sim/inject", { action: "crash", node });
+    return true;
+  }
+
+  async inject(action, from, to, delay) {
+    const body = { action, from, to };
+    if (action === "delay") {
+      body.millis = toNumber(delay);
+    }
+    this.snapshot = await this.post("/sim/inject", body);
+    return true;
+  }
+
+  async get(path) {
+    return this.read(await fetch(`${this.apiBase}${path}`));
+  }
+
+  async post(path, body) {
+    return this.read(
+      await fetch(`${this.apiBase}${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+    );
+  }
+
+  async read(response) {
+    const body = await response.text();
+    if (!response.ok) {
+      throw new Error(`server simulator ${response.status}: ${body}`);
+    }
+    return JSON.parse(body);
+  }
+}
+
+function toBigInt(value) {
+  return typeof value === "bigint" ? value : BigInt(value);
+}
+
+function toNumber(value) {
+  const number = Number(value);
+  return Number.isSafeInteger(number) && number >= 0 ? number : 0;
+}
+
 function showEngineError(error) {
   el.verdict.className = "verdict warn";
-  el.verdict.textContent = "wasm package unavailable";
+  el.verdict.textContent =
+    state.engine === "server" ? "server simulator unavailable" : "wasm package unavailable";
   el.banner.textContent = String(error?.message || error);
   for (const button of [el.step, el.play, el.copy, el.loadScenario, ...el.linkActions]) {
     button.disabled = true;

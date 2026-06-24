@@ -24,6 +24,18 @@ Then open:
 http://127.0.0.1:5173/demo/
 ```
 
+The default engine is the local WASM package. To drive the same UI through the
+sandbox HTTP API instead, run the sandbox and add `engine=server` plus the API
+base:
+
+```powershell
+cargo run -p hydracache-sandbox -- --backend memory
+```
+
+```text
+http://127.0.0.1:5173/demo/?engine=server&api=http://127.0.0.1:3000
+```
+
 The page URL carries `seed`, `steps`, and `scenario`, so a shared URL can be
 replayed locally. The copy-reproducer button emits the matching `hydracache-sim`
 CLI command.

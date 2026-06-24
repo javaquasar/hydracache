@@ -55,6 +55,7 @@
 //! http://127.0.0.1:3000/demo/cluster/read-through/run
 //! http://127.0.0.1:3000/demo/cluster/owner-load/run
 //! http://127.0.0.1:3000/demo/cluster/real-adapters/run
+//! http://127.0.0.1:3000/sim/snapshot
 //! http://127.0.0.1:3000/sandbox/cluster/staging-gate
 //! http://127.0.0.1:3000/sandbox/cluster/leave-rejoin
 //! http://127.0.0.1:3000/sandbox/cluster/stale-generation
@@ -108,6 +109,7 @@ use hydracache_cluster_transport_axum::{
 use hydracache_diesel::{DieselCache, DieselQueryExt};
 use hydracache_observability::{CacheDiagnosticsSnapshot, HydraCacheRegistry};
 use hydracache_seaorm::{SeaOrmCache, SeaOrmQueryExt};
+use hydracache_sim::{SimConfig, SimWorld};
 use hydracache_sqlx::SqlxCache;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -124,6 +126,8 @@ use tokio::sync::{mpsc, oneshot, RwLock};
 use tokio::time::{sleep, timeout};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
+
+mod sim_routes;
 
 const MAX_DEMO_EVENTS: usize = 256;
 
@@ -716,6 +720,7 @@ pub async fn build_sandbox(config: SandboxConfig) -> Result<SandboxApp, SandboxE
         )
         .route("/demo/invalidate/user/{id}", post(invalidate_user))
         .route("/demo/flush", post(flush_cache))
+        .merge(sim_routes::router())
         .route_layer(middleware::from_fn_with_state(state.clone(), sandbox_auth))
         .with_state(state);
     let router = Router::new()
@@ -782,6 +787,7 @@ async fn build_sandbox_state(
             function_calls: Arc::new(AtomicU64::new(0)),
             next_event_id: Arc::new(AtomicU64::new(0)),
             events: Arc::new(RwLock::new(VecDeque::new())),
+            sim_world: Arc::new(RwLock::new(SimWorld::new(50, SimConfig::default()))),
             event_log_path: config.event_log_path,
             auth_token: config.auth_token,
             profile: config.profile,
@@ -822,6 +828,7 @@ struct SandboxState {
     function_calls: Arc<AtomicU64>,
     next_event_id: Arc<AtomicU64>,
     events: Arc<RwLock<VecDeque<DemoEvent>>>,
+    sim_world: Arc<RwLock<SimWorld>>,
     event_log_path: Option<PathBuf>,
     auth_token: Option<String>,
     profile: SandboxProfile,

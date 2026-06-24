@@ -42,7 +42,11 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("from \"./scenarios.js\""));
     assert!(js.contains("./pkg/hydracache_sim_wasm.js"));
     assert!(js.contains("new state.SimHandle"));
-    assert!(js.contains("state.sim.run(BigInt(steps))"));
+    assert!(js.contains("WasmSimSession"));
+    assert!(js.contains("ServerSimSession"));
+    assert!(js.contains("/sim/new"));
+    assert!(js.contains("/sim/step"));
+    assert!(js.contains("/sim/inject"));
     assert!(js.contains("snapshot_json()"));
     assert!(js.contains("set_workload_enabled"));
     assert!(js.contains("crash_node"));
@@ -63,6 +67,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(share.contains("writeUrlState"));
     assert!(share.contains("reproducerCommand"));
     assert!(share.contains("snapshotHash"));
+    assert!(share.contains("engine"));
+    assert!(share.contains("apiBase"));
 
     for scenario in [
         "minority_partition_cannot_commit",
@@ -85,6 +91,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
         .contains("cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked"));
     assert!(readme.contains("wasm-pack build crates/hydracache-sim-wasm"));
     assert!(readme.contains("cargo xtask verify"));
+    assert!(readme.contains("engine=server"));
+    assert!(readme.contains("cargo run -p hydracache-sandbox -- --backend memory"));
 
     assert!(workflow
         .contains("cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked"));

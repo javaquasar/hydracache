@@ -1,0 +1,211 @@
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::routing::options;
+use axum::{Json, Router};
+use hydracache_sim::{
+    run_scenario, ScenarioError, SimConfig, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
+};
+use serde::{Deserialize, Serialize};
+
+use crate::SandboxState;
+
+#[derive(Debug, Clone, Deserialize)]
+struct SimNewRequest {
+    seed: Option<u64>,
+    steps: Option<u64>,
+    scenario: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct SimStepRequest {
+    steps: Option<u64>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "action", rename_all = "snake_case")]
+enum SimInjectRequest {
+    Workload {
+        enabled: bool,
+    },
+    Crash {
+        node: String,
+    },
+    Restart {
+        node: String,
+    },
+    Partition {
+        from: String,
+        to: String,
+    },
+    Heal {
+        from: String,
+        to: String,
+    },
+    Drop {
+        from: String,
+        to: String,
+    },
+    Delay {
+        from: String,
+        to: String,
+        millis: u64,
+    },
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct SimRouteError {
+    code: &'static str,
+    message: String,
+}
+
+type SimRouteResult =
+    Result<([(&'static str, &'static str); 3], Json<SimSnapshot>), SimRouteRejection>;
+
+/// Build the sandbox simulator routes.
+pub(super) fn router() -> Router<SandboxState> {
+    Router::new()
+        .route("/sim/new", options(sim_options).post(sim_new))
+        .route("/sim/step", options(sim_options).post(sim_step))
+        .route("/sim/inject", options(sim_options).post(sim_inject))
+        .route("/sim/snapshot", options(sim_options).get(sim_snapshot))
+}
+
+async fn sim_new(
+    State(state): State<SandboxState>,
+    Json(request): Json<SimNewRequest>,
+) -> SimRouteResult {
+    let mut world = if let Some(scenario) = request.scenario.as_deref() {
+        if scenario == "default" {
+            SimWorld::new(request.seed.unwrap_or(50), SimConfig::default())
+        } else {
+            run_scenario(scenario)
+                .map_err(SimRouteRejection::from)?
+                .world
+        }
+    } else {
+        SimWorld::new(request.seed.unwrap_or(50), SimConfig::default())
+    };
+    if let Some(steps) = request.steps {
+        let current_step = world.snapshot().step;
+        if steps > current_step {
+            world.run(steps - current_step);
+        }
+    }
+    let snapshot = world.snapshot();
+    assert_current_snapshot_schema(&snapshot);
+    *state.sim_world.write().await = world;
+    Ok((cors_headers(), Json(snapshot)))
+}
+
+async fn sim_step(
+    State(state): State<SandboxState>,
+    Json(request): Json<SimStepRequest>,
+) -> SimRouteResult {
+    let mut world = state.sim_world.write().await;
+    world.run(request.steps.unwrap_or(1));
+    let snapshot = world.snapshot();
+    assert_current_snapshot_schema(&snapshot);
+    Ok((cors_headers(), Json(snapshot)))
+}
+
+async fn sim_inject(
+    State(state): State<SandboxState>,
+    Json(request): Json<SimInjectRequest>,
+) -> SimRouteResult {
+    let mut world = state.sim_world.write().await;
+    apply_injection(&mut world, request)?;
+    let snapshot = world.snapshot();
+    assert_current_snapshot_schema(&snapshot);
+    Ok((cors_headers(), Json(snapshot)))
+}
+
+async fn sim_snapshot(
+    State(state): State<SandboxState>,
+) -> ([(&'static str, &'static str); 3], Json<SimSnapshot>) {
+    (
+        cors_headers(),
+        Json(state.sim_world.read().await.snapshot()),
+    )
+}
+
+async fn sim_options() -> impl IntoResponse {
+    (StatusCode::NO_CONTENT, cors_headers())
+}
+
+fn apply_injection(
+    world: &mut SimWorld,
+    request: SimInjectRequest,
+) -> Result<(), SimRouteRejection> {
+    let applied = match request {
+        SimInjectRequest::Workload { enabled } => {
+            world.set_workload_enabled(enabled);
+            true
+        }
+        SimInjectRequest::Crash { node } => world.crash_node(node),
+        SimInjectRequest::Restart { node } => world.restart_node(node),
+        SimInjectRequest::Partition { from, to } => world.partition_link(from, to),
+        SimInjectRequest::Heal { from, to } => world.heal_link(from, to),
+        SimInjectRequest::Drop { from, to } => world.drop_next_on_link(from, to),
+        SimInjectRequest::Delay { from, to, millis } => {
+            world.delay_next_on_link_millis(from, to, millis)
+        }
+    };
+    if applied {
+        Ok(())
+    } else {
+        Err(SimRouteRejection::bad_request(
+            "invalid_sim_action",
+            "sim injection references an unknown node or link",
+        ))
+    }
+}
+
+fn assert_current_snapshot_schema(snapshot: &SimSnapshot) {
+    debug_assert_eq!(snapshot.schema_version, SIM_SNAPSHOT_SCHEMA_VERSION);
+}
+
+#[derive(Debug)]
+struct SimRouteRejection {
+    status: StatusCode,
+    code: &'static str,
+    message: String,
+}
+
+impl SimRouteRejection {
+    fn bad_request(code: &'static str, message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::BAD_REQUEST,
+            code,
+            message: message.into(),
+        }
+    }
+}
+
+impl From<ScenarioError> for SimRouteRejection {
+    fn from(error: ScenarioError) -> Self {
+        Self::bad_request("unknown_sim_scenario", error.to_string())
+    }
+}
+
+impl IntoResponse for SimRouteRejection {
+    fn into_response(self) -> Response {
+        (
+            self.status,
+            cors_headers(),
+            Json(SimRouteError {
+                code: self.code,
+                message: self.message,
+            }),
+        )
+            .into_response()
+    }
+}
+
+fn cors_headers() -> [(&'static str, &'static str); 3] {
+    [
+        ("access-control-allow-origin", "*"),
+        ("access-control-allow-methods", "GET,POST,OPTIONS"),
+        ("access-control-allow-headers", "content-type,authorization"),
+    ]
+}

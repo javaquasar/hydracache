@@ -1656,6 +1656,7 @@ dependencies = [
  "hydracache-diesel",
  "hydracache-observability",
  "hydracache-seaorm",
+ "hydracache-sim",
  "hydracache-sqlx",
  "serde",
  "serde_json",

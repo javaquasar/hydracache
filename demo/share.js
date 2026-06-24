@@ -1,5 +1,6 @@
 const DEFAULT_SEED = 80;
 const DEFAULT_SCENARIO = "default";
+const DEFAULT_ENGINE = "wasm";
 const FNV_OFFSET = 0xcbf29ce484222325n;
 const FNV_PRIME = 0x100000001b3n;
 const FNV_MASK = 0xffffffffffffffffn;
@@ -10,10 +11,18 @@ export function readInitialState(search) {
     seed: readPositiveInt(params.get("seed"), DEFAULT_SEED),
     steps: readPositiveInt(params.get("steps"), 0),
     scenario: readScenario(params.get("scenario")),
+    engine: readEngine(params.get("engine")),
+    apiBase: readApiBase(params.get("api")),
   };
 }
 
-export function writeUrlState(history, snapshot, scenario = DEFAULT_SCENARIO) {
+export function writeUrlState(
+  history,
+  snapshot,
+  scenario = DEFAULT_SCENARIO,
+  engine = DEFAULT_ENGINE,
+  apiBase = "",
+) {
   if (!history || !snapshot) {
     return;
   }
@@ -21,6 +30,13 @@ export function writeUrlState(history, snapshot, scenario = DEFAULT_SCENARIO) {
   params.set("seed", String(snapshot.seed));
   params.set("steps", String(snapshot.step));
   params.set("scenario", readScenario(scenario));
+  if (readEngine(engine) === "server") {
+    params.set("engine", "server");
+    const normalizedApiBase = readApiBase(apiBase);
+    if (normalizedApiBase) {
+      params.set("api", normalizedApiBase);
+    }
+  }
   history.replaceState(null, "", `?${params.toString()}`);
 }
 
@@ -46,6 +62,20 @@ function readPositiveInt(value, fallback) {
 function readScenario(value) {
   const scenario = String(value ?? DEFAULT_SCENARIO).trim();
   return /^[a-z0-9_-]+$/i.test(scenario) ? scenario : DEFAULT_SCENARIO;
+}
+
+function readEngine(value) {
+  return String(value ?? DEFAULT_ENGINE).trim().toLowerCase() === "server"
+    ? "server"
+    : DEFAULT_ENGINE;
+}
+
+function readApiBase(value) {
+  const apiBase = String(value ?? "").trim().replace(/\/+$/, "");
+  if (!apiBase) {
+    return "";
+  }
+  return /^https?:\/\/[^\s]+$/i.test(apiBase) || apiBase.startsWith("/") ? apiBase : "";
 }
 
 function stableJson(value) {
