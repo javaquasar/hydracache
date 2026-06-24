@@ -15,13 +15,14 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use hydracache::{AdmissionRejection, ConsumerIsolation};
+use hydracache::{AdmissionRejection, ConsumerIsolation, TenantId, TenantMetricsSnapshot};
 use hydracache_client_protocol::{
     BatchItemStatus, BatchPutEntry, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
     ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
     ClientWireMessage, InvalidationEvent, Namespace, StructuredKey, VersionHandshake,
     PROTOCOL_VERSION,
 };
+use hydracache_observability::TenantStatus;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -260,6 +261,31 @@ impl ClientSurfaceState {
     /// Count of active subscription streams.
     pub fn active_subscriptions(&self) -> u64 {
         self.active_subscriptions.load(Ordering::SeqCst)
+    }
+
+    /// Return a tenant-scoped consumer status.
+    pub fn tenant_status(
+        &self,
+        identity: &ClientIdentity,
+    ) -> Result<TenantStatus, ClientSurfaceError> {
+        self.validate_tenant_identity(identity)?;
+        let metrics = if let Some(isolation) = &self.isolation {
+            let tenant_id =
+                TenantId::new(identity.tenant()).map_err(|_| ClientSurfaceError::Unauthorized)?;
+            isolation
+                .lock()
+                .expect("isolation mutex")
+                .metrics_snapshot_for_tenant(&tenant_id)
+                .ok_or(ClientSurfaceError::Unauthorized)?
+        } else {
+            TenantMetricsSnapshot::default()
+        };
+        Ok(TenantStatus::from_metrics(
+            identity.tenant(),
+            &metrics,
+            self.active_subscriptions(),
+            0,
+        ))
     }
 
     fn validate_tenant_identity(
@@ -651,11 +677,18 @@ async fn client_data(
 }
 
 async fn client_status(
-    State(_state): State<Arc<ClientSurfaceState>>,
+    State(state): State<Arc<ClientSurfaceState>>,
     headers: HeaderMap,
 ) -> Response {
     match ClientIdentity::from_headers(&headers) {
-        Ok(identity) => (StatusCode::OK, Json(ClientStatusReply::from(identity))).into_response(),
+        Ok(identity) => match state.tenant_status(&identity) {
+            Ok(tenant_status) => (
+                StatusCode::OK,
+                Json(ClientStatusReply::from_identity(identity, tenant_status)),
+            )
+                .into_response(),
+            Err(error) => error.into_response(),
+        },
         Err(error) => error.into_response(),
     }
 }
@@ -843,14 +876,17 @@ pub struct ClientStatusReply {
     pub tenant: String,
     /// Route boundary version.
     pub route_version: u16,
+    /// Tenant-scoped consumer status.
+    pub tenant_status: TenantStatus,
 }
 
-impl From<ClientIdentity> for ClientStatusReply {
-    fn from(identity: ClientIdentity) -> Self {
+impl ClientStatusReply {
+    fn from_identity(identity: ClientIdentity, tenant_status: TenantStatus) -> Self {
         Self {
             client_id: identity.client_id,
             tenant: identity.tenant,
             route_version: 1,
+            tenant_status,
         }
     }
 }

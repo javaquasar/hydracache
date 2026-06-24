@@ -1,0 +1,29 @@
+{
+  "title": "HydraCache Consumer Governance",
+  "panels": [
+    {
+      "title": "Tenant bytes",
+      "targets": [{ "expr": "hydracache_tenant_bytes" }]
+    },
+    {
+      "title": "Tenant entries",
+      "targets": [{ "expr": "hydracache_tenant_entries" }]
+    },
+    {
+      "title": "Admission rejections",
+      "targets": [{ "expr": "rate(hydracache_tenant_admission_rejected_total[5m])" }]
+    },
+    {
+      "title": "Client auth failures",
+      "targets": [{ "expr": "rate(hydracache_client_auth_rejected_total[5m])" }]
+    },
+    {
+      "title": "Residency refusals",
+      "targets": [{ "expr": "rate(hydracache_residency_refused_crossing_total[5m])" }]
+    },
+    {
+      "title": "Mandatory audit fail-closed",
+      "targets": [{ "expr": "rate(hydracache_audit_mandatory_fail_closed_total[5m])" }]
+    }
+  ]
+}

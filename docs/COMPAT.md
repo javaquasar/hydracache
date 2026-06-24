@@ -23,6 +23,8 @@ they are persisted or transmitted across processes.
 | Hibernate L2 provider contract | `1` | `hydracache-client-protocol::hibernate` and external `hydracache-hibernate` providers | Hibernate ORM 6.x providers map regions to HydraCache namespaces, access strategies to stable L2 consistency labels, and query cache regions to timestamp/bulk invalidation. See `docs/integrations/hibernate.md` and ADR `docs/adr/0006-why-not-clone-hibernate-hikaricp.md`. | Unsupported Hibernate versions, unsupported query-cache mode, or unknown future mapping versions must fail loud at provider bootstrap. HydraCache never joins JVM transactions. |
 | Client SDK conformance manifest | `1` | `hydracache-client` and `sdks/python` | `crates/hydracache-client/tests/fixtures/conformance/client_v1.json` is the language-agnostic scenario set for protocol-v1 SDKs. Rust and Python SDKs are supported only when their runners pass this manifest. | SDKs that do not pass the manifest are not claimed as supported. Manifest major changes require a new compatibility entry and SDK semver mapping. |
 | `ResidencyPolicy` control-plane format | `1` | `hydracache` residency governance | Policies are committed at a control-plane epoch per namespace with optional per-key overrides. Readers accept format `1`, enforce allowed regions at placement, WAN value movement, read serving, and include-value invalidation decisions, and report the enforced epoch. | Unknown future policy formats are rejected before commit. Unsatisfiable in-policy RF, forbidden boundary crossing, stale policy epochs, and forbidden-region reads fail loud and emit audit-ready events. |
+| Tenant status JSON schema | `1` | `hydracache-observability` and `/client/v1/status` | `TenantStatus` is scoped to the verified caller tenant and includes schema version, namespace usage/quota, rate/fair-share state, and near-cache/subscription health. | Unknown future status schema versions must be treated as incompatible by strict clients. Servers must not include other tenants in a caller-scoped status response. |
+| Consumer audit event schema | `1` | `hydracache-observability` audit recorders/sinks | Audit envelopes carry schema version `1` plus redacted governance/security/admin events. Keys are omitted or hashed; values are never logged. | Mandatory governance/security event sink failures fail closed. Future schema versions require an explicit compatibility entry before operator log readers accept them. |
 
 ## Upgrade Rules
 
@@ -130,3 +132,9 @@ filters legal regions first, then asks placement to satisfy RF inside that set.
 WAN links refuse to ship pinned value bytes over forbidden boundaries, reads from
 forbidden regions fail closed even if a stale local copy exists, and
 policy-narrowing reports explicit eviction/degraded remediation actions.
+
+W6 registers tenant status JSON schema `1` and consumer audit event schema `1`.
+`GET /client/v1/status` is read-only and scoped to the verified tenant identity.
+Audit events are append-only, redacted, and mandatory for governance/security
+refusals: if the configured mandatory sink is unavailable, the guarded operation
+fails closed rather than proceeding without an audit trail.

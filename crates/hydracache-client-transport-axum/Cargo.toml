@@ -16,10 +16,12 @@ axum.workspace = true
 bytes.workspace = true
 hydracache.workspace = true
 hydracache-client-protocol.workspace = true
+hydracache-observability.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
+serde_json.workspace = true
 tokio.workspace = true
 tower.workspace = true
 

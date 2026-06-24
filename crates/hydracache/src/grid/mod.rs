@@ -1145,11 +1145,35 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
             labels: &["region"],
         },
         ClusterMetricDescriptor {
+            name: "hydracache_tenant_bytes",
+            labels: &["tenant"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_tenant_entries",
+            labels: &["tenant"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_tenant_admission_rejected_total",
+            labels: &["tenant"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_client_auth_rejected_total",
+            labels: &["route"],
+        },
+        ClusterMetricDescriptor {
             name: "hydracache_residency_rejected_placement_total",
             labels: &[],
         },
         ClusterMetricDescriptor {
             name: "hydracache_residency_refused_crossing_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_audit_sink_failures_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_audit_mandatory_fail_closed_total",
             labels: &[],
         },
         ClusterMetricDescriptor {

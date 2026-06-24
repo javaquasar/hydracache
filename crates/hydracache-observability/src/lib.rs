@@ -44,8 +44,19 @@ use hydracache::{
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
 
+pub mod audit;
+pub mod consumer;
 pub mod exporter;
 
+pub use audit::{
+    AuditEnvelope, AuditError, AuditEvent, AuditHealth, AuditKey, AuditKeyPolicy, AuditOutcome,
+    AuditRecorder, AuditRedactionPolicy, AuditSink, InMemoryAuditSink,
+    CONSUMER_AUDIT_EVENT_SCHEMA_VERSION,
+};
+pub use consumer::{
+    consumer_alert_metric_names, consumer_metric_names, ConsumerNearCacheStatus,
+    TenantNamespaceStatus, TenantRateLimitStatus, TenantStatus, TENANT_STATUS_SCHEMA_VERSION,
+};
 pub use exporter::{registered_metric_names, PrometheusExporter};
 
 /// Serializable snapshot of [`CacheStats`].

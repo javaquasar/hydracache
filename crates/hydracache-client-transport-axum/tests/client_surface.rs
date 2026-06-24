@@ -8,8 +8,8 @@ use hydracache_client_protocol::{
     ClientResponse, ClientResponseEnvelope, ClientWireMessage, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
-    AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER,
-    HYDRACACHE_TENANT_HEADER,
+    AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
+    HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
 use tower::ServiceExt;
 
@@ -245,4 +245,58 @@ async fn client_surface_tenant_quota_returns_retryable_backpressure() {
     assert!(error.retryable);
     assert!(error.retry_after_ms.is_some());
     assert_eq!(surface.state().state_mutations(), 1);
+}
+
+#[tokio::test]
+async fn client_surface_status_is_scoped_to_verified_tenant() {
+    let surface = isolated_surface(100);
+    let put = ClientRequestEnvelope::new(
+        "put-status",
+        ClientRequest::Put {
+            ns: ns(),
+            key: key("42"),
+            value: b"profile".to_vec(),
+            ttl_ms: None,
+            dimensions: Vec::new(),
+        },
+    );
+    assert!(send(&surface, put).await.result.is_ok());
+
+    let response = surface
+        .routes()
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri(CLIENT_STATUS_PATH)
+                .header(HYDRACACHE_CLIENT_ID_HEADER, "client-a")
+                .header(HYDRACACHE_TENANT_HEADER, "tenant-a")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = to_bytes(response.into_body(), 1024 * 1024).await.unwrap();
+    let json: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+
+    assert_eq!(json["tenant"], "tenant-a");
+    assert_eq!(json["tenant_status"]["tenant"], "tenant-a");
+    assert_eq!(json["tenant_status"]["namespaces"][0]["namespace"], "users");
+    assert_eq!(json["tenant_status"]["namespaces"][0]["bytes"], 7);
+    assert!(!json.to_string().contains("tenant-b"));
+
+    let forbidden = surface
+        .routes()
+        .oneshot(
+            Request::builder()
+                .method("GET")
+                .uri(CLIENT_STATUS_PATH)
+                .header(HYDRACACHE_CLIENT_ID_HEADER, "client-a")
+                .header(HYDRACACHE_TENANT_HEADER, "tenant-b")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden.status(), StatusCode::FORBIDDEN);
 }

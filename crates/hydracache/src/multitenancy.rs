@@ -388,39 +388,16 @@ impl ConsumerIsolation {
 
     /// Snapshot bounded-label metrics.
     pub fn metrics_snapshot(&self) -> TenantMetricsSnapshot {
-        let mut tenant_bytes = BTreeMap::new();
-        let mut tenant_entries = BTreeMap::new();
-        let mut tenant_admission_rejected_total = BTreeMap::new();
+        self.snapshot_for_tenants(self.metric_labels.iter().cloned())
+    }
 
-        for tenant_id in &self.metric_labels {
-            let bytes = self
-                .usage
-                .iter()
-                .filter(|((usage_tenant, _), _)| usage_tenant == tenant_id)
-                .map(|(_, usage)| usage.bytes)
-                .sum();
-            let entries = self
-                .usage
-                .iter()
-                .filter(|((usage_tenant, _), _)| usage_tenant == tenant_id)
-                .map(|(_, usage)| usage.entries)
-                .sum();
-            tenant_bytes.insert(tenant_id.as_str().to_owned(), bytes);
-            tenant_entries.insert(tenant_id.as_str().to_owned(), entries);
-            tenant_admission_rejected_total.insert(
-                tenant_id.as_str().to_owned(),
-                self.rejected_total
-                    .get(tenant_id)
-                    .copied()
-                    .unwrap_or_default(),
-            );
-        }
-
-        TenantMetricsSnapshot {
-            tenant_bytes,
-            tenant_entries,
-            tenant_admission_rejected_total,
-        }
+    /// Snapshot one tenant for a scoped consumer status response.
+    pub fn metrics_snapshot_for_tenant(
+        &self,
+        tenant_id: &TenantId,
+    ) -> Option<TenantMetricsSnapshot> {
+        self.roster.tenant(tenant_id)?;
+        Some(self.snapshot_for_tenants(std::iter::once(tenant_id.clone())))
     }
 
     fn check_rate(&mut self, tenant_id: &TenantId) -> Result<(), AdmissionRejection> {
@@ -470,6 +447,96 @@ impl ConsumerIsolation {
     fn record_rejection(&mut self, tenant_id: &TenantId) {
         self.metric_labels.insert(tenant_id.clone());
         *self.rejected_total.entry(tenant_id.clone()).or_insert(0) += 1;
+    }
+
+    fn snapshot_for_tenants(
+        &self,
+        tenants: impl IntoIterator<Item = TenantId>,
+    ) -> TenantMetricsSnapshot {
+        let mut snapshot = TenantMetricsSnapshot::default();
+
+        for tenant_id in tenants {
+            let Some(tenant) = self.roster.tenant(&tenant_id) else {
+                continue;
+            };
+            let tenant_label = tenant_id.as_str().to_owned();
+            let mut namespace_bytes = BTreeMap::new();
+            let mut namespace_entries = BTreeMap::new();
+            let mut namespace_quota_bytes = BTreeMap::new();
+            let mut namespace_quota_entries = BTreeMap::new();
+
+            for (namespace, quota) in &tenant.namespaces {
+                let usage = self
+                    .usage
+                    .get(&(tenant_id.clone(), namespace.clone()))
+                    .copied()
+                    .unwrap_or_default();
+                namespace_bytes.insert(namespace.clone(), usage.bytes);
+                namespace_entries.insert(namespace.clone(), usage.entries);
+                namespace_quota_bytes.insert(namespace.clone(), quota.max_bytes);
+                namespace_quota_entries.insert(namespace.clone(), quota.max_entries);
+            }
+
+            snapshot.tenant_bytes.insert(
+                tenant_label.clone(),
+                namespace_bytes.values().copied().sum(),
+            );
+            snapshot.tenant_entries.insert(
+                tenant_label.clone(),
+                namespace_entries.values().copied().sum(),
+            );
+            snapshot.tenant_admission_rejected_total.insert(
+                tenant_label.clone(),
+                self.rejected_total
+                    .get(&tenant_id)
+                    .copied()
+                    .unwrap_or_default(),
+            );
+            snapshot
+                .tenant_namespace_bytes
+                .insert(tenant_label.clone(), namespace_bytes);
+            snapshot
+                .tenant_namespace_entries
+                .insert(tenant_label.clone(), namespace_entries);
+            snapshot
+                .tenant_namespace_quota_bytes
+                .insert(tenant_label.clone(), namespace_quota_bytes);
+            snapshot
+                .tenant_namespace_quota_entries
+                .insert(tenant_label.clone(), namespace_quota_entries);
+            snapshot.tenant_request_count.insert(
+                tenant_label.clone(),
+                self.request_counts
+                    .get(&tenant_id)
+                    .copied()
+                    .unwrap_or_default(),
+            );
+            snapshot
+                .tenant_rate_limit_per_window
+                .insert(tenant_label.clone(), tenant.rate_limit_per_window);
+            snapshot.tenant_fair_share_count.insert(
+                tenant_label.clone(),
+                self.fair_share_counts
+                    .get(&tenant_id)
+                    .copied()
+                    .unwrap_or_default(),
+            );
+            snapshot
+                .tenant_fair_share_per_window
+                .insert(tenant_label.clone(), tenant.fair_share_per_window);
+            snapshot.tenant_subscriptions.insert(
+                tenant_label.clone(),
+                self.subscriptions
+                    .get(&tenant_id)
+                    .copied()
+                    .unwrap_or_default(),
+            );
+            snapshot
+                .tenant_max_subscriptions
+                .insert(tenant_label, tenant.max_subscriptions);
+        }
+
+        snapshot
     }
 }
 
@@ -555,6 +622,26 @@ pub struct TenantMetricsSnapshot {
     pub tenant_entries: BTreeMap<String, u64>,
     /// Admission rejections by roster tenant.
     pub tenant_admission_rejected_total: BTreeMap<String, u64>,
+    /// Namespace bytes by tenant for scoped status snapshots.
+    pub tenant_namespace_bytes: BTreeMap<String, BTreeMap<String, u64>>,
+    /// Namespace entries by tenant for scoped status snapshots.
+    pub tenant_namespace_entries: BTreeMap<String, BTreeMap<String, u64>>,
+    /// Namespace byte quotas by tenant for scoped status snapshots.
+    pub tenant_namespace_quota_bytes: BTreeMap<String, BTreeMap<String, u64>>,
+    /// Namespace entry quotas by tenant for scoped status snapshots.
+    pub tenant_namespace_quota_entries: BTreeMap<String, BTreeMap<String, u64>>,
+    /// Requests admitted in the current modeled window by tenant.
+    pub tenant_request_count: BTreeMap<String, u64>,
+    /// Request rate limit per modeled window by tenant.
+    pub tenant_rate_limit_per_window: BTreeMap<String, u64>,
+    /// Fair-share count in the current modeled window by tenant.
+    pub tenant_fair_share_count: BTreeMap<String, u64>,
+    /// Fair-share limit per modeled window by tenant.
+    pub tenant_fair_share_per_window: BTreeMap<String, u64>,
+    /// Active subscriptions by tenant.
+    pub tenant_subscriptions: BTreeMap<String, u64>,
+    /// Subscription limit by tenant.
+    pub tenant_max_subscriptions: BTreeMap<String, u64>,
 }
 
 /// Configuration errors for tenant isolation.

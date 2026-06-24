@@ -1,0 +1,31 @@
+groups:
+  - name: hydracache-consumer
+    rules:
+      - alert: HydraCacheTenantAdmissionRejections
+        expr: rate(hydracache_tenant_admission_rejected_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Tenant admission rejections are increasing.
+      - alert: HydraCacheClientAuthFailures
+        expr: rate(hydracache_client_auth_rejected_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: External client authentication or authorization failures are increasing.
+      - alert: HydraCacheResidencyRefusals
+        expr: rate(hydracache_residency_refused_crossing_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Residency governance refused cross-region value movement.
+      - alert: HydraCacheMandatoryAuditFailedClosed
+        expr: rate(hydracache_audit_mandatory_fail_closed_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Mandatory audit sink failure caused fail-closed governance behavior.
