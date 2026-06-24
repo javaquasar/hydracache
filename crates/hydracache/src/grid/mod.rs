@@ -14,6 +14,7 @@ pub(crate) mod elasticity;
 pub(crate) mod failure_detector;
 pub(crate) mod hardening;
 pub(crate) mod hinted_handoff;
+pub(crate) mod invalidation_ring;
 pub(crate) mod merkle_repair;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
@@ -940,6 +941,14 @@ pub struct ClusterGridCounters {
     pub lock_acquired_total: u64,
     /// Stale fenced lock tokens rejected.
     pub lock_stale_token_rejected_total: u64,
+    /// Retained invalidation ring events.
+    pub invalidation_ring_depth: u64,
+    /// Exact invalidation events replayed.
+    pub invalidation_replayed_total: u64,
+    /// Subscribers that fell behind the retained invalidation window.
+    pub invalidation_fell_behind_total: u64,
+    /// Invalidation events overwritten by a full ring.
+    pub invalidation_ring_overrun_total: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1173,6 +1182,22 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_lock_stale_token_rejected_total",
             labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_invalidation_ring_depth",
+            labels: &["partition"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_invalidation_replayed_total",
+            labels: &["subscriber"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_invalidation_fell_behind_total",
+            labels: &["subscriber"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_invalidation_ring_overrun_total",
+            labels: &["partition"],
         },
     ];
     DESCRIPTORS

@@ -452,6 +452,10 @@ where
             cas_mismatch_total: 0,
             lock_acquired_total: 0,
             lock_stale_token_rejected_total: 0,
+            invalidation_ring_depth: 0,
+            invalidation_replayed_total: 0,
+            invalidation_fell_behind_total: 0,
+            invalidation_ring_overrun_total: 0,
         }
     }
 
