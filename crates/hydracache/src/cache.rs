@@ -439,6 +439,10 @@ where
             auto_repair_advisory_total: 0,
             consistency_level_operations_total: 0,
             consistency_unsatisfiable_total: 0,
+            hints_stored_total: 0,
+            hints_replayed_total: 0,
+            hints_dropped_total: 0,
+            hint_store_bytes: 0,
         }
     }
 

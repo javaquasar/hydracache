@@ -551,6 +551,10 @@ pub use grid::hardening::{
     WriteWatermark, REPLICATED_VALUE_RECORD_CHECKSUM_FORMAT_VERSION,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
 };
+pub use grid::hinted_handoff::{
+    apply_hint, replay_hints, Hint, HintBudget, HintError, HintMetrics, HintOutcome,
+    HintReplayDecision, HintStore, InMemoryHintStore,
+};
 pub use grid::region_failover::{
     promote_region_home, rejoining_region_authority, RegionFailoverError, RegionFailoverMetrics,
     RegionObservation, RegionPromotion, RegionPromotionReport, RegionRestore, RegionRestoreError,

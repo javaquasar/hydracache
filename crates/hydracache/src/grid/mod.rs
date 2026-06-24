@@ -11,6 +11,7 @@ pub(crate) mod consistency_level;
 pub(crate) mod crdt;
 pub(crate) mod elasticity;
 pub(crate) mod hardening;
+pub(crate) mod hinted_handoff;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
 
@@ -910,6 +911,14 @@ pub struct ClusterGridCounters {
     pub consistency_level_operations_total: u64,
     /// Operations rejected because the requested consistency level was unsatisfiable.
     pub consistency_unsatisfiable_total: u64,
+    /// Hinted handoff writes retained for replay.
+    pub hints_stored_total: u64,
+    /// Hinted handoff writes replayed successfully.
+    pub hints_replayed_total: u64,
+    /// Hints dropped because of age or budget.
+    pub hints_dropped_total: u64,
+    /// Approximate retained hint bytes.
+    pub hint_store_bytes: u64,
 }
 
 /// Bounded metric descriptor used by cardinality tests and exporters.
@@ -1087,6 +1096,22 @@ pub fn cluster_grid_metric_descriptors() -> &'static [ClusterMetricDescriptor] {
         ClusterMetricDescriptor {
             name: "hydracache_consistency_unsatisfiable_total",
             labels: &["operation", "level"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_hints_stored_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_hints_replayed_total",
+            labels: &[],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_hints_dropped_total",
+            labels: &["reason"],
+        },
+        ClusterMetricDescriptor {
+            name: "hydracache_hint_store_bytes",
+            labels: &[],
         },
     ];
     DESCRIPTORS
