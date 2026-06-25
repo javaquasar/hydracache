@@ -5,6 +5,7 @@
 //! a seed and step count.
 
 pub mod clock;
+pub mod election;
 pub mod invariants;
 pub mod linearizability;
 pub mod lock_safety;
@@ -21,6 +22,11 @@ pub mod workload;
 pub mod world;
 
 pub use clock::SimClock;
+pub use election::{
+    cluster_transition, node_transition, ClusterFsm, ClusterFsmAction, ClusterFsmEvent,
+    FormationPhase, FsmTransition, NodeFsm, NodeFsmState, CLUSTER_TRANSITION_TABLE,
+    NODE_TRANSITION_TABLE,
+};
 pub use invariants::{
     InvariantChecker, InvariantReport, InvariantViolation, LogEntry, LogOp, ReplicaSnapshot,
     ValueObservation, ValueState,
