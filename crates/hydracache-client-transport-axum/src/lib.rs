@@ -17,10 +17,10 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{AdmissionRejection, ConsumerIsolation, TenantId, TenantMetricsSnapshot};
 use hydracache_client_protocol::{
-    BatchItemStatus, BatchPutEntry, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
-    ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
-    ClientWireMessage, InvalidationEvent, Namespace, StructuredKey, VersionHandshake,
-    PROTOCOL_VERSION,
+    protocol_version_supported, BatchItemStatus, BatchPutEntry, ClientErrorCode,
+    ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
+    ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, Namespace, StructuredKey,
+    VersionHandshake, PROTOCOL_VERSION,
 };
 use hydracache_observability::TenantStatus;
 use serde::{Deserialize, Serialize};
@@ -356,15 +356,15 @@ impl ClientSurfaceState {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
-        if envelope.protocol_version != PROTOCOL_VERSION {
-            return ClientResponseEnvelope::error(
-                envelope.request_id,
-                ClientErrorEnvelope::new(
-                    ClientErrorCode::IncompatibleVersion,
-                    false,
-                    "unsupported request protocol version",
-                ),
-            );
+        let request_protocol_version = envelope.protocol_version;
+        let response_protocol_version = if protocol_version_supported(request_protocol_version) {
+            request_protocol_version
+        } else {
+            PROTOCOL_VERSION
+        };
+        if let Err(error) = envelope.validate_protocol() {
+            return ClientResponseEnvelope::error(envelope.request_id, error)
+                .with_protocol_version(response_protocol_version);
         }
         if envelope.deadline_expired(0) {
             return ClientResponseEnvelope::error(
@@ -375,21 +375,23 @@ impl ClientSurfaceState {
                     "request deadline expired",
                 )
                 .with_retry_after_ms(1),
-            );
+            )
+            .with_protocol_version(response_protocol_version);
         }
 
-        match envelope.request {
+        let response = match envelope.request {
             ClientRequest::Get { ns, key } => {
                 if let Err(error) = self.admit_request(identity) {
-                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    let value = self
+                        .store
+                        .lock()
+                        .expect("store mutex")
+                        .get(&store_key(&ns, &key))
+                        .cloned();
+                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Value { value })
                 }
-                let value = self
-                    .store
-                    .lock()
-                    .expect("store mutex")
-                    .get(&store_key(&ns, &key))
-                    .cloned();
-                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Value { value })
             }
             ClientRequest::Put {
                 ns,
@@ -407,70 +409,74 @@ impl ClientSurfaceState {
             ),
             ClientRequest::Invalidate { ns, key } => {
                 if let Err(error) = self.admit_request(identity) {
-                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    self.store
+                        .lock()
+                        .expect("store mutex")
+                        .remove(&store_key(&ns, &key));
+                    self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                    self.record_invalidation(ns, key);
+                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
                 }
-                self.store
-                    .lock()
-                    .expect("store mutex")
-                    .remove(&store_key(&ns, &key));
-                self.state_mutations.fetch_add(1, Ordering::SeqCst);
-                self.record_invalidation(ns, key);
-                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
             }
             ClientRequest::BatchGet { ns, keys } => {
                 if let Err(error) = self.admit_request(identity) {
-                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    let store = self.store.lock().expect("store mutex");
+                    let items = keys
+                        .iter()
+                        .enumerate()
+                        .map(|(index, key)| BatchItemStatus {
+                            index,
+                            result: Ok(store.get(&store_key(&ns, key)).cloned()),
+                        })
+                        .collect();
+                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
                 }
-                let store = self.store.lock().expect("store mutex");
-                let items = keys
-                    .iter()
-                    .enumerate()
-                    .map(|(index, key)| BatchItemStatus {
-                        index,
-                        result: Ok(store.get(&store_key(&ns, key)).cloned()),
-                    })
-                    .collect();
-                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
             }
             ClientRequest::BatchPut { ns, entries } => {
                 if let Err(error) = self.admit_batch_put(identity, &ns, &entries) {
-                    return ClientResponseEnvelope::error(envelope.request_id, error);
-                }
-                let mut store = self.store.lock().expect("store mutex");
-                let items = entries
-                    .into_iter()
-                    .enumerate()
-                    .map(|(index, entry)| {
-                        if entry.value.len() > self.limits.max_value_bytes {
-                            return BatchItemStatus {
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    let mut store = self.store.lock().expect("store mutex");
+                    let items = entries
+                        .into_iter()
+                        .enumerate()
+                        .map(|(index, entry)| {
+                            if entry.value.len() > self.limits.max_value_bytes {
+                                return BatchItemStatus {
+                                    index,
+                                    result: Err(ClientErrorEnvelope::new(
+                                        ClientErrorCode::TooLarge,
+                                        false,
+                                        "batch item value too large",
+                                    )),
+                                };
+                            }
+                            store.insert(store_key(&ns, &entry.key), entry.value);
+                            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                            BatchItemStatus {
                                 index,
-                                result: Err(ClientErrorEnvelope::new(
-                                    ClientErrorCode::TooLarge,
-                                    false,
-                                    "batch item value too large",
-                                )),
-                            };
-                        }
-                        store.insert(store_key(&ns, &entry.key), entry.value);
-                        self.state_mutations.fetch_add(1, Ordering::SeqCst);
-                        BatchItemStatus {
-                            index,
-                            result: Ok(None),
-                        }
-                    })
-                    .collect();
-                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
+                                result: Ok(None),
+                            }
+                        })
+                        .collect();
+                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
+                }
             }
             ClientRequest::EvictRegion { ns } => {
                 if let Err(error) = self.admit_request(identity) {
-                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    self.store
+                        .lock()
+                        .expect("store mutex")
+                        .retain(|(stored_ns, _), _| stored_ns != ns.as_str());
+                    self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Evicted)
                 }
-                self.store
-                    .lock()
-                    .expect("store mutex")
-                    .retain(|(stored_ns, _), _| stored_ns != ns.as_str());
-                self.state_mutations.fetch_add(1, Ordering::SeqCst);
-                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Evicted)
             }
             ClientRequest::SubscribeInvalidations {
                 ns: _,
@@ -479,11 +485,16 @@ impl ClientSurfaceState {
                 include_value: _,
             } => {
                 if let Err(error) = self.begin_tenant_subscription(identity) {
-                    return ClientResponseEnvelope::error(envelope.request_id, error);
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    ClientResponseEnvelope::ok(
+                        envelope.request_id,
+                        ClientResponse::Subscribed { from },
+                    )
                 }
-                ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Subscribed { from })
             }
-        }
+        };
+        response.with_protocol_version(response_protocol_version)
     }
 
     fn handle_put(
@@ -748,11 +759,13 @@ fn header_value(headers: &HeaderMap, name: &'static str) -> Result<String, Clien
 }
 
 fn encode_wire_message(message: &ClientWireMessage) -> Result<Vec<u8>, ClientSurfaceError> {
-    Ok(ClientFrame::from_message(message)
-        .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
-        .encode()
-        .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
-        .to_vec())
+    Ok(
+        ClientFrame::from_message_with_version(message.protocol_version(), message)
+            .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
+            .encode()
+            .map_err(|error| ClientSurfaceError::MalformedFrame(error.to_string()))?
+            .to_vec(),
+    )
 }
 
 fn admission_error(error: AdmissionRejection) -> ClientErrorEnvelope {

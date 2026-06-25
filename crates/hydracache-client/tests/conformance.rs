@@ -13,7 +13,7 @@ use hydracache_client::{
 };
 use hydracache_client_protocol::{
     ClientErrorCode, ClientRequest, Namespace, RepairAction, StructuredKey, VersionHandshake,
-    PROTOCOL_VERSION,
+    MIN_PROTOCOL_VERSION, PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER,
@@ -111,7 +111,7 @@ impl ClientTransport for TwoNodeAxumTransport {
 #[tokio::test]
 async fn rust_client_passes_full_conformance() {
     let manifest = manifest();
-    assert_eq!(manifest.protocol_version, PROTOCOL_VERSION);
+    assert_eq!(manifest.protocol_version, MIN_PROTOCOL_VERSION);
     assert!(manifest
         .scenarios
         .iter()
@@ -177,6 +177,21 @@ async fn conformance_client_respects_negotiated_version() {
         .expect("client connects");
 
     assert_eq!(client.negotiated_version(), PROTOCOL_VERSION);
+}
+
+#[tokio::test]
+async fn conformance_v1_client_keeps_v1_compat_window() {
+    let transport = TwoNodeAxumTransport::new();
+    let config = HydraClientConfig {
+        supported_versions: VersionHandshake::new(MIN_PROTOCOL_VERSION, MIN_PROTOCOL_VERSION),
+        ..HydraClientConfig::new(identity())
+    };
+    let client = HydraClient::connect(transport, config)
+        .await
+        .expect("client connects");
+
+    assert_eq!(client.negotiated_version(), MIN_PROTOCOL_VERSION);
+    assert_eq!(client.get(ns(), key("missing")).await.unwrap(), None);
 }
 
 #[test]

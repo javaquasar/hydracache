@@ -6,10 +6,12 @@ selected for 0.49 is Python, under `sdks/python`.
 
 ## Protocol And Semver
 
-Both SDKs support HydraCache client protocol version 1. SDK semantic versions are
-tied to the protocol support window:
+Both SDKs support the HydraCache client protocol compatibility window. SDK
+semantic versions are tied to the protocol support window:
 
 - SDK `0.49.x` supports protocol `1`.
+- SDKs adding 0.52 lock/CAS support must negotiate protocol `2` while keeping
+  protocol `1` cache-operation compatibility.
 - Adding support for another compatible protocol version is a minor SDK release.
 - Removing protocol `1` support requires a breaking SDK release and a new COMPAT
   entry.

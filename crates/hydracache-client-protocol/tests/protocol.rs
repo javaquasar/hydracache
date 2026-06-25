@@ -2,10 +2,11 @@ use std::fs;
 use std::path::Path;
 
 use hydracache_client_protocol::{
-    ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame, ClientRequest,
-    ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope, ClientWireMessage,
-    InvalidationEvent, Namespace, ReadConsistency, RegionId, RepairAction, StructuredKey,
-    SubscriptionWatermarkTracker, VersionHandshake, Watermark,
+    require_protocol_version, ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
+    ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
+    ClientWireMessage, InvalidationEvent, Namespace, ReadConsistency, RegionId, RepairAction,
+    StructuredKey, SubscriptionWatermarkTracker, VersionHandshake, Watermark, MIN_PROTOCOL_VERSION,
+    PROTOCOL_VERSION,
 };
 
 fn ns() -> Namespace {
@@ -61,6 +62,24 @@ fn protocol_new_client_old_server_compat() {
 }
 
 #[test]
+fn protocol_default_handshake_advertises_v1_to_v2_window() {
+    let handshake = VersionHandshake::default();
+
+    assert_eq!(handshake.min, MIN_PROTOCOL_VERSION);
+    assert_eq!(handshake.max, PROTOCOL_VERSION);
+}
+
+#[test]
+fn lock_op_requires_negotiated_v2() {
+    let error = require_protocol_version(1, 2, "try_lock").unwrap_err();
+
+    assert_eq!(error.code, ClientErrorCode::IncompatibleVersion);
+    assert!(!error.retryable);
+    assert!(error.message.contains("try_lock requires"));
+    assert!(require_protocol_version(2, 2, "try_lock").is_ok());
+}
+
+#[test]
 fn protocol_golden_wire_fixtures_are_stable() {
     let fixture_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/client-v1");
     let fixture = fs::read_to_string(fixture_dir.join("handshake.hex")).unwrap();
@@ -75,6 +94,16 @@ fn protocol_malformed_or_truncated_frame_is_refused_not_panicked() {
     let error = ClientFrame::decode(&[0, 0, 0], 1024).unwrap_err();
 
     assert!(error.to_string().contains("truncated client frame"));
+}
+
+#[test]
+fn protocol_zero_frame_version_is_refused_loud() {
+    let bytes = ClientFrame::with_version(0, Vec::new()).encode().unwrap();
+    let error = ClientFrame::decode(&bytes, 1024).unwrap_err();
+
+    assert!(error
+        .to_string()
+        .contains("unsupported client protocol version 0"));
 }
 
 #[test]

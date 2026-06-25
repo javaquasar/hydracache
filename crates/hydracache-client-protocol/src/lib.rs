@@ -12,7 +12,10 @@ pub mod hibernate;
 pub mod java_migration;
 
 /// First supported external client protocol version.
-pub const PROTOCOL_VERSION: u16 = 1;
+pub const MIN_PROTOCOL_VERSION: u16 = 1;
+
+/// Highest supported external client protocol version.
+pub const PROTOCOL_VERSION: u16 = 2;
 
 /// Bytes used by the unsigned length prefix.
 pub const LENGTH_PREFIX_BYTES: usize = 4;
@@ -40,7 +43,7 @@ pub struct ClientFrame {
 }
 
 impl ClientFrame {
-    /// Build a v1 frame.
+    /// Build a frame at the highest supported protocol version.
     pub fn new(payload: impl Into<Bytes>) -> Self {
         Self {
             protocol_version: PROTOCOL_VERSION,
@@ -53,6 +56,16 @@ impl ClientFrame {
         let payload = postcard::to_allocvec(message)
             .map_err(|error| ClientProtocolError::Codec(error.to_string()))?;
         Ok(Self::new(payload))
+    }
+
+    /// Encode a typed wire message as this frame payload at an explicit version.
+    pub fn from_message_with_version(
+        protocol_version: u16,
+        message: &ClientWireMessage,
+    ) -> Result<Self, ClientProtocolError> {
+        let payload = postcard::to_allocvec(message)
+            .map_err(|error| ClientProtocolError::Codec(error.to_string()))?;
+        Ok(Self::with_version(protocol_version, payload))
     }
 
     /// Build a frame with an explicit protocol version for compatibility tests.
@@ -143,7 +156,7 @@ impl ClientFrame {
                 .try_into()
                 .expect("slice length is checked"),
         );
-        if protocol_version > PROTOCOL_VERSION {
+        if !(MIN_PROTOCOL_VERSION..=PROTOCOL_VERSION).contains(&protocol_version) {
             return Err(ClientProtocolError::UnsupportedVersion {
                 version: protocol_version,
                 supported_max: PROTOCOL_VERSION,
@@ -191,9 +204,49 @@ impl VersionHandshake {
 impl Default for VersionHandshake {
     fn default() -> Self {
         Self {
-            min: PROTOCOL_VERSION,
+            min: MIN_PROTOCOL_VERSION,
             max: PROTOCOL_VERSION,
         }
+    }
+}
+
+/// Return whether a request/response envelope version is in the supported window.
+pub fn protocol_version_supported(protocol_version: u16) -> bool {
+    (MIN_PROTOCOL_VERSION..=PROTOCOL_VERSION).contains(&protocol_version)
+}
+
+/// Reject an unsupported protocol version with the stable wire error.
+pub fn ensure_supported_protocol_version(protocol_version: u16) -> Result<(), ClientErrorEnvelope> {
+    if protocol_version_supported(protocol_version) {
+        Ok(())
+    } else {
+        Err(ClientErrorEnvelope::new(
+            ClientErrorCode::IncompatibleVersion,
+            false,
+            format!(
+                "unsupported HydraCache client protocol version {protocol_version}; supported range is {MIN_PROTOCOL_VERSION}..={PROTOCOL_VERSION}"
+            ),
+        ))
+    }
+}
+
+/// Reject an operation whose minimum version is newer than the negotiated version.
+pub fn require_protocol_version(
+    protocol_version: u16,
+    required_min: u16,
+    operation: &'static str,
+) -> Result<(), ClientErrorEnvelope> {
+    ensure_supported_protocol_version(protocol_version)?;
+    if protocol_version >= required_min {
+        Ok(())
+    } else {
+        Err(ClientErrorEnvelope::new(
+            ClientErrorCode::IncompatibleVersion,
+            false,
+            format!(
+                "{operation} requires HydraCache client protocol version {required_min} or newer"
+            ),
+        ))
     }
 }
 
@@ -378,7 +431,7 @@ pub struct ClientRequestEnvelope {
 }
 
 impl ClientRequestEnvelope {
-    /// Create an envelope for v1.
+    /// Create an envelope for the highest supported protocol version.
     pub fn new(request_id: impl Into<String>, request: ClientRequest) -> Self {
         Self {
             request_id: request_id.into(),
@@ -411,6 +464,11 @@ impl ClientRequestEnvelope {
     /// Return whether the deadline is expired at a logical timestamp.
     pub fn deadline_expired(&self, now_ms: u64) -> bool {
         self.deadline_ms.is_some_and(|deadline| deadline <= now_ms)
+    }
+
+    /// Validate the envelope version and operation minimum version.
+    pub fn validate_protocol(&self) -> Result<(), ClientErrorEnvelope> {
+        self.request.ensure_supported_by(self.protocol_version)
     }
 }
 
@@ -451,6 +509,42 @@ pub enum ClientRequest {
     },
 }
 
+impl ClientRequest {
+    /// Minimum protocol version required by this operation.
+    pub fn minimum_protocol_version(&self) -> u16 {
+        match self {
+            Self::Get { .. }
+            | Self::Put { .. }
+            | Self::Invalidate { .. }
+            | Self::BatchGet { .. }
+            | Self::BatchPut { .. }
+            | Self::EvictRegion { .. }
+            | Self::SubscribeInvalidations { .. } => MIN_PROTOCOL_VERSION,
+        }
+    }
+
+    /// Validate this operation against a negotiated protocol version.
+    pub fn ensure_supported_by(&self, protocol_version: u16) -> Result<(), ClientErrorEnvelope> {
+        require_protocol_version(
+            protocol_version,
+            self.minimum_protocol_version(),
+            self.operation_name(),
+        )
+    }
+
+    fn operation_name(&self) -> &'static str {
+        match self {
+            Self::Get { .. } => "get",
+            Self::Put { .. } => "put",
+            Self::Invalidate { .. } => "invalidate",
+            Self::BatchGet { .. } => "batch_get",
+            Self::BatchPut { .. } => "batch_put",
+            Self::EvictRegion { .. } => "evict_region",
+            Self::SubscribeInvalidations { .. } => "subscribe_invalidations",
+        }
+    }
+}
+
 /// One batch put entry.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BatchPutEntry {
@@ -488,6 +582,12 @@ impl ClientResponseEnvelope {
             protocol_version: PROTOCOL_VERSION,
             result: Err(error),
         }
+    }
+
+    /// Return this response encoded for a negotiated protocol version.
+    pub fn with_protocol_version(mut self, protocol_version: u16) -> Self {
+        self.protocol_version = protocol_version;
+        self
     }
 }
 
@@ -670,6 +770,18 @@ pub enum ClientWireMessage {
     Invalidation(InvalidationEvent),
     /// Stream heartbeat.
     Heartbeat(Watermark),
+}
+
+impl ClientWireMessage {
+    /// Return the protocol version that should be used for the outer frame.
+    pub fn protocol_version(&self) -> u16 {
+        match self {
+            Self::Handshake(handshake) => handshake.max,
+            Self::Request(envelope) => envelope.protocol_version,
+            Self::Response(envelope) => envelope.protocol_version,
+            Self::Invalidation(_) | Self::Heartbeat(_) => PROTOCOL_VERSION,
+        }
+    }
 }
 
 fn redact_message(message: String) -> String {

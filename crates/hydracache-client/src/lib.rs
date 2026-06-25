@@ -14,7 +14,7 @@ use hydracache_client_protocol::{
     ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame, ClientProtocolError,
     ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
     ClientWireMessage, Namespace, RepairAction, StructuredKey, SubscriptionWatermarkTracker,
-    VersionHandshake, PROTOCOL_VERSION,
+    VersionHandshake,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -97,7 +97,7 @@ pub struct HydraClientConfig {
 }
 
 impl HydraClientConfig {
-    /// Build a config for protocol v1.
+    /// Build a config for the default supported protocol window.
     pub fn new(identity: ClientIdentity) -> Self {
         Self {
             identity,
@@ -221,9 +221,11 @@ where
 {
     /// Connect and negotiate the highest common protocol version.
     pub async fn connect(transport: T, config: HydraClientConfig) -> Result<Self, ClientError> {
-        let frame =
-            ClientFrame::from_message(&ClientWireMessage::Handshake(config.supported_versions))?
-                .encode()?;
+        let frame = ClientFrame::from_message_with_version(
+            config.supported_versions.max,
+            &ClientWireMessage::Handshake(config.supported_versions),
+        )?
+        .encode()?;
         let response = transport.send_frame(&config.identity, frame).await?;
         let response = decode_message(&response, config.max_frame_bytes)?;
         let ClientWireMessage::Handshake(server) = response else {
@@ -361,7 +363,8 @@ where
         envelope.protocol_version = self.negotiated_version;
 
         let message = ClientWireMessage::Request(envelope);
-        let frame = ClientFrame::from_message(&message)?.encode()?;
+        let frame =
+            ClientFrame::from_message_with_version(self.negotiated_version, &message)?.encode()?;
         let response = self
             .transport
             .send_frame(&self.config.identity, frame)
@@ -370,7 +373,7 @@ where
         let ClientWireMessage::Response(envelope) = response else {
             return Err(ClientError::UnexpectedMessage("response"));
         };
-        unpack_response(envelope)
+        unpack_response(envelope, self.negotiated_version)
     }
 
     fn next_request_id(&self) -> String {
@@ -385,8 +388,11 @@ impl<T> Drop for HydraClient<T> {
     }
 }
 
-fn unpack_response(envelope: ClientResponseEnvelope) -> Result<ClientResponse, ClientError> {
-    if envelope.protocol_version != PROTOCOL_VERSION {
+fn unpack_response(
+    envelope: ClientResponseEnvelope,
+    expected_protocol_version: u16,
+) -> Result<ClientResponse, ClientError> {
+    if envelope.protocol_version != expected_protocol_version {
         return Err(ClientError::Server(ClientErrorEnvelope::new(
             ClientErrorCode::IncompatibleVersion,
             false,

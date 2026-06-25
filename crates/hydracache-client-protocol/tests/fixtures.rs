@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use hydracache_client_protocol::{ClientFrame, PROTOCOL_VERSION};
+use hydracache_client_protocol::ClientFrame;
 
 #[test]
 fn golden_client_v1_fixtures_round_trip() {
@@ -19,7 +19,7 @@ fn golden_client_v1_fixtures_round_trip() {
         let bytes = decode_hex(&text);
         let frame = ClientFrame::decode(&bytes, 1024).expect("fixture decodes");
 
-        assert_eq!(frame.protocol_version(), PROTOCOL_VERSION);
+        assert_eq!(frame.protocol_version(), 1);
         assert_eq!(
             frame.encode().expect("fixture re-encodes").as_ref(),
             bytes.as_slice(),

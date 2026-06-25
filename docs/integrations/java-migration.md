@@ -12,8 +12,9 @@ checked-in unsupported-API manifest.
 
 ## Artifacts
 
-- `hydracache-java-client`: typed Java client over the protocol-v1 HTTP/2
-  length-prefixed binary frame.
+- `hydracache-java-client`: typed Java client over the protocol-v1/v2 HTTP/2
+  length-prefixed binary frame. Protocol v1 covers cache operations; protocol v2
+  is required for the 0.52 IMap/Fenced Lock surface.
 - `hydracache-spring-boot2-starter`, `hydracache-spring-boot3-starter`, and
   `hydracache-spring-boot4-starter`: Boot-generation-specific
   auto-configuration with one shared runtime model.
@@ -74,8 +75,23 @@ UserProfile cached = users.get(userId);
 
 The facade is deliberately narrow: `get`, `put`, `putIfAbsent`, `remove`,
 `containsKey`, `getAll`, `putAll`, `invalidate`, `clearNamespace`, and
-`evictRegion`. These operations map to protocol-v1 cache operations and never
-expose server-side code execution.
+`evictRegion`. These cache operations map to the protocol-v1/v2 compatibility
+window and never expose server-side code execution. Lock/CAS extensions require
+protocol v2 negotiation before dispatch.
+
+## Fenced Lock Release Contract
+
+The 0.52 lock facade follows the same explicit-release shape that Java users
+already expect from `Lock.unlock()`: the successful lock path returns a guard or
+handle that exposes the fence token, and the guaranteed release path is an
+explicit `unlock().await` / `unlock()` call through the client.
+
+Client-side `LockGuard::Drop` must not attempt an async network unlock. Rust
+`Drop` is synchronous, cannot await a transport round trip, and may run after the
+runtime/channel is already gone. A guard may record a non-blocking abandon hint
+for diagnostics, but that hint is not a correctness guarantee. The server-side
+logical lease/session expiry is the safety net for crashed clients or forgotten
+explicit unlocks, and stale owners are rejected by fence/session checks.
 
 ## Codec And Schema Registration
 

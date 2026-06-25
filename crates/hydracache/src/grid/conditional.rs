@@ -225,6 +225,11 @@ impl SingleKeyConditionalStore {
         self.records.get(key)
     }
 
+    /// Return the current live value for a key, treating tombstones as absent.
+    pub fn current_value(&self, key: &str) -> Option<Vec<u8>> {
+        self.records.get(key).and_then(current_bytes)
+    }
+
     /// Return the current lock hold for a key.
     pub fn lock_hold(&self, key: &str) -> Option<&LockHold> {
         self.locks.get(key)
@@ -295,6 +300,28 @@ impl SingleKeyConditionalStore {
         level: ConsistencyLevel,
     ) -> Result<CasResult, ConditionalError> {
         self.compare_and_set(key, None, value, level)
+    }
+
+    /// Remove one key by writing a tombstone only when the live value matches.
+    pub fn remove_if_value(
+        &mut self,
+        key: &str,
+        expected: &[u8],
+        level: ConsistencyLevel,
+    ) -> Result<CasResult, ConditionalError> {
+        require_linearizable_level(level)?;
+        let current = self.records.get(key).and_then(current_bytes);
+        if current.as_deref() != Some(expected) {
+            self.metrics.cas_mismatch_total = self.metrics.cas_mismatch_total.saturating_add(1);
+            return Ok(CasResult::Mismatch { current });
+        }
+
+        let version = self.next_version;
+        self.apply_tombstone(key, version);
+        self.metrics.cas_applied_total = self.metrics.cas_applied_total.saturating_add(1);
+        Ok(CasResult::Applied {
+            new_version: version,
+        })
     }
 
     /// Reject multi-key conditional attempts loudly.

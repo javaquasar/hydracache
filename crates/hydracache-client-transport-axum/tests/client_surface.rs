@@ -6,6 +6,7 @@ use hydracache::{
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
     ClientResponse, ClientResponseEnvelope, ClientWireMessage, Namespace, StructuredKey,
+    PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
@@ -38,10 +39,23 @@ async fn send(
     surface: &AxumClientSurface,
     envelope: ClientRequestEnvelope,
 ) -> ClientResponseEnvelope {
-    let frame = ClientFrame::from_message(&ClientWireMessage::Request(envelope))
-        .unwrap()
-        .encode()
-        .unwrap();
+    send_with_frame_version(surface, envelope, PROTOCOL_VERSION)
+        .await
+        .1
+}
+
+async fn send_with_frame_version(
+    surface: &AxumClientSurface,
+    envelope: ClientRequestEnvelope,
+    frame_protocol_version: u16,
+) -> (u16, ClientResponseEnvelope) {
+    let frame = ClientFrame::from_message_with_version(
+        frame_protocol_version,
+        &ClientWireMessage::Request(envelope),
+    )
+    .unwrap()
+    .encode()
+    .unwrap();
     let response = surface
         .routes()
         .oneshot(
@@ -58,14 +72,13 @@ async fn send(
 
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = to_bytes(response.into_body(), 1024 * 1024).await.unwrap();
-    let message = ClientFrame::decode(&bytes, 1024 * 1024)
-        .unwrap()
-        .decode_message()
-        .unwrap();
+    let frame = ClientFrame::decode(&bytes, 1024 * 1024).unwrap();
+    let response_protocol_version = frame.protocol_version();
+    let message = frame.decode_message().unwrap();
     let ClientWireMessage::Response(response) = message else {
         panic!("expected response message");
     };
-    response
+    (response_protocol_version, response)
 }
 
 #[tokio::test]
@@ -211,6 +224,28 @@ async fn client_surface_remote_request_respects_authority_and_fence() {
     let error = send(&surface, request).await.result.unwrap_err();
     assert_eq!(error.code, ClientErrorCode::IncompatibleVersion);
     assert_eq!(surface.state().state_mutations(), 0);
+}
+
+#[tokio::test]
+async fn mixed_version_v1_client_never_sees_v2_response() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let mut request = ClientRequestEnvelope::new(
+        "get-v1",
+        ClientRequest::Get {
+            ns: ns(),
+            key: key("42"),
+        },
+    );
+    request.protocol_version = 1;
+
+    let (frame_version, response) = send_with_frame_version(&surface, request, 1).await;
+
+    assert_eq!(frame_version, 1);
+    assert_eq!(response.protocol_version, 1);
+    assert!(matches!(
+        response.result.unwrap(),
+        ClientResponse::Value { value: None }
+    ));
 }
 
 #[tokio::test]
