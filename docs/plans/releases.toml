@@ -121,6 +121,6 @@ depends_on = ["0.45.0"]
 [[release]]
 version = "0.52.0"
 file = "docs/plans/V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "IMap + Fenced Lock Java surface — surface the shipped single-key fenced-lock engine (0.46 SingleKeyConditionalStore) as a supported distributed lock: lock lease + session-bound ownership + auto-release on session loss (the one missing algorithm), reentrancy, lock ops in the client wire protocol, Hazelcast FencedLock / IMap-lock-shaped Java facade with the unsupported-manifest stance reversed for the lock subset; rounds out IMap CAS ergonomics (replace(k,old,new), remove(k,val)) and entry listeners over the invalidation bus; validated in 0.44 DST (mutual exclusion, fence monotonicity, zombie-holder rejection). No new consistency level, no general CP Subsystem, no remote code execution, no cross-region lock"
 depends_on = ["0.46.0", "0.49.0"]
