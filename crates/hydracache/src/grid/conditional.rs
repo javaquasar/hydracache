@@ -548,6 +548,17 @@ impl SingleKeyConditionalStore {
         Ok(())
     }
 
+    /// Privileged release that advances the fencing sequence without requiring ownership.
+    pub fn force_unlock(&mut self, key: &str) -> Option<FenceToken> {
+        if self.locks.remove(key).is_some() {
+            let next = FenceToken::new(self.next_fence);
+            self.next_fence = self.next_fence.saturating_add(1);
+            Some(next)
+        } else {
+            None
+        }
+    }
+
     /// Validate that a token is still current.
     pub fn validate_fence_token(
         &mut self,

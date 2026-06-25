@@ -1692,6 +1692,7 @@ dependencies = [
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",
+ "hydracache-observability",
  "serde",
  "serde_json",
  "thiserror 2.0.18",

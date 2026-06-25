@@ -546,6 +546,8 @@ pub enum ClientRequest {
         fence: u64,
         lease_ms: u64,
     },
+    /// Privileged fence-advancing release.
+    ForceUnlock { ns: Namespace, key: StructuredKey },
     /// Read current lock ownership metadata.
     GetLockOwnership { ns: Namespace, key: StructuredKey },
 }
@@ -564,6 +566,7 @@ impl ClientRequest {
             Self::TryLock { .. }
             | Self::Unlock { .. }
             | Self::RenewLockLease { .. }
+            | Self::ForceUnlock { .. }
             | Self::GetLockOwnership { .. } => LOCK_PROTOCOL_VERSION,
         }
     }
@@ -589,6 +592,7 @@ impl ClientRequest {
             Self::TryLock { .. } => "try_lock",
             Self::Unlock { .. } => "unlock",
             Self::RenewLockLease { .. } => "renew_lock_lease",
+            Self::ForceUnlock { .. } => "force_unlock",
             Self::GetLockOwnership { .. } => "get_lock_ownership",
         }
     }

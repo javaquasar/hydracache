@@ -11,7 +11,7 @@ use thiserror::Error;
 use crate::{ClientErrorCode, ClientErrorEnvelope};
 
 /// Current Java migration contract version.
-pub const JAVA_MIGRATION_CONTRACT_VERSION: u16 = 1;
+pub const JAVA_MIGRATION_CONTRACT_VERSION: u16 = 2;
 
 /// Checked-in manifest of Hazelcast APIs that HydraCache refuses to emulate.
 pub const UNSUPPORTED_HAZELCAST_APIS_MANIFEST: &str =
@@ -300,6 +300,84 @@ impl JavaMapOperation {
     }
 }
 
+/// Java lock facade operation exposed by the migration toolkit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JavaLockOperation {
+    /// `Lock.lock`.
+    Lock,
+    /// Hazelcast CP `lockAndGetFence`.
+    LockAndGetFence,
+    /// Immediate `tryLock`.
+    TryLock,
+    /// Timed `tryLock`.
+    TryLockTimed,
+    /// Explicit `unlock`.
+    Unlock,
+    /// Read the current fencing token.
+    GetFence,
+    /// Read whether the lock is held.
+    IsLocked,
+    /// Check whether this session/endpoint owns the lock.
+    IsLockedByCurrentThread,
+    /// Privileged force unlock.
+    ForceUnlock,
+}
+
+/// Protocol-level operation family for a Java lock facade method.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JavaLockProtocolFamily {
+    /// Maps to protocol-v2 `TryLock` and may wait/retry client-side.
+    TryLock {
+        /// Whether the Java facade returns the fence directly.
+        returns_fence: bool,
+        /// Whether the facade models blocking wait semantics.
+        blocking_wait: bool,
+    },
+    /// Maps to protocol-v2 `Unlock`.
+    Unlock,
+    /// Maps to protocol-v2 `GetLockOwnership`.
+    GetLockOwnership,
+    /// Maps to protocol-v2 privileged `ForceUnlock`.
+    ForceUnlock {
+        /// Force unlock always requires admin authorization and audit.
+        privileged: bool,
+    },
+}
+
+impl JavaLockOperation {
+    /// Return the protocol family that backs this facade operation.
+    pub const fn protocol_family(self) -> JavaLockProtocolFamily {
+        match self {
+            Self::Lock => JavaLockProtocolFamily::TryLock {
+                returns_fence: false,
+                blocking_wait: true,
+            },
+            Self::LockAndGetFence => JavaLockProtocolFamily::TryLock {
+                returns_fence: true,
+                blocking_wait: true,
+            },
+            Self::TryLock => JavaLockProtocolFamily::TryLock {
+                returns_fence: true,
+                blocking_wait: false,
+            },
+            Self::TryLockTimed => JavaLockProtocolFamily::TryLock {
+                returns_fence: true,
+                blocking_wait: true,
+            },
+            Self::Unlock => JavaLockProtocolFamily::Unlock,
+            Self::GetFence | Self::IsLocked | Self::IsLockedByCurrentThread => {
+                JavaLockProtocolFamily::GetLockOwnership
+            }
+            Self::ForceUnlock => JavaLockProtocolFamily::ForceUnlock { privileged: true },
+        }
+    }
+
+    /// Return whether this operation requires admin authorization and audit.
+    pub const fn is_privileged(self) -> bool {
+        matches!(self, Self::ForceUnlock)
+    }
+}
+
 /// Serializer registration kind accepted or rejected by the Java toolkit.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JavaCodecKind {
@@ -458,13 +536,24 @@ pub struct UnsupportedHazelcastApi {
     pub migration_hint: String,
 }
 
-/// Versioned manifest of unsupported Hazelcast APIs.
+/// One supported Hazelcast API migration mapping and its caveat.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SupportedHazelcastApiMapping {
+    /// Hazelcast API surface.
+    pub api: String,
+    /// Human migration hint.
+    pub migration_hint: String,
+}
+
+/// Versioned manifest of supported mappings and unsupported Hazelcast APIs.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UnsupportedHazelcastApiManifest {
     /// Manifest version.
     pub version: u16,
     /// Unsupported APIs.
     pub entries: Vec<UnsupportedHazelcastApi>,
+    /// Supported source-level migration mappings.
+    pub supported_mappings: Vec<SupportedHazelcastApiMapping>,
 }
 
 impl UnsupportedHazelcastApiManifest {
@@ -472,6 +561,7 @@ impl UnsupportedHazelcastApiManifest {
     pub fn parse(contents: &str) -> Result<Self, JavaMigrationContractError> {
         let mut version = None;
         let mut entries = Vec::new();
+        let mut supported_mappings = Vec::new();
 
         for raw in contents.lines() {
             let line = raw.trim();
@@ -487,16 +577,30 @@ impl UnsupportedHazelcastApiManifest {
                 continue;
             }
 
-            let Some((api, migration_hint)) = line.split_once('|') else {
-                return Err(JavaMigrationContractError::InvalidManifest("entry"));
+            let parts = line.split('|').map(str::trim).collect::<Vec<_>>();
+            let (kind, api, migration_hint) = match parts.as_slice() {
+                [api, migration_hint] => ("unsupported", *api, *migration_hint),
+                [kind @ ("unsupported" | "supported"), api, migration_hint] => {
+                    (*kind, *api, *migration_hint)
+                }
+                _ => {
+                    return Err(JavaMigrationContractError::InvalidManifest("entry"));
+                }
             };
-            if api.trim().is_empty() || migration_hint.trim().is_empty() {
+            if api.is_empty() || migration_hint.is_empty() {
                 return Err(JavaMigrationContractError::InvalidManifest("entry"));
             }
-            entries.push(UnsupportedHazelcastApi {
-                api: api.trim().to_owned(),
-                migration_hint: migration_hint.trim().to_owned(),
-            });
+            match kind {
+                "unsupported" => entries.push(UnsupportedHazelcastApi {
+                    api: api.to_owned(),
+                    migration_hint: migration_hint.to_owned(),
+                }),
+                "supported" => supported_mappings.push(SupportedHazelcastApiMapping {
+                    api: api.to_owned(),
+                    migration_hint: migration_hint.to_owned(),
+                }),
+                _ => return Err(JavaMigrationContractError::InvalidManifest("entry")),
+            }
         }
 
         let version = version.ok_or(JavaMigrationContractError::InvalidManifest("version"))?;
@@ -510,7 +614,11 @@ impl UnsupportedHazelcastApiManifest {
             return Err(JavaMigrationContractError::InvalidManifest("entries"));
         }
 
-        Ok(Self { version, entries })
+        Ok(Self {
+            version,
+            entries,
+            supported_mappings,
+        })
     }
 
     /// Parse the checked-in manifest.
@@ -521,6 +629,13 @@ impl UnsupportedHazelcastApiManifest {
     /// Find a manifest entry by API name.
     pub fn find(&self, api: &str) -> Option<&UnsupportedHazelcastApi> {
         self.entries.iter().find(|entry| entry.api == api)
+    }
+
+    /// Find a supported mapping entry by API name.
+    pub fn find_supported(&self, api: &str) -> Option<&SupportedHazelcastApiMapping> {
+        self.supported_mappings
+            .iter()
+            .find(|entry| entry.api == api)
     }
 }
 

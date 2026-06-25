@@ -5,9 +5,10 @@ use hydracache_client_protocol::{
     ClientResponseEnvelope, ClientWireMessage, LockConsistency, Namespace, StructuredKey,
 };
 use hydracache_client_transport_axum::{
-    AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER,
-    HYDRACACHE_TENANT_HEADER,
+    AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, HYDRACACHE_ADMIN_HEADER,
+    HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
+use hydracache_observability::AuditEvent;
 use tower::ServiceExt;
 
 fn ns() -> Namespace {
@@ -23,6 +24,15 @@ async fn send(
     client_id: &str,
     request: ClientRequest,
 ) -> ClientResponseEnvelope {
+    send_with_admin(surface, client_id, false, request).await
+}
+
+async fn send_with_admin(
+    surface: &AxumClientSurface,
+    client_id: &str,
+    admin: bool,
+    request: ClientRequest,
+) -> ClientResponseEnvelope {
     let frame = ClientFrame::from_message(&ClientWireMessage::Request(ClientRequestEnvelope::new(
         format!("{client_id}-request"),
         request,
@@ -30,17 +40,17 @@ async fn send(
     .unwrap()
     .encode()
     .unwrap();
+    let mut request = Request::builder()
+        .method("POST")
+        .uri(CLIENT_DATA_PATH)
+        .header(HYDRACACHE_CLIENT_ID_HEADER, client_id)
+        .header(HYDRACACHE_TENANT_HEADER, "tenant-a");
+    if admin {
+        request = request.header(HYDRACACHE_ADMIN_HEADER, "true");
+    }
     let response = surface
         .routes()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri(CLIENT_DATA_PATH)
-                .header(HYDRACACHE_CLIENT_ID_HEADER, client_id)
-                .header(HYDRACACHE_TENANT_HEADER, "tenant-a")
-                .body(Body::from(frame))
-                .unwrap(),
-        )
+        .oneshot(request.body(Body::from(frame)).unwrap())
         .await
         .unwrap();
 
@@ -180,4 +190,86 @@ async fn not_leader_forwards_or_redirects() {
     assert!(error.retryable);
     assert_eq!(error.retry_after_ms, Some(1));
     assert!(error.message.contains("leader=1"));
+}
+
+#[tokio::test]
+async fn force_unlock_requires_admin_and_audits() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let acquired = send(&surface, "client-a", try_lock(LockConsistency::Quorum, 100))
+        .await
+        .result
+        .unwrap();
+    assert!(matches!(acquired, ClientResponse::LockAcquired { .. }));
+
+    let error = send(
+        &surface,
+        "client-b",
+        ClientRequest::ForceUnlock {
+            ns: ns(),
+            key: key("user:42"),
+        },
+    )
+    .await
+    .result
+    .unwrap_err();
+
+    assert_eq!(error.code, ClientErrorCode::Unauthorized);
+    let events = surface.state().audit_events_for_tests();
+    assert!(matches!(
+        events.as_slice(),
+        [AuditEvent::AuthFailure {
+            tenant: Some(_),
+            route,
+            request_id: Some(_)
+        }] if route == CLIENT_DATA_PATH
+    ));
+    assert_eq!(
+        send(&surface, "client-b", try_lock(LockConsistency::Quorum, 100))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::LockBusy
+    );
+}
+
+#[tokio::test]
+async fn force_unlock_advances_fence() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let acquired = send(&surface, "client-a", try_lock(LockConsistency::Quorum, 100))
+        .await
+        .result
+        .unwrap();
+    let ClientResponse::LockAcquired { fence } = acquired else {
+        panic!("expected acquisition");
+    };
+
+    send_with_admin(
+        &surface,
+        "admin-a",
+        true,
+        ClientRequest::ForceUnlock {
+            ns: ns(),
+            key: key("user:42"),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+
+    let reacquired = send(&surface, "client-b", try_lock(LockConsistency::Quorum, 100))
+        .await
+        .result
+        .unwrap();
+    let ClientResponse::LockAcquired { fence: next_fence } = reacquired else {
+        panic!("expected acquisition after force unlock");
+    };
+    assert!(next_fence > fence);
+    assert!(surface
+        .state()
+        .audit_events_for_tests()
+        .iter()
+        .any(|event| matches!(
+            event,
+            AuditEvent::PolicyChanged { summary, .. } if summary == "force_unlock"
+        )));
 }

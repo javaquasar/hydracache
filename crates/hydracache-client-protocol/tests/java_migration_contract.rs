@@ -3,9 +3,9 @@ use std::path::PathBuf;
 
 use hydracache_client_protocol::java_migration::{
     java_exception_mapping, JavaClientRuntimeConfig, JavaClientTopology, JavaCodecDescriptor,
-    JavaCodecKind, JavaCodecRegistryContract, JavaExceptionKind, JavaMapOperation,
-    JavaMapProtocolFamily, JavaMigrationContractError, SpringCacheMode,
-    UnsupportedHazelcastApiManifest, JAVA_MIGRATION_CONTRACT_VERSION,
+    JavaCodecKind, JavaCodecRegistryContract, JavaExceptionKind, JavaLockOperation,
+    JavaLockProtocolFamily, JavaMapOperation, JavaMapProtocolFamily, JavaMigrationContractError,
+    SpringCacheMode, UnsupportedHazelcastApiManifest, JAVA_MIGRATION_CONTRACT_VERSION,
     SUPPORTED_SPRING_BOOT_GENERATIONS,
 };
 use hydracache_client_protocol::{ClientErrorCode, ClientErrorEnvelope};
@@ -181,14 +181,11 @@ mod java_migration_contract {
         assert_eq!(manifest.version, JAVA_MIGRATION_CONTRACT_VERSION);
         assert!(manifest.entries.len() >= 8);
         for api in [
-            "HazelcastInstance.getCPSubsystem",
             "HazelcastInstance.getExecutorService",
             "HazelcastInstance.getSql",
-            "IMap.lock",
             "IMap.executeOnKey",
             "ReplicatedMap",
             "ReliableTopic",
-            "FencedLock",
         ] {
             let entry = manifest.find(api).expect("manifest entry");
             assert!(
@@ -196,13 +193,25 @@ mod java_migration_contract {
                 "{api} should have a migration hint"
             );
         }
+        for api in ["IMap.lock", "IMap.tryLock", "FencedLock"] {
+            assert!(manifest.find(api).is_none(), "{api} should not be refused");
+            let mapping = manifest.find_supported(api).expect("supported mapping");
+            assert!(mapping.migration_hint.contains("HydraFencedLock"));
+            assert!(mapping.migration_hint.contains("fence"));
+        }
+        assert!(manifest
+            .find_supported("HazelcastInstance.getCPSubsystem().getLock")
+            .expect("lock-only CP mapping")
+            .migration_hint
+            .contains("Lock-only"));
 
         let future_error =
-            UnsupportedHazelcastApiManifest::parse("version=2\nIMap.lock|hint").unwrap_err();
+            UnsupportedHazelcastApiManifest::parse("version=3\nunsupported|IMap.lock|hint")
+                .unwrap_err();
         assert_eq!(
             future_error,
             JavaMigrationContractError::UnsupportedManifestVersion {
-                actual: 2,
+                actual: 3,
                 supported: JAVA_MIGRATION_CONTRACT_VERSION
             }
         );
@@ -216,12 +225,79 @@ mod java_migration_contract {
             .expect("java migration docs");
         let compat = fs::read_to_string(root.join("docs/COMPAT.md")).expect("compat");
 
-        assert!(manifest_file.contains("IMap.lock|"));
+        assert!(manifest_file.contains("supported|IMap.lock|"));
         assert!(docs.contains("Java/Spring Migration Contract"));
         assert!(docs.contains("HydraCacheMap<String, UserProfile>"));
+        assert!(docs.contains("HydraFencedLock"));
         assert!(docs.contains("mode: native"));
         assert!(compat.contains("Java migration toolkit contract"));
+        assert!(compat.contains("| Java migration toolkit contract | `2` |"));
         assert!(compat.contains("unsupported_hazelcast_apis.txt"));
+    }
+
+    #[test]
+    fn java_lock_operation_maps_to_wire_family() {
+        let cases = [
+            (
+                JavaLockOperation::Lock,
+                JavaLockProtocolFamily::TryLock {
+                    returns_fence: false,
+                    blocking_wait: true,
+                },
+            ),
+            (
+                JavaLockOperation::LockAndGetFence,
+                JavaLockProtocolFamily::TryLock {
+                    returns_fence: true,
+                    blocking_wait: true,
+                },
+            ),
+            (
+                JavaLockOperation::TryLock,
+                JavaLockProtocolFamily::TryLock {
+                    returns_fence: true,
+                    blocking_wait: false,
+                },
+            ),
+            (
+                JavaLockOperation::TryLockTimed,
+                JavaLockProtocolFamily::TryLock {
+                    returns_fence: true,
+                    blocking_wait: true,
+                },
+            ),
+            (JavaLockOperation::Unlock, JavaLockProtocolFamily::Unlock),
+            (
+                JavaLockOperation::GetFence,
+                JavaLockProtocolFamily::GetLockOwnership,
+            ),
+            (
+                JavaLockOperation::IsLocked,
+                JavaLockProtocolFamily::GetLockOwnership,
+            ),
+            (
+                JavaLockOperation::IsLockedByCurrentThread,
+                JavaLockProtocolFamily::GetLockOwnership,
+            ),
+            (
+                JavaLockOperation::ForceUnlock,
+                JavaLockProtocolFamily::ForceUnlock { privileged: true },
+            ),
+        ];
+
+        for (operation, family) in cases {
+            assert_eq!(operation.protocol_family(), family, "{operation:?}");
+        }
+    }
+
+    #[test]
+    fn force_unlock_is_marked_privileged() {
+        assert!(JavaLockOperation::ForceUnlock.is_privileged());
+        assert!(!JavaLockOperation::Unlock.is_privileged());
+        assert_eq!(
+            JavaLockOperation::ForceUnlock.protocol_family(),
+            JavaLockProtocolFamily::ForceUnlock { privileged: true }
+        );
     }
 
     #[test]

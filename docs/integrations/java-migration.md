@@ -10,6 +10,10 @@ It is not a Hazelcast wire-compatible client and it is not a Hazelcast API
 clone. Unsupported Hazelcast APIs fail loud with a migration hint from the
 checked-in unsupported-API manifest.
 
+HydraCache 0.52 documents the Java lock facade contract and Rust-side protocol
+mapping only. It does not publish a Maven/Gradle Java SDK artifact from this
+workspace; buildable Java artifacts remain a separate delivery item.
+
 ## Artifacts
 
 - `hydracache-java-client`: typed Java client over the protocol-v1/v2 HTTP/2
@@ -93,6 +97,25 @@ for diagnostics, but that hint is not a correctness guarantee. The server-side
 logical lease/session expiry is the safety net for crashed clients or forgotten
 explicit unlocks, and stale owners are rejected by fence/session checks.
 
+## Hazelcast Lock Mapping
+
+This is source-level migration ergonomics, not Hazelcast wire compatibility.
+
+| Hazelcast concept | HydraCache equivalent | Notes |
+| --- | --- | --- |
+| `IMap.lock(key)` | `HydraFencedLock.lock(key)` | Protocol-v2 `TryLock` with client-side wait/retry semantics. |
+| `IMap.tryLock(key)` | `HydraFencedLock.tryLock(key)` | Immediate protocol-v2 `TryLock`; returns busy without blocking. |
+| `FencedLock.lockAndGetFence()` | `HydraFencedLock.lockAndGetFence()` | Returns the fence token; callers must pass it to the external system of record. |
+| `FencedLock.getFence()` / `isLocked()` | `GetLockOwnership` | Reads ownership metadata from the partition leader. |
+| `forceUnlock()` | privileged `ForceUnlock` | Requires admin authorization, writes an audit event, and advances the fence before the next owner. |
+| `getCPSubsystem().getLock(...)` | lock-only mapping | Other CP structures remain unsupported. |
+
+The GC-pause story is fence-first: a paused client may resume after its logical
+lease expired, but its old fence is rejected after another owner advances the
+fence. This is a single-key linearizable lock surface. It is not cross-region
+linearizable, not a distributed transaction primitive, and not reentrant across
+processes unless callers preserve the same session identity.
+
 ## Codec And Schema Registration
 
 Java native serialization and reflective fallback serializers are disabled by
@@ -175,7 +198,7 @@ internals.
 
 The Java toolkit refuses unsupported APIs from
 `crates/hydracache-client-protocol/manifests/unsupported_hazelcast_apis.txt`.
-The first refused group includes CP structures, locks, executor service,
+The refused group still includes non-lock CP structures, executor service,
 Hazelcast SQL, entry processors, server-side interceptors, general pub/sub,
 ringbuffer, replicated map, and CRDT object APIs.
 

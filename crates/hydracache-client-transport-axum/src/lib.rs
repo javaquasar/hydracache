@@ -26,7 +26,7 @@ use hydracache_client_protocol::{
     ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, LockConsistency, Namespace,
     StructuredKey, VersionHandshake, PROTOCOL_VERSION,
 };
-use hydracache_observability::TenantStatus;
+use hydracache_observability::{AuditEvent, AuditRecorder, InMemoryAuditSink, TenantStatus};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -47,6 +47,9 @@ pub const HYDRACACHE_CLIENT_ID_HEADER: &str = "x-hydracache-client-id";
 
 /// Header carrying a verified tenant id.
 pub const HYDRACACHE_TENANT_HEADER: &str = "x-hydracache-tenant";
+
+/// Optional test/admin marker for privileged client operations.
+pub const HYDRACACHE_ADMIN_HEADER: &str = "x-hydracache-admin";
 
 /// External client route boundary helper.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -145,6 +148,7 @@ impl ClientSurfaceLimits {
 pub struct ClientIdentity {
     client_id: String,
     tenant: String,
+    admin: bool,
 }
 
 impl ClientIdentity {
@@ -161,7 +165,11 @@ impl ClientIdentity {
         if tenant.trim().is_empty() {
             return Err(ClientSurfaceError::Unauthenticated);
         }
-        Ok(Self { client_id, tenant })
+        Ok(Self {
+            client_id,
+            tenant,
+            admin: false,
+        })
     }
 
     /// Consumer id.
@@ -174,10 +182,20 @@ impl ClientIdentity {
         &self.tenant
     }
 
+    /// Return whether this identity can call privileged admin operations.
+    pub fn is_admin(&self) -> bool {
+        self.admin
+    }
+
     fn from_headers(headers: &HeaderMap) -> Result<Self, ClientSurfaceError> {
         let client_id = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER)?;
         let tenant = header_value(headers, HYDRACACHE_TENANT_HEADER)?;
-        Self::new(client_id, tenant)
+        let mut identity = Self::new(client_id, tenant)?;
+        identity.admin = headers
+            .get(HYDRACACHE_ADMIN_HEADER)
+            .and_then(|value| value.to_str().ok())
+            .is_some_and(|value| matches!(value, "true" | "1"));
+        Ok(identity)
     }
 }
 
@@ -266,6 +284,8 @@ pub struct ClientSurfaceState {
     events: Mutex<Vec<InvalidationEvent>>,
     idempotency_keys: Mutex<BTreeSet<String>>,
     lock_service: Mutex<ClientLockService>,
+    audit_sink: Arc<InMemoryAuditSink>,
+    audit: Mutex<AuditRecorder<Arc<InMemoryAuditSink>>>,
     isolation: Option<Mutex<ConsumerIsolation>>,
 }
 
@@ -273,6 +293,7 @@ impl ClientSurfaceState {
     /// Create state with validated limits.
     pub fn new(limits: ClientSurfaceLimits) -> Result<Self, ClientSurfaceError> {
         limits.validate()?;
+        let audit_sink = Arc::new(InMemoryAuditSink::new());
         Ok(Self {
             limits,
             dispatch_attempts: AtomicU64::new(0),
@@ -285,6 +306,8 @@ impl ClientSurfaceState {
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
             lock_service: Mutex::new(ClientLockService::new()),
+            audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
+            audit_sink,
             isolation: None,
         })
     }
@@ -295,6 +318,7 @@ impl ClientSurfaceState {
         isolation: ConsumerIsolation,
     ) -> Result<Self, ClientSurfaceError> {
         limits.validate()?;
+        let audit_sink = Arc::new(InMemoryAuditSink::new());
         Ok(Self {
             limits,
             dispatch_attempts: AtomicU64::new(0),
@@ -307,6 +331,8 @@ impl ClientSurfaceState {
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
             lock_service: Mutex::new(ClientLockService::new()),
+            audit: Mutex::new(AuditRecorder::new(Arc::clone(&audit_sink))),
+            audit_sink,
             isolation: Some(Mutex::new(isolation)),
         })
     }
@@ -355,6 +381,11 @@ impl ClientSurfaceState {
             .lock()
             .expect("lock service mutex")
             .advance_time_for_tests(millis);
+    }
+
+    /// Return recorded consumer audit events for integration tests.
+    pub fn audit_events_for_tests(&self) -> Vec<AuditEvent> {
+        self.audit_sink.events()
     }
 
     /// Return a tenant-scoped consumer status.
@@ -603,6 +634,9 @@ impl ClientSurfaceState {
                 fence,
                 lease_ms,
             } => self.handle_renew_lock(identity, envelope.request_id, ns, key, fence, lease_ms),
+            ClientRequest::ForceUnlock { ns, key } => {
+                self.handle_force_unlock(identity, envelope.request_id, ns, key)
+            }
             ClientRequest::GetLockOwnership { ns, key } => {
                 self.handle_lock_ownership(envelope.request_id, ns, key)
             }
@@ -688,6 +722,45 @@ impl ClientSurfaceState {
         lock_response(request_id, result)
     }
 
+    fn handle_force_unlock(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+    ) -> ClientResponseEnvelope {
+        if !identity.is_admin() {
+            self.record_audit(AuditEvent::AuthFailure {
+                tenant: Some(identity.tenant().to_owned()),
+                route: CLIENT_DATA_PATH.to_owned(),
+                request_id: Some(request_id.clone()),
+            });
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::Unauthorized,
+                    false,
+                    "force_unlock requires admin privileges",
+                ),
+            );
+        }
+        self.record_audit(AuditEvent::PolicyChanged {
+            namespace: ns.as_str().to_owned(),
+            policy_epoch: ClusterEpoch::new(1),
+            summary: "force_unlock".to_owned(),
+        });
+        let lock_key = lock_key(&ns, &key);
+        let result = self
+            .lock_service
+            .lock()
+            .expect("lock service mutex")
+            .apply_lock_command(|store, _now| {
+                store.force_unlock(&lock_key);
+                Ok(ClientResponse::LockReleased)
+            });
+        lock_response(request_id, result)
+    }
+
     fn handle_lock_ownership(
         &self,
         request_id: String,
@@ -711,6 +784,10 @@ impl ClientSurfaceState {
             );
         }
         ClientResponseEnvelope::ok(request_id, service.current_ownership(&lock_key))
+    }
+
+    fn record_audit(&self, event: AuditEvent) {
+        let _ = self.audit.lock().expect("audit mutex").record(&event);
     }
 
     fn handle_put(
