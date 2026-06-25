@@ -638,6 +638,12 @@ pub use grid::merkle_repair::{
     RepairReport, RepairSession, RepairToken,
 };
 #[cfg(not(target_arch = "wasm32"))]
+pub use grid::persistence_policy::{
+    NamespacePersistenceRule, NamespacePersistenceSettings, PersistenceDurability,
+    PersistenceEviction, PersistenceInMemoryFormat, PersistenceMatcher, PersistencePolicy,
+    PersistencePolicyError, ResolvedPersistence,
+};
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::region_failover::{
     promote_region_home, rejoining_region_authority, RegionFailoverError, RegionFailoverMetrics,
     RegionObservation, RegionPromotion, RegionPromotionReport, RegionRestore, RegionRestoreError,
