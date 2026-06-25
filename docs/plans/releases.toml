@@ -114,6 +114,6 @@ depends_on = ["0.44.0"]
 [[release]]
 version = "0.51.0"
 file = "docs/plans/V0_51_CONFIGURABLE_PERSISTENCE_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "Configurable per-namespace / per-region persistence (Hazelcast-style selective durability) — on-disk DurableValueStore backend, per-namespace policy with wildcard/prefix patterns (opt-in, default RAM-only), per-region selection (persist only important regions), Sync/AsyncBounded write path + scheduled snapshots, fail-loud epoch-fenced full-restart recovery, declarative config; builds on 0.43 tiered store + 0.45 regions, validated by 0.44 DST, may be pulled forward"
 depends_on = ["0.45.0"]

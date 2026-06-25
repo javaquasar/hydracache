@@ -5,7 +5,7 @@
 > - **Why:** today the value plane is **RAM-only** (`InMemoryReplicatedValueStore`; the "durable" names cover only the *format/seam*, not disk). A full simultaneous cluster restart loses **all** cached values. Operators need what Hazelcast gives them: persistence configured *flexibly, per important region*, not all-or-nothing — survive a reboot for the data that matters, pay nothing for the data that doesn't.
 > - **After (depends on):** 0.45 (region/active-active model). Also builds on 0.43 `TieredValueStore` (the cold-tier seam the durable backend plugs into) and is validated by 0.44 DST. The durable backend is *foundational*, so — like 0.50 — this **may be pulled forward** ahead of 0.46–0.49; it is numbered 0.51 only to avoid renumbering the in-flight 0.46–0.49 line.
 > - **Unblocks:** stronger DR for 0.48 backup/PITR (persistent namespaces have a durable source on each node) and Hibernate L2 region durability in 0.49.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · storage direction: [`../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md) · positioning: [`../POSITIONING.md`](../POSITIONING.md)
 
