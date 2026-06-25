@@ -250,8 +250,14 @@ pub enum JavaMapOperation {
     Put,
     /// `HydraCacheMap.putIfAbsent`.
     PutIfAbsent,
+    /// `HydraCacheMap.replace(key, oldValue, newValue)`.
+    Replace,
+    /// `HydraCacheMap.replace(key, newValue)`.
+    ReplaceIfPresent,
     /// `HydraCacheMap.remove`.
     Remove,
+    /// `HydraCacheMap.remove(key, value)`.
+    RemoveIfValue,
     /// `HydraCacheMap.containsKey`.
     ContainsKey,
     /// `HydraCacheMap.getAll`.
@@ -275,6 +281,13 @@ pub enum JavaMapProtocolFamily {
     Put,
     /// Maps to protocol-v1 conflict-aware conditional put-if-absent.
     ConditionalPutIfAbsent,
+    /// Maps to protocol-v2 compare-and-set replace.
+    ConditionalReplace {
+        /// Which wire expectation shape the facade must use.
+        expectation: JavaMapCasExpectation,
+    },
+    /// Maps to protocol-v2 conditional tombstone.
+    ConditionalRemove,
     /// Maps to protocol-v1 invalidation.
     Invalidate,
     /// Maps to protocol-v1 batch get.
@@ -285,6 +298,15 @@ pub enum JavaMapProtocolFamily {
     EvictRegion,
 }
 
+/// Java map CAS expectation shape.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JavaMapCasExpectation {
+    /// The caller provides an exact old value.
+    ExactValue,
+    /// Any live value is acceptable, but absent/tombstoned keys mismatch.
+    Present,
+}
+
 impl JavaMapOperation {
     /// Return the protocol family that backs this facade operation.
     pub const fn protocol_family(self) -> JavaMapProtocolFamily {
@@ -292,6 +314,13 @@ impl JavaMapOperation {
             Self::Get | Self::ContainsKey => JavaMapProtocolFamily::Get,
             Self::Put => JavaMapProtocolFamily::Put,
             Self::PutIfAbsent => JavaMapProtocolFamily::ConditionalPutIfAbsent,
+            Self::Replace => JavaMapProtocolFamily::ConditionalReplace {
+                expectation: JavaMapCasExpectation::ExactValue,
+            },
+            Self::ReplaceIfPresent => JavaMapProtocolFamily::ConditionalReplace {
+                expectation: JavaMapCasExpectation::Present,
+            },
+            Self::RemoveIfValue => JavaMapProtocolFamily::ConditionalRemove,
             Self::Remove | Self::Invalidate => JavaMapProtocolFamily::Invalidate,
             Self::GetAll => JavaMapProtocolFamily::BatchGet,
             Self::PutAll => JavaMapProtocolFamily::BatchPut,

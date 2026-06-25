@@ -1,8 +1,9 @@
 use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
 use hydracache_client_protocol::{
-    ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ClientWireMessage, LockConsistency, Namespace, StructuredKey,
+    CasExpectation, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
+    ClientResponse, ClientResponseEnvelope, ClientWireMessage, LockConsistency, Namespace,
+    StructuredKey,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, HYDRACACHE_ADMIN_HEADER,
@@ -272,4 +273,179 @@ async fn force_unlock_advances_fence() {
             event,
             AuditEvent::PolicyChanged { summary, .. } if summary == "force_unlock"
         )));
+}
+
+#[tokio::test]
+async fn compare_and_set_matching_old_updates_visible_value() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    send(
+        &surface,
+        "client-a",
+        ClientRequest::Put {
+            ns: ns(),
+            key: key("user:42"),
+            value: b"old".to_vec(),
+            ttl_ms: None,
+            dimensions: Vec::new(),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+
+    let applied = send(
+        &surface,
+        "client-a",
+        ClientRequest::CompareAndSet {
+            ns: ns(),
+            key: key("user:42"),
+            expected: CasExpectation::Exact(b"old".to_vec()),
+            new_value: b"new".to_vec(),
+            level: LockConsistency::Quorum,
+        },
+    )
+    .await
+    .result
+    .unwrap();
+    assert!(matches!(applied, ClientResponse::CasApplied { .. }));
+
+    let value = send(
+        &surface,
+        "client-a",
+        ClientRequest::Get {
+            ns: ns(),
+            key: key("user:42"),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+    assert_eq!(
+        value,
+        ClientResponse::Value {
+            value: Some(b"new".to_vec())
+        }
+    );
+}
+
+#[tokio::test]
+async fn compare_and_set_stale_old_returns_current_without_update() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    send(
+        &surface,
+        "client-a",
+        ClientRequest::Put {
+            ns: ns(),
+            key: key("user:42"),
+            value: b"current".to_vec(),
+            ttl_ms: None,
+            dimensions: Vec::new(),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+
+    let mismatch = send(
+        &surface,
+        "client-a",
+        ClientRequest::CompareAndSet {
+            ns: ns(),
+            key: key("user:42"),
+            expected: CasExpectation::Exact(b"stale".to_vec()),
+            new_value: b"new".to_vec(),
+            level: LockConsistency::Quorum,
+        },
+    )
+    .await
+    .result
+    .unwrap();
+
+    assert_eq!(
+        mismatch,
+        ClientResponse::CasMismatch {
+            current: Some(b"current".to_vec())
+        }
+    );
+}
+
+#[tokio::test]
+async fn remove_if_value_match_writes_tombstone_visible_as_absent() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    send(
+        &surface,
+        "client-a",
+        ClientRequest::Put {
+            ns: ns(),
+            key: key("user:42"),
+            value: b"current".to_vec(),
+            ttl_ms: None,
+            dimensions: Vec::new(),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+
+    let removed = send(
+        &surface,
+        "client-a",
+        ClientRequest::RemoveIfValue {
+            ns: ns(),
+            key: key("user:42"),
+            expected: b"current".to_vec(),
+            level: LockConsistency::Quorum,
+        },
+    )
+    .await
+    .result
+    .unwrap();
+    assert!(matches!(removed, ClientResponse::CasApplied { .. }));
+
+    let value = send(
+        &surface,
+        "client-a",
+        ClientRequest::Get {
+            ns: ns(),
+            key: key("user:42"),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+    assert_eq!(value, ClientResponse::Value { value: None });
+}
+
+#[tokio::test]
+async fn replace_if_present_on_absent_is_mismatch_not_inserted() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+
+    let mismatch = send(
+        &surface,
+        "client-a",
+        ClientRequest::CompareAndSet {
+            ns: ns(),
+            key: key("missing"),
+            expected: CasExpectation::Present,
+            new_value: b"created".to_vec(),
+            level: LockConsistency::Quorum,
+        },
+    )
+    .await
+    .result
+    .unwrap();
+    assert_eq!(mismatch, ClientResponse::CasMismatch { current: None });
+
+    let value = send(
+        &surface,
+        "client-a",
+        ClientRequest::Get {
+            ns: ns(),
+            key: key("missing"),
+        },
+    )
+    .await
+    .result
+    .unwrap();
+    assert_eq!(value, ClientResponse::Value { value: None });
 }

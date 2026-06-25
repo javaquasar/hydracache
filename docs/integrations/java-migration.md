@@ -97,6 +97,23 @@ for diagnostics, but that hint is not a correctness guarantee. The server-side
 logical lease/session expiry is the safety net for crashed clients or forgotten
 explicit unlocks, and stale owners are rejected by fence/session checks.
 
+## Hazelcast IMap Conditional Write Mapping
+
+This is source-level migration ergonomics over protocol-v2 single-key CAS, not
+Hazelcast binary compatibility.
+
+| Hazelcast concept | HydraCache equivalent | Notes |
+| --- | --- | --- |
+| `IMap.replace(key, oldValue, newValue)` | `HydraCacheMap.replace(key, oldValue, newValue)` | Protocol-v2 `CompareAndSet` with an exact old-value expectation. |
+| `IMap.replace(key, newValue)` | `HydraCacheMap.replaceIfPresent(key, newValue)` | Protocol-v2 `CompareAndSet` with a present-only expectation; absent/tombstoned keys return mismatch and do not insert. |
+| `IMap.remove(key, value)` | `HydraCacheMap.removeIf(key, value)` | Protocol-v2 `RemoveIfValue`; a match writes a versioned tombstone, mismatch returns the current live value. |
+
+These operations are single-key and leader-applied. They do not provide
+multi-key transactions, entry-processor semantics, or server-side application
+code execution. Callers should treat `CasMismatch` as the normal optimistic
+conflict path and retry from the returned current value when that is safe for
+their business workflow.
+
 ## Hazelcast Lock Mapping
 
 This is source-level migration ergonomics, not Hazelcast wire compatibility.
@@ -208,11 +225,10 @@ transparent replacement for all Hazelcast runtime features.
 The list reflects what the toolkit refuses **today**, not a permanent ceiling for
 every entry. `RULES.md` R-2 fixes only the permanent non-goals (distributed
 transactions, cross-region linearizability, remote code execution); distributed
-locks are **not** among them. The **lock-by-key subset** (`IMap.lock` /
-`IMap.tryLock` / CP `FencedLock`) has a planned supported path — a single-key
-linearizable HydraCache fenced lock with a returned fencing token — tracked in
-[`V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md`](../plans/V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md)
-(status: planned; not yet shipped). The remaining refused APIs — entry processors /
-`executeOnKey`, Hazelcast SQL, executor service, `ReplicatedMap`, ringbuffer /
-reliable topic as an event log, and CRDT object APIs — stay unsupported: they are
-either permanent R-2 non-goals or out of scope for the cache wedge.
+locks and single-key conditional writes are **not** among them. The supported
+0.52 subset covers `IMap.lock` / `IMap.tryLock` / CP `FencedLock` plus
+`IMap.replace` and `IMap.remove(key,value)` as protocol-v2 single-key
+operations. The remaining refused APIs — entry processors / `executeOnKey`,
+Hazelcast SQL, executor service, `ReplicatedMap`, ringbuffer / reliable topic
+as an event log, and CRDT object APIs — stay unsupported: they are either
+permanent R-2 non-goals or out of scope for the cache wedge.

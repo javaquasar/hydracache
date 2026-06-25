@@ -9,8 +9,9 @@ use axum::http::{Request, StatusCode};
 use bytes::Bytes;
 use hydracache::{ClusterGeneration, MetaDataContainer, NearCacheRepairAction};
 use hydracache_client::{
-    stable_error_retryable, ClientError, ClientIdentity, ClientTransport, ConformanceManifest,
-    HydraClient, HydraClientConfig, RemoteNearCache, RequestOptions, RetryPolicy,
+    stable_error_retryable, CasOutcome, ClientError, ClientIdentity, ClientTransport,
+    ConformanceManifest, HydraClient, HydraClientConfig, RemoteNearCache, RequestOptions,
+    RetryPolicy,
 };
 use hydracache_client_protocol::{
     ClientErrorCode, ClientRequest, Namespace, RepairAction, StructuredKey, VersionHandshake,
@@ -223,6 +224,52 @@ async fn conformance_client_lock_guard_unlock_and_metrics() {
     assert_eq!(metrics.lock_acquired_total, 2);
     assert_eq!(metrics.lock_busy_total, 0);
     assert_eq!(metrics.lock_lease_renew_total, 1);
+}
+
+#[tokio::test]
+async fn conformance_client_imap_cas_methods_and_metrics() {
+    let transport = TwoNodeAxumTransport::new();
+    let client = HydraClient::connect(transport, HydraClientConfig::new(identity()))
+        .await
+        .expect("client connects");
+
+    client
+        .put(ns(), key("cas"), Bytes::from_static(b"old"), None)
+        .await
+        .expect("put");
+
+    let applied = client
+        .replace(
+            ns(),
+            key("cas"),
+            Bytes::from_static(b"old"),
+            Bytes::from_static(b"new"),
+        )
+        .await
+        .expect("replace");
+    assert!(matches!(applied, CasOutcome::Applied { .. }));
+    assert_eq!(
+        client.get(ns(), key("cas")).await.expect("get"),
+        Some(Bytes::from_static(b"new"))
+    );
+
+    let mismatch = client
+        .replace_if_present(ns(), key("missing-cas"), Bytes::from_static(b"created"))
+        .await
+        .expect("replace-if-present");
+    assert_eq!(mismatch, CasOutcome::Mismatch { current: None });
+    assert_eq!(client.get(ns(), key("missing-cas")).await.unwrap(), None);
+
+    let removed = client
+        .remove_if(ns(), key("cas"), Bytes::from_static(b"new"))
+        .await
+        .expect("remove-if");
+    assert!(matches!(removed, CasOutcome::Applied { .. }));
+    assert_eq!(client.get(ns(), key("cas")).await.unwrap(), None);
+
+    let metrics = client.metrics();
+    assert_eq!(metrics.cas_applied_total, 2);
+    assert_eq!(metrics.cas_mismatch_total, 1);
 }
 
 #[test]

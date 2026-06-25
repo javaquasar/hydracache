@@ -11,10 +11,10 @@ use std::time::Duration;
 use async_trait::async_trait;
 use bytes::Bytes;
 use hydracache_client_protocol::{
-    ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame, ClientProtocolError,
-    ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
-    ClientWireMessage, LockConsistency, Namespace, RepairAction, StructuredKey,
-    SubscriptionWatermarkTracker, VersionHandshake,
+    CasExpectation, ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
+    ClientProtocolError, ClientRequest, ClientRequestEnvelope, ClientResponse,
+    ClientResponseEnvelope, ClientWireMessage, LockConsistency, Namespace, RepairAction,
+    StructuredKey, SubscriptionWatermarkTracker, VersionHandshake,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -212,6 +212,21 @@ pub struct LockOwnership {
     pub fence: Option<u64>,
     /// Whether the lock is held.
     pub locked: bool,
+}
+
+/// Result of an IMap compare-and-set operation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CasOutcome {
+    /// The operation applied and produced a monotonic server version.
+    Applied {
+        /// New monotonic value version.
+        new_version: u64,
+    },
+    /// The operation did not apply because the current value differed.
+    Mismatch {
+        /// Current live value bytes, if present.
+        current: Option<Bytes>,
+    },
 }
 
 /// Fenced lock guard returned by [`HydraClient::try_lock`].
@@ -483,6 +498,92 @@ where
         Ok(LockOwnership { fence, locked })
     }
 
+    /// Replace a value only when the current value exactly matches `expected`.
+    pub async fn replace(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+        expected: Bytes,
+        new_value: Bytes,
+    ) -> Result<CasOutcome, ClientError> {
+        self.compare_and_set(ns, key, CasExpectation::Exact(expected.to_vec()), new_value)
+            .await
+    }
+
+    /// Replace a value only when any live value is present.
+    pub async fn replace_if_present(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+        new_value: Bytes,
+    ) -> Result<CasOutcome, ClientError> {
+        self.compare_and_set(ns, key, CasExpectation::Present, new_value)
+            .await
+    }
+
+    /// Remove a value only when the current value exactly matches `expected`.
+    pub async fn remove_if(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+        expected: Bytes,
+    ) -> Result<CasOutcome, ClientError> {
+        let response = self
+            .request(
+                ClientRequest::RemoveIfValue {
+                    ns,
+                    key,
+                    expected: expected.to_vec(),
+                    level: LockConsistency::Quorum,
+                },
+                RequestOptions::default(),
+            )
+            .await?;
+        self.cas_outcome(response)
+    }
+
+    async fn compare_and_set(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+        expected: CasExpectation,
+        new_value: Bytes,
+    ) -> Result<CasOutcome, ClientError> {
+        let response = self
+            .request(
+                ClientRequest::CompareAndSet {
+                    ns,
+                    key,
+                    expected,
+                    new_value: new_value.to_vec(),
+                    level: LockConsistency::Quorum,
+                },
+                RequestOptions::default(),
+            )
+            .await?;
+        self.cas_outcome(response)
+    }
+
+    fn cas_outcome(&self, response: ClientResponse) -> Result<CasOutcome, ClientError> {
+        match response {
+            ClientResponse::CasApplied { new_version } => {
+                self.metrics
+                    .cas_applied_total
+                    .fetch_add(1, Ordering::SeqCst);
+                Ok(CasOutcome::Applied { new_version })
+            }
+            ClientResponse::CasMismatch { current } => {
+                self.metrics
+                    .cas_mismatch_total
+                    .fetch_add(1, Ordering::SeqCst);
+                Ok(CasOutcome::Mismatch {
+                    current: current.map(Bytes::from),
+                })
+            }
+            _ => Err(ClientError::UnexpectedResponse("cas outcome")),
+        }
+    }
+
     /// Send a raw protocol request with explicit options.
     pub async fn request(
         &self,
@@ -625,6 +726,8 @@ pub struct ClientMetrics {
     lock_acquired_total: AtomicU64,
     lock_busy_total: AtomicU64,
     lock_lease_renew_total: AtomicU64,
+    cas_applied_total: AtomicU64,
+    cas_mismatch_total: AtomicU64,
 }
 
 impl ClientMetrics {
@@ -636,6 +739,8 @@ impl ClientMetrics {
             lock_acquired_total: self.lock_acquired_total.load(Ordering::SeqCst),
             lock_busy_total: self.lock_busy_total.load(Ordering::SeqCst),
             lock_lease_renew_total: self.lock_lease_renew_total.load(Ordering::SeqCst),
+            cas_applied_total: self.cas_applied_total.load(Ordering::SeqCst),
+            cas_mismatch_total: self.cas_mismatch_total.load(Ordering::SeqCst),
         }
     }
 }
@@ -653,6 +758,10 @@ pub struct ClientMetricsSnapshot {
     pub lock_busy_total: u64,
     /// Successful lock lease renewals.
     pub lock_lease_renew_total: u64,
+    /// Successful client CAS operations.
+    pub cas_applied_total: u64,
+    /// Client CAS operations that observed a mismatch.
+    pub cas_mismatch_total: u64,
 }
 
 /// Language-agnostic conformance manifest.

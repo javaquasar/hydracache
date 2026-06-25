@@ -3,6 +3,8 @@
 version=2
 supported|IMap.lock|Use HydraFencedLock as a single-key linearizable fenced lock; pass the returned fence to your system of record. Not cross-region linearizable and not reentrant across processes unless the same session identity is supplied.
 supported|IMap.tryLock|Use HydraFencedLock.tryLock as a protocol-v2 TryLock mapping; pass the returned fence to your system of record. Timed waits are client-side retry loops over the same single-key lock.
+supported|IMap.replace|Use HydraCacheMap.replace as a protocol-v2 CompareAndSet mapping. Exact old-value replace and replace-if-present are distinct expectation modes; absent keys mismatch.
+supported|IMap.remove(key,value)|Use HydraCacheMap.remove_if as a protocol-v2 RemoveIfValue mapping. A match writes a versioned tombstone; mismatch returns the current value.
 supported|FencedLock|Use HydraFencedLock for the lock-by-key subset. ForceUnlock is privileged, audited, and fence-advancing; this is source-level ergonomics, not Hazelcast wire compatibility.
 supported|HazelcastInstance.getCPSubsystem().getLock|Lock-only CP migration path: use HydraFencedLock. Other CP structures remain unsupported.
 unsupported|HazelcastInstance.getExecutorService|HydraCache does not run server-side application code; keep execution in the application JVM or job system.

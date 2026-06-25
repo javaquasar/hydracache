@@ -16,12 +16,12 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use hydracache::{
-    AdmissionRejection, ClusterEpoch, ConditionalError, ConsistencyLevel, ConsumerIsolation,
-    FenceToken, LockOwner, LogicalDuration, LogicalTime, SingleKeyConditionalStore, TenantId,
-    TenantMetricsSnapshot,
+    AdmissionRejection, CasResult, ClusterEpoch, ConditionalError, ConsistencyLevel,
+    ConsumerIsolation, FenceToken, LockOwner, LogicalDuration, LogicalTime,
+    SingleKeyConditionalStore, TenantId, TenantMetricsSnapshot,
 };
 use hydracache_client_protocol::{
-    protocol_version_supported, BatchItemStatus, BatchPutEntry, ClientErrorCode,
+    protocol_version_supported, BatchItemStatus, BatchPutEntry, CasExpectation, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, LockConsistency, Namespace,
     StructuredKey, VersionHandshake, PROTOCOL_VERSION,
@@ -206,6 +206,14 @@ struct ClientLockService {
     leader_node_id: u64,
     logical_now_ms: u64,
     applied_commands: u64,
+}
+
+struct CompareAndSetCommand {
+    ns: Namespace,
+    key: StructuredKey,
+    expected: CasExpectation,
+    new_value: Vec<u8>,
+    level: LockConsistency,
 }
 
 impl ClientLockService {
@@ -640,6 +648,31 @@ impl ClientSurfaceState {
             ClientRequest::GetLockOwnership { ns, key } => {
                 self.handle_lock_ownership(envelope.request_id, ns, key)
             }
+            ClientRequest::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            } => self.handle_compare_and_set(
+                identity,
+                envelope.request_id,
+                CompareAndSetCommand {
+                    ns,
+                    key,
+                    expected,
+                    new_value,
+                    level,
+                },
+            ),
+            ClientRequest::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            } => {
+                self.handle_remove_if_value(identity, envelope.request_id, ns, key, expected, level)
+            }
         };
         response.with_protocol_version(response_protocol_version)
     }
@@ -784,6 +817,107 @@ impl ClientSurfaceState {
             );
         }
         ClientResponseEnvelope::ok(request_id, service.current_ownership(&lock_key))
+    }
+
+    fn handle_compare_and_set(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        command: CompareAndSetCommand,
+    ) -> ClientResponseEnvelope {
+        let CompareAndSetCommand {
+            ns,
+            key,
+            expected,
+            new_value,
+            level,
+        } = command;
+        if new_value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
+            );
+        }
+        if let Err(error) = self.admit_put(identity, &ns, &key, new_value.len() as u64) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let map_key = store_key(&ns, &key);
+        let live_value = self
+            .store
+            .lock()
+            .expect("store mutex")
+            .get(&map_key)
+            .cloned();
+        let cas_key = lock_key(&ns, &key);
+        let value_for_response = new_value.clone();
+        let level = lock_consistency(level);
+        let result = self
+            .lock_service
+            .lock()
+            .expect("lock service mutex")
+            .apply_lock_command(|store, _now| {
+                sync_conditional_record(store, &cas_key, live_value.as_deref())?;
+                let result = match expected {
+                    CasExpectation::Exact(expected) => {
+                        store.compare_and_set(&cas_key, Some(&expected), new_value, level)?
+                    }
+                    CasExpectation::Present => {
+                        store.replace_if_present(&cas_key, new_value, level)?
+                    }
+                };
+                Ok(cas_response(result))
+            });
+
+        if matches!(&result, Ok(ClientResponse::CasApplied { .. })) {
+            self.store
+                .lock()
+                .expect("store mutex")
+                .insert(map_key, value_for_response);
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        lock_response(request_id, result)
+    }
+
+    fn handle_remove_if_value(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        expected: Vec<u8>,
+        level: LockConsistency,
+    ) -> ClientResponseEnvelope {
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let map_key = store_key(&ns, &key);
+        let live_value = self
+            .store
+            .lock()
+            .expect("store mutex")
+            .get(&map_key)
+            .cloned();
+        let cas_key = lock_key(&ns, &key);
+        let level = lock_consistency(level);
+        let result = self
+            .lock_service
+            .lock()
+            .expect("lock service mutex")
+            .apply_lock_command(|store, _now| {
+                sync_conditional_record(store, &cas_key, live_value.as_deref())?;
+                let result = store.remove_if_value(&cas_key, &expected, level)?;
+                Ok(cas_response(result))
+            });
+
+        if matches!(&result, Ok(ClientResponse::CasApplied { .. })) {
+            self.store.lock().expect("store mutex").remove(&map_key);
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        lock_response(request_id, result)
     }
 
     fn record_audit(&self, event: AuditEvent) {
@@ -1128,6 +1262,40 @@ fn lock_consistency(level: LockConsistency) -> ConsistencyLevel {
         LockConsistency::Quorum => ConsistencyLevel::Quorum,
         LockConsistency::EachQuorum => ConsistencyLevel::EachQuorum,
         LockConsistency::All => ConsistencyLevel::All,
+    }
+}
+
+fn sync_conditional_record(
+    store: &mut SingleKeyConditionalStore,
+    key: &str,
+    live_value: Option<&[u8]>,
+) -> Result<(), ConditionalError> {
+    let current = store.current_value(key);
+    if current.as_deref() == live_value {
+        return Ok(());
+    }
+    match live_value {
+        Some(value) => {
+            store.compare_and_set(
+                key,
+                current.as_deref(),
+                value.to_vec(),
+                ConsistencyLevel::Quorum,
+            )?;
+        }
+        None => {
+            if let Some(current) = current {
+                store.remove_if_value(key, &current, ConsistencyLevel::Quorum)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn cas_response(result: CasResult) -> ClientResponse {
+    match result {
+        CasResult::Applied { new_version } => ClientResponse::CasApplied { new_version },
+        CasResult::Mismatch { current } => ClientResponse::CasMismatch { current },
     }
 }
 

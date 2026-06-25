@@ -356,6 +356,16 @@ pub enum LockConsistency {
     All,
 }
 
+/// Expected value shape for single-key compare-and-set operations.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CasExpectation {
+    /// Match one exact current value.
+    Exact(Vec<u8>),
+    /// Match any live value, but fail when the key is absent/tombstoned.
+    Present,
+}
+
 /// Optional context carried by every request.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClientContext {
@@ -550,6 +560,21 @@ pub enum ClientRequest {
     ForceUnlock { ns: Namespace, key: StructuredKey },
     /// Read current lock ownership metadata.
     GetLockOwnership { ns: Namespace, key: StructuredKey },
+    /// Single-key compare-and-set for IMap replace ergonomics.
+    CompareAndSet {
+        ns: Namespace,
+        key: StructuredKey,
+        expected: CasExpectation,
+        new_value: Vec<u8>,
+        level: LockConsistency,
+    },
+    /// Single-key conditional tombstone for IMap remove(key, value).
+    RemoveIfValue {
+        ns: Namespace,
+        key: StructuredKey,
+        expected: Vec<u8>,
+        level: LockConsistency,
+    },
 }
 
 impl ClientRequest {
@@ -567,7 +592,9 @@ impl ClientRequest {
             | Self::Unlock { .. }
             | Self::RenewLockLease { .. }
             | Self::ForceUnlock { .. }
-            | Self::GetLockOwnership { .. } => LOCK_PROTOCOL_VERSION,
+            | Self::GetLockOwnership { .. }
+            | Self::CompareAndSet { .. }
+            | Self::RemoveIfValue { .. } => LOCK_PROTOCOL_VERSION,
         }
     }
 
@@ -594,6 +621,8 @@ impl ClientRequest {
             Self::RenewLockLease { .. } => "renew_lock_lease",
             Self::ForceUnlock { .. } => "force_unlock",
             Self::GetLockOwnership { .. } => "get_lock_ownership",
+            Self::CompareAndSet { .. } => "compare_and_set",
+            Self::RemoveIfValue { .. } => "remove_if_value",
         }
     }
 }
@@ -670,6 +699,10 @@ pub enum ClientResponse {
     LockLeaseRenewed,
     /// Current lock ownership.
     LockOwnership { fence: Option<u64>, locked: bool },
+    /// CAS applied and produced a new monotonic version.
+    CasApplied { new_version: u64 },
+    /// CAS did not apply; carries the current live value if present.
+    CasMismatch { current: Option<Vec<u8>> },
 }
 
 /// Per-item batch status.

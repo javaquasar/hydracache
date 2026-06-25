@@ -4,9 +4,9 @@ use std::path::PathBuf;
 use hydracache_client_protocol::java_migration::{
     java_exception_mapping, JavaClientRuntimeConfig, JavaClientTopology, JavaCodecDescriptor,
     JavaCodecKind, JavaCodecRegistryContract, JavaExceptionKind, JavaLockOperation,
-    JavaLockProtocolFamily, JavaMapOperation, JavaMapProtocolFamily, JavaMigrationContractError,
-    SpringCacheMode, UnsupportedHazelcastApiManifest, JAVA_MIGRATION_CONTRACT_VERSION,
-    SUPPORTED_SPRING_BOOT_GENERATIONS,
+    JavaLockProtocolFamily, JavaMapCasExpectation, JavaMapOperation, JavaMapProtocolFamily,
+    JavaMigrationContractError, SpringCacheMode, UnsupportedHazelcastApiManifest,
+    JAVA_MIGRATION_CONTRACT_VERSION, SUPPORTED_SPRING_BOOT_GENERATIONS,
 };
 use hydracache_client_protocol::{ClientErrorCode, ClientErrorEnvelope};
 
@@ -199,6 +199,14 @@ mod java_migration_contract {
             assert!(mapping.migration_hint.contains("HydraFencedLock"));
             assert!(mapping.migration_hint.contains("fence"));
         }
+        for api in ["IMap.replace", "IMap.remove(key,value)"] {
+            assert!(manifest.find(api).is_none(), "{api} should not be refused");
+            let mapping = manifest.find_supported(api).expect("supported mapping");
+            assert!(
+                mapping.migration_hint.contains("protocol-v2"),
+                "{api} should document protocol-v2 CAS mapping"
+            );
+        }
         assert!(manifest
             .find_supported("HazelcastInstance.getCPSubsystem().getLock")
             .expect("lock-only CP mapping")
@@ -226,6 +234,8 @@ mod java_migration_contract {
         let compat = fs::read_to_string(root.join("docs/COMPAT.md")).expect("compat");
 
         assert!(manifest_file.contains("supported|IMap.lock|"));
+        assert!(manifest_file.contains("supported|IMap.replace|"));
+        assert!(manifest_file.contains("supported|IMap.remove(key,value)|"));
         assert!(docs.contains("Java/Spring Migration Contract"));
         assert!(docs.contains("HydraCacheMap<String, UserProfile>"));
         assert!(docs.contains("HydraFencedLock"));
@@ -339,6 +349,22 @@ mod java_migration_contract {
         assert_eq!(
             JavaMapOperation::PutIfAbsent.protocol_family(),
             JavaMapProtocolFamily::ConditionalPutIfAbsent
+        );
+        assert_eq!(
+            JavaMapOperation::Replace.protocol_family(),
+            JavaMapProtocolFamily::ConditionalReplace {
+                expectation: JavaMapCasExpectation::ExactValue,
+            }
+        );
+        assert_eq!(
+            JavaMapOperation::ReplaceIfPresent.protocol_family(),
+            JavaMapProtocolFamily::ConditionalReplace {
+                expectation: JavaMapCasExpectation::Present,
+            }
+        );
+        assert_eq!(
+            JavaMapOperation::RemoveIfValue.protocol_family(),
+            JavaMapProtocolFamily::ConditionalRemove
         );
         assert_eq!(
             JavaMapOperation::Remove.protocol_family(),

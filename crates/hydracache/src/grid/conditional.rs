@@ -302,6 +302,22 @@ impl SingleKeyConditionalStore {
         self.compare_and_set(key, None, value, level)
     }
 
+    /// Replace one key only when a live value is currently present.
+    pub fn replace_if_present(
+        &mut self,
+        key: &str,
+        new_value: Vec<u8>,
+        level: ConsistencyLevel,
+    ) -> Result<CasResult, ConditionalError> {
+        require_linearizable_level(level)?;
+        let current = self.records.get(key).and_then(current_bytes);
+        let Some(expected) = current else {
+            self.metrics.cas_mismatch_total = self.metrics.cas_mismatch_total.saturating_add(1);
+            return Ok(CasResult::Mismatch { current: None });
+        };
+        self.compare_and_set(key, Some(&expected), new_value, level)
+    }
+
     /// Remove one key by writing a tombstone only when the live value matches.
     pub fn remove_if_value(
         &mut self,
