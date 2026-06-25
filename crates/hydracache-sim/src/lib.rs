@@ -7,6 +7,7 @@
 pub mod clock;
 pub mod invariants;
 pub mod linearizability;
+pub mod lock_safety;
 pub mod network;
 pub mod persistence_recovery;
 pub mod rng;
@@ -27,6 +28,7 @@ pub use invariants::{
 pub use linearizability::{
     LinearizabilityChecker, LinearizabilityReport, LinearizabilityViolation,
 };
+pub use lock_safety::{run_lock_safety, LockSafetyReport, LockSafetyScenario};
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
 pub use persistence_recovery::{
     run_persistence_recovery, PersistenceRecoveryFault, PersistenceRecoveryInvariantReport,

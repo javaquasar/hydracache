@@ -133,8 +133,18 @@ impl InvariantReport {
         self.checked = self.checked.saturating_add(1);
     }
 
+    /// Record that one invariant was checked successfully.
+    pub fn record_check(&mut self) {
+        self.checked();
+    }
+
     fn violation(&mut self, name: &'static str, message: impl Into<String>) {
         self.violations.push(InvariantViolation::new(name, message));
+    }
+
+    /// Record one invariant violation.
+    pub fn record_violation(&mut self, name: &'static str, message: impl Into<String>) {
+        self.violation(name, message);
     }
 
     fn merge(&mut self, other: InvariantReport) {
