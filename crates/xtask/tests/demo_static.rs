@@ -31,6 +31,7 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(html.contains("data-testid=\"verdict\""));
     assert!(html.contains("data-testid=\"partition-link\""));
     assert!(html.contains("data-testid=\"nodes-panel\""));
+    assert!(html.contains("data-testid=\"signals-panel\""));
     assert!(html.contains("data-testid=\"scenario-select\""));
     assert!(html.contains("data-testid=\"load-scenario\""));
     assert!(html.contains("data-testid=\"copy-reproducer\""));
@@ -57,6 +58,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("snapshot.election_source"));
     assert!(js.contains("snapshot.nodes"));
     assert!(js.contains("snapshot.links"));
+    assert!(js.contains("snapshot.in_flight"));
+    assert!(js.contains("snapshot.over_budget"));
     assert!(js.contains("snapshot.keys"));
     assert!(js.contains("writeUrlState(window.history"));
     assert!(js.contains("snapshotHash(snapshot)"));

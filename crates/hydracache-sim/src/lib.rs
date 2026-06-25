@@ -24,8 +24,9 @@ pub mod world;
 pub use clock::SimClock;
 pub use election::{
     cluster_transition, node_transition, ClusterFsm, ClusterFsmAction, ClusterFsmEvent,
-    ElectionDriver, ElectionDriverSnapshot, ElectionNodeState, ElectionSource, FormationPhase,
-    FsmTransition, NodeFsm, NodeFsmState, CLUSTER_TRANSITION_TABLE, NODE_TRANSITION_TABLE,
+    ElectionDriver, ElectionDriverSnapshot, ElectionNodeState, ElectionSignal, ElectionSignalKind,
+    ElectionSource, FormationPhase, FsmTransition, NodeFsm, NodeFsmState, CLUSTER_TRANSITION_TABLE,
+    NODE_TRANSITION_TABLE,
 };
 pub use invariants::{
     ElectionTopologyNode, ElectionTopologyState, InvariantChecker, InvariantReport,
@@ -51,8 +52,9 @@ pub use schedule::{
     FailureReport, FaultSchedule, ReplayOutcome, ReplayRunner, ScheduledFault, ScheduledFaultKind,
 };
 pub use snapshot::{
-    ConvergenceView, KeyReplicaView, KeyView, LinkStateView, LinkView, NodeView, ProgressView,
-    SimSnapshot, SimSnapshotDecodeError, VerdictView, SIM_SNAPSHOT_SCHEMA_VERSION,
+    ConvergenceView, KeyReplicaView, KeyView, LinkStateView, LinkView, MessageView, NodeView,
+    ProgressView, SimSnapshot, SimSnapshotDecodeError, SnapshotOverBudgetView, VerdictView,
+    MAX_IN_FLIGHT_RENDERED, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,

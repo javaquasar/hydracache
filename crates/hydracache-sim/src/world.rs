@@ -322,6 +322,11 @@ impl SimWorld {
                     })
             })
             .collect();
+        let (in_flight, over_budget) = crate::snapshot::message_views_from_network_and_election(
+            self.network.in_flight_messages(),
+            election.signals.iter(),
+            self.clock.now(),
+        );
         let mut key_observations = BTreeMap::<String, BTreeMap<String, u64>>::new();
         for (node_id, sim_node) in &self.nodes {
             for (key, checksum) in sim_node.storage.visible_checksums() {
@@ -342,6 +347,8 @@ impl SimWorld {
             election_disclosure: election.source.disclosure().to_owned(),
             nodes,
             links,
+            in_flight,
+            over_budget,
             keys: crate::snapshot::key_views_from_storage(key_observations),
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(

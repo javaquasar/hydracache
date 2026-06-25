@@ -618,6 +618,8 @@ pub struct ElectionDriverSnapshot {
     pub nodes: Vec<ElectionNodeState>,
     /// Stable trace emitted by the driver.
     pub trace: Vec<String>,
+    /// Modeled election signals currently visible to the simulator snapshot.
+    pub signals: Vec<ElectionSignal>,
 }
 
 impl ElectionDriverSnapshot {
@@ -627,6 +629,43 @@ impl ElectionDriverSnapshot {
             .iter()
             .filter(|node| node.state == NodeFsmState::Leader)
             .collect()
+    }
+}
+
+/// Modeled election signal visible in snapshot `in_flight`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElectionSignal {
+    /// Stable signal id within the election driver.
+    pub id: u64,
+    /// Source node id.
+    pub from: ClusterNodeId,
+    /// Destination node id.
+    pub to: ClusterNodeId,
+    /// Signal kind.
+    pub kind: ElectionSignalKind,
+    /// Election term carried by this signal.
+    pub term: u64,
+}
+
+/// Election signal kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ElectionSignalKind {
+    /// Candidate asks a peer for a vote.
+    VoteRequest,
+    /// Peer grants a vote to the candidate.
+    VoteResponse,
+    /// Leader heartbeat after formation.
+    LeaderHeartbeat,
+}
+
+impl ElectionSignalKind {
+    /// Stable snapshot label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::VoteRequest => "vote_request",
+            Self::VoteResponse => "vote_response",
+            Self::LeaderHeartbeat => "leader_heartbeat",
+        }
     }
 }
 
@@ -676,6 +715,8 @@ pub struct ElectionDriver {
     nodes: BTreeMap<ClusterNodeId, ElectionNode>,
     leader: Option<ClusterNodeId>,
     pending_candidate: Option<ClusterNodeId>,
+    signals: Vec<ElectionSignal>,
+    next_signal_id: u64,
     trace: Vec<String>,
 }
 
@@ -693,6 +734,8 @@ impl ElectionDriver {
             nodes,
             leader: None,
             pending_candidate: None,
+            signals: Vec::new(),
+            next_signal_id: 1,
             trace: Vec::new(),
         }
     }
@@ -741,6 +784,7 @@ impl ElectionDriver {
                 })
                 .collect(),
             trace: self.trace.clone(),
+            signals: self.signals.clone(),
         }
     }
 
@@ -820,11 +864,26 @@ impl ElectionDriver {
     ) {
         self.apply_cluster(ClusterFsmEvent::ElectionTimeout, logical_step);
         let term = self.term();
+        self.signals.clear();
         for node_id in live_nodes {
             self.apply_node(node_id, ClusterFsmEvent::ElectionTimeout, logical_step);
             if let Some(node) = self.nodes.get_mut(node_id) {
                 node.set_term(term);
                 node.clear_vote();
+            }
+            if *node_id != candidate {
+                self.push_signal(
+                    candidate.clone(),
+                    node_id.clone(),
+                    ElectionSignalKind::VoteRequest,
+                    term,
+                );
+                self.push_signal(
+                    node_id.clone(),
+                    candidate.clone(),
+                    ElectionSignalKind::VoteResponse,
+                    term,
+                );
             }
         }
         self.pending_candidate = Some(candidate.clone());
@@ -841,6 +900,7 @@ impl ElectionDriver {
         logical_step: u64,
     ) {
         let term = self.term();
+        self.signals.clear();
         self.apply_node(&candidate, ClusterFsmEvent::VoteQuorum, logical_step);
         for node_id in live_nodes {
             if let Some(node) = self.nodes.get_mut(node_id) {
@@ -872,12 +932,37 @@ impl ElectionDriver {
         live_nodes: &BTreeSet<ClusterNodeId>,
         logical_step: u64,
     ) {
+        self.signals.clear();
         for node_id in live_nodes {
             if node_id != leader {
                 self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
+                self.push_signal(
+                    leader.clone(),
+                    node_id.clone(),
+                    ElectionSignalKind::LeaderHeartbeat,
+                    self.term(),
+                );
             }
         }
         self.apply_cluster(ClusterFsmEvent::LeaderHeartbeat, logical_step);
+    }
+
+    fn push_signal(
+        &mut self,
+        from: ClusterNodeId,
+        to: ClusterNodeId,
+        kind: ElectionSignalKind,
+        term: u64,
+    ) {
+        let id = self.next_signal_id;
+        self.next_signal_id = self.next_signal_id.saturating_add(1);
+        self.signals.push(ElectionSignal {
+            id,
+            from,
+            to,
+            kind,
+            term,
+        });
     }
 
     fn mark_unavailable_nodes(&mut self, live_nodes: &BTreeSet<ClusterNodeId>, logical_step: u64) {

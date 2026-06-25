@@ -1,15 +1,19 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 
-use hydracache::LogicalTime;
+use hydracache::{ClusterNodeMessage, LogicalTime};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ElectionNodeState, History, InvariantChecker, InvariantReport, WorkloadOp, WorkloadResult,
+    ElectionNodeState, ElectionSignal, History, InvariantChecker, InvariantReport, TimedMessage,
+    WorkloadOp, WorkloadResult,
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 2;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 3;
+
+/// Maximum number of in-flight messages rendered in one snapshot.
+pub const MAX_IN_FLIGHT_RENDERED: usize = 64;
 
 /// Versioned browser/demo view over the real deterministic simulator state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -32,6 +36,10 @@ pub struct SimSnapshot {
     pub nodes: Vec<NodeView>,
     /// Directed links rendered by the UI.
     pub links: Vec<LinkView>,
+    /// Typed network/election messages currently visible to the simulator.
+    pub in_flight: Vec<MessageView>,
+    /// Snapshot budget counters for intentionally summarized views.
+    pub over_budget: SnapshotOverBudgetView,
     /// Sampled key state by replica.
     pub keys: Vec<KeyView>,
     /// Invariant verdict for the current state.
@@ -55,6 +63,8 @@ impl SimSnapshot {
                 .to_owned(),
             nodes: Vec::new(),
             links: Vec::new(),
+            in_flight: Vec::new(),
+            over_budget: SnapshotOverBudgetView::default(),
             keys: keys_from_history(history),
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
@@ -141,6 +151,34 @@ pub struct LinkView {
     pub delay_millis: Option<u64>,
     /// Packets currently in flight on this directed link.
     pub in_flight: u32,
+}
+
+/// Typed in-flight message projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MessageView {
+    /// Stable message id for deterministic rendering and replay hashing.
+    pub id: String,
+    /// Source node id.
+    pub from: String,
+    /// Destination node id.
+    pub to: String,
+    /// Stable message kind label.
+    pub kind: String,
+    /// Cache key carried by replication messages, when present.
+    pub key: Option<String>,
+    /// Message sequence or logical term.
+    pub sequence: Option<u64>,
+    /// Logical delivery timestamp in milliseconds.
+    pub deliver_at_millis: u64,
+    /// Logical time until delivery in milliseconds.
+    pub remaining_millis: u64,
+}
+
+/// Snapshot budget counters.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SnapshotOverBudgetView {
+    /// In-flight messages omitted after [`MAX_IN_FLIGHT_RENDERED`].
+    pub in_flight_summarized: u64,
 }
 
 /// Link state visible to the UI.
@@ -310,6 +348,73 @@ pub(crate) fn link_view(
         state,
         delay_millis: delay,
         in_flight: in_flight.min(u32::MAX as usize) as u32,
+    }
+}
+
+pub(crate) fn message_views_from_network_and_election<'a>(
+    network_messages: impl IntoIterator<Item = &'a TimedMessage>,
+    election_signals: impl IntoIterator<Item = &'a ElectionSignal>,
+    now: LogicalTime,
+) -> (Vec<MessageView>, SnapshotOverBudgetView) {
+    let mut messages = network_messages
+        .into_iter()
+        .map(|packet| message_view_from_network(packet, now))
+        .chain(
+            election_signals
+                .into_iter()
+                .map(|signal| message_view_from_election(signal, now)),
+        )
+        .collect::<Vec<_>>();
+    messages.sort_by(|left, right| left.id.cmp(&right.id));
+    let summarized = messages.len().saturating_sub(MAX_IN_FLIGHT_RENDERED);
+    messages.truncate(MAX_IN_FLIGHT_RENDERED);
+    (
+        messages,
+        SnapshotOverBudgetView {
+            in_flight_summarized: summarized as u64,
+        },
+    )
+}
+
+fn message_view_from_network(packet: &TimedMessage, now: LogicalTime) -> MessageView {
+    let (kind, key, sequence) = match &packet.message {
+        ClusterNodeMessage::Heartbeat { sequence, .. } => ("heartbeat", None, Some(*sequence)),
+        ClusterNodeMessage::ReplicatePut { key, sequence, .. } => {
+            ("replicate_put", Some(key.clone()), Some(*sequence))
+        }
+        ClusterNodeMessage::ReplicateInvalidate { key, sequence } => {
+            ("replicate_invalidate", Some(key.clone()), Some(*sequence))
+        }
+        ClusterNodeMessage::ReplicateFlush { sequence } => {
+            ("replicate_flush", None, Some(*sequence))
+        }
+        ClusterNodeMessage::Ack { sequence } => ("ack", None, Some(*sequence)),
+    };
+    MessageView {
+        id: format!("net-{}", packet.packet_id()),
+        from: packet.from.to_string(),
+        to: packet.to.to_string(),
+        kind: kind.to_owned(),
+        key,
+        sequence,
+        deliver_at_millis: packet.deliver_at.as_millis(),
+        remaining_millis: packet
+            .deliver_at
+            .as_millis()
+            .saturating_sub(now.as_millis()),
+    }
+}
+
+fn message_view_from_election(signal: &ElectionSignal, now: LogicalTime) -> MessageView {
+    MessageView {
+        id: format!("election-{}", signal.id),
+        from: signal.from.to_string(),
+        to: signal.to.to_string(),
+        kind: signal.kind.as_str().to_owned(),
+        key: None,
+        sequence: Some(signal.term),
+        deliver_at_millis: now.as_millis(),
+        remaining_millis: 0,
     }
 }
 

@@ -37,7 +37,7 @@ they are persisted or transmitted across processes.
 | `ResidencyPolicy` control-plane format | `1` | `hydracache` residency governance | Policies are committed at a control-plane epoch per namespace with optional per-key overrides. Readers accept format `1`, enforce allowed regions at placement, WAN value movement, read serving, and include-value invalidation decisions, and report the enforced epoch. | Unknown future policy formats are rejected before commit. Unsatisfiable in-policy RF, forbidden boundary crossing, stale policy epochs, and forbidden-region reads fail loud and emit audit-ready events. |
 | Tenant status JSON schema | `1` | `hydracache-observability` and `/client/v1/status` | `TenantStatus` is scoped to the verified caller tenant and includes schema version, namespace usage/quota, rate/fair-share state, and near-cache/subscription health. | Unknown future status schema versions must be treated as incompatible by strict clients. Servers must not include other tenants in a caller-scoped status response. |
 | Consumer audit event schema | `1` | `hydracache-observability` audit recorders/sinks | Audit envelopes carry schema version `1` plus redacted governance/security/admin events. Keys are omitted or hashed; values are never logged. | Mandatory governance/security event sink failures fail closed. Future schema versions require an explicit compatibility entry before operator log readers accept them. |
-| Simulator snapshot JSON schema | `2` | `hydracache-sim` and `hydracache-sim-wasm` | Readers accept the current schema only and reject unknown future versions. Version `1` carried seed, step, logical time, nodes, links, sampled keys, real invariant verdict, and progress. Version `2` adds the 0.53 W1 election/formation fields: `formation_phase`, `election_source`, `election_disclosure`, and per-node `vote_state`, `voted_for`, `votes_received`. | Strict readers reject unknown future schema versions before rendering or replaying a shared seed. The demo must not synthesize a green verdict outside `InvariantChecker`; `election_source = "sim-model"` must be presented as a teaching model, not a production consensus claim. |
+| Simulator snapshot JSON schema | `3` | `hydracache-sim` and `hydracache-sim-wasm` | Readers accept the current schema only and reject unknown future versions. Version `1` carried seed, step, logical time, nodes, links, sampled keys, real invariant verdict, and progress. Version `2` adds the 0.53 W1 election/formation fields: `formation_phase`, `election_source`, `election_disclosure`, and per-node `vote_state`, `voted_for`, `votes_received`. Version `3` adds typed `in_flight` network/election messages plus `over_budget.in_flight_summarized` for bounded rendering. | Strict readers reject unknown future schema versions before rendering or replaying a shared seed. The demo must not synthesize a green verdict outside `InvariantChecker`; `election_source = "sim-model"` must be presented as a teaching model, not a production consensus claim. In-flight render summaries must fail loud through the over-budget counter instead of silently dropping evidence. |
 
 ## Upgrade Rules
 
@@ -275,3 +275,11 @@ WASM, and sandbox consumers: top-level `formation_phase`, `election_source`, and
 deterministic teaching model over the simulator FSM and must not be described as
 the production consensus implementation. Unknown future snapshot versions
 continue to fail closed before rendering.
+
+W2 bumps the simulator snapshot JSON schema to version `3`. The new `in_flight`
+array carries typed network and election messages (`heartbeat`, replication,
+ack, vote request/response, and leader heartbeat), with deterministic ids,
+source/destination nodes, optional keys, sequence/term, and logical delivery
+timing. The array is capped by `MAX_IN_FLIGHT_RENDERED`; omitted records are
+reported through `over_budget.in_flight_summarized` so UI and replay consumers
+can detect summarized evidence instead of mistaking it for an empty network.

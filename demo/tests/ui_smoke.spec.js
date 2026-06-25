@@ -6,6 +6,7 @@ test("loads_steps_and_renders_verdict", async ({ page }) => {
   await page.goto(demoUrl);
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
   await expect(page.getByTestId("engine-banner")).toContainText("election sim-model");
+  await expect(page.getByTestId("signals-panel")).toBeVisible();
 
   const before = await page.getByTestId("progress-panel").textContent();
   await page.getByTestId("step").click();

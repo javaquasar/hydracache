@@ -40,6 +40,7 @@ const el = {
   progress: document.querySelector("#progress-panel"),
   hash: document.querySelector("#snapshot-hash"),
   nodes: document.querySelector("#nodes-panel"),
+  signals: document.querySelector("#signals-panel"),
   consistency: document.querySelector("#consistency-panel"),
   keys: document.querySelector("#keys-panel"),
   linkActions: Array.from(document.querySelectorAll("[data-action]")),
@@ -153,6 +154,7 @@ function render() {
   renderSelectedLink();
   renderProgress(snapshot);
   renderNodes(snapshot);
+  renderSignals(snapshot);
   renderConsistency(snapshot);
   renderKeys(snapshot);
 }
@@ -281,6 +283,40 @@ function renderNodes(snapshot) {
     list.append(row);
   }
   el.nodes.replaceChildren(list);
+}
+
+function renderSignals(snapshot) {
+  const list = document.createElement("div");
+  list.className = "metric-list";
+  const messages = (snapshot.in_flight || []).slice(0, 8);
+  if (messages.length === 0) {
+    const empty = document.createElement("p");
+    empty.textContent = "no in-flight messages";
+    list.append(empty);
+  }
+  for (const message of messages) {
+    const row = document.createElement("div");
+    row.className = "metric";
+    const label = document.createElement("strong");
+    label.textContent = message.kind;
+    const meta = document.createElement("span");
+    const key = message.key ? ` key ${message.key}` : "";
+    meta.textContent = `${message.from} -> ${message.to}; ${message.remaining_millis} ms${key}`;
+    row.append(label, meta);
+    list.append(row);
+  }
+  const summarized = snapshot.over_budget?.in_flight_summarized || 0;
+  if (summarized > 0) {
+    const row = document.createElement("div");
+    row.className = "metric";
+    const label = document.createElement("strong");
+    label.textContent = "summarized";
+    const meta = document.createElement("span");
+    meta.textContent = `${summarized} over render budget`;
+    row.append(label, meta);
+    list.append(row);
+  }
+  el.signals.replaceChildren(list);
 }
 
 function renderConsistency(snapshot) {

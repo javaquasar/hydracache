@@ -205,6 +205,11 @@ impl SimNetwork {
         self.in_flight.len()
     }
 
+    /// Return packets currently in flight in deterministic render order.
+    pub fn in_flight_messages(&self) -> impl Iterator<Item = &TimedMessage> {
+        self.in_flight.values()
+    }
+
     /// Return whether a directed link can currently deliver packets.
     pub fn can_deliver(&self, from: &ClusterNodeId, to: &ClusterNodeId) -> bool {
         !self.partitions.contains(&(from.clone(), to.clone()))
@@ -268,5 +273,12 @@ impl SimNetwork {
 
     fn link_mut(&mut self, from: ClusterNodeId, to: ClusterNodeId) -> &mut LinkState {
         self.links.entry((from, to)).or_default()
+    }
+}
+
+impl TimedMessage {
+    /// Stable packet id assigned by the deterministic network.
+    pub fn packet_id(&self) -> u64 {
+        self.packet_id
     }
 }

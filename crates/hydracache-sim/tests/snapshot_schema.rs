@@ -1,7 +1,7 @@
 use hydracache::LogicalTime;
 use hydracache_sim::{
     History, SimConfig, SimSnapshot, SimWorld, VerdictView, WorkloadOp, WorkloadResult,
-    SIM_SNAPSHOT_SCHEMA_VERSION,
+    MAX_IN_FLIGHT_RENDERED, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 
 #[test]
@@ -18,9 +18,10 @@ fn snapshot_roundtrips_and_is_versioned() {
     assert_eq!(decoded.step, 12);
     assert_eq!(decoded.nodes.len(), 3);
     assert_eq!(decoded.links.len(), 6);
-    assert_eq!(decoded.schema_version, 2);
+    assert_eq!(decoded.schema_version, 3);
     assert_eq!(decoded.formation_phase, "formed");
     assert_eq!(decoded.election_source, "sim-model");
+    assert!(decoded.over_budget.in_flight_summarized <= decoded.in_flight.len() as u64);
     assert!(decoded
         .election_disclosure
         .contains("not a product consensus claim"));
@@ -38,6 +39,8 @@ fn snapshot_roundtrips_and_is_versioned() {
             "election_disclosure": "deterministic simulator election model",
             "nodes": [],
         "links": [],
+        "in_flight": [],
+        "over_budget": { "in_flight_summarized": 0 },
         "keys": [],
         "verdict": { "status": "holding" },
         "progress": {
@@ -57,20 +60,92 @@ fn schema_version_matches_contract_for_each_field_set() {
     let mut world = SimWorld::new(0x53_04, SimConfig::default());
     world.set_workload_enabled(false);
     let before = world.snapshot();
-    assert_eq!(before.schema_version, 2);
+    assert_eq!(before.schema_version, 3);
     assert_eq!(before.formation_phase, "unformed");
     assert_eq!(before.election_source, "sim-model");
+    assert!(before.in_flight.is_empty());
+    assert_eq!(before.over_budget.in_flight_summarized, 0);
     assert!(before.nodes.iter().all(|node| {
         node.vote_state == "disconnected" && node.voted_for.is_none() && node.votes_received == 0
     }));
 
     world.run(8);
     let formed = world.snapshot();
-    assert_eq!(formed.schema_version, 2);
+    assert_eq!(formed.schema_version, 3);
     assert_eq!(formed.formation_phase, "formed");
     assert!(formed.nodes.iter().any(|node| {
         node.vote_state == "leader" && node.voted_for.as_deref() == Some(node.id.as_str())
     }));
+}
+
+#[test]
+fn snapshot_exposes_typed_in_flight_messages() {
+    let mut world = SimWorld::new(0x53_20, SimConfig::default());
+    world.set_workload_enabled(false);
+    assert!(world.delay_next_on_link_millis("node-0", "node-1", 250));
+
+    world.step();
+    let snapshot = world.snapshot();
+
+    assert_eq!(snapshot.schema_version, 3);
+    assert!(snapshot.in_flight.iter().any(|message| {
+        message.kind == "heartbeat"
+            && message.from == "node-0"
+            && message.to == "node-1"
+            && message.sequence.is_some()
+            && message.remaining_millis > 0
+    }));
+}
+
+#[test]
+fn vote_messages_are_visible_during_election() {
+    let mut world = SimWorld::new(0x53_21, SimConfig::default());
+    world.set_workload_enabled(false);
+
+    for _ in 0..8 {
+        world.step();
+        let snapshot = world.snapshot();
+        if snapshot.formation_phase == "electing" {
+            assert!(snapshot
+                .in_flight
+                .iter()
+                .any(|message| message.kind == "vote_request"));
+            assert!(snapshot
+                .in_flight
+                .iter()
+                .any(|message| message.kind == "vote_response"));
+            return;
+        }
+    }
+
+    panic!("expected deterministic run to expose an electing snapshot");
+}
+
+#[test]
+fn in_flight_is_bounded_and_over_budget_is_counted() {
+    let cfg = SimConfig {
+        node_count: 10,
+        ..SimConfig::default()
+    };
+    let mut world = SimWorld::new(0x53_22, cfg);
+    world.set_workload_enabled(false);
+    for from in 0..10 {
+        for to in 0..10 {
+            if from != to {
+                assert!(world.delay_next_on_link_millis(
+                    format!("node-{from}"),
+                    format!("node-{to}"),
+                    1_000,
+                ));
+            }
+        }
+    }
+
+    world.step();
+    let snapshot = world.snapshot();
+
+    assert_eq!(snapshot.in_flight.len(), MAX_IN_FLIGHT_RENDERED);
+    assert!(snapshot.over_budget.in_flight_summarized > 0);
 }
 
 #[test]
