@@ -4,6 +4,8 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
+use crate::grid::elasticity::RegionId;
+
 /// Namespace persistence durability mode.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -45,6 +47,112 @@ pub enum PersistenceInMemoryFormat {
     Binary,
 }
 
+/// Region selection for persistent namespaces.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum RegionSelector {
+    /// Persist in every region where the namespace is placed.
+    #[default]
+    All,
+    /// Persist only in the listed regions.
+    Only(BTreeSet<RegionId>),
+    /// Persist only in the namespace home region.
+    HomeRegionOnly,
+}
+
+impl RegionSelector {
+    /// Select an explicit bounded set of regions.
+    pub fn only(regions: impl IntoIterator<Item = RegionId>) -> Self {
+        Self::Only(regions.into_iter().collect())
+    }
+
+    /// Return whether `local_region` should persist under `placement`.
+    pub fn selects(&self, local_region: &RegionId, placement: &PersistenceRegionPlacement) -> bool {
+        match self {
+            Self::All => placement.contains(local_region),
+            Self::Only(regions) => regions.contains(local_region),
+            Self::HomeRegionOnly => placement.home() == local_region,
+        }
+    }
+
+    /// Validate that all explicitly selected regions are in placement.
+    pub fn validate_placement(
+        &self,
+        pattern: &PersistenceMatcher,
+        placement: &PersistenceRegionPlacement,
+    ) -> Result<(), PersistencePolicyError> {
+        let missing = match self {
+            Self::All | Self::HomeRegionOnly => Vec::new(),
+            Self::Only(regions) => regions
+                .iter()
+                .filter(|region| !placement.contains(region))
+                .cloned()
+                .collect::<Vec<_>>(),
+        };
+        if missing.is_empty() {
+            return Ok(());
+        }
+        let missing = missing
+            .iter()
+            .map(RegionId::as_str)
+            .collect::<Vec<_>>()
+            .join(", ");
+        Err(PersistencePolicyError::new(format!(
+            "persistence rule '{pattern}' selects region(s) outside placement: {missing}"
+        )))
+    }
+}
+
+/// Placement regions for a namespace used by persistence-region validation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PersistenceRegionPlacement {
+    home: RegionId,
+    replicated_regions: BTreeSet<RegionId>,
+}
+
+impl PersistenceRegionPlacement {
+    /// Create placement with a home region and replicated regions.
+    pub fn new(
+        home: impl Into<RegionId>,
+        replicated_regions: impl IntoIterator<Item = RegionId>,
+    ) -> Self {
+        let home = home.into();
+        let mut replicated_regions = replicated_regions.into_iter().collect::<BTreeSet<_>>();
+        replicated_regions.insert(home.clone());
+        Self {
+            home,
+            replicated_regions,
+        }
+    }
+
+    /// Create single-home placement.
+    pub fn home_region_only(home: impl Into<RegionId>) -> Self {
+        Self::new(home, [])
+    }
+
+    /// Create active-active placement for home plus peers.
+    pub fn active_active(
+        home: impl Into<RegionId>,
+        peers: impl IntoIterator<Item = RegionId>,
+    ) -> Self {
+        Self::new(home, peers)
+    }
+
+    /// Return the authoritative home region.
+    pub fn home(&self) -> &RegionId {
+        &self.home
+    }
+
+    /// Return whether the namespace is placed in `region`.
+    pub fn contains(&self, region: &RegionId) -> bool {
+        self.replicated_regions.contains(region)
+    }
+
+    /// Return all placed regions.
+    pub fn regions(&self) -> &BTreeSet<RegionId> {
+        &self.replicated_regions
+    }
+}
+
 /// Concrete rule applied after namespace pattern matching.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NamespacePersistenceSettings {
@@ -60,6 +168,8 @@ pub struct NamespacePersistenceSettings {
     pub backup_count: usize,
     /// RAM representation preference.
     pub in_memory_format: PersistenceInMemoryFormat,
+    /// Regions where this namespace persists when `persist` is true.
+    pub persist_in_regions: RegionSelector,
 }
 
 impl NamespacePersistenceSettings {
@@ -72,6 +182,7 @@ impl NamespacePersistenceSettings {
             eviction: PersistenceEviction::None,
             backup_count: 0,
             in_memory_format: PersistenceInMemoryFormat::Binary,
+            persist_in_regions: RegionSelector::All,
         }
     }
 
@@ -84,6 +195,7 @@ impl NamespacePersistenceSettings {
             eviction: PersistenceEviction::None,
             backup_count: 0,
             in_memory_format: PersistenceInMemoryFormat::Binary,
+            persist_in_regions: RegionSelector::All,
         }
     }
 
@@ -96,6 +208,12 @@ impl NamespacePersistenceSettings {
     /// Set snapshot interval.
     pub fn with_snapshot_interval(mut self, interval: Duration) -> Self {
         self.snapshot_interval = Some(interval);
+        self
+    }
+
+    /// Set region selector.
+    pub fn with_region_selector(mut self, selector: RegionSelector) -> Self {
+        self.persist_in_regions = selector;
         self
     }
 }
@@ -220,6 +338,19 @@ impl ResolvedPersistence {
     pub fn persists(&self) -> bool {
         self.settings.persist
     }
+
+    /// Return whether this namespace persists on `local_region`.
+    pub fn persists_in_region(
+        &self,
+        local_region: &RegionId,
+        placement: &PersistenceRegionPlacement,
+    ) -> bool {
+        self.settings.persist
+            && self
+                .settings
+                .persist_in_regions
+                .selects(local_region, placement)
+    }
 }
 
 /// Deterministic namespace persistence policy.
@@ -297,6 +428,39 @@ impl PersistencePolicy {
                 settings: NamespacePersistenceSettings::ram_only(),
             },
         }
+    }
+
+    /// Resolve and validate a namespace for a concrete node region.
+    pub fn resolve_for_region(
+        &self,
+        namespace: &str,
+        local_region: &RegionId,
+        placement: &PersistenceRegionPlacement,
+    ) -> Result<ResolvedPersistence, PersistencePolicyError> {
+        self.validate_namespace_placement(namespace, placement)?;
+        let mut resolved = self.resolve(namespace);
+        if !resolved.persists_in_region(local_region, placement) {
+            resolved.settings.persist = false;
+        }
+        Ok(resolved)
+    }
+
+    /// Validate that matching persistent rules select only placed regions.
+    pub fn validate_namespace_placement(
+        &self,
+        namespace: &str,
+        placement: &PersistenceRegionPlacement,
+    ) -> Result<(), PersistencePolicyError> {
+        for rule in self
+            .rules
+            .iter()
+            .filter(|rule| rule.settings.persist && rule.matcher.matches(namespace))
+        {
+            rule.settings
+                .persist_in_regions
+                .validate_placement(&rule.matcher, placement)?;
+        }
+        Ok(())
     }
 
     /// Return exact persistent namespaces that are safe to use as bounded metric labels.
