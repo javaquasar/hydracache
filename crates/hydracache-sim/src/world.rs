@@ -285,6 +285,12 @@ impl SimWorld {
     pub fn snapshot(&self) -> SimSnapshot {
         let node_ids = self.nodes.keys().cloned().collect::<Vec<_>>();
         let committed_entries = self.history.completed().count() as u64;
+        let election = self.election.snapshot();
+        let election_nodes = election
+            .nodes
+            .iter()
+            .map(|node| (node.node_id.to_string(), node))
+            .collect::<BTreeMap<_, _>>();
         let nodes = node_ids
             .iter()
             .map(|node_id| {
@@ -293,6 +299,7 @@ impl SimWorld {
                     committed_entries,
                     committed_entries,
                     self.crashed_nodes.contains(node_id),
+                    election_nodes.get(node_id.as_str()).copied(),
                 )
             })
             .collect();
@@ -330,6 +337,9 @@ impl SimWorld {
             seed: self.seed,
             step: self.steps,
             logical_time_millis: crate::snapshot::logical_millis(self.clock.now()),
+            formation_phase: election.phase.to_string(),
+            election_source: election.source.as_str().to_owned(),
+            election_disclosure: election.source.disclosure().to_owned(),
             nodes,
             links,
             keys: crate::snapshot::key_views_from_storage(key_observations),

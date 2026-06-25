@@ -2,6 +2,7 @@ use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
 use axum::Router;
 use hydracache_sandbox::{build_sandbox, SandboxConfig};
+use hydracache_sim::SIM_SNAPSHOT_SCHEMA_VERSION;
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
@@ -18,7 +19,7 @@ async fn sim_routes_emit_w2_schema_and_step_deterministically() {
         json!({"seed": 700, "steps": 3}).to_string(),
     )
     .await;
-    assert_eq!(created["schema_version"], 1);
+    assert_eq!(created["schema_version"], SIM_SNAPSHOT_SCHEMA_VERSION);
     assert_eq!(created["seed"], 700);
     assert_eq!(created["step"], 3);
     assert_eq!(created["verdict"]["status"], "holding");
@@ -66,7 +67,7 @@ async fn sim_routes_emit_w2_schema_and_step_deterministically() {
     .await;
     assert_eq!(scenario["seed"], 5002);
     assert_eq!(scenario["step"], 12);
-    assert_eq!(scenario["schema_version"], 1);
+    assert_eq!(scenario["schema_version"], SIM_SNAPSHOT_SCHEMA_VERSION);
 
     let response = app
         .oneshot(post(

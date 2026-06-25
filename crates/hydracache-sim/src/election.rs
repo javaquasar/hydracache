@@ -675,6 +675,7 @@ pub struct ElectionDriver {
     cluster: ClusterFsm,
     nodes: BTreeMap<ClusterNodeId, ElectionNode>,
     leader: Option<ClusterNodeId>,
+    pending_candidate: Option<ClusterNodeId>,
     trace: Vec<String>,
 }
 
@@ -691,6 +692,7 @@ impl ElectionDriver {
             cluster: ClusterFsm::new(),
             nodes,
             leader: None,
+            pending_candidate: None,
             trace: Vec::new(),
         }
     }
@@ -766,6 +768,7 @@ impl ElectionDriver {
 
         let quorum = quorum(self.nodes.len());
         if live_nodes.len() < quorum {
+            self.pending_candidate = None;
             self.apply_cluster(ClusterFsmEvent::Isolate, logical_step);
             self.trace.push(format!(
                 "election:{logical_step}:no-quorum:live={} quorum={quorum}",
@@ -774,8 +777,18 @@ impl ElectionDriver {
             return;
         }
 
+        if let Some(candidate) = self.pending_candidate.clone() {
+            if live_nodes.contains(&candidate) {
+                self.elect(candidate, live_nodes, logical_step);
+            } else {
+                self.pending_candidate = None;
+                self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
+            }
+            return;
+        }
+
         if let Some(candidate) = self.due_candidate(logical_step, live_nodes) {
-            self.elect(candidate, live_nodes, logical_step);
+            self.start_election(candidate, live_nodes, logical_step);
         }
     }
 
@@ -799,7 +812,7 @@ impl ElectionDriver {
             .map(|(_, node_id)| node_id)
     }
 
-    fn elect(
+    fn start_election(
         &mut self,
         candidate: ClusterNodeId,
         live_nodes: &BTreeSet<ClusterNodeId>,
@@ -809,7 +822,25 @@ impl ElectionDriver {
         let term = self.term();
         for node_id in live_nodes {
             self.apply_node(node_id, ClusterFsmEvent::ElectionTimeout, logical_step);
+            if let Some(node) = self.nodes.get_mut(node_id) {
+                node.set_term(term);
+                node.clear_vote();
+            }
         }
+        self.pending_candidate = Some(candidate.clone());
+        self.trace.push(format!(
+            "election:{logical_step}:candidate:{candidate}:term:{term}:source:{}",
+            self.source
+        ));
+    }
+
+    fn elect(
+        &mut self,
+        candidate: ClusterNodeId,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+        logical_step: u64,
+    ) {
+        let term = self.term();
         self.apply_node(&candidate, ClusterFsmEvent::VoteQuorum, logical_step);
         for node_id in live_nodes {
             if let Some(node) = self.nodes.get_mut(node_id) {
@@ -827,6 +858,7 @@ impl ElectionDriver {
         }
         self.apply_cluster(ClusterFsmEvent::VoteQuorum, logical_step);
         self.leader = Some(candidate.clone());
+        self.pending_candidate = None;
         self.trace.push(format!(
             "election:{logical_step}:leader:{candidate}:term:{term}:votes:{}:source:{}",
             live_nodes.len(),

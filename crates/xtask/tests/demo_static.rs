@@ -53,6 +53,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("restart_node"));
     assert!(js.contains("state.sim.inject(action"));
     assert!(js.contains("snapshot.verdict.status"));
+    assert!(js.contains("snapshot.formation_phase"));
+    assert!(js.contains("snapshot.election_source"));
     assert!(js.contains("snapshot.nodes"));
     assert!(js.contains("snapshot.links"));
     assert!(js.contains("snapshot.keys"));

@@ -4,10 +4,12 @@ use std::fmt;
 use hydracache::LogicalTime;
 use serde::{Deserialize, Serialize};
 
-use crate::{History, InvariantChecker, InvariantReport, WorkloadOp, WorkloadResult};
+use crate::{
+    ElectionNodeState, History, InvariantChecker, InvariantReport, WorkloadOp, WorkloadResult,
+};
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 1;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 2;
 
 /// Versioned browser/demo view over the real deterministic simulator state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,6 +22,12 @@ pub struct SimSnapshot {
     pub step: u64,
     /// Current logical time in milliseconds.
     pub logical_time_millis: u64,
+    /// Current modeled cluster formation phase.
+    pub formation_phase: String,
+    /// Election source used by the simulator.
+    pub election_source: String,
+    /// Disclosure shown by demo surfaces for the election source.
+    pub election_disclosure: String,
     /// Nodes rendered by the UI.
     pub nodes: Vec<NodeView>,
     /// Directed links rendered by the UI.
@@ -41,6 +49,10 @@ impl SimSnapshot {
             seed,
             step,
             logical_time_millis: 0,
+            formation_phase: "history_only".to_owned(),
+            election_source: "none".to_owned(),
+            election_disclosure: "history-only snapshots do not include an election model"
+                .to_owned(),
             nodes: Vec::new(),
             links: Vec::new(),
             keys: keys_from_history(history),
@@ -100,6 +112,12 @@ pub struct NodeView {
     pub role: String,
     /// Logical consensus term. The 0.44 simulator has no leader election yet.
     pub term: u64,
+    /// Modeled election/vote state.
+    pub vote_state: String,
+    /// Candidate this node voted for in the current term.
+    pub voted_for: Option<String>,
+    /// Votes received by this node when it is the winning candidate.
+    pub votes_received: u32,
     /// Committed logical operation index visible to the simulator.
     pub commit_index: u64,
     /// Applied logical operation index visible to the simulator.
@@ -243,13 +261,28 @@ pub(crate) fn node_view(
     committed_entries: u64,
     applied_entries: u64,
     crashed: bool,
+    election: Option<&ElectionNodeState>,
 ) -> NodeView {
+    let (role, term, vote_state, voted_for, votes_received) = election
+        .map(|node| {
+            (
+                node.state.to_string(),
+                node.term,
+                node.state.to_string(),
+                node.voted_for.as_ref().map(ToString::to_string),
+                node.votes_received.min(u32::MAX as usize) as u32,
+            )
+        })
+        .unwrap_or_else(|| ("member".to_owned(), 0, "unknown".to_owned(), None, 0));
     NodeView {
         id,
         region: "local".to_owned(),
         zone: "default".to_owned(),
-        role: "member".to_owned(),
-        term: 0,
+        role,
+        term,
+        vote_state,
+        voted_for,
+        votes_received,
         commit_index: committed_entries,
         applied_index: applied_entries,
         up: !crashed,

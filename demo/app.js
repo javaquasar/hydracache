@@ -146,7 +146,7 @@ async function refresh() {
 
 function render() {
   const snapshot = state.snapshot;
-  el.banner.textContent = `This runs the real hydracache-sim engine, seed ${snapshot.seed}, step ${snapshot.step}. Verdicts are produced by the actual invariant checker.`;
+  el.banner.textContent = `This runs the real hydracache-sim engine, seed ${snapshot.seed}, step ${snapshot.step}. Formation ${snapshot.formation_phase}; election ${snapshot.election_source}. ${snapshot.election_disclosure || "Verdicts are produced by the actual invariant checker."}`;
   el.scenario.value = state.scenario;
   renderVerdict(snapshot);
   renderGraph(snapshot);
@@ -220,7 +220,7 @@ function renderGraph(snapshot) {
     group.append(
       svg("circle", { r: 46 }),
       svg("text", { y: -5 }, node.id),
-      svg("text", { y: 17 }, node.crashed ? "crashed" : node.role),
+      svg("text", { y: 17 }, node.crashed ? "crashed" : node.vote_state || node.role),
     );
     nodeLayer.append(group);
   }
@@ -245,6 +245,10 @@ function renderProgress(snapshot) {
     desc(`${snapshot.logical_time_millis} ms`),
     term("Committed", progress.committed_entries),
     desc(progress.committed_entries),
+    term("Formation", snapshot.formation_phase || "unknown"),
+    desc(snapshot.formation_phase || "unknown"),
+    term("Election", snapshot.election_source || "unknown"),
+    desc(snapshot.election_source || "unknown"),
     term("Convergence", progress.convergence),
     desc(progress.convergence),
   );
@@ -258,7 +262,9 @@ function renderNodes(snapshot) {
     const row = document.createElement("div");
     row.className = "metric";
     const label = document.createElement("strong");
-    label.textContent = `${node.id} ${node.crashed ? "crashed" : "up"}`;
+    label.textContent = `${node.id} ${node.crashed ? "crashed" : node.vote_state || "up"}`;
+    const meta = document.createElement("span");
+    meta.textContent = `term ${node.term}; votes ${node.votes_received}`;
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = node.crashed ? "Restart" : "Crash";
@@ -271,7 +277,7 @@ function renderNodes(snapshot) {
       }
       await refresh();
     });
-    row.append(label, button);
+    row.append(label, meta, button);
     list.append(row);
   }
   el.nodes.replaceChildren(list);

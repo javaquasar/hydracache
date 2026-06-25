@@ -5,6 +5,7 @@ const demoUrl = process.env.HYDRACACHE_DEMO_URL ?? "http://127.0.0.1:5173/demo/"
 test("loads_steps_and_renders_verdict", async ({ page }) => {
   await page.goto(demoUrl);
   await expect(page.getByTestId("verdict")).toContainText(/invariants hold|violation/);
+  await expect(page.getByTestId("engine-banner")).toContainText("election sim-model");
 
   const before = await page.getByTestId("progress-panel").textContent();
   await page.getByTestId("step").click();
