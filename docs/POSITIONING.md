@@ -71,19 +71,30 @@ fragile manual cache busting around `sqlx`/`diesel`/`seaorm`.
 ## What HydraCache is NOT (honest weaknesses)
 
 - **Not a Redis throughput replacement.** Different goal; do not pitch on raw ops/sec.
-- **Not yet production-deployable as a server.** No standalone daemon, in-transit
-  encryption, or external client protocol yet (see prod-readiness gaps).
-- **Distributed layer is young.** The 0.43 debt-closure gates now validate
-  multi-node/zone behavior over real networked transport seams, but the project still
-  needs production wrapping: server packaging, security, external protocols,
-  operations, and longer-running soak history.
+- **Deployment wrapping shipped, but not yet battle-tested.** The standalone
+  `hydracache-server` daemon, graceful upgrade, in-transit mTLS, encryption-at-rest,
+  object-storage backup/PITR, Docker/k8s artifacts (`0.48`) and the external client
+  wire protocol (`0.49`) now exist — the older "no server / no encryption / no external
+  protocol" gap is **closed**. What is still missing is *operating history*: no
+  multi-year soak, limited real-world deployment mileage, and a thin operability surface
+  (metrics/actuator/admin API, no Management Center-style UI).
+- **Distributed layer is feature-complete-ish but young in the field.** The grid has
+  durable raft, online resharding, active-active multi-region, tunable consistency, and
+  a Jepsen-class deterministic simulator (`0.44`), validated over real networked
+  transport. The remaining weakness is not missing algorithms — it is **longer-running
+  soak/chaos history** and proven behavior under sustained production overload.
+- **Consumer ergonomics are still Rust-first.** Non-Rust stacks can use the grid via the
+  `0.49` protocol + Hibernate L2 provider, but the Hazelcast-shaped Java surface
+  (`IMap`, near-cache, distributed locks) is still thin — the lock-by-key path is
+  planned, not shipped (`docs/plans/V0_52_…`), and SDK breadth is Rust + Python only.
 - **Pre-1.0.** API is still moving; no stability/semver commitment yet.
 - **Not a database.** SQL/vector are read-only / opt-in modules; transactions are a
   permanent non-goal (R-2).
 
-So "interesting on the market" is today a **design and niche bet** with a now-validated
-distributed core, but it becomes a real deployment advantage only after the production
-wrapping (server, security, external protocol, and operating model) lands.
+So "interesting on the market" is today a **design and niche bet** with a now-validated,
+production-wrapped distributed core; the remaining distance to a real deployment
+advantage is **adoption and operating history** (Java/IMap/lock ergonomics, SDK breadth,
+operability surface, and soak mileage), not missing core capability.
 
 ## "Why not …" quick answers
 

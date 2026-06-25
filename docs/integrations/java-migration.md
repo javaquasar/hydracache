@@ -165,3 +165,15 @@ ringbuffer, replicated map, and CRDT object APIs.
 
 This keeps the migration honest: HydraCache supports cache migration, not a
 transparent replacement for all Hazelcast runtime features.
+
+The list reflects what the toolkit refuses **today**, not a permanent ceiling for
+every entry. `RULES.md` R-2 fixes only the permanent non-goals (distributed
+transactions, cross-region linearizability, remote code execution); distributed
+locks are **not** among them. The **lock-by-key subset** (`IMap.lock` /
+`IMap.tryLock` / CP `FencedLock`) has a planned supported path — a single-key
+linearizable HydraCache fenced lock with a returned fencing token — tracked in
+[`V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md`](../plans/V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md)
+(status: planned; not yet shipped). The remaining refused APIs — entry processors /
+`executeOnKey`, Hazelcast SQL, executor service, `ReplicatedMap`, ringbuffer /
+reliable topic as an event log, and CRDT object APIs — stay unsupported: they are
+either permanent R-2 non-goals or out of scope for the cache wedge.

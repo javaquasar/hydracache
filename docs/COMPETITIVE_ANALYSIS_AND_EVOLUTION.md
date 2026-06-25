@@ -36,9 +36,18 @@ HydraCache is an embedded-first Rust cache + DB query-result caching adapters +
 cluster coordination. Through `0.43` it added geo/elasticity and the 0.43
 debt-closure work moved the multi-node/zone layer from model-only coverage to
 live networked transport validation. The raft layer is `raft-rs` 0.7 (TiKV's
-crate), pinning `protobuf 2.x` (`docs/technical-debt/TD-0002`). It still has no
-standalone server/daemon, no in-transit encryption, and the external client surface
-is deferred (`DRAFT_ECOSYSTEM_…`).
+crate), pinning `protobuf 2.x` (`docs/technical-debt/TD-0002`).
+
+Since this analysis was first written the baseline has advanced well past `0.43`:
+`0.44` shipped the deterministic simulator + storage fault model, `0.45`–`0.47` added
+active-active multi-region / resilience / cross-region session consistency, `0.48`
+shipped the `hydracache-server` daemon, in-transit mTLS, encryption-at-rest, and
+Docker/Kubernetes artifacts, `0.49` shipped the external client wire protocol +
+Hibernate L2 provider + Java/Spring migration contract, and `0.51` added selective
+persistence. So the "no standalone server, no in-transit encryption, external client
+surface deferred" gaps in the original framing are **closed**; the residual work is
+hot-path/storage excellence and operational soak history (see the roadmap below for
+which phases are now shipped).
 
 The projects below are the references for hardening those shipped seams and going
 beyond them.
@@ -414,8 +423,8 @@ feature" wedge.
 | Admission (count+memory, FIFO) | scylladb `reader_concurrency_semaphore` | new `admission` module |
 | Proportional backlog control | scylladb `backlog_controller.hh` | `0.43 W6`, `0.45 W2/W3` |
 | Hot-key sketch + rate/inflight limits | pingora `pingora-limits` | hot-cache + overload |
-| Zero-downtime upgrade + server | pingora `server/mod.rs`; arroyo `server-common`, `k8s/` | deploy gap |
-| Connection pooling | pingora `pingora-pool` | post-0.43 networked transport hardening |
+| Zero-downtime upgrade + server | pingora `server/mod.rs`; arroyo `server-common`, `k8s/` | `0.48` shipped (`hydracache-server` daemon, graceful upgrade, Docker/k8s) |
+| Connection pooling | pingora `pingora-pool` | post-0.43 networked transport hardening (residual) |
 | Object-storage DR/snapshots | arroyo `arroyo-storage` | `0.43 W6`/`0.44 W4` |
 | S3-FIFO eviction | qdrant `trififo` | local hot tier (bench-off vs moka) |
 | Thread-per-core (strategic) | scylladb shard-per-core; pingora no-steal runtime | long-horizon opt-in |
@@ -426,37 +435,53 @@ feature" wedge.
 
 ## Recommended evolution roadmap
 
-**Phase 0 — close the credibility gap (now).** Execute
-`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md` using qdrant as the blueprint: durable raft
-(§2.1), real transport with pooled connections (§1.2), online resharding via WAL-delta
-(§2.3). Until this lands, none of the "distributed" claims are real.
+> **Status note (post-0.51).** This roadmap predates `0.44`–`0.51`. **Phase 0 is
+> shipped** and **Phase 1 is largely shipped**; the credibility-gap and
+> prod-readiness work it describes is no longer "next" — it is done, with a few
+> residual hardening items called out inline. **Phase 2 is mostly forward** (one seam
+> shipped), and **Phase 3 is partially shipped** (external client surface landed in
+> `0.49`; the extreme-scale items remain forward). Per RULES R-7, "shipped" below
+> means the named release's gates passed. The current next-step thinking — develop the
+> grid *outward (Java/IMap/lock surface, see `docs/plans/V0_52_…`) and downward
+> (operational soak)*, not wider — supersedes the "keep deepening" framing here.
 
-**Phase 1 — make it runnable & survivable in prod (the prod-readiness gaps).**
+**Phase 0 — close the credibility gap. ✅ Shipped (`0.42`/`0.43`).**
+`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md` landed durable raft (§2.1), real networked
+transport (§1.2), and online resharding (§2.3) over live transport
+(`networked_control_plane = true`). *Residual hardening:* WAL-delta catch-up on shard
+transfer and connection pooling depth remain incremental improvements, not blockers.
+
+**Phase 1 — make it runnable & survivable in prod. ✅ Largely shipped.**
 - `hydracache-server` daemon with graceful upgrade (pingora §1.1) + Docker/k8s
-  artifacts (arroyo §4.3).
-- Admission control + proportional backlog controller (scylladb §5.1–5.2) for
-  overload and self-healing — a real differentiator under load.
-- Object-storage snapshot/DR backend (arroyo §4.2).
-- Begin a **deterministic simulation harness** + storage fault model + artifact
-  checksums (tigerbeetle §6.1–6.2) — the strongest correctness investment and the
-  Jepsen-class answer for production confidence.
+  artifacts (arroyo §4.3). **Shipped `0.48`.**
+- Object-storage snapshot/DR backend (arroyo §4.2). **Shipped `0.48` (backup + PITR).**
+- **Deterministic simulation harness** + storage fault model + artifact checksums
+  (tigerbeetle §6.1–6.2). **Shipped `0.44`** — the Jepsen-class correctness substrate.
+- Admission control + proportional backlog controller (scylladb §5.1–5.2). *Partial:*
+  backlog/self-healing signals exist (`0.43`/`0.45`); a dedicated dual-limited admission
+  module under sustained overload is the **main residual Phase 1 item** — and the
+  highest-value "downward" (soak/operability) investment next.
 
-**Phase 2 — storage & hot-path excellence (be *interesting*, not just correct).**
+**Phase 2 — storage & hot-path excellence. ◻ Mostly forward (one seam shipped).**
 - `Directory`/`LogEngine` storage trait + SSTable format + explicit compaction
-  `MergePolicy` (tantivy §3.1–3.3); register formats in COMPAT.
-- Zero-copy value serving + arena hot-path (tantivy §3.4).
-- S3-FIFO local tier bench-off vs moka (qdrant §2.5); ship the winner behind a flag.
-- Count-min hot-key detection feeding the authoritative hot-cache (pingora §1.4).
+  `MergePolicy` (tantivy §3.1–3.3); register formats in COMPAT. *Forward* — the `0.43`
+  `TieredValueStore` cold-tier seam and `0.51` `DurableValueStore` exist, but a general
+  pluggable storage-engine trait + compaction is not yet built.
+- Zero-copy value serving + arena hot-path (tantivy §3.4). *Forward* (partial: `0.37`
+  perf budget / byte weigher).
+- S3-FIFO local tier bench-off vs moka (qdrant §2.5); ship the winner behind a flag. *Forward.*
+- Count-min hot-key detection feeding the authoritative hot-cache (pingora §1.4). *Forward.*
 
-**Phase 3 — extreme-scale & ecosystem (strategic).**
-- Optional thread-per-core / sharded executor (scylladb §5.3 + pingora §1.5).
+**Phase 3 — extreme-scale & ecosystem. ◻ Partially shipped.**
+- External client surface so non-Rust stacks can use the grid. **Shipped `0.49`**
+  (stable wire protocol, Hibernate L2, Java/Spring migration contract, Python SDK).
+  The Java/IMap/lock *ergonomics* on top of it are the active `0.52` direction.
+- Optional thread-per-core / sharded executor (scylladb §5.3 + pingora §1.5). *Forward.*
 - Resolve `raft-rs`/protobuf debt (TD-0002); evaluate multi-raft if partition counts
   grow (tikv conceptual). Record VSR as a considered consensus alternative in an ADR
-  (tigerbeetle §6.5).
+  (tigerbeetle §6.5). *Forward — explicitly do not pursue speculatively.*
 - Exactly-once client sessions + bounded/static allocation discipline (tigerbeetle
-  §6.3–6.4) as the client protocol and overload work mature.
-- External client surface (the deferred ecosystem release) so non-Rust stacks can use
-  the grid.
+  §6.3–6.4) as the client protocol and overload work mature. *Forward.*
 
 ## What makes HydraCache *competitive and interesting* (positioning)
 
