@@ -590,6 +590,11 @@ pub use grid::crdt::{
     tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
     OrSetTag, PnCounter, TombstoneCrdtDecision,
 };
+#[cfg(not(target_arch = "wasm32"))]
+pub use grid::durability::{
+    DurabilityError, DurabilityErrorKind, DurabilityMetricsSnapshot, DurabilitySnapshotManifest,
+    DurabilityWritePath, DurableFlush, DurableWriteOutcome, DURABILITY_SNAPSHOT_FORMAT_VERSION,
+};
 #[cfg(feature = "durable-value-store")]
 pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
 #[cfg(not(target_arch = "wasm32"))]
