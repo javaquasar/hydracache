@@ -156,6 +156,8 @@ pub struct ConditionalMetrics {
     pub lock_not_owner_rejected_total: u64,
     /// Lock leases renewed.
     pub lock_lease_renewed_total: u64,
+    /// Reentrant acquires rejected by the configured limit.
+    pub lock_reentrancy_limit_rejected_total: u64,
 }
 
 /// Current state of one held fenced lock.
@@ -188,6 +190,7 @@ pub struct SingleKeyConditionalStore {
     epoch: ClusterEpoch,
     partition_count: u32,
     metrics: ConditionalMetrics,
+    lock_acquire_limit: Option<u32>,
 }
 
 impl SingleKeyConditionalStore {
@@ -202,7 +205,14 @@ impl SingleKeyConditionalStore {
             epoch,
             partition_count: partition_count.max(1),
             metrics: ConditionalMetrics::default(),
+            lock_acquire_limit: None,
         }
+    }
+
+    /// Configure the reentrant acquire limit. `None` keeps Hazelcast-style unbounded reentrancy.
+    pub fn with_lock_acquire_limit(mut self, limit: Option<u32>) -> Self {
+        self.lock_acquire_limit = limit;
+        self
     }
 
     /// Return current metrics.
@@ -218,6 +228,21 @@ impl SingleKeyConditionalStore {
     /// Return the current lock hold for a key.
     pub fn lock_hold(&self, key: &str) -> Option<&LockHold> {
         self.locks.get(key)
+    }
+
+    /// Return whether a lock is currently held.
+    pub fn is_locked(&self, key: &str) -> bool {
+        self.locks.contains_key(key)
+    }
+
+    /// Return whether a lock is currently held by `owner`.
+    pub fn is_locked_by(&self, key: &str, owner: &LockOwner) -> bool {
+        self.locks.get(key).is_some_and(|hold| &hold.owner == owner)
+    }
+
+    /// Return the current fence token for a held lock.
+    pub fn current_fence(&self, key: &str) -> Option<FenceToken> {
+        self.locks.get(key).map(|hold| hold.fence)
     }
 
     /// Apply a tombstone at an explicit version, preserving A5 delete semantics.
@@ -295,10 +320,36 @@ impl SingleKeyConditionalStore {
         now: LogicalTime,
     ) -> Result<Option<FenceToken>, ConditionalError> {
         require_linearizable_level(level)?;
-        if let Some(hold) = self.locks.get(key) {
-            if !hold.expired_at(now) {
+        if self
+            .locks
+            .get(key)
+            .is_some_and(|hold| !hold.expired_at(now))
+        {
+            if self.is_locked_by(key, &owner) {
+                let limit = self.lock_acquire_limit;
+                let hold = self.locks.get_mut(key).expect("checked lock hold");
+                let next_holds = hold.holds.saturating_add(1);
+                if limit.is_some_and(|limit| next_holds > limit) {
+                    self.metrics.lock_reentrancy_limit_rejected_total = self
+                        .metrics
+                        .lock_reentrancy_limit_rejected_total
+                        .saturating_add(1);
+                    return Err(ConditionalError::ReentrancyLimit {
+                        key: key.to_owned(),
+                        limit: limit.unwrap_or(u32::MAX),
+                    });
+                }
+                hold.holds = next_holds;
+                hold.lease_deadline = hold.lease_deadline.max(now.saturating_add(lease));
+                self.session_heartbeats.record(owner.session.clone(), now);
+                self.metrics.lock_acquired_total =
+                    self.metrics.lock_acquired_total.saturating_add(1);
+                return Ok(Some(hold.fence));
+            } else {
                 return Ok(None);
             }
+        }
+        if self.locks.contains_key(key) {
             self.metrics.lock_lease_expired_total =
                 self.metrics.lock_lease_expired_total.saturating_add(1);
         }
@@ -455,7 +506,18 @@ impl SingleKeyConditionalStore {
                 presented: token,
             });
         }
-        self.locks.remove(key);
+        let remove = {
+            let hold = self.locks.get_mut(key).expect("checked lock hold");
+            if hold.holds > 1 {
+                hold.holds = hold.holds.saturating_sub(1);
+                false
+            } else {
+                true
+            }
+        };
+        if remove {
+            self.locks.remove(key);
+        }
         Ok(())
     }
 
