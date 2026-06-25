@@ -648,6 +648,13 @@ pub use grid::persistence_policy::{
     PersistenceEviction, PersistenceInMemoryFormat, PersistenceMatcher, PersistencePolicy,
     PersistencePolicyError, PersistenceRegionPlacement, RegionSelector, ResolvedPersistence,
 };
+#[cfg(feature = "durable-value-store")]
+pub use grid::recovery::open_durable_value_store_for_recovery;
+#[cfg(not(target_arch = "wasm32"))]
+pub use grid::recovery::{
+    recover_namespaces, RecoveredNamespace, RecoveryError, RecoveryErrorKind, RecoveryMode,
+    RecoveryNamespace, RecoveryPolicy, RecoveryReport,
+};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::region_failover::{
     promote_region_home, rejoining_region_authority, RegionFailoverError, RegionFailoverMetrics,

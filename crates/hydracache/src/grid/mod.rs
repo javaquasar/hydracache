@@ -22,6 +22,7 @@ pub(crate) mod hinted_handoff;
 pub(crate) mod invalidation_ring;
 pub(crate) mod merkle_repair;
 pub(crate) mod persistence_policy;
+pub(crate) mod recovery;
 pub(crate) mod region_failover;
 pub(crate) mod region_link;
 pub(crate) mod residency;
