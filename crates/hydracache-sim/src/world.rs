@@ -6,8 +6,9 @@ use hydracache::{
 };
 
 use crate::{
-    History, InvariantChecker, InvariantReport, LinkFault, PartitionSymmetry, SimClock, SimNetwork,
-    SimRng, SimSnapshot, SimStorage, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
+    ElectionDriver, ElectionDriverSnapshot, History, InvariantChecker, InvariantReport, LinkFault,
+    PartitionSymmetry, SimClock, SimNetwork, SimRng, SimSnapshot, SimStorage, WorkloadConfig,
+    WorkloadGenerator, WorkloadOp, WorkloadResult,
 };
 
 /// Configuration for a deterministic simulation run.
@@ -73,6 +74,7 @@ pub struct SimWorld {
     rng: SimRng,
     clock: SimClock,
     network: SimNetwork,
+    election: ElectionDriver,
     workload: WorkloadGenerator,
     history: History,
     invariant_checker: InvariantChecker,
@@ -118,6 +120,7 @@ impl SimWorld {
             rng: SimRng::from_seed(seed),
             clock: SimClock::default(),
             network: SimNetwork::from_seed(seed ^ 0x44_44_44_44),
+            election: ElectionDriver::new(seed ^ 0x53_00_00_00, node_ids.clone()),
             workload: WorkloadGenerator::new(
                 seed ^ 0x55_55_55_55,
                 WorkloadConfig {
@@ -156,6 +159,7 @@ impl SimWorld {
             self.clock.now().as_millis()
         ));
 
+        self.drive_election();
         self.deliver_network();
         self.tick_nodes();
         self.issue_smoke_workload();
@@ -188,6 +192,11 @@ impl SimWorld {
     /// Return the latest invariant report.
     pub fn invariant_report(&self) -> &InvariantReport {
         &self.invariant_report
+    }
+
+    /// Return the current deterministic election-driver snapshot.
+    pub fn election_snapshot(&self) -> ElectionDriverSnapshot {
+        self.election.snapshot()
     }
 
     /// Enable or disable the built-in smoke workload.
@@ -356,6 +365,24 @@ impl SimWorld {
                 target.node.handle_message(from, message);
             }
         }
+    }
+
+    fn drive_election(&mut self) {
+        let live_nodes = self.live_node_ids();
+        let previous_trace_len = self.election.trace().len();
+        self.election.step(self.steps, &live_nodes);
+        let new_events = self.election.trace()[previous_trace_len..].to_vec();
+        for event in new_events {
+            self.record(event);
+        }
+    }
+
+    fn live_node_ids(&self) -> BTreeSet<ClusterNodeId> {
+        self.nodes
+            .keys()
+            .filter(|node_id| !self.crashed_nodes.contains(*node_id))
+            .cloned()
+            .collect()
     }
 
     fn tick_nodes(&mut self) {

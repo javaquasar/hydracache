@@ -24,8 +24,8 @@ pub mod world;
 pub use clock::SimClock;
 pub use election::{
     cluster_transition, node_transition, ClusterFsm, ClusterFsmAction, ClusterFsmEvent,
-    FormationPhase, FsmTransition, NodeFsm, NodeFsmState, CLUSTER_TRANSITION_TABLE,
-    NODE_TRANSITION_TABLE,
+    ElectionDriver, ElectionDriverSnapshot, ElectionNodeState, ElectionSource, FormationPhase,
+    FsmTransition, NodeFsm, NodeFsmState, CLUSTER_TRANSITION_TABLE, NODE_TRANSITION_TABLE,
 };
 pub use invariants::{
     InvariantChecker, InvariantReport, InvariantViolation, LogEntry, LogOp, ReplicaSnapshot,

@@ -1,4 +1,7 @@
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
+
+use hydracache::ClusterNodeId;
 
 /// Cluster-wide formation phase rendered and driven by the simulator FSM.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -544,4 +547,375 @@ impl NodeFsm {
         self.state = transition.next;
         transition
     }
+}
+
+/// Source of election behavior used by the simulator.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ElectionSource {
+    /// Deterministic simulator model used when raft-rs multi-node election
+    /// cannot expose a seedable timeout seam.
+    SimModel,
+}
+
+impl ElectionSource {
+    /// Stable machine-readable source label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::SimModel => "sim-model",
+        }
+    }
+
+    /// Whether this source may be presented as a production consensus claim.
+    pub fn carries_product_consensus_claim(self) -> bool {
+        match self {
+            Self::SimModel => false,
+        }
+    }
+
+    /// Human-facing disclosure for demo surfaces.
+    pub fn disclosure(self) -> &'static str {
+        match self {
+            Self::SimModel => {
+                "deterministic simulator election model for the lab; not a product consensus claim"
+            }
+        }
+    }
+}
+
+impl fmt::Display for ElectionSource {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.as_str())
+    }
+}
+
+/// Per-node modeled election state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElectionNodeState {
+    /// Node id.
+    pub node_id: ClusterNodeId,
+    /// FSM role.
+    pub state: NodeFsmState,
+    /// Current modeled term.
+    pub term: u64,
+    /// Candidate this node voted for in the current term.
+    pub voted_for: Option<ClusterNodeId>,
+    /// Votes observed by this node when it is the winning candidate.
+    pub votes_received: usize,
+}
+
+/// Snapshot of the deterministic election driver.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElectionDriverSnapshot {
+    /// Election source label.
+    pub source: ElectionSource,
+    /// Current cluster formation phase.
+    pub phase: FormationPhase,
+    /// Current modeled term.
+    pub term: u64,
+    /// Current leader, if a quorum elected one.
+    pub leader: Option<ClusterNodeId>,
+    /// Per-node state ordered by node id.
+    pub nodes: Vec<ElectionNodeState>,
+    /// Stable trace emitted by the driver.
+    pub trace: Vec<String>,
+}
+
+impl ElectionDriverSnapshot {
+    /// Return nodes currently in the leader state.
+    pub fn leaders(&self) -> Vec<&ElectionNodeState> {
+        self.nodes
+            .iter()
+            .filter(|node| node.state == NodeFsmState::Leader)
+            .collect()
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ElectionNode {
+    fsm: NodeFsm,
+    term: u64,
+    voted_for: Option<ClusterNodeId>,
+    votes_received: usize,
+}
+
+impl ElectionNode {
+    fn new() -> Self {
+        Self {
+            fsm: NodeFsm::new(),
+            term: 0,
+            voted_for: None,
+            votes_received: 0,
+        }
+    }
+
+    fn apply(&mut self, event: ClusterFsmEvent) -> FsmTransition<NodeFsmState> {
+        self.fsm.apply(event)
+    }
+
+    fn set_term(&mut self, term: u64) {
+        self.term = term;
+    }
+
+    fn observe_vote(&mut self, voted_for: ClusterNodeId, votes_received: usize) {
+        self.voted_for = Some(voted_for);
+        self.votes_received = votes_received;
+    }
+
+    fn clear_vote(&mut self) {
+        self.voted_for = None;
+        self.votes_received = 0;
+    }
+}
+
+/// Deterministic election driver for the simulator lab.
+#[derive(Debug, Clone)]
+pub struct ElectionDriver {
+    seed: u64,
+    source: ElectionSource,
+    cluster: ClusterFsm,
+    nodes: BTreeMap<ClusterNodeId, ElectionNode>,
+    leader: Option<ClusterNodeId>,
+    trace: Vec<String>,
+}
+
+impl ElectionDriver {
+    /// Build a deterministic election driver over a stable node set.
+    pub fn new(seed: u64, node_ids: impl IntoIterator<Item = ClusterNodeId>) -> Self {
+        let nodes = node_ids
+            .into_iter()
+            .map(|node_id| (node_id, ElectionNode::new()))
+            .collect();
+        Self {
+            seed,
+            source: ElectionSource::SimModel,
+            cluster: ClusterFsm::new(),
+            nodes,
+            leader: None,
+            trace: Vec::new(),
+        }
+    }
+
+    /// Election behavior source.
+    pub fn source(&self) -> ElectionSource {
+        self.source
+    }
+
+    /// Current leader, if one exists.
+    pub fn leader(&self) -> Option<&ClusterNodeId> {
+        self.leader.as_ref()
+    }
+
+    /// Current modeled term.
+    pub fn term(&self) -> u64 {
+        self.cluster.current_term()
+    }
+
+    /// Current cluster formation phase.
+    pub fn phase(&self) -> FormationPhase {
+        self.cluster.phase()
+    }
+
+    /// Stable election trace.
+    pub fn trace(&self) -> &[String] {
+        &self.trace
+    }
+
+    /// Return a stable snapshot of the modeled election state.
+    pub fn snapshot(&self) -> ElectionDriverSnapshot {
+        ElectionDriverSnapshot {
+            source: self.source,
+            phase: self.phase(),
+            term: self.term(),
+            leader: self.leader.clone(),
+            nodes: self
+                .nodes
+                .iter()
+                .map(|(node_id, node)| ElectionNodeState {
+                    node_id: node_id.clone(),
+                    state: node.fsm.state(),
+                    term: node.term,
+                    voted_for: node.voted_for.clone(),
+                    votes_received: node.votes_received,
+                })
+                .collect(),
+            trace: self.trace.clone(),
+        }
+    }
+
+    /// Advance election state by one logical simulator step.
+    pub fn step(&mut self, logical_step: u64, live_nodes: &BTreeSet<ClusterNodeId>) {
+        self.mark_unavailable_nodes(live_nodes, logical_step);
+
+        if self.cluster.phase() == FormationPhase::Unformed && !live_nodes.is_empty() {
+            self.apply_cluster(ClusterFsmEvent::Boot, logical_step);
+            for node_id in live_nodes {
+                self.apply_node(node_id, ClusterFsmEvent::Boot, logical_step);
+            }
+        }
+
+        if let Some(leader) = self.leader.clone() {
+            if live_nodes.contains(&leader) {
+                self.heartbeat_from_leader(&leader, live_nodes, logical_step);
+                return;
+            }
+            self.leader = None;
+            self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
+            self.trace
+                .push(format!("election:{logical_step}:leader-lost:{leader}"));
+        }
+
+        let quorum = quorum(self.nodes.len());
+        if live_nodes.len() < quorum {
+            self.apply_cluster(ClusterFsmEvent::Isolate, logical_step);
+            self.trace.push(format!(
+                "election:{logical_step}:no-quorum:live={} quorum={quorum}",
+                live_nodes.len()
+            ));
+            return;
+        }
+
+        if let Some(candidate) = self.due_candidate(logical_step, live_nodes) {
+            self.elect(candidate, live_nodes, logical_step);
+        }
+    }
+
+    fn due_candidate(
+        &self,
+        logical_step: u64,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+    ) -> Option<ClusterNodeId> {
+        live_nodes
+            .iter()
+            .filter(|node_id| {
+                self.nodes
+                    .get(*node_id)
+                    .is_some_and(|node| node.fsm.state() != NodeFsmState::Disabled)
+            })
+            .filter_map(|node_id| {
+                let timeout = deterministic_timeout(self.seed, node_id, self.term());
+                (logical_step >= timeout).then_some((timeout, node_id.clone()))
+            })
+            .min_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)))
+            .map(|(_, node_id)| node_id)
+    }
+
+    fn elect(
+        &mut self,
+        candidate: ClusterNodeId,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+        logical_step: u64,
+    ) {
+        self.apply_cluster(ClusterFsmEvent::ElectionTimeout, logical_step);
+        let term = self.term();
+        for node_id in live_nodes {
+            self.apply_node(node_id, ClusterFsmEvent::ElectionTimeout, logical_step);
+        }
+        self.apply_node(&candidate, ClusterFsmEvent::VoteQuorum, logical_step);
+        for node_id in live_nodes {
+            if let Some(node) = self.nodes.get_mut(node_id) {
+                node.set_term(term);
+                node.observe_vote(candidate.clone(), usize::from(*node_id == candidate));
+            }
+        }
+        if let Some(winner) = self.nodes.get_mut(&candidate) {
+            winner.observe_vote(candidate.clone(), live_nodes.len());
+        }
+        for node_id in live_nodes {
+            if *node_id != candidate {
+                self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
+            }
+        }
+        self.apply_cluster(ClusterFsmEvent::VoteQuorum, logical_step);
+        self.leader = Some(candidate.clone());
+        self.trace.push(format!(
+            "election:{logical_step}:leader:{candidate}:term:{term}:votes:{}:source:{}",
+            live_nodes.len(),
+            self.source
+        ));
+    }
+
+    fn heartbeat_from_leader(
+        &mut self,
+        leader: &ClusterNodeId,
+        live_nodes: &BTreeSet<ClusterNodeId>,
+        logical_step: u64,
+    ) {
+        for node_id in live_nodes {
+            if node_id != leader {
+                self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
+            }
+        }
+        self.apply_cluster(ClusterFsmEvent::LeaderHeartbeat, logical_step);
+    }
+
+    fn mark_unavailable_nodes(&mut self, live_nodes: &BTreeSet<ClusterNodeId>, logical_step: u64) {
+        let unavailable = self
+            .nodes
+            .keys()
+            .filter(|node_id| !live_nodes.contains(*node_id))
+            .cloned()
+            .collect::<Vec<_>>();
+        for node_id in unavailable {
+            let current = self
+                .nodes
+                .get(&node_id)
+                .map(|node| node.fsm.state())
+                .unwrap_or(NodeFsmState::Disconnected);
+            if current != NodeFsmState::Disconnected && current != NodeFsmState::Disabled {
+                self.apply_node(&node_id, ClusterFsmEvent::Isolate, logical_step);
+                if let Some(node) = self.nodes.get_mut(&node_id) {
+                    node.clear_vote();
+                }
+            }
+        }
+    }
+
+    fn apply_cluster(
+        &mut self,
+        event: ClusterFsmEvent,
+        logical_step: u64,
+    ) -> FsmTransition<FormationPhase> {
+        let before = self.cluster.phase();
+        let transition = self.cluster.apply(event);
+        if before != transition.next || transition.action != ClusterFsmAction::None {
+            self.trace.push(format!(
+                "cluster:{logical_step}:{before}->{next}:{event:?}:{action:?}",
+                next = transition.next,
+                action = transition.action
+            ));
+        }
+        transition
+    }
+
+    fn apply_node(
+        &mut self,
+        node_id: &ClusterNodeId,
+        event: ClusterFsmEvent,
+        logical_step: u64,
+    ) -> Option<FsmTransition<NodeFsmState>> {
+        let node = self.nodes.get_mut(node_id)?;
+        let before = node.fsm.state();
+        let transition = node.apply(event);
+        if before != transition.next || transition.action != ClusterFsmAction::None {
+            self.trace.push(format!(
+                "node:{logical_step}:{node_id}:{before}->{next}:{event:?}:{action:?}",
+                next = transition.next,
+                action = transition.action
+            ));
+        }
+        Some(transition)
+    }
+}
+
+fn quorum(node_count: usize) -> usize {
+    node_count / 2 + 1
+}
+
+fn deterministic_timeout(seed: u64, node_id: &ClusterNodeId, term: u64) -> u64 {
+    let mut hash = seed ^ term.rotate_left(17) ^ 0x53_53_53_53_53_53_53_53;
+    for byte in node_id.as_str().as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x100_0000_01b3);
+    }
+    2 + (hash % 5)
 }
