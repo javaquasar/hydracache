@@ -8,6 +8,7 @@ pub mod clock;
 pub mod invariants;
 pub mod linearizability;
 pub mod network;
+pub mod persistence_recovery;
 pub mod rng;
 pub mod scenarios;
 pub mod schedule;
@@ -27,6 +28,10 @@ pub use linearizability::{
     LinearizabilityChecker, LinearizabilityReport, LinearizabilityViolation,
 };
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
+pub use persistence_recovery::{
+    run_persistence_recovery, PersistenceRecoveryFault, PersistenceRecoveryInvariantReport,
+    PersistenceRecoveryScenario,
+};
 pub use rng::SimRng;
 pub use scenarios::{
     run_scenario, scenario_matches_expectation, scenario_presets, ExpectedScenarioProgress,
