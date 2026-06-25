@@ -366,6 +366,112 @@ pub enum CasExpectation {
     Present,
 }
 
+/// Entry-event projection requested by Java/IMap-style listeners.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EntryEventProjection {
+    /// Plain near-cache invalidation signal.
+    Invalidation,
+    /// IMap entry-event shaped cache signal.
+    IMapEntryEvent,
+}
+
+/// Source signal that can be projected into an IMap entry event kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EntryEventSource {
+    /// A value was written, but the signal does not prove whether it was add or update.
+    Stored,
+    /// A value was explicitly removed or tombstoned.
+    Removed,
+    /// A key was invalidated without a stronger transition reason.
+    KeyInvalidated,
+    /// A tag invalidated one or more keys.
+    TagInvalidated,
+    /// A whole cache/namespace was flushed.
+    Flushed,
+    /// A value expired.
+    Expired,
+    /// A value was evicted.
+    Evicted,
+    /// A stale loader result was discarded.
+    StaleLoadDiscarded,
+    /// Unknown or transport-specific signal.
+    Unknown,
+}
+
+/// Entry-event kind exposed to Java/IMap-style listeners.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EntryEventKind {
+    /// A key changed, but the signal cannot distinguish add from update.
+    Upserted,
+    /// A key was removed/tombstoned.
+    Removed,
+    /// A key was evicted or expired.
+    Evicted,
+    /// A freshness invalidation without business-event semantics.
+    Invalidated,
+}
+
+impl EntryEventKind {
+    /// Conservatively project a cache/invalidation source into an entry-event kind.
+    pub const fn from_source(source: EntryEventSource) -> Self {
+        match source {
+            EntryEventSource::Stored => Self::Upserted,
+            EntryEventSource::Removed => Self::Removed,
+            EntryEventSource::Expired | EntryEventSource::Evicted => Self::Evicted,
+            EntryEventSource::KeyInvalidated
+            | EntryEventSource::TagInvalidated
+            | EntryEventSource::Flushed
+            | EntryEventSource::StaleLoadDiscarded
+            | EntryEventSource::Unknown => Self::Invalidated,
+        }
+    }
+}
+
+/// IMap entry-event shaped cache signal.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EntryEvent {
+    /// Namespace.
+    pub ns: Namespace,
+    /// Key when the underlying signal is key-scoped.
+    pub key: Option<StructuredKey>,
+    /// Conservative event kind.
+    pub kind: EntryEventKind,
+    /// Optional value, gated by residency and transport support.
+    pub value: Option<Vec<u8>>,
+    /// Whether value inclusion was degraded by residency.
+    pub residency_degraded: bool,
+    /// Event watermark, if the source carries one.
+    pub watermark: Option<Watermark>,
+}
+
+/// Executable contract for W6 listener semantics.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EntryListenerContract {
+    /// Signals may be coalesced and are not a complete event history.
+    pub coalesced: bool,
+    /// Delivery uses bounded buffers.
+    pub bounded_buffer: bool,
+    /// Slow listeners are dropped/reported through lag counters.
+    pub lag_drop_counter: bool,
+    /// This surface must not be used as a business event log.
+    pub business_event_log: bool,
+}
+
+impl EntryListenerContract {
+    /// Return the shipped W6 listener contract.
+    pub const fn cache_signal() -> Self {
+        Self {
+            coalesced: true,
+            bounded_buffer: true,
+            lag_drop_counter: true,
+            business_event_log: false,
+        }
+    }
+}
+
 /// Optional context carried by every request.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClientContext {
@@ -535,6 +641,14 @@ pub enum ClientRequest {
         from: Option<Watermark>,
         include_value: bool,
     },
+    /// Subscribe to IMap entry-event shaped cache signals.
+    SubscribeEntryEvents {
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+        projection: EntryEventProjection,
+    },
     /// Try to acquire a session-bound fenced lock.
     TryLock {
         ns: Namespace,
@@ -588,7 +702,8 @@ impl ClientRequest {
             | Self::BatchPut { .. }
             | Self::EvictRegion { .. }
             | Self::SubscribeInvalidations { .. } => MIN_PROTOCOL_VERSION,
-            Self::TryLock { .. }
+            Self::SubscribeEntryEvents { .. }
+            | Self::TryLock { .. }
             | Self::Unlock { .. }
             | Self::RenewLockLease { .. }
             | Self::ForceUnlock { .. }
@@ -616,6 +731,7 @@ impl ClientRequest {
             Self::BatchPut { .. } => "batch_put",
             Self::EvictRegion { .. } => "evict_region",
             Self::SubscribeInvalidations { .. } => "subscribe_invalidations",
+            Self::SubscribeEntryEvents { .. } => "subscribe_entry_events",
             Self::TryLock { .. } => "try_lock",
             Self::Unlock { .. } => "unlock",
             Self::RenewLockLease { .. } => "renew_lock_lease",
@@ -849,6 +965,39 @@ impl InvalidationEvent {
             self.residency_degraded = true;
         }
         self
+    }
+}
+
+impl EntryEvent {
+    /// Project a near-cache invalidation into an IMap-shaped entry-event signal.
+    pub fn from_invalidation(event: InvalidationEvent) -> Self {
+        let watermark = event.watermark();
+        Self {
+            ns: event.ns,
+            key: Some(event.key),
+            kind: EntryEventKind::Invalidated,
+            value: event.value,
+            residency_degraded: event.residency_degraded,
+            watermark: Some(watermark),
+        }
+    }
+
+    /// Build an entry event from a known cache signal source.
+    pub fn from_source(
+        ns: Namespace,
+        key: Option<StructuredKey>,
+        source: EntryEventSource,
+        value: Option<Vec<u8>>,
+        watermark: Option<Watermark>,
+    ) -> Self {
+        Self {
+            ns,
+            key,
+            kind: EntryEventKind::from_source(source),
+            value,
+            residency_degraded: false,
+            watermark,
+        }
     }
 }
 

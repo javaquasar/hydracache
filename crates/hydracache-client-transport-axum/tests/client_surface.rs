@@ -5,8 +5,8 @@ use hydracache::{
 };
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
-    ClientResponse, ClientResponseEnvelope, ClientWireMessage, Namespace, StructuredKey,
-    PROTOCOL_VERSION,
+    ClientResponse, ClientResponseEnvelope, ClientWireMessage, EntryEventProjection, Namespace,
+    StructuredKey, Watermark, PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
@@ -135,6 +135,31 @@ async fn client_surface_get_put_invalidate_round_trip() {
         panic!("expected value response");
     };
     assert!(value.is_none());
+}
+
+#[tokio::test]
+async fn client_surface_subscribe_entry_events_uses_bounded_subscription_family() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let from = Some(Watermark::new(3, 5));
+
+    let response = send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "entry-events-1",
+            ClientRequest::SubscribeEntryEvents {
+                ns: ns(),
+                region: None,
+                from,
+                include_value: true,
+                projection: EntryEventProjection::IMapEntryEvent,
+            },
+        ),
+    )
+    .await
+    .result
+    .unwrap();
+
+    assert_eq!(response, ClientResponse::Subscribed { from });
 }
 
 #[tokio::test]

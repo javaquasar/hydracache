@@ -200,8 +200,13 @@ public class UserCacheListener implements HydraCacheEntryInvalidatedListener<Str
 ```
 
 Listeners register after Spring singletons are ready and deregister on context
-shutdown. Stream resume uses W1 watermarks. `includeValue` is always subject to
-W5 residency checks, and unsupported listener interfaces fail loud at startup.
+shutdown. Stream resume uses W1 watermarks. `includeValue` is best-effort and
+always subject to residency checks; a listener should follow up with `get` when
+it needs the current value. Entry listeners are bounded, at-least-once/coalesced
+cache freshness signals. They are not a business event log, do not replace
+`Ringbuffer`/`ReliableTopic`, and slow listeners are dropped/reported through
+lag counters instead of forcing unbounded buffering. Unsupported listener
+interfaces fail loud at startup.
 
 ## Micrometer And Actuator Probe
 

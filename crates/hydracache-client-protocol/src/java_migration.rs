@@ -258,6 +258,8 @@ pub enum JavaMapOperation {
     Remove,
     /// `HydraCacheMap.remove(key, value)`.
     RemoveIfValue,
+    /// `HydraCacheMap.addEntryListener`.
+    AddEntryListener,
     /// `HydraCacheMap.containsKey`.
     ContainsKey,
     /// `HydraCacheMap.getAll`.
@@ -288,6 +290,11 @@ pub enum JavaMapProtocolFamily {
     },
     /// Maps to protocol-v2 conditional tombstone.
     ConditionalRemove,
+    /// Maps to protocol subscription with an entry-event projection.
+    SubscribeInvalidations {
+        /// Whether the mapping requests IMap entry-event shaping.
+        projection: JavaMapListenerProjection,
+    },
     /// Maps to protocol-v1 invalidation.
     Invalidate,
     /// Maps to protocol-v1 batch get.
@@ -307,6 +314,13 @@ pub enum JavaMapCasExpectation {
     Present,
 }
 
+/// Java listener projection over HydraCache invalidation signals.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JavaMapListenerProjection {
+    /// IMap entry-event shaped cache signal.
+    EntryEvent,
+}
+
 impl JavaMapOperation {
     /// Return the protocol family that backs this facade operation.
     pub const fn protocol_family(self) -> JavaMapProtocolFamily {
@@ -321,6 +335,9 @@ impl JavaMapOperation {
                 expectation: JavaMapCasExpectation::Present,
             },
             Self::RemoveIfValue => JavaMapProtocolFamily::ConditionalRemove,
+            Self::AddEntryListener => JavaMapProtocolFamily::SubscribeInvalidations {
+                projection: JavaMapListenerProjection::EntryEvent,
+            },
             Self::Remove | Self::Invalidate => JavaMapProtocolFamily::Invalidate,
             Self::GetAll => JavaMapProtocolFamily::BatchGet,
             Self::PutAll => JavaMapProtocolFamily::BatchPut,

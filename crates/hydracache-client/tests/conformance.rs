@@ -10,12 +10,12 @@ use bytes::Bytes;
 use hydracache::{ClusterGeneration, MetaDataContainer, NearCacheRepairAction};
 use hydracache_client::{
     stable_error_retryable, CasOutcome, ClientError, ClientIdentity, ClientTransport,
-    ConformanceManifest, HydraClient, HydraClientConfig, RemoteNearCache, RequestOptions,
-    RetryPolicy,
+    ConformanceManifest, EntryEventAdapter, HydraClient, HydraClientConfig, RemoteNearCache,
+    RequestOptions, RetryPolicy,
 };
 use hydracache_client_protocol::{
-    ClientErrorCode, ClientRequest, Namespace, RepairAction, StructuredKey, VersionHandshake,
-    MIN_PROTOCOL_VERSION, PROTOCOL_VERSION,
+    ClientErrorCode, ClientRequest, EntryEventKind, InvalidationEvent, Namespace, RepairAction,
+    StructuredKey, VersionHandshake, Watermark, MIN_PROTOCOL_VERSION, PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, HYDRACACHE_CLIENT_ID_HEADER,
@@ -270,6 +270,42 @@ async fn conformance_client_imap_cas_methods_and_metrics() {
     let metrics = client.metrics();
     assert_eq!(metrics.cas_applied_total, 2);
     assert_eq!(metrics.cas_mismatch_total, 1);
+}
+
+#[tokio::test]
+async fn conformance_client_entry_event_subscription_and_adapter() {
+    let transport = TwoNodeAxumTransport::new();
+    let client = HydraClient::connect(transport, HydraClientConfig::new(identity()))
+        .await
+        .expect("client connects");
+
+    let from = Some(Watermark::new(7, 9));
+    assert_eq!(
+        client
+            .subscribe_entry_events(ns(), None, from, true)
+            .await
+            .expect("entry subscription"),
+        from
+    );
+
+    let contract = EntryEventAdapter::contract();
+    assert!(contract.coalesced);
+    assert!(contract.bounded_buffer);
+    assert!(contract.lag_drop_counter);
+    assert!(!contract.business_event_log);
+
+    let mut adapter = EntryEventAdapter::default();
+    let projected = adapter.on_invalidation(
+        InvalidationEvent::new(ns(), key("listener"), 1, 2).with_value(b"value".to_vec()),
+    );
+    assert_eq!(projected.kind, EntryEventKind::Invalidated);
+    assert_eq!(projected.value, Some(b"value".to_vec()));
+    assert_eq!(projected.watermark, Some(Watermark::new(1, 2)));
+
+    adapter.on_lagged(3);
+    let metrics = adapter.metrics();
+    assert_eq!(metrics.lagged_total, 3);
+    assert_eq!(metrics.dropped_total, 3);
 }
 
 #[test]

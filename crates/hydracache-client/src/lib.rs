@@ -13,8 +13,9 @@ use bytes::Bytes;
 use hydracache_client_protocol::{
     CasExpectation, ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
     ClientProtocolError, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ClientWireMessage, LockConsistency, Namespace, RepairAction,
-    StructuredKey, SubscriptionWatermarkTracker, VersionHandshake,
+    ClientResponseEnvelope, ClientWireMessage, EntryEvent, EntryEventProjection,
+    EntryListenerContract, InvalidationEvent, LockConsistency, Namespace, RegionId, RepairAction,
+    StructuredKey, SubscriptionWatermarkTracker, VersionHandshake, Watermark,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -542,6 +543,32 @@ where
         self.cas_outcome(response)
     }
 
+    /// Subscribe to IMap-shaped entry events over the invalidation subscription family.
+    pub async fn subscribe_entry_events(
+        &self,
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+    ) -> Result<Option<Watermark>, ClientError> {
+        let response = self
+            .request(
+                ClientRequest::SubscribeEntryEvents {
+                    ns,
+                    region,
+                    from,
+                    include_value,
+                    projection: EntryEventProjection::IMapEntryEvent,
+                },
+                RequestOptions::default(),
+            )
+            .await?;
+        match response {
+            ClientResponse::Subscribed { from } => Ok(from),
+            _ => Err(ClientError::UnexpectedResponse("entry event subscription")),
+        }
+    }
+
     async fn compare_and_set(
         &self,
         ns: Namespace,
@@ -716,6 +743,48 @@ impl RemoteNearCache {
         }
         action
     }
+}
+
+/// Client-side adapter for IMap-shaped entry listener events.
+#[derive(Debug, Default)]
+pub struct EntryEventAdapter {
+    lagged_total: u64,
+    dropped_total: u64,
+}
+
+impl EntryEventAdapter {
+    /// Return the executable listener contract.
+    pub const fn contract() -> EntryListenerContract {
+        EntryListenerContract::cache_signal()
+    }
+
+    /// Project an invalidation event into an entry-event shaped cache signal.
+    pub fn on_invalidation(&mut self, event: InvalidationEvent) -> EntryEvent {
+        EntryEvent::from_invalidation(event)
+    }
+
+    /// Record that a bounded listener skipped or dropped events.
+    pub fn on_lagged(&mut self, skipped: u64) {
+        self.lagged_total = self.lagged_total.saturating_add(skipped);
+        self.dropped_total = self.dropped_total.saturating_add(skipped);
+    }
+
+    /// Snapshot adapter diagnostics.
+    pub fn metrics(&self) -> EntryEventAdapterMetrics {
+        EntryEventAdapterMetrics {
+            lagged_total: self.lagged_total,
+            dropped_total: self.dropped_total,
+        }
+    }
+}
+
+/// Bounded entry-event adapter diagnostics.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EntryEventAdapterMetrics {
+    /// Events skipped because the listener lagged a bounded stream.
+    pub lagged_total: u64,
+    /// Events considered dropped rather than buffered unboundedly.
+    pub dropped_total: u64,
 }
 
 /// SDK metrics counters.

@@ -626,6 +626,22 @@ impl ClientSurfaceState {
                     )
                 }
             }
+            ClientRequest::SubscribeEntryEvents {
+                ns: _,
+                region: _,
+                from,
+                include_value: _,
+                projection: _,
+            } => {
+                if let Err(error) = self.begin_tenant_subscription(identity) {
+                    ClientResponseEnvelope::error(envelope.request_id, error)
+                } else {
+                    ClientResponseEnvelope::ok(
+                        envelope.request_id,
+                        ClientResponse::Subscribed { from },
+                    )
+                }
+            }
             ClientRequest::TryLock {
                 ns,
                 key,
