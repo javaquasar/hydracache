@@ -3,6 +3,7 @@ use std::fmt;
 
 use hydracache::ClusterNodeId;
 
+use crate::election::{ElectionDriverSnapshot, NodeFsmState};
 use crate::{History, WorkloadOp, WorkloadResult};
 
 /// One committed log entry observed in a simulated replica.
@@ -56,6 +57,155 @@ pub struct ReplicaSnapshot {
     pub durable_log_len: usize,
     /// Per-key value observations.
     pub values: BTreeMap<String, ValueObservation>,
+}
+
+/// Per-node election/topology observation used by C3 invariant checks.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElectionTopologyNode {
+    /// Replica node id.
+    pub node_id: ClusterNodeId,
+    /// Whether the node is live in the modeled topology.
+    pub up: bool,
+    /// Current election role.
+    pub state: NodeFsmState,
+    /// Current modeled term.
+    pub term: u64,
+    /// Vote target in the current term.
+    pub voted_for: Option<ClusterNodeId>,
+    /// Votes received by this node when it is a candidate/leader.
+    pub votes_received: usize,
+    /// Historical `(commit_index, applied_index)` samples.
+    pub index_history: Vec<(u64, u64)>,
+    /// Applied commit sequence observed while catching up.
+    pub applied_commits: Vec<u64>,
+    /// Writes accepted after this node stopped being the authoritative leader.
+    pub stale_leader_writes: u64,
+}
+
+impl ElectionTopologyNode {
+    /// Build a live follower-like node with monotonic indices.
+    pub fn new(node_id: impl Into<ClusterNodeId>) -> Self {
+        Self {
+            node_id: node_id.into(),
+            up: true,
+            state: NodeFsmState::Follower,
+            term: 0,
+            voted_for: None,
+            votes_received: 0,
+            index_history: vec![(0, 0)],
+            applied_commits: Vec::new(),
+            stale_leader_writes: 0,
+        }
+    }
+
+    /// Set election role and term.
+    pub fn role(mut self, state: NodeFsmState, term: u64) -> Self {
+        self.state = state;
+        self.term = term;
+        self
+    }
+
+    /// Set vote metadata.
+    pub fn vote(mut self, voted_for: impl Into<ClusterNodeId>, votes_received: usize) -> Self {
+        self.voted_for = Some(voted_for.into());
+        self.votes_received = votes_received;
+        self
+    }
+
+    /// Replace index history.
+    pub fn index_history(mut self, history: Vec<(u64, u64)>) -> Self {
+        self.index_history = history;
+        self
+    }
+
+    /// Replace catch-up applied commits.
+    pub fn applied_commits(mut self, commits: Vec<u64>) -> Self {
+        self.applied_commits = commits;
+        self
+    }
+
+    /// Mark writes accepted after leadership was lost.
+    pub fn stale_leader_writes(mut self, writes: u64) -> Self {
+        self.stale_leader_writes = writes;
+        self
+    }
+}
+
+/// Subscriber delivery observation used by `event_after_commit`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SubscriberDeliveryObservation {
+    /// Subscriber id.
+    pub subscriber_id: String,
+    /// Event key.
+    pub key: String,
+    /// Commit index required before this event may be delivered.
+    pub commit_index: u64,
+    /// Commit index visible when the subscriber received the event.
+    pub delivered_after_commit_index: u64,
+}
+
+/// C3 election/topology state checked every simulator step.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ElectionTopologyState {
+    /// Current authoritative leader.
+    pub leader: Option<ClusterNodeId>,
+    /// Total configured node count, including unavailable nodes.
+    pub total_nodes: usize,
+    /// Per-node observations.
+    pub nodes: Vec<ElectionTopologyNode>,
+    /// Subscriber delivery observations.
+    pub subscriber_deliveries: Vec<SubscriberDeliveryObservation>,
+}
+
+impl ElectionTopologyState {
+    /// Build a topology state from the deterministic election driver.
+    pub fn from_election_snapshot(snapshot: &ElectionDriverSnapshot) -> Self {
+        Self {
+            leader: snapshot.leader.clone(),
+            total_nodes: snapshot.nodes.len(),
+            nodes: snapshot
+                .nodes
+                .iter()
+                .map(|node| {
+                    ElectionTopologyNode::new(node.node_id.clone())
+                        .role(node.state, node.term)
+                        .index_history(vec![(0, 0)])
+                        .vote(
+                            node.voted_for
+                                .clone()
+                                .unwrap_or_else(|| node.node_id.clone()),
+                            node.votes_received,
+                        )
+                })
+                .collect(),
+            subscriber_deliveries: Vec::new(),
+        }
+    }
+
+    /// Build from explicit nodes for tests.
+    pub fn new(total_nodes: usize, nodes: Vec<ElectionTopologyNode>) -> Self {
+        Self {
+            leader: nodes
+                .iter()
+                .find(|node| node.state == NodeFsmState::Leader)
+                .map(|node| node.node_id.clone()),
+            total_nodes,
+            nodes,
+            subscriber_deliveries: Vec::new(),
+        }
+    }
+
+    /// Override the authoritative leader.
+    pub fn leader(mut self, leader: Option<ClusterNodeId>) -> Self {
+        self.leader = leader;
+        self
+    }
+
+    /// Add one subscriber delivery observation.
+    pub fn subscriber_delivery(mut self, delivery: SubscriberDeliveryObservation) -> Self {
+        self.subscriber_deliveries.push(delivery);
+        self
+    }
 }
 
 impl ReplicaSnapshot {
@@ -176,11 +326,190 @@ impl InvariantChecker {
         report
     }
 
+    /// Check only election/topology invariants.
+    pub fn check_election_topology(&self, topology: &ElectionTopologyState) -> InvariantReport {
+        let mut report = InvariantReport::default();
+        self.check_election_safety(topology, &mut report);
+        self.check_leader_requires_quorum(topology, &mut report);
+        self.check_no_stale_leader_writes(topology, &mut report);
+        self.check_index_monotonicity(topology, &mut report);
+        self.check_catchup_no_skip(topology, &mut report);
+        self.check_event_after_commit(topology, &mut report);
+        report
+    }
+
     /// Check history and replica snapshots.
     pub fn check(&self, history: &History, replicas: &[ReplicaSnapshot]) -> InvariantReport {
         let mut report = self.check_history(history);
         report.merge(self.check_replicas(replicas));
         report
+    }
+
+    /// Check history plus election/topology invariants.
+    pub fn check_history_and_election(
+        &self,
+        history: &History,
+        topology: &ElectionTopologyState,
+    ) -> InvariantReport {
+        let mut report = self.check_history(history);
+        report.merge(self.check_election_topology(topology));
+        report
+    }
+
+    fn check_election_safety(
+        &self,
+        topology: &ElectionTopologyState,
+        report: &mut InvariantReport,
+    ) {
+        report.checked();
+        let mut leaders_by_term: BTreeMap<u64, Vec<&ClusterNodeId>> = BTreeMap::new();
+        for node in topology
+            .nodes
+            .iter()
+            .filter(|node| node.state == NodeFsmState::Leader)
+        {
+            leaders_by_term
+                .entry(node.term)
+                .or_default()
+                .push(&node.node_id);
+        }
+        for (term, leaders) in leaders_by_term {
+            if leaders.len() > 1 {
+                report.violation(
+                    "election_safety",
+                    format!("term {term} has multiple leaders: {leaders:?}"),
+                );
+            }
+        }
+    }
+
+    fn check_leader_requires_quorum(
+        &self,
+        topology: &ElectionTopologyState,
+        report: &mut InvariantReport,
+    ) {
+        report.checked();
+        let quorum = topology.total_nodes / 2 + 1;
+        for node in topology
+            .nodes
+            .iter()
+            .filter(|node| node.state == NodeFsmState::Leader)
+        {
+            if node.votes_received < quorum {
+                report.violation(
+                    "leader_requires_quorum",
+                    format!(
+                        "{} is leader with {} vote(s), quorum is {quorum}",
+                        node.node_id, node.votes_received
+                    ),
+                );
+            }
+        }
+    }
+
+    fn check_no_stale_leader_writes(
+        &self,
+        topology: &ElectionTopologyState,
+        report: &mut InvariantReport,
+    ) {
+        report.checked();
+        for node in &topology.nodes {
+            let is_authoritative = topology
+                .leader
+                .as_ref()
+                .is_some_and(|leader| leader == &node.node_id);
+            if !is_authoritative && node.stale_leader_writes > 0 {
+                report.violation(
+                    "no_stale_leader_writes",
+                    format!(
+                        "{} accepted {} write(s) after losing leadership",
+                        node.node_id, node.stale_leader_writes
+                    ),
+                );
+            }
+        }
+    }
+
+    fn check_index_monotonicity(
+        &self,
+        topology: &ElectionTopologyState,
+        report: &mut InvariantReport,
+    ) {
+        report.checked();
+        for node in &topology.nodes {
+            for window in node.index_history.windows(2) {
+                let [(prev_commit, prev_applied), (commit, applied)] = window else {
+                    continue;
+                };
+                if commit < prev_commit || applied < prev_applied {
+                    report.violation(
+                        "index_monotonicity",
+                        format!(
+                            "{} index regressed from ({prev_commit},{prev_applied}) to ({commit},{applied})",
+                            node.node_id
+                        ),
+                    );
+                }
+            }
+            for (commit, applied) in &node.index_history {
+                if applied > commit {
+                    report.violation(
+                        "index_monotonicity",
+                        format!(
+                            "{} applied index {applied} is ahead of commit index {commit}",
+                            node.node_id
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
+    fn check_catchup_no_skip(
+        &self,
+        topology: &ElectionTopologyState,
+        report: &mut InvariantReport,
+    ) {
+        report.checked();
+        for node in &topology.nodes {
+            for window in node.applied_commits.windows(2) {
+                let [previous, next] = window else {
+                    continue;
+                };
+                if next != &(previous.saturating_add(1)) {
+                    report.violation(
+                        "catchup_no_skip",
+                        format!(
+                            "{} skipped commit {} before applying {next}",
+                            node.node_id,
+                            previous + 1
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
+    fn check_event_after_commit(
+        &self,
+        topology: &ElectionTopologyState,
+        report: &mut InvariantReport,
+    ) {
+        report.checked();
+        for delivery in &topology.subscriber_deliveries {
+            if delivery.delivered_after_commit_index < delivery.commit_index {
+                report.violation(
+                    "event_after_commit",
+                    format!(
+                        "{} received '{}' at commit {}, before required commit {}",
+                        delivery.subscriber_id,
+                        delivery.key,
+                        delivery.delivered_after_commit_index,
+                        delivery.commit_index
+                    ),
+                );
+            }
+        }
     }
 
     fn check_consensus_prefix(&self, replicas: &[ReplicaSnapshot], report: &mut InvariantReport) {

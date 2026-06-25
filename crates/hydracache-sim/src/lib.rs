@@ -28,7 +28,8 @@ pub use election::{
     FsmTransition, NodeFsm, NodeFsmState, CLUSTER_TRANSITION_TABLE, NODE_TRANSITION_TABLE,
 };
 pub use invariants::{
-    InvariantChecker, InvariantReport, InvariantViolation, LogEntry, LogOp, ReplicaSnapshot,
+    ElectionTopologyNode, ElectionTopologyState, InvariantChecker, InvariantReport,
+    InvariantViolation, LogEntry, LogOp, ReplicaSnapshot, SubscriberDeliveryObservation,
     ValueObservation, ValueState,
 };
 pub use linearizability::{

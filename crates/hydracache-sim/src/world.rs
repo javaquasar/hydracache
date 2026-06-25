@@ -164,7 +164,7 @@ impl SimWorld {
         self.tick_nodes();
         self.issue_smoke_workload();
         self.drain_node_effects();
-        self.invariant_report = self.invariant_checker.check_history(&self.history);
+        self.refresh_invariant_report();
     }
 
     /// Return a snapshot outcome without advancing the world.
@@ -383,6 +383,15 @@ impl SimWorld {
             .filter(|node_id| !self.crashed_nodes.contains(*node_id))
             .cloned()
             .collect()
+    }
+
+    fn refresh_invariant_report(&mut self) {
+        let election_state = crate::invariants::ElectionTopologyState::from_election_snapshot(
+            &self.election.snapshot(),
+        );
+        self.invariant_report = self
+            .invariant_checker
+            .check_history_and_election(&self.history, &election_state);
     }
 
     fn tick_nodes(&mut self) {
