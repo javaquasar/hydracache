@@ -107,7 +107,7 @@ depends_on = ["0.48.0"]
 [[release]]
 version = "0.50.0"
 file = "docs/plans/V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "Interactive cluster simulator demo (DevRel) — seed-reproducible browser visualization over the 0.44 hydracache-sim engine (WASM), partition/crash/heal controls, live committed-log/leader/consistency-level/convergence + real invariant verdicts; depends only on 0.44 and may be pulled forward"
 depends_on = ["0.44.0"]
 

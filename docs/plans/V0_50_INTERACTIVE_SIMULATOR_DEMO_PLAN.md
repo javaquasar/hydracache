@@ -5,7 +5,7 @@
 > - **Why:** make the "correctness as a product feature" wedge (`POSITIONING.md` §2) *visible and persuasive*. Consistency/partition behavior is the hardest thing to sell in prose; a "tear the network, watch it stay correct / converge / fail loud" demo is the strongest possible pitch, onboarding aid, and conference asset.
 > - **After (depends on):** `0.44` (the `hydracache-sim` deterministic simulator) — **already shipped**, so this can be pulled forward ahead of `0.46`–`0.49` at any time; it is numbered `0.50` only to avoid renumbering the in-flight cluster/prod line, not because it must wait for them.
 > - **Unblocks:** — (DevRel / marketing artifact; nothing depends on it).
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) · engine: [`V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md`](V0_44_DETERMINISTIC_SIMULATION_TESTING_PLAN.md) · pitch: [`../POSITIONING.md`](../POSITIONING.md).
 >
@@ -15,6 +15,108 @@ This plan is written for an autonomous coding agent (Codex). Read [`CLAUDE.md`](
 [`docs/RULES.md`](../RULES.md), and the `0.44` DST plan first. One work item = one
 commit/PR; after each, run its Definition of Done **and** `cargo xtask verify`; never
 push red.
+
+> **Addendum scope:** this plan also carries a **Pre-0.50 debt closure** section (below)
+> recording the debts found auditing the shipped `0.45`–`0.48` releases. Those items are
+> **independent of the demo** — they neither block nor depend on the W1–W7 demo work — but
+> they are attached here because `0.50` is the next planned roadmap touch-point and they
+> should be closed before/with it. Each is a standalone commit/PR.
+
+## Pre-0.50 debt closure (audit of shipped releases 0.45–0.48)
+
+An audit of the `0.45`–`0.48` plans against the implementation found **no feature drift**:
+the work items are implemented and tested (`hydracache-server` + `deploy/{k8s,helm,dashboards}`
++ runbooks exist; tests cover every work item; sources contain no `todo!`/`unimplemented!`/
+`FIXME`; `#[ignore]` is confined to the chaos/soak/Docker tier per R-5). The debts are
+**documentation, compatibility, and process** gaps that the gates do not currently catch
+(`doc-check` validates only `releases.toml`). Close these as `D1`–`D4`.
+
+### D1. COMPAT register is missing the 0.45/0.46/0.47 durable/wire artifacts (R-4) — primary
+
+**Problem.** `docs/COMPAT.md` jumps from `0.44` straight to `0.48`: there are **no sections
+or table rows for `0.45`, `0.46`, `0.47`**, yet those releases introduced durable or
+wire-visible artifacts that R-4 requires registering (with version, writer, reader-
+compatibility window, and failure mode).
+
+**Where / what to add.**
+- **0.45 (active-active):** the **CRDT value encoding** (durable + replicated), the **WAN
+  `RegionLink` frame** (cross-process/region), and cross-region **anti-entropy exchange
+  records**. Files: `grid/crdt.rs`, `grid/region_link.rs`, `grid/active_active.rs`,
+  `tests/anti_entropy.rs`.
+- **0.46 (resilience):** the **durable replayable invalidation stream** (W6 — explicitly a
+  durable artifact), **hinted-handoff records**, and the **Merkle repair exchange** wire
+  shape. Files: `grid/invalidation_ring.rs`, `grid/hinted_handoff.rs`, `grid/merkle_repair.rs`.
+- **0.47 (causal+):** the **session token / `ClientContext` wire format** (transmitted to
+  consumers) and the **session watermark**. Files: `grid/session_context.rs`,
+  `grid/session_lifecycle.rs`.
+
+**Fix.** For each artifact add a `Versioned Artifacts` table row (version `1`, writer,
+reader-compat, fail-loud failure mode) **and** a `## 0.45 …` / `## 0.46 …` / `## 0.47 …`
+narrative section, mirroring the existing `0.42`–`0.44`/`0.48` entries. Readers must refuse
+unknown-future versions loud (R-3). Verify the on-disk/wire format version each artifact
+actually emits in code before writing the row (do not guess the version number).
+
+**Acceptance.** `docs/COMPAT.md` has `0.45`/`0.46`/`0.47` sections; every durable/wire
+artifact those releases added is registered; a reviewer can map each table row to the
+emitting code path.
+
+### D2. Dangling plan cross-references after the +1 renumber (R-11)
+
+**Problem.** After the DST-insertion renumber, the `Deferred` sections still point to
+pre-renumber filenames that no longer exist:
+- `docs/plans/V0_45_ACTIVE_ACTIVE_MULTIREGION_PLAN.md` (~lines 537, 539) →
+  old pre-renumber cluster-resilience and cross-region-session filenames.
+- `docs/plans/V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md` (~line 565) →
+  the old pre-renumber cross-region-session filename.
+
+**Fix.** Repoint to the real files (`V0_46_CLUSTER_RESILIENCE_AND_COORDINATION_PLAN.md`,
+`V0_47_CROSS_REGION_SESSION_CONSISTENCY_PLAN.md`). **Recurrence guard:** extend
+`crates/xtask/src/doc_check.rs` to validate in-prose `V0_*.md` plan links resolve to files
+on disk (today it only checks `releases.toml` `file` entries), with a test in
+`crates/xtask/tests/doc_check.rs`.
+
+**Acceptance.** No `V0_4x_*.md` reference in any plan points to a non-existent file;
+`doc-check` fails on a dangling in-prose plan link.
+
+### D3. ADR numbering collisions
+
+**Problem.** `docs/adr/` has duplicate numbers across two schemes
+(`0001-gossip-…` vs `0001-ownership`, `0002-…` ×2, `0003-…` ×2, `0004-…` ×2, `0005-…` ×2)
+plus a separate `ADR-00xx` scheme — ADRs are not uniquely addressable, which weakens the
+cross-references plans rely on (e.g. `0.49` W2 expects `0006-why-not-clone-hibernate…`,
+patch P7 expects `0007-client-wire-framing`).
+
+**Fix.** Renumber to a single monotonic scheme, add/refresh `docs/adr/README.md` as the
+index, and fix any plan references to the renamed ADRs. Reserve `0006`/`0007` for the
+`0.49` ADRs (create them when `0.49` starts, not here).
+
+**Acceptance.** ADR numbers are unique; `docs/adr/README.md` lists them; no plan references
+a missing/duplicate ADR number.
+
+### D4. Perpetually-deferred items have no committed home (record as TD)
+
+**Problem.** **Automatic home-region placement / latency-based home assignment** and
+**provider-specific autoscaler controllers** have been carried as "deferred" across
+`0.45` → `0.46` → `0.47` with no target release — an accumulating deferral rather than a
+tracked decision.
+
+**Fix.** Create `docs/technical-debt/TD-0004-deferred-placement-and-autoscaling.md`
+capturing both, with current status, why-deferred, and a candidate target release; replace
+the loose "deferred" prose in the three plans' `Deferred` sections with a reference to
+`TD-0004`.
+
+**Acceptance.** `TD-0004` exists; the three plans reference it instead of re-stating the
+deferral; the item has an owner/target, not an open-ended "later".
+
+### Debt-closure gates
+
+```powershell
+cargo xtask doc-check          # after D1/D2: COMPAT + in-prose plan links resolve
+cargo test -p xtask --locked   # after D2: the new dangling-plan-link guard
+```
+
+These are doc/process items: each is its own commit, and none of them is part of the demo's
+W1–W7 scope or Final Decision below.
 
 ## The non-negotiable principle
 
