@@ -244,7 +244,16 @@ what HydraCache's durable/tiered value layer needs.
 ## 4. arroyo — checkpointing, state backends, object-storage DR
 
 arroyo is a Rust stream processor; its **state/checkpoint** machinery maps onto
-HydraCache's invalidation stream, snapshots, and disaster recovery.
+HydraCache's invalidation stream, snapshots, and disaster recovery. Because arroyo is
+**Rust**, its patterns are directly portable (unlike the C++/Zig references).
+
+> **Reconciliation (post-0.51).** Most of this section's original "HydraCache action"
+> items are now **realized**: object-storage DR (§4.2) shipped in `0.48` (backup + PITR),
+> server scaffolding + Docker/k8s (§4.3) shipped in `0.48`, and the `committing_state`
+> two-phase commit (§4.1) informed the `0.45`/`0.46` durable invalidation stream. The
+> **still-open, highest-value borrow is §4.4 (the connectors/formats trait)** — it maps
+> directly to the ROADMAP item "optional external invalidation transports (Postgres
+> LISTEN/NOTIFY, Redis, NATS)", and arroyo already ships those exact connectors.
 
 ### 4.1 State backend with table abstractions & expiring keys
 
@@ -265,9 +274,10 @@ HydraCache's invalidation stream, snapshots, and disaster recovery.
   `arroyo/crates/arroyo-controller/` (checkpoint coordination).
 - **Idea:** snapshots/state are written to a pluggable object store (S3/GCS/local),
   coordinated centrally; restore reconstructs from the latest checkpoint.
-- **HydraCache action:** this is the **`SnapshotSink` / control-plane backup-restore**
-  from `0.43 W6` / `0.44 W4` DR — arroyo's object-storage abstraction is the concrete
-  backend to implement it. Closes the "DR backup/restore tested" prod gap.
+- **HydraCache action:** **✅ realized in `0.48`** (object-storage backup + PITR), the
+  `SnapshotSink` / control-plane backup-restore seam from `0.43 W6` / `0.44 W4` DR.
+  arroyo's object-storage abstraction was the concrete backend model; the "DR
+  backup/restore tested" prod gap is closed.
 
 ### 4.3 Server scaffolding
 
@@ -275,8 +285,37 @@ HydraCache's invalidation stream, snapshots, and disaster recovery.
   `arroyo/docker/`.
 - **Idea:** shared server bootstrap (telemetry, health, graceful) and shipped k8s /
   Docker artifacts.
-- **HydraCache action:** template for the deployment-artifacts gap — ship a
-  `hydracache-server-common`, a Dockerfile, and k8s manifests/Helm like arroyo does.
+- **HydraCache action:** **✅ realized in `0.48`** — the `hydracache-server` daemon +
+  Docker/Kubernetes artifacts followed this template; the deployment-artifacts gap is closed.
+
+### 4.4 Connectors + formats trait (the still-open, highest-value borrow)
+
+- **Where:** `arroyo/crates/arroyo-connectors/src/` (one module per transport: `kafka`,
+  `kinesis`, `nats`, `mqtt`, `rabbitmq`, `redis`, `sse`, `websocket`, `polling_http`,
+  `webhook`, `filesystem`, `confluent`, `fluvio`, …) behind a common connector trait, with
+  `arroyo/crates/arroyo-formats/` for pluggable serialization.
+- **Idea:** every external source/sink is a small module implementing one trait; the engine
+  core stays transport-agnostic and connectors are opt-in.
+- **HydraCache action:** this is the concrete Rust blueprint for the **ROADMAP item
+  "optional external invalidation transports (Postgres LISTEN/NOTIFY, Redis, NATS)"** —
+  arroyo already ships `redis` and `nats` connectors. Define an
+  `InvalidationTransport` trait + one crate per backend (`hydracache-transport-redis`,
+  `…-nats`, `…-pg-notify`), opt-in, **never on the local cache fast path** (keep the core
+  dependency-light, R-10). Reuse the connector-as-module discipline; do **not** pull the
+  transports into `hydracache` itself.
+
+### 4.5 Checkpoint coordination (barrier-aligned, controller-driven)
+
+- **Where:** `arroyo/crates/arroyo-controller/` + `…/arroyo-state/src/checkpoints.rs` +
+  `committing_state.rs`: a controller coordinates **consistent checkpoints** across operators
+  (barrier-aligned), committed atomically, restored from the latest on recovery.
+- **Idea:** a cluster-wide *consistent* snapshot is a coordinated barrier, not N independent
+  per-node dumps.
+- **HydraCache action:** a **hardening reference for `0.51` snapshots + `0.43` online
+  reshard** — when a cluster-wide consistent point (vs per-namespace scheduled snapshot) or a
+  rescale-with-checkpoint (stop → checkpoint → redistribute → resume) is wanted, arroyo's
+  controller/barrier coordination is the model. Keep authority on epoch/version (R-1); this
+  adds *coordination*, not a new consistency level.
 
 ---
 
@@ -411,6 +450,96 @@ feature" wedge.
 
 ---
 
+## 7. blazingmq — battle-tested cluster FSMs, state ledger, and file-store (a *different product*, borrow the engineering)
+
+**What it is.** Bloomberg's open-source distributed **message queue** (C++ broker + C++/
+Java/Python clients), **production-hardened for 8+ years** on Linux and Solaris. Durable,
+fault-tolerant, highly available queues with multiple routing strategies (work-queue,
+priority, fan-out, broadcast), strong consistency, compression, and poison-pill detection.
+
+**Category caveat first (RULES R-2/R-9).** BlazingMQ is a **message queue, not a cache** —
+the opposite product category from HydraCache. Its *product* features (queue routing
+strategies, at-least-once business-message delivery, durable event log) are **explicit
+non-goals** for HydraCache: the invalidation bus stays a cache-freshness **signal**, and
+`Ringbuffer`/`ReliableTopic` stay unsupported in the Java migration manifest. So this entry
+borrows BlazingMQ's **distributed-systems engineering patterns**, never its product shape.
+
+### 7.1 Explicit cluster + partition state machines (the strongest fit)
+
+The broker models cluster and partition lifecycle as **explicit finite state machines** —
+`mqbc_clusterfsm.{h,cpp}` and `mqbc_partitionfsm.{h,cpp}` (with `partitionfsmobserver`,
+`clusterstatetable`, `partitionstatetable`). State transitions are a reviewable, testable
+table, not ad-hoc branching.
+
+- **HydraCache action:** this lands **directly on `0.53` W1** (cold-start formation phases
+  `Disconnected → Campaigning → Elected → Connected`) and on the `0.39` health-state enum.
+  Model election + formation as an **explicit FSM with a transition table**, so the
+  deterministic-sim run is checkable and the UI reflects real modeled states. Adopt the
+  FSM-as-table discipline; it makes the seeded election (W1's riskiest determinism surface)
+  auditable.
+
+### 7.2 Cluster state as a replicated *ledger* (metadata, separate from data)
+
+Cluster membership/state is replicated as an append-only **ledger** with its own wire
+protocol and an in-core implementation: `mqbc_clusterstateledger`,
+`mqbc_clusterstateledgerprotocol`, `mqbc_clusterstateledgeriterator`,
+`mqbc_incoreclusterstateledger`, `mqbc_clusterstatemanager`. The **metadata/control plane is
+a distinct, versioned, iterable log** from the message data path.
+
+- **HydraCache action:** HydraCache already keeps metadata on raft, but the clean split —
+  *cluster-state ledger + protocol + iterator + util*, versioned and replayable — is a
+  reference for structuring the control plane and for `docs/COMPAT.md` discipline around
+  the cluster-state format. Mirror the **protocol/iterator/util** separation if the
+  control-plane format grows.
+
+### 7.3 File store: on-disk protocol, iterators, file-set rotation, recovery
+
+Storage is a real file-backed engine with an explicit on-disk **protocol** and tooling:
+`mqbs_filestore` + `mqbs_filestoreprotocol`, `mqbs_datastore`, `mqbs_filebackedstorage`,
+`mqbs_datafileiterator`, `mqbs_fileset` (multi-file rotation), `mqbs_filestoreprintutil`
+(operability). Proven format + recovery over many years.
+
+- **HydraCache action:** a **hardening reference for the `0.51` `DurableValueStore`** —
+  explicit versioned on-disk protocol, iterators, **file-set rotation/compaction**, and a
+  print/inspect utility for operability. Borrow the *format-protocol + iterator + fileset*
+  structure as the durable store matures (ties the tantivy §3 storage-discipline thread).
+
+### 7.4 Leader-election robustness — anti-ping-pong / non-sticky leader
+
+BlazingMQ's docs call out real election hazards (`leaderPingPong`, `nonStickyLeader`): a
+cluster that re-elects repeatedly or cannot keep a stable leader degrades throughput.
+
+- **HydraCache action:** feed **`0.46` resilience + `0.53` election**: add election-stability
+  guards (hysteresis / pre-vote-style damping, seeded in the simulator) and a **flapping
+  detector** so a leaderless or thrashing cluster is visible and bounded, not silent. The
+  `0.53` lab can *show* anti-ping-pong behavior as a teaching point.
+
+### 7.5 Distribution-tree fan-out, poison-pill, flow control (borrow narrowly)
+
+- **Distribution tree** (proxy tier → cluster tier; `tree1`/`tree2`): a multi-tier relay so
+  fan-out to many consumers does not overload the source. *Fit:* a reference for scaling
+  **invalidation / near-cache fan-out** to many clients (relay tiers), **not** a general
+  pub/sub. Keep it a cache-freshness path (R-9).
+- **Poison-pill detection:** a message that repeatedly fails consumers is quarantined.
+  *HydraCache analog:* a **poison-load circuit-breaker** for a key whose single-flight loader
+  keeps failing — fail loud + back off, don't hammer the DB (ties `0.37` loader work).
+- **Flow control / backpressure:** producer/consumer flow control — reinforces the existing
+  **admission + backlog-controller** direction (scylladb §5), another battle-tested data point.
+
+### 7.6 Plugin interfaces + operational maturity
+
+Clean pure-abstract **plugin interfaces** (`bmq/bmqpi`, `mqb/mqbplug`) and 8+ years of
+production soak. *HydraCache action:* a reference for the **storage-engine/transport seam**
+discipline (Phase 2), and a concrete reminder that the honest remaining HydraCache gap is
+**operating history** (`POSITIONING.md`), not algorithms — BlazingMQ is what multi-year soak
+looks like.
+
+**What NOT to borrow:** the message-queue product surface — routing strategies as features,
+at-least-once business delivery, a durable business-event log. Those are HydraCache non-goals
+(R-2/R-9); the invalidation stream is a cache signal, not a queue.
+
+---
+
 ## Cross-cutting themes (consolidated)
 
 | Theme | Best reference(s) | HydraCache target |
@@ -425,13 +554,19 @@ feature" wedge.
 | Hot-key sketch + rate/inflight limits | pingora `pingora-limits` | hot-cache + overload |
 | Zero-downtime upgrade + server | pingora `server/mod.rs`; arroyo `server-common`, `k8s/` | `0.48` shipped (`hydracache-server` daemon, graceful upgrade, Docker/k8s) |
 | Connection pooling | pingora `pingora-pool` | post-0.43 networked transport hardening (residual) |
-| Object-storage DR/snapshots | arroyo `arroyo-storage` | `0.43 W6`/`0.44 W4` |
+| Object-storage DR/snapshots | arroyo `arroyo-storage` | ✅ shipped `0.48` (backup + PITR) |
+| External transport connectors (trait + crate-per-backend) | arroyo `arroyo-connectors` (redis/nats/kafka/pg…) | ROADMAP external invalidation transports — `InvalidationTransport` trait, opt-in, off fast-path |
+| Barrier-aligned consistent checkpoint coordination | arroyo `arroyo-controller` + `checkpoints.rs` | harden `0.51` snapshots / `0.43` rescale-with-checkpoint |
 | S3-FIFO eviction | qdrant `trififo` | local hot tier (bench-off vs moka) |
 | Thread-per-core (strategic) | scylladb shard-per-core; pingora no-steal runtime | long-horizon opt-in |
 | Deterministic simulation testing (DST) | tigerbeetle `vopr.zig`, `testing/{cluster,packet_simulator,storage}.zig` | evolve `fault_injector` → seeded whole-cluster sim (RULES R-5) |
 | Storage fault model + scrubbing + checksums | tigerbeetle `testing/storage.zig`, `vsr/grid_scrubber.zig`, `vsr/checksum.zig` | checksum durable artifacts + background scrub (ties `0.45` repair) |
 | Exactly-once client sessions | tigerbeetle `vsr/client_sessions.zig`, `vsr/client_replies.zig` | idempotent client protocol + replication retries |
 | Bounded / static allocation | tigerbeetle `static_allocator.zig` | bound every pool/queue/ring (with scylladb §5 admission) |
+| Explicit cluster/partition state machines | blazingmq `mqbc_clusterfsm`, `mqbc_partitionfsm` | `0.53` W1 cold-start formation FSM + `0.39` health-state — FSM-as-table, sim-checkable |
+| Replicated cluster-state ledger (control plane) | blazingmq `mqbc_clusterstateledger*` | structure control-plane format (protocol/iterator/util) + COMPAT discipline |
+| File-store protocol + iterators + fileset rotation | blazingmq `mqbs_filestore*`, `mqbs_fileset` | harden `0.51` `DurableValueStore` (format protocol, rotation/compaction, inspect util) |
+| Leader-election stability (anti-ping-pong) | blazingmq `leaderPingPong`/`nonStickyLeader` | `0.46`/`0.53` election damping + flapping detector (seeded) |
 
 ## Recommended evolution roadmap
 
@@ -503,3 +638,4 @@ references tell on their own.
 - `scylladb/` — wide-column store (reader_concurrency_semaphore, backlog_controller; shard-per-core).
 - `tigerbeetle/` — financial DB (VSR consensus `src/vsr/`, deterministic simulator `src/vopr.zig` + `src/testing/`, storage fault model + scrubber, client sessions, static allocator).
 - `tikv/` — present and analyzed in [`STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](STORAGE_AND_DATA_PLATFORM_EVOLUTION.md) (engine_traits, hybrid engine, raft_log_engine, resolved_ts, resource_control).
+- `blazingmq/` — Bloomberg distributed message queue (C++; `src/groups/mqb/mqbc` cluster + partition FSMs and cluster-state ledger, `mqbs` file store + protocol, `mqbnet` transport, `mqbblp` queues/routing, `bmq/bmqpi` + `mqb/mqbplug` plugin interfaces). A *different product category* (queue, not cache) — borrow the engineering patterns (§7), not the product surface.

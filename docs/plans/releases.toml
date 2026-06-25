@@ -124,3 +124,17 @@ file = "docs/plans/V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md"
 status = "shipped"
 theme = "IMap + Fenced Lock Java surface — surface the shipped single-key fenced-lock engine (0.46 SingleKeyConditionalStore) as a supported distributed lock: lock lease + session-bound ownership + auto-release on session loss (the one missing algorithm), reentrancy, lock ops in the client wire protocol, Hazelcast FencedLock / IMap-lock-shaped Java facade with the unsupported-manifest stance reversed for the lock subset; rounds out IMap CAS ergonomics (replace(k,old,new), remove(k,val)) and entry listeners over the invalidation bus; validated in 0.44 DST (mutual exclusion, fence monotonicity, zombie-holder rejection). No new consistency level, no general CP Subsystem, no remote code execution, no cross-region lock"
 depends_on = ["0.46.0", "0.49.0"]
+
+[[release]]
+version = "0.53.0"
+file = "docs/plans/V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md"
+status = "planned"
+theme = "Interactive cluster lab (DevRel) — evolve the 0.50 browser demo into a liquid-glass (glassmorphism) multi-mode lab: deterministic leader election + cold-start cluster formation MODELED in hydracache-sim (closing the '0.44 has no leader election yet' gap), typed in-flight signal animation (votes/append/replication/invalidation), manual mode (user pushes client events → diverge → replicate → converge → listener receipt), one-click isolate/disable/rejoin with visible re-election + catch-up re-sync, runtime add-node scaling + online reshard, and manual/scripted-loop/mixed modes all clickable for live topology intervention. Teaching/DevRel asset, not a correctness gate; every control + election is seed-deterministic and replayable (R-5). W1 reinforced with explicit cluster/partition FSM-as-table (blazingmq pattern). Absorbs V0_50_DEMO_ENHANCEMENTS_PLAN"
+depends_on = ["0.50.0", "0.52.0"]
+
+[[release]]
+version = "0.54.0"
+file = "docs/plans/V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md"
+status = "planned"
+theme = "External invalidation transports — pluggable InvalidationTransport trait over the existing CacheInvalidationFrame plus opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness between processes/clusters, with message_id watermark dedup/resume via the 0.46 ring, loop prevention, fail-loud failure, bounded buffers, bounded-label metrics. Off the local cache fast path (R-10), not an event log (R-9), no new consistency level (R-1). Blueprint: arroyo connector-as-module pattern (ships redis/nats)"
+depends_on = ["0.46.0"]

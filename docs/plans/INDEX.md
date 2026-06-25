@@ -78,6 +78,19 @@ v0 foundations
                           session-bound, wire + Java-facade distributed lock; reverse the
                           unsupported-manifest stance for the lock subset; round out IMap
                           CAS ergonomics + entry listeners; validated by 0.44 DST)
+
+   0.50 + 0.52 ─┄ feed ┄► 0.53 Interactive cluster lab (DevRel; liquid-glass multi-mode
+                          demo: MODEL deterministic leader election + cold-start formation
+                          in hydracache-sim, typed in-flight signal animation, manual
+                          push→diverge→converge→listener, isolate/disable/rejoin with
+                          re-election + re-sync, runtime add-node; manual/scripted/mixed
+                          modes, all clickable; absorbs V0_50_DEMO_ENHANCEMENTS)
+
+   0.46 ─┄ also feeds ┄► 0.54 External invalidation transports (pluggable
+                          InvalidationTransport trait + opt-in crate-per-backend Redis/NATS
+                          relaying CacheInvalidationFrame across processes; watermark
+                          dedup/resume, loop prevention, fail-loud, off fast-path;
+                          arroyo connector pattern)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -100,6 +113,8 @@ v0 foundations
 | [0.50.0](V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md) | shipped | Seed-reproducible browser demo over the 0.44 `hydracache-sim`: WASM default, optional sandbox `/sim/*` server mode, partition/crash/heal + live committed-log/leader/consistency-level/convergence + real invariant verdicts | Make "correctness as a product feature" visible/persuasive (TigerBeetle-style); pitch + onboarding asset | 0.44 | - |
 | [0.51.0](V0_51_CONFIGURABLE_PERSISTENCE_PLAN.md) | shipped | On-disk `DurableValueStore`, per-namespace persistence policy (wildcard/prefix, opt-in, default RAM-only), per-region selection ("important regions" only), Sync/AsyncBounded write path + scheduled snapshots, fail-loud epoch-fenced full-restart recovery, declarative Hazelcast-style config | Today the value plane is RAM-only — a full cluster restart loses everything; give Hazelcast-style *selective* durability so important namespaces/regions survive a reboot while the rest stay lean | 0.45 | — |
 | [0.52.0](V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md) | shipped | Lock lease + session-bound ownership + auto-release (the missing algorithm), reentrancy, lock ops in the client wire protocol, Hazelcast `FencedLock`/`IMap`-lock-shaped Java facade with the unsupported-manifest stance reversed for the lock subset; IMap CAS ergonomics (`replace(k,old,new)`, `remove(k,val)`) + entry listeners over the invalidation bus; DST mutual-exclusion/fence-monotonicity/zombie-holder gates | The two most-requested migration features (IMap + distributed locks) are the ones the product *actively rejects*, even though the linearizable fenced-lock engine already ships — close the gap by surfacing it inside the permanent R-2 ceiling | 0.46, 0.49 | — |
+| [0.53.0](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md) | planned | Liquid-glass multi-mode interactive cluster lab: MODEL deterministic leader election + cold-start cluster formation in `hydracache-sim` (closes the "0.44 has no leader election yet" gap; W1 reinforced with explicit cluster/partition FSM-as-table per blazingmq), typed in-flight signal animation, manual mode (push client event → diverge → replicate → converge → listener receipt), one-click isolate/disable/rejoin with visible re-election + catch-up re-sync, runtime add-node scaling, manual/scripted-loop/mixed modes all clickable for live topology intervention | Make "correctness as a visible product feature" persuasive for the Hazelcast-migration pitch — show the two things that convince operators (live quorum voting + a node rejoining and re-syncing) truthfully, not as animation; teaching asset, not a gate | 0.50, 0.52 | — |
+| [0.54.0](V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md) | planned | Pluggable `InvalidationTransport` trait over the existing `CacheInvalidationFrame` + opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness across processes/clusters; `message_id` watermark dedup/resume via the 0.46 ring, loop prevention, fail-loud, bounded buffers + bounded-label metrics | Realize the ROADMAP "external invalidation transports (Redis/NATS/pg-notify)" item using arroyo's connector-as-module pattern — let deployments ride their existing bus for freshness fan-out, opt-in and off the local fast path (R-10), without becoming an event log (R-9) | 0.46 | — |
 
 `0.43` debt closure:
 [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)
@@ -117,6 +132,11 @@ model-only coverage to live networked transport coverage.
   the 0.49 plan: proposed scope split (core vs Java/Spring migration follow-on), pinned
   non-JVM SDK + wire framing (ADR), and routing the multi-node residency/fair-share faults
   through the 0.44 deterministic simulator.
+- [`V0_50_DEMO_ENHANCEMENTS_PLAN.md`](V0_50_DEMO_ENHANCEMENTS_PLAN.md) — **superseded by
+  0.53**. Interactive cluster-lab enhancements over the 0.50 browser demo (in-flight message
+  animation, one-click node isolate/overload, runtime add-node, visible client/subscriber
+  actors); scope absorbed into [`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md).
+  Kept for history.
 - [`V0_37_41_REVIEW_AND_IMPROVEMENTS.md`](V0_37_41_REVIEW_AND_IMPROVEMENTS.md) —
   cross-project architecture review and the Hazelcast-vs-ScyllaDB decision driving the
   cluster track.

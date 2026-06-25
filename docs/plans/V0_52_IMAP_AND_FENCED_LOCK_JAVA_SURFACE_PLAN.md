@@ -497,3 +497,241 @@ No production surface to roll back.
   "IMap-lock migration" move from gap to shipped, with the fenced-lock caveats stated.
 - The `FEATURE_MATRIX.md` lock/Java-facade rows added.
 - No new numeric self-score (R-7); the release ships on the boolean gates above.
+
+---
+
+# Implementation Appendix — hard parts, reference blueprints, and review patches
+
+This appendix answers the implementation-difficulty review. It (a) folds in the
+sequencing/patch items raised, and (b) gives concrete, reference-grounded guidance for
+the three items that are heavier than their one-line W-statements suggest: the
+**lease/session lifecycle (W1/W2)**, the **wire+server service path (W3)**, and the
+**conditional tombstone (W5)**. Reference checkouts live under `C:\Workspace\prj\jq\cashe`.
+
+## A0. Revised sequencing (per review)
+
+Build strictly **W1 → W2** first (pure engine, no I/O). **Before W3**, land a small
+**"Pre-W3 patch"** (§A2.4–A2.6 below) covering async-`Drop`, mixed-version negotiation, and
+the conditional-tombstone engine method, because W3 and W5 both depend on those decisions.
+Then W3 → W4 → (W5, W6 in parallel) → W7.
+
+## A1. The load-bearing correctness decision (affects W1 **and** W3)
+
+**Assign the fence token and register the lock session on the raft *apply* path, never at
+*propose* time.** This is the tigerbeetle `src/vsr/client_sessions.zig` lesson: sessions are
+"register[ed] … explicitly through the state machine to ensure that session numbers always
+increase", with a careful committed-vs-uncommitted distinction because "uncommitted requests
+may not survive a view change." If HydraCache hands out a fence optimistically before the
+lock command commits, a leader change can replay/reorder and resurrect a stale fence —
+breaking the single monotonic-owner invariant the whole feature exists to provide.
+
+Concretely: `SingleKeyConditionalStore` becomes a **deterministic raft state machine**. A
+lock op is `propose(LockCommand)` → wait for commit → the **apply** function mutates the
+store and returns the assigned fence. `next_fence` lives *inside* the applied state (it
+already does), so it only advances on apply, deterministically, on every replica. This makes
+W1's lease logic and W3's wiring the same state machine, not two code paths.
+
+## A2. W1/W2 — lease + session + reentrancy lifecycle
+
+### A2.1 Reference model (Hazelcast CP)
+
+Hazelcast's `ProxySessionManager`
+(`cashe/hazelcast/.../cp/internal/session/ProxySessionManager.java`) is the proven shape:
+- `acquireSession(groupId, count)` — **reentrancy is an acquire *count* on a session**, not a
+  separate lock field. Re-acquire by the same owner increments the count; `releaseSession(…,
+  count)` decrements; the lock frees at zero.
+- `invalidateSession(groupId, id)` — "no more heartbeats will be sent"; the server-side
+  session is the **liveness token**.
+- `getOrCreateUniqueThreadId(groupId)` — **owner identity = (session id, unique thread/endpoint
+  id)**. This is exactly what `isLockedByCurrentThread()` checks.
+
+Map to HydraCache: `LockOwner { session: SessionId, endpoint: u64 }`, reentrancy = a hold
+count on the `LockHold`, lease = a logical deadline owned by the session.
+
+### A2.2 State shapes (extend `grid/conditional.rs`)
+
+```rust
+pub struct SessionId(u64);                 // assigned on apply, monotonic (tigerbeetle lesson)
+
+struct LockHold {
+    owner: LockOwner,                      // (session, endpoint)
+    fence: FenceToken,                     // stable across reentrant holds; only a *new* owner bumps it
+    holds: u32,                            // reentrancy count (Hazelcast acquire count)
+    lease_deadline: LogicalTime,           // epoch/version/logical clock — NEVER wall-clock (R-5)
+}
+
+// new errors (extend ConditionalError; register in docs/COMPAT.md, R-4)
+LeaseExpired { key, current: Option<FenceToken> }
+NotOwner     { key, current_owner: Option<LockOwner> }
+ReentrancyLimit { key, limit: u32 }
+```
+
+`locks: BTreeMap<String, FenceToken>` becomes `BTreeMap<String, LockHold>`.
+
+### A2.3 Operations (all are pure functions of state + a logical `now`)
+
+- `try_acquire(key, owner, lease, now)`: if unheld **or** `held.lease_deadline <= now` →
+  grant, **bump fence**, count it (steal of an expired hold is the failover path). If held by
+  the **same owner** → increment `holds` (honor `lock_acquire_limit`, else `ReentrancyLimit`),
+  return the **existing** fence (Hazelcast keeps fence stable across reentrancy). Else →
+  `LockBusy`.
+- `renew(key, owner, token, new_deadline)`: heartbeat extends `lease_deadline`; rejects on
+  `NotOwner`/stale token.
+- `release(key, owner, token)`: require current owner **and** current fence; decrement
+  `holds`; remove at zero. Non-owner → `NotOwner` (counted).
+- `expire_due(now)`: sweep holds with `lease_deadline <= now`; each release **advances the
+  fence** and bumps `lock_lease_expired_total`. Session loss (heartbeat watermark too old)
+  expires **all** that session's holds via this same path (R-3: never silently honor a zombie).
+
+### A2.4 Pre-W3 patch — `LockGuard::Drop` cannot do async unlock
+
+Rust `Drop` is synchronous; a client `LockGuard` **must not** attempt an `async` network
+unlock in `Drop` (no runtime guarantee, can't await, can panic on a dropped runtime). The
+contract is therefore: **explicit `guard.unlock().await`** is the release path; the
+**server-side lease expiry is the safety net** if the client dies or forgets. `Drop` may only
+do a *best-effort, non-blocking* "abandon" hint (e.g. enqueue a fire-and-forget release on the
+existing client channel) and must be documented as **not** a guaranteed release. Add this to
+W3's client-API DoD and to the migration doc (Hazelcast `Lock.unlock()` is also explicit; this
+matches expectations).
+
+### A2.5 W1/W2 tests (engine-level; extend the DoD already in W1/W2)
+
+Already specified in W1/W2; add two grounded by the references:
+- `fence_assigned_only_on_apply_not_propose` — propose a lock, simulate leader change before
+  apply, assert no fence leaked (A1 invariant).
+- `reentrancy_is_acquire_count_on_session` — same (session,endpoint) increments; different
+  endpoint on same session is `LockBusy` (Hazelcast thread-id semantics).
+
+## A3. W3 — wire + server service path (the real weight)
+
+### A3.1 Current reality (sized honestly)
+
+- The request dispatch is `handle_request` in
+  `crates/hydracache-client-transport-axum/src/lib.rs` — a `match envelope.request` that
+  today holds a plain `Mutex<store>` (an in-memory map), **not** a `SingleKeyConditionalStore`,
+  and is **not** partition/leader-aware.
+- The server rejects on **strict** version equality: `if envelope.protocol_version !=
+  PROTOCOL_VERSION` (line ~359). There is a real negotiation seam already —
+  `VersionHandshake::negotiate` returns the highest common version — but `Default` is
+  `min=max=PROTOCOL_VERSION` (currently `1`) and the dispatch ignores it.
+- `SingleKeyConditionalStore` is referenced **only** from `crates/hydracache/` (and its test);
+  nothing in `hydracache-server`/transport can see it yet.
+
+So W3 = (1) protocol variants, (2) a **lock/CAS service** added to server state, (3)
+**leader routing + propose/wait/apply**, (4) negotiation. Items 2–3 are the weight.
+
+### A3.2 Backbone already exists — reuse the raft propose/commit seam
+
+`crates/hydracache-cluster-raft/src/log_store.rs` exposes `propose(data) -> index` and
+`committed_payloads_on(node_id) -> Vec<payload>`. The lock service path is the standard
+replicated-state-machine loop, mirroring how qdrant drives ops through `raft-rs` consensus
+(`cashe/qdrant/.../consensus*`):
+
+```
+client → transport handle_request
+       → LockService (new, in server state)
+           → if not leader: redirect/forward to leader (NotLeader response carrying leader hint)
+           → serialize LockCommand::{TryLock,Unlock,Renew,Cas,RemoveIfValue}
+           → raft.propose(cmd)                       // returns log index
+           → await commit (index applied)
+           → apply(cmd) on SingleKeyConditionalStore // fence assigned HERE (A1)
+           → reply { fence | LockBusy | Mismatch }
+```
+
+The apply step is shared by every replica, so the conditional store stays deterministic and
+DST-checkable (W7). Keep lock/CAS ops on a **separate request family** from the cache
+fast-path (they pay a raft round-trip; `get`/`put` must not).
+
+### A3.3 Mixed-version protocol patch (Pre-W3)
+
+1. Bump `PROTOCOL_VERSION` to `2`; set client/server `VersionHandshake` to `min=1, max=2`.
+2. Replace the strict `protocol_version != PROTOCOL_VERSION` reject with: decode at the
+   **negotiated** version; accept `[min, max]`. Register the v2 frames in `docs/COMPAT.md` with
+   the reader window (R-4).
+3. **Gate lock/CAS variants on negotiated ≥ 2.** A v1 client must **never** receive a v2-only
+   response shape; a v1 client that somehow sends a v2 op gets a loud `IncompatibleVersion`
+   (R-3), not a silently-different reply. Add `mixed_version_v1_client_never_sees_v2_response`
+   and `lock_op_requires_negotiated_v2` tests.
+
+### A3.4 W3 tests (extend the DoD already in W3)
+
+Keep the W3 DoD list; add `not_leader_forwards_or_redirects` (leader routing) and the two
+mixed-version tests from §A3.3.
+
+## A4. W4 — `forceUnlock` authorization + Java-facade honesty
+
+- **`forceUnlock` is privileged.** It maps to a **fence-advancing admin release** (steal
+  ownership without holding the token), so it must run through the existing identity/authz
+  path (`0.42`/`0.49` node identity + authz), be **rejected for non-admin callers** (R-3), and
+  emit an **audit event** on the existing consumer-audit surface (`0.49`). Add
+  `force_unlock_requires_admin_and_audits` and `force_unlock_advances_fence`.
+- **No Java SDK artifact is promised.** The repo has **no Maven/Gradle/Java module**; `0.52`
+  ships the **migration *contract* + facade *surface*** (Rust-side `JavaLockOperation` mapping,
+  manifest, docs), not a published `.jar` client. State explicitly in the plan's Non-Goals and
+  the migration doc: a buildable Java client artifact is a **separate, later work item**, not
+  implied by `0.52`. (This keeps R-7 honesty: we do not claim a deliverable we are not building.)
+
+## A5. W5 — conditional tombstone engine method (not just a protocol name)
+
+`compare_and_set` today only writes a **value** record; `remove(k, val)` needs a **conditional
+tombstone**. The primitive already exists — `SingleKeyConditionalStore::apply_tombstone` and
+`ReplicatedValueRecord::tombstone` — so add a real engine method, don't fake it at the wire
+layer:
+
+```rust
+pub fn remove_if_value(&mut self, key, expected: &[u8], level)
+    -> Result<CasResult, ConditionalError>
+{
+    require_linearizable_level(level)?;
+    let current = self.records.get(key).and_then(current_bytes);
+    if current.as_deref() != Some(expected) {
+        self.metrics.cas_mismatch_total += 1;
+        return Ok(CasResult::Mismatch { current });
+    }
+    let version = self.next_version; self.next_version += 1;
+    // tombstone at an explicit version — A5 delete semantics, never resurrect (R-3)
+    self.apply_tombstone(key, version);
+    self.metrics.cas_applied_total += 1;
+    Ok(CasResult::Applied { new_version: version })
+}
+```
+
+**Engine-level tests (in addition to the protocol mapping in W5):**
+- `remove_if_value_writes_tombstone_at_new_version`.
+- `remove_if_value_mismatch_leaves_record_untouched`.
+- `tombstone_from_remove_if_value_is_not_resurrected_by_stale_put` (R-3).
+- `removed_key_reads_as_absent_after_tombstone`.
+
+## A6. W6 — entry-event projection honesty + listener-is-not-an-event-log
+
+Do **not** invent `Added` vs `Updated` if the invalidation bus does not carry enough state to
+distinguish them. Inspect the existing event/invalidation reasons first; if the bus only knows
+"this key changed", expose **`Upserted`** (or `Invalidated`) plus a documented **follow-up
+`get`** for the value, rather than fabricating a transition the stream cannot prove (R-3). Only
+emit `Added`/`Updated`/`Removed`/`Evicted` for reasons the bus actually distinguishes.
+
+**Add the contract test the review asks for:**
+- `entry_listener_is_not_a_business_event_log` — assert the surface keeps **coalescing**, a
+  **bounded buffer**, and **lag/drop counters** (a slow listener is dropped-with-a-counter, not
+  buffered unboundedly), so callers cannot mistake it for `Ringbuffer`/`ReliableTopic` (which
+  stay unsupported). This makes the "cache signal, not event log" boundary executable.
+
+## A7. W7 — lock workload + invariants in `hydracache-sim`
+
+`hydracache-sim` is seeded and exists, but has **no lock workload or lock invariants yet** —
+this is mandatory, not optional, or the "distributed lock" claim is unbacked. Add a lock client
+workload (N contending clients, one key) and encode the invariants as checkers in the existing
+harness: mutual exclusion per `(key, fence)`, strict fence monotonicity across ownership
+changes, zombie-writer rejection after session-loss, and "no lock at a weak consistency level".
+Reference the tigerbeetle simulator discipline (`cashe/tigerbeetle/src/testing/`,
+`src/vopr.zig`): seeded, replayable, shrinking on failure.
+
+## Reference index (for the implementer)
+
+| Hard part | Reference (under `cashe/`) | What to copy |
+| --- | --- | --- |
+| Session liveness, monotonic ids, committed-vs-uncommitted | `tigerbeetle/src/vsr/client_sessions.zig` | register sessions through the state machine; fence/session on apply (A1) |
+| Reentrancy as acquire-count, owner = session+thread, invalidate | `hazelcast/.../cp/internal/session/ProxySessionManager.java` | lock state shape (A2.1) |
+| Fenced-lock semantics + GC-pause/fence story | `hazelcast/.../cp/lock/FencedLock.java` | the user-facing contract + W7 zombie invariant |
+| Drive ops through raft consensus to a leader | `qdrant/.../consensus*`, `hydracache-cluster-raft/src/log_store.rs` (`propose`/`committed_payloads_on`) | W3 propose/commit/apply loop (A3.2) |
+| Seeded simulator, replay/shrink | `tigerbeetle/src/testing/`, `src/vopr.zig` | W7 lock workload + invariants |
