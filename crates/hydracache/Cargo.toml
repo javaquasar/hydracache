@@ -13,6 +13,7 @@ description = "User-facing HydraCache runtime crate."
 
 [features]
 default = []
+durable-value-store = ["dep:sled"]
 durable-values = []
 tiered-values = []
 testing = []
@@ -27,6 +28,7 @@ futures-util.workspace = true
 hydracache-core.workspace = true
 hydracache-macros.workspace = true
 moka.workspace = true
+sled = { workspace = true, optional = true }
 thiserror.workspace = true
 tokio.workspace = true
 

@@ -590,6 +590,8 @@ pub use grid::crdt::{
     tombstone_crdt_decision, ConflictFreeValue, CrdtMergeStats, GCounter, LwwRegister, OrSet,
     OrSetTag, PnCounter, TombstoneCrdtDecision,
 };
+#[cfg(feature = "durable-value-store")]
+pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::elasticity::{
     hedge_winner, plan_hedged_read, restore_topology_from_snapshot, topology_from_member_metadata,

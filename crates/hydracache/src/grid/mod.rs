@@ -12,6 +12,8 @@ pub(crate) mod conditional;
 pub(crate) mod consistency_level;
 pub(crate) mod convergence_staleness;
 pub(crate) mod crdt;
+#[cfg(feature = "durable-value-store")]
+pub(crate) mod durable_store;
 pub(crate) mod elasticity;
 pub(crate) mod failure_detector;
 pub(crate) mod hardening;

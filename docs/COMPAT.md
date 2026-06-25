@@ -16,6 +16,7 @@ they are persisted or transmitted across processes.
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
+| `DurableValueStore` on-disk value-store format | `1` | `hydracache` `durable-value-store` feature | Readers accept store format `1` only. Records are length-prefixed binary envelopes containing the cache key, `ReplicatedValueRecord`, tombstone/value state, and checksum metadata. The value engine is separate from the raft log engine. | Store open refuses unknown future formats. Corrupt or mismatched records fail loud and are not served. |
 | CRDT value encoding | `1` | `hydracache` active-active CRDT helpers | The 0.45 serde shape for `GCounter`, `PnCounter`, `OrSet`, `LwwRegister`, and OR-set tags is the registered CRDT value encoding version `1`. Durable or replicated adapters must keep this shape stable or introduce a new explicit version before emitting a changed encoding. | Unknown future CRDT value encodings must fail closed before merge/apply so stale readers do not converge on different metadata. |
 | WAN `RegionLink` replication batch frame | `1` | `hydracache` active-active region-link helpers | The 0.45 serde shape for `GeoBatch`, `GeoWrite`, `IdempotencyKey`, and `GeoBatchApplyReport` is the registered WAN batch frame version `1`. Readers must preserve idempotency-key pairing and HLC/epoch/version fields. | Unknown future WAN frames must be rejected before apply; mismatched entry/idempotency vectors are already refused. |
 | Cross-region anti-entropy digest exchange | `1` | `hydracache` region-link anti-entropy helpers | The 0.45 serde shape for `PartitionDigest`, `VersionSummary`, and CRDT metadata GC confirmation is the registered digest exchange version `1`. Readers compare `(version, epoch)` summaries only within the matching partition. | Unknown future digest versions must fail loud before diffing so repair cannot silently skip or over-apply keys. |
@@ -209,3 +210,12 @@ a correctness gate. It serializes the real deterministic `SimWorld` state and
 the real `InvariantChecker` verdict. Unknown future schema versions are rejected
 loudly by strict readers before rendering, seed sharing, or route consumers treat
 the payload as compatible.
+
+## 0.51 Configurable Persistence
+
+`0.51.0` registers `DurableValueStore` on-disk value-store format version `1`
+for the feature-gated value-plane persistence backend. The store persists sealed
+replicated value records and tombstones in length-prefixed binary envelopes and
+verifies checksums before serving. It is intentionally a separate engine from
+the raft log store. Unknown future store formats refuse startup; corrupt or
+mismatched records fail loud and are not served.

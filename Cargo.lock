@@ -1445,6 +1445,7 @@ dependencies = [
  "proptest",
  "serde",
  "serde_json",
+ "sled",
  "thiserror 2.0.18",
  "tokio",
  "trybuild",
