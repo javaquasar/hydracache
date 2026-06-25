@@ -1,9 +1,22 @@
 use hydracache::{
-    CasResult, ClusterEpoch, ConditionalError, ConsistencyLevel, SingleKeyConditionalStore,
+    CasResult, ClusterEpoch, ConditionalError, ConsistencyLevel, LockOwner, LogicalDuration,
+    LogicalTime, SingleKeyConditionalStore,
 };
 
 fn store() -> SingleKeyConditionalStore {
     SingleKeyConditionalStore::new(ClusterEpoch::new(1), 16)
+}
+
+fn owner(name: &str) -> LockOwner {
+    LockOwner::new(name, 1)
+}
+
+fn lease() -> LogicalDuration {
+    LogicalDuration::from_millis(10)
+}
+
+fn now(ms: u64) -> LogicalTime {
+    LogicalTime::from_millis(ms)
 }
 
 #[test]
@@ -77,11 +90,23 @@ fn conditional_writes_multi_key_conditional_is_rejected_loud() {
 fn conditional_writes_fenced_lock_rejects_stale_token() {
     let mut store = store();
     let first = store
-        .try_acquire_lock("lock:refresh", ConsistencyLevel::Quorum)
+        .try_acquire_lock(
+            "lock:refresh",
+            ConsistencyLevel::Quorum,
+            owner("session-a"),
+            lease(),
+            now(0),
+        )
         .unwrap()
         .expect("first lock acquisition succeeds");
     let second = store
-        .force_acquire_lock("lock:refresh", ConsistencyLevel::Quorum)
+        .force_acquire_lock(
+            "lock:refresh",
+            ConsistencyLevel::Quorum,
+            owner("session-b"),
+            lease(),
+            now(1),
+        )
         .unwrap();
 
     assert!(second > first);
@@ -110,9 +135,17 @@ fn conditional_writes_cas_respects_tombstone_version() {
 fn conditional_writes_lock_survives_partition_via_raft_authority() {
     let mut store = store();
     let token = store
-        .try_acquire_lock("lock:refresh", ConsistencyLevel::Quorum)
+        .try_acquire_lock(
+            "lock:refresh",
+            ConsistencyLevel::Quorum,
+            owner("session-a"),
+            lease(),
+            now(0),
+        )
         .unwrap()
         .expect("lock acquired before simulated partition");
 
-    assert!(store.release_lock("lock:refresh", token).is_ok());
+    assert!(store
+        .release_lock("lock:refresh", &owner("session-a"), token)
+        .is_ok());
 }

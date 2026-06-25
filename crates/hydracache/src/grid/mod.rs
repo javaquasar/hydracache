@@ -20,6 +20,7 @@ pub(crate) mod failure_detector;
 pub(crate) mod hardening;
 pub(crate) mod hinted_handoff;
 pub(crate) mod invalidation_ring;
+pub(crate) mod lock_session;
 pub(crate) mod merkle_repair;
 pub(crate) mod persistence_config;
 pub(crate) mod persistence_policy;

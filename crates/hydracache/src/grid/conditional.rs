@@ -3,9 +3,11 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-use crate::cluster::{partition_for_key, ClusterEpoch};
+use crate::cluster::{partition_for_key, ClusterEpoch, LogicalDuration, LogicalTime};
 use crate::grid::consistency_level::ConsistencyLevel;
 use crate::grid::hardening::{ReplicatedValueRecord, ValueVersion};
+use crate::grid::lock_session::SessionHeartbeats;
+use crate::grid::session_context::SessionId;
 use crate::grid::ReplicatedSlot;
 
 /// Result of a single-key compare-and-set operation.
@@ -39,6 +41,25 @@ impl FenceToken {
     }
 }
 
+/// Owner identity for a session-bound fenced lock.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct LockOwner {
+    /// Client/application session that owns the lock.
+    pub session: SessionId,
+    /// Stable endpoint/thread identity within the session.
+    pub endpoint: u64,
+}
+
+impl LockOwner {
+    /// Create a lock owner from a session id and endpoint.
+    pub fn new(session: impl Into<SessionId>, endpoint: u64) -> Self {
+        Self {
+            session: session.into(),
+            endpoint,
+        }
+    }
+}
+
 /// Errors returned by conditional writes and fenced locks.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ConditionalError {
@@ -55,6 +76,27 @@ pub enum ConditionalError {
     },
     /// Lock is not held.
     LockNotHeld,
+    /// The lock lease already expired.
+    LeaseExpired {
+        /// Lock key.
+        key: String,
+        /// Current token, when another owner already acquired the lock.
+        current: Option<FenceToken>,
+    },
+    /// The caller is not the current lock owner.
+    NotOwner {
+        /// Lock key.
+        key: String,
+        /// Current owner, when the lock is held.
+        current_owner: Option<LockOwner>,
+    },
+    /// Reentrant acquire would exceed the configured limit.
+    ReentrancyLimit {
+        /// Lock key.
+        key: String,
+        /// Configured acquire limit.
+        limit: u32,
+    },
 }
 
 impl fmt::Display for ConditionalError {
@@ -77,6 +119,20 @@ impl fmt::Display for ConditionalError {
                 current.map(FenceToken::value)
             ),
             Self::LockNotHeld => formatter.write_str("fenced lock is not held"),
+            Self::LeaseExpired { key, current } => write!(
+                formatter,
+                "fenced lock lease for key '{key}' expired; current token is {:?}",
+                current.map(FenceToken::value)
+            ),
+            Self::NotOwner { key, current_owner } => write!(
+                formatter,
+                "caller is not owner of fenced lock '{key}'; current owner is {:?}",
+                current_owner
+            ),
+            Self::ReentrancyLimit { key, limit } => write!(
+                formatter,
+                "fenced lock '{key}' reached reentrancy limit {limit}"
+            ),
         }
     }
 }
@@ -94,13 +150,39 @@ pub struct ConditionalMetrics {
     pub lock_acquired_total: u64,
     /// Stale lock tokens rejected.
     pub lock_stale_token_rejected_total: u64,
+    /// Lock holds expired due to lease deadline or session loss.
+    pub lock_lease_expired_total: u64,
+    /// Lock releases/renews rejected because the caller was not the owner.
+    pub lock_not_owner_rejected_total: u64,
+    /// Lock leases renewed.
+    pub lock_lease_renewed_total: u64,
+}
+
+/// Current state of one held fenced lock.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LockHold {
+    /// Current owner.
+    pub owner: LockOwner,
+    /// Current fencing token.
+    pub fence: FenceToken,
+    /// Reentrant acquire count.
+    pub holds: u32,
+    /// Logical lease deadline.
+    pub lease_deadline: LogicalTime,
+}
+
+impl LockHold {
+    fn expired_at(&self, now: LogicalTime) -> bool {
+        self.lease_deadline <= now
+    }
 }
 
 /// Deterministic single-key conditional store backed by versioned records.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SingleKeyConditionalStore {
     records: BTreeMap<String, ReplicatedValueRecord>,
-    locks: BTreeMap<String, FenceToken>,
+    locks: BTreeMap<String, LockHold>,
+    session_heartbeats: SessionHeartbeats,
     next_version: ValueVersion,
     next_fence: u64,
     epoch: ClusterEpoch,
@@ -114,6 +196,7 @@ impl SingleKeyConditionalStore {
         Self {
             records: BTreeMap::new(),
             locks: BTreeMap::new(),
+            session_heartbeats: SessionHeartbeats::default(),
             next_version: 1,
             next_fence: 1,
             epoch,
@@ -130,6 +213,11 @@ impl SingleKeyConditionalStore {
     /// Return the record for a key.
     pub fn record(&self, key: &str) -> Option<&ReplicatedValueRecord> {
         self.records.get(key)
+    }
+
+    /// Return the current lock hold for a key.
+    pub fn lock_hold(&self, key: &str) -> Option<&LockHold> {
+        self.locks.get(key)
     }
 
     /// Apply a tombstone at an explicit version, preserving A5 delete semantics.
@@ -202,14 +290,30 @@ impl SingleKeyConditionalStore {
         &mut self,
         key: &str,
         level: ConsistencyLevel,
+        owner: LockOwner,
+        lease: LogicalDuration,
+        now: LogicalTime,
     ) -> Result<Option<FenceToken>, ConditionalError> {
         require_linearizable_level(level)?;
-        if self.locks.contains_key(key) {
-            return Ok(None);
+        if let Some(hold) = self.locks.get(key) {
+            if !hold.expired_at(now) {
+                return Ok(None);
+            }
+            self.metrics.lock_lease_expired_total =
+                self.metrics.lock_lease_expired_total.saturating_add(1);
         }
         let token = FenceToken::new(self.next_fence);
         self.next_fence = self.next_fence.saturating_add(1);
-        self.locks.insert(key.to_owned(), token);
+        self.session_heartbeats.record(owner.session.clone(), now);
+        self.locks.insert(
+            key.to_owned(),
+            LockHold {
+                owner,
+                fence: token,
+                holds: 1,
+                lease_deadline: now.saturating_add(lease),
+            },
+        );
         self.metrics.lock_acquired_total = self.metrics.lock_acquired_total.saturating_add(1);
         Ok(Some(token))
     }
@@ -219,27 +323,135 @@ impl SingleKeyConditionalStore {
         &mut self,
         key: &str,
         level: ConsistencyLevel,
+        owner: LockOwner,
+        lease: LogicalDuration,
+        now: LogicalTime,
     ) -> Result<FenceToken, ConditionalError> {
         require_linearizable_level(level)?;
         let token = FenceToken::new(self.next_fence);
         self.next_fence = self.next_fence.saturating_add(1);
-        self.locks.insert(key.to_owned(), token);
+        self.session_heartbeats.record(owner.session.clone(), now);
+        self.locks.insert(
+            key.to_owned(),
+            LockHold {
+                owner,
+                fence: token,
+                holds: 1,
+                lease_deadline: now.saturating_add(lease),
+            },
+        );
         self.metrics.lock_acquired_total = self.metrics.lock_acquired_total.saturating_add(1);
         Ok(token)
     }
 
-    /// Release a fenced lock when the token is current.
-    pub fn release_lock(&mut self, key: &str, token: FenceToken) -> Result<(), ConditionalError> {
-        let Some(current) = self.locks.get(key).copied() else {
-            return Err(ConditionalError::LockNotHeld);
+    /// Renew a lock lease for the current owner.
+    pub fn renew_lease(
+        &mut self,
+        key: &str,
+        owner: &LockOwner,
+        token: FenceToken,
+        new_deadline: LogicalTime,
+    ) -> Result<(), ConditionalError> {
+        let Some(hold) = self.locks.get_mut(key) else {
+            self.metrics.lock_stale_token_rejected_total = self
+                .metrics
+                .lock_stale_token_rejected_total
+                .saturating_add(1);
+            return Err(ConditionalError::LeaseExpired {
+                key: key.to_owned(),
+                current: None,
+            });
         };
-        if current != token {
+        if &hold.owner != owner {
+            self.metrics.lock_not_owner_rejected_total =
+                self.metrics.lock_not_owner_rejected_total.saturating_add(1);
+            return Err(ConditionalError::NotOwner {
+                key: key.to_owned(),
+                current_owner: Some(hold.owner.clone()),
+            });
+        }
+        if hold.fence != token {
             self.metrics.lock_stale_token_rejected_total = self
                 .metrics
                 .lock_stale_token_rejected_total
                 .saturating_add(1);
             return Err(ConditionalError::StaleFenceToken {
-                current: Some(current),
+                current: Some(hold.fence),
+                presented: token,
+            });
+        }
+        hold.lease_deadline = new_deadline;
+        self.session_heartbeats
+            .record(owner.session.clone(), new_deadline);
+        self.metrics.lock_lease_renewed_total =
+            self.metrics.lock_lease_renewed_total.saturating_add(1);
+        Ok(())
+    }
+
+    /// Record a logical session heartbeat.
+    pub fn record_session_heartbeat(&mut self, session: SessionId, now: LogicalTime) {
+        self.session_heartbeats.record(session, now);
+    }
+
+    /// Expire all lock holds with lease deadlines at or before `now`.
+    pub fn expire_due(&mut self, now: LogicalTime) -> usize {
+        let expired = self
+            .locks
+            .iter()
+            .filter(|(_, hold)| hold.expired_at(now))
+            .map(|(key, _)| key.clone())
+            .collect::<Vec<_>>();
+        self.expire_keys(expired)
+    }
+
+    /// Expire all lock holds owned by sessions that stopped heartbeating.
+    pub fn expire_lost_sessions(
+        &mut self,
+        now: LogicalTime,
+        max_silence: LogicalDuration,
+    ) -> usize {
+        let lost = self.session_heartbeats.lost_sessions(now, max_silence);
+        let expired = self
+            .locks
+            .iter()
+            .filter(|(_, hold)| lost.contains(&hold.owner.session))
+            .map(|(key, _)| key.clone())
+            .collect::<Vec<_>>();
+        self.expire_keys(expired)
+    }
+
+    /// Release a fenced lock when the token is current.
+    pub fn release_lock(
+        &mut self,
+        key: &str,
+        owner: &LockOwner,
+        token: FenceToken,
+    ) -> Result<(), ConditionalError> {
+        let Some(hold) = self.locks.get(key) else {
+            self.metrics.lock_stale_token_rejected_total = self
+                .metrics
+                .lock_stale_token_rejected_total
+                .saturating_add(1);
+            return Err(ConditionalError::StaleFenceToken {
+                current: None,
+                presented: token,
+            });
+        };
+        if &hold.owner != owner {
+            self.metrics.lock_not_owner_rejected_total =
+                self.metrics.lock_not_owner_rejected_total.saturating_add(1);
+            return Err(ConditionalError::NotOwner {
+                key: key.to_owned(),
+                current_owner: Some(hold.owner.clone()),
+            });
+        }
+        if hold.fence != token {
+            self.metrics.lock_stale_token_rejected_total = self
+                .metrics
+                .lock_stale_token_rejected_total
+                .saturating_add(1);
+            return Err(ConditionalError::StaleFenceToken {
+                current: Some(hold.fence),
                 presented: token,
             });
         }
@@ -253,7 +465,7 @@ impl SingleKeyConditionalStore {
         key: &str,
         token: FenceToken,
     ) -> Result<(), ConditionalError> {
-        let current = self.locks.get(key).copied();
+        let current = self.locks.get(key).map(|hold| hold.fence);
         if current == Some(token) {
             Ok(())
         } else {
@@ -266,6 +478,19 @@ impl SingleKeyConditionalStore {
                 presented: token,
             })
         }
+    }
+
+    fn expire_keys(&mut self, keys: Vec<String>) -> usize {
+        let mut expired = 0usize;
+        for key in keys {
+            if self.locks.remove(&key).is_some() {
+                self.next_fence = self.next_fence.saturating_add(1);
+                self.metrics.lock_lease_expired_total =
+                    self.metrics.lock_lease_expired_total.saturating_add(1);
+                expired = expired.saturating_add(1);
+            }
+        }
+        expired
     }
 }
 

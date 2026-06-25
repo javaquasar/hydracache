@@ -1,12 +1,16 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
+use serde::{Deserialize, Serialize};
+
 use super::ClusterNodeId;
 
 /// Logical simulator time in milliseconds.
 ///
 /// Production code can adapt wall-clock time into this type at the driver edge,
 /// while deterministic tests and simulators advance it explicitly.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize,
+)]
 pub struct LogicalTime(u64);
 
 impl LogicalTime {
@@ -27,7 +31,7 @@ impl LogicalTime {
 }
 
 /// Logical simulator duration in milliseconds.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct LogicalDuration(u64);
 
 impl LogicalDuration {

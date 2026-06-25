@@ -572,7 +572,8 @@ pub use grid::causal_consistency::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::conditional::{
-    CasResult, ConditionalError, ConditionalMetrics, FenceToken, SingleKeyConditionalStore,
+    CasResult, ConditionalError, ConditionalMetrics, FenceToken, LockHold, LockOwner,
+    SingleKeyConditionalStore,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::consistency_level::{
@@ -637,6 +638,8 @@ pub use grid::invalidation_ring::{
     InvalidationEvent, InvalidationRing, InvalidationRingMetrics, InvalidationRingSnapshot,
     ReplayResult,
 };
+#[cfg(not(target_arch = "wasm32"))]
+pub use grid::lock_session::SessionHeartbeats;
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::merkle_repair::{
     foreground_read_repair, ForegroundReadRepairOutcome, KeyRange, MerkleTree, RepairKind,
