@@ -17,6 +17,9 @@ pub const MIN_PROTOCOL_VERSION: u16 = 1;
 /// Highest supported external client protocol version.
 pub const PROTOCOL_VERSION: u16 = 2;
 
+/// First protocol version that carries the IMap/Fenced Lock operation family.
+pub const LOCK_PROTOCOL_VERSION: u16 = 2;
+
 /// Bytes used by the unsigned length prefix.
 pub const LENGTH_PREFIX_BYTES: usize = 4;
 
@@ -338,6 +341,21 @@ pub enum WriteConsistency {
     Quorum,
 }
 
+/// Linearizable-capable consistency labels for lock/CAS operations.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LockConsistency {
+    /// A single replica; rejected for lock/CAS operations.
+    One,
+    /// Quorum-applied command.
+    #[default]
+    Quorum,
+    /// Each quorum-applied command.
+    EachQuorum,
+    /// All replicas applied the command.
+    All,
+}
+
 /// Optional context carried by every request.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ClientContext {
@@ -507,6 +525,29 @@ pub enum ClientRequest {
         from: Option<Watermark>,
         include_value: bool,
     },
+    /// Try to acquire a session-bound fenced lock.
+    TryLock {
+        ns: Namespace,
+        key: StructuredKey,
+        lease_ms: u64,
+        wait_ms: u64,
+        level: LockConsistency,
+    },
+    /// Release a fenced lock with the current fence token.
+    Unlock {
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+    },
+    /// Renew the lease for the current lock owner.
+    RenewLockLease {
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+        lease_ms: u64,
+    },
+    /// Read current lock ownership metadata.
+    GetLockOwnership { ns: Namespace, key: StructuredKey },
 }
 
 impl ClientRequest {
@@ -520,6 +561,10 @@ impl ClientRequest {
             | Self::BatchPut { .. }
             | Self::EvictRegion { .. }
             | Self::SubscribeInvalidations { .. } => MIN_PROTOCOL_VERSION,
+            Self::TryLock { .. }
+            | Self::Unlock { .. }
+            | Self::RenewLockLease { .. }
+            | Self::GetLockOwnership { .. } => LOCK_PROTOCOL_VERSION,
         }
     }
 
@@ -541,6 +586,10 @@ impl ClientRequest {
             Self::BatchPut { .. } => "batch_put",
             Self::EvictRegion { .. } => "evict_region",
             Self::SubscribeInvalidations { .. } => "subscribe_invalidations",
+            Self::TryLock { .. } => "try_lock",
+            Self::Unlock { .. } => "unlock",
+            Self::RenewLockLease { .. } => "renew_lock_lease",
+            Self::GetLockOwnership { .. } => "get_lock_ownership",
         }
     }
 }
@@ -607,6 +656,16 @@ pub enum ClientResponse {
     Evicted,
     /// Subscription accepted.
     Subscribed { from: Option<Watermark> },
+    /// Fenced lock acquired.
+    LockAcquired { fence: u64 },
+    /// Fenced lock is currently held by another owner.
+    LockBusy,
+    /// Fenced lock released.
+    LockReleased,
+    /// Fenced lock lease renewed.
+    LockLeaseRenewed,
+    /// Current lock ownership.
+    LockOwnership { fence: Option<u64>, locked: bool },
 }
 
 /// Per-item batch status.

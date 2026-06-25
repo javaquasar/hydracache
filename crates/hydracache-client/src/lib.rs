@@ -13,8 +13,8 @@ use bytes::Bytes;
 use hydracache_client_protocol::{
     ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame, ClientProtocolError,
     ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
-    ClientWireMessage, Namespace, RepairAction, StructuredKey, SubscriptionWatermarkTracker,
-    VersionHandshake,
+    ClientWireMessage, LockConsistency, Namespace, RepairAction, StructuredKey,
+    SubscriptionWatermarkTracker, VersionHandshake,
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -205,6 +205,63 @@ impl RequestOptions {
     }
 }
 
+/// Current remote lock ownership.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct LockOwnership {
+    /// Current fence token, when held.
+    pub fence: Option<u64>,
+    /// Whether the lock is held.
+    pub locked: bool,
+}
+
+/// Fenced lock guard returned by [`HydraClient::try_lock`].
+#[derive(Debug)]
+pub struct LockGuard<'a, T>
+where
+    T: ClientTransport,
+{
+    client: &'a HydraClient<T>,
+    ns: Namespace,
+    key: StructuredKey,
+    fence: u64,
+    unlocked: bool,
+}
+
+impl<'a, T> LockGuard<'a, T>
+where
+    T: ClientTransport,
+{
+    /// Return the fencing token to forward to an external system of record.
+    pub fn fence(&self) -> u64 {
+        self.fence
+    }
+
+    /// Explicitly release the lock. `Drop` is not a guaranteed network unlock.
+    pub async fn unlock(mut self) -> Result<(), ClientError> {
+        self.client
+            .unlock(self.ns.clone(), self.key.clone(), self.fence)
+            .await?;
+        self.unlocked = true;
+        Ok(())
+    }
+
+    /// Renew the logical server-side lease for this lock.
+    pub async fn renew(&self, lease: Duration) -> Result<(), ClientError> {
+        self.client
+            .renew_lock_lease(self.ns.clone(), self.key.clone(), self.fence, lease)
+            .await
+    }
+}
+
+impl<T> Drop for LockGuard<'_, T>
+where
+    T: ClientTransport,
+{
+    fn drop(&mut self) {
+        let _ = self.unlocked;
+    }
+}
+
 /// Remote HydraCache client.
 #[derive(Debug)]
 pub struct HydraClient<T> {
@@ -316,6 +373,114 @@ where
             ClientResponse::Invalidated => Ok(()),
             _ => Err(ClientError::UnexpectedResponse("invalidated")),
         }
+    }
+
+    /// Try to acquire a session-bound fenced lock.
+    pub async fn try_lock<'a>(
+        &'a self,
+        ns: Namespace,
+        key: StructuredKey,
+        lease: Duration,
+    ) -> Result<Option<LockGuard<'a, T>>, ClientError> {
+        let lease_ms = duration_millis_saturating(lease).max(1);
+        let response = self
+            .request(
+                ClientRequest::TryLock {
+                    ns: ns.clone(),
+                    key: key.clone(),
+                    lease_ms,
+                    wait_ms: 0,
+                    level: LockConsistency::Quorum,
+                },
+                RequestOptions::default(),
+            )
+            .await?;
+        match response {
+            ClientResponse::LockAcquired { fence } => {
+                self.metrics
+                    .lock_acquired_total
+                    .fetch_add(1, Ordering::SeqCst);
+                Ok(Some(LockGuard {
+                    client: self,
+                    ns,
+                    key,
+                    fence,
+                    unlocked: false,
+                }))
+            }
+            ClientResponse::LockBusy => {
+                self.metrics.lock_busy_total.fetch_add(1, Ordering::SeqCst);
+                Ok(None)
+            }
+            _ => Err(ClientError::UnexpectedResponse("lock acquisition")),
+        }
+    }
+
+    /// Release a fenced lock using its current fence.
+    pub async fn unlock(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+    ) -> Result<(), ClientError> {
+        let response = self
+            .request(
+                ClientRequest::Unlock { ns, key, fence },
+                RequestOptions::default(),
+            )
+            .await?;
+        match response {
+            ClientResponse::LockReleased => Ok(()),
+            _ => Err(ClientError::UnexpectedResponse("lock release")),
+        }
+    }
+
+    /// Renew a fenced lock lease.
+    pub async fn renew_lock_lease(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+        lease: Duration,
+    ) -> Result<(), ClientError> {
+        let response = self
+            .request(
+                ClientRequest::RenewLockLease {
+                    ns,
+                    key,
+                    fence,
+                    lease_ms: duration_millis_saturating(lease).max(1),
+                },
+                RequestOptions::default(),
+            )
+            .await?;
+        match response {
+            ClientResponse::LockLeaseRenewed => {
+                self.metrics
+                    .lock_lease_renew_total
+                    .fetch_add(1, Ordering::SeqCst);
+                Ok(())
+            }
+            _ => Err(ClientError::UnexpectedResponse("lock lease renewal")),
+        }
+    }
+
+    /// Return current lock ownership metadata.
+    pub async fn lock_ownership(
+        &self,
+        ns: Namespace,
+        key: StructuredKey,
+    ) -> Result<LockOwnership, ClientError> {
+        let response = self
+            .request(
+                ClientRequest::GetLockOwnership { ns, key },
+                RequestOptions::default(),
+            )
+            .await?;
+        let ClientResponse::LockOwnership { fence, locked } = response else {
+            return Err(ClientError::UnexpectedResponse("lock ownership"));
+        };
+        Ok(LockOwnership { fence, locked })
     }
 
     /// Send a raw protocol request with explicit options.
@@ -457,6 +622,9 @@ impl RemoteNearCache {
 pub struct ClientMetrics {
     sessions_active: AtomicU64,
     near_cache_repairs_total: AtomicU64,
+    lock_acquired_total: AtomicU64,
+    lock_busy_total: AtomicU64,
+    lock_lease_renew_total: AtomicU64,
 }
 
 impl ClientMetrics {
@@ -465,6 +633,9 @@ impl ClientMetrics {
         ClientMetricsSnapshot {
             client_sessions_active: self.sessions_active.load(Ordering::SeqCst),
             client_near_cache_repairs_total: self.near_cache_repairs_total.load(Ordering::SeqCst),
+            lock_acquired_total: self.lock_acquired_total.load(Ordering::SeqCst),
+            lock_busy_total: self.lock_busy_total.load(Ordering::SeqCst),
+            lock_lease_renew_total: self.lock_lease_renew_total.load(Ordering::SeqCst),
         }
     }
 }
@@ -476,6 +647,12 @@ pub struct ClientMetricsSnapshot {
     pub client_sessions_active: u64,
     /// Conservative near-cache repairs.
     pub client_near_cache_repairs_total: u64,
+    /// Successful lock acquisitions.
+    pub lock_acquired_total: u64,
+    /// Lock attempts rejected because another owner holds the lock.
+    pub lock_busy_total: u64,
+    /// Successful lock lease renewals.
+    pub lock_lease_renew_total: u64,
 }
 
 /// Language-agnostic conformance manifest.

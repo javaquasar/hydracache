@@ -15,12 +15,16 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use hydracache::{AdmissionRejection, ConsumerIsolation, TenantId, TenantMetricsSnapshot};
+use hydracache::{
+    AdmissionRejection, ClusterEpoch, ConditionalError, ConsistencyLevel, ConsumerIsolation,
+    FenceToken, LockOwner, LogicalDuration, LogicalTime, SingleKeyConditionalStore, TenantId,
+    TenantMetricsSnapshot,
+};
 use hydracache_client_protocol::{
     protocol_version_supported, BatchItemStatus, BatchPutEntry, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, Namespace, StructuredKey,
-    VersionHandshake, PROTOCOL_VERSION,
+    ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, LockConsistency, Namespace,
+    StructuredKey, VersionHandshake, PROTOCOL_VERSION,
 };
 use hydracache_observability::TenantStatus;
 use serde::{Deserialize, Serialize};
@@ -177,6 +181,77 @@ impl ClientIdentity {
     }
 }
 
+#[derive(Debug)]
+struct ClientLockService {
+    store: SingleKeyConditionalStore,
+    local_node_id: u64,
+    leader_node_id: u64,
+    logical_now_ms: u64,
+    applied_commands: u64,
+}
+
+impl ClientLockService {
+    fn new() -> Self {
+        Self {
+            store: SingleKeyConditionalStore::new(ClusterEpoch::new(1), 64),
+            local_node_id: 1,
+            leader_node_id: 1,
+            logical_now_ms: 0,
+            applied_commands: 0,
+        }
+    }
+
+    fn set_leader_for_tests(&mut self, local_node_id: u64, leader_node_id: u64) {
+        self.local_node_id = local_node_id.max(1);
+        self.leader_node_id = leader_node_id.max(1);
+    }
+
+    fn advance_time_for_tests(&mut self, millis: u64) {
+        self.logical_now_ms = self.logical_now_ms.saturating_add(millis);
+        self.store
+            .expire_due(LogicalTime::from_millis(self.logical_now_ms));
+    }
+
+    fn is_leader(&self) -> bool {
+        self.local_node_id == self.leader_node_id
+    }
+
+    fn apply_lock_command<F>(&mut self, apply: F) -> Result<ClientResponse, ClientErrorEnvelope>
+    where
+        F: FnOnce(
+            &mut SingleKeyConditionalStore,
+            LogicalTime,
+        ) -> Result<ClientResponse, ConditionalError>,
+    {
+        if !self.is_leader() {
+            return Err(ClientErrorEnvelope::new(
+                ClientErrorCode::BackendUnavailable,
+                true,
+                format!(
+                    "not leader for lock partition; leader={}",
+                    self.leader_node_id
+                ),
+            )
+            .with_retry_after_ms(1));
+        }
+        self.applied_commands = self.applied_commands.saturating_add(1);
+        self.logical_now_ms = self.logical_now_ms.saturating_add(1);
+        let now = LogicalTime::from_millis(self.logical_now_ms);
+        self.store.expire_due(now);
+        apply(&mut self.store, now).map_err(lock_error_envelope)
+    }
+
+    fn current_ownership(&mut self, lock_key: &str) -> ClientResponse {
+        self.store
+            .expire_due(LogicalTime::from_millis(self.logical_now_ms));
+        let fence = self.store.current_fence(lock_key).map(FenceToken::value);
+        ClientResponse::LockOwnership {
+            fence,
+            locked: fence.is_some(),
+        }
+    }
+}
+
 /// Shared state for the public client surface.
 #[derive(Debug)]
 pub struct ClientSurfaceState {
@@ -190,6 +265,7 @@ pub struct ClientSurfaceState {
     store: Mutex<BTreeMap<(String, String), Vec<u8>>>,
     events: Mutex<Vec<InvalidationEvent>>,
     idempotency_keys: Mutex<BTreeSet<String>>,
+    lock_service: Mutex<ClientLockService>,
     isolation: Option<Mutex<ConsumerIsolation>>,
 }
 
@@ -208,6 +284,7 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
+            lock_service: Mutex::new(ClientLockService::new()),
             isolation: None,
         })
     }
@@ -229,6 +306,7 @@ impl ClientSurfaceState {
             store: Mutex::new(BTreeMap::new()),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
+            lock_service: Mutex::new(ClientLockService::new()),
             isolation: Some(Mutex::new(isolation)),
         })
     }
@@ -261,6 +339,22 @@ impl ClientSurfaceState {
     /// Count of active subscription streams.
     pub fn active_subscriptions(&self) -> u64 {
         self.active_subscriptions.load(Ordering::SeqCst)
+    }
+
+    /// Configure the modeled lock leader for integration tests.
+    pub fn set_lock_leader_for_tests(&self, local_node_id: u64, leader_node_id: u64) {
+        self.lock_service
+            .lock()
+            .expect("lock service mutex")
+            .set_leader_for_tests(local_node_id, leader_node_id);
+    }
+
+    /// Advance the modeled logical lock time for integration tests.
+    pub fn advance_lock_logical_time_for_tests(&self, millis: u64) {
+        self.lock_service
+            .lock()
+            .expect("lock service mutex")
+            .advance_time_for_tests(millis);
     }
 
     /// Return a tenant-scoped consumer status.
@@ -493,8 +587,130 @@ impl ClientSurfaceState {
                     )
                 }
             }
+            ClientRequest::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms: _,
+                level,
+            } => self.handle_try_lock(identity, envelope.request_id, ns, key, lease_ms, level),
+            ClientRequest::Unlock { ns, key, fence } => {
+                self.handle_unlock(identity, envelope.request_id, ns, key, fence)
+            }
+            ClientRequest::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            } => self.handle_renew_lock(identity, envelope.request_id, ns, key, fence, lease_ms),
+            ClientRequest::GetLockOwnership { ns, key } => {
+                self.handle_lock_ownership(envelope.request_id, ns, key)
+            }
         };
         response.with_protocol_version(response_protocol_version)
+    }
+
+    fn handle_try_lock(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        lease_ms: u64,
+        level: LockConsistency,
+    ) -> ClientResponseEnvelope {
+        let lock_key = lock_key(&ns, &key);
+        let owner = lock_owner(identity);
+        let lease = LogicalDuration::from_millis(lease_ms.max(1));
+        let level = lock_consistency(level);
+        let result = self
+            .lock_service
+            .lock()
+            .expect("lock service mutex")
+            .apply_lock_command(|store, now| {
+                let acquired = store.try_acquire_lock(&lock_key, level, owner, lease, now)?;
+                Ok(match acquired {
+                    Some(fence) => ClientResponse::LockAcquired {
+                        fence: fence.value(),
+                    },
+                    None => ClientResponse::LockBusy,
+                })
+            });
+        lock_response(request_id, result)
+    }
+
+    fn handle_unlock(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+    ) -> ClientResponseEnvelope {
+        let lock_key = lock_key(&ns, &key);
+        let owner = lock_owner(identity);
+        let result = self
+            .lock_service
+            .lock()
+            .expect("lock service mutex")
+            .apply_lock_command(|store, _now| {
+                store.release_lock(&lock_key, &owner, FenceToken::new(fence))?;
+                Ok(ClientResponse::LockReleased)
+            });
+        lock_response(request_id, result)
+    }
+
+    fn handle_renew_lock(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+        lease_ms: u64,
+    ) -> ClientResponseEnvelope {
+        let lock_key = lock_key(&ns, &key);
+        let owner = lock_owner(identity);
+        let lease = LogicalDuration::from_millis(lease_ms.max(1));
+        let result = self
+            .lock_service
+            .lock()
+            .expect("lock service mutex")
+            .apply_lock_command(|store, now| {
+                store.renew_lease(
+                    &lock_key,
+                    &owner,
+                    FenceToken::new(fence),
+                    now.saturating_add(lease),
+                )?;
+                Ok(ClientResponse::LockLeaseRenewed)
+            });
+        lock_response(request_id, result)
+    }
+
+    fn handle_lock_ownership(
+        &self,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+    ) -> ClientResponseEnvelope {
+        let lock_key = lock_key(&ns, &key);
+        let mut service = self.lock_service.lock().expect("lock service mutex");
+        if !service.is_leader() {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::BackendUnavailable,
+                    true,
+                    format!(
+                        "not leader for lock partition; leader={}",
+                        service.leader_node_id
+                    ),
+                )
+                .with_retry_after_ms(1),
+            );
+        }
+        ClientResponseEnvelope::ok(request_id, service.current_ownership(&lock_key))
     }
 
     fn handle_put(
@@ -809,6 +1025,46 @@ fn admission_error(error: AdmissionRejection) -> ClientErrorEnvelope {
 
 fn duration_millis_saturating(duration: Duration) -> u64 {
     duration.as_millis().min(u128::from(u64::MAX)) as u64
+}
+
+fn lock_response(
+    request_id: String,
+    result: Result<ClientResponse, ClientErrorEnvelope>,
+) -> ClientResponseEnvelope {
+    match result {
+        Ok(response) => ClientResponseEnvelope::ok(request_id, response),
+        Err(error) => ClientResponseEnvelope::error(request_id, error),
+    }
+}
+
+fn lock_key(ns: &Namespace, key: &StructuredKey) -> String {
+    format!("{}:{}", ns.as_str(), key.stable_key())
+}
+
+fn lock_owner(identity: &ClientIdentity) -> LockOwner {
+    LockOwner::new(format!("{}:{}", identity.tenant(), identity.client_id()), 0)
+}
+
+fn lock_consistency(level: LockConsistency) -> ConsistencyLevel {
+    match level {
+        LockConsistency::One => ConsistencyLevel::One,
+        LockConsistency::Quorum => ConsistencyLevel::Quorum,
+        LockConsistency::EachQuorum => ConsistencyLevel::EachQuorum,
+        LockConsistency::All => ConsistencyLevel::All,
+    }
+}
+
+fn lock_error_envelope(error: ConditionalError) -> ClientErrorEnvelope {
+    let code = match error {
+        ConditionalError::WeakConsistency { .. }
+        | ConditionalError::MultiKeyRejected { .. }
+        | ConditionalError::StaleFenceToken { .. }
+        | ConditionalError::LockNotHeld
+        | ConditionalError::LeaseExpired { .. }
+        | ConditionalError::NotOwner { .. }
+        | ConditionalError::ReentrancyLimit { .. } => ClientErrorCode::Conflict,
+    };
+    ClientErrorEnvelope::new(code, false, error.to_string())
 }
 
 fn store_key(ns: &Namespace, key: &StructuredKey) -> (String, String) {

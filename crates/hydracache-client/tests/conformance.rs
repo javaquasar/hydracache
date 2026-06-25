@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Duration;
 
 use async_trait::async_trait;
 use axum::body::{to_bytes, Body};
@@ -192,6 +193,36 @@ async fn conformance_v1_client_keeps_v1_compat_window() {
 
     assert_eq!(client.negotiated_version(), MIN_PROTOCOL_VERSION);
     assert_eq!(client.get(ns(), key("missing")).await.unwrap(), None);
+}
+
+#[tokio::test]
+async fn conformance_client_lock_guard_unlock_and_metrics() {
+    let transport = TwoNodeAxumTransport::new();
+    let client = HydraClient::connect(transport, HydraClientConfig::new(identity()))
+        .await
+        .expect("client connects");
+
+    let guard = client
+        .try_lock(ns(), key("guard"), Duration::from_millis(50))
+        .await
+        .expect("lock request")
+        .expect("lock acquired");
+    let first_fence = guard.fence();
+    guard.renew(Duration::from_millis(50)).await.expect("renew");
+    guard.unlock().await.expect("unlock");
+
+    let second = client
+        .try_lock(ns(), key("guard"), Duration::from_millis(50))
+        .await
+        .expect("second lock request")
+        .expect("second lock acquired");
+    assert!(second.fence() > first_fence);
+    second.unlock().await.expect("second unlock");
+
+    let metrics = client.metrics();
+    assert_eq!(metrics.lock_acquired_total, 2);
+    assert_eq!(metrics.lock_busy_total, 0);
+    assert_eq!(metrics.lock_lease_renew_total, 1);
 }
 
 #[test]
