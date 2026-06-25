@@ -643,6 +643,12 @@ pub use grid::merkle_repair::{
     RepairReport, RepairSession, RepairToken,
 };
 #[cfg(not(target_arch = "wasm32"))]
+pub use grid::persistence_config::{
+    NamespaceMetricLabels, PersistenceConfig, PersistenceConfigError, PersistenceConfigErrorKind,
+    PersistenceDurabilityConfig, PersistenceNamespaceConfig, PersistenceRecoveryConfig,
+    PersistenceRegionSelectorConfig, OTHER_NAMESPACE_METRIC_LABEL,
+};
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::persistence_policy::{
     NamespacePersistenceRule, NamespacePersistenceSettings, PersistenceDurability,
     PersistenceEviction, PersistenceInMemoryFormat, PersistenceMatcher, PersistencePolicy,

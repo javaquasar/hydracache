@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
@@ -10,6 +11,7 @@ use crate::cache::{HydraCache, HydraCacheInner};
 use crate::cluster::{ClusterRuntime, RoutingMode, TransportPosture};
 use crate::entry::CacheEntry;
 use crate::events::EventBus;
+use crate::grid::persistence_policy::PersistencePolicy;
 use crate::grid::{ReplicatedValueSecurityPosture, ReplicationConfig};
 use crate::inflight::InFlightMap;
 use crate::invalidation_bus::CacheInvalidationBus;
@@ -57,6 +59,8 @@ where
     read_through_enabled: bool,
     replication_config: ReplicationConfig,
     replicated_value_security: ReplicatedValueSecurityPosture,
+    persistence_policy: Option<PersistencePolicy>,
+    persistence_storage_dir: Option<PathBuf>,
     codec: C,
 }
 
@@ -178,6 +182,8 @@ where
             read_through_enabled: self.read_through_enabled,
             replication_config: self.replication_config,
             replicated_value_security: self.replicated_value_security,
+            persistence_policy: self.persistence_policy,
+            persistence_storage_dir: self.persistence_storage_dir,
             codec,
         }
     }
@@ -292,6 +298,18 @@ where
             .map_err(|error| CacheError::Backend(format!("invalid replication config: {error}")))
     }
 
+    /// Attach a persistence policy for future durable value-plane wiring.
+    pub fn with_persistence_policy(mut self, policy: PersistencePolicy) -> Self {
+        self.persistence_policy = Some(policy);
+        self
+    }
+
+    /// Set the root directory used by persistent value-plane namespaces.
+    pub fn with_storage_dir(mut self, storage_dir: impl Into<PathBuf>) -> Self {
+        self.persistence_storage_dir = Some(storage_dir.into());
+        self
+    }
+
     /// Build the local cache.
     pub fn build(self) -> HydraCache<C> {
         let max_entry_bytes = self.max_entry_bytes;
@@ -360,6 +378,8 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             read_through_enabled: true,
             replication_config: ReplicationConfig::default(),
             replicated_value_security: ReplicatedValueSecurityPosture::Disabled,
+            persistence_policy: None,
+            persistence_storage_dir: None,
             codec: PostcardCodec,
         }
     }
