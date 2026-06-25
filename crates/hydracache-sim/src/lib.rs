@@ -5,6 +5,7 @@
 //! a seed and step count.
 
 pub mod clock;
+pub mod control;
 pub mod election;
 pub mod invariants;
 pub mod linearizability;
@@ -22,6 +23,10 @@ pub mod workload;
 pub mod world;
 
 pub use clock::SimClock;
+pub use control::{
+    ControlActionV1, ControlApplyError, ReplayScriptError, ReplayScriptV1, SimMode,
+    MAX_REPLAY_ACTIONS, REPLAY_SCRIPT_VERSION,
+};
 pub use election::{
     cluster_transition, node_transition, ClusterFsm, ClusterFsmAction, ClusterFsmEvent,
     ElectionDriver, ElectionDriverSnapshot, ElectionNodeState, ElectionSignal, ElectionSignalKind,
@@ -52,9 +57,10 @@ pub use schedule::{
     FailureReport, FaultSchedule, ReplayOutcome, ReplayRunner, ScheduledFault, ScheduledFaultKind,
 };
 pub use snapshot::{
-    ConvergenceView, KeyReplicaView, KeyView, LinkStateView, LinkView, MessageView, NodeView,
-    ProgressView, SimSnapshot, SimSnapshotDecodeError, SnapshotOverBudgetView, VerdictView,
-    MAX_IN_FLIGHT_RENDERED, SIM_SNAPSHOT_SCHEMA_VERSION,
+    ClientView, ConvergenceView, KeyReplicaView, KeyView, LinkStateView, LinkView, MessageView,
+    NodeView, ProgressView, SimSnapshot, SimSnapshotDecodeError, SnapshotOverBudgetView,
+    SubscriberEventView, SubscriberView, SyncProgressView, VerdictView, MAX_IN_FLIGHT_RENDERED,
+    MAX_SUBSCRIBER_BUFFER, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,

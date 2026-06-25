@@ -85,6 +85,40 @@ impl SimHandle {
         }
     }
 
+    /// Subscribe a manual-mode client to namespace cache events.
+    pub fn subscribe(&mut self, client: String, namespace: String) {
+        self.world.subscribe(client, namespace);
+    }
+
+    /// Push a manual-mode cache event through the shared control surface.
+    pub fn push_event(
+        &mut self,
+        client: String,
+        namespace: String,
+        key: String,
+        value: String,
+    ) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::PushEvent {
+                at_step,
+                client,
+                ns: namespace,
+                key,
+                value,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
+    /// Apply a versioned replay script through the shared control surface.
+    pub fn apply_control_script_json(&mut self, script_json: String) -> Result<(), JsValue> {
+        let script = hydracache_sim::ReplayScriptV1::from_json(&script_json)
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        self.world
+            .apply_replay_script(&script)
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// Replace the current world with a curated simulator scenario.
     pub fn apply_scenario(&mut self, name: String) -> Result<(), JsValue> {
         let run = hydracache_sim::run_scenario(&name)
@@ -183,5 +217,28 @@ mod tests {
         assert_eq!(snapshot.step, 6);
         assert_eq!(snapshot.progress.committed_entries, 0);
         assert_eq!(snapshot.verdict, VerdictView::Holding);
+    }
+
+    #[test]
+    fn wasm_control_actions_match_native() {
+        let mut handle = SimHandle::new(0x5333);
+        handle.set_workload_enabled(false);
+        handle.run(8);
+        handle.subscribe("client-a".to_owned(), "profiles".to_owned());
+        handle
+            .push_event(
+                "client-a".to_owned(),
+                "profiles".to_owned(),
+                "profile-42".to_owned(),
+                "fresh".to_owned(),
+            )
+            .expect("push applies");
+        handle.run(2);
+
+        let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
+        assert!(snapshot
+            .subscribers
+            .iter()
+            .any(|subscriber| subscriber.last_event.is_some()));
     }
 }

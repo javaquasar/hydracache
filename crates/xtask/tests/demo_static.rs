@@ -32,6 +32,10 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(html.contains("data-testid=\"partition-link\""));
     assert!(html.contains("data-testid=\"nodes-panel\""));
     assert!(html.contains("data-testid=\"signals-panel\""));
+    assert!(html.contains("data-testid=\"push-event-button\""));
+    assert!(html.contains("data-testid=\"subscribe-button\""));
+    assert!(html.contains("data-testid=\"clients-panel\""));
+    assert!(html.contains("data-testid=\"subscribers-panel\""));
     assert!(html.contains("data-testid=\"scenario-select\""));
     assert!(html.contains("data-testid=\"load-scenario\""));
     assert!(html.contains("data-testid=\"copy-reproducer\""));
@@ -60,7 +64,11 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("snapshot.links"));
     assert!(js.contains("snapshot.in_flight"));
     assert!(js.contains("snapshot.over_budget"));
+    assert!(js.contains("snapshot.clients"));
+    assert!(js.contains("snapshot.subscribers"));
     assert!(js.contains("snapshot.keys"));
+    assert!(js.contains("push_event("));
+    assert!(js.contains("subscribe("));
     assert!(js.contains("writeUrlState(window.history"));
     assert!(js.contains("snapshotHash(snapshot)"));
     assert!(js.contains("reproducerCommand("));
@@ -88,6 +96,7 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(spec.contains("loads_steps_and_renders_verdict"));
     assert!(spec.contains("clicking_partition_updates_link_state"));
     assert!(spec.contains("loading_scenario_uses_curated_engine_preset"));
+    assert!(spec.contains("manual_push_shows_diverge_converge_and_listener_receipt"));
     assert!(seed_spec.contains("url_seed_reproduces_identical_run"));
     assert!(seed_spec.contains("copy-status"));
 

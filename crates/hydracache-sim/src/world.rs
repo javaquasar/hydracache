@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use hydracache::{
     ClientAck, ClientOp, ClusterNode, ClusterNodeConfig, ClusterNodeId, LogicalDuration,
@@ -6,10 +6,13 @@ use hydracache::{
 };
 
 use crate::{
-    ElectionDriver, ElectionDriverSnapshot, History, InvariantChecker, InvariantReport, LinkFault,
-    PartitionSymmetry, SimClock, SimNetwork, SimRng, SimSnapshot, SimStorage, WorkloadConfig,
-    WorkloadGenerator, WorkloadOp, WorkloadResult,
+    ControlActionV1, ControlApplyError, ElectionDriver, ElectionDriverSnapshot, History,
+    InvariantChecker, InvariantReport, LinkFault, PartitionSymmetry, ReplayScriptV1, SimClock,
+    SimNetwork, SimRng, SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig,
+    WorkloadGenerator, WorkloadOp, WorkloadResult, MAX_SUBSCRIBER_BUFFER,
 };
+
+const BUS_EVENT_UPSERTED: &str = "upserted";
 
 /// Configuration for a deterministic simulation run.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -66,6 +69,32 @@ struct SimNode {
     storage: SimStorage,
 }
 
+#[derive(Debug, Clone)]
+struct SimClientActor {
+    numeric_id: u64,
+    namespace: String,
+    last_op: Option<String>,
+    in_flight: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PendingSubscriberEvent {
+    kind: String,
+    key: String,
+    version: u64,
+    commit_index: u64,
+}
+
+#[derive(Debug, Clone)]
+struct SimSubscriber {
+    id: String,
+    client_id: String,
+    namespace: String,
+    pending: VecDeque<PendingSubscriberEvent>,
+    last_event: Option<SubscriberEventView>,
+    dropped: u64,
+}
+
 /// Deterministic whole-cluster simulation driver.
 #[derive(Debug, Clone)]
 pub struct SimWorld {
@@ -80,8 +109,11 @@ pub struct SimWorld {
     invariant_checker: InvariantChecker,
     invariant_report: InvariantReport,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
+    clients: BTreeMap<String, SimClientActor>,
+    subscribers: BTreeMap<String, SimSubscriber>,
     crashed_nodes: BTreeSet<ClusterNodeId>,
     workload_enabled: bool,
+    next_client_numeric_id: u64,
     steps: u64,
     accepted_ops: u64,
     delivered_messages: u64,
@@ -132,8 +164,11 @@ impl SimWorld {
             invariant_checker: InvariantChecker,
             invariant_report: InvariantReport::default(),
             nodes,
+            clients: BTreeMap::new(),
+            subscribers: BTreeMap::new(),
             crashed_nodes: BTreeSet::new(),
             workload_enabled: true,
+            next_client_numeric_id: 1,
             steps: 0,
             accepted_ops: 0,
             delivered_messages: 0,
@@ -164,6 +199,7 @@ impl SimWorld {
         self.tick_nodes();
         self.issue_smoke_workload();
         self.drain_node_effects();
+        self.deliver_subscriber_events();
         self.refresh_invariant_report();
     }
 
@@ -207,6 +243,118 @@ impl SimWorld {
     /// Return whether the built-in smoke workload is enabled.
     pub fn workload_enabled(&self) -> bool {
         self.workload_enabled
+    }
+
+    /// Apply one shared control action.
+    pub fn apply_control_action(
+        &mut self,
+        action: ControlActionV1,
+    ) -> Result<(), ControlApplyError> {
+        match action {
+            ControlActionV1::Step { n, .. } => {
+                self.run(n);
+                Ok(())
+            }
+            ControlActionV1::PushEvent {
+                client,
+                ns,
+                key,
+                value,
+                ..
+            } => self.push_event(client, ns, key, value),
+            ControlActionV1::Subscribe { client, ns, .. } => {
+                self.subscribe(client, ns);
+                Ok(())
+            }
+            ControlActionV1::ModeChange { .. } => Ok(()),
+            ControlActionV1::Isolate { .. } => Err(ControlApplyError::UnsupportedAction("isolate")),
+            ControlActionV1::Rejoin { .. } => Err(ControlApplyError::UnsupportedAction("rejoin")),
+            ControlActionV1::Disable { .. } => Err(ControlApplyError::UnsupportedAction("disable")),
+            ControlActionV1::Enable { .. } => Err(ControlApplyError::UnsupportedAction("enable")),
+            ControlActionV1::AddNode { .. } => {
+                Err(ControlApplyError::UnsupportedAction("add_node"))
+            }
+        }
+    }
+
+    /// Apply a replay script through the same control surface used by WASM and sandbox.
+    pub fn apply_replay_script(
+        &mut self,
+        script: &ReplayScriptV1,
+    ) -> Result<(), ControlApplyError> {
+        script.validate()?;
+        for action in script.actions.iter().cloned() {
+            if action.at_step() > self.steps {
+                self.run(action.at_step() - self.steps);
+            }
+            self.apply_control_action(action)?;
+        }
+        Ok(())
+    }
+
+    /// Subscribe a manual-mode client to namespace cache events.
+    pub fn subscribe(&mut self, client: impl Into<String>, namespace: impl Into<String>) {
+        let client = client.into();
+        let namespace = namespace.into();
+        self.ensure_client_actor(&client, &namespace);
+        let id = subscriber_id(&client, &namespace);
+        self.subscribers
+            .entry(id.clone())
+            .or_insert_with(|| SimSubscriber {
+                id,
+                client_id: client,
+                namespace,
+                pending: VecDeque::new(),
+                last_event: None,
+                dropped: 0,
+            });
+    }
+
+    /// Push a manual-mode cache event into the simulated cluster.
+    pub fn push_event(
+        &mut self,
+        client: impl Into<String>,
+        namespace: impl Into<String>,
+        key: impl Into<String>,
+        value: impl Into<String>,
+    ) -> Result<(), ControlApplyError> {
+        let client = client.into();
+        let namespace = namespace.into();
+        let key = namespaced_key(&namespace, &key.into());
+        let value = value.into().into_bytes();
+        let target = self.preferred_write_node().ok_or_else(|| {
+            ControlApplyError::InvalidAction("no live node for push_event".to_owned())
+        })?;
+        let numeric_id = self.ensure_client_actor(&client, &namespace);
+        let op = WorkloadOp::Put {
+            key: key.clone(),
+            value: value.clone(),
+        };
+        let event_id = self
+            .history
+            .record_invocation(numeric_id, op.clone(), self.clock.now());
+        let ack = self
+            .nodes
+            .get_mut(&target)
+            .expect("preferred write node must exist")
+            .node
+            .handle_client(client_op(op));
+        self.accepted_ops = self.accepted_ops.saturating_add(1);
+        self.history
+            .record_response(event_id, self.clock.now(), workload_result(ack.clone()));
+        let commit_index = self.history.completed().count() as u64;
+        if let Some(actor) = self.clients.get_mut(&client) {
+            actor.namespace = namespace.clone();
+            actor.last_op = Some(format!("push {key}"));
+            actor.in_flight = 0;
+        }
+        self.record(format!("manual_push:{client}:{target}:{key}:{event_id:?}"));
+        self.drain_node_effects();
+        let version = value_version(&value);
+        self.enqueue_subscriber_events(&namespace, key, version, commit_index);
+        self.deliver_subscriber_events();
+        self.refresh_invariant_report();
+        Ok(())
     }
 
     /// Crash a node if it exists.
@@ -336,6 +484,19 @@ impl SimWorld {
                     .insert(node_id.to_string(), checksum);
             }
         }
+        for replicas in key_observations.values_mut() {
+            for node_id in &node_ids {
+                replicas.entry(node_id.to_string()).or_default();
+            }
+        }
+        let sync_progress = node_ids
+            .iter()
+            .map(|node_id| crate::snapshot::SyncProgressView {
+                node_id: node_id.to_string(),
+                applied_index: committed_entries,
+                leader_commit_index: committed_entries,
+            })
+            .collect();
 
         SimSnapshot {
             schema_version: crate::snapshot::SIM_SNAPSHOT_SCHEMA_VERSION,
@@ -350,6 +511,29 @@ impl SimWorld {
             in_flight,
             over_budget,
             keys: crate::snapshot::key_views_from_storage(key_observations),
+            clients: self
+                .clients
+                .iter()
+                .map(|(id, actor)| crate::snapshot::ClientView {
+                    id: id.clone(),
+                    namespace: actor.namespace.clone(),
+                    last_op: actor.last_op.clone(),
+                    in_flight: actor.in_flight,
+                })
+                .collect(),
+            subscribers: self
+                .subscribers
+                .values()
+                .map(|subscriber| crate::snapshot::SubscriberView {
+                    id: subscriber.id.clone(),
+                    client_id: subscriber.client_id.clone(),
+                    namespace: subscriber.namespace.clone(),
+                    last_event: subscriber.last_event.clone(),
+                    lag: subscriber.pending.len() as u64,
+                    dropped: subscriber.dropped,
+                })
+                .collect(),
+            sync_progress,
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,
@@ -403,9 +587,21 @@ impl SimWorld {
     }
 
     fn refresh_invariant_report(&mut self) {
-        let election_state = crate::invariants::ElectionTopologyState::from_election_snapshot(
+        let mut election_state = crate::invariants::ElectionTopologyState::from_election_snapshot(
             &self.election.snapshot(),
         );
+        for subscriber in self.subscribers.values() {
+            if let Some(event) = &subscriber.last_event {
+                election_state = election_state.subscriber_delivery(
+                    crate::invariants::SubscriberDeliveryObservation {
+                        subscriber_id: subscriber.id.clone(),
+                        key: event.key.clone(),
+                        commit_index: event.commit_index,
+                        delivered_after_commit_index: self.history.completed().count() as u64,
+                    },
+                );
+            }
+        }
         self.invariant_report = self
             .invariant_checker
             .check_history_and_election(&self.history, &election_state);
@@ -482,6 +678,92 @@ impl SimWorld {
         }
     }
 
+    fn preferred_write_node(&self) -> Option<ClusterNodeId> {
+        let live = self.live_node_ids();
+        self.election
+            .snapshot()
+            .leader
+            .filter(|leader| live.contains(leader))
+            .or_else(|| live.into_iter().next())
+    }
+
+    fn ensure_client_actor(&mut self, client: &str, namespace: &str) -> u64 {
+        if let Some(actor) = self.clients.get_mut(client) {
+            actor.namespace = namespace.to_owned();
+            return actor.numeric_id;
+        }
+        let numeric_id = self.next_client_numeric_id;
+        self.next_client_numeric_id = self.next_client_numeric_id.saturating_add(1);
+        self.clients.insert(
+            client.to_owned(),
+            SimClientActor {
+                numeric_id,
+                namespace: namespace.to_owned(),
+                last_op: None,
+                in_flight: 0,
+            },
+        );
+        numeric_id
+    }
+
+    fn enqueue_subscriber_events(
+        &mut self,
+        namespace: &str,
+        key: String,
+        version: u64,
+        commit_index: u64,
+    ) {
+        for subscriber in self
+            .subscribers
+            .values_mut()
+            .filter(|subscriber| subscriber.namespace == namespace)
+        {
+            if subscriber.pending.len() >= MAX_SUBSCRIBER_BUFFER {
+                subscriber.dropped = subscriber.dropped.saturating_add(1);
+                continue;
+            }
+            subscriber.pending.push_back(PendingSubscriberEvent {
+                kind: BUS_EVENT_UPSERTED.to_owned(),
+                key: key.clone(),
+                version,
+                commit_index,
+            });
+        }
+    }
+
+    fn deliver_subscriber_events(&mut self) {
+        let live_count = self.live_node_ids().len();
+        let completed = self.history.completed().count() as u64;
+        let storage_versions = self
+            .nodes
+            .iter()
+            .filter(|(node_id, _)| !self.crashed_nodes.contains(*node_id))
+            .map(|(node_id, sim_node)| (node_id.clone(), sim_node.storage.visible_checksums()))
+            .collect::<Vec<_>>();
+        for subscriber in self.subscribers.values_mut() {
+            let Some(event) = subscriber.pending.front() else {
+                continue;
+            };
+            if completed < event.commit_index {
+                continue;
+            }
+            let matching = storage_versions
+                .iter()
+                .filter(|(_, values)| values.get(&event.key).copied() == Some(event.version))
+                .count();
+            if live_count > 0 && matching == live_count {
+                let event = subscriber.pending.pop_front().expect("front event exists");
+                subscriber.last_event = Some(SubscriberEventView {
+                    kind: event.kind,
+                    key: event.key,
+                    version: event.version,
+                    commit_index: event.commit_index,
+                    delivered_at_step: self.steps,
+                });
+            }
+        }
+    }
+
     fn record(&mut self, event: String) {
         self.trace.push(event);
     }
@@ -526,4 +808,16 @@ fn workload_result(ack: ClientAck) -> WorkloadResult {
             sequence: request_id,
         },
     }
+}
+
+fn namespaced_key(namespace: &str, key: &str) -> String {
+    format!("{namespace}:{key}")
+}
+
+fn subscriber_id(client: &str, namespace: &str) -> String {
+    format!("{client}@{namespace}")
+}
+
+fn value_version(value: &[u8]) -> u64 {
+    crate::storage::checksum(value)
 }

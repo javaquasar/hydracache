@@ -10,10 +10,13 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 3;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 4;
 
 /// Maximum number of in-flight messages rendered in one snapshot.
 pub const MAX_IN_FLIGHT_RENDERED: usize = 64;
+
+/// Maximum pending cache events kept for one subscriber.
+pub const MAX_SUBSCRIBER_BUFFER: usize = 16;
 
 /// Versioned browser/demo view over the real deterministic simulator state.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -42,6 +45,12 @@ pub struct SimSnapshot {
     pub over_budget: SnapshotOverBudgetView,
     /// Sampled key state by replica.
     pub keys: Vec<KeyView>,
+    /// Manual-mode client actors.
+    pub clients: Vec<ClientView>,
+    /// Manual-mode namespace subscribers.
+    pub subscribers: Vec<SubscriberView>,
+    /// Cluster sync progress visible to manual/topology modes.
+    pub sync_progress: Vec<SyncProgressView>,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -66,6 +75,9 @@ impl SimSnapshot {
             in_flight: Vec::new(),
             over_budget: SnapshotOverBudgetView::default(),
             keys: keys_from_history(history),
+            clients: Vec::new(),
+            subscribers: Vec::new(),
+            sync_progress: Vec::new(),
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,
@@ -211,6 +223,62 @@ pub struct KeyReplicaView {
     pub version: u64,
     /// Logical epoch. The 0.44 simulator does not model storage epochs yet.
     pub epoch: u64,
+}
+
+/// Manual-mode client actor projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClientView {
+    /// Stable client id.
+    pub id: String,
+    /// Namespace used by the latest action.
+    pub namespace: String,
+    /// Last operation shown in the client lane.
+    pub last_op: Option<String>,
+    /// Operations currently in flight for this actor.
+    pub in_flight: u32,
+}
+
+/// Manual-mode subscriber projection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SubscriberView {
+    /// Stable subscriber id.
+    pub id: String,
+    /// Client actor that owns the subscription.
+    pub client_id: String,
+    /// Subscribed namespace.
+    pub namespace: String,
+    /// Last delivered cache-signal event.
+    pub last_event: Option<SubscriberEventView>,
+    /// Pending events in the bounded subscriber buffer.
+    pub lag: u64,
+    /// Events dropped because the bounded buffer was full.
+    pub dropped: u64,
+}
+
+/// Subscriber event visible to the UI.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SubscriberEventView {
+    /// Bus-carried cache event kind.
+    pub kind: String,
+    /// Namespaced cache key.
+    pub key: String,
+    /// Stable value version/checksum.
+    pub version: u64,
+    /// Commit index required before delivery.
+    pub commit_index: u64,
+    /// Scheduler step where the event was delivered.
+    pub delivered_at_step: u64,
+}
+
+/// Per-node catch-up/sync progress.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SyncProgressView {
+    /// Node id.
+    pub node_id: String,
+    /// Applied entries for this node.
+    pub applied_index: u64,
+    /// Leader commit index visible to this node.
+    pub leader_commit_index: u64,
 }
 
 /// Invariant verdict visible to the UI.

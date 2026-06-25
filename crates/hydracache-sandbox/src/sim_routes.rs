@@ -4,7 +4,8 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::options;
 use axum::{Json, Router};
 use hydracache_sim::{
-    run_scenario, ScenarioError, SimConfig, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
+    run_scenario, ControlActionV1, ControlApplyError, ReplayScriptV1, ScenarioError, SimConfig,
+    SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 use serde::{Deserialize, Serialize};
 
@@ -51,6 +52,16 @@ enum SimInjectRequest {
         to: String,
         millis: u64,
     },
+    PushEvent {
+        client: String,
+        ns: String,
+        key: String,
+        value: String,
+    },
+    Subscribe {
+        client: String,
+        ns: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -68,6 +79,7 @@ pub(super) fn router() -> Router<SandboxState> {
         .route("/sim/new", options(sim_options).post(sim_new))
         .route("/sim/step", options(sim_options).post(sim_step))
         .route("/sim/inject", options(sim_options).post(sim_inject))
+        .route("/sim/control", options(sim_options).post(sim_control))
         .route("/sim/snapshot", options(sim_options).get(sim_snapshot))
 }
 
@@ -120,6 +132,29 @@ async fn sim_inject(
     Ok((cors_headers(), Json(snapshot)))
 }
 
+async fn sim_control(
+    State(state): State<SandboxState>,
+    Json(script): Json<ReplayScriptV1>,
+) -> SimRouteResult {
+    script
+        .validate()
+        .map_err(ControlApplyError::from)
+        .map_err(SimRouteRejection::from)?;
+    let mut world = SimWorld::new(script.seed, SimConfig::default());
+    if let Some(scenario) = script.scenario.as_deref() {
+        if scenario != "default" {
+            world = run_scenario(scenario)
+                .map_err(SimRouteRejection::from)?
+                .world;
+        }
+    }
+    world.apply_replay_script(&script)?;
+    let snapshot = world.snapshot();
+    assert_current_snapshot_schema(&snapshot);
+    *state.sim_world.write().await = world;
+    Ok((cors_headers(), Json(snapshot)))
+}
+
 async fn sim_snapshot(
     State(state): State<SandboxState>,
 ) -> ([(&'static str, &'static str); 3], Json<SimSnapshot>) {
@@ -149,6 +184,31 @@ fn apply_injection(
         SimInjectRequest::Drop { from, to } => world.drop_next_on_link(from, to),
         SimInjectRequest::Delay { from, to, millis } => {
             world.delay_next_on_link_millis(from, to, millis)
+        }
+        SimInjectRequest::PushEvent {
+            client,
+            ns,
+            key,
+            value,
+        } => {
+            return world
+                .apply_control_action(ControlActionV1::PushEvent {
+                    at_step: world.outcome().steps,
+                    client,
+                    ns,
+                    key,
+                    value,
+                })
+                .map_err(SimRouteRejection::from);
+        }
+        SimInjectRequest::Subscribe { client, ns } => {
+            return world
+                .apply_control_action(ControlActionV1::Subscribe {
+                    at_step: world.outcome().steps,
+                    client,
+                    ns,
+                })
+                .map_err(SimRouteRejection::from);
         }
     };
     if applied {
@@ -185,6 +245,12 @@ impl SimRouteRejection {
 impl From<ScenarioError> for SimRouteRejection {
     fn from(error: ScenarioError) -> Self {
         Self::bad_request("unknown_sim_scenario", error.to_string())
+    }
+}
+
+impl From<ControlApplyError> for SimRouteRejection {
+    fn from(error: ControlApplyError) -> Self {
+        Self::bad_request("sim_control_rejected", error.to_string())
     }
 }
 

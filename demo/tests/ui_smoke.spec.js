@@ -29,3 +29,14 @@ test("loading_scenario_uses_curated_engine_preset", async ({ page }) => {
   await expect(page.getByTestId("snapshot-hash")).toContainText("snapshot ");
   await expect(page).toHaveURL(/scenario=minority_partition_cannot_commit/);
 });
+
+test("manual_push_shows_diverge_converge_and_listener_receipt", async ({ page }) => {
+  await page.goto(demoUrl);
+  await page.getByTestId("subscribe-button").click();
+  await page.getByTestId("push-event-button").click();
+
+  await expect(page.getByTestId("clients-panel")).toContainText("client-a");
+  await page.getByTestId("step").click();
+  await page.getByTestId("step").click();
+  await expect(page.getByTestId("subscribers-panel")).toContainText("upserted");
+});

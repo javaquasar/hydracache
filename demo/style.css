@@ -276,6 +276,16 @@ dd {
   background: #fbfcf8;
 }
 
+.manual-controls {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.manual-controls input {
+  width: 100%;
+}
+
 .metric strong,
 .key-row strong {
   overflow-wrap: anywhere;

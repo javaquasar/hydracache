@@ -2,7 +2,7 @@ use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
 use axum::Router;
 use hydracache_sandbox::{build_sandbox, SandboxConfig};
-use hydracache_sim::SIM_SNAPSHOT_SCHEMA_VERSION;
+use hydracache_sim::{ControlActionV1, ReplayScriptV1, SimMode, SIM_SNAPSHOT_SCHEMA_VERSION};
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
@@ -86,6 +86,43 @@ async fn sim_routes_emit_w2_schema_and_step_deterministically() {
     );
     let body = body_json(response).await;
     assert_eq!(body["code"], "unknown_sim_scenario");
+}
+
+#[tokio::test]
+async fn sim_routes_accept_same_control_script() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+    let script = ReplayScriptV1::new(
+        0x5334,
+        SimMode::Manual,
+        vec![
+            ControlActionV1::Step { at_step: 0, n: 8 },
+            ControlActionV1::Subscribe {
+                at_step: 8,
+                client: "client-a".to_owned(),
+                ns: "profiles".to_owned(),
+            },
+            ControlActionV1::PushEvent {
+                at_step: 8,
+                client: "client-a".to_owned(),
+                ns: "profiles".to_owned(),
+                key: "profile-42".to_owned(),
+                value: "fresh".to_owned(),
+            },
+            ControlActionV1::Step { at_step: 8, n: 2 },
+        ],
+    );
+
+    let snapshot = post_json(app, "/sim/control", script.to_json()).await;
+
+    assert_eq!(snapshot["schema_version"], SIM_SNAPSHOT_SCHEMA_VERSION);
+    assert!(snapshot["subscribers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|subscriber| subscriber["last_event"]["kind"] == "upserted"));
 }
 
 async fn post_json(app: Router, uri: &str, body: String) -> Value {

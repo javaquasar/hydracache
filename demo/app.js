@@ -35,12 +35,19 @@ const el = {
   copyStatus: document.querySelector("#copy-status"),
   workload: document.querySelector("#workload-toggle"),
   speed: document.querySelector("#speed-input"),
+  manualNs: document.querySelector("#manual-ns"),
+  manualKey: document.querySelector("#manual-key"),
+  manualValue: document.querySelector("#manual-value"),
+  subscribe: document.querySelector("#subscribe-button"),
+  pushEvent: document.querySelector("#push-event-button"),
   graph: document.querySelector("#cluster-graph"),
   selectedLink: document.querySelector("#selected-link"),
   progress: document.querySelector("#progress-panel"),
   hash: document.querySelector("#snapshot-hash"),
   nodes: document.querySelector("#nodes-panel"),
   signals: document.querySelector("#signals-panel"),
+  clients: document.querySelector("#clients-panel"),
+  subscribers: document.querySelector("#subscribers-panel"),
   consistency: document.querySelector("#consistency-panel"),
   keys: document.querySelector("#keys-panel"),
   linkActions: Array.from(document.querySelectorAll("[data-action]")),
@@ -81,6 +88,19 @@ function bindEvents() {
   });
   el.play.addEventListener("click", togglePlay);
   el.copy.addEventListener("click", copyReproducer);
+  el.subscribe.addEventListener("click", async () => {
+    await state.sim?.subscribe("client-a", el.manualNs.value);
+    await refresh();
+  });
+  el.pushEvent.addEventListener("click", async () => {
+    await state.sim?.push_event(
+      "client-a",
+      el.manualNs.value,
+      el.manualKey.value,
+      el.manualValue.value,
+    );
+    await refresh();
+  });
   el.workload.addEventListener("change", async () => {
     await state.sim?.set_workload_enabled(el.workload.checked);
     await refresh();
@@ -155,6 +175,7 @@ function render() {
   renderProgress(snapshot);
   renderNodes(snapshot);
   renderSignals(snapshot);
+  renderClients(snapshot);
   renderConsistency(snapshot);
   renderKeys(snapshot);
 }
@@ -317,6 +338,49 @@ function renderSignals(snapshot) {
     list.append(row);
   }
   el.signals.replaceChildren(list);
+}
+
+function renderClients(snapshot) {
+  const clients = document.createElement("div");
+  clients.className = "metric-list";
+  for (const client of snapshot.clients || []) {
+    const row = document.createElement("div");
+    row.className = "metric";
+    const label = document.createElement("strong");
+    label.textContent = client.id;
+    const meta = document.createElement("span");
+    meta.textContent = client.last_op || client.namespace;
+    row.append(label, meta);
+    clients.append(row);
+  }
+  if (!clients.childElementCount) {
+    const empty = document.createElement("p");
+    empty.textContent = "no manual clients";
+    clients.append(empty);
+  }
+
+  const subscribers = document.createElement("div");
+  subscribers.className = "metric-list";
+  for (const subscriber of snapshot.subscribers || []) {
+    const row = document.createElement("div");
+    row.className = "metric";
+    const label = document.createElement("strong");
+    label.textContent = subscriber.id;
+    const event = subscriber.last_event
+      ? `${subscriber.last_event.kind} ${subscriber.last_event.key}`
+      : "waiting";
+    const meta = document.createElement("span");
+    meta.textContent = `${event}; lag ${subscriber.lag}; drop ${subscriber.dropped}`;
+    row.append(label, meta);
+    subscribers.append(row);
+  }
+  if (!subscribers.childElementCount) {
+    const empty = document.createElement("p");
+    empty.textContent = "no subscribers";
+    subscribers.append(empty);
+  }
+  el.clients.replaceChildren(clients);
+  el.subscribers.replaceChildren(subscribers);
 }
 
 function renderConsistency(snapshot) {
@@ -522,6 +586,14 @@ class WasmSimSession {
     this.handle.apply_scenario(name);
   }
 
+  async subscribe(client, namespace) {
+    this.handle.subscribe(client, namespace);
+  }
+
+  async push_event(client, namespace, key, value) {
+    return this.handle.push_event(client, namespace, key, value);
+  }
+
   async snapshot_json() {
     return this.handle.snapshot_json();
   }
@@ -563,6 +635,20 @@ class ServerSimSession {
 
   async apply_scenario(name) {
     this.snapshot = await this.post("/sim/new", { scenario: name });
+  }
+
+  async subscribe(client, ns) {
+    this.snapshot = await this.post("/sim/inject", { action: "subscribe", client, ns });
+  }
+
+  async push_event(client, ns, key, value) {
+    this.snapshot = await this.post("/sim/inject", {
+      action: "push_event",
+      client,
+      ns,
+      key,
+      value,
+    });
   }
 
   async snapshot_json() {
