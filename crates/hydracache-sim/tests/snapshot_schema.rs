@@ -18,7 +18,7 @@ fn snapshot_roundtrips_and_is_versioned() {
     assert_eq!(decoded.step, 12);
     assert_eq!(decoded.nodes.len(), 3);
     assert_eq!(decoded.links.len(), 6);
-    assert_eq!(decoded.schema_version, 5);
+    assert_eq!(decoded.schema_version, 6);
     assert_eq!(decoded.formation_phase, "formed");
     assert_eq!(decoded.election_source, "sim-model");
     assert!(decoded.over_budget.in_flight_summarized <= decoded.in_flight.len() as u64);
@@ -67,7 +67,7 @@ fn schema_version_matches_contract_for_each_field_set() {
     let mut world = SimWorld::new(0x53_04, SimConfig::default());
     world.set_workload_enabled(false);
     let before = world.snapshot();
-    assert_eq!(before.schema_version, 5);
+    assert_eq!(before.schema_version, 6);
     assert_eq!(before.formation_phase, "unformed");
     assert_eq!(before.election_source, "sim-model");
     assert!(before.in_flight.is_empty());
@@ -91,11 +91,48 @@ fn schema_version_matches_contract_for_each_field_set() {
 
     world.run(8);
     let formed = world.snapshot();
-    assert_eq!(formed.schema_version, 5);
+    assert_eq!(formed.schema_version, 6);
     assert_eq!(formed.formation_phase, "formed");
     assert!(formed.nodes.iter().any(|node| {
         node.vote_state == "leader" && node.voted_for.as_deref() == Some(node.id.as_str())
     }));
+}
+
+// v6: manual clients and subscribers expose the cluster node they are routed to,
+// so the demo can draw the client/subscriber connection.
+#[test]
+fn manual_client_and_subscriber_expose_connected_node() {
+    let mut world = SimWorld::new(0x53_06, SimConfig::default());
+    world.run(8);
+    world.subscribe("client-a", "profiles");
+    world
+        .push_event("client-a", "profiles", "profile-1", "fresh")
+        .expect("manual push applies");
+
+    let snapshot = world.snapshot();
+    let node_ids = snapshot
+        .nodes
+        .iter()
+        .map(|node| node.id.clone())
+        .collect::<Vec<_>>();
+
+    let client = snapshot
+        .clients
+        .iter()
+        .find(|client| client.id == "client-a")
+        .expect("client-a present");
+    let connected = client
+        .connected_node
+        .as_deref()
+        .expect("client routes to a live node");
+    assert!(node_ids.iter().any(|id| id == connected));
+    assert!(snapshot
+        .subscribers
+        .iter()
+        .all(|subscriber| subscriber
+            .connected_node
+            .as_deref()
+            .is_some_and(|node| node_ids.iter().any(|id| id == node))));
 }
 
 #[test]
@@ -107,7 +144,7 @@ fn snapshot_exposes_typed_in_flight_messages() {
     world.step();
     let snapshot = world.snapshot();
 
-    assert_eq!(snapshot.schema_version, 5);
+    assert_eq!(snapshot.schema_version, 6);
     assert!(snapshot.in_flight.iter().any(|message| {
         message.kind == "heartbeat"
             && message.from == "node-0"

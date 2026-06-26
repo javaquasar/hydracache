@@ -674,6 +674,80 @@ dd {
   }
 }
 
+/* Manual clients / subscribers drawn just outside the cluster ring, linked to the
+   node they are routed to. The link "flows" while data is moving. */
+.entity-links {
+  pointer-events: none;
+}
+
+.entity-link {
+  stroke: var(--accent-alt);
+  stroke-width: 2;
+  stroke-dasharray: 5 6;
+  opacity: 0.4;
+}
+
+.entity-link.subscriber {
+  stroke: var(--event);
+}
+
+.entity-link.active {
+  opacity: 0.92;
+  stroke-width: 3;
+  animation: entity-flow 0.7s linear infinite;
+}
+
+@keyframes entity-flow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+.entity circle {
+  fill: rgba(255, 255, 255, 0.96);
+  stroke: var(--accent-alt);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 4px 6px rgba(76, 91, 213, 0.18));
+}
+
+.entity.subscriber circle {
+  stroke: var(--event);
+}
+
+.entity.active circle {
+  stroke-width: 3.5;
+}
+
+.entity .entity-id {
+  fill: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.entity .entity-sub {
+  fill: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.entity.clickable {
+  cursor: pointer;
+}
+
+.entity.clickable:hover circle {
+  fill: color-mix(in srgb, var(--accent-alt) 16%, white);
+}
+
+.entity.subscriber.clickable:hover circle {
+  fill: color-mix(in srgb, var(--event) 16%, white);
+}
+
+html[data-reduced-motion="true"] .entity-link.active {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

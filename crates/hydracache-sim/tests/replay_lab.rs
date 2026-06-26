@@ -33,7 +33,7 @@ fn full_mixed_run_replays_identically_from_script() {
 
 #[test]
 fn every_new_snapshot_field_bumped_schema() {
-    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 5);
+    assert_eq!(SIM_SNAPSHOT_SCHEMA_VERSION, 6);
 
     let mut world = SimWorld::new(0x5371, SimConfig::default());
     world
@@ -43,7 +43,7 @@ fn every_new_snapshot_field_bumped_schema() {
     let encoded = snapshot.to_json();
     let decoded = SimSnapshot::from_json(&encoded).expect("current snapshot decodes");
 
-    assert_eq!(decoded.schema_version, 5);
+    assert_eq!(decoded.schema_version, 6);
     assert_eq!(decoded.formation_phase, "formed");
     assert!(decoded
         .nodes

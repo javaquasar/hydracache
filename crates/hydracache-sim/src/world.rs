@@ -695,6 +695,7 @@ impl SimWorld {
                     namespace: actor.namespace.clone(),
                     last_op: actor.last_op.clone(),
                     in_flight: actor.in_flight,
+                    connected_node: self.connected_node_for(id),
                 })
                 .collect(),
             subscribers: self
@@ -707,6 +708,7 @@ impl SimWorld {
                     last_event: subscriber.last_event.clone(),
                     lag: subscriber.pending.len() as u64,
                     dropped: subscriber.dropped,
+                    connected_node: self.connected_node_for(&subscriber.id),
                 })
                 .collect(),
             sync_progress,
@@ -725,6 +727,30 @@ impl SimWorld {
     /// Serialize the canonical UI snapshot as JSON.
     pub fn snapshot_json(&self) -> String {
         self.snapshot().to_json()
+    }
+
+    /// Deterministically route a client/subscriber id to a live cluster node
+    /// (smart-client routing), so the demo can draw which node it connects to.
+    /// `None` when no node is currently live. `self.nodes` is a `BTreeMap`, so the
+    /// candidate order is stable and the routing is seed-reproducible.
+    fn connected_node_for(&self, id: &str) -> Option<String> {
+        let live = self
+            .nodes
+            .keys()
+            .filter(|node| {
+                !self.crashed_nodes.contains(*node) && !self.disabled_nodes.contains(*node)
+            })
+            .map(|node| node.as_str().to_owned())
+            .collect::<Vec<_>>();
+        if live.is_empty() {
+            return None;
+        }
+        let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+        for byte in id.as_bytes() {
+            hash ^= u64::from(*byte);
+            hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+        Some(live[(hash % live.len() as u64) as usize].clone())
     }
 
     /// Serialize the canonical invariant verdict as JSON.

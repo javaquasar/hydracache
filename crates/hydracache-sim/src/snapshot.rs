@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 5;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 6;
 
 /// Maximum number of in-flight messages rendered in one snapshot.
 pub const MAX_IN_FLIGHT_RENDERED: usize = 64;
@@ -250,6 +250,8 @@ pub struct ClientView {
     pub last_op: Option<String>,
     /// Operations currently in flight for this actor.
     pub in_flight: u32,
+    /// Cluster node this client is currently routed to (smart-client routing).
+    pub connected_node: Option<String>,
 }
 
 /// Manual-mode subscriber projection.
@@ -267,6 +269,8 @@ pub struct SubscriberView {
     pub lag: u64,
     /// Events dropped because the bounded buffer was full.
     pub dropped: u64,
+    /// Cluster node this subscriber currently receives events from.
+    pub connected_node: Option<String>,
 }
 
 /// Subscriber event visible to the UI.

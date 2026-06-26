@@ -41,6 +41,7 @@ const el = {
   copyStatus: document.querySelector("#copy-status"),
   workload: document.querySelector("#workload-toggle"),
   speed: document.querySelector("#speed-input"),
+  manualClient: document.querySelector("#manual-client"),
   manualNs: document.querySelector("#manual-ns"),
   manualKey: document.querySelector("#manual-key"),
   manualValue: document.querySelector("#manual-value"),
@@ -103,19 +104,12 @@ function bindEvents() {
   el.play.addEventListener("click", togglePlay);
   el.copy.addEventListener("click", copyReproducer);
   el.subscribe.addEventListener("click", async () => {
-    await state.sim?.subscribe("client-a", el.manualNs.value);
+    await state.sim?.subscribe(manualClientId(), el.manualNs.value);
     await settleAfterIntervention();
     await refresh();
   });
   el.pushEvent.addEventListener("click", async () => {
-    await state.sim?.push_event(
-      "client-a",
-      el.manualNs.value,
-      el.manualKey.value,
-      el.manualValue.value,
-    );
-    await settleAfterIntervention();
-    await refresh();
+    await pushEventFor(manualClientId(), el.manualNs.value);
   });
   el.addNode.addEventListener("click", async () => {
     await state.sim?.add_node();
@@ -311,6 +305,90 @@ function renderGraph(snapshot) {
       svg("text", { y: 17 }, status),
     );
     nodeLayer.append(group);
+  }
+
+  renderEntityLayer(el.graph, positions, snapshot);
+}
+
+// Place manual clients and subscribers just outside the cluster ring, near the
+// node they are routed to, so the viewer sees which node each one connected to.
+function layoutEntities(snapshot, nodePositions) {
+  const center = { x: 400, y: 260 };
+  const entities = [];
+  const perNode = new Map();
+  const place = (list, kind) => {
+    for (const item of list || []) {
+      const node = item.connected_node;
+      const np = node ? nodePositions.get(node) : null;
+      if (!np) {
+        continue;
+      }
+      let dx = np.x - center.x;
+      let dy = np.y - center.y;
+      let len = Math.hypot(dx, dy);
+      if (len < 1) {
+        dx = 0;
+        dy = -1;
+        len = 1;
+      }
+      const ux = dx / len;
+      const uy = dy / len;
+      const perp = { x: -uy, y: ux };
+      const idx = perNode.get(node) || 0;
+      perNode.set(node, idx + 1);
+      const reach = 60 + Math.floor(idx / 2) * 38;
+      const side = (kind === "subscriber" ? 26 : -26) + (idx % 2 === 0 ? 0 : kind === "subscriber" ? 16 : -16);
+      entities.push({
+        ...item,
+        kind,
+        nodeX: np.x,
+        nodeY: np.y,
+        x: np.x + ux * reach + perp.x * side,
+        y: np.y + uy * reach + perp.y * side,
+      });
+    }
+  };
+  place(snapshot.clients, "client");
+  place(snapshot.subscribers, "subscriber");
+  return entities;
+}
+
+function renderEntityLayer(graph, positions, snapshot) {
+  const entities = layoutEntities(snapshot, positions);
+  if (entities.length === 0) {
+    return;
+  }
+  const linkLayer = svg("g", { class: "entity-links", "aria-hidden": "true" });
+  const layer = svg("g", { class: "entities" });
+  graph.append(linkLayer, layer);
+
+  for (const entity of entities) {
+    const active = entity.kind === "client" ? Boolean(entity.last_op) : Boolean(entity.last_event);
+    linkLayer.append(
+      svg("line", {
+        class: ["entity-link", entity.kind, active ? "active" : ""].filter(Boolean).join(" "),
+        x1: entity.nodeX,
+        y1: entity.nodeY,
+        x2: entity.x,
+        y2: entity.y,
+      }),
+    );
+
+    const group = svg("g", {
+      class: ["entity", entity.kind, active ? "active" : ""].filter(Boolean).join(" "),
+      transform: `translate(${entity.x} ${entity.y})`,
+    });
+    group.append(
+      svg("circle", { r: 20 }),
+      svg("text", { class: "entity-id", y: 4 }, entity.kind === "client" ? entity.id : entity.client_id || entity.id),
+      svg("text", { class: "entity-sub", y: 36 }, entity.namespace || ""),
+    );
+    if (entity.kind === "client") {
+      group.classList.add("clickable");
+      group.append(svg("title", {}, `Click to push to ${entity.namespace}`));
+      group.addEventListener("click", () => void pushEventFor(entity.id, entity.namespace));
+    }
+    layer.append(group);
   }
 }
 
@@ -547,6 +625,22 @@ function togglePlay() {
 // sim until the user presses Step. These are ordinary deterministic steps, so the
 // run stays seed-reproducible. No-op while auto-playing (the interval steps already)
 // and capped so a legitimately leaderless cluster cannot spin forever.
+function manualClientId() {
+  const value = (el.manualClient?.value || "").trim();
+  return value || "client-a";
+}
+
+// Push an event for a specific client (used by the Push button and by clicking a
+// client in the graph). Uses the panel key/value as the payload.
+async function pushEventFor(client, namespace) {
+  if (!state.sim) {
+    return;
+  }
+  await state.sim.push_event(client, namespace, el.manualKey.value, el.manualValue.value);
+  await settleAfterIntervention();
+  await refresh();
+}
+
 async function settleAfterIntervention() {
   if (state.playing || !state.sim) {
     return;
