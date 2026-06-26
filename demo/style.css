@@ -364,6 +364,16 @@ p {
   overflow-y: auto;
 }
 
+/* Space the "Add node" button off the node list below it. */
+#add-node-button {
+  margin-bottom: 10px;
+}
+
+/* Separate the subscriber rows from the client rows above them. */
+#subscribers-panel {
+  margin-top: 8px;
+}
+
 #selected-link {
   min-height: 22px;
   margin-bottom: 10px;

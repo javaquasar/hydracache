@@ -869,9 +869,17 @@ impl ElectionDriver {
         live_nodes
             .iter()
             .filter(|node_id| {
-                self.nodes
-                    .get(*node_id)
-                    .is_some_and(|node| node.fsm.state() != NodeFsmState::Disabled)
+                // Only nodes that are actually part of the formation may campaign.
+                // A `Disconnected` (e.g. freshly added, not-yet-integrated) node can
+                // never reach `Leader` via the table (`Disconnected x VoteQuorum =
+                // Disconnected`), so allowing it to be elected produced a phantom
+                // leader and stalled real re-election after a leader crash/isolation.
+                self.nodes.get(*node_id).is_some_and(|node| {
+                    matches!(
+                        node.fsm.state(),
+                        NodeFsmState::Joining | NodeFsmState::Follower | NodeFsmState::Candidate
+                    )
+                })
             })
             .filter_map(|node_id| {
                 let timeout = deterministic_timeout(self.seed, node_id, self.term());
@@ -1119,6 +1127,90 @@ mod node_lifecycle_tests {
             NodeFsmState::Follower,
             "added node must become a follower after heartbeats"
         );
+    }
+
+    // A crashed leader must always be replaced by a real, live participant — never
+    // left without a leader and never "elects" an unintegrated node.
+    #[test]
+    fn leader_crash_always_reelects_a_live_node() {
+        let members = live(&["node-0", "node-1", "node-2", "node-3", "node-4"]);
+        let mut driver = ElectionDriver::new(11, members.clone());
+        for step in 0..30 {
+            driver.step(step, &members);
+        }
+        let leader = driver.leader().cloned().expect("initial leader");
+
+        let mut without = members.clone();
+        without.remove(&leader);
+        let mut step = 30;
+        while step < 70 && driver.leader().map(|current| current == &leader).unwrap_or(true) {
+            driver.step(step, &without);
+            step += 1;
+        }
+
+        let new_leader = driver.leader().cloned().expect("a new leader must be re-elected");
+        assert_ne!(new_leader, leader, "new leader differs from the crashed leader");
+        assert!(
+            without.contains(&new_leader),
+            "the new leader must be one of the live nodes"
+        );
+    }
+
+    // Repro for "added nodes stay joining and never connect": after several nodes
+    // are added, stepping must converge every live node to follower/leader and a
+    // leader must exist to heartbeat them.
+    #[test]
+    fn many_added_nodes_all_converge_to_followers() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        run_to_leader(&mut driver, &members);
+
+        let mut all = members.clone();
+        let mut step = 24;
+        for index in 3..9 {
+            let name = format!("node-{index}");
+            driver.add_node(nid(&name), step);
+            all.insert(nid(&name));
+            step += 1;
+        }
+        for current in step..step + 20 {
+            driver.step(current, &all);
+        }
+
+        assert!(driver.leader().is_some(), "a leader must exist to heartbeat joiners");
+        let snapshot = driver.snapshot();
+        let stuck = snapshot
+            .nodes
+            .iter()
+            .filter(|node| {
+                !matches!(node.state, NodeFsmState::Follower | NodeFsmState::Leader)
+            })
+            .map(|node| format!("{}={:?}", node.node_id.as_str(), node.state))
+            .collect::<Vec<_>>();
+        assert!(
+            stuck.is_empty(),
+            "every added node must converge to follower/leader, stuck: {stuck:?}"
+        );
+    }
+
+    // Repro for "disable the leader -> no new leader -> joiners stuck": after the
+    // leader is taken away, re-election must produce a live leader.
+    #[test]
+    fn disabling_leader_then_stepping_reelects() {
+        let members = live(&["node-0", "node-1", "node-2", "node-3"]);
+        let mut driver = ElectionDriver::new(5, members.clone());
+        run_to_leader(&mut driver, &members);
+        let leader = driver.leader().cloned().expect("leader");
+
+        // Drop the leader from the live set (disable/crash) and keep stepping.
+        let mut without = members.clone();
+        without.remove(&leader);
+        for current in 40..70 {
+            driver.step(current, &without);
+        }
+        let new_leader = driver.leader().cloned().expect("re-elected leader");
+        assert_ne!(new_leader, leader);
+        assert!(without.contains(&new_leader));
     }
 
     // Bug 7: a restarted node must return to the formation (follower), not stay

@@ -104,6 +104,7 @@ function bindEvents() {
   el.copy.addEventListener("click", copyReproducer);
   el.subscribe.addEventListener("click", async () => {
     await state.sim?.subscribe("client-a", el.manualNs.value);
+    await settleAfterIntervention();
     await refresh();
   });
   el.pushEvent.addEventListener("click", async () => {
@@ -113,10 +114,12 @@ function bindEvents() {
       el.manualKey.value,
       el.manualValue.value,
     );
+    await settleAfterIntervention();
     await refresh();
   });
   el.addNode.addEventListener("click", async () => {
     await state.sim?.add_node();
+    await settleAfterIntervention();
     await refresh();
   });
   el.workload.addEventListener("change", async () => {
@@ -238,14 +241,26 @@ function renderGraph(snapshot) {
   const nodeLayer = svg("g", { class: "nodes" });
   el.graph.append(linkLayer, packetLayer, nodeLayer);
 
+  const drawnPairs = new Set();
   for (const link of snapshot.links) {
+    // Draw each unordered pair once. The snapshot carries both directed links
+    // (a->b and b->a); drawing both overlaps two dashed partition lines whose
+    // phases drift with line length, which is why diagonals looked denser than
+    // horizontals. One line per pair removes that artifact.
+    const pairKey = [link.from, link.to].slice().sort().join(" ");
+    if (drawnPairs.has(pairKey)) {
+      continue;
+    }
+    drawnPairs.add(pairKey);
     const from = positions.get(link.from);
     const to = positions.get(link.to);
     if (!from || !to) {
       continue;
     }
+    const reverse = snapshot.links.find((other) => other.from === link.to && other.to === link.from);
+    const linkState = worstLinkState(link.state, reverse?.state);
     const selected = isSelectedLink(link);
-    const className = ["link", link.state, selected ? "selected" : ""].filter(Boolean).join(" ");
+    const className = ["link", linkState, selected ? "selected" : ""].filter(Boolean).join(" ");
     const visual = svg("line", {
       class: className,
       x1: from.x,
@@ -350,14 +365,17 @@ function renderNodes(snapshot) {
       } else {
         await state.sim.crash_node(node.id);
       }
+      await settleAfterIntervention();
       await refresh();
     });
     const isolate = nodeButton("Isolate", async () => {
       await state.sim.isolate_node(node.id);
+      await settleAfterIntervention();
       await refresh();
     });
     const rejoin = nodeButton("Rejoin", async () => {
       await state.sim.rejoin_node(node.id);
+      await settleAfterIntervention();
       await refresh();
     });
     const disable = nodeButton(node.disabled ? "Enable" : "Disable", async () => {
@@ -366,6 +384,7 @@ function renderNodes(snapshot) {
       } else {
         await state.sim.disable_node(node.id);
       }
+      await settleAfterIntervention();
       await refresh();
     });
     buttons.append(crash, isolate, rejoin, disable);
@@ -509,6 +528,7 @@ async function applyLinkAction(action) {
   if (action === "delay" || action === "drop") {
     await state.sim.step();
   }
+  await settleAfterIntervention();
   await refresh();
 }
 
@@ -517,6 +537,33 @@ function togglePlay() {
     stopPlay();
   } else {
     startPlay();
+  }
+}
+
+// After a manual intervention (add/crash/isolate/rejoin/disable/push), advance
+// the modeled clock a few ticks so the cluster visibly reacts -- joiners become
+// followers, a lost leader is re-elected -- instead of sitting frozen on a paused
+// sim until the user presses Step. These are ordinary deterministic steps, so the
+// run stays seed-reproducible. No-op while auto-playing (the interval steps already)
+// and capped so a legitimately leaderless cluster cannot spin forever.
+async function settleAfterIntervention() {
+  if (state.playing || !state.sim) {
+    return;
+  }
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    await state.sim.step();
+    const snapshot = JSON.parse(await state.sim.snapshot_json());
+    const nodes = snapshot.nodes || [];
+    const stillJoining = nodes.some(
+      (node) =>
+        !node.crashed &&
+        !node.disabled &&
+        (node.vote_state === "joining" || node.vote_state === "catching_up"),
+    );
+    const hasLeader = nodes.some((node) => node.vote_state === "leader");
+    if (hasLeader && !stillJoining) {
+      break;
+    }
   }
 }
 
@@ -597,6 +644,15 @@ function isSelectedLink(link) {
     state.selectedLink.from === link.from &&
     state.selectedLink.to === link.to
   );
+}
+
+// When collapsing the two directed links of a pair into one drawn line, show the
+// most degraded state so a partition/delay is never hidden by a healthy reverse.
+function worstLinkState(a, b) {
+  const rank = { partitioned: 3, delayed: 2, up: 1 };
+  const left = rank[a] || 0;
+  const right = rank[b] || 0;
+  return right > left ? b : a;
 }
 
 function layoutNodes(nodes) {
