@@ -16,6 +16,7 @@
   --accent: #0b7a75;
   --accent-strong: #075f5b;
   --accent-alt: #4c5bd5;
+  --data: #c026d3;
   --event: #8a4a0a;
   --danger: #b42318;
   --danger-bg: #fff0ec;
@@ -299,7 +300,7 @@ p {
 }
 
 .legend-dot.data {
-  background: var(--ok);
+  background: var(--data);
 }
 
 .legend-dot.event {
@@ -577,7 +578,7 @@ dd {
 
 .packet.data,
 .packet.upserted {
-  fill: var(--ok);
+  fill: var(--data);
 }
 
 .packet.event,

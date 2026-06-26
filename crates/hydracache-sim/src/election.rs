@@ -806,6 +806,21 @@ impl ElectionDriver {
         self.apply_node(&node_id, ClusterFsmEvent::AddNode, logical_step);
     }
 
+    /// Decommission a node out of the voting set (administrative `Disable`).
+    /// Unlike a crash/isolation — a *temporary* outage where the node stays a
+    /// voting member and still counts toward quorum — disabling removes it from
+    /// the configuration, so quorum shrinks and the remaining members can still
+    /// elect a leader. Re-enabling rejoins it as a fresh member via `add_node`.
+    pub fn remove_node(&mut self, node_id: &ClusterNodeId) {
+        self.nodes.remove(node_id);
+        if self.leader.as_ref() == Some(node_id) {
+            self.leader = None;
+        }
+        if self.pending_candidate.as_ref() == Some(node_id) {
+            self.pending_candidate = None;
+        }
+    }
+
     /// Drive a restarted / rejoined / re-enabled node back into the formation via
     /// the explicit `Enable` transition. `Enable` is total and safe for both a
     /// `Disconnected` node (`-> Joining`, then `-> Follower` on the next heartbeat)
@@ -1236,6 +1251,56 @@ mod node_lifecycle_tests {
         let new_leader = driver.leader().cloned().expect("re-elected leader");
         assert_ne!(new_leader, leader);
         assert!(without.contains(&new_leader));
+    }
+
+    // Disabling (decommissioning) leaders one after another must keep electing a
+    // new leader: each disable shrinks the voting set, so the remaining members can
+    // still form a majority. This is the "disable 3 leaders in a 6-node cluster"
+    // scenario that previously stalled.
+    #[test]
+    fn decommissioning_leaders_keeps_electing() {
+        let members = live(&["node-0", "node-1", "node-2", "node-3", "node-4", "node-5"]);
+        let mut driver = ElectionDriver::new(9, members.clone());
+        run_to_leader(&mut driver, &members);
+
+        let mut remaining = members.clone();
+        let mut step = 40;
+        for _ in 0..3 {
+            let leader = driver.leader().cloned().expect("a leader before each decommission");
+            driver.remove_node(&leader);
+            remaining.remove(&leader);
+            for current in step..step + 12 {
+                driver.step(current, &remaining);
+            }
+            step += 12;
+        }
+
+        let leader = driver.leader().cloned().expect("the remaining members must elect a leader");
+        assert!(remaining.contains(&leader), "the leader is one of the still-voting members");
+    }
+
+    // Contrast (safety): crashing a *majority* must NOT elect a leader — crashed
+    // nodes remain voting members, so a minority cannot form a quorum.
+    #[test]
+    fn crashing_a_majority_yields_no_leader() {
+        let members = live(&["node-0", "node-1", "node-2", "node-3", "node-4", "node-5"]);
+        let mut driver = ElectionDriver::new(9, members.clone());
+        run_to_leader(&mut driver, &members);
+        let leader = driver.leader().cloned().expect("leader");
+
+        // Take the leader plus two others offline: 3 of 6 live, below quorum (4).
+        let mut survivors = members.clone();
+        survivors.remove(&leader);
+        for other in members.iter().filter(|node| **node != leader).take(2) {
+            survivors.remove(other);
+        }
+        for current in 40..70 {
+            driver.step(current, &survivors);
+        }
+        assert!(
+            driver.leader().is_none(),
+            "a minority must not elect a leader (split-brain safety)"
+        );
     }
 
     // Bug 7: a restarted node must return to the formation (follower), not stay

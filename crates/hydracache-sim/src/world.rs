@@ -483,10 +483,14 @@ impl SimWorld {
         true
     }
 
-    /// Disable one node without marking it crashed.
+    /// Disable one node without marking it crashed. Disabling is an administrative
+    /// decommission: the node leaves the voting set (quorum shrinks) so the rest of
+    /// the cluster can still elect a leader — unlike a crash, which is a temporary
+    /// outage that keeps the node a voting member.
     pub fn disable_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
         let node_id = node_id.into();
         if self.nodes.contains_key(&node_id) {
+            self.election.remove_node(&node_id);
             self.disabled_nodes.insert(node_id);
             true
         } else {
@@ -494,7 +498,8 @@ impl SimWorld {
         }
     }
 
-    /// Enable one disabled node and run deterministic catch-up.
+    /// Enable one disabled node and run deterministic catch-up. The node rejoins the
+    /// voting set as a fresh member and integrates on the next heartbeat.
     pub fn enable_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
         let node_id = node_id.into();
         if !self.nodes.contains_key(&node_id) {
@@ -502,7 +507,7 @@ impl SimWorld {
         }
         let removed = self.disabled_nodes.remove(&node_id);
         self.catch_up_node(&node_id);
-        self.election.restore_node(&node_id, self.steps);
+        self.election.add_node(node_id.clone(), self.steps);
         removed
     }
 
