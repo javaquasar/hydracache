@@ -149,8 +149,15 @@ impl SimHandle {
     }
 
     /// Subscribe a manual-mode client to namespace cache events.
-    pub fn subscribe(&mut self, client: String, namespace: String) {
-        self.world.subscribe(client, namespace);
+    pub fn subscribe(&mut self, client: String, namespace: String) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::Subscribe {
+                at_step,
+                client,
+                ns: namespace,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 
     /// Push a manual-mode cache event through the shared control surface.
@@ -303,7 +310,9 @@ mod tests {
         let mut handle = SimHandle::new(0x5333);
         handle.set_workload_enabled(false);
         handle.run(8);
-        handle.subscribe("client-a".to_owned(), "profiles".to_owned());
+        handle
+            .subscribe("client-a".to_owned(), "profiles".to_owned())
+            .expect("subscribe applies");
         handle
             .push_event(
                 "client-a".to_owned(),
@@ -319,6 +328,12 @@ mod tests {
             .subscribers
             .iter()
             .any(|subscriber| subscriber.last_event.is_some()));
+        let replay = hydracache_sim::ReplayScriptV1::from_json(&handle.replay_script_json())
+            .expect("wasm replay script decodes");
+        assert!(replay
+            .actions
+            .iter()
+            .any(|action| matches!(action, hydracache_sim::ControlActionV1::Subscribe { .. })));
     }
 
     #[test]

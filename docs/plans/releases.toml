@@ -128,7 +128,7 @@ depends_on = ["0.46.0", "0.49.0"]
 [[release]]
 version = "0.53.0"
 file = "docs/plans/V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "Interactive cluster lab (DevRel) — evolve the 0.50 browser demo into a liquid-glass (glassmorphism) multi-mode lab: deterministic leader election + cold-start cluster formation MODELED in hydracache-sim (closing the '0.44 has no leader election yet' gap), typed in-flight signal animation (votes/append/replication/invalidation), manual mode (user pushes client events → diverge → replicate → converge → listener receipt), one-click isolate/disable/rejoin with visible re-election + catch-up re-sync, runtime add-node scaling + online reshard, and manual/scripted-loop/mixed modes all clickable for live topology intervention. Teaching/DevRel asset, not a correctness gate; every control + election is seed-deterministic and replayable (R-5). W1 reinforced with explicit cluster/partition FSM-as-table (blazingmq pattern). Absorbs V0_50_DEMO_ENHANCEMENTS_PLAN"
 depends_on = ["0.50.0", "0.52.0"]
 

@@ -73,7 +73,9 @@ async function boot() {
       }
       state.SimHandle = wasm.SimHandle;
     }
-    if (initial.scenario === "default") {
+    if (initial.script) {
+      await loadReplayScript(initial.script);
+    } else if (initial.scenario === "default") {
       await resetSimulation(initial.steps);
     } else {
       await loadScenario(initial.scenario, initial.steps);
@@ -173,7 +175,20 @@ async function refresh() {
     return;
   }
   state.snapshot = JSON.parse(await state.sim.snapshot_json());
-  writeUrlState(window.history, state.snapshot, state.scenario, state.engine, state.apiBase);
+  let replayScriptJson = "";
+  try {
+    replayScriptJson = (await state.sim.replay_script_json?.()) ?? "";
+  } catch (_error) {
+    replayScriptJson = "";
+  }
+  writeUrlState(
+    window.history,
+    state.snapshot,
+    state.scenario,
+    state.engine,
+    state.apiBase,
+    replayScriptJson,
+  );
   render();
 }
 
@@ -494,13 +509,33 @@ async function copyReproducer() {
   if (!state.snapshot) {
     return;
   }
-  const command = reproducerCommand(state.snapshot.seed, state.snapshot.step);
+  const replayScriptJson = (await state.sim?.replay_script_json?.()) ?? "";
+  const command = reproducerCommand(
+    state.snapshot.seed,
+    state.snapshot.step,
+    replayScriptJson,
+    window.location.href,
+  );
   try {
     await navigator.clipboard?.writeText(command);
     el.copyStatus.textContent = command;
   } catch (_error) {
     el.copyStatus.textContent = command;
   }
+}
+
+async function loadReplayScript(script) {
+  if (state.engine === "wasm" && !state.SimHandle) {
+    return;
+  }
+  stopPlay();
+  state.selectedLink = null;
+  state.scenario = script.scenario || "default";
+  el.scenario.value = state.scenario;
+  state.sim = await createSimulation(script.seed);
+  await state.sim.apply_control_script_json(JSON.stringify(script));
+  await refresh();
+  el.seedInput.value = String(state.snapshot.seed);
 }
 
 function startPlay() {
@@ -717,6 +752,10 @@ class WasmSimSession {
     this.handle.apply_scenario(name);
   }
 
+  async apply_control_script_json(scriptJson) {
+    return this.handle.apply_control_script_json(scriptJson);
+  }
+
   async subscribe(client, namespace) {
     this.handle.subscribe(client, namespace);
   }
@@ -794,6 +833,10 @@ class ServerSimSession {
 
   async apply_scenario(name) {
     this.snapshot = await this.post("/sim/new", { scenario: name });
+  }
+
+  async apply_control_script_json(scriptJson) {
+    this.snapshot = await this.post("/sim/control", JSON.parse(scriptJson));
   }
 
   async subscribe(client, ns) {

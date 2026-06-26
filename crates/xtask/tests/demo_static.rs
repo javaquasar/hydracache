@@ -97,9 +97,12 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("snapshot.keys"));
     assert!(js.contains("push_event("));
     assert!(js.contains("subscribe("));
-    assert!(js.contains("writeUrlState(window.history"));
+    assert!(js.contains("writeUrlState("));
+    assert!(js.contains("window.history"));
     assert!(js.contains("snapshotHash(snapshot)"));
     assert!(js.contains("reproducerCommand("));
+    assert!(js.contains("loadReplayScript"));
+    assert!(js.contains("apply_control_script_json"));
     assert!(js.contains("state.sim.apply_scenario(state.scenario)"));
     assert!(js.contains("actual invariant checker"));
     assert!(js.contains("el.copyStatus.textContent = command"));
@@ -107,6 +110,10 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(share.contains("readInitialState"));
     assert!(share.contains("writeUrlState"));
     assert!(share.contains("reproducerCommand"));
+    assert!(share.contains("encodeReplayScript"));
+    assert!(share.contains("decodeReplayScript"));
+    assert!(share.contains("script"));
+    assert!(share.contains("MAX_REPLAY_ACTIONS") || share.contains("actions.length > 256"));
     assert!(share.contains("snapshotHash"));
     assert!(share.contains("engine"));
     assert!(share.contains("apiBase"));
@@ -131,6 +138,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(spec.contains("reduced_motion_and_transparency_fallbacks_apply"));
     assert!(spec.contains("contrastRatio"));
     assert!(seed_spec.contains("url_seed_reproduces_identical_run"));
+    assert!(seed_spec.contains("copy_reproducer_roundtrips_mode_and_actions"));
+    assert!(seed_spec.contains("script="));
     assert!(seed_spec.contains("copy-status"));
 
     assert!(css.contains("--glass"));

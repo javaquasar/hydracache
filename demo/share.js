@@ -7,12 +7,15 @@ const FNV_MASK = 0xffffffffffffffffn;
 
 export function readInitialState(search) {
   const params = new URLSearchParams(search);
+  const script = readReplayScript(params.get("script"));
   return {
-    seed: readPositiveInt(params.get("seed"), DEFAULT_SEED),
+    seed: script?.seed ?? readPositiveInt(params.get("seed"), DEFAULT_SEED),
     steps: readPositiveInt(params.get("steps"), 0),
-    scenario: readScenario(params.get("scenario")),
+    scenario: script?.scenario ?? readScenario(params.get("scenario")),
+    mode: script?.mode ?? "manual",
     engine: readEngine(params.get("engine")),
     apiBase: readApiBase(params.get("api")),
+    script,
   };
 }
 
@@ -22,6 +25,7 @@ export function writeUrlState(
   scenario = DEFAULT_SCENARIO,
   engine = DEFAULT_ENGINE,
   apiBase = "",
+  replayScriptJson = "",
 ) {
   if (!history || !snapshot) {
     return;
@@ -37,11 +41,30 @@ export function writeUrlState(
       params.set("api", normalizedApiBase);
     }
   }
+  const replayScript = readReplayScriptJson(replayScriptJson);
+  if (shouldShareReplayScript(replayScript)) {
+    params.set("script", encodeReplayScript(replayScript));
+  }
   history.replaceState(null, "", `?${params.toString()}`);
 }
 
-export function reproducerCommand(seed, steps) {
+export function reproducerCommand(seed, steps, replayScriptJson = "", currentUrl = "") {
+  const replayScript = readReplayScriptJson(replayScriptJson);
+  if (shouldShareReplayScript(replayScript) && currentUrl) {
+    const url = new URL(currentUrl);
+    url.search = "";
+    url.searchParams.set("script", encodeReplayScript(replayScript));
+    return url.toString();
+  }
   return `cargo run -p hydracache-sim --bin vopr -- --seed ${seed} --steps ${steps}`;
+}
+
+export function encodeReplayScript(script) {
+  return base64UrlEncode(JSON.stringify(script));
+}
+
+export function decodeReplayScript(encoded) {
+  return readReplayScript(encoded);
 }
 
 export function snapshotHash(snapshot) {
@@ -52,6 +75,85 @@ export function snapshotHash(snapshot) {
     hash = (hash * FNV_PRIME) & FNV_MASK;
   }
   return hash.toString(16).padStart(16, "0");
+}
+
+function shouldShareReplayScript(script) {
+  if (!script) {
+    return false;
+  }
+  return (
+    script.mode !== "manual" ||
+    Boolean(script.scenario) ||
+    (Array.isArray(script.actions) && script.actions.length > 0)
+  );
+}
+
+function readReplayScriptJson(value) {
+  if (!value) {
+    return null;
+  }
+  try {
+    return normalizeReplayScript(JSON.parse(value));
+  } catch (_error) {
+    return null;
+  }
+}
+
+function readReplayScript(value) {
+  if (!value) {
+    return null;
+  }
+  try {
+    return normalizeReplayScript(JSON.parse(base64UrlDecode(value)));
+  } catch (_error) {
+    return null;
+  }
+}
+
+function normalizeReplayScript(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  if (value.version !== 1) {
+    return null;
+  }
+  const seed = Number(value.seed);
+  if (!Number.isSafeInteger(seed) || seed < 0) {
+    return null;
+  }
+  const mode = ["manual", "scripted", "mixed"].includes(value.mode) ? value.mode : "manual";
+  const scenario =
+    value.scenario === null || value.scenario === undefined ? null : readScenario(value.scenario);
+  const actions = Array.isArray(value.actions) ? value.actions : [];
+  if (actions.length > 256) {
+    return null;
+  }
+  return {
+    version: 1,
+    seed,
+    mode,
+    scenario,
+    actions,
+  };
+}
+
+function base64UrlEncode(value) {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlDecode(value) {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(
+    Math.ceil(value.length / 4) * 4,
+    "=",
+  );
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 function readPositiveInt(value, fallback) {
