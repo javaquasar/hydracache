@@ -11,6 +11,9 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
+# Not published to crates.io: internal deterministic simulation/test harness, not part of the
+# curated public publish set (scripts/verify-release-readiness.ps1, package-publishable.ps1).
+publish = false
 
 [dependencies]
 hydracache = { workspace = true }

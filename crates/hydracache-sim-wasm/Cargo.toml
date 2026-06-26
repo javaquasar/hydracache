@@ -11,6 +11,8 @@ homepage.workspace = true
 readme.workspace = true
 keywords.workspace = true
 categories.workspace = true
+# Not published to crates.io: browser-demo wasm cdylib built via wasm-pack, not a library crate.
+publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
