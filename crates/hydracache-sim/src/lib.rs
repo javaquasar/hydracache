@@ -9,8 +9,10 @@ pub mod control;
 pub mod election;
 pub mod invariants;
 pub mod linearizability;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod lock_safety;
 pub mod network;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod persistence_recovery;
 pub mod rng;
 pub mod scenarios;
@@ -41,8 +43,10 @@ pub use invariants::{
 pub use linearizability::{
     LinearizabilityChecker, LinearizabilityReport, LinearizabilityViolation,
 };
+#[cfg(not(target_arch = "wasm32"))]
 pub use lock_safety::{run_lock_safety, LockSafetyReport, LockSafetyScenario};
 pub use network::{LinkFault, PartitionSymmetry, SimNetwork, TimedMessage};
+#[cfg(not(target_arch = "wasm32"))]
 pub use persistence_recovery::{
     run_persistence_recovery, PersistenceRecoveryFault, PersistenceRecoveryInvariantReport,
     PersistenceRecoveryScenario,

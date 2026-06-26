@@ -1,0 +1,14 @@
+{
+  "name": "hydracache-sim-demo",
+  "version": "0.53.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ./scripts/check-static.mjs",
+    "serve": "node ./scripts/serve-static.mjs",
+    "test": "playwright test --config ./playwright.config.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.57.0"
+  }
+}

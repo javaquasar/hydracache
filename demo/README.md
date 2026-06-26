@@ -15,7 +15,9 @@ suite and `cargo xtask verify`.
 rustup target add wasm32-unknown-unknown
 cargo build -p hydracache-sim-wasm --target wasm32-unknown-unknown --locked
 wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked
-python -m http.server 5173
+npm --prefix demo ci
+npm --prefix demo run build
+npm --prefix demo run serve
 ```
 
 Then open:
@@ -45,3 +47,12 @@ CLI command.
 `.github/workflows/demo.yml` runs outside the fast PR gate. It builds the WASM
 package, runs the headless UI and seed-share smoke tests, and publishes the
 static `demo/` artifact to GitHub Pages on nightly/manual/tag runs.
+
+The local C7 smoke gate uses the same tooling:
+
+```powershell
+npx --prefix demo playwright test
+```
+
+The Playwright config runs both the desktop `1440x900` and mobile `390x844`
+viewports and checks the liquid-glass accessibility fallbacks.

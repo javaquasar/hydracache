@@ -57,6 +57,7 @@ const el = {
 };
 
 async function boot() {
+  bindPreferenceState();
   const initial = readInitialState(window.location.search);
   state.engine = initial.engine;
   state.apiBase = initial.apiBase;
@@ -214,8 +215,9 @@ function renderGraph(snapshot) {
   el.graph.replaceChildren();
   const positions = layoutNodes(snapshot.nodes);
   const linkLayer = svg("g", { class: "links" });
+  const packetLayer = svg("g", { class: "packet-layer", "aria-hidden": "true" });
   const nodeLayer = svg("g", { class: "nodes" });
-  el.graph.append(linkLayer, nodeLayer);
+  el.graph.append(linkLayer, packetLayer, nodeLayer);
 
   for (const link of snapshot.links) {
     const from = positions.get(link.from);
@@ -249,6 +251,8 @@ function renderGraph(snapshot) {
     });
     linkLayer.append(visual, hit);
   }
+
+  renderPacketLayer(packetLayer, positions, snapshot);
 
   for (const node of snapshot.nodes) {
     const pos = positions.get(node.id);
@@ -559,6 +563,64 @@ function layoutNodes(nodes) {
   return positions;
 }
 
+function renderPacketLayer(layer, positions, snapshot) {
+  const messages = (snapshot.in_flight || []).slice(0, 16);
+  for (const [index, message] of messages.entries()) {
+    const from = positions.get(message.from);
+    const to = positions.get(message.to);
+    if (!from || !to) {
+      continue;
+    }
+    const progress = packetProgress(snapshot.logical_time_millis, index);
+    const x = from.x + (to.x - from.x) * progress;
+    const y = from.y + (to.y - from.y) * progress;
+    const kind = packetKind(message.kind);
+    const trailStart = 0.18;
+    const trailEnd = Math.max(trailStart, progress - 0.08);
+    layer.append(
+      svg("line", {
+        class: `packet-trail ${kind}`,
+        x1: from.x + (to.x - from.x) * trailStart,
+        y1: from.y + (to.y - from.y) * trailStart,
+        x2: from.x + (to.x - from.x) * trailEnd,
+        y2: from.y + (to.y - from.y) * trailEnd,
+      }),
+      svg("circle", {
+        class: `packet ${kind}`,
+        cx: x,
+        cy: y,
+        r: 7,
+      }),
+    );
+  }
+}
+
+function packetProgress(logicalMillis, index) {
+  const phase = (Number(logicalMillis || 0) + index * 137) % 560;
+  return 0.22 + phase / 1000;
+}
+
+function packetKind(kind) {
+  const normalized = String(kind || "message")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .replace(/[^a-z0-9-]/g, "-");
+  if (normalized.includes("heartbeat")) {
+    return "heartbeat";
+  }
+  if (normalized.includes("vote")) {
+    return `vote ${normalized}`;
+  }
+  if (normalized.includes("upsert") || normalized.includes("data")) {
+    return `data ${normalized}`;
+  }
+  if (normalized.includes("invalid") || normalized.includes("event")) {
+    return `event ${normalized}`;
+  }
+  return normalized || "message";
+}
+
 function svg(name, attrs = {}, text = null) {
   const node = document.createElementNS(SVG_NS, name);
   for (const [key, value] of Object.entries(attrs)) {
@@ -596,6 +658,28 @@ function populateScenarios(selected) {
     option.title = scenario.summary;
     option.selected = scenario.name === selected;
     el.scenario.append(option);
+  }
+}
+
+function bindPreferenceState() {
+  bindMediaFlag("reducedMotion", "(prefers-reduced-motion: reduce)");
+  bindMediaFlag("reducedTransparency", "(prefers-reduced-transparency: reduce)");
+}
+
+function bindMediaFlag(name, query) {
+  if (typeof window.matchMedia !== "function") {
+    document.documentElement.dataset[name] = "false";
+    return;
+  }
+  const media = window.matchMedia(query);
+  const apply = () => {
+    document.documentElement.dataset[name] = media.matches ? "true" : "false";
+  };
+  apply();
+  if (typeof media.addEventListener === "function") {
+    media.addEventListener("change", apply);
+  } else if (typeof media.addListener === "function") {
+    media.addListener(apply);
   }
 }
 

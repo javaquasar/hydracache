@@ -50,20 +50,25 @@ jobs:
       - name: Build browser package
         run: wasm-pack build crates/hydracache-sim-wasm --target web --out-dir ../../demo/pkg --release -- --locked
 
-      - name: Install Playwright
+      - name: Install demo dependencies
+        run: npm --prefix demo ci
+
+      - name: Check static demo package
+        run: npm --prefix demo run build
+
+      - name: Install Playwright browsers
         run: |
-          npm install --no-save @playwright/test
-          npx playwright install --with-deps chromium
+          npx --prefix demo playwright install --with-deps chromium
 
       - name: Serve demo
         run: |
-          python3 -m http.server 5173 --directory . &
+          npm --prefix demo run serve &
           echo $! > demo-server.pid
 
       - name: Run headless smoke
         env:
           HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/
-        run: npx playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js
+        run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

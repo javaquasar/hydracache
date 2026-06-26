@@ -20,6 +20,11 @@ __pycache__/
 # wasm-pack output for the static simulator demo
 demo/pkg/
 
+# Browser demo local tooling output
+demo/node_modules/
+playwright-report/
+test-results/
+
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

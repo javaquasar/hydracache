@@ -7,6 +7,7 @@ test("url_seed_reproduces_identical_run", async ({ browser }) => {
 
   const first = await browser.newPage();
   await first.goto(url);
+  await expect(first.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
   const firstHash = await first.getByTestId("snapshot-hash").textContent();
   await first.close();
 
@@ -18,6 +19,7 @@ test("url_seed_reproduces_identical_run", async ({ browser }) => {
 
 test("copy_reproducer_uses_current_seed_and_step", async ({ page }) => {
   await page.goto(`${demoUrl}?seed=501&steps=3&scenario=default`);
+  await expect(page.getByTestId("snapshot-hash")).toContainText(/^snapshot /);
   await page.getByTestId("copy-reproducer").click();
 
   await expect(page.getByTestId("copy-status")).toContainText(

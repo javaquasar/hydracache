@@ -8,7 +8,7 @@
   </head>
   <body>
     <main class="shell" data-testid="demo-shell">
-      <header class="topbar">
+      <header class="topbar glass-panel">
         <div>
           <h1>HydraCache Cluster Simulator</h1>
           <p id="engine-banner" data-testid="engine-banner">
@@ -18,7 +18,7 @@
         <div id="verdict" class="verdict" data-testid="verdict">loading</div>
       </header>
 
-      <section class="controls" aria-label="simulation controls">
+      <section class="controls glass-panel" aria-label="simulation controls">
         <label>
           Seed
           <input id="seed-input" data-testid="seed-input" inputmode="numeric" value="80" />
@@ -55,31 +55,43 @@
       </section>
 
       <section class="workspace">
-        <section class="graph-panel" aria-label="cluster graph">
+        <section class="graph-panel glass-panel" aria-label="cluster graph">
           <svg id="cluster-graph" viewBox="0 0 800 520" role="img" aria-label="cluster graph"></svg>
+          <div class="graph-legend" data-testid="graph-legend" aria-label="signal legend">
+            <span><i class="legend-dot vote"></i>vote</span>
+            <span><i class="legend-dot heartbeat"></i>heartbeat</span>
+            <span><i class="legend-dot data"></i>data</span>
+            <span><i class="legend-dot event"></i>event</span>
+          </div>
         </section>
 
-        <aside class="side-panel">
-          <section>
+        <aside class="side-panel glass-panel">
+          <section class="glass-panel">
             <h2>Link</h2>
             <p id="selected-link" data-testid="selected-link">none</p>
             <div class="button-row">
               <button id="partition-link" type="button" data-action="partition" data-testid="partition-link">
                 Partition
               </button>
-              <button id="delay-link" type="button" data-action="delay">Delay</button>
-              <button id="drop-link" type="button" data-action="drop">Drop</button>
-              <button id="heal-link" type="button" data-action="heal">Heal</button>
+              <button id="delay-link" type="button" data-action="delay" data-testid="delay-link">
+                Delay
+              </button>
+              <button id="drop-link" type="button" data-action="drop" data-testid="drop-link">
+                Drop
+              </button>
+              <button id="heal-link" type="button" data-action="heal" data-testid="heal-link">
+                Heal
+              </button>
             </div>
           </section>
 
-          <section>
+          <section class="glass-panel">
             <h2>Progress</h2>
             <dl id="progress-panel" data-testid="progress-panel"></dl>
             <p id="snapshot-hash" class="hash" data-testid="snapshot-hash"></p>
           </section>
 
-          <section>
+          <section class="glass-panel">
             <h2>Nodes</h2>
             <button id="add-node-button" type="button" data-testid="add-node-button">
               Add node
@@ -87,12 +99,12 @@
             <div id="nodes-panel" data-testid="nodes-panel"></div>
           </section>
 
-          <section>
+          <section class="glass-panel">
             <h2>Signals</h2>
             <div id="signals-panel" data-testid="signals-panel"></div>
           </section>
 
-          <section>
+          <section class="glass-panel">
             <h2>Client</h2>
             <div class="manual-controls">
               <label>
@@ -120,12 +132,12 @@
             <div id="subscribers-panel" data-testid="subscribers-panel"></div>
           </section>
 
-          <section>
+          <section class="glass-panel">
             <h2>Consistency</h2>
             <div id="consistency-panel" data-testid="consistency-panel"></div>
           </section>
 
-          <section>
+          <section class="glass-panel">
             <h2>Keys</h2>
             <div id="keys-panel" data-testid="keys-panel"></div>
           </section>
