@@ -656,6 +656,9 @@ pub enum ElectionSignalKind {
     VoteResponse,
     /// Leader heartbeat after formation.
     LeaderHeartbeat,
+    /// Follower acknowledges the leader heartbeat (the response half of the
+    /// AppendEntries round, so the graph shows traffic from followers too).
+    HeartbeatAck,
 }
 
 impl ElectionSignalKind {
@@ -665,6 +668,7 @@ impl ElectionSignalKind {
             Self::VoteRequest => "vote_request",
             Self::VoteResponse => "vote_response",
             Self::LeaderHeartbeat => "leader_heartbeat",
+            Self::HeartbeatAck => "heartbeat_ack",
         }
     }
 }
@@ -966,6 +970,7 @@ impl ElectionDriver {
         logical_step: u64,
     ) {
         self.signals.clear();
+        let term = self.term();
         for node_id in live_nodes {
             if node_id != leader {
                 self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
@@ -973,7 +978,15 @@ impl ElectionDriver {
                     leader.clone(),
                     node_id.clone(),
                     ElectionSignalKind::LeaderHeartbeat,
-                    self.term(),
+                    term,
+                );
+                // Follower -> leader acknowledgement, so steady-state traffic is
+                // visibly bidirectional instead of only emanating from the leader.
+                self.push_signal(
+                    node_id.clone(),
+                    leader.clone(),
+                    ElectionSignalKind::HeartbeatAck,
+                    term,
                 );
             }
         }
