@@ -1,17 +1,18 @@
 :root {
   color-scheme: light;
-  --bg-start: #e9f7f4;
-  --bg-mid: #f5f7ff;
-  --bg-end: #fff3eb;
+  --bg-start: #d6f0ec;
+  --bg-mid: #e6e9ff;
+  --bg-end: #ffe6d6;
   --ink: #13201f;
   --muted: #4d615f;
-  --line: rgba(33, 62, 58, 0.22);
-  --glass: rgba(255, 255, 255, 0.74);
-  --glass-strong: rgba(255, 255, 255, 0.9);
+  --line: rgba(33, 62, 58, 0.18);
+  --glass: rgba(255, 255, 255, 0.52);
+  --glass-strong: rgba(255, 255, 255, 0.82);
   --glass-solid: #f8fbf8;
-  --shadow: 0 18px 44px rgba(24, 42, 40, 0.12);
-  --shadow-soft: 0 8px 22px rgba(24, 42, 40, 0.08);
-  --blur: blur(22px) saturate(150%);
+  --glass-edge: rgba(255, 255, 255, 0.65);
+  --shadow: 0 20px 48px rgba(24, 42, 40, 0.16);
+  --shadow-soft: 0 10px 26px rgba(24, 42, 40, 0.1);
+  --blur: blur(26px) saturate(165%);
   --accent: #0b7a75;
   --accent-strong: #075f5b;
   --accent-alt: #4c5bd5;
@@ -35,6 +36,22 @@ body {
   min-width: 320px;
   background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 48%, var(--bg-end) 100%);
   color: var(--ink);
+}
+
+/* Colourful blurred blobs behind the translucent panels so the backdrop-filter
+   blur actually reads as liquid glass instead of flat white over flat white. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -12%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 36% at 16% 20%, rgba(11, 122, 117, 0.5), transparent 70%),
+    radial-gradient(38% 38% at 84% 16%, rgba(76, 91, 213, 0.46), transparent 70%),
+    radial-gradient(46% 44% at 78% 84%, rgba(176, 92, 24, 0.34), transparent 72%),
+    radial-gradient(42% 40% at 22% 86%, rgba(23, 108, 67, 0.4), transparent 72%);
+  filter: blur(8px);
 }
 
 button,
@@ -77,11 +94,17 @@ button:disabled {
 }
 
 .glass-panel {
-  border: 1px solid var(--line);
-  background: var(--glass);
-  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--glass-edge);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.3));
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.85);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
+}
+
+/* Inner panels sit on top of the glass aside; keep them a touch more opaque so
+   stacked glass stays legible. */
+.side-panel > section {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.42));
 }
 
 .shell {
@@ -304,6 +327,43 @@ p {
   gap: 8px;
 }
 
+/* Node rows: name + meta on the first line, the action buttons on their own
+   full-width row so "Isolate"/"Disable" no longer overflow the panel. */
+#nodes-panel .metric {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+#nodes-panel .metric > strong {
+  grid-column: 1;
+}
+
+#nodes-panel .metric > span {
+  grid-column: 2;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#nodes-panel .metric > .button-row {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+
+#nodes-panel .metric button {
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+/* Signals list keeps a stable height so new in-flight rows do not shove the
+   panels below it up and down on every step. */
+#signals-panel {
+  height: 208px;
+  overflow-y: auto;
+}
+
 #selected-link {
   min-height: 22px;
   margin-bottom: 10px;
@@ -379,11 +439,68 @@ dd {
   stroke: var(--accent);
   stroke-width: 3;
   filter: drop-shadow(0 8px 10px rgba(7, 95, 91, 0.14));
+  transition:
+    fill 260ms ease,
+    stroke 260ms ease,
+    stroke-width 260ms ease;
+}
+
+/* Role-driven node colour so a node visibly changes as it joins, leads, or
+   comes back after a crash/restart (engine reports vote_state). */
+.node.role-leader circle {
+  fill: #d7f1ec;
+  stroke: var(--accent-strong);
+  stroke-width: 5;
+}
+
+.node.role-follower circle {
+  fill: rgba(255, 255, 255, 0.92);
+  stroke: var(--accent);
+}
+
+.node.role-candidate circle {
+  fill: var(--warn-bg);
+  stroke: var(--warn);
+  stroke-width: 4;
+}
+
+.node.role-joining circle,
+.node.role-catching_up circle {
+  fill: #eef0ff;
+  stroke: var(--accent-alt);
+  stroke-dasharray: 6 5;
+}
+
+.node.role-unknown circle,
+.node.role-disconnected circle {
+  fill: #eef1f3;
+  stroke: #93a3a0;
+}
+
+.node.disabled circle {
+  fill: #ededed;
+  stroke: #9aa0a0;
+  stroke-dasharray: 2 5;
 }
 
 .node.crashed circle {
   fill: var(--danger-bg);
   stroke: var(--danger);
+  stroke-dasharray: none;
+}
+
+.node.joining {
+  animation: node-join 620ms ease-out;
+}
+
+@keyframes node-join {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .node text {
@@ -467,13 +584,11 @@ dd {
 @keyframes packet-pulse {
   0%,
   100% {
-    opacity: 0.74;
-    transform: scale(0.95);
+    opacity: 0.78;
   }
 
   50% {
     opacity: 1;
-    transform: scale(1.06);
   }
 }
 
@@ -505,7 +620,9 @@ dd {
 }
 
 html[data-reduced-motion="true"] .packet,
-html[data-reduced-motion="true"] .packet-trail {
+html[data-reduced-motion="true"] .packet-trail,
+html[data-reduced-motion="true"] .node.joining,
+html[data-reduced-motion="true"] .node circle {
   animation: none;
   transition: none;
 }

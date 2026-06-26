@@ -788,6 +788,31 @@ impl ElectionDriver {
         }
     }
 
+    /// Register a node added after construction and drive it into the formation
+    /// through the explicit `AddNode` transition (`Disconnected -> Joining`), so a
+    /// scaled-out node stops reporting an "unknown" role and becomes a follower on
+    /// the next leader heartbeat instead of staying outside the modeled formation.
+    pub fn add_node(&mut self, node_id: ClusterNodeId, logical_step: u64) {
+        if self.nodes.contains_key(&node_id) {
+            return;
+        }
+        let mut node = ElectionNode::new();
+        node.set_term(self.term());
+        self.nodes.insert(node_id.clone(), node);
+        self.apply_node(&node_id, ClusterFsmEvent::AddNode, logical_step);
+    }
+
+    /// Drive a restarted / rejoined / re-enabled node back into the formation via
+    /// the explicit `Enable` transition. `Enable` is total and safe for both a
+    /// `Disconnected` node (`-> Joining`, then `-> Follower` on the next heartbeat)
+    /// and a node that never left `Follower` (`-> Follower`, a no-op), so a node
+    /// never stays stuck off the cluster after coming back.
+    pub fn restore_node(&mut self, node_id: &ClusterNodeId, logical_step: u64) {
+        if self.nodes.contains_key(node_id) {
+            self.apply_node(node_id, ClusterFsmEvent::Enable, logical_step);
+        }
+    }
+
     /// Advance election state by one logical simulator step.
     pub fn step(&mut self, logical_step: u64, live_nodes: &BTreeSet<ClusterNodeId>) {
         self.mark_unavailable_nodes(live_nodes, logical_step);
@@ -1035,4 +1060,100 @@ fn deterministic_timeout(seed: u64, node_id: &ClusterNodeId, term: u64) -> u64 {
         hash = hash.wrapping_mul(0x100_0000_01b3);
     }
     2 + (hash % 5)
+}
+
+#[cfg(test)]
+mod node_lifecycle_tests {
+    use super::*;
+
+    fn nid(name: &str) -> ClusterNodeId {
+        ClusterNodeId::new(name.to_owned())
+    }
+
+    fn live(names: &[&str]) -> BTreeSet<ClusterNodeId> {
+        names.iter().map(|name| nid(name)).collect()
+    }
+
+    fn role(driver: &ElectionDriver, name: &str) -> NodeFsmState {
+        driver
+            .snapshot()
+            .nodes
+            .into_iter()
+            .find(|node| node.node_id.as_str() == name)
+            .map(|node| node.state)
+            .unwrap_or(NodeFsmState::Disconnected)
+    }
+
+    fn run_to_leader(driver: &mut ElectionDriver, members: &BTreeSet<ClusterNodeId>) {
+        for step in 0..24 {
+            driver.step(step, members);
+            if driver.leader().is_some() {
+                return;
+            }
+        }
+        panic!("cluster did not elect a leader");
+    }
+
+    // Bug 6: a node added after formation must not stay "unknown"; it joins and
+    // becomes a follower once the leader heartbeats it.
+    #[test]
+    fn added_node_joins_then_becomes_follower() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        run_to_leader(&mut driver, &members);
+
+        driver.add_node(nid("node-3"), 30);
+        assert_eq!(
+            role(&driver, "node-3"),
+            NodeFsmState::Joining,
+            "added node must enter Joining, never stay unknown/disconnected"
+        );
+
+        let mut grown = members.clone();
+        grown.insert(nid("node-3"));
+        for step in 30..40 {
+            driver.step(step, &grown);
+        }
+        assert_eq!(
+            role(&driver, "node-3"),
+            NodeFsmState::Follower,
+            "added node must become a follower after heartbeats"
+        );
+    }
+
+    // Bug 7: a restarted node must return to the formation (follower), not stay
+    // stuck Disconnected after coming back.
+    #[test]
+    fn restored_node_returns_to_follower() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(7, members.clone());
+        run_to_leader(&mut driver, &members);
+        let leader = driver.leader().cloned().expect("leader");
+
+        let victim = members
+            .iter()
+            .find(|node| **node != leader)
+            .cloned()
+            .expect("a non-leader node");
+        let mut without = members.clone();
+        without.remove(&victim);
+        for step in 24..32 {
+            driver.step(step, &without);
+        }
+        assert_eq!(
+            role(&driver, victim.as_str()),
+            NodeFsmState::Disconnected,
+            "an unavailable node drops to Disconnected"
+        );
+
+        driver.restore_node(&victim, 32);
+        for step in 32..44 {
+            driver.step(step, &members);
+        }
+        assert_eq!(
+            role(&driver, victim.as_str()),
+            NodeFsmState::Follower,
+            "restarted node must return to follower"
+        );
+    }
 }

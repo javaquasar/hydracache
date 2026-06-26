@@ -439,6 +439,7 @@ impl SimWorld {
         let restarted = self.crashed_nodes.remove(&node_id);
         if restarted {
             self.catch_up_node(&node_id);
+            self.election.restore_node(&node_id, self.steps);
         }
         restarted
     }
@@ -478,6 +479,7 @@ impl SimWorld {
         }
         self.isolated_nodes.remove(&node_id);
         self.catch_up_node(&node_id);
+        self.election.restore_node(&node_id, self.steps);
         true
     }
 
@@ -500,6 +502,7 @@ impl SimWorld {
         }
         let removed = self.disabled_nodes.remove(&node_id);
         self.catch_up_node(&node_id);
+        self.election.restore_node(&node_id, self.steps);
         removed
     }
 
@@ -519,6 +522,7 @@ impl SimWorld {
             },
         );
         self.cfg.node_count = self.cfg.node_count.saturating_add(1);
+        self.election.add_node(node_id.clone(), self.steps);
         self.catch_up_node(&node_id);
         self.rebalance = Some(RebalanceState {
             phase: "complete".to_owned(),

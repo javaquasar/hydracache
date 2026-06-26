@@ -20,6 +20,10 @@ const state = {
   timer: null,
   playing: false,
   tickPending: false,
+  seenNodes: new Set(),
+  packets: [],
+  animationFrame: null,
+  packetStart: 0,
 };
 
 const el = {
@@ -271,14 +275,25 @@ function renderGraph(snapshot) {
 
   for (const node of snapshot.nodes) {
     const pos = positions.get(node.id);
+    const status = nodeStatus(node);
+    const isNew = !state.seenNodes.has(node.id);
+    state.seenNodes.add(node.id);
     const group = svg("g", {
-      class: ["node", node.crashed ? "crashed" : ""].filter(Boolean).join(" "),
+      class: [
+        "node",
+        `role-${status}`,
+        node.crashed ? "crashed" : "",
+        node.disabled ? "disabled" : "",
+        isNew ? "joining" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
       transform: `translate(${pos.x} ${pos.y})`,
     });
     group.append(
       svg("circle", { r: 46 }),
       svg("text", { y: -5 }, node.id),
-      svg("text", { y: 17 }, node.crashed ? "crashed" : node.vote_state || node.role),
+      svg("text", { y: 17 }, status),
     );
     nodeLayer.append(group);
   }
@@ -598,41 +613,83 @@ function layoutNodes(nodes) {
   return positions;
 }
 
+function nodeStatus(node) {
+  if (node.crashed) {
+    return "crashed";
+  }
+  if (node.disabled) {
+    return "disabled";
+  }
+  return String(node.vote_state || node.role || "unknown");
+}
+
+// Packet travel time from one node to the next, in wall-clock ms. Purely
+// decorative (the layer is aria-hidden) and independent of the seeded snapshot,
+// so animating it does not affect determinism or replay.
+const PACKET_PERIOD_MS = 1150;
+
 function renderPacketLayer(layer, positions, snapshot) {
+  cancelPacketAnimation();
+  state.packets = [];
   const messages = (snapshot.in_flight || []).slice(0, 16);
-  for (const [index, message] of messages.entries()) {
+  messages.forEach((message, index) => {
     const from = positions.get(message.from);
     const to = positions.get(message.to);
     if (!from || !to) {
-      continue;
+      return;
     }
-    const progress = packetProgress(snapshot.logical_time_millis, index);
-    const x = from.x + (to.x - from.x) * progress;
-    const y = from.y + (to.y - from.y) * progress;
     const kind = packetKind(message.kind);
-    const trailStart = 0.18;
-    const trailEnd = Math.max(trailStart, progress - 0.08);
-    layer.append(
-      svg("line", {
-        class: `packet-trail ${kind}`,
-        x1: from.x + (to.x - from.x) * trailStart,
-        y1: from.y + (to.y - from.y) * trailStart,
-        x2: from.x + (to.x - from.x) * trailEnd,
-        y2: from.y + (to.y - from.y) * trailEnd,
-      }),
-      svg("circle", {
-        class: `packet ${kind}`,
-        cx: x,
-        cy: y,
-        r: 7,
-      }),
-    );
+    const trail = svg("line", { class: `packet-trail ${kind}`, x1: from.x, y1: from.y, x2: from.x, y2: from.y });
+    const dot = svg("circle", { class: `packet ${kind}`, cx: from.x, cy: from.y, r: 7 });
+    layer.append(trail, dot);
+    state.packets.push({ dot, trail, from, to, offset: index / Math.max(messages.length, 1) });
+  });
+  if (state.packets.length === 0) {
+    return;
   }
+  if (document.documentElement.dataset.reducedMotion === "true") {
+    // Reduced motion: hold each signal at a stable midpoint, no animation loop.
+    for (const packet of state.packets) {
+      positionPacket(packet, 0.5);
+    }
+    return;
+  }
+  state.packetStart = performance.now();
+  state.animationFrame = requestAnimationFrame(animatePackets);
 }
 
-function packetProgress(logicalMillis, index) {
-  const phase = (Number(logicalMillis || 0) + index * 137) % 560;
-  return 0.22 + phase / 1000;
+function animatePackets(now) {
+  if (state.packets.length === 0) {
+    state.animationFrame = null;
+    return;
+  }
+  const base = (now - state.packetStart) / PACKET_PERIOD_MS;
+  for (const packet of state.packets) {
+    positionPacket(packet, (base + packet.offset) % 1);
+  }
+  state.animationFrame = requestAnimationFrame(animatePackets);
+}
+
+// Linear interpolation along the exact link the signal travels, so dots always
+// land on the line between the two node centers.
+function positionPacket(packet, progress) {
+  const { from, to } = packet;
+  const x = from.x + (to.x - from.x) * progress;
+  const y = from.y + (to.y - from.y) * progress;
+  packet.dot.setAttribute("cx", x);
+  packet.dot.setAttribute("cy", y);
+  const tail = Math.max(0, progress - 0.16);
+  packet.trail.setAttribute("x1", from.x + (to.x - from.x) * tail);
+  packet.trail.setAttribute("y1", from.y + (to.y - from.y) * tail);
+  packet.trail.setAttribute("x2", x);
+  packet.trail.setAttribute("y2", y);
+}
+
+function cancelPacketAnimation() {
+  if (state.animationFrame !== null) {
+    cancelAnimationFrame(state.animationFrame);
+    state.animationFrame = null;
+  }
 }
 
 function packetKind(kind) {
@@ -719,6 +776,8 @@ function bindMediaFlag(name, query) {
 }
 
 async function createSimulation(seed) {
+  cancelPacketAnimation();
+  state.seenNodes = new Set();
   if (state.engine === "server") {
     const sim = new ServerSimSession(state.apiBase);
     await sim.reset(seed);
