@@ -172,6 +172,24 @@ async fn sim_routes_accept_topology_control_actions() {
         .any(|node| node["id"] == "node-3"));
 }
 
+#[tokio::test]
+async fn sim_routes_accept_mode_change_control_action() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+
+    let snapshot = post_json(
+        app,
+        "/sim/inject",
+        json!({"action": "mode_change", "mode": "mixed"}).to_string(),
+    )
+    .await;
+
+    assert_eq!(snapshot["mode"], "mixed");
+    assert_eq!(snapshot["intervention_count"], 1);
+}
+
 async fn post_json(app: Router, uri: &str, body: String) -> Value {
     let response = app.oneshot(post(uri, body)).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);

@@ -20,6 +20,17 @@ pub enum SimMode {
     Mixed,
 }
 
+impl SimMode {
+    /// Stable snapshot label.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Manual => "manual",
+            Self::Scripted => "scripted",
+            Self::Mixed => "mixed",
+        }
+    }
+}
+
 /// Versioned replay artifact for interactive simulator controls.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReplayScriptV1 {

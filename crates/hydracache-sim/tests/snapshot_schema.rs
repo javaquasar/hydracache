@@ -46,6 +46,9 @@ fn snapshot_roundtrips_and_is_versioned() {
         "subscribers": [],
         "sync_progress": [],
         "rebalance": null,
+        "mode": "manual",
+        "active_scenario": null,
+        "intervention_count": 0,
         "verdict": { "status": "holding" },
         "progress": {
             "committed_entries": 0,
@@ -72,6 +75,9 @@ fn schema_version_matches_contract_for_each_field_set() {
     assert!(before.clients.is_empty());
     assert!(before.subscribers.is_empty());
     assert!(before.rebalance.is_none());
+    assert_eq!(before.mode, "manual");
+    assert_eq!(before.active_scenario, None);
+    assert_eq!(before.intervention_count, 0);
     assert!(before
         .sync_progress
         .iter()

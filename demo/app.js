@@ -27,6 +27,8 @@ const el = {
   verdict: document.querySelector("#verdict"),
   seedInput: document.querySelector("#seed-input"),
   scenario: document.querySelector("#scenario-select"),
+  mode: document.querySelector("#mode-select"),
+  interventionStatus: document.querySelector("#intervention-status"),
   loadScenario: document.querySelector("#load-scenario"),
   reset: document.querySelector("#reset-button"),
   step: document.querySelector("#step-button"),
@@ -83,6 +85,10 @@ async function boot() {
 function bindEvents() {
   el.reset.addEventListener("click", () => void resetSimulation());
   el.loadScenario.addEventListener("click", () => void loadScenario(el.scenario.value));
+  el.mode.addEventListener("change", async () => {
+    await state.sim?.set_mode(el.mode.value);
+    await refresh();
+  });
   el.step.addEventListener("click", async () => {
     await state.sim?.step();
     await refresh();
@@ -174,6 +180,11 @@ function render() {
   const snapshot = state.snapshot;
   el.banner.textContent = `This runs the real hydracache-sim engine, seed ${snapshot.seed}, step ${snapshot.step}. Formation ${snapshot.formation_phase}; election ${snapshot.election_source}. ${snapshot.election_disclosure || "Verdicts are produced by the actual invariant checker."}`;
   el.scenario.value = state.scenario;
+  el.mode.value = snapshot.mode || "manual";
+  el.interventionStatus.textContent =
+    snapshot.intervention_count > 0
+      ? `${snapshot.mode} · ${snapshot.intervention_count} replay action(s)`
+      : `${snapshot.mode || "manual"} · no interventions`;
   renderVerdict(snapshot);
   renderGraph(snapshot);
   renderSelectedLink();
@@ -281,6 +292,8 @@ function renderProgress(snapshot) {
     desc(progress.convergence),
     term("Rebalance", snapshot.rebalance?.phase || "idle"),
     desc(snapshot.rebalance ? `${snapshot.rebalance.moved_partitions}/${snapshot.rebalance.total_partitions}` : "idle"),
+    term("Mode", snapshot.mode || "manual"),
+    desc(snapshot.active_scenario || "manual"),
   );
   el.hash.textContent = `snapshot ${snapshotHash(snapshot)}`;
 }
@@ -604,6 +617,10 @@ class WasmSimSession {
     this.handle.set_workload_enabled(enabled);
   }
 
+  async set_mode(mode) {
+    return this.handle.set_mode(mode);
+  }
+
   async run(steps) {
     this.handle.run(toBigInt(steps));
   }
@@ -626,6 +643,10 @@ class WasmSimSession {
 
   async snapshot_json() {
     return this.handle.snapshot_json();
+  }
+
+  async replay_script_json() {
+    return this.handle.replay_script_json();
   }
 
   async restart_node(node) {
@@ -675,6 +696,10 @@ class ServerSimSession {
     this.snapshot = await this.post("/sim/inject", { action: "workload", enabled });
   }
 
+  async set_mode(mode) {
+    this.snapshot = await this.post("/sim/inject", { action: "mode_change", mode });
+  }
+
   async run(steps) {
     this.snapshot = await this.post("/sim/step", { steps: toNumber(steps) });
   }
@@ -706,6 +731,16 @@ class ServerSimSession {
       this.snapshot = await this.get("/sim/snapshot");
     }
     return JSON.stringify(this.snapshot);
+  }
+
+  async replay_script_json() {
+    return JSON.stringify({
+      version: 1,
+      seed: this.snapshot?.seed ?? 0,
+      mode: this.snapshot?.mode ?? "manual",
+      scenario: this.snapshot?.active_scenario ?? null,
+      actions: [],
+    });
   }
 
   async restart_node(node) {

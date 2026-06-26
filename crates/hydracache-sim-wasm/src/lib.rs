@@ -39,6 +39,17 @@ impl SimHandle {
         self.world.set_workload_enabled(enabled);
     }
 
+    /// Set the visible lab mode.
+    pub fn set_mode(&mut self, mode: String) -> Result<(), JsValue> {
+        let mode = parse_mode(&mode)?;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::ModeChange {
+                at_step: self.world.outcome().steps,
+                mode,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// Crash a simulator node.
     pub fn crash_node(&mut self, node_id: String) -> Result<(), JsValue> {
         if self.world.crash_node(node_id.clone()) {
@@ -184,9 +195,25 @@ impl SimHandle {
         self.world.snapshot_json()
     }
 
+    /// Serialize the replay script accumulated by the shared control surface.
+    pub fn replay_script_json(&self) -> String {
+        self.world.replay_script().to_json()
+    }
+
     /// Serialize the latest canonical invariant verdict as JSON.
     pub fn verdict_json(&self) -> String {
         self.world.verdict_json()
+    }
+}
+
+fn parse_mode(mode: &str) -> Result<hydracache_sim::SimMode, JsValue> {
+    match mode {
+        "manual" => Ok(hydracache_sim::SimMode::Manual),
+        "scripted" => Ok(hydracache_sim::SimMode::Scripted),
+        "mixed" => Ok(hydracache_sim::SimMode::Mixed),
+        other => Err(JsValue::from_str(&format!(
+            "unknown simulator mode '{other}'"
+        ))),
     }
 }
 
@@ -311,5 +338,16 @@ mod tests {
         let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
         assert_eq!(snapshot.nodes.len(), 4);
         assert!(snapshot.rebalance.is_some());
+    }
+
+    #[test]
+    fn wasm_mode_change_is_visible_in_snapshot() {
+        let mut handle = SimHandle::new(0x5354);
+        handle.set_mode("mixed".to_owned()).expect("mode applies");
+
+        let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
+
+        assert_eq!(snapshot.mode, "mixed");
+        assert_eq!(snapshot.intervention_count, 1);
     }
 }

@@ -50,3 +50,13 @@ test("node_controls_show_reelection_resync_and_scale_out", async ({ page }) => {
   await page.getByTestId("add-node-button").click();
   await expect(page.getByTestId("nodes-panel")).toContainText("node-3");
 });
+
+test("modes_switch_and_topology_is_clickable_in_each", async ({ page }) => {
+  await page.goto(demoUrl);
+  for (const mode of ["manual", "scripted", "mixed"]) {
+    await page.getByTestId("mode-select").selectOption(mode);
+    await expect(page.getByTestId("intervention-status")).toContainText(mode);
+    await page.getByText("Isolate").first().click();
+    await page.getByText("Rejoin").first().click();
+  }
+});

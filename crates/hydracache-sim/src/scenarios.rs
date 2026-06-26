@@ -1,6 +1,9 @@
 use std::fmt;
 
-use crate::{ConvergenceView, SimConfig, SimSnapshot, SimWorld, VerdictView};
+use crate::{
+    ControlActionV1, ConvergenceView, ReplayScriptV1, SimConfig, SimMode, SimSnapshot, SimWorld,
+    VerdictView,
+};
 
 /// Curated simulator scenario set version.
 pub const SIM_SCENARIO_SET_VERSION: u16 = 1;
@@ -181,6 +184,69 @@ pub fn scenario_presets() -> Vec<ScenarioPreset> {
             ],
             expected_verdict: ExpectedScenarioVerdict::Holding,
             expected_progress: ExpectedScenarioProgress::SomeProgress,
+        },
+    ]
+}
+
+/// Return scripted lab scenarios as replayable control scripts.
+pub fn scripted_lab_catalog() -> Vec<ReplayScriptV1> {
+    vec![
+        ReplayScriptV1 {
+            version: crate::REPLAY_SCRIPT_VERSION,
+            seed: 0x5350,
+            mode: SimMode::Scripted,
+            scenario: Some("cold-start-formation".to_owned()),
+            actions: vec![ControlActionV1::Step { at_step: 0, n: 8 }],
+        },
+        ReplayScriptV1 {
+            version: crate::REPLAY_SCRIPT_VERSION,
+            seed: 0x5351,
+            mode: SimMode::Scripted,
+            scenario: Some("leader-loss-reelection".to_owned()),
+            actions: vec![
+                ControlActionV1::Step { at_step: 0, n: 8 },
+                ControlActionV1::Isolate {
+                    at_step: 8,
+                    node: "node-0".to_owned(),
+                },
+                ControlActionV1::Step { at_step: 8, n: 4 },
+                ControlActionV1::Rejoin {
+                    at_step: 12,
+                    node: "node-0".to_owned(),
+                },
+            ],
+        },
+        ReplayScriptV1 {
+            version: crate::REPLAY_SCRIPT_VERSION,
+            seed: 0x5352,
+            mode: SimMode::Scripted,
+            scenario: Some("manual-push-convergence".to_owned()),
+            actions: vec![
+                ControlActionV1::Step { at_step: 0, n: 8 },
+                ControlActionV1::Subscribe {
+                    at_step: 8,
+                    client: "client-a".to_owned(),
+                    ns: "profiles".to_owned(),
+                },
+                ControlActionV1::PushEvent {
+                    at_step: 8,
+                    client: "client-a".to_owned(),
+                    ns: "profiles".to_owned(),
+                    key: "profile-42".to_owned(),
+                    value: "fresh".to_owned(),
+                },
+                ControlActionV1::Step { at_step: 8, n: 2 },
+            ],
+        },
+        ReplayScriptV1 {
+            version: crate::REPLAY_SCRIPT_VERSION,
+            seed: 0x5353,
+            mode: SimMode::Scripted,
+            scenario: Some("scale-out".to_owned()),
+            actions: vec![
+                ControlActionV1::Step { at_step: 0, n: 8 },
+                ControlActionV1::AddNode { at_step: 8 },
+            ],
         },
     ]
 }

@@ -5,7 +5,7 @@ use axum::routing::options;
 use axum::{Json, Router};
 use hydracache_sim::{
     run_scenario, ControlActionV1, ControlApplyError, ReplayScriptV1, ScenarioError, SimConfig,
-    SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
+    SimMode, SimSnapshot, SimWorld, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 use serde::{Deserialize, Serialize};
 
@@ -56,6 +56,9 @@ enum SimInjectRequest {
         node: String,
     },
     AddNode,
+    ModeChange {
+        mode: SimMode,
+    },
     Drop {
         from: String,
         to: String,
@@ -230,6 +233,14 @@ fn apply_injection(
             return world
                 .apply_control_action(ControlActionV1::AddNode {
                     at_step: world.outcome().steps,
+                })
+                .map_err(SimRouteRejection::from);
+        }
+        SimInjectRequest::ModeChange { mode } => {
+            return world
+                .apply_control_action(ControlActionV1::ModeChange {
+                    at_step: world.outcome().steps,
+                    mode,
                 })
                 .map_err(SimRouteRejection::from);
         }

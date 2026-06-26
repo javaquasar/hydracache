@@ -122,6 +122,9 @@ pub struct SimWorld {
     isolated_nodes: BTreeSet<ClusterNodeId>,
     disabled_nodes: BTreeSet<ClusterNodeId>,
     rebalance: Option<RebalanceState>,
+    mode: crate::SimMode,
+    active_scenario: Option<String>,
+    action_log: Vec<ControlActionV1>,
     workload_enabled: bool,
     next_client_numeric_id: u64,
     steps: u64,
@@ -180,6 +183,9 @@ impl SimWorld {
             isolated_nodes: BTreeSet::new(),
             disabled_nodes: BTreeSet::new(),
             rebalance: None,
+            mode: crate::SimMode::Manual,
+            active_scenario: None,
+            action_log: Vec::new(),
             workload_enabled: true,
             next_client_numeric_id: 1,
             steps: 0,
@@ -263,7 +269,7 @@ impl SimWorld {
         &mut self,
         action: ControlActionV1,
     ) -> Result<(), ControlApplyError> {
-        match action {
+        let result = match action.clone() {
             ControlActionV1::Step { n, .. } => {
                 self.run(n);
                 Ok(())
@@ -279,7 +285,10 @@ impl SimWorld {
                 self.subscribe(client, ns);
                 Ok(())
             }
-            ControlActionV1::ModeChange { .. } => Ok(()),
+            ControlActionV1::ModeChange { mode, .. } => {
+                self.mode = mode;
+                Ok(())
+            }
             ControlActionV1::Isolate { node, .. } => {
                 self.isolate_node(node).then_some(()).ok_or_else(|| {
                     ControlApplyError::InvalidAction(
@@ -308,7 +317,11 @@ impl SimWorld {
                 self.add_node();
                 Ok(())
             }
+        };
+        if result.is_ok() {
+            self.action_log.push(action);
         }
+        result
     }
 
     /// Apply a replay script through the same control surface used by WASM and sandbox.
@@ -317,6 +330,8 @@ impl SimWorld {
         script: &ReplayScriptV1,
     ) -> Result<(), ControlApplyError> {
         script.validate()?;
+        self.mode = script.mode;
+        self.active_scenario = script.scenario.clone();
         for action in script.actions.iter().cloned() {
             if action.at_step() > self.steps {
                 self.run(action.at_step() - self.steps);
@@ -324,6 +339,22 @@ impl SimWorld {
             self.apply_control_action(action)?;
         }
         Ok(())
+    }
+
+    /// Return the replay-visible action log accumulated by the shared control surface.
+    pub fn action_log(&self) -> &[ControlActionV1] {
+        &self.action_log
+    }
+
+    /// Build a replay script from the current world metadata and action log.
+    pub fn replay_script(&self) -> ReplayScriptV1 {
+        ReplayScriptV1 {
+            version: crate::REPLAY_SCRIPT_VERSION,
+            seed: self.seed,
+            mode: self.mode,
+            scenario: self.active_scenario.clone(),
+            actions: self.action_log.clone(),
+        }
     }
 
     /// Subscribe a manual-mode client to namespace cache events.
@@ -671,6 +702,9 @@ impl SimWorld {
                 .collect(),
             sync_progress,
             rebalance,
+            mode: self.mode.as_str().to_owned(),
+            active_scenario: self.active_scenario.clone(),
+            intervention_count: self.action_log.len() as u64,
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,

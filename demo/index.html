@@ -27,6 +27,15 @@
           Scenario
           <select id="scenario-select" data-testid="scenario-select"></select>
         </label>
+        <label>
+          Mode
+          <select id="mode-select" data-testid="mode-select">
+            <option value="manual">Manual</option>
+            <option value="scripted">Scripted</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </label>
+        <p id="intervention-status" class="copy-status" data-testid="intervention-status"></p>
         <button id="load-scenario" type="button" data-testid="load-scenario">Load</button>
         <button id="reset-button" type="button" data-testid="reset">Reset</button>
         <button id="step-button" type="button" data-testid="step">Step</button>

@@ -53,6 +53,12 @@ pub struct SimSnapshot {
     pub sync_progress: Vec<SyncProgressView>,
     /// Current deterministic rebalance/reshard progress.
     pub rebalance: Option<RebalanceView>,
+    /// Current lab mode.
+    pub mode: String,
+    /// Active scripted scenario, when any.
+    pub active_scenario: Option<String>,
+    /// Number of replay-visible interventions recorded by the control surface.
+    pub intervention_count: u64,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -81,6 +87,9 @@ impl SimSnapshot {
             subscribers: Vec::new(),
             sync_progress: Vec::new(),
             rebalance: None,
+            mode: "manual".to_owned(),
+            active_scenario: None,
+            intervention_count: 0,
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,

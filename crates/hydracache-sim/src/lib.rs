@@ -49,9 +49,9 @@ pub use persistence_recovery::{
 };
 pub use rng::SimRng;
 pub use scenarios::{
-    run_scenario, scenario_matches_expectation, scenario_presets, ExpectedScenarioProgress,
-    ExpectedScenarioVerdict, ScenarioAction, ScenarioError, ScenarioPreset, ScenarioRun,
-    SIM_SCENARIO_SET_VERSION,
+    run_scenario, scenario_matches_expectation, scenario_presets, scripted_lab_catalog,
+    ExpectedScenarioProgress, ExpectedScenarioVerdict, ScenarioAction, ScenarioError,
+    ScenarioPreset, ScenarioRun, SIM_SCENARIO_SET_VERSION,
 };
 pub use schedule::{
     FailureReport, FaultSchedule, ReplayOutcome, ReplayRunner, ScheduledFault, ScheduledFaultKind,
