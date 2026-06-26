@@ -421,6 +421,20 @@ p {
   margin-top: 8px;
 }
 
+/* Client/subscriber rows stack their label and detail so long ids like
+   "client-a@profiles" no longer break mid-word against the detail text. */
+#clients-panel .metric,
+#subscribers-panel .metric {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+#clients-panel .metric strong,
+#subscribers-panel .metric strong {
+  overflow-wrap: normal;
+}
+
 #selected-link {
   min-height: 22px;
   margin-bottom: 10px;
