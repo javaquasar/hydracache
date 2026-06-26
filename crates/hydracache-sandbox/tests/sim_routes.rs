@@ -89,6 +89,32 @@ async fn sim_routes_emit_w2_schema_and_step_deterministically() {
 }
 
 #[tokio::test]
+async fn sim_new_defaults_to_raft_election_source() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+
+    let snapshot = post_json(
+        app,
+        "/sim/new",
+        json!({"seed": 702, "steps": 80}).to_string(),
+    )
+    .await;
+
+    assert_eq!(snapshot["election_source"], "raft");
+    assert!(snapshot["election_disclosure"]
+        .as_str()
+        .unwrap()
+        .contains("real raft-rs"));
+    assert!(snapshot["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|node| node["vote_state"] == "leader"));
+}
+
+#[tokio::test]
 async fn sim_routes_accept_same_control_script() {
     let app = build_sandbox(SandboxConfig::default())
         .await

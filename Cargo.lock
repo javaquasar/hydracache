@@ -1706,10 +1706,14 @@ name = "hydracache-sim"
 version = "0.53.0"
 dependencies = [
  "hydracache",
+ "hydracache-cluster-raft",
+ "protobuf",
+ "raft",
  "rand_chacha 0.9.0",
  "rand_core 0.9.5",
  "serde",
  "serde_json",
+ "slog",
 ]
 
 [[package]]

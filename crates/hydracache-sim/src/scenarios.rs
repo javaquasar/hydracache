@@ -69,7 +69,7 @@ pub enum ExpectedScenarioProgress {
 }
 
 /// Completed scenario run.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ScenarioRun {
     /// Preset that was applied.
     pub preset: ScenarioPreset,

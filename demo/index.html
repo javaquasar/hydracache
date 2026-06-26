@@ -15,7 +15,17 @@
             This runs the real hydracache-sim engine. Verdicts are produced by the actual invariant checker.
           </p>
         </div>
-        <div id="verdict" class="verdict" data-testid="verdict">loading</div>
+        <div class="status-cluster" aria-label="simulation status">
+          <div id="verdict" class="verdict" data-testid="verdict">loading</div>
+          <div
+            id="election-source-chip"
+            class="source-chip"
+            data-testid="election-source-chip"
+            aria-label="Election source"
+          >
+            unknown
+          </div>
+        </div>
       </header>
 
       <section class="controls glass-panel" aria-label="simulation controls">

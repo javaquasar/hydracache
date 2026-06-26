@@ -552,6 +552,9 @@ impl NodeFsm {
 /// Source of election behavior used by the simulator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ElectionSource {
+    /// Real raft-rs consensus driven synchronously by the deterministic lab
+    /// harness.
+    Raft,
     /// Deterministic simulator model used when raft-rs multi-node election
     /// cannot expose a seedable timeout seam.
     SimModel,
@@ -561,6 +564,7 @@ impl ElectionSource {
     /// Stable machine-readable source label.
     pub fn as_str(self) -> &'static str {
         match self {
+            Self::Raft => "raft",
             Self::SimModel => "sim-model",
         }
     }
@@ -568,6 +572,7 @@ impl ElectionSource {
     /// Whether this source may be presented as a production consensus claim.
     pub fn carries_product_consensus_claim(self) -> bool {
         match self {
+            Self::Raft => true,
             Self::SimModel => false,
         }
     }
@@ -575,6 +580,9 @@ impl ElectionSource {
     /// Human-facing disclosure for demo surfaces.
     pub fn disclosure(self) -> &'static str {
         match self {
+            Self::Raft => {
+                "real raft-rs consensus driven deterministically over the seeded simulator network; not the full product transport or persistence runtime"
+            }
             Self::SimModel => {
                 "deterministic simulator election model for the lab; not a product consensus claim"
             }

@@ -787,7 +787,10 @@ async fn build_sandbox_state(
             function_calls: Arc::new(AtomicU64::new(0)),
             next_event_id: Arc::new(AtomicU64::new(0)),
             events: Arc::new(RwLock::new(VecDeque::new())),
-            sim_world: Arc::new(RwLock::new(SimWorld::new(50, SimConfig::default()))),
+            sim_world: Arc::new(RwLock::new(SimWorld::with_raft_election(
+                50,
+                SimConfig::default(),
+            ))),
             event_log_path: config.event_log_path,
             auth_token: config.auth_token,
             profile: config.profile,

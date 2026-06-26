@@ -154,6 +154,13 @@ p {
   font-size: 13px;
 }
 
+.status-cluster {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  min-width: min(420px, 100%);
+}
+
 .verdict {
   min-width: 220px;
   max-width: 420px;
@@ -179,6 +186,33 @@ p {
 .verdict.warn {
   background: color-mix(in srgb, var(--warn-bg) 88%, white);
   color: var(--warn);
+}
+
+.source-chip {
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.64);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.source-chip.source-raft {
+  border-color: color-mix(in srgb, var(--ok) 42%, white);
+  background: color-mix(in srgb, var(--ok-bg) 84%, white);
+  color: var(--ok);
+}
+
+.source-chip.source-sim-model {
+  border-color: color-mix(in srgb, var(--accent-alt) 38%, white);
+  background: color-mix(in srgb, var(--bg-mid) 76%, white);
+  color: var(--accent-alt);
 }
 
 .controls {
@@ -839,6 +873,15 @@ html[data-reduced-transparency="true"] select {
 
   .verdict {
     max-width: none;
+  }
+
+  .status-cluster {
+    justify-items: stretch;
+    min-width: 0;
+  }
+
+  .source-chip {
+    justify-self: start;
   }
 
   .controls {

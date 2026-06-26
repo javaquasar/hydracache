@@ -12,6 +12,14 @@ test("loads_steps_and_renders_verdict", async ({ page }) => {
   await expect(page.getByTestId("progress-panel")).not.toHaveText(before ?? "");
 });
 
+test("election_source_chip_is_visible_and_labelled", async ({ page }) => {
+  await openReady(page);
+  const chip = page.getByTestId("election-source-chip");
+  await expect(chip).toBeVisible();
+  await expect(chip).toContainText(/sim-model|raft/);
+  await expect(chip).toHaveAttribute("title", /consensus|simulator|raft/);
+});
+
 test("clicking_partition_updates_link_state", async ({ page }) => {
   await openReady(page);
   await selectFirstLink(page);

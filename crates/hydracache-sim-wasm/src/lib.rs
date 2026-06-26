@@ -255,6 +255,19 @@ mod tests {
     }
 
     #[test]
+    fn wasm_default_reports_validated_sim_model() {
+        let mut handle = SimHandle::new(42);
+        handle.run(8);
+
+        let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
+
+        assert_eq!(snapshot.election_source, "sim-model");
+        assert!(snapshot
+            .election_disclosure
+            .contains("not a product consensus claim"));
+    }
+
+    #[test]
     fn verdict_json_reports_canonical_verdict() {
         let mut handle = SimHandle::new(7);
         handle.run(3);
