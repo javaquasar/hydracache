@@ -270,4 +270,24 @@ are best-effort/Docker-gated.
 - All failure modes are loud + counted; no silent drop/over-invalidate/resurrect (R-3).
 - Metrics bounded-label (R-6). No new consistency level (R-1).
 - `FEATURE_MATRIX.md` lists `hydracache-transport-redis` / `-nats` as opt-in crates.
+- **Publish-readiness hygiene (the home for the cross-project review point).** `0.54` adds the
+  first **new publishable crates** since the script lists were written, so the release **must**
+  reconcile them: add `hydracache-transport-redis` and `hydracache-transport-nats` to the
+  `adapters` set in `scripts/package-publishable.ps1` **and** to `scripts/verify-release-readiness.ps1`,
+  **or** explicitly set `publish = false` in their `Cargo.toml` with a one-line reason. The
+  decision is recorded, not implicit (R-7). DoD: a test/check
+  `every_publishable_crate_is_in_the_publish_scripts` (a script or `xtask` step that diffs the
+  workspace's publishable crates against the script lists and fails loud on drift) — so this class
+  of gap can never silently recur.
+- **Reconcile the remaining publish-status inconsistencies here (owned by `0.54`, surfaced by
+  the `0.53` review).** Several crates have crates.io-ready metadata but are **absent** from the
+  curated publish set (`$publishOrder` / `package-publishable.ps1`). Make each **explicit**:
+  either add it to the publish lists **or** set `publish = false` with a one-line reason (R-7).
+  - ✅ **Already done** (standalone hygiene change ahead of `0.54`): `hydracache-sim` and
+    `hydracache-sim-wasm` are now `publish = false`.
+  - ◻ **Still to decide in `0.54`:** `hydracache-client*`, `hydracache-server`,
+    `hydracache-client-transport-axum` — decide per the `0.49` external-consumer intent (list
+    them if they are meant to be public consumer libraries, else `publish = false` with a reason).
+  The `every_publishable_crate_is_in_the_publish_scripts` check then enforces whichever choice is
+  recorded, so no crate sits in the ambiguous metadata-vs-list middle again.
 - `releases.toml` + `INDEX.md` updated to `0.54.0`. No numeric self-score (R-7).

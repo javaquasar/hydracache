@@ -132,6 +132,144 @@ Conventions per work item: **Goal / Files / Steps / Definition of Done (tests) /
 
 ---
 
+## Contracts, Invariants & Proof Obligations (read before any W)
+
+This section turns the "nice goals" into **hard, testable contracts**. Every contract below
+states **What / Why / How tested / Proof of truthfulness** (how we know the lab shows reality,
+not animation). Work items reference these by id (C1…C8). A claim that lacks its proof obligation
+is not done (R-7).
+
+> **Authoring note (UTF-8, not mojibake).** These plan files are valid UTF-8 and use `—`, `→`,
+> `·`, `◄`, `✅`. If a tool renders them as `â€"`/`â†'`, the **reading pipe is latin-1** — fix the
+> pipe, do **not** "repair" the file. New machine-consumed snippets (enum names, JSON keys) stay
+> **ASCII** so no toolchain mangles identifiers.
+
+### C1. `ReplayScriptV1` + `ControlActionV1` — the reproducibility contract
+
+- **What.** A first-class, versioned reproducer artifact:
+  `ReplayScriptV1 { version: u16, seed: u64, mode: Mode, scenario: Option<String>, actions:
+  Vec<ControlActionV1> }`, where `ControlActionV1` is a closed enum:
+  `Step{n}`, `Isolate{node}`, `Rejoin{node}`, `Disable{node}`, `Enable{node}`, `AddNode`,
+  `PushEvent{client, ns, key, value}`, `Subscribe{client, ns}`, `ModeChange{mode}`. Each action
+  carries the **logical step** at which it applies.
+- **Why.** A seed + step count reproduces a *scripted* run, but **manual/mixed mode adds
+  user-ordered actions** — so the reproducer must be `seed + mode + ordered actions`, or "copy
+  reproducer" silently loses the very interventions the lab is about. This is the difference
+  between a demo and a provable artifact.
+- **How tested.** `crates/hydracache-sim/tests/replay_script.rs`:
+  `replay_script_roundtrips_json` (encode→decode identity), `unknown_future_replay_version_rejected`
+  (loud, R-4), `share_url_roundtrips_replay_script` (the demo URL encodes/decodes it).
+- **Proof of truthfulness.** `full_mixed_run_replays_identically_from_script` (W7 master test):
+  executing a `ReplayScriptV1` produces a **byte-identical snapshot-history hash** to the original
+  run. If it diverges, replay is a lie and the build is red. **`ReplayScriptV1` is a replay-visible/
+  web-visible format → registered in `docs/COMPAT.md` (R-4)** with a reader window + loud reject.
+
+### C2. Snapshot schema version matrix (explicit, not "bump schema")
+
+`SIM_SNAPSHOT_SCHEMA_VERSION` advances on a **named, per-work-item** schedule; each bump has a
+reader window and a loud unknown-future reject (`SimSnapshot::from_json`). No work item may add a
+field without advancing to its assigned version and registering it in `docs/COMPAT.md`.
+
+| Version | Adds | Owner WI |
+| --- | --- | --- |
+| `v1` | current (`nodes/links/keys/verdict/progress`) | shipped |
+| `v2` | election/formation (`vote_state`, `voted_for`, `votes_received`, `formation_phase`) | W1 |
+| `v3` | typed in-flight messages (`in_flight: Vec<MessageView>`) | W2 |
+| `v4` | clients/subscribers/manual-push (`clients`, `subscribers`, `sync_progress`) | W3, W4 |
+| `v5` | modes + replay metadata + topology progress (`mode`, `active_scenario`, `rebalance`) | W4, W5 |
+
+- **Why.** "Bump schema" without a target invites COMPAT drift and two PRs claiming the same
+  version. The matrix makes each reader window auditable.
+- **How tested / proof.** `schema_version_matches_contract_for_each_field_set` (a test asserting
+  the field set present implies the documented version), and the existing
+  `unknown_future_schema_version_refuses_to_load` after every bump. `cargo xtask doc-check`
+  enforces the COMPAT entries.
+
+### C3. Election & topology invariants — the **truthfulness** contract
+
+These are real checkers in `crates/hydracache-sim/src/invariants.rs`, evaluated every step and
+surfaced in the verdict. They are what make the lab *correctness made visible* rather than a
+cartoon. Each invariant names the fault that would violate it (so W7 can inject it):
+
+| Invariant | Violated by | Checker |
+| --- | --- | --- |
+| **≤ one leader per term** | split-brain election | `election_safety` |
+| **Leader only with quorum** | minority leader after partition | `leader_requires_quorum` |
+| **Isolated old leader is not authoritative** | stale leader accepting writes | `no_stale_leader_writes` |
+| **`commit_index` / `applied_index` monotonic per node** | log rollback | `index_monotonicity` |
+| **Rejoin catch-up never skips a commit** | gap during re-sync | `catchup_no_skip` |
+| **Subscriber event never precedes apply/commit of its write** | event before durability | `event_after_commit` |
+
+- **Why.** A pretty animation that violates these would *mislead* an operator — the opposite of
+  the pitch. The invariants are the proof the visuals reflect a correct run.
+- **How tested / proof.** Each invariant has (a) a unit test asserting it holds on a good run and
+  (b) a **fault test that injects the violating fault and asserts the checker fires loud** — e.g.
+  `no_stale_leader_writes_fires_when_isolated_leader_writes`. A checker that cannot be made to fire
+  under its fault is not trusted (a checker must be *falsifiable*).
+
+### C4. Manual-mode observable-field semantics (C4)
+
+"Diverge → converge → listener receipt" is defined on **snapshot fields**, not vibes:
+- **Divergence** = at least two live replicas report different `(version | commit_index |
+  applied_index)` for the pushed key in `KeyView`.
+- **Convergence** = all **live** replicas report the **same** `version` and value for that key.
+- **Listener receipt** = a `SubscriberView` records an event whose **kind is one the `0.52` W6
+  bus actually carries** (`Invalidated`/`Upserted`, or W6's `Added/Updated/Removed/Evicted` if
+  shipped) — **never** a business-event payload (R-9).
+- **Proof.** `manual_push_diverges_then_converges_on_observable_fields` asserts the exact field
+  transitions; `subscriber_receipt_kind_is_bus_carried_only` asserts no fabricated kind.
+
+### C5. Bounded / perf limits + over-budget counters (R-3/R-6)
+
+Explicit caps, each with a **drop/over-budget counter that fails loud**, never silent or unbounded:
+- `MAX_IN_FLIGHT_RENDERED` (typed packets in a snapshot) — excess summarized, counted.
+- `MAX_REPLAY_ACTIONS` (actions in a `ReplayScriptV1` / share URL) — over-length refuses loud with
+  a "script too long" error (URLs have length limits), never truncates silently.
+- `MAX_SUBSCRIBER_BUFFER` — slow subscriber dropped-with-counter.
+- **Proof.** `over_budget_in_flight_is_summarized_and_counted`,
+  `replay_script_over_max_actions_refuses_loud`, `slow_subscriber_drops_with_counter`.
+
+### C6. Native/WASM/sandbox parity via one shared control API (C6)
+
+`ControlActionV1` (C1) is the **single** control surface used by `hydracache-sim` (native),
+`hydracache-sim-wasm`, and the sandbox `/sim/*` routes — no mode re-implements verbs.
+- **Why.** Three drifting control paths = three behaviors and an unreproducible lab.
+- **How tested / proof.** `wasm_control_actions_match_native` (the WASM handle accepts exactly the
+  native `ControlActionV1` set) and `sim_routes_accept_same_control_script` (the sandbox `/sim/*`
+  path executes an identical `ReplayScriptV1` to the same hash).
+
+### C7. UI gate — concrete, not "demo smoke" (C7)
+
+The demo gate is a named, runnable procedure, not a vibe:
+- **Prerequisite — scaffold the demo tooling first (W6).** `demo/` today has
+  `tests/ui_smoke.spec.js` but **no `demo/package.json` and no Playwright config** (verified). W6
+  must add `demo/package.json` (build + `@playwright/test` devDep + scripts) and a
+  `playwright.config.*` with the two viewports below, or the commands here cannot run. This
+  scaffolding is part of W6's DoD, gated by W7.
+- **Start:** `npm --prefix demo ci && npm --prefix demo run build`; serve via the documented dev
+  command; for sandbox mode start `cargo run -p hydracache-sandbox` and point the demo at `/sim/*`.
+- **Run:** `npx --prefix demo playwright test` (the `demo/tests/ui_smoke.spec.js` suite).
+- **Required artifacts:** Playwright screenshots at **desktop (1440×900)** and **mobile
+  (390×844)** viewports for: cold-start formation, an election, a manual push, an isolate→rejoin.
+- **Glass checks (W6):** `no_overlap_at_both_viewports`, `wcag_aa_contrast_on_glass_text`,
+  `prefers_reduced_motion_freezes_packets`, `prefers_reduced_transparency_uses_opaque_panels`.
+- **Proof.** The gate is green only if all the above pass; screenshots are attached to the PR.
+
+### C8. Release gate list (consolidated; W7 enforces)
+
+`cargo xtask verify` · focused per-W sim tests · `wasm-pack`/`cargo build -p hydracache-sim-wasm`
+· sandbox `/sim/*` route tests · Playwright UI smoke (C7) · `doc-check` (COMPAT incl. C1 + C2) ·
+**publish-readiness (corrected — no packaging decision in 0.53):** `0.53` adds **no** new crate
+and **changes no crate's publish status**. It does **not** assert anything about
+`hydracache-sim` / `hydracache-sim-wasm` publish state. (Those were **already reconciled to
+`publish = false`** as a standalone hygiene change ahead of this release — sim is an internal
+test harness, sim-wasm is a `wasm-pack` demo cdylib — so the prior metadata-vs-list inconsistency
+is gone.) The only `0.53` publish-gate is: *no crate's `publish` field changed by this release's
+commits* (a diff check, fail loud on drift). The broader publish-list reconciliation for
+`client*`/`server` remains `0.54`'s scope.
+
+---
+
 ## W1. Deterministic leader election + cold-start cluster formation (foundation)
 
 **Goal.** Make leader election **real and deterministic** in the simulator and let a cluster
@@ -212,6 +350,40 @@ from `world.rs::step`. Reuse `hydracache-cluster-raft` for the actual vote mecha
 W1 is split (per its rollback note), land the FSM **first** so both halves build on it. Revert
 collapses to inline state handling.
 
+### W1.S — Sub-item split (W1a–W1d) + the determinism fail-loud criterion
+
+W1 is the long pole; ship it as **four ordered PRs, scope preserved** (not reduced). Each is its
+own commit with its own tests; the FSM (W1.R) lands inside W1a.
+
+| Sub-PR | Scope | Proof gate |
+| --- | --- | --- |
+| **W1a** | explicit `ClusterFsm`/`NodeFsm` transition table (W1.R) | `transition_table_is_total` |
+| **W1b** | deterministic election **driver** over the FSM | `cold_start_elects_single_leader_deterministically` + `election_run_is_replayable_from_seed` |
+| **W1c** | election/topology **invariants** (C3) wired into the checker | each C3 invariant's hold-test **and** its fault-fires-test |
+| **W1d** | cold-start formation phases in snapshot + UI (`v2`, C2) | `cold_start_drives_disconnected_to_connected_via_fsm` + UI smoke |
+
+**The determinism criterion (precise, fail-loud).** The real risk is **not** wall-clock —
+`raft-rs` (TiKV 0.7) is **tick-based**: `Raft::tick()` advances *logical* ticks and
+`election_timeout` is in tick units, so driving it from `SimClock` is fine. The actual risk is the
+**randomized election-timeout RNG inside `raft-rs`**, which is not trivially seedable from outside.
+
+W1b therefore has an explicit decision gate:
+1. **First attempt:** drive `raft-rs` by `tick()` on `SimClock` and **seed its randomized
+   election timeout deterministically** (inject/seed the RNG seam). If `same seed ⇒ same leader,
+   term, and election-message order` holds across 1000 seeded runs → done, this is the product-
+   accurate path.
+2. **If (1) cannot be made deterministic** (the RNG seam is not reachable without patching
+   `raft-rs`): **fail loud in the plan** — fall back to a **simulator election adapter** (a
+   deterministic election model over the same FSM) that is **explicitly labelled "model for the
+   demo, not the product consensus"** in the snapshot (`election_source: "raft" | "sim-model"`)
+   and in the UI. **No product correctness claim** is attached to the sim-model path (R-7); it is
+   a teaching device, and the lab says so on screen.
+
+**Proof of truthfulness for W1b.** `election_determinism_holds_over_1000_seeds` (same seed ⇒
+identical leader/term/message-order). If the product path is used, also
+`election_source_is_raft_not_model`; if the fallback is used,
+`sim_model_is_labelled_and_makes_no_product_claim` asserts the snapshot/UI disclosure exists.
+
 ---
 
 ## W2. Typed in-flight signal animation
@@ -247,6 +419,11 @@ Revert removes the field + UI layer.
 **Goal.** Let the user **push a client event** from the UI and watch the full life: the write
 lands on a node, **diverges** across replicas, **replicates**, **converges**, and a
 **listener/subscriber receives** the change — the core "I did X and the cluster did Y" loop.
+
+**Contracts.** Divergence/convergence/receipt are defined on snapshot fields per **C4** (assert
+field transitions, not visuals); the listener kind is bus-carried only (R-9). `PushEvent` /
+`Subscribe` are `ControlActionV1` cases (**C1/C6**) and so are part of the replayable script.
+Subscriber buffering is bounded per **C5**.
 
 **Files.** `world.rs` (named client actors issuing UI-driven ops tagged with `client_id`; a
 subscriber registry on the existing invalidation/event path). `snapshot.rs` (`clients:
@@ -322,6 +499,11 @@ scenarios cycling through cluster×client combinations on a loop to showcase beh
 **Mixed** (a scripted loop the user can interrupt). In **every** mode the topology stays
 **clickable** so the viewer can intervene mid-run.
 
+**Contracts.** A scenario **is** a `ReplayScriptV1` (**C1**); a user click in mixed mode is a
+`ControlActionV1` appended at the current logical step. Scripted/mixed/manual all run the **same
+`ControlActionV1` surface across native/WASM/sandbox** (**C6**), and the merged action log is
+itself a `ReplayScriptV1` that round-trips (proof in W7). Action count is bounded per **C5**.
+
 **Files.** `crates/hydracache-sim/src/scenarios.rs` (a scripted scenario catalog: cold-start
 formation, leader loss + re-election, partition + heal, scale-out, manual-push convergence,
 subscriber lag), `world.rs` (a scenario runner that interleaves scripted control actions with
@@ -354,6 +536,11 @@ guards it. Revert collapses to a single manual mode.
 **Goal.** Restyle the lab in a **liquid-glass / glassmorphism** theme (translucent layered
 panels, blur, depth, soft light) for nodes, links, animated signals, client/subscriber lanes,
 the verdict panel, and controls — modern and legible.
+
+**Contracts.** The accessibility + viewport gate is **C7** (exact start/run commands, required
+desktop 1440×900 + mobile 390×844 screenshots, and the four glass checks: no-overlap, WCAG-AA
+contrast, reduced-motion freeze, reduced-transparency opaque fallback). W6 is green only when C7
+passes; do not weaken C7 to make the theme land.
 
 **Files.** `demo/style.css` (glass tokens: translucency, backdrop-blur, layered shadows,
 gradient light; node/link/packet/lane/verdict styling), `demo/index.html` (structure for
@@ -399,26 +586,45 @@ schema bumps), `demo/tests/ui_smoke.spec.js` (consolidated).
 3. The "copy reproducer" must round-trip the full action log (seed + mode + control script).
 
 **DoD.** `crates/hydracache-sim/tests/replay_lab.rs`
-- `full_mixed_run_replays_identically_from_seed`, `every_new_snapshot_field_bumped_schema`,
-  `reproducer_roundtrips_seed_mode_and_actions`.
-- `demo/tests/ui_smoke.spec.js`: full control surface green.
-- Run: `cargo xtask verify` + the demo smoke suite.
+- `full_mixed_run_replays_identically_from_script` (the **C1** master proof: execute a
+  `ReplayScriptV1` → byte-identical snapshot-history hash; the single gate that makes the whole
+  lab provably reproducible),
+- `every_new_snapshot_field_bumped_schema` (the **C2** matrix is honored),
+- `reproducer_roundtrips_seed_mode_and_actions` (share-URL ↔ `ReplayScriptV1`).
+- `demo/tests/ui_smoke.spec.js`: full control surface green at both **C7** viewports.
+- **Run the full C8 gate list:** `cargo xtask verify` · per-W focused sim tests ·
+  `cargo build -p hydracache-sim-wasm` · sandbox `/sim/*` route tests · Playwright UI smoke (C7) ·
+  `doc-check` (COMPAT incl. C1 + C2) · publish-readiness: **no crate's `publish` field changed in
+  `0.53`** (diff check, fail loud). The sim/sim-wasm publish-list reconciliation is `0.54`'s
+  scope, not asserted here (C8).
 
 **Risk & rollback.** Non-negotiable safety net: any control (especially election) that cannot be
-made deterministic does not ship (R-5). No production surface.
+made deterministic does not ship (R-5). The **C3 invariant checkers must be falsifiable** — each
+must fire under its injected fault, or it is not trusted. No production surface.
 
 ---
 
 ## Gates (Definition of Done for the release)
 
-- `cargo xtask verify` green; demo Playwright smoke green.
-- Leader election is **modeled** (W1), covered by the election-safety invariant, and **visible**
-  (W2) — no animated fiction (R-3).
-- Determinism/replay proven for every control + election + scripted/mixed runs (W7); the
-  reproducer reproduces exactly (R-5).
-- Every new `SimSnapshot` field registered in `docs/COMPAT.md` with a schema bump (R-4).
-- WASM and sandbox `/sim/*` paths stay in parity.
-- Liquid-glass theme keeps WCAG-AA contrast + reduced-motion/transparency fallbacks (W6).
+- Full **C8** gate list green (`cargo xtask verify` · per-W sim tests · `hydracache-sim-wasm`
+  build · sandbox `/sim/*` routes · Playwright smoke at C7 viewports · `doc-check`).
+- **C1:** `ReplayScriptV1` + `ControlActionV1` shipped, share-URL round-trips, registered in
+  `docs/COMPAT.md`; the master test `full_mixed_run_replays_identically_from_script` is green.
+- **C2:** snapshot schema followed the `v2…v5` matrix; every field set advanced to its assigned
+  version with a reader window + loud unknown-future reject.
+- **C3:** all six election/topology invariants are real checkers **and each is falsifiable**
+  (fires under its injected fault) — this is the proof the visuals reflect a correct run, not
+  animation (R-3).
+- **C4:** manual-mode diverge/converge/receipt asserted on snapshot fields; listener kinds are
+  bus-carried only (R-9).
+- **C5:** all caps (in-flight, replay actions, subscriber buffer) enforced with over-budget
+  counters that fail loud (R-3/R-6).
+- **C6:** one `ControlActionV1` surface across native/WASM/sandbox; parity tests green.
+- **C7:** liquid-glass passes WCAG-AA contrast + reduced-motion/transparency fallbacks at both
+  viewports; screenshots attached to the PR.
+- Election uses `raft-rs` deterministically **or** the labelled sim-model fallback (W1.S) — if
+  the fallback, the snapshot/UI disclose `election_source: "sim-model"` and make **no** product
+  claim (R-7).
 - The lab remains a teaching/DevRel asset; no control presented as a correctness guarantee
   (RULES). No numeric self-score (R-7).
 - `releases.toml` + `INDEX.md` updated to `0.53.0`; the absorbed

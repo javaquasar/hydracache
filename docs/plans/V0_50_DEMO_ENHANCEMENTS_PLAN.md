@@ -1,10 +1,24 @@
 # HydraCache 0.50 Demo Enhancements — Interactive Cluster Lab (Execution Plan)
 
-> **Superseded by [`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md).**
-> This supporting plan's scope (in-flight message animation, one-click isolate/overload,
-> runtime add-node, visible client/subscriber actors) was **absorbed** into the numbered
-> `0.53` release, which adds modeled leader election + cold-start formation, a liquid-glass
-> UI, and the manual/scripted/mixed mode system. Kept for history; implement against `0.53`.
+> **Status: SUPERSEDED by [`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md) — historical only. DO NOT IMPLEMENT DIRECTLY.**
+>
+> This supporting plan is kept for history. Its scope was **absorbed** into the numbered `0.53`
+> release (which additionally adds modeled leader election + cold-start formation, a liquid-glass
+> UI, and the manual/scripted/mixed mode system). **All of this plan's own gates and DoD are
+> void** — they do not apply; only `0.53`'s gates and contracts (C1–C8) are authoritative. **Any
+> new requirement, field, or test for this scope goes into `0.53`, never here**, so an agent never
+> implements two competing plans.
+>
+> **Scope mapping (this plan → `0.53` work item):**
+>
+> | This plan (0.50 supporting) | Implement in `0.53` |
+> | --- | --- |
+> | W1 in-flight message animation | **W2** (typed in-flight signal animation) |
+> | W2 isolate/overload + W3 add-node | **W4** (topology intervention: isolate/disable/rejoin + add-node) |
+> | W4 client actors + W5 subscribers | **W3** (manual mode: client push → diverge → converge → listener receipt) |
+> | W6 determinism/replay + schema/COMPAT + UI-smoke | **W7** (+ contracts **C1** ReplayScriptV1, **C2** schema matrix) |
+>
+> The text below is the **original** supporting-plan content, retained unchanged for provenance.
 
 > **At a glance**
 > - **What:** turn the shipped `0.50` browser simulator into a hands-on **interactive

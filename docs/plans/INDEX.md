@@ -137,6 +137,12 @@ model-only coverage to live networked transport coverage.
   animation, one-click node isolate/overload, runtime add-node, visible client/subscriber
   actors); scope absorbed into [`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md).
   Kept for history.
+- [`V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md`](V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md) —
+  **DRAFT (version TBD, not sequenced)**. Idea-capture for durable value-store & snapshot
+  hardening: versioned file-store format + iterators + inspect util + file-set rotation/compaction
+  (blazingmq `mqbs_filestore`), barrier-aligned cluster-wide consistent checkpoint + rescale
+  (arroyo controller), poison-load circuit-breaker (blazingmq poison-pill analog). Builds on 0.51
+  persistence; promote to a numbered release (next free 0.55) before implementing.
 - [`V0_37_41_REVIEW_AND_IMPROVEMENTS.md`](V0_37_41_REVIEW_AND_IMPROVEMENTS.md) —
   cross-project architecture review and the Hazelcast-vs-ScyllaDB decision driving the
   cluster track.

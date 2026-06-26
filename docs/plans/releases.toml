@@ -138,3 +138,10 @@ file = "docs/plans/V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md"
 status = "planned"
 theme = "External invalidation transports — pluggable InvalidationTransport trait over the existing CacheInvalidationFrame plus opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness between processes/clusters, with message_id watermark dedup/resume via the 0.46 ring, loop prevention, fail-loud failure, bounded buffers, bounded-label metrics. Off the local cache fast path (R-10), not an event log (R-9), no new consistency level (R-1). Blueprint: arroyo connector-as-module pattern (ships redis/nats)"
 depends_on = ["0.46.0"]
+
+[[release]]
+version = "TBD"
+file = "docs/plans/V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md"
+status = "draft"
+theme = "DRAFT (idea capture, not sequenced) — durable value-store & snapshot hardening: versioned file-store format + iterators + inspect util and file-set rotation/compaction (blazingmq mqbs_filestore pattern), barrier-aligned cluster-wide consistent checkpoint + rescale-with-checkpoint (arroyo controller pattern), and a poison-load circuit-breaker (blazingmq poison-pill analog). Builds on 0.51 persistence + 0.43 tiered/reshard, validated by 0.44 DST. Promote to a numbered release (next free 0.55) before implementing"
+depends_on = ["0.51.0"]
