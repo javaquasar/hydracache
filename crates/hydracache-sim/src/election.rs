@@ -1266,7 +1266,10 @@ mod node_lifecycle_tests {
         let mut remaining = members.clone();
         let mut step = 40;
         for _ in 0..3 {
-            let leader = driver.leader().cloned().expect("a leader before each decommission");
+            let leader = driver
+                .leader()
+                .cloned()
+                .expect("a leader before each decommission");
             driver.remove_node(&leader);
             remaining.remove(&leader);
             for current in step..step + 12 {
@@ -1275,8 +1278,14 @@ mod node_lifecycle_tests {
             step += 12;
         }
 
-        let leader = driver.leader().cloned().expect("the remaining members must elect a leader");
-        assert!(remaining.contains(&leader), "the leader is one of the still-voting members");
+        let leader = driver
+            .leader()
+            .cloned()
+            .expect("the remaining members must elect a leader");
+        assert!(
+            remaining.contains(&leader),
+            "the leader is one of the still-voting members"
+        );
     }
 
     // Contrast (safety): crashing a *majority* must NOT elect a leader — crashed
