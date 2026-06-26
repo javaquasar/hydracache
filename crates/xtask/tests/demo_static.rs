@@ -89,7 +89,8 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("prefers-reduced-motion"));
     assert!(js.contains("prefers-reduced-transparency"));
     assert!(js.contains("renderPacketLayer"));
-    assert!(js.contains("packetProgress"));
+    assert!(js.contains("positionPacket(packet, progress)"));
+    assert!(js.contains("state.packets.push"));
     assert!(js.contains("node.disabled"));
     assert!(js.contains("add_node("));
     assert!(js.contains("isolate_node("));
