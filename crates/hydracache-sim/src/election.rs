@@ -1156,13 +1156,24 @@ mod node_lifecycle_tests {
         let mut without = members.clone();
         without.remove(&leader);
         let mut step = 30;
-        while step < 70 && driver.leader().map(|current| current == &leader).unwrap_or(true) {
+        while step < 70
+            && driver
+                .leader()
+                .map(|current| current == &leader)
+                .unwrap_or(true)
+        {
             driver.step(step, &without);
             step += 1;
         }
 
-        let new_leader = driver.leader().cloned().expect("a new leader must be re-elected");
-        assert_ne!(new_leader, leader, "new leader differs from the crashed leader");
+        let new_leader = driver
+            .leader()
+            .cloned()
+            .expect("a new leader must be re-elected");
+        assert_ne!(
+            new_leader, leader,
+            "new leader differs from the crashed leader"
+        );
         assert!(
             without.contains(&new_leader),
             "the new leader must be one of the live nodes"
@@ -1190,14 +1201,15 @@ mod node_lifecycle_tests {
             driver.step(current, &all);
         }
 
-        assert!(driver.leader().is_some(), "a leader must exist to heartbeat joiners");
+        assert!(
+            driver.leader().is_some(),
+            "a leader must exist to heartbeat joiners"
+        );
         let snapshot = driver.snapshot();
         let stuck = snapshot
             .nodes
             .iter()
-            .filter(|node| {
-                !matches!(node.state, NodeFsmState::Follower | NodeFsmState::Leader)
-            })
+            .filter(|node| !matches!(node.state, NodeFsmState::Follower | NodeFsmState::Leader))
             .map(|node| format!("{}={:?}", node.node_id.as_str(), node.state))
             .collect::<Vec<_>>();
         assert!(
