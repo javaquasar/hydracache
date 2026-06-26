@@ -358,6 +358,42 @@ p {
   font-size: 13px;
 }
 
+/* Colour the node rows by role, matching the graph circles. */
+.node-row {
+  border-left-width: 4px;
+  transition: border-left-color 260ms ease;
+}
+
+.node-row.role-leader {
+  border-left-color: var(--accent-strong);
+}
+
+.node-row.role-follower {
+  border-left-color: var(--accent);
+}
+
+.node-row.role-candidate {
+  border-left-color: var(--warn);
+}
+
+.node-row.role-joining,
+.node-row.role-catching_up {
+  border-left-color: var(--accent-alt);
+}
+
+.node-row.role-unknown,
+.node-row.role-disconnected {
+  border-left-color: #93a3a0;
+}
+
+.node-row.role-disabled {
+  border-left-color: #9aa0a0;
+}
+
+.node-row.role-crashed {
+  border-left-color: var(--danger);
+}
+
 /* Signals list keeps a stable height so new in-flight rows do not shove the
    panels below it up and down on every step. */
 #signals-panel {

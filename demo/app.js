@@ -351,10 +351,11 @@ function renderNodes(snapshot) {
   const list = document.createElement("div");
   list.className = "metric-list";
   for (const node of snapshot.nodes) {
+    const status = nodeStatus(node);
     const row = document.createElement("div");
-    row.className = "metric";
+    row.className = `metric node-row role-${status}`;
     const label = document.createElement("strong");
-    label.textContent = `${node.id} ${node.crashed ? "crashed" : node.disabled ? "disabled" : node.vote_state || "up"}`;
+    label.textContent = `${node.id} ${status}`;
     const meta = document.createElement("span");
     meta.textContent = `term ${node.term}; votes ${node.votes_received}`;
     const buttons = document.createElement("div");
