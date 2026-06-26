@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use hydracache_sim::{
-    ControlActionV1, ReplayScriptV1, SimConfig, SimMode, SimSnapshot, SimWorld,
+    ControlActionV1, ReplayScriptV1, SimConfig, SimMode, SimSnapshot, SimWorld, VerdictView,
     SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 
@@ -86,6 +86,30 @@ fn reproducer_roundtrips_seed_mode_and_actions() {
     assert_eq!(reproducer.mode, SimMode::Mixed);
     assert_eq!(reproducer.scenario.as_deref(), Some("mixed-lab"));
     assert_eq!(reproducer.actions, script.actions);
+}
+
+#[test]
+fn seed_80_manual_scale_out_replay_keeps_quorum_invariants() {
+    let script = ReplayScriptV1::new(
+        80,
+        SimMode::Manual,
+        vec![
+            ControlActionV1::AddNode { at_step: 48 },
+            ControlActionV1::AddNode { at_step: 60 },
+            ControlActionV1::AddNode { at_step: 62 },
+            ControlActionV1::Step { at_step: 62, n: 29 },
+        ],
+    );
+    let world = run_script(&script);
+
+    assert_eq!(world.outcome().steps, 91);
+    assert!(
+        world.invariant_report().is_ok(),
+        "manual seed 80 scale-out replay must not trip leader quorum"
+    );
+    let snapshot = world.snapshot();
+    assert_eq!(snapshot.nodes.len(), 6);
+    assert_eq!(snapshot.verdict, VerdictView::Holding);
 }
 
 fn mixed_lab_script() -> ReplayScriptV1 {

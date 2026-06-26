@@ -843,6 +843,25 @@ impl ElectionDriver {
             }
         }
 
+        let quorum = quorum(self.nodes.len());
+        if live_nodes.len() < quorum {
+            self.pending_candidate = None;
+            if let Some(leader) = self.leader.take() {
+                self.apply_node(&leader, ClusterFsmEvent::LeaderLost, logical_step);
+                if let Some(node) = self.nodes.get_mut(&leader) {
+                    node.clear_vote();
+                }
+                self.trace
+                    .push(format!("election:{logical_step}:leader-lost:{leader}"));
+            }
+            self.apply_cluster(ClusterFsmEvent::Isolate, logical_step);
+            self.trace.push(format!(
+                "election:{logical_step}:no-quorum:live={} quorum={quorum}",
+                live_nodes.len()
+            ));
+            return;
+        }
+
         if let Some(leader) = self.leader.clone() {
             if live_nodes.contains(&leader) {
                 self.heartbeat_from_leader(&leader, live_nodes, logical_step);
@@ -852,17 +871,6 @@ impl ElectionDriver {
             self.apply_cluster(ClusterFsmEvent::LeaderLost, logical_step);
             self.trace
                 .push(format!("election:{logical_step}:leader-lost:{leader}"));
-        }
-
-        let quorum = quorum(self.nodes.len());
-        if live_nodes.len() < quorum {
-            self.pending_candidate = None;
-            self.apply_cluster(ClusterFsmEvent::Isolate, logical_step);
-            self.trace.push(format!(
-                "election:{logical_step}:no-quorum:live={} quorum={quorum}",
-                live_nodes.len()
-            ));
-            return;
         }
 
         if let Some(candidate) = self.pending_candidate.clone() {
@@ -986,6 +994,9 @@ impl ElectionDriver {
     ) {
         self.signals.clear();
         let term = self.term();
+        if let Some(node) = self.nodes.get_mut(leader) {
+            node.observe_vote(leader.clone(), live_nodes.len());
+        }
         for node_id in live_nodes {
             if node_id != leader {
                 self.apply_node(node_id, ClusterFsmEvent::LeaderHeartbeat, logical_step);
@@ -1233,6 +1244,40 @@ mod node_lifecycle_tests {
         );
     }
 
+    #[test]
+    fn scale_out_refreshes_leader_quorum_support() {
+        let members = live(&["node-0", "node-1", "node-2"]);
+        let mut driver = ElectionDriver::new(80, members.clone());
+        run_to_leader(&mut driver, &members);
+        let initial_leader = driver.leader().cloned().expect("initial leader");
+
+        let mut all = members.clone();
+        let mut step = 48;
+        for index in 3..6 {
+            let name = format!("node-{index}");
+            driver.add_node(nid(&name), step);
+            all.insert(nid(&name));
+            driver.step(step, &all);
+            step += 1;
+        }
+        for current in step..step + 8 {
+            driver.step(current, &all);
+        }
+
+        assert_eq!(driver.leader(), Some(&initial_leader));
+        let snapshot = driver.snapshot();
+        let leader = snapshot
+            .nodes
+            .iter()
+            .find(|node| node.node_id == initial_leader)
+            .expect("leader is still in snapshot");
+        assert_eq!(leader.state, NodeFsmState::Leader);
+        assert!(
+            leader.votes_received >= quorum(all.len()),
+            "leader quorum support must track the grown voting set"
+        );
+    }
+
     // Repro for "disable the leader -> no new leader -> joiners stuck": after the
     // leader is taken away, re-election must produce a live leader.
     #[test]
@@ -1251,6 +1296,28 @@ mod node_lifecycle_tests {
         let new_leader = driver.leader().cloned().expect("re-elected leader");
         assert_ne!(new_leader, leader);
         assert!(without.contains(&new_leader));
+    }
+
+    #[test]
+    fn live_leader_steps_down_without_quorum() {
+        let members = live(&["node-0", "node-1", "node-2", "node-3", "node-4", "node-5"]);
+        let mut driver = ElectionDriver::new(19, members.clone());
+        run_to_leader(&mut driver, &members);
+        let leader = driver.leader().cloned().expect("initial leader");
+
+        let mut minority = BTreeSet::new();
+        minority.insert(leader.clone());
+        for node in members.iter().filter(|node| **node != leader).take(2) {
+            minority.insert(node.clone());
+        }
+
+        driver.step(40, &minority);
+
+        assert!(
+            driver.leader().is_none(),
+            "a live leader in a minority must step down before heartbeating"
+        );
+        assert_ne!(role(&driver, leader.as_str()), NodeFsmState::Leader);
     }
 
     // Disabling (decommissioning) leaders one after another must keep electing a

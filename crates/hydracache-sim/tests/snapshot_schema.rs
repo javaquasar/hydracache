@@ -126,13 +126,10 @@ fn manual_client_and_subscriber_expose_connected_node() {
         .as_deref()
         .expect("client routes to a live node");
     assert!(node_ids.iter().any(|id| id == connected));
-    assert!(snapshot
-        .subscribers
-        .iter()
-        .all(|subscriber| subscriber
-            .connected_node
-            .as_deref()
-            .is_some_and(|node| node_ids.iter().any(|id| id == node))));
+    assert!(snapshot.subscribers.iter().all(|subscriber| subscriber
+        .connected_node
+        .as_deref()
+        .is_some_and(|node| node_ids.iter().any(|id| id == node))));
 }
 
 #[test]
