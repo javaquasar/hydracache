@@ -203,7 +203,7 @@ function render() {
       ? `${snapshot.mode} · ${snapshot.intervention_count} replay action(s)`
       : `${snapshot.mode || "manual"} · no interventions`;
   renderVerdict(snapshot);
-  renderGraph(snapshot);
+  syncGraph(snapshot);
   renderSelectedLink();
   renderProgress(snapshot);
   renderNodes(snapshot);
@@ -227,169 +227,541 @@ function renderVerdict(snapshot) {
   }
 }
 
-function renderGraph(snapshot) {
-  el.graph.replaceChildren();
-  const positions = layoutNodes(snapshot.nodes);
-  const linkLayer = svg("g", { class: "links" });
-  const packetLayer = svg("g", { class: "packet-layer", "aria-hidden": "true" });
-  const nodeLayer = svg("g", { class: "nodes" });
-  el.graph.append(linkLayer, packetLayer, nodeLayer);
+// ---------------------------------------------------------------------------
+// Force-directed, draggable cluster graph (Obsidian-style). Positions persist
+// across snapshots; a physics tick (repulsion + edge springs) keeps spacing and
+// smoothly pulls a client to a new node when its routing changes; vertices are
+// draggable and the canvas pans. DOM is rebuilt only on topology change; visual
+// attributes and positions update in place.
+// ---------------------------------------------------------------------------
+const GRAPH = {
+  center: { x: 400, y: 260 },
+  nodeRadius: 46,
+  entityRadius: 20,
+  springNode: 168, // rest length between cluster nodes (more breathing room)
+  springEntity: 132, // rest length node <-> client/subscriber (bigger distance)
+  repulsion: 52000,
+  spring: 0.018,
+  damping: 0.85,
+  centerPull: 0.006,
+  maxVelocity: 26,
+};
 
+const graphSim = {
+  pos: new Map(), // id -> { x, y, vx, vy, fixed, kind }
+  vertices: [], // [{ id, kind }]
+  edges: [], // [{ a, b, kind }]
+  dom: null,
+  topoKey: "",
+  view: { tx: 0, ty: 0, scale: 1 },
+  drag: null,
+  raf: null,
+  packets: [],
+  pulses: [],
+  interactionsBound: false,
+};
+
+function resetGraph() {
+  if (graphSim.raf !== null) {
+    cancelAnimationFrame(graphSim.raf);
+    graphSim.raf = null;
+  }
+  graphSim.pos.clear();
+  graphSim.topoKey = "";
+  graphSim.view = { tx: 0, ty: 0, scale: 1 };
+  graphSim.drag = null;
+  graphSim.packets = [];
+}
+
+function syncGraph(snapshot) {
+  bindGraphInteractions();
+  const nodes = snapshot.nodes || [];
+  const clients = snapshot.clients || [];
+  const subscribers = snapshot.subscribers || [];
+
+  // Vertices.
+  const vertices = nodes.map((n) => ({ id: n.id, kind: "node" }));
+  for (const c of clients) vertices.push({ id: `client:${c.id}`, kind: "client", ref: c });
+  for (const s of subscribers) vertices.push({ id: `sub:${s.id}`, kind: "subscriber", ref: s });
+
+  // Edges: cluster node pairs (deduped) + entity -> connected node.
+  const edges = [];
   const drawnPairs = new Set();
-  for (const link of snapshot.links) {
-    // Draw each unordered pair once. The snapshot carries both directed links
-    // (a->b and b->a); drawing both overlaps two dashed partition lines whose
-    // phases drift with line length, which is why diagonals looked denser than
-    // horizontals. One line per pair removes that artifact.
-    const pairKey = [link.from, link.to].slice().sort().join(" ");
-    if (drawnPairs.has(pairKey)) {
-      continue;
-    }
-    drawnPairs.add(pairKey);
-    const from = positions.get(link.from);
-    const to = positions.get(link.to);
-    if (!from || !to) {
-      continue;
-    }
-    const reverse = snapshot.links.find((other) => other.from === link.to && other.to === link.from);
-    const linkState = worstLinkState(link.state, reverse?.state);
-    const selected = isSelectedLink(link);
-    const className = ["link", linkState, selected ? "selected" : ""].filter(Boolean).join(" ");
-    const visual = svg("line", {
-      class: className,
-      x1: from.x,
-      y1: from.y,
-      x2: to.x,
-      y2: to.y,
-      "data-from": link.from,
-      "data-to": link.to,
-    });
-    const hit = svg("line", {
-      class: "link-hit",
-      x1: from.x,
-      y1: from.y,
-      x2: to.x,
-      y2: to.y,
-      "data-from": link.from,
-      "data-to": link.to,
-    });
-    hit.addEventListener("click", () => {
-      state.selectedLink = { from: link.from, to: link.to };
-      render();
-    });
-    linkLayer.append(visual, hit);
+  for (const link of snapshot.links || []) {
+    const key = [link.from, link.to].slice().sort().join("|");
+    if (drawnPairs.has(key)) continue;
+    drawnPairs.add(key);
+    const reverse = (snapshot.links || []).find((o) => o.from === link.to && o.to === link.from);
+    edges.push({ a: link.from, b: link.to, kind: "node", state: worstLinkState(link.state, reverse?.state), from: link.from, to: link.to });
+  }
+  for (const c of clients) {
+    if (c.connected_node) edges.push({ a: c.connected_node, b: `client:${c.id}`, kind: "entity", active: Boolean(c.last_op) });
+  }
+  for (const s of subscribers) {
+    if (s.connected_node) edges.push({ a: s.connected_node, b: `sub:${s.id}`, kind: "entity", active: Boolean(s.last_event) });
   }
 
-  renderPacketLayer(packetLayer, positions, snapshot);
+  graphSim.vertices = vertices;
+  graphSim.edges = edges;
 
-  for (const node of snapshot.nodes) {
-    const pos = positions.get(node.id);
-    const status = nodeStatus(node);
-    const isNew = !state.seenNodes.has(node.id);
-    state.seenNodes.add(node.id);
-    const group = svg("g", {
-      class: [
-        "node",
-        `role-${status}`,
-        node.crashed ? "crashed" : "",
-        node.disabled ? "disabled" : "",
-        isNew ? "joining" : "",
-      ]
-        .filter(Boolean)
-        .join(" "),
-      transform: `translate(${pos.x} ${pos.y})`,
-    });
-    group.append(
-      svg("circle", { r: 46 }),
-      svg("text", { y: -5 }, node.id),
-      svg("text", { y: 17 }, status),
-    );
-    nodeLayer.append(group);
+  // Persist / initialise positions.
+  const liveIds = new Set(vertices.map((v) => v.id));
+  for (const id of [...graphSim.pos.keys()]) if (!liveIds.has(id)) graphSim.pos.delete(id);
+  vertices.forEach((v, index) => ensureVertexPosition(v, index, vertices.length));
+
+  // Rebuild DOM only when the set of vertices/edges changes.
+  const topoKey = vertices.map((v) => v.id).join(",") + "::" + edges.map((e) => `${e.a}>${e.b}`).join(",");
+  if (topoKey !== graphSim.topoKey) {
+    buildGraphDom(snapshot);
+    graphSim.topoKey = topoKey;
   }
 
-  renderEntityLayer(el.graph, positions, snapshot);
+  updateGraphVisuals(snapshot);
+  rebuildPackets(snapshot);
+  startGraphSim();
 }
 
-// Place manual clients and subscribers just outside the cluster ring, near the
-// node they are routed to, so the viewer sees which node each one connected to.
-function layoutEntities(snapshot, nodePositions) {
-  const center = { x: 400, y: 260 };
-  const entities = [];
-  const perNode = new Map();
-  const place = (list, kind) => {
-    for (const item of list || []) {
-      const node = item.connected_node;
-      const np = node ? nodePositions.get(node) : null;
-      if (!np) {
-        continue;
-      }
-      let dx = np.x - center.x;
-      let dy = np.y - center.y;
-      let len = Math.hypot(dx, dy);
-      if (len < 1) {
-        dx = 0;
-        dy = -1;
-        len = 1;
-      }
-      const ux = dx / len;
-      const uy = dy / len;
-      const perp = { x: -uy, y: ux };
-      const idx = perNode.get(node) || 0;
-      perNode.set(node, idx + 1);
-      const reach = 60 + Math.floor(idx / 2) * 38;
-      const side = (kind === "subscriber" ? 26 : -26) + (idx % 2 === 0 ? 0 : kind === "subscriber" ? 16 : -16);
-      entities.push({
-        ...item,
-        kind,
-        nodeX: np.x,
-        nodeY: np.y,
-        x: np.x + ux * reach + perp.x * side,
-        y: np.y + uy * reach + perp.y * side,
-      });
-    }
-  };
-  place(snapshot.clients, "client");
-  place(snapshot.subscribers, "subscriber");
-  return entities;
-}
-
-function renderEntityLayer(graph, positions, snapshot) {
-  const entities = layoutEntities(snapshot, positions);
-  if (entities.length === 0) {
+function ensureVertexPosition(vertex, index, count) {
+  if (graphSim.pos.has(vertex.id)) {
+    graphSim.pos.get(vertex.id).kind = vertex.kind;
     return;
   }
-  const linkLayer = svg("g", { class: "entity-links", "aria-hidden": "true" });
-  const layer = svg("g", { class: "entities" });
-  graph.append(linkLayer, layer);
-
-  for (const entity of entities) {
-    const active = entity.kind === "client" ? Boolean(entity.last_op) : Boolean(entity.last_event);
-    linkLayer.append(
-      svg("line", {
-        class: ["entity-link", entity.kind, active ? "active" : ""].filter(Boolean).join(" "),
-        x1: entity.nodeX,
-        y1: entity.nodeY,
-        x2: entity.x,
-        y2: entity.y,
-      }),
-    );
-
-    const group = svg("g", {
-      class: ["entity", entity.kind, active ? "active" : ""].filter(Boolean).join(" "),
-      transform: `translate(${entity.x} ${entity.y})`,
-    });
-    group.append(
-      svg("circle", { r: 20 }),
-      svg("text", { class: "entity-id", y: 4 }, entity.kind === "client" ? entity.id : entity.client_id || entity.id),
-      svg("text", { class: "entity-sub", y: 36 }, entity.namespace || ""),
-    );
-    if (entity.kind === "client") {
-      group.classList.add("clickable");
-      group.append(svg("title", {}, `Click to push to ${entity.namespace}`));
-      group.addEventListener("click", () => void pushEventFor(entity.id, entity.namespace));
-    }
-    layer.append(group);
+  let x;
+  let y;
+  if (vertex.kind === "node") {
+    const angle = -Math.PI / 2 + (index * Math.PI * 2) / Math.max(count, 1);
+    x = GRAPH.center.x + Math.cos(angle) * 150;
+    y = GRAPH.center.y + Math.sin(angle) * 150;
+  } else {
+    // Spawn next to the node it connects to, so it eases in instead of flying.
+    const nodeId = vertex.ref?.connected_node;
+    const anchor = nodeId ? graphSim.pos.get(nodeId) : null;
+    const base = anchor || GRAPH.center;
+    x = base.x + (Math.random() - 0.5) * 60;
+    y = base.y + (Math.random() - 0.5) * 60 + 70;
   }
+  graphSim.pos.set(vertex.id, { x, y, vx: 0, vy: 0, fixed: false, kind: vertex.kind });
+}
+
+function buildGraphDom(snapshot) {
+  el.graph.replaceChildren();
+  const viewport = svg("g", { class: "graph-viewport" });
+  const edgeLayer = svg("g", { class: "links" });
+  const entityLinkLayer = svg("g", { class: "entity-links", "aria-hidden": "true" });
+  const packetLayer = svg("g", { class: "packet-layer", "aria-hidden": "true" });
+  const pulseLayer = svg("g", { class: "pulse-layer", "aria-hidden": "true" });
+  const vertexLayer = svg("g", { class: "vertices" });
+  viewport.append(edgeLayer, entityLinkLayer, packetLayer, pulseLayer, vertexLayer);
+  el.graph.append(viewport);
+
+  const dom = { viewport, packetLayer, pulseLayer, edges: [], entityEdges: [], vertices: new Map() };
+
+  for (const edge of graphSim.edges) {
+    if (edge.kind === "node") {
+      const visual = svg("line", { class: "link" });
+      const hit = svg("line", { class: "link-hit" });
+      hit.addEventListener("click", (event) => {
+        event.stopPropagation();
+        state.selectedLink = { from: edge.from, to: edge.to };
+        render();
+      });
+      edgeLayer.append(visual, hit);
+      dom.edges.push({ edge, visual, hit });
+    } else {
+      const line = svg("line", { class: "entity-link" });
+      entityLinkLayer.append(line);
+      dom.entityEdges.push({ edge, line });
+    }
+  }
+
+  for (const vertex of graphSim.vertices) {
+    const group = svg("g", { class: "vertex" });
+    if (vertex.kind === "node") {
+      group.append(svg("circle", { r: GRAPH.nodeRadius }), svg("text", { class: "v-id", y: -5 }), svg("text", { class: "v-sub", y: 17 }));
+    } else {
+      group.append(
+        svg("circle", { r: GRAPH.entityRadius }),
+        svg("text", { class: "entity-id", y: 4 }),
+        svg("text", { class: "entity-sub", y: 36 }),
+      );
+      if (vertex.kind === "client") group.append(svg("title", {}, "Click to push (drag to move)"));
+    }
+    bindVertexDrag(group, vertex);
+    vertexLayer.append(group);
+    dom.vertices.set(vertex.id, { group, vertex });
+  }
+
+  graphSim.dom = dom;
+}
+
+function updateGraphVisuals(snapshot) {
+  const nodeById = new Map((snapshot.nodes || []).map((n) => [n.id, n]));
+  for (const [, item] of graphSim.dom.vertices) {
+    const v = item.vertex;
+    if (v.kind === "node") {
+      const node = nodeById.get(v.id);
+      if (!node) continue;
+      const status = nodeStatus(node);
+      const isNew = !state.seenNodes.has(node.id);
+      state.seenNodes.add(node.id);
+      item.group.setAttribute(
+        "class",
+        ["vertex", "node", `role-${status}`, node.crashed ? "crashed" : "", node.disabled ? "disabled" : "", isNew ? "joining" : ""].filter(Boolean).join(" "),
+      );
+      item.group.querySelector(".v-id").textContent = node.id;
+      item.group.querySelector(".v-sub").textContent = status;
+    } else {
+      const ref = v.ref;
+      const active = v.kind === "client" ? Boolean(ref.last_op) : Boolean(ref.last_event);
+      item.group.setAttribute("class", ["vertex", "entity", v.kind, active ? "active" : "", v.kind === "client" ? "clickable" : ""].filter(Boolean).join(" "));
+      item.group.querySelector(".entity-id").textContent = v.kind === "client" ? ref.id : ref.client_id || ref.id;
+      item.group.querySelector(".entity-sub").textContent = ref.namespace || "";
+    }
+  }
+  for (const { edge, visual } of graphSim.dom.edges) {
+    const selected = state.selectedLink && state.selectedLink.from === edge.from && state.selectedLink.to === edge.to;
+    visual.setAttribute("class", ["link", edge.state, selected ? "selected" : ""].filter(Boolean).join(" "));
+  }
+  for (const { edge, line } of graphSim.dom.entityEdges) {
+    line.setAttribute("class", ["entity-link", edge.kind === "entity" && edge.b.startsWith("sub:") ? "subscriber" : "client", edge.active ? "active" : ""].filter(Boolean).join(" "));
+  }
+}
+
+function rebuildPackets(snapshot) {
+  graphSim.packets = [];
+  if (!graphSim.dom) return;
+  graphSim.dom.packetLayer.replaceChildren();
+  const messages = (snapshot.in_flight || []).slice(0, 16);
+  messages.forEach((message, index) => {
+    if (!graphSim.pos.has(message.from) || !graphSim.pos.has(message.to)) return;
+    const kind = packetKind(message.kind);
+    const trail = svg("line", { class: `packet-trail ${kind}` });
+    const dot = svg("circle", { class: `packet ${kind}`, r: 7 });
+    graphSim.dom.packetLayer.append(trail, dot);
+    graphSim.packets.push({ dot, trail, from: message.from, to: message.to, offset: index / Math.max(messages.length, 1) });
+  });
+}
+
+function applyGraphForces() {
+  const V = graphSim.vertices;
+  const P = graphSim.pos;
+  for (let i = 0; i < V.length; i += 1) {
+    const pi = P.get(V[i].id);
+    for (let j = i + 1; j < V.length; j += 1) {
+      const pj = P.get(V[j].id);
+      let dx = pi.x - pj.x;
+      let dy = pi.y - pj.y;
+      let d2 = dx * dx + dy * dy;
+      if (d2 < 1) {
+        dx = Math.random() - 0.5;
+        dy = Math.random() - 0.5;
+        d2 = 1;
+      }
+      const f = GRAPH.repulsion / d2;
+      const d = Math.sqrt(d2);
+      const fx = (dx / d) * f;
+      const fy = (dy / d) * f;
+      pi.vx += fx;
+      pi.vy += fy;
+      pj.vx -= fx;
+      pj.vy -= fy;
+    }
+  }
+  for (const e of graphSim.edges) {
+    const pa = P.get(e.a);
+    const pb = P.get(e.b);
+    if (!pa || !pb) continue;
+    let dx = pb.x - pa.x;
+    let dy = pb.y - pa.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const rest = e.kind === "entity" ? GRAPH.springEntity : GRAPH.springNode;
+    const f = (d - rest) * GRAPH.spring;
+    const fx = (dx / d) * f;
+    const fy = (dy / d) * f;
+    pa.vx += fx;
+    pa.vy += fy;
+    pb.vx -= fx;
+    pb.vy -= fy;
+  }
+  let energy = 0;
+  const padX = 74;
+  const padY = 54;
+  for (const v of V) {
+    const p = P.get(v.id);
+    // Pull everything gently toward the centre; entities a little less so they
+    // can sit outside the cluster but still drift in-screen when there's room.
+    const pull = v.kind === "node" ? GRAPH.centerPull : GRAPH.centerPull * 0.5;
+    p.vx += (GRAPH.center.x - p.x) * pull;
+    p.vy += (GRAPH.center.y - p.y) * pull;
+    if (p.fixed) {
+      p.vx = 0;
+      p.vy = 0;
+      continue;
+    }
+    p.vx = Math.max(-GRAPH.maxVelocity, Math.min(GRAPH.maxVelocity, p.vx * GRAPH.damping));
+    p.vy = Math.max(-GRAPH.maxVelocity, Math.min(GRAPH.maxVelocity, p.vy * GRAPH.damping));
+    p.x += p.vx;
+    p.y += p.vy;
+    // Keep physics-driven vertices inside the visible viewBox so clients and
+    // subscribers do not drift off-screen (a held drag is exempt above).
+    if (p.x < padX) {
+      p.x = padX;
+      p.vx = 0;
+    } else if (p.x > 800 - padX) {
+      p.x = 800 - padX;
+      p.vx = 0;
+    }
+    if (p.y < padY) {
+      p.y = padY;
+      p.vy = 0;
+    } else if (p.y > 520 - padY) {
+      p.y = 520 - padY;
+      p.vy = 0;
+    }
+    energy += p.vx * p.vx + p.vy * p.vy;
+  }
+  return energy;
+}
+
+function paintGraph(now) {
+  const P = graphSim.pos;
+  if (graphSim.dom) {
+    graphSim.dom.viewport.setAttribute(
+      "transform",
+      `translate(${graphSim.view.tx} ${graphSim.view.ty}) scale(${graphSim.view.scale})`,
+    );
+    for (const [id, item] of graphSim.dom.vertices) {
+      const p = P.get(id);
+      if (p) item.group.setAttribute("transform", `translate(${p.x} ${p.y})`);
+    }
+    const setLine = (line, a, b) => {
+      const pa = P.get(a);
+      const pb = P.get(b);
+      if (!pa || !pb) return;
+      line.setAttribute("x1", pa.x);
+      line.setAttribute("y1", pa.y);
+      line.setAttribute("x2", pb.x);
+      line.setAttribute("y2", pb.y);
+    };
+    for (const { edge, visual, hit } of graphSim.dom.edges) {
+      setLine(visual, edge.a, edge.b);
+      setLine(hit, edge.a, edge.b);
+    }
+    for (const { edge, line } of graphSim.dom.entityEdges) setLine(line, edge.a, edge.b);
+  }
+  const reduced = document.documentElement.dataset.reducedMotion === "true";
+  const base = (now / 1150) % 1;
+  for (const packet of graphSim.packets) {
+    const pa = P.get(packet.from);
+    const pb = P.get(packet.to);
+    if (!pa || !pb) continue;
+    const progress = reduced ? 0.5 : (base + packet.offset) % 1;
+    const x = pa.x + (pb.x - pa.x) * progress;
+    const y = pa.y + (pb.y - pa.y) * progress;
+    packet.dot.setAttribute("cx", x);
+    packet.dot.setAttribute("cy", y);
+    const tail = Math.max(0, progress - 0.16);
+    packet.trail.setAttribute("x1", pa.x + (pb.x - pa.x) * tail);
+    packet.trail.setAttribute("y1", pa.y + (pb.y - pa.y) * tail);
+    packet.trail.setAttribute("x2", x);
+    packet.trail.setAttribute("y2", y);
+  }
+  updatePulses(now);
+}
+
+// Transient, choreographed "data flow" triggered by a client push: request travels
+// client -> entry node, replicates entry node -> peers, then is delivered entry
+// node(s) -> subscriber(s). Decorative overlay on its own layer (survives refresh).
+function updatePulses(now) {
+  if (graphSim.pulses.length === 0) {
+    return;
+  }
+  const P = graphSim.pos;
+  const remaining = [];
+  for (const pulse of graphSim.pulses) {
+    let alive = false;
+    for (const mover of pulse.movers) {
+      const t = now - pulse.t0 - mover.startMs;
+      if (t < 0) {
+        mover.dot.setAttribute("opacity", "0");
+        alive = true;
+        continue;
+      }
+      const progress = t / mover.durMs;
+      if (progress >= 1) {
+        mover.dot.setAttribute("opacity", "0");
+        continue;
+      }
+      alive = true;
+      const pa = P.get(mover.fromId);
+      const pb = P.get(mover.toId);
+      if (!pa || !pb) {
+        continue;
+      }
+      mover.dot.setAttribute("opacity", "1");
+      mover.dot.setAttribute("cx", pa.x + (pb.x - pa.x) * progress);
+      mover.dot.setAttribute("cy", pa.y + (pb.y - pa.y) * progress);
+    }
+    if (alive) {
+      remaining.push(pulse);
+    } else {
+      for (const mover of pulse.movers) mover.dot.remove();
+    }
+  }
+  graphSim.pulses = remaining;
+}
+
+function playDataFlowPulse(clientId, namespace) {
+  if (!graphSim.dom || !state.snapshot) {
+    return;
+  }
+  if (document.documentElement.dataset.reducedMotion === "true") {
+    return;
+  }
+  const snapshot = state.snapshot;
+  const clientVertexId = `client:${clientId}`;
+  const client = (snapshot.clients || []).find((c) => c.id === clientId);
+  const entryNode = client?.connected_node;
+  if (!entryNode || !graphSim.pos.has(clientVertexId)) {
+    return;
+  }
+  const peers = (snapshot.nodes || [])
+    .filter((n) => !n.crashed && !n.disabled && n.id !== entryNode)
+    .map((n) => n.id);
+  const subscribers = (snapshot.subscribers || []).filter(
+    (s) => s.namespace === namespace && s.connected_node,
+  );
+
+  const movers = [];
+  const add = (fromId, toId, startMs, durMs, kind) => {
+    if (!graphSim.pos.has(fromId) || !graphSim.pos.has(toId)) {
+      return;
+    }
+    const dot = svg("circle", { class: `pulse ${kind}`, r: 6, opacity: 0, cx: 0, cy: 0 });
+    graphSim.dom.pulseLayer.append(dot);
+    movers.push({ fromId, toId, startMs, durMs, kind, dot });
+  };
+
+  // 1) request into the cluster
+  add(clientVertexId, entryNode, 0, 460, "data");
+  // 2) replication across the live cluster
+  peers.forEach((peer, index) => add(entryNode, peer, 340 + index * 45, 460, "data"));
+  const replicationEnd = 340 + Math.max(0, peers.length - 1) * 45 + 460;
+  // 3) delivery to each subscriber on the namespace
+  subscribers.forEach((sub, index) =>
+    add(sub.connected_node, `sub:${sub.id}`, replicationEnd + index * 70, 520, "event"),
+  );
+
+  if (movers.length === 0) {
+    return;
+  }
+  graphSim.pulses.push({ t0: performance.now(), movers });
+  startGraphSim();
+}
+
+function startGraphSim() {
+  if (graphSim.raf !== null) return;
+  const tick = (now) => {
+    const energy = applyGraphForces();
+    paintGraph(now);
+    const busy =
+      graphSim.drag || graphSim.packets.length > 0 || graphSim.pulses.length > 0 || energy > 0.05;
+    graphSim.raf = busy ? requestAnimationFrame(tick) : null;
+    if (!busy) paintGraph(now); // final settle paint
+  };
+  graphSim.raf = requestAnimationFrame(tick);
+}
+
+function pointerToGraph(event) {
+  const ctm = el.graph.getScreenCTM();
+  if (!ctm) return { x: 0, y: 0 };
+  const inv = ctm.inverse();
+  const gx = inv.a * event.clientX + inv.c * event.clientY + inv.e;
+  const gy = inv.b * event.clientX + inv.d * event.clientY + inv.f;
+  return {
+    x: (gx - graphSim.view.tx) / graphSim.view.scale,
+    y: (gy - graphSim.view.ty) / graphSim.view.scale,
+  };
+}
+
+function bindVertexDrag(group, vertex) {
+  group.addEventListener("pointerdown", (event) => {
+    event.stopPropagation();
+    const p = graphSim.pos.get(vertex.id);
+    if (!p) return;
+    graphSim.movedDuringPress = false;
+    const start = { x: event.clientX, y: event.clientY };
+    p.fixed = true;
+    graphSim.drag = { id: vertex.id };
+    startGraphSim();
+    group.setPointerCapture?.(event.pointerId);
+
+    const move = (ev) => {
+      if (Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > 4) graphSim.movedDuringPress = true;
+      const g = pointerToGraph(ev);
+      p.x = g.x;
+      p.y = g.y;
+      p.vx = 0;
+      p.vy = 0;
+      startGraphSim();
+    };
+    const up = (ev) => {
+      p.fixed = false;
+      graphSim.drag = null;
+      group.releasePointerCapture?.(ev.pointerId);
+      group.removeEventListener("pointermove", move);
+      group.removeEventListener("pointerup", up);
+      if (!graphSim.movedDuringPress && vertex.kind === "client") {
+        void pushEventFor(vertex.ref.id, vertex.ref.namespace);
+      }
+      startGraphSim();
+    };
+    group.addEventListener("pointermove", move);
+    group.addEventListener("pointerup", up);
+  });
+}
+
+function bindGraphInteractions() {
+  if (graphSim.interactionsBound) return;
+  graphSim.interactionsBound = true;
+  // Pan the whole graph by dragging the empty canvas.
+  el.graph.addEventListener("pointerdown", (event) => {
+    if (event.target.closest(".vertex") || event.target.closest(".link-hit")) return;
+    const ctm = el.graph.getScreenCTM();
+    const sx = ctm && ctm.a ? ctm.a : 1;
+    const sy = ctm && ctm.d ? ctm.d : 1;
+    const start = { x: event.clientX, y: event.clientY, tx: graphSim.view.tx, ty: graphSim.view.ty };
+    graphSim.drag = { pan: true };
+    el.graph.setPointerCapture?.(event.pointerId);
+    const move = (ev) => {
+      graphSim.view.tx = start.tx + (ev.clientX - start.x) / sx;
+      graphSim.view.ty = start.ty + (ev.clientY - start.y) / sy;
+      paintGraph(performance.now());
+    };
+    const up = (ev) => {
+      graphSim.drag = null;
+      el.graph.releasePointerCapture?.(ev.pointerId);
+      el.graph.removeEventListener("pointermove", move);
+      el.graph.removeEventListener("pointerup", up);
+    };
+    el.graph.addEventListener("pointermove", move);
+    el.graph.addEventListener("pointerup", up);
+  });
+  // Wheel zoom around the cursor.
+  el.graph.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+      const before = pointerToGraph(event);
+      const factor = event.deltaY < 0 ? 1.1 : 1 / 1.1;
+      graphSim.view.scale = Math.max(0.45, Math.min(2.4, graphSim.view.scale * factor));
+      const after = pointerToGraph(event);
+      graphSim.view.tx += (after.x - before.x) * graphSim.view.scale;
+      graphSim.view.ty += (after.y - before.y) * graphSim.view.scale;
+      paintGraph(performance.now());
+    },
+    { passive: false },
+  );
 }
 
 function renderSelectedLink() {
@@ -636,6 +1008,9 @@ async function pushEventFor(client, namespace) {
   if (!state.sim) {
     return;
   }
+  // Start the visual data-flow before the engine call so the request is seen
+  // travelling into the cluster while the push commits and replicates.
+  playDataFlowPulse(client, namespace);
   await state.sim.push_event(client, namespace, el.manualKey.value, el.manualValue.value);
   await settleAfterIntervention();
   await refresh();
@@ -750,20 +1125,6 @@ function worstLinkState(a, b) {
   return right > left ? b : a;
 }
 
-function layoutNodes(nodes) {
-  const center = { x: 400, y: 260 };
-  const radius = Math.min(180, 110 + nodes.length * 12);
-  const positions = new Map();
-  nodes.forEach((node, index) => {
-    const angle = -Math.PI / 2 + (index * Math.PI * 2) / Math.max(nodes.length, 1);
-    positions.set(node.id, {
-      x: center.x + Math.cos(angle) * radius,
-      y: center.y + Math.sin(angle) * radius,
-    });
-  });
-  return positions;
-}
-
 function nodeStatus(node) {
   if (node.crashed) {
     return "crashed";
@@ -772,75 +1133,6 @@ function nodeStatus(node) {
     return "disabled";
   }
   return String(node.vote_state || node.role || "unknown");
-}
-
-// Packet travel time from one node to the next, in wall-clock ms. Purely
-// decorative (the layer is aria-hidden) and independent of the seeded snapshot,
-// so animating it does not affect determinism or replay.
-const PACKET_PERIOD_MS = 1150;
-
-function renderPacketLayer(layer, positions, snapshot) {
-  cancelPacketAnimation();
-  state.packets = [];
-  const messages = (snapshot.in_flight || []).slice(0, 16);
-  messages.forEach((message, index) => {
-    const from = positions.get(message.from);
-    const to = positions.get(message.to);
-    if (!from || !to) {
-      return;
-    }
-    const kind = packetKind(message.kind);
-    const trail = svg("line", { class: `packet-trail ${kind}`, x1: from.x, y1: from.y, x2: from.x, y2: from.y });
-    const dot = svg("circle", { class: `packet ${kind}`, cx: from.x, cy: from.y, r: 7 });
-    layer.append(trail, dot);
-    state.packets.push({ dot, trail, from, to, offset: index / Math.max(messages.length, 1) });
-  });
-  if (state.packets.length === 0) {
-    return;
-  }
-  if (document.documentElement.dataset.reducedMotion === "true") {
-    // Reduced motion: hold each signal at a stable midpoint, no animation loop.
-    for (const packet of state.packets) {
-      positionPacket(packet, 0.5);
-    }
-    return;
-  }
-  state.packetStart = performance.now();
-  state.animationFrame = requestAnimationFrame(animatePackets);
-}
-
-function animatePackets(now) {
-  if (state.packets.length === 0) {
-    state.animationFrame = null;
-    return;
-  }
-  const base = (now - state.packetStart) / PACKET_PERIOD_MS;
-  for (const packet of state.packets) {
-    positionPacket(packet, (base + packet.offset) % 1);
-  }
-  state.animationFrame = requestAnimationFrame(animatePackets);
-}
-
-// Linear interpolation along the exact link the signal travels, so dots always
-// land on the line between the two node centers.
-function positionPacket(packet, progress) {
-  const { from, to } = packet;
-  const x = from.x + (to.x - from.x) * progress;
-  const y = from.y + (to.y - from.y) * progress;
-  packet.dot.setAttribute("cx", x);
-  packet.dot.setAttribute("cy", y);
-  const tail = Math.max(0, progress - 0.16);
-  packet.trail.setAttribute("x1", from.x + (to.x - from.x) * tail);
-  packet.trail.setAttribute("y1", from.y + (to.y - from.y) * tail);
-  packet.trail.setAttribute("x2", x);
-  packet.trail.setAttribute("y2", y);
-}
-
-function cancelPacketAnimation() {
-  if (state.animationFrame !== null) {
-    cancelAnimationFrame(state.animationFrame);
-    state.animationFrame = null;
-  }
 }
 
 function packetKind(kind) {
@@ -927,7 +1219,7 @@ function bindMediaFlag(name, query) {
 }
 
 async function createSimulation(seed) {
-  cancelPacketAnimation();
+  resetGraph();
   state.seenNodes = new Set();
   if (state.engine === "server") {
     const sim = new ServerSimSession(state.apiBase);

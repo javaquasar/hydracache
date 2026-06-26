@@ -259,6 +259,8 @@ p {
   width: 100%;
   height: min(68vh, 680px);
   min-height: 460px;
+  touch-action: none;
+  cursor: grab;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(242, 249, 247, 0.72)),
     var(--glass-solid);
@@ -501,8 +503,20 @@ dd {
   overflow-wrap: anywhere;
 }
 
+.vertex {
+  cursor: grab;
+}
+
+.vertex:active {
+  cursor: grabbing;
+}
+
+.entity.clickable {
+  cursor: pointer;
+}
+
 .node {
-  cursor: default;
+  cursor: grab;
 }
 
 .node circle {
@@ -701,6 +715,27 @@ dd {
   to {
     stroke-dashoffset: -22;
   }
+}
+
+/* Choreographed data-flow pulse fired on a client push (bigger/brighter than the
+   ambient signal packets so the sent data reads clearly). */
+.pulse {
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 2;
+}
+
+.pulse.data {
+  fill: var(--data);
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--data) 70%, transparent));
+}
+
+.pulse.event {
+  fill: var(--event);
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--event) 70%, transparent));
+}
+
+html[data-reduced-motion="true"] .pulse-layer {
+  display: none;
 }
 
 .entity circle {
