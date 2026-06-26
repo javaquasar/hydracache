@@ -18,7 +18,7 @@ fn snapshot_roundtrips_and_is_versioned() {
     assert_eq!(decoded.step, 12);
     assert_eq!(decoded.nodes.len(), 3);
     assert_eq!(decoded.links.len(), 6);
-    assert_eq!(decoded.schema_version, 4);
+    assert_eq!(decoded.schema_version, 5);
     assert_eq!(decoded.formation_phase, "formed");
     assert_eq!(decoded.election_source, "sim-model");
     assert!(decoded.over_budget.in_flight_summarized <= decoded.in_flight.len() as u64);
@@ -45,6 +45,7 @@ fn snapshot_roundtrips_and_is_versioned() {
         "clients": [],
         "subscribers": [],
         "sync_progress": [],
+        "rebalance": null,
         "verdict": { "status": "holding" },
         "progress": {
             "committed_entries": 0,
@@ -63,24 +64,28 @@ fn schema_version_matches_contract_for_each_field_set() {
     let mut world = SimWorld::new(0x53_04, SimConfig::default());
     world.set_workload_enabled(false);
     let before = world.snapshot();
-    assert_eq!(before.schema_version, 4);
+    assert_eq!(before.schema_version, 5);
     assert_eq!(before.formation_phase, "unformed");
     assert_eq!(before.election_source, "sim-model");
     assert!(before.in_flight.is_empty());
     assert_eq!(before.over_budget.in_flight_summarized, 0);
     assert!(before.clients.is_empty());
     assert!(before.subscribers.is_empty());
+    assert!(before.rebalance.is_none());
     assert!(before
         .sync_progress
         .iter()
         .all(|sync| sync.applied_index == 0));
     assert!(before.nodes.iter().all(|node| {
-        node.vote_state == "disconnected" && node.voted_for.is_none() && node.votes_received == 0
+        node.vote_state == "disconnected"
+            && node.voted_for.is_none()
+            && node.votes_received == 0
+            && !node.disabled
     }));
 
     world.run(8);
     let formed = world.snapshot();
-    assert_eq!(formed.schema_version, 4);
+    assert_eq!(formed.schema_version, 5);
     assert_eq!(formed.formation_phase, "formed");
     assert!(formed.nodes.iter().any(|node| {
         node.vote_state == "leader" && node.voted_for.as_deref() == Some(node.id.as_str())
@@ -96,7 +101,7 @@ fn snapshot_exposes_typed_in_flight_messages() {
     world.step();
     let snapshot = world.snapshot();
 
-    assert_eq!(snapshot.schema_version, 4);
+    assert_eq!(snapshot.schema_version, 5);
     assert!(snapshot.in_flight.iter().any(|message| {
         message.kind == "heartbeat"
             && message.from == "node-0"

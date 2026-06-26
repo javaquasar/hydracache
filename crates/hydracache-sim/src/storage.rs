@@ -401,6 +401,17 @@ impl SimStorage {
             .unwrap_or_default()
     }
 
+    pub(crate) fn replace_visible_default_zone_from(&mut self, source: &SimStorage) {
+        match source.zones.get(&StorageZoneId::default()).cloned() {
+            Some(zone) => {
+                self.zones.insert(StorageZoneId::default(), zone);
+            }
+            None => {
+                self.zones.remove(&StorageZoneId::default());
+            }
+        }
+    }
+
     fn apply_fault(
         &mut self,
         zone: StorageZoneId,

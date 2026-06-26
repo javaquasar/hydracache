@@ -43,6 +43,19 @@ enum SimInjectRequest {
         from: String,
         to: String,
     },
+    Isolate {
+        node: String,
+    },
+    Rejoin {
+        node: String,
+    },
+    Disable {
+        node: String,
+    },
+    Enable {
+        node: String,
+    },
+    AddNode,
     Drop {
         from: String,
         to: String,
@@ -181,6 +194,45 @@ fn apply_injection(
         SimInjectRequest::Restart { node } => world.restart_node(node),
         SimInjectRequest::Partition { from, to } => world.partition_link(from, to),
         SimInjectRequest::Heal { from, to } => world.heal_link(from, to),
+        SimInjectRequest::Isolate { node } => {
+            return world
+                .apply_control_action(ControlActionV1::Isolate {
+                    at_step: world.outcome().steps,
+                    node,
+                })
+                .map_err(SimRouteRejection::from);
+        }
+        SimInjectRequest::Rejoin { node } => {
+            return world
+                .apply_control_action(ControlActionV1::Rejoin {
+                    at_step: world.outcome().steps,
+                    node,
+                })
+                .map_err(SimRouteRejection::from);
+        }
+        SimInjectRequest::Disable { node } => {
+            return world
+                .apply_control_action(ControlActionV1::Disable {
+                    at_step: world.outcome().steps,
+                    node,
+                })
+                .map_err(SimRouteRejection::from);
+        }
+        SimInjectRequest::Enable { node } => {
+            return world
+                .apply_control_action(ControlActionV1::Enable {
+                    at_step: world.outcome().steps,
+                    node,
+                })
+                .map_err(SimRouteRejection::from);
+        }
+        SimInjectRequest::AddNode => {
+            return world
+                .apply_control_action(ControlActionV1::AddNode {
+                    at_step: world.outcome().steps,
+                })
+                .map_err(SimRouteRejection::from);
+        }
         SimInjectRequest::Drop { from, to } => world.drop_next_on_link(from, to),
         SimInjectRequest::Delay { from, to, millis } => {
             world.delay_next_on_link_millis(from, to, millis)

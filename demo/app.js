@@ -45,6 +45,7 @@ const el = {
   progress: document.querySelector("#progress-panel"),
   hash: document.querySelector("#snapshot-hash"),
   nodes: document.querySelector("#nodes-panel"),
+  addNode: document.querySelector("#add-node-button"),
   signals: document.querySelector("#signals-panel"),
   clients: document.querySelector("#clients-panel"),
   subscribers: document.querySelector("#subscribers-panel"),
@@ -99,6 +100,10 @@ function bindEvents() {
       el.manualKey.value,
       el.manualValue.value,
     );
+    await refresh();
+  });
+  el.addNode.addEventListener("click", async () => {
+    await state.sim?.add_node();
     await refresh();
   });
   el.workload.addEventListener("change", async () => {
@@ -274,6 +279,8 @@ function renderProgress(snapshot) {
     desc(snapshot.election_source || "unknown"),
     term("Convergence", progress.convergence),
     desc(progress.convergence),
+    term("Rebalance", snapshot.rebalance?.phase || "idle"),
+    desc(snapshot.rebalance ? `${snapshot.rebalance.moved_partitions}/${snapshot.rebalance.total_partitions}` : "idle"),
   );
   el.hash.textContent = `snapshot ${snapshotHash(snapshot)}`;
 }
@@ -285,14 +292,12 @@ function renderNodes(snapshot) {
     const row = document.createElement("div");
     row.className = "metric";
     const label = document.createElement("strong");
-    label.textContent = `${node.id} ${node.crashed ? "crashed" : node.vote_state || "up"}`;
+    label.textContent = `${node.id} ${node.crashed ? "crashed" : node.disabled ? "disabled" : node.vote_state || "up"}`;
     const meta = document.createElement("span");
     meta.textContent = `term ${node.term}; votes ${node.votes_received}`;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = node.crashed ? "Restart" : "Crash";
-    button.dataset.testid = node.crashed ? `restart-${node.id}` : `crash-${node.id}`;
-    button.addEventListener("click", async () => {
+    const buttons = document.createElement("div");
+    buttons.className = "button-row";
+    const crash = nodeButton(node.crashed ? "Restart" : "Crash", async () => {
       if (node.crashed) {
         await state.sim.restart_node(node.id);
       } else {
@@ -300,10 +305,35 @@ function renderNodes(snapshot) {
       }
       await refresh();
     });
-    row.append(label, meta, button);
+    const isolate = nodeButton("Isolate", async () => {
+      await state.sim.isolate_node(node.id);
+      await refresh();
+    });
+    const rejoin = nodeButton("Rejoin", async () => {
+      await state.sim.rejoin_node(node.id);
+      await refresh();
+    });
+    const disable = nodeButton(node.disabled ? "Enable" : "Disable", async () => {
+      if (node.disabled) {
+        await state.sim.enable_node(node.id);
+      } else {
+        await state.sim.disable_node(node.id);
+      }
+      await refresh();
+    });
+    buttons.append(crash, isolate, rejoin, disable);
+    row.append(label, meta, buttons);
     list.append(row);
   }
   el.nodes.replaceChildren(list);
+}
+
+function nodeButton(label, handler) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = label;
+  button.addEventListener("click", handler);
+  return button;
 }
 
 function renderSignals(snapshot) {
@@ -602,6 +632,26 @@ class WasmSimSession {
     return this.handle.restart_node(node);
   }
 
+  async isolate_node(node) {
+    return this.handle.isolate_node(node);
+  }
+
+  async rejoin_node(node) {
+    return this.handle.rejoin_node(node);
+  }
+
+  async disable_node(node) {
+    return this.handle.disable_node(node);
+  }
+
+  async enable_node(node) {
+    return this.handle.enable_node(node);
+  }
+
+  async add_node() {
+    return this.handle.add_node();
+  }
+
   async crash_node(node) {
     return this.handle.crash_node(node);
   }
@@ -660,6 +710,31 @@ class ServerSimSession {
 
   async restart_node(node) {
     this.snapshot = await this.post("/sim/inject", { action: "restart", node });
+    return true;
+  }
+
+  async isolate_node(node) {
+    this.snapshot = await this.post("/sim/inject", { action: "isolate", node });
+    return true;
+  }
+
+  async rejoin_node(node) {
+    this.snapshot = await this.post("/sim/inject", { action: "rejoin", node });
+    return true;
+  }
+
+  async disable_node(node) {
+    this.snapshot = await this.post("/sim/inject", { action: "disable", node });
+    return true;
+  }
+
+  async enable_node(node) {
+    this.snapshot = await this.post("/sim/inject", { action: "enable", node });
+    return true;
+  }
+
+  async add_node() {
+    this.snapshot = await this.post("/sim/inject", { action: "add_node" });
     return true;
   }
 

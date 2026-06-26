@@ -58,9 +58,9 @@ pub use schedule::{
 };
 pub use snapshot::{
     ClientView, ConvergenceView, KeyReplicaView, KeyView, LinkStateView, LinkView, MessageView,
-    NodeView, ProgressView, SimSnapshot, SimSnapshotDecodeError, SnapshotOverBudgetView,
-    SubscriberEventView, SubscriberView, SyncProgressView, VerdictView, MAX_IN_FLIGHT_RENDERED,
-    MAX_SUBSCRIBER_BUFFER, SIM_SNAPSHOT_SCHEMA_VERSION,
+    NodeView, ProgressView, RebalanceView, SimSnapshot, SimSnapshotDecodeError,
+    SnapshotOverBudgetView, SubscriberEventView, SubscriberView, SyncProgressView, VerdictView,
+    MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER, SIM_SNAPSHOT_SCHEMA_VERSION,
 };
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,

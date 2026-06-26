@@ -10,7 +10,7 @@ use crate::{
 };
 
 /// Current stable simulator snapshot JSON schema version.
-pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 4;
+pub const SIM_SNAPSHOT_SCHEMA_VERSION: u16 = 5;
 
 /// Maximum number of in-flight messages rendered in one snapshot.
 pub const MAX_IN_FLIGHT_RENDERED: usize = 64;
@@ -51,6 +51,8 @@ pub struct SimSnapshot {
     pub subscribers: Vec<SubscriberView>,
     /// Cluster sync progress visible to manual/topology modes.
     pub sync_progress: Vec<SyncProgressView>,
+    /// Current deterministic rebalance/reshard progress.
+    pub rebalance: Option<RebalanceView>,
     /// Invariant verdict for the current state.
     pub verdict: VerdictView,
     /// Progress summary for dashboard panels.
@@ -78,6 +80,7 @@ impl SimSnapshot {
             clients: Vec::new(),
             subscribers: Vec::new(),
             sync_progress: Vec::new(),
+            rebalance: None,
             verdict: VerdictView::from_report(&report),
             progress: ProgressView {
                 committed_entries: history.completed().count() as u64,
@@ -148,6 +151,8 @@ pub struct NodeView {
     pub up: bool,
     /// Whether the node is currently crashed.
     pub crashed: bool,
+    /// Whether the node is administratively disabled in the simulator.
+    pub disabled: bool,
 }
 
 /// UI directed-link projection.
@@ -281,6 +286,17 @@ pub struct SyncProgressView {
     pub leader_commit_index: u64,
 }
 
+/// Deterministic rebalance progress visible to topology demos.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RebalanceView {
+    /// Rebalance phase.
+    pub phase: String,
+    /// Partitions/keys moved by the simulator model.
+    pub moved_partitions: u64,
+    /// Total partitions/keys considered by the simulator model.
+    pub total_partitions: u64,
+}
+
 /// Invariant verdict visible to the UI.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "status", rename_all = "snake_case")]
@@ -367,6 +383,7 @@ pub(crate) fn node_view(
     committed_entries: u64,
     applied_entries: u64,
     crashed: bool,
+    disabled: bool,
     election: Option<&ElectionNodeState>,
 ) -> NodeView {
     let (role, term, vote_state, voted_for, votes_received) = election
@@ -391,8 +408,9 @@ pub(crate) fn node_view(
         votes_received,
         commit_index: committed_entries,
         applied_index: applied_entries,
-        up: !crashed,
+        up: !crashed && !disabled,
         crashed,
+        disabled,
     }
 }
 

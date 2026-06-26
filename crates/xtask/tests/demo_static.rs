@@ -36,6 +36,7 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(html.contains("data-testid=\"subscribe-button\""));
     assert!(html.contains("data-testid=\"clients-panel\""));
     assert!(html.contains("data-testid=\"subscribers-panel\""));
+    assert!(html.contains("data-testid=\"add-node-button\""));
     assert!(html.contains("data-testid=\"scenario-select\""));
     assert!(html.contains("data-testid=\"load-scenario\""));
     assert!(html.contains("data-testid=\"copy-reproducer\""));
@@ -66,6 +67,11 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(js.contains("snapshot.over_budget"));
     assert!(js.contains("snapshot.clients"));
     assert!(js.contains("snapshot.subscribers"));
+    assert!(js.contains("snapshot.rebalance") || js.contains("rebalance"));
+    assert!(js.contains("node.disabled"));
+    assert!(js.contains("add_node("));
+    assert!(js.contains("isolate_node("));
+    assert!(js.contains("rejoin_node("));
     assert!(js.contains("snapshot.keys"));
     assert!(js.contains("push_event("));
     assert!(js.contains("subscribe("));
@@ -97,6 +103,7 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(spec.contains("clicking_partition_updates_link_state"));
     assert!(spec.contains("loading_scenario_uses_curated_engine_preset"));
     assert!(spec.contains("manual_push_shows_diverge_converge_and_listener_receipt"));
+    assert!(spec.contains("node_controls_show_reelection_resync_and_scale_out"));
     assert!(seed_spec.contains("url_seed_reproduces_identical_run"));
     assert!(seed_spec.contains("copy-status"));
 

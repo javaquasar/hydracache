@@ -125,6 +125,53 @@ async fn sim_routes_accept_same_control_script() {
         .any(|subscriber| subscriber["last_event"]["kind"] == "upserted"));
 }
 
+#[tokio::test]
+async fn sim_routes_accept_topology_control_actions() {
+    let app = build_sandbox(SandboxConfig::default())
+        .await
+        .unwrap()
+        .router;
+    post_json(
+        app.clone(),
+        "/sim/new",
+        json!({"seed": 701, "steps": 8}).to_string(),
+    )
+    .await;
+
+    let isolated = post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "isolate", "node": "node-0"}).to_string(),
+    )
+    .await;
+    assert!(isolated["links"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|link| link["from"] == "node-0" && link["state"] == "partitioned"));
+
+    let rejoined = post_json(
+        app.clone(),
+        "/sim/inject",
+        json!({"action": "rejoin", "node": "node-0"}).to_string(),
+    )
+    .await;
+    assert!(rejoined["rebalance"].is_object());
+
+    let added = post_json(
+        app,
+        "/sim/inject",
+        json!({"action": "add_node"}).to_string(),
+    )
+    .await;
+    assert_eq!(added["schema_version"], SIM_SNAPSHOT_SCHEMA_VERSION);
+    assert!(added["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|node| node["id"] == "node-3"));
+}
+
 async fn post_json(app: Router, uri: &str, body: String) -> Value {
     let response = app.oneshot(post(uri, body)).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);

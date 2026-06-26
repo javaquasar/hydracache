@@ -85,6 +85,58 @@ impl SimHandle {
         }
     }
 
+    /// Isolate one simulator node from all peers.
+    pub fn isolate_node(&mut self, node_id: String) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::Isolate {
+                at_step,
+                node: node_id,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
+    /// Rejoin one isolated simulator node.
+    pub fn rejoin_node(&mut self, node_id: String) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::Rejoin {
+                at_step,
+                node: node_id,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
+    /// Disable one simulator node.
+    pub fn disable_node(&mut self, node_id: String) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::Disable {
+                at_step,
+                node: node_id,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
+    /// Enable one simulator node.
+    pub fn enable_node(&mut self, node_id: String) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::Enable {
+                at_step,
+                node: node_id,
+            })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
+    /// Add one deterministic simulator node.
+    pub fn add_node(&mut self) -> Result<(), JsValue> {
+        let at_step = self.world.outcome().steps;
+        self.world
+            .apply_control_action(hydracache_sim::ControlActionV1::AddNode { at_step })
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// Subscribe a manual-mode client to namespace cache events.
     pub fn subscribe(&mut self, client: String, namespace: String) {
         self.world.subscribe(client, namespace);
@@ -240,5 +292,24 @@ mod tests {
             .subscribers
             .iter()
             .any(|subscriber| subscriber.last_event.is_some()));
+    }
+
+    #[test]
+    fn wasm_topology_controls_match_native() {
+        let mut handle = SimHandle::new(0x5340);
+        handle.set_workload_enabled(false);
+        handle.run(8);
+        handle
+            .isolate_node("node-0".to_owned())
+            .expect("isolate applies");
+        handle.step();
+        handle
+            .rejoin_node("node-0".to_owned())
+            .expect("rejoin applies");
+        handle.add_node().expect("add-node applies");
+
+        let snapshot = SimSnapshot::from_json(&handle.snapshot_json()).expect("valid snapshot");
+        assert_eq!(snapshot.nodes.len(), 4);
+        assert!(snapshot.rebalance.is_some());
     }
 }

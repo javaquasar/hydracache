@@ -95,6 +95,13 @@ struct SimSubscriber {
     dropped: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RebalanceState {
+    phase: String,
+    moved_partitions: u64,
+    total_partitions: u64,
+}
+
 /// Deterministic whole-cluster simulation driver.
 #[derive(Debug, Clone)]
 pub struct SimWorld {
@@ -112,6 +119,9 @@ pub struct SimWorld {
     clients: BTreeMap<String, SimClientActor>,
     subscribers: BTreeMap<String, SimSubscriber>,
     crashed_nodes: BTreeSet<ClusterNodeId>,
+    isolated_nodes: BTreeSet<ClusterNodeId>,
+    disabled_nodes: BTreeSet<ClusterNodeId>,
+    rebalance: Option<RebalanceState>,
     workload_enabled: bool,
     next_client_numeric_id: u64,
     steps: u64,
@@ -167,6 +177,9 @@ impl SimWorld {
             clients: BTreeMap::new(),
             subscribers: BTreeMap::new(),
             crashed_nodes: BTreeSet::new(),
+            isolated_nodes: BTreeSet::new(),
+            disabled_nodes: BTreeSet::new(),
+            rebalance: None,
             workload_enabled: true,
             next_client_numeric_id: 1,
             steps: 0,
@@ -267,12 +280,33 @@ impl SimWorld {
                 Ok(())
             }
             ControlActionV1::ModeChange { .. } => Ok(()),
-            ControlActionV1::Isolate { .. } => Err(ControlApplyError::UnsupportedAction("isolate")),
-            ControlActionV1::Rejoin { .. } => Err(ControlApplyError::UnsupportedAction("rejoin")),
-            ControlActionV1::Disable { .. } => Err(ControlApplyError::UnsupportedAction("disable")),
-            ControlActionV1::Enable { .. } => Err(ControlApplyError::UnsupportedAction("enable")),
+            ControlActionV1::Isolate { node, .. } => {
+                self.isolate_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "isolate references an unknown node".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::Rejoin { node, .. } => {
+                self.rejoin_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction("rejoin references an unknown node".to_owned())
+                })
+            }
+            ControlActionV1::Disable { node, .. } => {
+                self.disable_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction(
+                        "disable references an unknown node".to_owned(),
+                    )
+                })
+            }
+            ControlActionV1::Enable { node, .. } => {
+                self.enable_node(node).then_some(()).ok_or_else(|| {
+                    ControlApplyError::InvalidAction("enable references an unknown node".to_owned())
+                })
+            }
             ControlActionV1::AddNode { .. } => {
-                Err(ControlApplyError::UnsupportedAction("add_node"))
+                self.add_node();
+                Ok(())
             }
         }
     }
@@ -371,7 +405,96 @@ impl SimWorld {
     /// Restart a crashed node if it exists.
     pub fn restart_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
         let node_id = node_id.into();
-        self.crashed_nodes.remove(&node_id)
+        let restarted = self.crashed_nodes.remove(&node_id);
+        if restarted {
+            self.catch_up_node(&node_id);
+        }
+        restarted
+    }
+
+    /// Isolate one node from all peers with symmetric partitions.
+    pub fn isolate_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
+        let node_id = node_id.into();
+        if !self.nodes.contains_key(&node_id) {
+            return false;
+        }
+        let others = self
+            .nodes
+            .keys()
+            .filter(|peer| *peer != &node_id)
+            .cloned()
+            .collect::<Vec<_>>();
+        self.network.partition(
+            (std::slice::from_ref(&node_id), &others),
+            PartitionSymmetry::Symmetric,
+        );
+        self.isolated_nodes.insert(node_id);
+        true
+    }
+
+    /// Rejoin one isolated node and run deterministic catch-up.
+    pub fn rejoin_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
+        let node_id = node_id.into();
+        if !self.nodes.contains_key(&node_id) {
+            return false;
+        }
+        let others = self.nodes.keys().cloned().collect::<Vec<_>>();
+        for other in others {
+            if other != node_id {
+                self.network.heal_link(&node_id, &other);
+                self.network.heal_link(&other, &node_id);
+            }
+        }
+        self.isolated_nodes.remove(&node_id);
+        self.catch_up_node(&node_id);
+        true
+    }
+
+    /// Disable one node without marking it crashed.
+    pub fn disable_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
+        let node_id = node_id.into();
+        if self.nodes.contains_key(&node_id) {
+            self.disabled_nodes.insert(node_id);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Enable one disabled node and run deterministic catch-up.
+    pub fn enable_node(&mut self, node_id: impl Into<ClusterNodeId>) -> bool {
+        let node_id = node_id.into();
+        if !self.nodes.contains_key(&node_id) {
+            return false;
+        }
+        let removed = self.disabled_nodes.remove(&node_id);
+        self.catch_up_node(&node_id);
+        removed
+    }
+
+    /// Add a deterministic simulator node.
+    pub fn add_node(&mut self) -> ClusterNodeId {
+        let node_id = ClusterNodeId::new(format!("node-{}", self.nodes.len()));
+        let peers = self.nodes.keys().cloned().collect::<Vec<_>>();
+        let node = ClusterNode::new(
+            ClusterNodeConfig::new(node_id.clone(), peers)
+                .heartbeat_interval(self.cfg.heartbeat_interval),
+        );
+        self.nodes.insert(
+            node_id.clone(),
+            SimNode {
+                node,
+                storage: SimStorage::new(),
+            },
+        );
+        self.cfg.node_count = self.cfg.node_count.saturating_add(1);
+        self.catch_up_node(&node_id);
+        self.rebalance = Some(RebalanceState {
+            phase: "complete".to_owned(),
+            moved_partitions: self.history.completed().count() as u64,
+            total_partitions: self.cfg.key_count,
+        });
+        node_id
     }
 
     /// Partition one directed link.
@@ -447,6 +570,7 @@ impl SimWorld {
                     committed_entries,
                     committed_entries,
                     self.crashed_nodes.contains(node_id),
+                    self.disabled_nodes.contains(node_id),
                     election_nodes.get(node_id.as_str()).copied(),
                 )
             })
@@ -493,10 +617,22 @@ impl SimWorld {
             .iter()
             .map(|node_id| crate::snapshot::SyncProgressView {
                 node_id: node_id.to_string(),
-                applied_index: committed_entries,
+                applied_index: self
+                    .nodes
+                    .get(node_id)
+                    .map(|node| node.storage.visible_checksums().len() as u64)
+                    .unwrap_or_default(),
                 leader_commit_index: committed_entries,
             })
             .collect();
+        let rebalance = self
+            .rebalance
+            .as_ref()
+            .map(|rebalance| crate::snapshot::RebalanceView {
+                phase: rebalance.phase.clone(),
+                moved_partitions: rebalance.moved_partitions,
+                total_partitions: rebalance.total_partitions,
+            });
 
         SimSnapshot {
             schema_version: crate::snapshot::SIM_SNAPSHOT_SCHEMA_VERSION,
@@ -534,6 +670,7 @@ impl SimWorld {
                 })
                 .collect(),
             sync_progress,
+            rebalance,
             verdict: crate::snapshot::VerdictView::from_report(&self.invariant_report),
             progress: crate::snapshot::progress_from_report(
                 committed_entries,
@@ -559,7 +696,10 @@ impl SimWorld {
             .saturating_add(delivered.len() as u64);
         for (from, to, message) in delivered {
             self.record(format!("deliver:{from}->{to}:{message:?}"));
-            if self.crashed_nodes.contains(&to) {
+            if self.crashed_nodes.contains(&to)
+                || self.disabled_nodes.contains(&to)
+                || self.isolated_nodes.contains(&to)
+            {
                 continue;
             }
             if let Some(target) = self.nodes.get_mut(&to) {
@@ -581,7 +721,11 @@ impl SimWorld {
     fn live_node_ids(&self) -> BTreeSet<ClusterNodeId> {
         self.nodes
             .keys()
-            .filter(|node_id| !self.crashed_nodes.contains(*node_id))
+            .filter(|node_id| {
+                !self.crashed_nodes.contains(*node_id)
+                    && !self.disabled_nodes.contains(*node_id)
+                    && !self.isolated_nodes.contains(*node_id)
+            })
             .cloned()
             .collect()
     }
@@ -609,7 +753,10 @@ impl SimWorld {
 
     fn tick_nodes(&mut self) {
         for (node_id, sim_node) in self.nodes.iter_mut() {
-            if self.crashed_nodes.contains(node_id) {
+            if self.crashed_nodes.contains(node_id)
+                || self.disabled_nodes.contains(node_id)
+                || self.isolated_nodes.contains(node_id)
+            {
                 continue;
             }
             sim_node.node.tick(self.clock.now());
@@ -620,12 +767,7 @@ impl SimWorld {
         if !self.workload_enabled {
             return;
         }
-        let live_nodes = self
-            .nodes
-            .keys()
-            .filter(|node_id| !self.crashed_nodes.contains(*node_id))
-            .cloned()
-            .collect::<Vec<_>>();
+        let live_nodes = self.live_node_ids().into_iter().collect::<Vec<_>>();
         let node_count = live_nodes.len();
         if node_count == 0 {
             return;
@@ -648,7 +790,10 @@ impl SimWorld {
     fn drain_node_effects(&mut self) {
         let mut outbound = Vec::new();
         for (node_id, sim_node) in self.nodes.iter_mut() {
-            if self.crashed_nodes.contains(node_id) {
+            if self.crashed_nodes.contains(node_id)
+                || self.disabled_nodes.contains(node_id)
+                || self.isolated_nodes.contains(node_id)
+            {
                 continue;
             }
             outbound.extend(sim_node.node.take_outbound());
@@ -685,6 +830,33 @@ impl SimWorld {
             .leader
             .filter(|leader| live.contains(leader))
             .or_else(|| live.into_iter().next())
+    }
+
+    fn catch_up_node(&mut self, node_id: &ClusterNodeId) {
+        if self.crashed_nodes.contains(node_id) || self.disabled_nodes.contains(node_id) {
+            return;
+        }
+        let Some(source_id) = self
+            .preferred_write_node()
+            .filter(|source| source != node_id)
+            .or_else(|| self.nodes.keys().find(|source| *source != node_id).cloned())
+        else {
+            return;
+        };
+        let Some(source_storage) = self.nodes.get(&source_id).map(|node| node.storage.clone())
+        else {
+            return;
+        };
+        if let Some(target) = self.nodes.get_mut(node_id) {
+            target
+                .storage
+                .replace_visible_default_zone_from(&source_storage);
+        }
+        self.rebalance = Some(RebalanceState {
+            phase: "complete".to_owned(),
+            moved_partitions: source_storage.visible_checksums().len() as u64,
+            total_partitions: self.cfg.key_count,
+        });
     }
 
     fn ensure_client_actor(&mut self, client: &str, namespace: &str) -> u64 {
@@ -737,7 +909,11 @@ impl SimWorld {
         let storage_versions = self
             .nodes
             .iter()
-            .filter(|(node_id, _)| !self.crashed_nodes.contains(*node_id))
+            .filter(|(node_id, _)| {
+                !self.crashed_nodes.contains(*node_id)
+                    && !self.disabled_nodes.contains(*node_id)
+                    && !self.isolated_nodes.contains(*node_id)
+            })
             .map(|(node_id, sim_node)| (node_id.clone(), sim_node.storage.visible_checksums()))
             .collect::<Vec<_>>();
         for subscriber in self.subscribers.values_mut() {

@@ -40,3 +40,13 @@ test("manual_push_shows_diverge_converge_and_listener_receipt", async ({ page })
   await page.getByTestId("step").click();
   await expect(page.getByTestId("subscribers-panel")).toContainText("upserted");
 });
+
+test("node_controls_show_reelection_resync_and_scale_out", async ({ page }) => {
+  await page.goto(demoUrl);
+  await page.getByText("Isolate").first().click();
+  await page.getByTestId("step").click();
+  await expect(page.getByTestId("engine-banner")).toContainText("Formation");
+  await page.getByText("Rejoin").first().click();
+  await page.getByTestId("add-node-button").click();
+  await expect(page.getByTestId("nodes-panel")).toContainText("node-3");
+});
