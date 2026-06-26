@@ -133,6 +133,13 @@ theme = "Interactive cluster lab (DevRel) — evolve the 0.50 browser demo into 
 depends_on = ["0.50.0", "0.52.0"]
 
 [[release]]
+version = "0.53.1"
+file = "docs/plans/V0_53_1_REAL_RAFT_ELECTION_IN_THE_LAB_PLAN.md"
+status = "shipped"
+theme = "Real raft election in the lab (point release over 0.53) — raise leader election from the modeled sim-model FSM to real raft-rs consensus driven deterministically over the simulator's seeded, fault-injecting SimNetwork (executing the 0.53 W1b 'first attempt'). Reuses the shipped hydracache-cluster-raft RaftMetadataRuntime + RaftWireMessage + RaftMessageSink (no new consensus); the one seam is seeding raft-rs's randomized election timeout via set_randomized_election_timeout, gated by election_determinism_holds_over_1000_seeds. Validates the sim-model against real raft, surfaces election_source:'raft' (default on the native server/sandbox path), resolves wasm-compat via an ADR (raft-in-wasm or server=raft/wasm=validated-model), and discloses the source in the UI. Lab stays a teaching asset, product runtime untouched"
+depends_on = ["0.53.0"]
+
+[[release]]
 version = "0.54.0"
 file = "docs/plans/V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md"
 status = "planned"

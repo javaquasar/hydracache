@@ -5,6 +5,8 @@ use hydracache::{
     LogicalTime, OutboundClusterMessage,
 };
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::SimRaftCluster;
 use crate::{
     ControlActionV1, ControlApplyError, ElectionDriver, ElectionDriverSnapshot, History,
     InvariantChecker, InvariantReport, LinkFault, PartitionSymmetry, ReplayScriptV1, SimClock,
@@ -102,15 +104,28 @@ struct RebalanceState {
     total_partitions: u64,
 }
 
+/// Election backend used by [`SimWorld`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ElectionBackend {
+    /// Deterministic simulator model retained as the wasm/fallback path.
+    Model,
+    /// Real raft-rs driven synchronously over the simulator network.
+    #[cfg(not(target_arch = "wasm32"))]
+    Raft,
+}
+
 /// Deterministic whole-cluster simulation driver.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct SimWorld {
     seed: u64,
     cfg: SimConfig,
     rng: SimRng,
     clock: SimClock,
     network: SimNetwork,
+    election_backend: ElectionBackend,
     election: ElectionDriver,
+    #[cfg(not(target_arch = "wasm32"))]
+    raft: Option<SimRaftCluster>,
     workload: WorkloadGenerator,
     history: History,
     invariant_checker: InvariantChecker,
@@ -165,7 +180,10 @@ impl SimWorld {
             rng: SimRng::from_seed(seed),
             clock: SimClock::default(),
             network: SimNetwork::from_seed(seed ^ 0x44_44_44_44),
+            election_backend: ElectionBackend::Model,
             election: ElectionDriver::new(seed ^ 0x53_00_00_00, node_ids.clone()),
+            #[cfg(not(target_arch = "wasm32"))]
+            raft: None,
             workload: WorkloadGenerator::new(
                 seed ^ 0x55_55_55_55,
                 WorkloadConfig {
@@ -193,6 +211,19 @@ impl SimWorld {
             delivered_messages: 0,
             trace: Vec::new(),
         }
+    }
+
+    /// Build a world that uses real raft-rs for lab leader election.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn with_raft_election(seed: u64, cfg: SimConfig) -> Self {
+        let mut world = Self::new(seed, cfg);
+        let node_ids = world.nodes.keys().cloned().collect::<Vec<_>>();
+        world.raft = Some(
+            SimRaftCluster::new(seed ^ 0x53_01_00_00, node_ids)
+                .expect("real raft election backend must initialize from simulator nodes"),
+        );
+        world.election_backend = ElectionBackend::Raft;
+        world
     }
 
     /// Run the scheduler for `steps`.
@@ -251,7 +282,15 @@ impl SimWorld {
 
     /// Return the current deterministic election-driver snapshot.
     pub fn election_snapshot(&self) -> ElectionDriverSnapshot {
-        self.election.snapshot()
+        match self.election_backend {
+            ElectionBackend::Model => self.election.snapshot(),
+            #[cfg(not(target_arch = "wasm32"))]
+            ElectionBackend::Raft => self
+                .raft
+                .as_ref()
+                .expect("raft backend must have a raft cluster")
+                .snapshot(),
+        }
     }
 
     /// Enable or disable the built-in smoke workload.
@@ -440,6 +479,10 @@ impl SimWorld {
         if restarted {
             self.catch_up_node(&node_id);
             self.election.restore_node(&node_id, self.steps);
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(raft) = self.raft.as_mut() {
+                raft.restore_node(&node_id);
+            }
         }
         restarted
     }
@@ -480,6 +523,10 @@ impl SimWorld {
         self.isolated_nodes.remove(&node_id);
         self.catch_up_node(&node_id);
         self.election.restore_node(&node_id, self.steps);
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(raft) = self.raft.as_mut() {
+            raft.restore_node(&node_id);
+        }
         true
     }
 
@@ -491,6 +538,11 @@ impl SimWorld {
         let node_id = node_id.into();
         if self.nodes.contains_key(&node_id) {
             self.election.remove_node(&node_id);
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(raft) = self.raft.as_mut() {
+                raft.remove_node(&node_id, self.steps)
+                    .expect("raft remove-node conf change must be proposed or deferred");
+            }
             self.disabled_nodes.insert(node_id);
             true
         } else {
@@ -508,6 +560,11 @@ impl SimWorld {
         let removed = self.disabled_nodes.remove(&node_id);
         self.catch_up_node(&node_id);
         self.election.add_node(node_id.clone(), self.steps);
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(raft) = self.raft.as_mut() {
+            raft.add_node(node_id.clone(), self.steps)
+                .expect("raft add-node conf change must be proposed or deferred");
+        }
         removed
     }
 
@@ -528,6 +585,11 @@ impl SimWorld {
         );
         self.cfg.node_count = self.cfg.node_count.saturating_add(1);
         self.election.add_node(node_id.clone(), self.steps);
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(raft) = self.raft.as_mut() {
+            raft.add_node(node_id.clone(), self.steps)
+                .expect("raft add-node conf change must be proposed or deferred");
+        }
         self.catch_up_node(&node_id);
         self.rebalance = Some(RebalanceState {
             phase: "complete".to_owned(),
@@ -596,7 +658,7 @@ impl SimWorld {
     pub fn snapshot(&self) -> SimSnapshot {
         let node_ids = self.nodes.keys().cloned().collect::<Vec<_>>();
         let committed_entries = self.history.completed().count() as u64;
-        let election = self.election.snapshot();
+        let election = self.election_snapshot();
         let election_nodes = election
             .nodes
             .iter()
@@ -779,11 +841,29 @@ impl SimWorld {
 
     fn drive_election(&mut self) {
         let live_nodes = self.live_node_ids();
-        let previous_trace_len = self.election.trace().len();
-        self.election.step(self.steps, &live_nodes);
-        let new_events = self.election.trace()[previous_trace_len..].to_vec();
-        for event in new_events {
-            self.record(event);
+        match self.election_backend {
+            ElectionBackend::Model => {
+                let previous_trace_len = self.election.trace().len();
+                self.election.step(self.steps, &live_nodes);
+                let new_events = self.election.trace()[previous_trace_len..].to_vec();
+                for event in new_events {
+                    self.record(event);
+                }
+            }
+            #[cfg(not(target_arch = "wasm32"))]
+            ElectionBackend::Raft => {
+                let raft = self
+                    .raft
+                    .as_mut()
+                    .expect("raft backend must have a raft cluster");
+                let previous_trace_len = raft.trace().len();
+                raft.step(self.steps, &live_nodes, &self.network)
+                    .expect("real raft election step must stay deterministic");
+                let new_events = raft.trace()[previous_trace_len..].to_vec();
+                for event in new_events {
+                    self.record(event);
+                }
+            }
         }
     }
 
@@ -801,7 +881,7 @@ impl SimWorld {
 
     fn refresh_invariant_report(&mut self) {
         let mut election_state = crate::invariants::ElectionTopologyState::from_election_snapshot(
-            &self.election.snapshot(),
+            &self.election_snapshot(),
         );
         for subscriber in self.subscribers.values() {
             if let Some(event) = &subscriber.last_event {
@@ -894,8 +974,7 @@ impl SimWorld {
 
     fn preferred_write_node(&self) -> Option<ClusterNodeId> {
         let live = self.live_node_ids();
-        self.election
-            .snapshot()
+        self.election_snapshot()
             .leader
             .filter(|leader| live.contains(leader))
             .or_else(|| live.into_iter().next())

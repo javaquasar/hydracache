@@ -29,6 +29,7 @@ const state = {
 const el = {
   banner: document.querySelector("#engine-banner"),
   verdict: document.querySelector("#verdict"),
+  electionSourceChip: document.querySelector("#election-source-chip"),
   seedInput: document.querySelector("#seed-input"),
   scenario: document.querySelector("#scenario-select"),
   mode: document.querySelector("#mode-select"),
@@ -196,6 +197,7 @@ async function refresh() {
 function render() {
   const snapshot = state.snapshot;
   el.banner.textContent = `This runs the real hydracache-sim engine, seed ${snapshot.seed}, step ${snapshot.step}. Formation ${snapshot.formation_phase}; election ${snapshot.election_source}. ${snapshot.election_disclosure || "Verdicts are produced by the actual invariant checker."}`;
+  renderElectionSource(snapshot);
   el.scenario.value = state.scenario;
   el.mode.value = snapshot.mode || "manual";
   el.interventionStatus.textContent =
@@ -211,6 +213,19 @@ function render() {
   renderClients(snapshot);
   renderConsistency(snapshot);
   renderKeys(snapshot);
+}
+
+function renderElectionSource(snapshot) {
+  const source = snapshot.election_source || "unknown";
+  const sourceClass = source
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+  el.electionSourceChip.className = `source-chip source-${sourceClass || "unknown"}`;
+  el.electionSourceChip.textContent = source;
+  el.electionSourceChip.title =
+    snapshot.election_disclosure || "Election source for this simulator snapshot.";
+  el.electionSourceChip.setAttribute("aria-label", `Election source: ${source}`);
 }
 
 function renderVerdict(snapshot) {

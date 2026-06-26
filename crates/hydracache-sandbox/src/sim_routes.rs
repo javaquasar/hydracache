@@ -105,14 +105,14 @@ async fn sim_new(
 ) -> SimRouteResult {
     let mut world = if let Some(scenario) = request.scenario.as_deref() {
         if scenario == "default" {
-            SimWorld::new(request.seed.unwrap_or(50), SimConfig::default())
+            SimWorld::with_raft_election(request.seed.unwrap_or(50), SimConfig::default())
         } else {
             run_scenario(scenario)
                 .map_err(SimRouteRejection::from)?
                 .world
         }
     } else {
-        SimWorld::new(request.seed.unwrap_or(50), SimConfig::default())
+        SimWorld::with_raft_election(request.seed.unwrap_or(50), SimConfig::default())
     };
     if let Some(steps) = request.steps {
         let current_step = world.snapshot().step;
@@ -156,7 +156,7 @@ async fn sim_control(
         .validate()
         .map_err(ControlApplyError::from)
         .map_err(SimRouteRejection::from)?;
-    let mut world = SimWorld::new(script.seed, SimConfig::default());
+    let mut world = SimWorld::with_raft_election(script.seed, SimConfig::default());
     if let Some(scenario) = script.scenario.as_deref() {
         if scenario != "default" {
             world = run_scenario(scenario)

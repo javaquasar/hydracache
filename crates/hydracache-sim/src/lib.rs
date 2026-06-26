@@ -17,6 +17,8 @@ pub mod persistence_recovery;
 pub mod rng;
 pub mod scenarios;
 pub mod schedule;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod sim_raft;
 pub mod snapshot;
 pub mod storage;
 #[cfg(not(target_arch = "wasm32"))]
@@ -60,6 +62,8 @@ pub use scenarios::{
 pub use schedule::{
     FailureReport, FaultSchedule, ReplayOutcome, ReplayRunner, ScheduledFault, ScheduledFaultKind,
 };
+#[cfg(not(target_arch = "wasm32"))]
+pub use sim_raft::{SimRaftCluster, SimRaftError, SimRaftInFlightKey, SimRaftResult};
 pub use snapshot::{
     ClientView, ConvergenceView, KeyReplicaView, KeyView, LinkStateView, LinkView, MessageView,
     NodeView, ProgressView, RebalanceView, SimSnapshot, SimSnapshotDecodeError,
@@ -77,4 +81,4 @@ pub use upgrade_recovery::{
 pub use workload::{
     EventId, History, HistoryEvent, WorkloadConfig, WorkloadGenerator, WorkloadOp, WorkloadResult,
 };
-pub use world::{SimConfig, SimOutcome, SimWorld};
+pub use world::{ElectionBackend, SimConfig, SimOutcome, SimWorld};
