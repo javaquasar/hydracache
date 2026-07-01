@@ -389,6 +389,23 @@ pub trait ReplicatedValueStore: Send + Sync {
         &self,
         map: &EffectiveReplicationMap,
     ) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError>;
+
+    /// Return every stored record, without ownership filtering.
+    fn scan_all(&self) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError>;
+
+    /// Remove one stored record outright.
+    fn remove(&mut self, key: &str) -> Result<(), ValueStoreError>;
+
+    /// Reclaim backend space when supported; returns reclaimed bytes.
+    fn compact(&mut self) -> Result<u64, ValueStoreError> {
+        Ok(0)
+    }
+
+    /// Return total retained value bytes.
+    fn total_bytes(&self) -> Result<u64, ValueStoreError>;
+
+    /// Return how many writes were rejected by the byte budget.
+    fn rejected_total(&self) -> u64;
 }
 
 /// Deterministic in-memory implementation used by the fast 0.42 tests and as
@@ -505,11 +522,28 @@ impl ReplicatedValueStore for InMemoryReplicatedValueStore {
         if map.reading.is_empty() {
             return Ok(Vec::new());
         }
+        self.scan_all()
+    }
+
+    fn scan_all(&self) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError> {
         Ok(self
             .records
             .iter()
             .map(|(key, record)| (key.clone(), record.clone()))
             .collect())
+    }
+
+    fn remove(&mut self, key: &str) -> Result<(), ValueStoreError> {
+        self.records.remove(key);
+        Ok(())
+    }
+
+    fn total_bytes(&self) -> Result<u64, ValueStoreError> {
+        Ok(InMemoryReplicatedValueStore::total_bytes(self))
+    }
+
+    fn rejected_total(&self) -> u64 {
+        InMemoryReplicatedValueStore::rejected_total(self)
     }
 }
 

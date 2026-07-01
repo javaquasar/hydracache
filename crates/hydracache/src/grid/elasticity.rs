@@ -1009,6 +1009,39 @@ where
         }
         Ok(merged.into_iter().collect())
     }
+
+    fn scan_all(&self) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError> {
+        let mut merged = BTreeMap::new();
+        for (key, record) in self.cold.scan_all()? {
+            merged.insert(key, record);
+        }
+        for (key, record) in &self.hot {
+            let record = merged
+                .remove(key)
+                .map(|cold| cold.merge(record.clone()))
+                .unwrap_or_else(|| record.clone());
+            merged.insert(key.clone(), record);
+        }
+        Ok(merged.into_iter().collect())
+    }
+
+    fn remove(&mut self, key: &str) -> Result<(), ValueStoreError> {
+        self.hot.remove(key);
+        self.order.retain(|existing| existing != key);
+        self.cold.remove(key)
+    }
+
+    fn compact(&mut self) -> Result<u64, ValueStoreError> {
+        self.cold.compact()
+    }
+
+    fn total_bytes(&self) -> Result<u64, ValueStoreError> {
+        Ok(self.cold.total_bytes()?.saturating_add(self.hot_bytes()))
+    }
+
+    fn rejected_total(&self) -> u64 {
+        self.cold.rejected_total()
+    }
 }
 
 /// Single-partition invalidation batch.

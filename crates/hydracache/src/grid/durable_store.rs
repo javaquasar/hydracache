@@ -111,6 +111,17 @@ impl DurableValueStore {
             .saturating_add(record.approx_bytes())
             <= self.max_total_bytes)
     }
+
+    fn scan_records(&self) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError> {
+        let mut records = Vec::new();
+        for item in self.db.scan_prefix(RECORD_PREFIX) {
+            let (key, value) = item.map_err(sled_error)?;
+            let key = stored_key_to_cache_key(key.as_ref())?;
+            let record = decode_record(&key, value.as_ref())?;
+            records.push((key, record));
+        }
+        Ok(records)
+    }
 }
 
 impl ReplicatedValueStore for DurableValueStore {
@@ -164,14 +175,29 @@ impl ReplicatedValueStore for DurableValueStore {
         if map.reading.is_empty() {
             return Ok(Vec::new());
         }
-        let mut records = Vec::new();
-        for item in self.db.scan_prefix(RECORD_PREFIX) {
-            let (key, value) = item.map_err(sled_error)?;
-            let key = stored_key_to_cache_key(key.as_ref())?;
-            let record = decode_record(&key, value.as_ref())?;
-            records.push((key, record));
-        }
-        Ok(records)
+        self.scan_all()
+    }
+
+    fn scan_all(&self) -> Result<Vec<(String, ReplicatedValueRecord)>, ValueStoreError> {
+        self.scan_records()
+    }
+
+    fn remove(&mut self, key: &str) -> Result<(), ValueStoreError> {
+        self.db.remove(record_key(key)).map_err(sled_error)?;
+        self.flush()
+    }
+
+    fn compact(&mut self) -> Result<u64, ValueStoreError> {
+        self.flush()?;
+        Ok(0)
+    }
+
+    fn total_bytes(&self) -> Result<u64, ValueStoreError> {
+        DurableValueStore::total_bytes(self)
+    }
+
+    fn rejected_total(&self) -> u64 {
+        DurableValueStore::rejected_total(self)
     }
 }
 
