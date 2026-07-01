@@ -25,8 +25,8 @@ On Windows, `cargo xtask verify` splits the test gate into
 `cargo test -p xtask --lib --tests --locked -j 1`. This keeps the same coverage while
 avoiding the OS lock on the currently running `target/debug/xtask.exe` and transient
 linker locks on test binaries. The child cargo gates also use
-`CARGO_TARGET_DIR=target/xtask-verify` on Windows so stale default-target artifacts
-cannot block the run.
+`CARGO_TARGET_DIR=target/xtask-verify-<process-id>` on Windows so stale default-target
+artifacts and locked test binaries from earlier verify runs cannot block the run.
 
 ## Gate registry
 

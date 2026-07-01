@@ -22,7 +22,7 @@
 >   by `0.44` DST. Independent of `0.52`/`0.53`/`0.54`.
 > - **Promoted from** `V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md` (D1–D4 expanded into W1–W6 with
 >   an **honest sled reframing** — see below).
-> - **Status:** planned.
+> - **Status:** in-progress.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > storage direction: [`../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md) ·
@@ -75,6 +75,22 @@ Make the `0.51` durable plane **engine-flexible, inspectable, self-scrubbing, an
 add a **cluster-wide consistent checkpoint** and **rescale-with-checkpoint**, and add a
 **poison-load circuit-breaker** — without a new consistency level (R-1), without becoming a
 database (R-9), and without regressing the RAM-only default (R-10).
+
+## Preflight Audit (Codex, 0.55 start)
+
+- `grid/hardening.rs` already owns the non-object-safe `ReplicatedValueStore` trait and the
+  `InMemoryReplicatedValueStore` implementation. W1 extends this trait in place; callers stay on
+  generic bounds, never `dyn ReplicatedValueStore`.
+- `grid/durable_store.rs` already owns the sled implementation, the format marker, record
+  encode/decode, checksum verification, `put_raw_record_for_test`, and the byte-budget counters.
+  `scan_owned` currently walks `RECORD_PREFIX` and only special-cases an empty map, so W1 can add
+  `scan_all` by extracting the unfiltered walk without changing the record format or checksum path.
+- `grid/mod.rs` already exposes `TombstoneTracker::confirm_repair` and `repair_debt`, and
+  `ReplicatedValueRecord::is_tombstone`. W3 must build on that repair gate rather than deleting
+  tombstones directly from store state.
+- `grid/durability.rs`, `grid/recovery.rs`, and `grid/elasticity.rs` are the compile-impact
+  surfaces for W1/W4. `cache.rs`/`refresh.rs`/`inflight.rs` are the W5 single-flight seam. No
+  preflight code change is required before W1.
 
 ## Non-Goals
 

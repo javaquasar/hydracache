@@ -149,7 +149,7 @@ depends_on = ["0.46.0"]
 [[release]]
 version = "0.55.0"
 file = "docs/plans/V0_55_DURABLE_STORE_HARDENING_PLAN.md"
-status = "planned"
+status = "in-progress"
 theme = "Durable store hardening & cluster-wide checkpoints — harden the shipped 0.51 sled-backed durable value plane: EXTEND the existing ReplicatedValueStore trait (hardening.rs:367, already impl by sled DurableValueStore + InMemoryReplicatedValueStore; NOT a new trait) with scan_all/remove/compact (no behaviour change; keeps redb/RocksDB drop-in per TD-0003; trait stays generic-bound, not object-safe), domain-aware inspect/dump tool + bounded background scrubber (per-record independent decode, proactive corruption detection, fail-loud), maintenance (repair-gated tombstone GC that never resurrects + sled compaction + budget hardening), barrier-aligned cluster-wide consistent checkpoint + rescale-with-checkpoint (arroyo pattern, loses no committed write), and a per-key poison-load circuit-breaker over the single-flight loader (blazingmq poison-pill analog). Honest sled reframing of the blazingmq file-store idea (sled owns files). No new consistency level (R-1), not a database (R-9), RAM-only default unchanged (R-10); validated by 0.44 DST. Promoted from V0_DRAFT_DURABLE_STORE_HARDENING_PLAN"
 depends_on = ["0.51.0"]
 
