@@ -29,6 +29,12 @@ pub struct DurableValueStore {
     rejected_total: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DurableRawRecord {
+    pub key: String,
+    pub bytes: Vec<u8>,
+}
+
 impl DurableValueStore {
     /// Open or create a durable value store under `path`.
     pub fn open(path: impl AsRef<Path>) -> Result<Self, ValueStoreError> {
@@ -94,6 +100,63 @@ impl DurableValueStore {
             .insert(record_key(key), bytes.as_ref())
             .map_err(sled_error)?;
         self.flush()
+    }
+
+    /// Return raw bytes for one key, used by checksum fault-injection tests.
+    #[doc(hidden)]
+    pub fn raw_record_for_test(&self, key: &str) -> Result<Option<Vec<u8>>, ValueStoreError> {
+        self.db
+            .get(record_key(key))
+            .map(|bytes| bytes.map(|bytes| bytes.to_vec()))
+            .map_err(sled_error)
+    }
+
+    pub(crate) fn raw_record_batch_after(
+        &self,
+        after: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<DurableRawRecord>, ValueStoreError> {
+        let limit = limit.max(1);
+        let mut records = Vec::with_capacity(limit);
+        match after {
+            Some(after) => {
+                for item in self.db.range(record_key(after)..) {
+                    let (stored_key, bytes) = item.map_err(sled_error)?;
+                    let stored_key = stored_key.as_ref();
+                    if !stored_key.starts_with(RECORD_PREFIX) {
+                        break;
+                    }
+                    let key = stored_key_to_cache_key(stored_key)?;
+                    if key.as_str() <= after {
+                        continue;
+                    }
+                    records.push(DurableRawRecord {
+                        key,
+                        bytes: bytes.to_vec(),
+                    });
+                    if records.len() == limit {
+                        break;
+                    }
+                }
+            }
+            None => {
+                for item in self.db.scan_prefix(RECORD_PREFIX).take(limit) {
+                    let (stored_key, bytes) = item.map_err(sled_error)?;
+                    records.push(DurableRawRecord {
+                        key: stored_key_to_cache_key(stored_key.as_ref())?,
+                        bytes: bytes.to_vec(),
+                    });
+                }
+            }
+        }
+        Ok(records)
+    }
+
+    pub(crate) fn decode_raw_record(
+        key: &str,
+        bytes: &[u8],
+    ) -> Result<ReplicatedValueRecord, ValueStoreError> {
+        decode_record(key, bytes)
     }
 
     fn would_fit(

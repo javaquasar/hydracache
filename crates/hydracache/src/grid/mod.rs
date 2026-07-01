@@ -14,6 +14,10 @@ pub(crate) mod convergence_staleness;
 pub(crate) mod crdt;
 pub(crate) mod durability;
 #[cfg(feature = "durable-value-store")]
+pub(crate) mod durable_inspect;
+#[cfg(feature = "durable-value-store")]
+pub(crate) mod durable_scrub;
+#[cfg(feature = "durable-value-store")]
 pub(crate) mod durable_store;
 pub(crate) mod elasticity;
 pub(crate) mod failure_detector;

@@ -599,6 +599,15 @@ pub use grid::durability::{
     DurabilityWritePath, DurableFlush, DurableWriteOutcome, DURABILITY_SNAPSHOT_FORMAT_VERSION,
 };
 #[cfg(feature = "durable-value-store")]
+pub use grid::durable_inspect::{
+    inspect_replicated_store, DurableInspectChecksumStatus, DurableInspectRecord,
+};
+#[cfg(feature = "durable-value-store")]
+pub use grid::durable_scrub::{
+    DurableScrubConfig, DurableScrubCorruption, DurableScrubMetrics, DurableScrubReport,
+    DurableScrubber,
+};
+#[cfg(feature = "durable-value-store")]
 pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::elasticity::{

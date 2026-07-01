@@ -8,6 +8,7 @@ publish = false
 description = "HydraCache repository automation tasks."
 
 [dependencies]
+hydracache = { workspace = true, features = ["durable-value-store"] }
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
