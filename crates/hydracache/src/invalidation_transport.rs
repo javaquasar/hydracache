@@ -1,20 +1,20 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex as StdMutex};
 use std::time::Duration;
 
 use async_trait::async_trait;
 use bytes::Bytes;
 use hydracache_core::Result;
-use tokio::sync::{mpsc, watch, Mutex};
+use tokio::sync::{mpsc, watch, Mutex, Notify};
 use tokio::task::{JoinError, JoinHandle};
 
-use crate::grid::invalidation_ring::InvalidationRing;
+use crate::grid::invalidation_ring::{InvalidationEvent, InvalidationRing, ReplayResult};
 use crate::invalidation_bus::{
-    CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
+    CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
     CacheInvalidationReceive, InMemoryFramedInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
 };
-use crate::ClusterGeneration;
+use crate::{ClusterGeneration, PartitionId};
 
 /// Shared invalidation-ring handle reserved for resume support.
 ///
@@ -92,6 +92,8 @@ pub struct TransportConfig {
     pub reconnect_backoff_ms: u64,
     /// Number of `(source,message_id)` pairs retained for deduplication.
     pub dedup_window: usize,
+    /// Maximum accepted inbound frames per source for the current relay window.
+    pub inbound_rate_limit_per_source: Option<u64>,
 }
 
 impl TransportConfig {
@@ -113,6 +115,7 @@ impl TransportConfig {
             inbound_capacity: Self::DEFAULT_QUEUE_CAPACITY,
             reconnect_backoff_ms: Self::DEFAULT_RECONNECT_BACKOFF_MS,
             dedup_window: Self::DEFAULT_DEDUP_WINDOW,
+            inbound_rate_limit_per_source: None,
         }
     }
 
@@ -143,6 +146,12 @@ impl TransportConfig {
     /// Override the deduplication window.
     pub fn dedup_window(mut self, window: usize) -> Self {
         self.dedup_window = window;
+        self
+    }
+
+    /// Override the per-source inbound rate limit.
+    pub fn inbound_rate_limit_per_source(mut self, limit: Option<u64>) -> Self {
+        self.inbound_rate_limit_per_source = limit;
         self
     }
 }
@@ -188,6 +197,24 @@ pub struct TransportMetricsSnapshot {
     pub bus_apply_error_total: u64,
     /// Bus lag reports observed by the outbound relay.
     pub bus_lag_total: u64,
+    /// Valid inbound frames dropped by the per-source rate limit.
+    pub rate_limited_total: u64,
+    /// Resume requests sent to the replay loop.
+    pub resume_requested_total: u64,
+    /// Resume requests skipped because no ring was configured.
+    pub resume_unavailable_total: u64,
+    /// Outbound drops that marked a resume gap.
+    pub resume_marked_total: u64,
+    /// Ring events replayed after a resume request.
+    pub resume_replayed_total: u64,
+    /// Ring resume requests that fell behind retention.
+    pub resume_fell_behind_total: u64,
+    /// Conservative clear-partition actions emitted for fell-behind gaps.
+    pub resume_clear_partition_total: u64,
+    /// Last partition that needed a clear after falling behind.
+    pub last_clear_partition: Option<PartitionId>,
+    /// Current ring distance from the last requested resume watermark.
+    pub inbound_lag: u64,
 }
 
 /// Bounded-label invalidation relay counters.
@@ -209,11 +236,22 @@ pub struct TransportMetrics {
     decode_error_total: AtomicU64,
     bus_apply_error_total: AtomicU64,
     bus_lag_total: AtomicU64,
+    rate_limited_total: AtomicU64,
+    resume_requested_total: AtomicU64,
+    resume_unavailable_total: AtomicU64,
+    resume_marked_total: AtomicU64,
+    resume_replayed_total: AtomicU64,
+    resume_fell_behind_total: AtomicU64,
+    resume_clear_partition_total: AtomicU64,
+    last_clear_partition: AtomicU64,
+    inbound_lag: AtomicU64,
 }
 
 impl TransportMetrics {
     /// Return a stable snapshot of all counters.
     pub fn snapshot(&self) -> TransportMetricsSnapshot {
+        let resume_clear_partition_total =
+            self.resume_clear_partition_total.load(Ordering::Relaxed);
         TransportMetricsSnapshot {
             published_total: self.published_total.load(Ordering::Relaxed),
             received_total: self.received_total.load(Ordering::Relaxed),
@@ -235,6 +273,21 @@ impl TransportMetrics {
             decode_error_total: self.decode_error_total.load(Ordering::Relaxed),
             bus_apply_error_total: self.bus_apply_error_total.load(Ordering::Relaxed),
             bus_lag_total: self.bus_lag_total.load(Ordering::Relaxed),
+            rate_limited_total: self.rate_limited_total.load(Ordering::Relaxed),
+            resume_requested_total: self.resume_requested_total.load(Ordering::Relaxed),
+            resume_unavailable_total: self.resume_unavailable_total.load(Ordering::Relaxed),
+            resume_marked_total: self.resume_marked_total.load(Ordering::Relaxed),
+            resume_replayed_total: self.resume_replayed_total.load(Ordering::Relaxed),
+            resume_fell_behind_total: self.resume_fell_behind_total.load(Ordering::Relaxed),
+            resume_clear_partition_total,
+            last_clear_partition: if resume_clear_partition_total == 0 {
+                None
+            } else {
+                Some(PartitionId::new(
+                    self.last_clear_partition.load(Ordering::Relaxed) as u32,
+                ))
+            },
+            inbound_lag: self.inbound_lag.load(Ordering::Relaxed),
         }
     }
 
@@ -250,6 +303,69 @@ impl TransportMetrics {
             TransportError::Backend(_) | TransportError::Backpressure(_) => {}
         }
     }
+}
+
+/// Static metric descriptor used by observability adapters.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TransportMetricDescriptor {
+    /// Metric name.
+    pub name: &'static str,
+    /// Bounded label keys allowed for this metric.
+    pub labels: &'static [&'static str],
+}
+
+const KIND_DIRECTION_LABELS: &[&str] = &["kind", "direction"];
+
+const TRANSPORT_METRIC_DESCRIPTORS: &[TransportMetricDescriptor] = &[
+    TransportMetricDescriptor {
+        name: "transport_published_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_received_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_deduped_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_fenced_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_dropped_full_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_replayed_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_resume_fell_behind_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_publish_error_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_rate_limited_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_bus_lag_total",
+        labels: KIND_DIRECTION_LABELS,
+    },
+    TransportMetricDescriptor {
+        name: "transport_inbound_lag",
+        labels: KIND_DIRECTION_LABELS,
+    },
+];
+
+/// Return the bounded-label metric descriptors emitted by the relay.
+pub fn transport_metric_descriptors() -> &'static [TransportMetricDescriptor] {
+    TRANSPORT_METRIC_DESCRIPTORS
 }
 
 /// In-memory transport endpoint used by W1/W5 deterministic tests.
@@ -319,11 +435,91 @@ impl InvalidationTransport for InMemoryTransport {
     }
 }
 
+#[derive(Debug)]
+struct BoundedFrameQueue {
+    capacity: usize,
+    inner: Arc<StdMutex<VecDeque<CacheInvalidationFrame>>>,
+    notify: Arc<Notify>,
+}
+
+impl BoundedFrameQueue {
+    fn new(capacity: usize) -> Self {
+        Self {
+            capacity: capacity.max(1),
+            inner: Arc::new(StdMutex::new(VecDeque::with_capacity(capacity.max(1)))),
+            notify: Arc::new(Notify::new()),
+        }
+    }
+
+    fn push_drop_oldest(&self, frame: CacheInvalidationFrame) -> QueuePush {
+        let mut queue = self
+            .inner
+            .lock()
+            .expect("transport frame queue mutex poisoned");
+        let dropped = if queue.len() == self.capacity {
+            queue.pop_front()
+        } else {
+            None
+        };
+        queue.push_back(frame);
+        drop(queue);
+        self.notify.notify_one();
+        match dropped {
+            Some(frame) => QueuePush::DroppedOldest(frame),
+            None => QueuePush::Enqueued,
+        }
+    }
+
+    async fn recv(&self, shutdown: &mut watch::Receiver<bool>) -> Option<CacheInvalidationFrame> {
+        loop {
+            if let Some(frame) = self
+                .inner
+                .lock()
+                .expect("transport frame queue mutex poisoned")
+                .pop_front()
+            {
+                return Some(frame);
+            }
+
+            tokio::select! {
+                changed = shutdown.changed() => {
+                    if changed.is_err() || *shutdown.borrow() {
+                        return None;
+                    }
+                }
+                _ = self.notify.notified() => {}
+            }
+        }
+    }
+}
+
+impl Clone for BoundedFrameQueue {
+    fn clone(&self) -> Self {
+        Self {
+            capacity: self.capacity,
+            inner: self.inner.clone(),
+            notify: self.notify.clone(),
+        }
+    }
+}
+
+#[derive(Debug)]
+enum QueuePush {
+    Enqueued,
+    DroppedOldest(CacheInvalidationFrame),
+}
+
+#[derive(Debug, Clone, Copy)]
+struct ResumeRequest {
+    last_seen: u64,
+}
+
 /// Running invalidation relay with observable metrics.
 #[derive(Debug)]
 pub struct InvalidationRelayHandle {
     join: JoinHandle<()>,
     shutdown: watch::Sender<bool>,
+    resume: mpsc::UnboundedSender<ResumeRequest>,
     metrics: Arc<TransportMetrics>,
 }
 
@@ -336,6 +532,13 @@ impl InvalidationRelayHandle {
     /// Return a point-in-time metrics snapshot.
     pub fn snapshot(&self) -> TransportMetricsSnapshot {
         self.metrics.snapshot()
+    }
+
+    /// Request replay from the configured invalidation ring after `last_seen`.
+    pub fn request_resume(&self, last_seen: u64) -> std::result::Result<(), TransportError> {
+        self.resume
+            .send(ResumeRequest { last_seen })
+            .map_err(|_| TransportError::Backend("invalidation relay is closed".to_owned()))
     }
 
     /// Ask the relay tasks to shut down and wait for the supervisor task.
@@ -383,7 +586,7 @@ impl InvalidationRelay {
     pub fn spawn_with_metrics<B, T>(
         bus: Arc<B>,
         transport: T,
-        _ring: Option<SharedInvalidationRing>,
+        ring: Option<SharedInvalidationRing>,
         config: TransportConfig,
     ) -> InvalidationRelayHandle
     where
@@ -392,36 +595,45 @@ impl InvalidationRelay {
     {
         let metrics = Arc::new(TransportMetrics::default());
         let bus_receiver = bus.subscribe();
-        let (outbound_tx, outbound_rx) = mpsc::channel(config.outbound_capacity.max(1));
-        let (inbound_tx, inbound_rx) = mpsc::channel(config.inbound_capacity.max(1));
+        let outbound_queue = BoundedFrameQueue::new(config.outbound_capacity);
+        let inbound_queue = BoundedFrameQueue::new(config.inbound_capacity);
+        let (resume, resume_rx) = mpsc::unbounded_channel();
         let (shutdown, shutdown_rx) = watch::channel(false);
         let next_message_id = Arc::new(AtomicU64::new(1));
 
         let outbound_reader = tokio::spawn(run_outbound_bus_loop(
             shutdown_rx.clone(),
-            outbound_tx,
+            outbound_queue.clone(),
             config.clone(),
             metrics.clone(),
             next_message_id,
             bus_receiver,
+            resume.clone(),
         ));
         let outbound_publisher = tokio::spawn(run_outbound_transport_loop(
             shutdown_rx.clone(),
-            outbound_rx,
+            outbound_queue,
             transport.clone(),
             metrics.clone(),
         ));
         let inbound_reader = tokio::spawn(run_inbound_transport_loop(
             shutdown_rx.clone(),
-            inbound_tx,
+            inbound_queue.clone(),
             transport,
             metrics.clone(),
         ));
         let inbound_apply = tokio::spawn(run_inbound_apply_loop(
-            shutdown_rx,
-            inbound_rx,
+            shutdown_rx.clone(),
+            inbound_queue.clone(),
             bus,
             config,
+            metrics.clone(),
+        ));
+        let resume_loop = tokio::spawn(run_resume_loop(
+            shutdown_rx,
+            resume_rx,
+            ring,
+            inbound_queue,
             metrics.clone(),
         ));
 
@@ -431,12 +643,14 @@ impl InvalidationRelay {
             let mut outbound_publisher = outbound_publisher;
             let mut inbound_reader = inbound_reader;
             let mut inbound_apply = inbound_apply;
+            let mut resume_loop = resume_loop;
 
             tokio::select! {
                 _ = &mut outbound_reader => {}
                 _ = &mut outbound_publisher => {}
                 _ = &mut inbound_reader => {}
                 _ = &mut inbound_apply => {}
+                _ = &mut resume_loop => {}
             }
 
             let _ = supervisor_shutdown.send(true);
@@ -444,11 +658,13 @@ impl InvalidationRelay {
             outbound_publisher.abort();
             inbound_reader.abort();
             inbound_apply.abort();
+            resume_loop.abort();
         });
 
         InvalidationRelayHandle {
             join,
             shutdown,
+            resume,
             metrics,
         }
     }
@@ -456,11 +672,12 @@ impl InvalidationRelay {
 
 async fn run_outbound_bus_loop(
     mut shutdown: watch::Receiver<bool>,
-    outbound_tx: mpsc::Sender<CacheInvalidationFrame>,
+    outbound_queue: BoundedFrameQueue,
     config: TransportConfig,
     metrics: Arc<TransportMetrics>,
     next_message_id: Arc<AtomicU64>,
     mut bus_receiver: Box<dyn crate::invalidation_bus::CacheInvalidationReceiver>,
+    resume: mpsc::UnboundedSender<ResumeRequest>,
 ) {
     loop {
         tokio::select! {
@@ -473,11 +690,12 @@ async fn run_outbound_bus_loop(
                 match received {
                     CacheInvalidationReceive::Message(message) => {
                         enqueue_outbound_frame(
-                            &outbound_tx,
+                            &outbound_queue,
                             &config,
                             &metrics,
                             &next_message_id,
                             message,
+                            &resume,
                         );
                     }
                     CacheInvalidationReceive::Lagged(count) => {
@@ -494,11 +712,12 @@ async fn run_outbound_bus_loop(
 }
 
 fn enqueue_outbound_frame(
-    outbound_tx: &mpsc::Sender<CacheInvalidationFrame>,
+    outbound_queue: &BoundedFrameQueue,
     config: &TransportConfig,
     metrics: &TransportMetrics,
     next_message_id: &AtomicU64,
     message: CacheInvalidationMessage,
+    resume: &mpsc::UnboundedSender<ResumeRequest>,
 ) {
     if message.source_id() != config.local_node_id.as_str() {
         metrics
@@ -512,41 +731,35 @@ fn enqueue_outbound_frame(
         .with_cluster_name(config.cluster_name.clone())
         .with_message_id(message_id);
 
-    if outbound_tx.try_send(frame).is_err() {
+    if let QueuePush::DroppedOldest(dropped) = outbound_queue.push_drop_oldest(frame) {
         metrics
             .outbound_dropped_full_total
             .fetch_add(1, Ordering::Relaxed);
+        metrics.resume_marked_total.fetch_add(1, Ordering::Relaxed);
+        let last_seen = dropped.message_id().unwrap_or(message_id).saturating_sub(1);
+        let _ = resume.send(ResumeRequest { last_seen });
     }
 }
 
 async fn run_outbound_transport_loop<T>(
     mut shutdown: watch::Receiver<bool>,
-    mut outbound_rx: mpsc::Receiver<CacheInvalidationFrame>,
+    outbound_queue: BoundedFrameQueue,
     transport: T,
     metrics: Arc<TransportMetrics>,
 ) where
     T: InvalidationTransport,
 {
     loop {
-        tokio::select! {
-            changed = shutdown.changed() => {
-                if changed.is_err() || *shutdown.borrow() {
-                    break;
-                }
+        let Some(frame) = outbound_queue.recv(&mut shutdown).await else {
+            break;
+        };
+        match transport.publish(&frame).await {
+            Ok(()) => {
+                metrics.published_total.fetch_add(1, Ordering::Relaxed);
             }
-            maybe_frame = outbound_rx.recv() => {
-                let Some(frame) = maybe_frame else {
-                    break;
-                };
-                match transport.publish(&frame).await {
-                    Ok(()) => {
-                        metrics.published_total.fetch_add(1, Ordering::Relaxed);
-                    }
-                    Err(error) => {
-                        metrics.publish_error_total.fetch_add(1, Ordering::Relaxed);
-                        metrics.record_transport_error(&error);
-                    }
-                }
+            Err(error) => {
+                metrics.publish_error_total.fetch_add(1, Ordering::Relaxed);
+                metrics.record_transport_error(&error);
             }
         }
     }
@@ -554,7 +767,7 @@ async fn run_outbound_transport_loop<T>(
 
 async fn run_inbound_transport_loop<T>(
     mut shutdown: watch::Receiver<bool>,
-    inbound_tx: mpsc::Sender<CacheInvalidationFrame>,
+    inbound_queue: BoundedFrameQueue,
     mut transport: T,
     metrics: Arc<TransportMetrics>,
 ) where
@@ -571,7 +784,10 @@ async fn run_inbound_transport_loop<T>(
                 match maybe_frame {
                     Some(Ok(frame)) => {
                         metrics.received_total.fetch_add(1, Ordering::Relaxed);
-                        if inbound_tx.try_send(frame).is_err() {
+                        if matches!(
+                            inbound_queue.push_drop_oldest(frame),
+                            QueuePush::DroppedOldest(_)
+                        ) {
                             metrics
                                 .inbound_dropped_full_total
                                 .fetch_add(1, Ordering::Relaxed);
@@ -587,7 +803,7 @@ async fn run_inbound_transport_loop<T>(
 
 async fn run_inbound_apply_loop<B>(
     mut shutdown: watch::Receiver<bool>,
-    mut inbound_rx: mpsc::Receiver<CacheInvalidationFrame>,
+    inbound_queue: BoundedFrameQueue,
     bus: Arc<B>,
     config: TransportConfig,
     metrics: Arc<TransportMetrics>,
@@ -597,36 +813,134 @@ async fn run_inbound_apply_loop<B>(
     let mut state = InboundApplyState::new(config.dedup_window);
 
     loop {
+        let Some(frame) = inbound_queue.recv(&mut shutdown).await else {
+            break;
+        };
+        if state.should_drop(&frame, &config, &metrics) {
+            continue;
+        }
+
+        match frame
+            .encode()
+            .and_then(|bytes| bus.publish_encoded_frame(bytes))
+        {
+            Ok(()) => {
+                metrics.applied_total.fetch_add(1, Ordering::Relaxed);
+            }
+            Err(_) => {
+                metrics
+                    .bus_apply_error_total
+                    .fetch_add(1, Ordering::Relaxed);
+            }
+        }
+    }
+}
+
+async fn run_resume_loop(
+    mut shutdown: watch::Receiver<bool>,
+    mut resume_rx: mpsc::UnboundedReceiver<ResumeRequest>,
+    ring: Option<SharedInvalidationRing>,
+    inbound_queue: BoundedFrameQueue,
+    metrics: Arc<TransportMetrics>,
+) {
+    loop {
         tokio::select! {
             changed = shutdown.changed() => {
                 if changed.is_err() || *shutdown.borrow() {
                     break;
                 }
             }
-            maybe_frame = inbound_rx.recv() => {
-                let Some(frame) = maybe_frame else {
+            maybe_request = resume_rx.recv() => {
+                let Some(request) = maybe_request else {
                     break;
                 };
-                if state.should_drop(&frame, &config, &metrics) {
+                metrics.resume_requested_total.fetch_add(1, Ordering::Relaxed);
+                let Some(ring) = &ring else {
+                    metrics.resume_unavailable_total.fetch_add(1, Ordering::Relaxed);
                     continue;
-                }
-
-                match frame.encode().and_then(|bytes| bus.publish_encoded_frame(bytes)) {
-                    Ok(()) => {
-                        metrics.applied_total.fetch_add(1, Ordering::Relaxed);
-                    }
-                    Err(_) => {
-                        metrics.bus_apply_error_total.fetch_add(1, Ordering::Relaxed);
-                    }
-                }
+                };
+                replay_from_ring(
+                    ring,
+                    request.last_seen,
+                    &inbound_queue,
+                    &metrics,
+                )
+                .await;
             }
         }
     }
 }
 
+async fn replay_from_ring(
+    ring: &SharedInvalidationRing,
+    last_seen: u64,
+    inbound_queue: &BoundedFrameQueue,
+    metrics: &TransportMetrics,
+) {
+    let mut ring = ring.lock().await;
+    metrics.inbound_lag.store(
+        ring.next_seq().saturating_sub(last_seen.saturating_add(1)),
+        Ordering::Relaxed,
+    );
+    match ring.replay_from(last_seen) {
+        ReplayResult::Range(events) => {
+            let replayed = events.len() as u64;
+            for event in events {
+                if matches!(
+                    inbound_queue.push_drop_oldest(frame_from_replay_event(event)),
+                    QueuePush::DroppedOldest(_)
+                ) {
+                    metrics
+                        .inbound_dropped_full_total
+                        .fetch_add(1, Ordering::Relaxed);
+                }
+            }
+            metrics
+                .resume_replayed_total
+                .fetch_add(replayed, Ordering::Relaxed);
+        }
+        ReplayResult::FellBehind { clear_partition } => {
+            metrics
+                .resume_fell_behind_total
+                .fetch_add(1, Ordering::Relaxed);
+            metrics
+                .resume_clear_partition_total
+                .fetch_add(1, Ordering::Relaxed);
+            metrics
+                .last_clear_partition
+                .store(u64::from(clear_partition.value()), Ordering::Relaxed);
+            if matches!(
+                inbound_queue.push_drop_oldest(clear_partition_frame(clear_partition, last_seen)),
+                QueuePush::DroppedOldest(_)
+            ) {
+                metrics
+                    .inbound_dropped_full_total
+                    .fetch_add(1, Ordering::Relaxed);
+            }
+        }
+    }
+}
+
+fn frame_from_replay_event(event: InvalidationEvent) -> CacheInvalidationFrame {
+    let mut message = CacheInvalidationMessage::new("transport-resume", event.invalidation);
+    if let Some(generation) = event.source_generation {
+        message = message.with_source_generation(generation);
+    }
+    CacheInvalidationFrame::new(message).with_message_id(event.sequence)
+}
+
+fn clear_partition_frame(partition: PartitionId, last_seen: u64) -> CacheInvalidationFrame {
+    CacheInvalidationFrame::new(CacheInvalidationMessage::new(
+        format!("transport-resume-partition-{}", partition.value()),
+        CacheInvalidation::flush(),
+    ))
+    .with_message_id(last_seen.saturating_add(1))
+}
+
 struct InboundApplyState {
     dedup: DedupWindow,
     highest_generation: HashMap<String, ClusterGeneration>,
+    rate_limited_by_source: HashMap<String, u64>,
 }
 
 impl InboundApplyState {
@@ -634,6 +948,7 @@ impl InboundApplyState {
         Self {
             dedup: DedupWindow::new(dedup_window),
             highest_generation: HashMap::new(),
+            rate_limited_by_source: HashMap::new(),
         }
     }
 
@@ -677,6 +992,11 @@ impl InboundApplyState {
             }
         }
 
+        if self.is_rate_limited(frame, config) {
+            metrics.rate_limited_total.fetch_add(1, Ordering::Relaxed);
+            return true;
+        }
+
         false
     }
 
@@ -698,6 +1018,25 @@ impl InboundApplyState {
                 false
             }
         }
+    }
+
+    fn is_rate_limited(
+        &mut self,
+        frame: &CacheInvalidationFrame,
+        config: &TransportConfig,
+    ) -> bool {
+        let Some(limit) = config.inbound_rate_limit_per_source else {
+            return false;
+        };
+        let count = self
+            .rate_limited_by_source
+            .entry(frame.source_id().to_owned())
+            .or_insert(0);
+        if *count >= limit {
+            return true;
+        }
+        *count = count.saturating_add(1);
+        false
     }
 }
 

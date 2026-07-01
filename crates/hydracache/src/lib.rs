@@ -735,9 +735,9 @@ pub use invalidation_bus::{
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use invalidation_transport::{
-    CacheInvalidationFrameSink, InMemoryTransport, InvalidationRelay, InvalidationRelayHandle,
-    InvalidationTransport, SharedInvalidationRing, TransportConfig, TransportError,
-    TransportMetrics, TransportMetricsSnapshot,
+    transport_metric_descriptors, CacheInvalidationFrameSink, InMemoryTransport, InvalidationRelay,
+    InvalidationRelayHandle, InvalidationTransport, SharedInvalidationRing, TransportConfig,
+    TransportError, TransportMetricDescriptor, TransportMetrics, TransportMetricsSnapshot,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use multitenancy::{
