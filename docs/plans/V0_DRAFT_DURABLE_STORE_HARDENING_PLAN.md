@@ -1,5 +1,14 @@
 # DRAFT — Durable Value-Store & Snapshot Hardening (idea capture, not sequenced)
 
+> **Status: SUPERSEDED by [`V0_55_DURABLE_STORE_HARDENING_PLAN.md`](V0_55_DURABLE_STORE_HARDENING_PLAN.md) — historical only.**
+> This idea-capture draft (D1–D4) was **promoted** to the numbered `0.55` release and expanded
+> into full work items **with an honest sled reframing**: because the durable backend is `sled`,
+> the draft's blazingmq "custom file-store format + file-set rotation" (D1/D2) became a
+> `DurableValueBackend` **trait** + **inspect/scrub operability** + **maintenance (tombstone
+> GC/compaction)**, since sled owns files. The genuinely-new items — cluster-wide consistent
+> checkpoint (D3) and poison-load circuit-breaker (D4) — carried over. Implement against `0.55`,
+> not here. Kept for provenance.
+
 > **Status: DRAFT — version TBD, not yet sequenced.** This is an **idea-capture sketch** so the
 > cross-project borrows from `COMPETITIVE_ANALYSIS_AND_EVOLUTION.md` §7 (blazingmq) and §4.5
 > (arroyo) are not lost. It is **not** a committed release: no work-item DoD is binding yet, and
