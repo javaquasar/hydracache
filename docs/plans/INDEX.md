@@ -86,11 +86,21 @@ v0 foundations
                           re-election + re-sync, runtime add-node; manual/scripted/mixed
                           modes, all clickable; absorbs V0_50_DEMO_ENHANCEMENTS)
 
-   0.46 ─┄ also feeds ┄► 0.54 External invalidation transports (pluggable
-                          InvalidationTransport trait + opt-in crate-per-backend Redis/NATS
-                          relaying CacheInvalidationFrame across processes; watermark
-                          dedup/resume, loop prevention, fail-loud, off fast-path;
-                          arroyo connector pattern)
+   0.46 ─┄ also feeds ┄► 0.54 External invalidation transports (async
+                          InvalidationTransport RELAY over the tokio-broadcast bus +
+                          CacheInvalidationFrame + 0.46 ring; opt-in Redis/NATS crates;
+                          version/generation FENCING = correctness, dedup = optimisation,
+                          ANTI-STORM (inbound applies locally, never re-published), resume
+                          via ring.replay_from (FellBehind→clear-partition), publish never
+                          blocks the fast path; one cluster, arroyo connector pattern)
+
+   0.51 (+0.43,0.44) ─┄ feeds ┄► 0.55 Durable store hardening & cluster-wide checkpoints
+                          (harden the sled-backed durable value plane: DurableValueBackend
+                          trait (sled=default, opens redb/RocksDB), inspect tool + bounded
+                          background scrubber (fail-loud corruption), tombstone-GC/compaction
+                          maintenance, barrier-aligned cluster-wide consistent checkpoint +
+                          rescale-with-checkpoint, poison-load circuit-breaker; honest sled
+                          reframing of the blazingmq file-store idea; promoted from draft)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -115,7 +125,8 @@ v0 foundations
 | [0.52.0](V0_52_IMAP_AND_FENCED_LOCK_JAVA_SURFACE_PLAN.md) | shipped | Lock lease + session-bound ownership + auto-release (the missing algorithm), reentrancy, lock ops in the client wire protocol, Hazelcast `FencedLock`/`IMap`-lock-shaped Java facade with the unsupported-manifest stance reversed for the lock subset; IMap CAS ergonomics (`replace(k,old,new)`, `remove(k,val)`) + entry listeners over the invalidation bus; DST mutual-exclusion/fence-monotonicity/zombie-holder gates | The two most-requested migration features (IMap + distributed locks) are the ones the product *actively rejects*, even though the linearizable fenced-lock engine already ships — close the gap by surfacing it inside the permanent R-2 ceiling | 0.46, 0.49 | — |
 | [0.53.0](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md) | shipped | Liquid-glass multi-mode interactive cluster lab: MODEL deterministic leader election + cold-start cluster formation in `hydracache-sim` (closes the "0.44 has no leader election yet" gap; W1 reinforced with explicit cluster/partition FSM-as-table per blazingmq), typed in-flight signal animation, manual mode (push client event → diverge → replicate → converge → listener receipt), one-click isolate/disable/rejoin with visible re-election + catch-up re-sync, runtime add-node scaling, manual/scripted-loop/mixed modes all clickable for live topology intervention | Make "correctness as a visible product feature" persuasive for the Hazelcast-migration pitch — show the two things that convince operators (live quorum voting + a node rejoining and re-syncing) truthfully, not as animation; teaching asset, not a gate | 0.50, 0.52 | — |
 | [0.53.1](V0_53_1_REAL_RAFT_ELECTION_IN_THE_LAB_PLAN.md) | shipped | Real raft election in the lab: drive **real `raft-rs`** (`hydracache-cluster-raft::RaftMetadataRuntime`) deterministically over the simulator's seeded `SimNetwork`/`SimClock` (executes the `0.53` W1b "first attempt"); seed the randomized election timeout (`set_randomized_election_timeout`, 1000-seed determinism gate); validate the sim-model against real raft; surface `election_source:"raft"` (default on the native server/sandbox path); resolve wasm-compat via an ADR; disclose the source in the UI | The lab's election was a labelled model, not the product consensus — close it with the already-shipped raft runtime (integration, not new consensus); product runtime untouched, lab stays teaching-only | 0.53 | — |
-| [0.54.0](V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md) | planned | Pluggable `InvalidationTransport` trait over the existing `CacheInvalidationFrame` + opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness across processes/clusters; `message_id` watermark dedup/resume via the 0.46 ring, loop prevention, fail-loud, bounded buffers + bounded-label metrics | Realize the ROADMAP "external invalidation transports (Redis/NATS/pg-notify)" item using arroyo's connector-as-module pattern — let deployments ride their existing bus for freshness fan-out, opt-in and off the local fast path (R-10), without becoming an event log (R-9) | 0.46 | — |
+| [0.54.0](V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md) | planned | Async `InvalidationTransport` **relay** over the tokio-broadcast bus + `CacheInvalidationFrame` + 0.46 ring, opt-in crate-per-backend (Redis then NATS); correctness = version/generation **fencing** (falsifiable, no resurrection under reorder), `message_id` dedup as an optimisation, **anti-storm** (inbound applies locally, never re-published), resume via `ring.replay_from` (`FellBehind`→clear-partition), publish never blocks the cache fast path, bounded queues + per-source rate-limit, bounded-label metrics, loud on unknown/malformed frames | Realize the ROADMAP "external invalidation transports (Redis/NATS/pg-notify)" item via arroyo's connector-as-module pattern — freshness fan-out for one cluster, opt-in and off the fast path (R-10), not an event log (R-9), cross-cluster/WAN out of scope | 0.46 | — |
+| [0.55.0](V0_55_DURABLE_STORE_HARDENING_PLAN.md) | planned | Harden the shipped 0.51 sled-backed durable value plane: `DurableValueBackend` **trait** (sled = default impl, opens redb/RocksDB per TD-0003, no behaviour change), domain-aware **inspect/dump** tool + **bounded background scrubber** (proactive corruption detection, fail-loud), maintenance (**tombstone GC** that never resurrects + compaction controls + budget hardening), **barrier-aligned cluster-wide consistent checkpoint** + rescale-with-checkpoint (loses no committed write), **poison-load circuit-breaker** over the single-flight loader | Close the `0.51` durability gaps — operability (no inspector/scrubber), engine flexibility (sled hard-coded), cluster-wide consistency (per-namespace only), loader resilience — with an honest sled reframing of the blazingmq file-store idea; not a database (R-9), no new consistency level (R-1), RAM-only default unchanged (R-10); promoted from draft | 0.51 | — |
 
 `0.43` debt closure:
 [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)
@@ -139,11 +150,10 @@ model-only coverage to live networked transport coverage.
   actors); scope absorbed into [`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md).
   Kept for history.
 - [`V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md`](V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md) —
-  **DRAFT (version TBD, not sequenced)**. Idea-capture for durable value-store & snapshot
-  hardening: versioned file-store format + iterators + inspect util + file-set rotation/compaction
-  (blazingmq `mqbs_filestore`), barrier-aligned cluster-wide consistent checkpoint + rescale
-  (arroyo controller), poison-load circuit-breaker (blazingmq poison-pill analog). Builds on 0.51
-  persistence; promote to a numbered release (next free 0.55) before implementing.
+  **SUPERSEDED — promoted to [`0.55`](V0_55_DURABLE_STORE_HARDENING_PLAN.md)**. Original
+  idea-capture (D1–D4) for durable value-store & snapshot hardening; expanded into full work items
+  with an honest sled reframing (D1/D2 file-store items became engine-trait + inspect/scrub +
+  maintenance, since sled owns files). Kept for provenance.
 - [`V0_37_41_REVIEW_AND_IMPROVEMENTS.md`](V0_37_41_REVIEW_AND_IMPROVEMENTS.md) —
   cross-project architecture review and the Hazelcast-vs-ScyllaDB decision driving the
   cluster track.

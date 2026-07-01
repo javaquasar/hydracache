@@ -143,12 +143,19 @@ depends_on = ["0.53.0"]
 version = "0.54.0"
 file = "docs/plans/V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md"
 status = "planned"
-theme = "External invalidation transports — pluggable InvalidationTransport trait over the existing CacheInvalidationFrame plus opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness between processes/clusters, with message_id watermark dedup/resume via the 0.46 ring, loop prevention, fail-loud failure, bounded buffers, bounded-label metrics. Off the local cache fast path (R-10), not an event log (R-9), no new consistency level (R-1). Blueprint: arroyo connector-as-module pattern (ships redis/nats)"
+theme = "External invalidation transports — async InvalidationTransport relay over the existing tokio-broadcast bus + CacheInvalidationFrame + 0.46 ring, plus opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness between processes of one cluster. Correctness = version/generation FENCING (falsifiable, no resurrection under reorder); message_id dedup is an efficiency optimisation; ANTI-STORM rule (inbound applies locally, never re-published); resume via ring.replay_from with FellBehind->clear-partition; publish never blocks the cache fast path (R-10); bounded queues + per-source rate-limit for over-invalidation; bounded-label metrics; loud on unknown/malformed frames. Not an event log (R-9), no new consistency level (R-1), cross-cluster/WAN out of scope. Blueprint: arroyo connector-as-module pattern"
 depends_on = ["0.46.0"]
+
+[[release]]
+version = "0.55.0"
+file = "docs/plans/V0_55_DURABLE_STORE_HARDENING_PLAN.md"
+status = "planned"
+theme = "Durable store hardening & cluster-wide checkpoints — harden the shipped 0.51 sled-backed durable value plane: DurableValueBackend trait (sled = default impl, opens redb/RocksDB per TD-0003, no behaviour change), domain-aware inspect/dump tool + bounded background scrubber (proactive corruption detection, fail-loud), maintenance (tombstone GC that never resurrects + compaction controls + budget hardening), barrier-aligned cluster-wide consistent checkpoint + rescale-with-checkpoint (arroyo pattern, loses no committed write), and a poison-load circuit-breaker over the single-flight loader (blazingmq poison-pill analog). Honest sled reframing of the blazingmq file-store idea (sled owns files). No new consistency level (R-1), not a database (R-9), RAM-only default unchanged (R-10); validated by 0.44 DST. Promoted from V0_DRAFT_DURABLE_STORE_HARDENING_PLAN"
+depends_on = ["0.51.0"]
 
 [[release]]
 version = "TBD"
 file = "docs/plans/V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md"
-status = "draft"
-theme = "DRAFT (idea capture, not sequenced) — durable value-store & snapshot hardening: versioned file-store format + iterators + inspect util and file-set rotation/compaction (blazingmq mqbs_filestore pattern), barrier-aligned cluster-wide consistent checkpoint + rescale-with-checkpoint (arroyo controller pattern), and a poison-load circuit-breaker (blazingmq poison-pill analog). Builds on 0.51 persistence + 0.43 tiered/reshard, validated by 0.44 DST. Promote to a numbered release (next free 0.55) before implementing"
+status = "superseded"
+theme = "SUPERSEDED by 0.55 — original idea-capture draft for durable value-store & snapshot hardening (D1-D4). Promoted and expanded into V0_55_DURABLE_STORE_HARDENING_PLAN with an honest sled reframing (D1/D2 file-store items became engine-trait + inspect/scrub + maintenance since sled owns files). Kept for provenance"
 depends_on = ["0.51.0"]
