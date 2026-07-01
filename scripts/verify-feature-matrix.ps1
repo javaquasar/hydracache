@@ -71,6 +71,11 @@ $checks = @(
         Package = "hydracache-transport-redis"
         Purpose = "Redis external invalidation transport"
         Args = @("check", "-p", "hydracache-transport-redis", "--all-targets", "--locked")
+    },
+    @{
+        Package = "hydracache-transport-nats"
+        Purpose = "NATS external invalidation transport"
+        Args = @("check", "-p", "hydracache-transport-nats", "--all-targets", "--locked")
     }
 )
 

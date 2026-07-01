@@ -22,6 +22,7 @@ members = [
     "crates/hydracache-sim-wasm",
     "crates/hydracache-sql-lint",
     "crates/hydracache-sqlx",
+    "crates/hydracache-transport-nats",
     "crates/hydracache-transport-redis",
     "crates/xtask",
 ]
@@ -43,6 +44,7 @@ categories = ["caching", "asynchronous"]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)"] }
 
 [workspace.dependencies]
+async-nats = { version = "0.49.1", default-features = false, features = ["ring"] }
 async-trait = "0.1.89"
 axum = "0.8"
 base64 = "0.22.1"
@@ -70,6 +72,7 @@ hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.53.1" }
 hydracache-sim = { path = "crates/hydracache-sim", version = "0.53.1" }
 hydracache-sql-lint = { path = "crates/hydracache-sql-lint", version = "0.53.1" }
 hydracache-sqlx = { path = "crates/hydracache-sqlx", version = "0.53.1" }
+hydracache-transport-nats = { path = "crates/hydracache-transport-nats", version = "0.53.1" }
 hydracache-transport-redis = { path = "crates/hydracache-transport-redis", version = "0.53.1" }
 loom = "0.7.2"
 moka = { version = "0.12.15", features = ["future"] }
@@ -92,7 +95,7 @@ slog = "2.7"
 sqlx = { version = "0.8", default-features = false }
 sqlparser = "0.62.0"
 syn = { version = "2", features = ["full"] }
-testcontainers-modules = { version = "0.15.0", features = ["postgres", "redis"] }
+testcontainers-modules = { version = "0.15.0", features = ["postgres", "redis", "nats"] }
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
 tokio-stream = "0.1"

@@ -1,0 +1,22 @@
+[package]
+name = "hydracache-transport-nats"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "NATS external invalidation transport for HydraCache."
+readme = "README.md"
+
+[dependencies]
+async-nats.workspace = true
+async-trait.workspace = true
+bytes.workspace = true
+futures-util.workspace = true
+hydracache.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+testcontainers-modules.workspace = true
+tokio.workspace = true

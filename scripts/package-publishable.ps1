@@ -27,6 +27,7 @@ $packageSets = @{
         "hydracache-diesel",
         "hydracache-seaorm",
         "hydracache-sqlx",
+        "hydracache-transport-nats",
         "hydracache-transport-redis"
     )
 }
