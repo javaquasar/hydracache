@@ -6,7 +6,7 @@ use crate::grid::hardening::{
     ChecksummedReplicatedValueRecord, ReplicatedValueRecord, ReplicatedValueStore, ValueStoreError,
     ValueVersion,
 };
-use crate::grid::{EffectiveReplicationMap, ReplicatedSlot};
+use crate::grid::{EffectiveReplicationMap, ReplicatedSlot, TombstoneTracker};
 
 /// On-disk value-store format version registered in `docs/COMPAT.md`.
 pub const DURABLE_VALUE_FORMAT_VERSION: u32 = 1;
@@ -27,6 +27,25 @@ pub struct DurableValueStore {
     db: sled::Db,
     max_total_bytes: u64,
     rejected_total: u64,
+}
+
+/// Report from one bounded durable value-store GC cycle.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct DurableGcReport {
+    /// Records scanned this cycle.
+    pub scanned: usize,
+    /// Live records skipped.
+    pub skipped_live: usize,
+    /// Tombstones skipped because repair has not been confirmed.
+    pub skipped_repair_pending: usize,
+    /// Records removed this cycle.
+    pub removed: usize,
+    /// Approximate durable budget bytes reclaimed this cycle.
+    pub reclaimed_bytes: u64,
+    /// Counter: `durable_gc_reclaimed_total`.
+    pub durable_gc_reclaimed_total: u64,
+    /// Counter: `durable_gc_skipped_repair_pending_total`.
+    pub durable_gc_skipped_repair_pending_total: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -157,6 +176,43 @@ impl DurableValueStore {
         bytes: &[u8],
     ) -> Result<ReplicatedValueRecord, ValueStoreError> {
         decode_record(key, bytes)
+    }
+
+    /// Reclaim repair-confirmed tombstones in a bounded maintenance cycle.
+    pub fn collect_tombstone_garbage(
+        &mut self,
+        tracker: &mut TombstoneTracker,
+        now_epoch: ClusterEpoch,
+        max_records: usize,
+    ) -> Result<DurableGcReport, ValueStoreError> {
+        let max_records = max_records.max(1);
+        let mut report = DurableGcReport::default();
+        let mut records = self.scan_all()?;
+        records.sort_by(|left, right| left.0.cmp(&right.0));
+
+        for (key, record) in records.into_iter().take(max_records) {
+            report.scanned = report.scanned.saturating_add(1);
+            if !record.is_tombstone() {
+                report.skipped_live = report.skipped_live.saturating_add(1);
+                continue;
+            }
+            let Some(eligible_after) = tracker.gc_eligible_after(&key) else {
+                report.skipped_repair_pending = report.skipped_repair_pending.saturating_add(1);
+                continue;
+            };
+            if eligible_after > now_epoch {
+                report.skipped_repair_pending = report.skipped_repair_pending.saturating_add(1);
+                continue;
+            }
+            let reclaimed = record.approx_bytes();
+            self.remove(&key)?;
+            tracker.forget(&key);
+            report.removed = report.removed.saturating_add(1);
+            report.reclaimed_bytes = report.reclaimed_bytes.saturating_add(reclaimed);
+        }
+        report.durable_gc_reclaimed_total = report.reclaimed_bytes;
+        report.durable_gc_skipped_repair_pending_total = report.skipped_repair_pending as u64;
+        Ok(report)
     }
 
     fn would_fit(

@@ -608,6 +608,8 @@ pub use grid::durable_scrub::{
     DurableScrubber,
 };
 #[cfg(feature = "durable-value-store")]
+pub use grid::durable_store::DurableGcReport;
+#[cfg(feature = "durable-value-store")]
 pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::elasticity::{
@@ -659,14 +661,15 @@ pub use grid::merkle_repair::{
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::persistence_config::{
     NamespaceMetricLabels, PersistenceConfig, PersistenceConfigError, PersistenceConfigErrorKind,
-    PersistenceDurabilityConfig, PersistenceNamespaceConfig, PersistenceRecoveryConfig,
-    PersistenceRegionSelectorConfig, OTHER_NAMESPACE_METRIC_LABEL,
+    PersistenceDurabilityConfig, PersistenceMaintenanceConfig, PersistenceNamespaceConfig,
+    PersistenceRecoveryConfig, PersistenceRegionSelectorConfig, OTHER_NAMESPACE_METRIC_LABEL,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::persistence_policy::{
     NamespacePersistenceRule, NamespacePersistenceSettings, PersistenceDurability,
-    PersistenceEviction, PersistenceInMemoryFormat, PersistenceMatcher, PersistencePolicy,
-    PersistencePolicyError, PersistenceRegionPlacement, RegionSelector, ResolvedPersistence,
+    PersistenceEviction, PersistenceInMemoryFormat, PersistenceMaintenance, PersistenceMatcher,
+    PersistencePolicy, PersistencePolicyError, PersistenceRegionPlacement, RegionSelector,
+    ResolvedPersistence,
 };
 #[cfg(feature = "durable-value-store")]
 pub use grid::recovery::open_durable_value_store_for_recovery;

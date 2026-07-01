@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 use crate::grid::elasticity::RegionId;
 use crate::grid::persistence_policy::{
     NamespacePersistenceRule, NamespacePersistenceSettings, PersistenceDurability,
-    PersistenceEviction, PersistenceInMemoryFormat, PersistencePolicy, PersistencePolicyError,
-    RegionSelector,
+    PersistenceEviction, PersistenceInMemoryFormat, PersistenceMaintenance, PersistencePolicy,
+    PersistencePolicyError, RegionSelector,
 };
 use crate::grid::recovery::{RecoveryMode, RecoveryPolicy};
 
@@ -144,6 +144,8 @@ pub struct PersistenceNamespaceConfig {
     pub in_memory_format: PersistenceInMemoryFormat,
     /// Region selector for value-plane persistence.
     pub regions: PersistenceRegionSelectorConfig,
+    /// Durable maintenance cadence and bounded-cycle knobs.
+    pub maintenance: PersistenceMaintenanceConfig,
 }
 
 impl PersistenceNamespaceConfig {
@@ -172,6 +174,7 @@ impl PersistenceNamespaceConfig {
         settings.backup_count = self.backup_count;
         settings.in_memory_format = self.in_memory_format;
         settings.persist_in_regions = self.regions.clone().into();
+        settings.maintenance = self.maintenance.into();
         settings
     }
 }
@@ -186,6 +189,53 @@ impl Default for PersistenceNamespaceConfig {
             backup_count: 0,
             in_memory_format: PersistenceInMemoryFormat::Binary,
             regions: PersistenceRegionSelectorConfig::All,
+            maintenance: PersistenceMaintenanceConfig::default(),
+        }
+    }
+}
+
+/// Serde-friendly durable maintenance config.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PersistenceMaintenanceConfig {
+    /// Optional scheduled tombstone GC interval in seconds.
+    pub tombstone_gc_interval_secs: Option<u64>,
+    /// Optional scheduled backend compaction interval in seconds.
+    pub compaction_interval_secs: Option<u64>,
+    /// Maximum records scanned per GC cycle.
+    pub gc_records_per_cycle: usize,
+}
+
+impl From<PersistenceMaintenanceConfig> for PersistenceMaintenance {
+    fn from(value: PersistenceMaintenanceConfig) -> Self {
+        PersistenceMaintenance::new(
+            value.tombstone_gc_interval_secs.map(Duration::from_secs),
+            value.compaction_interval_secs.map(Duration::from_secs),
+            value.gc_records_per_cycle,
+        )
+    }
+}
+
+impl From<PersistenceMaintenance> for PersistenceMaintenanceConfig {
+    fn from(value: PersistenceMaintenance) -> Self {
+        Self {
+            tombstone_gc_interval_secs: value
+                .tombstone_gc_interval
+                .map(|duration| duration.as_secs().max(1)),
+            compaction_interval_secs: value
+                .compaction_interval
+                .map(|duration| duration.as_secs().max(1)),
+            gc_records_per_cycle: value.gc_records_per_cycle,
+        }
+    }
+}
+
+impl Default for PersistenceMaintenanceConfig {
+    fn default() -> Self {
+        Self {
+            tombstone_gc_interval_secs: None,
+            compaction_interval_secs: None,
+            gc_records_per_cycle: 128,
         }
     }
 }

@@ -170,6 +170,8 @@ pub struct NamespacePersistenceSettings {
     pub in_memory_format: PersistenceInMemoryFormat,
     /// Regions where this namespace persists when `persist` is true.
     pub persist_in_regions: RegionSelector,
+    /// Durable maintenance cadence and bounded-cycle knobs.
+    pub maintenance: PersistenceMaintenance,
 }
 
 impl NamespacePersistenceSettings {
@@ -183,6 +185,7 @@ impl NamespacePersistenceSettings {
             backup_count: 0,
             in_memory_format: PersistenceInMemoryFormat::Binary,
             persist_in_regions: RegionSelector::All,
+            maintenance: PersistenceMaintenance::default(),
         }
     }
 
@@ -196,6 +199,7 @@ impl NamespacePersistenceSettings {
             backup_count: 0,
             in_memory_format: PersistenceInMemoryFormat::Binary,
             persist_in_regions: RegionSelector::All,
+            maintenance: PersistenceMaintenance::default(),
         }
     }
 
@@ -216,12 +220,60 @@ impl NamespacePersistenceSettings {
         self.persist_in_regions = selector;
         self
     }
+
+    /// Set durable maintenance settings.
+    pub fn with_maintenance(mut self, maintenance: PersistenceMaintenance) -> Self {
+        self.maintenance = maintenance;
+        self
+    }
 }
 
 impl Default for NamespacePersistenceSettings {
     fn default() -> Self {
         Self::ram_only()
     }
+}
+
+/// Durable maintenance settings resolved from persistence config.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PersistenceMaintenance {
+    /// Optional scheduled tombstone GC interval.
+    pub tombstone_gc_interval: Option<Duration>,
+    /// Optional scheduled backend compaction interval.
+    pub compaction_interval: Option<Duration>,
+    /// Maximum records scanned per GC cycle.
+    pub gc_records_per_cycle: usize,
+}
+
+impl PersistenceMaintenance {
+    /// Create normalized maintenance settings.
+    pub fn new(
+        tombstone_gc_interval: Option<Duration>,
+        compaction_interval: Option<Duration>,
+        gc_records_per_cycle: usize,
+    ) -> Self {
+        Self {
+            tombstone_gc_interval: normalize_interval(tombstone_gc_interval),
+            compaction_interval: normalize_interval(compaction_interval),
+            gc_records_per_cycle: gc_records_per_cycle.max(1),
+        }
+    }
+}
+
+impl Default for PersistenceMaintenance {
+    fn default() -> Self {
+        Self::new(None, None, 128)
+    }
+}
+
+fn normalize_interval(interval: Option<Duration>) -> Option<Duration> {
+    interval.map(|duration| {
+        if duration.is_zero() {
+            Duration::from_secs(1)
+        } else {
+            duration
+        }
+    })
 }
 
 /// A Hazelcast-style namespace pattern.

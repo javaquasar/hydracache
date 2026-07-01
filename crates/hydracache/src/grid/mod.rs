@@ -539,6 +539,25 @@ impl TombstoneTracker {
         }
     }
 
+    /// Return the epoch after which a tombstone may be GC'd, if repair was confirmed.
+    pub fn gc_eligible_after(&self, key: &str) -> Option<ClusterEpoch> {
+        self.records
+            .iter()
+            .find(|record| record.key == key)
+            .and_then(|record| record.gc_eligible_after)
+    }
+
+    /// Forget a tombstone after the durable record has been reclaimed.
+    pub fn forget(&mut self, key: &str) -> bool {
+        let before = self.records.len();
+        self.records.retain(|record| record.key != key);
+        let removed = self.records.len() != before;
+        if removed && !self.over_budget() {
+            self.repair_debt = false;
+        }
+        removed
+    }
+
     /// Return whether the tracker is in repair debt.
     pub fn repair_debt(&self) -> bool {
         self.repair_debt
