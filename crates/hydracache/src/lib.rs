@@ -487,6 +487,8 @@ mod inflight;
 #[cfg(not(target_arch = "wasm32"))]
 mod invalidation_bus;
 #[cfg(not(target_arch = "wasm32"))]
+mod invalidation_transport;
+#[cfg(not(target_arch = "wasm32"))]
 mod multitenancy;
 #[cfg(not(target_arch = "wasm32"))]
 mod refresh;
@@ -730,6 +732,12 @@ pub use invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationFrame, CacheInvalidationMessage,
     CacheInvalidationReceive, CacheInvalidationReceiver, InMemoryFramedInvalidationBus,
     InMemoryInvalidationBus, CACHE_INVALIDATION_FRAME_VERSION,
+};
+#[cfg(not(target_arch = "wasm32"))]
+pub use invalidation_transport::{
+    CacheInvalidationFrameSink, InMemoryTransport, InvalidationRelay, InvalidationRelayHandle,
+    InvalidationTransport, SharedInvalidationRing, TransportConfig, TransportError,
+    TransportMetrics, TransportMetricsSnapshot,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use multitenancy::{
