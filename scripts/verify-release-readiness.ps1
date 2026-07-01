@@ -27,7 +27,8 @@ $publishOrder = @(
     "hydracache-cdc-postgres",
     "hydracache-diesel",
     "hydracache-seaorm",
-    "hydracache-sqlx"
+    "hydracache-sqlx",
+    "hydracache-transport-redis"
 )
 
 $gateCommands = @(

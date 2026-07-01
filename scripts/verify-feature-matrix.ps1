@@ -66,6 +66,11 @@ $checks = @(
         Package = "hydracache-cluster-transport-axum"
         Purpose = "HTTP peer-fetch transport"
         Args = @("check", "-p", "hydracache-cluster-transport-axum", "--all-targets", "--locked")
+    },
+    @{
+        Package = "hydracache-transport-redis"
+        Purpose = "Redis external invalidation transport"
+        Args = @("check", "-p", "hydracache-transport-redis", "--all-targets", "--locked")
     }
 )
 

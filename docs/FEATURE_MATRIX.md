@@ -24,6 +24,7 @@ opt-in.
 | raft-rs metadata runtime | `hydracache-cluster-raft` | raft-rs and `hydracache` | SQLx, Diesel, SeaORM |
 | Cluster facade | `hydracache-cluster` | chitchat/raft cluster adapters | ORM crates, Axum transport |
 | HTTP peer-fetch transport | `hydracache-cluster-transport-axum` | Axum/Reqwest and `hydracache` | ORM crates |
+| Redis external invalidation transport | `hydracache-transport-redis` | Redis async client and `hydracache` transport seam | SQLx, Diesel, SeaORM, NATS |
 
 `hydracache-sandbox` is a non-published workspace crate. It intentionally pulls
 many optional pieces together for manual exploration, Swagger/OpenAPI, scenario
@@ -45,6 +46,7 @@ clients and transactions.
 | `hydracache-diesel` | Postgres/MySQL | adapter contract only | User-owned Diesel loader/connection path; not runtime-tested here. |
 | `hydracache-seaorm` | SQLite in-memory | deterministic local gate | `cargo test -p hydracache-seaorm --locked` |
 | `hydracache-seaorm` | Postgres/MySQL | adapter contract only | User-owned SeaORM loader/connection path; not runtime-tested here. |
+| `hydracache-transport-redis` | Redis testcontainers | optional Docker smoke | `cargo test -p hydracache-transport-redis --locked` |
 
 Docker-backed rows must skip gracefully when Docker is unavailable. They should
 not make the Windows local gate flaky.
@@ -80,6 +82,8 @@ its job is to catch accidental dependency or compile coupling quickly.
 - Add `hydracache-actuator-axum` only when an Axum HTTP surface is wanted.
 - Add cluster crates only when client/member or peer-fetch experiments are
   needed.
+- Add `hydracache-transport-redis` only when invalidations must cross process
+  or region boundaries through an operator-owned Redis pub/sub fabric.
 
 ## Release Rule
 

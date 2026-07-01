@@ -75,6 +75,36 @@ pub trait InvalidationTransport: Send + Sync + 'static {
     ) -> Option<std::result::Result<CacheInvalidationFrame, TransportError>>;
 }
 
+/// Decode transport bytes using the relay's fail-closed error taxonomy.
+///
+/// Concrete backends use this when they receive raw pub/sub payloads before the
+/// frame reaches [`InvalidationRelay`]. Future frame versions are reported as
+/// [`TransportError::UnknownFrameVersion`] so callers can count them separately
+/// from malformed bytes.
+pub fn decode_transport_frame(
+    bytes: &Bytes,
+) -> std::result::Result<CacheInvalidationFrame, TransportError> {
+    CacheInvalidationFrame::decode(bytes).map_err(|error| {
+        let message = error.to_string();
+        unsupported_invalidation_frame_version(&message).map_or_else(
+            || TransportError::Decode(message),
+            |found| TransportError::UnknownFrameVersion {
+                found,
+                max_supported: CACHE_INVALIDATION_FRAME_VERSION,
+            },
+        )
+    })
+}
+
+fn unsupported_invalidation_frame_version(message: &str) -> Option<u16> {
+    let marker = "unsupported invalidation frame version ";
+    let start = message.find(marker)? + marker.len();
+    let version = message[start..]
+        .split(|character: char| !character.is_ascii_digit())
+        .next()?;
+    version.parse().ok()
+}
+
 /// Configuration for an invalidation relay.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TransportConfig {
