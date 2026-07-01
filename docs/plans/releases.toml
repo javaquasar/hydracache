@@ -142,7 +142,7 @@ depends_on = ["0.53.0"]
 [[release]]
 version = "0.54.0"
 file = "docs/plans/V0_54_EXTERNAL_INVALIDATION_TRANSPORTS_PLAN.md"
-status = "planned"
+status = "shipped"
 theme = "External invalidation transports — async InvalidationTransport relay over the existing tokio-broadcast bus + CacheInvalidationFrame + 0.46 ring, plus opt-in crate-per-backend (Redis then NATS) relaying near-cache freshness between processes of one cluster. Correctness = version/generation FENCING (falsifiable, no resurrection under reorder); message_id dedup is an efficiency optimisation; ANTI-STORM rule (inbound applies locally, never re-published); resume via ring.replay_from with FellBehind->clear-partition; publish never blocks the cache fast path (R-10); bounded queues + per-source rate-limit for over-invalidation; bounded-label metrics; loud on unknown/malformed frames. Not an event log (R-9), no new consistency level (R-1), cross-cluster/WAN out of scope. Blueprint: arroyo connector-as-module pattern"
 depends_on = ["0.46.0"]
 
@@ -159,3 +159,10 @@ file = "docs/plans/V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md"
 status = "superseded"
 theme = "SUPERSEDED by 0.55 — original idea-capture draft for durable value-store & snapshot hardening (D1-D4). Promoted and expanded into V0_55_DURABLE_STORE_HARDENING_PLAN with an honest sled reframing (D1/D2 file-store items became engine-trait + inspect/scrub + maintenance since sled owns files). Kept for provenance"
 depends_on = ["0.51.0"]
+
+[[release]]
+version = "TBD"
+file = "docs/plans/V0_DRAFT_KUBERNETES_OPERATOR_PLAN.md"
+status = "draft"
+theme = "DRAFT (idea capture, candidate 0.56) — HydraCache Kubernetes Operator: a HydraCacheCluster CRD + reconcile controller managing the full cluster lifecycle declaratively (install, scale with 0.43 online reshard + drain, zero-downtime rolling upgrade via 0.48 graceful upgrade, cert/key rotation via 0.48 mTLS lifecycle, persistence volumes via 0.51, scheduled backup/PITR via 0.48, health/readiness/admission + least-privilege RBAC). Orchestration over already-shipped 0.42-0.51 primitives, NOT new consensus/consistency/storage. Closes the named Hazelcast Platform Operator gap (develop-downward/operate-in-prod). Tooling decision at promotion: kube-rs (Rust, recommended) vs Go operator-sdk (ADR). Not a PaaS, not a Helm replacement, no business logic. Builds on 0.48. Promote to numbered release (candidate 0.56) before implementing"
+depends_on = ["0.48.0"]

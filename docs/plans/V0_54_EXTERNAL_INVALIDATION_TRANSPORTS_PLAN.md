@@ -19,7 +19,7 @@
 >   of `0.52`/`0.53`.
 > - **Blueprint:** arroyo's connector-as-module pattern (`arroyo/crates/arroyo-connectors/src/{redis,
 >   nats,…}`), `COMPETITIVE_ANALYSIS_AND_EVOLUTION.md` §4.4.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md)

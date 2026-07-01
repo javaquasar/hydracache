@@ -29,7 +29,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.53.1"
+version = "0.54.0"
 edition = "2021"
 rust-version = "1.88"
 license = "Apache-2.0"
@@ -53,27 +53,27 @@ chitchat = "0.11.0"
 criterion = { version = "0.5", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
 futures-util = "0.3.32"
-hydracache-core = { path = "crates/hydracache-core", version = "0.53.1" }
-hydracache = { path = "crates/hydracache", version = "0.53.1" }
-hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.53.1" }
-hydracache-client = { path = "crates/hydracache-client", version = "0.53.1" }
-hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.53.1" }
-hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-axum", version = "0.53.1" }
-hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.53.1" }
-hydracache-cluster-chitchat = { path = "crates/hydracache-cluster-chitchat", version = "0.53.1" }
-hydracache-cluster-raft = { path = "crates/hydracache-cluster-raft", version = "0.53.1" }
-hydracache-cluster-transport-axum = { path = "crates/hydracache-cluster-transport-axum", version = "0.53.1" }
-hydracache-db = { path = "crates/hydracache-db", version = "0.53.1" }
-hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.53.1" }
-hydracache-macros = { path = "crates/hydracache-macros", version = "0.53.1" }
-hydracache-observability = { path = "crates/hydracache-observability", version = "0.53.1" }
-hydracache-server = { path = "crates/hydracache-server", version = "0.53.1" }
-hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.53.1" }
-hydracache-sim = { path = "crates/hydracache-sim", version = "0.53.1" }
-hydracache-sql-lint = { path = "crates/hydracache-sql-lint", version = "0.53.1" }
-hydracache-sqlx = { path = "crates/hydracache-sqlx", version = "0.53.1" }
-hydracache-transport-nats = { path = "crates/hydracache-transport-nats", version = "0.53.1" }
-hydracache-transport-redis = { path = "crates/hydracache-transport-redis", version = "0.53.1" }
+hydracache-core = { path = "crates/hydracache-core", version = "0.54.0" }
+hydracache = { path = "crates/hydracache", version = "0.54.0" }
+hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.54.0" }
+hydracache-client = { path = "crates/hydracache-client", version = "0.54.0" }
+hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.54.0" }
+hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-axum", version = "0.54.0" }
+hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.54.0" }
+hydracache-cluster-chitchat = { path = "crates/hydracache-cluster-chitchat", version = "0.54.0" }
+hydracache-cluster-raft = { path = "crates/hydracache-cluster-raft", version = "0.54.0" }
+hydracache-cluster-transport-axum = { path = "crates/hydracache-cluster-transport-axum", version = "0.54.0" }
+hydracache-db = { path = "crates/hydracache-db", version = "0.54.0" }
+hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.54.0" }
+hydracache-macros = { path = "crates/hydracache-macros", version = "0.54.0" }
+hydracache-observability = { path = "crates/hydracache-observability", version = "0.54.0" }
+hydracache-server = { path = "crates/hydracache-server", version = "0.54.0" }
+hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.54.0" }
+hydracache-sim = { path = "crates/hydracache-sim", version = "0.54.0" }
+hydracache-sql-lint = { path = "crates/hydracache-sql-lint", version = "0.54.0" }
+hydracache-sqlx = { path = "crates/hydracache-sqlx", version = "0.54.0" }
+hydracache-transport-nats = { path = "crates/hydracache-transport-nats", version = "0.54.0" }
+hydracache-transport-redis = { path = "crates/hydracache-transport-redis", version = "0.54.0" }
 loom = "0.7.2"
 moka = { version = "0.12.15", features = ["future"] }
 postcard = { version = "1.1.3", features = ["alloc"] }

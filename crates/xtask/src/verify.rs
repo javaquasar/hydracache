@@ -108,7 +108,12 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
 }
 
 fn windows_verify_target_dir(root: &Path) -> PathBuf {
-    root.join("target").join("xtask-verify")
+    windows_verify_target_dir_for_process(root, std::process::id())
+}
+
+fn windows_verify_target_dir_for_process(root: &Path, process_id: u32) -> PathBuf {
+    root.join("target")
+        .join(format!("xtask-verify-{process_id}"))
 }
 
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -154,7 +159,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{gates_for_platform, windows_verify_target_dir, Gate};
+    use super::{gates_for_platform, windows_verify_target_dir_for_process, Gate};
 
     fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
         gates
@@ -207,8 +212,8 @@ mod tests {
         let root = Path::new("repo");
 
         assert_eq!(
-            windows_verify_target_dir(root),
-            PathBuf::from("repo").join("target").join("xtask-verify")
+            windows_verify_target_dir_for_process(root, 42),
+            PathBuf::from("repo").join("target").join("xtask-verify-42")
         );
     }
 

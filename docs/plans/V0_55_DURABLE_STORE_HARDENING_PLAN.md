@@ -2,8 +2,10 @@
 
 > **At a glance**
 > - **What:** harden the shipped `0.51` durable value plane and add cluster-wide consistency to
->   its snapshots: (1) put the value backend behind a **`DurableValueBackend` trait** so sled is
->   one impl (opens the door to redb/RocksDB, TD-0003) without touching callers; (2) add an
+>   its snapshots: (1) **extend the existing `ReplicatedValueStore` trait** (hardening.rs:367,
+>   already implemented by the sled `DurableValueStore` and the in-memory store — **no new trait**)
+>   with the hardening methods (`scan_all`/`remove`/`compact`), keeping redb/RocksDB drop-in
+>   (TD-0003); (2) add an
 >   **inspect/dump tool + background scrubber** so corruption is found proactively and fail-loud;
 >   (3) **maintenance** — tombstone GC, compaction controls, byte-budget hardening — leveraging
 >   sled, not replacing it; (4) a **barrier-aligned cluster-wide consistent checkpoint** and a
@@ -82,8 +84,9 @@ database (R-9), and without regressing the RAM-only default (R-10).
   DB stays authoritative. No distributed transactions, no cross-node atomic multi-key durability.
 - **No always-on cost (R-10).** Everything is opt-in per the `0.51` persistence policy; unconfigured
   namespaces stay RAM-only, byte-for-byte identical to prior releases.
-- **No storage-engine *research*.** W1 abstracts the backend behind a trait with **sled as the one
-  reference impl**; choosing redb/RocksDB as a default is TD-0003, not this release.
+- **No storage-engine *research*.** W1 **extends the existing `ReplicatedValueStore` trait**; sled
+  stays the one durable reference impl. Choosing redb/RocksDB as a default is TD-0003, not this
+  release.
 - **No silent degradation (R-3).** Corruption, unrecoverable checkpoints, or over-budget writes are
   **loud + counted**, never a quiet partial.
 
@@ -199,7 +202,7 @@ tombstone/checksum status) and a **background scrubber** that proactively verifi
 fails loud on corruption — the operability sled does not provide.
 
 **Files.** `crates/hydracache/src/grid/durable_inspect.rs` (inspect/dump over the W1 trait's
-`iter`), `crates/hydracache/src/grid/durable_scrub.rs` (a `Scrubber` verifying `ReplicatedValueRecord`
+`scan_all`), `crates/hydracache/src/grid/durable_scrub.rs` (a `Scrubber` verifying `ReplicatedValueRecord`
 checksums, `grid/hardening.rs`), a `hydracache-server`/`xtask` subcommand to run the inspector
 offline (leaning on the `0.48` server surface).
 

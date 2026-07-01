@@ -15,13 +15,14 @@
 //!   real plan file.
 //! - every ADR uses the single `0001-title.md` filename scheme, has a unique
 //!   number, and is listed from `docs/adr/README.md`.
+//! - every publishable workspace crate is present in both release publish scripts.
 //!
 //! This turns the "release sequencing is recorded, not implied" rule into an
 //! executable gate so doc drift (e.g. two plans claiming the same version, or a
 //! plan referencing a sibling that no longer exists) fails CI instead of silently
 //! rotting.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -46,6 +47,49 @@ struct Release {
     depends_on: Vec<String>,
     #[serde(default)]
     networked_control_plane: Option<bool>,
+}
+
+#[derive(serde::Deserialize)]
+struct WorkspaceManifest {
+    workspace: WorkspaceTable,
+}
+
+#[derive(serde::Deserialize)]
+struct WorkspaceTable {
+    #[serde(default)]
+    members: Vec<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct PackageManifest {
+    package: PackageTable,
+}
+
+#[derive(serde::Deserialize)]
+struct PackageTable {
+    name: String,
+    #[serde(default = "default_publish_setting")]
+    publish: PublishSetting,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+enum PublishSetting {
+    Bool(bool),
+    Registries(Vec<String>),
+}
+
+fn default_publish_setting() -> PublishSetting {
+    PublishSetting::Bool(true)
+}
+
+impl PublishSetting {
+    fn is_publishable(&self) -> bool {
+        match self {
+            PublishSetting::Bool(value) => *value,
+            PublishSetting::Registries(registries) => !registries.is_empty(),
+        }
+    }
 }
 
 /// Locate the repository root by ascending from the cargo manifest dir and the
@@ -149,8 +193,67 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
 
     problems.extend(check_in_prose_plan_links(root)?);
     problems.extend(check_adr_index(root)?);
+    problems.extend(check_publishable_crates_in_publish_scripts(root)?);
 
     Ok(problems)
+}
+
+fn check_publishable_crates_in_publish_scripts(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let workspace_manifest_path = root.join("Cargo.toml");
+    if !workspace_manifest_path.is_file() {
+        return Ok(Vec::new());
+    }
+
+    let workspace_text = fs::read_to_string(&workspace_manifest_path)
+        .map_err(|err| format!("reading {}: {err}", workspace_manifest_path.display()))?;
+    let workspace: WorkspaceManifest = toml::from_str(&workspace_text)
+        .map_err(|err| format!("parsing {}: {err}", workspace_manifest_path.display()))?;
+
+    let mut problems = Vec::new();
+    let mut publishable = BTreeSet::new();
+    for member in workspace.workspace.members {
+        let manifest_path = root.join(&member).join("Cargo.toml");
+        if !manifest_path.is_file() {
+            problems.push(format!(
+                "{member}: workspace member Cargo.toml does not exist"
+            ));
+            continue;
+        }
+
+        let text = fs::read_to_string(&manifest_path)
+            .map_err(|err| format!("reading {}: {err}", manifest_path.display()))?;
+        let manifest: PackageManifest = toml::from_str(&text)
+            .map_err(|err| format!("parsing {}: {err}", manifest_path.display()))?;
+        if manifest.package.publish.is_publishable() {
+            publishable.insert(manifest.package.name);
+        }
+    }
+
+    for script in [
+        "scripts/package-publishable.ps1",
+        "scripts/verify-release-readiness.ps1",
+    ] {
+        let path = root.join(script);
+        let text = fs::read_to_string(&path)
+            .map_err(|err| format!("reading {}: {err}", path.display()))?;
+        let listed = extract_quoted_hydracache_packages(&text);
+        for package in publishable.difference(&listed) {
+            problems.push(format!(
+                "{script}: publishable crate '{package}' is missing from the publish package list"
+            ));
+        }
+    }
+
+    Ok(problems)
+}
+
+fn extract_quoted_hydracache_packages(text: &str) -> BTreeSet<String> {
+    text.split('"')
+        .skip(1)
+        .step_by(2)
+        .filter(|value| *value == "hydracache" || value.starts_with("hydracache-"))
+        .map(ToOwned::to_owned)
+        .collect()
 }
 
 fn check_in_prose_plan_links(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
