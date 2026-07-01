@@ -651,6 +651,7 @@ impl InvalidationRelay {
             inbound_queue.clone(),
             transport,
             metrics.clone(),
+            resume.clone(),
         ));
         let inbound_apply = tokio::spawn(run_inbound_apply_loop(
             shutdown_rx.clone(),
@@ -800,9 +801,11 @@ async fn run_inbound_transport_loop<T>(
     inbound_queue: BoundedFrameQueue,
     mut transport: T,
     metrics: Arc<TransportMetrics>,
+    resume: mpsc::UnboundedSender<ResumeRequest>,
 ) where
     T: InvalidationTransport,
 {
+    let mut last_seen = 0_u64;
     loop {
         tokio::select! {
             changed = shutdown.changed() => {
@@ -814,6 +817,9 @@ async fn run_inbound_transport_loop<T>(
                 match maybe_frame {
                     Some(Ok(frame)) => {
                         metrics.received_total.fetch_add(1, Ordering::Relaxed);
+                        if let Some(message_id) = frame.message_id() {
+                            last_seen = last_seen.max(message_id);
+                        }
                         if matches!(
                             inbound_queue.push_drop_oldest(frame),
                             QueuePush::DroppedOldest(_)
@@ -823,12 +829,25 @@ async fn run_inbound_transport_loop<T>(
                                 .fetch_add(1, Ordering::Relaxed);
                         }
                     }
-                    Some(Err(error)) => metrics.record_transport_error(&error),
+                    Some(Err(error)) => {
+                        metrics.record_transport_error(&error);
+                        if transport_error_requests_resume(&error) {
+                            metrics.resume_marked_total.fetch_add(1, Ordering::Relaxed);
+                            let _ = resume.send(ResumeRequest { last_seen });
+                        }
+                    }
                     None => break,
                 }
             }
         }
     }
+}
+
+fn transport_error_requests_resume(error: &TransportError) -> bool {
+    matches!(
+        error,
+        TransportError::Backend(_) | TransportError::Backpressure(_)
+    )
 }
 
 async fn run_inbound_apply_loop<B>(

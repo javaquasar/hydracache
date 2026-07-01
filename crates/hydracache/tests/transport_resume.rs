@@ -83,6 +83,52 @@ async fn resume_range_after_gap_closes_from_watermark() {
 }
 
 #[tokio::test]
+async fn reconnect_transport_error_triggers_ring_resume_without_gap() {
+    let bus = Arc::new(InMemoryFramedInvalidationBus::for_cluster("orders", 16));
+    let mut subscriber = bus.subscribe();
+    let ring = shared_ring(8);
+    {
+        let mut ring = ring.lock().await;
+        ring.publish(CacheInvalidation::key("already-seen"));
+        ring.publish(CacheInvalidation::tag("missed-during-reconnect"));
+    }
+    let (relay_transport, peer) = InMemoryTransport::pair(16);
+    let handle = InvalidationRelay::spawn_with_metrics(bus, relay_transport, Some(ring), config());
+
+    peer.publish(
+        &CacheInvalidationFrame::new(CacheInvalidationMessage::new(
+            "remote",
+            CacheInvalidation::key("already-seen"),
+        ))
+        .with_cluster_name("orders")
+        .with_message_id(0),
+    )
+    .await
+    .unwrap();
+    let first = recv_message(&mut subscriber).await;
+    assert_eq!(first.invalidation().key_value(), Some("already-seen"));
+
+    peer.try_send_error(TransportError::Backend("simulated reconnect".to_owned()))
+        .unwrap();
+
+    let replayed = recv_message(&mut subscriber).await;
+    assert_eq!(
+        replayed.invalidation().tag_value(),
+        Some("missed-during-reconnect")
+    );
+    wait_until(|| {
+        let snapshot = handle.snapshot();
+        snapshot.transport_error_total == 1
+            && snapshot.resume_marked_total == 1
+            && snapshot.resume_requested_total == 1
+            && snapshot.resume_replayed_total == 1
+            && snapshot.applied_total == 2
+    })
+    .await;
+    handle.abort();
+}
+
+#[tokio::test]
 async fn resume_fell_behind_emits_clear_partition() {
     let bus = Arc::new(InMemoryFramedInvalidationBus::for_cluster("orders", 16));
     let mut subscriber = bus.subscribe();
