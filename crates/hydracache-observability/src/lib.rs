@@ -37,9 +37,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use hydracache::{
-    ClusterEpoch, ClusterGridCounters, ClusterGridDiagnostics, ClusterNodeId, ClusterPilotReport,
-    ClusterStagingHealth, HydraCache, QuorumPosture, RegionId, RegionState, SplitBrainReport,
-    StalenessBound,
+    AdmissionSnapshot, ClusterEpoch, ClusterGridCounters, ClusterGridDiagnostics, ClusterNodeId,
+    ClusterPilotReport, ClusterStagingHealth, HydraCache, QuorumPosture, RegionId, RegionState,
+    SplitBrainReport, StalenessBound,
 };
 use hydracache_core::{CacheCodec, CacheDiagnostics, CacheStats, PostcardCodec};
 use serde::Serialize;
@@ -207,10 +207,136 @@ impl CacheDiagnosticsSnapshot {
 }
 
 /// Serializable overview of all registered caches.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Default)]
 pub struct HydraCacheOverview {
     /// One diagnostic snapshot per registered cache.
     pub caches: Vec<CacheDiagnosticsSnapshot>,
+    /// Admission controller snapshot for the served runtime.
+    pub admission: AdmissionOverview,
+    /// Aggregate grid counters across the served runtime.
+    pub cluster_grid: ClusterGridCounters,
+    /// Honest topology status used by management and metrics surfaces.
+    pub topology: ClusterTopologyOverview,
+    /// Worst backup/checkpoint age in seconds, if any snapshot exists.
+    pub backup_age_seconds: Option<u64>,
+}
+
+/// Serializable admission snapshot used by operator metrics.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Default)]
+pub struct AdmissionOverview {
+    /// Current admitted operation count.
+    pub in_flight: u64,
+    /// Current admitted bytes.
+    pub memory_bytes: u64,
+    /// Waiting FIFO backlog depth.
+    pub queue_depth: u64,
+    /// Total rejected operations.
+    pub rejected_total: u64,
+}
+
+impl From<AdmissionSnapshot> for AdmissionOverview {
+    fn from(snapshot: AdmissionSnapshot) -> Self {
+        Self {
+            in_flight: snapshot.in_flight as u64,
+            memory_bytes: snapshot.memory_bytes as u64,
+            queue_depth: snapshot.queue_depth as u64,
+            rejected_total: snapshot.rejected_total,
+        }
+    }
+}
+
+/// Whether a topology reading is live or modeled.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TopologyStatusSource {
+    /// Status came from a live grid/control-plane handle.
+    Live,
+    /// Status is modeled and must not be rendered as live.
+    #[default]
+    Modeled,
+}
+
+impl TopologyStatusSource {
+    /// Stable Prometheus label value.
+    pub fn as_label(self) -> &'static str {
+        match self {
+            Self::Live => "live",
+            Self::Modeled => "modeled",
+        }
+    }
+}
+
+/// Bounded reshard phase for topology gauges.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TopologyReshardPhase {
+    /// No reshard is active.
+    #[default]
+    Idle,
+    /// A reshard is being planned.
+    Planning,
+    /// Partitions or replicas are moving.
+    Moving,
+    /// The reshard is finalizing.
+    Finalizing,
+}
+
+impl TopologyReshardPhase {
+    /// Stable Prometheus label value.
+    pub fn as_label(self) -> &'static str {
+        match self {
+            Self::Idle => "idle",
+            Self::Planning => "planning",
+            Self::Moving => "moving",
+            Self::Finalizing => "finalizing",
+        }
+    }
+}
+
+/// Honest topology snapshot used by Management Center metrics.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClusterTopologyOverview {
+    /// Whether the topology values are live or modeled.
+    pub source: TopologyStatusSource,
+    /// Visible member count.
+    pub members: u64,
+    /// Current leader id, if known.
+    pub leader: Option<String>,
+    /// Current control-plane epoch.
+    pub epoch: u64,
+    /// Current bounded reshard phase.
+    pub reshard_phase: TopologyReshardPhase,
+}
+
+impl ClusterTopologyOverview {
+    /// Build a topology snapshot.
+    pub fn new(
+        source: TopologyStatusSource,
+        members: u64,
+        leader: Option<String>,
+        epoch: u64,
+        reshard_phase: TopologyReshardPhase,
+    ) -> Self {
+        Self {
+            source,
+            members,
+            leader,
+            epoch,
+            reshard_phase,
+        }
+    }
+}
+
+impl Default for ClusterTopologyOverview {
+    fn default() -> Self {
+        Self {
+            source: TopologyStatusSource::Modeled,
+            members: 0,
+            leader: None,
+            epoch: 0,
+            reshard_phase: TopologyReshardPhase::Idle,
+        }
+    }
 }
 
 /// Per-member status entry for the grid operator surface.
@@ -557,6 +683,38 @@ impl RepairDebtController {
 }
 
 impl HydraCacheOverview {
+    /// Build an overview from cache diagnostics with default zero operator signals.
+    pub fn new(caches: Vec<CacheDiagnosticsSnapshot>) -> Self {
+        Self {
+            caches,
+            ..Self::default()
+        }
+    }
+
+    /// Attach an admission snapshot.
+    pub fn with_admission_snapshot(mut self, admission: AdmissionSnapshot) -> Self {
+        self.admission = AdmissionOverview::from(admission);
+        self
+    }
+
+    /// Attach aggregate cluster-grid counters.
+    pub fn with_cluster_grid_counters(mut self, counters: ClusterGridCounters) -> Self {
+        self.cluster_grid = counters;
+        self
+    }
+
+    /// Attach an honest topology snapshot.
+    pub fn with_topology(mut self, topology: ClusterTopologyOverview) -> Self {
+        self.topology = topology;
+        self
+    }
+
+    /// Attach the worst known backup age.
+    pub fn with_backup_age_seconds(mut self, seconds: u64) -> Self {
+        self.backup_age_seconds = Some(seconds);
+        self
+    }
+
     /// Return the number of caches represented by this overview.
     pub fn cache_count(&self) -> usize {
         self.caches.len()
@@ -579,6 +737,11 @@ pub trait CacheProbe: Send + Sync {
 
     /// Return cluster staging health when this probe wraps a cluster cache.
     fn cluster_staging_health(&self) -> Option<ClusterStagingHealth>;
+
+    /// Return aggregate grid counters for this probe.
+    fn cluster_grid_counters(&self) -> ClusterGridCounters {
+        ClusterGridCounters::default()
+    }
 
     /// Return the pilot report for this probe when available.
     fn cluster_pilot_report(&self) -> Option<ClusterPilotReport> {
@@ -634,6 +797,10 @@ where
         self.cache.cluster_staging_health()
     }
 
+    fn cluster_grid_counters(&self) -> ClusterGridCounters {
+        self.cache.cluster_grid_counters()
+    }
+
     fn cluster_pilot_report(&self) -> Option<ClusterPilotReport> {
         Some(self.cache.cluster_pilot_report())
     }
@@ -647,6 +814,10 @@ where
 #[derive(Clone, Default)]
 pub struct HydraCacheRegistry {
     probes: BTreeMap<String, Arc<dyn CacheProbe>>,
+    admission: AdmissionOverview,
+    cluster_grid: ClusterGridCounters,
+    topology: ClusterTopologyOverview,
+    backup_age_seconds: Option<u64>,
 }
 
 impl HydraCacheRegistry {
@@ -663,6 +834,30 @@ impl HydraCacheRegistry {
         C: CacheCodec,
     {
         self.insert_cache(name, cache);
+        self
+    }
+
+    /// Attach the current admission snapshot.
+    pub fn with_admission_snapshot(mut self, admission: AdmissionSnapshot) -> Self {
+        self.admission = AdmissionOverview::from(admission);
+        self
+    }
+
+    /// Attach aggregate grid counters supplied by the hosting runtime.
+    pub fn with_cluster_grid_counters(mut self, counters: ClusterGridCounters) -> Self {
+        self.cluster_grid = add_cluster_grid_counters(self.cluster_grid, counters);
+        self
+    }
+
+    /// Attach an honest topology snapshot.
+    pub fn with_topology(mut self, topology: ClusterTopologyOverview) -> Self {
+        self.topology = topology;
+        self
+    }
+
+    /// Attach the worst known backup age.
+    pub fn with_backup_age_seconds(mut self, seconds: u64) -> Self {
+        self.backup_age_seconds = Some(seconds);
         self
     }
 
@@ -739,11 +934,106 @@ impl HydraCacheRegistry {
     /// Return diagnostic snapshots for all registered caches.
     pub async fn overview(&self) -> HydraCacheOverview {
         let mut caches = Vec::with_capacity(self.probes.len());
+        let mut cluster_grid = self.cluster_grid;
         for probe in self.probes.values() {
             caches.push(probe.diagnostics().await);
+            cluster_grid = add_cluster_grid_counters(cluster_grid, probe.cluster_grid_counters());
         }
-        HydraCacheOverview { caches }
+        HydraCacheOverview {
+            caches,
+            admission: self.admission,
+            cluster_grid,
+            topology: self.topology.clone(),
+            backup_age_seconds: self.backup_age_seconds,
+        }
     }
+}
+
+macro_rules! add_cluster_counter_fields {
+    ($left:ident, $right:ident, [$($field:ident),+ $(,)?]) => {
+        $(
+            $left.$field = $left.$field.saturating_add($right.$field);
+        )+
+    };
+}
+
+fn add_cluster_grid_counters(
+    mut left: ClusterGridCounters,
+    right: ClusterGridCounters,
+) -> ClusterGridCounters {
+    add_cluster_counter_fields!(
+        left,
+        right,
+        [
+            replication_success_total,
+            replication_failure_total,
+            bytes_replicated_total,
+            replication_backpressure_total,
+            replication_oversized_rejected_total,
+            replication_decrypt_failure_total,
+            under_replicated_keys,
+            failover_total,
+            repair_task_total,
+            repair_failure_total,
+            rebalance_plan_total,
+            rebalance_task_ack_total,
+            topology_fence_rejected_total,
+            tombstone_repair_debt,
+            replicated_value_rejected_total,
+            split_brain_detected_total,
+            merge_discarded_entries_total,
+            merge_unresolved_conflicts_total,
+            cluster_auth_rejected_total,
+            repair_debt_degraded_mode,
+            placement_zone_underspread,
+            reshard_moves_inflight,
+            reshard_backfill_lag,
+            read_local_zone_total,
+            read_hedged_total,
+            read_hedge_win_total,
+            value_tier_promotions_total,
+            value_tier_demotions_total,
+            invalidate_batch_total,
+            invalidation_saga_pending,
+            auto_repair_active_total,
+            auto_repair_advisory_total,
+            consistency_level_operations_total,
+            consistency_unsatisfiable_total,
+            hints_stored_total,
+            hints_replayed_total,
+            hints_dropped_total,
+            hint_store_bytes,
+            repair_ranges_exchanged_total,
+            read_repair_total,
+            repair_progress_ratio,
+            peer_phi_scaled,
+            false_suspect_total,
+            cas_applied_total,
+            cas_mismatch_total,
+            lock_acquired_total,
+            lock_stale_token_rejected_total,
+            invalidation_ring_depth,
+            invalidation_replayed_total,
+            invalidation_fell_behind_total,
+            invalidation_ring_overrun_total,
+            session_watermark_entries,
+            session_active_sessions,
+            session_watermark_entries_p99,
+            session_worst_staleness_versions,
+            session_watermark_coarsened_total,
+            session_token_rejected_total,
+            session_ryw_escalations_total,
+            session_guarantee_unmet_total,
+            monotonic_read_violations_prevented_total,
+            monotonic_write_reorders_prevented_total,
+            causal_writes_deferred_total,
+            causal_summary_coarsened_total,
+            causal_dependency_bytes,
+            bounded_staleness_fast_serves_total,
+            bounded_staleness_escalations_total,
+        ]
+    );
+    left
 }
 
 impl fmt::Debug for HydraCacheRegistry {
@@ -923,9 +1213,7 @@ mod tests {
             estimated_entries: 1,
             empty: false,
         };
-        let overview = HydraCacheOverview {
-            caches: vec![diagnostics.clone()],
-        };
+        let overview = HydraCacheOverview::new(vec![diagnostics.clone()]);
 
         assert_json_fields(
             serde_json::to_value(&diagnostics.stats).unwrap(),
@@ -965,7 +1253,16 @@ mod tests {
             serde_json::to_value(&diagnostics).unwrap(),
             &["name", "stats", "estimated_entries", "empty"],
         );
-        assert_json_fields(serde_json::to_value(&overview).unwrap(), &["caches"]);
+        assert_json_fields(
+            serde_json::to_value(&overview).unwrap(),
+            &[
+                "caches",
+                "admission",
+                "cluster_grid",
+                "topology",
+                "backup_age_seconds",
+            ],
+        );
     }
 
     #[test]
