@@ -573,6 +573,11 @@ pub use grid::causal_consistency::{
     CausalConsistencyMetrics, CausalDependencyMissing, CausalSummary, CausalWrite,
 };
 #[cfg(not(target_arch = "wasm32"))]
+pub use grid::checkpoint::{
+    CheckpointCoordinator, ClusterCheckpointError, ClusterCheckpointErrorKind,
+    ClusterCheckpointManifest, NodeCheckpointManifest, CLUSTER_CHECKPOINT_MANIFEST_FORMAT_VERSION,
+};
+#[cfg(not(target_arch = "wasm32"))]
 pub use grid::conditional::{
     CasResult, ConditionalError, ConditionalMetrics, FenceToken, LockHold, LockOwner,
     SingleKeyConditionalStore,
@@ -613,16 +618,17 @@ pub use grid::durable_store::DurableGcReport;
 pub use grid::durable_store::{DurableValueStore, DURABLE_VALUE_FORMAT_VERSION};
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::elasticity::{
-    hedge_winner, plan_hedged_read, restore_topology_from_snapshot, topology_from_member_metadata,
-    validate_move_preserves_zone_quorum, AtomicInvalidationError, AutoRepairDecision,
-    AutoRepairPolicy, BatchInvalidationState, CompatVersion, ControlPlaneSnapshot, HedgePolicy,
-    HedgedReadPlan, InMemorySnapshotSink, InvalidateBatch, InvalidationSaga, InvalidationTarget,
-    MovePhase, NodeTopology, PartitionMove, RegionId, RepairAction, RepairMode, ReplicaObservation,
-    ReplicaScorer, ReplicaSelection, ReshardPlan, ReshardPlanError, SnapshotError, SnapshotSink,
-    TieredValueStore, TopologyAuthority, UpgradeGuard, UpgradeGuardError, UpgradeStep,
-    ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId, ZonePlacementReadiness,
-    CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION, NODE_TOPOLOGY_REGION_METADATA_KEY,
-    NODE_TOPOLOGY_ZONE_METADATA_KEY,
+    hedge_winner, plan_hedged_read, rescale_with_checkpoint, restore_topology_from_snapshot,
+    topology_from_member_metadata, validate_move_preserves_zone_quorum, AtomicInvalidationError,
+    AutoRepairDecision, AutoRepairPolicy, BatchInvalidationState, CompatVersion,
+    ControlPlaneSnapshot, HedgePolicy, HedgedReadPlan, InMemorySnapshotSink, InvalidateBatch,
+    InvalidationSaga, InvalidationTarget, MovePhase, NodeTopology, PartitionMove, RegionId,
+    RepairAction, RepairMode, ReplicaObservation, ReplicaScorer, ReplicaSelection,
+    RescaleCheckpointPhase, RescaleWithCheckpointPlan, ReshardPlan, ReshardPlanError,
+    SnapshotError, SnapshotSink, TieredValueStore, TopologyAuthority, UpgradeGuard,
+    UpgradeGuardError, UpgradeStep, ZoneAwareReplicaSet, ZoneAwareReplicationStrategy, ZoneId,
+    ZonePlacementReadiness, CONTROL_PLANE_SNAPSHOT_FORMAT_VERSION,
+    NODE_TOPOLOGY_REGION_METADATA_KEY, NODE_TOPOLOGY_ZONE_METADATA_KEY,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::failure_detector::{
@@ -675,8 +681,8 @@ pub use grid::persistence_policy::{
 pub use grid::recovery::open_durable_value_store_for_recovery;
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::recovery::{
-    recover_namespaces, RecoveredNamespace, RecoveryError, RecoveryErrorKind, RecoveryMode,
-    RecoveryNamespace, RecoveryPolicy, RecoveryReport,
+    recover_cluster_checkpoint, recover_namespaces, RecoveredNamespace, RecoveryError,
+    RecoveryErrorKind, RecoveryMode, RecoveryNamespace, RecoveryPolicy, RecoveryReport,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use grid::region_failover::{

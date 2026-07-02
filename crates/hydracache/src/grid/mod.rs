@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 pub(crate) mod active_active;
 pub(crate) mod capacity;
 pub(crate) mod causal_consistency;
+pub(crate) mod checkpoint;
 pub(crate) mod conditional;
 pub(crate) mod consistency_level;
 pub(crate) mod convergence_staleness;

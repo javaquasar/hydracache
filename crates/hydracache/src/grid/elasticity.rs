@@ -7,6 +7,7 @@ use crate::cluster::{
     partition_for_key, ClusterEpoch, ClusterMember, ClusterNodeId, PartitionId,
     RendezvousClusterOwnership,
 };
+use crate::grid::checkpoint::ClusterCheckpointManifest;
 use crate::grid::hardening::{
     ReplicatedValueRecord, ReplicatedValueStore, ValueStoreError, ValueVersion, WriteWatermark,
     REPLICATED_VALUE_RECORD_FORMAT_VERSION,
@@ -598,6 +599,92 @@ impl ReshardPlan {
             .collect();
         Self::new(epoch, moves, max_concurrent)
     }
+}
+
+/// Phase of the stop-checkpoint-redistribute-resume rescale flow.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RescaleCheckpointPhase {
+    /// Writes are stopped at the controller barrier.
+    Stopped,
+    /// A verified cluster checkpoint has been collected.
+    Checkpointed,
+    /// Partition data is being redistributed through the online reshard path.
+    Redistributing,
+    /// The reshard plan has been resumed from a restart-safe snapshot.
+    Resumed,
+    /// Rescale completed and ownership can drop old copies after confirmation.
+    Complete,
+}
+
+/// Reshard plan bound to a verified cluster-wide checkpoint.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RescaleWithCheckpointPlan {
+    /// Verified checkpoint that fences the pre-rescale cut.
+    pub checkpoint: ClusterCheckpointManifest,
+    /// Underlying 0.43 online reshard plan.
+    pub reshard: ReshardPlan,
+    /// Current coordinated flow phase.
+    pub phase: RescaleCheckpointPhase,
+}
+
+impl RescaleWithCheckpointPlan {
+    /// Bind a verified checkpoint to a reshard plan in the same authority epoch.
+    pub fn new(
+        checkpoint: ClusterCheckpointManifest,
+        reshard: ReshardPlan,
+    ) -> Result<Self, ReshardPlanError> {
+        checkpoint.verify().map_err(|error| {
+            ReshardPlanError::new(format!("invalid rescale checkpoint: {error}"))
+        })?;
+        if checkpoint.epoch != reshard.epoch {
+            return Err(ReshardPlanError::new(format!(
+                "rescale checkpoint epoch {} does not match reshard epoch {}",
+                checkpoint.epoch.value(),
+                reshard.epoch.value()
+            )));
+        }
+        Ok(Self {
+            checkpoint,
+            reshard,
+            phase: RescaleCheckpointPhase::Checkpointed,
+        })
+    }
+
+    /// Mark redistribution as started after the checkpoint is durable.
+    pub fn redistribute(&mut self) {
+        self.phase = RescaleCheckpointPhase::Redistributing;
+    }
+
+    /// Return a restart-safe snapshot of the coordinated rescale flow.
+    pub fn snapshot(&self) -> Self {
+        self.clone()
+    }
+
+    /// Reopen a coordinated rescale flow from its restart-safe snapshot.
+    pub fn resume_from(snapshot: Self) -> Result<Self, ReshardPlanError> {
+        snapshot.checkpoint.verify().map_err(|error| {
+            ReshardPlanError::new(format!("invalid rescale checkpoint: {error}"))
+        })?;
+        Ok(Self {
+            reshard: ReshardPlan::resume_from(snapshot.reshard),
+            phase: RescaleCheckpointPhase::Resumed,
+            ..snapshot
+        })
+    }
+
+    /// Mark the coordinated rescale as complete.
+    pub fn complete(&mut self) {
+        self.phase = RescaleCheckpointPhase::Complete;
+    }
+}
+
+/// Create a rescale-with-checkpoint flow from a verified checkpoint and reshard plan.
+pub fn rescale_with_checkpoint(
+    checkpoint: ClusterCheckpointManifest,
+    reshard: ReshardPlan,
+) -> Result<RescaleWithCheckpointPlan, ReshardPlanError> {
+    RescaleWithCheckpointPlan::new(checkpoint, reshard)
 }
 
 /// Error returned when a move would break placement invariants.

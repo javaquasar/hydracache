@@ -4,6 +4,8 @@
 //! build on these seeded primitives so every failing run can be reproduced from
 //! a seed and step count.
 
+#[cfg(not(target_arch = "wasm32"))]
+pub mod checkpoint;
 pub mod clock;
 pub mod control;
 pub mod election;
@@ -26,6 +28,8 @@ pub mod upgrade_recovery;
 pub mod workload;
 pub mod world;
 
+#[cfg(not(target_arch = "wasm32"))]
+pub use checkpoint::{run_checkpoint_rescale, CheckpointRescaleReport};
 pub use clock::SimClock;
 pub use control::{
     ControlActionV1, ControlApplyError, ReplayScriptError, ReplayScriptV1, SimMode,

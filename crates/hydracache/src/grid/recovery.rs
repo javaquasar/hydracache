@@ -7,10 +7,15 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 
 use crate::cluster::ClusterEpoch;
+use crate::grid::checkpoint::{
+    ClusterCheckpointError, ClusterCheckpointErrorKind, ClusterCheckpointManifest,
+};
 #[cfg(feature = "durable-value-store")]
 use crate::grid::durable_store::DurableValueStore;
 use crate::grid::elasticity::RegionId;
-use crate::grid::hardening::{ReplicatedValueRecord, ReplicatedValueStore, ValueStoreError};
+use crate::grid::hardening::{
+    ReplicatedValueRecord, ReplicatedValueStore, ValueStoreError, WriteWatermark,
+};
 use crate::grid::persistence_policy::{
     PersistencePolicy, PersistencePolicyError, PersistenceRegionPlacement,
 };
@@ -241,6 +246,71 @@ where
     Ok(report)
 }
 
+/// Recover persistent namespaces through a verified cluster checkpoint cut.
+///
+/// Records newer than the per-partition checkpoint watermark are fenced so
+/// concurrent writes after the barrier cannot leak into this restore view.
+pub fn recover_cluster_checkpoint<S>(
+    checkpoint: &ClusterCheckpointManifest,
+    store: &S,
+    policy: &PersistencePolicy,
+    local_region: &RegionId,
+    authority_epoch: ClusterEpoch,
+    recovery_policy: &RecoveryPolicy,
+    namespaces: impl IntoIterator<Item = RecoveryNamespace>,
+) -> Result<RecoveryReport, RecoveryError>
+where
+    S: ReplicatedValueStore,
+{
+    checkpoint.verify().map_err(RecoveryError::checkpoint)?;
+    if checkpoint.epoch < authority_epoch {
+        return Err(RecoveryError::checkpoint(ClusterCheckpointError::new(
+            ClusterCheckpointErrorKind::AuthorityFence,
+            format!(
+                "cluster checkpoint epoch {} is older than authority epoch {}",
+                checkpoint.epoch.value(),
+                authority_epoch.value()
+            ),
+        )));
+    }
+
+    let mut report = recover_namespaces(
+        store,
+        policy,
+        local_region,
+        authority_epoch,
+        recovery_policy,
+        namespaces,
+    )?;
+    let mut checkpoint_fenced_total = 0_u64;
+    for namespace in report.namespaces.values_mut() {
+        let mut fenced = Vec::new();
+        namespace.records.retain(|key, record| {
+            if checkpoint.covers(WriteWatermark::new(
+                record.partition,
+                record.version,
+                record.epoch,
+            )) {
+                true
+            } else {
+                fenced.push(key.clone());
+                false
+            }
+        });
+        checkpoint_fenced_total = checkpoint_fenced_total.saturating_add(fenced.len() as u64);
+        namespace.stale_keys.extend(fenced);
+        namespace.stale_keys.sort();
+        namespace.stale_keys.dedup();
+    }
+    report.recovered_record_total = report
+        .recovered_record_total
+        .saturating_sub(checkpoint_fenced_total);
+    report.stale_fenced_total = report
+        .stale_fenced_total
+        .saturating_add(checkpoint_fenced_total);
+    Ok(report)
+}
+
 #[cfg(feature = "durable-value-store")]
 /// Open a durable value store as part of recovery, preserving fail-loud store errors.
 pub fn open_durable_value_store_for_recovery(
@@ -279,6 +349,13 @@ impl RecoveryError {
         }
     }
 
+    fn checkpoint(error: ClusterCheckpointError) -> Self {
+        Self {
+            kind: RecoveryErrorKind::Checkpoint,
+            message: error.to_string(),
+        }
+    }
+
     /// Return the stable error kind.
     pub fn kind(&self) -> RecoveryErrorKind {
         self.kind
@@ -303,6 +380,8 @@ pub enum RecoveryErrorKind {
     Store,
     /// Recovery timed out before safe serving.
     Timeout,
+    /// Cluster checkpoint validation or authority fencing failed.
+    Checkpoint,
 }
 
 fn recovery_timeout_or_partial(

@@ -18,6 +18,7 @@ they are persisted or transmitted across processes.
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
 | `DurableValueStore` on-disk value-store format | `1` | `hydracache` `durable-value-store` feature | Readers accept store format `1` only. Records are length-prefixed binary envelopes containing the cache key, `ReplicatedValueRecord`, tombstone/value state, and checksum metadata. The value engine is separate from the raft log engine. | Store open refuses unknown future formats. Corrupt or mismatched records fail loud and are not served. |
 | `DurabilitySnapshotManifest` format | `1` | `hydracache` durability write path | Readers accept manifest format `1` only. The manifest records namespace, snapshot scheduler time, interval, and the covered `(partition, version, epoch)` watermark with a deterministic checksum. | Unknown future manifest formats or checksum mismatches fail loud before recovery trusts the snapshot watermark. |
+| `ClusterCheckpointManifest` format | `1` | `hydracache` checkpoint coordinator | Readers accept manifest format `1` only. The manifest records a cluster-wide checkpoint id, authority epoch, per-partition barrier watermarks, per-node `DurabilitySnapshotManifest` evidence, and a deterministic checksum. | Partial/torn cuts, stale partition watermarks, checksum mismatches, older-than-authority checkpoints, and unknown future formats fail loud before recovery or rescale trusts the cut. |
 | CRDT value encoding | `1` | `hydracache` active-active CRDT helpers | The 0.45 serde shape for `GCounter`, `PnCounter`, `OrSet`, `LwwRegister`, and OR-set tags is the registered CRDT value encoding version `1`. Durable or replicated adapters must keep this shape stable or introduce a new explicit version before emitting a changed encoding. | Unknown future CRDT value encodings must fail closed before merge/apply so stale readers do not converge on different metadata. |
 | WAN `RegionLink` replication batch frame | `1` | `hydracache` active-active region-link helpers | The 0.45 serde shape for `GeoBatch`, `GeoWrite`, `IdempotencyKey`, and `GeoBatchApplyReport` is the registered WAN batch frame version `1`. Readers must preserve idempotency-key pairing and HLC/epoch/version fields. | Unknown future WAN frames must be rejected before apply; mismatched entry/idempotency vectors are already refused. |
 | Cross-region anti-entropy digest exchange | `1` | `hydracache` region-link anti-entropy helpers | The 0.45 serde shape for `PartitionDigest`, `VersionSummary`, and CRDT metadata GC confirmation is the registered digest exchange version `1`. Readers compare `(version, epoch)` summaries only within the matching partition. | Unknown future digest versions must fail loud before diffing so repair cannot silently skip or over-apply keys. |
@@ -298,3 +299,13 @@ W4/W5 bump the simulator snapshot JSON schema to version `5`. Topology controls
 progress, current lab mode, active scripted scenario, and replay-visible
 intervention count. The W4 add-node/reshard path is a simulator model for the
 lab and does not claim production ownership movement.
+
+## 0.55 Durable Store Hardening
+
+W4 registers `ClusterCheckpointManifest` format version `1` for coordinated
+cluster-wide consistent cuts. The manifest is separate from
+`DurabilitySnapshotManifest`: node snapshots prove durable local coverage, while
+the cluster checkpoint records the controller barrier watermarks that define the
+cut. Restore and rescale readers accept only format `1`, verify checksum and
+per-partition coverage, reject partial/torn cuts, and fence checkpoints older
+than the current authority epoch before serving or redistributing data.
