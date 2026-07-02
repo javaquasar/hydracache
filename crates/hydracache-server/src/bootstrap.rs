@@ -1,11 +1,15 @@
 use hydracache::HydraCache;
 use hydracache_client_transport_axum::{ClientSurfaceDrain, ClientSurfaceRuntime};
+use hydracache_observability::{
+    ClusterTopologyOverview, HydraCacheRegistry, TopologyReshardPhase, TopologyStatusSource,
+};
 use serde::Serialize;
 use std::sync::Arc;
 use thiserror::Error;
 
 use crate::cluster_status::{
-    ClusterStatusProvider, ClusterStatusRuntime, ModeledClusterStatus, StatusSource,
+    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, ModeledClusterStatus, ReshardPhase,
+    StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
@@ -284,10 +288,7 @@ impl ServerRuntime {
 
     /// Return admin/operator status derived from the runtime model.
     pub fn admin_status(&self) -> ServerAdminStatus {
-        let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
-        let status = self
-            .cluster_status
-            .cluster_status(ClusterStatusRuntime::new(cluster_ready, self.is_draining()));
+        let status = self.cluster_status_snapshot();
         ServerAdminStatus {
             source: status.source,
             leader: status.leader,
@@ -297,6 +298,26 @@ impl ServerRuntime {
             reshard_phase: status.reshard_phase.to_string(),
             draining: status.draining,
         }
+    }
+
+    /// Build a metrics registry snapshot for the admin surface.
+    pub fn metrics_registry(&self) -> HydraCacheRegistry {
+        let status = self.cluster_status_snapshot();
+        HydraCacheRegistry::new()
+            .with_cache("server", self.cache.clone())
+            .with_topology(ClusterTopologyOverview::new(
+                topology_status_source(status.source),
+                status.members.len() as u64,
+                status.leader,
+                status.epoch,
+                topology_reshard_phase(status.reshard_phase),
+            ))
+    }
+
+    fn cluster_status_snapshot(&self) -> ClusterStatus {
+        let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
+        self.cluster_status
+            .cluster_status(ClusterStatusRuntime::new(cluster_ready, self.is_draining()))
     }
 
     /// Request an online reshard through the current runtime model.
@@ -351,5 +372,21 @@ impl ServerRuntime {
     /// Return the runtime config.
     pub fn config(&self) -> &ServerConfig {
         &self.config
+    }
+}
+
+fn topology_status_source(source: StatusSource) -> TopologyStatusSource {
+    match source {
+        StatusSource::Live => TopologyStatusSource::Live,
+        StatusSource::Modeled => TopologyStatusSource::Modeled,
+    }
+}
+
+fn topology_reshard_phase(phase: ReshardPhase) -> TopologyReshardPhase {
+    match phase {
+        ReshardPhase::Idle => TopologyReshardPhase::Idle,
+        ReshardPhase::Planning => TopologyReshardPhase::Planning,
+        ReshardPhase::Moving => TopologyReshardPhase::Moving,
+        ReshardPhase::Finalizing => TopologyReshardPhase::Finalizing,
     }
 }

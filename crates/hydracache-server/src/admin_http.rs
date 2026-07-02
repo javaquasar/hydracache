@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use axum::extract::State;
+use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
@@ -13,11 +14,14 @@ use thiserror::Error;
 
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
 use crate::services::DrainOutcome;
+use hydracache_observability::PrometheusExporter;
 
 /// Liveness path used by Kubernetes probes.
 pub const ADMIN_HEALTHZ_PATH: &str = "/healthz";
 /// Readiness path used by Kubernetes probes.
 pub const ADMIN_READYZ_PATH: &str = "/readyz";
+/// Prometheus metrics path on the internal admin surface.
+pub const ADMIN_METRICS_PATH: &str = "/metrics";
 /// Operator status path.
 pub const ADMIN_STATUS_PATH: &str = "/admin/status";
 /// Operator drain action path.
@@ -59,6 +63,7 @@ impl AdminHttpSurface {
         Router::new()
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
+            .route(ADMIN_METRICS_PATH, get(metrics))
             .route(ADMIN_STATUS_PATH, get(admin_status))
             .route(ADMIN_DRAIN_PATH, post(admin_drain))
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
@@ -80,6 +85,15 @@ async fn readyz(State(runtime): State<SharedServerRuntime>) -> Response {
         StatusCode::SERVICE_UNAVAILABLE
     };
     (status, Json(ready)).into_response()
+}
+
+async fn metrics(State(runtime): State<SharedServerRuntime>) -> Response {
+    let registry = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .metrics_registry();
+    let text = PrometheusExporter::new(registry).render().await;
+    ([(CONTENT_TYPE, "text/plain; version=0.0.4")], text).into_response()
 }
 
 async fn admin_status(State(runtime): State<SharedServerRuntime>, headers: HeaderMap) -> Response {
