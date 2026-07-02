@@ -1,12 +1,14 @@
-//! `cargo xtask verify` — run the fast, no-network release gates in order and stop
+//! `cargo xtask verify` — run the fast release gates in order and stop
 //! on the first failure. This is the single command an agent or developer runs
-//! before opening a PR; CI runs the same gates (see `docs/GATES.md`). Network- or
-//! time-heavy suites (criterion benchmark *runs*, chaos/soak, Docker) are nightly
-//! and intentionally excluded here.
+//! before opening a PR; CI runs the same gates (see `docs/GATES.md`). Time-heavy
+//! suites (criterion benchmark *runs*, chaos/soak, Docker) are nightly and
+//! intentionally excluded here.
+//! The browser console gate runs only when Node and npm are available; otherwise
+//! it logs an explicit skip.
 
 use std::error::Error;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use crate::doc_check;
 
@@ -18,6 +20,8 @@ struct Gate {
     env: Option<(&'static str, &'static str)>,
 }
 
+const CONSOLE_GATE_LABEL: &str = "management console";
+
 fn gate(
     label: &'static str,
     args: impl Into<Vec<&'static str>>,
@@ -28,6 +32,17 @@ fn gate(
         args: args.into(),
         env,
     }
+}
+
+fn console_npm_steps() -> [(&'static str, Vec<&'static str>); 3] {
+    [
+        ("console npm deps", vec!["--prefix", "console", "ci"]),
+        (
+            "console static check",
+            vec!["--prefix", "console", "run", "build"],
+        ),
+        ("console playwright", vec!["--prefix", "console", "test"]),
+    ]
 }
 
 fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
@@ -151,15 +166,56 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         }
     }
 
+    run_console_gate(&root)?;
+
     println!("verify: all gates passed");
     Ok(())
+}
+
+fn run_console_gate(root: &Path) -> Result<(), Box<dyn Error>> {
+    println!("== {CONSOLE_GATE_LABEL} ==");
+    if !command_available("node") {
+        println!("{CONSOLE_GATE_LABEL}: SKIP (node not found)");
+        return Ok(());
+    }
+    if !command_available("npm") {
+        println!("{CONSOLE_GATE_LABEL}: SKIP (npm not found)");
+        return Ok(());
+    }
+
+    for (label, args) in console_npm_steps() {
+        println!("-- {label}");
+        let status = Command::new("npm")
+            .args(args)
+            .current_dir(root)
+            .status()
+            .map_err(|err| format!("gate '{label}' could not start: {err}"))?;
+        if !status.success() {
+            return Err(format!("gate '{label}' failed").into());
+        }
+    }
+
+    Ok(())
+}
+
+fn command_available(program: &str) -> bool {
+    Command::new(program)
+        .arg("--version")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success())
 }
 
 #[cfg(test)]
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{gates_for_platform, windows_verify_target_dir_for_process, Gate};
+    use super::{
+        console_npm_steps, gates_for_platform, windows_verify_target_dir_for_process, Gate,
+        CONSOLE_GATE_LABEL,
+    };
 
     fn args_for<'a>(gates: &'a [Gate], label: &str) -> &'a [&'static str] {
         gates
@@ -230,6 +286,22 @@ mod tests {
                 "--test",
                 "dst_budget",
                 "--locked"
+            ]
+        );
+    }
+
+    #[test]
+    fn verify_has_optional_management_console_gate_contract() {
+        assert_eq!(CONSOLE_GATE_LABEL, "management console");
+        assert_eq!(
+            console_npm_steps(),
+            [
+                ("console npm deps", vec!["--prefix", "console", "ci"]),
+                (
+                    "console static check",
+                    vec!["--prefix", "console", "run", "build"]
+                ),
+                ("console playwright", vec!["--prefix", "console", "test"])
             ]
         );
     }

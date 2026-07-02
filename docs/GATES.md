@@ -12,13 +12,14 @@ enforces" — no drift.
 cargo xtask verify
 ```
 
-Runs the fast, no-network gates in order and fails on the first red one:
+Runs the fast gates in order and fails on the first red one:
 formatting, clippy, dependency bans, docs-consistency (`doc-check`), workspace
 tests, rustdoc (`-D warnings`), the DST fast budget, and the performance-budget
-contract test. Use it
-before opening a PR. Network-/time-heavy suites (criterion benchmark runs,
-chaos/soak, Docker/testcontainers) are nightly / scheduled and are **not** part of
-`verify`.
+contract test. When Node/npm are installed, it also runs the read-only Management
+Center static check and Playwright specs; without Node/npm it logs a skip and
+continues. Use it before opening a PR. Time-heavy suites (criterion benchmark
+runs, chaos/soak, Docker/testcontainers) are nightly / scheduled and are **not**
+part of `verify`.
 
 On Windows, `cargo xtask verify` splits the test gate into
 `cargo test --workspace --exclude xtask --locked -j 1` and
@@ -37,6 +38,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Bench targets compile | `cargo check -p hydracache --benches` / `-p hydracache-db --benches` | CI | benches build |
 | Dependency bans | `cargo deny check bans` | CI + verify | `deny.toml` (incl. sqlparser runtime ban — RULES R-9) |
 | DST fast budget | `cargo test -p hydracache-sim --test dst_budget --locked` | CI + verify | bounded deterministic simulation seed matrix (RULES R-5/R-8) |
+| Management console | `npm --prefix console ci` + `npm --prefix console run build` + `npm --prefix console test` | CI + verify (verify skips only when Node/npm are absent) | read-only `/console/` renders `/cluster/overview` and `/metrics`, preserves live/modeled honesty, degrades when unreachable, and keeps DOM rendering bounded |
 | SQL lint baseline drift | `cargo test -p hydracache-sql-lint --test lint_cli` + `lint --check-baseline` | CI + verify | no new un-baselined SQL lint findings |
 | Docs consistency | `cargo xtask doc-check` | CI + verify | `releases.toml` integrity (RULES R-11): file existence, version uniqueness, `depends_on` resolution, status validity, 0.43 networked-control-plane status-drift sentinel |
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |

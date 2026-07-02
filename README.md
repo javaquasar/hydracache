@@ -52,6 +52,11 @@ For a browser walkthrough of the real deterministic cluster simulator, see
 The simulator page is a DevRel artifact over the real `hydracache-sim` engine,
 not a replacement for the release correctness gates.
 
+For the read-only operations console served by the server admin surface, see
+[`docs/management-center.md`](docs/management-center.md).
+
+![HydraCache Management Center](docs/images/management-center.png)
+
 For database production-readiness rules around keys, tags, transactions,
 adapter boundaries, and observability, see
 [`docs/DB_PRODUCTION_READINESS.md`](docs/DB_PRODUCTION_READINESS.md).

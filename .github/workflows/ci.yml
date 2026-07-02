@@ -33,6 +33,13 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Install Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
@@ -70,6 +77,13 @@ jobs:
 
       - name: DST fast budget
         run: cargo test -p hydracache-sim --test dst_budget --locked
+
+      - name: Management console
+        run: |
+          npm --prefix console ci
+          npx --prefix console playwright install --with-deps chromium
+          npm --prefix console run build
+          npm --prefix console test
 
       - name: Test
         run: cargo test --workspace --locked

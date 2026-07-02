@@ -17,5 +17,8 @@ npm ci
 npm test
 ```
 
+The release gate is `cargo xtask verify`; it runs these specs when Node/npm are
+available and logs an explicit skip when they are not installed.
+
 Fidelity note: `source:"modeled"` is a first-class state, not an error. The UI
 must keep that badge visible and must not show modeled leader data as live.

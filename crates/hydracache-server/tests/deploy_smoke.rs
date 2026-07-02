@@ -1,3 +1,15 @@
+use std::path::PathBuf;
+
+use axum::body::{to_bytes, Body};
+use axum::http::{Request, StatusCode};
+use hydracache_client_transport_axum::{AxumClientSurface, ClientSurfaceLimits};
+use hydracache_server::{
+    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ServerConfig, ServerRole,
+    ServerRuntime, TlsConfig, ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_METRICS_PATH,
+};
+use serde_json::Value;
+use tower::ServiceExt;
+
 #[test]
 fn deploy_smoke_dockerfile_builds_hydracache_server_binary() {
     let dockerfile = include_str!("../../../Dockerfile");
@@ -32,6 +44,44 @@ fn deploy_smoke_k8s_manifests_wire_stateful_identity_storage_tls_backup_and_prob
     assert!(service.contains("name: metrics"));
     assert!(pdb.contains("kind: PodDisruptionBudget"));
     assert!(pdb.contains("minAvailable: 2"));
+}
+
+#[tokio::test]
+async fn daemon_serves_metrics_and_cluster_overview_with_source_on_internal_port() {
+    let admin = AdminHttpSurface::new(ServerRuntime::new(member_config()).unwrap().start());
+
+    let metrics = admin
+        .routes()
+        .oneshot(get_request(ADMIN_METRICS_PATH))
+        .await
+        .unwrap();
+    assert_eq!(metrics.status(), StatusCode::OK);
+    let metrics_text = text_response(metrics).await;
+    assert!(metrics_text.contains("hydracache_cluster_members{source=\"modeled\"}"));
+
+    let overview = admin
+        .routes()
+        .oneshot(get_request(ADMIN_CLUSTER_OVERVIEW_PATH))
+        .await
+        .unwrap();
+    assert_eq!(overview.status(), StatusCode::OK);
+    let overview_body = json_response(overview).await;
+    assert_eq!(overview_body["source"], "modeled");
+    assert!(overview_body["leader"].is_null());
+
+    let client = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let client_metrics = client
+        .routes()
+        .oneshot(get_request(ADMIN_METRICS_PATH))
+        .await
+        .unwrap();
+    assert_eq!(client_metrics.status(), StatusCode::NOT_FOUND);
+    let client_overview = client
+        .routes()
+        .oneshot(get_request(ADMIN_CLUSTER_OVERVIEW_PATH))
+        .await
+        .unwrap();
+    assert_eq!(client_overview.status(), StatusCode::NOT_FOUND);
 }
 
 #[test]
@@ -73,4 +123,37 @@ fn deploy_smoke_kind_statefulset_forms_quorum_and_survives_rolling_update() {
         .status()
         .expect("kind is installed")
         .success());
+}
+
+fn member_config() -> ServerConfig {
+    ServerConfig {
+        role: ServerRole::Member,
+        listen_addr: "127.0.0.1:18080".parse().unwrap(),
+        cluster_addr: "127.0.0.1:17000".parse().unwrap(),
+        seeds: vec!["127.0.0.1:17000".to_owned()],
+        storage_dir: Some(PathBuf::from("target/test-hydracache-deploy-smoke")),
+        drain_timeout_ms: 1_000,
+        tls: TlsConfig::default(),
+        backup: BackupConfig::default(),
+        client_api: ClientApiConfig::default(),
+        admin_api: AdminApiConfig::default(),
+    }
+}
+
+fn get_request(uri: &str) -> Request<Body> {
+    Request::builder()
+        .method("GET")
+        .uri(uri)
+        .body(Body::empty())
+        .unwrap()
+}
+
+async fn json_response(response: axum::response::Response) -> Value {
+    let bytes = to_bytes(response.into_body(), 1024 * 1024).await.unwrap();
+    serde_json::from_slice(&bytes).unwrap()
+}
+
+async fn text_response(response: axum::response::Response) -> String {
+    let bytes = to_bytes(response.into_body(), 1024 * 1024).await.unwrap();
+    String::from_utf8(bytes.to_vec()).unwrap()
 }
