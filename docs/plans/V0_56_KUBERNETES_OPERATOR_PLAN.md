@@ -18,7 +18,7 @@
 > - **After (depends on):** `0.48` (server daemon, graceful upgrade, mTLS, backup/PITR, k8s artifacts).
 >   Uses `0.43` reshard, `0.51` persistence, `0.42` identity/authz. Independent of `0.52`–`0.55`.
 > - **Promoted from** `V0_DRAFT_KUBERNETES_OPERATOR_PLAN.md` (D1–D7 expanded into W1–W7).
-> - **Status:** planned.
+> - **Status:** in-progress.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md)

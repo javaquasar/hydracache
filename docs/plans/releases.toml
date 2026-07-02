@@ -163,7 +163,7 @@ depends_on = ["0.51.0"]
 [[release]]
 version = "0.56.0"
 file = "docs/plans/V0_56_KUBERNETES_OPERATOR_PLAN.md"
-status = "planned"
+status = "in-progress"
 theme = "Kubernetes Operator — a HydraCacheCluster CRD (kube-rs, scale-subresource) + reconcile controller (leader-elected, server-side-apply, finalizer that RETAINS PVCs by default) managing the full lifecycle declaratively: install → StatefulSet/Services/Secrets/PVCs; scale with 0.43 online reshard + drain-before-remove + quorum guard + PDB; zero-downtime rolling upgrade = QUORUM-AWARE POD REPLACEMENT + graceful DRAIN via 0.48 graceful_shutdown/preStop (NOT the in-place fd-handoff), leader pod drained only after re-election, mixed-version skew within COMPAT window; cert/key rotation via 0.48 mTLS without dropped connections; persistence volumes via 0.51 PVCs; scheduled backup/PITR via 0.48 + restore; health/admission + least-privilege RBAC. Preflight W0 = one server-side change: thin HTTP /healthz+/readyz+/admin/* surface over existing ServerRuntime methods (no logic). Orchestration over shipped 0.42-0.51 primitives, NOT new core; closes the named Hazelcast Platform Operator gap (develop-downward). New hydracache-operator binary crate (publish=false); library fast path untouched (R-10); fail-loud safety; envtest for object-shape, kind for pod-lifecycle, both skip without a cluster. Not a PaaS, not a Helm replacement. Promoted from V0_DRAFT_KUBERNETES_OPERATOR_PLAN"
 depends_on = ["0.48.0"]
 
