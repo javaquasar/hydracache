@@ -17,6 +17,9 @@ use kube::{Client, ResourceExt};
 use serde_json::json;
 use thiserror::Error;
 
+use crate::backup::{
+    backup_completed_condition, backup_failed_condition, plan_backup, BackupObservation, BackupPlan,
+};
 use crate::crd::{HydraCacheCluster, HydraCacheClusterStatus};
 use crate::persistence::plan_persistence;
 use crate::resources::{
@@ -241,7 +244,8 @@ pub async fn apply_cluster(
                         .iter()
                         .find_map(|action| match action {
                             crate::scale::AdminAction::Drain { ordinal } => Some(*ordinal),
-                            crate::scale::AdminAction::Reshard { .. } => None,
+                            crate::scale::AdminAction::Reshard { .. }
+                            | crate::scale::AdminAction::Backup { .. } => None,
                         })
                 {
                     let draining_pod = pod_name(&cluster.name_any(), drain_ordinal);
@@ -372,6 +376,51 @@ pub async fn apply_cluster(
                 &error.to_string(),
                 cluster.metadata.generation,
             )),
+        }
+    }
+
+    let backup_plan = if cluster.spec.backup_schedule.is_some() {
+        if scale_plan.phase == READY_PHASE
+            && upgrade_plan.phase == READY_PHASE
+            && tls_rotation_plan.phase == READY_PHASE
+        {
+            let backup_observation = BackupObservation {
+                phase: status.phase.clone(),
+                health: status.health.clone(),
+                ready_replicas: scale_observation.ready_replicas,
+                last_backup: status.last_backup.clone(),
+            };
+            plan_backup(&cluster, &backup_observation)
+        } else {
+            BackupPlan::deferred(cluster.metadata.generation)
+        }
+    } else {
+        BackupPlan::steady()
+    };
+    status.conditions.extend(backup_plan.conditions.clone());
+    if !backup_plan.admin_actions.is_empty() {
+        match ctx
+            .scale_admin
+            .perform(&namespace, &cluster.name_any(), &backup_plan.admin_actions)
+            .await
+        {
+            Ok(()) => {
+                if backup_plan.record_last_backup_on_success {
+                    let completed_at = k8s_openapi::jiff::Timestamp::now().to_string();
+                    status.last_backup = Some(completed_at.clone());
+                    status.conditions.push(backup_completed_condition(
+                        &completed_at,
+                        cluster.metadata.generation,
+                    ));
+                }
+            }
+            Err(error) => {
+                status.health = DEGRADED_HEALTH.to_owned();
+                status.conditions.push(backup_failed_condition(
+                    &error.to_string(),
+                    cluster.metadata.generation,
+                ));
+            }
         }
     }
 

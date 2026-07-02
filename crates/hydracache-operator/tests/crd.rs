@@ -40,6 +40,7 @@ fn crd_malformed_spec_is_rejected_by_validation() {
         find_property(&crd, "storageClassName").unwrap()["minLength"],
         1
     );
+    assert_eq!(find_property(&crd, "location").unwrap()["minLength"], 1);
 
     let subresources = &crd["spec"]["versions"][0]["subresources"];
     assert_eq!(subresources["scale"]["specReplicasPath"], ".spec.replicas");
@@ -61,6 +62,7 @@ fn crd_manifest_records_generated_surface() {
     assert!(manifest.contains("- hcc"));
     assert!(manifest.contains("specReplicasPath: .spec.replicas"));
     assert!(manifest.contains("statusReplicasPath: .status.observedReplicas"));
+    assert!(manifest.contains("required: [schedule, location, retention]"));
     assert!(manifest.contains("minLength: 1"));
     assert!(manifest.contains("minimum: 1"));
 }

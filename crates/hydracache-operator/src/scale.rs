@@ -20,6 +20,7 @@ pub const SCALE_ACTION_FAILED_CONDITION: &str = "ScaleActionFailed";
 const ADMIN_STATUS_PATH: &str = "/admin/status";
 const ADMIN_DRAIN_PATH: &str = "/admin/drain";
 const ADMIN_RESHARD_PATH: &str = "/admin/reshard";
+const ADMIN_BACKUP_PATH: &str = "/admin/backup";
 const HYDRACACHE_CLIENT_ID_HEADER: &str = "x-hydracache-client-id";
 const HYDRACACHE_TENANT_HEADER: &str = "x-hydracache-tenant";
 const HYDRACACHE_ADMIN_HEADER: &str = "x-hydracache-admin";
@@ -95,6 +96,7 @@ pub struct AdminStatus {
 pub enum AdminAction {
     Reshard { ordinal: u32 },
     Drain { ordinal: u32 },
+    Backup { ordinal: u32 },
 }
 
 impl AdminAction {
@@ -102,12 +104,15 @@ impl AdminAction {
         match self {
             Self::Reshard { .. } => ADMIN_RESHARD_PATH,
             Self::Drain { .. } => ADMIN_DRAIN_PATH,
+            Self::Backup { .. } => ADMIN_BACKUP_PATH,
         }
     }
 
     fn ordinal(&self) -> u32 {
         match self {
-            Self::Reshard { ordinal } | Self::Drain { ordinal } => *ordinal,
+            Self::Reshard { ordinal } | Self::Drain { ordinal } | Self::Backup { ordinal } => {
+                *ordinal
+            }
         }
     }
 }

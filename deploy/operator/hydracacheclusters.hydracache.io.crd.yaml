@@ -86,9 +86,12 @@ spec:
                   x-kubernetes-preserve-unknown-fields: true
                 backupSchedule:
                   type: object
-                  required: [schedule, retention]
+                  required: [schedule, location, retention]
                   properties:
                     schedule:
+                      type: string
+                      minLength: 1
+                    location:
                       type: string
                       minLength: 1
                     retention:

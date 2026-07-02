@@ -363,6 +363,12 @@ fn pod_template(
 fn server_env(cluster: &HydraCacheCluster) -> Vec<EnvVar> {
     let name = cluster.name_any();
     let tls_enabled = cluster.spec.tls.is_some().to_string();
+    let backup_location = cluster
+        .spec
+        .backup_schedule
+        .as_ref()
+        .map(|backup| backup.location.as_str())
+        .unwrap_or("");
     vec![
         env("HYDRACACHE_ROLE", "member"),
         env("HYDRACACHE_LISTEN_ADDR", "0.0.0.0:8080"),
@@ -377,6 +383,7 @@ fn server_env(cluster: &HydraCacheCluster) -> Vec<EnvVar> {
             "HYDRACACHE_BACKUP_ENABLED",
             &cluster.spec.backup_schedule.is_some().to_string(),
         ),
+        env("HYDRACACHE_BACKUP_LOCATION", backup_location),
         env("HYDRACACHE_ADMIN_ADDR", "0.0.0.0:9091"),
     ]
 }

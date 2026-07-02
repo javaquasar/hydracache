@@ -115,6 +115,9 @@ pub struct BackupScheduleSpec {
     /// Cron expression understood by the operator.
     #[schemars(length(min = 1))]
     pub schedule: String,
+    /// Backup target location, for example `s3://bucket/prefix` or `file:///backups`.
+    #[schemars(length(min = 1))]
+    pub location: String,
     /// Retention window such as `168h`.
     #[schemars(length(min = 1))]
     pub retention: String,
@@ -162,6 +165,7 @@ pub fn sample_spec() -> HydraCacheClusterSpec {
         resources: None,
         backup_schedule: Some(BackupScheduleSpec {
             schedule: "0 * * * *".to_owned(),
+            location: "file:///var/lib/hydracache/backups".to_owned(),
             retention: "168h".to_owned(),
         }),
     }
