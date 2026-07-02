@@ -12,12 +12,14 @@ use k8s_openapi::api::core::v1::{
     SecretVolumeSource, Service, ServicePort, ServiceSpec, Volume, VolumeMount,
     VolumeResourceRequirements,
 };
+use k8s_openapi::api::policy::v1::{PodDisruptionBudget, PodDisruptionBudgetSpec};
 use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta, OwnerReference};
 use k8s_openapi::apimachinery::pkg::util::intstr::IntOrString;
 use kube::ResourceExt;
 
 use crate::crd::{HydraCacheCluster, PvcReclaimPolicy};
+use crate::scale::quorum_for;
 
 pub const APP_LABEL: &str = "app.kubernetes.io/name";
 pub const INSTANCE_LABEL: &str = "app.kubernetes.io/instance";
@@ -39,20 +41,34 @@ pub struct OwnedResources {
     pub headless_service: Service,
     pub client_service: Service,
     pub admin_secret: Secret,
+    pub pod_disruption_budget: PodDisruptionBudget,
 }
 
 impl OwnedResources {
     pub fn build(cluster: &HydraCacheCluster) -> Self {
+        Self::build_with_replicas(cluster, cluster.spec.replicas)
+    }
+
+    pub fn build_with_replicas(cluster: &HydraCacheCluster, replicas: u32) -> Self {
         let name = cluster.name_any();
         let namespace = cluster.namespace();
         let labels = base_labels(&name);
         let owner = owner_reference(cluster);
 
         Self {
-            stateful_set: stateful_set(cluster, namespace.clone(), &labels, owner.clone()),
+            stateful_set: stateful_set(
+                cluster,
+                namespace.clone(),
+                &labels,
+                owner.clone(),
+                replicas,
+            ),
             headless_service: headless_service(&name, namespace.clone(), &labels, owner.clone()),
             client_service: client_service(&name, namespace.clone(), &labels, owner.clone()),
-            admin_secret: admin_secret(&name, namespace, &labels, owner),
+            admin_secret: admin_secret(&name, namespace.clone(), &labels, owner.clone()),
+            pod_disruption_budget: pod_disruption_budget(
+                &name, namespace, &labels, owner, replicas,
+            ),
         }
     }
 }
@@ -120,6 +136,7 @@ pub fn stateful_set(
     namespace: Option<String>,
     base_labels: &BTreeMap<String, String>,
     owner: Option<OwnerReference>,
+    replicas: u32,
 ) -> StatefulSet {
     let name = cluster.name_any();
     let pod_labels = pod_selector_labels(&name);
@@ -128,7 +145,7 @@ pub fn stateful_set(
         spec: Some(StatefulSetSpec {
             persistent_volume_claim_retention_policy: Some(pvc_retention_policy(cluster)),
             pod_management_policy: Some("OrderedReady".to_owned()),
-            replicas: Some(cluster.spec.replicas as i32),
+            replicas: Some(replicas as i32),
             selector: LabelSelector {
                 match_labels: Some(pod_labels.clone()),
                 ..Default::default()
@@ -144,6 +161,27 @@ pub fn stateful_set(
                 .persistence
                 .as_ref()
                 .map(|_| vec![data_volume_claim(cluster, owner)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+pub fn pod_disruption_budget(
+    name: &str,
+    namespace: Option<String>,
+    labels: &BTreeMap<String, String>,
+    owner: Option<OwnerReference>,
+    replicas: u32,
+) -> PodDisruptionBudget {
+    PodDisruptionBudget {
+        metadata: object_meta(name.to_owned(), namespace, labels, owner),
+        spec: Some(PodDisruptionBudgetSpec {
+            min_available: Some(IntOrString::Int(quorum_for(replicas) as i32)),
+            selector: Some(LabelSelector {
+                match_labels: Some(pod_selector_labels(name)),
+                ..Default::default()
+            }),
             ..Default::default()
         }),
         ..Default::default()

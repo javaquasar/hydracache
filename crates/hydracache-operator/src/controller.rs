@@ -7,6 +7,7 @@ use futures_util::StreamExt;
 use k8s_openapi::api::apps::v1::StatefulSet;
 use k8s_openapi::api::coordination::v1::Lease;
 use k8s_openapi::api::core::v1::{PersistentVolumeClaim, Secret, Service};
+use k8s_openapi::api::policy::v1::PodDisruptionBudget;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{Condition, Time};
 use kube::api::{Api, DeleteParams, ListParams, Patch, PatchParams, PostParams};
 use kube::runtime::controller::Action;
@@ -18,6 +19,10 @@ use thiserror::Error;
 
 use crate::crd::{HydraCacheCluster, HydraCacheClusterStatus};
 use crate::resources::{cleanup_plan, headless_service_name, OwnedResources, FIELD_MANAGER};
+use crate::scale::{
+    plan_scale, pod_name, scale_condition, ScaleAdminClient, ScaleObservation,
+    SCALE_ACTION_FAILED_CONDITION,
+};
 
 pub const FINALIZER: &str = "hydracache.io/finalizer";
 pub const READY_PHASE: &str = "Ready";
@@ -30,6 +35,7 @@ pub struct Ctx {
     pub client: Client,
     pub identity: String,
     pub namespace: Option<String>,
+    pub scale_admin: ScaleAdminClient,
 }
 
 impl Ctx {
@@ -38,6 +44,7 @@ impl Ctx {
             client,
             identity: identity.into(),
             namespace,
+            scale_admin: ScaleAdminClient::default(),
         }
     }
 }
@@ -71,6 +78,10 @@ pub async fn run(ctx: Ctx) {
             watcher::Config::default(),
         )
         .owns(Api::<Secret>::all(client), watcher::Config::default())
+        .owns(
+            Api::<PodDisruptionBudget>::all(ctx.client.clone()),
+            watcher::Config::default(),
+        )
         .run(reconcile, error_policy, Arc::new(ctx))
         .for_each(|result| async move {
             if let Err(error) = result {
@@ -111,12 +122,23 @@ pub async fn apply_cluster(
     let namespace = cluster
         .namespace()
         .ok_or_else(|| Error::MissingNamespace(cluster.name_any()))?;
-    let desired = OwnedResources::build(&cluster);
     let apply = PatchParams::apply(FIELD_MANAGER).force();
 
     let statefulsets: Api<StatefulSet> = Api::namespaced(ctx.client.clone(), &namespace);
-    if let Some(existing) = get_optional(&statefulsets, &cluster.name_any()).await? {
-        validate_statefulset_update(&existing, &desired.stateful_set)?;
+    let existing = get_optional(&statefulsets, &cluster.name_any()).await?;
+    let mut scale_observation = ScaleObservation::from_statefulset(&cluster, existing.as_ref());
+    if scale_observation.current_replicas > 0 {
+        scale_observation.admin_status = ctx
+            .scale_admin
+            .status(&namespace, &cluster.name_any(), 0)
+            .await
+            .ok();
+    }
+    let scale_plan = plan_scale(&cluster, &scale_observation);
+    let desired = OwnedResources::build_with_replicas(&cluster, scale_plan.effective_replicas);
+
+    if let Some(existing) = existing.as_ref() {
+        validate_statefulset_update(existing, &desired.stateful_set)?;
     }
     statefulsets
         .patch(
@@ -156,12 +178,54 @@ pub async fn apply_cluster(
         )
         .await?;
 
-    patch_status(
-        &cluster,
-        ctx.client.clone(),
-        observed_status(&cluster, Some(&desired.stateful_set)),
+    let pdbs: Api<PodDisruptionBudget> = Api::namespaced(ctx.client.clone(), &namespace);
+    pdbs.patch(
+        &cluster.name_any(),
+        &apply,
+        &Patch::Apply(&desired.pod_disruption_budget),
     )
     .await?;
+
+    let mut status = observed_status(&cluster, existing.as_ref().or(Some(&desired.stateful_set)));
+    status.phase = scale_plan.phase.to_owned();
+    status.conditions.extend(scale_plan.conditions.clone());
+    if !scale_plan.admin_actions.is_empty() {
+        match ctx
+            .scale_admin
+            .perform(&namespace, &cluster.name_any(), &scale_plan.admin_actions)
+            .await
+        {
+            Ok(()) => {
+                if let Some(drain_ordinal) =
+                    scale_plan
+                        .admin_actions
+                        .iter()
+                        .find_map(|action| match action {
+                            crate::scale::AdminAction::Drain { ordinal } => Some(*ordinal),
+                            crate::scale::AdminAction::Reshard { .. } => None,
+                        })
+                {
+                    let draining_pod = pod_name(&cluster.name_any(), drain_ordinal);
+                    status.conditions.push(scale_condition(
+                        crate::scale::SCALE_PROGRESSING_CONDITION,
+                        "True",
+                        "DrainComplete",
+                        &format!("drain complete for {draining_pod}"),
+                        cluster.metadata.generation,
+                    ));
+                }
+            }
+            Err(error) => status.conditions.push(scale_condition(
+                SCALE_ACTION_FAILED_CONDITION,
+                "True",
+                "AdminActionFailed",
+                &error.to_string(),
+                cluster.metadata.generation,
+            )),
+        }
+    }
+
+    patch_status(&cluster, ctx.client.clone(), status).await?;
 
     Ok(Action::requeue(Duration::from_secs(30)))
 }
