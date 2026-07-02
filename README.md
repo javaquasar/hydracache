@@ -1944,12 +1944,17 @@ lines should be investigated before release.
 Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
-- [docs/releases/0.35.0.md](docs/releases/0.35.0.md) - database production-readiness release.
-- [docs/releases/0.32.0.md](docs/releases/0.32.0.md) - database adapter parity release.
-- [docs/releases/0.31.1.md](docs/releases/0.31.1.md) - latest published patch notes.
-- [docs/releases/0.31.0.md](docs/releases/0.31.0.md) - Diesel and SeaORM adapter release.
-- [docs/plans/V0_35_DATABASE_PRODUCTION_READINESS_PLAN.md](docs/plans/V0_35_DATABASE_PRODUCTION_READINESS_PLAN.md) - current database production-readiness plan.
-- [docs/plans/V0_32_DATABASE_ADAPTER_PARITY_PLAN.md](docs/plans/V0_32_DATABASE_ADAPTER_PARITY_PLAN.md) - current ORM adapter parity plan.
+- [docs/releases/0.56.0.md](docs/releases/0.56.0.md) - Kubernetes Operator release.
+- [docs/releases/0.55.0.md](docs/releases/0.55.0.md) - durable store hardening release.
+- [docs/releases/0.54.0.md](docs/releases/0.54.0.md) - external invalidation transports release.
+- [docs/releases/0.53.1.md](docs/releases/0.53.1.md) - real raft election in the lab patch notes.
+- [docs/releases/0.53.0.md](docs/releases/0.53.0.md) - interactive cluster lab release.
+- [docs/releases/0.52.0.md](docs/releases/0.52.0.md) - IMap and Fenced Lock Java surface release.
+- [docs/releases/0.51.0.md](docs/releases/0.51.0.md) - configurable persistence release.
+- [docs/releases/0.50.0.md](docs/releases/0.50.0.md) - interactive simulator demo release.
+- [docs/releases/0.49.0.md](docs/releases/0.49.0.md) - ecosystem and external consumers release.
+- [docs/releases/0.48.0.md](docs/releases/0.48.0.md) - production deployment and security release.
+- [docs/plans/INDEX.md](docs/plans/INDEX.md) - shipped and planned release roadmap.
 - [docs/PRODUCTION_CLUSTER_READINESS.md](docs/PRODUCTION_CLUSTER_READINESS.md) - cluster readiness boundaries.
 - [docs/PUBLISHING.md](docs/PUBLISHING.md) - staged publish and post-publish checks.
 - [docs/TESTING.md](docs/TESTING.md) - test, coverage, and CI guidance.
