@@ -6,7 +6,7 @@ use std::time::Duration;
 use futures_util::StreamExt;
 use k8s_openapi::api::apps::v1::StatefulSet;
 use k8s_openapi::api::coordination::v1::Lease;
-use k8s_openapi::api::core::v1::{PersistentVolumeClaim, Secret, Service};
+use k8s_openapi::api::core::v1::{PersistentVolumeClaim, Pod, Secret, Service};
 use k8s_openapi::api::policy::v1::PodDisruptionBudget;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{Condition, Time};
 use kube::api::{Api, DeleteParams, ListParams, Patch, PatchParams, PostParams};
@@ -18,10 +18,16 @@ use serde_json::json;
 use thiserror::Error;
 
 use crate::crd::{HydraCacheCluster, HydraCacheClusterStatus};
-use crate::resources::{cleanup_plan, headless_service_name, OwnedResources, FIELD_MANAGER};
+use crate::resources::{
+    cleanup_plan, headless_service_name, pod_selector_labels, OwnedResources, FIELD_MANAGER,
+};
 use crate::scale::{
     plan_scale, pod_name, scale_condition, ScaleAdminClient, ScaleObservation,
     SCALE_ACTION_FAILED_CONDITION,
+};
+use crate::upgrade::{
+    plan_upgrade, upgrade_deferred_for_lifecycle, PodObservation, UpgradeObservation, UpgradePlan,
+    UPGRADE_ACTION_FAILED_CONDITION, UPGRADE_FAILED_CONDITION,
 };
 
 pub const FINALIZER: &str = "hydracache.io/finalizer";
@@ -188,6 +194,9 @@ pub async fn apply_cluster(
 
     let mut status = observed_status(&cluster, existing.as_ref().or(Some(&desired.stateful_set)));
     status.phase = scale_plan.phase.to_owned();
+    if let Some(admin_status) = scale_observation.admin_status.as_ref() {
+        status.leader = admin_status.leader.clone();
+    }
     status.conditions.extend(scale_plan.conditions.clone());
     if !scale_plan.admin_actions.is_empty() {
         match ctx
@@ -217,6 +226,57 @@ pub async fn apply_cluster(
             }
             Err(error) => status.conditions.push(scale_condition(
                 SCALE_ACTION_FAILED_CONDITION,
+                "True",
+                "AdminActionFailed",
+                &error.to_string(),
+                cluster.metadata.generation,
+            )),
+        }
+    }
+
+    let pods: Api<Pod> = Api::namespaced(ctx.client.clone(), &namespace);
+    let upgrade_plan = if scale_plan.phase == READY_PHASE {
+        let upgrade_observation = UpgradeObservation {
+            current_replicas: scale_observation.current_replicas,
+            ready_replicas: scale_observation.ready_replicas,
+            previous_phase: cluster.status.as_ref().map(|status| status.phase.clone()),
+            admin_status: scale_observation.admin_status.clone(),
+            pods: list_upgrade_pods(&pods, &cluster.name_any()).await?,
+        };
+        plan_upgrade(&cluster, &upgrade_observation)
+    } else {
+        UpgradePlan {
+            phase: READY_PHASE,
+            conditions: vec![upgrade_deferred_for_lifecycle(cluster.metadata.generation)],
+            admin_actions: Vec::new(),
+            delete_pod: None,
+        }
+    };
+    if scale_plan.phase == READY_PHASE {
+        status.phase = upgrade_plan.phase.to_owned();
+    }
+    status.conditions.extend(upgrade_plan.conditions.clone());
+    if !upgrade_plan.admin_actions.is_empty() {
+        match ctx
+            .scale_admin
+            .perform(&namespace, &cluster.name_any(), &upgrade_plan.admin_actions)
+            .await
+        {
+            Ok(()) => {
+                if let Some(pod_name) = upgrade_plan.delete_pod.as_deref() {
+                    if let Err(error) = pods.delete(pod_name, &DeleteParams::default()).await {
+                        status.conditions.push(scale_condition(
+                            UPGRADE_FAILED_CONDITION,
+                            "True",
+                            "PodDeleteFailed",
+                            &error.to_string(),
+                            cluster.metadata.generation,
+                        ));
+                    }
+                }
+            }
+            Err(error) => status.conditions.push(scale_condition(
+                UPGRADE_ACTION_FAILED_CONDITION,
                 "True",
                 "AdminActionFailed",
                 &error.to_string(),
@@ -458,4 +518,21 @@ where
         Err(kube::Error::Api(error)) if error.code == 404 => Ok(None),
         Err(error) => Err(error),
     }
+}
+
+async fn list_upgrade_pods(
+    api: &Api<Pod>,
+    cluster_name: &str,
+) -> Result<Vec<PodObservation>, Error> {
+    let selector = pod_selector_labels(cluster_name)
+        .iter()
+        .map(|(key, value)| format!("{key}={value}"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let listed = api.list(&ListParams::default().labels(&selector)).await?;
+    Ok(listed
+        .items
+        .iter()
+        .filter_map(|pod| PodObservation::from_pod(cluster_name, pod))
+        .collect())
 }

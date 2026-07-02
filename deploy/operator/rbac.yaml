@@ -19,7 +19,7 @@ rules:
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "delete"]
   - apiGroups: ["hydracache.io"]
     resources: ["hydracacheclusters"]
     verbs: ["get", "list", "watch", "update", "patch"]
