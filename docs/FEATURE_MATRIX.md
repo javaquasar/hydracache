@@ -27,10 +27,15 @@ opt-in.
 | HTTP peer-fetch transport | `hydracache-cluster-transport-axum` | Axum/Reqwest and `hydracache` | ORM crates |
 | Redis external invalidation transport | `hydracache-transport-redis` | Redis async client and `hydracache` transport seam | SQLx, Diesel, SeaORM, NATS |
 | NATS external invalidation transport | `hydracache-transport-nats` | async NATS client and `hydracache` transport seam | SQLx, Diesel, SeaORM, Redis |
+| Kubernetes lifecycle operator | `hydracache-operator` (`publish = false`) | kube-rs, k8s-openapi, reqwest, server admin orchestration | crates.io library API, embedded cache fast path, ORM crates |
 
 `hydracache-sandbox` is a non-published workspace crate. It intentionally pulls
 many optional pieces together for manual exploration, Swagger/OpenAPI, scenario
 labs, and release validation.
+
+`hydracache-operator` is also workspace-only. It is a deployable controller
+binary shipped through Kubernetes manifests/container images, not a public Rust
+library surface.
 
 ## Adapter Runtime Verification Matrix
 
@@ -50,9 +55,13 @@ clients and transactions.
 | `hydracache-seaorm` | Postgres/MySQL | adapter contract only | User-owned SeaORM loader/connection path; not runtime-tested here. |
 | `hydracache-transport-redis` | Redis testcontainers | optional Docker smoke | `cargo test -p hydracache-transport-redis --locked` |
 | `hydracache-transport-nats` | NATS testcontainers | optional Docker smoke | `cargo test -p hydracache-transport-nats --locked` |
+| `hydracache-operator` | envtest/kind | optional Kubernetes smoke | `cargo test -p hydracache-operator --locked --test e2e` |
 
 Docker-backed rows must skip gracefully when Docker is unavailable. They should
 not make the Windows local gate flaky.
+Kubernetes-backed operator rows must skip gracefully unless
+`HYDRACACHE_OPERATOR_KIND=1` or `HYDRACACHE_OPERATOR_ENVTEST=1` is set by the
+caller.
 
 ## Durable Value-Plane Operability
 
@@ -103,6 +112,8 @@ its job is to catch accidental dependency or compile coupling quickly.
   or region boundaries through an operator-owned Redis pub/sub fabric.
 - Add `hydracache-transport-nats` only when invalidations must cross process or
   region boundaries through an operator-owned NATS subject fabric.
+- Use `hydracache-operator` as a deployed Kubernetes controller when lifecycle
+  orchestration is needed; do not depend on it from application code.
 
 ## Release Rule
 

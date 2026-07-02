@@ -8,6 +8,7 @@ authors.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Kubernetes operator scaffolding for HydraCache clusters."
+# Deployable controller binary; shipped as manifests/container image, not as a crates.io library.
 publish = false
 
 [dependencies]
