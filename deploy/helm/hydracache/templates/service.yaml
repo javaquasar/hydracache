@@ -26,3 +26,6 @@ spec:
     - name: cluster
       port: {{ .Values.service.clusterPort }}
       targetPort: cluster
+    - name: admin
+      port: {{ .Values.service.adminPort }}
+      targetPort: admin

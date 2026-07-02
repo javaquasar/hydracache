@@ -62,6 +62,26 @@ pub struct ClientApiConfig {
     pub limits: ClientSurfaceLimits,
 }
 
+/// Internal operator/admin HTTP policy.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AdminApiConfig {
+    /// Whether `/healthz`, `/readyz`, and `/admin/*` routes are enabled.
+    pub enabled: bool,
+    /// Internal admin listen address, intentionally separate from the client surface.
+    pub listen_addr: SocketAddr,
+}
+
+impl Default for AdminApiConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            listen_addr: "127.0.0.1:9091"
+                .parse()
+                .expect("default admin listen address is valid"),
+        }
+    }
+}
+
 /// Standalone daemon configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
@@ -84,6 +104,8 @@ pub struct ServerConfig {
     pub backup: BackupConfig,
     /// External client API policy.
     pub client_api: ClientApiConfig,
+    /// Internal operator/admin HTTP policy.
+    pub admin_api: AdminApiConfig,
 }
 
 impl Default for ServerConfig {
@@ -102,6 +124,7 @@ impl Default for ServerConfig {
             tls: TlsConfig::default(),
             backup: BackupConfig::default(),
             client_api: ClientApiConfig::default(),
+            admin_api: AdminApiConfig::default(),
         }
     }
 }
@@ -175,6 +198,14 @@ impl ServerConfig {
         if env::var("HYDRACACHE_CLIENT_API_ENABLED").as_deref() == Ok("true") {
             config.client_api.enabled = true;
         }
+        if let Ok(enabled) = env::var("HYDRACACHE_ADMIN_API_ENABLED") {
+            config.admin_api.enabled = enabled != "false";
+        }
+        if let Ok(listen) = env::var("HYDRACACHE_ADMIN_ADDR") {
+            config.admin_api.listen_addr = listen
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidAddress(listen))?;
+        }
         config.validate()?;
         Ok(config)
     }
@@ -213,6 +244,9 @@ impl ServerConfig {
                 .validate()
                 .map_err(|error| ServerConfigError::InvalidClientApi(error.to_string()))?;
         }
+        if self.admin_api.enabled && self.admin_api.listen_addr == self.listen_addr {
+            return Err(ServerConfigError::AdminAddressConflicts);
+        }
         Ok(())
     }
 
@@ -223,7 +257,9 @@ impl ServerConfig {
 
     /// Return whether any listener is externally reachable.
     pub fn exposes_non_loopback(&self) -> bool {
-        !is_loopback(self.listen_addr.ip()) || !is_loopback(self.cluster_addr.ip())
+        !is_loopback(self.listen_addr.ip())
+            || !is_loopback(self.cluster_addr.ip())
+            || (self.admin_api.enabled && !is_loopback(self.admin_api.listen_addr.ip()))
     }
 }
 
@@ -268,6 +304,9 @@ pub enum ServerConfigError {
     /// External client API config is invalid.
     #[error("invalid client_api config: {0}")]
     InvalidClientApi(String),
+    /// Admin and client/listen surfaces must be independently bindable.
+    #[error("admin_api.listen_addr must differ from listen_addr")]
+    AdminAddressConflicts,
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {

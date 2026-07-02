@@ -13,6 +13,9 @@ spec:
     - name: cluster
       port: 7000
       targetPort: cluster
+    - name: admin
+      port: 9091
+      targetPort: admin
 ---
 apiVersion: v1
 kind: Service

@@ -1,6 +1,7 @@
 use hydracache::HydraCache;
 use hydracache_client_transport_axum::{ClientSurfaceDrain, ClientSurfaceRuntime};
 use serde::Serialize;
+use thiserror::Error;
 
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
@@ -43,6 +44,48 @@ pub struct ServerReadiness {
     pub client_surface_ready: bool,
 }
 
+/// Admin status consumed by the Kubernetes operator.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ServerAdminStatus {
+    /// Current leader id if known to the runtime.
+    pub leader: Option<String>,
+    /// Current control-plane term if known.
+    pub term: u64,
+    /// Whether the runtime believes quorum is available.
+    pub quorum_ok: bool,
+    /// Observed member count.
+    pub members: u32,
+    /// Current reshard phase.
+    pub reshard_phase: String,
+    /// Whether the runtime is draining.
+    pub draining: bool,
+}
+
+/// Accepted admin action response.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ServerAdminAction {
+    /// Stable action name.
+    pub action: &'static str,
+    /// Stable outcome string.
+    pub outcome: &'static str,
+    /// Human-readable detail, safe for operator Conditions.
+    pub detail: String,
+}
+
+/// Fail-loud admin action errors.
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+pub enum ServerAdminActionError {
+    /// The runtime is not ready to accept the requested action.
+    #[error("server is not ready for admin action: {0}")]
+    NotReady(&'static str),
+    /// The action requires member mode in the current server model.
+    #[error("{0} requires member mode")]
+    RequiresMember(&'static str),
+    /// Backup cannot run without configured backup support.
+    #[error("backup admin action requires backup.enabled and backup.location")]
+    BackupDisabled,
+}
+
 /// Standalone server runtime.
 #[derive(Debug, Clone)]
 pub struct ServerRuntime {
@@ -56,6 +99,7 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
+    last_drain: Option<DrainOutcome>,
 }
 
 impl ServerRuntime {
@@ -81,6 +125,7 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             last_client_surface_drain: None,
+            last_drain: None,
         })
     }
 
@@ -115,15 +160,25 @@ impl ServerRuntime {
     /// Return readiness.
     pub fn ready(&self) -> ServerReadiness {
         ServerReadiness {
-            ready: self.state == ServerState::Running
-                && self.storage_open
-                && self.cluster_ready
-                && self.accepting,
+            ready: self.can_serve(),
             storage_open: self.storage_open,
             cluster_ready: self.cluster_ready,
             accepting: self.accepting,
             client_surface_ready: self.client_surface_ready(),
         }
+    }
+
+    /// Return whether the runtime can serve traffic.
+    pub fn can_serve(&self) -> bool {
+        self.state == ServerState::Running
+            && self.storage_open
+            && self.cluster_ready
+            && self.accepting
+    }
+
+    /// Return whether the runtime is currently draining.
+    pub fn is_draining(&self) -> bool {
+        self.state == ServerState::Draining
     }
 
     /// Begin one in-flight request.
@@ -166,20 +221,98 @@ impl ServerRuntime {
         self.last_client_surface_drain
     }
 
-    /// Gracefully stop accepting, drain, flush, and stop services.
-    pub fn shutdown(&mut self) -> DrainOutcome {
+    /// Stop accepting new work and enter the draining state.
+    pub fn begin_drain(&mut self) {
+        if matches!(self.state, ServerState::Stopped) {
+            return;
+        }
         self.accepting = false;
         self.state = ServerState::Draining;
         if let Some(surface) = self.client_surface.as_mut() {
-            self.last_client_surface_drain = Some(surface.shutdown());
+            if self
+                .last_client_surface_drain
+                .is_none_or(|drain| drain.remaining > 0)
+            {
+                self.last_client_surface_drain = Some(surface.shutdown());
+            }
         }
+    }
+
+    /// Gracefully stop accepting, drain, flush, and stop services.
+    pub fn graceful_shutdown(&mut self) -> DrainOutcome {
+        if self.state == ServerState::Stopped {
+            return self.last_drain.unwrap_or(DrainOutcome {
+                started_with: 0,
+                remaining: 0,
+                timed_out: false,
+            });
+        }
+        self.begin_drain();
         let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.flushed = true;
         self.storage_open = false;
         self.cluster_ready = false;
         self.services.stop();
         self.state = ServerState::Stopped;
+        self.last_drain = Some(outcome);
         outcome
+    }
+
+    /// Backward-compatible alias for graceful shutdown.
+    pub fn shutdown(&mut self) -> DrainOutcome {
+        self.graceful_shutdown()
+    }
+
+    /// Return admin/operator status derived from the runtime model.
+    pub fn admin_status(&self) -> ServerAdminStatus {
+        let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
+        ServerAdminStatus {
+            leader: cluster_ready.then(|| "local".to_owned()),
+            term: u64::from(cluster_ready),
+            quorum_ok: cluster_ready && !self.is_draining(),
+            members: u32::from(cluster_ready),
+            reshard_phase: "idle".to_owned(),
+            draining: self.is_draining(),
+        }
+    }
+
+    /// Request an online reshard through the current runtime model.
+    pub fn request_reshard(&self) -> Result<ServerAdminAction, ServerAdminActionError> {
+        if !self.can_serve() {
+            return Err(ServerAdminActionError::NotReady("reshard"));
+        }
+        if !matches!(self.config.role, ServerRole::Member) {
+            return Err(ServerAdminActionError::RequiresMember("reshard"));
+        }
+        Ok(ServerAdminAction {
+            action: "reshard",
+            outcome: "accepted",
+            detail: "reshard request accepted by member runtime".to_owned(),
+        })
+    }
+
+    /// Request a backup through the current runtime model.
+    pub fn request_backup(&self) -> Result<ServerAdminAction, ServerAdminActionError> {
+        if !self.can_serve() {
+            return Err(ServerAdminActionError::NotReady("backup"));
+        }
+        if !self.config.backup.enabled
+            || self
+                .config
+                .backup
+                .location
+                .as_deref()
+                .unwrap_or("")
+                .trim()
+                .is_empty()
+        {
+            return Err(ServerAdminActionError::BackupDisabled);
+        }
+        Ok(ServerAdminAction {
+            action: "backup",
+            outcome: "accepted",
+            detail: "backup request accepted by configured runtime".to_owned(),
+        })
     }
 
     /// Return whether shutdown flushed durable state.

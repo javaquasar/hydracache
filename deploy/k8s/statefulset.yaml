@@ -30,6 +30,8 @@ spec:
               containerPort: 7000
             - name: metrics
               containerPort: 9090
+            - name: admin
+              containerPort: 9091
           env:
             - name: HYDRACACHE_ROLE
               value: member
@@ -53,16 +55,18 @@ spec:
               value: "true"
             - name: HYDRACACHE_BACKUP_LOCATION
               value: s3://hydracache-backups/prod
+            - name: HYDRACACHE_ADMIN_ADDR
+              value: 0.0.0.0:9091
           livenessProbe:
             httpGet:
-              path: /health
-              port: http
+              path: /healthz
+              port: admin
             periodSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /ready
-              port: http
+              path: /readyz
+              port: admin
             periodSeconds: 5
             failureThreshold: 2
           volumeMounts:

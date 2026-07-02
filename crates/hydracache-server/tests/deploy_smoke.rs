@@ -20,11 +20,15 @@ fn deploy_smoke_k8s_manifests_wire_stateful_identity_storage_tls_backup_and_prob
     assert!(statefulset.contains("HYDRACACHE_SEEDS"));
     assert!(statefulset.contains("HYDRACACHE_TLS_ENABLED"));
     assert!(statefulset.contains("HYDRACACHE_BACKUP_LOCATION"));
+    assert!(statefulset.contains("HYDRACACHE_ADMIN_ADDR"));
+    assert!(statefulset.contains("name: admin"));
     assert!(statefulset.contains("livenessProbe"));
-    assert!(statefulset.contains("path: /health"));
+    assert!(statefulset.contains("path: /healthz"));
+    assert!(statefulset.contains("port: admin"));
     assert!(statefulset.contains("readinessProbe"));
-    assert!(statefulset.contains("path: /ready"));
+    assert!(statefulset.contains("path: /readyz"));
     assert!(service.contains("clusterIP: None"));
+    assert!(service.contains("name: admin"));
     assert!(service.contains("name: metrics"));
     assert!(pdb.contains("kind: PodDisruptionBudget"));
     assert!(pdb.contains("minAvailable: 2"));
@@ -43,8 +47,12 @@ fn deploy_smoke_helm_chart_exposes_replicas_rf_tls_and_backup_values() {
     assert!(values.contains("replicationFactor: 3"));
     assert!(values.contains("tls:"));
     assert!(values.contains("backup:"));
+    assert!(values.contains("adminPort: 9091"));
     assert!(statefulset.contains("{{ .Values.tls.enabled | quote }}"));
     assert!(statefulset.contains("{{ .Values.backup.location | quote }}"));
+    assert!(statefulset.contains("HYDRACACHE_ADMIN_ADDR"));
+    assert!(statefulset.contains("path: /healthz"));
+    assert!(statefulset.contains("path: /readyz"));
 }
 
 #[test]

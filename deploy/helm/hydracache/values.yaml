@@ -10,6 +10,7 @@ service:
   httpPort: 8080
   clusterPort: 7000
   metricsPort: 9090
+  adminPort: 9091
 
 storage:
   size: 20Gi

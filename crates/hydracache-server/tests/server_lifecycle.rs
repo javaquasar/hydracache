@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use hydracache_server::{
-    BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime,
-    ServerState, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,
+    ServerRuntime, ServerState, TlsConfig,
 };
 
 fn member_config() -> ServerConfig {
@@ -16,6 +16,7 @@ fn member_config() -> ServerConfig {
         tls: TlsConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
+        admin_api: AdminApiConfig::default(),
     }
 }
 
@@ -73,6 +74,10 @@ cluster_addr = "127.0.0.1:17000"
 seeds = ["127.0.0.1:17000"]
 storage_dir = "target/test-hydracache-server"
 drain_timeout_ms = 1000
+
+[admin_api]
+enabled = true
+listen_addr = "127.0.0.1:19091"
 "#,
     )
     .unwrap();

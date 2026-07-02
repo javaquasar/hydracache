@@ -5,14 +5,23 @@
 //! tested without binding sockets. The binary wrapper wires these primitives to
 //! process startup.
 
+pub mod admin_http;
 pub mod bootstrap;
 pub mod config;
 pub mod services;
 pub mod upgrade;
 
-pub use bootstrap::{ServerHealth, ServerReadiness, ServerRuntime, ServerState};
+pub use admin_http::{
+    AdminHttpError, AdminHttpSurface, ADMIN_BACKUP_PATH, ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH,
+    ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+};
+pub use bootstrap::{
+    ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth, ServerReadiness,
+    ServerRuntime, ServerState,
+};
 pub use config::{
-    BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,
+    TlsConfig,
 };
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{

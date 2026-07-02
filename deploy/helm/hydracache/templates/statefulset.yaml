@@ -25,6 +25,8 @@ spec:
               containerPort: {{ .Values.service.clusterPort }}
             - name: metrics
               containerPort: {{ .Values.service.metricsPort }}
+            - name: admin
+              containerPort: {{ .Values.service.adminPort }}
           env:
             - name: HYDRACACHE_ROLE
               value: member
@@ -46,14 +48,16 @@ spec:
               value: {{ .Values.backup.enabled | quote }}
             - name: HYDRACACHE_BACKUP_LOCATION
               value: {{ .Values.backup.location | quote }}
+            - name: HYDRACACHE_ADMIN_ADDR
+              value: "0.0.0.0:{{ .Values.service.adminPort }}"
           livenessProbe:
             httpGet:
-              path: /health
-              port: http
+              path: /healthz
+              port: admin
           readinessProbe:
             httpGet:
-              path: /ready
-              port: http
+              path: /readyz
+              port: admin
           volumeMounts:
             - name: data
               mountPath: {{ .Values.storage.mountPath | quote }}
