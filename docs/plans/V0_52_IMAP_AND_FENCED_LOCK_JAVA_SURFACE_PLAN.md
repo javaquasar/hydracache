@@ -24,7 +24,7 @@
 >   migration contract + `unsupported_hazelcast_apis.txt`). Both shipped.
 > - **Unblocks:** a credible "Hazelcast CP FencedLock / IMap-lock replacement" migration
 >   story; closes the largest gap between the stated migration goal and the shipped surface.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md) ·

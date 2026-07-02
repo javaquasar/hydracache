@@ -26,10 +26,12 @@ concerns into the Rust workspace.
 ## Decision
 
 HydraCache uses the provider approach. The Java artifact
-`hydracache-hibernate` implements Hibernate's `RegionFactory` /
-`DomainDataRegion` SPI and talks to HydraCache through protocol v1. A Hibernate
-region maps to a HydraCache namespace; Hibernate access strategies map to the
-stable `hydracache_client_protocol::hibernate` consistency labels.
+`hydracache-hibernate` is to implement Hibernate's `RegionFactory` /
+`DomainDataRegion` SPI and talk to HydraCache through protocol v1 (the artifact is
+**planned**; today only the Rust-side `hydracache_client_protocol::hibernate`
+contract ships — see `technical-debt/TD-0005-…`). A Hibernate region maps to a
+HydraCache namespace; Hibernate access strategies map to the stable
+`hydracache_client_protocol::hibernate` consistency labels.
 
 HikariCP remains the application's JDBC connection pool. HydraCache borrows the
 operational discipline that made pooling successful: explicit limits, fail-fast

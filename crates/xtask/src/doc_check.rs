@@ -13,6 +13,10 @@
 //!   accident.
 //! - every in-prose `V0_*.md` plan reference under `docs/plans/` resolves to a
 //!   real plan file.
+//! - every manifest plan that carries a strict `**Status:**` header has that
+//!   header agree with its manifest `status` (TD-0006). A header that drifts
+//!   (e.g. a shipped plan still saying "planned") fails the gate instead of
+//!   passing silently. Plans that use a prose status (drafts) are skipped.
 //! - every ADR uses the single `0001-title.md` filename scheme, has a unique
 //!   number, and is listed from `docs/adr/README.md`.
 //! - every publishable workspace crate is present in both release publish scripts.
@@ -191,11 +195,61 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
         }
     }
 
+    problems.extend(check_plan_header_status(root, &manifest.release)?);
     problems.extend(check_in_prose_plan_links(root)?);
     problems.extend(check_adr_index(root)?);
     problems.extend(check_publishable_crates_in_publish_scripts(root)?);
 
     Ok(problems)
+}
+
+/// Validate that each manifest plan's `> - **Status:** <value>` header agrees with
+/// the `status` recorded for it in `releases.toml` (TD-0006). `doc-check` already
+/// keeps `releases.toml` and `INDEX.md` in sync, but the in-plan header could drift
+/// silently (e.g. a shipped plan still reading "planned"). A plan that uses a prose
+/// status line instead of the strict `**Status:**` marker (e.g. an idea-capture
+/// draft) is skipped rather than flagged, so only real drift fails the gate.
+fn check_plan_header_status(root: &Path, releases: &[Release]) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    for r in releases {
+        let path = root.join(&r.file);
+        if !path.is_file() {
+            continue; // missing-file is already reported by check().
+        }
+        let text = fs::read_to_string(&path)
+            .map_err(|err| format!("reading {}: {err}", path.display()))?;
+        if let Some(header) = parse_status_header(&text) {
+            if !header.eq_ignore_ascii_case(&r.status) {
+                problems.push(format!(
+                    "{}: plan header status '{}' does not match manifest status '{}'",
+                    r.file, header, r.status
+                ));
+            }
+        }
+    }
+    Ok(problems)
+}
+
+/// Extract the leading status token from a strict `**Status:** <value>` header
+/// line. Only the first `[A-Za-z0-9-]+` run is taken, so an annotated header such
+/// as `**Status:** shipped — <prose>` or `**Status:** planned.` still yields the
+/// bare status word (`shipped`, `in-progress`, `planned`, …). Returns `None` when
+/// no such marker is present (prose-status plans are intentionally not matched).
+fn parse_status_header(text: &str) -> Option<String> {
+    const MARKER: &str = "**Status:**";
+    for line in text.lines() {
+        if let Some(idx) = line.find(MARKER) {
+            let token: String = line[idx + MARKER.len()..]
+                .trim_start()
+                .chars()
+                .take_while(|ch| ch.is_ascii_alphanumeric() || *ch == '-')
+                .collect();
+            if !token.is_empty() {
+                return Some(token);
+            }
+        }
+    }
+    None
 }
 
 fn check_publishable_crates_in_publish_scripts(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
@@ -419,5 +473,40 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             eprintln!("doc-check: {problem}");
         }
         Err(format!("doc-check found {} problem(s)", problems.len()).into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_status_header;
+
+    #[test]
+    fn parses_status_header_trimming_trailing_period() {
+        let text = "# Plan\n\n> - **What:** x\n> - **Status:** shipped.\n";
+        assert_eq!(parse_status_header(text).as_deref(), Some("shipped"));
+    }
+
+    #[test]
+    fn parses_in_progress_value() {
+        assert_eq!(
+            parse_status_header("> - **Status:** in-progress.").as_deref(),
+            Some("in-progress")
+        );
+    }
+
+    #[test]
+    fn takes_only_the_leading_token_from_an_annotated_header() {
+        assert_eq!(
+            parse_status_header("> - **Status:** shipped — Phase F gates validate the claim.")
+                .as_deref(),
+            Some("shipped")
+        );
+    }
+
+    #[test]
+    fn prose_status_and_missing_header_return_none() {
+        // Draft-style prose status uses `**Status: DRAFT ...**`, not the strict marker.
+        assert_eq!(parse_status_header("> **Status: DRAFT — version TBD.**"), None);
+        assert_eq!(parse_status_header("no status header at all"), None);
     }
 }

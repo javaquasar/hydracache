@@ -16,6 +16,12 @@ workspace; buildable Java artifacts remain a separate delivery item.
 
 ## Artifacts
 
+> **Status:** this is the **target** Java toolkit design. As stated above, no
+> buildable Maven/Gradle Java artifact is published from this workspace yet — only
+> the **Rust-side** protocol/provider contracts ship today. The Java artifacts
+> below are **planned**; see
+> [`TD-0005`](../technical-debt/TD-0005-release-claim-evidence-gap.md).
+
 - `hydracache-java-client`: typed Java client over the protocol-v1/v2 HTTP/2
   length-prefixed binary frame. Protocol v1 covers cache operations; protocol v2
   is required for the 0.52 IMap/Fenced Lock surface.
@@ -26,8 +32,8 @@ workspace; buildable Java artifacts remain a separate delivery item.
   and `none` modes.
 - `hydracache-jcache`: optional JCache binding for applications already wired
   through `javax.cache` or `jakarta.cache`.
-- `hydracache-hibernate`: Hibernate L2 provider that follows
-  `docs/integrations/hibernate.md`.
+- `hydracache-hibernate`: Hibernate L2 provider that *would* follow
+  `docs/integrations/hibernate.md` (planned; only the Rust-side contract ships today).
 
 ## Client Configuration
 

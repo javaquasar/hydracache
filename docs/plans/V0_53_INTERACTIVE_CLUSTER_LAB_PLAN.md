@@ -23,7 +23,7 @@
 >   `0.44` (`hydracache-sim`). **Absorbs** the supporting
 >   [`V0_50_DEMO_ENHANCEMENTS_PLAN.md`](V0_50_DEMO_ENHANCEMENTS_PLAN.md) (in-flight animation,
 >   isolate/overload, add-node, client/subscriber views) — that plan is superseded by this one.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > demo release: [`V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md`](V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md)

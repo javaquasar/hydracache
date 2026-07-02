@@ -38,9 +38,10 @@
 > - **After (depends on):** `0.44` (`hydracache-sim` engine) and `0.50` (the browser demo).
 >   W5 (event subscribers) coordinates with `0.52` W6 (entry listeners) so the demo does not
 >   fabricate event semantics the bus does not carry.
-> - **Status:** planned. This is a **supporting/execution plan over `0.50`**, not a new
->   numbered release (avoids renumbering churn); it still ships on its own boolean gates and
->   may be promoted to a point release (e.g. `0.53`) if preferred.
+> - **Status:** superseded. This was a **supporting/execution plan over `0.50`**, not a new
+>   numbered release; its scope was **absorbed into `0.53`**
+>   ([`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md)). Kept for
+>   history.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > demo release: [`V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md`](V0_50_INTERACTIVE_SIMULATOR_DEMO_PLAN.md)

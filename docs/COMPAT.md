@@ -167,8 +167,9 @@ filter: it may narrow delivery, but it never hides correctness-relevant
 cross-region invalidations, and `include_value` is residency-gated.
 
 W2 registers Hibernate L2 provider contract version `1`. The provider contract is
-not a Hibernate clone: an external Java `hydracache-hibernate` artifact implements
-Hibernate ORM 6.x SPI and uses the W1 protocol. Regions map to namespaces,
+not a Hibernate clone: an external Java `hydracache-hibernate` artifact (planned,
+not yet in-repo — see `technical-debt/TD-0005-…`) *would* implement Hibernate ORM
+6.x SPI and use the W1 protocol. Regions map to namespaces,
 `read-only` maps to `strong-immutable`, `nonstrict-read-write` maps to
 `best-effort-invalidate`, and `read-write` / `transactional` map to
 `invalidate-on-commit`. Query cache support is timestamp/bulk invalidation or a

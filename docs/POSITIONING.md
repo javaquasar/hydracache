@@ -84,9 +84,11 @@ fragile manual cache busting around `sqlx`/`diesel`/`seaorm`.
   transport. The remaining weakness is not missing algorithms — it is **longer-running
   soak/chaos history** and proven behavior under sustained production overload.
 - **Consumer ergonomics are still Rust-first.** Non-Rust stacks can use the grid via the
-  `0.49` protocol + Hibernate L2 provider, but the Hazelcast-shaped Java surface
-  (`IMap`, near-cache, distributed locks) is still thin — the lock-by-key path is
-  planned, not shipped (`docs/plans/V0_52_…`), and SDK breadth is Rust + Python only.
+  `0.49` protocol + the Hibernate L2 provider **contract** (Rust-side; the Java
+  `hydracache-hibernate` artifact is **planned, not yet in-repo** — see
+  `docs/technical-debt/TD-0005-…`). The Hazelcast-shaped Java surface has grown: `0.52`
+  **shipped** the `IMap`/`FencedLock`-shaped lock surface (lock-by-key + CAS ergonomics +
+  entry listeners), but near-cache is still thin and SDK breadth is Rust + Python only.
 - **Pre-1.0.** API is still moving; no stability/semver commitment yet.
 - **Not a database.** SQL/vector are read-only / opt-in modules; transactions are a
   permanent non-goal (R-2).

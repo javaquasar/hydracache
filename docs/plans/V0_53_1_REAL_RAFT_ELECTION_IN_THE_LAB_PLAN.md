@@ -17,7 +17,7 @@
 >   (partition/delay/drop) and `SimClock`. So this is **integration, not new consensus**.
 > - **After (depends on):** `0.53.0` (the lab) and the shipped raft runtime (`0.42`/`0.43`
 >   `hydracache-cluster-raft`). A point release over `0.53`.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > lab: [`V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md`](V0_53_INTERACTIVE_CLUSTER_LAB_PLAN.md)

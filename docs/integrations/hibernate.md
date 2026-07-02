@@ -1,11 +1,15 @@
 # Hibernate L2 Provider Contract
 
-HydraCache 0.49 supports Hibernate second-level cache integration as a provider
-contract over the stable external client protocol. The Java artifact is
-`hydracache-hibernate` and implements Hibernate's `RegionFactory` /
-`DomainDataRegion` SPI outside the Cargo workspace. HydraCache stays a Rust cache
-server; it does not clone Hibernate and does not join Hibernate/JVM
-transactions.
+HydraCache 0.49 ships a Hibernate second-level cache **provider contract** over the
+stable external client protocol — the **Rust-side** shape a Java provider must
+speak. The Java artifact `hydracache-hibernate` (which *would* implement
+Hibernate's `RegionFactory` / `DomainDataRegion` SPI outside the Cargo workspace)
+is **planned, not yet in this repository**: today only the Rust-side contract
+exists in `hydracache_client_protocol::hibernate` (with a conformance test that
+exercises the request-shaping, `hibernate_contract.rs`). See
+[`TD-0005`](../technical-debt/TD-0005-release-claim-evidence-gap.md) for the
+tracked artifact/evidence gap. HydraCache stays a Rust cache server; it does not
+clone Hibernate and does not join Hibernate/JVM transactions.
 
 ## Supported Matrix
 
