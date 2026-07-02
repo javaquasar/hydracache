@@ -489,6 +489,8 @@ mod invalidation_bus;
 #[cfg(not(target_arch = "wasm32"))]
 mod invalidation_transport;
 #[cfg(not(target_arch = "wasm32"))]
+mod load_breaker;
+#[cfg(not(target_arch = "wasm32"))]
 mod multitenancy;
 #[cfg(not(target_arch = "wasm32"))]
 mod refresh;
@@ -758,6 +760,8 @@ pub use invalidation_transport::{
     SharedInvalidationRing, TransportConfig, TransportError, TransportMetricDescriptor,
     TransportMetrics, TransportMetricsSnapshot,
 };
+#[cfg(not(target_arch = "wasm32"))]
+pub use load_breaker::LoadBreakerPolicy;
 #[cfg(not(target_arch = "wasm32"))]
 pub use multitenancy::{
     AdmissionRejection, ConsumerIsolation, ConsumerIsolationConfig, MultitenancyError,

@@ -15,6 +15,7 @@ use crate::grid::persistence_policy::PersistencePolicy;
 use crate::grid::{ReplicatedValueSecurityPosture, ReplicationConfig};
 use crate::inflight::InFlightMap;
 use crate::invalidation_bus::CacheInvalidationBus;
+use crate::load_breaker::{LoadBreakerPolicy, LoadBreakerRegistry};
 use crate::stats::StatsCounters;
 use crate::tag_index::TagIndex;
 
@@ -61,6 +62,7 @@ where
     replicated_value_security: ReplicatedValueSecurityPosture,
     persistence_policy: Option<PersistencePolicy>,
     persistence_storage_dir: Option<PathBuf>,
+    load_breaker_policy: LoadBreakerPolicy,
     codec: C,
 }
 
@@ -184,6 +186,7 @@ where
             replicated_value_security: self.replicated_value_security,
             persistence_policy: self.persistence_policy,
             persistence_storage_dir: self.persistence_storage_dir,
+            load_breaker_policy: self.load_breaker_policy,
             codec,
         }
     }
@@ -310,6 +313,28 @@ where
         self
     }
 
+    /// Configure the per-key loader circuit breaker.
+    ///
+    /// The breaker is disabled by default. When enabled, consecutive loader
+    /// failures for one key open a bounded backoff window without affecting
+    /// other keys.
+    pub fn load_breaker(
+        mut self,
+        failure_threshold: u32,
+        initial_backoff: Duration,
+        max_backoff: Duration,
+    ) -> Self {
+        self.load_breaker_policy =
+            LoadBreakerPolicy::new(failure_threshold, initial_backoff, max_backoff);
+        self
+    }
+
+    /// Set the complete loader circuit-breaker policy.
+    pub fn load_breaker_policy(mut self, policy: LoadBreakerPolicy) -> Self {
+        self.load_breaker_policy = policy;
+        self
+    }
+
     /// Build the local cache.
     pub fn build(self) -> HydraCache<C> {
         let max_entry_bytes = self.max_entry_bytes;
@@ -351,6 +376,7 @@ where
                 read_through_enabled: self.read_through_enabled,
                 replication_config: self.replication_config,
                 replicated_value_security: self.replicated_value_security,
+                load_breaker: LoadBreakerRegistry::new(self.load_breaker_policy),
             }),
         };
 
@@ -380,6 +406,7 @@ impl Default for HydraCacheBuilder<PostcardCodec> {
             replicated_value_security: ReplicatedValueSecurityPosture::Disabled,
             persistence_policy: None,
             persistence_storage_dir: None,
+            load_breaker_policy: LoadBreakerPolicy::default(),
             codec: PostcardCodec,
         }
     }

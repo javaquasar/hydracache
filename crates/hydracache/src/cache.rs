@@ -29,6 +29,7 @@ use crate::inflight::{InFlightMap, SharedLoadFuture};
 use crate::invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
 };
+use crate::load_breaker::{LoadBreakerDecision, LoadBreakerRegistry};
 use crate::refresh::RefreshOptions;
 use crate::stats::StatsCounters;
 use crate::tag_index::{LoadGenerationSnapshot, TagIndex};
@@ -93,6 +94,7 @@ where
     pub(crate) read_through_enabled: bool,
     pub(crate) replication_config: ReplicationConfig,
     pub(crate) replicated_value_security: ReplicatedValueSecurityPosture,
+    pub(crate) load_breaker: LoadBreakerRegistry,
 }
 
 impl<C> Drop for HydraCacheInner<C>
@@ -1774,13 +1776,24 @@ where
             return shared;
         }
 
+        let key_owned = key.to_owned();
+        if self
+            .inner
+            .load_breaker
+            .before_load(&key_owned, &self.inner.stats)
+            .await
+            == LoadBreakerDecision::Reject
+        {
+            let error = Arc::new(load_breaker_open_error(&key_owned));
+            return async move { Err(error) }.boxed().shared();
+        }
+
         // Coverage builds get one cooperative scheduling point here so tests can
         // deterministically exercise the defensive "insert_or_get_current lost
         // the race" branch below. Normal builds do not yield on this path.
         #[cfg(coverage)]
         tokio::task::yield_now().await;
 
-        let key_owned = key.to_owned();
         let cache = self.clone();
         let load_key = key_owned.clone();
         let load_generation = generation.clone();
@@ -1832,6 +1845,12 @@ where
                     load_failed_event_tags,
                 );
             }
+
+            cache
+                .inner
+                .load_breaker
+                .after_load_result(&load_key, result.is_ok(), &cache.inner.stats)
+                .await;
 
             let result = result.map_err(Arc::new);
 
@@ -2134,6 +2153,10 @@ fn entry_in_stale_window(entry: &CacheEntry, window: Option<std::time::Duration>
     window
         .map(|window| entry.stale_window_contains_now(window))
         .unwrap_or(false)
+}
+
+fn load_breaker_open_error(key: &str) -> CacheError {
+    CacheError::Backend(format!("load breaker open for key '{key}'"))
 }
 
 fn take_loader<F>(loader: &mut Option<F>) -> F {

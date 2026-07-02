@@ -75,6 +75,14 @@ pub struct CacheStatsSnapshot {
     pub single_flight_joins: u64,
     /// Loader results skipped because their invalidation generation became stale.
     pub stale_load_discards: u64,
+    /// Per-key loader breakers opened after repeated failures.
+    pub load_breaker_open_total: u64,
+    /// Per-key loader breakers allowed one half-open probe.
+    pub load_breaker_half_open_total: u64,
+    /// Per-key loader breakers closed after a successful probe.
+    pub load_breaker_recovered_total: u64,
+    /// Loader calls rejected because a breaker was open.
+    pub load_breaker_rejected_total: u64,
     /// Entries removed by invalidation APIs.
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
@@ -108,6 +116,8 @@ pub struct CacheStatsSnapshot {
     pub single_flight_active: bool,
     /// Whether at least one stale loader result was discarded.
     pub stale_load_discards_seen: bool,
+    /// Whether loader circuit-breaker activity was observed.
+    pub load_breaker_active: bool,
     /// Whether at least one event subscriber lagged behind the event bus.
     pub event_subscriber_lag_seen: bool,
     /// Whether this cache published or received bus invalidations.
@@ -125,6 +135,10 @@ impl CacheStatsSnapshot {
             loads: stats.loads,
             single_flight_joins: stats.single_flight_joins,
             stale_load_discards: stats.stale_load_discards,
+            load_breaker_open_total: stats.load_breaker_open_total,
+            load_breaker_half_open_total: stats.load_breaker_half_open_total,
+            load_breaker_recovered_total: stats.load_breaker_recovered_total,
+            load_breaker_rejected_total: stats.load_breaker_rejected_total,
             invalidations: stats.invalidations,
             evictions: stats.evictions,
             oversize_rejections: stats.oversize_rejections,
@@ -143,6 +157,7 @@ impl CacheStatsSnapshot {
             hit_ratio: stats.hit_ratio(),
             single_flight_active: stats.has_single_flight_activity(),
             stale_load_discards_seen: stats.has_stale_load_discards(),
+            load_breaker_active: stats.has_load_breaker_activity(),
             event_subscriber_lag_seen: stats.has_event_subscriber_lag(),
             distributed_invalidation_active: stats.has_distributed_invalidation_activity(),
             distributed_invalidation_bus_issues: stats.has_distributed_invalidation_bus_issues(),
@@ -855,6 +870,10 @@ mod tests {
             misses: 1,
             single_flight_joins: 1,
             stale_load_discards: 1,
+            load_breaker_open_total: 1,
+            load_breaker_half_open_total: 1,
+            load_breaker_recovered_total: 1,
+            load_breaker_rejected_total: 1,
             distributed_invalidations_received: 1,
             distributed_invalidation_lagged: 1,
             distributed_invalidation_decode_errors: 1,
@@ -869,6 +888,7 @@ mod tests {
         assert_eq!(snapshot.hit_ratio, Some(2.0 / 3.0));
         assert!(snapshot.single_flight_active);
         assert!(snapshot.stale_load_discards_seen);
+        assert!(snapshot.load_breaker_active);
         assert!(!snapshot.event_subscriber_lag_seen);
         assert!(snapshot.distributed_invalidation_active);
         assert!(snapshot.distributed_invalidation_bus_issues);
@@ -890,6 +910,8 @@ mod tests {
             loads: 1,
             single_flight_joins: 1,
             stale_load_discards: 1,
+            load_breaker_open_total: 1,
+            load_breaker_rejected_total: 1,
             invalidations: 1,
             events_published: 1,
             distributed_invalidation_publish_failures: 1,
@@ -913,6 +935,10 @@ mod tests {
                 "loads",
                 "single_flight_joins",
                 "stale_load_discards",
+                "load_breaker_open_total",
+                "load_breaker_half_open_total",
+                "load_breaker_recovered_total",
+                "load_breaker_rejected_total",
                 "invalidations",
                 "evictions",
                 "oversize_rejections",
@@ -929,6 +955,7 @@ mod tests {
                 "hit_ratio",
                 "single_flight_active",
                 "stale_load_discards_seen",
+                "load_breaker_active",
                 "event_subscriber_lag_seen",
                 "distributed_invalidation_active",
                 "distributed_invalidation_bus_issues",

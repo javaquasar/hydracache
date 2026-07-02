@@ -11,6 +11,7 @@
 /// let stats = CacheStats::default();
 /// assert_eq!(stats.hits, 0);
 /// assert_eq!(stats.single_flight_joins, 0);
+/// assert_eq!(stats.load_breaker_open_total, 0);
 /// assert_eq!(stats.oversize_rejections, 0);
 /// assert_eq!(stats.consistency_wait_successes, 0);
 /// assert_eq!(stats.events_published, 0);
@@ -32,6 +33,14 @@ pub struct CacheStats {
     pub single_flight_joins: u64,
     /// Loader results skipped because their invalidation generation became stale.
     pub stale_load_discards: u64,
+    /// Per-key loader breakers opened after repeated failures.
+    pub load_breaker_open_total: u64,
+    /// Per-key loader breakers allowed one half-open probe.
+    pub load_breaker_half_open_total: u64,
+    /// Per-key loader breakers closed after a successful probe.
+    pub load_breaker_recovered_total: u64,
+    /// Loader calls rejected before invoking the loader because a breaker was open.
+    pub load_breaker_rejected_total: u64,
     /// Entries removed by invalidation APIs.
     pub invalidations: u64,
     /// Entries observed as evicted by the backend.
@@ -131,6 +140,14 @@ impl CacheStats {
         self.stale_load_discards > 0
     }
 
+    /// Return whether loader circuit-breaker activity was observed.
+    pub fn has_load_breaker_activity(&self) -> bool {
+        self.load_breaker_open_total > 0
+            || self.load_breaker_half_open_total > 0
+            || self.load_breaker_recovered_total > 0
+            || self.load_breaker_rejected_total > 0
+    }
+
     /// Return whether at least one encoded value was rejected before insertion.
     pub fn has_oversize_rejections(&self) -> bool {
         self.oversize_rejections > 0
@@ -224,6 +241,7 @@ mod tests {
         assert_eq!(empty.hit_ratio(), None);
         assert!(!empty.has_single_flight_activity());
         assert!(!empty.has_stale_load_discards());
+        assert!(!empty.has_load_breaker_activity());
         assert!(!empty.has_event_subscriber_lag());
         assert!(!empty.has_distributed_invalidation_activity());
         assert!(!empty.has_distributed_invalidation_bus_issues());
@@ -233,6 +251,10 @@ mod tests {
             misses: 1,
             single_flight_joins: 2,
             stale_load_discards: 1,
+            load_breaker_open_total: 1,
+            load_breaker_half_open_total: 1,
+            load_breaker_recovered_total: 1,
+            load_breaker_rejected_total: 1,
             oversize_rejections: 1,
             event_subscriber_lagged: 1,
             distributed_invalidations_published: 1,
@@ -248,6 +270,7 @@ mod tests {
         assert_eq!(active.hit_ratio(), Some(0.75));
         assert!(active.has_single_flight_activity());
         assert!(active.has_stale_load_discards());
+        assert!(active.has_load_breaker_activity());
         assert!(active.has_oversize_rejections());
         assert!(active.has_event_subscriber_lag());
         assert!(active.has_distributed_invalidation_activity());
