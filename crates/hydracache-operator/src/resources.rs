@@ -7,9 +7,9 @@ use k8s_openapi::api::apps::v1::{
     StatefulSetUpdateStrategy,
 };
 use k8s_openapi::api::core::v1::{
-    Container, ContainerPort, EnvVar, ExecAction, HTTPGetAction, Lifecycle, LifecycleHandler,
-    PersistentVolumeClaim, PersistentVolumeClaimSpec, PodSpec, PodTemplateSpec, Probe, Secret,
-    SecretVolumeSource, Service, ServicePort, ServiceSpec, Volume, VolumeMount,
+    Container, ContainerPort, EmptyDirVolumeSource, EnvVar, ExecAction, HTTPGetAction, Lifecycle,
+    LifecycleHandler, PersistentVolumeClaim, PersistentVolumeClaimSpec, PodSpec, PodTemplateSpec,
+    Probe, Secret, SecretVolumeSource, Service, ServicePort, ServiceSpec, Volume, VolumeMount,
     VolumeResourceRequirements,
 };
 use k8s_openapi::api::policy::v1::{PodDisruptionBudget, PodDisruptionBudgetSpec};
@@ -20,6 +20,8 @@ use kube::ResourceExt;
 
 use crate::crd::{HydraCacheCluster, PvcReclaimPolicy};
 use crate::scale::quorum_for;
+use crate::tls::{TLS_SECRET_FINGERPRINT_ANNOTATION, TLS_SECRET_NAME_ANNOTATION};
+use crate::upgrade::VERSION_ANNOTATION;
 
 pub const APP_LABEL: &str = "app.kubernetes.io/name";
 pub const INSTANCE_LABEL: &str = "app.kubernetes.io/instance";
@@ -50,6 +52,14 @@ impl OwnedResources {
     }
 
     pub fn build_with_replicas(cluster: &HydraCacheCluster, replicas: u32) -> Self {
+        Self::build_with_replicas_and_tls_fingerprint(cluster, replicas, None)
+    }
+
+    pub fn build_with_replicas_and_tls_fingerprint(
+        cluster: &HydraCacheCluster,
+        replicas: u32,
+        tls_secret_fingerprint: Option<&str>,
+    ) -> Self {
         let name = cluster.name_any();
         let namespace = cluster.namespace();
         let labels = base_labels(&name);
@@ -62,6 +72,7 @@ impl OwnedResources {
                 &labels,
                 owner.clone(),
                 replicas,
+                tls_secret_fingerprint,
             ),
             headless_service: headless_service(&name, namespace.clone(), &labels, owner.clone()),
             client_service: client_service(&name, namespace.clone(), &labels, owner.clone()),
@@ -137,6 +148,7 @@ pub fn stateful_set(
     base_labels: &BTreeMap<String, String>,
     owner: Option<OwnerReference>,
     replicas: u32,
+    tls_secret_fingerprint: Option<&str>,
 ) -> StatefulSet {
     let name = cluster.name_any();
     let pod_labels = pod_selector_labels(&name);
@@ -151,7 +163,7 @@ pub fn stateful_set(
                 ..Default::default()
             },
             service_name: Some(headless_service_name(&name)),
-            template: pod_template(cluster, namespace, &pod_labels),
+            template: pod_template(cluster, namespace, &pod_labels, tls_secret_fingerprint),
             update_strategy: Some(StatefulSetUpdateStrategy {
                 type_: Some("OnDelete".to_owned()),
                 ..Default::default()
@@ -252,6 +264,7 @@ fn pod_template(
     cluster: &HydraCacheCluster,
     namespace: Option<String>,
     pod_labels: &BTreeMap<String, String>,
+    tls_secret_fingerprint: Option<&str>,
 ) -> PodTemplateSpec {
     let mut volumes = Vec::new();
     let mut mounts = vec![VolumeMount {
@@ -259,6 +272,14 @@ fn pod_template(
         name: DATA_VOLUME.to_owned(),
         ..Default::default()
     }];
+
+    if cluster.spec.persistence.is_none() {
+        volumes.push(Volume {
+            name: DATA_VOLUME.to_owned(),
+            empty_dir: Some(EmptyDirVolumeSource::default()),
+            ..Default::default()
+        });
+    }
 
     if let Some(tls) = &cluster.spec.tls {
         volumes.push(Volume {
@@ -277,13 +298,25 @@ fn pod_template(
         });
     }
 
+    let mut annotations =
+        BTreeMap::from([(VERSION_ANNOTATION.to_owned(), cluster.spec.version.clone())]);
+    if let Some(tls) = &cluster.spec.tls {
+        annotations.insert(
+            TLS_SECRET_NAME_ANNOTATION.to_owned(),
+            tls.secret_name.clone(),
+        );
+        if let Some(fingerprint) = tls_secret_fingerprint {
+            annotations.insert(
+                TLS_SECRET_FINGERPRINT_ANNOTATION.to_owned(),
+                fingerprint.to_owned(),
+            );
+        }
+    }
+
     PodTemplateSpec {
         metadata: Some(ObjectMeta {
             labels: Some(pod_labels.clone()),
-            annotations: Some(BTreeMap::from([(
-                "hydracache.io/version".to_owned(),
-                cluster.spec.version.clone(),
-            )])),
+            annotations: Some(annotations),
             namespace,
             ..Default::default()
         }),

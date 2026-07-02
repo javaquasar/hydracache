@@ -18,12 +18,18 @@ use serde_json::json;
 use thiserror::Error;
 
 use crate::crd::{HydraCacheCluster, HydraCacheClusterStatus};
+use crate::persistence::plan_persistence;
 use crate::resources::{
     cleanup_plan, headless_service_name, pod_selector_labels, OwnedResources, FIELD_MANAGER,
 };
 use crate::scale::{
     plan_scale, pod_name, scale_condition, ScaleAdminClient, ScaleObservation,
     SCALE_ACTION_FAILED_CONDITION,
+};
+use crate::tls::{
+    plan_tls_rotation, plan_tls_secret, tls_deferred_for_lifecycle, TlsPodObservation,
+    TlsRotationObservation, TlsRotationPlan, TlsSecretObservation,
+    TLS_ROTATION_ACTION_FAILED_CONDITION, TLS_ROTATION_FAILED_CONDITION,
 };
 use crate::upgrade::{
     plan_upgrade, upgrade_deferred_for_lifecycle, PodObservation, UpgradeObservation, UpgradePlan,
@@ -141,7 +147,32 @@ pub async fn apply_cluster(
             .ok();
     }
     let scale_plan = plan_scale(&cluster, &scale_observation);
-    let desired = OwnedResources::build_with_replicas(&cluster, scale_plan.effective_replicas);
+
+    let persistence_plan = plan_persistence(&cluster);
+    if persistence_plan.blocked {
+        let mut status = observed_status(&cluster, existing.as_ref());
+        status.health = DEGRADED_HEALTH.to_owned();
+        status.conditions.extend(persistence_plan.conditions);
+        patch_status(&cluster, ctx.client.clone(), status).await?;
+        return Ok(Action::requeue(Duration::from_secs(30)));
+    }
+
+    let secrets: Api<Secret> = Api::namespaced(ctx.client.clone(), &namespace);
+    let tls_secret_observation = observe_tls_secret(&secrets, &cluster).await?;
+    let tls_secret_plan = plan_tls_secret(&cluster, &tls_secret_observation);
+    if tls_secret_plan.blocked {
+        let mut status = observed_status(&cluster, existing.as_ref());
+        status.health = DEGRADED_HEALTH.to_owned();
+        status.conditions.extend(tls_secret_plan.conditions);
+        patch_status(&cluster, ctx.client.clone(), status).await?;
+        return Ok(Action::requeue(Duration::from_secs(30)));
+    }
+
+    let desired = OwnedResources::build_with_replicas_and_tls_fingerprint(
+        &cluster,
+        scale_plan.effective_replicas,
+        tls_secret_plan.fingerprint.as_deref(),
+    );
 
     if let Some(existing) = existing.as_ref() {
         validate_statefulset_update(existing, &desired.stateful_set)?;
@@ -170,7 +201,6 @@ pub async fn apply_cluster(
         )
         .await?;
 
-    let secrets: Api<Secret> = Api::namespaced(ctx.client.clone(), &namespace);
     secrets
         .patch(
             desired
@@ -277,6 +307,66 @@ pub async fn apply_cluster(
             }
             Err(error) => status.conditions.push(scale_condition(
                 UPGRADE_ACTION_FAILED_CONDITION,
+                "True",
+                "AdminActionFailed",
+                &error.to_string(),
+                cluster.metadata.generation,
+            )),
+        }
+    }
+
+    let tls_rotation_plan = if cluster.spec.tls.is_some() {
+        if scale_plan.phase == READY_PHASE && upgrade_plan.phase == READY_PHASE {
+            let tls_observation = TlsRotationObservation {
+                current_replicas: scale_observation.current_replicas,
+                ready_replicas: scale_observation.ready_replicas,
+                admin_status: scale_observation.admin_status.clone(),
+                secret: tls_secret_observation,
+                pods: list_tls_pods(&pods, &cluster.name_any()).await?,
+            };
+            plan_tls_rotation(&cluster, &tls_observation)
+        } else {
+            TlsRotationPlan {
+                phase: READY_PHASE,
+                conditions: vec![tls_deferred_for_lifecycle(cluster.metadata.generation)],
+                admin_actions: Vec::new(),
+                delete_pod: None,
+            }
+        }
+    } else {
+        TlsRotationPlan::steady()
+    };
+    if scale_plan.phase == READY_PHASE && upgrade_plan.phase == READY_PHASE {
+        status.phase = tls_rotation_plan.phase.to_owned();
+    }
+    status
+        .conditions
+        .extend(tls_rotation_plan.conditions.clone());
+    if !tls_rotation_plan.admin_actions.is_empty() {
+        match ctx
+            .scale_admin
+            .perform(
+                &namespace,
+                &cluster.name_any(),
+                &tls_rotation_plan.admin_actions,
+            )
+            .await
+        {
+            Ok(()) => {
+                if let Some(pod_name) = tls_rotation_plan.delete_pod.as_deref() {
+                    if let Err(error) = pods.delete(pod_name, &DeleteParams::default()).await {
+                        status.conditions.push(scale_condition(
+                            TLS_ROTATION_FAILED_CONDITION,
+                            "True",
+                            "PodDeleteFailed",
+                            &error.to_string(),
+                            cluster.metadata.generation,
+                        ));
+                    }
+                }
+            }
+            Err(error) => status.conditions.push(scale_condition(
+                TLS_ROTATION_ACTION_FAILED_CONDITION,
                 "True",
                 "AdminActionFailed",
                 &error.to_string(),
@@ -535,4 +625,35 @@ async fn list_upgrade_pods(
         .iter()
         .filter_map(|pod| PodObservation::from_pod(cluster_name, pod))
         .collect())
+}
+
+async fn list_tls_pods(
+    api: &Api<Pod>,
+    cluster_name: &str,
+) -> Result<Vec<TlsPodObservation>, Error> {
+    let selector = pod_selector_labels(cluster_name)
+        .iter()
+        .map(|(key, value)| format!("{key}={value}"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let listed = api.list(&ListParams::default().labels(&selector)).await?;
+    Ok(listed
+        .items
+        .iter()
+        .filter_map(|pod| TlsPodObservation::from_pod(cluster_name, pod))
+        .collect())
+}
+
+async fn observe_tls_secret(
+    api: &Api<Secret>,
+    cluster: &HydraCacheCluster,
+) -> Result<TlsSecretObservation, Error> {
+    let Some(tls) = cluster.spec.tls.as_ref() else {
+        return Ok(TlsSecretObservation::disabled());
+    };
+    let secret = get_optional(api, &tls.secret_name).await?;
+    Ok(TlsSecretObservation::from_secret(
+        &tls.secret_name,
+        secret.as_ref(),
+    ))
 }
