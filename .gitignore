@@ -22,6 +22,7 @@ demo/pkg/
 
 # Browser demo local tooling output
 demo/node_modules/
+console/node_modules/
 playwright-report/
 test-results/
 

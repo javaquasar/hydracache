@@ -22,6 +22,8 @@ pub const ADMIN_HEALTHZ_PATH: &str = "/healthz";
 pub const ADMIN_READYZ_PATH: &str = "/readyz";
 /// Prometheus metrics path on the internal admin surface.
 pub const ADMIN_METRICS_PATH: &str = "/metrics";
+/// Read-only Management Center console path on the internal admin surface.
+pub const ADMIN_CONSOLE_PATH: &str = "/console";
 /// Read-only cluster overview path on the internal admin surface.
 pub const ADMIN_CLUSTER_OVERVIEW_PATH: &str = "/cluster/overview";
 /// Operator status path.
@@ -66,6 +68,11 @@ impl AdminHttpSurface {
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
             .route(ADMIN_METRICS_PATH, get(metrics))
+            .route(ADMIN_CONSOLE_PATH, get(console_index))
+            .route("/console/", get(console_index))
+            .route("/console/index.html", get(console_index))
+            .route("/console/app.js", get(console_app))
+            .route("/console/style.css", get(console_style))
             .route(ADMIN_CLUSTER_OVERVIEW_PATH, get(cluster_overview))
             .route(ADMIN_STATUS_PATH, get(admin_status))
             .route(ADMIN_DRAIN_PATH, post(admin_drain))
@@ -97,6 +104,30 @@ async fn metrics(State(runtime): State<SharedServerRuntime>) -> Response {
         .metrics_registry();
     let text = PrometheusExporter::new(registry).render().await;
     ([(CONTENT_TYPE, "text/plain; version=0.0.4")], text).into_response()
+}
+
+async fn console_index() -> Response {
+    (
+        [(CONTENT_TYPE, "text/html; charset=utf-8")],
+        include_str!("../../../console/index.html"),
+    )
+        .into_response()
+}
+
+async fn console_app() -> Response {
+    (
+        [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        include_str!("../../../console/app.js"),
+    )
+        .into_response()
+}
+
+async fn console_style() -> Response {
+    (
+        [(CONTENT_TYPE, "text/css; charset=utf-8")],
+        include_str!("../../../console/style.css"),
+    )
+        .into_response()
 }
 
 async fn cluster_overview(State(runtime): State<SharedServerRuntime>) -> Response {

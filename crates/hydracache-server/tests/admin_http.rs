@@ -10,8 +10,8 @@ use hydracache_client_transport_axum::{
 };
 use hydracache_server::{
     AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ServerConfig, ServerRole,
-    ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH,
-    ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_CONSOLE_PATH, ADMIN_DRAIN_PATH,
+    ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -227,6 +227,47 @@ mod admin_http {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn console_assets_are_served_from_admin_surface() {
+        let surface = AdminHttpSurface::new(ServerRuntime::new(member_config()).unwrap().start());
+
+        let index = surface
+            .routes()
+            .oneshot(
+                Request::builder()
+                    .method("GET")
+                    .uri(ADMIN_CONSOLE_PATH)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(index.status(), StatusCode::OK);
+        assert_eq!(
+            index.headers().get(CONTENT_TYPE).unwrap(),
+            "text/html; charset=utf-8"
+        );
+        let html = text_response(index).await;
+        assert!(html.contains("HydraCache Management Center"));
+        assert!(html.contains("./app.js"));
+
+        let app = surface
+            .routes()
+            .oneshot(
+                Request::builder()
+                    .method("GET")
+                    .uri("/console/app.js")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(app.status(), StatusCode::OK);
+        let javascript = text_response(app).await;
+        assert!(javascript.contains("/cluster/overview"));
+        assert!(javascript.contains("MAX_RENDERED_MEMBERS"));
     }
 
     #[tokio::test]
