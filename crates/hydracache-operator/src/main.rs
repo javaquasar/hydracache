@@ -1,16 +1,23 @@
 use std::error::Error;
 
+use hydracache_operator::controller::{run, Ctx};
 use hydracache_operator::crd::HydraCacheCluster;
 use kube::CustomResourceExt;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     if std::env::args().nth(1).as_deref() == Some("--print-crd-json") {
         println!(
             "{}",
             serde_json::to_string_pretty(&HydraCacheCluster::crd())?
         );
     } else {
-        println!("hydracache-operator scaffold ready");
+        let client = kube::Client::try_default().await?;
+        let identity = std::env::var("HYDRACACHE_OPERATOR_IDENTITY")
+            .or_else(|_| std::env::var("HOSTNAME"))
+            .unwrap_or_else(|_| "hydracache-operator".to_owned());
+        let namespace = std::env::var("HYDRACACHE_OPERATOR_NAMESPACE").ok();
+        run(Ctx::new(client, identity, namespace)).await;
     }
     Ok(())
 }
