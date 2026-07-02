@@ -14,6 +14,7 @@ opt-in.
 | --- | --- | --- | --- |
 | Key/tag/options/codecs/stats primitives | `hydracache-core` | `serde`, `bytes`, codec support | Moka, Tokio runtime helpers, ORM crates, Axum |
 | Local cache runtime and cacheable macros | `hydracache` | Moka, Tokio, `hydracache-core`, macros | SQLx, Diesel, SeaORM, Axum, chitchat, raft-rs |
+| Durable value-plane hardening | `hydracache` with `durable-value-store` | sled-backed `DurableValueStore`, inspect/scrub/maintenance helpers | ORM crates, Axum, external transports |
 | Database-neutral query cache API | `hydracache-db` | `hydracache`, `hydracache-core`, macros | SQLx, Diesel, SeaORM |
 | SQLx convenience adapter | `hydracache-sqlx` | SQLx and `hydracache-db` | Diesel, SeaORM |
 | Diesel convenience adapter | `hydracache-diesel` | Diesel and `hydracache-db` | SQLx, SeaORM |
@@ -52,6 +53,20 @@ clients and transactions.
 
 Docker-backed rows must skip gracefully when Docker is unavailable. They should
 not make the Windows local gate flaky.
+
+## Durable Value-Plane Operability
+
+The `durable-value-store` feature keeps the durable value plane opt-in. The base
+`hydracache` crate remains RAM-first unless the application/server chooses a
+persistent namespace policy and opens a durable store.
+
+| Surface | API or command | Scope | Safety boundary |
+| --- | --- | --- | --- |
+| Inspect/dump | `inspect_replicated_store` and `cargo xtask durable-inspect <store-dir>` | Dumps key, partition, version, epoch, tombstone, approximate bytes, and checksum status from a durable value store. | Read-only; corrupt records fail loud instead of being silently skipped. Run offline against the server durable state directory when investigating a node. |
+| Background scrub | `DurableScrubber` | Bounded per-cycle verification of raw durable records with cursor progress and corruption counters. | Decode/checksum errors are counted per record; one corrupt record does not abort the cycle or get served as valid data. |
+| Maintenance | `PersistenceMaintenance`, `DurableValueStore::gc_tombstones*`, and `compact()` through `ReplicatedValueStore` | Repair-gated tombstone GC, explicit compaction trigger, and exact byte-budget accounting. | Tombstones are reclaimed only after the repair gate confirms safety; compaction does not change record format or resurrect data. |
+| Cluster checkpoints | `CheckpointCoordinator`, `ClusterCheckpointManifest`, `recover_cluster_checkpoint`, `rescale_with_checkpoint` | Barrier-aligned cluster-wide cut and rescale-with-checkpoint flow over the existing online reshard path. | Partial/torn cuts, stale watermarks, older authority epochs, checksum mismatch, and unknown future checkpoint formats fail loud. |
+| Loader protection | `LoadBreakerPolicy` via `HydraCacheBuilder::load_breaker*` | Per-key poison-load circuit breaker over the single-flight loader. | Opt-in; counters are aggregate only. Open breakers fail fast or use the existing explicit stale-on-loader-error contract without changing healthy-key behavior. |
 
 ## Verification Script
 

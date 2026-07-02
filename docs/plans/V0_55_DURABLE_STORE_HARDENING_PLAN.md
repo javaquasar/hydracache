@@ -22,7 +22,7 @@
 >   by `0.44` DST. Independent of `0.52`/`0.53`/`0.54`.
 > - **Promoted from** `V0_DRAFT_DURABLE_STORE_HARDENING_PLAN.md` (D1–D4 expanded into W1–W6 with
 >   an **honest sled reframing** — see below).
-> - **Status:** in-progress.
+> - **Status:** shipped.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > storage direction: [`../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md`](../STORAGE_AND_DATA_PLATFORM_EVOLUTION.md) ·
