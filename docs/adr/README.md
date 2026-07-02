@@ -23,6 +23,7 @@ wire compatibility, or long-term product direction.
 | [ADR-0014](0014-tag-generation-invalidation-safety.md) | Accepted for 0.4 | Tag generations prevent write-after-invalidate races. |
 | [ADR-0015](0015-transaction-companion-adapters.md) | Accepted for 0.38 | SQLx transaction companion is explicit; Diesel/SeaORM companions are deferred. |
 | [ADR-0016](0016-raft-in-wasm-lab.md) | Accepted for 0.53.1 | Server lab uses real raft election; wasm remains a labelled validated sim-model. |
+| [ADR-0017](0017-operator-tooling.md) | Accepted for 0.56 | Use kube-rs for the Kubernetes operator. |
 
 ## Naming
 
