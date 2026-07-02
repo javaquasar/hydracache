@@ -127,10 +127,11 @@ async fn admin_status_reports_leader_quorum_reshard_phase() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let body = json_response(response).await;
+    assert_eq!(body["source"], "modeled");
     assert_eq!(body["leader"], "local");
     assert_eq!(body["term"], 1);
     assert_eq!(body["quorum_ok"], true);
-    assert_eq!(body["members"], 1);
+    assert_eq!(body["members"], 0);
     assert_eq!(body["reshard_phase"], "idle");
     assert_eq!(body["draining"], false);
 }

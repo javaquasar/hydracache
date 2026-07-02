@@ -7,6 +7,7 @@
 
 pub mod admin_http;
 pub mod bootstrap;
+pub mod cluster_status;
 pub mod config;
 pub mod services;
 pub mod upgrade;
@@ -18,6 +19,11 @@ pub use admin_http::{
 pub use bootstrap::{
     ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth, ServerReadiness,
     ServerRuntime, ServerState,
+};
+pub use cluster_status::{
+    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle,
+    LiveClusterStatus, MemberRole, MemberStatus, ModeledClusterStatus, Reachability, ReshardPhase,
+    StatusSource,
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,

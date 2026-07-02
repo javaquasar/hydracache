@@ -209,7 +209,10 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
 /// silently (e.g. a shipped plan still reading "planned"). A plan that uses a prose
 /// status line instead of the strict `**Status:**` marker (e.g. an idea-capture
 /// draft) is skipped rather than flagged, so only real drift fails the gate.
-fn check_plan_header_status(root: &Path, releases: &[Release]) -> Result<Vec<String>, Box<dyn Error>> {
+fn check_plan_header_status(
+    root: &Path,
+    releases: &[Release],
+) -> Result<Vec<String>, Box<dyn Error>> {
     let mut problems = Vec::new();
     for r in releases {
         let path = root.join(&r.file);
@@ -506,7 +509,10 @@ mod tests {
     #[test]
     fn prose_status_and_missing_header_return_none() {
         // Draft-style prose status uses `**Status: DRAFT ...**`, not the strict marker.
-        assert_eq!(parse_status_header("> **Status: DRAFT — version TBD.**"), None);
+        assert_eq!(
+            parse_status_header("> **Status: DRAFT — version TBD.**"),
+            None
+        );
         assert_eq!(parse_status_header("no status header at all"), None);
     }
 }

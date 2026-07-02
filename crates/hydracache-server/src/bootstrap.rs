@@ -1,8 +1,12 @@
 use hydracache::HydraCache;
 use hydracache_client_transport_axum::{ClientSurfaceDrain, ClientSurfaceRuntime};
 use serde::Serialize;
+use std::sync::Arc;
 use thiserror::Error;
 
+use crate::cluster_status::{
+    ClusterStatusProvider, ClusterStatusRuntime, ModeledClusterStatus, StatusSource,
+};
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
 
@@ -47,6 +51,8 @@ pub struct ServerReadiness {
 /// Admin status consumed by the Kubernetes operator.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ServerAdminStatus {
+    /// Whether this status is live or modeled.
+    pub source: StatusSource,
     /// Current leader id if known to the runtime.
     pub leader: Option<String>,
     /// Current control-plane term if known.
@@ -98,6 +104,7 @@ pub struct ServerRuntime {
     accepting: bool,
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
+    cluster_status: Arc<dyn ClusterStatusProvider>,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_drain: Option<DrainOutcome>,
 }
@@ -124,9 +131,21 @@ impl ServerRuntime {
             accepting: false,
             flushed: false,
             client_surface,
+            cluster_status: Arc::new(ModeledClusterStatus),
             last_client_surface_drain: None,
             last_drain: None,
         })
+    }
+
+    /// Override the cluster-status provider.
+    ///
+    /// This is the W0 seam used by tests and later by the member-role grid host.
+    pub fn with_cluster_status_provider(
+        mut self,
+        cluster_status: Arc<dyn ClusterStatusProvider>,
+    ) -> Self {
+        self.cluster_status = cluster_status;
+        self
     }
 
     /// Start storage, cluster membership, listeners, and background services.
@@ -266,13 +285,17 @@ impl ServerRuntime {
     /// Return admin/operator status derived from the runtime model.
     pub fn admin_status(&self) -> ServerAdminStatus {
         let cluster_ready = self.cluster_ready && self.state != ServerState::Stopped;
+        let status = self
+            .cluster_status
+            .cluster_status(ClusterStatusRuntime::new(cluster_ready, self.is_draining()));
         ServerAdminStatus {
-            leader: cluster_ready.then(|| "local".to_owned()),
-            term: u64::from(cluster_ready),
-            quorum_ok: cluster_ready && !self.is_draining(),
-            members: u32::from(cluster_ready),
-            reshard_phase: "idle".to_owned(),
-            draining: self.is_draining(),
+            source: status.source,
+            leader: status.leader,
+            term: status.term,
+            quorum_ok: status.quorum_ok,
+            members: status.members.len() as u32,
+            reshard_phase: status.reshard_phase.to_string(),
+            draining: status.draining,
         }
     }
 
