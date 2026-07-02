@@ -339,6 +339,183 @@ impl Default for ClusterTopologyOverview {
     }
 }
 
+/// Read-only cluster snapshot for the Management Center.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClusterOverview {
+    /// Whether the snapshot is live or modeled.
+    pub source: TopologyStatusSource,
+    /// Visible members. Unreachable members remain present.
+    pub members: Vec<ClusterMemberView>,
+    /// Current leader, if a live source knows one.
+    pub leader: Option<LeaderView>,
+    /// Aggregate partition health.
+    pub partitions: PartitionSummary,
+    /// Configured and observed consistency-level summary.
+    pub consistency: ConsistencyView,
+    /// Oldest known backup/checkpoint age in seconds.
+    pub backup_age_seconds: Option<u64>,
+    /// Current cluster lifecycle phases.
+    pub lifecycle: LifecycleView,
+}
+
+impl ClusterOverview {
+    /// Build a read-only cluster overview.
+    pub fn new(
+        source: TopologyStatusSource,
+        members: Vec<ClusterMemberView>,
+        leader: Option<LeaderView>,
+        partitions: PartitionSummary,
+        consistency: ConsistencyView,
+        backup_age_seconds: Option<u64>,
+        lifecycle: LifecycleView,
+    ) -> Self {
+        Self {
+            source,
+            members,
+            leader,
+            partitions,
+            consistency,
+            backup_age_seconds,
+            lifecycle,
+        }
+    }
+}
+
+/// Per-member read model rendered by the Management Center.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ClusterMemberView {
+    /// Stable logical member id.
+    pub node_id: String,
+    /// Runtime role label.
+    pub role: String,
+    /// Whether the member is currently reachable.
+    pub reachable: bool,
+    /// Full reachability label, preserving suspect vs unreachable.
+    pub reachability: String,
+    /// Process generation reported by the cluster-status source.
+    pub generation: u64,
+}
+
+impl ClusterMemberView {
+    /// Build a member view.
+    pub fn new(
+        node_id: impl Into<String>,
+        role: impl Into<String>,
+        reachable: bool,
+        reachability: impl Into<String>,
+        generation: u64,
+    ) -> Self {
+        Self {
+            node_id: node_id.into(),
+            role: role.into(),
+            reachable,
+            reachability: reachability.into(),
+            generation,
+        }
+    }
+}
+
+/// Leader view carried only when the leader is known.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LeaderView {
+    /// Stable logical member id.
+    pub node_id: String,
+    /// Current control-plane term.
+    pub term: u64,
+    /// Current authority epoch.
+    pub epoch: u64,
+}
+
+impl LeaderView {
+    /// Build a leader view.
+    pub fn new(node_id: impl Into<String>, term: u64, epoch: u64) -> Self {
+        Self {
+            node_id: node_id.into(),
+            term,
+            epoch,
+        }
+    }
+}
+
+/// Aggregate partition status for the cluster overview.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Default)]
+pub struct PartitionSummary {
+    /// Aggregate under-replicated partition/key count.
+    pub under_replicated: u64,
+    /// Effective partition count, or zero when no live map is attached yet.
+    pub count: u64,
+}
+
+impl PartitionSummary {
+    /// Build partition status from grid counters and the current effective map size.
+    pub fn from_grid_counters(counters: ClusterGridCounters, count: u64) -> Self {
+        Self {
+            under_replicated: counters.under_replicated_keys,
+            count,
+        }
+    }
+}
+
+/// Consistency-level summary for the cluster overview.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Default)]
+pub struct ConsistencyView {
+    /// Configured default consistency label, if the host exposes one.
+    pub configured_default: Option<String>,
+    /// Observed per-level operation counts.
+    ///
+    /// Current counters only expose an aggregate total, so the server uses an
+    /// explicit `aggregate` bucket until a per-level source is wired.
+    pub op_counts_by_level: Vec<ConsistencyLevelCount>,
+}
+
+impl ConsistencyView {
+    /// Build a consistency view from aggregate grid counters.
+    pub fn from_grid_counters(
+        configured_default: Option<String>,
+        counters: ClusterGridCounters,
+    ) -> Self {
+        let mut op_counts_by_level = Vec::new();
+        if counters.consistency_level_operations_total > 0 {
+            op_counts_by_level.push(ConsistencyLevelCount {
+                level: "aggregate".to_owned(),
+                count: counters.consistency_level_operations_total,
+            });
+        }
+        Self {
+            configured_default,
+            op_counts_by_level,
+        }
+    }
+}
+
+/// One consistency-level counter bucket.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ConsistencyLevelCount {
+    /// Consistency level label, or `aggregate` when only aggregate data exists.
+    pub level: String,
+    /// Operation count for the level.
+    pub count: u64,
+}
+
+/// Cluster lifecycle phases rendered by the Management Center.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct LifecycleView {
+    /// Current reshard phase.
+    pub reshard_phase: String,
+    /// Current graceful-upgrade phase.
+    pub upgrade_phase: String,
+}
+
+impl LifecycleView {
+    /// Build lifecycle status.
+    pub fn new(reshard_phase: impl Into<String>, upgrade_phase: impl Into<String>) -> Self {
+        Self {
+            reshard_phase: reshard_phase.into(),
+            upgrade_phase: upgrade_phase.into(),
+        }
+    }
+}
+
 /// Per-member status entry for the grid operator surface.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct MemberStatus {

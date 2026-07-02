@@ -1,15 +1,17 @@
-use hydracache::HydraCache;
+use hydracache::{ClusterGridCounters, HydraCache};
 use hydracache_client_transport_axum::{ClientSurfaceDrain, ClientSurfaceRuntime};
 use hydracache_observability::{
-    ClusterTopologyOverview, HydraCacheRegistry, TopologyReshardPhase, TopologyStatusSource,
+    ClusterMemberView, ClusterOverview, ClusterTopologyOverview, ConsistencyView,
+    HydraCacheRegistry, LeaderView, LifecycleView, PartitionSummary, TopologyReshardPhase,
+    TopologyStatusSource,
 };
 use serde::Serialize;
 use std::sync::Arc;
 use thiserror::Error;
 
 use crate::cluster_status::{
-    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, ModeledClusterStatus, ReshardPhase,
-    StatusSource,
+    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, MemberRole, ModeledClusterStatus,
+    Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
@@ -82,6 +84,69 @@ pub struct ServerAdminAction {
     pub detail: String,
 }
 
+/// Additional read-only observability signals supplied by the daemon host.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ServerObservabilityModel {
+    cluster_grid: ClusterGridCounters,
+    partition_count: u64,
+    configured_default_consistency: Option<String>,
+    backup_age_seconds: Option<u64>,
+    upgrade_phase: String,
+}
+
+impl ServerObservabilityModel {
+    /// Attach aggregate grid counters supplied by the hosting runtime.
+    pub fn with_cluster_grid_counters(mut self, counters: ClusterGridCounters) -> Self {
+        self.cluster_grid = counters;
+        self
+    }
+
+    /// Attach the effective partition count.
+    pub fn with_partition_count(mut self, count: u64) -> Self {
+        self.partition_count = count;
+        self
+    }
+
+    /// Attach the configured default consistency label.
+    pub fn with_configured_default_consistency(mut self, level: impl Into<String>) -> Self {
+        self.configured_default_consistency = Some(level.into());
+        self
+    }
+
+    /// Attach the worst known backup age.
+    pub fn with_backup_age_seconds(mut self, seconds: u64) -> Self {
+        self.backup_age_seconds = Some(seconds);
+        self
+    }
+
+    /// Attach backup ages for namespaces, keeping the oldest/worst age.
+    pub fn with_backup_age_seconds_from_namespaces(
+        mut self,
+        ages: impl IntoIterator<Item = u64>,
+    ) -> Self {
+        self.backup_age_seconds = ages.into_iter().max();
+        self
+    }
+
+    /// Attach the current graceful-upgrade phase.
+    pub fn with_upgrade_phase(mut self, phase: impl Into<String>) -> Self {
+        self.upgrade_phase = phase.into();
+        self
+    }
+}
+
+impl Default for ServerObservabilityModel {
+    fn default() -> Self {
+        Self {
+            cluster_grid: ClusterGridCounters::default(),
+            partition_count: 0,
+            configured_default_consistency: None,
+            backup_age_seconds: None,
+            upgrade_phase: "idle".to_owned(),
+        }
+    }
+}
+
 /// Fail-loud admin action errors.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum ServerAdminActionError {
@@ -109,6 +174,7 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
+    observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_drain: Option<DrainOutcome>,
 }
@@ -136,6 +202,7 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             cluster_status: Arc::new(ModeledClusterStatus),
+            observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_drain: None,
         })
@@ -149,6 +216,12 @@ impl ServerRuntime {
         cluster_status: Arc<dyn ClusterStatusProvider>,
     ) -> Self {
         self.cluster_status = cluster_status;
+        self
+    }
+
+    /// Override additional read-only observability signals.
+    pub fn with_observability_model(mut self, observability: ServerObservabilityModel) -> Self {
+        self.observability = observability;
         self
     }
 
@@ -303,15 +376,57 @@ impl ServerRuntime {
     /// Build a metrics registry snapshot for the admin surface.
     pub fn metrics_registry(&self) -> HydraCacheRegistry {
         let status = self.cluster_status_snapshot();
-        HydraCacheRegistry::new()
+        let registry = HydraCacheRegistry::new()
             .with_cache("server", self.cache.clone())
+            .with_cluster_grid_counters(self.observability.cluster_grid)
             .with_topology(ClusterTopologyOverview::new(
                 topology_status_source(status.source),
                 status.members.len() as u64,
                 status.leader,
                 status.epoch,
                 topology_reshard_phase(status.reshard_phase),
-            ))
+            ));
+        if let Some(seconds) = self.observability.backup_age_seconds {
+            registry.with_backup_age_seconds(seconds)
+        } else {
+            registry
+        }
+    }
+
+    /// Build a read-only Management Center cluster overview.
+    pub fn cluster_overview(&self) -> ClusterOverview {
+        let status = self.cluster_status_snapshot();
+        let counters = overview_cluster_grid_counters(
+            self.cache.cluster_grid_counters(),
+            self.observability.cluster_grid,
+        );
+        ClusterOverview::new(
+            topology_status_source(status.source),
+            status
+                .members
+                .iter()
+                .map(|member| {
+                    ClusterMemberView::new(
+                        member.node_id.clone(),
+                        member_role_label(member.role),
+                        member.reachable == Reachability::Reachable,
+                        reachability_label(member.reachable),
+                        member.generation,
+                    )
+                })
+                .collect(),
+            cluster_overview_leader(&status),
+            PartitionSummary::from_grid_counters(counters, self.observability.partition_count),
+            ConsistencyView::from_grid_counters(
+                self.observability.configured_default_consistency.clone(),
+                counters,
+            ),
+            self.observability.backup_age_seconds,
+            LifecycleView::new(
+                status.reshard_phase.to_string(),
+                self.observability.upgrade_phase.clone(),
+            ),
+        )
     }
 
     fn cluster_status_snapshot(&self) -> ClusterStatus {
@@ -389,4 +504,43 @@ fn topology_reshard_phase(phase: ReshardPhase) -> TopologyReshardPhase {
         ReshardPhase::Moving => TopologyReshardPhase::Moving,
         ReshardPhase::Finalizing => TopologyReshardPhase::Finalizing,
     }
+}
+
+fn cluster_overview_leader(status: &ClusterStatus) -> Option<LeaderView> {
+    if status.source != StatusSource::Live {
+        return None;
+    }
+    status
+        .leader
+        .as_ref()
+        .map(|node_id| LeaderView::new(node_id.clone(), status.term, status.epoch))
+}
+
+fn member_role_label(role: MemberRole) -> &'static str {
+    match role {
+        MemberRole::Local => "local",
+        MemberRole::Client => "client",
+        MemberRole::Member => "member",
+    }
+}
+
+fn reachability_label(reachability: Reachability) -> &'static str {
+    match reachability {
+        Reachability::Reachable => "reachable",
+        Reachability::Suspect => "suspect",
+        Reachability::Unreachable => "unreachable",
+    }
+}
+
+fn overview_cluster_grid_counters(
+    mut left: ClusterGridCounters,
+    right: ClusterGridCounters,
+) -> ClusterGridCounters {
+    left.under_replicated_keys = left
+        .under_replicated_keys
+        .saturating_add(right.under_replicated_keys);
+    left.consistency_level_operations_total = left
+        .consistency_level_operations_total
+        .saturating_add(right.consistency_level_operations_total);
+    left
 }

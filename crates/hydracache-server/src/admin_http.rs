@@ -22,6 +22,8 @@ pub const ADMIN_HEALTHZ_PATH: &str = "/healthz";
 pub const ADMIN_READYZ_PATH: &str = "/readyz";
 /// Prometheus metrics path on the internal admin surface.
 pub const ADMIN_METRICS_PATH: &str = "/metrics";
+/// Read-only cluster overview path on the internal admin surface.
+pub const ADMIN_CLUSTER_OVERVIEW_PATH: &str = "/cluster/overview";
 /// Operator status path.
 pub const ADMIN_STATUS_PATH: &str = "/admin/status";
 /// Operator drain action path.
@@ -64,6 +66,7 @@ impl AdminHttpSurface {
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
             .route(ADMIN_METRICS_PATH, get(metrics))
+            .route(ADMIN_CLUSTER_OVERVIEW_PATH, get(cluster_overview))
             .route(ADMIN_STATUS_PATH, get(admin_status))
             .route(ADMIN_DRAIN_PATH, post(admin_drain))
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
@@ -94,6 +97,14 @@ async fn metrics(State(runtime): State<SharedServerRuntime>) -> Response {
         .metrics_registry();
     let text = PrometheusExporter::new(registry).render().await;
     ([(CONTENT_TYPE, "text/plain; version=0.0.4")], text).into_response()
+}
+
+async fn cluster_overview(State(runtime): State<SharedServerRuntime>) -> Response {
+    let overview = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .cluster_overview();
+    (StatusCode::OK, Json(overview)).into_response()
 }
 
 async fn admin_status(State(runtime): State<SharedServerRuntime>, headers: HeaderMap) -> Response {

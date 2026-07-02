@@ -13,12 +13,13 @@ pub mod services;
 pub mod upgrade;
 
 pub use admin_http::{
-    AdminHttpError, AdminHttpSurface, ADMIN_BACKUP_PATH, ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH,
-    ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    AdminHttpError, AdminHttpSurface, ADMIN_BACKUP_PATH, ADMIN_CLUSTER_OVERVIEW_PATH,
+    ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH,
+    ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 pub use bootstrap::{
-    ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth, ServerReadiness,
-    ServerRuntime, ServerState,
+    ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,
+    ServerObservabilityModel, ServerReadiness, ServerRuntime, ServerState,
 };
 pub use cluster_status::{
     ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle,
