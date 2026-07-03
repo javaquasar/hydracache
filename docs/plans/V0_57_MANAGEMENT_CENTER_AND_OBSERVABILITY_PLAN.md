@@ -33,7 +33,8 @@
 >   tech), `0.51` (backup age). Independent of `0.54`/`0.55`.
 > - **Blueprint:** Hazelcast **Management Center** (read-only cluster view, not a control plane);
 >   TigerBeetle-style "correctness is visible" discipline already used in `0.50`/`0.53`.
-> - **Status:** planned.
+> - **Status:** shipped. W0-W8 landed; W6b networked multi-daemon grid hosting is deferred as
+>   [`TD-0008`](../technical-debt/TD-0008-networked-daemon-grid-hosting.md).
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md) ·
