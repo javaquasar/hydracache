@@ -90,7 +90,7 @@ raft = { version = "0.7.0", default-features = false, features = ["protobuf-code
 rand_chacha = "0.9.0"
 rand_core = "0.9.5"
 redis = { version = "1.3.0", default-features = false, features = ["tokio-comp", "bytes"] }
-reqwest = { version = "0.12", default-features = false, features = ["json"] }
+reqwest = { version = "0.13", default-features = false, features = ["json"] }
 sea-orm = { version = "1.1.17", default-features = false }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1"
