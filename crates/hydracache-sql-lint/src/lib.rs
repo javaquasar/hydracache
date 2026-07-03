@@ -423,7 +423,17 @@ fn fingerprint(policy: &str, finding: &LintFinding) -> String {
     hasher.update(policy.as_bytes());
     hasher.update([0]);
     hasher.update(format!("{finding:?}").as_bytes());
-    format!("{:x}", hasher.finalize())
+    encode_lower_hex(hasher.finalize().as_ref())
+}
+
+fn encode_lower_hex(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut output = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        output.push(HEX[(byte >> 4) as usize] as char);
+        output.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    output
 }
 
 fn normalize_ident(identifier: &str) -> String {
