@@ -737,6 +737,8 @@ async fn raft_style_metadata_control_plane_records_committed_membership_commands
     assert_eq!(snapshot.epoch.value(), 1);
     assert_eq!(snapshot.member_count, 1);
     assert_eq!(snapshot.client_count, 1);
+    assert_eq!(control_plane.members()[0].node_id.as_str(), "member-a");
+    assert_eq!(control_plane.clients()[0].node_id.as_str(), "client-a");
     assert!(matches!(
         snapshot.last_command,
         Some(RaftMetadataCommand::ClientUpsert { ref node_id, .. })

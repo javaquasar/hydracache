@@ -31,16 +31,24 @@ Every cluster view carries `source`:
 
 - `live` means the daemon has a real grid/control-plane status source.
 - `modeled` means the daemon is exposing a local model because the real grid host
-  is not attached yet.
+  is not attached for that role.
 
 Console readers must treat missing or unknown `source` as `modeled`. Modeled
 views are useful, but they are not evidence of a live cluster. In particular,
 `/cluster/overview` renders modeled leader as `null`, even if older operator
 status still has a local placeholder.
 
-G9 remains the named prerequisite for production-live views: member-role daemon
-hosting of the real grid is required before a deployable server can consistently
-emit `source:"live"`. Until then, the console must show `modeled` plainly.
+For `role = "member"`, the daemon hosts an in-process grid-mode `HydraCache`
+member and emits `source:"live"` from the `RaftStyleMetadataControlPlane` member
+table. This proves a real member table/epoch/term for a single process. `local`
+and `client` roles stay `modeled`.
+
+The remaining G9 follow-up is networked daemon grid hosting: wiring the existing
+raft/chitchat/transport adapters into the standalone daemon so multiple
+processes form one cluster and expose an elected leader. That is tracked as
+[`TD-0008`](technical-debt/TD-0008-networked-daemon-grid-hosting.md); until it
+lands, a `live` member-role view is live for the in-process member table, not
+proof of a multi-node daemon election.
 
 ## `/cluster/overview`
 
@@ -80,7 +88,9 @@ cluster-grid, topology, and backup-age series.
 1. Port-forward the admin listener, for example
    `kubectl port-forward statefulset/hydracache 9091:9091`.
 2. Open `http://127.0.0.1:9091/console/`.
-3. Check the `source` badge first. Treat `modeled` as a constrained local view.
+3. Check the `source` badge first. Treat `modeled` as a constrained local view;
+   treat single-node `live` with `leader:null` as W6a in-process membership,
+   not as proof of a networked election.
 4. Check degraded state. If the console cannot reach `/cluster/overview`, it must
    show an explicit unreachable state rather than a stale healthy view.
 5. Correlate `/cluster/overview` lifecycle and partition data with `/metrics`

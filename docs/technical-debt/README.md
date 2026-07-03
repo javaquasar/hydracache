@@ -18,3 +18,4 @@ Each item should explain:
 - [TD-0005: Release-claim evidence gap (Hibernate L2 / JVM artifact)](TD-0005-release-claim-evidence-gap.md)
 - [TD-0006: Release-plan header status is not validated against the manifest](TD-0006-release-plan-status-validation.md)
 - [TD-0007: Operator lifecycle E2E coverage is a prepared-state snapshot, not a driven chain](TD-0007-operator-lifecycle-e2e-coverage.md)
+- [TD-0008: Networked daemon grid hosting is deferred after W6a](TD-0008-networked-daemon-grid-hosting.md)

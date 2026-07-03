@@ -57,7 +57,7 @@ async fn daemon_serves_metrics_and_cluster_overview_with_source_on_internal_port
         .unwrap();
     assert_eq!(metrics.status(), StatusCode::OK);
     let metrics_text = text_response(metrics).await;
-    assert!(metrics_text.contains("hydracache_cluster_members{source=\"modeled\"}"));
+    assert!(metrics_text.contains("hydracache_cluster_members{source=\"live\"} 1"));
 
     let overview = admin
         .routes()
@@ -66,8 +66,9 @@ async fn daemon_serves_metrics_and_cluster_overview_with_source_on_internal_port
         .unwrap();
     assert_eq!(overview.status(), StatusCode::OK);
     let overview_body = json_response(overview).await;
-    assert_eq!(overview_body["source"], "modeled");
+    assert_eq!(overview_body["source"], "live");
     assert!(overview_body["leader"].is_null());
+    assert_eq!(overview_body["members"].as_array().unwrap().len(), 1);
 
     let client = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
     let client_metrics = client

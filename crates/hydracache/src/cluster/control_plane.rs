@@ -215,6 +215,16 @@ impl RaftStyleMetadataControlPlane {
         }
     }
 
+    /// Return admitted member snapshots from the authoritative in-process table.
+    pub fn members(&self) -> Vec<ClusterMember> {
+        self.cluster.members()
+    }
+
+    /// Return connected client snapshots from the authoritative in-process table.
+    pub fn clients(&self) -> Vec<ClusterMember> {
+        self.cluster.clients()
+    }
+
     fn append_command(&self, command: RaftMetadataCommand) {
         let mut metadata = self.metadata.lock().expect("raft metadata poisoned");
         metadata.commit_index = metadata.commit_index.saturating_add(1);

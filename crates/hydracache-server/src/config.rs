@@ -304,6 +304,9 @@ pub enum ServerConfigError {
     /// External client API config is invalid.
     #[error("invalid client_api config: {0}")]
     InvalidClientApi(String),
+    /// Member grid host could not be constructed.
+    #[error("failed to start member grid host: {0}")]
+    GridHostStart(String),
     /// Admin and client/listen surfaces must be independently bindable.
     #[error("admin_api.listen_addr must differ from listen_addr")]
     AdminAddressConflicts,

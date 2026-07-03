@@ -137,11 +137,11 @@ mod admin_http {
 
         assert_eq!(response.status(), StatusCode::OK);
         let body = json_response(response).await;
-        assert_eq!(body["source"], "modeled");
-        assert_eq!(body["leader"], "local");
+        assert_eq!(body["source"], "live");
+        assert!(body["leader"].is_null());
         assert_eq!(body["term"], 1);
         assert_eq!(body["quorum_ok"], true);
-        assert_eq!(body["members"], 0);
+        assert_eq!(body["members"], 1);
         assert_eq!(body["reshard_phase"], "idle");
         assert_eq!(body["draining"], false);
     }
@@ -170,7 +170,7 @@ mod admin_http {
         let text = text_response(response).await;
         assert!(text.contains("# TYPE hydracache_cache_hits_total counter"));
         assert!(text.contains("# TYPE hydracache_cluster_members gauge"));
-        assert!(text.contains("hydracache_cluster_members{source=\"modeled\"} 0"));
+        assert!(text.contains("hydracache_cluster_members{source=\"live\"} 1"));
     }
 
     #[tokio::test]
@@ -207,7 +207,7 @@ mod admin_http {
             .unwrap();
         assert_eq!(metrics.status(), StatusCode::OK);
         let text = text_response(metrics).await;
-        assert!(text.contains("hydracache_cluster_members{source=\"modeled\"} 0"));
+        assert!(text.contains("hydracache_cluster_members{source=\"live\"} 1"));
     }
 
     #[tokio::test]

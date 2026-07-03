@@ -10,8 +10,8 @@ use std::sync::Arc;
 use thiserror::Error;
 
 use crate::cluster_status::{
-    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, MemberRole, ModeledClusterStatus,
-    Reachability, ReshardPhase, StatusSource,
+    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, LiveClusterStatus, MemberRole,
+    ModeledClusterStatus, Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
@@ -183,6 +183,16 @@ impl ServerRuntime {
     /// Validate config and construct a runtime.
     pub fn new(config: ServerConfig) -> Result<Self, ServerConfigError> {
         config.validate()?;
+        let (cache, cluster_status): (HydraCache, Arc<dyn ClusterStatusProvider>) =
+            match config.role {
+                ServerRole::Member => {
+                    let (cache, grid) = crate::grid_host::build_member(&config)?;
+                    (cache, Arc::new(LiveClusterStatus::new(grid)))
+                }
+                ServerRole::Local | ServerRole::Client => {
+                    (HydraCache::local().build(), Arc::new(ModeledClusterStatus))
+                }
+            };
         let client_surface = if config.client_api.enabled {
             Some(
                 ClientSurfaceRuntime::new(config.client_api.limits)
@@ -193,7 +203,7 @@ impl ServerRuntime {
         };
         Ok(Self {
             config,
-            cache: HydraCache::local().build(),
+            cache,
             services: ServiceSet::default(),
             state: ServerState::Created,
             storage_open: false,
@@ -201,7 +211,7 @@ impl ServerRuntime {
             accepting: false,
             flushed: false,
             client_surface,
-            cluster_status: Arc::new(ModeledClusterStatus),
+            cluster_status,
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_drain: None,
