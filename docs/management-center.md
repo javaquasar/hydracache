@@ -2,7 +2,9 @@
 
 HydraCache 0.57 adds a read-only Management Center for operating a running
 daemon. It is served from the internal admin surface at `/console/` and reads the
-same-origin endpoints `/cluster/overview` and `/metrics`.
+same-origin endpoints `/cluster/overview` and `/metrics`. Granular per-cache
+diagnostics are served on the same internal listener under
+`/actuator/hydracache/*`.
 
 The console is an observe-only surface. It does not call the authz-gated write
 API. Operational actions still flow through the Kubernetes operator or the admin
@@ -17,8 +19,8 @@ write endpoints:
 The admin listener defaults to `127.0.0.1:9091` and is intended for local
 operators, Kubernetes probes, Prometheus, and port-forwarded console sessions.
 Expose it as an internal service only. The public client surface uses
-`/client/v1/*`; `/metrics`, `/cluster/overview`, and `/console/` are not mounted
-there.
+`/client/v1/*`; `/metrics`, `/cluster/overview`, `/actuator/hydracache/*`, and
+`/console/` are not mounted there.
 
 When the console is served from `/console/`, browser reads to `/cluster/overview`
 and `/metrics` are same-origin and need no CORS policy. If an operator hosts the
@@ -66,6 +68,23 @@ It is a view, not a linearizable read. Consumers should poll it and replace the
 whole view. They should not infer hidden members, a current consistency level, or
 backup freshness from absent fields.
 
+## Actuator JSON
+
+`/cluster/overview` is the aggregated console view. `/actuator/hydracache/*` is
+the granular per-cache read-only actuator mounted on the same admin listener:
+
+- `GET /actuator/hydracache/health`
+- `GET /actuator/hydracache/caches`
+- `GET /actuator/hydracache/caches/{name}/diagnostics`
+- `GET /actuator/hydracache/caches/{name}/stats`
+- `GET /actuator/hydracache/cluster/staging-health`
+- `GET /actuator/hydracache/cluster/pilot-report`
+- `GET /actuator/hydracache/correctness`
+
+The standalone daemon registers its cache as `server`. Unknown cache names
+return `404`. These routes are read-only and remain available during drain, like
+`/metrics`.
+
 ## Prometheus
 
 Scrape `/metrics` on the same admin listener:
@@ -95,6 +114,8 @@ cluster-grid, topology, and backup-age series.
    show an explicit unreachable state rather than a stale healthy view.
 5. Correlate `/cluster/overview` lifecycle and partition data with `/metrics`
    counters before running any write action through the operator/admin API.
+6. Use `/actuator/hydracache/caches/server/diagnostics` for per-cache stats when
+   the aggregate overview is not detailed enough.
 
 ## Verification
 

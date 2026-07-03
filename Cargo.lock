@@ -1930,6 +1930,7 @@ version = "0.56.0"
 dependencies = [
  "axum",
  "hydracache",
+ "hydracache-actuator-axum",
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",
  "hydracache-observability",

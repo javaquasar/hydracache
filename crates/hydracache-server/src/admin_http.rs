@@ -6,6 +6,7 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use hydracache_actuator_axum::HydraCacheActuator;
 use hydracache_client_transport_axum::{
     HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
@@ -26,6 +27,8 @@ pub const ADMIN_METRICS_PATH: &str = "/metrics";
 pub const ADMIN_CONSOLE_PATH: &str = "/console";
 /// Read-only cluster overview path on the internal admin surface.
 pub const ADMIN_CLUSTER_OVERVIEW_PATH: &str = "/cluster/overview";
+/// Read-only per-cache actuator path on the internal admin surface.
+pub const ADMIN_ACTUATOR_PATH: &str = "/actuator/hydracache";
 /// Operator status path.
 pub const ADMIN_STATUS_PATH: &str = "/admin/status";
 /// Operator drain action path.
@@ -64,6 +67,11 @@ impl AdminHttpSurface {
 
     /// Return the axum router for `/healthz`, `/readyz`, and `/admin/*`.
     pub fn routes(&self) -> Router {
+        let actuator_registry = self
+            .runtime
+            .lock()
+            .expect("server runtime mutex")
+            .metrics_registry();
         Router::new()
             .route(ADMIN_HEALTHZ_PATH, get(healthz))
             .route(ADMIN_READYZ_PATH, get(readyz))
@@ -79,6 +87,10 @@ impl AdminHttpSurface {
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
             .route(ADMIN_BACKUP_PATH, post(admin_backup))
             .with_state(Arc::clone(&self.runtime))
+            .nest(
+                ADMIN_ACTUATOR_PATH,
+                HydraCacheActuator::routes_for(actuator_registry),
+            )
     }
 }
 

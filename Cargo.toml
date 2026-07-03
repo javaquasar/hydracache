@@ -56,6 +56,7 @@ diesel = { version = "2.3.10", default-features = false }
 futures-util = "0.3.32"
 hydracache-core = { path = "crates/hydracache-core", version = "0.56.0" }
 hydracache = { path = "crates/hydracache", version = "0.56.0" }
+hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.56.0" }
 hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.56.0" }
 hydracache-client = { path = "crates/hydracache-client", version = "0.56.0" }
 hydracache-client-protocol = { path = "crates/hydracache-client-protocol", version = "0.56.0" }
