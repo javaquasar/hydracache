@@ -1,0 +1,378 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f6f7;
+  --surface: #ffffff;
+  --surface-soft: #eef3f1;
+  --text: #1f262b;
+  --muted: #5f6b72;
+  --line: #d6dde0;
+  --green: #16835b;
+  --green-soft: #dff3eb;
+  --amber: #9a6415;
+  --amber-soft: #fff0d6;
+  --red: #b33a3a;
+  --red-soft: #fde5e3;
+  --teal: #12757c;
+  --violet: #6b5ca5;
+  --shadow: 0 1px 2px rgba(31, 38, 43, 0.08);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 72px;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.85rem;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: var(--text);
+  color: #fff;
+  font-weight: 800;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.15rem;
+  font-weight: 760;
+}
+
+h2 {
+  font-size: 0.98rem;
+}
+
+.brand p,
+.section-heading p,
+.metric-cell span,
+.metric-cell small,
+dt,
+.readonly-copy {
+  color: var(--muted);
+}
+
+.status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.source-badge,
+.readonly-badge,
+.trust-note {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 8px;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  font-size: 0.78rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.source-badge[data-source="live"] {
+  border-color: #a4ddc6;
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.source-badge[data-source="modeled"] {
+  border-color: #ead08e;
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.source-badge[data-source="unreachable"] {
+  border-color: #efb3ad;
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.readonly-badge {
+  background: #eceafb;
+  border-color: #d6d0f3;
+  color: var(--violet);
+}
+
+.page-shell {
+  display: grid;
+  gap: 1rem;
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.degraded {
+  border: 1px solid #efb3ad;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--red-soft);
+  color: var(--red);
+  font-weight: 700;
+}
+
+.summary-grid,
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.details-grid {
+  grid-template-columns: 1.1fr 1.4fr 1fr;
+}
+
+.metric-cell,
+.detail-panel,
+.topology-section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.metric-cell {
+  display: grid;
+  gap: 0.3rem;
+  min-height: 96px;
+  padding: 0.85rem;
+}
+
+.metric-cell strong {
+  overflow-wrap: anywhere;
+  font-size: 1.3rem;
+}
+
+.topology-section {
+  padding: 1rem;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+}
+
+.topology-shell {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.1fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+#topology-graph {
+  width: 100%;
+  min-height: 360px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfc;
+}
+
+.graph-link {
+  stroke: #b6c3c7;
+  stroke-width: 1.5;
+}
+
+.graph-node circle {
+  fill: var(--teal);
+  stroke: #ffffff;
+  stroke-width: 4;
+}
+
+.graph-node.leader circle {
+  fill: var(--green);
+}
+
+.graph-node circle[data-reachability="suspect"] {
+  fill: var(--amber);
+}
+
+.graph-node circle[data-reachability="unreachable"] {
+  fill: var(--red);
+}
+
+.graph-node text {
+  fill: var(--muted);
+  font-size: 0.72rem;
+  text-anchor: middle;
+}
+
+.member-list {
+  display: grid;
+  align-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.65rem;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.member-card {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 78px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--teal);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #fff;
+}
+
+.member-card[data-leader="true"] {
+  border-left-color: var(--green);
+}
+
+.member-card[data-reachability="suspect"] {
+  border-left-color: var(--amber);
+}
+
+.member-card[data-reachability="unreachable"] {
+  border-left-color: var(--red);
+}
+
+.member-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.member-topline strong {
+  overflow-wrap: anywhere;
+}
+
+.member-topline span {
+  border-radius: 8px;
+  padding: 0.1rem 0.45rem;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.member-card p {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.detail-panel {
+  min-height: 160px;
+  padding: 1rem;
+}
+
+.detail-panel h2 {
+  margin-bottom: 0.8rem;
+}
+
+dl {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+dt {
+  margin-bottom: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 720;
+}
+
+.metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.metric-pill {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 68px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: #fbfcfc;
+}
+
+.metric-pill small {
+  color: var(--muted);
+}
+
+.metric-pill strong {
+  overflow-wrap: anywhere;
+}
+
+code {
+  display: block;
+  margin-top: 0.45rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  background: #f1f3f4;
+  color: #2b343a;
+  font-size: 0.83rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .topbar,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .status-strip {
+    justify-content: flex-start;
+  }
+
+  .summary-grid,
+  .details-grid,
+  .topology-shell,
+  .metrics-strip {
+    grid-template-columns: 1fr;
+  }
+
+  #topology-graph {
+    min-height: 300px;
+  }
+}

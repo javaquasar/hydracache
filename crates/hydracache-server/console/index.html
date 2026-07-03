@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HydraCache Management Center</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">HC</span>
+        <div>
+          <h1>HydraCache Management Center</h1>
+          <p data-testid="poll-state">Connecting to admin surface</p>
+        </div>
+      </div>
+      <div class="status-strip" aria-label="Console status">
+        <span class="source-badge" data-testid="source-badge">loading</span>
+        <span class="readonly-badge" data-testid="readonly-badge">read only</span>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="degraded" data-testid="degraded-state" hidden></section>
+
+      <section class="summary-grid" aria-label="Cluster summary">
+        <div class="metric-cell" data-testid="leader">
+          <span>Leader</span>
+          <strong>loading</strong>
+          <small>term - / epoch -</small>
+        </div>
+        <div class="metric-cell" data-testid="partition-summary">
+          <span>Partitions</span>
+          <strong>loading</strong>
+          <small>under-replicated -</small>
+        </div>
+        <div class="metric-cell" data-testid="backup-age">
+          <span>Backup age</span>
+          <strong>loading</strong>
+          <small>worst known namespace</small>
+        </div>
+        <div class="metric-cell" data-testid="lifecycle-panel">
+          <span>Lifecycle</span>
+          <strong>loading</strong>
+          <small>upgrade -</small>
+        </div>
+      </section>
+
+      <section class="topology-section" aria-labelledby="topology-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="topology-title">Topology</h2>
+            <p data-testid="render-cap">waiting for members</p>
+          </div>
+          <span class="trust-note">point-in-time view</span>
+        </div>
+        <div class="topology-shell">
+          <svg
+            id="topology-graph"
+            data-testid="topology-graph"
+            viewBox="0 0 640 360"
+            role="img"
+            aria-label="Cluster topology graph"
+          ></svg>
+          <div class="member-list" data-testid="members-list"></div>
+        </div>
+      </section>
+
+      <section class="details-grid" aria-label="Cluster details">
+        <div class="detail-panel" data-testid="consistency-panel">
+          <h2>Consistency</h2>
+          <dl>
+            <div>
+              <dt>Configured default</dt>
+              <dd data-field="configured-default">-</dd>
+            </div>
+            <div>
+              <dt>Observed operations</dt>
+              <dd data-field="consistency-counts">-</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="detail-panel">
+          <h2>Metrics</h2>
+          <div class="metrics-strip" data-testid="metrics-strip">
+            <span>metrics unavailable</span>
+          </div>
+        </div>
+        <div class="detail-panel">
+          <h2>Write Path</h2>
+          <p class="readonly-copy">
+            Observe here. Mutations stay on the authz-gated admin API.
+          </p>
+          <code>POST /admin/drain</code>
+          <code>POST /admin/reshard</code>
+          <code>POST /admin/backup</code>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

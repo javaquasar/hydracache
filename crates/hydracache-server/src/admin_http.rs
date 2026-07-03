@@ -121,7 +121,7 @@ async fn metrics(State(runtime): State<SharedServerRuntime>) -> Response {
 async fn console_index() -> Response {
     (
         [(CONTENT_TYPE, "text/html; charset=utf-8")],
-        include_str!("../../../console/index.html"),
+        include_str!("../console/index.html"),
     )
         .into_response()
 }
@@ -129,7 +129,7 @@ async fn console_index() -> Response {
 async fn console_app() -> Response {
     (
         [(CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        include_str!("../../../console/app.js"),
+        include_str!("../console/app.js"),
     )
         .into_response()
 }
@@ -137,7 +137,7 @@ async fn console_app() -> Response {
 async fn console_style() -> Response {
     (
         [(CONTENT_TYPE, "text/css; charset=utf-8")],
-        include_str!("../../../console/style.css"),
+        include_str!("../console/style.css"),
     )
         .into_response()
 }
