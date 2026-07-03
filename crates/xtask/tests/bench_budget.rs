@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use xtask::bench_budget::{
     check_budget, load_measurements, parse_budget, BenchMeasurement, BenchMeasurements,
@@ -100,13 +100,36 @@ fn budget_toml_parser_keeps_section_ids() {
 #[test]
 fn criterion_estimates_directory_is_loaded() {
     let root = unique_temp_dir("criterion_estimates_directory_is_loaded");
-    let estimate_dir = root.join("hot_path").join("hit").join("new");
-    fs::create_dir_all(&estimate_dir).unwrap();
-    fs::write(
-        estimate_dir.join("estimates.json"),
-        r#"{"mean":{"point_estimate":123.0}}"#,
-    )
-    .unwrap();
+    write_criterion_estimate(&root, "hot_path/hit", "new", 123.0);
+
+    let loaded = load_measurements(&root).unwrap();
+
+    assert_eq!(
+        loaded.measurements["hot_path/hit"],
+        BenchMeasurement { mean_ns: 123.0 }
+    );
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn criterion_base_estimates_directory_is_loaded() {
+    let root = unique_temp_dir("criterion_base_estimates_directory_is_loaded");
+    write_criterion_estimate(&root, "hot_path/hit", "base", 123.0);
+
+    let loaded = load_measurements(&root).unwrap();
+
+    assert_eq!(
+        loaded.measurements["hot_path/hit"],
+        BenchMeasurement { mean_ns: 123.0 }
+    );
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn criterion_new_estimates_override_base() {
+    let root = unique_temp_dir("criterion_new_estimates_override_base");
+    write_criterion_estimate(&root, "hot_path/hit", "base", 200.0);
+    write_criterion_estimate(&root, "hot_path/hit", "new", 123.0);
 
     let loaded = load_measurements(&root).unwrap();
 
@@ -132,4 +155,17 @@ fn unique_temp_dir(name: &str) -> PathBuf {
     let path = std::env::temp_dir().join(format!("hydracache_xtask_{name}_{}", std::process::id()));
     let _ = fs::remove_dir_all(&path);
     path
+}
+
+fn write_criterion_estimate(root: &Path, id: &str, snapshot: &str, mean_ns: f64) {
+    let estimate_dir = id
+        .split('/')
+        .fold(root.to_path_buf(), |path, component| path.join(component))
+        .join(snapshot);
+    fs::create_dir_all(&estimate_dir).unwrap();
+    fs::write(
+        estimate_dir.join("estimates.json"),
+        format!(r#"{{"mean":{{"point_estimate":{mean_ns}}}}}"#),
+    )
+    .unwrap();
 }

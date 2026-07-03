@@ -298,12 +298,14 @@ fn collect_criterion_estimates(
         if path.file_name().and_then(|name| name.to_str()) != Some("estimates.json") {
             continue;
         }
-        if path
+        let Some(snapshot_dir_name) = path
             .parent()
             .and_then(Path::file_name)
             .and_then(|name| name.to_str())
-            != Some("new")
-        {
+        else {
+            continue;
+        };
+        if snapshot_dir_name != "new" && snapshot_dir_name != "base" {
             continue;
         }
         let bench_dir = path
@@ -323,12 +325,14 @@ fn collect_criterion_estimates(
                 path.display()
             ))
         })?;
-        measurements.measurements.insert(
-            id,
-            BenchMeasurement {
-                mean_ns: estimates.mean.point_estimate,
-            },
-        );
+        let measurement = BenchMeasurement {
+            mean_ns: estimates.mean.point_estimate,
+        };
+        if snapshot_dir_name == "new" {
+            measurements.measurements.insert(id, measurement);
+        } else {
+            measurements.measurements.entry(id).or_insert(measurement);
+        }
     }
     Ok(())
 }
