@@ -51,7 +51,7 @@ axum = "0.8"
 base64 = "0.22.1"
 bytes = "1.11.1"
 chitchat = "0.11.0"
-criterion = { version = "0.5", features = ["async_tokio"] }
+criterion = { version = "0.8", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
 futures-util = "0.3.32"
 hydracache-core = { path = "crates/hydracache-core", version = "0.57.0" }

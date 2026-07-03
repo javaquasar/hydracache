@@ -1,9 +1,10 @@
 use std::error::Error;
 use std::fmt;
+use std::hint::black_box;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use hydracache::{CacheOptions, HydraCache};
 use tokio::runtime::Runtime;
 
