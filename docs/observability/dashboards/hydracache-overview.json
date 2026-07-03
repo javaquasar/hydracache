@@ -1,0 +1,134 @@
+{
+  "uid": "hydracache-overview",
+  "title": "HydraCache Overview",
+  "tags": ["hydracache", "management-center"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Cache Hit Ratio",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hydracache_cache_hit_ratio",
+          "legendFormat": "{{cache}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Cache Traffic",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(hydracache_cache_hits_total[5m])",
+          "legendFormat": "hits {{cache}}"
+        },
+        {
+          "refId": "B",
+          "expr": "rate(hydracache_cache_misses_total[5m])",
+          "legendFormat": "misses {{cache}}"
+        },
+        {
+          "refId": "C",
+          "expr": "rate(hydracache_cache_loads_total[5m])",
+          "legendFormat": "loads {{cache}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Admission Pressure",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "increase(hydracache_admission_rejected_total[5m])",
+          "legendFormat": "rejected"
+        },
+        {
+          "refId": "B",
+          "expr": "hydracache_admission_in_flight",
+          "legendFormat": "in flight"
+        },
+        {
+          "refId": "C",
+          "expr": "hydracache_admission_queue_depth",
+          "legendFormat": "queue"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Topology",
+      "type": "stat",
+      "gridPos": { "h": 7, "w": 8, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hydracache_cluster_members",
+          "legendFormat": "members {{source}}"
+        },
+        {
+          "refId": "B",
+          "expr": "hydracache_cluster_leader",
+          "legendFormat": "leader {{source}} {{node}}"
+        },
+        {
+          "refId": "C",
+          "expr": "hydracache_cluster_epoch",
+          "legendFormat": "epoch {{source}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Replication And Repair",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 8, "x": 8, "y": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hydracache_under_replicated_keys",
+          "legendFormat": "under replicated"
+        },
+        {
+          "refId": "B",
+          "expr": "increase(hydracache_replication_backpressure_total[5m])",
+          "legendFormat": "backpressure"
+        },
+        {
+          "refId": "C",
+          "expr": "hydracache_tombstone_repair_debt",
+          "legendFormat": "repair debt"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Backup Age",
+      "type": "stat",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hydracache_backup_age_seconds",
+          "legendFormat": "backup age {{source}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    }
+  ]
+}

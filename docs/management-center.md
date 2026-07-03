@@ -102,6 +102,16 @@ The metric catalog is registered in `docs/COMPAT.md`. Topology metrics carry a
 bounded `source="live|modeled"` label, and the exporter emits cache, admission,
 cluster-grid, topology, and backup-age series.
 
+## Grafana Dashboard
+
+Import
+[`docs/observability/dashboards/hydracache-overview.json`](observability/dashboards/hydracache-overview.json)
+into Grafana with Prometheus as the datasource. The dashboard covers hit ratio,
+cache traffic, admission pressure, topology, replication/repair, and backup age.
+`cargo xtask verify` includes a drift guard that parses every PromQL `expr` in
+the dashboard and rejects references to metrics not emitted by
+`registered_metric_names()`.
+
 ## Day-2 Observe Flow
 
 1. Port-forward the admin listener, for example
