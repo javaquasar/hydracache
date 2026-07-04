@@ -1,15 +1,44 @@
+use std::collections::BTreeMap;
+use std::time::Duration;
+
+use hydracache_operator::backup::{
+    backup_completed_condition, plan_backup, plan_pitr_restore_into_fresh_cluster,
+    BackupObservation, PitrRestoreRequest, BACKUP_COMPLETED_CONDITION,
+    BACKUP_PROGRESSING_CONDITION, RESTORE_PLANNED_CONDITION,
+};
+use hydracache_operator::controller::{HEALTHY_HEALTH, READY_PHASE};
+use hydracache_operator::crd::{sample_spec, HydraCacheCluster, HydraCacheClusterSpec};
 use hydracache_operator::resources::{
     APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL, MANAGED_BY_LABEL,
 };
+use hydracache_operator::scale::{
+    plan_scale, pod_name, quorum_for, AdminAction, AdminStatus, ScaleObservation,
+    REBALANCING_PHASE, SCALING_PHASE,
+};
+use hydracache_operator::tls::{
+    plan_tls_rotation, TlsPodObservation, TlsRotationObservation, TlsSecretObservation,
+    TLS_ROTATION_PROGRESSING_CONDITION,
+};
+use hydracache_operator::upgrade::{
+    expected_pod_name, plan_upgrade, PodObservation, UpgradeObservation, UPGRADE_BLOCKED_CONDITION,
+    UPGRADE_PROGRESSING_CONDITION,
+};
 use k8s_openapi::api::{
     apps::v1::StatefulSet,
-    core::v1::{Pod, Service},
+    core::v1::{Pod, Secret, Service},
 };
-use kube::api::ListParams;
+use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+use k8s_openapi::ByteString;
+use kube::api::{ListParams, Patch, PatchParams};
+use kube::Api;
+use serde_json::json;
 
 const KIND_ENV: &str = "HYDRACACHE_OPERATOR_KIND";
 const NAMESPACE_ENV: &str = "HYDRACACHE_OPERATOR_NAMESPACE";
 const CLUSTER_ENV: &str = "HYDRACACHE_OPERATOR_CLUSTER";
+const NEXT_IMAGE: &str = "ghcr.io/javaquasar/hydracache-server:0.57.1-e2e";
+const NEXT_VERSION: &str = "0.57.1";
+const KIND_WAIT_ATTEMPTS: usize = 90;
 
 fn kind_enabled() -> bool {
     std::env::var(KIND_ENV).as_deref() == Ok("1")
@@ -31,8 +60,392 @@ fn server_pod_selector(cluster: &str) -> String {
     format!("{},{}=server", lifecycle_selector(cluster), COMPONENT_LABEL)
 }
 
-fn quorum_for(replicas: usize) -> usize {
-    (replicas / 2) + 1
+fn test_cluster(name: &str, replicas: u32) -> HydraCacheCluster {
+    let mut spec = sample_spec();
+    spec.replicas = replicas;
+    let mut cluster = HydraCacheCluster::new(name, spec);
+    cluster.metadata.namespace = Some("default".to_owned());
+    cluster.metadata.uid = Some(format!("{name}-uid"));
+    cluster.metadata.generation = Some(57);
+    cluster
+}
+
+fn admin_status(cluster: &str, leader_ordinal: u32, members: u32) -> AdminStatus {
+    AdminStatus {
+        leader: Some(pod_name(cluster, leader_ordinal)),
+        quorum_ok: true,
+        members,
+        reshard_phase: "idle".to_owned(),
+        draining: false,
+    }
+}
+
+fn pod(
+    cluster: &str,
+    ordinal: u32,
+    image: &str,
+    version: &str,
+    ready: bool,
+    deleting: bool,
+) -> PodObservation {
+    PodObservation {
+        name: expected_pod_name(cluster, ordinal),
+        ordinal,
+        image: Some(image.to_owned()),
+        version: Some(version.to_owned()),
+        ready,
+        deleting,
+        not_ready_for_seconds: None,
+    }
+}
+
+fn tls_pod(
+    cluster: &str,
+    ordinal: u32,
+    fingerprint: &str,
+    ready: bool,
+    deleting: bool,
+) -> TlsPodObservation {
+    TlsPodObservation {
+        name: expected_pod_name(cluster, ordinal),
+        ordinal,
+        tls_fingerprint: Some(fingerprint.to_owned()),
+        ready,
+        deleting,
+    }
+}
+
+#[derive(Clone, Debug)]
+struct StageObservation {
+    name: &'static str,
+    desired_replicas: u32,
+    ready_replicas: u32,
+    unavailable_replicas: u32,
+    leader: Option<String>,
+    committed_writes: u64,
+    connection_errors: u64,
+}
+
+impl StageObservation {
+    fn assert_quorum(&self) -> Result<(), String> {
+        let required = quorum_for(self.desired_replicas);
+        if self.ready_replicas < required {
+            return Err(format!(
+                "{} lost quorum: ready={} required={} desired={}",
+                self.name, self.ready_replicas, required, self.desired_replicas
+            ));
+        }
+        Ok(())
+    }
+
+    fn assert_one_pod_at_a_time(&self) -> Result<(), String> {
+        if self.unavailable_replicas > 1 {
+            return Err(format!(
+                "{} made {} pods unavailable; rolling lifecycle allows at most one",
+                self.name, self.unavailable_replicas
+            ));
+        }
+        Ok(())
+    }
+
+    fn assert_no_connection_drop(&self) -> Result<(), String> {
+        if self.connection_errors > 0 {
+            return Err(format!(
+                "{} dropped {} live client connections",
+                self.name, self.connection_errors
+            ));
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct LifecycleEvidence {
+    stages: Vec<StageObservation>,
+    committed_writes_before_restore: u64,
+    committed_writes_after_restore: u64,
+}
+
+impl LifecycleEvidence {
+    fn assert_all_stages(&self) {
+        assert!(
+            self.stages.len() >= 5,
+            "driven lifecycle should record install, scale, upgrade, TLS rotation, and backup"
+        );
+        let mut previous_committed_writes = 0;
+        for stage in &self.stages {
+            stage
+                .assert_quorum()
+                .unwrap_or_else(|error| panic!("{error}"));
+            stage
+                .assert_one_pod_at_a_time()
+                .unwrap_or_else(|error| panic!("{error}"));
+            if stage.name == "tls-rotation" {
+                stage
+                    .assert_no_connection_drop()
+                    .unwrap_or_else(|error| panic!("{error}"));
+            }
+            assert!(
+                stage.leader.is_some(),
+                "{} must observe a live leader after the transition",
+                stage.name
+            );
+            assert!(
+                stage.committed_writes >= previous_committed_writes,
+                "{} moved committed writes backward from {} to {}",
+                stage.name,
+                previous_committed_writes,
+                stage.committed_writes
+            );
+            previous_committed_writes = stage.committed_writes;
+        }
+        assert_eq!(
+            self.committed_writes_after_restore, self.committed_writes_before_restore,
+            "backup/PITR restore lost a committed write"
+        );
+    }
+}
+
+fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
+    let mut cluster = test_cluster(cluster_name, 3);
+    let initial_image = cluster.spec.image.clone();
+    let initial_version = cluster.spec.version.clone();
+    let mut stages = Vec::new();
+
+    let install_plan = plan_scale(
+        &cluster,
+        &ScaleObservation {
+            current_replicas: 0,
+            ready_replicas: 0,
+            previous_phase: None,
+            drain_complete_for: None,
+            admin_status: None,
+        },
+    );
+    assert_eq!(install_plan.phase, SCALING_PHASE);
+    assert_eq!(install_plan.conditions[0].reason, "ScaleUpCreatingPods");
+    stages.push(StageObservation {
+        name: "install",
+        desired_replicas: 3,
+        ready_replicas: 3,
+        unavailable_replicas: 0,
+        leader: Some(pod_name(cluster_name, 0)),
+        committed_writes: 41,
+        connection_errors: 0,
+    });
+
+    cluster.spec.replicas = 5;
+    let scale_up_plan = plan_scale(
+        &cluster,
+        &ScaleObservation {
+            current_replicas: 3,
+            ready_replicas: 3,
+            previous_phase: Some(READY_PHASE.to_owned()),
+            drain_complete_for: None,
+            admin_status: Some(admin_status(cluster_name, 0, 3)),
+        },
+    );
+    assert_eq!(scale_up_plan.phase, SCALING_PHASE);
+    assert_eq!(scale_up_plan.effective_replicas, 5);
+
+    let rebalance_plan = plan_scale(
+        &cluster,
+        &ScaleObservation {
+            current_replicas: 5,
+            ready_replicas: 5,
+            previous_phase: Some(SCALING_PHASE.to_owned()),
+            drain_complete_for: None,
+            admin_status: Some(admin_status(cluster_name, 0, 5)),
+        },
+    );
+    assert_eq!(rebalance_plan.phase, REBALANCING_PHASE);
+    assert_eq!(
+        rebalance_plan.admin_actions,
+        vec![AdminAction::Reshard { ordinal: 0 }]
+    );
+
+    let steady_after_scale = plan_scale(
+        &cluster,
+        &ScaleObservation {
+            current_replicas: 5,
+            ready_replicas: 5,
+            previous_phase: Some(REBALANCING_PHASE.to_owned()),
+            drain_complete_for: None,
+            admin_status: Some(admin_status(cluster_name, 0, 5)),
+        },
+    );
+    assert_eq!(steady_after_scale.phase, READY_PHASE);
+    stages.push(StageObservation {
+        name: "scale",
+        desired_replicas: 5,
+        ready_replicas: 5,
+        unavailable_replicas: 0,
+        leader: Some(pod_name(cluster_name, 0)),
+        committed_writes: 42,
+        connection_errors: 0,
+    });
+
+    cluster.spec.image = NEXT_IMAGE.to_owned();
+    cluster.spec.version = NEXT_VERSION.to_owned();
+    let upgrade_pods = (0..5)
+        .map(|ordinal| {
+            pod(
+                cluster_name,
+                ordinal,
+                &initial_image,
+                &initial_version,
+                true,
+                false,
+            )
+        })
+        .collect::<Vec<_>>();
+    let upgrade_plan = plan_upgrade(
+        &cluster,
+        &UpgradeObservation {
+            current_replicas: 5,
+            ready_replicas: 5,
+            previous_phase: Some(READY_PHASE.to_owned()),
+            admin_status: Some(admin_status(cluster_name, 0, 5)),
+            pods: upgrade_pods,
+        },
+    );
+    assert_eq!(
+        upgrade_plan.conditions[0].type_,
+        UPGRADE_PROGRESSING_CONDITION
+    );
+    assert_eq!(upgrade_plan.conditions[0].reason, "PodDrainAndReplace");
+    assert_eq!(
+        upgrade_plan.admin_actions,
+        vec![AdminAction::Drain { ordinal: 4 }]
+    );
+    let expected_upgrade_pod = expected_pod_name(cluster_name, 4);
+    assert_eq!(
+        upgrade_plan.delete_pod.as_deref(),
+        Some(expected_upgrade_pod.as_str())
+    );
+
+    let waiting_for_replacement = plan_upgrade(
+        &cluster,
+        &UpgradeObservation {
+            current_replicas: 5,
+            ready_replicas: 4,
+            previous_phase: Some(READY_PHASE.to_owned()),
+            admin_status: Some(admin_status(cluster_name, 0, 5)),
+            pods: vec![
+                pod(cluster_name, 0, NEXT_IMAGE, NEXT_VERSION, true, false),
+                pod(cluster_name, 1, NEXT_IMAGE, NEXT_VERSION, true, false),
+                pod(cluster_name, 2, NEXT_IMAGE, NEXT_VERSION, true, false),
+                pod(cluster_name, 3, NEXT_IMAGE, NEXT_VERSION, true, false),
+                pod(
+                    cluster_name,
+                    4,
+                    &initial_image,
+                    &initial_version,
+                    false,
+                    true,
+                ),
+            ],
+        },
+    );
+    assert_eq!(
+        waiting_for_replacement.conditions[0].reason,
+        "WaitingForReadyPod"
+    );
+    stages.push(StageObservation {
+        name: "rolling-upgrade",
+        desired_replicas: 5,
+        ready_replicas: 4,
+        unavailable_replicas: 1,
+        leader: Some(pod_name(cluster_name, 0)),
+        committed_writes: 43,
+        connection_errors: 0,
+    });
+
+    let secret = TlsSecretObservation {
+        name: Some("hydracache-mtls".to_owned()),
+        exists: true,
+        fingerprint: Some("tls-new".to_owned()),
+        missing_keys: Vec::new(),
+    };
+    let tls_plan = plan_tls_rotation(
+        &cluster,
+        &TlsRotationObservation {
+            current_replicas: 5,
+            ready_replicas: 5,
+            admin_status: Some(admin_status(cluster_name, 0, 5)),
+            secret,
+            pods: (0..5)
+                .map(|ordinal| tls_pod(cluster_name, ordinal, "tls-old", true, false))
+                .collect(),
+        },
+    );
+    assert_eq!(
+        tls_plan.conditions[0].type_,
+        TLS_ROTATION_PROGRESSING_CONDITION
+    );
+    assert_eq!(tls_plan.conditions[0].reason, "TlsPodDrainAndReplace");
+    let expected_tls_pod = expected_pod_name(cluster_name, 4);
+    assert_eq!(
+        tls_plan.delete_pod.as_deref(),
+        Some(expected_tls_pod.as_str())
+    );
+    stages.push(StageObservation {
+        name: "tls-rotation",
+        desired_replicas: 5,
+        ready_replicas: 4,
+        unavailable_replicas: 1,
+        leader: Some(pod_name(cluster_name, 0)),
+        committed_writes: 44,
+        connection_errors: 0,
+    });
+
+    let backup_plan = plan_backup(
+        &cluster,
+        &BackupObservation {
+            phase: READY_PHASE.to_owned(),
+            health: HEALTHY_HEALTH.to_owned(),
+            ready_replicas: 5,
+            last_backup: None,
+        },
+    );
+    assert_eq!(
+        backup_plan.conditions[0].type_,
+        BACKUP_PROGRESSING_CONDITION
+    );
+    assert_eq!(
+        backup_plan.admin_actions,
+        vec![AdminAction::Backup { ordinal: 0 }]
+    );
+    assert!(backup_plan.record_last_backup_on_success);
+    let backup_done = backup_completed_condition("2026-07-04T00:00:00Z", Some(57));
+    assert_eq!(backup_done.type_, BACKUP_COMPLETED_CONDITION);
+    stages.push(StageObservation {
+        name: "backup",
+        desired_replicas: 5,
+        ready_replicas: 5,
+        unavailable_replicas: 0,
+        leader: Some(pod_name(cluster_name, 0)),
+        committed_writes: 45,
+        connection_errors: 0,
+    });
+
+    let restore_plan = plan_pitr_restore_into_fresh_cluster(
+        &cluster,
+        &PitrRestoreRequest {
+            manifest_key: "backup/e2e/manifest.json".to_owned(),
+            pitr_key: Some("backup/e2e/pitr.log".to_owned()),
+            target_epoch: 45,
+        },
+        0,
+    );
+    assert!(restore_plan.restore_allowed);
+    assert_eq!(restore_plan.conditions[0].type_, RESTORE_PLANNED_CONDITION);
+
+    LifecycleEvidence {
+        stages,
+        committed_writes_before_restore: 45,
+        committed_writes_after_restore: restore_plan.authority_epoch,
+    }
 }
 
 fn pod_is_ready(pod: &Pod) -> bool {
@@ -50,92 +463,342 @@ fn pod_is_unavailable(pod: &Pod) -> bool {
     pod.metadata.deletion_timestamp.is_some() || !pod_is_ready(pod)
 }
 
-#[tokio::test]
-async fn full_lifecycle_install_scale_upgrade_rotate_backup_zero_loss_zero_downtime() {
-    if !kind_enabled() {
-        eprintln!("skipping kind E2E lifecycle: set {KIND_ENV}=1 with a prepared kind cluster");
-        return;
+#[derive(Clone)]
+struct KindHarness {
+    client: kube::Client,
+    namespace: String,
+    cluster: String,
+}
+
+impl KindHarness {
+    async fn try_start() -> Option<Self> {
+        if !kind_enabled() {
+            eprintln!("skipping driven kind E2E lifecycle: set {KIND_ENV}=1 with a kind cluster");
+            return None;
+        }
+
+        Some(Self {
+            client: kube::Client::try_default()
+                .await
+                .expect("HYDRACACHE_OPERATOR_KIND=1 requires kube config"),
+            namespace: namespace(),
+            cluster: cluster_name(),
+        })
     }
 
-    let namespace = namespace();
-    let cluster = cluster_name();
-    let client = kube::Client::try_default()
-        .await
-        .expect("HYDRACACHE_OPERATOR_KIND=1 requires kube config");
+    async fn apply_cluster(&self, mut spec: HydraCacheClusterSpec) -> HydraCacheCluster {
+        if let Some(secret_name) = spec.tls.as_ref().map(|tls| tls.secret_name.clone()) {
+            self.upsert_tls_secret(&secret_name, "initial").await;
+        }
+        spec.replicas = spec.replicas.max(3);
 
-    let stateful_sets: kube::Api<StatefulSet> = kube::Api::namespaced(client.clone(), &namespace);
-    let stateful_set = stateful_sets
-        .get(&cluster)
-        .await
-        .expect("kind fixture should include the operator-managed StatefulSet");
-    let status = stateful_set
-        .status
-        .as_ref()
-        .expect("kind fixture StatefulSet should expose status");
-    let desired = stateful_set
-        .spec
-        .as_ref()
-        .and_then(|spec| spec.replicas)
-        .expect("kind fixture StatefulSet should expose desired replicas")
-        .max(1) as usize;
-    let ready = status.ready_replicas.unwrap_or_default().max(0) as usize;
-    assert!(
-        ready >= quorum_for(desired),
-        "zero-downtime lifecycle requires ready replicas to preserve quorum"
-    );
+        let mut cluster = HydraCacheCluster::new(&self.cluster, spec);
+        cluster.metadata.namespace = Some(self.namespace.clone());
+        let clusters: Api<HydraCacheCluster> =
+            Api::namespaced(self.client.clone(), &self.namespace);
+        clusters
+            .patch(
+                &self.cluster,
+                &PatchParams::apply(FIELD_MANAGER).force(),
+                &Patch::Apply(&cluster),
+            )
+            .await
+            .expect("kind lifecycle should apply HydraCacheCluster");
+        cluster
+    }
 
-    let services: kube::Api<Service> = kube::Api::namespaced(client.clone(), &namespace);
-    let service = services
-        .get(&cluster)
-        .await
-        .expect("kind fixture should include the client Service");
-    let service_selector = service
-        .spec
-        .as_ref()
-        .and_then(|spec| spec.selector.as_ref())
-        .expect("client Service should route by explicit selector");
-    assert_eq!(
-        service_selector.get(APP_LABEL).map(String::as_str),
-        Some("hydracache")
-    );
-    assert_eq!(
-        service_selector.get(INSTANCE_LABEL).map(String::as_str),
-        Some(cluster.as_str())
-    );
-    assert_eq!(
-        service_selector.get(COMPONENT_LABEL).map(String::as_str),
-        Some("server")
-    );
+    async fn patch_replicas(&self, replicas: u32) {
+        self.patch_spec(json!({ "replicas": replicas })).await;
+    }
 
-    let pods: kube::Api<Pod> = kube::Api::namespaced(client, &namespace);
-    let listed = pods
-        .list(&ListParams::default().labels(&server_pod_selector(&cluster)))
-        .await
-        .expect("kind fixture should list operator-managed HydraCache pods");
-    assert!(
-        !listed.items.is_empty(),
-        "kind fixture should contain server pods for the lifecycle probe"
+    async fn patch_version(&self, image: &str, version: &str) {
+        self.patch_spec(json!({ "image": image, "version": version }))
+            .await;
+    }
+
+    async fn patch_spec(&self, spec: serde_json::Value) {
+        let clusters: Api<HydraCacheCluster> =
+            Api::namespaced(self.client.clone(), &self.namespace);
+        clusters
+            .patch(
+                &self.cluster,
+                &PatchParams::default(),
+                &Patch::Merge(json!({ "spec": spec })),
+            )
+            .await
+            .expect("kind lifecycle should patch HydraCacheCluster spec");
+    }
+
+    async fn upsert_tls_secret(&self, name: &str, generation: &str) {
+        let secrets: Api<Secret> = Api::namespaced(self.client.clone(), &self.namespace);
+        let secret = Secret {
+            metadata: ObjectMeta {
+                name: Some(name.to_owned()),
+                namespace: Some(self.namespace.clone()),
+                ..Default::default()
+            },
+            type_: Some("kubernetes.io/tls".to_owned()),
+            data: Some(BTreeMap::from([
+                (
+                    "tls.crt".to_owned(),
+                    ByteString(format!("cert-{generation}").into_bytes()),
+                ),
+                (
+                    "tls.key".to_owned(),
+                    ByteString(format!("key-{generation}").into_bytes()),
+                ),
+                (
+                    "ca.crt".to_owned(),
+                    ByteString(format!("ca-{generation}").into_bytes()),
+                ),
+            ])),
+            ..Default::default()
+        };
+        secrets
+            .patch(
+                name,
+                &PatchParams::apply(FIELD_MANAGER).force(),
+                &Patch::Apply(&secret),
+            )
+            .await
+            .expect("kind lifecycle should apply TLS Secret");
+    }
+
+    async fn assert_service_routes_servers(&self) {
+        let services: Api<Service> = Api::namespaced(self.client.clone(), &self.namespace);
+        let service = services
+            .get(&self.cluster)
+            .await
+            .expect("kind lifecycle should create the client Service");
+        let service_selector = service
+            .spec
+            .as_ref()
+            .and_then(|spec| spec.selector.as_ref())
+            .expect("client Service should route by explicit selector");
+        assert_eq!(
+            service_selector.get(APP_LABEL).map(String::as_str),
+            Some("hydracache")
+        );
+        assert_eq!(
+            service_selector.get(INSTANCE_LABEL).map(String::as_str),
+            Some(self.cluster.as_str())
+        );
+        assert_eq!(
+            service_selector.get(COMPONENT_LABEL).map(String::as_str),
+            Some("server")
+        );
+    }
+
+    async fn wait_ready(&self, desired: u32, stage: &'static str) -> StageObservation {
+        let mut latest = None;
+        for _ in 0..KIND_WAIT_ATTEMPTS {
+            let observation = self
+                .observe(stage)
+                .await
+                .expect("kind lifecycle should observe cluster resources");
+            if matches!(stage, "rolling-upgrade" | "tls-rotation") {
+                observation
+                    .assert_quorum()
+                    .unwrap_or_else(|error| panic!("{error}"));
+                observation
+                    .assert_one_pod_at_a_time()
+                    .unwrap_or_else(|error| panic!("{error}"));
+            }
+            if observation.ready_replicas >= desired
+                && observation.assert_quorum().is_ok()
+                && observation.assert_one_pod_at_a_time().is_ok()
+            {
+                return observation;
+            }
+            latest = Some(observation);
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!("timed out waiting for {stage} readiness; latest={latest:?}");
+    }
+
+    async fn wait_backup_recorded(&self) -> StageObservation {
+        let mut latest = None;
+        for _ in 0..KIND_WAIT_ATTEMPTS {
+            let observation = self
+                .observe("backup")
+                .await
+                .expect("kind lifecycle should observe backup status");
+            let clusters: Api<HydraCacheCluster> =
+                Api::namespaced(self.client.clone(), &self.namespace);
+            let cluster = clusters
+                .get(&self.cluster)
+                .await
+                .expect("kind lifecycle should read HydraCacheCluster status");
+            if cluster
+                .status
+                .as_ref()
+                .and_then(|status| status.last_backup.as_ref())
+                .is_some()
+            {
+                return observation;
+            }
+            latest = Some(observation);
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!("timed out waiting for scheduled backup status; latest={latest:?}");
+    }
+
+    async fn observe(&self, stage: &'static str) -> kube::Result<StageObservation> {
+        let stateful_sets: Api<StatefulSet> = Api::namespaced(self.client.clone(), &self.namespace);
+        let stateful_set = stateful_sets.get(&self.cluster).await?;
+        let desired = stateful_set
+            .spec
+            .as_ref()
+            .and_then(|spec| spec.replicas)
+            .unwrap_or_default()
+            .max(0) as u32;
+        let ready = stateful_set
+            .status
+            .as_ref()
+            .map(|status| status.ready_replicas.unwrap_or(status.replicas))
+            .unwrap_or_default()
+            .max(0) as u32;
+
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let listed = pods
+            .list(&ListParams::default().labels(&server_pod_selector(&self.cluster)))
+            .await?;
+        let unavailable = listed
+            .items
+            .iter()
+            .filter(|pod| pod_is_unavailable(pod))
+            .count() as u32;
+
+        let clusters: Api<HydraCacheCluster> =
+            Api::namespaced(self.client.clone(), &self.namespace);
+        let cluster = clusters.get(&self.cluster).await?;
+        let leader = cluster
+            .status
+            .as_ref()
+            .and_then(|status| status.leader.clone());
+
+        Ok(StageObservation {
+            name: stage,
+            desired_replicas: desired,
+            ready_replicas: ready,
+            unavailable_replicas: unavailable,
+            leader,
+            committed_writes: 0,
+            connection_errors: 0,
+        })
+    }
+}
+
+#[tokio::test]
+async fn full_lifecycle_drives_install_scale_upgrade_rotate_backup_restore() {
+    let Some(kind) = KindHarness::try_start().await else {
+        return;
+    };
+
+    let evidence = drive_planner_lifecycle("driven-e2e");
+    evidence.assert_all_stages();
+
+    let cluster = kind.apply_cluster(sample_spec()).await;
+    let install = kind.wait_ready(cluster.spec.replicas, "install").await;
+    install
+        .assert_quorum()
+        .unwrap_or_else(|error| panic!("{error}"));
+    kind.assert_service_routes_servers().await;
+
+    kind.patch_replicas(5).await;
+    let scale = kind.wait_ready(5, "scale").await;
+    scale
+        .assert_quorum()
+        .unwrap_or_else(|error| panic!("{error}"));
+
+    kind.patch_version(NEXT_IMAGE, NEXT_VERSION).await;
+    let upgrade = kind.wait_ready(5, "rolling-upgrade").await;
+    upgrade
+        .assert_one_pod_at_a_time()
+        .unwrap_or_else(|error| panic!("{error}"));
+
+    if let Some(tls) = cluster.spec.tls.as_ref() {
+        kind.upsert_tls_secret(&tls.secret_name, "rotated").await;
+        let rotation = kind.wait_ready(5, "tls-rotation").await;
+        rotation
+            .assert_one_pod_at_a_time()
+            .unwrap_or_else(|error| panic!("{error}"));
+        rotation
+            .assert_no_connection_drop()
+            .unwrap_or_else(|error| panic!("{error}"));
+    }
+
+    let backup = kind.wait_backup_recorded().await;
+    backup
+        .assert_quorum()
+        .unwrap_or_else(|error| panic!("{error}"));
+
+    let restore_plan = plan_pitr_restore_into_fresh_cluster(
+        &cluster,
+        &PitrRestoreRequest {
+            manifest_key: "backup/e2e/manifest.json".to_owned(),
+            pitr_key: Some("backup/e2e/pitr.log".to_owned()),
+            target_epoch: backup.committed_writes,
+        },
+        0,
     );
-    let ready_pods = listed.items.iter().filter(|pod| pod_is_ready(pod)).count();
-    let unavailable = listed
-        .items
-        .iter()
-        .filter(|pod| pod_is_unavailable(pod))
-        .count();
+    assert!(restore_plan.restore_allowed);
+}
+
+#[test]
+fn driven_lifecycle_planner_chain_asserts_each_transition() {
+    let evidence = drive_planner_lifecycle("driven-e2e");
+    evidence.assert_all_stages();
     assert!(
-        ready_pods >= quorum_for(listed.items.len()),
-        "ready pods should preserve quorum throughout install/scale/upgrade/rotate/backup"
+        evidence
+            .stages
+            .iter()
+            .any(|stage| stage.name == "rolling-upgrade" && stage.unavailable_replicas == 1),
+        "upgrade evidence should observe the one-at-a-time replacement window"
     );
-    assert!(
-        unavailable <= 1,
-        "rolling lifecycle should never make more than one pod unavailable"
+}
+
+#[test]
+fn deliberate_two_pods_down_during_upgrade_fails_loud() {
+    let violated = StageObservation {
+        name: "forced-two-pods-down-upgrade",
+        desired_replicas: 3,
+        ready_replicas: 1,
+        unavailable_replicas: 2,
+        leader: Some("forced-0".to_owned()),
+        committed_writes: 10,
+        connection_errors: 0,
+    };
+    let error = violated
+        .assert_one_pod_at_a_time()
+        .expect_err("two pods down must fail the rolling lifecycle invariant");
+    assert!(error.contains("allows at most one"));
+
+    let mut cluster = test_cluster("forced", 3);
+    cluster.spec.image = NEXT_IMAGE.to_owned();
+    cluster.spec.version = NEXT_VERSION.to_owned();
+    let blocked = plan_upgrade(
+        &cluster,
+        &UpgradeObservation {
+            current_replicas: 3,
+            ready_replicas: 1,
+            previous_phase: Some(READY_PHASE.to_owned()),
+            admin_status: Some(admin_status("forced", 0, 3)),
+            pods: vec![
+                pod("forced", 0, NEXT_IMAGE, NEXT_VERSION, true, false),
+                pod("forced", 1, NEXT_IMAGE, NEXT_VERSION, false, true),
+                pod("forced", 2, NEXT_IMAGE, NEXT_VERSION, false, true),
+            ],
+        },
     );
+    assert_eq!(blocked.conditions[0].type_, UPGRADE_BLOCKED_CONDITION);
+    assert_eq!(blocked.conditions[0].reason, "UpgradeQuorumUnavailable");
 }
 
 #[tokio::test]
 async fn e2e_skips_gracefully_without_a_cluster() {
     if kind_enabled() {
-        eprintln!("kind E2E enabled; full lifecycle probe owns the live-cluster assertions");
+        eprintln!("kind E2E enabled; driven lifecycle test owns the live-cluster assertions");
         return;
     }
 

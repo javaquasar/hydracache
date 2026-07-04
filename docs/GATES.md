@@ -63,6 +63,19 @@ lines) and a full-gate block. Those suites must be green for the release to clai
 feature (RULES R-7). The per-release gate lists are the source for what a given
 release adds on top of this baseline.
 
+The operator lifecycle kind E2E is also opt-in because it needs a real cluster
+with the CRD/controller installed. The fast suite still proves its skip path and
+falsifiability model; the live driven chain runs in the nightly/pre-release kind
+tier:
+
+```powershell
+$env:HYDRACACHE_OPERATOR_KIND='1'
+$env:HYDRACACHE_OPERATOR_NAMESPACE='default'
+$env:HYDRACACHE_OPERATOR_CLUSTER='hydracache-e2e'
+cargo test -p hydracache-operator --locked --test e2e -- --nocapture
+Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER -ErrorAction SilentlyContinue
+```
+
 ## Adding a gate
 
 1. Implement the check as a single command (a test, a `cargo deny`/`clippy` rule, or

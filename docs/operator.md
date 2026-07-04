@@ -147,7 +147,9 @@ cargo test -p hydracache-operator --locked --test e2e
 Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER -ErrorAction SilentlyContinue
 ```
 
-Without `HYDRACACHE_OPERATOR_KIND=1`, the E2E tests skip cleanly. With a prepared
-kind fixture, they assert that the operator-managed StatefulSet, client Service,
-and pods preserve quorum and avoid more than one unavailable pod during the
-install/scale/upgrade/rotate/backup lifecycle.
+Without `HYDRACACHE_OPERATOR_KIND=1`, the live E2E skips cleanly while the fast
+suite still runs the deterministic lifecycle driver and the deliberate
+two-pods-down falsifiability check. With a kind cluster that has the
+HydraCacheCluster CRD and operator installed, the E2E applies a cluster, scales
+it, patches a rolling upgrade, rotates TLS material, waits for backup status, and
+asserts quorum plus one-pod-at-a-time invariants at each transition.
