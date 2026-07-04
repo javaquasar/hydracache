@@ -31,7 +31,7 @@ Current restored versions include:
 - ICU `2.2.x`
 - `testcontainers-modules 0.15.0`
 - `testcontainers 0.27.3`
-- `serde_with 3.20.0`
+- `serde_with 3.21.0`
 - `home 0.5.12`
 
 ## Remaining Risk

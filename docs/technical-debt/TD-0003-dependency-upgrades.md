@@ -4,7 +4,9 @@
 
 Open. Tracks the workspace dependency upgrade backlog and the policy for acting
 on it. Reviewed whenever `cargo update` runs or an IDE/Dependabot flags a newer
-version.
+version. The `0.57.1` debt-closure pass refreshed the lockfile, landed the safe
+bucket-B major bumps, and left only the explicit `sqlx 0.9` deferral plus
+bucket-C blockers.
 
 ## Context
 
@@ -65,9 +67,15 @@ This is lockfile hygiene, not a migration. Consider automating with a scheduled
 | Crate | Current → flagged | Notes / effort |
 | --- | --- | --- |
 | `sqlx` | `0.8` → `0.9` | Core of the DB adapters; breaking API. Run `hydracache-sqlx` / `hydracache-db` suites; coordinate with TD-0001 (MSRV / sqlx transitive). |
-| `reqwest` | `0.12` → `0.13` | Cluster HTTP client path; moderate breaking changes. |
-| `sha2` | `0.10` → `0.11` | RustCrypto bump; low effort, may cascade with other RustCrypto crates. |
-| `criterion` | `0.5` → `0.8` | Dev-dependency (benches) only — no runtime impact; lowest priority. |
+
+Completed in `0.57.1`:
+
+- `sha2 0.10 -> 0.11` landed with `hydracache-sql-lint` and `hydracache-db`
+  tests plus the full gate.
+- `criterion 0.5 -> 0.8` landed with benchmark targets compiling and the full
+  gate.
+- `reqwest 0.12 -> 0.13` landed with the operator/client/cluster transport
+  suites plus the full gate.
 
 2026-07-03 evaluation: `sqlx 0.8 -> 0.9` was attempted by changing the
 workspace requirement to `0.9` and running `cargo update -p sqlx`. Cargo failed

@@ -6,8 +6,8 @@ Open.
 
 Owner: server / cluster runtime integration.
 
-Candidate target: follow-up to `0.57` that completes W6b from
-`docs/plans/V0_57_MANAGEMENT_CENTER_AND_OBSERVABILITY_PLAN.md`.
+Candidate target: `0.59.0` Networked Daemon Grid Hosting, which completes W6b
+from `docs/plans/V0_57_MANAGEMENT_CENTER_AND_OBSERVABILITY_PLAN.md`.
 
 ## Context
 
@@ -50,6 +50,7 @@ Address when one of:
 - `0.57` is prepared for final release notes and the team wants the stronger
   "multi-node daemon live" claim;
 - `0.58` soak/overload work needs a real multi-daemon cluster harness;
+- the `0.59.0` Networked Daemon Grid Hosting plan starts implementation;
 - operator lifecycle E2E starts asserting leader re-election through the
   deployed server.
 
@@ -78,5 +79,6 @@ Address when one of:
 
 - `docs/plans/V0_57_MANAGEMENT_CENTER_AND_OBSERVABILITY_PLAN.md` (W6b)
 - `docs/plans/V0_58_ENDURANCE_SOAK_AND_OVERLOAD_HARDENING_PLAN.md`
+- `docs/plans/V0_59_NETWORKED_DAEMON_GRID_HOSTING_PLAN.md`
 - `crates/hydracache-server/tests/grid_host.rs`
 - `crates/hydracache-cluster-raft/tests/networked_raft.rs`
