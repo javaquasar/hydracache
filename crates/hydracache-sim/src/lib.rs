@@ -22,6 +22,7 @@ pub mod schedule;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod sim_raft;
 pub mod snapshot;
+pub mod soak;
 pub mod storage;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod upgrade_recovery;
@@ -73,6 +74,11 @@ pub use snapshot::{
     NodeView, ProgressView, RebalanceView, SimSnapshot, SimSnapshotDecodeError,
     SnapshotOverBudgetView, SubscriberEventView, SubscriberView, SyncProgressView, VerdictView,
     MAX_IN_FLIGHT_RENDERED, MAX_SUBSCRIBER_BUFFER, SIM_SNAPSHOT_SCHEMA_VERSION,
+};
+pub use soak::{
+    minimal_failing_steps, minimal_failing_steps_by, run_soak, run_soak_with_seed_runner,
+    shrink_failing_schedule, shrink_failing_schedule_with, Minimization, SoakConfig, SoakFailure,
+    SoakOutcome, SoakReport, SoakReportOutcome,
 };
 pub use storage::{
     SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,

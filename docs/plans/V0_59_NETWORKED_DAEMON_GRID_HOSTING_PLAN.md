@@ -73,6 +73,20 @@ status — **integration over shipped consensus**, no new algorithm, `local`/`cl
 - **Not the operator's job.** The operator (`0.56`) already schedules pods; `0.59` makes the pod's
   process actually join a cluster. No CRD changes required.
 
+## Technical-debt scope & downstream obligations (do not lose)
+
+| TD / obligation | In `0.59`? | Detail |
+| --- | --- | --- |
+| **TD-0008** networked daemon grid | **Closed here** | This release *is* TD-0008. W5's loopback multi-daemon E2E enables the ignored sentinel; W6 marks it **Resolved**. |
+| **Discharge `0.58` W4's downstream obligation** | **Yes (W6)** | `0.58` shipped W4 as **honest-partial**: its `soak_kind.rs` ran against a kind fixture whose pods host the **in-process** member grid (W6a), *not* a true multi-daemon raft cluster. Once `0.59` lands, the pods host the **networked** grid (W2), so `0.58`'s soak now exercises real multi-daemon raft. **W6 re-points `0.58` `soak_kind.rs` at the real daemon cluster and lifts the `0.58` TD-scope "blocked" caveat.** |
+| **`TD-0009`** (soak/overload findings, if `0.58` created it) | **Orthogonal** | Unrelated to grid hosting; stays on its own track. |
+| **Production soak mileage** | **Stays for `0.60`/`1.0`** | `0.59` makes a real daemon cluster *soakable*; multi-day field mileage still accrues later (R-11) — `0.59` does not claim "battle-tested". |
+| TD-0002 raft/protobuf, TD-0003 bucket C, TD-0004 placement, TD-0005 Java artifact | **Out of scope** | Untouched. |
+
+**Forward note for `1.0`:** a real daemon cluster (`0.59`) + soak harness (`0.58`) + operability
+(`0.57`) are the three legs of a defensible `1.0` "production-ready cluster out of the box"; the
+remaining `1.0` work is API-freeze/semver + mileage, not new consensus.
+
 ## Dependency Graph
 
 ```
@@ -235,17 +249,24 @@ possible and gated to nightly. Revert leaves the sentinel `#[ignore]` and TD-000
 
 **Files.** `docs/deployment` member-mode runbook (seeds/cluster_addr/storage_dir/TLS),
 `docs/management-center.md` (leader is now live in `member` mode), `docs/GATES.md` (network-gated E2E
-command), `docs/technical-debt/TD-0008-…` → Resolved, `releases.toml` + `INDEX.md`.
+command), `docs/technical-debt/TD-0008-…` → Resolved, `docs/plans/V0_58_…` (lift the W4 caveat),
+`crates/hydracache-operator/tests/soak_kind.rs` (re-point), `releases.toml` + `INDEX.md`.
 
 **Steps.**
 1. Runbook: how to bring up a 3-node cluster of daemons (or via the `0.56` operator).
 2. Update the `0.57` `source:live|modeled` note: `member` now reports live multi-node; `local`/`client`
    still `modeled`.
-3. Mark **TD-0008 Resolved** (the sentinel is enabled); note the `0.58` W4 upgrade.
+3. Mark **TD-0008 Resolved** (the sentinel is enabled).
+4. **Discharge the `0.58` downstream obligation:** re-point `0.58` `soak_kind.rs` so its "no lost
+   committed write / leader re-elected" assertions run against pods hosting the **networked** grid
+   (W2), not the in-process fixture; **edit `docs/plans/V0_58_…` Technical-debt-scope row for TD-0008
+   from "blocked → stays for 0.59" to "unblocked by 0.59"** so the roadmap stays honest.
 
 **Tests & requirements.**
 - `cargo xtask verify` green (incl. `doc-check` header-status; keep `0.59.0` header/manifest/INDEX in
   sync).
+- `soak_kind.rs` (from `0.58`) now asserts against a real daemon cluster (network/kind-gated,
+  skip-graceful — no PR-gate regression).
 - Run: `cargo xtask verify`.
 
 ## Gates (Definition of Done for the release)

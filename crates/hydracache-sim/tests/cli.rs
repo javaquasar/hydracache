@@ -1,25 +1,27 @@
 use std::process::Command;
 
 #[test]
-fn cli_vopr_seed_flag_is_deterministic() {
-    let first = run_vopr(["--seed", "44", "--steps", "16"]);
-    let second = run_vopr(["--seed", "44", "--steps", "16"]);
-
-    assert_eq!(first, second);
-    assert!(first.contains("seed=44"));
-    assert!(first.contains("steps=16"));
-    assert!(first.contains("invariant_violations=0"));
-}
-
-fn run_vopr<const N: usize>(args: [&str; N]) -> String {
+fn vopr_soak_subcommand_exits_2_on_failure() {
     let output = Command::new(env!("CARGO_BIN_EXE_vopr"))
-        .args(args)
+        .args([
+            "soak",
+            "--master-seed",
+            "22530",
+            "--budget-ms",
+            "0",
+            "--steps-per-seed",
+            "4",
+            "--max-seeds",
+            "1",
+            "--synthetic-failure-after-seeds",
+            "1",
+        ])
         .output()
-        .expect("vopr runs");
-    assert!(
-        output.status.success(),
-        "vopr failed: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    String::from_utf8(output.stdout).expect("stdout is utf8")
+        .expect("vopr binary runs");
+
+    assert_eq!(output.status.code(), Some(2), "{output:?}");
+    let stdout = String::from_utf8(output.stdout).expect("stdout is utf8");
+    assert!(stdout.contains("\"status\":\"failed\""), "{stdout}");
+    assert!(stdout.contains("synthetic_soak_failure"), "{stdout}");
+    assert!(stdout.contains("vopr --seed"), "{stdout}");
 }

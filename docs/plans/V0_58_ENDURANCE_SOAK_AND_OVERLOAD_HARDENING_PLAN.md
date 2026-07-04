@@ -114,16 +114,63 @@ consistency level.
   VOPR (`bin/vopr.rs`); `FaultSchedule`/`ScheduledFault`/`ReplayRunner`/`shrink_*` (schedule.rs);
   `InvariantChecker`/`InvariantReport` (invariants.rs); `SimStorage` (storage.rs); `dst_budget.rs`.
   **Determinism is the contract** — every failure is a seed + step count (R-5).
-- **From `0.46`:** `AdmissionController` + `AdmissionSnapshot` (admission.rs), `grid/capacity.rs`,
-  `hydracache_admission_*` metrics — the backpressure surface under test.
-- **From `0.56`:** the operator + kind E2E harness (skip-gracefully-without-a-cluster) reused for W4.
+- **From `0.46`:** `AdmissionController` + `AdmissionSnapshot` (admission.rs:38/122) — a **standalone**
+  backpressure component (no cache-hot-path call site, G1), driven **directly** by W3.
+- **From `0.56` + `0.57.1`:** the operator kind infra **and** the `0.57.1` driven-E2E harness
+  (`e2e.rs`, TD-0007, skip-gracefully) reused by W4 (G4).
+
+## Gap Analysis (post-audit — holes found and closed)
+
+A second code-grounded pass found four holes at the **simulator-vs-real boundary**. Each is verified
+and folded into the work items below:
+
+- **G1 — the simulator does NOT wire the real `AdmissionController`.** `crates/hydracache-sim/src/
+  world.rs` and `workload.rs` contain **zero** admission/capacity references (the earlier match was
+  the sim model's own `in_flight` field, world.rs:79). And `AdmissionController` (admission.rs:38) has
+  **no call sites on the cache write path** (grep finds only the struct + exports at lib.rs:510) — it
+  is a **standalone component tested in isolation**, not on the live hot path. **Fix:** W3's overload
+  proof is a **focused component test** driving `AdmissionController` **directly** (honest: it proves
+  the component's boundedness/recovery, not an end-to-end server overload). The sim does **not** get a
+  fake "admission workload"; the sim's leak role is W2 over its **own** tracked resources.
+- **G2 — W2's sample sources partly don't exist in the sim.** "in-flight/queue via the admission
+  snapshot in the sim" and "tombstone debt (`TombstoneTracker`)" are **not** sim-tracked
+  (`TombstoneTracker` is grid-side, grid/mod.rs; there is no admission in the sim). **Fix:** W2 samples
+  only what `SimWorld::snapshot() -> SimSnapshot` (world.rs:658) genuinely exposes — network in-flight
+  messages (:749), per-client in-flight (:759), subscriber pending/lag (:771, capped by
+  `MAX_SUBSCRIBER_BUFFER` :1041) — plus the new `SimStorage::footprint()`. Tombstone-debt boundedness
+  moves to the **real/grid** side (or is dropped), not the sim checker.
+- **G3 — W1 conflates two minimization mechanisms.** `ReplayRunner::shrink_with` (schedule.rs:147)
+  shrinks a **`FaultSchedule`** — it only applies to **schedule-driven** failures. A plain-seed VOPR
+  failure (no injected schedule) has nothing to shrink; it minimizes over **step count** (bisect
+  `--steps` until the violation disappears). **Fix:** W1 defines **two** paths — schedule-shrink for
+  fault-driven runs, step-bisection for plain-seed runs — not one.
+- **G4 — W4 predates 0.57.1.** The driven operator kind harness now **exists**
+  (`crates/hydracache-operator/tests/e2e.rs`, TD-0007 resolved:
+  `full_lifecycle_drives_install_scale_upgrade_rotate_backup_restore`, `e2e_skips_gracefully_without_a_cluster`).
+  **Fix:** W4 **reuses that harness/provisioning**, not "the 0.56 kind harness" generically.
+
+## Technical-debt scope (what this release includes vs leaves for later)
+
+`0.58` is **develop-downward endurance**, not a ledger-closing maintenance pass (that was `0.57.1`).
+Its relationship to `docs/technical-debt/` is explicit:
+
+| TD | In `0.58`? | Why |
+| --- | --- | --- |
+| **TD-0008** networked daemon grid | **Partially blocked → stays for `0.59`** | W4's "real multi-node soak" runs against the `0.56`/`0.57.1` operator/kind fixture, whose pods run the **in-process** member grid (`grid_host.rs` W6a), **not** a true multi-daemon raft cluster. The **full** daemon-cluster soak lands only after `0.59` wires the networked grid. W4 is honest-partial until then. |
+| **New: `TD-0009` soak/overload findings** | **Created here if needed** | W2/W3 may surface a real leak or an admission-boundedness bug. Fixable in-window → fixed + gated (no TD). Too large → **spawn `TD-0009`** with the reproducing seed, rather than half-fix. |
+| **New: real-server RSS/fd sampler portability** | **Tracked if platform-bound** | The `#[ignore]` real-process sampler (W2) is nightly/Linux-first; if Windows/macOS sampling needs work, note it as a small follow-up, don't block the release. |
+| TD-0002 raft/protobuf, TD-0003 bucket C, TD-0004 placement, TD-0005 Java artifact | **Out of scope** | Untouched — unrelated to soak/endurance. |
+
+**What stays for later (explicit):** the **true daemon-cluster** endurance soak (needs `0.59`/TD-0008);
+**production soak mileage** (`0.58` builds the *harness + evidence*, not "battle-tested" history — that
+accrues into `0.60`/`1.0`, R-11); any **large hardening fix** W3 surfaces (→ `TD-0009`).
 
 ## Dependency Graph
 
 ```
-0.44 SimWorld/VOPR/FaultSchedule ─► W1 continuous soak driver ─► W2 footprint + BoundedGrowthChecker ─┐
-0.46 AdmissionController ─────────────────────────────► W3 sustained-overload / backpressure proof ───┼─► W5 CI soak gate + nightly + SOAK_REPORT + docs
-0.56 operator/kind harness ──────────────────────────► W4 real multi-node chaos soak ─────────────────┘
+0.44 SimWorld/VOPR/FaultSchedule ─► W1 continuous soak driver ─► W2 footprint + BoundedGrowthChecker (sim's OWN resources) ─┐
+0.46 AdmissionController (standalone) ─────────────► W3 component-level overload proof (drive it directly) ─────────────────┼─► W5 CI soak gate + nightly + SOAK_REPORT + docs
+0.56 operator/kind + 0.57.1 driven e2e.rs harness ─► W4 real multi-node chaos soak (reuses that harness) ──────────────────┘
 ```
 
 ---
@@ -191,14 +238,35 @@ pub fn run_soak(cfg: &SoakConfig) -> SoakOutcome {
     }
 }
 ```
-Minimization of a failing schedule reuses the existing delta-debugger (audit item 3):
+CLI: extend the existing single-shot binary (`bin/vopr.rs`, args `--seed`/`--steps`, exit `0`/`2`) with
+a `soak` subcommand — a thin wrapper over `run_soak`, exit `2` loud on the first failure:
 ```rust
-// Given a failing (seed, steps, schedule), shrink to a minimal reproducing schedule.
-let runner = ReplayRunner::default();
-let minimal = runner.shrink_with(schedule, |s| {
-    // real-invariant predicate, not just SyntheticViolation:
+// crates/hydracache-sim/src/bin/vopr.rs — add `soak --budget-secs S --steps-per-seed K --master-seed M`.
+Some("soak") => {
+    let out = hydracache_sim::run_soak(&cfg_from_args(args)?);
+    println!("{}", serde_json::to_string(&SoakReport::from(&out))?);   // W5 SoakReport
+    if out.first_failure.is_some() { return ExitCode::from(2); }        // loud (R-3)
+    ExitCode::SUCCESS
+}
+```
+
+Minimization has **two distinct paths** (G3 — do not conflate):
+```rust
+// (a) SCHEDULE-DRIVEN failure — shrink the FaultSchedule via the existing delta-debugger.
+let minimal_schedule = ReplayRunner::default().shrink_with(schedule, |s| {   // schedule.rs:147
     ReplayRunner::default().run(seed, steps, s.clone()).sim.invariant_violations > 0
 });
+
+// (b) PLAIN-SEED failure (no injected schedule) — there is nothing to shrink; bisect STEP COUNT.
+fn minimal_failing_steps(seed: u64, cfg: &SimConfig, failing_steps: u64) -> u64 {
+    let (mut lo, mut hi) = (1u64, failing_steps);
+    while lo < hi {
+        let mid = lo + (hi - lo) / 2;
+        if SimWorld::new(seed, cfg.clone()).run(mid).invariant_violations > 0 { hi = mid; }
+        else { lo = mid + 1; }
+    }
+    lo   // fewest steps that still reproduces the violation
+}
 ```
 
 **Steps.**
@@ -207,9 +275,10 @@ let minimal = runner.shrink_with(schedule, |s| {
    `invariant_violations`.
 2. Budget by **wall clock**; report `seeds_run`/`total_steps`; on failure capture `{seed, step,
    violations}` and **stop loud** (exit `2`), printing the exact `--seed`/`--steps` to reproduce.
-3. Add minimization: on a failing seed with a fault schedule, `shrink_with` the schedule using an
-   `invariant_violations > 0` predicate (extends the harness that today only trips on
-   `SyntheticViolation`).
+3. Add minimization on **two** paths (G3): a fault-**schedule** failure → `shrink_with`
+   (schedule.rs:147) with an `invariant_violations > 0` predicate (extends the harness that today only
+   trips on `SyntheticViolation`); a **plain-seed** failure → **step-count bisection** (fewest
+   `--steps` that still reproduces). The report says which mechanism was used.
 4. Bound memory: retain only summaries + the single first failure (feeds W2's driver-footprint test).
 
 **Corner-case scenarios (each an explicit test).**
@@ -217,8 +286,10 @@ let minimal = runner.shrink_with(schedule, |s| {
   (the core R-5 property).
 - **Fleet reproducibility:** same `master_seed` ⇒ identical seed sequence ⇒ identical first failure.
 - **Loud stop:** first `invariant_violations > 0` stops the fleet (exit `2`), no silent continue (R-3).
-- **Minimization:** a schedule of N faults that fails shrinks to the minimal failing subset and the
-  minimal set still reproduces.
+- **Minimization (schedule):** a schedule of N faults that fails shrinks to the minimal failing
+  subset and the minimal set still reproduces.
+- **Minimization (plain seed):** a seed failing at step K bisects to the fewest steps that still
+  reproduce (G3 — step-bisection, not schedule-shrink).
 - **Zero-budget:** runs at least one seed.
 - **Bounded memory:** a long fleet does not accumulate per-run traces.
 
@@ -226,7 +297,8 @@ let minimal = runner.shrink_with(schedule, |s| {
 - `soak_fleet_is_reproducible_from_master_seed`.
 - `first_failing_seed_reproduces_the_violation_exactly` (R-5).
 - `soak_stops_loud_on_first_invariant_violation` (exit-2 semantics, R-3).
-- `failing_schedule_shrinks_to_minimal_reproducing_subset`.
+- `failing_schedule_shrinks_to_minimal_reproducing_subset` (schedule path).
+- `plain_seed_failure_bisects_to_minimal_step_count` (G3, step-bisection path).
 - `soak_driver_memory_is_bounded_over_a_long_fleet`.
 - Run: `cargo test -p hydracache-sim --locked soak_driver`.
 
@@ -236,9 +308,11 @@ gated. Revert leaves VOPR single-shot.
 ## W2. Resource accounting (`SimStorage::footprint`) + `BoundedGrowthChecker` + real RSS/fd sampler
 
 **Goal.** Make leaks-over-time detectable. **Add the missing** `SimStorage::footprint()` accessor;
-add a **`BoundedGrowthChecker`** that asserts accounted resources (storage bytes, in-flight/queue
-depth, subscriber buffers, tombstone debt) **do not grow unboundedly** over a long run (falsifiable);
-and a real-server RSS/fd sampler that fails loud on monotonic, unbounded climb.
+add a **`BoundedGrowthChecker`** that asserts the sim's **own tracked** resources (storage footprint,
+network + client in-flight, subscriber pending/lag — the fields `SimWorld::snapshot()` already exposes,
+G2) **do not grow unboundedly** over a long run (falsifiable); and a real-server RSS/fd sampler that
+fails loud on monotonic, unbounded climb. (Admission-queue and tombstone-debt are **not** sim-tracked —
+G1/G2 — so they are **not** sampled here; tombstone-debt boundedness lives on the grid/real side.)
 
 **Files.**
 - `crates/hydracache-sim/src/storage.rs` (**add** `pub fn footprint(&self) -> StorageFootprint`
@@ -265,6 +339,13 @@ impl SimStorage {
 ```
 ```rust
 // invariants.rs — bounded-growth check appended to the existing report shape.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ResourceSample {
+    pub storage_bytes: u64,     // sum of SimStorage::footprint().live_bytes
+    pub in_flight: u64,         // network + per-client in-flight
+    pub subscriber_pending: u64,// sum of subscriber.pending.len()
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct BoundedGrowthChecker { budget: ResourceBudget, samples: Vec<ResourceSample> }
 
@@ -283,14 +364,35 @@ impl BoundedGrowthChecker {
     // bounded oscillation within budget => OK; a monotonic climb past ceiling => leak.
 }
 ```
+```rust
+// world.rs — wire the checker into the existing per-step hook. SimWorld already holds
+// nodes/clients/subscribers (world.rs:133-135) and calls refresh_invariant_report() each
+// step (world.rs:882); sample ONLY those sim-tracked fields (G2).
+pub struct SimWorld {
+    // …existing fields (invariant_report world.rs:132, nodes :133, clients :134, subscribers :135)…
+    growth: BoundedGrowthChecker,   // NEW
+}
+
+fn refresh_invariant_report(&mut self) {   // world.rs:882 (existing)
+    // …existing invariant checks…
+    let sample = ResourceSample {
+        storage_bytes: self.nodes.values().map(|n| n.storage.footprint().live_bytes).sum(),
+        in_flight: self.network.in_flight_messages().len() as u64
+            + self.clients.values().map(|c| u64::from(c.in_flight)).sum::<u64>(),
+        subscriber_pending: self.subscribers.values().map(|s| s.pending.len() as u64).sum(),
+    };
+    self.growth.observe(sample, &mut self.invariant_report);   // appends resource_bounded_growth on leak
+}
+```
 
 **Steps.**
 1. Add `SimStorage::footprint()` (+ `StorageFootprint`); no behaviour change (read-only).
-2. Add `BoundedGrowthChecker` + `ResourceBudget`/`ResourceSample`; sample storage footprint,
-   in-flight/queue (via the admission snapshot in the sim), subscriber buffers
-   (`MAX_SUBSCRIBER_BUFFER`, snapshot.rs), tombstone debt (`TombstoneTracker`, grid/mod.rs:500) each
-   step; **monotonic climb past budget = loud violation** (R-3), reported like any invariant with a
-   reproducing seed.
+2. Add `BoundedGrowthChecker` + `ResourceBudget`/`ResourceSample`; sample **only sim-tracked**
+   resources each step (G2): `SimStorage::footprint()` (new), network in-flight (`SimWorld::snapshot()`
+   → SimSnapshot, world.rs:749), per-client in-flight (:759), subscriber pending/lag (:771, cap
+   `MAX_SUBSCRIBER_BUFFER` :1041). **Monotonic climb past budget = loud violation** (R-3), reported
+   like any invariant with a reproducing seed. (No admission-queue / tombstone-debt sampling here —
+   G1/G2.)
 3. Distinguish **bounded oscillation** (OK) from **unbounded growth** (leak) — the check is
    **falsifiable**: a deliberately-leaky fixture must fail it.
 4. Real process: an `#[ignore]` long test samples RSS + open fds around a sustained
@@ -302,14 +404,15 @@ impl BoundedGrowthChecker {
   (proves the checker is not vacuous).
 - **Oscillation passes:** steady rise-and-fall within budget does not trip.
 - **One-time step-up plateau:** a new partition raises footprint once then plateaus → not a leak.
-- **Tombstone debt bounded under repair** vs **accumulating** (ties to `0.55` repair-gated GC).
+- **Subscriber lag bounded:** a slow subscriber's pending queue stays under `MAX_SUBSCRIBER_BUFFER`,
+  not unbounded (a sim-tracked resource, world.rs:771/1041).
 
 **DoD.** `crates/hydracache-sim/tests/soak_resource.rs` (sim) +
 `crates/hydracache-server/tests/soak_resource.rs` (process, ignored-by-default)
 - `bounded_growth_invariant_flags_a_leaky_fixture` (falsifiable).
 - `steady_state_oscillation_within_budget_passes`.
 - `one_time_stepup_then_plateau_is_not_a_leak`.
-- `tombstone_debt_stays_bounded_under_repair`.
+- `subscriber_pending_stays_bounded_under_slow_consumer` (sim-tracked, G2).
 - `real_server_rss_and_fds_plateau_under_sustained_load` (ignored-by-default; nightly).
 - Run: `cargo test -p hydracache-sim --locked soak_resource` (+ nightly `-- --ignored`).
 
@@ -319,15 +422,19 @@ test proves the checker isn't vacuous. Revert removes the checker + accessor; ex
 ## W3. Sustained-overload / backpressure hardening proof
 
 **Goal.** Prove that holding offered load **above capacity for a long window** yields **fail-loud,
-bounded** behaviour on the shipped `AdmissionController`: rejects are **counted**, `in_flight` /
-`memory_bytes` / `queue_depth` stay **bounded** by the configured limits (never OOM / unbounded
-growth), and the node **recovers** to healthy once load falls — in the sim and a real single-node
-test. Fix any unbounded/silent-drop path found (this is the "hardening" half).
+bounded** behaviour on the shipped `AdmissionController`: rejects **counted**, `in_flight` /
+`memory_bytes` / `queue_depth` **bounded** by the configured limits (never OOM / unbounded growth),
+and **recovery** once load falls. **Honest scope (G1):** `AdmissionController` (admission.rs:38) is a
+**standalone component** with **no call site on the cache hot path**, so this is a **component-level**
+proof (drive the controller directly), not an end-to-end server overload; any unbounded/silent-drop
+path found is **fixed** in the component (the "hardening" half).
 
-**Files.** drive `crates/hydracache/src/admission.rs` (+ `grid/capacity.rs`,
-`cluster/admission.rs`); sim workload extension in `crates/hydracache-sim/src/workload.rs`; real test
-`crates/hydracache/tests/sustained_overload.rs`. Any fix lands in admission/capacity, never the fast
-path (R-10).
+**Files.** real test `crates/hydracache/tests/sustained_overload.rs` driving
+`crates/hydracache/src/admission.rs` **directly** (`AdmissionController::try_admit`/`snapshot`,
+admission.rs:122). A **separate** sim test (`hydracache-sim/tests/overload_sim.rs`) composes a
+**high-rate workload + a `FaultSchedule` partition** and asserts the sim's **own** resources stay
+bounded (no deadlock, W2 invariants) — it does **not** exercise `AdmissionController` (G1: no admission
+in the sim). Any fix lands in `admission.rs`, never the fast path (R-10).
 
 **Code sketch (asserting the shipped snapshot stays bounded).**
 ```rust
@@ -346,31 +453,33 @@ assert!(controller.try_admit(ticket("ok", small_bytes)).is_ok(), "recovers after
 ```
 
 **Steps.**
-1. Sim: a sustained over-budget workload (workload.rs) held for a long window; assert
-   `rejected_total` climbs while `in_flight`/`queue_depth`/`memory_bytes` stay **bounded** by limits,
-   and **no invariant violation / no unbounded memory** (ties W2).
-2. Real single-node: offer load above capacity for a window; assert bounded queue, counted rejects,
-   **no OOM**, and **recovery to healthy** after load drops. Fail loud on any silent drop (R-3) or
-   unbounded queue.
-3. If a real unbounded-growth or silent-drop path is found, **fix it** in admission/capacity and gate
-   the fix.
+1. Component (real, `hydracache/tests/sustained_overload.rs`): drive `AdmissionController` above
+   capacity for a long window; assert `rejected_total` climbs while `in_flight`/`queue_depth`/
+   `memory_bytes` stay **bounded** by limits, **no OOM**, and **recovery to healthy** after load drops.
+   Fail loud on any silent drop (R-3) or unbounded queue.
+2. Sim (separate, `hydracache-sim/tests/overload_sim.rs`, G1): a **high-rate** workload composed with a
+   `FaultSchedule` partition; assert the sim's **own** resources stay bounded (W2 checker) and there is
+   **no deadlock** — this is a *sim resilience* check, not an admission check.
+3. If a real unbounded-growth or silent-drop path is found in the controller, **fix it** in
+   `admission.rs` and gate the fix.
 
 **Corner-case scenarios.**
 - **At capacity:** load exactly at `max_in_flight` — steady, no thrash.
 - **Burst above→below:** rejects during, healthy after (recovery proven).
-- **Overload + partition:** backpressure composed with a `FaultSchedule` partition → no deadlock
-  (sim, seeded).
+- **High-rate + partition (sim, G1):** a high-rate workload composed with a `FaultSchedule` partition
+  → no deadlock, sim resources bounded (W2) — a *sim resilience* check, not an admission assertion.
 - **Slow downstream:** a slow loader/DB does not grow the in-flight set unbounded (ties `0.55`
   poison-load breaker).
 - **Oversized single request:** rejected via `ensure_fits` (`AdmissionRejectionReason::MemoryLimit`),
   counted, not queued forever.
 
-**DoD.** `crates/hydracache/tests/sustained_overload.rs` + `hydracache-sim/tests/overload_sim.rs`
-- `sustained_overload_rejects_are_counted_and_queue_is_bounded`.
-- `node_recovers_to_healthy_after_overload_subsides`.
-- `overload_composed_with_partition_does_not_deadlock` (sim, seeded).
-- `slow_downstream_does_not_grow_in_flight_unbounded`.
-- `oversized_request_is_rejected_and_counted`.
+**DoD.** `crates/hydracache/tests/sustained_overload.rs` (component) +
+`hydracache-sim/tests/overload_sim.rs` (sim resilience, G1)
+- `sustained_overload_rejects_are_counted_and_queue_is_bounded` (component).
+- `node_recovers_to_healthy_after_overload_subsides` (component).
+- `oversized_request_is_rejected_and_counted` (component).
+- `slow_downstream_does_not_grow_in_flight_unbounded` (component).
+- `high_rate_workload_with_partition_does_not_deadlock` (sim, seeded — resources bounded, no admission).
 - Run: `cargo test -p hydracache --locked sustained_overload` +
   `cargo test -p hydracache-sim --locked overload_sim`.
 
@@ -384,12 +493,34 @@ rolling chaos schedule (partition / crash / slow-disk) over a wall-clock window,
 invariants — **no lost committed write**, quorum preserved, recovery after each fault — reusing the
 operator's kind infrastructure and its **skip-without-a-cluster** pattern.
 
-**Files.** `crates/hydracache-operator/tests/soak_kind.rs` (new, `#[ignore]`/kind-gated like the
-`0.56` E2E), reusing the kind harness + the `0.42`/`0.44` invariant oracles against a real cluster; a
-chaos driver over operator actions (drain, kill-pod, partition).
+**Files.** `crates/hydracache-operator/tests/soak_kind.rs` (new, `#[ignore]`/kind-gated), **reusing the
+`0.57.1` driven-E2E harness/provisioning** (`crates/hydracache-operator/tests/e2e.rs`, TD-0007 —
+`full_lifecycle_drives_…`, `e2e_skips_gracefully_without_a_cluster`) rather than re-deriving a kind
+harness (G4); applies the `0.42`/`0.44` invariant oracles against the real cluster; a chaos driver over
+operator actions (drain, kill-pod, partition).
+
+**Code sketch (chaos loop over the reused harness, G4).**
+```rust
+// crates/hydracache-operator/tests/soak_kind.rs — reuse the 0.57.1 e2e harness (TD-0007).
+#[tokio::test]
+async fn multi_node_chaos_soak_loses_no_committed_write() {
+    let Some(kind) = KindHarness::try_start() else { return log_skip(); } // e2e.rs skip-graceful (G4)
+    let cr = apply_cluster(&kind, sample_spec()).await;
+    kind.wait_ready(&cr, quorum_for(3)).await;                          // scale.rs:297
+    let writer = spawn_committed_write_probe(&kind, &cr);               // records committed writes
+    for fault in rolling_chaos_schedule(WINDOW) {                       // crash|partition|slow-disk, spaced
+        kind.inject(fault).await;
+        assert!(kind.has_leader(&cr).await, "leader re-established after {fault:?}");
+        kind.heal(fault).await;
+        kind.wait_ready(&cr, quorum_for(3)).await;                      // /readyz recovers
+    }
+    assert_eq!(writer.committed(), kind.durable_committed(&cr).await, "no lost committed write");
+}
+```
 
 **Steps.**
-1. Stand up a small `HydraCacheCluster` via the operator; run a steady client workload.
+1. Stand up a small `HydraCacheCluster` via the operator (reusing the `0.57.1` `apply_cluster`/
+   `wait_ready` harness, G4); run a steady committed-write probe.
 2. Apply a **rolling** chaos schedule over a window (crash a pod, heal; partition, heal; slow a disk,
    heal), spaced so quorum is preserved (drain-before-remove, `0.56` semantics).
 3. Continuously assert: no lost committed write, a leader always re-established, `/readyz` recovers
@@ -407,7 +538,8 @@ chaos driver over operator actions (drain, kill-pod, partition).
 - `multi_node_chaos_soak_loses_no_committed_write` (kind).
 - `leader_is_always_reestablished_after_pod_crash` (kind).
 - `soak_skips_gracefully_without_a_cluster` (unit-level guard, always runs).
-- Run (nightly/manual): the `0.56` kind harness command; skipped in the fast PR gate.
+- Run (nightly/manual): the `0.57.1` kind command in `docs/GATES.md`
+  (`HYDRACACHE_OPERATOR_KIND=1 … -- --ignored`, G4); skipped in the fast PR gate.
 
 **Risk & rollback.** Real-cluster soak is nightly/manual, off the fast PR gate (kind is heavy). Revert
 leaves the sim soak (W1–W3) as the endurance proof.
@@ -462,9 +594,32 @@ fn verify_includes_soak_fast_budget_gate() {
    `Gate`; add `verify_includes_soak_fast_budget_gate`. Deterministic ⇒ never flakes the PR gate.
 2. Extended nightly: a long wall-clock soak (W1) + the ignored resource/overload/kind tests
    (`-- --ignored`); publishes the `SOAK_REPORT`.
-3. `SOAK_REPORT`: structured (`master_seed`, `seeds_run`, `total_steps`, `wall_clock`,
-   `first_failure | none`, resource verdicts) — **honest status, never a score** (R-7); a failure
-   carries the reproducing seed (and minimal schedule from W1).
+3. `SOAK_REPORT`: a structured, **score-free** (R-7) summary emitted by the driver:
+   ```rust
+   // crates/hydracache-sim/src/soak.rs — serialized to JSON for the nightly artifact.
+   #[derive(Debug, Clone, Serialize)]
+   pub struct SoakReport {
+       pub master_seed: u64,
+       pub seeds_run: u64,
+       pub total_steps: u64,
+       pub wall_clock_secs: u64,
+       pub resource_bounds_ok: bool,          // W2 BoundedGrowthChecker verdict
+       pub outcome: SoakReportOutcome,        // Clean | Failed { .. }
+   }
+   #[derive(Debug, Clone, Serialize)]
+   #[serde(rename_all = "snake_case", tag = "status")]
+   pub enum SoakReportOutcome {
+       Clean,                                  // no violation over the whole budget
+       Failed {
+           seed: u64,
+           reproduce: String,                  // e.g. "vopr --seed N --steps K"
+           minimization: Minimization,         // Schedule { faults } | Steps { minimal }  (G3)
+           violations: Vec<String>,
+       },
+   }
+   ```
+   No health percentage, no numeric self-score (R-7); a failure carries the **exact reproducing seed**
+   and which **minimization mechanism** applied (schedule-shrink vs step-bisect, G3).
 4. Docs: `docs/soak.md` runbook + a `POSITIONING.md` honesty note that soak is accruing evidence, not
    a "battle-tested" claim (R-11).
 
@@ -485,20 +640,42 @@ fn verify_includes_soak_fast_budget_gate() {
 **Risk & rollback.** The bounded CI soak must not become flaky — determinism (fixed master seed +
 small budget) is the safeguard. Revert removes the gate; the soak driver stays runnable manually.
 
+## Test coverage matrix (every new artifact has a named test)
+
+| New code | Source file | Covering test(s) | Tier |
+| --- | --- | --- | --- |
+| `run_soak`, `SoakConfig/Outcome/Failure` | `hydracache-sim/src/soak.rs` (new) | `soak_fleet_is_reproducible_from_master_seed`, `soak_stops_loud_on_first_invariant_violation`, `soak_driver_memory_is_bounded_over_a_long_fleet` | PR (bounded) + nightly |
+| exact-replay + minimization (both paths, G3) | `soak.rs` (`minimal_failing_steps`) | `first_failing_seed_reproduces_the_violation_exactly`, `failing_schedule_shrinks_to_minimal_reproducing_subset`, `plain_seed_failure_bisects_to_minimal_step_count` | PR |
+| `soak` subcommand | `hydracache-sim/src/bin/vopr.rs` | `vopr_soak_subcommand_exits_2_on_failure` (tests/cli.rs) | PR |
+| `SoakReport`/`SoakReportOutcome` | `soak.rs` | `soak_report_serializes_without_a_self_score` (R-7) | PR |
+| `SimStorage::footprint()` + `StorageFootprint` | `hydracache-sim/src/storage.rs` | `footprint_sums_live_and_tombstone_bytes` | PR |
+| `BoundedGrowthChecker`/`ResourceSample`/`ResourceBudget` + world wiring | `hydracache-sim/src/invariants.rs`, `world.rs:882` | `bounded_growth_invariant_flags_a_leaky_fixture` (falsifiable), `steady_state_oscillation_within_budget_passes`, `one_time_stepup_then_plateau_is_not_a_leak`, `subscriber_pending_stays_bounded_under_slow_consumer` | PR |
+| overload component (drive `AdmissionController`, G1) | `hydracache/tests/sustained_overload.rs` (new) | `sustained_overload_rejects_are_counted_and_queue_is_bounded`, `node_recovers_to_healthy_after_overload_subsides`, `oversized_request_is_rejected_and_counted`, `slow_downstream_does_not_grow_in_flight_unbounded` | PR |
+| sim overload resilience (no admission, G1) | `hydracache-sim/tests/overload_sim.rs` (new) | `high_rate_workload_with_partition_does_not_deadlock` | PR |
+| real-server RSS/fd sampler | `hydracache-server/tests/soak_resource.rs` (new) | `real_server_rss_and_fds_plateau_under_sustained_load` (`#[ignore]`) | nightly |
+| bounded CI soak gate + guard | `xtask/src/verify.rs`, `hydracache-sim/tests/soak_budget.rs` (new) | `bounded_ci_soak_is_deterministic_and_fast`, `verify_includes_soak_fast_budget_gate` | PR |
+| multi-node chaos soak (reuses 0.57.1 harness, G4) | `hydracache-operator/tests/soak_kind.rs` (new) | `multi_node_chaos_soak_loses_no_committed_write`, `leader_is_always_reestablished_after_pod_crash`, `soak_skips_gracefully_without_a_cluster` | kind / nightly |
+
+**Coverage rule (DoD):** no new public type or file lands without a row here; PR-tier tests are
+deterministic and run under `cargo xtask verify`; nightly/kind rows are `#[ignore]`/env-gated and
+**skip-graceful** so the fast gate stays green without Node/Docker/kind.
+
 ## Gates (Definition of Done for the release)
 
 - `cargo xtask verify` green (fmt, clippy, tests, doc-check, COMPAT, deny), including a **bounded,
   deterministic** "soak fast budget" gate beside "DST fast budget" (W5).
-- A failing soak seed **reproduces the violation exactly** from `--seed`/`--steps` and **shrinks to a
-  minimal reproducing schedule** (R-5, W1); the fleet is reproducible from one master seed.
+- A failing soak seed **reproduces the violation exactly** and **minimizes** — schedule-shrink for
+  fault-driven runs, **step-bisection** for plain-seed runs (R-5, W1, G3); the fleet is reproducible
+  from one master seed.
 - Soak **stops loud** on the first invariant violation (R-3) — never a silent continue (W1).
-- **Bounded-growth / leak-over-time** invariants are **falsifiable** (a leaky fixture is caught) and
-  green on the real system; `SimStorage::footprint()` added (W2).
-- Sustained overload is **fail-loud + bounded + recovers-after**: rejects counted, `in_flight`/
-  `memory_bytes`/`queue_depth` bounded by limits, no OOM, healthy after (W3); any fix stays off the
-  fast path (R-10).
-- Real multi-node chaos soak loses **no committed write** and always re-establishes a leader, and
-  **skips gracefully without a cluster** (W4).
+- **Bounded-growth / leak-over-time** invariants are **falsifiable** (a leaky fixture is caught) over
+  the sim's **own** tracked resources (footprint + in-flight + subscriber lag, G1/G2); admission-queue
+  and tombstone-debt are **not** sampled in the sim; `SimStorage::footprint()` added (W2).
+- Sustained overload is **fail-loud + bounded + recovers-after** on the **`AdmissionController`
+  component driven directly** (G1): rejects counted, `in_flight`/`memory_bytes`/`queue_depth` bounded,
+  no OOM, healthy after (W3); any fix stays off the fast path (R-10).
+- Real multi-node chaos soak loses **no committed write** and always re-establishes a leader, reusing
+  the `0.57.1` driven-E2E harness (G4), and **skips gracefully without a cluster** (W4).
 - No throughput/ops number and **no numeric self-score** anywhere (R-7); the `SOAK_REPORT` states
   honest status only; positioning stays honest that field mileage is still accruing (R-11).
 - No new algorithm / consistency level (R-1); embedded fast path byte-for-byte unchanged (R-10).
