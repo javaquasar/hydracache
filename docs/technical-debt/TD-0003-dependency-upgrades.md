@@ -69,6 +69,16 @@ This is lockfile hygiene, not a migration. Consider automating with a scheduled
 | `sha2` | `0.10` → `0.11` | RustCrypto bump; low effort, may cascade with other RustCrypto crates. |
 | `criterion` | `0.5` → `0.8` | Dev-dependency (benches) only — no runtime impact; lowest priority. |
 
+2026-07-03 evaluation: `sqlx 0.8 -> 0.9` was attempted by changing the
+workspace requirement to `0.9` and running `cargo update -p sqlx`. Cargo failed
+before lockfile resolution because `sqlx 0.9.0` no longer provides the
+`runtime-tokio-rustls` feature used by `hydracache-db`, `hydracache-sqlx`, and
+`hydracache-sandbox`; `cargo info sqlx@0.9.0` also reports `rust-version:
+1.94.0`, while HydraCache declares MSRV `1.88`. Next unblock condition: make an
+explicit MSRV decision for Rust `1.94` or newer, then map the old SQLx runtime
+TLS feature to the new `runtime-tokio` plus `tls-rustls-*` feature set and rerun
+`cargo test -p hydracache-sqlx -p hydracache-db --locked`.
+
 Each lands as its own PR, green under `cargo xtask verify` and the named suites.
 
 ### Bucket C — Blocked / do not migrate now
