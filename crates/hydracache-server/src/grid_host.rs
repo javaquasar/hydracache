@@ -17,8 +17,8 @@ use hydracache_cluster_raft::{
     RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftWireMessage,
 };
 use hydracache_cluster_transport_axum::{
-    AxumClusterMessageService, ClusterMessageAck, ClusterMessageHandler, ClusterOpaqueMessage,
-    ClusterRoute, ClusterRouteAuth,
+    tls::TlsStartupPolicy, AxumClusterMessageService, ClusterMessageAck, ClusterMessageHandler,
+    ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
 };
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -225,12 +225,18 @@ async fn spawn_cluster_transport(
     message_sink: Arc<dyn RaftMessageSink>,
     mut shutdown: watch::Receiver<bool>,
 ) -> CacheResult<()> {
+    TlsStartupPolicy::new(config.cluster_addr, config.tls.enabled)
+        .acknowledge_insecure(config.tls.acknowledge_insecure)
+        .validate()
+        .map_err(|error| CacheError::Backend(error.to_string()))?;
     let listener = TcpListener::bind(config.cluster_addr)
         .await
         .map_err(|error| {
             CacheError::Backend(format!("failed to bind cluster transport: {error}"))
         })?;
-    let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true);
+    let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(
+        !config.tls.enabled || config.tls.acknowledge_insecure,
+    );
     let routes = AxumClusterMessageService::new(
         node_id.clone(),
         Arc::new(RaftClusterMessageHandler {

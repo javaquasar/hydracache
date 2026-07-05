@@ -46,6 +46,20 @@ fn grid_env_lock() -> MutexGuard<'static, ()> {
     LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
 }
 
+fn configured_tls() -> TlsConfig {
+    TlsConfig {
+        enabled: true,
+        cert_path: Some(PathBuf::from(
+            "target/test-hydracache-grid-host/tls/cert.pem",
+        )),
+        key_path: Some(PathBuf::from(
+            "target/test-hydracache-grid-host/tls/key.pem",
+        )),
+        ca_path: Some(PathBuf::from("target/test-hydracache-grid-host/tls/ca.pem")),
+        acknowledge_insecure: false,
+    }
+}
+
 #[test]
 fn member_builds_networked_triad_with_shared_raft_control_plane() {
     let _env = grid_env_lock();
@@ -143,6 +157,33 @@ fn draining_member_leaves_raft_config_cleanly() {
     let status = runtime.admin_status();
     assert_eq!(status.members, 0);
     assert!(!status.quorum_ok);
+}
+
+#[test]
+fn non_loopback_member_without_tls_is_rejected_loud() {
+    let mut config = member_config("non-loopback-without-tls");
+    config.cluster_addr = "0.0.0.0:17057".parse().unwrap();
+    config.seeds = vec!["0.0.0.0:17057".to_owned()];
+
+    assert!(matches!(
+        ServerRuntime::new(config),
+        Err(ServerConfigError::NonLoopbackWithoutTls)
+    ));
+}
+
+#[test]
+fn member_cluster_listener_uses_configured_tls() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let mut config = member_config("configured-tls");
+    config.tls = configured_tls();
+
+    let runtime = ServerRuntime::new(config).unwrap().start();
+
+    let status = runtime.admin_status();
+    assert_eq!(status.source, StatusSource::Live);
+    assert!(status.leader.is_some());
+    assert!(status.quorum_ok);
 }
 
 #[test]
