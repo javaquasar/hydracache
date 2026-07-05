@@ -70,6 +70,10 @@ pub enum ScheduledFaultKind {
         to: String,
         duration: LogicalDuration,
     },
+    /// Partition one directed link.
+    NetworkPartition { from: String, to: String },
+    /// Heal one directed link.
+    NetworkHeal { from: String, to: String },
     /// Corrupt a storage key.
     StorageCorruption { node: String, key: String },
     /// Crash a node.
@@ -119,18 +123,39 @@ impl ReplayRunner {
             let step_faults = schedule.faults_at(step).cloned().collect::<Vec<_>>();
             for fault in step_faults {
                 trace.push(format!("step {step}: {:?}", fault.kind));
-                if let ScheduledFaultKind::SyntheticViolation { invariant } = fault.kind {
-                    return ReplayOutcome {
-                        seed,
-                        steps,
-                        sim: world.outcome(),
-                        failure: Some(FailureReport {
+                match fault.kind {
+                    ScheduledFaultKind::NetworkDrop { from, to } => {
+                        world.drop_next_on_link(from, to);
+                    }
+                    ScheduledFaultKind::NetworkDelay { from, to, duration } => {
+                        world.delay_next_on_link(from, to, duration);
+                    }
+                    ScheduledFaultKind::NetworkPartition { from, to } => {
+                        world.partition_link(from, to);
+                    }
+                    ScheduledFaultKind::NetworkHeal { from, to } => {
+                        world.heal_link(from, to);
+                    }
+                    ScheduledFaultKind::Crash { node } => {
+                        world.crash_node(node);
+                    }
+                    ScheduledFaultKind::Restart { node } => {
+                        world.restart_node(node);
+                    }
+                    ScheduledFaultKind::StorageCorruption { .. } => {}
+                    ScheduledFaultKind::SyntheticViolation { invariant } => {
+                        return ReplayOutcome {
                             seed,
-                            step,
-                            schedule,
-                            trace: vec![format!("synthetic violation: {invariant}")],
-                        }),
-                    };
+                            steps,
+                            sim: world.outcome(),
+                            failure: Some(FailureReport {
+                                seed,
+                                step,
+                                schedule,
+                                trace: vec![format!("synthetic violation: {invariant}")],
+                            }),
+                        };
+                    }
                 }
             }
             world.step();
