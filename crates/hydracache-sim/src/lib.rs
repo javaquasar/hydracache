@@ -43,9 +43,9 @@ pub use election::{
     NODE_TRANSITION_TABLE,
 };
 pub use invariants::{
-    ElectionTopologyNode, ElectionTopologyState, InvariantChecker, InvariantReport,
-    InvariantViolation, LogEntry, LogOp, ReplicaSnapshot, SubscriberDeliveryObservation,
-    ValueObservation, ValueState,
+    BoundedGrowthChecker, ElectionTopologyNode, ElectionTopologyState, InvariantChecker,
+    InvariantReport, InvariantViolation, LogEntry, LogOp, ReplicaSnapshot, ResourceBudget,
+    ResourceSample, SubscriberDeliveryObservation, ValueObservation, ValueState,
 };
 pub use linearizability::{
     LinearizabilityChecker, LinearizabilityReport, LinearizabilityViolation,
@@ -81,7 +81,8 @@ pub use soak::{
     SoakOutcome, SoakReport, SoakReportOutcome,
 };
 pub use storage::{
-    SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageZoneId, StoredValue,
+    SimStorage, SimStorageApply, SimStorageError, StorageFault, StorageFootprint, StorageZoneId,
+    StoredValue,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use upgrade_recovery::{

@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;
 
 use hydracache::ClusterNodeId;
@@ -300,6 +300,166 @@ impl InvariantReport {
     fn merge(&mut self, other: InvariantReport) {
         self.checked = self.checked.saturating_add(other.checked);
         self.violations.extend(other.violations);
+    }
+}
+
+/// Point-in-time resource sample captured by the deterministic simulator.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ResourceSample {
+    /// Bytes retained by simulated storage payloads.
+    pub storage_bytes: u64,
+    /// Messages currently retained by the simulated network.
+    pub network_in_flight: u64,
+    /// Client requests currently tracked as in-flight by simulated clients.
+    pub client_in_flight: u64,
+    /// Subscriber events buffered by simulated subscribers.
+    pub subscriber_pending: u64,
+}
+
+/// Resource ceilings used by [`BoundedGrowthChecker`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ResourceBudget {
+    /// Maximum simulated storage payload bytes.
+    pub max_storage_bytes: u64,
+    /// Maximum simulated network in-flight messages.
+    pub max_network_in_flight: u64,
+    /// Maximum simulated client in-flight requests.
+    pub max_client_in_flight: u64,
+    /// Maximum simulated subscriber pending events.
+    pub max_subscriber_pending: u64,
+    /// Number of recent samples used to distinguish sustained growth from spikes.
+    pub sample_window: usize,
+}
+
+impl Default for ResourceBudget {
+    fn default() -> Self {
+        Self {
+            max_storage_bytes: 1 << 30,
+            max_network_in_flight: 100_000,
+            max_client_in_flight: 100_000,
+            max_subscriber_pending: 100_000,
+            sample_window: 8,
+        }
+    }
+}
+
+/// Detects sustained resource growth over a bounded sample window.
+#[derive(Debug, Clone)]
+pub struct BoundedGrowthChecker {
+    budget: ResourceBudget,
+    samples: VecDeque<ResourceSample>,
+}
+
+impl Default for BoundedGrowthChecker {
+    fn default() -> Self {
+        Self::new(ResourceBudget::default())
+    }
+}
+
+impl BoundedGrowthChecker {
+    /// Build a checker with explicit resource ceilings.
+    pub fn new(budget: ResourceBudget) -> Self {
+        Self {
+            budget,
+            samples: VecDeque::new(),
+        }
+    }
+
+    /// Return the active resource budget.
+    pub fn budget(&self) -> ResourceBudget {
+        self.budget
+    }
+
+    /// Replace the active budget and drop old samples.
+    pub fn set_budget(&mut self, budget: ResourceBudget) {
+        self.budget = budget;
+        self.samples.clear();
+    }
+
+    /// Return the number of samples retained in memory.
+    pub fn retained_samples(&self) -> usize {
+        self.samples.len()
+    }
+
+    /// Observe one sample and append violations for sustained growth past budget.
+    pub fn observe(&mut self, sample: ResourceSample, report: &mut InvariantReport) {
+        report.record_check();
+        let sample_window = self.budget.sample_window.max(3);
+        self.samples.push_back(sample);
+        while self.samples.len() > sample_window {
+            self.samples.pop_front();
+        }
+        if self.samples.len() < sample_window {
+            return;
+        }
+
+        self.check_component(
+            "storage_bytes",
+            self.budget.max_storage_bytes,
+            |sample| sample.storage_bytes,
+            report,
+        );
+        self.check_component(
+            "network_in_flight",
+            self.budget.max_network_in_flight,
+            |sample| sample.network_in_flight,
+            report,
+        );
+        self.check_component(
+            "client_in_flight",
+            self.budget.max_client_in_flight,
+            |sample| sample.client_in_flight,
+            report,
+        );
+        self.check_component(
+            "subscriber_pending",
+            self.budget.max_subscriber_pending,
+            |sample| sample.subscriber_pending,
+            report,
+        );
+    }
+
+    fn check_component(
+        &self,
+        component: &'static str,
+        budget: u64,
+        value: impl Fn(&ResourceSample) -> u64,
+        report: &mut InvariantReport,
+    ) {
+        let Some(first_sample) = self.samples.front() else {
+            return;
+        };
+        let Some(last_sample) = self.samples.back() else {
+            return;
+        };
+        let first = value(first_sample);
+        let last = value(last_sample);
+        if last <= budget {
+            return;
+        }
+
+        let mut previous = first;
+        let mut increases = 0usize;
+        for sample in self.samples.iter().skip(1) {
+            let current = value(sample);
+            if current < previous {
+                return;
+            }
+            if current > previous {
+                increases = increases.saturating_add(1);
+            }
+            previous = current;
+        }
+
+        if increases >= 2 {
+            report.record_violation(
+                "resource_bounded_growth",
+                format!(
+                    "{component} climbed from {first} to {last}, exceeding budget {budget} over {} samples",
+                    self.samples.len()
+                ),
+            );
+        }
     }
 }
 

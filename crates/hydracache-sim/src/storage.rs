@@ -212,6 +212,30 @@ impl SimStorageZone {
     }
 }
 
+/// Byte and marker footprint tracked by simulated storage.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct StorageFootprint {
+    /// Number of storage zones present in the simulation.
+    pub zones: u64,
+    /// Number of key entries tracked across all zones.
+    pub entries: u64,
+    /// Bytes currently visible to reads.
+    pub live_bytes: u64,
+    /// Bytes durably stored after the latest fsync.
+    pub stable_bytes: u64,
+    /// Bytes pending fsync or crash.
+    pub volatile_bytes: u64,
+    /// Pending delete markers tracked by the simulated storage layer.
+    pub pending_delete_markers: u64,
+}
+
+impl StorageFootprint {
+    /// Return all byte payloads currently retained by the simulator.
+    pub fn tracked_bytes(&self) -> u64 {
+        self.stable_bytes.saturating_add(self.volatile_bytes)
+    }
+}
+
 /// Result of a storage operation plus deterministic simulated delay.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SimStorageApply {
@@ -281,6 +305,44 @@ impl SimStorage {
         };
         self.inject_fault(zone, fault.clone());
         fault
+    }
+
+    /// Return the storage resources currently modeled by the simulator.
+    pub fn footprint(&self) -> StorageFootprint {
+        let mut footprint = StorageFootprint {
+            zones: self.zones.len() as u64,
+            ..StorageFootprint::default()
+        };
+
+        for zone in self.zones.values() {
+            footprint.entries = footprint.entries.saturating_add(zone.entries.len() as u64);
+            for entry in zone.entries.values() {
+                if let Some(value) = entry.read() {
+                    footprint.live_bytes = footprint
+                        .live_bytes
+                        .saturating_add(value.bytes().len() as u64);
+                }
+                if let Some(value) = &entry.stable {
+                    footprint.stable_bytes = footprint
+                        .stable_bytes
+                        .saturating_add(value.bytes().len() as u64);
+                }
+                match &entry.volatile {
+                    Some(PendingState::Value(value)) => {
+                        footprint.volatile_bytes = footprint
+                            .volatile_bytes
+                            .saturating_add(value.bytes().len() as u64);
+                    }
+                    Some(PendingState::Deleted) => {
+                        footprint.pending_delete_markers =
+                            footprint.pending_delete_markers.saturating_add(1);
+                    }
+                    None => {}
+                }
+            }
+        }
+
+        footprint
     }
 
     /// Apply an operation in the default zone.

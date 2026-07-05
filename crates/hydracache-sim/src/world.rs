@@ -8,10 +8,11 @@ use hydracache::{
 #[cfg(not(target_arch = "wasm32"))]
 use crate::SimRaftCluster;
 use crate::{
-    ControlActionV1, ControlApplyError, ElectionDriver, ElectionDriverSnapshot, History,
-    InvariantChecker, InvariantReport, LinkFault, PartitionSymmetry, ReplayScriptV1, SimClock,
-    SimNetwork, SimRng, SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig,
-    WorkloadGenerator, WorkloadOp, WorkloadResult, MAX_SUBSCRIBER_BUFFER,
+    BoundedGrowthChecker, ControlActionV1, ControlApplyError, ElectionDriver,
+    ElectionDriverSnapshot, History, InvariantChecker, InvariantReport, LinkFault,
+    PartitionSymmetry, ReplayScriptV1, ResourceBudget, ResourceSample, SimClock, SimNetwork,
+    SimRng, SimSnapshot, SimStorage, SubscriberEventView, WorkloadConfig, WorkloadGenerator,
+    WorkloadOp, WorkloadResult, MAX_SUBSCRIBER_BUFFER,
 };
 
 const BUS_EVENT_UPSERTED: &str = "upserted";
@@ -129,6 +130,7 @@ pub struct SimWorld {
     workload: WorkloadGenerator,
     history: History,
     invariant_checker: InvariantChecker,
+    resource_growth_checker: BoundedGrowthChecker,
     invariant_report: InvariantReport,
     nodes: BTreeMap<ClusterNodeId, SimNode>,
     clients: BTreeMap<String, SimClientActor>,
@@ -193,6 +195,7 @@ impl SimWorld {
             ),
             history: History::new(),
             invariant_checker: InvariantChecker,
+            resource_growth_checker: BoundedGrowthChecker::default(),
             invariant_report: InvariantReport::default(),
             nodes,
             clients: BTreeMap::new(),
@@ -301,6 +304,11 @@ impl SimWorld {
     /// Return whether the built-in smoke workload is enabled.
     pub fn workload_enabled(&self) -> bool {
         self.workload_enabled
+    }
+
+    /// Replace the bounded-resource invariant budget and reset its sample window.
+    pub fn set_resource_budget(&mut self, budget: ResourceBudget) {
+        self.resource_growth_checker.set_budget(budget);
     }
 
     /// Apply one shared control action.
@@ -898,6 +906,30 @@ impl SimWorld {
         self.invariant_report = self
             .invariant_checker
             .check_history_and_election(&self.history, &election_state);
+        let sample = self.resource_sample();
+        self.resource_growth_checker
+            .observe(sample, &mut self.invariant_report);
+    }
+
+    fn resource_sample(&self) -> ResourceSample {
+        ResourceSample {
+            storage_bytes: self
+                .nodes
+                .values()
+                .map(|node| node.storage.footprint().tracked_bytes())
+                .sum(),
+            network_in_flight: self.network.in_flight_len() as u64,
+            client_in_flight: self
+                .clients
+                .values()
+                .map(|client| u64::from(client.in_flight))
+                .sum(),
+            subscriber_pending: self
+                .subscribers
+                .values()
+                .map(|subscriber| subscriber.pending.len() as u64)
+                .sum(),
+        }
     }
 
     fn tick_nodes(&mut self) {
