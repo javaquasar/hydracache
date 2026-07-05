@@ -618,6 +618,14 @@ where
             .clone()
     }
 
+    /// Return the current raft soft-state leader id.
+    ///
+    /// Raft-rs uses `0` when no leader is known, such as during an election.
+    pub fn leader_id(&self) -> Option<u64> {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        known_leader_id(state.raw_node.raft.leader_id)
+    }
+
     /// Return a runtime snapshot.
     pub fn snapshot(&self) -> RaftMetadataRuntimeSnapshot {
         let state = self.raft.lock().expect("raft metadata state poisoned");
@@ -1246,6 +1254,14 @@ fn parse_role(value: &str) -> CacheResult<ClusterRole> {
     }
 }
 
+fn known_leader_id(leader_id: u64) -> Option<u64> {
+    if leader_id == 0 {
+        None
+    } else {
+        Some(leader_id)
+    }
+}
+
 fn to_cache_error(error: impl fmt::Display) -> CacheError {
     CacheError::Backend(format!("raft metadata runtime failed: {error}"))
 }
@@ -1265,7 +1281,14 @@ mod tests {
 
         assert_eq!(snapshot.raft_node_id, 1);
         assert_eq!(snapshot.role, RaftRuntimeRole::Leader);
+        assert_eq!(runtime.leader_id(), Some(1));
         assert_eq!(snapshot.commands_committed, 0);
+    }
+
+    #[test]
+    fn leader_id_maps_zero_soft_state_to_none() {
+        assert_eq!(known_leader_id(0), None);
+        assert_eq!(known_leader_id(7), Some(7));
     }
 
     #[tokio::test]
