@@ -116,6 +116,8 @@ use slog::{o, Logger};
 pub struct RaftMetadataRuntimeConfig {
     cluster_name: String,
     raft_node_id: u64,
+    voters: Vec<u64>,
+    auto_campaign: bool,
     election_tick: usize,
     heartbeat_tick: usize,
     max_size_per_msg: u64,
@@ -128,11 +130,42 @@ impl RaftMetadataRuntimeConfig {
         Self {
             cluster_name: cluster_name.into(),
             raft_node_id: raft_node_id.max(1),
+            voters: vec![raft_node_id.max(1)],
+            auto_campaign: true,
             election_tick: 10,
             heartbeat_tick: 3,
             max_size_per_msg: 1024 * 1024,
             max_inflight_msgs: 256,
         }
+    }
+
+    /// Build a runtime configuration for an explicitly bootstrapped voter set.
+    pub fn multi_voter<I>(cluster_name: impl Into<String>, raft_node_id: u64, voters: I) -> Self
+    where
+        I: IntoIterator<Item = u64>,
+    {
+        let raft_node_id = raft_node_id.max(1);
+        Self {
+            cluster_name: cluster_name.into(),
+            raft_node_id,
+            voters: normalize_voters(raft_node_id, voters),
+            auto_campaign: false,
+            election_tick: 10,
+            heartbeat_tick: 3,
+            max_size_per_msg: 1024 * 1024,
+            max_inflight_msgs: 256,
+        }
+    }
+
+    /// Control whether the runtime campaigns during construction.
+    pub fn auto_campaign(mut self, auto_campaign: bool) -> Self {
+        self.auto_campaign = auto_campaign;
+        self
+    }
+
+    /// Return the configured voter ids.
+    pub fn voter_ids(&self) -> &[u64] {
+        &self.voters
     }
 
     /// Set Raft election and heartbeat ticks.
@@ -165,6 +198,20 @@ impl RaftMetadataRuntimeConfig {
             ..Default::default()
         }
     }
+}
+
+fn normalize_voters<I>(raft_node_id: u64, voters: I) -> Vec<u64>
+where
+    I: IntoIterator<Item = u64>,
+{
+    let mut voters = voters
+        .into_iter()
+        .map(|voter| voter.max(1))
+        .chain(std::iter::once(raft_node_id.max(1)))
+        .collect::<Vec<_>>();
+    voters.sort_unstable();
+    voters.dedup();
+    voters
 }
 
 /// Point-in-time raft-rs metadata runtime snapshot.
@@ -417,6 +464,7 @@ where
     commands: Vec<RaftMetadataCommandEnvelope>,
     applied_command_ids: BTreeSet<String>,
     results: Vec<RaftCommandResult>,
+    outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
     #[cfg(test)]
     fail_next_proposal: bool,
@@ -508,7 +556,7 @@ impl RaftMetadataRuntime<InMemoryRaftLogStore> {
         metadata_store: Option<Arc<dyn RaftMetadataStore>>,
     ) -> CacheResult<Self> {
         let storage =
-            InMemoryRaftLogStore::new_with_conf_state((vec![config.raft_node_id], vec![]));
+            InMemoryRaftLogStore::new_with_conf_state((config.voter_ids().to_vec(), vec![]));
         Self::build_with_storage(config, storage, metadata_store)
     }
 
@@ -529,6 +577,14 @@ impl RaftMetadataRuntime<DurableRaftLogStore> {
         directory: DurableRaftLogDirectory,
     ) -> CacheResult<Self> {
         let config = RaftMetadataRuntimeConfig::single_node(cluster_name, raft_node_id);
+        Self::durable_with_config(config, directory)
+    }
+
+    /// Open or create a runtime backed by a durable raft log using explicit config.
+    pub fn durable_with_config(
+        config: RaftMetadataRuntimeConfig,
+        directory: DurableRaftLogDirectory,
+    ) -> CacheResult<Self> {
         let storage = directory.open().map_err(to_cache_error)?;
         if storage
             .initial_state()
@@ -537,7 +593,7 @@ impl RaftMetadataRuntime<DurableRaftLogStore> {
             .voters
             .is_empty()
         {
-            storage.initialize_with_conf_state((vec![config.raft_node_id], vec![]));
+            storage.initialize_with_conf_state((config.voter_ids().to_vec(), vec![]));
         }
         Self::build_with_storage(config, storage, None)
     }
@@ -564,18 +620,21 @@ where
         let logger = Logger::root(slog::Discard, o!());
         let mut raw_node =
             RawNode::new(&config.raft_config(), storage, &logger).map_err(to_cache_error)?;
-        raw_node.campaign().map_err(to_cache_error)?;
+        if config.auto_campaign {
+            raw_node.campaign().map_err(to_cache_error)?;
+        }
 
         let mut state = RaftRuntimeState {
             raw_node,
             commands: Vec::new(),
             applied_command_ids: BTreeSet::new(),
             results: Vec::new(),
+            outbound_messages: Vec::new(),
             applied_index: 0,
             #[cfg(test)]
             fail_next_proposal: false,
         };
-        state.drain_ready()?;
+        let _ = state.drain_ready()?;
 
         let runtime = Self {
             cluster: InMemoryCluster::new(cluster_name),
@@ -616,6 +675,49 @@ where
             .expect("raft metadata state poisoned")
             .results
             .clone()
+    }
+
+    /// Ask raft-rs to campaign and return outbound peer messages.
+    pub fn campaign(&self) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.raw_node.campaign().map_err(to_cache_error)?;
+        state.drain_ready()
+    }
+
+    /// Advance the raft logical clock and return outbound peer messages.
+    pub fn tick(&self) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.raw_node.tick();
+        state.drain_ready()
+    }
+
+    /// Step one inbound raft message and return outbound peer messages.
+    pub fn step(&self, message: RaftWireMessage) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state
+            .raw_node
+            .step(message.decode()?)
+            .map_err(to_cache_error)?;
+        state.drain_ready()
+    }
+
+    /// Drain any pending raft ready state and return outbound peer messages.
+    pub fn drain_ready(&self) -> CacheResult<Vec<RaftWireMessage>> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .drain_ready()
+    }
+
+    /// Return outbound messages captured while committing metadata commands.
+    pub fn take_outbound_messages(&self) -> Vec<RaftWireMessage> {
+        std::mem::take(
+            &mut self
+                .raft
+                .lock()
+                .expect("raft metadata state poisoned")
+                .outbound_messages,
+        )
     }
 
     /// Return the current raft soft-state leader id.
@@ -972,7 +1074,8 @@ where
         self.raw_node
             .propose(vec![], encode_envelope(&envelope))
             .map_err(to_cache_error)?;
-        self.drain_ready()?;
+        let outbound = self.drain_ready()?;
+        self.outbound_messages.extend(outbound);
         let result = RaftCommandResult {
             command_id,
             status: RaftCommandStatus::Committed,
@@ -982,7 +1085,8 @@ where
         Ok(result)
     }
 
-    fn drain_ready(&mut self) -> CacheResult<()> {
+    fn drain_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut outbound = Vec::new();
         while self.raw_node.has_ready() {
             let store = self.raw_node.raft.raft_log.store.clone();
             let mut ready = self.raw_node.ready();
@@ -994,6 +1098,8 @@ where
             }
 
             let committed_entries = ready.take_committed_entries();
+            outbound.extend(ready.take_messages());
+            outbound.extend(ready.take_persisted_messages());
 
             if !ready.entries().is_empty() {
                 store.append(ready.entries()).map_err(to_cache_error)?;
@@ -1010,10 +1116,14 @@ where
                 store.set_commit(commit).map_err(to_cache_error)?;
             }
             self.apply_committed_entries(light_ready.take_committed_entries())?;
+            outbound.extend(light_ready.take_messages());
             store.mark_applied(self.applied_index);
             self.raw_node.advance_apply();
         }
-        Ok(())
+        outbound
+            .into_iter()
+            .map(|message| RaftWireMessage::encode(&message))
+            .collect()
     }
 
     fn apply_committed_entries(&mut self, entries: Vec<Entry>) -> CacheResult<()> {
