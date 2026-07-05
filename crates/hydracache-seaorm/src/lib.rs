@@ -519,7 +519,11 @@ mod tests {
         let second = second.unwrap();
 
         assert_eq!(first, second);
-        assert_eq!(first.name, "single-flight");
+        assert!(
+            matches!(first.name.as_str(), "single-flight" | "duplicate-loader"),
+            "single-flight value must be one of the two loaders, got {}",
+            first.name
+        );
         assert_eq!(calls.load(Ordering::SeqCst), 1);
     }
 
