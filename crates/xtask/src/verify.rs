@@ -75,6 +75,18 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             ],
             None,
         ),
+        gate(
+            "soak fast budget",
+            [
+                "test",
+                "-p",
+                "hydracache-sim",
+                "--test",
+                "soak_budget",
+                "--locked",
+            ],
+            None,
+        ),
     ];
 
     if is_windows {
@@ -285,6 +297,23 @@ mod tests {
                 "hydracache-sim",
                 "--test",
                 "dst_budget",
+                "--locked"
+            ]
+        );
+    }
+
+    #[test]
+    fn verify_includes_soak_fast_budget_gate() {
+        let gates = gates_for_platform(false);
+
+        assert_eq!(
+            args_for(&gates, "soak fast budget"),
+            [
+                "test",
+                "-p",
+                "hydracache-sim",
+                "--test",
+                "soak_budget",
                 "--locked"
             ]
         );

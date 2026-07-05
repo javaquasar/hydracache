@@ -82,7 +82,9 @@ fragile manual cache busting around `sqlx`/`diesel`/`seaorm`.
   durable raft, online resharding, active-active multi-region, tunable consistency, and
   a Jepsen-class deterministic simulator (`0.44`), validated over real networked
   transport. The remaining weakness is not missing algorithms — it is **longer-running
-  soak/chaos history** and proven behavior under sustained production overload.
+  soak/chaos history** and proven behavior under sustained production overload. The
+  `0.58` soak gate and nightly `SOAK_REPORT` add reproducible endurance evidence, but
+  they are still accumulating mileage rather than a "battle-tested" production claim.
 - **Consumer ergonomics are still Rust-first.** Non-Rust stacks can use the grid via the
   `0.49` protocol + the Hibernate L2 provider **contract** (Rust-side; the Java
   `hydracache-hibernate` artifact is **planned, not yet in-repo** — see

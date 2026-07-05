@@ -1,6 +1,7 @@
 # HydraCache 0.58.0 Endurance — Soak & Overload Hardening — Codex Execution Plan
 
 > **At a glance**
+> - **Status:** shipped.
 > - **What:** close the single most honest remaining weakness — *"no multi-year soak … the remaining
 >   weakness is longer-running soak/chaos history and proven behavior under sustained production
 >   overload."* Concretely, with implementation tasks for the parts that **do not exist yet**:

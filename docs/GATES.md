@@ -14,7 +14,7 @@ cargo xtask verify
 
 Runs the fast gates in order and fails on the first red one:
 formatting, clippy, dependency bans, docs-consistency (`doc-check`), workspace
-tests, rustdoc (`-D warnings`), the DST fast budget, and the performance-budget
+tests, rustdoc (`-D warnings`), the DST fast budget, the soak fast budget, and the performance-budget
 contract test. When Node/npm are installed, it also runs the read-only Management
 Center static check and Playwright specs; without Node/npm it logs a skip and
 continues. Use it before opening a PR. Time-heavy suites (criterion benchmark
@@ -38,6 +38,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Bench targets compile | `cargo check -p hydracache --benches` / `-p hydracache-db --benches` | CI | benches build |
 | Dependency bans | `cargo deny check bans` | CI + verify | `deny.toml` (incl. sqlparser runtime ban — RULES R-9) |
 | DST fast budget | `cargo test -p hydracache-sim --test dst_budget --locked` | CI + verify | bounded deterministic simulation seed matrix (RULES R-5/R-8) |
+| Soak fast budget | `cargo test -p hydracache-sim --test soak_budget --locked` | CI + verify | bounded deterministic endurance soak with score-free `SOAK_REPORT` shape |
 | Management console | `npm --prefix console ci` + `npm --prefix console run build` + `npm --prefix console test` | CI + verify (verify skips only when Node/npm are absent) | read-only `/console/` renders `/cluster/overview` and `/metrics`, preserves live/modeled honesty, degrades when unreachable, and keeps DOM rendering bounded |
 | Grafana dashboard drift | `cargo test -p hydracache-observability --test dashboard_metrics --locked` | CI + verify (via workspace tests) | dashboard PromQL references only metrics registered by `registered_metric_names()` |
 | SQL lint baseline drift | `cargo test -p hydracache-sql-lint --test lint_cli` + `lint --check-baseline` | CI + verify | no new un-baselined SQL lint findings |
@@ -56,6 +57,7 @@ Per RULES R-5 these run behind `#[ignore]` and are not in `verify`:
 ```powershell
 cargo test --workspace --locked -- --ignored
 cargo run -p hydracache-sim --bin vopr -- --seed 44 --steps 100000
+cargo run -p hydracache-sim --bin vopr -- soak --master-seed 22530 --budget-secs 60 --steps-per-seed 512 --max-seeds 128 > SOAK_REPORT.json
 ```
 
 Each release plan lists its own focused gate block (the `cargo test -p … <suite>`

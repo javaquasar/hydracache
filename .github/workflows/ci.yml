@@ -78,6 +78,9 @@ jobs:
       - name: DST fast budget
         run: cargo test -p hydracache-sim --test dst_budget --locked
 
+      - name: Soak fast budget
+        run: cargo test -p hydracache-sim --test soak_budget --locked
+
       - name: Management console
         run: |
           npm --prefix console ci
@@ -122,7 +125,7 @@ jobs:
         run: cargo run -p xtask --locked -- bench-budget --current target/criterion
 
   dst-nightly-soak:
-    name: DST Nightly Soak
+    name: DST and Soak Nightly
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
@@ -143,6 +146,21 @@ jobs:
           cargo run -p hydracache-sim --bin vopr --locked -- --seed 44 --steps 512
           cargo run -p hydracache-sim --bin vopr --locked -- --seed 45 --steps 512
           cargo run -p hydracache-sim --bin vopr --locked -- --seed 46 --steps 512
+
+      - name: Run continuous soak and write SOAK_REPORT
+        run: |
+          cargo run -p hydracache-sim --bin vopr --locked -- soak --master-seed 22530 --budget-secs 60 --steps-per-seed 512 --max-seeds 128 | tee SOAK_REPORT.json
+
+      - name: Run ignored resource and operator soak sentinels
+        run: |
+          cargo test -p hydracache-server --test soak_resource --locked -- --ignored --nocapture
+          cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture
+
+      - name: Upload SOAK_REPORT
+        uses: actions/upload-artifact@v4
+        with:
+          name: SOAK_REPORT
+          path: SOAK_REPORT.json
 
   msrv:
     name: MSRV 1.88.0

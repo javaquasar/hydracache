@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::env;
 use std::process::ExitCode;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache_sim::{
     run_soak, run_soak_with_seed_runner, SimConfig, SimWorld, SoakConfig, SoakReport,
@@ -177,6 +177,7 @@ fn run_single_shot(cli: SingleShotCli) -> ExitCode {
 
 fn run_soak_command(cli: SoakCli) -> ExitCode {
     let cfg = cli.config();
+    let started = Instant::now();
     #[cfg(debug_assertions)]
     let outcome = if let Some(fail_after) = cli.synthetic_failure_after_seeds {
         let mut seeds = 0_u64;
@@ -195,7 +196,7 @@ fn run_soak_command(cli: SoakCli) -> ExitCode {
     #[cfg(not(debug_assertions))]
     let outcome = run_soak(&cfg);
 
-    match serde_json::to_string(&SoakReport::from(&outcome)) {
+    match serde_json::to_string(&SoakReport::from_outcome(&outcome, started.elapsed())) {
         Ok(report) => println!("{report}"),
         Err(err) => {
             eprintln!("failed to serialize soak report: {err}");

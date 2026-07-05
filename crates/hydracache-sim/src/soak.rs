@@ -92,6 +92,10 @@ pub struct SoakReport {
     pub seeds_run: u64,
     /// Total scheduler steps executed across the fleet.
     pub total_steps: u64,
+    /// Wall-clock seconds spent by the reporting command.
+    pub wall_clock_secs: u64,
+    /// Whether bounded-resource invariants stayed clean.
+    pub resource_bounds_ok: bool,
     /// Final report outcome.
     pub outcome: SoakReportOutcome,
 }
@@ -114,6 +118,13 @@ pub enum SoakReportOutcome {
 
 impl From<&SoakOutcome> for SoakReport {
     fn from(outcome: &SoakOutcome) -> Self {
+        Self::from_outcome(outcome, Duration::ZERO)
+    }
+}
+
+impl SoakReport {
+    /// Build a score-free report with the caller-observed wall-clock duration.
+    pub fn from_outcome(outcome: &SoakOutcome, wall_clock: Duration) -> Self {
         let report_outcome = match &outcome.first_failure {
             Some(failure) => SoakReportOutcome::Failed {
                 seed: failure.seed,
@@ -134,6 +145,8 @@ impl From<&SoakOutcome> for SoakReport {
             master_seed: outcome.master_seed,
             seeds_run: outcome.seeds_run,
             total_steps: outcome.total_steps,
+            wall_clock_secs: wall_clock.as_secs(),
+            resource_bounds_ok: outcome.first_failure.is_none(),
             outcome: report_outcome,
         }
     }
