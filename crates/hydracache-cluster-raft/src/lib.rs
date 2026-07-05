@@ -93,6 +93,7 @@ use hydracache::{
     CacheError, CacheInvalidationBus, CacheResult, ClusterCandidate, ClusterControlPlane,
     ClusterDiagnostics, ClusterEpoch, ClusterGeneration, ClusterMember, ClusterMembershipEvent,
     ClusterMembershipSubscriber, ClusterNodeId, ClusterRole, InMemoryCluster, RaftMetadataCommand,
+    RaftMetadataSnapshot,
 };
 mod log_store;
 
@@ -675,6 +676,33 @@ where
             .expect("raft metadata state poisoned")
             .results
             .clone()
+    }
+
+    /// Return a metadata-journal snapshot shaped like the base control-plane seam.
+    pub fn metadata_snapshot(&self) -> RaftMetadataSnapshot {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        let hard_state = state.raw_node.raft.hard_state();
+        RaftMetadataSnapshot {
+            term: state.raw_node.raft.term,
+            commit_index: hard_state.commit,
+            epoch: self.cluster.epoch(),
+            member_count: self.cluster.members().len(),
+            client_count: self.cluster.clients().len(),
+            last_command: state
+                .commands
+                .last()
+                .map(|envelope| envelope.command.clone()),
+        }
+    }
+
+    /// Return admitted member snapshots from the runtime control plane.
+    pub fn members(&self) -> Vec<ClusterMember> {
+        self.cluster.members()
+    }
+
+    /// Return connected client snapshots from the runtime control plane.
+    pub fn clients(&self) -> Vec<ClusterMember> {
+        self.cluster.clients()
     }
 
     /// Ask raft-rs to campaign and return outbound peer messages.
