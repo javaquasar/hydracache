@@ -354,6 +354,7 @@ impl ServerRuntime {
             });
         }
         self.begin_drain();
+        self.leave_cluster_for_shutdown();
         let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.flushed = true;
         self.storage_open = false;
@@ -367,6 +368,12 @@ impl ServerRuntime {
     /// Backward-compatible alias for graceful shutdown.
     pub fn shutdown(&mut self) -> DrainOutcome {
         self.graceful_shutdown()
+    }
+
+    fn leave_cluster_for_shutdown(&self) {
+        if matches!(self.config.role, ServerRole::Member | ServerRole::Client) {
+            let _ = block_on_cluster_leave(&self.cache);
+        }
     }
 
     /// Return admin/operator status derived from the runtime model.
@@ -505,6 +512,24 @@ fn topology_status_source(source: StatusSource) -> TopologyStatusSource {
         StatusSource::Live => TopologyStatusSource::Live,
         StatusSource::Modeled => TopologyStatusSource::Modeled,
     }
+}
+
+fn block_on_cluster_leave(cache: &HydraCache) -> hydracache::CacheResult<()> {
+    let left = if let Ok(handle) = tokio::runtime::Handle::try_current() {
+        tokio::task::block_in_place(|| handle.block_on(cache.leave_cluster()))
+    } else {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .map_err(|error| {
+                hydracache::CacheError::Backend(format!(
+                    "failed to build cluster leave runtime: {error}"
+                ))
+            })?;
+        runtime.block_on(cache.leave_cluster())
+    }?;
+    let _ = left;
+    Ok(())
 }
 
 fn topology_reshard_phase(phase: ReshardPhase) -> TopologyReshardPhase {

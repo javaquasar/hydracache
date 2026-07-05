@@ -125,5 +125,26 @@ fn inproc_fallback_still_builds_under_env_flag() {
 }
 
 #[test]
+fn draining_member_leaves_raft_config_cleanly() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let mut runtime = ServerRuntime::new(member_config("draining-leaves-raft"))
+        .unwrap()
+        .start();
+    assert_eq!(runtime.admin_status().members, 1);
+
+    let drain = runtime.shutdown();
+
+    assert!(!drain.timed_out);
+    assert_eq!(
+        runtime.cache().cluster_diagnostics().unwrap().member_count,
+        0
+    );
+    let status = runtime.admin_status();
+    assert_eq!(status.members, 0);
+    assert!(!status.quorum_ok);
+}
+
+#[test]
 #[ignore = "W6b deferred: requires networked raft/chitchat daemon wiring"]
 fn multi_node_members_form_a_cluster_and_elect_one_leader() {}

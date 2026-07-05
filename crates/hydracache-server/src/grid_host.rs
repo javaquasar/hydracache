@@ -460,7 +460,15 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     }
 
     fn has_quorum(&self) -> bool {
-        self.raft.leader_id().is_some() && !self.raft.members().is_empty()
+        let members = self.raft.members();
+        if self.raft.leader_id().is_none() || members.is_empty() {
+            return false;
+        }
+        let reachable = members
+            .iter()
+            .filter(|member| self.reachability(&member.node_id) == Reachability::Reachable)
+            .count();
+        reachable >= (members.len() / 2).saturating_add(1)
     }
 
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {
