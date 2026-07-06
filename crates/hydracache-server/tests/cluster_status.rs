@@ -12,9 +12,10 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_ADMIN_HEADER, HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{
-    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterStatusProvider,
-    ClusterStatusRuntime, GridControlPlaneHandle, LiveClusterStatus, Reachability, ReshardPhase,
-    ServerConfig, ServerRole, ServerRuntime, StatusSource, TlsConfig, ADMIN_STATUS_PATH,
+    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
+    ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle, LiveClusterStatus,
+    Reachability, ReshardPhase, ServerConfig, ServerRole, ServerRuntime, StatusSource, TlsConfig,
+    ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -28,6 +29,7 @@ fn member_config() -> ServerConfig {
         storage_dir: Some(PathBuf::from("target/test-hydracache-server-status")),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),

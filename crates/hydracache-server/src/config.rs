@@ -44,6 +44,40 @@ impl TlsConfig {
     }
 }
 
+/// Cluster route credential policy.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ClusterAuthConfig {
+    /// Current credential key id.
+    pub key_id: Option<String>,
+    /// File containing the current opaque token.
+    pub token_file: Option<PathBuf>,
+    /// Previous credential key id accepted during rotation.
+    pub previous_key_id: Option<String>,
+    /// File containing the previous opaque token.
+    pub previous_token_file: Option<PathBuf>,
+}
+
+impl ClusterAuthConfig {
+    /// Return whether a current credential is configured.
+    pub fn is_configured(&self) -> bool {
+        self.key_id.as_deref().is_some_and(non_empty)
+            || self.token_file.as_deref().is_some_and(non_empty_path)
+    }
+
+    fn validate(&self) -> Result<(), ServerConfigError> {
+        validate_cluster_auth_pair(
+            self.key_id.as_deref(),
+            self.token_file.as_deref(),
+            "cluster_auth",
+        )?;
+        validate_cluster_auth_pair(
+            self.previous_key_id.as_deref(),
+            self.previous_token_file.as_deref(),
+            "cluster_auth.previous",
+        )
+    }
+}
+
 /// Backup startup policy.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BackupConfig {
@@ -100,6 +134,8 @@ pub struct ServerConfig {
     pub drain_timeout_ms: u64,
     /// TLS policy.
     pub tls: TlsConfig,
+    /// Cluster route authentication policy.
+    pub cluster_auth: ClusterAuthConfig,
     /// Backup policy.
     pub backup: BackupConfig,
     /// External client API policy.
@@ -122,6 +158,7 @@ impl Default for ServerConfig {
             storage_dir: None,
             drain_timeout_ms: 30_000,
             tls: TlsConfig::default(),
+            cluster_auth: ClusterAuthConfig::default(),
             backup: BackupConfig::default(),
             client_api: ClientApiConfig::default(),
             admin_api: AdminApiConfig::default(),
@@ -189,6 +226,18 @@ impl ServerConfig {
         if let Ok(path) = env::var("HYDRACACHE_TLS_CA_PATH") {
             config.tls.ca_path = Some(PathBuf::from(path));
         }
+        if let Ok(key_id) = env::var("HYDRACACHE_CLUSTER_AUTH_KEY_ID") {
+            config.cluster_auth.key_id = Some(key_id);
+        }
+        if let Ok(path) = env::var("HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE") {
+            config.cluster_auth.token_file = Some(PathBuf::from(path));
+        }
+        if let Ok(key_id) = env::var("HYDRACACHE_CLUSTER_AUTH_PREVIOUS_KEY_ID") {
+            config.cluster_auth.previous_key_id = Some(key_id);
+        }
+        if let Ok(path) = env::var("HYDRACACHE_CLUSTER_AUTH_PREVIOUS_TOKEN_FILE") {
+            config.cluster_auth.previous_token_file = Some(PathBuf::from(path));
+        }
         if env::var("HYDRACACHE_BACKUP_ENABLED").as_deref() == Ok("true") {
             config.backup.enabled = true;
         }
@@ -235,6 +284,7 @@ impl ServerConfig {
         if !self.tls.has_complete_material() {
             return Err(ServerConfigError::IncompleteTlsMaterial);
         }
+        self.cluster_auth.validate()?;
         if self.exposes_non_loopback() && !self.tls.enabled && !self.tls.acknowledge_insecure {
             return Err(ServerConfigError::NonLoopbackWithoutTls);
         }
@@ -298,6 +348,30 @@ pub enum ServerConfigError {
     /// TLS enabled without full material paths.
     #[error("tls.enabled requires cert_path, key_path, and ca_path")]
     IncompleteTlsMaterial,
+    /// Cluster auth material is incomplete.
+    #[error("{section} requires key_id and readable token_file")]
+    IncompleteClusterAuth {
+        /// Config section.
+        section: &'static str,
+    },
+    /// Cluster auth token file could not be read.
+    #[error("failed to read {section}.token_file {path}: {source}")]
+    ClusterAuthTokenRead {
+        /// Config section.
+        section: &'static str,
+        /// Token file path.
+        path: PathBuf,
+        /// Source IO error.
+        source: std::io::Error,
+    },
+    /// Cluster auth token file was empty.
+    #[error("{section}.token_file {path} is empty")]
+    EmptyClusterAuthToken {
+        /// Config section.
+        section: &'static str,
+        /// Token file path.
+        path: PathBuf,
+    },
     /// External listener without TLS and without explicit acknowledgement.
     #[error("non-loopback listeners require TLS or acknowledge_insecure=true")]
     NonLoopbackWithoutTls,
@@ -319,6 +393,42 @@ fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {
         "client" => Ok(ServerRole::Client),
         _ => Err(ServerConfigError::InvalidRole(value.to_owned())),
     }
+}
+
+fn validate_cluster_auth_pair(
+    key_id: Option<&str>,
+    token_file: Option<&Path>,
+    section: &'static str,
+) -> Result<(), ServerConfigError> {
+    let has_key = key_id.is_some_and(non_empty);
+    let has_file = token_file.is_some_and(non_empty_path);
+    if has_key != has_file {
+        return Err(ServerConfigError::IncompleteClusterAuth { section });
+    }
+    let Some(path) = token_file else {
+        return Ok(());
+    };
+    let token =
+        fs::read_to_string(path).map_err(|source| ServerConfigError::ClusterAuthTokenRead {
+            section,
+            path: path.to_path_buf(),
+            source,
+        })?;
+    if token.trim().is_empty() {
+        return Err(ServerConfigError::EmptyClusterAuthToken {
+            section,
+            path: path.to_path_buf(),
+        });
+    }
+    Ok(())
+}
+
+fn non_empty(value: &str) -> bool {
+    !value.trim().is_empty()
+}
+
+fn non_empty_path(path: &Path) -> bool {
+    !path.as_os_str().is_empty()
 }
 
 fn is_loopback(ip: IpAddr) -> bool {

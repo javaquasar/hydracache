@@ -6,8 +6,8 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerAdminStatus, ServerConfig,
-    ServerConfigError, ServerRole, ServerRuntime, StatusSource, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerAdminStatus,
+    ServerConfig, ServerConfigError, ServerRole, ServerRuntime, StatusSource, TlsConfig,
 };
 use serde_json::json;
 
@@ -22,6 +22,7 @@ fn member_config(name: &str) -> ServerConfig {
         ))),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
@@ -176,18 +177,19 @@ fn non_loopback_member_without_tls_is_rejected_loud() {
 }
 
 #[test]
-fn member_cluster_listener_uses_configured_tls() {
+fn tls_enabled_member_without_cluster_auth_fails_loud_at_startup() {
     let _env = grid_env_lock();
     std::env::remove_var("HYDRACACHE_GRID_INPROC");
-    let mut config = member_config("configured-tls");
+    let mut config = member_config("tls-without-cluster-auth");
     config.tls = configured_tls();
 
-    let runtime = ServerRuntime::new(config).unwrap().start();
+    let error = ServerRuntime::new(config).unwrap_err();
 
-    let status = runtime.admin_status();
-    assert_eq!(status.source, StatusSource::Live);
-    assert!(status.leader.is_some());
-    assert!(status.quorum_ok);
+    assert!(matches!(error, ServerConfigError::GridHostStart(_)));
+    assert!(
+        error.to_string().contains("[cluster_auth]"),
+        "error should name missing cluster_auth: {error}"
+    );
 }
 
 #[test]

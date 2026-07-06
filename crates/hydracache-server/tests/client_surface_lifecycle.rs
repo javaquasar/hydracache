@@ -8,8 +8,8 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerRole, ServerRuntime,
-    TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerConfig, ServerRole,
+    ServerRuntime, TlsConfig,
 };
 use tower::ServiceExt;
 
@@ -24,6 +24,7 @@ fn member_config_with_client_surface() -> ServerConfig {
         )),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig {
             enabled: true,

@@ -4,6 +4,7 @@ use std::fmt;
 use std::fs;
 use std::future::Future;
 use std::net::SocketAddr;
+use std::path::Path;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
@@ -19,8 +20,9 @@ use hydracache_cluster_raft::{
     RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftWireMessage,
 };
 use hydracache_cluster_transport_axum::{
-    tls::TlsStartupPolicy, AxumClusterMessageService, ClusterMessageAck, ClusterMessageHandler,
-    ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth, DEFAULT_RAFT_APPEND_PATH,
+    tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
+    ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
+    StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH,
 };
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -140,11 +142,13 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         .await?,
     );
     let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
+    let route_auth = cluster_route_auth(config, &node_id)?;
     let message_sink: Arc<dyn RaftMessageSink> = if topology.multi_voter {
         Arc::new(HttpRaftMessageSink::new(
             node_id.clone(),
             raft_node_id,
             topology.peers.clone(),
+            route_auth.clone(),
         ))
     } else {
         Arc::new(InMemoryRaftMessageSink::default())
@@ -161,6 +165,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         node_id.clone(),
         raft.clone(),
         message_sink.clone(),
+        route_auth,
         shutdown.subscribe(),
     )
     .await?;
@@ -260,6 +265,7 @@ async fn spawn_cluster_transport(
     node_id: ClusterNodeId,
     raft: Arc<NetworkedRaftRuntime>,
     message_sink: Arc<dyn RaftMessageSink>,
+    auth: ClusterRouteAuth,
     mut shutdown: watch::Receiver<bool>,
 ) -> CacheResult<()> {
     TlsStartupPolicy::new(config.cluster_addr, config.tls.enabled)
@@ -271,9 +277,6 @@ async fn spawn_cluster_transport(
         .map_err(|error| {
             CacheError::Backend(format!("failed to bind cluster transport: {error}"))
         })?;
-    let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(
-        !config.tls.enabled || config.tls.acknowledge_insecure,
-    );
     let routes = AxumClusterMessageService::new(
         node_id.clone(),
         Arc::new(RaftClusterMessageHandler {
@@ -301,6 +304,74 @@ async fn spawn_cluster_transport(
             .await;
     });
     Ok(())
+}
+
+fn cluster_route_auth(
+    config: &ServerConfig,
+    node_id: &ClusterNodeId,
+) -> CacheResult<ClusterRouteAuth> {
+    if let Some(identity) = cluster_auth_provider(config, node_id)? {
+        return Ok(ClusterRouteAuth::secure(
+            Arc::new(identity),
+            Arc::new(AllowAllAuthorizer),
+        ));
+    }
+    if config.tls.enabled {
+        return Err(CacheError::Backend(
+            "tls.enabled member requires [cluster_auth]: a TLS listener without peer auth rejects every inbound raft message and the cluster cannot form"
+                .to_owned(),
+        ));
+    }
+    Ok(
+        ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(
+            config.cluster_addr.ip().is_loopback() || config.tls.acknowledge_insecure,
+        ),
+    )
+}
+
+fn cluster_auth_provider(
+    config: &ServerConfig,
+    node_id: &ClusterNodeId,
+) -> CacheResult<Option<StaticNodeIdentityProvider>> {
+    let Some(key_id) = config.cluster_auth.key_id.as_deref() else {
+        return Ok(None);
+    };
+    let token_file = config.cluster_auth.token_file.as_deref().ok_or_else(|| {
+        CacheError::Backend("cluster_auth requires key_id and readable token_file".to_owned())
+    })?;
+    let token = read_cluster_auth_token(token_file, "cluster_auth")?;
+    let mut provider = StaticNodeIdentityProvider::new(node_id.clone(), key_id, token);
+    if let Some(previous_key_id) = config.cluster_auth.previous_key_id.as_deref() {
+        let previous_token_file = config
+            .cluster_auth
+            .previous_token_file
+            .as_deref()
+            .ok_or_else(|| {
+                CacheError::Backend(
+                    "cluster_auth.previous requires key_id and readable token_file".to_owned(),
+                )
+            })?;
+        let previous_token = read_cluster_auth_token(previous_token_file, "cluster_auth.previous")?;
+        provider = provider.with_previous(previous_key_id, previous_token);
+    }
+    Ok(Some(provider))
+}
+
+fn read_cluster_auth_token(path: &Path, section: &str) -> CacheResult<String> {
+    let token = fs::read_to_string(path).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to read {section}.token_file {}: {error}",
+            path.display()
+        ))
+    })?;
+    let token = token.trim_end_matches(['\r', '\n']).to_owned();
+    if token.trim().is_empty() {
+        return Err(CacheError::Backend(format!(
+            "{section}.token_file {} is empty",
+            path.display()
+        )));
+    }
+    Ok(token)
 }
 
 fn spawn_grid_drive(
@@ -442,6 +513,7 @@ struct HttpRaftMessageSink {
     local_node_id: ClusterNodeId,
     local_raft_node_id: u64,
     peers: Arc<BTreeMap<u64, RaftPeer>>,
+    auth: ClusterRouteAuth,
     client: reqwest::Client,
 }
 
@@ -450,11 +522,13 @@ impl HttpRaftMessageSink {
         local_node_id: ClusterNodeId,
         local_raft_node_id: u64,
         peers: Arc<BTreeMap<u64, RaftPeer>>,
+        auth: ClusterRouteAuth,
     ) -> Self {
         Self {
             local_node_id,
             local_raft_node_id,
             peers,
+            auth,
             client: reqwest::Client::new(),
         }
     }
@@ -468,6 +542,16 @@ impl HttpRaftMessageSink {
                 .map(|peer| peer.node_id.to_string())
                 .unwrap_or_else(|| raft_node_id.to_string())
         }
+    }
+
+    fn authenticated_headers(&self) -> CacheResult<reqwest::header::HeaderMap> {
+        let mut headers = reqwest::header::HeaderMap::new();
+        self.auth
+            .apply_outbound_headers(&mut headers)
+            .map_err(|error| {
+                CacheError::Backend(format!("failed to apply cluster auth headers: {error}"))
+            })?;
+        Ok(headers)
     }
 }
 
@@ -489,12 +573,14 @@ impl RaftMessageSink for HttpRaftMessageSink {
             message.term,
             message.payload,
         );
+        let headers = self.authenticated_headers()?;
         let response = self
             .client
             .post(format!(
                 "http://{}{}",
                 peer.address, DEFAULT_RAFT_APPEND_PATH
             ))
+            .headers(headers)
             .json(&request)
             .send()
             .await
@@ -889,6 +975,10 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
 mod tests {
     use super::*;
     use hydracache::{ClusterCandidate, InMemoryClusterDiscovery};
+    use hydracache_cluster_transport_axum::{
+        HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
+    };
+    use std::path::PathBuf;
 
     #[tokio::test]
     async fn drive_loop_admits_a_gossip_candidate_into_the_shared_raft_runtime() {
@@ -915,5 +1005,57 @@ mod tests {
             hydracache::RaftMetadataCommand::MemberUpsert { node_id, .. }
                 if node_id.as_str() == "member-a"
         )));
+    }
+
+    #[test]
+    fn plaintext_route_is_acknowledged_only_on_loopback_or_staged_boundary() {
+        let node_id = ClusterNodeId::from("member-a");
+        let mut config = test_member_config("127.0.0.1:7000");
+        let auth = cluster_route_auth(&config, &node_id).unwrap();
+        assert!(auth.route_enabled(ClusterRoute::RaftAppend));
+
+        config.cluster_addr = "10.0.0.1:7000".parse().unwrap();
+        config.tls.acknowledge_insecure = false;
+        let auth = cluster_route_auth(&config, &node_id).unwrap();
+        assert!(!auth.route_enabled(ClusterRoute::RaftAppend));
+
+        config.tls.acknowledge_insecure = true;
+        let auth = cluster_route_auth(&config, &node_id).unwrap();
+        assert!(auth.route_enabled(ClusterRoute::RaftAppend));
+    }
+
+    #[test]
+    fn http_raft_sink_attaches_cluster_auth_headers() {
+        let node_id = ClusterNodeId::from("member-a");
+        let auth = ClusterRouteAuth::secure(
+            Arc::new(StaticNodeIdentityProvider::new(
+                node_id.clone(),
+                "k1",
+                "secret",
+            )),
+            Arc::new(AllowAllAuthorizer),
+        );
+        let sink = HttpRaftMessageSink::new(node_id, 1, Arc::new(BTreeMap::new()), auth);
+
+        let headers = sink.authenticated_headers().unwrap();
+
+        assert_eq!(headers[HYDRACACHE_NODE_KEY_ID_HEADER], "k1");
+        assert_eq!(headers[HYDRACACHE_NODE_TOKEN_HEADER], "secret");
+    }
+
+    fn test_member_config(cluster_addr: &str) -> ServerConfig {
+        ServerConfig {
+            role: crate::config::ServerRole::Member,
+            listen_addr: "127.0.0.1:18080".parse().unwrap(),
+            cluster_addr: cluster_addr.parse().unwrap(),
+            seeds: vec![cluster_addr.to_owned()],
+            storage_dir: Some(PathBuf::from("target/test-hydracache-grid-host/unit")),
+            drain_timeout_ms: 1_000,
+            tls: crate::config::TlsConfig::default(),
+            cluster_auth: crate::config::ClusterAuthConfig::default(),
+            backup: crate::config::BackupConfig::default(),
+            client_api: crate::config::ClientApiConfig::default(),
+            admin_api: crate::config::AdminApiConfig::default(),
+        }
     }
 }

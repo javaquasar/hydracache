@@ -28,8 +28,8 @@ pub use cluster_status::{
     StatusSource,
 };
 pub use config::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,
-    TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerConfig,
+    ServerConfigError, ServerRole, TlsConfig,
 };
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{

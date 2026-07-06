@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,
-    ServerRuntime, ServerState, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerConfig,
+    ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
 };
 
 fn member_config() -> ServerConfig {
@@ -14,6 +14,7 @@ fn member_config() -> ServerConfig {
         storage_dir: Some(PathBuf::from("target/test-hydracache-server")),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
@@ -62,10 +63,29 @@ fn server_lifecycle_invalid_config_fails_loud() {
         backup_without_location.validate(),
         Err(ServerConfigError::MissingBackupLocation)
     ));
+
+    let mut auth_without_token = member_config();
+    auth_without_token.cluster_auth.key_id = Some("k1".to_owned());
+    assert!(matches!(
+        auth_without_token.validate(),
+        Err(ServerConfigError::IncompleteClusterAuth { .. })
+    ));
+
+    let mut auth_with_missing_file = member_config();
+    auth_with_missing_file.cluster_auth.key_id = Some("k1".to_owned());
+    auth_with_missing_file.cluster_auth.token_file =
+        Some(PathBuf::from("target/test-hydracache-server/missing-token"));
+    assert!(matches!(
+        auth_with_missing_file.validate(),
+        Err(ServerConfigError::ClusterAuthTokenRead { .. })
+    ));
 }
 
 #[test]
 fn server_lifecycle_toml_config_roundtrip_validates() {
+    std::fs::create_dir_all("target/test-hydracache-server").unwrap();
+    std::fs::write("target/test-hydracache-server/token", "secret\n").unwrap();
+
     let config = ServerConfig::from_toml_str(
         r#"
 role = "member"
@@ -74,6 +94,10 @@ cluster_addr = "127.0.0.1:17000"
 seeds = ["127.0.0.1:17000"]
 storage_dir = "target/test-hydracache-server"
 drain_timeout_ms = 1000
+
+[cluster_auth]
+key_id = "k1"
+token_file = "target/test-hydracache-server/token"
 
 [admin_api]
 enabled = true
