@@ -157,13 +157,12 @@ Its relationship to `docs/technical-debt/` is explicit:
 
 | TD | In `0.58`? | Why |
 | --- | --- | --- |
-| **TD-0008** networked daemon grid | **Partially blocked → stays for `0.59`** | W4's "real multi-node soak" runs against the `0.56`/`0.57.1` operator/kind fixture, whose pods run the **in-process** member grid (`grid_host.rs` W6a), **not** a true multi-daemon raft cluster. The **full** daemon-cluster soak lands only after `0.59` wires the networked grid. W4 is honest-partial until then. |
+| **TD-0008** networked daemon grid | **Unblocked by `0.59`** | W4 shipped as an honest partial because the then-current operator/kind fixture used the in-process member grid. `0.59` wires the daemon networked grid and adds a loopback leader-election/re-election gate, so the kind soak now targets pods whose member role hosts the networked grid. Partition and slow-disk faults still require the external chaos injector. |
 | **New: `TD-0009` soak/overload findings** | **Created here if needed** | W2/W3 may surface a real leak or an admission-boundedness bug. Fixable in-window → fixed + gated (no TD). Too large → **spawn `TD-0009`** with the reproducing seed, rather than half-fix. |
 | **New: real-server RSS/fd sampler portability** | **Tracked if platform-bound** | The `#[ignore]` real-process sampler (W2) is nightly/Linux-first; if Windows/macOS sampling needs work, note it as a small follow-up, don't block the release. |
 | TD-0002 raft/protobuf, TD-0003 bucket C, TD-0004 placement, TD-0005 Java artifact | **Out of scope** | Untouched — unrelated to soak/endurance. |
 
-**What stays for later (explicit):** the **true daemon-cluster** endurance soak (needs `0.59`/TD-0008);
-**production soak mileage** (`0.58` builds the *harness + evidence*, not "battle-tested" history — that
+**What stays for later (explicit):** **production soak mileage** (`0.58` builds the *harness + evidence*, not "battle-tested" history — that
 accrues into `0.60`/`1.0`, R-11); any **large hardening fix** W3 surfaces (→ `TD-0009`).
 
 ## Dependency Graph

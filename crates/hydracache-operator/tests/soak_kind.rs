@@ -14,7 +14,7 @@ const KIND_ENV: &str = "HYDRACACHE_OPERATOR_KIND";
 const NAMESPACE_ENV: &str = "HYDRACACHE_OPERATOR_NAMESPACE";
 const CLUSTER_ENV: &str = "HYDRACACHE_OPERATOR_CLUSTER";
 const KIND_WAIT_ATTEMPTS: usize = 90;
-const SCOPE_DISCLOSURE: &str = "0.58 W4 kind soak is an honest partial: pods host the 0.57.1 in-process member grid; true multi-daemon raft lands in 0.59 / TD-0008.";
+const SCOPE_DISCLOSURE: &str = "0.59 networked daemon grid is wired: member pods host the networked member grid; partition and slow-disk faults still require the external kind chaos injector.";
 
 fn kind_enabled() -> bool {
     std::env::var(KIND_ENV).as_deref() == Ok("1")
@@ -349,7 +349,7 @@ async fn soak_skips_gracefully_without_a_cluster() {
         !kind_enabled(),
         "kind soak tests must be opt-in so local verify can run without a cluster"
     );
-    assert!(SCOPE_DISCLOSURE.contains("0.59 / TD-0008"));
+    assert!(SCOPE_DISCLOSURE.contains("networked member grid"));
     assert!(
         rolling_chaos_schedule()
             .iter()

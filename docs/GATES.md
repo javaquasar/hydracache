@@ -78,6 +78,16 @@ cargo test -p hydracache-operator --locked --test e2e -- --nocapture
 Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER -ErrorAction SilentlyContinue
 ```
 
+The networked daemon grid E2E is opt-in because it opens loopback TCP/UDP
+listeners and intentionally drops a live leader. The fast `grid_host` suite
+proves the skip path; the live loopback gate is:
+
+```powershell
+$env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
+cargo test -p hydracache-server --test grid_host multi_node_members_form_a_cluster_and_elect_one_leader --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
+```
+
 ## Adding a gate
 
 1. Implement the check as a single command (a test, a `cargo deny`/`clippy` rule, or

@@ -1,79 +1,51 @@
-# TD-0008: Networked daemon grid hosting is deferred after W6a
+# TD-0008: Networked daemon grid hosting
 
 ## Status
 
-Open.
+Resolved in `0.59.0`.
 
 Owner: server / cluster runtime integration.
 
-Candidate target: `0.59.0` Networked Daemon Grid Hosting, which completes W6b
-from `docs/plans/V0_57_MANAGEMENT_CENTER_AND_OBSERVABILITY_PLAN.md`.
+## Resolution
 
-## Context
+`hydracache-server` member mode now hosts the networked grid stack:
 
-`0.57` W6a wires `role = "member"` in `hydracache-server` to build a grid-mode
-`HydraCache::member()` with an in-process `RaftStyleMetadataControlPlane`.
-Management Center and Prometheus now receive `source:"live"` from a real
-member table/epoch/term instead of the old modeled `"local"` placeholder.
+- durable `hydracache-cluster-raft::RaftMetadataRuntime`
+- `hydracache-cluster-chitchat::ChitchatDiscovery`
+- `hydracache-cluster-transport-axum` raft message routes
+- one shared raft-backed membership/status authority for the cache and
+  `/cluster/overview`
 
-The networked half of W6 remains deferred: the standalone daemon does not yet
-wire `hydracache-cluster-raft`, `hydracache-cluster-transport-axum`, and
-`hydracache-cluster-chitchat` into `ServerRuntime` so multiple daemon processes
-join over `cluster_addr`/`seeds` and report a true elected raft leader.
+The old in-process member grid remains available only as the explicit
+`HYDRACACHE_GRID_INPROC=1` test/development fallback. `local` and `client`
+roles continue to report `source:"modeled"`.
 
-The explicit sentinel is:
+## Verification
 
-- `crates/hydracache-server/tests/grid_host.rs::multi_node_members_form_a_cluster_and_elect_one_leader`
-  is `#[ignore]` until W6b is implemented.
+Fast gate:
 
-## Why It Is A Debt
+```powershell
+cargo test -p hydracache-server --test grid_host --locked
+```
 
-The `source:"live"` tag is now true for a single member process, but it must not
-be read as evidence that the deployable daemon has end-to-end networked cluster
-formation. Without W6b, a regression in daemon-level seed discovery,
-networked raft transport, TLS-bound cluster listeners, or leader handoff would
-not be caught by the server package.
+Network-gated loopback daemon E2E:
 
-## Risk While Open
+```powershell
+$env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
+cargo test -p hydracache-server --test grid_host multi_node_members_form_a_cluster_and_elect_one_leader --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
+```
 
-- Management Center can prove in-process member liveness but not daemon
-  multi-node elections.
-- `/cluster/overview` has `leader:null` for W6a because there is no networked
-  raft soft-state leader wired into the server status handle.
-- Existing networked raft adapter tests can pass while the standalone daemon
-  integration remains unwired.
+The E2E starts three real `ServerRuntime` member daemons on loopback, waits for
+one elected raft leader and three committed members, drops the leader, and then
+asserts that the remaining daemons re-elect a new leader without reporting the
+stale one.
 
-## Revisit Triggers
+## Follow-Ups
 
-Address when one of:
-
-- `0.57` is prepared for final release notes and the team wants the stronger
-  "multi-node daemon live" claim;
-- `0.58` soak/overload work needs a real multi-daemon cluster harness;
-- the `0.59.0` Networked Daemon Grid Hosting plan starts implementation;
-- operator lifecycle E2E starts asserting leader re-election through the
-  deployed server.
-
-## Future Definition Of Done
-
-- `ServerRuntime` constructs the networked `RaftMetadataRuntime`,
-  cluster transport listener, and chitchat discovery for `role = "member"`.
-- The status handle reads member table, term, epoch, quorum, reachability,
-  reshard phase, and elected leader from that networked runtime.
-- `multi_node_members_form_a_cluster_and_elect_one_leader` is enabled or
-  replaced with an equivalent skip-graceful network gate that drives three
-  daemon runtimes over loopback.
-- `local` and `client` roles remain `source:"modeled"`.
-
-## How To Verify The Debt Can Be Removed Safely
-
-- Run the server grid-host tests and confirm the multi-node election test is no
-  longer ignored in the normal gated tier, or is covered by an explicit
-  network-gated command documented in `docs/GATES.md`.
-- Kill the current leader in the loopback daemon test and confirm
-  `/cluster/overview` transitions from `leader:null` during election to the new
-  elected id without showing a stale leader.
-- Run `cargo xtask verify`.
+`0.59.0` closes the daemon hosting debt. Production soak mileage remains a
+separate `0.60`/`1.0` evidence track, and the kind chaos soak still documents
+external injectors for network-partition and slow-disk faults.
 
 ## Related Plans
 

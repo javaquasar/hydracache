@@ -40,17 +40,16 @@ views are useful, but they are not evidence of a live cluster. In particular,
 `/cluster/overview` renders modeled leader as `null`, even if older operator
 status still has a local placeholder.
 
-For `role = "member"`, the daemon hosts an in-process grid-mode `HydraCache`
-member and emits `source:"live"` from the `RaftStyleMetadataControlPlane` member
-table. This proves a real member table/epoch/term for a single process. `local`
-and `client` roles stay `modeled`.
+For `role = "member"`, the daemon hosts the networked grid stack: durable
+`RaftMetadataRuntime`, chitchat discovery, and the cluster raft transport. It
+emits `source:"live"` from the same raft-backed membership authority used by the
+cache, so `/cluster/overview` can report a real elected leader. `local` and
+`client` roles stay `modeled`.
 
-The remaining G9 follow-up is networked daemon grid hosting: wiring the existing
-raft/chitchat/transport adapters into the standalone daemon so multiple
-processes form one cluster and expose an elected leader. That is tracked as
-[`TD-0008`](technical-debt/TD-0008-networked-daemon-grid-hosting.md); until it
-lands, a `live` member-role view is live for the in-process member table, not
-proof of a multi-node daemon election.
+The historical W6b follow-up is closed as
+[`TD-0008`](technical-debt/TD-0008-networked-daemon-grid-hosting.md). The
+`HYDRACACHE_GRID_INPROC=1` path remains only as an explicit test/development
+fallback.
 
 ## `/cluster/overview`
 
@@ -117,9 +116,10 @@ the dashboard and rejects references to metrics not emitted by
 1. Port-forward the admin listener, for example
    `kubectl port-forward statefulset/hydracache 9091:9091`.
 2. Open `http://127.0.0.1:9091/console/`.
-3. Check the `source` badge first. Treat `modeled` as a constrained local view;
-   treat single-node `live` with `leader:null` as W6a in-process membership,
-   not as proof of a networked election.
+3. Check the `source` badge first. Treat `modeled` as a constrained local view.
+   Treat member-role `live` as the daemon's raft-backed membership/status view;
+   `leader:null` means an election is in progress or no leader is currently
+   known.
 4. Check degraded state. If the console cannot reach `/cluster/overview`, it must
    show an explicit unreachable state rather than a stale healthy view.
 5. Correlate `/cluster/overview` lifecycle and partition data with `/metrics`
@@ -134,6 +134,9 @@ Local W5 verification:
 ```powershell
 npm --prefix console test
 cargo test -p hydracache-server --locked deploy_smoke
+$env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
+cargo test -p hydracache-server --test grid_host multi_node_members_form_a_cluster_and_elect_one_leader --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
 cargo xtask verify
 ```
 

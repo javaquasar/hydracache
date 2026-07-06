@@ -25,7 +25,7 @@
 >   shipped `hydracache-cluster-*` adapters. It retroactively upgrades `0.58` W4's "real multi-node
 >   soak" from an operator fixture to a true daemon cluster, and is a prerequisite for a `1.0`
 >   "production-ready cluster out of the box" claim.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > debt tracked: [`../technical-debt/TD-0008-networked-daemon-grid-hosting.md`](../technical-debt/TD-0008-networked-daemon-grid-hosting.md)
@@ -384,7 +384,8 @@ possible and gated to nightly. Revert leaves the sentinel `#[ignore]` and TD-000
 **Files.** `docs/deployment` member-mode runbook (seeds/cluster_addr/storage_dir/TLS),
 `docs/management-center.md` (leader is now live in `member` mode), `docs/GATES.md` (network-gated E2E
 command), `docs/technical-debt/TD-0008-…` → Resolved, `docs/plans/V0_58_…` (lift the W4 caveat),
-`crates/hydracache-operator/tests/soak_kind.rs` (re-point), `releases.toml` + `INDEX.md`.
+`crates/hydracache-operator/tests/soak_kind.rs` (re-point), `docs/daemon-member-mode.md`,
+`releases.toml` + `INDEX.md`.
 
 **Steps.**
 1. Runbook: how to bring up a 3-node cluster of daemons (or via the `0.56` operator).
@@ -397,9 +398,8 @@ command), `docs/technical-debt/TD-0008-…` → Resolved, `docs/plans/V0_58_…`
       leader re-elected" assertions run against pods hosting the **networked** grid (W2), not the
       `0.57.1` in-process fixture.
    b. **Update the `SCOPE_DISCLOSURE` constant + its test assertion** (soak_kind.rs:17 +
-      `soak_skips_gracefully_without_a_cluster` asserts `SCOPE_DISCLOSURE.contains("0.59 / TD-0008")`,
-      soak_kind.rs:352) — once `0.59` lands, the disclosure "honest partial … lands in 0.59" is no
-      longer true and the assertion must be flipped/removed, or CI stays wrong-but-green.
+      `soak_skips_gracefully_without_a_cluster`, soak_kind.rs:352) so it says `0.59` has wired the
+      networked daemon grid while partition / slow-disk faults remain external-injector-driven.
    c. **Wire the external chaos injector for partition / slow-disk faults** — today `inject()` only
       deletes a pod; `NetworkPartition`/`SlowDisk` are *observe-only* (soak_kind.rs:159-168,
       `requires_external_injector`). With a real daemon cluster, actually inject them (or keep them

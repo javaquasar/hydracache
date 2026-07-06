@@ -32,8 +32,9 @@ cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocap
 ```
 
 The operator kind soak is opt-in. Without `HYDRACACHE_OPERATOR_KIND=1`, it skips
-gracefully. In 0.58 it is an honest partial: operator pods host the in-process
-member grid. The true multi-daemon raft soak lands with 0.59 / TD-0008.
+gracefully. Since 0.59, member-role pods host the networked daemon grid; the
+loopback daemon E2E is gated separately by `HYDRACACHE_RUN_NETWORKED_DAEMON_E2E`.
+Partition and slow-disk kind faults still require the external chaos injector.
 
 ## SOAK_REPORT
 
