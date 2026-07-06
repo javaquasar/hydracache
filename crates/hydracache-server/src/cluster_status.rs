@@ -128,6 +128,9 @@ pub struct ClusterStatus {
 
 /// Read-only provider of cluster status.
 pub trait ClusterStatusProvider: fmt::Debug + Send + Sync {
+    /// Notify the provider that the server has started graceful drain.
+    fn begin_drain(&self) {}
+
     /// Return a cluster status snapshot, incorporating current runtime state.
     fn cluster_status(&self, runtime: ClusterStatusRuntime) -> ClusterStatus;
 }
@@ -153,6 +156,9 @@ impl ClusterStatusProvider for ModeledClusterStatus {
 
 /// Minimal read-only handle over a live grid/control-plane.
 pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
+    /// Notify the live grid that graceful drain started.
+    fn begin_drain(&self);
+
     /// Return a point-in-time control-plane snapshot.
     fn snapshot(&self) -> RaftMetadataSnapshot;
     /// Return visible members.
@@ -183,6 +189,10 @@ impl LiveClusterStatus {
 }
 
 impl ClusterStatusProvider for LiveClusterStatus {
+    fn begin_drain(&self) {
+        self.grid.begin_drain();
+    }
+
     fn cluster_status(&self, runtime: ClusterStatusRuntime) -> ClusterStatus {
         let snapshot = self.grid.snapshot();
         let draining = runtime.draining || self.grid.is_draining();

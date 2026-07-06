@@ -198,6 +198,8 @@ impl FakeGrid {
 }
 
 impl GridControlPlaneHandle for FakeGrid {
+    fn begin_drain(&self) {}
+
     fn snapshot(&self) -> RaftMetadataSnapshot {
         self.snapshot.clone()
     }

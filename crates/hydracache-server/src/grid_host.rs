@@ -6,7 +6,8 @@ use std::future::Future;
 use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::path::Path;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, RwLock};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::time::Duration;
 
@@ -39,6 +40,7 @@ const NODE_IDENTITY_FILE: &str = "node-identity.json";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 
 type NetworkedRaftRuntime = RaftMetadataRuntime<DurableRaftLogStore>;
+type SharedRaftPeers = Arc<RwLock<BTreeMap<u64, RaftPeer>>>;
 
 /// Build the grid-mode cache used by a member-role daemon.
 pub(crate) fn build_member(
@@ -147,11 +149,12 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     );
     let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
     let route_auth = cluster_route_auth(config, &node_id)?;
+    let raft_peers = Arc::new(RwLock::new((*topology.peers).clone()));
     let message_sink: Arc<dyn RaftMessageSink> = if topology.multi_voter {
         Arc::new(HttpRaftMessageSink::new(
             node_id.clone(),
             raft_node_id,
-            topology.peers.clone(),
+            raft_peers.clone(),
             route_auth.clone(),
             config,
         )?)
@@ -163,6 +166,9 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         raft.clone(),
         bridge.clone(),
         message_sink.clone(),
+        raft_peers.clone(),
+        node_id.clone(),
+        config.cluster_addr,
         shutdown.subscribe(),
     );
     spawn_cluster_transport(
@@ -194,11 +200,13 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         cache,
         node_id,
         raft_node_id,
-        raft_peers: topology.peer_node_ids(),
+        raft_peers,
         raft,
         discovery,
         bridge,
         message_sink,
+        draining: Arc::new(AtomicBool::new(false)),
+        drain_remove_proposed: Arc::new(AtomicBool::new(false)),
         shutdown,
     })
 }
@@ -434,6 +442,9 @@ fn spawn_grid_drive(
     raft: Arc<NetworkedRaftRuntime>,
     bridge: ClusterAdmissionBridge,
     message_sink: Arc<dyn RaftMessageSink>,
+    raft_peers: SharedRaftPeers,
+    local_node_id: ClusterNodeId,
+    local_addr: SocketAddr,
     mut shutdown: watch::Receiver<bool>,
 ) {
     tokio::spawn(async move {
@@ -446,7 +457,14 @@ fn spawn_grid_drive(
                     }
                 }
                 _ = interval.tick() => {
-                    if let Err(_error) = drive_grid_once(&raft, &bridge, &message_sink).await {
+                    if let Err(_error) = drive_grid_once(
+                        &raft,
+                        &bridge,
+                        &message_sink,
+                        &raft_peers,
+                        &local_node_id,
+                        local_addr,
+                    ).await {
                         continue;
                     }
                 }
@@ -459,11 +477,84 @@ async fn drive_grid_once(
     raft: &Arc<NetworkedRaftRuntime>,
     bridge: &ClusterAdmissionBridge,
     message_sink: &Arc<dyn RaftMessageSink>,
+    raft_peers: &SharedRaftPeers,
+    local_node_id: &ClusterNodeId,
+    local_addr: SocketAddr,
 ) -> CacheResult<()> {
     let _ = send_raft_messages(message_sink, raft.tick()?).await;
     let _ = bridge.run_once().await;
+    refresh_raft_peers(raft_peers, local_node_id, local_addr, &raft.members());
+    sync_raft_voters(raft, message_sink, raft_peers).await?;
     let _ = send_raft_messages(message_sink, raft.take_outbound_messages()).await;
     let _ = send_raft_messages(message_sink, raft.drain_ready()?).await;
+    Ok(())
+}
+
+fn refresh_raft_peers(
+    raft_peers: &SharedRaftPeers,
+    local_node_id: &ClusterNodeId,
+    local_addr: SocketAddr,
+    members: &[ClusterMember],
+) {
+    let mut peers = raft_peers.write().expect("raft peer map poisoned");
+    peers.insert(
+        raft_node_id(local_node_id),
+        RaftPeer {
+            node_id: local_node_id.clone(),
+            address: local_addr,
+        },
+    );
+    for member in members {
+        if !member.is_member() {
+            continue;
+        }
+        let Some(address) = member
+            .endpoints
+            .control
+            .as_deref()
+            .and_then(|endpoint| endpoint.parse::<SocketAddr>().ok())
+        else {
+            continue;
+        };
+        peers.insert(
+            raft_node_id(&member.node_id),
+            RaftPeer {
+                node_id: member.node_id.clone(),
+                address,
+            },
+        );
+    }
+}
+
+async fn sync_raft_voters(
+    raft: &Arc<NetworkedRaftRuntime>,
+    message_sink: &Arc<dyn RaftMessageSink>,
+    raft_peers: &SharedRaftPeers,
+) -> CacheResult<()> {
+    let snapshot = raft.snapshot();
+    if raft.leader_id() != Some(snapshot.raft_node_id) {
+        return Ok(());
+    }
+    let current_voters = raft.voter_ids()?;
+    for member in raft.members() {
+        if !member.is_member() {
+            continue;
+        }
+        let raft_id = raft_node_id(&member.node_id);
+        if current_voters.contains(&raft_id) {
+            continue;
+        }
+        if !raft_peers
+            .read()
+            .expect("raft peer map poisoned")
+            .contains_key(&raft_id)
+        {
+            continue;
+        }
+        let outbound = raft.propose_add_voter(raft_id)?;
+        send_raft_messages(message_sink, outbound).await?;
+        break;
+    }
     Ok(())
 }
 
@@ -569,22 +660,13 @@ impl RaftTopology {
             .unwrap_or(0);
         5 + (rank * 2)
     }
-
-    fn peer_node_ids(&self) -> Arc<BTreeMap<u64, ClusterNodeId>> {
-        Arc::new(
-            self.peers
-                .iter()
-                .map(|(raft_id, peer)| (*raft_id, peer.node_id.clone()))
-                .collect(),
-        )
-    }
 }
 
 #[derive(Debug, Clone)]
 struct HttpRaftMessageSink {
     local_node_id: ClusterNodeId,
     local_raft_node_id: u64,
-    peers: Arc<BTreeMap<u64, RaftPeer>>,
+    peers: SharedRaftPeers,
     auth: ClusterRouteAuth,
     scheme: &'static str,
     client: reqwest::Client,
@@ -594,7 +676,7 @@ impl HttpRaftMessageSink {
     fn new(
         local_node_id: ClusterNodeId,
         local_raft_node_id: u64,
-        peers: Arc<BTreeMap<u64, RaftPeer>>,
+        peers: SharedRaftPeers,
         auth: ClusterRouteAuth,
         config: &ServerConfig,
     ) -> CacheResult<Self> {
@@ -614,6 +696,8 @@ impl HttpRaftMessageSink {
             self.local_node_id.to_string()
         } else {
             self.peers
+                .read()
+                .expect("raft peer map poisoned")
                 .get(&raft_node_id)
                 .map(|peer| peer.node_id.to_string())
                 .unwrap_or_else(|| raft_node_id.to_string())
@@ -637,12 +721,18 @@ impl RaftMessageSink for HttpRaftMessageSink {
         if message.to == self.local_raft_node_id {
             return Ok(());
         }
-        let peer = self.peers.get(&message.to).ok_or_else(|| {
-            CacheError::Backend(format!(
-                "no HTTP raft peer endpoint for raft node {}",
-                message.to
-            ))
-        })?;
+        let peer = self
+            .peers
+            .read()
+            .expect("raft peer map poisoned")
+            .get(&message.to)
+            .cloned()
+            .ok_or_else(|| {
+                CacheError::Backend(format!(
+                    "no HTTP raft peer endpoint for raft node {}",
+                    message.to
+                ))
+            })?;
         let request = ClusterOpaqueMessage::new(
             self.node_id_for(message.from),
             peer.node_id.to_string(),
@@ -929,22 +1019,26 @@ struct NetworkedMemberStack {
     cache: HydraCache,
     node_id: ClusterNodeId,
     raft_node_id: u64,
-    raft_peers: Arc<BTreeMap<u64, ClusterNodeId>>,
+    raft_peers: SharedRaftPeers,
     raft: Arc<NetworkedRaftRuntime>,
     discovery: Arc<ChitchatDiscovery>,
     bridge: ClusterAdmissionBridge,
     message_sink: Arc<dyn RaftMessageSink>,
+    draining: Arc<AtomicBool>,
+    drain_remove_proposed: Arc<AtomicBool>,
     shutdown: watch::Sender<bool>,
 }
 
 struct NetworkedGridHandle {
     node_id: ClusterNodeId,
     raft_node_id: u64,
-    raft_peers: Arc<BTreeMap<u64, ClusterNodeId>>,
+    raft_peers: SharedRaftPeers,
     raft: Arc<NetworkedRaftRuntime>,
     discovery: Arc<ChitchatDiscovery>,
     _bridge: ClusterAdmissionBridge,
     _message_sink: Arc<dyn RaftMessageSink>,
+    draining: Arc<AtomicBool>,
+    drain_remove_proposed: Arc<AtomicBool>,
     shutdown: watch::Sender<bool>,
     _runtime: Option<DedicatedGridRuntime>,
 }
@@ -959,6 +1053,8 @@ impl NetworkedGridHandle {
             discovery: stack.discovery,
             _bridge: stack.bridge,
             _message_sink: stack.message_sink,
+            draining: stack.draining,
+            drain_remove_proposed: stack.drain_remove_proposed,
             shutdown: stack.shutdown,
             _runtime: runtime,
         }
@@ -974,6 +1070,17 @@ impl DedicatedGridRuntime {
         Self {
             runtime: Mutex::new(Some(runtime)),
         }
+    }
+
+    fn block_on<F>(&self, future: F) -> F::Output
+    where
+        F: Future,
+    {
+        let guard = self.runtime.lock().expect("grid runtime holder poisoned");
+        guard
+            .as_ref()
+            .expect("grid runtime must exist while handle is live")
+            .block_on(future)
     }
 }
 
@@ -1009,6 +1116,11 @@ impl fmt::Debug for NetworkedGridHandle {
 }
 
 impl GridControlPlaneHandle for NetworkedGridHandle {
+    fn begin_drain(&self) {
+        self.draining.store(true, Ordering::SeqCst);
+        self.try_remove_local_voter_for_drain();
+    }
+
     fn snapshot(&self) -> RaftMetadataSnapshot {
         self.raft.metadata_snapshot()
     }
@@ -1023,23 +1135,30 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
                 self.node_id.to_string()
             } else {
                 self.raft_peers
+                    .read()
+                    .expect("raft peer map poisoned")
                     .get(&leader)
-                    .map(ToString::to_string)
+                    .map(|peer| peer.node_id.to_string())
                     .unwrap_or_else(|| format!("raft-{leader}"))
             }
         })
     }
 
     fn has_quorum(&self) -> bool {
-        let members = self.raft.members();
-        if self.raft.leader_id().is_none() || members.is_empty() {
+        if self.raft.leader_id().is_none() || self.raft.members().is_empty() {
             return false;
         }
-        let reachable = members
+        let Ok(voters) = self.raft.voter_ids() else {
+            return false;
+        };
+        if voters.is_empty() {
+            return false;
+        }
+        let reachable = voters
             .iter()
-            .filter(|member| self.reachability(&member.node_id) == Reachability::Reachable)
+            .filter(|raft_id| self.raft_voter_reachability(**raft_id) == Reachability::Reachable)
             .count();
-        reachable >= (members.len() / 2).saturating_add(1)
+        reachable >= (voters.len() / 2).saturating_add(1)
     }
 
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {
@@ -1079,7 +1198,47 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     }
 
     fn is_draining(&self) -> bool {
-        false
+        self.draining.load(Ordering::SeqCst)
+    }
+}
+
+impl NetworkedGridHandle {
+    fn raft_voter_reachability(&self, raft_id: u64) -> Reachability {
+        if raft_id == self.raft_node_id {
+            return Reachability::Reachable;
+        }
+        let Some(node_id) = self
+            .raft_peers
+            .read()
+            .expect("raft peer map poisoned")
+            .get(&raft_id)
+            .map(|peer| peer.node_id.clone())
+        else {
+            return Reachability::Unreachable;
+        };
+        self.reachability(&node_id)
+    }
+
+    fn try_remove_local_voter_for_drain(&self) {
+        if self.drain_remove_proposed.load(Ordering::SeqCst) {
+            return;
+        }
+        let Ok(voters) = self.raft.voter_ids() else {
+            return;
+        };
+        if voters.len() <= 1 || !voters.contains(&self.raft_node_id) {
+            return;
+        }
+        if self.raft.leader_id() != Some(self.raft_node_id) {
+            return;
+        }
+        let Ok(messages) = self.raft.propose_remove_voter(self.raft_node_id) else {
+            return;
+        };
+        self.drain_remove_proposed.store(true, Ordering::SeqCst);
+        if let Some(runtime) = &self._runtime {
+            let _ = runtime.block_on(send_raft_messages(&self._message_sink, messages));
+        }
     }
 }
 
@@ -1111,6 +1270,8 @@ impl fmt::Debug for InProcessGridHandle {
 }
 
 impl GridControlPlaneHandle for InProcessGridHandle {
+    fn begin_drain(&self) {}
+
     fn snapshot(&self) -> RaftMetadataSnapshot {
         self.control_plane.snapshot()
     }
@@ -1202,7 +1363,10 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
 mod tests {
     use super::*;
     use axum::{http::StatusCode, routing::post, Router};
-    use hydracache::{ClusterCandidate, InMemoryClusterDiscovery};
+    use hydracache::{
+        ClusterCandidate, ClusterControlPlane, ClusterEndpoints, ClusterEpoch, ClusterRole,
+        InMemoryClusterDiscovery,
+    };
     use hydracache_cluster_transport_axum::{
         HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
     };
@@ -1217,12 +1381,20 @@ mod tests {
         let discovery = Arc::new(InMemoryClusterDiscovery::new());
         let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
         let message_sink: Arc<dyn RaftMessageSink> = Arc::new(InMemoryRaftMessageSink::default());
+        let raft_peers = Arc::new(RwLock::new(BTreeMap::new()));
 
         discovery
             .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)));
-        drive_grid_once(&raft, &bridge, &message_sink)
-            .await
-            .unwrap();
+        drive_grid_once(
+            &raft,
+            &bridge,
+            &message_sink,
+            &raft_peers,
+            &ClusterNodeId::from("local"),
+            "127.0.0.1:7000".parse().unwrap(),
+        )
+        .await
+        .unwrap();
 
         assert!(raft
             .members()
@@ -1233,6 +1405,73 @@ mod tests {
             hydracache::RaftMetadataCommand::MemberUpsert { node_id, .. }
                 if node_id.as_str() == "member-a"
         )));
+    }
+
+    #[test]
+    fn refresh_raft_peers_tracks_admitted_member_control_endpoints() {
+        let local_node = ClusterNodeId::from("local");
+        let member_node = ClusterNodeId::from("member-a");
+        let member = ClusterMember {
+            node_id: member_node.clone(),
+            generation: ClusterGeneration::new(1),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(1),
+            endpoints: ClusterEndpoints::new().control("127.0.0.1:7001"),
+            metadata: BTreeMap::new(),
+        };
+        let raft_peers = Arc::new(RwLock::new(BTreeMap::new()));
+
+        refresh_raft_peers(
+            &raft_peers,
+            &local_node,
+            "127.0.0.1:7000".parse().unwrap(),
+            &[member],
+        );
+
+        let peers = raft_peers.read().expect("raft peer map poisoned");
+        assert_eq!(
+            peers
+                .get(&raft_node_id(&local_node))
+                .map(|peer| peer.address),
+            Some("127.0.0.1:7000".parse().unwrap())
+        );
+        assert_eq!(
+            peers
+                .get(&raft_node_id(&member_node))
+                .map(|peer| peer.address),
+            Some("127.0.0.1:7001".parse().unwrap())
+        );
+    }
+
+    #[tokio::test]
+    async fn sync_raft_voters_adds_admitted_member_with_known_peer() {
+        let raft = Arc::new(
+            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
+                .unwrap(),
+        );
+        let message_sink: Arc<dyn RaftMessageSink> = Arc::new(InMemoryRaftMessageSink::default());
+        let member_node = ClusterNodeId::from("member-a");
+        let member_raft_id = raft_node_id(&member_node);
+        let raft_peers = Arc::new(RwLock::new(BTreeMap::from([(
+            member_raft_id,
+            RaftPeer {
+                node_id: member_node.clone(),
+                address: "127.0.0.1:7001".parse().unwrap(),
+            },
+        )])));
+
+        raft.join_member(
+            ClusterCandidate::member(member_node)
+                .generation(ClusterGeneration::new(1))
+                .endpoints(ClusterEndpoints::new().control("127.0.0.1:7001")),
+        )
+        .await
+        .unwrap();
+        sync_raft_voters(&raft, &message_sink, &raft_peers)
+            .await
+            .unwrap();
+
+        assert!(raft.voter_ids().unwrap().contains(&member_raft_id));
     }
 
     #[test]
@@ -1289,8 +1528,14 @@ mod tests {
             Arc::new(AllowAllAuthorizer),
         );
         let config = test_member_config("127.0.0.1:7000");
-        let sink =
-            HttpRaftMessageSink::new(node_id, 1, Arc::new(BTreeMap::new()), auth, &config).unwrap();
+        let sink = HttpRaftMessageSink::new(
+            node_id,
+            1,
+            Arc::new(RwLock::new(BTreeMap::new())),
+            auth,
+            &config,
+        )
+        .unwrap();
 
         let headers = sink.authenticated_headers().unwrap();
 
@@ -1343,7 +1588,7 @@ mod tests {
         let sink = HttpRaftMessageSink::new(
             ClusterNodeId::from("local"),
             1,
-            Arc::new(peers),
+            Arc::new(RwLock::new(peers)),
             auth,
             &config,
         )

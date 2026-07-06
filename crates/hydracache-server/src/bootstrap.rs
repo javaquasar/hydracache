@@ -334,6 +334,7 @@ impl ServerRuntime {
         }
         self.accepting = false;
         self.state = ServerState::Draining;
+        self.cluster_status.begin_drain();
         if let Some(surface) = self.client_surface.as_mut() {
             if self
                 .last_client_surface_drain
