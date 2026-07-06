@@ -14,6 +14,7 @@ description = "Standalone production server daemon for HydraCache."
 [dependencies]
 async-trait.workspace = true
 axum.workspace = true
+axum-server.workspace = true
 hydracache.workspace = true
 hydracache-actuator-axum.workspace = true
 hydracache-client-transport-axum.workspace = true
@@ -29,6 +30,7 @@ toml.workspace = true
 
 [dev-dependencies]
 hydracache-client-protocol.workspace = true
+rcgen.workspace = true
 serde_json.workspace = true
 tower.workspace = true
 

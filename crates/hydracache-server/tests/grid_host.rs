@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
+use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, UdpSocket};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -62,6 +63,51 @@ fn configured_tls() -> TlsConfig {
         )),
         ca_path: Some(PathBuf::from("target/test-hydracache-grid-host/tls/ca.pem")),
         acknowledge_insecure: false,
+    }
+}
+
+fn configure_cluster_auth(config: &mut ServerConfig, name: &str) {
+    let dir = PathBuf::from(format!("target/test-hydracache-grid-host/{name}/auth"));
+    std::fs::create_dir_all(&dir).unwrap();
+    let token_file = dir.join("token");
+    std::fs::write(&token_file, "secret\n").unwrap();
+    config.cluster_auth.key_id = Some("k1".to_owned());
+    config.cluster_auth.token_file = Some(token_file);
+}
+
+fn configure_test_tls(config: &mut ServerConfig, name: &str) {
+    let material =
+        write_test_tls_material(Path::new("target/test-hydracache-grid-host").join(name));
+    config.tls = TlsConfig {
+        enabled: true,
+        cert_path: Some(material.cert_path),
+        key_path: Some(material.key_path),
+        ca_path: Some(material.ca_path),
+        acknowledge_insecure: false,
+    };
+}
+
+struct TestTlsMaterial {
+    cert_path: PathBuf,
+    key_path: PathBuf,
+    ca_path: PathBuf,
+}
+
+fn write_test_tls_material(dir: PathBuf) -> TestTlsMaterial {
+    std::fs::create_dir_all(&dir).unwrap();
+    let rcgen::CertifiedKey { cert, signing_key } =
+        rcgen::generate_simple_self_signed(["127.0.0.1".to_owned(), "localhost".to_owned()])
+            .unwrap();
+    let cert_path = dir.join("cert.pem");
+    let key_path = dir.join("key.pem");
+    let ca_path = dir.join("ca.pem");
+    std::fs::write(&cert_path, cert.pem()).unwrap();
+    std::fs::write(&key_path, signing_key.serialize_pem()).unwrap();
+    std::fs::write(&ca_path, cert.pem()).unwrap();
+    TestTlsMaterial {
+        cert_path,
+        key_path,
+        ca_path,
     }
 }
 
@@ -189,6 +235,65 @@ fn tls_enabled_member_without_cluster_auth_fails_loud_at_startup() {
     assert!(
         error.to_string().contains("[cluster_auth]"),
         "error should name missing cluster_auth: {error}"
+    );
+}
+
+#[test]
+fn tls_member_with_unreadable_cert_fails_loud_at_startup() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let mut config = member_config("tls-unreadable-cert");
+    configure_cluster_auth(&mut config, "tls-unreadable-cert");
+    config.tls = configured_tls();
+
+    let error = ServerRuntime::new(config).unwrap_err();
+
+    assert!(matches!(error, ServerConfigError::GridHostStart(_)));
+    assert!(
+        error.to_string().contains("cert")
+            && error
+                .to_string()
+                .contains("target/test-hydracache-grid-host/tls/cert.pem"),
+        "error should name the unreadable TLS cert path: {error}"
+    );
+}
+
+#[test]
+fn cluster_listener_rejects_plaintext_when_tls_enabled() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let addr = reserve_loopback_addrs(1).remove(0);
+    let mut config = member_config("tls-listener-rejects-plaintext");
+    config.cluster_addr = addr;
+    config.seeds = vec![addr.to_string()];
+    configure_cluster_auth(&mut config, "tls-listener-rejects-plaintext");
+    configure_test_tls(&mut config, "tls-listener-rejects-plaintext/tls");
+
+    let mut runtime = ServerRuntime::new(config).unwrap().start();
+    let rejected = wait_until(Duration::from_secs(3), || {
+        let Ok(mut stream) =
+            std::net::TcpStream::connect_timeout(&addr, Duration::from_millis(250))
+        else {
+            return false;
+        };
+        stream
+            .set_read_timeout(Some(Duration::from_millis(250)))
+            .unwrap();
+        stream
+            .write_all(b"POST /cluster/v1/raft/append HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 0\r\n\r\n")
+            .unwrap();
+        let mut buffer = [0_u8; 16];
+        match stream.read(&mut buffer) {
+            Ok(0) => true,
+            Ok(bytes) => !String::from_utf8_lossy(&buffer[..bytes]).starts_with("HTTP/"),
+            Err(_) => true,
+        }
+    });
+
+    let _ = runtime.shutdown();
+    assert!(
+        rejected,
+        "plain HTTP unexpectedly reached the TLS cluster listener on {addr}"
     );
 }
 

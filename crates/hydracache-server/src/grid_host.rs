@@ -3,13 +3,14 @@ use std::env;
 use std::fmt;
 use std::fs;
 use std::future::Future;
-use std::net::SocketAddr;
+use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::path::Path;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::time::Duration;
 
+use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
     CacheError, CacheResult, ClusterAdmissionBridge, ClusterDiscoveryEvent, ClusterGeneration,
     ClusterMember, ClusterNodeId, HydraCache, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
@@ -24,7 +25,6 @@ use hydracache_cluster_transport_axum::{
     ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
     StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH,
 };
-use tokio::net::TcpListener;
 use tokio::sync::watch;
 
 use crate::cluster_status::{GridControlPlaneHandle, Reachability, ReshardPhase};
@@ -149,7 +149,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_node_id,
             topology.peers.clone(),
             route_auth.clone(),
-        ))
+            config,
+        )?)
     } else {
         Arc::new(InMemoryRaftMessageSink::default())
     };
@@ -272,11 +273,14 @@ async fn spawn_cluster_transport(
         .acknowledge_insecure(config.tls.acknowledge_insecure)
         .validate()
         .map_err(|error| CacheError::Backend(error.to_string()))?;
-    let listener = TcpListener::bind(config.cluster_addr)
-        .await
-        .map_err(|error| {
-            CacheError::Backend(format!("failed to bind cluster transport: {error}"))
-        })?;
+    let listener = StdTcpListener::bind(config.cluster_addr).map_err(|error| {
+        CacheError::Backend(format!("failed to bind cluster transport: {error}"))
+    })?;
+    listener.set_nonblocking(true).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to configure cluster transport listener: {error}"
+        ))
+    })?;
     let routes = AxumClusterMessageService::new(
         node_id.clone(),
         Arc::new(RaftClusterMessageHandler {
@@ -288,22 +292,70 @@ async fn spawn_cluster_transport(
         auth,
     )
     .routes();
-    tokio::spawn(async move {
-        let shutdown_signal = async move {
-            loop {
-                if *shutdown.borrow() {
-                    break;
-                }
-                if shutdown.changed().await.is_err() {
-                    break;
-                }
-            }
-        };
-        let _ = axum::serve(listener, routes)
-            .with_graceful_shutdown(shutdown_signal)
-            .await;
-    });
+    if config.tls.enabled {
+        let cert_path = config
+            .tls
+            .cert_path
+            .as_deref()
+            .ok_or_else(|| CacheError::Backend("tls.enabled requires cert_path".to_owned()))?;
+        let key_path = config
+            .tls
+            .key_path
+            .as_deref()
+            .ok_or_else(|| CacheError::Backend("tls.enabled requires key_path".to_owned()))?;
+        let rustls_config = RustlsConfig::from_pem_file(cert_path, key_path)
+            .await
+            .map_err(|error| {
+                CacheError::Backend(format!(
+                    "failed to load cluster TLS cert/key {} / {}: {error}",
+                    cert_path.display(),
+                    key_path.display()
+                ))
+            })?;
+        let server = axum_server::from_tcp_rustls(listener, rustls_config).map_err(|error| {
+            CacheError::Backend(format!("failed to start TLS cluster transport: {error}"))
+        })?;
+        tokio::spawn(async move {
+            let handle = axum_server::Handle::new();
+            let shutdown_handle = handle.clone();
+            tokio::spawn(async move {
+                wait_for_shutdown(&mut shutdown).await;
+                shutdown_handle.graceful_shutdown(None);
+            });
+            let _ = server
+                .handle(handle)
+                .serve(routes.into_make_service())
+                .await;
+        });
+    } else {
+        let server = axum_server::from_tcp(listener).map_err(|error| {
+            CacheError::Backend(format!("failed to start cluster transport: {error}"))
+        })?;
+        tokio::spawn(async move {
+            let handle = axum_server::Handle::new();
+            let shutdown_handle = handle.clone();
+            tokio::spawn(async move {
+                wait_for_shutdown(&mut shutdown).await;
+                shutdown_handle.graceful_shutdown(None);
+            });
+            let _ = server
+                .handle(handle)
+                .serve(routes.into_make_service())
+                .await;
+        });
+    }
     Ok(())
+}
+
+async fn wait_for_shutdown(shutdown: &mut watch::Receiver<bool>) {
+    loop {
+        if *shutdown.borrow() {
+            break;
+        }
+        if shutdown.changed().await.is_err() {
+            break;
+        }
+    }
 }
 
 fn cluster_route_auth(
@@ -514,6 +566,7 @@ struct HttpRaftMessageSink {
     local_raft_node_id: u64,
     peers: Arc<BTreeMap<u64, RaftPeer>>,
     auth: ClusterRouteAuth,
+    scheme: &'static str,
     client: reqwest::Client,
 }
 
@@ -523,14 +576,17 @@ impl HttpRaftMessageSink {
         local_raft_node_id: u64,
         peers: Arc<BTreeMap<u64, RaftPeer>>,
         auth: ClusterRouteAuth,
-    ) -> Self {
-        Self {
+        config: &ServerConfig,
+    ) -> CacheResult<Self> {
+        let (scheme, client) = raft_http_client(config)?;
+        Ok(Self {
             local_node_id,
             local_raft_node_id,
             peers,
             auth,
-            client: reqwest::Client::new(),
-        }
+            scheme,
+            client,
+        })
     }
 
     fn node_id_for(&self, raft_node_id: u64) -> String {
@@ -577,8 +633,8 @@ impl RaftMessageSink for HttpRaftMessageSink {
         let response = self
             .client
             .post(format!(
-                "http://{}{}",
-                peer.address, DEFAULT_RAFT_APPEND_PATH
+                "{}://{}{}",
+                self.scheme, peer.address, DEFAULT_RAFT_APPEND_PATH
             ))
             .headers(headers)
             .json(&request)
@@ -599,6 +655,36 @@ impl RaftMessageSink for HttpRaftMessageSink {
         }
         Ok(())
     }
+}
+
+fn raft_http_client(config: &ServerConfig) -> CacheResult<(&'static str, reqwest::Client)> {
+    if !config.tls.enabled {
+        return Ok(("http", reqwest::Client::new()));
+    }
+    let ca_path = config
+        .tls
+        .ca_path
+        .as_deref()
+        .ok_or_else(|| CacheError::Backend("tls.enabled requires ca_path".to_owned()))?;
+    let ca_pem = fs::read(ca_path).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to read cluster TLS CA {}: {error}",
+            ca_path.display()
+        ))
+    })?;
+    let certificate = reqwest::Certificate::from_pem(&ca_pem).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to parse cluster TLS CA {}: {error}",
+            ca_path.display()
+        ))
+    })?;
+    let client = reqwest::Client::builder()
+        .add_root_certificate(certificate)
+        .build()
+        .map_err(|error| {
+            CacheError::Backend(format!("failed to build TLS raft client: {error}"))
+        })?;
+    Ok(("https", client))
 }
 
 async fn wait_for_raft_leader(raft: &Arc<NetworkedRaftRuntime>) -> CacheResult<()> {
@@ -974,6 +1060,7 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::{http::StatusCode, routing::post, Router};
     use hydracache::{ClusterCandidate, InMemoryClusterDiscovery};
     use hydracache_cluster_transport_axum::{
         HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
@@ -1035,12 +1122,129 @@ mod tests {
             )),
             Arc::new(AllowAllAuthorizer),
         );
-        let sink = HttpRaftMessageSink::new(node_id, 1, Arc::new(BTreeMap::new()), auth);
+        let config = test_member_config("127.0.0.1:7000");
+        let sink =
+            HttpRaftMessageSink::new(node_id, 1, Arc::new(BTreeMap::new()), auth, &config).unwrap();
 
         let headers = sink.authenticated_headers().unwrap();
 
         assert_eq!(headers[HYDRACACHE_NODE_KEY_ID_HEADER], "k1");
         assert_eq!(headers[HYDRACACHE_NODE_TOKEN_HEADER], "secret");
+    }
+
+    #[tokio::test]
+    async fn sink_verifies_peer_against_configured_ca() {
+        let server_tls = write_test_tls_material("sink-ca/server");
+        let wrong_tls = write_test_tls_material("sink-ca/wrong");
+        let listener = StdTcpListener::bind("127.0.0.1:0").unwrap();
+        let peer_addr = listener.local_addr().unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let rustls_config =
+            RustlsConfig::from_pem_file(&server_tls.cert_path, &server_tls.key_path)
+                .await
+                .unwrap();
+        let handle = axum_server::Handle::new();
+        let shutdown_handle = handle.clone();
+        let server = axum_server::from_tcp_rustls(listener, rustls_config)
+            .unwrap()
+            .handle(handle)
+            .serve(
+                Router::new()
+                    .route(
+                        DEFAULT_RAFT_APPEND_PATH,
+                        post(|| async { StatusCode::NO_CONTENT }),
+                    )
+                    .into_make_service(),
+            );
+        let server_task = tokio::spawn(async move { server.await.unwrap() });
+        let auth = ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true);
+        let mut peers = BTreeMap::new();
+        peers.insert(
+            2,
+            RaftPeer {
+                node_id: ClusterNodeId::from("peer"),
+                address: peer_addr,
+            },
+        );
+        let mut config = test_member_config("127.0.0.1:7000");
+        config.tls = crate::config::TlsConfig {
+            enabled: true,
+            cert_path: Some(server_tls.cert_path.clone()),
+            key_path: Some(server_tls.key_path.clone()),
+            ca_path: Some(server_tls.ca_path.clone()),
+            acknowledge_insecure: false,
+        };
+        let sink = HttpRaftMessageSink::new(
+            ClusterNodeId::from("local"),
+            1,
+            Arc::new(peers),
+            auth,
+            &config,
+        )
+        .unwrap();
+        assert_eq!(sink.scheme, "https");
+
+        let message = RaftWireMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            payload: Vec::new(),
+        };
+        let ok = tokio::time::timeout(Duration::from_secs(3), async {
+            loop {
+                if sink.send(message.clone()).await.is_ok() {
+                    break true;
+                }
+                tokio::time::sleep(Duration::from_millis(50)).await;
+            }
+        })
+        .await
+        .unwrap();
+        assert!(ok);
+
+        let mut wrong_config = config;
+        wrong_config.tls.ca_path = Some(wrong_tls.ca_path);
+        let wrong_sink = HttpRaftMessageSink::new(
+            ClusterNodeId::from("local"),
+            1,
+            sink.peers.clone(),
+            ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true),
+            &wrong_config,
+        )
+        .unwrap();
+        let error = wrong_sink.send(message).await.unwrap_err();
+        assert!(
+            error.to_string().contains("failed to send raft message"),
+            "wrong CA should fail during TLS verification: {error}"
+        );
+
+        shutdown_handle.graceful_shutdown(None);
+        server_task.await.unwrap();
+    }
+
+    struct TestTlsMaterial {
+        cert_path: PathBuf,
+        key_path: PathBuf,
+        ca_path: PathBuf,
+    }
+
+    fn write_test_tls_material(name: &str) -> TestTlsMaterial {
+        let dir = PathBuf::from(format!("target/test-hydracache-grid-host/unit/{name}"));
+        fs::create_dir_all(&dir).unwrap();
+        let rcgen::CertifiedKey { cert, signing_key } =
+            rcgen::generate_simple_self_signed(["127.0.0.1".to_owned(), "localhost".to_owned()])
+                .unwrap();
+        let cert_path = dir.join("cert.pem");
+        let key_path = dir.join("key.pem");
+        let ca_path = dir.join("ca.pem");
+        fs::write(&cert_path, cert.pem()).unwrap();
+        fs::write(&key_path, signing_key.serialize_pem()).unwrap();
+        fs::write(&ca_path, cert.pem()).unwrap();
+        TestTlsMaterial {
+            cert_path,
+            key_path,
+            ca_path,
+        }
     }
 
     fn test_member_config(cluster_addr: &str) -> ServerConfig {
