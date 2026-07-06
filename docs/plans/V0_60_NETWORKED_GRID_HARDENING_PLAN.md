@@ -29,7 +29,7 @@
 >   (operator scale lifecycle that W4 finally makes truthful for members).
 > - **Unblocks:** a defensible `1.0` (secure-by-configuration cluster, runtime resize, honest
 >   status under every plane).
-> - **Status:** in-progress.
+> - **Status:** shipped.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > debt tracked: [`../technical-debt/TD-0010-cluster-transport-tls-and-peer-auth.md`](../technical-debt/TD-0010-cluster-transport-tls-and-peer-auth.md),
