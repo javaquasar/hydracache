@@ -17,6 +17,7 @@ fn member_config(name: &str) -> ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
+        node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from(format!(
             "target/test-hydracache-grid-host/{name}"
@@ -298,6 +299,101 @@ fn cluster_listener_rejects_plaintext_when_tls_enabled() {
 }
 
 #[test]
+fn member_identity_persists_across_address_change() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let addrs = reserve_loopback_addrs(2);
+    let mut config = member_config("identity-persists-address-change");
+    let storage_dir = config.storage_dir.clone().unwrap();
+    let _ = std::fs::remove_dir_all(&storage_dir);
+    config.cluster_addr = addrs[0];
+    config.seeds = vec![addrs[0].to_string()];
+
+    let mut runtime = ServerRuntime::new(config.clone()).unwrap().start();
+    let first_identity = read_node_identity(&storage_dir);
+    let first_node_id = first_identity["node_id"].as_str().unwrap().to_owned();
+    let first_raft_node_id = first_identity["raft_node_id"].as_u64().unwrap();
+    assert_eq!(first_node_id, member_node_id_for_addr(addrs[0]));
+    assert_eq!(
+        runtime.admin_status().leader.as_deref(),
+        Some(first_node_id.as_str())
+    );
+    let _ = runtime.shutdown();
+
+    config.cluster_addr = addrs[1];
+    config.seeds = vec![addrs[1].to_string()];
+    let mut restarted = ServerRuntime::new(config).unwrap().start();
+    let second_identity = read_node_identity(&storage_dir);
+
+    assert_eq!(second_identity["node_id"], first_identity["node_id"]);
+    assert_eq!(
+        second_identity["raft_node_id"].as_u64(),
+        Some(first_raft_node_id)
+    );
+    assert_eq!(
+        restarted.admin_status().leader.as_deref(),
+        Some(first_node_id.as_str())
+    );
+    let _ = restarted.shutdown();
+}
+
+#[test]
+fn configured_node_id_conflicting_with_persisted_identity_fails_loud() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let mut config = member_config("identity-conflict");
+    let storage_dir = config.storage_dir.clone().unwrap();
+    let _ = std::fs::remove_dir_all(&storage_dir);
+    config.node_id = Some("member-pinned".to_owned());
+
+    let mut runtime = ServerRuntime::new(config.clone()).unwrap().start();
+    let identity = read_node_identity(&storage_dir);
+    assert_eq!(identity["node_id"], "member-pinned");
+    let _ = runtime.shutdown();
+
+    config.node_id = Some("member-other".to_owned());
+    let error = ServerRuntime::new(config).unwrap_err();
+
+    assert!(matches!(error, ServerConfigError::GridHostStart(_)));
+    assert!(
+        error
+            .to_string()
+            .contains("conflicts with persisted node identity"),
+        "conflicting node_id should fail loud: {error}"
+    );
+}
+
+#[test]
+fn future_node_identity_format_fails_loud() {
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let config = member_config("identity-future-format");
+    let storage_dir = config.storage_dir.clone().unwrap();
+    let _ = std::fs::remove_dir_all(&storage_dir);
+    std::fs::create_dir_all(&storage_dir).unwrap();
+    std::fs::write(
+        storage_dir.join("node-identity.json"),
+        r#"{
+  "format_version": 999,
+  "cluster": "hydracache",
+  "node_id": "member-future",
+  "raft_node_id": 1
+}"#,
+    )
+    .unwrap();
+
+    let error = ServerRuntime::new(config).unwrap_err();
+
+    assert!(matches!(error, ServerConfigError::GridHostStart(_)));
+    assert!(
+        error
+            .to_string()
+            .contains("unknown future node identity format version 999"),
+        "future node identity format should fail loud: {error}"
+    );
+}
+
+#[test]
 fn multi_node_members_form_a_cluster_and_elect_one_leader() {
     if !networked_daemon_e2e_enabled() {
         return;
@@ -422,6 +518,11 @@ fn leaders(statuses: &[ServerAdminStatus]) -> BTreeSet<String> {
         .iter()
         .filter_map(|status| status.leader.clone())
         .collect()
+}
+
+fn read_node_identity(storage_dir: &Path) -> serde_json::Value {
+    let text = std::fs::read_to_string(storage_dir.join("node-identity.json")).unwrap();
+    serde_json::from_str(&text).unwrap()
 }
 
 fn member_node_id_for_addr(addr: SocketAddr) -> String {

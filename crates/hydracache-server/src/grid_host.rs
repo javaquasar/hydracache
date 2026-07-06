@@ -25,6 +25,7 @@ use hydracache_cluster_transport_axum::{
     ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
     StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH,
 };
+use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
 
 use crate::cluster_status::{GridControlPlaneHandle, Reachability, ReshardPhase};
@@ -34,6 +35,8 @@ const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
+const NODE_IDENTITY_FILE: &str = "node-identity.json";
+const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 
 type NetworkedRaftRuntime = RaftMetadataRuntime<DurableRaftLogStore>;
 
@@ -103,13 +106,14 @@ fn start_networked_member_stack_without_current(
 }
 
 async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedMemberStack> {
-    let node_id = member_node_id(config);
-    let generation = ClusterGeneration::new(1);
-    let raft_node_id = raft_node_id(&node_id);
-    let topology = raft_topology(config, node_id.clone(), raft_node_id);
     let storage_dir = config.storage_dir.as_ref().ok_or_else(|| {
         CacheError::Backend("member role requires storage_dir before grid host startup".to_owned())
     })?;
+    let identity = resolve_member_identity(config, storage_dir)?;
+    let node_id = identity.node_id;
+    let generation = ClusterGeneration::new(1);
+    let raft_node_id = identity.raft_node_id;
+    let topology = raft_topology(config, node_id.clone(), raft_node_id)?;
     let raft_log_dir = storage_dir.join("raft-log");
     fs::create_dir_all(&raft_log_dir).map_err(|error| {
         CacheError::Backend(format!(
@@ -499,26 +503,23 @@ fn raft_topology(
     config: &ServerConfig,
     local_node_id: ClusterNodeId,
     local_raft_node_id: u64,
-) -> RaftTopology {
+) -> CacheResult<RaftTopology> {
     let mut peers = BTreeMap::new();
     if config.cluster_addr.port() != 0 {
-        peers.insert(
+        insert_raft_peer(
+            &mut peers,
             local_raft_node_id,
-            RaftPeer {
-                node_id: local_node_id,
-                address: config.cluster_addr,
-            },
-        );
+            local_node_id,
+            config.cluster_addr,
+        )?;
         for seed in &config.seeds {
             if let Ok(address) = seed.parse::<SocketAddr>() {
-                if address.port() == 0 {
+                if address.port() == 0 || address == config.cluster_addr {
                     continue;
                 }
                 let node_id = member_node_id_for_addr(address);
                 let raft_id = raft_node_id(&node_id);
-                peers
-                    .entry(raft_id)
-                    .or_insert(RaftPeer { node_id, address });
+                insert_raft_peer(&mut peers, raft_id, node_id, address)?;
             }
         }
     }
@@ -532,12 +533,31 @@ fn raft_topology(
     voters.sort_unstable();
     voters.dedup();
     let bootstrap_raft_node_id = voters.iter().copied().min().unwrap_or(local_raft_node_id);
-    RaftTopology {
+    Ok(RaftTopology {
         voters,
         peers: Arc::new(peers),
         multi_voter,
         bootstrap_raft_node_id,
+    })
+}
+
+fn insert_raft_peer(
+    peers: &mut BTreeMap<u64, RaftPeer>,
+    raft_id: u64,
+    node_id: ClusterNodeId,
+    address: SocketAddr,
+) -> CacheResult<()> {
+    if let Some(existing) = peers.get(&raft_id) {
+        if existing.node_id != node_id {
+            return Err(CacheError::Backend(format!(
+                "raft node id collision for {raft_id}: {} and {}",
+                existing.node_id, node_id
+            )));
+        }
+        return Ok(());
     }
+    peers.insert(raft_id, RaftPeer { node_id, address });
+    Ok(())
 }
 
 impl RaftTopology {
@@ -702,8 +722,129 @@ async fn wait_for_raft_leader(raft: &Arc<NetworkedRaftRuntime>) -> CacheResult<(
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct MemberIdentity {
+    node_id: ClusterNodeId,
+    raft_node_id: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct PersistedNodeIdentity {
+    format_version: u32,
+    cluster: String,
+    node_id: String,
+    raft_node_id: u64,
+}
+
+impl PersistedNodeIdentity {
+    fn new(node_id: ClusterNodeId, raft_node_id: u64) -> Self {
+        Self {
+            format_version: NODE_IDENTITY_FORMAT_VERSION,
+            cluster: DEFAULT_CLUSTER_NAME.to_owned(),
+            node_id: node_id.to_string(),
+            raft_node_id,
+        }
+    }
+
+    fn into_member_identity(self) -> CacheResult<MemberIdentity> {
+        if self.format_version > NODE_IDENTITY_FORMAT_VERSION {
+            return Err(CacheError::Backend(format!(
+                "unknown future node identity format version {}",
+                self.format_version
+            )));
+        }
+        if self.cluster != DEFAULT_CLUSTER_NAME {
+            return Err(CacheError::Backend(format!(
+                "node identity belongs to cluster {}, expected {DEFAULT_CLUSTER_NAME}",
+                self.cluster
+            )));
+        }
+        let node_id = ClusterNodeId::from(self.node_id);
+        let expected_raft_node_id = raft_node_id(&node_id);
+        if self.raft_node_id != expected_raft_node_id {
+            return Err(CacheError::Backend(format!(
+                "node identity raft_node_id {} does not match node_id {} (expected {})",
+                self.raft_node_id, node_id, expected_raft_node_id
+            )));
+        }
+        Ok(MemberIdentity {
+            node_id,
+            raft_node_id: self.raft_node_id,
+        })
+    }
+}
+
+fn resolve_member_identity(
+    config: &ServerConfig,
+    storage_dir: &Path,
+) -> CacheResult<MemberIdentity> {
+    let path = storage_dir.join(NODE_IDENTITY_FILE);
+    if path.exists() {
+        let persisted = read_persisted_node_identity(&path)?;
+        let identity = persisted.into_member_identity()?;
+        if let Some(configured_node_id) = configured_member_node_id(config) {
+            if configured_node_id != identity.node_id {
+                return Err(CacheError::Backend(format!(
+                    "configured node_id {} conflicts with persisted node identity {} in {}",
+                    configured_node_id,
+                    identity.node_id,
+                    path.display()
+                )));
+            }
+        }
+        return Ok(identity);
+    }
+
+    fs::create_dir_all(storage_dir).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to create member storage directory {}: {error}",
+            storage_dir.display()
+        ))
+    })?;
+    let node_id = member_node_id(config);
+    let raft_node_id = raft_node_id(&node_id);
+    let persisted = PersistedNodeIdentity::new(node_id.clone(), raft_node_id);
+    let text = serde_json::to_string_pretty(&persisted)
+        .map_err(|error| CacheError::Backend(format!("failed to encode node identity: {error}")))?;
+    fs::write(&path, text).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to write node identity {}: {error}",
+            path.display()
+        ))
+    })?;
+    Ok(MemberIdentity {
+        node_id,
+        raft_node_id,
+    })
+}
+
+fn read_persisted_node_identity(path: &Path) -> CacheResult<PersistedNodeIdentity> {
+    let text = fs::read_to_string(path).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to read node identity {}: {error}",
+            path.display()
+        ))
+    })?;
+    serde_json::from_str(&text).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to parse node identity {}: {error}",
+            path.display()
+        ))
+    })
+}
+
 fn member_node_id(config: &ServerConfig) -> ClusterNodeId {
-    member_node_id_for_addr(config.cluster_addr)
+    configured_member_node_id(config)
+        .unwrap_or_else(|| member_node_id_for_addr(config.cluster_addr))
+}
+
+fn configured_member_node_id(config: &ServerConfig) -> Option<ClusterNodeId> {
+    config
+        .node_id
+        .as_deref()
+        .map(str::trim)
+        .filter(|node_id| !node_id.is_empty())
+        .map(ClusterNodeId::from)
 }
 
 fn member_node_id_for_addr(addr: SocketAddr) -> ClusterNodeId {
@@ -1112,6 +1253,31 @@ mod tests {
     }
 
     #[test]
+    fn seed_hash_collision_fails_loud_at_topology_build() {
+        let mut peers = BTreeMap::new();
+        insert_raft_peer(
+            &mut peers,
+            42,
+            ClusterNodeId::from("member-a"),
+            "127.0.0.1:7000".parse().unwrap(),
+        )
+        .unwrap();
+
+        let error = insert_raft_peer(
+            &mut peers,
+            42,
+            ClusterNodeId::from("member-b"),
+            "127.0.0.1:7001".parse().unwrap(),
+        )
+        .unwrap_err();
+
+        assert!(
+            error.to_string().contains("raft node id collision"),
+            "collision should fail loud: {error}"
+        );
+    }
+
+    #[test]
     fn http_raft_sink_attaches_cluster_auth_headers() {
         let node_id = ClusterNodeId::from("member-a");
         let auth = ClusterRouteAuth::secure(
@@ -1252,6 +1418,7 @@ mod tests {
             role: crate::config::ServerRole::Member,
             listen_addr: "127.0.0.1:18080".parse().unwrap(),
             cluster_addr: cluster_addr.parse().unwrap(),
+            node_id: None,
             seeds: vec![cluster_addr.to_owned()],
             storage_dir: Some(PathBuf::from("target/test-hydracache-grid-host/unit")),
             drain_timeout_ms: 1_000,

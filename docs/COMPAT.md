@@ -14,6 +14,7 @@ they are persisted or transmitted across processes.
 | `RaftLogStore` in-memory format | `1` | `hydracache-cluster-raft` metadata runtime | 0.41 tests cover append/replay, snapshot recovery, suffix truncation, and compaction guard semantics. Future durable engines must register their own format before rollout. | Runtime fails loud on store errors; unknown future durable formats must refuse startup. |
 | HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
+| `node-identity.json` member identity file | `1` | `hydracache-server` member startup | Readers accept format `1` only. The file records `cluster`, stable `node_id`, and derived `raft_node_id` so a member keeps the same raft identity across address changes. A configured `node_id` must match the persisted identity once the file exists. | Unknown future identity formats, cluster mismatches, configured-id conflicts, and node-id/raft-id mismatches refuse member startup before opening the networked grid. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
 | `DurableValueStore` on-disk value-store format | `1` | `hydracache` `durable-value-store` feature | Readers accept store format `1` only. Records are length-prefixed binary envelopes containing the cache key, `ReplicatedValueRecord`, tombstone/value state, and checksum metadata. The value engine is separate from the raft log engine. | Store open refuses unknown future formats. Corrupt or mismatched records fail loud and are not served. |
@@ -314,3 +315,13 @@ the cluster checkpoint records the controller barrier watermarks that define the
 cut. Restore and rescale readers accept only format `1`, verify checksum and
 per-partition coverage, reject partial/torn cuts, and fence checkpoints older
 than the current authority epoch before serving or redistributing data.
+
+## 0.60 Networked Grid Hardening
+
+W3 registers the `node-identity.json` member identity file at format version `1`.
+The file lives in the member `storage_dir` beside the raft log and pins
+`node_id` plus its derived `raft_node_id` to the durable member state. Readers
+accept only version `1`, refuse unknown future versions, and fail startup when an
+explicitly configured `node_id` conflicts with the persisted identity. Address
+changes without an explicit conflicting id keep the persisted identity so the
+raft log is not orphaned by a listen-address change.

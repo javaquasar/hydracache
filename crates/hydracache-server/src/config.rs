@@ -126,6 +126,8 @@ pub struct ServerConfig {
     pub listen_addr: SocketAddr,
     /// Internal cluster listen address.
     pub cluster_addr: SocketAddr,
+    /// Optional stable member node identity.
+    pub node_id: Option<String>,
     /// Seed members used by member/client roles.
     pub seeds: Vec<String>,
     /// Durable state directory for member mode.
@@ -154,6 +156,7 @@ impl Default for ServerConfig {
             cluster_addr: "127.0.0.1:7000"
                 .parse()
                 .expect("default cluster address is valid"),
+            node_id: None,
             seeds: Vec::new(),
             storage_dir: None,
             drain_timeout_ms: 30_000,
@@ -199,6 +202,9 @@ impl ServerConfig {
             config.cluster_addr = cluster
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidAddress(cluster))?;
+        }
+        if let Ok(node_id) = env::var("HYDRACACHE_NODE_ID") {
+            config.node_id = Some(node_id);
         }
         if let Ok(storage_dir) = env::var("HYDRACACHE_STORAGE_DIR") {
             config.storage_dir = Some(PathBuf::from(storage_dir));
@@ -269,6 +275,13 @@ impl ServerConfig {
         }
         if matches!(self.role, ServerRole::Member | ServerRole::Client) && self.seeds.is_empty() {
             return Err(ServerConfigError::MissingSeeds);
+        }
+        if self
+            .node_id
+            .as_deref()
+            .is_some_and(|node_id| node_id.trim().is_empty())
+        {
+            return Err(ServerConfigError::InvalidNodeId);
         }
         if self.backup.enabled
             && self
@@ -342,6 +355,9 @@ pub enum ServerConfigError {
     /// Member/client mode requires seeds.
     #[error("member/client role requires at least one seed")]
     MissingSeeds,
+    /// Configured node identity cannot be empty.
+    #[error("node_id must not be empty")]
+    InvalidNodeId,
     /// Backup enabled without a destination.
     #[error("backup.enabled requires backup.location")]
     MissingBackupLocation,

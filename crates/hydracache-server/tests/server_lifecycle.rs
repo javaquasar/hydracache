@@ -10,6 +10,7 @@ fn member_config() -> ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
+        node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from("target/test-hydracache-server")),
         drain_timeout_ms: 1_000,
@@ -79,6 +80,13 @@ fn server_lifecycle_invalid_config_fails_loud() {
         auth_with_missing_file.validate(),
         Err(ServerConfigError::ClusterAuthTokenRead { .. })
     ));
+
+    let mut empty_node_id = member_config();
+    empty_node_id.node_id = Some("   ".to_owned());
+    assert!(matches!(
+        empty_node_id.validate(),
+        Err(ServerConfigError::InvalidNodeId)
+    ));
 }
 
 #[test]
@@ -91,6 +99,7 @@ fn server_lifecycle_toml_config_roundtrip_validates() {
 role = "member"
 listen_addr = "127.0.0.1:18080"
 cluster_addr = "127.0.0.1:17000"
+node_id = "member-configured"
 seeds = ["127.0.0.1:17000"]
 storage_dir = "target/test-hydracache-server"
 drain_timeout_ms = 1000
@@ -107,5 +116,6 @@ listen_addr = "127.0.0.1:19091"
     .unwrap();
 
     assert_eq!(config.role, ServerRole::Member);
+    assert_eq!(config.node_id.as_deref(), Some("member-configured"));
     assert_eq!(config.drain_timeout().as_millis(), 1_000);
 }
