@@ -67,8 +67,11 @@ async fn daemon_serves_metrics_and_cluster_overview_with_source_on_internal_port
     assert_eq!(overview.status(), StatusCode::OK);
     let overview_body = json_response(overview).await;
     assert_eq!(overview_body["source"], "live");
-    assert!(overview_body["leader"].is_null());
     assert_eq!(overview_body["members"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        overview_body["leader"]["node_id"],
+        overview_body["members"][0]["node_id"]
+    );
 
     let client = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
     let client_metrics = client
@@ -130,8 +133,8 @@ fn member_config() -> ServerConfig {
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
-        cluster_addr: "127.0.0.1:17000".parse().unwrap(),
-        seeds: vec!["127.0.0.1:17000".to_owned()],
+        cluster_addr: "127.0.0.1:0".parse().unwrap(),
+        seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from("target/test-hydracache-deploy-smoke")),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
