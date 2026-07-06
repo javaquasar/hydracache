@@ -23,8 +23,8 @@ mod admin_http {
         ServerConfig {
             role: ServerRole::Member,
             listen_addr: "127.0.0.1:18080".parse().unwrap(),
-            cluster_addr: "127.0.0.1:17000".parse().unwrap(),
-            seeds: vec!["127.0.0.1:17000".to_owned()],
+            cluster_addr: "127.0.0.1:0".parse().unwrap(),
+            seeds: vec!["127.0.0.1:0".to_owned()],
             storage_dir: Some(PathBuf::from("target/test-hydracache-server-admin")),
             drain_timeout_ms: 1_000,
             tls: TlsConfig::default(),
@@ -138,7 +138,7 @@ mod admin_http {
         assert_eq!(response.status(), StatusCode::OK);
         let body = json_response(response).await;
         assert_eq!(body["source"], "live");
-        assert!(body["leader"].is_null());
+        assert!(body["leader"].as_str().unwrap().starts_with("member-"));
         assert_eq!(body["term"], 1);
         assert_eq!(body["quorum_ok"], true);
         assert_eq!(body["members"], 1);
