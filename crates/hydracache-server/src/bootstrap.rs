@@ -515,19 +515,28 @@ fn topology_status_source(source: StatusSource) -> TopologyStatusSource {
 }
 
 fn block_on_cluster_leave(cache: &HydraCache) -> hydracache::CacheResult<()> {
-    let left = if let Ok(handle) = tokio::runtime::Handle::try_current() {
-        tokio::task::block_in_place(|| handle.block_on(cache.leave_cluster()))
-    } else {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|error| {
-                hydracache::CacheError::Backend(format!(
-                    "failed to build cluster leave runtime: {error}"
-                ))
+    let cache = cache.clone();
+    if tokio::runtime::Handle::try_current().is_ok() {
+        return std::thread::spawn(move || block_on_cluster_leave_without_current(cache))
+            .join()
+            .map_err(|_| {
+                hydracache::CacheError::Backend("cluster leave helper thread panicked".to_owned())
             })?;
-        runtime.block_on(cache.leave_cluster())
-    }?;
+    }
+
+    block_on_cluster_leave_without_current(cache)
+}
+
+fn block_on_cluster_leave_without_current(cache: HydraCache) -> hydracache::CacheResult<()> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .map_err(|error| {
+            hydracache::CacheError::Backend(format!(
+                "failed to build cluster leave runtime: {error}"
+            ))
+        })?;
+    let left = runtime.block_on(cache.leave_cluster())?;
     let _ = left;
     Ok(())
 }

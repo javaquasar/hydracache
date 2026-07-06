@@ -3,7 +3,7 @@ use std::fmt;
 use std::fs;
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::time::Duration;
 
@@ -57,29 +57,44 @@ fn build_inprocess_member(
 fn build_networked_member(
     config: &ServerConfig,
 ) -> Result<(HydraCache, Arc<dyn GridControlPlaneHandle>), ServerConfigError> {
-    if let Ok(handle) = tokio::runtime::Handle::try_current() {
-        let stack = tokio::task::block_in_place(|| handle.block_on(networked_member_stack(config)))
-            .map_err(|error| ServerConfigError::GridHostStart(error.to_string()))?;
-        let cache = stack.cache.clone();
-        return Ok((cache, Arc::new(NetworkedGridHandle::new(stack, None))));
-    }
-
-    let runtime = Arc::new(
-        tokio::runtime::Builder::new_multi_thread()
-            .worker_threads(1)
-            .thread_name("hydracache-grid-host")
-            .enable_all()
-            .build()
-            .map_err(|error| ServerConfigError::GridHostStart(error.to_string()))?,
-    );
-    let stack = runtime
-        .block_on(networked_member_stack(config))
-        .map_err(|error| ServerConfigError::GridHostStart(error.to_string()))?;
+    let (stack, runtime) = start_networked_member_stack(config)?;
     let cache = stack.cache.clone();
     Ok((
         cache,
         Arc::new(NetworkedGridHandle::new(stack, Some(runtime))),
     ))
+}
+
+fn start_networked_member_stack(
+    config: &ServerConfig,
+) -> Result<(NetworkedMemberStack, DedicatedGridRuntime), ServerConfigError> {
+    if tokio::runtime::Handle::try_current().is_ok() {
+        let config = config.clone();
+        return std::thread::spawn(move || start_networked_member_stack_without_current(&config))
+            .join()
+            .map_err(|_| {
+                ServerConfigError::GridHostStart(
+                    "networked member startup helper thread panicked".to_owned(),
+                )
+            })?;
+    }
+
+    start_networked_member_stack_without_current(config)
+}
+
+fn start_networked_member_stack_without_current(
+    config: &ServerConfig,
+) -> Result<(NetworkedMemberStack, DedicatedGridRuntime), ServerConfigError> {
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(1)
+        .thread_name("hydracache-grid-host")
+        .enable_all()
+        .build()
+        .map_err(|error| ServerConfigError::GridHostStart(error.to_string()))?;
+    let stack = runtime
+        .block_on(networked_member_stack(config))
+        .map_err(|error| ServerConfigError::GridHostStart(error.to_string()))?;
+    Ok((stack, DedicatedGridRuntime::new(runtime)))
 }
 
 async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedMemberStack> {
@@ -410,11 +425,11 @@ struct NetworkedGridHandle {
     _bridge: ClusterAdmissionBridge,
     _message_sink: Arc<dyn RaftMessageSink>,
     shutdown: watch::Sender<bool>,
-    _runtime: Option<Arc<tokio::runtime::Runtime>>,
+    _runtime: Option<DedicatedGridRuntime>,
 }
 
 impl NetworkedGridHandle {
-    fn new(stack: NetworkedMemberStack, runtime: Option<Arc<tokio::runtime::Runtime>>) -> Self {
+    fn new(stack: NetworkedMemberStack, runtime: Option<DedicatedGridRuntime>) -> Self {
         Self {
             node_id: stack.node_id,
             raft_node_id: stack.raft_node_id,
@@ -424,6 +439,31 @@ impl NetworkedGridHandle {
             _message_sink: stack.message_sink,
             shutdown: stack.shutdown,
             _runtime: runtime,
+        }
+    }
+}
+
+struct DedicatedGridRuntime {
+    runtime: Mutex<Option<tokio::runtime::Runtime>>,
+}
+
+impl DedicatedGridRuntime {
+    fn new(runtime: tokio::runtime::Runtime) -> Self {
+        Self {
+            runtime: Mutex::new(Some(runtime)),
+        }
+    }
+}
+
+impl Drop for DedicatedGridRuntime {
+    fn drop(&mut self) {
+        if let Some(runtime) = self
+            .runtime
+            .lock()
+            .expect("grid runtime holder poisoned")
+            .take()
+        {
+            runtime.shutdown_background();
         }
     }
 }
