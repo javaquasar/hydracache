@@ -10,7 +10,7 @@ Coverage-run stability sub-item: resolved on 2026-07-05 in
 `fix/td-0009-coverage-flake`.
 
 Remaining scope: coverage ratchet and targeted coverage expansion are deferred
-to a post-`0.59.0` quality-hardening slice.
+to a post-`0.60.0` quality-hardening slice.
 
 ## Context
 
@@ -55,9 +55,19 @@ Functions: 85.28%
 Lines:     88.07%
 ```
 
-This is the clean post-fix baseline for the current workspace shape. Re-measure
-the baseline after `0.59.0`, because the networked grid work is expected to add
-server/operator surface and may lower the workspace percentage.
+This was the clean post-fix baseline for the then-current workspace shape.
+
+After the `0.59.0` and `0.60.0` networked-grid surface landed, the clean command
+was re-run on 2026-07-06 without `--ignore-run-fail`:
+
+```text
+Regions:   86.69%
+Functions: 84.88%
+Lines:     87.77%
+```
+
+That is the current post-networked-grid baseline. It is recorded for ratchet
+planning only; no `--fail-under-lines` gate is enabled by this fix.
 
 ## Why The Two Tests Failed Under Coverage
 
@@ -86,8 +96,8 @@ winner identity, not the single-flight guarantee itself.
 - Coverage can drift down because no CI ratchet is enabled yet.
 - The project still needs targeted fast tests for the largest operational
   surfaces before raising the line-coverage floor.
-- The post-`0.59.0` networked grid may change the denominator enough that the
-  current clean baseline should not become the final ratchet target unchanged.
+- The post-`0.60.0` baseline is measured, but it should not become the ratchet
+  target unchanged until the named targeted tests are added.
 
 ## Coverage Improvement Plan
 
@@ -123,8 +133,8 @@ winner identity, not the single-flight guarantee itself.
      not chase boilerplate.
 
 4. Introduce a ratchet after the run is clean.
-   - Re-measure the baseline after `0.59.0` before choosing the first
-     `--fail-under-lines` value.
+   - Use the 2026-07-06 post-`0.60.0` clean baseline above when choosing the
+     first `--fail-under-lines` value.
    - Raise by small steps (`89`, `90`, then higher) as targeted tests land.
    - Keep the long-term aspiration from `docs/TESTING.md`: reusable library
      crates near or above `95%` line coverage, and workspace coverage trending
@@ -144,7 +154,7 @@ winner identity, not the single-flight guarantee itself.
 
 Address or re-rank this debt when one of:
 
-- `0.59.0` networked daemon grid work adds more server/operator surface;
+- future networked daemon grid work adds more server/operator surface;
 - a release wants to claim improved test coverage or coverage ratcheting;
 - the coverage command fails in CI or local release verification;
 - new adapters/transports are added.
@@ -169,8 +179,8 @@ cargo llvm-cov --workspace --all-targets --locked --summary-only
 cargo xtask verify
 ```
 
-The coverage-run stability sub-item is closed. The whole debt can be closed when
-the post-`0.59.0` baseline is re-measured and the CI/release policy enforces or
+The coverage-run stability sub-item is closed, and the post-`0.60.0` baseline is
+recorded. The whole debt can be closed when the CI/release policy enforces or
 deliberately tracks the next ratchet step with the targeted coverage work
 accounted for.
 

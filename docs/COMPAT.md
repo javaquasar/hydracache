@@ -325,3 +325,8 @@ accept only version `1`, refuse unknown future versions, and fail startup when a
 explicitly configured `node_id` conflicts with the persisted identity. Address
 changes without an explicit conflicting id keep the persisted identity so the
 raft log is not orphaned by a listen-address change.
+
+W4 persists raft `ConfState` through the existing durable raft log store so voter
+add/remove survives restart. This does not introduce a separate public manifest
+or file-format version; compatibility remains governed by the existing raft log
+store and the pinned raft/protobuf dependency pair.

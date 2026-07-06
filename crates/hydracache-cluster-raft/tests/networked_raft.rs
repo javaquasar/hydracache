@@ -494,6 +494,19 @@ fn conf_change_adds_and_removes_raft_voter_loudly() {
     }
 }
 
+#[test]
+fn follower_can_request_own_voter_removal_for_drain() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.campaign(1);
+
+    let remove_messages = cluster.node(2).request_remove_voter(2).unwrap();
+    cluster.drain_until_idle(remove_messages);
+
+    for node_id in [1, 2, 3] {
+        assert_eq!(cluster.node(node_id).voter_ids().unwrap(), vec![1, 3]);
+    }
+}
+
 #[tokio::test]
 async fn follower_join_member_reports_forwarded_then_applies() {
     let mut cluster = NetworkedRuntimeCluster::three_node();

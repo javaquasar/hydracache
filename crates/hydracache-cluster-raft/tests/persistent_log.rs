@@ -57,8 +57,10 @@ fn persistent_log_snapshot_recovery_after_restart() {
 #[test]
 fn persistent_log_conf_state_updates_initial_state() {
     let store = InMemoryRaftLogStore::new_with_conf_state((vec![1], vec![]));
-    let mut conf_state = ConfState::default();
-    conf_state.voters = vec![1, 2];
+    let conf_state = ConfState {
+        voters: vec![1, 2],
+        ..ConfState::default()
+    };
 
     store
         .save_conf_state(&conf_state)

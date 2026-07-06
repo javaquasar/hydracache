@@ -440,16 +440,73 @@ fn multi_node_members_form_a_cluster_and_elect_one_leader() {
         "three networked daemon members did not converge to one leader: {:?}",
         active_statuses(&runtimes)
     );
+    let expected_member_ids = addrs
+        .iter()
+        .map(|addr| member_node_id_for_addr(*addr))
+        .collect::<BTreeSet<_>>();
+    for member_ids in active_member_id_sets(&runtimes) {
+        assert_eq!(
+            member_ids, expected_member_ids,
+            "converged daemon did not expose the full committed member set"
+        );
+    }
+
+    let first_leader = active_statuses(&runtimes)[0]
+        .leader
+        .clone()
+        .expect("leader after convergence");
+    let follower_index = addrs
+        .iter()
+        .position(|addr| member_node_id_for_addr(*addr) != first_leader)
+        .expect("at least one follower belongs to the spawned daemon set");
+    let drained_follower = member_node_id_for_addr(addrs[follower_index]);
+    let expected_after_follower_drain = expected_member_ids
+        .iter()
+        .filter(|node_id| *node_id != &drained_follower)
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let mut follower_runtime = runtimes[follower_index].take().unwrap();
+    let follower_drain = follower_runtime.shutdown();
+    assert!(!follower_drain.timed_out);
+    drop(follower_runtime);
+
+    let follower_removed = wait_until(Duration::from_secs(10), || {
+        let statuses = active_statuses(&runtimes);
+        let leaders = leaders(&statuses);
+        leaders.len() == 1
+            && statuses
+                .iter()
+                .all(|status| status.members == 2 && status.quorum_ok)
+    });
+    assert!(
+        follower_removed,
+        "remaining daemon members did not converge after follower drain: follower={drained_follower}, statuses={:?}",
+        active_statuses(&runtimes)
+    );
+    for member_ids in active_member_id_sets(&runtimes) {
+        assert_eq!(
+            member_ids, expected_after_follower_drain,
+            "survivor did not converge to the committed member set after follower drain"
+        );
+    }
 
     let old_leader = active_statuses(&runtimes)[0]
         .leader
         .clone()
-        .expect("leader after convergence");
+        .expect("leader after follower drain");
+    let expected_survivor_ids = expected_after_follower_drain
+        .iter()
+        .filter(|node_id| *node_id != &old_leader)
+        .cloned()
+        .collect::<BTreeSet<_>>();
     let leader_index = addrs
         .iter()
         .position(|addr| member_node_id_for_addr(*addr) == old_leader)
         .expect("leader belongs to one spawned daemon");
-    drop(runtimes[leader_index].take());
+    let mut old_leader_runtime = runtimes[leader_index].take().unwrap();
+    let drain = old_leader_runtime.shutdown();
+    assert!(!drain.timed_out);
+    drop(old_leader_runtime);
 
     let re_elected = wait_until(Duration::from_secs(10), || {
         let statuses = active_statuses(&runtimes);
@@ -458,13 +515,19 @@ fn multi_node_members_form_a_cluster_and_elect_one_leader() {
             && !leaders.contains(&old_leader)
             && statuses
                 .iter()
-                .all(|status| status.members == 3 && status.quorum_ok)
+                .all(|status| status.members == 1 && status.quorum_ok)
     });
     assert!(
         re_elected,
-        "remaining daemon members did not re-elect without reporting the stale leader: old={old_leader}, statuses={:?}",
+        "remaining daemon members did not re-elect after leader drain: old={old_leader}, statuses={:?}",
         active_statuses(&runtimes)
     );
+    for member_ids in active_member_id_sets(&runtimes) {
+        assert_eq!(
+            member_ids, expected_survivor_ids,
+            "survivor did not converge to the committed member set after leader drain"
+        );
+    }
 
     for runtime in runtimes.iter_mut().filter_map(Option::as_mut) {
         let _ = runtime.shutdown();
@@ -517,6 +580,22 @@ fn leaders(statuses: &[ServerAdminStatus]) -> BTreeSet<String> {
     statuses
         .iter()
         .filter_map(|status| status.leader.clone())
+        .collect()
+}
+
+fn active_member_id_sets(runtimes: &[Option<ServerRuntime>]) -> Vec<BTreeSet<String>> {
+    runtimes
+        .iter()
+        .filter_map(Option::as_ref)
+        .map(|runtime| {
+            let overview = serde_json::to_value(runtime.cluster_overview()).unwrap();
+            overview["members"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|member| member["node_id"].as_str().unwrap().to_owned())
+                .collect()
+        })
         .collect()
 }
 

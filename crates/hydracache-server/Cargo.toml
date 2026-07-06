@@ -23,6 +23,7 @@ hydracache-cluster-raft.workspace = true
 hydracache-cluster-transport-axum.workspace = true
 hydracache-observability.workspace = true
 reqwest.workspace = true
+rustls.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

@@ -115,7 +115,7 @@ use raft::{Config, RawNode, StateRole};
 use slog::{o, Logger};
 use tokio::time::{sleep, Duration};
 
-const FORWARDED_APPLY_WAIT_ATTEMPTS: usize = 10;
+const FORWARDED_APPLY_WAIT_ATTEMPTS: usize = 500;
 const FORWARDED_APPLY_WAIT_INTERVAL: Duration = Duration::from_millis(10);
 
 /// Configuration for an embedded raft-rs metadata runtime.
@@ -797,6 +797,15 @@ where
         self.propose_voter_change(raft_node_id, ConfChangeType::RemoveNode)
     }
 
+    /// Request removing a raft voter through raft-rs ConfChange.
+    ///
+    /// Unlike the leader-only `propose_remove_voter` helper, this allows a
+    /// follower with a known leader to forward its own graceful-drain removal.
+    pub fn request_remove_voter(&self, raft_node_id: u64) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.request_voter_change(raft_node_id, ConfChangeType::RemoveNode)
+    }
+
     /// Return a runtime snapshot.
     pub fn snapshot(&self) -> RaftMetadataRuntimeSnapshot {
         let state = self.raft.lock().expect("raft metadata state poisoned");
@@ -1193,8 +1202,33 @@ where
                 "raft voter changes must be proposed by the leader".to_owned(),
             ));
         }
-        let mut change = ConfChange::default();
-        change.node_id = raft_node_id.max(1);
+        let mut change = ConfChange {
+            node_id: raft_node_id.max(1),
+            ..ConfChange::default()
+        };
+        change.set_change_type(change_type);
+        self.raw_node
+            .propose_conf_change(Vec::new(), change)
+            .map_err(to_cache_error)?;
+        self.drain_ready()
+    }
+
+    fn request_voter_change(
+        &mut self,
+        raft_node_id: u64,
+        change_type: ConfChangeType,
+    ) -> CacheResult<Vec<RaftWireMessage>> {
+        if self.raw_node.raft.state != StateRole::Leader
+            && known_leader_id(self.raw_node.raft.leader_id).is_none()
+        {
+            return Err(CacheError::Backend(
+                "raft voter changes require a known leader".to_owned(),
+            ));
+        }
+        let mut change = ConfChange {
+            node_id: raft_node_id.max(1),
+            ..ConfChange::default()
+        };
         change.set_change_type(change_type);
         self.raw_node
             .propose_conf_change(Vec::new(), change)

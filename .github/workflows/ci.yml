@@ -156,6 +156,11 @@ jobs:
           cargo test -p hydracache-server --test soak_resource --locked -- --ignored --nocapture
           cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture
 
+      - name: Run networked daemon E2E tier
+        env:
+          HYDRACACHE_RUN_NETWORKED_DAEMON_E2E: "1"
+        run: cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapture
+
       - name: Upload SOAK_REPORT
         uses: actions/upload-artifact@v4
         with:

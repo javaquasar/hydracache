@@ -7,7 +7,7 @@ use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::path::Path;
 use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex, Once, RwLock};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::time::Duration;
 
@@ -165,7 +165,6 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
         raft.clone(),
-        bridge.clone(),
         message_sink.clone(),
         raft_peers.clone(),
         drive_diagnostics.clone(),
@@ -173,6 +172,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         config.cluster_addr,
         shutdown.subscribe(),
     );
+    spawn_admission_drive(bridge.clone(), shutdown.subscribe());
     spawn_cluster_transport(
         config,
         node_id.clone(),
@@ -308,6 +308,7 @@ async fn spawn_cluster_transport(
     )
     .routes();
     if config.tls.enabled {
+        install_default_rustls_provider();
         let cert_path = config
             .tls
             .cert_path
@@ -443,7 +444,6 @@ fn read_cluster_auth_token(path: &Path, section: &str) -> CacheResult<String> {
 
 fn spawn_grid_drive(
     raft: Arc<NetworkedRaftRuntime>,
-    bridge: ClusterAdmissionBridge,
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
     diagnostics: Arc<GridDriveDiagnostics>,
@@ -463,7 +463,6 @@ fn spawn_grid_drive(
                 _ = interval.tick() => {
                     if let Err(_error) = drive_grid_once(
                         &raft,
-                        &bridge,
                         &message_sink,
                         &raft_peers,
                         &diagnostics,
@@ -479,9 +478,26 @@ fn spawn_grid_drive(
     });
 }
 
+fn spawn_admission_drive(bridge: ClusterAdmissionBridge, mut shutdown: watch::Receiver<bool>) {
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(GRID_DRIVE_INTERVAL);
+        loop {
+            tokio::select! {
+                changed = shutdown.changed() => {
+                    if changed.is_err() || *shutdown.borrow() {
+                        break;
+                    }
+                }
+                _ = interval.tick() => {
+                    let _ = bridge.run_once().await;
+                }
+            }
+        }
+    });
+}
+
 async fn drive_grid_once(
     raft: &Arc<NetworkedRaftRuntime>,
-    bridge: &ClusterAdmissionBridge,
     message_sink: &Arc<dyn RaftMessageSink>,
     raft_peers: &SharedRaftPeers,
     diagnostics: &GridDriveDiagnostics,
@@ -491,7 +507,6 @@ async fn drive_grid_once(
     diagnostics.record_tick();
     let _ =
         send_raft_messages_with_diagnostics(message_sink, raft.tick()?, Some(diagnostics)).await;
-    let _ = bridge.run_once().await;
     refresh_raft_peers(raft_peers, local_node_id, local_addr, &raft.members());
     sync_raft_voters(raft, message_sink, raft_peers, diagnostics).await?;
     let _ = send_raft_messages_with_diagnostics(
@@ -861,6 +876,7 @@ fn raft_http_client(config: &ServerConfig) -> CacheResult<(&'static str, reqwest
     if !config.tls.enabled {
         return Ok(("http", reqwest::Client::new()));
     }
+    install_default_rustls_provider();
     let ca_path = config
         .tls
         .ca_path
@@ -885,6 +901,13 @@ fn raft_http_client(config: &ServerConfig) -> CacheResult<(&'static str, reqwest
             CacheError::Backend(format!("failed to build TLS raft client: {error}"))
         })?;
     Ok(("https", client))
+}
+
+fn install_default_rustls_provider() {
+    static INSTALL: Once = Once::new();
+    INSTALL.call_once(|| {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    });
 }
 
 async fn wait_for_raft_leader(raft: &Arc<NetworkedRaftRuntime>) -> CacheResult<()> {
@@ -1252,7 +1275,7 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             .iter()
             .filter(|raft_id| self.raft_voter_reachability(**raft_id) == Reachability::Reachable)
             .count();
-        reachable >= (voters.len() / 2).saturating_add(1)
+        raft_voter_majority_reachable(voters.len(), reachable)
     }
 
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {
@@ -1314,10 +1337,10 @@ impl NetworkedGridHandle {
         if voters.len() <= 1 || !voters.contains(&self.raft_node_id) {
             return;
         }
-        if self.raft.leader_id() != Some(self.raft_node_id) {
+        if self.raft.leader_id().is_none() {
             return;
         }
-        let Ok(messages) = self.raft.propose_remove_voter(self.raft_node_id) else {
+        let Ok(messages) = self.raft.request_remove_voter(self.raft_node_id) else {
             return;
         };
         self.drain_remove_proposed.store(true, Ordering::SeqCst);
@@ -1406,6 +1429,10 @@ fn reachability_from_discovery_liveness(
     }
 }
 
+fn raft_voter_majority_reachable(total_voters: usize, reachable_voters: usize) -> bool {
+    total_voters > 0 && reachable_voters >= (total_voters / 2).saturating_add(1)
+}
+
 #[derive(Clone)]
 struct RaftClusterMessageHandler {
     node_id: ClusterNodeId,
@@ -1483,9 +1510,9 @@ mod tests {
 
         discovery
             .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)));
+        bridge.run_once().await;
         drive_grid_once(
             &raft,
-            &bridge,
             &message_sink,
             &raft_peers,
             &diagnostics,
@@ -1628,6 +1655,16 @@ mod tests {
         assert_eq!(reachability_from_discovery_liveness(None), None);
     }
 
+    #[test]
+    fn has_quorum_reflects_voter_majority() {
+        assert!(!raft_voter_majority_reachable(0, 0));
+        assert!(raft_voter_majority_reachable(1, 1));
+        assert!(!raft_voter_majority_reachable(3, 1));
+        assert!(raft_voter_majority_reachable(3, 2));
+        assert!(!raft_voter_majority_reachable(4, 2));
+        assert!(raft_voter_majority_reachable(4, 3));
+    }
+
     #[derive(Debug)]
     struct FailingRaftMessageSink;
 
@@ -1709,6 +1746,7 @@ mod tests {
 
     #[tokio::test]
     async fn sink_verifies_peer_against_configured_ca() {
+        install_default_rustls_provider();
         let server_tls = write_test_tls_material("sink-ca/server");
         let wrong_tls = write_test_tls_material("sink-ca/wrong");
         let listener = StdTcpListener::bind("127.0.0.1:0").unwrap();

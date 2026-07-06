@@ -2,11 +2,49 @@
 
 ## Status
 
-Open.
+Open, with the `0.60.0` identity, ConfChange, quorum, and graceful-drain
+sub-items resolved on 2026-07-06.
 
 Owner: cluster raft runtime / server grid host.
 
-Candidate target: `0.60.0` Networked Grid Hardening (W3/W4).
+Partial target: `0.60.0` Networked Grid Hardening (W3/W4). The remaining
+late-start daemon join bootstrap is deferred to a follow-up quality slice.
+
+## 0.60 Resolution Scope
+
+`0.60.0` resolves the unsafe identity and drain/quorum parts:
+
+- member identity is persisted as `node-identity.json` in `storage_dir`, with
+  fail-loud future-format, configured-id mismatch, and raft-id collision paths;
+- `RaftMetadataRuntime` exposes raft-rs `ConfChange` voter add/remove and
+  persists `ConfState` through the raft log store;
+- follower metadata proposals report `Forwarded` and wait for real apply
+  instead of claiming `Committed` early;
+- graceful daemon drain commits metadata leave before requesting voter removal,
+  and the E2E covers both follower drain and leader drain/re-election;
+- `/cluster/overview` quorum is computed from reachable raft voters rather than
+  metadata members.
+
+Verification:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test networked_raft --locked
+cargo test -p hydracache-server --lib --locked grid_host::tests
+cargo test -p hydracache-server --test grid_host --locked
+$env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
+cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
+```
+
+## Remaining Gap
+
+A fourth daemon started after an already-formed 3-member cluster is still not a
+release claim. The current startup path waits for a networked raft leader before
+the member cache has completed admission, and a late-start node needs a
+non-voter/join bootstrap path rather than seeding its local durable raft log as
+if it were part of the original voter set. The leader-side drive loop can promote
+an already admitted member to a voter, but the full new-daemon bootstrap needs a
+separate falsifiable E2E before operator scale-up can be claimed end-to-end.
 
 ## Context
 
@@ -25,52 +63,29 @@ collision handling.
 
 ## Why It Is A Debt
 
-- **The cluster cannot be resized at runtime.** A fourth daemon started later
-  computes its own topology, but the running members' raft `ConfState` is fixed
-  — the new node never becomes a voter. This breaks the `0.56` operator's
-  scale-up story for member pods (the StatefulSet grows, the raft quorum does
-  not).
-- **Graceful drain leaks voters.** Shutdown removes the member from *metadata*
-  (`NodeLeft` via `leave_cluster_for_shutdown`,
-  `crates/hydracache-server/src/bootstrap.rs:373-377`) but never from the raft
-  voter set. After two of three members drain away, the survivor can never win
-  an election (raft still requires 2/3), while `has_quorum()`
-  (grid_host.rs:720-730) counts *metadata members* — the two quorum planes
-  disagree, which is exactly the split the `0.59` plan was corrected to avoid.
-- **Identity is coupled to the address.** Restarting a member on a different
-  port/IP with the same `storage_dir` produces a new node id and raft id over a
-  durable raft log whose recorded voter set names the old id — the node comes
-  back outside its own cluster. An FNV-64 collision between two seed-derived
-  ids would silently merge two identities.
+- **Late-start daemon join is still incomplete.** A fourth daemon started after
+  the initial cluster needs a real join bootstrap path before it can become a
+  voter end-to-end.
 
 ## Risk While Open
 
-- Operator-driven scale-up/scale-down of member pods silently fails to change
-  the raft quorum.
-- Rolling infrastructure that changes pod IPs (without stable DNS names in
-  `seeds`) orphans durable raft logs.
-- Quorum reporting on `/cluster/overview` can read `true` while raft can no
-  longer commit (or elect), and vice versa.
+- Operator-driven scale-up of member pods is not yet an end-to-end release
+  claim.
+- Rolling infrastructure that changes pod IPs is covered only when the same
+  `storage_dir` and persisted `node-identity.json` are retained.
 
 ## Revisit Triggers
 
-- `0.60.0` starts implementation;
 - the operator asserts member-count changes through the deployed daemon;
 - any soak/E2E needs to add or remove a daemon at runtime.
 
 ## Future Definition Of Done
 
-- `RaftMetadataRuntime` exposes a fail-loud voter-change path (raft
-  `ConfChange` AddNode/RemoveNode) with the `ConfState` persisted by the log
-  stores.
-- The daemon promotes an admitted member to voter (leader-side) and removes a
-  draining member from the voter set before process exit; a drained node's
-  departure shrinks the quorum denominator.
-- Node identity is persisted in `storage_dir` (or configured explicitly),
-  survives address changes, and identity/raft-id mismatches or hash collisions
-  fail loud at startup.
-- `has_quorum()` counts reachable raft **voters** against the raft `ConfState`
-  majority, not metadata members.
+- A fourth daemon can start after a 3-member cluster has already formed, join
+  through the networked daemon path, and appear as an admitted raft voter on all
+  survivors.
+- The E2E proves both directions: graceful drain shrinks the quorum denominator,
+  while a crash does not silently remove a voter.
 
 ## Related
 

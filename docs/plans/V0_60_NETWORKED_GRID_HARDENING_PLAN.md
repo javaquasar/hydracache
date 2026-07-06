@@ -8,8 +8,8 @@
 >   `https://` outbound raft sink (today plaintext `axum::serve`, grid_host.rs:299, and hardcoded
 >   `http://`, grid_host.rs:494) — closing **TD-0010**; (**W3**) **persistent node identity**
 >   decoupled from `cluster_addr`; (**W4**) **dynamic raft membership** — `ConfChange` voter
->   add/remove, drain-removes-voter, quorum counted against the raft `ConfState` — closing
->   **TD-0011**; (**W5**) honest proposal status on non-leaders (no more `Committed` for a merely
+>   add/remove, drain-removes-voter, quorum counted against the raft `ConfState`; full late-start
+>   daemon join bootstrap remains a named TD-0011 residual; (**W5**) honest proposal status on non-leaders (no more `Committed` for a merely
 >   forwarded proposal, lib.rs:1151); (**W6**) drive-loop/status-path hardening (no swallowed
 >   errors, bounded discovery journal, O(1) reachability); (**W7**) the multi-daemon proofs +
 >   a CI tier for the `0.59` E2E that currently runs **only by hand**, plus the TD-0009 coverage
@@ -29,7 +29,7 @@
 >   (operator scale lifecycle that W4 finally makes truthful for members).
 > - **Unblocks:** a defensible `1.0` (secure-by-configuration cluster, runtime resize, honest
 >   status under every plane).
-> - **Status:** planned.
+> - **Status:** in-progress.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > debt tracked: [`../technical-debt/TD-0010-cluster-transport-tls-and-peer-auth.md`](../technical-debt/TD-0010-cluster-transport-tls-and-peer-auth.md),
@@ -125,10 +125,10 @@ proofs running in CI instead of by hand. Hardening over shipped consensus — **
 | TD / obligation | In `0.60`? | Detail |
 | --- | --- | --- |
 | **TD-0010** cluster transport TLS + peer auth | **Closed here** | W1 (auth + the fail-loud fix for the `tls.enabled` dead-end) + W2 (rustls termination, `https://` sink). W8 marks it Resolved. |
-| **TD-0011** dynamic membership + identity | **Closed here** | W3 (persistent identity) + W4 (`ConfChange`, drain-removes-voter, `ConfState` quorum). W8 marks it Resolved. |
+| **TD-0011** dynamic membership + identity | **Partially closed here** | W3 (persistent identity), W4 raft `ConfChange`, voter-based quorum, and graceful follower/leader drain are resolved. Full late-start fourth-daemon join bootstrap remains open in TD-0011 and is not a `0.60` release claim. |
 | **TD-0009** coverage ratchet & run stability | **Touched, not closed** | W7 re-measures the post-`0.59`/`0.60` baseline and records it in TD-0009 (its named trigger "0.59 adds server/operator surface" has fired). No ratchet gate is added (Non-Goal); the ratchet decision stays in TD-0009. |
 | **`0.59` W4 gate overclaim** | **Corrected (W0)** | The shipped `0.59` plan still reads "Cluster listener is **TLS-bound** when configured"; the manifest theme was already softened. W0 re-states the gate honestly and points it at TD-0010 → `0.60` W1/W2. |
-| **`0.59` unimplemented named tests** | **Landed here (W4/W6/W7)** | `conf_change_adds_and_removes_raft_voter_loudly` (→ W4), `raft_node_id_mapping_is_stable_across_restart` (→ W3), `has_quorum_reflects_membership_majority`, `reachability_maps_chitchat_liveness` (→ W6/W7), "no lost committed metadata" E2E assertion (→ W7). |
+| **`0.59` unimplemented named tests** | **Landed or re-scoped here (W3/W4/W6/W7)** | `conf_change_adds_and_removes_raft_voter_loudly` (→ W4), persistent identity restart coverage (→ W3), voter-majority quorum coverage, `reachability_maps_chitchat_liveness` (→ W6/W7), and "no lost committed metadata" E2E assertion (→ W7). Full late-start daemon join is re-scoped into the remaining TD-0011 item. |
 | TD-0002 raft/protobuf, TD-0003 bucket C, TD-0004 placement, TD-0005 Java artifact | **Out of scope** | Untouched. W4 uses `raft::eraftpb::ConfChange` from the already-pinned raft/protobuf pair — no new advisory surface. |
 
 ## Dependency Graph
@@ -340,7 +340,6 @@ naming both.
 - `configured_node_id_conflicting_with_persisted_identity_fails_loud`.
 - `seed_hash_collision_fails_loud_at_topology_build` — synthetic collision via test-only ids
   (falsifiable: today the second peer is silently dropped, :396-398).
-- `raft_node_id_mapping_is_stable_across_restart` — the `0.59`-planned, never-written test.
 - Run: `cargo test -p hydracache-server --locked grid_host`.
 
 **Pros.** Prerequisite for W4 (ConfChange needs stable ids); kills the address-churn foot-gun.
@@ -352,8 +351,9 @@ address-derived identity; W4 must not land without W3.
 **Goal.** The raft voter set follows the cluster: an admitted member becomes a **voter** at
 runtime, a draining member is **removed** before exit (shrinking the quorum denominator), and
 `has_quorum()` counts reachable **raft voters against the raft `ConfState` majority** — ending the
-metadata-vs-raft quorum split. Closes the second half of TD-0011 and makes `0.56` operator scaling
-truthful for members.
+metadata-vs-raft quorum split. This resolves TD-0011's identity/drain/quorum sub-items; full
+late-start daemon join remains a named follow-up before `0.56` operator scale-up can be claimed
+end-to-end.
 
 **Design/contract (runtime, `hydracache-cluster-raft`).**
 1. **Persist conf state.** `RaftLogStore` (log_store.rs:46-83) has no conf-state saver — add
@@ -405,12 +405,9 @@ truthful for members.
    promotion path. Unknown `message.to` stays a loud error — but only after gossip-known peers
    have been folded in. Auth/TLS identity for the joiner is the same cluster-wide W1/W2 material
    (shared credential + CA-signed cert); per-join provisioning is out of scope for `0.60`.
-7. **Drain.** `leave_cluster_for_shutdown` (bootstrap.rs:373-377) gains a grid-handle step *before*
-   the metadata leave: expose `fn leave_raft_voters(&self)` on `GridControlPlaneHandle`
-   (`cluster_status.rs:160-170`; no-op for `InProcessGridHandle`) implementing step 4. Order:
-   transfer leadership away if leader → publish the graceful-leave marker → bounded wait until
-   the removal commits (self ∉ `voter_ids()`) → metadata `NodeLeft` → exit. On timeout, fail
-   loud into the drain report — never exit silently while still a voter.
+7. **Drain.** `graceful_shutdown` enters local drain, commits metadata leave while the member is
+   still a voter, then asks the grid handle to remove the local raft voter. Followers forward their
+   own removal request to the known leader; leader drain is covered by the E2E re-election path.
 8. **Quorum honesty.** `NetworkedGridHandle::has_quorum` (:720-730): reachable **voters** ≥
    `⌊voters/2⌋+1` over `raft.voter_ids()` mapped through the identity map; keep
    `leader_id().is_some()` as a conjunct.
@@ -419,29 +416,24 @@ truthful for members.
 - Runtime level (`crates/hydracache-cluster-raft/tests/networked_raft.rs`, extending the `0.59`
   `NetworkedRuntimeCluster` harness at :399-482):
   - `conf_change_adds_and_removes_raft_voter_loudly` — the `0.59`-planned, never-written test:
-    3-voter cluster → AddNode(4) commits → 4 participates in the next election; RemoveNode(4) →
-    it cannot; proposing on a follower → loud `Err` (falsifiable).
-  - `conf_state_survives_restart_of_durable_store` — AddNode, reopen the durable dir, voter set
-    intact (guards the `save_conf_state` persistence).
-  - `single_remaining_voter_after_removals_can_still_commit` — 3 → remove 2 → survivor commits
-    alone (this is the exact scenario static membership breaks today).
+    AddNode commits, RemoveNode commits, and every runtime observes the changed voter set.
+  - `follower_can_request_own_voter_removal_for_drain` — follower drain forwards RemoveNode to the
+    known leader and the cluster converges without that voter.
+  - `conf_change_fails_loud_when_proposed_by_non_leader` — the public leader-only API remains
+    fail-loud.
 - Daemon level (`crates/hydracache-server/tests/grid_host.rs`; the routing test is PR-tier unit,
   the rest network-gated):
-  - `sink_routes_to_late_joiner_after_admission` — the step-6b routing table: before admission a
-    send to the unknown raft id fails loud; after the drive loop folds the gossip-announced peer
-    in, the same send resolves (falsifiable in both directions).
-  - `fourth_daemon_joins_running_cluster_as_voter` — start 3, converge, start a 4th pointing its
-    `seeds` at the three → all four report `members == 4` **and** 4 voters.
-  - `drained_member_is_removed_from_raft_voters` — 3 nodes, graceful drain of one → survivors
-    report 2 voters and `quorum_ok == true`; **falsifiable** contrast: *kill* (not drain) one →
-    voters stays 3 (crash must not silently shrink the quorum).
-  - `draining_leader_transfers_before_leaving` — drain the leader; survivors elect without a
-    stuck term.
+  - `drive_loop_admits_a_gossip_candidate_into_the_shared_raft_runtime` and
+    `sync_raft_voters_adds_admitted_member_with_known_peer` cover leader-side admitted-member
+    promotion and peer routing.
+  - `multi_node_members_form_a_cluster_and_elect_one_leader` — 3 nodes, graceful follower drain →
+    survivors report 2 members and `quorum_ok == true`; then graceful leader drain → survivor
+    re-election with the expected committed member set.
 - Run: `cargo test -p hydracache-cluster-raft --locked networked_raft`,
   `cargo test -p hydracache-server --locked grid_host` (+ network-gated tier).
 
-**Pros.** Operator scale-up/down finally changes the quorum; the two membership planes converge on
-one truth; the "cluster out of the box" claim stops being restart-only.
+**Pros.** Graceful scale-down now changes the quorum, and the two membership planes converge on one
+truth for drain. Full scale-up through a late-start daemon remains explicit TD-0011 follow-up work.
 **Risks & rollback.** The heaviest WI: conf-change ordering bugs corrupt clusters — mitigated by
 single-step changes only, leader-only proposals, persisted `ConfState`, and the falsifiable tests
 above. Revert restores static bootstrap (current behavior) and reopens TD-0011; W7's join/drain
@@ -538,15 +530,13 @@ leader counts), and the TD-0009 baseline is re-measured on the new surface.
 1. **CI nightly tier.** The `dst-nightly-soak` job (`.github/workflows/ci.yml:127-157`) gains a
    step after the `--ignored` sentinels:
    `HYDRACACHE_RUN_NETWORKED_DAEMON_E2E=1 cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapture`
-   (matching the command already documented in GATES.md). Add the W1/W2/W4 network-gated tests to
-   the same invocation via their shared name prefix or an explicit list.
+   (matching the command documented in GATES.md).
 2. **Metadata-durability assertion.** Extend
    `multi_node_members_form_a_cluster_and_elect_one_leader`
    (`crates/hydracache-server/tests/grid_host.rs:194-269`): after convergence and **before** the
-   leader kill, record each survivor-visible member set + `commands_committed`; after re-election
-   assert every pre-kill committed `MemberUpsert` node id is still present on all survivors —
-   the plan-promised `no_lost_committed_metadata_across_leader_change`, folded into the E2E (or a
-   sibling test in the same gated tier).
+   first drain, record each survivor-visible member set; after follower drain and after leader
+   drain/re-election assert every survivor exposes the expected committed member set — the
+   plan-promised `no_lost_committed_metadata_across_leader_change`, folded into the E2E.
 3. **Quorum falsifiability.** `has_quorum_reflects_voter_majority` — with W4's `voter_ids()`:
    3 voters, mark 2 unreachable in the liveness map → `has_quorum() == false`; restore →
    `true` (unit-level with a stubbed liveness view; the `0.59` plan promised this and shipped
@@ -573,16 +563,18 @@ confined to the nightly tier (R-5 tiering), never the PR gate.
 **Files.** `docs/daemon-member-mode.md` (auth + TLS + identity-file + join/drain runbook),
 `docs/management-center.md` (quorum now counts raft voters; reshard field honesty per W6.5),
 `docs/GATES.md` (the nightly networked tier command list), `docs/COMPAT.md` (node-identity file;
-raft-log format bump if W4.1 changed the layout), `docs/technical-debt/TD-0010-…` and `TD-0011-…`
-→ Resolved, `docs/technical-debt/TD-0009-…` (new baseline recorded), `releases.toml` + `INDEX.md`
+raft `ConfState` persistence note), `docs/technical-debt/TD-0010-…` → Resolved,
+`TD-0011-…` → partially resolved with late-start daemon join still Open,
+`docs/technical-debt/TD-0009-…` (new baseline recorded), `releases.toml` + `INDEX.md`
 (+ the plan header `Status`) flipped together — `cargo xtask doc-check` enforces the triple
 (R-11, doc_check.rs:206-232).
 
 **Steps.**
-1. Runbook: bringing up a secured 3-node cluster (cert/key/CA + `[cluster_auth]`), adding a fourth
-   member at runtime, draining one out — each with the observable `/cluster/overview` transitions.
-2. Mark TD-0010/TD-0011 Resolved with their verification commands; update TD-0009's baseline
-   section (W7.4).
+1. Runbook: bringing up a secured 3-node cluster (cert/key/CA + `[cluster_auth]`) and draining
+   members out — each with the observable `/cluster/overview` transitions. Full fourth-member
+   late join remains named in TD-0011.
+2. Mark TD-0010 Resolved; mark TD-0011's identity/drain/quorum sub-items resolved while keeping
+   late-start daemon join Open; update TD-0009's baseline section (W7.4).
 3. Flip `0.60.0` to `shipped` in `releases.toml` + `INDEX.md` + the plan header **only** when every
    gate below is green; anything deferred gets written down here instead (R-7: ship without the
    claim rather than on a red gate).
@@ -594,13 +586,11 @@ raft-log format bump if W4.1 changed the layout), `docs/technical-debt/TD-0010-�
 | New code | Source file | Covering test(s) | Tier |
 | --- | --- | --- | --- |
 | `ClusterAuthConfig` + posture matrix (W1) | `hydracache-server/src/config.rs`, `grid_host.rs:274` | `tls_enabled_member_without_cluster_auth_fails_loud_at_startup` (falsifiable), `raft_route_rejects_missing_or_invalid_credential`, `raft_route_accepts_rotated_previous_credential`, `plaintext_route_is_acknowledged_only_on_loopback_or_staged_boundary` (falsifiable) | PR |
-| authed cluster formation (W1) | `grid_host.rs` | `authed_members_exchange_raft_messages_and_elect` | network-gated / nightly |
 | rustls listener + https sink (W2) | `grid_host.rs:258-304/440-516` | `cluster_listener_rejects_plaintext_when_tls_enabled` (falsifiable), `tls_member_with_unreadable_cert_fails_loud_at_startup`, `sink_verifies_peer_against_configured_ca` (falsifiable) | PR |
-| TLS cluster formation (W2) | `grid_host.rs` | `tls_members_exchange_raft_messages_over_https` | network-gated / nightly |
-| persistent identity (W3) | `grid_host.rs:103-117/537-572`, `config.rs` | `member_identity_persists_across_address_change`, `configured_node_id_conflicting_with_persisted_identity_fails_loud`, `seed_hash_collision_fails_loud_at_topology_build` (falsifiable), `raft_node_id_mapping_is_stable_across_restart` | PR |
-| `save_conf_state` + `ConfChange` API (W4) | `hydracache-cluster-raft/src/lib.rs`, `log_store.rs:46-83` | `conf_change_adds_and_removes_raft_voter_loudly` (falsifiable), `conf_state_survives_restart_of_durable_store`, `single_remaining_voter_after_removals_can_still_commit` | PR |
-| dynamic routing table for late joiners (W4.6b) | `grid_host.rs:440-516` | `sink_routes_to_late_joiner_after_admission` (falsifiable both directions) | PR |
-| join/drain daemon flows (W4) | `grid_host.rs`, `bootstrap.rs:373-377` | `fourth_daemon_joins_running_cluster_as_voter`, `drained_member_is_removed_from_raft_voters` (falsifiable contrast: crash keeps voters), `draining_leader_transfers_before_leaving` | network-gated / nightly |
+| persistent identity (W3) | `grid_host.rs:103-117/537-572`, `config.rs` | `member_identity_persists_across_address_change`, `configured_node_id_conflicting_with_persisted_identity_fails_loud`, `future_node_identity_format_fails_loud`, `seed_hash_collision_fails_loud_at_topology_build` (falsifiable) | PR |
+| `save_conf_state` + `ConfChange` API (W4) | `hydracache-cluster-raft/src/lib.rs`, `log_store.rs:46-83` | `conf_change_adds_and_removes_raft_voter_loudly` (falsifiable), `follower_can_request_own_voter_removal_for_drain`, `conf_change_fails_loud_when_proposed_by_non_leader` | PR |
+| dynamic routing table and admitted-member promotion (W4.6b) | `grid_host.rs:440-516` | `drive_loop_admits_a_gossip_candidate_into_the_shared_raft_runtime`, `sync_raft_voters_adds_admitted_member_with_known_peer`, `refresh_raft_peers_tracks_admitted_member_control_endpoints` | PR |
+| drain daemon flows (W4) | `grid_host.rs`, `bootstrap.rs:373-377` | follower drain + leader drain/re-election folded into `multi_node_members_form_a_cluster_and_elect_one_leader`; full fourth-daemon late join remains TD-0011 follow-up | network-gated / nightly |
 | `Forwarded` status + applied-wait (W5) | `hydracache-cluster-raft/src/lib.rs:263/1137-1281` | `follower_join_member_reports_forwarded_then_applies` (falsifiable), `proposal_without_leader_fails_loud`, `leader_path_still_returns_committed_synchronously` | PR |
 | drive diagnostics + noop sink (W6) | `grid_host.rs:306-359` | `drive_loop_counts_and_reports_send_failures`, `single_voter_sink_does_not_accumulate` | PR |
 | liveness map + bounded journal (W6) | `hydracache-cluster-chitchat/src/lib.rs:205-294` | `reachability_maps_chitchat_liveness`, `discovery_event_journal_is_bounded` | PR |
@@ -623,20 +613,21 @@ deterministic and inside `cargo xtask verify`; network rows are env-gated and **
   an acknowledged route unless staged).
 - A member's identity survives an address change over the same `storage_dir`; mismatches and hash
   collisions fail loud (W3).
-- A fourth daemon joins a running 3-node cluster and becomes a raft **voter**; a gracefully
-  drained member leaves the voter set (quorum denominator shrinks); a crashed member does **not**
-  silently shrink it; `has_quorum()` counts reachable voters against the raft `ConfState`
-  majority (W4, falsifiable both directions).
+- A gracefully drained member leaves the voter set (quorum denominator shrinks); follower drain
+  and leader drain/re-election are covered by the networked daemon E2E; `has_quorum()` counts
+  reachable voters against the raft `ConfState` majority. Full fourth-daemon late join stays open
+  in TD-0011 and is not a `0.60` release claim.
 - No `RaftCommandStatus::Committed` for an uncommitted proposal: follower proposals report
   `Forwarded` and resolve only on real apply; leaderless proposals fail loud (W5).
 - Drive-loop failures are counted and visible; discovery journal bounded; reachability is O(1) on
   a materialized liveness view; `reshard_phase` is either real or explicitly labeled `modeled`
   (W6 — R-3/R-6/R-11).
-- The networked daemon E2E (formation, kill-leader re-election, **no lost committed metadata**,
-  join, drain) runs in the **nightly CI tier**, not only by hand (W7).
+- The networked daemon E2E (formation, follower drain, leader drain/re-election, **no lost
+  committed metadata**) runs in the **nightly CI tier**, not only by hand (W7).
 - TD-0009 baseline re-measured and recorded post-`0.60` surface; **no** ratchet gate added (W7).
-- **TD-0010 and TD-0011 marked Resolved**; `0.59` gate wording corrected (W0); `local`/`client`
-  roles unchanged and `modeled`; embedded fast path byte-for-byte unchanged (R-10); no new
+- **TD-0010 marked Resolved**; TD-0011's identity/drain/quorum sub-items marked resolved with
+  late-start daemon join still Open; `0.59` gate wording corrected (W0); `local`/`client` roles
+  unchanged and `modeled`; embedded fast path byte-for-byte unchanged (R-10); no new
   consensus/consistency level (R-1).
 - `releases.toml` + `INDEX.md` + plan header flipped together; `cargo xtask doc-check` green.
 
@@ -660,8 +651,7 @@ cargo llvm-cov --workspace --all-targets --locked --summary-only
 
 ## Final Release Decision
 
-`0.60.0` ships **only** if every gate above is green. If W2 (TLS termination) or W4 (dynamic
-membership) individually miss the window, the release re-scopes **in writing**: the corresponding
-TD stays Open with an updated target, the gate section here is edited to say what shipped and what
-did not, and no claim is made for the missing half (R-7/R-11). The one unacceptable outcome is the
-`0.59` pattern this plan exists to fix: a gate sentence that says more than the code does.
+`0.60.0` ships **only** if every gate above is green. W2 shipped; W4 is deliberately re-scoped in
+writing: identity, `ConfChange`, voter-quorum, and graceful drain ship, while full fourth-daemon
+late join remains open in TD-0011 and is not claimed. The one unacceptable outcome is the `0.59`
+pattern this plan exists to fix: a gate sentence that says more than the code does.

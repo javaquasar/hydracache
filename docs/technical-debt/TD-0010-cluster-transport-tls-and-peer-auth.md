@@ -2,11 +2,35 @@
 
 ## Status
 
-Open.
+Resolved on 2026-07-06 by the `0.60.0` Networked Grid Hardening work.
 
 Owner: server / cluster transport security.
 
-Candidate target: `0.60.0` Networked Grid Hardening (W1/W2).
+Shipped target: `0.60.0` Networked Grid Hardening (W1/W2).
+
+## Resolution
+
+`hydracache-server` member mode now wires the shipped cluster auth seam into
+the raft route and terminates TLS on the cluster listener when `tls.enabled` is
+set:
+
+- `[cluster_auth]` supplies `key_id` + `token_file`, with optional
+  `previous_*` rotation material, and `HttpRaftMessageSink` attaches outbound
+  credentials.
+- `tls.enabled = true` without `[cluster_auth]` fails loud at startup instead
+  of starting a cluster that rejects every inbound raft message.
+- The cluster listener uses rustls with the configured cert/key, and outbound
+  raft sends use `https://` verified against the configured CA.
+- Plaintext member transport remains available only for loopback/dev or an
+  explicitly acknowledged insecure staging boundary.
+
+Verification:
+
+```powershell
+cargo test -p hydracache-server --lib --locked grid_host::tests
+cargo test -p hydracache-server --test grid_host --locked
+cargo llvm-cov --workspace --all-targets --locked --summary-only
+```
 
 ## Context
 
