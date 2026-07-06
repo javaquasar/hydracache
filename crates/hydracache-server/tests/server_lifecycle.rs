@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,
-    ServerRuntime, ServerState, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerConfig,
+    ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
 };
 
 fn member_config() -> ServerConfig {
@@ -10,10 +10,12 @@ fn member_config() -> ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
+        node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from("target/test-hydracache-server")),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
@@ -62,18 +64,49 @@ fn server_lifecycle_invalid_config_fails_loud() {
         backup_without_location.validate(),
         Err(ServerConfigError::MissingBackupLocation)
     ));
+
+    let mut auth_without_token = member_config();
+    auth_without_token.cluster_auth.key_id = Some("k1".to_owned());
+    assert!(matches!(
+        auth_without_token.validate(),
+        Err(ServerConfigError::IncompleteClusterAuth { .. })
+    ));
+
+    let mut auth_with_missing_file = member_config();
+    auth_with_missing_file.cluster_auth.key_id = Some("k1".to_owned());
+    auth_with_missing_file.cluster_auth.token_file =
+        Some(PathBuf::from("target/test-hydracache-server/missing-token"));
+    assert!(matches!(
+        auth_with_missing_file.validate(),
+        Err(ServerConfigError::ClusterAuthTokenRead { .. })
+    ));
+
+    let mut empty_node_id = member_config();
+    empty_node_id.node_id = Some("   ".to_owned());
+    assert!(matches!(
+        empty_node_id.validate(),
+        Err(ServerConfigError::InvalidNodeId)
+    ));
 }
 
 #[test]
 fn server_lifecycle_toml_config_roundtrip_validates() {
+    std::fs::create_dir_all("target/test-hydracache-server").unwrap();
+    std::fs::write("target/test-hydracache-server/token", "secret\n").unwrap();
+
     let config = ServerConfig::from_toml_str(
         r#"
 role = "member"
 listen_addr = "127.0.0.1:18080"
 cluster_addr = "127.0.0.1:17000"
+node_id = "member-configured"
 seeds = ["127.0.0.1:17000"]
 storage_dir = "target/test-hydracache-server"
 drain_timeout_ms = 1000
+
+[cluster_auth]
+key_id = "k1"
+token_file = "target/test-hydracache-server/token"
 
 [admin_api]
 enabled = true
@@ -83,5 +116,6 @@ listen_addr = "127.0.0.1:19091"
     .unwrap();
 
     assert_eq!(config.role, ServerRole::Member);
+    assert_eq!(config.node_id.as_deref(), Some("member-configured"));
     assert_eq!(config.drain_timeout().as_millis(), 1_000);
 }

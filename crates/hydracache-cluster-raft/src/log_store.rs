@@ -51,6 +51,9 @@ pub trait RaftLogStore: Storage + Clone + Send + Sync + 'static {
     /// Persist term/vote/commit.
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()>;
 
+    /// Persist the current raft configuration state.
+    fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()>;
+
     /// Append entries, overwriting any existing suffix from `entries[0].index`.
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()>;
 
@@ -286,6 +289,15 @@ impl RaftLogStore for InMemoryRaftLogStore {
         Ok(())
     }
 
+    fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()> {
+        self.state
+            .write()
+            .expect("raft log store poisoned")
+            .raft_state
+            .conf_state = conf_state.clone();
+        Ok(())
+    }
+
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
         if entries.is_empty() {
             return Ok(());
@@ -512,6 +524,12 @@ impl RaftLogStore for DurableRaftLogStore {
         Ok(())
     }
 
+    fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()> {
+        self.inner.save_conf_state(conf_state)?;
+        self.record_sync();
+        Ok(())
+    }
+
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
         self.inner.append(entries)
     }
@@ -733,6 +751,9 @@ impl SledRaftLogStore {
             self.inner
                 .save_snapshot(&decode_snapshot(&bytes)?, usize::MAX)?;
         }
+        if let Some(bytes) = self.db.get(SLED_CONF_STATE_KEY).map_err(sled_error)? {
+            self.inner.save_conf_state(&decode_conf_state(&bytes)?)?;
+        }
         let entries = self
             .db
             .scan_prefix(SLED_ENTRY_PREFIX)
@@ -797,6 +818,14 @@ impl RaftLogStore for SledRaftLogStore {
         self.inner.save_hard_state(hard_state)?;
         self.db
             .insert(SLED_HARD_STATE_KEY, encode_hard_state(hard_state)?)
+            .map_err(sled_error)?;
+        self.sync()
+    }
+
+    fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()> {
+        self.inner.save_conf_state(conf_state)?;
+        self.db
+            .insert(SLED_CONF_STATE_KEY, encode_conf_state(conf_state)?)
             .map_err(sled_error)?;
         self.sync()
     }
@@ -918,6 +947,8 @@ impl SledRaftLogStore {
 #[cfg(feature = "sled-log-store")]
 const SLED_HARD_STATE_KEY: &[u8] = b"meta:hard_state";
 #[cfg(feature = "sled-log-store")]
+const SLED_CONF_STATE_KEY: &[u8] = b"meta:conf_state";
+#[cfg(feature = "sled-log-store")]
 const SLED_SNAPSHOT_KEY: &[u8] = b"meta:snapshot";
 #[cfg(feature = "sled-log-store")]
 const SLED_APPLIED_KEY: &[u8] = b"meta:applied";
@@ -980,6 +1011,18 @@ fn encode_hard_state(hard_state: &HardState) -> RaftStoreResult<Vec<u8>> {
 fn decode_hard_state(bytes: &[u8]) -> RaftStoreResult<HardState> {
     HardState::parse_from_bytes(bytes)
         .map_err(|error| RaftStoreError::new(format!("failed to decode hard state: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn encode_conf_state(conf_state: &ConfState) -> RaftStoreResult<Vec<u8>> {
+    protobuf::Message::write_to_bytes(conf_state)
+        .map_err(|error| RaftStoreError::new(format!("failed to encode conf state: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_conf_state(bytes: &[u8]) -> RaftStoreResult<ConfState> {
+    ConfState::parse_from_bytes(bytes)
+        .map_err(|error| RaftStoreError::new(format!("failed to decode conf state: {error}")))
 }
 
 #[cfg(feature = "sled-log-store")]

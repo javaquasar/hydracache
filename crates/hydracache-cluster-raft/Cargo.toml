@@ -20,6 +20,7 @@ protobuf.workspace = true
 raft.workspace = true
 sled = { workspace = true, optional = true }
 slog.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
 axum.workspace = true

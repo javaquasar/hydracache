@@ -107,10 +107,16 @@ pub use log_store::{
 pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult};
 
 use protobuf::Message as ProtobufMessage;
-use raft::eraftpb::{Entry, EntryType, Message as RaftMessage};
+use raft::eraftpb::{
+    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
+};
 use raft::storage::Storage;
 use raft::{Config, RawNode, StateRole};
 use slog::{o, Logger};
+use tokio::time::{sleep, Duration};
+
+const FORWARDED_APPLY_WAIT_ATTEMPTS: usize = 500;
+const FORWARDED_APPLY_WAIT_INTERVAL: Duration = Duration::from_millis(10);
 
 /// Configuration for an embedded raft-rs metadata runtime.
 #[derive(Debug, Clone)]
@@ -263,6 +269,8 @@ pub struct RaftCommandResult {
 pub enum RaftCommandStatus {
     /// Command was proposed, committed, and applied.
     Committed,
+    /// Command was accepted by raft-rs but has not been applied locally yet.
+    Forwarded,
     /// Command id was already applied and was skipped.
     Duplicate,
 }
@@ -759,6 +767,45 @@ where
         known_leader_id(state.raw_node.raft.leader_id)
     }
 
+    /// Return the current raft voter ids from the persisted conf state.
+    pub fn voter_ids(&self) -> CacheResult<Vec<u64>> {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        Ok(state
+            .raw_node
+            .raft
+            .raft_log
+            .store
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .voters)
+    }
+
+    /// Return whether a metadata command id has been applied locally.
+    pub fn command_applied(&self, command_id: &str) -> bool {
+        let state = self.raft.lock().expect("raft metadata state poisoned");
+        state.applied_command_ids.contains(command_id)
+    }
+
+    /// Propose adding a raft voter through raft-rs ConfChange.
+    pub fn propose_add_voter(&self, raft_node_id: u64) -> CacheResult<Vec<RaftWireMessage>> {
+        self.propose_voter_change(raft_node_id, ConfChangeType::AddNode)
+    }
+
+    /// Propose removing a raft voter through raft-rs ConfChange.
+    pub fn propose_remove_voter(&self, raft_node_id: u64) -> CacheResult<Vec<RaftWireMessage>> {
+        self.propose_voter_change(raft_node_id, ConfChangeType::RemoveNode)
+    }
+
+    /// Request removing a raft voter through raft-rs ConfChange.
+    ///
+    /// Unlike the leader-only `propose_remove_voter` helper, this allows a
+    /// follower with a known leader to forward its own graceful-drain removal.
+    pub fn request_remove_voter(&self, raft_node_id: u64) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.request_voter_change(raft_node_id, ConfChangeType::RemoveNode)
+    }
+
     /// Return a runtime snapshot.
     pub fn snapshot(&self) -> RaftMetadataRuntimeSnapshot {
         let state = self.raft.lock().expect("raft metadata state poisoned");
@@ -865,6 +912,31 @@ where
                 command_id,
                 command,
             })
+    }
+
+    async fn wait_for_forwarded_apply(&self, result: &RaftCommandResult) -> CacheResult<()> {
+        if result.status != RaftCommandStatus::Forwarded {
+            return Ok(());
+        }
+        for _ in 0..FORWARDED_APPLY_WAIT_ATTEMPTS {
+            if self.command_applied(&result.command_id) {
+                return Ok(());
+            }
+            sleep(FORWARDED_APPLY_WAIT_INTERVAL).await;
+        }
+        Err(CacheError::Backend(format!(
+            "raft metadata command {} was forwarded but not applied locally before timeout",
+            result.command_id
+        )))
+    }
+
+    fn propose_voter_change(
+        &self,
+        raft_node_id: u64,
+        change_type: ConfChangeType,
+    ) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        state.propose_voter_change(raft_node_id, change_type)
     }
 
     fn apply_recovered_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
@@ -1120,6 +1192,50 @@ impl<S> RaftRuntimeState<S>
 where
     S: RaftLogStore,
 {
+    fn propose_voter_change(
+        &mut self,
+        raft_node_id: u64,
+        change_type: ConfChangeType,
+    ) -> CacheResult<Vec<RaftWireMessage>> {
+        if self.raw_node.raft.state != StateRole::Leader {
+            return Err(CacheError::Backend(
+                "raft voter changes must be proposed by the leader".to_owned(),
+            ));
+        }
+        let mut change = ConfChange {
+            node_id: raft_node_id.max(1),
+            ..ConfChange::default()
+        };
+        change.set_change_type(change_type);
+        self.raw_node
+            .propose_conf_change(Vec::new(), change)
+            .map_err(to_cache_error)?;
+        self.drain_ready()
+    }
+
+    fn request_voter_change(
+        &mut self,
+        raft_node_id: u64,
+        change_type: ConfChangeType,
+    ) -> CacheResult<Vec<RaftWireMessage>> {
+        if self.raw_node.raft.state != StateRole::Leader
+            && known_leader_id(self.raw_node.raft.leader_id).is_none()
+        {
+            return Err(CacheError::Backend(
+                "raft voter changes require a known leader".to_owned(),
+            ));
+        }
+        let mut change = ConfChange {
+            node_id: raft_node_id.max(1),
+            ..ConfChange::default()
+        };
+        change.set_change_type(change_type);
+        self.raw_node
+            .propose_conf_change(Vec::new(), change)
+            .map_err(to_cache_error)?;
+        self.drain_ready()
+    }
+
     fn commit_command(
         &mut self,
         envelope: RaftMetadataCommandEnvelope,
@@ -1141,14 +1257,26 @@ where
             ));
         }
         let command_id = envelope.command_id.clone();
+        if self.raw_node.raft.state != StateRole::Leader
+            && known_leader_id(self.raw_node.raft.leader_id).is_none()
+        {
+            return Err(CacheError::Backend(
+                "no raft leader; retry metadata proposal after election".to_owned(),
+            ));
+        }
         self.raw_node
             .propose(vec![], encode_envelope(&envelope))
             .map_err(to_cache_error)?;
         let outbound = self.drain_ready()?;
         self.outbound_messages.extend(outbound);
+        let status = if self.applied_command_ids.contains(&command_id) {
+            RaftCommandStatus::Committed
+        } else {
+            RaftCommandStatus::Forwarded
+        };
         let result = RaftCommandResult {
             command_id,
-            status: RaftCommandStatus::Committed,
+            status,
             applied_index: self.applied_index,
         };
         self.results.push(result.clone());
@@ -1199,13 +1327,53 @@ where
     fn apply_committed_entries(&mut self, entries: Vec<Entry>) -> CacheResult<()> {
         for entry in entries {
             self.applied_index = entry.index;
-            if entry.data.is_empty() || entry.get_entry_type() != EntryType::EntryNormal {
+            if entry.data.is_empty() {
                 continue;
             }
-            let envelope = decode_envelope(entry.data.as_ref())?;
-            if self.applied_command_ids.insert(envelope.command_id.clone()) {
-                materialize_committed_command(&self.cluster, &envelope.command)?;
-                self.commands.push(envelope);
+            match entry.get_entry_type() {
+                EntryType::EntryNormal => {
+                    let envelope = decode_envelope(entry.data.as_ref())?;
+                    if self.applied_command_ids.insert(envelope.command_id.clone()) {
+                        materialize_committed_command(&self.cluster, &envelope.command)?;
+                        self.commands.push(envelope);
+                    }
+                }
+                EntryType::EntryConfChange => {
+                    let change =
+                        ConfChange::parse_from_bytes(entry.data.as_ref()).map_err(|error| {
+                            CacheError::Decode(format!(
+                                "failed to decode raft conf change: {error}"
+                            ))
+                        })?;
+                    let conf_state = self
+                        .raw_node
+                        .apply_conf_change(&change)
+                        .map_err(to_cache_error)?;
+                    self.raw_node
+                        .raft
+                        .raft_log
+                        .store
+                        .save_conf_state(&conf_state)
+                        .map_err(to_cache_error)?;
+                }
+                EntryType::EntryConfChangeV2 => {
+                    let change =
+                        ConfChangeV2::parse_from_bytes(entry.data.as_ref()).map_err(|error| {
+                            CacheError::Decode(format!(
+                                "failed to decode raft conf change v2: {error}"
+                            ))
+                        })?;
+                    let conf_state = self
+                        .raw_node
+                        .apply_conf_change(&change)
+                        .map_err(to_cache_error)?;
+                    self.raw_node
+                        .raft
+                        .raft_log
+                        .store
+                        .save_conf_state(&conf_state)
+                        .map_err(to_cache_error)?;
+                }
             }
         }
         Ok(())
@@ -1242,15 +1410,17 @@ where
                 return Ok(member);
             }
         }
+        self.wait_for_forwarded_apply(&result).await?;
         if let Some(member) =
             find_materialized(&self.cluster, &candidate.node_id, ClusterRole::Member)
         {
             self.persist_metadata()?;
             return Ok(member);
         }
-        let member = self.cluster.join_member(candidate)?;
-        self.persist_metadata()?;
-        Ok(member)
+        Err(CacheError::Backend(format!(
+            "committed raft metadata command {} did not materialize member {}",
+            result.command_id, candidate.node_id
+        )))
     }
 
     async fn join_client(&self, candidate: ClusterCandidate) -> CacheResult<ClusterMember> {
@@ -1270,15 +1440,17 @@ where
                 return Ok(member);
             }
         }
+        self.wait_for_forwarded_apply(&result).await?;
         if let Some(member) =
             find_materialized(&self.cluster, &candidate.node_id, ClusterRole::Client)
         {
             self.persist_metadata()?;
             return Ok(member);
         }
-        let member = self.cluster.join_client(candidate)?;
-        self.persist_metadata()?;
-        Ok(member)
+        Err(CacheError::Backend(format!(
+            "committed raft metadata command {} did not materialize client {}",
+            result.command_id, candidate.node_id
+        )))
     }
 
     async fn validate_generation(
@@ -1310,6 +1482,7 @@ where
         if result.status == RaftCommandStatus::Duplicate {
             return Ok(None);
         }
+        self.wait_for_forwarded_apply(&result).await?;
         if predicted_leave_epoch(&self.cluster, node_id).is_none() {
             self.persist_metadata()?;
             return Ok(Some(ClusterMembershipEvent::NodeLeft {
@@ -1318,9 +1491,10 @@ where
                 epoch,
             }));
         }
-        let event = self.cluster.leave(node_id, generation)?;
-        self.persist_metadata()?;
-        Ok(event)
+        Err(CacheError::Backend(format!(
+            "committed raft metadata command {} did not materialize leave for {}",
+            result.command_id, node_id
+        )))
     }
 
     fn subscribe_membership(&self) -> ClusterMembershipSubscriber {

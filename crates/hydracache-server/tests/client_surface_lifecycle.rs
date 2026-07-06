@@ -8,8 +8,8 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_CLIENT_ID_HEADER, HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerRole, ServerRuntime,
-    TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerConfig, ServerRole,
+    ServerRuntime, TlsConfig,
 };
 use tower::ServiceExt;
 
@@ -18,12 +18,14 @@ fn member_config_with_client_surface() -> ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
+        node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from(
             "target/test-hydracache-server-client-surface",
         )),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig {
             enabled: true,

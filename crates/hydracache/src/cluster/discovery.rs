@@ -21,6 +21,17 @@ pub enum ClusterDiscoveryEvent {
     MemberDead(ClusterNodeId),
 }
 
+/// Latest liveness state observed by a discovery adapter.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClusterDiscoveryLiveness {
+    /// The node is currently considered live.
+    Live,
+    /// The node is suspected unhealthy, but not declared dead.
+    Suspect,
+    /// The node is considered dead or unreachable by discovery.
+    Dead,
+}
+
 /// Transport-neutral discovery contract for cluster candidates and liveness.
 ///
 /// This is the seam where future chitchat, DNS, mDNS, or P2P discovery
@@ -46,12 +57,21 @@ pub trait ClusterDiscovery: fmt::Debug + Send + Sync {
 
     /// Return discovery events recorded by this adapter.
     fn events(&self) -> Vec<ClusterDiscoveryEvent>;
+
+    /// Return the latest liveness state by node id.
+    ///
+    /// Adapters with a materialized liveness map should override this method.
+    /// The default derives the same answer from the retained event journal.
+    fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        liveness_from_events(self.events())
+    }
 }
 
 #[derive(Debug, Default)]
 struct InMemoryClusterDiscoveryState {
     candidates: BTreeMap<ClusterNodeId, ClusterCandidate>,
     events: Vec<ClusterDiscoveryEvent>,
+    liveness: BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness>,
 }
 
 /// In-memory discovery journal for tests, demos, and future adapter contracts.
@@ -98,11 +118,9 @@ impl InMemoryClusterDiscovery {
     }
 
     fn push_liveness(&self, event: ClusterDiscoveryEvent) {
-        self.state
-            .lock()
-            .expect("cluster discovery poisoned")
-            .events
-            .push(event);
+        let mut state = self.state.lock().expect("cluster discovery poisoned");
+        update_liveness(&mut state.liveness, &event);
+        state.events.push(event);
     }
 
     /// Return the latest candidate snapshot for every discovered node id.
@@ -122,6 +140,15 @@ impl InMemoryClusterDiscovery {
             .lock()
             .expect("cluster discovery poisoned")
             .events
+            .clone()
+    }
+
+    /// Return the latest liveness state by node id.
+    pub fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        self.state
+            .lock()
+            .expect("cluster discovery poisoned")
+            .liveness
             .clone()
     }
 }
@@ -154,6 +181,10 @@ impl ClusterDiscovery for InMemoryClusterDiscovery {
 
     fn events(&self) -> Vec<ClusterDiscoveryEvent> {
         InMemoryClusterDiscovery::events(self)
+    }
+
+    fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        InMemoryClusterDiscovery::liveness(self)
     }
 }
 
@@ -275,6 +306,11 @@ impl ChitchatStyleDiscovery {
     pub fn events(&self) -> Vec<ClusterDiscoveryEvent> {
         self.inner.events()
     }
+
+    /// Return the latest liveness state by node id.
+    pub fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        self.inner.liveness()
+    }
 }
 
 impl Default for ChitchatStyleDiscovery {
@@ -311,5 +347,37 @@ impl ClusterDiscovery for ChitchatStyleDiscovery {
 
     fn events(&self) -> Vec<ClusterDiscoveryEvent> {
         ChitchatStyleDiscovery::events(self)
+    }
+
+    fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        ChitchatStyleDiscovery::liveness(self)
+    }
+}
+
+fn liveness_from_events(
+    events: Vec<ClusterDiscoveryEvent>,
+) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+    let mut liveness = BTreeMap::new();
+    for event in events {
+        update_liveness(&mut liveness, &event);
+    }
+    liveness
+}
+
+fn update_liveness(
+    liveness: &mut BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness>,
+    event: &ClusterDiscoveryEvent,
+) {
+    match event {
+        ClusterDiscoveryEvent::MemberLive(node_id) => {
+            liveness.insert(node_id.clone(), ClusterDiscoveryLiveness::Live);
+        }
+        ClusterDiscoveryEvent::MemberSuspect(node_id) => {
+            liveness.insert(node_id.clone(), ClusterDiscoveryLiveness::Suspect);
+        }
+        ClusterDiscoveryEvent::MemberDead(node_id) => {
+            liveness.insert(node_id.clone(), ClusterDiscoveryLiveness::Dead);
+        }
+        ClusterDiscoveryEvent::CandidateSeen(_) | ClusterDiscoveryEvent::MemberLeaving { .. } => {}
     }
 }

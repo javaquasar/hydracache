@@ -5,8 +5,9 @@ use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
 use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration, ClusterNodeId};
 use hydracache_cluster_raft::{
-    InMemoryRaftLogStore, InMemoryRaftMessageSink, RaftLogStore, RaftMessageSink,
-    RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole, RaftWireMessage,
+    InMemoryRaftLogStore, InMemoryRaftMessageSink, RaftCommandStatus, RaftLogStore,
+    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole,
+    RaftWireMessage,
 };
 use hydracache_cluster_transport_axum::{
     AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck, ClusterOpaqueMessage,
@@ -115,7 +116,10 @@ struct NetworkedRuntimeCluster {
 
 impl NetworkedRuntimeCluster {
     fn three_node() -> Self {
-        let voters = vec![1, 2, 3];
+        Self::with_voters(vec![1, 2, 3])
+    }
+
+    fn with_voters(voters: Vec<u64>) -> Self {
         let nodes = voters
             .iter()
             .copied()
@@ -174,12 +178,31 @@ impl NetworkedRuntimeCluster {
             return Vec::new();
         };
         self.delivered.push(message.clone());
-        node.step(message).unwrap()
+        match node.step(message) {
+            Ok(messages) => messages,
+            Err(error) if error.to_string().contains("peer not found") => Vec::new(),
+            Err(error) => panic!("runtime raft harness failed to deliver message: {error}"),
+        }
     }
 
     fn delivered_count(&self) -> usize {
         self.delivered.len()
     }
+}
+
+async fn wait_for_status(runtime: &RaftMetadataRuntime, status: RaftCommandStatus) {
+    for _ in 0..100 {
+        if runtime
+            .snapshot()
+            .last_result
+            .as_ref()
+            .is_some_and(|result| result.status == status)
+        {
+            return;
+        }
+        tokio::task::yield_now().await;
+    }
+    panic!("runtime did not report {status:?}");
 }
 
 impl NetworkedRawNodeCluster {
@@ -414,11 +437,19 @@ async fn runtime_replicates_member_upsert_to_all_voters() {
     cluster.campaign(1);
     let leader = cluster.node(1);
 
-    leader
-        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
-        .await
-        .unwrap();
+    let join = tokio::spawn({
+        let leader = leader.clone();
+        async move {
+            leader
+                .join_member(
+                    ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+                )
+                .await
+        }
+    });
+    wait_for_status(&leader, RaftCommandStatus::Forwarded).await;
     cluster.drain_until_idle(leader.take_outbound_messages());
+    join.await.unwrap().unwrap();
 
     for node_id in [1, 2, 3] {
         assert!(
@@ -440,6 +471,118 @@ async fn runtime_replicates_member_upsert_to_all_voters() {
             "node {node_id} did not materialize member-a"
         );
     }
+}
+
+#[test]
+fn conf_change_adds_and_removes_raft_voter_loudly() {
+    let mut two_node = NetworkedRuntimeCluster::with_voters(vec![1, 2]);
+    two_node.campaign(1);
+    let add_messages = two_node.node(1).propose_add_voter(3).unwrap();
+    two_node.drain_until_idle(add_messages);
+
+    for node_id in [1, 2] {
+        assert_eq!(two_node.node(node_id).voter_ids().unwrap(), vec![1, 2, 3]);
+    }
+
+    let mut three_node = NetworkedRuntimeCluster::three_node();
+    three_node.campaign(1);
+    let remove_messages = three_node.node(1).propose_remove_voter(3).unwrap();
+    three_node.drain_until_idle(remove_messages);
+
+    for node_id in [1, 2, 3] {
+        assert_eq!(three_node.node(node_id).voter_ids().unwrap(), vec![1, 2]);
+    }
+}
+
+#[test]
+fn follower_can_request_own_voter_removal_for_drain() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.campaign(1);
+
+    let remove_messages = cluster.node(2).request_remove_voter(2).unwrap();
+    cluster.drain_until_idle(remove_messages);
+
+    for node_id in [1, 2, 3] {
+        assert_eq!(cluster.node(node_id).voter_ids().unwrap(), vec![1, 3]);
+    }
+}
+
+#[tokio::test]
+async fn follower_join_member_reports_forwarded_then_applies() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.campaign(1);
+    let follower = cluster.node(2);
+    let member_node = ClusterNodeId::from("member-follower");
+
+    let join = tokio::spawn({
+        let follower = follower.clone();
+        let member_node = member_node.clone();
+        async move {
+            follower
+                .join_member(
+                    ClusterCandidate::member(member_node).generation(ClusterGeneration::new(1)),
+                )
+                .await
+        }
+    });
+    wait_for_status(&follower, RaftCommandStatus::Forwarded).await;
+
+    cluster.drain_until_idle(follower.take_outbound_messages());
+    let member = join.await.unwrap().unwrap();
+
+    assert_eq!(member.node_id, member_node);
+    assert!(cluster
+        .node(2)
+        .command_applied("member-upsert:member-follower:1"));
+}
+
+#[tokio::test]
+async fn proposal_without_leader_fails_loud() {
+    let runtime = RaftMetadataRuntime::with_config(RaftMetadataRuntimeConfig::multi_voter(
+        "orders",
+        1,
+        [1, 2, 3],
+    ))
+    .unwrap();
+
+    let error = runtime
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+        .await
+        .unwrap_err();
+
+    assert!(
+        error.to_string().contains("no raft leader"),
+        "leaderless proposal should fail loud: {error}"
+    );
+}
+
+#[tokio::test]
+async fn leader_path_still_returns_committed_synchronously() {
+    let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+
+    runtime
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+        .await
+        .unwrap();
+
+    assert_eq!(
+        runtime.snapshot().last_result.unwrap().status,
+        RaftCommandStatus::Committed
+    );
+    assert!(runtime.command_applied("member-upsert:member-a:1"));
+}
+
+#[test]
+fn conf_change_fails_loud_when_proposed_by_non_leader() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.campaign(1);
+
+    let error = cluster.node(2).propose_add_voter(4).unwrap_err();
+
+    assert!(
+        error.to_string().contains("must be proposed by the leader"),
+        "non-leader conf change should fail loud: {error}"
+    );
 }
 
 #[test]

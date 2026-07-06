@@ -4,8 +4,9 @@ use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
 use hydracache_client_transport_axum::{AxumClientSurface, ClientSurfaceLimits};
 use hydracache_server::{
-    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ServerConfig, ServerRole,
-    ServerRuntime, TlsConfig, ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_METRICS_PATH,
+    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
+    ServerConfig, ServerRole, ServerRuntime, TlsConfig, ADMIN_CLUSTER_OVERVIEW_PATH,
+    ADMIN_METRICS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -134,10 +135,12 @@ fn member_config() -> ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
+        node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from("target/test-hydracache-deploy-smoke")),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
+        cluster_auth: ClusterAuthConfig::default(),
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),

@@ -79,8 +79,10 @@ Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env
 ```
 
 The networked daemon grid E2E is opt-in because it opens loopback TCP/UDP
-listeners and intentionally drops a live leader. The fast `grid_host` suite
-proves the skip path; the live loopback gate is:
+listeners and drives live daemon membership changes. The fast `grid_host` suite
+proves the skip path; the live loopback gate forms three daemons, verifies the
+committed member set, drains a follower, then drains the active leader and waits
+for survivor re-election:
 
 ```powershell
 $env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'

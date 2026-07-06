@@ -9,9 +9,9 @@ use hydracache_client_transport_axum::{
     HYDRACACHE_TENANT_HEADER,
 };
 use hydracache_server::{
-    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ServerConfig, ServerRole,
-    ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_CONSOLE_PATH, ADMIN_DRAIN_PATH,
-    ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
+    ServerConfig, ServerRole, ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_CONSOLE_PATH,
+    ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -24,10 +24,12 @@ mod admin_http {
             role: ServerRole::Member,
             listen_addr: "127.0.0.1:18080".parse().unwrap(),
             cluster_addr: "127.0.0.1:0".parse().unwrap(),
+            node_id: None,
             seeds: vec!["127.0.0.1:0".to_owned()],
             storage_dir: Some(PathBuf::from("target/test-hydracache-server-admin")),
             drain_timeout_ms: 1_000,
             tls: TlsConfig::default(),
+            cluster_auth: ClusterAuthConfig::default(),
             backup: BackupConfig::default(),
             client_api: ClientApiConfig::default(),
             admin_api: AdminApiConfig::default(),

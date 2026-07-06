@@ -43,8 +43,8 @@ status still has a local placeholder.
 For `role = "member"`, the daemon hosts the networked grid stack: durable
 `RaftMetadataRuntime`, chitchat discovery, and the cluster raft transport. It
 emits `source:"live"` from the same raft-backed membership authority used by the
-cache, so `/cluster/overview` can report a real elected leader. `local` and
-`client` roles stay `modeled`.
+cache, so `/cluster/overview` can report a real elected leader and quorum from
+reachable raft voters. `local` and `client` roles stay `modeled`.
 
 The historical W6b follow-up is closed as
 [`TD-0008`](technical-debt/TD-0008-networked-daemon-grid-hosting.md). The
@@ -66,6 +66,10 @@ fallback.
 It is a view, not a linearizable read. Consumers should poll it and replace the
 whole view. They should not infer hidden members, a current consistency level, or
 backup freshness from absent fields.
+
+For the networked member grid, `quorum_ok` is live voter-majority state. The
+`lifecycle.reshard_phase` field remains an honest lifecycle label; it is `idle`
+unless a real reshard runtime has supplied a non-idle phase.
 
 ## Actuator JSON
 

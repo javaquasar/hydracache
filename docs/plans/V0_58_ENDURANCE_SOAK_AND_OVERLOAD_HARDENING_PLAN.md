@@ -28,7 +28,6 @@
 >   (operator + kind harness). Independent of `0.54`/`0.55`/`0.57`.
 > - **Blueprint:** TigerBeetle **VOPR** ("the VOPR runs forever"), FoundationDB simulation-soak
 >   discipline, `COMPETITIVE_ANALYSIS_AND_EVOLUTION.md` soak thread.
-> - **Status:** planned.
 >
 > Roadmap & sequencing: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md) ·

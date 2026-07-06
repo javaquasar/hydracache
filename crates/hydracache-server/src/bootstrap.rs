@@ -329,6 +329,11 @@ impl ServerRuntime {
 
     /// Stop accepting new work and enter the draining state.
     pub fn begin_drain(&mut self) {
+        self.begin_local_drain();
+        self.cluster_status.begin_drain();
+    }
+
+    fn begin_local_drain(&mut self) {
         if matches!(self.state, ServerState::Stopped) {
             return;
         }
@@ -353,8 +358,9 @@ impl ServerRuntime {
                 timed_out: false,
             });
         }
-        self.begin_drain();
+        self.begin_local_drain();
         self.leave_cluster_for_shutdown();
+        self.cluster_status.begin_drain();
         let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
         self.flushed = true;
         self.storage_open = false;
