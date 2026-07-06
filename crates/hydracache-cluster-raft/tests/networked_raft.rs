@@ -115,7 +115,10 @@ struct NetworkedRuntimeCluster {
 
 impl NetworkedRuntimeCluster {
     fn three_node() -> Self {
-        let voters = vec![1, 2, 3];
+        Self::with_voters(vec![1, 2, 3])
+    }
+
+    fn with_voters(voters: Vec<u64>) -> Self {
         let nodes = voters
             .iter()
             .copied()
@@ -174,7 +177,11 @@ impl NetworkedRuntimeCluster {
             return Vec::new();
         };
         self.delivered.push(message.clone());
-        node.step(message).unwrap()
+        match node.step(message) {
+            Ok(messages) => messages,
+            Err(error) if error.to_string().contains("peer not found") => Vec::new(),
+            Err(error) => panic!("runtime raft harness failed to deliver message: {error}"),
+        }
     }
 
     fn delivered_count(&self) -> usize {
@@ -440,6 +447,40 @@ async fn runtime_replicates_member_upsert_to_all_voters() {
             "node {node_id} did not materialize member-a"
         );
     }
+}
+
+#[test]
+fn conf_change_adds_and_removes_raft_voter_loudly() {
+    let mut two_node = NetworkedRuntimeCluster::with_voters(vec![1, 2]);
+    two_node.campaign(1);
+    let add_messages = two_node.node(1).propose_add_voter(3).unwrap();
+    two_node.drain_until_idle(add_messages);
+
+    for node_id in [1, 2] {
+        assert_eq!(two_node.node(node_id).voter_ids().unwrap(), vec![1, 2, 3]);
+    }
+
+    let mut three_node = NetworkedRuntimeCluster::three_node();
+    three_node.campaign(1);
+    let remove_messages = three_node.node(1).propose_remove_voter(3).unwrap();
+    three_node.drain_until_idle(remove_messages);
+
+    for node_id in [1, 2, 3] {
+        assert_eq!(three_node.node(node_id).voter_ids().unwrap(), vec![1, 2]);
+    }
+}
+
+#[test]
+fn conf_change_fails_loud_when_proposed_by_non_leader() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.campaign(1);
+
+    let error = cluster.node(2).propose_add_voter(4).unwrap_err();
+
+    assert!(
+        error.to_string().contains("must be proposed by the leader"),
+        "non-leader conf change should fail loud: {error}"
+    );
 }
 
 #[test]

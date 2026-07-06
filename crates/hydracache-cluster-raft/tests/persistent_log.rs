@@ -1,6 +1,6 @@
 use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration};
 use hydracache_cluster_raft::{InMemoryRaftLogStore, RaftLogStore, RaftMetadataRuntime};
-use raft::eraftpb::{Entry, Snapshot};
+use raft::eraftpb::{ConfState, Entry, Snapshot};
 use raft::storage::{GetEntriesContext, Storage};
 use raft::{Error as RaftError, StorageError};
 
@@ -52,6 +52,20 @@ fn persistent_log_snapshot_recovery_after_restart() {
     assert_eq!(state.hard_state.term, 3);
     assert_eq!(state.conf_state.voters, vec![1]);
     assert_eq!(store.first_index().unwrap(), 8);
+}
+
+#[test]
+fn persistent_log_conf_state_updates_initial_state() {
+    let store = InMemoryRaftLogStore::new_with_conf_state((vec![1], vec![]));
+    let mut conf_state = ConfState::default();
+    conf_state.voters = vec![1, 2];
+
+    store
+        .save_conf_state(&conf_state)
+        .expect("conf state saved");
+
+    let state = store.initial_state().expect("initial state");
+    assert_eq!(state.conf_state.voters, vec![1, 2]);
 }
 
 #[tokio::test]
