@@ -461,6 +461,7 @@ struct RaftRuntimeState<S>
 where
     S: RaftLogStore,
 {
+    cluster: Arc<InMemoryCluster>,
     raw_node: RawNode<S>,
     commands: Vec<RaftMetadataCommandEnvelope>,
     applied_command_ids: BTreeSet<String>,
@@ -489,7 +490,7 @@ pub struct RaftMetadataRuntime<S = InMemoryRaftLogStore>
 where
     S: RaftLogStore,
 {
-    cluster: InMemoryCluster,
+    cluster: Arc<InMemoryCluster>,
     raft_node_id: u64,
     raft: Mutex<RaftRuntimeState<S>>,
     metadata_store: Option<Arc<dyn RaftMetadataStore>>,
@@ -625,7 +626,9 @@ where
             raw_node.campaign().map_err(to_cache_error)?;
         }
 
+        let cluster = Arc::new(InMemoryCluster::new(cluster_name));
         let mut state = RaftRuntimeState {
+            cluster: cluster.clone(),
             raw_node,
             commands: Vec::new(),
             applied_command_ids: BTreeSet::new(),
@@ -638,7 +641,7 @@ where
         let _ = state.drain_ready()?;
 
         let runtime = Self {
-            cluster: InMemoryCluster::new(cluster_name),
+            cluster,
             raft_node_id,
             raft: Mutex::new(state),
             metadata_store,
@@ -1074,6 +1077,45 @@ fn materialize_command(
     }
 }
 
+fn materialize_committed_command(
+    cluster: &InMemoryCluster,
+    command: &RaftMetadataCommand,
+) -> CacheResult<()> {
+    match command {
+        RaftMetadataCommand::MemberUpsert {
+            node_id,
+            generation,
+            ..
+        } => {
+            if find_materialized(cluster, node_id, ClusterRole::Member)
+                .is_some_and(|member| member.generation >= *generation)
+            {
+                return Ok(());
+            }
+        }
+        RaftMetadataCommand::ClientUpsert {
+            node_id,
+            generation,
+            ..
+        } => {
+            if find_materialized(cluster, node_id, ClusterRole::Client)
+                .is_some_and(|member| member.generation >= *generation)
+            {
+                return Ok(());
+            }
+        }
+        RaftMetadataCommand::NodeLeft { node_id, .. } => {
+            let present = find_materialized(cluster, node_id, ClusterRole::Member).is_some()
+                || find_materialized(cluster, node_id, ClusterRole::Client).is_some();
+            if !present {
+                return Ok(());
+            }
+        }
+        RaftMetadataCommand::CommitTopology { .. } => return Ok(()),
+    }
+    materialize_command(cluster, command).map(|_| ())
+}
+
 impl<S> RaftRuntimeState<S>
 where
     S: RaftLogStore,
@@ -1162,6 +1204,7 @@ where
             }
             let envelope = decode_envelope(entry.data.as_ref())?;
             if self.applied_command_ids.insert(envelope.command_id.clone()) {
+                materialize_committed_command(&self.cluster, &envelope.command)?;
                 self.commands.push(envelope);
             }
         }
@@ -1199,6 +1242,12 @@ where
                 return Ok(member);
             }
         }
+        if let Some(member) =
+            find_materialized(&self.cluster, &candidate.node_id, ClusterRole::Member)
+        {
+            self.persist_metadata()?;
+            return Ok(member);
+        }
         let member = self.cluster.join_member(candidate)?;
         self.persist_metadata()?;
         Ok(member)
@@ -1220,6 +1269,12 @@ where
             {
                 return Ok(member);
             }
+        }
+        if let Some(member) =
+            find_materialized(&self.cluster, &candidate.node_id, ClusterRole::Client)
+        {
+            self.persist_metadata()?;
+            return Ok(member);
         }
         let member = self.cluster.join_client(candidate)?;
         self.persist_metadata()?;
@@ -1254,6 +1309,14 @@ where
         let result = self.commit_command(command_id_for(&command), command)?;
         if result.status == RaftCommandStatus::Duplicate {
             return Ok(None);
+        }
+        if predicted_leave_epoch(&self.cluster, node_id).is_none() {
+            self.persist_metadata()?;
+            return Ok(Some(ClusterMembershipEvent::NodeLeft {
+                node_id: node_id.clone(),
+                role,
+                epoch,
+            }));
         }
         let event = self.cluster.leave(node_id, generation)?;
         self.persist_metadata()?;

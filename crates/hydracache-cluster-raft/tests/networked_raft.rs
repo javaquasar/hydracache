@@ -431,6 +431,14 @@ async fn runtime_replicates_member_upsert_to_all_voters() {
             }),
             "node {node_id} did not apply member-a"
         );
+        assert!(
+            cluster
+                .node(node_id)
+                .members()
+                .iter()
+                .any(|member| member.node_id.as_str() == "member-a"),
+            "node {node_id} did not materialize member-a"
+        );
     }
 }
 
