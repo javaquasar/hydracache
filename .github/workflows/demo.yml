@@ -67,11 +67,24 @@ jobs:
           HYDRACACHE_DEMO_URL: http://127.0.0.1:5173/demo/
         run: npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js
 
+      - name: Prepare Pages artifact
+        if: github.ref == 'refs/heads/main'
+        run: |
+          rm -rf target/demo-pages
+          mkdir -p target/demo-pages
+          cp demo/index.html demo/app.js demo/style.css demo/scenarios.js demo/share.js target/demo-pages/
+          cp -R demo/pkg target/demo-pages/pkg
+          touch target/demo-pages/.nojekyll
+
+      - name: Configure Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: demo
+          path: target/demo-pages
 
   deploy:
     name: Publish demo

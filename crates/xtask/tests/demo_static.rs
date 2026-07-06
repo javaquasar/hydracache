@@ -179,11 +179,18 @@ fn demo_static_files_are_wired_to_real_wasm_snapshot() {
     assert!(workflow.contains(
         "npx --prefix demo playwright test demo/tests/ui_smoke.spec.js demo/tests/seed_share.spec.js",
     ));
+    assert!(workflow.contains("rm -rf target/demo-pages"));
+    assert!(workflow
+        .contains("cp demo/index.html demo/app.js demo/style.css demo/scenarios.js demo/share.js target/demo-pages/"));
+    assert!(workflow.contains("cp -R demo/pkg target/demo-pages/pkg"));
+    assert!(workflow.contains("touch target/demo-pages/.nojekyll"));
+    assert!(workflow.contains("actions/configure-pages"));
     assert!(workflow.contains("branches:"));
     assert!(workflow.contains("- main"));
     assert!(!workflow.contains("name: Serve demo"));
     assert!(!workflow.contains("demo-server.pid"));
     assert!(workflow.contains("actions/upload-pages-artifact"));
+    assert!(workflow.contains("path: target/demo-pages"));
     assert!(workflow.contains("actions/deploy-pages"));
     assert!(!workflow.contains("pull_request:"));
 
