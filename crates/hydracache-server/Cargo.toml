@@ -21,6 +21,7 @@ hydracache-cluster-chitchat.workspace = true
 hydracache-cluster-raft.workspace = true
 hydracache-cluster-transport-axum.workspace = true
 hydracache-observability.workspace = true
+reqwest.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 tokio.workspace = true

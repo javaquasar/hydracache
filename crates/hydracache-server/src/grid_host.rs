@@ -1,7 +1,9 @@
+use std::collections::BTreeMap;
 use std::env;
 use std::fmt;
 use std::fs;
 use std::future::Future;
+use std::net::SocketAddr;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
@@ -18,7 +20,7 @@ use hydracache_cluster_raft::{
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AxumClusterMessageService, ClusterMessageAck, ClusterMessageHandler,
-    ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
+    ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth, DEFAULT_RAFT_APPEND_PATH,
 };
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -29,6 +31,7 @@ use crate::config::{ServerConfig, ServerConfigError};
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
+const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 
 type NetworkedRaftRuntime = RaftMetadataRuntime<DurableRaftLogStore>;
 
@@ -101,6 +104,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let node_id = member_node_id(config);
     let generation = ClusterGeneration::new(1);
     let raft_node_id = raft_node_id(&node_id);
+    let topology = raft_topology(config, node_id.clone(), raft_node_id);
     let storage_dir = config.storage_dir.as_ref().ok_or_else(|| {
         CacheError::Backend("member role requires storage_dir before grid host startup".to_owned())
     })?;
@@ -112,9 +116,13 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         ))
     })?;
 
-    let raft_config =
-        RaftMetadataRuntimeConfig::multi_voter(DEFAULT_CLUSTER_NAME, raft_node_id, [raft_node_id])
-            .auto_campaign(true);
+    let raft_config = RaftMetadataRuntimeConfig::multi_voter(
+        DEFAULT_CLUSTER_NAME,
+        raft_node_id,
+        topology.voters.clone(),
+    )
+    .auto_campaign(!topology.multi_voter)
+    .ticks(5, 1);
     let raft = Arc::new(RaftMetadataRuntime::durable_with_config(
         raft_config,
         DurableRaftLogDirectory::new(),
@@ -132,17 +140,15 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         .await?,
     );
     let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
-    let message_sink: Arc<dyn RaftMessageSink> = Arc::new(InMemoryRaftMessageSink::default());
-
-    let cache = networked_member_cache(
-        config,
-        raft.clone(),
-        discovery.clone(),
-        node_id.clone(),
-        generation,
-    )
-    .await?;
-
+    let message_sink: Arc<dyn RaftMessageSink> = if topology.multi_voter {
+        Arc::new(HttpRaftMessageSink::new(
+            node_id.clone(),
+            raft_node_id,
+            topology.peers.clone(),
+        ))
+    } else {
+        Arc::new(InMemoryRaftMessageSink::default())
+    };
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
         raft.clone(),
@@ -156,6 +162,21 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         raft.clone(),
         message_sink.clone(),
         shutdown.subscribe(),
+    )
+    .await?;
+    if topology.multi_voter {
+        if raft_node_id == topology.bootstrap_raft_node_id {
+            send_raft_messages(&message_sink, raft.campaign()?).await?;
+        }
+        wait_for_raft_leader(&raft).await?;
+    }
+
+    let cache = networked_member_cache(
+        config,
+        raft.clone(),
+        discovery.clone(),
+        node_id.clone(),
+        generation,
     )
     .await?;
 
@@ -327,9 +348,164 @@ async fn send_raft_messages(
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+struct RaftPeer {
+    node_id: ClusterNodeId,
+    address: SocketAddr,
+}
+
+#[derive(Debug, Clone)]
+struct RaftTopology {
+    voters: Vec<u64>,
+    peers: Arc<BTreeMap<u64, RaftPeer>>,
+    multi_voter: bool,
+    bootstrap_raft_node_id: u64,
+}
+
+fn raft_topology(
+    config: &ServerConfig,
+    local_node_id: ClusterNodeId,
+    local_raft_node_id: u64,
+) -> RaftTopology {
+    let mut peers = BTreeMap::new();
+    if config.cluster_addr.port() != 0 {
+        peers.insert(
+            local_raft_node_id,
+            RaftPeer {
+                node_id: local_node_id,
+                address: config.cluster_addr,
+            },
+        );
+        for seed in &config.seeds {
+            if let Ok(address) = seed.parse::<SocketAddr>() {
+                if address.port() == 0 {
+                    continue;
+                }
+                let node_id = member_node_id_for_addr(address);
+                let raft_id = raft_node_id(&node_id);
+                peers
+                    .entry(raft_id)
+                    .or_insert(RaftPeer { node_id, address });
+            }
+        }
+    }
+
+    let multi_voter = peers.len() > 1;
+    let mut voters = if multi_voter {
+        peers.keys().copied().collect::<Vec<_>>()
+    } else {
+        vec![local_raft_node_id]
+    };
+    voters.sort_unstable();
+    voters.dedup();
+    let bootstrap_raft_node_id = voters.iter().copied().min().unwrap_or(local_raft_node_id);
+    RaftTopology {
+        voters,
+        peers: Arc::new(peers),
+        multi_voter,
+        bootstrap_raft_node_id,
+    }
+}
+
+#[derive(Debug, Clone)]
+struct HttpRaftMessageSink {
+    local_node_id: ClusterNodeId,
+    local_raft_node_id: u64,
+    peers: Arc<BTreeMap<u64, RaftPeer>>,
+    client: reqwest::Client,
+}
+
+impl HttpRaftMessageSink {
+    fn new(
+        local_node_id: ClusterNodeId,
+        local_raft_node_id: u64,
+        peers: Arc<BTreeMap<u64, RaftPeer>>,
+    ) -> Self {
+        Self {
+            local_node_id,
+            local_raft_node_id,
+            peers,
+            client: reqwest::Client::new(),
+        }
+    }
+
+    fn node_id_for(&self, raft_node_id: u64) -> String {
+        if raft_node_id == self.local_raft_node_id {
+            self.local_node_id.to_string()
+        } else {
+            self.peers
+                .get(&raft_node_id)
+                .map(|peer| peer.node_id.to_string())
+                .unwrap_or_else(|| raft_node_id.to_string())
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl RaftMessageSink for HttpRaftMessageSink {
+    async fn send(&self, message: RaftWireMessage) -> CacheResult<()> {
+        if message.to == self.local_raft_node_id {
+            return Ok(());
+        }
+        let peer = self.peers.get(&message.to).ok_or_else(|| {
+            CacheError::Backend(format!(
+                "no HTTP raft peer endpoint for raft node {}",
+                message.to
+            ))
+        })?;
+        let request = ClusterOpaqueMessage::new(
+            self.node_id_for(message.from),
+            peer.node_id.to_string(),
+            message.term,
+            message.payload,
+        );
+        let response = self
+            .client
+            .post(format!(
+                "http://{}{}",
+                peer.address, DEFAULT_RAFT_APPEND_PATH
+            ))
+            .json(&request)
+            .send()
+            .await
+            .map_err(|error| {
+                CacheError::Backend(format!(
+                    "failed to send raft message to {}: {error}",
+                    peer.node_id
+                ))
+            })?;
+        if !response.status().is_success() {
+            return Err(CacheError::Backend(format!(
+                "raft peer {} rejected message with {}",
+                peer.node_id,
+                response.status()
+            )));
+        }
+        Ok(())
+    }
+}
+
+async fn wait_for_raft_leader(raft: &Arc<NetworkedRaftRuntime>) -> CacheResult<()> {
+    let deadline = tokio::time::Instant::now() + GRID_LEADER_WAIT_TIMEOUT;
+    loop {
+        if raft.leader_id().is_some() {
+            return Ok(());
+        }
+        if tokio::time::Instant::now() >= deadline {
+            return Err(CacheError::Backend(
+                "timed out waiting for networked raft leader".to_owned(),
+            ));
+        }
+        tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
+    }
+}
+
 fn member_node_id(config: &ServerConfig) -> ClusterNodeId {
-    let suffix = config
-        .cluster_addr
+    member_node_id_for_addr(config.cluster_addr)
+}
+
+fn member_node_id_for_addr(addr: SocketAddr) -> ClusterNodeId {
+    let suffix = addr
         .to_string()
         .chars()
         .map(|character| {
