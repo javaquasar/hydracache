@@ -38,6 +38,11 @@ Use the same `seeds` set on every member. For the 0.59 loopback gate, concrete
 socket seeds are required so the daemon can derive the raft voter set and route
 outbound raft messages to peers.
 
+For `0.59.0`, the cluster transport is still plaintext and unauthenticated even
+when the TLS startup policy is enabled; non-loopback member clusters must run
+inside a trusted network boundary until `0.60` wires peer auth and real TLS
+termination.
+
 ## Status
 
 `GET /cluster/overview` on the admin listener reports:

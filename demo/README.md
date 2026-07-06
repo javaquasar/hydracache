@@ -75,6 +75,20 @@ persistence, configurable consistency levels, and the real external client wire
 protocol. `hydracache-sim` is a **sans-IO seam over the core logic**, not the
 production runtime.
 
+This layer is also where the currently open deployment debt lives, so a perfect
+demo run says nothing about it: the `0.59` daemon cluster transport has no TLS
+termination or peer auth yet
+([TD-0010](../docs/technical-debt/TD-0010-cluster-transport-tls-and-peer-auth.md)),
+and its raft voter set is static — no runtime join/leave of voters, identity
+coupled to the listen address
+([TD-0011](../docs/technical-debt/TD-0011-dynamic-raft-membership-and-node-identity.md)).
+Both are scheduled for `0.60`
+([plan](../docs/plans/V0_60_NETWORKED_GRID_HARDENING_PLAN.md)). The lab's
+"kill leader → re-elect" and the real daemon E2E
+(`crates/hydracache-server/tests/grid_host.rs`) are different machinery: a
+seeded simulator network here, real `ServerRuntime` processes over loopback
+there.
+
 ### Bottom line
 
 Trust the **invariant verdicts, how state reacts to faults, and native/server

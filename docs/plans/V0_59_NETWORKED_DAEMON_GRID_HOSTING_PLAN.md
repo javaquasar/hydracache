@@ -178,7 +178,7 @@ remaining `1.0` work is API-freeze/semver + mileage, not new consensus.
 0.57 grid_host seam (GridControlPlaneHandle) ─┐
 hydracache-cluster-raft (RaftMetadataRuntime) ─┼─► W1 leader/role ─► W1b network-drivable multi-voter runtime ─► W2 daemon stack ─► W3 live status + lifecycle ─┐
 hydracache-cluster-chitchat (ClusterDiscovery)─┤                                                                                                                            ├─► W5 daemon E2E ─► W6 docs + gates + TD-0008 close
-hydracache-cluster-transport-axum ────────────┘                                                                 W4 TLS-bound cluster listener ───────────────────────────┘
+hydracache-cluster-transport-axum ────────────┘                                                                 W4 fail-loud TLS startup policy ─────────────────────────┘
 ```
 
 ## W1. Expose leader identity + role from the raft runtime
@@ -235,7 +235,8 @@ algorithm (R-1).
    leaving member is removed, and fail loud if the node-id mapping/conf-change cannot be committed.
 4. Bridge HTTP transport to the runtime: inbound `AxumClusterMessageService` routes decode opaque raft
    payloads into `RaftWireMessage` and call `step`; outbound messages POST through a sink over
-   `hydracache-cluster-transport-axum` with TLS/auth from W4.
+   `hydracache-cluster-transport-axum`; W4 keeps the TLS startup posture fail-loud while actual
+   TLS termination + peer auth are deferred to TD-0010 / `0.60`.
 5. Keep all new drive APIs deterministic and testable without wall-clock assertions; networked daemon
    timing belongs in bounded poll loops and the network-gated tier (R-5).
 
@@ -323,28 +324,30 @@ single-member and `leader:null` (still honest via the `0.57` tag).
 **Risk & rollback.** Correctness of drain-vs-quorum is load-bearing; gate it. Revert leaves the W2
 stack but with placeholder status fields.
 
-## W4. TLS-bound cluster listener + fail-loud config
+## W4. Fail-loud cluster TLS startup policy
 
-**Goal.** Bind the cluster transport with `0.48` mTLS when configured, and fail loud on incomplete
-cluster material — a member must not silently form an unauthenticated cluster in a non-loopback
-deployment.
+**Goal.** Enforce the shipped TLS startup policy for the cluster listener and fail loud on incomplete
+cluster material. Actual TLS termination and peer auth were not shipped in `0.59`; they are tracked
+as TD-0010 and closed by `0.60` W1/W2.
 
-**Files.** `crates/hydracache-server/src/grid_host.rs` (pass `config.tls` to the cluster listener),
+**Files.** `crates/hydracache-server/src/grid_host.rs` (validate `config.tls` posture before serving),
 `config.rs` (reuse the existing `exposes_non_loopback` + TLS validation, config.rs:235-263).
 
 **Steps.**
-1. Wire `config.tls` (cert/key/ca) into the cluster transport listener on `cluster_addr`.
+1. Validate the `config.tls` posture before binding the cluster transport listener on
+   `cluster_addr`.
 2. Reuse the shipped guard: a non-loopback cluster listener without TLS and without
    `acknowledge_insecure` is already rejected (config.rs:238-240) — assert it also covers
    `cluster_addr`.
 
 **Tests & requirements.** `crates/hydracache-server/tests/grid_host.rs`
 - `non_loopback_member_without_tls_is_rejected_loud`.
-- `member_cluster_listener_uses_configured_tls`.
+- `member_cluster_listener_uses_configured_tls` is intentionally not a TLS-termination proof in
+  `0.59`; it is replaced by falsifiable TLS tests in `0.60` W2.
 - Run: `cargo test -p hydracache-server --locked grid_host`.
 
-**Risk & rollback.** Security boundary; tested explicitly. Revert removes TLS binding (loopback-only
-dev still works).
+**Risk & rollback.** Security posture boundary; tested explicitly. Revert removes the startup guard
+(loopback-only dev still works).
 
 ## W5. Multi-daemon E2E (loopback, network-gated, skip-graceful)
 
@@ -472,7 +475,7 @@ A code-grounded pass on the *test descriptions* corrected one and added several 
 | durable recovery + stable id (W1b/W2) | `grid_host.rs`, `hydracache-cluster-raft` | `durable_raft_recovers_committed_membership_after_restart`, `raft_node_id_is_stable_and_deterministic_for_a_node` | PR |
 | member config guard (W2) | `config.rs` (reuse) | `member_without_storage_or_seeds_is_rejected_loud`, `seed_unreachable_at_startup_retries_not_crashes` | PR |
 | `NetworkedGridHandle` (W3) | `grid_host.rs` | `leader_status_reflects_raft_soft_state`, `has_quorum_reflects_membership_majority` (falsifiable), `reachability_maps_chitchat_liveness`, `draining_member_leaves_raft_config_cleanly`, `overview_reports_live_source_with_networked_handle` | PR |
-| TLS cluster listener (W4) | `grid_host.rs`, `config.rs:235-263` | `non_loopback_member_without_tls_is_rejected_loud`, `member_cluster_listener_uses_configured_tls` | PR |
+| Cluster TLS startup policy (W4) | `grid_host.rs`, `config.rs:235-263` | `non_loopback_member_without_tls_is_rejected_loud`; `member_cluster_listener_uses_configured_tls` remains a posture/regression guard, not a TLS-termination proof | PR |
 | loopback 3-daemon E2E (W5) | `hydracache-server/tests/grid_host.rs` | `three_members_form_a_cluster_and_elect_one_leader`, `killing_the_leader_triggers_reelection_without_stale_leader` (falsifiable), `no_lost_committed_metadata_across_leader_change` against real `ServerRuntime` daemons | network-gated / nightly |
 | skip-graceful guard (W5) | `tests/grid_host.rs` | `grid_host_skips_gracefully_without_a_network_cluster` | PR (always runs) |
 | 0.58 soak re-point (W6) | `hydracache-operator/tests/soak_kind.rs` | `multi_node_chaos_soak_loses_no_committed_write` (now real daemon cluster), `SCOPE_DISCLOSURE` assertion updated | kind / nightly |
@@ -492,7 +495,8 @@ fast gate stays green without a loopback cluster.
   including W1b).
 - Three daemons form one cluster; **killing the leader re-elects without a stale leader**; no lost
   committed metadata (W5, falsifiable, real `ServerRuntime` daemons).
-- Cluster listener is **TLS-bound** when configured; non-loopback without TLS is rejected loud (W4).
+- Cluster listener enforces the **fail-loud TLS startup policy**; actual TLS termination + peer auth
+  were not shipped in `0.59` and are tracked by TD-0010 / `0.60` W1/W2 (W4).
 - `local`/`client` roles unchanged and `modeled`; embedded fast path byte-for-byte unchanged (R-10);
   no new consensus/consistency level (R-1).
 - **TD-0008 marked Resolved**; the `0.57` `source` honesty note updated; `0.58` W4 re-pointed to the
