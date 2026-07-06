@@ -1,9 +1,13 @@
+use std::collections::BTreeSet;
+use std::net::{SocketAddr, TcpListener, UdpSocket};
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard, OnceLock};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ServerConfig, ServerConfigError, ServerRole,
-    ServerRuntime, StatusSource, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ServerAdminStatus, ServerConfig,
+    ServerConfigError, ServerRole, ServerRuntime, StatusSource, TlsConfig,
 };
 use serde_json::json;
 
@@ -187,5 +191,143 @@ fn member_cluster_listener_uses_configured_tls() {
 }
 
 #[test]
-#[ignore = "W6b deferred: requires networked raft/chitchat daemon wiring"]
-fn multi_node_members_form_a_cluster_and_elect_one_leader() {}
+fn multi_node_members_form_a_cluster_and_elect_one_leader() {
+    if !networked_daemon_e2e_enabled() {
+        return;
+    }
+
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let addrs = reserve_loopback_addrs(3);
+    let seeds = addrs.iter().map(ToString::to_string).collect::<Vec<_>>();
+    let mut configs = addrs
+        .iter()
+        .enumerate()
+        .map(|(index, addr)| {
+            let mut config = member_config(&format!("networked-daemon-e2e-{index}"));
+            config.cluster_addr = *addr;
+            config.seeds = seeds.clone();
+            if let Some(storage_dir) = &config.storage_dir {
+                let _ = std::fs::remove_dir_all(storage_dir);
+            }
+            config
+        })
+        .collect::<Vec<_>>();
+
+    let handles = configs
+        .drain(..)
+        .map(|config| thread::spawn(move || ServerRuntime::new(config).unwrap().start()))
+        .collect::<Vec<_>>();
+    let runtimes = handles
+        .into_iter()
+        .map(|handle| handle.join().unwrap())
+        .collect::<Vec<_>>();
+    let mut runtimes = runtimes.into_iter().map(Some).collect::<Vec<_>>();
+
+    let converged = wait_until(Duration::from_secs(10), || {
+        let statuses = active_statuses(&runtimes);
+        let leaders = leaders(&statuses);
+        leaders.len() == 1
+            && statuses
+                .iter()
+                .all(|status| status.members == 3 && status.quorum_ok)
+    });
+    assert!(
+        converged,
+        "three networked daemon members did not converge to one leader: {:?}",
+        active_statuses(&runtimes)
+    );
+
+    let old_leader = active_statuses(&runtimes)[0]
+        .leader
+        .clone()
+        .expect("leader after convergence");
+    let leader_index = addrs
+        .iter()
+        .position(|addr| member_node_id_for_addr(*addr) == old_leader)
+        .expect("leader belongs to one spawned daemon");
+    drop(runtimes[leader_index].take());
+
+    let re_elected = wait_until(Duration::from_secs(10), || {
+        let statuses = active_statuses(&runtimes);
+        let leaders = leaders(&statuses);
+        leaders.len() == 1
+            && !leaders.contains(&old_leader)
+            && statuses
+                .iter()
+                .all(|status| status.members == 3 && status.quorum_ok)
+    });
+    assert!(
+        re_elected,
+        "remaining daemon members did not re-elect without reporting the stale leader: old={old_leader}, statuses={:?}",
+        active_statuses(&runtimes)
+    );
+
+    for runtime in runtimes.iter_mut().filter_map(Option::as_mut) {
+        let _ = runtime.shutdown();
+    }
+}
+
+fn networked_daemon_e2e_enabled() -> bool {
+    std::env::var("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E")
+        .map(|value| matches!(value.trim(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
+}
+
+fn reserve_loopback_addrs(count: usize) -> Vec<SocketAddr> {
+    let mut addrs = Vec::new();
+    while addrs.len() < count {
+        let tcp = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = tcp.local_addr().unwrap();
+        let udp = UdpSocket::bind(addr).unwrap();
+        drop(udp);
+        drop(tcp);
+        if !addrs.contains(&addr) {
+            addrs.push(addr);
+        }
+    }
+    addrs
+}
+
+fn wait_until(timeout: Duration, mut predicate: impl FnMut() -> bool) -> bool {
+    let deadline = Instant::now() + timeout;
+    loop {
+        if predicate() {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            return false;
+        }
+        thread::sleep(Duration::from_millis(50));
+    }
+}
+
+fn active_statuses(runtimes: &[Option<ServerRuntime>]) -> Vec<ServerAdminStatus> {
+    runtimes
+        .iter()
+        .filter_map(Option::as_ref)
+        .map(ServerRuntime::admin_status)
+        .collect()
+}
+
+fn leaders(statuses: &[ServerAdminStatus]) -> BTreeSet<String> {
+    statuses
+        .iter()
+        .filter_map(|status| status.leader.clone())
+        .collect()
+}
+
+fn member_node_id_for_addr(addr: SocketAddr) -> String {
+    let suffix = addr
+        .to_string()
+        .chars()
+        .map(|character| {
+            if character.is_ascii_alphanumeric() {
+                character
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>();
+    format!("member-{suffix}")
+}

@@ -122,7 +122,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         topology.voters.clone(),
     )
     .auto_campaign(!topology.multi_voter)
-    .ticks(5, 1);
+    .ticks(topology.election_tick_for(raft_node_id), 1);
     let raft = Arc::new(RaftMetadataRuntime::durable_with_config(
         raft_config,
         DurableRaftLogDirectory::new(),
@@ -166,7 +166,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     .await?;
     if topology.multi_voter {
         if raft_node_id == topology.bootstrap_raft_node_id {
-            send_raft_messages(&message_sink, raft.campaign()?).await?;
+            let _ = send_raft_messages(&message_sink, raft.campaign()?).await;
         }
         wait_for_raft_leader(&raft).await?;
     }
@@ -184,6 +184,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         cache,
         node_id,
         raft_node_id,
+        raft_peers: topology.peer_node_ids(),
         raft,
         discovery,
         bridge,
@@ -332,18 +333,27 @@ async fn drive_grid_once(
     bridge: &ClusterAdmissionBridge,
     message_sink: &Arc<dyn RaftMessageSink>,
 ) -> CacheResult<()> {
-    send_raft_messages(message_sink, raft.tick()?).await?;
+    let _ = send_raft_messages(message_sink, raft.tick()?).await;
     let _ = bridge.run_once().await;
-    send_raft_messages(message_sink, raft.take_outbound_messages()).await?;
-    send_raft_messages(message_sink, raft.drain_ready()?).await
+    let _ = send_raft_messages(message_sink, raft.take_outbound_messages()).await;
+    let _ = send_raft_messages(message_sink, raft.drain_ready()?).await;
+    Ok(())
 }
 
 async fn send_raft_messages(
     message_sink: &Arc<dyn RaftMessageSink>,
     messages: Vec<RaftWireMessage>,
 ) -> CacheResult<()> {
+    let mut last_error = None;
     for message in messages {
-        message_sink.send(message).await?;
+        if let Err(error) = message_sink.send(message).await {
+            last_error = Some(error.to_string());
+        }
+    }
+    if let Some(error) = last_error {
+        return Err(CacheError::Backend(format!(
+            "one or more raft messages failed: {error}"
+        )));
     }
     Ok(())
 }
@@ -404,6 +414,26 @@ fn raft_topology(
         peers: Arc::new(peers),
         multi_voter,
         bootstrap_raft_node_id,
+    }
+}
+
+impl RaftTopology {
+    fn election_tick_for(&self, raft_node_id: u64) -> usize {
+        let rank = self
+            .voters
+            .iter()
+            .position(|voter| *voter == raft_node_id)
+            .unwrap_or(0);
+        5 + (rank * 2)
+    }
+
+    fn peer_node_ids(&self) -> Arc<BTreeMap<u64, ClusterNodeId>> {
+        Arc::new(
+            self.peers
+                .iter()
+                .map(|(raft_id, peer)| (*raft_id, peer.node_id.clone()))
+                .collect(),
+        )
     }
 }
 
@@ -586,6 +616,7 @@ struct NetworkedMemberStack {
     cache: HydraCache,
     node_id: ClusterNodeId,
     raft_node_id: u64,
+    raft_peers: Arc<BTreeMap<u64, ClusterNodeId>>,
     raft: Arc<NetworkedRaftRuntime>,
     discovery: Arc<ChitchatDiscovery>,
     bridge: ClusterAdmissionBridge,
@@ -596,6 +627,7 @@ struct NetworkedMemberStack {
 struct NetworkedGridHandle {
     node_id: ClusterNodeId,
     raft_node_id: u64,
+    raft_peers: Arc<BTreeMap<u64, ClusterNodeId>>,
     raft: Arc<NetworkedRaftRuntime>,
     discovery: Arc<ChitchatDiscovery>,
     _bridge: ClusterAdmissionBridge,
@@ -609,6 +641,7 @@ impl NetworkedGridHandle {
         Self {
             node_id: stack.node_id,
             raft_node_id: stack.raft_node_id,
+            raft_peers: stack.raft_peers,
             raft: stack.raft,
             discovery: stack.discovery,
             _bridge: stack.bridge,
@@ -676,7 +709,10 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             if leader == self.raft_node_id {
                 self.node_id.to_string()
             } else {
-                format!("raft-{leader}")
+                self.raft_peers
+                    .get(&leader)
+                    .map(ToString::to_string)
+                    .unwrap_or_else(|| format!("raft-{leader}"))
             }
         })
     }
