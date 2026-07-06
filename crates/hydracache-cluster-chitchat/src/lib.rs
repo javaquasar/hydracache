@@ -44,7 +44,7 @@
 //! # }
 //! ```
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
@@ -57,7 +57,7 @@ use chitchat::{
 };
 use hydracache::{
     CacheError, CacheResult, ClusterCandidate, ClusterDiscovery, ClusterDiscoveryEvent,
-    ClusterEndpoints, ClusterGeneration, ClusterNodeId, ClusterRole,
+    ClusterDiscoveryLiveness, ClusterEndpoints, ClusterGeneration, ClusterNodeId, ClusterRole,
 };
 use tokio::sync::Mutex as TokioMutex;
 
@@ -78,6 +78,7 @@ const LIFECYCLE_LEAVING: &str = "leaving";
 const METADATA_LIFECYCLE: &str = "lifecycle";
 const METADATA_LEFT_GENERATION: &str = "left.generation";
 const METADATA_LEFT_ROLE: &str = "left.role";
+const MAX_DISCOVERY_EVENTS: usize = 1024;
 
 /// Configuration for a chitchat-backed HydraCache discovery node.
 #[derive(Debug, Clone)]
@@ -205,7 +206,10 @@ impl ChitchatDiscoveryConfig {
 #[derive(Debug, Default)]
 struct DiscoveryState {
     candidates: BTreeMap<ClusterNodeId, ClusterCandidate>,
-    events: Vec<ClusterDiscoveryEvent>,
+    liveness: BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness>,
+    // Advisory diagnostics only. The materialized liveness map and authoritative
+    // control plane keep state even when old journal entries are dropped.
+    events: VecDeque<ClusterDiscoveryEvent>,
 }
 
 /// Real chitchat-backed implementation of [`ClusterDiscovery`].
@@ -290,6 +294,17 @@ impl ChitchatDiscovery {
             .lock()
             .expect("chitchat discovery state poisoned")
             .events
+            .iter()
+            .cloned()
+            .collect()
+    }
+
+    /// Return the latest materialized liveness state by node id.
+    pub fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        self.state
+            .lock()
+            .expect("chitchat discovery state poisoned")
+            .liveness
             .clone()
     }
 
@@ -392,11 +407,11 @@ impl ChitchatDiscovery {
     }
 
     fn push_event(&self, event: ClusterDiscoveryEvent) {
-        self.state
+        let mut state = self
+            .state
             .lock()
-            .expect("chitchat discovery state poisoned")
-            .events
-            .push(event);
+            .expect("chitchat discovery state poisoned");
+        record_event(&mut state, event);
     }
 }
 
@@ -427,6 +442,10 @@ impl ClusterDiscovery for ChitchatDiscovery {
 
     fn events(&self) -> Vec<ClusterDiscoveryEvent> {
         ChitchatDiscovery::events(self)
+    }
+
+    fn liveness(&self) -> BTreeMap<ClusterNodeId, ClusterDiscoveryLiveness> {
+        ChitchatDiscovery::liveness(self)
     }
 }
 
@@ -508,9 +527,10 @@ fn spawn_live_node_watcher(chitchat: Arc<TokioMutex<Chitchat>>, state: Arc<Mutex
 
             let mut state = state.lock().expect("chitchat discovery state poisoned");
             for candidate in candidates {
-                state
-                    .events
-                    .push(ClusterDiscoveryEvent::MemberLive(candidate.node_id.clone()));
+                record_event(
+                    &mut state,
+                    ClusterDiscoveryEvent::MemberLive(candidate.node_id.clone()),
+                );
                 state
                     .candidates
                     .insert(candidate.node_id.clone(), candidate);
@@ -521,9 +541,10 @@ fn spawn_live_node_watcher(chitchat: Arc<TokioMutex<Chitchat>>, state: Arc<Mutex
 
 fn record_candidate(state: Arc<Mutex<DiscoveryState>>, candidate: ClusterCandidate) {
     let mut state = state.lock().expect("chitchat discovery state poisoned");
-    state
-        .events
-        .push(ClusterDiscoveryEvent::CandidateSeen(candidate.clone()));
+    record_event(
+        &mut state,
+        ClusterDiscoveryEvent::CandidateSeen(candidate.clone()),
+    );
     state
         .candidates
         .insert(candidate.node_id.clone(), candidate);
@@ -558,11 +579,39 @@ fn record_leave_marker(
             .metadata
             .insert(METADATA_LEFT_ROLE.to_owned(), role_to_str(role).to_owned());
     }
-    state.events.push(ClusterDiscoveryEvent::MemberLeaving {
-        node_id,
-        generation,
-        role,
-    });
+    record_event(
+        &mut state,
+        ClusterDiscoveryEvent::MemberLeaving {
+            node_id,
+            generation,
+            role,
+        },
+    );
+}
+
+fn record_event(state: &mut DiscoveryState, event: ClusterDiscoveryEvent) {
+    match &event {
+        ClusterDiscoveryEvent::MemberLive(node_id) => {
+            state
+                .liveness
+                .insert(node_id.clone(), ClusterDiscoveryLiveness::Live);
+        }
+        ClusterDiscoveryEvent::MemberSuspect(node_id) => {
+            state
+                .liveness
+                .insert(node_id.clone(), ClusterDiscoveryLiveness::Suspect);
+        }
+        ClusterDiscoveryEvent::MemberDead(node_id) => {
+            state
+                .liveness
+                .insert(node_id.clone(), ClusterDiscoveryLiveness::Dead);
+        }
+        ClusterDiscoveryEvent::CandidateSeen(_) | ClusterDiscoveryEvent::MemberLeaving { .. } => {}
+    }
+    if state.events.len() == MAX_DISCOVERY_EVENTS {
+        state.events.pop_front();
+    }
+    state.events.push_back(event);
 }
 
 fn candidate_from_node(
@@ -737,6 +786,57 @@ mod tests {
             chitchat_config.marked_for_deletion_grace_period,
             Duration::from_secs(7)
         );
+    }
+
+    #[test]
+    fn discovery_liveness_map_tracks_latest_state() {
+        let mut state = DiscoveryState::default();
+        let node = ClusterNodeId::from("member-a");
+
+        record_event(&mut state, ClusterDiscoveryEvent::MemberLive(node.clone()));
+        assert_eq!(
+            state.liveness.get(&node),
+            Some(&ClusterDiscoveryLiveness::Live)
+        );
+
+        record_event(
+            &mut state,
+            ClusterDiscoveryEvent::MemberSuspect(node.clone()),
+        );
+        assert_eq!(
+            state.liveness.get(&node),
+            Some(&ClusterDiscoveryLiveness::Suspect)
+        );
+
+        record_event(&mut state, ClusterDiscoveryEvent::MemberDead(node.clone()));
+        assert_eq!(
+            state.liveness.get(&node),
+            Some(&ClusterDiscoveryLiveness::Dead)
+        );
+    }
+
+    #[test]
+    fn discovery_event_journal_is_bounded() {
+        let mut state = DiscoveryState::default();
+
+        for index in 0..(MAX_DISCOVERY_EVENTS + 10) {
+            record_event(
+                &mut state,
+                ClusterDiscoveryEvent::MemberLive(ClusterNodeId::from(format!("member-{index}"))),
+            );
+        }
+
+        assert_eq!(state.events.len(), MAX_DISCOVERY_EVENTS);
+        assert!(matches!(
+            state.events.front(),
+            Some(ClusterDiscoveryEvent::MemberLive(node_id))
+                if node_id.as_str() == "member-10"
+        ));
+        assert!(matches!(
+            state.events.back(),
+            Some(ClusterDiscoveryEvent::MemberLive(node_id))
+                if node_id.as_str() == "member-1033"
+        ));
     }
 
     #[tokio::test]

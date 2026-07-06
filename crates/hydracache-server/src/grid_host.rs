@@ -6,20 +6,20 @@ use std::future::Future;
 use std::net::{SocketAddr, TcpListener as StdTcpListener};
 use std::path::Path;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
 use std::time::Duration;
 
 use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
-    CacheError, CacheResult, ClusterAdmissionBridge, ClusterDiscoveryEvent, ClusterGeneration,
+    CacheError, CacheResult, ClusterAdmissionBridge, ClusterDiscoveryLiveness, ClusterGeneration,
     ClusterMember, ClusterNodeId, HydraCache, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
-    DurableRaftLogDirectory, DurableRaftLogStore, InMemoryRaftMessageSink, RaftMessageSink,
-    RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftWireMessage,
+    DurableRaftLogDirectory, DurableRaftLogStore, RaftMessageSink, RaftMetadataRuntime,
+    RaftMetadataRuntimeConfig, RaftWireMessage,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
@@ -159,14 +159,16 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             config,
         )?)
     } else {
-        Arc::new(InMemoryRaftMessageSink::default())
+        Arc::new(NoopRaftMessageSink)
     };
+    let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
         raft.clone(),
         bridge.clone(),
         message_sink.clone(),
         raft_peers.clone(),
+        drive_diagnostics.clone(),
         node_id.clone(),
         config.cluster_addr,
         shutdown.subscribe(),
@@ -205,6 +207,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         discovery,
         bridge,
         message_sink,
+        drive_diagnostics,
         draining: Arc::new(AtomicBool::new(false)),
         drain_remove_proposed: Arc::new(AtomicBool::new(false)),
         shutdown,
@@ -443,6 +446,7 @@ fn spawn_grid_drive(
     bridge: ClusterAdmissionBridge,
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
+    diagnostics: Arc<GridDriveDiagnostics>,
     local_node_id: ClusterNodeId,
     local_addr: SocketAddr,
     mut shutdown: watch::Receiver<bool>,
@@ -462,9 +466,11 @@ fn spawn_grid_drive(
                         &bridge,
                         &message_sink,
                         &raft_peers,
+                        &diagnostics,
                         &local_node_id,
                         local_addr,
                     ).await {
+                        diagnostics.record_drive_error(_error.to_string());
                         continue;
                     }
                 }
@@ -478,15 +484,25 @@ async fn drive_grid_once(
     bridge: &ClusterAdmissionBridge,
     message_sink: &Arc<dyn RaftMessageSink>,
     raft_peers: &SharedRaftPeers,
+    diagnostics: &GridDriveDiagnostics,
     local_node_id: &ClusterNodeId,
     local_addr: SocketAddr,
 ) -> CacheResult<()> {
-    let _ = send_raft_messages(message_sink, raft.tick()?).await;
+    diagnostics.record_tick();
+    let _ =
+        send_raft_messages_with_diagnostics(message_sink, raft.tick()?, Some(diagnostics)).await;
     let _ = bridge.run_once().await;
     refresh_raft_peers(raft_peers, local_node_id, local_addr, &raft.members());
-    sync_raft_voters(raft, message_sink, raft_peers).await?;
-    let _ = send_raft_messages(message_sink, raft.take_outbound_messages()).await;
-    let _ = send_raft_messages(message_sink, raft.drain_ready()?).await;
+    sync_raft_voters(raft, message_sink, raft_peers, diagnostics).await?;
+    let _ = send_raft_messages_with_diagnostics(
+        message_sink,
+        raft.take_outbound_messages(),
+        Some(diagnostics),
+    )
+    .await;
+    let _ =
+        send_raft_messages_with_diagnostics(message_sink, raft.drain_ready()?, Some(diagnostics))
+            .await;
     Ok(())
 }
 
@@ -530,6 +546,7 @@ async fn sync_raft_voters(
     raft: &Arc<NetworkedRaftRuntime>,
     message_sink: &Arc<dyn RaftMessageSink>,
     raft_peers: &SharedRaftPeers,
+    diagnostics: &GridDriveDiagnostics,
 ) -> CacheResult<()> {
     let snapshot = raft.snapshot();
     if raft.leader_id() != Some(snapshot.raft_node_id) {
@@ -552,7 +569,7 @@ async fn sync_raft_voters(
             continue;
         }
         let outbound = raft.propose_add_voter(raft_id)?;
-        send_raft_messages(message_sink, outbound).await?;
+        send_raft_messages_with_diagnostics(message_sink, outbound, Some(diagnostics)).await?;
         break;
     }
     Ok(())
@@ -562,9 +579,20 @@ async fn send_raft_messages(
     message_sink: &Arc<dyn RaftMessageSink>,
     messages: Vec<RaftWireMessage>,
 ) -> CacheResult<()> {
+    send_raft_messages_with_diagnostics(message_sink, messages, None).await
+}
+
+async fn send_raft_messages_with_diagnostics(
+    message_sink: &Arc<dyn RaftMessageSink>,
+    messages: Vec<RaftWireMessage>,
+    diagnostics: Option<&GridDriveDiagnostics>,
+) -> CacheResult<()> {
     let mut last_error = None;
     for message in messages {
         if let Err(error) = message_sink.send(message).await {
+            if let Some(diagnostics) = diagnostics {
+                diagnostics.record_send_failure(error.to_string());
+            }
             last_error = Some(error.to_string());
         }
     }
@@ -574,6 +602,68 @@ async fn send_raft_messages(
         )));
     }
     Ok(())
+}
+
+#[derive(Debug, Default)]
+struct NoopRaftMessageSink;
+
+#[async_trait::async_trait]
+impl RaftMessageSink for NoopRaftMessageSink {
+    async fn send(&self, _message: RaftWireMessage) -> CacheResult<()> {
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct GridDriveDiagnosticsSnapshot {
+    ticks: u64,
+    drive_errors: u64,
+    send_failures: u64,
+    last_error: Option<String>,
+}
+
+#[derive(Debug, Default)]
+struct GridDriveDiagnostics {
+    ticks: AtomicU64,
+    drive_errors: AtomicU64,
+    send_failures: AtomicU64,
+    last_error: Mutex<Option<String>>,
+}
+
+impl GridDriveDiagnostics {
+    fn record_tick(&self) {
+        self.ticks.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_drive_error(&self, error: String) {
+        self.drive_errors.fetch_add(1, Ordering::Relaxed);
+        self.set_last_error(error);
+    }
+
+    fn record_send_failure(&self, error: String) {
+        self.send_failures.fetch_add(1, Ordering::Relaxed);
+        self.set_last_error(error);
+    }
+
+    fn snapshot(&self) -> GridDriveDiagnosticsSnapshot {
+        GridDriveDiagnosticsSnapshot {
+            ticks: self.ticks.load(Ordering::Relaxed),
+            drive_errors: self.drive_errors.load(Ordering::Relaxed),
+            send_failures: self.send_failures.load(Ordering::Relaxed),
+            last_error: self
+                .last_error
+                .lock()
+                .expect("grid drive diagnostics poisoned")
+                .clone(),
+        }
+    }
+
+    fn set_last_error(&self, error: String) {
+        *self
+            .last_error
+            .lock()
+            .expect("grid drive diagnostics poisoned") = Some(error);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -1024,6 +1114,7 @@ struct NetworkedMemberStack {
     discovery: Arc<ChitchatDiscovery>,
     bridge: ClusterAdmissionBridge,
     message_sink: Arc<dyn RaftMessageSink>,
+    drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
     shutdown: watch::Sender<bool>,
@@ -1037,6 +1128,7 @@ struct NetworkedGridHandle {
     discovery: Arc<ChitchatDiscovery>,
     _bridge: ClusterAdmissionBridge,
     _message_sink: Arc<dyn RaftMessageSink>,
+    drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
     shutdown: watch::Sender<bool>,
@@ -1053,6 +1145,7 @@ impl NetworkedGridHandle {
             discovery: stack.discovery,
             _bridge: stack.bridge,
             _message_sink: stack.message_sink,
+            drive_diagnostics: stack.drive_diagnostics,
             draining: stack.draining,
             drain_remove_proposed: stack.drain_remove_proposed,
             shutdown: stack.shutdown,
@@ -1110,6 +1203,7 @@ impl fmt::Debug for NetworkedGridHandle {
             .field("node_id", &self.node_id)
             .field("raft_node_id", &self.raft_node_id)
             .field("snapshot", &self.raft.metadata_snapshot())
+            .field("drive_diagnostics", &self.drive_diagnostics.snapshot())
             .field("has_dedicated_runtime", &self._runtime.is_some())
             .finish()
     }
@@ -1166,19 +1260,10 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             return Reachability::Reachable;
         }
 
-        for event in self.discovery.events().into_iter().rev() {
-            match event {
-                ClusterDiscoveryEvent::MemberLive(event_node) if event_node == *node => {
-                    return Reachability::Reachable;
-                }
-                ClusterDiscoveryEvent::MemberSuspect(event_node) if event_node == *node => {
-                    return Reachability::Suspect;
-                }
-                ClusterDiscoveryEvent::MemberDead(event_node) if event_node == *node => {
-                    return Reachability::Unreachable;
-                }
-                _ => {}
-            }
+        if let Some(reachability) =
+            reachability_from_discovery_liveness(self.discovery.liveness().get(node).copied())
+        {
+            return reachability;
         }
 
         if self
@@ -1310,6 +1395,17 @@ impl GridControlPlaneHandle for InProcessGridHandle {
     }
 }
 
+fn reachability_from_discovery_liveness(
+    liveness: Option<ClusterDiscoveryLiveness>,
+) -> Option<Reachability> {
+    match liveness {
+        Some(ClusterDiscoveryLiveness::Live) => Some(Reachability::Reachable),
+        Some(ClusterDiscoveryLiveness::Suspect) => Some(Reachability::Suspect),
+        Some(ClusterDiscoveryLiveness::Dead) => Some(Reachability::Unreachable),
+        None => None,
+    }
+}
+
 #[derive(Clone)]
 struct RaftClusterMessageHandler {
     node_id: ClusterNodeId,
@@ -1367,6 +1463,7 @@ mod tests {
         ClusterCandidate, ClusterControlPlane, ClusterEndpoints, ClusterEpoch, ClusterRole,
         InMemoryClusterDiscovery,
     };
+    use hydracache_cluster_raft::InMemoryRaftMessageSink;
     use hydracache_cluster_transport_axum::{
         HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
     };
@@ -1382,6 +1479,7 @@ mod tests {
         let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
         let message_sink: Arc<dyn RaftMessageSink> = Arc::new(InMemoryRaftMessageSink::default());
         let raft_peers = Arc::new(RwLock::new(BTreeMap::new()));
+        let diagnostics = GridDriveDiagnostics::default();
 
         discovery
             .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)));
@@ -1390,6 +1488,7 @@ mod tests {
             &bridge,
             &message_sink,
             &raft_peers,
+            &diagnostics,
             &ClusterNodeId::from("local"),
             "127.0.0.1:7000".parse().unwrap(),
         )
@@ -1467,11 +1566,76 @@ mod tests {
         )
         .await
         .unwrap();
-        sync_raft_voters(&raft, &message_sink, &raft_peers)
+        let diagnostics = GridDriveDiagnostics::default();
+        sync_raft_voters(&raft, &message_sink, &raft_peers, &diagnostics)
             .await
             .unwrap();
 
         assert!(raft.voter_ids().unwrap().contains(&member_raft_id));
+    }
+
+    #[tokio::test]
+    async fn drive_loop_counts_and_reports_send_failures() {
+        let sink: Arc<dyn RaftMessageSink> = Arc::new(FailingRaftMessageSink);
+        let diagnostics = GridDriveDiagnostics::default();
+        let message = RaftWireMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            payload: Vec::new(),
+        };
+
+        let error = send_raft_messages_with_diagnostics(&sink, vec![message], Some(&diagnostics))
+            .await
+            .unwrap_err();
+        let snapshot = diagnostics.snapshot();
+
+        assert!(error.to_string().contains("forced raft send failure"));
+        assert_eq!(snapshot.send_failures, 1);
+        assert!(snapshot
+            .last_error
+            .as_deref()
+            .is_some_and(|error| error.contains("forced raft send failure")));
+    }
+
+    #[tokio::test]
+    async fn single_voter_sink_does_not_accumulate() {
+        let sink = NoopRaftMessageSink;
+        let message = RaftWireMessage {
+            from: 1,
+            to: 1,
+            term: 1,
+            payload: Vec::new(),
+        };
+
+        sink.send(message).await.unwrap();
+    }
+
+    #[test]
+    fn reachability_maps_chitchat_liveness() {
+        assert_eq!(
+            reachability_from_discovery_liveness(Some(ClusterDiscoveryLiveness::Live)),
+            Some(Reachability::Reachable)
+        );
+        assert_eq!(
+            reachability_from_discovery_liveness(Some(ClusterDiscoveryLiveness::Suspect)),
+            Some(Reachability::Suspect)
+        );
+        assert_eq!(
+            reachability_from_discovery_liveness(Some(ClusterDiscoveryLiveness::Dead)),
+            Some(Reachability::Unreachable)
+        );
+        assert_eq!(reachability_from_discovery_liveness(None), None);
+    }
+
+    #[derive(Debug)]
+    struct FailingRaftMessageSink;
+
+    #[async_trait::async_trait]
+    impl RaftMessageSink for FailingRaftMessageSink {
+        async fn send(&self, _message: RaftWireMessage) -> CacheResult<()> {
+            Err(CacheError::Backend("forced raft send failure".to_owned()))
+        }
     }
 
     #[test]
