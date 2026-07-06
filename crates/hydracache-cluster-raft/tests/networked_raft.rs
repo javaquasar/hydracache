@@ -5,8 +5,9 @@ use axum::body::{to_bytes, Body};
 use axum::http::{Request, StatusCode};
 use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration, ClusterNodeId};
 use hydracache_cluster_raft::{
-    InMemoryRaftLogStore, InMemoryRaftMessageSink, RaftLogStore, RaftMessageSink,
-    RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole, RaftWireMessage,
+    InMemoryRaftLogStore, InMemoryRaftMessageSink, RaftCommandStatus, RaftLogStore,
+    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole,
+    RaftWireMessage,
 };
 use hydracache_cluster_transport_axum::{
     AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck, ClusterOpaqueMessage,
@@ -187,6 +188,21 @@ impl NetworkedRuntimeCluster {
     fn delivered_count(&self) -> usize {
         self.delivered.len()
     }
+}
+
+async fn wait_for_status(runtime: &RaftMetadataRuntime, status: RaftCommandStatus) {
+    for _ in 0..100 {
+        if runtime
+            .snapshot()
+            .last_result
+            .as_ref()
+            .is_some_and(|result| result.status == status)
+        {
+            return;
+        }
+        tokio::task::yield_now().await;
+    }
+    panic!("runtime did not report {status:?}");
 }
 
 impl NetworkedRawNodeCluster {
@@ -421,11 +437,19 @@ async fn runtime_replicates_member_upsert_to_all_voters() {
     cluster.campaign(1);
     let leader = cluster.node(1);
 
-    leader
-        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
-        .await
-        .unwrap();
+    let join = tokio::spawn({
+        let leader = leader.clone();
+        async move {
+            leader
+                .join_member(
+                    ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)),
+                )
+                .await
+        }
+    });
+    wait_for_status(&leader, RaftCommandStatus::Forwarded).await;
     cluster.drain_until_idle(leader.take_outbound_messages());
+    join.await.unwrap().unwrap();
 
     for node_id in [1, 2, 3] {
         assert!(
@@ -468,6 +492,71 @@ fn conf_change_adds_and_removes_raft_voter_loudly() {
     for node_id in [1, 2, 3] {
         assert_eq!(three_node.node(node_id).voter_ids().unwrap(), vec![1, 2]);
     }
+}
+
+#[tokio::test]
+async fn follower_join_member_reports_forwarded_then_applies() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.campaign(1);
+    let follower = cluster.node(2);
+    let member_node = ClusterNodeId::from("member-follower");
+
+    let join = tokio::spawn({
+        let follower = follower.clone();
+        let member_node = member_node.clone();
+        async move {
+            follower
+                .join_member(
+                    ClusterCandidate::member(member_node).generation(ClusterGeneration::new(1)),
+                )
+                .await
+        }
+    });
+    wait_for_status(&follower, RaftCommandStatus::Forwarded).await;
+
+    cluster.drain_until_idle(follower.take_outbound_messages());
+    let member = join.await.unwrap().unwrap();
+
+    assert_eq!(member.node_id, member_node);
+    assert!(cluster
+        .node(2)
+        .command_applied("member-upsert:member-follower:1"));
+}
+
+#[tokio::test]
+async fn proposal_without_leader_fails_loud() {
+    let runtime = RaftMetadataRuntime::with_config(RaftMetadataRuntimeConfig::multi_voter(
+        "orders",
+        1,
+        [1, 2, 3],
+    ))
+    .unwrap();
+
+    let error = runtime
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+        .await
+        .unwrap_err();
+
+    assert!(
+        error.to_string().contains("no raft leader"),
+        "leaderless proposal should fail loud: {error}"
+    );
+}
+
+#[tokio::test]
+async fn leader_path_still_returns_committed_synchronously() {
+    let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+
+    runtime
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+        .await
+        .unwrap();
+
+    assert_eq!(
+        runtime.snapshot().last_result.unwrap().status,
+        RaftCommandStatus::Committed
+    );
+    assert!(runtime.command_applied("member-upsert:member-a:1"));
 }
 
 #[test]
