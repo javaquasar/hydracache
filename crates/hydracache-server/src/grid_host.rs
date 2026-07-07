@@ -185,7 +185,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_peers: raft_peers.clone(),
             diagnostics: drive_diagnostics.clone(),
             local_node_id: node_id.clone(),
-            local_addr: config.cluster_addr,
+            local_endpoint: config.cluster_advertise_endpoint(),
             local_generation: generation,
         },
         discovery.clone(),
@@ -489,7 +489,7 @@ struct GridDriveHandles {
     raft_peers: SharedRaftPeers,
     diagnostics: Arc<GridDriveDiagnostics>,
     local_node_id: ClusterNodeId,
-    local_addr: SocketAddr,
+    local_endpoint: String,
     local_generation: ClusterGeneration,
 }
 
@@ -554,7 +554,7 @@ async fn drive_grid_once(
     refresh_raft_peers(
         &handles.raft_peers,
         &handles.local_node_id,
-        handles.local_addr,
+        handles.local_endpoint.clone(),
         &handles.raft.members(),
         handles.local_generation,
         candidates,
@@ -584,7 +584,7 @@ async fn drive_grid_once(
 fn refresh_raft_peers(
     raft_peers: &SharedRaftPeers,
     local_node_id: &ClusterNodeId,
-    local_addr: SocketAddr,
+    local_endpoint: String,
     members: &[ClusterMember],
     local_generation: ClusterGeneration,
     candidates: &[ClusterCandidate],
@@ -594,18 +594,18 @@ fn refresh_raft_peers(
         raft_node_id(local_node_id),
         RaftPeer {
             node_id: local_node_id.clone(),
-            address: local_addr,
+            endpoint: local_endpoint,
         },
     );
     for member in members {
         if !member.is_member() {
             continue;
         }
-        let Some(address) = member
+        let Some(endpoint) = member
             .endpoints
             .control
             .as_deref()
-            .and_then(|endpoint| endpoint.parse::<SocketAddr>().ok())
+            .and_then(valid_raft_endpoint)
         else {
             continue;
         };
@@ -613,7 +613,7 @@ fn refresh_raft_peers(
             raft_node_id(&member.node_id),
             RaftPeer {
                 node_id: member.node_id.clone(),
-                address,
+                endpoint,
             },
         );
     }
@@ -621,11 +621,11 @@ fn refresh_raft_peers(
         if candidate.role != ClusterRole::Member || candidate.generation != local_generation {
             continue;
         }
-        let Some(address) = candidate
+        let Some(endpoint) = candidate
             .endpoints
             .control
             .as_deref()
-            .and_then(|endpoint| endpoint.parse::<SocketAddr>().ok())
+            .and_then(valid_raft_endpoint)
         else {
             continue;
         };
@@ -633,7 +633,7 @@ fn refresh_raft_peers(
             .entry(raft_node_id(&candidate.node_id))
             .or_insert_with(|| RaftPeer {
                 node_id: candidate.node_id.clone(),
-                address,
+                endpoint,
             });
     }
 }
@@ -765,7 +765,7 @@ impl GridDriveDiagnostics {
 #[derive(Debug, Clone)]
 struct RaftPeer {
     node_id: ClusterNodeId,
-    address: SocketAddr,
+    endpoint: String,
 }
 
 #[derive(Debug, Clone)]
@@ -823,22 +823,28 @@ fn raft_topology(
     local_raft_node_id: u64,
 ) -> CacheResult<RaftTopology> {
     let mut peers = BTreeMap::new();
-    if config.cluster_addr.port() != 0 {
+    if let Some(local_endpoint) = valid_raft_endpoint(&config.cluster_advertise_endpoint()) {
         insert_raft_peer(
             &mut peers,
             local_raft_node_id,
             local_node_id,
-            config.cluster_addr,
+            local_endpoint.clone(),
         )?;
         for seed in &config.seeds {
-            if let Ok(address) = seed.parse::<SocketAddr>() {
-                if address.port() == 0 || address == config.cluster_addr {
-                    continue;
-                }
-                let node_id = member_node_id_for_addr(address);
-                let raft_id = raft_node_id(&node_id);
-                insert_raft_peer(&mut peers, raft_id, node_id, address)?;
+            let Some(endpoint) = valid_raft_endpoint(seed) else {
+                continue;
+            };
+            if endpoint == local_endpoint {
+                continue;
             }
+            let Some(node_id) = node_id_for_seed_endpoint(seed) else {
+                continue;
+            };
+            let raft_id = raft_node_id(&node_id);
+            if raft_id == local_raft_node_id {
+                continue;
+            }
+            insert_raft_peer(&mut peers, raft_id, node_id, endpoint)?;
         }
     }
 
@@ -863,7 +869,7 @@ fn insert_raft_peer(
     peers: &mut BTreeMap<u64, RaftPeer>,
     raft_id: u64,
     node_id: ClusterNodeId,
-    address: SocketAddr,
+    endpoint: String,
 ) -> CacheResult<()> {
     if let Some(existing) = peers.get(&raft_id) {
         if existing.node_id != node_id {
@@ -874,8 +880,39 @@ fn insert_raft_peer(
         }
         return Ok(());
     }
-    peers.insert(raft_id, RaftPeer { node_id, address });
+    peers.insert(raft_id, RaftPeer { node_id, endpoint });
     Ok(())
+}
+
+fn valid_raft_endpoint(endpoint: &str) -> Option<String> {
+    let endpoint = endpoint.trim();
+    if endpoint.is_empty() {
+        return None;
+    }
+    if endpoint
+        .parse::<SocketAddr>()
+        .is_ok_and(|address| address.port() == 0 || address.ip().is_unspecified())
+    {
+        return None;
+    }
+    Some(endpoint.to_owned())
+}
+
+fn node_id_for_seed_endpoint(endpoint: &str) -> Option<ClusterNodeId> {
+    let endpoint = endpoint.trim();
+    if let Ok(address) = endpoint.parse::<SocketAddr>() {
+        return Some(member_node_id_for_addr(address));
+    }
+    let host = endpoint
+        .rsplit_once(':')
+        .map(|(host, _port)| host)
+        .unwrap_or(endpoint)
+        .trim_matches(['[', ']']);
+    host.split('.')
+        .next()
+        .map(str::trim)
+        .filter(|node_id| !node_id.is_empty())
+        .map(ClusterNodeId::from)
 }
 
 impl RaftTopology {
@@ -983,7 +1020,7 @@ impl RaftMessageSink for HttpRaftMessageSink {
             .client
             .post(format!(
                 "{}://{}{}",
-                self.scheme, peer.address, DEFAULT_RAFT_APPEND_PATH
+                self.scheme, peer.endpoint, DEFAULT_RAFT_APPEND_PATH
             ))
             .headers(headers)
             .json(&request)
@@ -991,8 +1028,8 @@ impl RaftMessageSink for HttpRaftMessageSink {
             .await
             .map_err(|error| {
                 CacheError::Backend(format!(
-                    "failed to send raft message to {}: {error}",
-                    peer.node_id
+                    "failed to send raft message to {} at {}: {error}",
+                    peer.node_id, peer.endpoint
                 ))
             })?;
         if !response.status().is_success() {
@@ -1683,7 +1720,7 @@ mod tests {
             raft_peers: raft_peers.clone(),
             diagnostics: Arc::new(diagnostics),
             local_node_id: ClusterNodeId::from("local"),
-            local_addr: "127.0.0.1:7000".parse().unwrap(),
+            local_endpoint: "127.0.0.1:7000".to_owned(),
             local_generation: ClusterGeneration::new(1),
         };
         drive_grid_once(&handles, &[]).await.unwrap();
@@ -1790,6 +1827,36 @@ mod tests {
     }
 
     #[test]
+    fn raft_topology_accepts_dns_seed_endpoints() {
+        let mut config = test_member_config("0.0.0.0:7000");
+        config.node_id = Some("demo-0".to_owned());
+        config.cluster_advertise_addr = Some("demo-0.demo-headless:7000".to_owned());
+        config.seeds = vec![
+            "demo-0.demo-headless:7000".to_owned(),
+            "demo-1.demo-headless:7000".to_owned(),
+            "demo-2.demo-headless:7000".to_owned(),
+        ];
+        let local_node = member_node_id(&config);
+        let local_raft_id = raft_node_id(&local_node);
+
+        let topology = raft_topology(&config, local_node, local_raft_id).unwrap();
+        let voters = topology.voters.iter().copied().collect::<BTreeSet<_>>();
+
+        assert!(topology.multi_voter);
+        assert_eq!(voters.len(), 3);
+        assert!(voters.contains(&raft_node_id(&ClusterNodeId::from("demo-0"))));
+        assert!(voters.contains(&raft_node_id(&ClusterNodeId::from("demo-1"))));
+        assert!(voters.contains(&raft_node_id(&ClusterNodeId::from("demo-2"))));
+        assert_eq!(
+            topology
+                .peers
+                .get(&raft_node_id(&ClusterNodeId::from("demo-1")))
+                .map(|peer| peer.endpoint.as_str()),
+            Some("demo-1.demo-headless:7000")
+        );
+    }
+
+    #[test]
     fn refresh_raft_peers_tracks_admitted_member_control_endpoints() {
         let local_node = ClusterNodeId::from("local");
         let member_node = ClusterNodeId::from("member-a");
@@ -1806,7 +1873,7 @@ mod tests {
         refresh_raft_peers(
             &raft_peers,
             &local_node,
-            "127.0.0.1:7000".parse().unwrap(),
+            "127.0.0.1:7000".to_owned(),
             &[member],
             ClusterGeneration::new(1),
             &[],
@@ -1816,14 +1883,14 @@ mod tests {
         assert_eq!(
             peers
                 .get(&raft_node_id(&local_node))
-                .map(|peer| peer.address),
-            Some("127.0.0.1:7000".parse().unwrap())
+                .map(|peer| peer.endpoint.as_str()),
+            Some("127.0.0.1:7000")
         );
         assert_eq!(
             peers
                 .get(&raft_node_id(&member_node))
-                .map(|peer| peer.address),
-            Some("127.0.0.1:7001".parse().unwrap())
+                .map(|peer| peer.endpoint.as_str()),
+            Some("127.0.0.1:7001")
         );
     }
 
@@ -1860,7 +1927,7 @@ mod tests {
         refresh_raft_peers(
             &raft_peers,
             &local_node,
-            "127.0.0.1:7000".parse().unwrap(),
+            "127.0.0.1:7000".to_owned(),
             &[member],
             ClusterGeneration::new(1),
             &candidates,
@@ -1870,14 +1937,14 @@ mod tests {
         assert_eq!(
             peers
                 .get(&raft_node_id(&member_node))
-                .map(|peer| peer.address),
-            Some("127.0.0.1:7001".parse().unwrap())
+                .map(|peer| peer.endpoint.as_str()),
+            Some("127.0.0.1:7001")
         );
         assert_eq!(
             peers
                 .get(&raft_node_id(&candidate_node))
-                .map(|peer| peer.address),
-            Some("127.0.0.1:7002".parse().unwrap())
+                .map(|peer| peer.endpoint.as_str()),
+            Some("127.0.0.1:7002")
         );
         assert!(!peers.contains_key(&raft_node_id(&stale_candidate_node)));
         assert!(!peers.contains_key(&raft_node_id(&ClusterNodeId::from("client-a"))));
@@ -1896,7 +1963,7 @@ mod tests {
             member_raft_id,
             RaftPeer {
                 node_id: member_node.clone(),
-                address: "127.0.0.1:7001".parse().unwrap(),
+                endpoint: "127.0.0.1:7001".to_owned(),
             },
         )])));
 
@@ -2025,7 +2092,7 @@ mod tests {
             &mut peers,
             42,
             ClusterNodeId::from("member-a"),
-            "127.0.0.1:7000".parse().unwrap(),
+            "127.0.0.1:7000".to_owned(),
         )
         .unwrap();
 
@@ -2033,7 +2100,7 @@ mod tests {
             &mut peers,
             42,
             ClusterNodeId::from("member-b"),
-            "127.0.0.1:7001".parse().unwrap(),
+            "127.0.0.1:7001".to_owned(),
         )
         .unwrap_err();
 
@@ -2102,7 +2169,7 @@ mod tests {
             2,
             RaftPeer {
                 node_id: ClusterNodeId::from("peer"),
-                address: peer_addr,
+                endpoint: peer_addr.to_string(),
             },
         );
         let mut config = test_member_config("127.0.0.1:7000");
