@@ -162,5 +162,9 @@ It needs a cache runtime with explicit semantics, a local-first fast path, and a
 
 That is what I am building with HydraCache.
 
-I would love to hear from Rust backend developers: when you cache database or API results today, where does your code become hardest to reason about?
+Project links:
 
+- GitHub: https://github.com/javaquasar/hydracache
+- crates.io: https://crates.io/crates/hydracache
+
+I would love to hear from Rust backend developers: when you cache database or API results today, where does your code become hardest to reason about?
