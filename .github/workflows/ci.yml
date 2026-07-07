@@ -167,6 +167,47 @@ jobs:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
 
+  coverage-ratchet:
+    name: Coverage Ratchet
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: coverage-ratchet
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Enforce coverage floor
+        run: cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88
+
+      - name: Generate coverage artifacts on failure
+        if: failure()
+        continue-on-error: true
+        run: |
+          cargo llvm-cov report --html --output-dir target/llvm-cov-html
+          cargo llvm-cov report --lcov --output-path target/llvm-cov.lcov
+
+      - name: Upload coverage artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ratchet
+          path: |
+            target/llvm-cov-html
+            target/llvm-cov.lcov
+
   msrv:
     name: MSRV 1.88.0
     runs-on: ubuntu-latest

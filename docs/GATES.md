@@ -1,10 +1,11 @@
 # HydraCache — Enforcement Gates
 
 This is the single map of every gate that guards `main`, and the one command to run
-them locally. **Enforcement lives in code/CI, not in prose**: a rule that is not in a
-gate here is not enforced. CI (`.github/workflows/ci.yml`) and the local
-`cargo xtask verify` run the same set, so "what an agent runs" equals "what CI
-enforces" — no drift.
+the fast gates locally. **Enforcement lives in code/CI, not in prose**: a rule that
+is not in a gate here is not enforced. Fast CI gates and the local
+`cargo xtask verify` stay aligned so "what an agent runs for a milestone" matches
+"what CI enforces" for the same fast surface. Time-heavy scheduled gates are
+registered here and wired in CI, but intentionally stay out of `verify`.
 
 ## One command
 
@@ -45,6 +46,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Docs consistency | `cargo xtask doc-check` | CI + verify | `releases.toml` integrity (RULES R-11): file existence, version uniqueness, `depends_on` resolution, status validity, 0.43 networked-control-plane status-drift sentinel |
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
 | Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
+| Coverage ratchet | `cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88` | CI (scheduled/dispatch) | mechanical line coverage floor; not a RULES R-7 numeric self-score |
 | Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
 | Clippy | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | CI + verify | lints |
@@ -94,8 +96,9 @@ Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContin
 
 1. Implement the check as a single command (a test, a `cargo deny`/`clippy` rule, or
    an `xtask` subcommand).
-2. Add it to `cargo xtask verify` (for fast gates) and to `ci.yml`.
+2. Add fast gates to `cargo xtask verify` and CI. Add time-heavy gates to CI as
+   scheduled/dispatch jobs and record them in this registry.
 3. Add a row to the table above.
 
-Do not document a gate that is not wired into both `verify`/CI — that is exactly the
-prose-only "enforcement" this file exists to prevent.
+Do not document a gate that is not wired into its stated enforcement surface; that
+is exactly the prose-only "enforcement" this file exists to prevent.
