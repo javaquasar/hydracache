@@ -1,20 +1,38 @@
+use std::collections::BTreeMap;
+use std::process::Command;
 use std::time::Duration;
 
 use hydracache_operator::controller::READY_PHASE;
 use hydracache_operator::crd::{sample_spec, HydraCacheCluster, HydraCacheClusterSpec};
 use hydracache_operator::resources::{
-    APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL, MANAGED_BY_LABEL,
+    headless_service_name, APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL,
+    MANAGED_BY_LABEL,
 };
 use hydracache_operator::scale::{pod_name, quorum_for};
-use k8s_openapi::api::{apps::v1::StatefulSet, core::v1::Pod};
+use k8s_openapi::api::{
+    apps::v1::StatefulSet,
+    core::v1::Pod,
+    networking::v1::{NetworkPolicy, NetworkPolicySpec},
+};
+use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
 use kube::api::{DeleteParams, ListParams, Patch, PatchParams};
-use kube::Api;
+use kube::{
+    api::{ApiResource, DynamicObject, GroupVersionKind},
+    discovery, Api,
+};
+use serde_json::{json, Value};
 
 const KIND_ENV: &str = "HYDRACACHE_OPERATOR_KIND";
 const NAMESPACE_ENV: &str = "HYDRACACHE_OPERATOR_NAMESPACE";
 const CLUSTER_ENV: &str = "HYDRACACHE_OPERATOR_CLUSTER";
+const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
+const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
 const KIND_WAIT_ATTEMPTS: usize = 90;
-const SCOPE_DISCLOSURE: &str = "0.59 networked daemon grid is wired: member pods host the networked member grid; partition and slow-disk faults still require the external kind chaos injector.";
+const NETWORK_POLICY_SKIP: &str =
+    "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
+const IOCHAOS_SKIP: &str =
+    "chaos-mesh IOChaos CRD is not installed; slow-disk remains an external dependency";
+const SCOPE_DISCLOSURE: &str = "0.61 kind chaos: NetworkPartition uses Kubernetes NetworkPolicy only when a CNI enforcement probe proves policy is active; SlowDisk uses chaos-mesh IOChaos only when the iochaos.chaos-mesh.org CRD is installed. Each unsupported leg skips loud, never wrong-but-green.";
 
 fn kind_enabled() -> bool {
     std::env::var(KIND_ENV).as_deref() == Ok("1")
@@ -26,6 +44,18 @@ fn namespace() -> String {
 
 fn cluster_name() -> String {
     std::env::var(CLUSTER_ENV).unwrap_or_else(|_| "hydracache-soak".to_owned())
+}
+
+fn soak_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
+    let mut spec = sample_spec();
+    spec.image = std::env::var(IMAGE_ENV).unwrap_or_else(|_| {
+        panic!("{KIND_ENV}=1 soak tests require {IMAGE_ENV}=<current hydracache-server image>")
+    });
+    spec.version = std::env::var(VERSION_ENV).unwrap_or_else(|_| "0.61.0-dev".to_owned());
+    spec.replicas = replicas;
+    spec.tls = None;
+    spec.backup_schedule = None;
+    spec
 }
 
 fn lifecycle_selector(cluster: &str) -> String {
@@ -44,8 +74,20 @@ enum ChaosFault {
 }
 
 impl ChaosFault {
-    fn requires_external_injector(self) -> bool {
+    fn requires_optional_infrastructure(self) -> bool {
         matches!(self, Self::NetworkPartition { .. } | Self::SlowDisk { .. })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum ChaosInjection {
+    Applied(&'static str),
+    Skipped(String),
+}
+
+impl ChaosInjection {
+    fn is_skipped(&self) -> bool {
+        matches!(self, Self::Skipped(_))
     }
 }
 
@@ -106,6 +148,71 @@ impl CommittedWriteProbe {
     }
 }
 
+fn partition_policy_name(cluster: &str, ordinal: u32) -> String {
+    format!("{cluster}-partition-{ordinal}")
+}
+
+fn slow_disk_chaos_name(cluster: &str, ordinal: u32) -> String {
+    format!("{cluster}-slow-disk-{ordinal}")
+}
+
+fn deny_all_partition_policy(cluster: &str, namespace: &str, ordinal: u32) -> NetworkPolicy {
+    NetworkPolicy {
+        metadata: ObjectMeta {
+            name: Some(partition_policy_name(cluster, ordinal)),
+            namespace: Some(namespace.to_owned()),
+            ..Default::default()
+        },
+        spec: Some(NetworkPolicySpec {
+            ingress: Some(Vec::new()),
+            egress: Some(Vec::new()),
+            pod_selector: Some(LabelSelector {
+                match_labels: Some(BTreeMap::from([(
+                    "statefulset.kubernetes.io/pod-name".to_owned(),
+                    pod_name(cluster, ordinal),
+                )])),
+                ..Default::default()
+            }),
+            policy_types: Some(vec!["Ingress".to_owned(), "Egress".to_owned()]),
+        }),
+    }
+}
+
+fn iochaos_manifest(cluster: &str, namespace: &str, ordinal: u32) -> Value {
+    let pod = pod_name(cluster, ordinal);
+    json!({
+        "apiVersion": "chaos-mesh.org/v1alpha1",
+        "kind": "IOChaos",
+        "metadata": {
+            "name": slow_disk_chaos_name(cluster, ordinal),
+            "namespace": namespace,
+        },
+        "spec": {
+            "action": "latency",
+            "mode": "one",
+            "selector": {
+                "namespaces": [namespace],
+                "pods": {
+                    namespace: [pod],
+                },
+            },
+            "volumePath": "/var/lib/hydracache",
+            "path": "/var/lib/hydracache/**/*",
+            "delay": "100ms",
+            "percent": 100,
+            "duration": "30s",
+        },
+    })
+}
+
+fn slow_disk_plan_for_crd_present(crd_present: bool) -> ChaosInjection {
+    if crd_present {
+        ChaosInjection::Applied("chaos-mesh IOChaos")
+    } else {
+        ChaosInjection::Skipped(IOCHAOS_SKIP.to_owned())
+    }
+}
+
 #[derive(Clone)]
 struct KindHarness {
     client: kube::Client,
@@ -148,34 +255,142 @@ impl KindHarness {
         cluster
     }
 
-    async fn inject(&self, fault: ChaosFault) {
+    async fn inject(&self, fault: ChaosFault) -> ChaosInjection {
         match fault {
             ChaosFault::PodCrash { ordinal } => {
                 let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
                 let _ = pods
                     .delete(&pod_name(&self.cluster, ordinal), &DeleteParams::default())
                     .await;
+                ChaosInjection::Applied("pod delete")
             }
             ChaosFault::NetworkPartition { ordinal } => {
-                eprintln!(
-                    "partition fault for ordinal {ordinal} requires the external kind chaos injector; observing recovery only. {SCOPE_DISCLOSURE}"
-                );
+                self.inject_network_partition(ordinal).await
+            }
+            ChaosFault::SlowDisk { ordinal } => self.inject_slow_disk(ordinal).await,
+        }
+    }
+
+    async fn heal(&self, fault: ChaosFault, injection: &ChaosInjection) {
+        match fault {
+            ChaosFault::PodCrash { .. } => {}
+            ChaosFault::NetworkPartition { ordinal } => {
+                if !injection.is_skipped() {
+                    self.delete_network_partition(ordinal).await;
+                }
             }
             ChaosFault::SlowDisk { ordinal } => {
-                eprintln!(
-                    "slow-disk fault for ordinal {ordinal} requires the external kind chaos injector; observing recovery only. {SCOPE_DISCLOSURE}"
-                );
+                if !injection.is_skipped() {
+                    self.delete_slow_disk(ordinal).await;
+                }
             }
         }
     }
 
-    async fn heal(&self, fault: ChaosFault) {
-        match fault {
-            ChaosFault::PodCrash { .. } => {}
-            ChaosFault::NetworkPartition { ordinal } | ChaosFault::SlowDisk { ordinal } => {
-                eprintln!("external chaos injector should heal ordinal {ordinal}");
-            }
+    async fn inject_network_partition(&self, ordinal: u32) -> ChaosInjection {
+        let policies: Api<NetworkPolicy> = Api::namespaced(self.client.clone(), &self.namespace);
+        let policy = deny_all_partition_policy(&self.cluster, &self.namespace, ordinal);
+        let name = partition_policy_name(&self.cluster, ordinal);
+        policies
+            .patch(
+                &name,
+                &PatchParams::apply(FIELD_MANAGER).force(),
+                &Patch::Apply(&policy),
+            )
+            .await
+            .expect("kind partition injector should apply NetworkPolicy");
+
+        if self.network_policy_blocks_peer(ordinal).await {
+            ChaosInjection::Applied("NetworkPolicy")
+        } else {
+            let _ = policies.delete(&name, &DeleteParams::default()).await;
+            ChaosInjection::Skipped(NETWORK_POLICY_SKIP.to_owned())
         }
+    }
+
+    async fn delete_network_partition(&self, ordinal: u32) {
+        let policies: Api<NetworkPolicy> = Api::namespaced(self.client.clone(), &self.namespace);
+        let _ = policies
+            .delete(
+                &partition_policy_name(&self.cluster, ordinal),
+                &DeleteParams::default(),
+            )
+            .await;
+    }
+
+    async fn network_policy_blocks_peer(&self, isolated_ordinal: u32) -> bool {
+        let source_ordinal = if isolated_ordinal == 0 { 1 } else { 0 };
+        let source = pod_name(&self.cluster, source_ordinal);
+        let target = pod_name(&self.cluster, isolated_ordinal);
+        let url = format!(
+            "http://{}.{}:9091/readyz",
+            target,
+            headless_service_name(&self.cluster)
+        );
+
+        for _ in 0..10 {
+            let reachable = Command::new("kubectl")
+                .arg("-n")
+                .arg(&self.namespace)
+                .arg("exec")
+                .arg(&source)
+                .arg("--")
+                .arg("wget")
+                .arg("-qO-")
+                .arg("-T")
+                .arg("2")
+                .arg(&url)
+                .output()
+                .expect("kind partition enforcement probe requires kubectl")
+                .status
+                .success();
+            if !reachable {
+                return true;
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+        false
+    }
+
+    async fn inject_slow_disk(&self, ordinal: u32) -> ChaosInjection {
+        let Some(api_resource) = self.iochaos_api_resource().await else {
+            return slow_disk_plan_for_crd_present(false);
+        };
+        let iochaos: Api<DynamicObject> =
+            Api::namespaced_with(self.client.clone(), &self.namespace, &api_resource);
+        let name = slow_disk_chaos_name(&self.cluster, ordinal);
+        let manifest = iochaos_manifest(&self.cluster, &self.namespace, ordinal);
+        iochaos
+            .patch(
+                &name,
+                &PatchParams::apply(FIELD_MANAGER).force(),
+                &Patch::Apply(&manifest),
+            )
+            .await
+            .expect("kind slow-disk injector should apply chaos-mesh IOChaos");
+        slow_disk_plan_for_crd_present(true)
+    }
+
+    async fn delete_slow_disk(&self, ordinal: u32) {
+        let Some(api_resource) = self.iochaos_api_resource().await else {
+            return;
+        };
+        let iochaos: Api<DynamicObject> =
+            Api::namespaced_with(self.client.clone(), &self.namespace, &api_resource);
+        let _ = iochaos
+            .delete(
+                &slow_disk_chaos_name(&self.cluster, ordinal),
+                &DeleteParams::default(),
+            )
+            .await;
+    }
+
+    async fn iochaos_api_resource(&self) -> Option<ApiResource> {
+        let gvk = GroupVersionKind::gvk("chaos-mesh.org", "v1alpha1", "IOChaos");
+        discovery::pinned_kind(&self.client, &gvk)
+            .await
+            .ok()
+            .map(|(resource, _)| resource)
     }
 
     async fn wait_ready(
@@ -281,7 +496,7 @@ async fn multi_node_chaos_soak_loses_no_committed_write() {
     };
     eprintln!("{SCOPE_DISCLOSURE}");
 
-    let cluster = kind.apply_cluster(sample_spec()).await;
+    let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
     let mut probe = CommittedWriteProbe::default();
     let install = kind
         .wait_ready(cluster.spec.replicas, "install", probe.committed())
@@ -291,14 +506,17 @@ async fn multi_node_chaos_soak_loses_no_committed_write() {
 
     for fault in rolling_chaos_schedule() {
         probe.record_committed_write();
-        kind.inject(fault).await;
+        let injection = kind.inject(fault).await;
+        if let ChaosInjection::Skipped(reason) = &injection {
+            eprintln!("skipping {fault:?}: {reason}");
+        }
         let observed = kind
             .wait_ready(cluster.spec.replicas, "fault-window", probe.committed())
             .await;
         observed.assert_quorum();
         observed.assert_leader();
         probe.assert_no_lost_committed_write(&observed);
-        kind.heal(fault).await;
+        kind.heal(fault, &injection).await;
         let recovered = kind
             .wait_ready(cluster.spec.replicas, "recovered", probe.committed())
             .await;
@@ -317,7 +535,7 @@ async fn leader_is_always_reestablished_after_pod_crash() {
     };
     eprintln!("{SCOPE_DISCLOSURE}");
 
-    let cluster = kind.apply_cluster(sample_spec()).await;
+    let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
     let mut probe = CommittedWriteProbe::default();
     let ready = kind
         .wait_ready(cluster.spec.replicas, READY_PHASE, probe.committed())
@@ -325,7 +543,7 @@ async fn leader_is_always_reestablished_after_pod_crash() {
     ready.assert_leader();
 
     probe.record_committed_write();
-    kind.inject(ChaosFault::PodCrash { ordinal: 0 }).await;
+    let injection = kind.inject(ChaosFault::PodCrash { ordinal: 0 }).await;
     let recovered = kind
         .wait_ready(
             cluster.spec.replicas,
@@ -336,6 +554,67 @@ async fn leader_is_always_reestablished_after_pod_crash() {
     recovered.assert_quorum();
     recovered.assert_leader();
     probe.assert_no_lost_committed_write(&recovered);
+    kind.heal(ChaosFault::PodCrash { ordinal: 0 }, &injection)
+        .await;
+}
+
+#[tokio::test]
+#[ignore = "kind/calico-gated: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
+async fn kind_partition_injection_isolates_and_heals() {
+    let Some(kind) = KindHarness::try_start("kind_partition_injection_isolates_and_heals").await
+    else {
+        return;
+    };
+    eprintln!("{SCOPE_DISCLOSURE}");
+
+    let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
+    let ready = kind.wait_ready(cluster.spec.replicas, READY_PHASE, 0).await;
+    ready.assert_quorum();
+    ready.assert_leader();
+
+    let fault = ChaosFault::NetworkPartition { ordinal: 1 };
+    let injection = kind.inject(fault).await;
+    if let ChaosInjection::Skipped(reason) = &injection {
+        eprintln!("skipping partition assertion: {reason}");
+        return;
+    }
+
+    let observed = kind
+        .wait_ready(cluster.spec.replicas, "partition-window", 1)
+        .await;
+    observed.assert_quorum();
+    observed.assert_leader();
+    kind.heal(fault, &injection).await;
+
+    let recovered = kind
+        .wait_ready(cluster.spec.replicas, "partition-healed", 1)
+        .await;
+    recovered.assert_quorum();
+    recovered.assert_leader();
+}
+
+#[tokio::test]
+async fn partition_probe_skips_loud_on_non_enforcing_cni() {
+    let Some(kind) =
+        KindHarness::try_start("partition_probe_skips_loud_on_non_enforcing_cni").await
+    else {
+        return;
+    };
+
+    let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
+    kind.wait_ready(cluster.spec.replicas, READY_PHASE, 0).await;
+    let fault = ChaosFault::NetworkPartition { ordinal: 1 };
+    let injection = kind.inject(fault).await;
+    match &injection {
+        ChaosInjection::Skipped(reason) => assert!(
+            reason.contains("NetworkPolicy"),
+            "skip should name NetworkPolicy enforcement: {reason}"
+        ),
+        ChaosInjection::Applied(kind_name) => {
+            assert_eq!(*kind_name, "NetworkPolicy");
+            kind.heal(fault, &injection).await;
+        }
+    }
 }
 
 #[tokio::test]
@@ -349,11 +628,55 @@ async fn soak_skips_gracefully_without_a_cluster() {
         !kind_enabled(),
         "kind soak tests must be opt-in so local verify can run without a cluster"
     );
-    assert!(SCOPE_DISCLOSURE.contains("networked member grid"));
+    assert!(SCOPE_DISCLOSURE.contains("NetworkPolicy"));
+    assert!(SCOPE_DISCLOSURE.contains("IOChaos"));
     assert!(
         rolling_chaos_schedule()
             .iter()
-            .any(|fault| fault.requires_external_injector()),
-        "partition/slow-disk faults remain explicit and externally injected"
+            .any(|fault| fault.requires_optional_infrastructure()),
+        "partition/slow-disk faults should name optional infrastructure"
     );
+}
+
+#[test]
+fn deny_all_partition_policy_selects_single_statefulset_pod() {
+    let policy = deny_all_partition_policy("chaos", "testing", 2);
+    let spec = policy.spec.as_ref().unwrap();
+    let labels = spec
+        .pod_selector
+        .as_ref()
+        .unwrap()
+        .match_labels
+        .as_ref()
+        .unwrap();
+
+    assert_eq!(policy.metadata.name.as_deref(), Some("chaos-partition-2"));
+    assert_eq!(labels["statefulset.kubernetes.io/pod-name"], "chaos-2");
+    assert_eq!(
+        spec.policy_types.as_ref().unwrap(),
+        &vec!["Ingress".to_owned(), "Egress".to_owned()]
+    );
+    assert_eq!(spec.ingress.as_ref().unwrap().len(), 0);
+    assert_eq!(spec.egress.as_ref().unwrap().len(), 0);
+}
+
+#[test]
+fn slow_disk_uses_iochaos_only_when_crd_present() {
+    assert_eq!(
+        slow_disk_plan_for_crd_present(false),
+        ChaosInjection::Skipped(IOCHAOS_SKIP.to_owned())
+    );
+    assert_eq!(
+        slow_disk_plan_for_crd_present(true),
+        ChaosInjection::Applied("chaos-mesh IOChaos")
+    );
+
+    let manifest = iochaos_manifest("chaos", "testing", 1);
+    assert_eq!(manifest["kind"], "IOChaos");
+    assert_eq!(manifest["metadata"]["name"], "chaos-slow-disk-1");
+    assert_eq!(
+        manifest["spec"]["selector"]["pods"]["testing"][0],
+        "chaos-1"
+    );
+    assert_eq!(manifest["spec"]["volumePath"], "/var/lib/hydracache");
 }
