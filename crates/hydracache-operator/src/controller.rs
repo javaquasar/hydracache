@@ -171,9 +171,12 @@ pub async fn apply_cluster(
         return Ok(Action::requeue(Duration::from_secs(30)));
     }
 
-    let desired = OwnedResources::build_with_replicas_and_tls_fingerprint(
+    let bootstrap_replicas =
+        bootstrap_replicas(&cluster, existing.as_ref()).unwrap_or(scale_plan.effective_replicas);
+    let desired = OwnedResources::build_with_replicas_bootstrap_and_tls_fingerprint(
         &cluster,
         scale_plan.effective_replicas,
+        bootstrap_replicas,
         tls_secret_plan.fingerprint.as_deref(),
     );
 

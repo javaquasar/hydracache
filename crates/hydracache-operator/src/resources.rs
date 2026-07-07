@@ -60,10 +60,31 @@ impl OwnedResources {
         replicas: u32,
         tls_secret_fingerprint: Option<&str>,
     ) -> Self {
+        let bootstrap_replicas = cluster
+            .status
+            .as_ref()
+            .and_then(|status| status.bootstrap_replicas)
+            .unwrap_or(replicas)
+            .max(1);
+        Self::build_with_replicas_bootstrap_and_tls_fingerprint(
+            cluster,
+            replicas,
+            bootstrap_replicas,
+            tls_secret_fingerprint,
+        )
+    }
+
+    pub fn build_with_replicas_bootstrap_and_tls_fingerprint(
+        cluster: &HydraCacheCluster,
+        replicas: u32,
+        bootstrap_replicas: u32,
+        tls_secret_fingerprint: Option<&str>,
+    ) -> Self {
         let name = cluster.name_any();
         let namespace = cluster.namespace();
         let labels = base_labels(&name);
         let owner = owner_reference(cluster);
+        let bootstrap_replicas = bootstrap_replicas.max(1);
 
         Self {
             stateful_set: stateful_set(
@@ -72,6 +93,7 @@ impl OwnedResources {
                 &labels,
                 owner.clone(),
                 replicas,
+                bootstrap_replicas,
                 tls_secret_fingerprint,
             ),
             headless_service: headless_service(&name, namespace.clone(), &labels, owner.clone()),
@@ -148,6 +170,7 @@ pub fn stateful_set(
     base_labels: &BTreeMap<String, String>,
     owner: Option<OwnerReference>,
     replicas: u32,
+    bootstrap_replicas: u32,
     tls_secret_fingerprint: Option<&str>,
 ) -> StatefulSet {
     let name = cluster.name_any();
@@ -163,7 +186,13 @@ pub fn stateful_set(
                 ..Default::default()
             },
             service_name: Some(headless_service_name(&name)),
-            template: pod_template(cluster, namespace, &pod_labels, tls_secret_fingerprint),
+            template: pod_template(
+                cluster,
+                namespace,
+                &pod_labels,
+                bootstrap_replicas,
+                tls_secret_fingerprint,
+            ),
             update_strategy: Some(StatefulSetUpdateStrategy {
                 type_: Some("OnDelete".to_owned()),
                 ..Default::default()
@@ -264,6 +293,7 @@ fn pod_template(
     cluster: &HydraCacheCluster,
     namespace: Option<String>,
     pod_labels: &BTreeMap<String, String>,
+    bootstrap_replicas: u32,
     tls_secret_fingerprint: Option<&str>,
 ) -> PodTemplateSpec {
     let mut volumes = Vec::new();
@@ -322,7 +352,8 @@ fn pod_template(
         }),
         spec: Some(PodSpec {
             containers: vec![Container {
-                env: Some(server_env(cluster)),
+                command: Some(server_startup_command(&cluster.name_any())),
+                env: Some(server_env(cluster, bootstrap_replicas)),
                 image: Some(cluster.spec.image.clone()),
                 image_pull_policy: Some("IfNotPresent".to_owned()),
                 lifecycle: Some(Lifecycle {
@@ -360,8 +391,7 @@ fn pod_template(
     }
 }
 
-fn server_env(cluster: &HydraCacheCluster) -> Vec<EnvVar> {
-    let name = cluster.name_any();
+fn server_env(cluster: &HydraCacheCluster, bootstrap_replicas: u32) -> Vec<EnvVar> {
     let tls_enabled = cluster.spec.tls.is_some().to_string();
     let backup_location = cluster
         .spec
@@ -373,7 +403,11 @@ fn server_env(cluster: &HydraCacheCluster) -> Vec<EnvVar> {
         env("HYDRACACHE_ROLE", "member"),
         env("HYDRACACHE_LISTEN_ADDR", "0.0.0.0:8080"),
         env("HYDRACACHE_CLUSTER_ADDR", "0.0.0.0:7000"),
-        env("HYDRACACHE_SEEDS", &seed_list(&name, cluster.spec.replicas)),
+        env(
+            "HYDRACACHE_BOOTSTRAP_REPLICAS",
+            &bootstrap_replicas.to_string(),
+        ),
+        env("HYDRACACHE_JOIN_TIMEOUT_MS", "30000"),
         env("HYDRACACHE_STORAGE_DIR", "/var/lib/hydracache"),
         env("HYDRACACHE_TLS_ENABLED", &tls_enabled),
         env("HYDRACACHE_TLS_CERT_PATH", "/etc/hydracache/tls/tls.crt"),
@@ -385,6 +419,40 @@ fn server_env(cluster: &HydraCacheCluster) -> Vec<EnvVar> {
         ),
         env("HYDRACACHE_BACKUP_LOCATION", backup_location),
         env("HYDRACACHE_ADMIN_ADDR", "0.0.0.0:9091"),
+    ]
+}
+
+fn server_startup_command(name: &str) -> Vec<String> {
+    let headless = headless_service_name(name);
+    vec![
+        "/bin/sh".to_owned(),
+        "-ec".to_owned(),
+        format!(
+            r#"ordinal="${{HOSTNAME##*-}}"
+case "$ordinal" in
+  ''|*[!0-9]*) echo "invalid StatefulSet HOSTNAME for HydraCache ordinal: $HOSTNAME" >&2; exit 64 ;;
+esac
+if [ "$ordinal" -lt "$HYDRACACHE_BOOTSTRAP_REPLICAS" ]; then
+  export HYDRACACHE_CLUSTER_START=bootstrap
+else
+  export HYDRACACHE_CLUSTER_START=join
+fi
+export HYDRACACHE_NODE_ID="$HOSTNAME"
+export HYDRACACHE_CLUSTER_ADVERTISE_ADDR="$HOSTNAME.{headless}:{CLUSTER_PORT}"
+seeds=""
+i=0
+while [ "$i" -lt "$HYDRACACHE_BOOTSTRAP_REPLICAS" ]; do
+  seed="{name}-$i.{headless}:{CLUSTER_PORT}"
+  if [ -z "$seeds" ]; then
+    seeds="$seed"
+  else
+    seeds="$seeds,$seed"
+  fi
+  i=$((i + 1))
+done
+export HYDRACACHE_SEEDS="$seeds"
+exec /usr/local/bin/hydracache-server"#
+        ),
     ]
 }
 

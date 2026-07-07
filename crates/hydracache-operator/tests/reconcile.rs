@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use hydracache_operator::controller::{
     immutable_change_condition, is_leader, lease_name, observed_status, operator_lease_for_cluster,
     validate_statefulset_update, DEGRADED_HEALTH, FINALIZER, FORMING_HEALTH, HEALTHY_HEALTH,
@@ -322,6 +324,44 @@ fn reconcile_status_is_state_machine_snapshot() {
 }
 
 #[test]
+fn operator_template_renders_routable_cluster_identity_and_endpoint() {
+    let mut cluster = cluster("identity");
+    cluster.spec.replicas = 4;
+    cluster.status = Some(HydraCacheClusterStatus {
+        bootstrap_replicas: Some(3),
+        ..Default::default()
+    });
+
+    let desired = OwnedResources::build_with_replicas(&cluster, 4);
+    let container = &desired
+        .stateful_set
+        .spec
+        .as_ref()
+        .unwrap()
+        .template
+        .spec
+        .as_ref()
+        .unwrap()
+        .containers[0];
+    let env = env_map(container);
+    let command = container.command.as_ref().unwrap().join("\n");
+
+    assert_eq!(env["HYDRACACHE_CLUSTER_ADDR"], "0.0.0.0:7000");
+    assert_eq!(env["HYDRACACHE_BOOTSTRAP_REPLICAS"], "3");
+    assert_eq!(env["HYDRACACHE_JOIN_TIMEOUT_MS"], "30000");
+    assert!(!env.contains_key("HYDRACACHE_SEEDS"));
+    assert!(command.contains("HYDRACACHE_CLUSTER_START=bootstrap"));
+    assert!(command.contains("HYDRACACHE_CLUSTER_START=join"));
+    assert!(command.contains(r#"HYDRACACHE_NODE_ID="$HOSTNAME""#));
+    assert!(
+        command.contains(r#"HYDRACACHE_CLUSTER_ADVERTISE_ADDR="$HOSTNAME.identity-headless:7000""#)
+    );
+    assert!(command.contains(r#"seed="identity-$i.identity-headless:7000""#));
+    assert!(command.contains(r#"HYDRACACHE_SEEDS="$seeds""#));
+    assert!(!command.contains("0.0.0.0:7000"));
+}
+
+#[test]
 fn bootstrap_replicas_is_recorded_once() {
     let mut subject = cluster("bootstrap-once");
     let desired = OwnedResources::build(&subject);
@@ -376,6 +416,16 @@ async fn reconcile_apply_cr_becomes_ready() {
             .unwrap_or(0)
             > 0
     );
+}
+
+fn env_map(container: &k8s_openapi::api::core::v1::Container) -> BTreeMap<String, String> {
+    container
+        .env
+        .as_ref()
+        .unwrap()
+        .iter()
+        .map(|var| (var.name.clone(), var.value.clone().unwrap_or_default()))
+        .collect()
 }
 
 #[tokio::test]
