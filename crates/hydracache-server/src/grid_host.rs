@@ -30,7 +30,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
 
 use crate::cluster_status::{GridControlPlaneHandle, Reachability, ReshardPhase};
-use crate::config::{ServerConfig, ServerConfigError};
+use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
@@ -123,14 +123,23 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_log_dir.display()
         ))
     })?;
+    let start_mode = resolved_start_mode(config, &raft_log_dir)?;
 
-    let raft_config = RaftMetadataRuntimeConfig::multi_voter(
-        DEFAULT_CLUSTER_NAME,
-        raft_node_id,
-        topology.voters.clone(),
-    )
-    .auto_campaign(!topology.multi_voter)
-    .ticks(topology.election_tick_for(raft_node_id), 1);
+    let raft_config = match start_mode {
+        ResolvedClusterStartMode::Bootstrap => RaftMetadataRuntimeConfig::multi_voter(
+            DEFAULT_CLUSTER_NAME,
+            raft_node_id,
+            topology.voters.clone(),
+        )
+        .auto_campaign(!topology.multi_voter)
+        .ticks(topology.election_tick_for(raft_node_id), 1),
+        ResolvedClusterStartMode::Join => RaftMetadataRuntimeConfig::try_joining(
+            DEFAULT_CLUSTER_NAME,
+            raft_node_id,
+            topology.remote_voters(raft_node_id),
+        )?
+        .ticks(topology.joiner_election_tick(), 1),
+    };
     let raft = Arc::new(RaftMetadataRuntime::durable_with_config(
         raft_config,
         DurableRaftLogDirectory::new(),
@@ -150,7 +159,9 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
     let route_auth = cluster_route_auth(config, &node_id)?;
     let raft_peers = Arc::new(RwLock::new((*topology.peers).clone()));
-    let message_sink: Arc<dyn RaftMessageSink> = if topology.multi_voter {
+    let use_network_sink =
+        topology.multi_voter || matches!(start_mode, ResolvedClusterStartMode::Join);
+    let message_sink: Arc<dyn RaftMessageSink> = if use_network_sink {
         Arc::new(HttpRaftMessageSink::new(
             node_id.clone(),
             raft_node_id,
@@ -182,7 +193,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         shutdown.subscribe(),
     )
     .await?;
-    if topology.multi_voter {
+    if use_network_sink {
         if raft_node_id == topology.bootstrap_raft_node_id {
             let _ = send_raft_messages(&message_sink, raft.campaign()?).await;
         }
@@ -695,6 +706,47 @@ struct RaftTopology {
     bootstrap_raft_node_id: u64,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ResolvedClusterStartMode {
+    Bootstrap,
+    Join,
+}
+
+fn resolved_start_mode(
+    config: &ServerConfig,
+    raft_log_dir: &Path,
+) -> CacheResult<ResolvedClusterStartMode> {
+    if !matches!(config.cluster_start, ClusterStartMode::Join) {
+        return Ok(ResolvedClusterStartMode::Bootstrap);
+    }
+    if raft_log_dir_has_state(raft_log_dir)? {
+        return Ok(ResolvedClusterStartMode::Bootstrap);
+    }
+    Ok(ResolvedClusterStartMode::Join)
+}
+
+fn raft_log_dir_has_state(path: &Path) -> CacheResult<bool> {
+    if !path.exists() {
+        return Ok(false);
+    }
+    let mut entries = fs::read_dir(path).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to inspect raft log directory {}: {error}",
+            path.display()
+        ))
+    })?;
+    Ok(entries
+        .next()
+        .transpose()
+        .map_err(|error| {
+            CacheError::Backend(format!(
+                "failed to inspect raft log directory {}: {error}",
+                path.display()
+            ))
+        })?
+        .is_some())
+}
+
 fn raft_topology(
     config: &ServerConfig,
     local_node_id: ClusterNodeId,
@@ -757,6 +809,14 @@ fn insert_raft_peer(
 }
 
 impl RaftTopology {
+    fn remote_voters(&self, local_raft_node_id: u64) -> Vec<u64> {
+        self.voters
+            .iter()
+            .copied()
+            .filter(|voter| *voter != local_raft_node_id)
+            .collect()
+    }
+
     fn election_tick_for(&self, raft_node_id: u64) -> usize {
         let rank = self
             .voters
@@ -764,6 +824,10 @@ impl RaftTopology {
             .position(|voter| *voter == raft_node_id)
             .unwrap_or(0);
         5 + (rank * 2)
+    }
+
+    fn joiner_election_tick(&self) -> usize {
+        7 + (self.voters.len() * 2)
     }
 }
 
@@ -1494,6 +1558,7 @@ mod tests {
     use hydracache_cluster_transport_axum::{
         HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
     };
+    use std::collections::BTreeSet;
     use std::path::PathBuf;
 
     #[tokio::test]
@@ -1531,6 +1596,60 @@ mod tests {
             hydracache::RaftMetadataCommand::MemberUpsert { node_id, .. }
                 if node_id.as_str() == "member-a"
         )));
+    }
+
+    #[test]
+    fn resolved_start_mode_joins_only_when_configured_and_log_is_empty() {
+        let mut config = test_member_config("127.0.0.1:7000");
+        let dir = PathBuf::from(format!(
+            "target/test-hydracache-grid-host/start-mode-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+
+        assert_eq!(
+            resolved_start_mode(&config, &dir).unwrap(),
+            ResolvedClusterStartMode::Bootstrap
+        );
+
+        config.cluster_start = ClusterStartMode::Join;
+        assert_eq!(
+            resolved_start_mode(&config, &dir).unwrap(),
+            ResolvedClusterStartMode::Join
+        );
+
+        std::fs::write(dir.join("conf-state"), b"present").unwrap();
+        assert_eq!(
+            resolved_start_mode(&config, &dir).unwrap(),
+            ResolvedClusterStartMode::Bootstrap
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn raft_topology_remote_voters_exclude_local_member() {
+        let mut config = test_member_config("127.0.0.1:7000");
+        config.seeds = vec!["127.0.0.1:7001".to_owned(), "127.0.0.1:7002".to_owned()];
+        let local_node = member_node_id_for_addr(config.cluster_addr);
+        let local_raft_id = raft_node_id(&local_node);
+        let topology = raft_topology(&config, local_node, local_raft_id).unwrap();
+        let remote_voters = topology
+            .remote_voters(local_raft_id)
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+        let expected_remote_voters = config
+            .seeds
+            .iter()
+            .map(|seed| seed.parse::<SocketAddr>().unwrap())
+            .map(member_node_id_for_addr)
+            .map(|node_id| raft_node_id(&node_id))
+            .collect::<BTreeSet<_>>();
+
+        assert!(topology.multi_voter);
+        assert!(topology.voters.contains(&local_raft_id));
+        assert!(!remote_voters.contains(&local_raft_id));
+        assert_eq!(remote_voters, expected_remote_voters);
     }
 
     #[test]
