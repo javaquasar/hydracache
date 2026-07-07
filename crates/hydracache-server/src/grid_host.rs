@@ -1432,6 +1432,13 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         raft_voter_majority_reachable(voters.len(), reachable)
     }
 
+    fn voter_count(&self) -> u32 {
+        self.raft
+            .voter_ids()
+            .map(|voters| voters.len() as u32)
+            .unwrap_or(0)
+    }
+
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {
         if node == &self.node_id {
             return Reachability::Reachable;
@@ -1548,6 +1555,10 @@ impl GridControlPlaneHandle for InProcessGridHandle {
 
     fn has_quorum(&self) -> bool {
         !self.control_plane.members().is_empty()
+    }
+
+    fn voter_count(&self) -> u32 {
+        self.control_plane.members().len() as u32
     }
 
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {

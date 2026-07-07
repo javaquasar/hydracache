@@ -67,6 +67,8 @@ pub struct ServerAdminStatus {
     pub quorum_ok: bool,
     /// Observed member count.
     pub members: u32,
+    /// Observed raft voter count.
+    pub voters: u32,
     /// Current reshard phase.
     pub reshard_phase: String,
     /// Whether the runtime is draining.
@@ -391,6 +393,7 @@ impl ServerRuntime {
             term: status.term,
             quorum_ok: status.quorum_ok,
             members: status.members.len() as u32,
+            voters: status.voters,
             reshard_phase: status.reshard_phase.to_string(),
             draining: status.draining,
         }

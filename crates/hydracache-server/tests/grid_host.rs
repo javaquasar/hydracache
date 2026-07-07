@@ -7,8 +7,9 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerAdminStatus,
-    ServerConfig, ServerConfigError, ServerRole, ServerRuntime, StatusSource, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
+    ServerAdminStatus, ServerConfig, ServerConfigError, ServerRole, ServerRuntime, StatusSource,
+    TlsConfig,
 };
 use serde_json::json;
 
@@ -535,10 +536,182 @@ fn multi_node_members_form_a_cluster_and_elect_one_leader() {
     }
 }
 
+#[test]
+fn multi_node_fourth_daemon_joins_running_cluster_as_voter() {
+    if !networked_daemon_e2e_enabled() {
+        return;
+    }
+
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let addrs = reserve_loopback_addrs(4);
+    let bootstrap_addrs = &addrs[..3];
+    let mut runtimes = start_bootstrap_daemons("late-join-bootstrap", bootstrap_addrs);
+    assert_cluster_shape(&runtimes, 3, 3, "bootstrap before late join");
+
+    let mut joiner = joiner_config("late-join-fourth", addrs[3], bootstrap_addrs);
+    joiner.join_timeout_ms = 10_000;
+    let joiner_id = member_node_id_for_addr(addrs[3]);
+    let joiner_runtime = ServerRuntime::new(joiner).unwrap().start();
+    runtimes.push(Some(joiner_runtime));
+    assert_cluster_shape(&runtimes, 4, 4, "late joiner admission");
+
+    let original_ids = bootstrap_addrs
+        .iter()
+        .map(|addr| member_node_id_for_addr(*addr))
+        .collect::<BTreeSet<_>>();
+    assert!(active_member_id_sets(&runtimes)
+        .into_iter()
+        .all(|ids| ids.contains(&joiner_id)));
+    let leader = active_statuses(&runtimes)[0]
+        .leader
+        .clone()
+        .expect("leader after join");
+    let kill_index = addrs
+        .iter()
+        .take(3)
+        .position(|addr| member_node_id_for_addr(*addr) == leader)
+        .unwrap_or(0);
+    let killed_original = member_node_id_for_addr(addrs[kill_index]);
+    assert!(original_ids.contains(&killed_original));
+    drop(runtimes[kill_index].take());
+
+    let re_elected_with_joiner_counted = wait_until(Duration::from_secs(10), || {
+        let statuses = active_statuses(&runtimes);
+        let leaders = leaders(&statuses);
+        leaders.len() == 1
+            && statuses
+                .iter()
+                .all(|status| status.members == 4 && status.voters == 4 && status.quorum_ok)
+    });
+    assert!(
+        re_elected_with_joiner_counted,
+        "remaining daemons did not keep quorum with joined voter after original crash: killed={killed_original}, statuses={:?}",
+        active_statuses(&runtimes)
+    );
+
+    shutdown_all(&mut runtimes);
+}
+
+#[test]
+fn multi_node_joiner_with_unreachable_cluster_fails_loud() {
+    if !networked_daemon_e2e_enabled() {
+        return;
+    }
+
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let addrs = reserve_loopback_addrs(2);
+    let mut config = joiner_config("late-join-unreachable", addrs[0], &[addrs[1]]);
+    config.join_timeout_ms = 250;
+
+    let error = ServerRuntime::new(config).unwrap_err();
+
+    assert!(matches!(error, ServerConfigError::GridHostStart(_)));
+    assert!(
+        error.to_string().contains("timed out")
+            && error.to_string().contains("joining raft member"),
+        "unreachable join should fail loud with join context: {error}"
+    );
+}
+
+#[test]
+fn multi_node_drained_joiner_leaves_voter_set() {
+    if !networked_daemon_e2e_enabled() {
+        return;
+    }
+
+    let _env = grid_env_lock();
+    std::env::remove_var("HYDRACACHE_GRID_INPROC");
+    let addrs = reserve_loopback_addrs(4);
+    let bootstrap_addrs = &addrs[..3];
+    let mut runtimes = start_bootstrap_daemons("late-join-drain", bootstrap_addrs);
+    assert_cluster_shape(&runtimes, 3, 3, "bootstrap before joiner drain");
+
+    let mut joiner = joiner_config("late-join-drained-fourth", addrs[3], bootstrap_addrs);
+    joiner.join_timeout_ms = 10_000;
+    runtimes.push(Some(ServerRuntime::new(joiner).unwrap().start()));
+    assert_cluster_shape(&runtimes, 4, 4, "joiner before drain");
+
+    let mut joiner_runtime = runtimes[3].take().unwrap();
+    let drain = joiner_runtime.shutdown();
+    assert!(!drain.timed_out);
+    drop(joiner_runtime);
+
+    assert_cluster_shape(&runtimes, 3, 3, "joined daemon after graceful drain");
+    shutdown_all(&mut runtimes);
+}
+
 fn networked_daemon_e2e_enabled() -> bool {
     std::env::var("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E")
         .map(|value| matches!(value.trim(), "1" | "true" | "TRUE" | "yes" | "YES"))
         .unwrap_or(false)
+}
+
+fn start_bootstrap_daemons(prefix: &str, addrs: &[SocketAddr]) -> Vec<Option<ServerRuntime>> {
+    let seeds = addrs.iter().map(ToString::to_string).collect::<Vec<_>>();
+    let configs = addrs
+        .iter()
+        .enumerate()
+        .map(|(index, addr)| {
+            let mut config = member_config(&format!("{prefix}-{index}"));
+            config.cluster_addr = *addr;
+            config.seeds = seeds.clone();
+            clean_storage(&config);
+            config
+        })
+        .collect::<Vec<_>>();
+    let handles = configs
+        .into_iter()
+        .map(|config| thread::spawn(move || ServerRuntime::new(config).unwrap().start()))
+        .collect::<Vec<_>>();
+    handles
+        .into_iter()
+        .map(|handle| Some(handle.join().unwrap()))
+        .collect()
+}
+
+fn joiner_config(name: &str, addr: SocketAddr, seeds: &[SocketAddr]) -> ServerConfig {
+    let mut config = member_config(name);
+    config.cluster_addr = addr;
+    config.cluster_advertise_addr = Some(addr.to_string());
+    config.cluster_start = ClusterStartMode::Join;
+    config.seeds = seeds.iter().map(ToString::to_string).collect();
+    clean_storage(&config);
+    config
+}
+
+fn clean_storage(config: &ServerConfig) {
+    if let Some(storage_dir) = &config.storage_dir {
+        let _ = std::fs::remove_dir_all(storage_dir);
+    }
+}
+
+fn assert_cluster_shape(
+    runtimes: &[Option<ServerRuntime>],
+    members: u32,
+    voters: u32,
+    stage: &str,
+) {
+    let converged = wait_until(Duration::from_secs(10), || {
+        let statuses = active_statuses(runtimes);
+        let leaders = leaders(&statuses);
+        leaders.len() == 1
+            && statuses.iter().all(|status| {
+                status.members == members && status.voters == voters && status.quorum_ok
+            })
+    });
+    assert!(
+        converged,
+        "{stage} did not converge to members={members}, voters={voters}: {:?}",
+        active_statuses(runtimes)
+    );
+}
+
+fn shutdown_all(runtimes: &mut [Option<ServerRuntime>]) {
+    for runtime in runtimes.iter_mut().filter_map(Option::as_mut) {
+        let _ = runtime.shutdown();
+    }
 }
 
 fn reserve_loopback_addrs(count: usize) -> Vec<SocketAddr> {

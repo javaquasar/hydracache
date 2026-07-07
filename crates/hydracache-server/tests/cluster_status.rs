@@ -75,6 +75,7 @@ mod cluster_status {
         assert_eq!(status.source, StatusSource::Modeled);
         assert_eq!(status.leader.as_deref(), Some("local"));
         assert_eq!(status.members, 0);
+        assert_eq!(status.voters, 0);
         assert_eq!(status.term, 1);
         assert!(status.quorum_ok);
     }
@@ -93,6 +94,7 @@ mod cluster_status {
         assert_eq!(status.leader.as_deref(), Some("node-2"));
         assert_eq!(status.term, 7);
         assert_eq!(status.members, 3);
+        assert_eq!(status.voters, 3);
         assert_eq!(status.reshard_phase, "moving");
         assert!(status.quorum_ok);
     }
@@ -155,6 +157,7 @@ mod cluster_status {
         let body = json_response(response).await;
         assert_eq!(body["source"], "modeled");
         assert_eq!(body["members"], 0);
+        assert_eq!(body["voters"], 0);
     }
 }
 
@@ -215,6 +218,10 @@ impl GridControlPlaneHandle for FakeGrid {
 
     fn has_quorum(&self) -> bool {
         self.quorum
+    }
+
+    fn voter_count(&self) -> u32 {
+        self.members.len() as u32
     }
 
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {

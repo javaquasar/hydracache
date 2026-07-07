@@ -85,6 +85,7 @@ fn live_status() -> ClusterStatus {
             member("node-2", Reachability::Reachable, 2),
             member("node-3", Reachability::Reachable, 3),
         ],
+        voters: 3,
         reshard_phase: ReshardPhase::Moving,
         draining: false,
     }
