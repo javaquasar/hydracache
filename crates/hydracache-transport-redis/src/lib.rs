@@ -176,3 +176,79 @@ async fn subscribe_once(
 fn redis_backend_error(action: &str, error: redis::RedisError) -> TransportError {
     TransportError::Backend(format!("redis {action}: {error}"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hydracache::{
+        CacheInvalidation, CacheInvalidationMessage, ClusterGeneration,
+        CACHE_INVALIDATION_FRAME_VERSION,
+    };
+
+    #[test]
+    fn config_scopes_channel_tls_and_queue_bound() {
+        let core = TransportConfig::new("orders", "node-a")
+            .channel("orders-channel")
+            .inbound_capacity(0);
+        let config = RedisTransportConfig::new("redis://localhost:6379/", core);
+
+        assert_eq!(config.channel(), "orders-channel");
+        assert_eq!(config.subscriber_capacity, 1);
+        assert!(!config.uses_tls());
+        assert!(RedisTransportConfig::new(
+            "rediss://localhost:6379/",
+            TransportConfig::new("orders", "node-a")
+        )
+        .uses_tls());
+    }
+
+    #[test]
+    fn decode_payload_reports_malformed_and_future_versions() {
+        let malformed = decode_redis_payload(b"not-a-hydracache-frame".to_vec()).unwrap_err();
+        assert!(matches!(malformed, TransportError::Decode(_)));
+
+        let frame = CacheInvalidationFrame::new(
+            CacheInvalidationMessage::new("remote", CacheInvalidation::key("future"))
+                .with_source_generation(ClusterGeneration::new(7)),
+        )
+        .with_cluster_name("orders")
+        .with_message_id(1);
+        let mut payload = frame.encode().expect("frame encodes").to_vec();
+        payload[0] = (CACHE_INVALIDATION_FRAME_VERSION + 1) as u8;
+
+        let error = decode_redis_payload(payload).unwrap_err();
+        assert!(matches!(
+            error,
+            TransportError::UnknownFrameVersion {
+                found: 2,
+                max_supported: CACHE_INVALIDATION_FRAME_VERSION
+            }
+        ));
+    }
+
+    #[tokio::test]
+    async fn invalid_client_url_fails_before_subscribe_loop() {
+        let config =
+            RedisTransportConfig::new("not-a-redis-url", TransportConfig::new("orders", "node-a"));
+
+        let error = RedisInvalidationTransport::connect(config)
+            .await
+            .expect_err("invalid Redis URL fails loud");
+        assert!(matches!(
+            error,
+            TransportError::Backend(message) if message.contains("redis open client")
+        ));
+    }
+
+    #[test]
+    fn backend_error_names_redis_action() {
+        let redis_error = redis::RedisError::from((redis::ErrorKind::Io, "socket closed"));
+        let error = redis_backend_error("publish", redis_error);
+
+        assert!(matches!(
+            error,
+            TransportError::Backend(message)
+                if message.contains("redis publish") && message.contains("socket closed")
+        ));
+    }
+}

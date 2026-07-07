@@ -152,3 +152,75 @@ async fn run_subscriber(
 fn nats_backend_error(action: &str, error: impl std::fmt::Display) -> TransportError {
     TransportError::Backend(format!("nats {action}: {error}"))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hydracache::{
+        CacheInvalidation, CacheInvalidationMessage, ClusterGeneration,
+        CACHE_INVALIDATION_FRAME_VERSION,
+    };
+
+    #[test]
+    fn config_scopes_subject_tls_and_queue_bound() {
+        let core = TransportConfig::new("orders", "node-a")
+            .channel("custom.subject")
+            .inbound_capacity(0);
+        let config = NatsTransportConfig::new("nats://localhost:4222", core);
+
+        assert_eq!(config.subject(), "custom.subject");
+        assert_eq!(config.subscriber_capacity, 1);
+        assert!(!config.uses_tls());
+        assert!(NatsTransportConfig::new(
+            "tls://localhost:4222",
+            TransportConfig::new("orders", "node-a")
+        )
+        .uses_tls());
+        assert!(NatsTransportConfig::new(
+            "nats+tls://localhost:4222",
+            TransportConfig::new("orders", "node-a")
+        )
+        .uses_tls());
+
+        let cluster_config =
+            NatsTransportConfig::for_cluster("nats://localhost:4222", "orders", "node-b");
+        assert_eq!(cluster_config.subject(), "hydracache.inval.orders");
+        assert_eq!(cluster_config.core.local_node_id, "node-b");
+    }
+
+    #[test]
+    fn decode_payload_reports_malformed_and_future_versions() {
+        let malformed =
+            decode_nats_payload(Bytes::from_static(b"not-a-hydracache-frame")).unwrap_err();
+        assert!(matches!(malformed, TransportError::Decode(_)));
+
+        let frame = CacheInvalidationFrame::new(
+            CacheInvalidationMessage::new("remote", CacheInvalidation::key("future"))
+                .with_source_generation(ClusterGeneration::new(7)),
+        )
+        .with_cluster_name("orders")
+        .with_message_id(1);
+        let mut payload = frame.encode().expect("frame encodes").to_vec();
+        payload[0] = (CACHE_INVALIDATION_FRAME_VERSION + 1) as u8;
+
+        let error = decode_nats_payload(Bytes::from(payload)).unwrap_err();
+        assert!(matches!(
+            error,
+            TransportError::UnknownFrameVersion {
+                found: 2,
+                max_supported: CACHE_INVALIDATION_FRAME_VERSION
+            }
+        ));
+    }
+
+    #[test]
+    fn backend_error_names_nats_action() {
+        let error = nats_backend_error("publish", "timeout");
+
+        assert!(matches!(
+            error,
+            TransportError::Backend(message)
+                if message.contains("nats publish") && message.contains("timeout")
+        ));
+    }
+}
