@@ -34,7 +34,17 @@ cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocap
 The operator kind soak is opt-in. Without `HYDRACACHE_OPERATOR_KIND=1`, it skips
 gracefully. Since 0.59, member-role pods host the networked daemon grid; the
 loopback daemon E2E is gated separately by `HYDRACACHE_RUN_NETWORKED_DAEMON_E2E`.
-Partition and slow-disk kind faults still require the external chaos injector.
+Since 0.61, partition and slow-disk faults are executable when their Kubernetes
+infrastructure exists:
+
+- `NetworkPartition` applies a `NetworkPolicy` only after a CNI-enforcement
+  probe proves policies are active; non-enforcing CNI setups skip loud.
+- `SlowDisk` applies chaos-mesh `IOChaos` only when the
+  `iochaos.chaos-mesh.org` CRD is installed; otherwise it skips loud as a named
+  external dependency.
+
+The kind soak must never report a wrong-but-green result when optional
+infrastructure is absent.
 
 ## SOAK_REPORT
 

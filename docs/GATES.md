@@ -47,6 +47,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
 | Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
 | Coverage ratchet | `cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88` | CI (scheduled/dispatch) | mechanical line coverage floor; not a RULES R-7 numeric self-score |
+| Operator kind chaos | `cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture` | CI (scheduled/dispatch) | pod crash, NetworkPolicy partition when CNI enforcement is proven, and chaos-mesh IOChaos slow disk when the CRD exists; unsupported legs skip loud |
 | Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
 | Clippy | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | CI + verify | lints |
@@ -70,13 +71,16 @@ release adds on top of this baseline.
 The operator lifecycle kind E2E is also opt-in because it needs a real cluster
 with the CRD/controller installed. The fast suite still proves its skip path and
 falsifiability model; the live driven chain runs in the nightly/pre-release kind
-tier:
+tier. The operator kind chaos suite uses the same opt-in boundary: partition
+requires a NetworkPolicy-enforcing CNI, slow disk requires the chaos-mesh
+`IOChaos` CRD, and unsupported legs skip loud rather than passing wrong:
 
 ```powershell
 $env:HYDRACACHE_OPERATOR_KIND='1'
 $env:HYDRACACHE_OPERATOR_NAMESPACE='default'
 $env:HYDRACACHE_OPERATOR_CLUSTER='hydracache-e2e'
 cargo test -p hydracache-operator --locked --test e2e -- --nocapture
+cargo test -p hydracache-operator --locked --test soak_kind -- --ignored --nocapture
 Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER -ErrorAction SilentlyContinue
 ```
 
