@@ -298,6 +298,28 @@ fn reconcile_immutable_statefulset_field_change_is_rejected_loud_or_recreated() 
 }
 
 #[test]
+fn reconcile_immutable_volume_claim_template_change_is_rejected_loud() {
+    let cluster = cluster("immutable-pvc");
+    let desired = OwnedResources::build(&cluster);
+    let mut existing = desired.stateful_set.clone();
+    existing
+        .spec
+        .as_mut()
+        .unwrap()
+        .volume_claim_templates
+        .as_mut()
+        .unwrap()[0]
+        .spec
+        .as_mut()
+        .unwrap()
+        .storage_class_name = Some("other-storage-class".to_owned());
+
+    let err = validate_statefulset_update(&existing, &desired.stateful_set).unwrap_err();
+
+    assert!(err.to_string().contains("spec.volumeClaimTemplates"));
+}
+
+#[test]
 fn reconcile_status_is_state_machine_snapshot() {
     let cluster = cluster("status");
     let desired = OwnedResources::build(&cluster);
@@ -321,6 +343,50 @@ fn reconcile_status_is_state_machine_snapshot() {
     ready.status.as_mut().unwrap().ready_replicas = Some(1);
     let degraded_status = observed_status(&cluster, Some(&ready));
     assert_eq!(degraded_status.health, DEGRADED_HEALTH);
+}
+
+#[test]
+fn reconcile_status_uses_replicas_when_ready_replicas_is_absent() {
+    let cluster = cluster("status-replicas");
+    let mut desired = OwnedResources::build(&cluster).stateful_set;
+    desired.status = Some(k8s_openapi::api::apps::v1::StatefulSetStatus {
+        ready_replicas: None,
+        replicas: 3,
+        ..Default::default()
+    });
+
+    let status = observed_status(&cluster, Some(&desired));
+
+    assert_eq!(status.observed_replicas, 3);
+    assert_eq!(status.health, HEALTHY_HEALTH);
+}
+
+#[test]
+fn reconcile_status_preserves_last_backup_and_bootstrap_baseline() {
+    let mut cluster = cluster("status-preserve");
+    cluster.status = Some(HydraCacheClusterStatus {
+        bootstrap_replicas: Some(2),
+        last_backup: Some("2026-07-07T00:00:00Z".to_owned()),
+        ..Default::default()
+    });
+    cluster.spec.replicas = 5;
+    let desired = OwnedResources::build_with_replicas(&cluster, 5).stateful_set;
+
+    let status = observed_status(&cluster, Some(&desired));
+
+    assert_eq!(status.bootstrap_replicas, Some(2));
+    assert_eq!(status.last_backup.as_deref(), Some("2026-07-07T00:00:00Z"));
+}
+
+#[test]
+fn reconcile_status_without_statefulset_stays_forming_and_unbaselined() {
+    let cluster = cluster("status-none");
+
+    let status = observed_status(&cluster, None);
+
+    assert_eq!(status.observed_replicas, 0);
+    assert_eq!(status.bootstrap_replicas, None);
+    assert_eq!(status.health, FORMING_HEALTH);
 }
 
 #[test]
@@ -415,6 +481,17 @@ fn bootstrap_replicas_is_recorded_once() {
     });
     let upgraded_status = observed_status(&pre_061, Some(&existing));
     assert_eq!(upgraded_status.bootstrap_replicas, Some(3));
+}
+
+#[test]
+fn leader_lease_without_matching_holder_does_not_elect_identity() {
+    let cluster = cluster("lease-empty");
+    let mut lease = operator_lease_for_cluster(&cluster, "operator-a");
+
+    lease.spec.as_mut().unwrap().holder_identity = None;
+    assert!(!is_leader("operator-a", &lease));
+    lease.spec.as_mut().unwrap().holder_identity = Some("operator-b".to_owned());
+    assert!(!is_leader("operator-a", &lease));
 }
 
 #[tokio::test]
