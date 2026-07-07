@@ -1389,6 +1389,18 @@ impl DedicatedGridRuntime {
             .expect("grid runtime must exist while handle is live")
             .block_on(future)
     }
+
+    fn spawn<F>(&self, future: F)
+    where
+        F: Future<Output = ()> + Send + 'static,
+    {
+        let guard = self.runtime.lock().expect("grid runtime holder poisoned");
+        let handle = guard
+            .as_ref()
+            .expect("grid runtime must exist while handle is live")
+            .spawn(future);
+        std::mem::drop(handle);
+    }
 }
 
 impl Drop for DedicatedGridRuntime {
@@ -1543,7 +1555,14 @@ impl NetworkedGridHandle {
         };
         self.drain_remove_proposed.store(true, Ordering::SeqCst);
         if let Some(runtime) = &self._runtime {
-            let _ = runtime.block_on(send_raft_messages(&self._message_sink, messages));
+            if tokio::runtime::Handle::try_current().is_ok() {
+                let message_sink = Arc::clone(&self._message_sink);
+                runtime.spawn(async move {
+                    let _ = send_raft_messages(&message_sink, messages).await;
+                });
+            } else {
+                let _ = runtime.block_on(send_raft_messages(&self._message_sink, messages));
+            }
         }
     }
 }

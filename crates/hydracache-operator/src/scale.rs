@@ -31,6 +31,7 @@ pub struct ScaleObservation {
     pub current_replicas: u32,
     pub ready_replicas: u32,
     pub previous_phase: Option<String>,
+    pub drain_requested_for: Option<String>,
     pub drain_complete_for: Option<String>,
     pub admin_status: Option<AdminStatus>,
 }
@@ -70,11 +71,31 @@ impl ScaleObservation {
                     .strip_prefix("drain complete for ")
                     .map(str::to_owned)
             });
+        let drain_requested_for = cluster
+            .status
+            .as_ref()
+            .and_then(|status| {
+                status
+                    .conditions
+                    .iter()
+                    .find(|condition| {
+                        condition.type_ == SCALE_PROGRESSING_CONDITION
+                            && condition.status == "True"
+                            && condition.reason == "DrainRequested"
+                    })
+                    .map(|condition| condition.message.clone())
+            })
+            .and_then(|message| {
+                message
+                    .strip_prefix("drain requested for ")
+                    .map(str::to_owned)
+            });
 
         Self {
             current_replicas,
             ready_replicas,
             previous_phase,
+            drain_requested_for,
             drain_complete_for,
             admin_status: None,
         }
@@ -219,6 +240,84 @@ pub fn plan_scale(cluster: &HydraCacheCluster, observed: &ScaleObservation) -> S
         };
     }
 
+    let drain_ordinal = current - 1;
+    let drain_pod = pod_name(&cluster.name_any(), drain_ordinal);
+    if observed.drain_complete_for.as_deref() == Some(drain_pod.as_str()) {
+        if observed.ready_replicas < desired {
+            return ScalePlan {
+                effective_replicas: current,
+                phase: SCALING_PHASE,
+                conditions: vec![scale_condition(
+                    SCALE_PROGRESSING_CONDITION,
+                    "True",
+                    "WaitingForSurvivorReplicas",
+                    &format!(
+                        "waiting for {desired} survivor replicas after draining {drain_pod}; observed {}",
+                        observed.ready_replicas
+                    ),
+                    generation,
+                )],
+                admin_actions: Vec::new(),
+            };
+        }
+
+        return ScalePlan {
+            effective_replicas: desired,
+            phase: REBALANCING_PHASE,
+            conditions: vec![scale_condition(
+                SCALE_PROGRESSING_CONDITION,
+                "True",
+                "DrainComplete",
+                &format!("drain complete for {drain_pod}"),
+                generation,
+            )],
+            admin_actions: Vec::new(),
+        };
+    }
+
+    if observed.drain_requested_for.as_deref() == Some(drain_pod.as_str()) {
+        if observed.admin_status.as_ref().is_some_and(|status| {
+            status.quorum_ok && status.members <= desired && status.voters <= desired
+        }) {
+            return ScalePlan {
+                effective_replicas: desired,
+                phase: REBALANCING_PHASE,
+                conditions: vec![scale_condition(
+                    SCALE_PROGRESSING_CONDITION,
+                    "True",
+                    "DrainComplete",
+                    &format!("drain complete for {drain_pod}"),
+                    generation,
+                )],
+                admin_actions: Vec::new(),
+            };
+        }
+
+        return ScalePlan {
+            effective_replicas: current,
+            phase: SCALING_PHASE,
+            conditions: vec![
+                scale_condition(
+                    SCALE_PROGRESSING_CONDITION,
+                    "True",
+                    "DrainRequested",
+                    &format!("drain requested for {drain_pod}"),
+                    generation,
+                ),
+                scale_condition(
+                    SCALE_PROGRESSING_CONDITION,
+                    "True",
+                    "WaitingForDrainCommit",
+                    &format!(
+                        "waiting for committed voter removal before removing {drain_pod}; target members/voters {desired}"
+                    ),
+                    generation,
+                ),
+            ],
+            admin_actions: Vec::new(),
+        };
+    }
+
     if observed.ready_replicas < current {
         return ScalePlan {
             effective_replicas: current,
@@ -237,8 +336,6 @@ pub fn plan_scale(cluster: &HydraCacheCluster, observed: &ScaleObservation) -> S
         };
     }
 
-    let drain_ordinal = current - 1;
-    let drain_pod = pod_name(&cluster.name_any(), drain_ordinal);
     if observed
         .admin_status
         .as_ref()
@@ -259,21 +356,6 @@ pub fn plan_scale(cluster: &HydraCacheCluster, observed: &ScaleObservation) -> S
         };
     }
 
-    if observed.drain_complete_for.as_deref() == Some(drain_pod.as_str()) {
-        return ScalePlan {
-            effective_replicas: desired,
-            phase: REBALANCING_PHASE,
-            conditions: vec![scale_condition(
-                SCALE_PROGRESSING_CONDITION,
-                "True",
-                "DrainComplete",
-                &format!("drain complete for {drain_pod}"),
-                generation,
-            )],
-            admin_actions: Vec::new(),
-        };
-    }
-
     ScalePlan {
         effective_replicas: current,
         phase: SCALING_PHASE,
@@ -281,7 +363,7 @@ pub fn plan_scale(cluster: &HydraCacheCluster, observed: &ScaleObservation) -> S
             SCALE_PROGRESSING_CONDITION,
             "True",
             "DrainBeforeRemove",
-            &format!("drain complete for {drain_pod}"),
+            &format!("drain requested for {drain_pod}"),
             generation,
         )],
         admin_actions: vec![

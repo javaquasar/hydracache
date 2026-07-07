@@ -43,6 +43,7 @@ fn reconcile_apply_cr_creates_statefulset_services_and_owner_refs() {
     let sts_spec = desired.stateful_set.spec.as_ref().unwrap();
     assert_eq!(sts_spec.replicas, Some(3));
     assert_eq!(sts_spec.service_name.as_deref(), Some("owned-headless"));
+    assert_eq!(sts_spec.pod_management_policy.as_deref(), Some("Parallel"));
     assert_eq!(
         sts_spec
             .persistent_volume_claim_retention_policy
@@ -410,23 +411,21 @@ fn operator_template_renders_routable_cluster_identity_and_endpoint() {
         .unwrap()
         .containers[0];
     let env = env_map(container);
-    let command = container.command.as_ref().unwrap().join("\n");
 
     assert_eq!(env["HYDRACACHE_CLUSTER_ADDR"], "0.0.0.0:7000");
     assert_eq!(env["HYDRACACHE_ADMIN_ADDR"], "0.0.0.0:9091");
     assert_eq!(env["HYDRACACHE_BOOTSTRAP_REPLICAS"], "3");
+    assert_eq!(
+        env["HYDRACACHE_CLUSTER_HEADLESS_SERVICE"],
+        "identity-headless"
+    );
     assert_eq!(env["HYDRACACHE_JOIN_TIMEOUT_MS"], "30000");
     assert_eq!(env["HYDRACACHE_TLS_ACK_INSECURE"], "false");
-    assert!(!env.contains_key("HYDRACACHE_SEEDS"));
-    assert!(command.contains("HYDRACACHE_CLUSTER_START=bootstrap"));
-    assert!(command.contains("HYDRACACHE_CLUSTER_START=join"));
-    assert!(command.contains(r#"HYDRACACHE_NODE_ID="$HOSTNAME""#));
-    assert!(
-        command.contains(r#"HYDRACACHE_CLUSTER_ADVERTISE_ADDR="$HOSTNAME.identity-headless:7000""#)
+    assert_eq!(
+        env["HYDRACACHE_SEEDS"],
+        "identity-0.identity-headless:7000,identity-1.identity-headless:7000,identity-2.identity-headless:7000"
     );
-    assert!(command.contains(r#"seed="identity-$i.identity-headless:7000""#));
-    assert!(command.contains(r#"HYDRACACHE_SEEDS="$seeds""#));
-    assert!(!command.contains("0.0.0.0:7000"));
+    assert!(container.command.is_none());
 }
 
 #[test]

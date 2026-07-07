@@ -6,6 +6,8 @@ use kube::CustomResourceExt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    hydracache_operator::install_default_rustls_provider();
+
     if std::env::args().nth(1).as_deref() == Some("--print-crd-json") {
         println!(
             "{}",

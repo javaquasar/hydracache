@@ -28,11 +28,20 @@ fn observed(cluster: &HydraCacheCluster, current: u32, ready: u32) -> ScaleObser
 }
 
 fn admin_status(leader: Option<String>, reshard_phase: &str) -> AdminStatus {
+    admin_status_with_counts(leader, 3, 3, reshard_phase)
+}
+
+fn admin_status_with_counts(
+    leader: Option<String>,
+    members: u32,
+    voters: u32,
+    reshard_phase: &str,
+) -> AdminStatus {
     AdminStatus {
         leader,
         quorum_ok: true,
-        members: 3,
-        voters: 3,
+        members,
+        voters,
         reshard_phase: reshard_phase.to_owned(),
         draining: false,
     }
@@ -79,11 +88,43 @@ fn scale_down_drains_before_removing() {
     assert_eq!(plan.conditions[0].reason, "DrainBeforeRemove");
     assert!(plan.conditions[0].message.contains("scale-down-2"));
 
-    let mut after_drain = observed(&target, 3, 3);
+    let mut requested = observed(&target, 3, 2);
+    requested.drain_requested_for = Some("scale-down-2".to_owned());
+    requested.admin_status = Some(admin_status_with_counts(None, 3, 3, "idle"));
+    let wait_for_commit = plan_scale(&target, &requested);
+    assert_eq!(wait_for_commit.effective_replicas, 3);
+    assert_eq!(wait_for_commit.conditions[0].reason, "DrainRequested");
+    assert_eq!(
+        wait_for_commit.conditions[1].reason,
+        "WaitingForDrainCommit"
+    );
+    assert!(wait_for_commit.admin_actions.is_empty());
+
+    requested.admin_status = Some(admin_status_with_counts(None, 2, 2, "idle"));
+    let committed = plan_scale(&target, &requested);
+    assert_eq!(committed.effective_replicas, 2);
+    assert_eq!(committed.conditions[0].reason, "DrainComplete");
+    assert!(committed.admin_actions.is_empty());
+
+    let mut after_drain = observed(&target, 3, 2);
     after_drain.drain_complete_for = Some("scale-down-2".to_owned());
     let removal = plan_scale(&target, &after_drain);
     assert_eq!(removal.effective_replicas, 2);
     assert!(removal.admin_actions.is_empty());
+}
+
+#[test]
+fn scale_down_waits_for_survivors_after_drain() {
+    let target = cluster("slow-survivor", 3);
+    let mut observation = observed(&target, 4, 2);
+    observation.drain_complete_for = Some("slow-survivor-3".to_owned());
+
+    let plan = plan_scale(&target, &observation);
+
+    assert_eq!(plan.effective_replicas, 4);
+    assert_eq!(plan.phase, SCALING_PHASE);
+    assert_eq!(plan.conditions[0].reason, "WaitingForSurvivorReplicas");
+    assert!(plan.admin_actions.is_empty());
 }
 
 #[test]

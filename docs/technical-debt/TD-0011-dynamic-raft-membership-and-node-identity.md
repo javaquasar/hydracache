@@ -2,16 +2,16 @@
 
 ## Status
 
-Open pending the live operator kind scale proof. The `0.60.0` identity,
-ConfChange, quorum, and graceful-drain sub-items were resolved on 2026-07-06.
-The `0.61.0` daemon late-start join sub-item was resolved on 2026-07-07.
+Resolved on 2026-07-07. The `0.60.0` identity, ConfChange, quorum, and
+graceful-drain sub-items were resolved on 2026-07-06. The `0.61.0` daemon
+late-start join and live operator kind scale proof sub-items were resolved on
+2026-07-07.
 
 Owner: cluster raft runtime / server grid host.
 
 Partial target: `0.60.0` Networked Grid Hardening (W3/W4), plus `0.61.0`
-Cluster Elasticity Completion for the daemon join path. The remaining evidence
-gap is the live operator kind proof that `spec.replicas` changes move deployed
-daemon voters end-to-end.
+Cluster Elasticity Completion for the daemon join path and live operator scale
+proof.
 
 ## 0.60 Resolution Scope
 
@@ -64,22 +64,47 @@ cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapt
 Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
 ```
 
-## Remaining Gap
+## 0.61 Live Operator Scale Proof
 
-The daemon late-start join path is covered by the loopback networked E2E. The
-remaining TD-0011 gap is the live operator scale claim: with a real kind cluster
-and the current `hydracache-server` image, changing
-`HydraCacheCluster.spec.replicas` must move deployed daemon voters end-to-end
-(`3 -> 4 -> 3`), and a pod crash must not silently shrink voters.
+`0.61.0` also resolves the live operator scale claim with a real kind cluster:
+changing `HydraCacheCluster.spec.replicas` moves deployed daemon voters
+end-to-end (`3 -> 4 -> 3`), and a pod crash does not silently shrink voters.
 
-Verification still required before resolving the whole debt:
+Implementation notes:
+
+- the operator runs namespace-scoped watches when configured with
+  `HYDRACACHE_OPERATOR_NAMESPACE`, matching its namespace-scoped RBAC;
+- StatefulSet pods derive node identity, advertise address, bootstrap/join mode,
+  and seeds from Kubernetes env without a shell wrapper;
+- `/admin/drain` is available as POST and Kubernetes preStop-compatible GET;
+- admin drain marks the daemon draining, leaves metadata membership, requests
+  raft voter removal, and does not stop the process from inside the admin Tokio
+  runtime;
+- scale-down status is two-phase: `DrainRequested` is sticky until a survivor
+  admin status reports committed member/voter removal, then `DrainComplete`
+  allows the StatefulSet replica count to shrink.
+
+Verification performed on 2026-07-07:
 
 ```powershell
+$env:PATH="$env:USERPROFILE\go\bin;$env:PATH"
+$env:CARGO_TARGET_DIR='target\td0011-cargo-target'
 $env:HYDRACACHE_OPERATOR_KIND='1'
-$env:HYDRACACHE_OPERATOR_IMAGE='<current hydracache-server image>'
+$env:HYDRACACHE_OPERATOR_IMAGE='hydracache-server:td0011-0.61'
+$env:HYDRACACHE_OPERATOR_NAMESPACE='default'
+$env:HYDRACACHE_OPERATOR_CLUSTER='hydracache-td0011'
 cargo test -p hydracache-operator --test e2e kind_ --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_IMAGE -ErrorAction SilentlyContinue
+Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_IMAGE,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER,Env:\CARGO_TARGET_DIR -ErrorAction SilentlyContinue
 ```
+
+Result: `3 passed; 0 failed; finished in 41.08s`.
+
+Images used in the proof:
+
+- `hydracache-server:td0011-0.61`
+  (`sha256:3498bc05d7aaf7de2d3c632be8ad1aab421ace501d522c6bc3a52fd1494ce7e4`)
+- `hydracache-operator:td0011-0.61`
+  (`sha256:b28938af69480e4290ff7462d05d22bdf76a60e912fd442921e22523898dc3d0`)
 
 ## Context
 
@@ -98,23 +123,21 @@ collision handling.
 
 ## Why It Is A Debt
 
-- **Live operator scale proof is still pending.** The daemon join path works in
-  the loopback E2E, but the operator replica-to-voter claim needs the kind live
-  tier with the current server image before this TD can be marked resolved.
+Resolved. The daemon join path is covered by the loopback networked E2E, and the
+operator replica-to-voter claim is covered by the kind live tier with the current
+server image.
 
 ## Risk While Open
 
-- Operator-driven scale-up of member pods is not yet an end-to-end release claim
-  until the live kind gate above is run with the current server image.
-- Rolling infrastructure that changes pod IPs is covered only when the same
-  `storage_dir` and persisted `node-identity.json` are retained.
+None for this debt item after the 2026-07-07 live proof. Rolling infrastructure
+that changes pod IPs still depends on retaining the same `storage_dir` and
+persisted `node-identity.json`, which is the supported identity model.
 
 ## Revisit Triggers
 
-- the operator live kind gate is available with the current server image;
 - any soak/E2E needs to add or remove a daemon at runtime.
 
-## Future Definition Of Done
+## Definition Of Done
 
 - The live kind gate proves `spec.replicas` changes move raft voters through
   deployed daemons.

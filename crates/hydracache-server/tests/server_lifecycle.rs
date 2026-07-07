@@ -36,6 +36,8 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_CLUSTER_ADDR",
     "HYDRACACHE_CLUSTER_START",
     "HYDRACACHE_CLUSTER_ADVERTISE_ADDR",
+    "HYDRACACHE_CLUSTER_HEADLESS_SERVICE",
+    "HYDRACACHE_BOOTSTRAP_REPLICAS",
     "HYDRACACHE_NODE_ID",
     "HYDRACACHE_STORAGE_DIR",
     "HYDRACACHE_SEEDS",
@@ -54,6 +56,7 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_CLIENT_API_ENABLED",
     "HYDRACACHE_ADMIN_API_ENABLED",
     "HYDRACACHE_ADMIN_ADDR",
+    "HOSTNAME",
 ];
 
 struct ConfigEnvGuard {
@@ -297,6 +300,36 @@ fn server_lifecycle_env_config_parses_join_mode_and_advertise_endpoint() {
 }
 
 #[test]
+fn server_lifecycle_env_config_derives_statefulset_identity_without_shell_wrapper() {
+    let _guard = ConfigEnvGuard::new(&[
+        ("HYDRACACHE_ROLE", "member"),
+        ("HYDRACACHE_LISTEN_ADDR", "127.0.0.1:18081"),
+        ("HYDRACACHE_CLUSTER_ADDR", "0.0.0.0:7000"),
+        ("HYDRACACHE_CLUSTER_HEADLESS_SERVICE", "demo-headless"),
+        ("HYDRACACHE_BOOTSTRAP_REPLICAS", "3"),
+        (
+            "HYDRACACHE_STORAGE_DIR",
+            "target/test-hydracache-server/env-statefulset",
+        ),
+        (
+            "HYDRACACHE_SEEDS",
+            "demo-0.demo-headless:7000,demo-1.demo-headless:7000,demo-2.demo-headless:7000",
+        ),
+        ("HYDRACACHE_TLS_ACK_INSECURE", "true"),
+        ("HOSTNAME", "demo-3"),
+    ]);
+
+    let config = ServerConfig::from_env().unwrap();
+
+    assert_eq!(config.cluster_start, ClusterStartMode::Join);
+    assert_eq!(config.node_id.as_deref(), Some("demo-3"));
+    assert_eq!(
+        config.cluster_advertise_endpoint(),
+        "demo-3.demo-headless:7000"
+    );
+}
+
+#[test]
 fn server_lifecycle_env_config_errors_are_specific() {
     assert!(matches!(
         config_error_from_env(&[("HYDRACACHE_ROLE", "worker")]),
@@ -313,6 +346,20 @@ fn server_lifecycle_env_config_errors_are_specific() {
     assert!(matches!(
         config_error_from_env(&[("HYDRACACHE_JOIN_TIMEOUT_MS", "forever")]),
         ServerConfigError::InvalidJoinTimeoutMs(value) if value == "forever"
+    ));
+    assert!(matches!(
+        config_error_from_env(&[
+            ("HYDRACACHE_BOOTSTRAP_REPLICAS", "zeroish"),
+            ("HOSTNAME", "demo-0")
+        ]),
+        ServerConfigError::InvalidBootstrapReplicas(value) if value == "zeroish"
+    ));
+    assert!(matches!(
+        config_error_from_env(&[
+            ("HYDRACACHE_BOOTSTRAP_REPLICAS", "3"),
+            ("HOSTNAME", "demo")
+        ]),
+        ServerConfigError::InvalidStatefulSetHostname(value) if value == "demo"
     ));
 }
 

@@ -331,6 +331,15 @@ mod admin_http {
         assert_eq!(first_body["action"], "drain");
         assert_eq!(first_body["outcome"], "accepted");
 
+        let status_after_drain = surface
+            .routes()
+            .oneshot(admin_request("GET", ADMIN_STATUS_PATH))
+            .await
+            .unwrap();
+        assert_eq!(status_after_drain.status(), StatusCode::OK);
+        let status_body = json_response(status_after_drain).await;
+        assert_eq!(status_body["draining"], true);
+
         let second_drain = surface
             .routes()
             .oneshot(admin_request("POST", ADMIN_DRAIN_PATH))
@@ -340,6 +349,13 @@ mod admin_http {
         let second_body = json_response(second_drain).await;
         assert_eq!(second_body["drain"]["remaining"], 0);
         assert_eq!(second_body["outcome"], "accepted");
+
+        let kube_prestop_drain = surface
+            .routes()
+            .oneshot(admin_request("GET", ADMIN_DRAIN_PATH))
+            .await
+            .unwrap();
+        assert_eq!(kube_prestop_drain.status(), StatusCode::OK);
     }
 
     #[tokio::test]

@@ -82,21 +82,28 @@ pub async fn run(ctx: Ctx) {
         Some(namespace) => Api::namespaced(client.clone(), namespace),
         None => Api::all(client.clone()),
     };
+    let statefulsets = match &ctx.namespace {
+        Some(namespace) => Api::<StatefulSet>::namespaced(client.clone(), namespace),
+        None => Api::<StatefulSet>::all(client.clone()),
+    };
+    let services = match &ctx.namespace {
+        Some(namespace) => Api::<Service>::namespaced(client.clone(), namespace),
+        None => Api::<Service>::all(client.clone()),
+    };
+    let secrets = match &ctx.namespace {
+        Some(namespace) => Api::<Secret>::namespaced(client.clone(), namespace),
+        None => Api::<Secret>::all(client.clone()),
+    };
+    let pod_disruption_budgets = match &ctx.namespace {
+        Some(namespace) => Api::<PodDisruptionBudget>::namespaced(client.clone(), namespace),
+        None => Api::<PodDisruptionBudget>::all(client.clone()),
+    };
 
     Controller::new(clusters, watcher::Config::default())
-        .owns(
-            Api::<StatefulSet>::all(client.clone()),
-            watcher::Config::default(),
-        )
-        .owns(
-            Api::<Service>::all(client.clone()),
-            watcher::Config::default(),
-        )
-        .owns(Api::<Secret>::all(client), watcher::Config::default())
-        .owns(
-            Api::<PodDisruptionBudget>::all(ctx.client.clone()),
-            watcher::Config::default(),
-        )
+        .owns(statefulsets, watcher::Config::default())
+        .owns(services, watcher::Config::default())
+        .owns(secrets, watcher::Config::default())
+        .owns(pod_disruption_budgets, watcher::Config::default())
         .run(reconcile, error_policy, Arc::new(ctx))
         .for_each(|result| async move {
             if let Err(error) = result {
@@ -255,8 +262,8 @@ pub async fn apply_cluster(
                     status.conditions.push(scale_condition(
                         crate::scale::SCALE_PROGRESSING_CONDITION,
                         "True",
-                        "DrainComplete",
-                        &format!("drain complete for {draining_pod}"),
+                        "DrainRequested",
+                        &format!("drain requested for {draining_pod}"),
                         cluster.metadata.generation,
                     ));
                 }

@@ -226,9 +226,13 @@ impl ServerConfig {
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidAddress(cluster))?;
         }
-        if let Ok(cluster_start) = env::var("HYDRACACHE_CLUSTER_START") {
+        let cluster_start_explicit = if let Ok(cluster_start) = env::var("HYDRACACHE_CLUSTER_START")
+        {
             config.cluster_start = parse_cluster_start(&cluster_start)?;
-        }
+            true
+        } else {
+            false
+        };
         if let Ok(advertise_addr) = env::var("HYDRACACHE_CLUSTER_ADVERTISE_ADDR") {
             config.cluster_advertise_addr = Some(advertise_addr);
         }
@@ -246,6 +250,7 @@ impl ServerConfig {
                 .map(ToOwned::to_owned)
                 .collect();
         }
+        apply_statefulset_env(&mut config, cluster_start_explicit)?;
         if let Ok(join_timeout) = env::var("HYDRACACHE_JOIN_TIMEOUT_MS") {
             config.join_timeout_ms = join_timeout
                 .parse()
@@ -413,6 +418,12 @@ pub enum ServerConfigError {
     /// Address value is invalid.
     #[error("invalid listen address: {0}")]
     InvalidAddress(String),
+    /// StatefulSet bootstrap replica count could not be parsed.
+    #[error("invalid bootstrap_replicas: {0}")]
+    InvalidBootstrapReplicas(String),
+    /// StatefulSet hostname could not be used to derive an ordinal identity.
+    #[error("invalid StatefulSet HOSTNAME: {0}")]
+    InvalidStatefulSetHostname(String),
     /// Join timeout value could not be parsed.
     #[error("invalid join_timeout_ms: {0}")]
     InvalidJoinTimeoutMs(String),
@@ -499,6 +510,72 @@ fn parse_cluster_start(value: &str) -> Result<ClusterStartMode, ServerConfigErro
         "join" => Ok(ClusterStartMode::Join),
         _ => Err(ServerConfigError::InvalidClusterStart(value.to_owned())),
     }
+}
+
+fn apply_statefulset_env(
+    config: &mut ServerConfig,
+    cluster_start_explicit: bool,
+) -> Result<(), ServerConfigError> {
+    let bootstrap_replicas = match env::var("HYDRACACHE_BOOTSTRAP_REPLICAS") {
+        Ok(value) => {
+            let replicas = value
+                .parse::<u32>()
+                .map_err(|_| ServerConfigError::InvalidBootstrapReplicas(value.clone()))?;
+            if replicas == 0 {
+                return Err(ServerConfigError::InvalidBootstrapReplicas(value));
+            }
+            Some(replicas)
+        }
+        Err(_) => None,
+    };
+    let headless_service = env::var("HYDRACACHE_CLUSTER_HEADLESS_SERVICE")
+        .ok()
+        .filter(|value| non_empty(value));
+    if bootstrap_replicas.is_none() && headless_service.is_none() {
+        return Ok(());
+    }
+
+    let hostname = env::var("HOSTNAME")
+        .map_err(|_| ServerConfigError::InvalidStatefulSetHostname(String::new()))
+        .and_then(|value| {
+            if non_empty(&value) {
+                Ok(value)
+            } else {
+                Err(ServerConfigError::InvalidStatefulSetHostname(value))
+            }
+        })?;
+
+    if config.node_id.is_none() {
+        config.node_id = Some(hostname.clone());
+    }
+
+    if let Some(headless) = headless_service {
+        if config.cluster_advertise_addr.is_none() {
+            config.cluster_advertise_addr = Some(format!(
+                "{hostname}.{headless}:{}",
+                config.cluster_addr.port()
+            ));
+        }
+    }
+
+    if let Some(replicas) = bootstrap_replicas {
+        if !cluster_start_explicit {
+            let ordinal = statefulset_ordinal(&hostname)
+                .ok_or_else(|| ServerConfigError::InvalidStatefulSetHostname(hostname.clone()))?;
+            config.cluster_start = if ordinal < replicas {
+                ClusterStartMode::Bootstrap
+            } else {
+                ClusterStartMode::Join
+            };
+        }
+    }
+
+    Ok(())
+}
+
+fn statefulset_ordinal(hostname: &str) -> Option<u32> {
+    let (_, ordinal) = hostname.rsplit_once('-')?;
+    ordinal.parse().ok()
 }
 
 fn validate_cluster_auth_pair(

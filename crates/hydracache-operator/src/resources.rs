@@ -7,7 +7,7 @@ use k8s_openapi::api::apps::v1::{
     StatefulSetUpdateStrategy,
 };
 use k8s_openapi::api::core::v1::{
-    Container, ContainerPort, EmptyDirVolumeSource, EnvVar, ExecAction, HTTPGetAction, Lifecycle,
+    Container, ContainerPort, EmptyDirVolumeSource, EnvVar, HTTPGetAction, Lifecycle,
     LifecycleHandler, PersistentVolumeClaim, PersistentVolumeClaimSpec, PodSpec, PodTemplateSpec,
     Probe, Secret, SecretVolumeSource, Service, ServicePort, ServiceSpec, Volume, VolumeMount,
     VolumeResourceRequirements,
@@ -179,7 +179,7 @@ pub fn stateful_set(
         metadata: object_meta(name.clone(), namespace.clone(), base_labels, owner.clone()),
         spec: Some(StatefulSetSpec {
             persistent_volume_claim_retention_policy: Some(pvc_retention_policy(cluster)),
-            pod_management_policy: Some("OrderedReady".to_owned()),
+            pod_management_policy: Some("Parallel".to_owned()),
             replicas: Some(replicas as i32),
             selector: LabelSelector {
                 match_labels: Some(pod_labels.clone()),
@@ -352,20 +352,15 @@ fn pod_template(
         }),
         spec: Some(PodSpec {
             containers: vec![Container {
-                command: Some(server_startup_command(&cluster.name_any())),
                 env: Some(server_env(cluster, bootstrap_replicas)),
                 image: Some(cluster.spec.image.clone()),
                 image_pull_policy: Some("IfNotPresent".to_owned()),
                 lifecycle: Some(Lifecycle {
                     pre_stop: Some(LifecycleHandler {
-                        exec: Some(ExecAction {
-                            command: Some(vec![
-                                "/bin/sh".to_owned(),
-                                "-c".to_owned(),
-                                format!(
-                                    "wget -qO- --post-data='' http://127.0.0.1:{ADMIN_PORT}/admin/drain || true"
-                                ),
-                            ]),
+                        http_get: Some(HTTPGetAction {
+                            path: Some("/admin/drain".to_owned()),
+                            port: IntOrString::String("admin".to_owned()),
+                            ..Default::default()
                         }),
                         ..Default::default()
                     }),
@@ -408,6 +403,14 @@ fn server_env(cluster: &HydraCacheCluster, bootstrap_replicas: u32) -> Vec<EnvVa
             "HYDRACACHE_BOOTSTRAP_REPLICAS",
             &bootstrap_replicas.to_string(),
         ),
+        env(
+            "HYDRACACHE_CLUSTER_HEADLESS_SERVICE",
+            &headless_service_name(&cluster.name_any()),
+        ),
+        env(
+            "HYDRACACHE_SEEDS",
+            &seed_list(&cluster.name_any(), bootstrap_replicas),
+        ),
         env("HYDRACACHE_JOIN_TIMEOUT_MS", "30000"),
         env("HYDRACACHE_STORAGE_DIR", "/var/lib/hydracache"),
         env("HYDRACACHE_TLS_ENABLED", &tls_enabled),
@@ -421,40 +424,6 @@ fn server_env(cluster: &HydraCacheCluster, bootstrap_replicas: u32) -> Vec<EnvVa
         ),
         env("HYDRACACHE_BACKUP_LOCATION", backup_location),
         env("HYDRACACHE_ADMIN_ADDR", "0.0.0.0:9091"),
-    ]
-}
-
-fn server_startup_command(name: &str) -> Vec<String> {
-    let headless = headless_service_name(name);
-    vec![
-        "/bin/sh".to_owned(),
-        "-ec".to_owned(),
-        format!(
-            r#"ordinal="${{HOSTNAME##*-}}"
-case "$ordinal" in
-  ''|*[!0-9]*) echo "invalid StatefulSet HOSTNAME for HydraCache ordinal: $HOSTNAME" >&2; exit 64 ;;
-esac
-if [ "$ordinal" -lt "$HYDRACACHE_BOOTSTRAP_REPLICAS" ]; then
-  export HYDRACACHE_CLUSTER_START=bootstrap
-else
-  export HYDRACACHE_CLUSTER_START=join
-fi
-export HYDRACACHE_NODE_ID="$HOSTNAME"
-export HYDRACACHE_CLUSTER_ADVERTISE_ADDR="$HOSTNAME.{headless}:{CLUSTER_PORT}"
-seeds=""
-i=0
-while [ "$i" -lt "$HYDRACACHE_BOOTSTRAP_REPLICAS" ]; do
-  seed="{name}-$i.{headless}:{CLUSTER_PORT}"
-  if [ -z "$seeds" ]; then
-    seeds="$seed"
-  else
-    seeds="$seeds,$seed"
-  fi
-  i=$((i + 1))
-done
-export HYDRACACHE_SEEDS="$seeds"
-exec /usr/local/bin/hydracache-server"#
-        ),
     ]
 }
 

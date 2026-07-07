@@ -276,6 +276,7 @@ fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
             current_replicas: 0,
             ready_replicas: 0,
             previous_phase: None,
+            drain_requested_for: None,
             drain_complete_for: None,
             admin_status: None,
         },
@@ -299,6 +300,7 @@ fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
             current_replicas: 3,
             ready_replicas: 3,
             previous_phase: Some(READY_PHASE.to_owned()),
+            drain_requested_for: None,
             drain_complete_for: None,
             admin_status: Some(admin_status(cluster_name, 0, 3)),
         },
@@ -312,6 +314,7 @@ fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
             current_replicas: 5,
             ready_replicas: 5,
             previous_phase: Some(SCALING_PHASE.to_owned()),
+            drain_requested_for: None,
             drain_complete_for: None,
             admin_status: Some(admin_status(cluster_name, 0, 5)),
         },
@@ -328,6 +331,7 @@ fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
             current_replicas: 5,
             ready_replicas: 5,
             previous_phase: Some(REBALANCING_PHASE.to_owned()),
+            drain_requested_for: None,
             drain_complete_for: None,
             admin_status: Some(admin_status(cluster_name, 0, 5)),
         },
@@ -534,6 +538,7 @@ impl KindHarness {
             eprintln!("skipping driven kind E2E lifecycle: set {KIND_ENV}=1 with a kind cluster");
             return None;
         }
+        hydracache_operator::install_default_rustls_provider();
 
         Some(Self {
             client: kube::Client::try_default()
@@ -668,10 +673,15 @@ impl KindHarness {
     async fn wait_ready(&self, desired: u32, stage: &'static str) -> StageObservation {
         let mut latest = None;
         for _ in 0..KIND_WAIT_ATTEMPTS {
-            let observation = self
-                .observe(stage)
-                .await
-                .expect("kind lifecycle should observe cluster resources");
+            let observation = match self.observe(stage).await {
+                Ok(observation) => observation,
+                Err(kube::Error::Api(error)) if error.code == 404 => {
+                    latest = Some(format!("waiting for owned resources: {}", error.message));
+                    tokio::time::sleep(Duration::from_secs(2)).await;
+                    continue;
+                }
+                Err(error) => panic!("kind lifecycle should observe cluster resources: {error}"),
+            };
             if matches!(stage, "rolling-upgrade" | "tls-rotation") {
                 observation
                     .assert_quorum()
@@ -686,7 +696,7 @@ impl KindHarness {
             {
                 return observation;
             }
-            latest = Some(observation);
+            latest = Some(format!("{observation:?}"));
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
         panic!("timed out waiting for {stage} readiness; latest={latest:?}");

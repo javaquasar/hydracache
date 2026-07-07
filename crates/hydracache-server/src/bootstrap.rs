@@ -335,6 +335,23 @@ impl ServerRuntime {
         self.cluster_status.begin_drain();
     }
 
+    /// Accept an operator/admin drain request without stopping the daemon process.
+    pub fn request_admin_drain(&mut self) -> DrainOutcome {
+        if self.state == ServerState::Stopped {
+            return self.last_drain.unwrap_or(DrainOutcome {
+                started_with: 0,
+                remaining: 0,
+                timed_out: false,
+            });
+        }
+        self.begin_local_drain();
+        self.leave_cluster_for_shutdown();
+        self.cluster_status.begin_drain();
+        let outcome = GracefulShutdown::new(self.config.drain_timeout()).drain(&mut self.services);
+        self.last_drain = Some(outcome);
+        outcome
+    }
+
     fn begin_local_drain(&mut self) {
         if matches!(self.state, ServerState::Stopped) {
             return;

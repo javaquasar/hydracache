@@ -83,7 +83,7 @@ impl AdminHttpSurface {
             .route("/console/style.css", get(console_style))
             .route(ADMIN_CLUSTER_OVERVIEW_PATH, get(cluster_overview))
             .route(ADMIN_STATUS_PATH, get(admin_status))
-            .route(ADMIN_DRAIN_PATH, post(admin_drain))
+            .route(ADMIN_DRAIN_PATH, get(admin_drain).post(admin_drain))
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
             .route(ADMIN_BACKUP_PATH, post(admin_backup))
             .with_state(Arc::clone(&self.runtime))
@@ -165,7 +165,7 @@ async fn admin_drain(State(runtime): State<SharedServerRuntime>, headers: Header
     let drain = runtime
         .lock()
         .expect("server runtime mutex")
-        .graceful_shutdown();
+        .request_admin_drain();
     (
         StatusCode::OK,
         Json(AdminDrainReply {
