@@ -164,6 +164,42 @@ impl RaftMetadataRuntimeConfig {
         }
     }
 
+    /// Build a runtime configuration for a node joining an existing voter set.
+    ///
+    /// The local node is deliberately not added to `remote_voters`; it becomes
+    /// a voter only after the existing leader commits a ConfChange for it.
+    pub fn try_joining<I>(
+        cluster_name: impl Into<String>,
+        raft_node_id: u64,
+        remote_voters: I,
+    ) -> CacheResult<Self>
+    where
+        I: IntoIterator<Item = u64>,
+    {
+        let raft_node_id = raft_node_id.max(1);
+        let voters = normalize_remote_voters(remote_voters);
+        if voters.is_empty() {
+            return Err(CacheError::Backend(
+                "joining raft runtime requires at least one remote voter".to_owned(),
+            ));
+        }
+        if voters.contains(&raft_node_id) {
+            return Err(CacheError::Backend(format!(
+                "joining raft runtime remote voters must not include local node {raft_node_id}"
+            )));
+        }
+        Ok(Self {
+            cluster_name: cluster_name.into(),
+            raft_node_id,
+            voters,
+            auto_campaign: false,
+            election_tick: 10,
+            heartbeat_tick: 3,
+            max_size_per_msg: 1024 * 1024,
+            max_inflight_msgs: 256,
+        })
+    }
+
     /// Control whether the runtime campaigns during construction.
     pub fn auto_campaign(mut self, auto_campaign: bool) -> Self {
         self.auto_campaign = auto_campaign;
@@ -215,6 +251,19 @@ where
         .into_iter()
         .map(|voter| voter.max(1))
         .chain(std::iter::once(raft_node_id.max(1)))
+        .collect::<Vec<_>>();
+    voters.sort_unstable();
+    voters.dedup();
+    voters
+}
+
+fn normalize_remote_voters<I>(voters: I) -> Vec<u64>
+where
+    I: IntoIterator<Item = u64>,
+{
+    let mut voters = voters
+        .into_iter()
+        .map(|voter| voter.max(1))
         .collect::<Vec<_>>();
     voters.sort_unstable();
     voters.dedup();
@@ -2021,6 +2070,27 @@ mod tests {
         assert_eq!(config.heartbeat_tick, 1);
         assert_eq!(config.max_size_per_msg, 1);
         assert_eq!(config.max_inflight_msgs, 1);
+    }
+
+    #[test]
+    fn joining_config_requires_remote_voters_without_self() {
+        let config = RaftMetadataRuntimeConfig::try_joining("orders", 4, [3, 1, 1, 2])
+            .unwrap()
+            .ticks(0, 0);
+
+        assert_eq!(config.raft_node_id, 4);
+        assert_eq!(config.voter_ids(), &[1, 2, 3]);
+        assert_eq!(config.election_tick, 2);
+        assert_eq!(config.heartbeat_tick, 1);
+
+        let empty = RaftMetadataRuntimeConfig::try_joining("orders", 4, []).unwrap_err();
+        assert!(empty.to_string().contains("at least one remote voter"));
+
+        let includes_self =
+            RaftMetadataRuntimeConfig::try_joining("orders", 4, [1, 2, 4]).unwrap_err();
+        assert!(includes_self
+            .to_string()
+            .contains("must not include local node 4"));
     }
 
     #[test]

@@ -138,6 +138,16 @@ impl NetworkedRuntimeCluster {
         }
     }
 
+    fn insert_joining_node(&mut self, node_id: u64, remote_voters: Vec<u64>) {
+        let config = RaftMetadataRuntimeConfig::try_joining("orders", node_id, remote_voters)
+            .unwrap()
+            .ticks(5, 1);
+        self.nodes.insert(
+            node_id,
+            Arc::new(RaftMetadataRuntime::with_config(config).unwrap()),
+        );
+    }
+
     fn node(&self, node_id: u64) -> Arc<RaftMetadataRuntime> {
         self.nodes.get(&node_id).expect("known node").clone()
     }
@@ -492,6 +502,41 @@ fn conf_change_adds_and_removes_raft_voter_loudly() {
     for node_id in [1, 2, 3] {
         assert_eq!(three_node.node(node_id).voter_ids().unwrap(), vec![1, 2]);
     }
+}
+
+#[test]
+fn runtime_outside_conf_receives_appends_and_becomes_voter() {
+    let mut cluster = NetworkedRuntimeCluster::three_node();
+    cluster.insert_joining_node(4, vec![1, 2, 3]);
+    cluster.campaign(1);
+
+    assert_eq!(cluster.node(4).voter_ids().unwrap(), vec![1, 2, 3]);
+    assert_eq!(cluster.node(4).snapshot().role, RaftRuntimeRole::Follower);
+
+    let add_messages = cluster.node(1).propose_add_voter(4).unwrap();
+    cluster.drain_until_idle(add_messages);
+
+    assert!(
+        cluster.delivered.iter().any(|message| {
+            message.to == 4
+                && message
+                    .decode()
+                    .is_ok_and(|decoded| decoded.get_msg_type() == MessageType::MsgAppend)
+        }),
+        "joining node should receive append messages before/while becoming a voter"
+    );
+    for node_id in [1, 2, 3, 4] {
+        assert_eq!(
+            cluster
+                .node(node_id)
+                .voter_ids()
+                .unwrap()
+                .into_iter()
+                .collect::<BTreeSet<_>>(),
+            BTreeSet::from([1, 2, 3, 4])
+        );
+    }
+    assert!(cluster.node(4).snapshot().commit_index > 0);
 }
 
 #[test]
