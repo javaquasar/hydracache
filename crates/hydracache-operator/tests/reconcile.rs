@@ -347,8 +347,10 @@ fn operator_template_renders_routable_cluster_identity_and_endpoint() {
     let command = container.command.as_ref().unwrap().join("\n");
 
     assert_eq!(env["HYDRACACHE_CLUSTER_ADDR"], "0.0.0.0:7000");
+    assert_eq!(env["HYDRACACHE_ADMIN_ADDR"], "0.0.0.0:9091");
     assert_eq!(env["HYDRACACHE_BOOTSTRAP_REPLICAS"], "3");
     assert_eq!(env["HYDRACACHE_JOIN_TIMEOUT_MS"], "30000");
+    assert_eq!(env["HYDRACACHE_TLS_ACK_INSECURE"], "false");
     assert!(!env.contains_key("HYDRACACHE_SEEDS"));
     assert!(command.contains("HYDRACACHE_CLUSTER_START=bootstrap"));
     assert!(command.contains("HYDRACACHE_CLUSTER_START=join"));
@@ -359,6 +361,28 @@ fn operator_template_renders_routable_cluster_identity_and_endpoint() {
     assert!(command.contains(r#"seed="identity-$i.identity-headless:7000""#));
     assert!(command.contains(r#"HYDRACACHE_SEEDS="$seeds""#));
     assert!(!command.contains("0.0.0.0:7000"));
+}
+
+#[test]
+fn operator_template_acknowledges_plaintext_when_tls_is_disabled() {
+    let mut cluster = cluster("plain");
+    cluster.spec.tls = None;
+
+    let desired = OwnedResources::build(&cluster);
+    let container = &desired
+        .stateful_set
+        .spec
+        .as_ref()
+        .unwrap()
+        .template
+        .spec
+        .as_ref()
+        .unwrap()
+        .containers[0];
+    let env = env_map(container);
+
+    assert_eq!(env["HYDRACACHE_TLS_ENABLED"], "false");
+    assert_eq!(env["HYDRACACHE_TLS_ACK_INSECURE"], "true");
 }
 
 #[test]

@@ -87,6 +87,7 @@ pub struct AdminStatus {
     pub leader: Option<String>,
     pub quorum_ok: bool,
     pub members: u32,
+    pub voters: u32,
     pub reshard_phase: String,
     pub draining: bool,
 }

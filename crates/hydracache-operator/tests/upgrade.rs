@@ -23,6 +23,7 @@ fn admin_status(leader: &str) -> AdminStatus {
         leader: Some(leader.to_owned()),
         quorum_ok: true,
         members: 3,
+        voters: 3,
         reshard_phase: "idle".to_owned(),
         draining: false,
     }

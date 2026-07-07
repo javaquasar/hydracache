@@ -1,4 +1,6 @@
 use std::collections::BTreeMap;
+use std::net::TcpListener;
+use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
 use hydracache_operator::backup::{
@@ -9,7 +11,7 @@ use hydracache_operator::backup::{
 use hydracache_operator::controller::{HEALTHY_HEALTH, READY_PHASE};
 use hydracache_operator::crd::{sample_spec, HydraCacheCluster, HydraCacheClusterSpec};
 use hydracache_operator::resources::{
-    APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL, MANAGED_BY_LABEL,
+    ADMIN_PORT, APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL, MANAGED_BY_LABEL,
 };
 use hydracache_operator::scale::{
     plan_scale, pod_name, quorum_for, AdminAction, AdminStatus, ScaleObservation,
@@ -36,6 +38,12 @@ use serde_json::json;
 const KIND_ENV: &str = "HYDRACACHE_OPERATOR_KIND";
 const NAMESPACE_ENV: &str = "HYDRACACHE_OPERATOR_NAMESPACE";
 const CLUSTER_ENV: &str = "HYDRACACHE_OPERATOR_CLUSTER";
+const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
+const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
+const ADMIN_STATUS_PATH: &str = "/admin/status";
+const HYDRACACHE_CLIENT_ID_HEADER: &str = "x-hydracache-client-id";
+const HYDRACACHE_TENANT_HEADER: &str = "x-hydracache-tenant";
+const HYDRACACHE_ADMIN_HEADER: &str = "x-hydracache-admin";
 const NEXT_IMAGE: &str = "ghcr.io/javaquasar/hydracache-server:0.57.1-e2e";
 const NEXT_VERSION: &str = "0.57.1";
 const KIND_WAIT_ATTEMPTS: usize = 90;
@@ -70,11 +78,26 @@ fn test_cluster(name: &str, replicas: u32) -> HydraCacheCluster {
     cluster
 }
 
+fn elasticity_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
+    let mut spec = sample_spec();
+    spec.image = std::env::var(IMAGE_ENV).unwrap_or_else(|_| {
+        panic!(
+            "{KIND_ENV}=1 elasticity tests require {IMAGE_ENV}=<current hydracache-server image>"
+        )
+    });
+    spec.version = std::env::var(VERSION_ENV).unwrap_or_else(|_| "0.61.0-dev".to_owned());
+    spec.replicas = replicas;
+    spec.tls = None;
+    spec.backup_schedule = None;
+    spec
+}
+
 fn admin_status(cluster: &str, leader_ordinal: u32, members: u32) -> AdminStatus {
     AdminStatus {
         leader: Some(pod_name(cluster, leader_ordinal)),
         quorum_ok: true,
         members,
+        voters: members,
         reshard_phase: "idle".to_owned(),
         draining: false,
     }
@@ -204,6 +227,41 @@ impl LifecycleEvidence {
             "backup/PITR restore lost a committed write"
         );
     }
+}
+
+struct AdminPortForward {
+    child: Child,
+}
+
+impl AdminPortForward {
+    fn spawn(namespace: &str, pod: &str, local_port: u16) -> Self {
+        let child = Command::new("kubectl")
+            .arg("-n")
+            .arg(namespace)
+            .arg("port-forward")
+            .arg(format!("pod/{pod}"))
+            .arg(format!("{local_port}:{ADMIN_PORT}"))
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .expect("kind voter assertions require kubectl for pod port-forward");
+        Self { child }
+    }
+}
+
+impl Drop for AdminPortForward {
+    fn drop(&mut self) {
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
+fn reserve_local_port() -> u16 {
+    TcpListener::bind(("127.0.0.1", 0))
+        .expect("kind voter assertions should reserve a local port")
+        .local_addr()
+        .expect("local port reservation should expose an address")
+        .port()
 }
 
 fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
@@ -486,6 +544,17 @@ impl KindHarness {
         })
     }
 
+    async fn try_start_named(test_name: &str, suffix: &str) -> Option<Self> {
+        let mut harness = Self::try_start().await?;
+        let base = cluster_name();
+        harness.cluster = format!("{base}-{suffix}");
+        eprintln!(
+            "running {test_name} against HydraCacheCluster {}",
+            harness.cluster
+        );
+        Some(harness)
+    }
+
     async fn apply_cluster(&self, mut spec: HydraCacheClusterSpec) -> HydraCacheCluster {
         if let Some(secret_name) = spec.tls.as_ref().map(|tls| tls.secret_name.clone()) {
             self.upsert_tls_secret(&secret_name, "initial").await;
@@ -527,6 +596,13 @@ impl KindHarness {
             )
             .await
             .expect("kind lifecycle should patch HydraCacheCluster spec");
+    }
+
+    async fn delete_pod(&self, ordinal: u32) {
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let _ = pods
+            .delete(&pod_name(&self.cluster, ordinal), &Default::default())
+            .await;
     }
 
     async fn upsert_tls_secret(&self, name: &str, generation: &str) {
@@ -614,6 +690,96 @@ impl KindHarness {
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
         panic!("timed out waiting for {stage} readiness; latest={latest:?}");
+    }
+
+    async fn wait_admin_voters(&self, expected: u32, stage: &'static str) -> AdminStatus {
+        let mut latest = None;
+        for _ in 0..KIND_WAIT_ATTEMPTS {
+            match self.admin_status(0).await {
+                Ok(status)
+                    if status.members == expected
+                        && status.voters == expected
+                        && status.quorum_ok =>
+                {
+                    return status
+                }
+                Ok(status) => latest = Some(format!("{status:?}")),
+                Err(error) => latest = Some(error),
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!("timed out waiting for {stage} voters={expected}; latest={latest:?}");
+    }
+
+    async fn wait_crash_preserves_voters(&self, ordinal: u32, expected: u32) -> AdminStatus {
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let target = pod_name(&self.cluster, ordinal);
+        let before_uid = pods
+            .get(&target)
+            .await
+            .ok()
+            .and_then(|pod| pod.metadata.uid);
+
+        self.delete_pod(ordinal).await;
+
+        let mut latest = None;
+        for _ in 0..KIND_WAIT_ATTEMPTS {
+            let crash_observed = match pods.get(&target).await {
+                Ok(pod) => {
+                    let uid_changed = before_uid
+                        .as_ref()
+                        .zip(pod.metadata.uid.as_ref())
+                        .is_some_and(|(before, after)| before != after);
+                    uid_changed || pod_is_unavailable(&pod)
+                }
+                Err(kube::Error::Api(error)) if error.code == 404 => true,
+                Err(error) => panic!("kind crash assertion could not read {target}: {error}"),
+            };
+
+            match self.admin_status(0).await {
+                Ok(status) if crash_observed && status.voters == expected && status.quorum_ok => {
+                    return status
+                }
+                Ok(status) => latest = Some(format!("{status:?}; crash_observed={crash_observed}")),
+                Err(error) => latest = Some(format!("{error}; crash_observed={crash_observed}")),
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!("timed out waiting for pod crash to preserve voters={expected}; latest={latest:?}");
+    }
+
+    async fn admin_status(&self, ordinal: u32) -> Result<AdminStatus, String> {
+        let pod = pod_name(&self.cluster, ordinal);
+        let local_port = reserve_local_port();
+        let _forward = AdminPortForward::spawn(&self.namespace, &pod, local_port);
+        let url = format!("http://127.0.0.1:{local_port}{ADMIN_STATUS_PATH}");
+        let client = reqwest::Client::new();
+        let mut latest = None;
+
+        for _ in 0..30 {
+            let response = client
+                .get(&url)
+                .header(HYDRACACHE_CLIENT_ID_HEADER, "operator")
+                .header(HYDRACACHE_TENANT_HEADER, "system")
+                .header(HYDRACACHE_ADMIN_HEADER, "true")
+                .send()
+                .await;
+            match response {
+                Ok(response) if response.status().is_success() => {
+                    return response
+                        .json::<AdminStatus>()
+                        .await
+                        .map_err(|error| format!("failed to decode {pod} admin status: {error}"));
+                }
+                Ok(response) => latest = Some(format!("HTTP {}", response.status())),
+                Err(error) => latest = Some(error.to_string()),
+            }
+            tokio::time::sleep(Duration::from_millis(200)).await;
+        }
+
+        Err(format!(
+            "timed out reading {pod} admin status through port-forward; latest={latest:?}"
+        ))
     }
 
     async fn wait_backup_recorded(&self) -> StageObservation {
@@ -743,6 +909,70 @@ async fn full_lifecycle_drives_install_scale_upgrade_rotate_backup_restore() {
         0,
     );
     assert!(restore_plan.restore_allowed);
+}
+
+#[tokio::test]
+async fn kind_scale_up_adds_raft_voter_through_daemon_join() {
+    let Some(kind) = KindHarness::try_start_named(
+        "kind_scale_up_adds_raft_voter_through_daemon_join",
+        "scale-up",
+    )
+    .await
+    else {
+        return;
+    };
+
+    let cluster = kind.apply_cluster(elasticity_kind_spec(3)).await;
+    kind.wait_ready(cluster.spec.replicas, "install").await;
+    let initial = kind.wait_admin_voters(3, "install-voters").await;
+    assert_eq!(initial.voters, 3);
+
+    kind.patch_replicas(4).await;
+    kind.wait_ready(4, "scale-up").await;
+    let scaled = kind.wait_admin_voters(4, "scale-up-voters").await;
+    assert_eq!(scaled.members, 4);
+    assert_eq!(scaled.voters, 4);
+}
+
+#[tokio::test]
+async fn kind_scale_down_drains_voter_through_daemon() {
+    let Some(kind) =
+        KindHarness::try_start_named("kind_scale_down_drains_voter_through_daemon", "scale-down")
+            .await
+    else {
+        return;
+    };
+
+    let cluster = kind.apply_cluster(elasticity_kind_spec(3)).await;
+    kind.wait_ready(cluster.spec.replicas, "install").await;
+    kind.wait_admin_voters(3, "install-voters").await;
+
+    kind.patch_replicas(4).await;
+    kind.wait_ready(4, "scale-up-before-down").await;
+    kind.wait_admin_voters(4, "scale-up-voters").await;
+
+    kind.patch_replicas(3).await;
+    kind.wait_ready(3, "scale-down").await;
+    let scaled_down = kind.wait_admin_voters(3, "scale-down-voters").await;
+    assert_eq!(scaled_down.members, 3);
+    assert_eq!(scaled_down.voters, 3);
+}
+
+#[tokio::test]
+async fn kind_pod_crash_does_not_shrink_voters() {
+    let Some(kind) =
+        KindHarness::try_start_named("kind_pod_crash_does_not_shrink_voters", "crash-voters").await
+    else {
+        return;
+    };
+
+    let cluster = kind.apply_cluster(elasticity_kind_spec(3)).await;
+    kind.wait_ready(cluster.spec.replicas, "install").await;
+    kind.wait_admin_voters(3, "install-voters").await;
+
+    let after_crash = kind.wait_crash_preserves_voters(2, 3).await;
+    assert_eq!(after_crash.voters, 3);
+    assert!(after_crash.quorum_ok);
 }
 
 #[test]

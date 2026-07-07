@@ -32,6 +32,7 @@ fn admin_status(leader: Option<String>, reshard_phase: &str) -> AdminStatus {
         leader,
         quorum_ok: true,
         members: 3,
+        voters: 3,
         reshard_phase: reshard_phase.to_owned(),
         draining: false,
     }

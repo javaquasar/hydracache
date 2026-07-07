@@ -393,6 +393,7 @@ fn pod_template(
 
 fn server_env(cluster: &HydraCacheCluster, bootstrap_replicas: u32) -> Vec<EnvVar> {
     let tls_enabled = cluster.spec.tls.is_some().to_string();
+    let tls_ack_insecure = cluster.spec.tls.is_none().to_string();
     let backup_location = cluster
         .spec
         .backup_schedule
@@ -410,6 +411,7 @@ fn server_env(cluster: &HydraCacheCluster, bootstrap_replicas: u32) -> Vec<EnvVa
         env("HYDRACACHE_JOIN_TIMEOUT_MS", "30000"),
         env("HYDRACACHE_STORAGE_DIR", "/var/lib/hydracache"),
         env("HYDRACACHE_TLS_ENABLED", &tls_enabled),
+        env("HYDRACACHE_TLS_ACK_INSECURE", &tls_ack_insecure),
         env("HYDRACACHE_TLS_CERT_PATH", "/etc/hydracache/tls/tls.crt"),
         env("HYDRACACHE_TLS_KEY_PATH", "/etc/hydracache/tls/tls.key"),
         env("HYDRACACHE_TLS_CA_PATH", "/etc/hydracache/tls/ca.crt"),
