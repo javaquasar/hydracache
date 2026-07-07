@@ -25,7 +25,7 @@
 >   `Forwarded` proposal honesty, drive diagnostics, the nightly networked-E2E CI tier).
 > - **Unblocks:** `1.0` (API freeze/semver + soak mileage remain; no new grid mechanics after
 >   this).
-> - **Status:** planned.
+> - **Status:** shipped on 2026-07-07.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > debt tracked: [`../technical-debt/TD-0011-dynamic-raft-membership-and-node-identity.md`](../technical-debt/TD-0011-dynamic-raft-membership-and-node-identity.md),
