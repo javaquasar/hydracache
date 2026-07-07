@@ -13,8 +13,9 @@ use std::time::Duration;
 
 use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
-    CacheError, CacheResult, ClusterAdmissionBridge, ClusterDiscoveryLiveness, ClusterGeneration,
-    ClusterMember, ClusterNodeId, HydraCache, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
+    CacheError, CacheResult, ClusterAdmissionBridge, ClusterCandidate, ClusterDiscovery,
+    ClusterDiscoveryLiveness, ClusterEndpoints, ClusterGeneration, ClusterMember, ClusterNodeId,
+    ClusterRole, HydraCache, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
@@ -156,6 +157,9 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         )
         .await?,
     );
+    if matches!(start_mode, ResolvedClusterStartMode::Join) {
+        announce_join_candidate(&discovery, node_id.clone(), generation, config).await?;
+    }
     let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
     let route_auth = cluster_route_auth(config, &node_id)?;
     let raft_peers = Arc::new(RwLock::new((*topology.peers).clone()));
@@ -175,12 +179,16 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
-        raft.clone(),
-        message_sink.clone(),
-        raft_peers.clone(),
-        drive_diagnostics.clone(),
-        node_id.clone(),
-        config.cluster_addr,
+        GridDriveHandles {
+            raft: raft.clone(),
+            message_sink: message_sink.clone(),
+            raft_peers: raft_peers.clone(),
+            diagnostics: drive_diagnostics.clone(),
+            local_node_id: node_id.clone(),
+            local_addr: config.cluster_addr,
+            local_generation: generation,
+        },
+        discovery.clone(),
         shutdown.subscribe(),
     );
     spawn_admission_drive(bridge.clone(), shutdown.subscribe());
@@ -193,11 +201,17 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         shutdown.subscribe(),
     )
     .await?;
-    if use_network_sink {
-        if raft_node_id == topology.bootstrap_raft_node_id {
-            let _ = send_raft_messages(&message_sink, raft.campaign()?).await;
+    match start_mode {
+        ResolvedClusterStartMode::Bootstrap if use_network_sink => {
+            if raft_node_id == topology.bootstrap_raft_node_id {
+                let _ = send_raft_messages(&message_sink, raft.campaign()?).await;
+            }
+            wait_for_raft_leader(&raft).await?;
         }
-        wait_for_raft_leader(&raft).await?;
+        ResolvedClusterStartMode::Join => {
+            wait_for_join_complete(&raft, raft_node_id, config.join_timeout()).await?;
+        }
+        ResolvedClusterStartMode::Bootstrap => {}
     }
 
     let cache = networked_member_cache(
@@ -453,13 +467,35 @@ fn read_cluster_auth_token(path: &Path, section: &str) -> CacheResult<String> {
     Ok(token)
 }
 
-fn spawn_grid_drive(
+async fn announce_join_candidate(
+    discovery: &ChitchatDiscovery,
+    node_id: ClusterNodeId,
+    generation: ClusterGeneration,
+    config: &ServerConfig,
+) -> CacheResult<()> {
+    discovery
+        .announce(
+            ClusterCandidate::member(node_id)
+                .generation(generation)
+                .endpoints(ClusterEndpoints::new().control(config.cluster_advertise_endpoint())),
+        )
+        .await
+}
+
+#[derive(Clone)]
+struct GridDriveHandles {
     raft: Arc<NetworkedRaftRuntime>,
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
     diagnostics: Arc<GridDriveDiagnostics>,
     local_node_id: ClusterNodeId,
     local_addr: SocketAddr,
+    local_generation: ClusterGeneration,
+}
+
+fn spawn_grid_drive(
+    handles: GridDriveHandles,
+    discovery: Arc<ChitchatDiscovery>,
     mut shutdown: watch::Receiver<bool>,
 ) {
     tokio::spawn(async move {
@@ -472,15 +508,12 @@ fn spawn_grid_drive(
                     }
                 }
                 _ = interval.tick() => {
+                    let candidates = discovery.candidates();
                     if let Err(_error) = drive_grid_once(
-                        &raft,
-                        &message_sink,
-                        &raft_peers,
-                        &diagnostics,
-                        &local_node_id,
-                        local_addr,
+                        &handles,
+                        &candidates,
                     ).await {
-                        diagnostics.record_drive_error(_error.to_string());
+                        handles.diagnostics.record_drive_error(_error.to_string());
                         continue;
                     }
                 }
@@ -508,27 +541,43 @@ fn spawn_admission_drive(bridge: ClusterAdmissionBridge, mut shutdown: watch::Re
 }
 
 async fn drive_grid_once(
-    raft: &Arc<NetworkedRaftRuntime>,
-    message_sink: &Arc<dyn RaftMessageSink>,
-    raft_peers: &SharedRaftPeers,
-    diagnostics: &GridDriveDiagnostics,
-    local_node_id: &ClusterNodeId,
-    local_addr: SocketAddr,
+    handles: &GridDriveHandles,
+    candidates: &[ClusterCandidate],
 ) -> CacheResult<()> {
-    diagnostics.record_tick();
-    let _ =
-        send_raft_messages_with_diagnostics(message_sink, raft.tick()?, Some(diagnostics)).await;
-    refresh_raft_peers(raft_peers, local_node_id, local_addr, &raft.members());
-    sync_raft_voters(raft, message_sink, raft_peers, diagnostics).await?;
+    handles.diagnostics.record_tick();
     let _ = send_raft_messages_with_diagnostics(
-        message_sink,
-        raft.take_outbound_messages(),
-        Some(diagnostics),
+        &handles.message_sink,
+        handles.raft.tick()?,
+        Some(handles.diagnostics.as_ref()),
     )
     .await;
-    let _ =
-        send_raft_messages_with_diagnostics(message_sink, raft.drain_ready()?, Some(diagnostics))
-            .await;
+    refresh_raft_peers(
+        &handles.raft_peers,
+        &handles.local_node_id,
+        handles.local_addr,
+        &handles.raft.members(),
+        handles.local_generation,
+        candidates,
+    );
+    sync_raft_voters(
+        &handles.raft,
+        &handles.message_sink,
+        &handles.raft_peers,
+        handles.diagnostics.as_ref(),
+    )
+    .await?;
+    let _ = send_raft_messages_with_diagnostics(
+        &handles.message_sink,
+        handles.raft.take_outbound_messages(),
+        Some(handles.diagnostics.as_ref()),
+    )
+    .await;
+    let _ = send_raft_messages_with_diagnostics(
+        &handles.message_sink,
+        handles.raft.drain_ready()?,
+        Some(handles.diagnostics.as_ref()),
+    )
+    .await;
     Ok(())
 }
 
@@ -537,6 +586,8 @@ fn refresh_raft_peers(
     local_node_id: &ClusterNodeId,
     local_addr: SocketAddr,
     members: &[ClusterMember],
+    local_generation: ClusterGeneration,
+    candidates: &[ClusterCandidate],
 ) {
     let mut peers = raft_peers.write().expect("raft peer map poisoned");
     peers.insert(
@@ -565,6 +616,25 @@ fn refresh_raft_peers(
                 address,
             },
         );
+    }
+    for candidate in candidates {
+        if candidate.role != ClusterRole::Member || candidate.generation != local_generation {
+            continue;
+        }
+        let Some(address) = candidate
+            .endpoints
+            .control
+            .as_deref()
+            .and_then(|endpoint| endpoint.parse::<SocketAddr>().ok())
+        else {
+            continue;
+        };
+        peers
+            .entry(raft_node_id(&candidate.node_id))
+            .or_insert_with(|| RaftPeer {
+                node_id: candidate.node_id.clone(),
+                address,
+            });
     }
 }
 
@@ -827,7 +897,7 @@ impl RaftTopology {
     }
 
     fn joiner_election_tick(&self) -> usize {
-        7 + (self.voters.len() * 2)
+        5 + (2 * (self.voters.len() + 1))
     }
 }
 
@@ -984,6 +1054,26 @@ async fn wait_for_raft_leader(raft: &Arc<NetworkedRaftRuntime>) -> CacheResult<(
             return Err(CacheError::Backend(
                 "timed out waiting for networked raft leader".to_owned(),
             ));
+        }
+        tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
+    }
+}
+
+async fn wait_for_join_complete(
+    raft: &Arc<NetworkedRaftRuntime>,
+    raft_node_id: u64,
+    deadline: Duration,
+) -> CacheResult<()> {
+    let timeout_ms = deadline.as_millis();
+    let deadline = tokio::time::Instant::now() + deadline;
+    loop {
+        if raft.leader_id().is_some() && raft.voter_ids()?.contains(&raft_node_id) {
+            return Ok(());
+        }
+        if tokio::time::Instant::now() >= deadline {
+            return Err(CacheError::Backend(format!(
+                "timed out after {timeout_ms}ms waiting for joining raft member {raft_node_id} to become a voter; check seed reachability, cluster auth/TLS compatibility, and live leader availability"
+            )));
         }
         tokio::time::sleep(GRID_DRIVE_INTERVAL).await;
     }
@@ -1576,16 +1666,16 @@ mod tests {
         discovery
             .announce(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)));
         bridge.run_once().await;
-        drive_grid_once(
-            &raft,
-            &message_sink,
-            &raft_peers,
-            &diagnostics,
-            &ClusterNodeId::from("local"),
-            "127.0.0.1:7000".parse().unwrap(),
-        )
-        .await
-        .unwrap();
+        let handles = GridDriveHandles {
+            raft: raft.clone(),
+            message_sink: message_sink.clone(),
+            raft_peers: raft_peers.clone(),
+            diagnostics: Arc::new(diagnostics),
+            local_node_id: ClusterNodeId::from("local"),
+            local_addr: "127.0.0.1:7000".parse().unwrap(),
+            local_generation: ClusterGeneration::new(1),
+        };
+        drive_grid_once(&handles, &[]).await.unwrap();
 
         assert!(raft
             .members()
@@ -1627,6 +1717,35 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
+    #[tokio::test]
+    async fn announce_join_candidate_uses_advertised_control_endpoint() {
+        let mut config = test_member_config("127.0.0.1:0");
+        config.cluster_advertise_addr = Some("127.0.0.1:7100".to_owned());
+        let node_id = ClusterNodeId::from("joiner-a");
+        let generation = ClusterGeneration::new(1);
+        let discovery = ChitchatDiscovery::spawn_udp(ChitchatDiscoveryConfig::new(
+            DEFAULT_CLUSTER_NAME,
+            node_id.clone(),
+            generation,
+            "127.0.0.1:0".parse().unwrap(),
+        ))
+        .await
+        .unwrap();
+
+        announce_join_candidate(&discovery, node_id.clone(), generation, &config)
+            .await
+            .unwrap();
+
+        let candidates = discovery.candidates();
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(candidates[0].node_id, node_id);
+        assert_eq!(candidates[0].role, ClusterRole::Member);
+        assert_eq!(
+            candidates[0].endpoints.control.as_deref(),
+            Some("127.0.0.1:7100")
+        );
+    }
+
     #[test]
     fn raft_topology_remote_voters_exclude_local_member() {
         let mut config = test_member_config("127.0.0.1:7000");
@@ -1650,6 +1769,13 @@ mod tests {
         assert!(topology.voters.contains(&local_raft_id));
         assert!(!remote_voters.contains(&local_raft_id));
         assert_eq!(remote_voters, expected_remote_voters);
+        let slowest_bootstrap_tick = topology
+            .voters
+            .iter()
+            .map(|voter| topology.election_tick_for(*voter))
+            .max()
+            .unwrap();
+        assert!(topology.joiner_election_tick() > slowest_bootstrap_tick);
     }
 
     #[test]
@@ -1671,6 +1797,8 @@ mod tests {
             &local_node,
             "127.0.0.1:7000".parse().unwrap(),
             &[member],
+            ClusterGeneration::new(1),
+            &[],
         );
 
         let peers = raft_peers.read().expect("raft peer map poisoned");
@@ -1686,6 +1814,62 @@ mod tests {
                 .map(|peer| peer.address),
             Some("127.0.0.1:7001".parse().unwrap())
         );
+    }
+
+    #[test]
+    fn refresh_raft_peers_uses_candidate_endpoints_only_as_missing_hints() {
+        let local_node = ClusterNodeId::from("local");
+        let member_node = ClusterNodeId::from("member-a");
+        let candidate_node = ClusterNodeId::from("member-b");
+        let stale_candidate_node = ClusterNodeId::from("member-stale");
+        let member = ClusterMember {
+            node_id: member_node.clone(),
+            generation: ClusterGeneration::new(1),
+            role: ClusterRole::Member,
+            epoch: ClusterEpoch::new(1),
+            endpoints: ClusterEndpoints::new().control("127.0.0.1:7001"),
+            metadata: BTreeMap::new(),
+        };
+        let candidates = vec![
+            ClusterCandidate::member(member_node.clone())
+                .generation(ClusterGeneration::new(1))
+                .endpoints(ClusterEndpoints::new().control("127.0.0.1:7999")),
+            ClusterCandidate::member(candidate_node.clone())
+                .generation(ClusterGeneration::new(1))
+                .endpoints(ClusterEndpoints::new().control("127.0.0.1:7002")),
+            ClusterCandidate::member(stale_candidate_node.clone())
+                .generation(ClusterGeneration::new(2))
+                .endpoints(ClusterEndpoints::new().control("127.0.0.1:7003")),
+            ClusterCandidate::client("client-a")
+                .generation(ClusterGeneration::new(1))
+                .endpoints(ClusterEndpoints::new().control("127.0.0.1:7004")),
+        ];
+        let raft_peers = Arc::new(RwLock::new(BTreeMap::new()));
+
+        refresh_raft_peers(
+            &raft_peers,
+            &local_node,
+            "127.0.0.1:7000".parse().unwrap(),
+            &[member],
+            ClusterGeneration::new(1),
+            &candidates,
+        );
+
+        let peers = raft_peers.read().expect("raft peer map poisoned");
+        assert_eq!(
+            peers
+                .get(&raft_node_id(&member_node))
+                .map(|peer| peer.address),
+            Some("127.0.0.1:7001".parse().unwrap())
+        );
+        assert_eq!(
+            peers
+                .get(&raft_node_id(&candidate_node))
+                .map(|peer| peer.address),
+            Some("127.0.0.1:7002".parse().unwrap())
+        );
+        assert!(!peers.contains_key(&raft_node_id(&stale_candidate_node)));
+        assert!(!peers.contains_key(&raft_node_id(&ClusterNodeId::from("client-a"))));
     }
 
     #[tokio::test]
@@ -1718,6 +1902,18 @@ mod tests {
             .unwrap();
 
         assert!(raft.voter_ids().unwrap().contains(&member_raft_id));
+    }
+
+    #[tokio::test]
+    async fn wait_for_join_complete_returns_when_self_is_voter() {
+        let raft = Arc::new(
+            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
+                .unwrap(),
+        );
+
+        wait_for_join_complete(&raft, 1, Duration::from_millis(1))
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
