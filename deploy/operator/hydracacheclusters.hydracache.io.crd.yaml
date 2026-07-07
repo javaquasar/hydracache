@@ -103,6 +103,9 @@ spec:
                 observedReplicas:
                   type: integer
                   format: int32
+                bootstrapReplicas:
+                  type: integer
+                  format: int32
                 leader:
                   type: string
                 health:

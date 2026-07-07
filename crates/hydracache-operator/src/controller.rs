@@ -468,6 +468,7 @@ pub fn observed_status(
     let desired = cluster.spec.replicas;
     HydraCacheClusterStatus {
         observed_replicas,
+        bootstrap_replicas: bootstrap_replicas(cluster, stateful_set),
         leader: None,
         health: if observed_replicas == 0 {
             FORMING_HEALTH.to_owned()
@@ -512,6 +513,33 @@ pub async fn patch_status(
         )
         .await?;
     Ok(())
+}
+
+fn bootstrap_replicas(
+    cluster: &HydraCacheCluster,
+    stateful_set: Option<&StatefulSet>,
+) -> Option<u32> {
+    cluster
+        .status
+        .as_ref()
+        .and_then(|status| status.bootstrap_replicas)
+        .or_else(|| stateful_set.and_then(statefulset_baseline_replicas))
+}
+
+fn statefulset_baseline_replicas(stateful_set: &StatefulSet) -> Option<u32> {
+    stateful_set
+        .status
+        .as_ref()
+        .map(|status| status.replicas)
+        .filter(|replicas| *replicas > 0)
+        .or_else(|| {
+            stateful_set
+                .spec
+                .as_ref()
+                .and_then(|spec| spec.replicas)
+                .filter(|replicas| *replicas > 0)
+        })
+        .map(|replicas| replicas as u32)
 }
 
 pub fn immutable_change_condition(field: &'static str, generation: Option<i64>) -> Condition {

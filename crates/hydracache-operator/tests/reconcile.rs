@@ -4,7 +4,8 @@ use hydracache_operator::controller::{
     READY_PHASE,
 };
 use hydracache_operator::crd::{
-    sample_spec, HydraCacheCluster, PvcReclaimPolicy, HYDRACACHE_CLUSTER_CRD_NAME,
+    sample_spec, HydraCacheCluster, HydraCacheClusterStatus, PvcReclaimPolicy,
+    HYDRACACHE_CLUSTER_CRD_NAME,
 };
 use hydracache_operator::resources::{
     cleanup_plan, headless_service_name, seed_list, OwnedResources, ADMIN_PORT, APP_LABEL,
@@ -301,6 +302,7 @@ fn reconcile_status_is_state_machine_snapshot() {
     let status = observed_status(&cluster, Some(&desired.stateful_set));
 
     assert_eq!(status.observed_replicas, 0);
+    assert_eq!(status.bootstrap_replicas, Some(3));
     assert_eq!(status.health, FORMING_HEALTH);
     assert_eq!(status.phase, READY_PHASE);
     assert_eq!(status.conditions[0].type_, "Reconciled");
@@ -317,6 +319,38 @@ fn reconcile_status_is_state_machine_snapshot() {
     ready.status.as_mut().unwrap().ready_replicas = Some(1);
     let degraded_status = observed_status(&cluster, Some(&ready));
     assert_eq!(degraded_status.health, DEGRADED_HEALTH);
+}
+
+#[test]
+fn bootstrap_replicas_is_recorded_once() {
+    let mut subject = cluster("bootstrap-once");
+    let desired = OwnedResources::build(&subject);
+    let first_status = observed_status(&subject, Some(&desired.stateful_set));
+    assert_eq!(first_status.bootstrap_replicas, Some(3));
+
+    subject.status = Some(HydraCacheClusterStatus {
+        bootstrap_replicas: Some(3),
+        ..first_status
+    });
+    subject.spec.replicas = 4;
+    let scaled = OwnedResources::build_with_replicas(&subject, 4);
+    let scaled_status = observed_status(&subject, Some(&scaled.stateful_set));
+    assert_eq!(scaled_status.bootstrap_replicas, Some(3));
+
+    let mut pre_061 = cluster("pre-061-upgrade");
+    pre_061.spec.replicas = 4;
+    pre_061.status = Some(HydraCacheClusterStatus {
+        bootstrap_replicas: None,
+        ..Default::default()
+    });
+    let mut existing = OwnedResources::build_with_replicas(&pre_061, 3).stateful_set;
+    existing.status = Some(k8s_openapi::api::apps::v1::StatefulSetStatus {
+        ready_replicas: Some(3),
+        replicas: 3,
+        ..Default::default()
+    });
+    let upgraded_status = observed_status(&pre_061, Some(&existing));
+    assert_eq!(upgraded_status.bootstrap_replicas, Some(3));
 }
 
 #[tokio::test]

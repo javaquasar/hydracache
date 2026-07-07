@@ -129,6 +129,9 @@ pub struct BackupScheduleSpec {
 pub struct HydraCacheClusterStatus {
     /// Observed ready/created replicas.
     pub observed_replicas: u32,
+    /// Initial bootstrap cohort size used to derive deterministic pod start mode.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bootstrap_replicas: Option<u32>,
     /// Current server leader if known.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub leader: Option<String>,
