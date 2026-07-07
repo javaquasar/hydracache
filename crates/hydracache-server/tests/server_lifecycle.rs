@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ServerConfig,
-    ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
+    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
+    ServerConfig, ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
 };
 
 fn member_config() -> ServerConfig {
@@ -19,6 +19,7 @@ fn member_config() -> ServerConfig {
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
+        ..ServerConfig::default()
     }
 }
 
@@ -87,6 +88,43 @@ fn server_lifecycle_invalid_config_fails_loud() {
         empty_node_id.validate(),
         Err(ServerConfigError::InvalidNodeId)
     ));
+
+    let mut join_with_local_role = member_config();
+    join_with_local_role.cluster_start = ClusterStartMode::Join;
+    join_with_local_role.role = ServerRole::Local;
+    assert!(matches!(
+        join_with_local_role.validate(),
+        Err(ServerConfigError::JoinRequiresMemberRole)
+    ));
+
+    let mut join_without_seeds = member_config();
+    join_without_seeds.cluster_start = ClusterStartMode::Join;
+    join_without_seeds.seeds.clear();
+    assert!(matches!(
+        join_without_seeds.validate(),
+        Err(ServerConfigError::JoinRequiresSeeds)
+    ));
+
+    let mut zero_join_timeout = member_config();
+    zero_join_timeout.join_timeout_ms = 0;
+    assert!(matches!(
+        zero_join_timeout.validate(),
+        Err(ServerConfigError::JoinTimeoutZero)
+    ));
+
+    let mut empty_advertise_addr = member_config();
+    empty_advertise_addr.cluster_advertise_addr = Some("   ".to_owned());
+    assert!(matches!(
+        empty_advertise_addr.validate(),
+        Err(ServerConfigError::InvalidClusterAdvertiseAddr)
+    ));
+
+    let mut bind_addr_as_advertise_addr = member_config();
+    bind_addr_as_advertise_addr.cluster_advertise_addr = Some("0.0.0.0:7000".to_owned());
+    assert!(matches!(
+        bind_addr_as_advertise_addr.validate(),
+        Err(ServerConfigError::InvalidClusterAdvertiseAddr)
+    ));
 }
 
 #[test]
@@ -99,10 +137,13 @@ fn server_lifecycle_toml_config_roundtrip_validates() {
 role = "member"
 listen_addr = "127.0.0.1:18080"
 cluster_addr = "127.0.0.1:17000"
+cluster_start = "join"
+cluster_advertise_addr = "member-configured.hydracache:17000"
 node_id = "member-configured"
 seeds = ["127.0.0.1:17000"]
 storage_dir = "target/test-hydracache-server"
 drain_timeout_ms = 1000
+join_timeout_ms = 2500
 
 [cluster_auth]
 key_id = "k1"
@@ -116,6 +157,16 @@ listen_addr = "127.0.0.1:19091"
     .unwrap();
 
     assert_eq!(config.role, ServerRole::Member);
+    assert_eq!(config.cluster_start, ClusterStartMode::Join);
+    assert_eq!(
+        config.cluster_advertise_addr.as_deref(),
+        Some("member-configured.hydracache:17000")
+    );
     assert_eq!(config.node_id.as_deref(), Some("member-configured"));
     assert_eq!(config.drain_timeout().as_millis(), 1_000);
+    assert_eq!(config.join_timeout().as_millis(), 2_500);
+    assert_eq!(
+        config.cluster_advertise_endpoint(),
+        "member-configured.hydracache:17000"
+    );
 }

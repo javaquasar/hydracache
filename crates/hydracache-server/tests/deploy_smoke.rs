@@ -144,6 +144,7 @@ fn member_config() -> ServerConfig {
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
+        ..ServerConfig::default()
     }
 }
 

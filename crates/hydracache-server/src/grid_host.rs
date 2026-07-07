@@ -1874,6 +1874,7 @@ mod tests {
             backup: crate::config::BackupConfig::default(),
             client_api: crate::config::ClientApiConfig::default(),
             admin_api: crate::config::AdminApiConfig::default(),
+            ..ServerConfig::default()
         }
     }
 }

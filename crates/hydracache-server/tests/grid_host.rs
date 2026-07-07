@@ -28,6 +28,7 @@ fn member_config(name: &str) -> ServerConfig {
         backup: BackupConfig::default(),
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
+        ..ServerConfig::default()
     }
 }
 

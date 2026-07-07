@@ -33,6 +33,7 @@ mod admin_http {
             backup: BackupConfig::default(),
             client_api: ClientApiConfig::default(),
             admin_api: AdminApiConfig::default(),
+            ..ServerConfig::default()
         }
     }
 

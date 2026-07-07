@@ -21,6 +21,20 @@ pub enum ServerRole {
     Client,
 }
 
+/// Cluster startup mode for the first boot of a durable member.
+///
+/// Restarting members keep their stored raft identity and configuration; this
+/// mode is only consulted before any durable raft log exists.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ClusterStartMode {
+    /// Bootstrap a new cluster or bootstrap cohort.
+    #[default]
+    Bootstrap,
+    /// Join an already bootstrapped cluster through seed members.
+    Join,
+}
+
 /// TLS startup policy.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TlsConfig {
@@ -126,6 +140,10 @@ pub struct ServerConfig {
     pub listen_addr: SocketAddr,
     /// Internal cluster listen address.
     pub cluster_addr: SocketAddr,
+    /// First-boot cluster startup mode.
+    pub cluster_start: ClusterStartMode,
+    /// Routable cluster endpoint advertised to other members.
+    pub cluster_advertise_addr: Option<String>,
     /// Optional stable member node identity.
     pub node_id: Option<String>,
     /// Seed members used by member/client roles.
@@ -134,6 +152,8 @@ pub struct ServerConfig {
     pub storage_dir: Option<PathBuf>,
     /// Graceful shutdown drain timeout.
     pub drain_timeout_ms: u64,
+    /// Maximum time spent waiting for explicit join admission.
+    pub join_timeout_ms: u64,
     /// TLS policy.
     pub tls: TlsConfig,
     /// Cluster route authentication policy.
@@ -156,10 +176,13 @@ impl Default for ServerConfig {
             cluster_addr: "127.0.0.1:7000"
                 .parse()
                 .expect("default cluster address is valid"),
+            cluster_start: ClusterStartMode::Bootstrap,
+            cluster_advertise_addr: None,
             node_id: None,
             seeds: Vec::new(),
             storage_dir: None,
             drain_timeout_ms: 30_000,
+            join_timeout_ms: 15_000,
             tls: TlsConfig::default(),
             cluster_auth: ClusterAuthConfig::default(),
             backup: BackupConfig::default(),
@@ -203,6 +226,12 @@ impl ServerConfig {
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidAddress(cluster))?;
         }
+        if let Ok(cluster_start) = env::var("HYDRACACHE_CLUSTER_START") {
+            config.cluster_start = parse_cluster_start(&cluster_start)?;
+        }
+        if let Ok(advertise_addr) = env::var("HYDRACACHE_CLUSTER_ADVERTISE_ADDR") {
+            config.cluster_advertise_addr = Some(advertise_addr);
+        }
         if let Ok(node_id) = env::var("HYDRACACHE_NODE_ID") {
             config.node_id = Some(node_id);
         }
@@ -216,6 +245,11 @@ impl ServerConfig {
                 .filter(|seed| !seed.is_empty())
                 .map(ToOwned::to_owned)
                 .collect();
+        }
+        if let Ok(join_timeout) = env::var("HYDRACACHE_JOIN_TIMEOUT_MS") {
+            config.join_timeout_ms = join_timeout
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidJoinTimeoutMs(join_timeout))?;
         }
         if env::var("HYDRACACHE_TLS_ACK_INSECURE").as_deref() == Ok("true") {
             config.tls.acknowledge_insecure = true;
@@ -270,6 +304,17 @@ impl ServerConfig {
         if self.drain_timeout_ms == 0 {
             return Err(ServerConfigError::DrainTimeoutZero);
         }
+        if self.join_timeout_ms == 0 {
+            return Err(ServerConfigError::JoinTimeoutZero);
+        }
+        if matches!(self.cluster_start, ClusterStartMode::Join) {
+            if !matches!(self.role, ServerRole::Member) {
+                return Err(ServerConfigError::JoinRequiresMemberRole);
+            }
+            if self.seeds.is_empty() {
+                return Err(ServerConfigError::JoinRequiresSeeds);
+            }
+        }
         if matches!(self.role, ServerRole::Member) && self.storage_dir.is_none() {
             return Err(ServerConfigError::MissingStorageDir);
         }
@@ -282,6 +327,13 @@ impl ServerConfig {
             .is_some_and(|node_id| node_id.trim().is_empty())
         {
             return Err(ServerConfigError::InvalidNodeId);
+        }
+        if self
+            .cluster_advertise_addr
+            .as_deref()
+            .is_some_and(invalid_cluster_advertise_addr)
+        {
+            return Err(ServerConfigError::InvalidClusterAdvertiseAddr);
         }
         if self.backup.enabled
             && self
@@ -318,6 +370,18 @@ impl ServerConfig {
         Duration::from_millis(self.drain_timeout_ms)
     }
 
+    /// Return the configured join admission timeout.
+    pub fn join_timeout(&self) -> Duration {
+        Duration::from_millis(self.join_timeout_ms)
+    }
+
+    /// Return the endpoint this member should advertise to peers.
+    pub fn cluster_advertise_endpoint(&self) -> String {
+        self.cluster_advertise_addr
+            .clone()
+            .unwrap_or_else(|| self.cluster_addr.to_string())
+    }
+
     /// Return whether any listener is externally reachable.
     pub fn exposes_non_loopback(&self) -> bool {
         !is_loopback(self.listen_addr.ip())
@@ -343,12 +407,27 @@ pub enum ServerConfigError {
     /// Role value is unknown.
     #[error("invalid server role: {0}")]
     InvalidRole(String),
+    /// Cluster start mode value is unknown.
+    #[error("invalid cluster start mode: {0}")]
+    InvalidClusterStart(String),
     /// Address value is invalid.
     #[error("invalid listen address: {0}")]
     InvalidAddress(String),
+    /// Join timeout value could not be parsed.
+    #[error("invalid join_timeout_ms: {0}")]
+    InvalidJoinTimeoutMs(String),
     /// Drain timeout cannot be zero.
     #[error("drain_timeout_ms must be greater than zero")]
     DrainTimeoutZero,
+    /// Join timeout cannot be zero.
+    #[error("join_timeout_ms must be greater than zero")]
+    JoinTimeoutZero,
+    /// Join mode is only valid for durable members.
+    #[error("cluster_start=join requires role=member")]
+    JoinRequiresMemberRole,
+    /// Join mode requires at least one seed.
+    #[error("cluster_start=join requires at least one seed")]
+    JoinRequiresSeeds,
     /// Member mode requires durable state.
     #[error("member role requires storage_dir")]
     MissingStorageDir,
@@ -358,6 +437,9 @@ pub enum ServerConfigError {
     /// Configured node identity cannot be empty.
     #[error("node_id must not be empty")]
     InvalidNodeId,
+    /// Advertised cluster endpoint must be a routable non-empty endpoint.
+    #[error("cluster_advertise_addr must be non-empty and routable when set")]
+    InvalidClusterAdvertiseAddr,
     /// Backup enabled without a destination.
     #[error("backup.enabled requires backup.location")]
     MissingBackupLocation,
@@ -411,6 +493,14 @@ fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {
     }
 }
 
+fn parse_cluster_start(value: &str) -> Result<ClusterStartMode, ServerConfigError> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "bootstrap" => Ok(ClusterStartMode::Bootstrap),
+        "join" => Ok(ClusterStartMode::Join),
+        _ => Err(ServerConfigError::InvalidClusterStart(value.to_owned())),
+    }
+}
+
 fn validate_cluster_auth_pair(
     key_id: Option<&str>,
     token_file: Option<&Path>,
@@ -445,6 +535,16 @@ fn non_empty(value: &str) -> bool {
 
 fn non_empty_path(path: &Path) -> bool {
     !path.as_os_str().is_empty()
+}
+
+fn invalid_cluster_advertise_addr(value: &str) -> bool {
+    let value = value.trim();
+    if value.is_empty() {
+        return true;
+    }
+    value
+        .parse::<SocketAddr>()
+        .is_ok_and(|addr| addr.ip().is_unspecified())
 }
 
 fn is_loopback(ip: IpAddr) -> bool {

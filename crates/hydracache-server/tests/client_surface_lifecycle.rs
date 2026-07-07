@@ -32,6 +32,7 @@ fn member_config_with_client_surface() -> ServerConfig {
             limits: ClientSurfaceLimits::default(),
         },
         admin_api: AdminApiConfig::default(),
+        ..ServerConfig::default()
     }
 }
 
