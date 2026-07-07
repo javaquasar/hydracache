@@ -52,7 +52,9 @@ fn client_config() -> ServerConfig {
 
 fn grid_env_lock() -> MutexGuard<'static, ()> {
     static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-    LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
+    LOCK.get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 fn configured_tls() -> TlsConfig {
@@ -716,17 +718,36 @@ fn shutdown_all(runtimes: &mut [Option<ServerRuntime>]) {
 
 fn reserve_loopback_addrs(count: usize) -> Vec<SocketAddr> {
     let mut addrs = Vec::new();
-    while addrs.len() < count {
-        let tcp = TcpListener::bind("127.0.0.1:0").unwrap();
+    let mut last_error = None;
+    let attempts = count.saturating_mul(256).max(256);
+    for _ in 0..attempts {
+        if addrs.len() == count {
+            return addrs;
+        }
+
+        let Ok(tcp) = TcpListener::bind("127.0.0.1:0") else {
+            continue;
+        };
         let addr = tcp.local_addr().unwrap();
-        let udp = UdpSocket::bind(addr).unwrap();
-        drop(udp);
-        drop(tcp);
-        if !addrs.contains(&addr) {
-            addrs.push(addr);
+        if addrs.contains(&addr) {
+            continue;
+        }
+
+        match UdpSocket::bind(addr) {
+            Ok(udp) => {
+                drop(udp);
+                drop(tcp);
+                addrs.push(addr);
+            }
+            Err(error) => {
+                last_error = Some(error);
+            }
         }
     }
-    addrs
+
+    panic!(
+        "failed to reserve {count} loopback TCP/UDP address pairs after {attempts} attempts; last error: {last_error:?}"
+    );
 }
 
 fn wait_until(timeout: Duration, mut predicate: impl FnMut() -> bool) -> bool {
