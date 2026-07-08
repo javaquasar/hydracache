@@ -10,7 +10,7 @@ use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::doc_check;
+use crate::{doc_check, feature_leak};
 
 /// A release gate: a human label, the `cargo` arguments, and optional env vars.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -87,6 +87,22 @@ fn gates_for_platform(is_windows: bool) -> Vec<Gate> {
             ],
             None,
         ),
+        gate(
+            "raft failpoint crash-safety",
+            [
+                "test",
+                "-p",
+                "hydracache-cluster-raft",
+                "--features",
+                "test-failpoints",
+                "--test",
+                "failpoints_crash_safety",
+                "--locked",
+                "--",
+                "--test-threads=1",
+            ],
+            None,
+        ),
     ];
 
     if is_windows {
@@ -156,6 +172,19 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
         return Err(format!("doc-check found {} problem(s)", problems.len()).into());
     }
     println!("doc-check: OK");
+
+    println!("== release feature leak ==");
+    let leaks = feature_leak::check(&root)?;
+    if !leaks.is_empty() {
+        for leak in &leaks {
+            eprintln!(
+                "release feature leak in {}: {} ({})",
+                leak.package, leak.marker, leak.reason
+            );
+        }
+        return Err(format!("found {} release feature leak(s)", leaks.len()).into());
+    }
+    println!("release feature leak: OK");
 
     let is_windows = cfg!(windows);
     let windows_target_dir = is_windows.then(|| windows_verify_target_dir(&root));
@@ -315,6 +344,27 @@ mod tests {
                 "--test",
                 "soak_budget",
                 "--locked"
+            ]
+        );
+    }
+
+    #[test]
+    fn verify_includes_raft_failpoint_crash_safety_gate() {
+        let gates = gates_for_platform(false);
+
+        assert_eq!(
+            args_for(&gates, "raft failpoint crash-safety"),
+            [
+                "test",
+                "-p",
+                "hydracache-cluster-raft",
+                "--features",
+                "test-failpoints",
+                "--test",
+                "failpoints_crash_safety",
+                "--locked",
+                "--",
+                "--test-threads=1"
             ]
         );
     }

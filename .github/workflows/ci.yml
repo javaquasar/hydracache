@@ -65,6 +65,9 @@ jobs:
           cargo test -p xtask --test doc_check --locked
           cargo run -p xtask --locked -- doc-check
 
+      - name: Release feature leak
+        run: cargo run -p xtask --locked -- verify-no-test-features
+
       - name: SQL lint baseline drift
         run: |
           cargo test -p hydracache-sql-lint --test lint_cli --locked
@@ -80,6 +83,9 @@ jobs:
 
       - name: Soak fast budget
         run: cargo test -p hydracache-sim --test soak_budget --locked
+
+      - name: Raft failpoint crash-safety
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
 
       - name: Management console
         run: |

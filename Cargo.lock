@@ -1328,6 +1328,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fail"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe5e43d0f78a42ad591453aedb1d7ae631ce7ee445c7643691055a9ed8d3b01c"
+dependencies = [
+ "log",
+ "once_cell",
+ "rand 0.8.6",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1964,9 +1975,12 @@ dependencies = [
  "async-trait",
  "axum",
  "chitchat",
+ "fail",
  "hydracache",
  "hydracache-cluster-chitchat",
+ "hydracache-cluster-testkit",
  "hydracache-cluster-transport-axum",
+ "proptest",
  "protobuf",
  "raft",
  "serde_json",
@@ -1974,6 +1988,17 @@ dependencies = [
  "slog",
  "tokio",
  "tower",
+]
+
+[[package]]
+name = "hydracache-cluster-testkit"
+version = "0.60.0"
+dependencies = [
+ "async-trait",
+ "hydracache",
+ "hydracache-cluster-raft",
+ "raft",
+ "tokio",
 ]
 
 [[package]]
@@ -2131,8 +2156,10 @@ dependencies = [
  "hydracache-client-transport-axum",
  "hydracache-cluster-chitchat",
  "hydracache-cluster-raft",
+ "hydracache-cluster-testkit",
  "hydracache-cluster-transport-axum",
  "hydracache-observability",
+ "proptest",
  "rcgen",
  "reqwest",
  "rustls",

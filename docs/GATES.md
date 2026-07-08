@@ -14,8 +14,9 @@ cargo xtask verify
 ```
 
 Runs the fast gates in order and fails on the first red one:
-formatting, clippy, dependency bans, docs-consistency (`doc-check`), workspace
-tests, rustdoc (`-D warnings`), the DST fast budget, the soak fast budget, and the performance-budget
+formatting, clippy, dependency bans, docs-consistency (`doc-check`), release
+feature-leak checks, workspace tests, rustdoc (`-D warnings`), the DST fast
+budget, the soak fast budget, raft failpoint crash-safety, and the performance-budget
 contract test. When Node/npm are installed, it also runs the read-only Management
 Center static check and Playwright specs; without Node/npm it logs a skip and
 continues. Use it before opening a PR. Time-heavy suites (criterion benchmark
@@ -44,10 +45,14 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Grafana dashboard drift | `cargo test -p hydracache-observability --test dashboard_metrics --locked` | CI + verify (via workspace tests) | dashboard PromQL references only metrics registered by `registered_metric_names()` |
 | SQL lint baseline drift | `cargo test -p hydracache-sql-lint --test lint_cli` + `lint --check-baseline` | CI + verify | no new un-baselined SQL lint findings |
 | Docs consistency | `cargo xtask doc-check` | CI + verify | `releases.toml` integrity (RULES R-11): file existence, version uniqueness, `depends_on` resolution, status validity, 0.43 networked-control-plane status-drift sentinel |
+| Release feature leak | `cargo xtask verify-no-test-features` | CI + verify | default server/operator/raft release graphs do not enable `test-failpoints`, `test-support`, `fail`, or `hydracache-cluster-testkit` |
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
 | Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
 | Coverage ratchet | `cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88` | CI (scheduled/dispatch) | mechanical line coverage floor; not a RULES R-7 numeric self-score |
 | Operator kind chaos | `cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture` | CI (scheduled/dispatch) | pod crash, NetworkPolicy partition when CNI enforcement is proven, and chaos-mesh IOChaos slow disk when the CRD exists; unsupported legs skip loud |
+| Raft deterministic message filter | `cargo test -p hydracache-cluster-raft --test raft_message_filter --locked` | CI + verify (via workspace tests) | pre-vote partition rejoin, asymmetric partition, minority/majority commit behavior, duplicate/reordered raft messages, deterministic replay |
+| Raft wire/golden properties | `cargo test -p hydracache-cluster-raft --test wire_properties --locked` + `cargo test -p hydracache-cluster-raft --test golden_vectors --locked` + `cargo test -p hydracache-server --test id_mapping_properties --locked` | CI + verify (via workspace tests) | malformed raft wire decode rejects loud, metadata byte vectors remain stable, stable node id to raft id mapping does not parse-first |
+| Raft failpoint crash-safety | `cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1` | CI + verify | test-only failpoints prove torn raft storage windows fail loud and canaries turn red |
 | Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
 | Clippy | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | CI + verify | lints |

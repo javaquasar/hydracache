@@ -324,6 +324,10 @@ Candidate work:
 - Add snapshot import/export compatibility tests.
 - Add durable log/state storage abstraction behind a feature.
 - Add transport integration tests before calling it production multi-node.
+- Keep the 0.62 deterministic raft message-filter harness as the default place
+  for asymmetric partition, duplicate, delay, and reorder regressions.
+- Keep failpoint crash-safety and golden-vector checks tied to this boundary so
+  storage/codec changes fail before they become release claims.
 
 ### 10. Optional P2P Discovery/Transport Spike
 
