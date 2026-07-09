@@ -11,7 +11,7 @@ use hydracache_operator::resources::{
 use hydracache_operator::scale::{pod_name, quorum_for};
 use k8s_openapi::api::{
     apps::v1::StatefulSet,
-    core::v1::Pod,
+    core::v1::{Container, Pod, PodSpec},
     networking::v1::{NetworkPolicy, NetworkPolicySpec},
 };
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
@@ -27,6 +27,7 @@ const NAMESPACE_ENV: &str = "HYDRACACHE_OPERATOR_NAMESPACE";
 const CLUSTER_ENV: &str = "HYDRACACHE_OPERATOR_CLUSTER";
 const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
 const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
+const NETWORK_PROBE_IMAGE_ENV: &str = "HYDRACACHE_NETWORK_PROBE_IMAGE";
 const KIND_WAIT_ATTEMPTS: usize = 90;
 const NETWORK_POLICY_SKIP: &str =
     "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
@@ -44,6 +45,10 @@ fn namespace() -> String {
 
 fn cluster_name() -> String {
     std::env::var(CLUSTER_ENV).unwrap_or_else(|_| "hydracache-soak".to_owned())
+}
+
+fn network_probe_image() -> String {
+    std::env::var(NETWORK_PROBE_IMAGE_ENV).unwrap_or_else(|_| "busybox:1.36".to_owned())
 }
 
 fn soak_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
@@ -229,6 +234,7 @@ impl KindHarness {
             return None;
         }
 
+        hydracache_operator::install_default_rustls_provider();
         Some(Self {
             client: kube::Client::try_default()
                 .await
@@ -288,6 +294,18 @@ impl KindHarness {
     }
 
     async fn inject_network_partition(&self, ordinal: u32) -> ChaosInjection {
+        let probe = self
+            .ensure_network_probe_pod(ordinal)
+            .await
+            .unwrap_or_else(|error| panic!("kind partition probe pod could not start: {error}"));
+        if !self.network_probe_reaches(&probe, ordinal).await {
+            self.delete_network_probe_pod(&probe).await;
+            panic!(
+                "kind partition probe could not reach {} before NetworkPolicy injection",
+                pod_name(&self.cluster, ordinal)
+            );
+        }
+
         let policies: Api<NetworkPolicy> = Api::namespaced(self.client.clone(), &self.namespace);
         let policy = deny_all_partition_policy(&self.cluster, &self.namespace, ordinal);
         let name = partition_policy_name(&self.cluster, ordinal);
@@ -300,7 +318,9 @@ impl KindHarness {
             .await
             .expect("kind partition injector should apply NetworkPolicy");
 
-        if self.network_policy_blocks_peer(ordinal).await {
+        let blocked = self.network_policy_blocks_peer(&probe, ordinal).await;
+        self.delete_network_probe_pod(&probe).await;
+        if blocked {
             ChaosInjection::Applied("NetworkPolicy")
         } else {
             let _ = policies.delete(&name, &DeleteParams::default()).await;
@@ -318,38 +338,110 @@ impl KindHarness {
             .await;
     }
 
-    async fn network_policy_blocks_peer(&self, isolated_ordinal: u32) -> bool {
-        let source_ordinal = if isolated_ordinal == 0 { 1 } else { 0 };
-        let source = pod_name(&self.cluster, source_ordinal);
-        let target = pod_name(&self.cluster, isolated_ordinal);
+    async fn network_probe_reaches(&self, probe: &str, target_ordinal: u32) -> bool {
+        for _ in 0..10 {
+            if self.network_probe_wget(probe, target_ordinal).await {
+                return true;
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+        false
+    }
+
+    async fn network_policy_blocks_peer(&self, probe: &str, isolated_ordinal: u32) -> bool {
+        for _ in 0..10 {
+            if !self.network_probe_wget(probe, isolated_ordinal).await {
+                return true;
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+        false
+    }
+
+    async fn network_probe_wget(&self, probe: &str, target_ordinal: u32) -> bool {
+        let target = pod_name(&self.cluster, target_ordinal);
         let url = format!(
             "http://{}.{}:9091/readyz",
             target,
             headless_service_name(&self.cluster)
         );
 
-        for _ in 0..10 {
-            let reachable = Command::new("kubectl")
-                .arg("-n")
-                .arg(&self.namespace)
-                .arg("exec")
-                .arg(&source)
-                .arg("--")
-                .arg("wget")
-                .arg("-qO-")
-                .arg("-T")
-                .arg("2")
-                .arg(&url)
-                .output()
-                .expect("kind partition enforcement probe requires kubectl")
-                .status
-                .success();
-            if !reachable {
-                return true;
+        Command::new("kubectl")
+            .arg("-n")
+            .arg(&self.namespace)
+            .arg("exec")
+            .arg(probe)
+            .arg("--")
+            .arg("wget")
+            .arg("-qO-")
+            .arg("-T")
+            .arg("2")
+            .arg(&url)
+            .output()
+            .expect("kind partition enforcement probe requires kubectl")
+            .status
+            .success()
+    }
+
+    async fn ensure_network_probe_pod(&self, isolated_ordinal: u32) -> Result<String, String> {
+        let name = format!("{}-netprobe-{}", self.cluster, isolated_ordinal);
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let probe = Pod {
+            metadata: ObjectMeta {
+                name: Some(name.clone()),
+                namespace: Some(self.namespace.clone()),
+                labels: Some(BTreeMap::from([(
+                    "app.kubernetes.io/name".to_owned(),
+                    "hydracache-network-probe".to_owned(),
+                )])),
+                ..Default::default()
+            },
+            spec: Some(PodSpec {
+                restart_policy: Some("Never".to_owned()),
+                containers: vec![Container {
+                    name: "probe".to_owned(),
+                    image: Some(network_probe_image()),
+                    image_pull_policy: Some("IfNotPresent".to_owned()),
+                    command: Some(vec!["sleep".to_owned(), "3600".to_owned()]),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        pods.patch(
+            &name,
+            &PatchParams::apply(FIELD_MANAGER).force(),
+            &Patch::Apply(&probe),
+        )
+        .await
+        .map_err(|error| error.to_string())?;
+
+        for _ in 0..30 {
+            match pods.get(&name).await {
+                Ok(pod) if pod_is_ready(&pod) => return Ok(name),
+                Ok(pod) => {
+                    let phase = pod
+                        .status
+                        .as_ref()
+                        .and_then(|status| status.phase.as_deref())
+                        .unwrap_or("unknown");
+                    eprintln!("waiting for partition probe pod {name}: phase={phase}");
+                }
+                Err(kube::Error::Api(error)) if error.code == 404 => {}
+                Err(error) => return Err(error.to_string()),
             }
-            tokio::time::sleep(Duration::from_secs(1)).await;
+            tokio::time::sleep(Duration::from_secs(2)).await;
         }
-        false
+        Err(format!(
+            "timed out waiting for {name} using image {}",
+            network_probe_image()
+        ))
+    }
+
+    async fn delete_network_probe_pod(&self, name: &str) {
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let _ = pods.delete(name, &DeleteParams::default()).await;
     }
 
     async fn inject_slow_disk(&self, ordinal: u32) -> ChaosInjection {
@@ -401,15 +493,20 @@ impl KindHarness {
     ) -> SoakObservation {
         let mut latest = None;
         for _ in 0..KIND_WAIT_ATTEMPTS {
-            let observation = self
-                .observe(stage, committed_writes)
-                .await
-                .expect("kind soak should observe cluster resources");
+            let observation = match self.observe(stage, committed_writes).await {
+                Ok(observation) => observation,
+                Err(kube::Error::Api(error)) if error.code == 404 => {
+                    latest = Some(format!("waiting for owned resources: {}", error.message));
+                    tokio::time::sleep(Duration::from_secs(2)).await;
+                    continue;
+                }
+                Err(error) => panic!("kind soak should observe cluster resources: {error}"),
+            };
             if observation.ready_replicas >= desired {
                 observation.assert_quorum();
                 return observation;
             }
-            latest = Some(observation);
+            latest = Some(format!("{observation:?}"));
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
         panic!("timed out waiting for {stage} readiness; latest={latest:?}");
@@ -606,11 +703,15 @@ async fn partition_probe_skips_loud_on_non_enforcing_cni() {
     let fault = ChaosFault::NetworkPartition { ordinal: 1 };
     let injection = kind.inject(fault).await;
     match &injection {
-        ChaosInjection::Skipped(reason) => assert!(
-            reason.contains("NetworkPolicy"),
-            "skip should name NetworkPolicy enforcement: {reason}"
-        ),
+        ChaosInjection::Skipped(reason) => {
+            eprintln!("skipping partition assertion: {reason}");
+            assert!(
+                reason.contains("NetworkPolicy"),
+                "skip should name NetworkPolicy enforcement: {reason}"
+            );
+        }
         ChaosInjection::Applied(kind_name) => {
+            eprintln!("partition probe applied {kind_name}; healing");
             assert_eq!(*kind_name, "NetworkPolicy");
             kind.heal(fault, &injection).await;
         }
