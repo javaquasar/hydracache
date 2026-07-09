@@ -29,7 +29,7 @@ pub use cluster_status::{
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    ServerConfig, ServerConfigError, ServerRole, TlsConfig,
+    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
 };
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{

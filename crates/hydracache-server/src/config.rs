@@ -130,6 +130,26 @@ impl Default for AdminApiConfig {
     }
 }
 
+/// Optional Redis RESP edge facade policy.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RedisApiConfig {
+    /// Whether the RESP listener is enabled.
+    pub enabled: bool,
+    /// RESP listen address, intentionally separate from HTTP/admin/cluster surfaces.
+    pub listen_addr: SocketAddr,
+}
+
+impl Default for RedisApiConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            listen_addr: "127.0.0.1:6379"
+                .parse()
+                .expect("default Redis RESP listen address is valid"),
+        }
+    }
+}
+
 /// Standalone daemon configuration.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
@@ -164,6 +184,8 @@ pub struct ServerConfig {
     pub client_api: ClientApiConfig,
     /// Internal operator/admin HTTP policy.
     pub admin_api: AdminApiConfig,
+    /// Optional Redis RESP edge facade policy.
+    pub redis_api: RedisApiConfig,
 }
 
 impl Default for ServerConfig {
@@ -188,6 +210,7 @@ impl Default for ServerConfig {
             backup: BackupConfig::default(),
             client_api: ClientApiConfig::default(),
             admin_api: AdminApiConfig::default(),
+            redis_api: RedisApiConfig::default(),
         }
     }
 }
@@ -300,6 +323,14 @@ impl ServerConfig {
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidAddress(listen))?;
         }
+        if env::var("HYDRACACHE_REDIS_API_ENABLED").as_deref() == Ok("true") {
+            config.redis_api.enabled = true;
+        }
+        if let Ok(listen) = env::var("HYDRACACHE_REDIS_ADDR") {
+            config.redis_api.listen_addr = listen
+                .parse()
+                .map_err(|_| ServerConfigError::InvalidAddress(listen))?;
+        }
         config.validate()?;
         Ok(config)
     }
@@ -367,6 +398,23 @@ impl ServerConfig {
         if self.admin_api.enabled && self.admin_api.listen_addr == self.listen_addr {
             return Err(ServerConfigError::AdminAddressConflicts);
         }
+        if self.redis_api.enabled {
+            if self.redis_api.listen_addr == self.listen_addr {
+                return Err(ServerConfigError::RedisAddressConflicts {
+                    surface: "listen_addr",
+                });
+            }
+            if self.redis_api.listen_addr == self.cluster_addr {
+                return Err(ServerConfigError::RedisAddressConflicts {
+                    surface: "cluster_addr",
+                });
+            }
+            if self.admin_api.enabled && self.redis_api.listen_addr == self.admin_api.listen_addr {
+                return Err(ServerConfigError::RedisAddressConflicts {
+                    surface: "admin_api.listen_addr",
+                });
+            }
+        }
         Ok(())
     }
 
@@ -392,6 +440,7 @@ impl ServerConfig {
         !is_loopback(self.listen_addr.ip())
             || !is_loopback(self.cluster_addr.ip())
             || (self.admin_api.enabled && !is_loopback(self.admin_api.listen_addr.ip()))
+            || (self.redis_api.enabled && !is_loopback(self.redis_api.listen_addr.ip()))
     }
 }
 
@@ -493,6 +542,12 @@ pub enum ServerConfigError {
     /// Admin and client/listen surfaces must be independently bindable.
     #[error("admin_api.listen_addr must differ from listen_addr")]
     AdminAddressConflicts,
+    /// Redis RESP and existing surfaces must be independently bindable.
+    #[error("redis_api.listen_addr must differ from {surface}")]
+    RedisAddressConflicts {
+        /// Conflicting surface.
+        surface: &'static str,
+    },
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {

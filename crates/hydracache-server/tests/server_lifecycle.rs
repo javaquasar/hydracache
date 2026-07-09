@@ -56,6 +56,8 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_CLIENT_API_ENABLED",
     "HYDRACACHE_ADMIN_API_ENABLED",
     "HYDRACACHE_ADMIN_ADDR",
+    "HYDRACACHE_REDIS_API_ENABLED",
+    "HYDRACACHE_REDIS_ADDR",
     "HOSTNAME",
 ];
 
@@ -209,6 +211,36 @@ fn server_lifecycle_invalid_config_fails_loud() {
         Err(ServerConfigError::AdminAddressConflicts)
     ));
 
+    let mut redis_listen_conflict = member_config();
+    redis_listen_conflict.redis_api.enabled = true;
+    redis_listen_conflict.redis_api.listen_addr = redis_listen_conflict.listen_addr;
+    assert!(matches!(
+        redis_listen_conflict.validate(),
+        Err(ServerConfigError::RedisAddressConflicts {
+            surface: "listen_addr"
+        })
+    ));
+
+    let mut redis_cluster_conflict = member_config();
+    redis_cluster_conflict.redis_api.enabled = true;
+    redis_cluster_conflict.redis_api.listen_addr = redis_cluster_conflict.cluster_addr;
+    assert!(matches!(
+        redis_cluster_conflict.validate(),
+        Err(ServerConfigError::RedisAddressConflicts {
+            surface: "cluster_addr"
+        })
+    ));
+
+    let mut redis_admin_conflict = member_config();
+    redis_admin_conflict.redis_api.enabled = true;
+    redis_admin_conflict.redis_api.listen_addr = redis_admin_conflict.admin_api.listen_addr;
+    assert!(matches!(
+        redis_admin_conflict.validate(),
+        Err(ServerConfigError::RedisAddressConflicts {
+            surface: "admin_api.listen_addr"
+        })
+    ));
+
     let mut client_limit_zero = member_config();
     client_limit_zero.client_api.enabled = true;
     client_limit_zero.client_api.limits.max_frame_bytes = 0;
@@ -250,6 +282,53 @@ fn server_lifecycle_invalid_config_fails_loud() {
     assert!(matches!(
         external_admin_without_tls.validate(),
         Err(ServerConfigError::NonLoopbackWithoutTls)
+    ));
+}
+
+#[test]
+fn redis_api_is_off_by_default_and_env_gated() {
+    {
+        let _guard = ConfigEnvGuard::new(&[]);
+        let default = ServerConfig::default();
+        assert!(!default.redis_api.enabled);
+        assert_eq!(
+            default.redis_api.listen_addr,
+            "127.0.0.1:6379".parse().unwrap()
+        );
+    }
+
+    let _guard = ConfigEnvGuard::new(&[
+        ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+        ("HYDRACACHE_REDIS_ADDR", "127.0.0.1:6380"),
+    ]);
+    let config = ServerConfig::from_env().unwrap();
+    assert!(config.redis_api.enabled);
+    assert_eq!(
+        config.redis_api.listen_addr,
+        "127.0.0.1:6380".parse().unwrap()
+    );
+}
+
+#[test]
+fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
+    let mut client_conflict = member_config();
+    client_conflict.redis_api.enabled = true;
+    client_conflict.redis_api.listen_addr = client_conflict.listen_addr;
+    assert!(matches!(
+        client_conflict.validate(),
+        Err(ServerConfigError::RedisAddressConflicts {
+            surface: "listen_addr"
+        })
+    ));
+
+    let mut admin_conflict = member_config();
+    admin_conflict.redis_api.enabled = true;
+    admin_conflict.redis_api.listen_addr = admin_conflict.admin_api.listen_addr;
+    assert!(matches!(
+        admin_conflict.validate(),
+        Err(ServerConfigError::RedisAddressConflicts {
+            surface: "admin_api.listen_addr"
+        })
     ));
 }
 
