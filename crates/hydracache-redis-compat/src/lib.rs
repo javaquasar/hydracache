@@ -62,6 +62,14 @@ pub enum RedisCommand {
     Del { keys: Vec<Vec<u8>> },
     /// `EXISTS key...`.
     Exists { keys: Vec<Vec<u8>> },
+    /// `HC.STATS`.
+    HcStats,
+    /// `HC.DIAGNOSTICS`.
+    HcDiagnostics,
+    /// `HC.INVALIDATE key`.
+    HcInvalidate { key: Vec<u8> },
+    /// `HC.*` command that is intentionally not enabled yet.
+    HcCandidate { command: String, args: Vec<Vec<u8>> },
     /// Command outside the accepted W1 parser subset.
     Unsupported { verb: String, args: Vec<Vec<u8>> },
 }
@@ -222,6 +230,12 @@ pub enum RedisTranslationError {
         /// Stable redacted detail.
         detail: &'static str,
     },
+    /// Command is recognized but remains candidate until native support lands.
+    #[error("ERR {command} is candidate and not enabled in this release")]
+    CandidateCommand {
+        /// Candidate command name.
+        command: String,
+    },
     /// HydraCache protocol mapping failed before dispatch.
     #[error("ERR protocol mapping failed: {detail}")]
     Protocol {
@@ -250,6 +264,17 @@ pub enum RedisTranslatedCommand {
     Immediate(RespValue),
     /// Command must execute through the HydraCache client surface.
     Execute(RedisExecutionPlan),
+    /// HydraCache-only extension that the host listener must satisfy from tenant-scoped data.
+    Extension(RedisExtensionRequest),
+}
+
+/// HydraCache-only extension requests.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedisExtensionRequest {
+    /// Tenant-scoped bounded stats snapshot.
+    Stats,
+    /// Tenant-scoped bounded diagnostics snapshot.
+    Diagnostics,
 }
 
 /// HydraCache client-surface execution plan for one Redis command.
@@ -333,6 +358,7 @@ enum RedisResponseReducer {
     Mget { expected_items: usize },
     Del { expected_items: usize },
     Exists { expected_items: usize },
+    Invalidate,
 }
 
 impl RedisResponseReducer {
@@ -346,6 +372,7 @@ impl RedisResponseReducer {
             Self::Mget { expected_items } => reduce_mget(responses, *expected_items),
             Self::Del { expected_items } => reduce_del(responses, *expected_items),
             Self::Exists { expected_items } => reduce_exists(responses, *expected_items),
+            Self::Invalidate => reduce_invalidate(responses),
         }
     }
 }
@@ -456,6 +483,22 @@ pub fn translate_redis_command(
                 RedisResponseReducer::Exists { expected_items },
             ))
         }
+        RedisCommand::HcStats => RedisTranslatedCommand::Extension(RedisExtensionRequest::Stats),
+        RedisCommand::HcDiagnostics => {
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics)
+        }
+        RedisCommand::HcInvalidate { key } => RedisTranslatedCommand::Execute(single_request_plan(
+            context,
+            "hc-invalidate",
+            ClientRequest::Invalidate {
+                ns: context.namespace.clone(),
+                key: redis_key_to_structured_key(&key)?,
+            },
+            RedisResponseReducer::Invalidate,
+        )),
+        RedisCommand::HcCandidate { command, .. } => {
+            return Err(RedisTranslationError::CandidateCommand { command });
+        }
         RedisCommand::Unsupported { verb, .. } => {
             return Err(RedisTranslationError::UnsupportedCommand { command: verb });
         }
@@ -551,6 +594,17 @@ fn reduce_exists(
     Ok(RespValue::Integer(
         values.iter().filter(|value| value.is_some()).count() as i64,
     ))
+}
+
+fn reduce_invalidate(
+    responses: &[ClientResponseEnvelope],
+) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::Invalidated) => Ok(RespValue::SimpleString("OK")),
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
 }
 
 fn single_response(
@@ -768,6 +822,17 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
         "MGET" if !args.is_empty() => RedisCommand::Mget { keys: args },
         "DEL" if !args.is_empty() => RedisCommand::Del { keys: args },
         "EXISTS" if !args.is_empty() => RedisCommand::Exists { keys: args },
+        "HC.STATS" if args.is_empty() => RedisCommand::HcStats,
+        "HC.DIAGNOSTICS" if args.is_empty() => RedisCommand::HcDiagnostics,
+        "HC.INVALIDATE" if args.len() == 1 => RedisCommand::HcInvalidate {
+            key: args.remove(0),
+        },
+        "HC.NAMESPACE" | "HC.TAG" | "HC.SETTAGS" | "HC.INVALIDATE_TAG" => {
+            RedisCommand::HcCandidate {
+                command: normalized,
+                args,
+            }
+        }
         _ => RedisCommand::Unsupported {
             verb: normalized,
             args,
@@ -1073,6 +1138,96 @@ mod tests {
         assert_eq!(key.segments(), &["redis-binary-v1-00ff".to_owned()]);
     }
 
+    #[test]
+    fn hc_invalidate_key_goes_through_client_surface_limits_and_audit() {
+        let (state, identity) = surface();
+        run_command(
+            &state,
+            &identity,
+            RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: Vec::new(),
+            },
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::HcInvalidate { key: b"k".to_vec() },
+            ),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(&state, &identity, RedisCommand::Get { key: b"k".to_vec() },),
+            RespValue::Null
+        );
+        assert_eq!(state.state_mutations(), 2);
+    }
+
+    #[test]
+    fn hc_stats_and_diagnostics_are_tenant_scoped_extension_requests() {
+        let context = RedisTranslationContext::default();
+        assert_eq!(
+            translate_redis_command(RedisCommand::HcStats, &context).unwrap(),
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Stats)
+        );
+        assert_eq!(
+            translate_redis_command(RedisCommand::HcDiagnostics, &context).unwrap(),
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics)
+        );
+    }
+
+    #[test]
+    fn hc_tag_commands_are_unsupported_until_native_metadata_path_exists() {
+        let context = RedisTranslationContext::default();
+        let translated = translate_redis_command(
+            RedisCommand::HcCandidate {
+                command: "HC.TAG".to_owned(),
+                args: vec![b"k".to_vec(), b"tag".to_vec()],
+            },
+            &context,
+        );
+        assert!(matches!(
+            translated,
+            Err(RedisTranslationError::CandidateCommand { command }) if command == "HC.TAG"
+        ));
+    }
+
+    #[test]
+    fn hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys() {
+        let context = RedisTranslationContext::default();
+        let translated = translate_redis_command(
+            RedisCommand::HcCandidate {
+                command: "HC.INVALIDATE_TAG".to_owned(),
+                args: vec![b"tag".to_vec()],
+            },
+            &context,
+        );
+        assert!(matches!(
+            translated,
+            Err(RedisTranslationError::CandidateCommand { command })
+                if command == "HC.INVALIDATE_TAG"
+        ));
+    }
+
+    #[test]
+    fn hc_commands_decode_to_explicit_extension_shapes() {
+        let (stats, _) = decode_resp2_command(b"*1\r\n$8\r\nHC.STATS\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(stats, RedisCommand::HcStats);
+
+        let (invalidate, _) = decode_resp2_command(b"*2\r\n$13\r\nHC.INVALIDATE\r\n$1\r\nk\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            invalidate,
+            RedisCommand::HcInvalidate { key: b"k".to_vec() }
+        );
+    }
+
     fn surface() -> (ClientSurfaceState, ClientIdentity) {
         (
             ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap(),
@@ -1103,6 +1258,9 @@ mod tests {
                         .map(|request| state.dispatch_verified_request(identity, request)),
                 );
                 plan.reduce(&responses).unwrap()
+            }
+            RedisTranslatedCommand::Extension(extension) => {
+                panic!("test helper cannot execute extension request {extension:?}")
             }
         }
     }
