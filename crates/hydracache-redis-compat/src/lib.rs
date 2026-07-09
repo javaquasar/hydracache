@@ -21,6 +21,36 @@ pub const SUPPORTED_RESP_DIALECT: &str = "RESP2";
 /// Default namespace used when no explicit RESP namespace mapping exists.
 pub const DEFAULT_REDIS_NAMESPACE: &str = "redis";
 
+/// Default maximum RESP frame bytes accepted by the edge codec.
+pub const DEFAULT_MAX_RESP_FRAME_BYTES: usize = 1024 * 1024;
+
+/// Default maximum RESP array elements accepted before command translation.
+pub const DEFAULT_MAX_RESP_ARRAY_ELEMENTS: usize = 1024;
+
+/// Default maximum RESP bulk/simple string bytes accepted before command translation.
+pub const DEFAULT_MAX_RESP_BULK_STRING_BYTES: usize = 16 * 1024 * 1024;
+
+/// RESP decoder resource limits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RespDecodeLimits {
+    /// Maximum buffered frame bytes.
+    pub max_frame_bytes: usize,
+    /// Maximum array elements in any RESP array.
+    pub max_array_elements: usize,
+    /// Maximum bytes in any bulk/simple string.
+    pub max_bulk_string_bytes: usize,
+}
+
+impl Default for RespDecodeLimits {
+    fn default() -> Self {
+        Self {
+            max_frame_bytes: DEFAULT_MAX_RESP_FRAME_BYTES,
+            max_array_elements: DEFAULT_MAX_RESP_ARRAY_ELEMENTS,
+            max_bulk_string_bytes: DEFAULT_MAX_RESP_BULK_STRING_BYTES,
+        }
+    }
+}
+
 /// Parser-neutral Redis command subset.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RedisCommand {
@@ -104,6 +134,30 @@ pub enum RedisCompatError {
     /// The underlying RESP encoder rejected the response.
     #[error("RESP2 encode error: {0}")]
     Encode(String),
+    /// Buffered RESP frame is too large.
+    #[error("RESP frame too large: {actual} bytes exceeds {max} bytes")]
+    FrameTooLarge {
+        /// Actual buffered bytes.
+        actual: usize,
+        /// Configured maximum bytes.
+        max: usize,
+    },
+    /// RESP array has too many elements.
+    #[error("RESP array too large: {actual} elements exceeds {max} elements")]
+    ArrayTooLarge {
+        /// Actual array elements.
+        actual: usize,
+        /// Configured maximum elements.
+        max: usize,
+    },
+    /// RESP string is too large.
+    #[error("RESP bulk string too large: {actual} bytes exceeds {max} bytes")]
+    BulkStringTooLarge {
+        /// Actual string bytes.
+        actual: usize,
+        /// Configured maximum bytes.
+        max: usize,
+    },
     /// Redis commands must be RESP arrays.
     #[error("Redis command must be a RESP array")]
     NonArrayCommand,
@@ -122,12 +176,27 @@ pub enum RedisCompatError {
 pub fn decode_resp2_command(
     input: &[u8],
 ) -> Result<Option<(RedisCommand, usize)>, RedisCompatError> {
+    decode_resp2_command_with_limits(input, RespDecodeLimits::default())
+}
+
+/// Decode one RESP2 command frame with resource limits.
+pub fn decode_resp2_command_with_limits(
+    input: &[u8],
+    limits: RespDecodeLimits,
+) -> Result<Option<(RedisCommand, usize)>, RedisCompatError> {
+    if input.len() > limits.max_frame_bytes {
+        return Err(RedisCompatError::FrameTooLarge {
+            actual: input.len(),
+            max: limits.max_frame_bytes,
+        });
+    }
     let bytes = Bytes::copy_from_slice(input);
     let Some((frame, consumed)) =
         decode_bytes(&bytes).map_err(|error| RedisCompatError::Decode(error.to_string()))?
     else {
         return Ok(None);
     };
+    enforce_frame_limits(&frame, limits)?;
     let command = command_from_frame(frame)?;
     Ok(Some((command, consumed)))
 }
@@ -157,6 +226,43 @@ fn resp_value_to_frame(value: RespValue) -> BytesFrame {
         RespValue::Null => BytesFrame::Null,
         RespValue::Error(value) => BytesFrame::Error(value.into()),
     }
+}
+
+fn enforce_frame_limits(
+    frame: &BytesFrame,
+    limits: RespDecodeLimits,
+) -> Result<(), RedisCompatError> {
+    match frame {
+        BytesFrame::Array(items) => {
+            if items.len() > limits.max_array_elements {
+                return Err(RedisCompatError::ArrayTooLarge {
+                    actual: items.len(),
+                    max: limits.max_array_elements,
+                });
+            }
+            for item in items {
+                enforce_frame_limits(item, limits)?;
+            }
+        }
+        BytesFrame::BulkString(bytes) | BytesFrame::SimpleString(bytes) => {
+            if bytes.len() > limits.max_bulk_string_bytes {
+                return Err(RedisCompatError::BulkStringTooLarge {
+                    actual: bytes.len(),
+                    max: limits.max_bulk_string_bytes,
+                });
+            }
+        }
+        BytesFrame::Error(error) => {
+            if error.len() > limits.max_bulk_string_bytes {
+                return Err(RedisCompatError::BulkStringTooLarge {
+                    actual: error.len(),
+                    max: limits.max_bulk_string_bytes,
+                });
+            }
+        }
+        BytesFrame::Integer(_) | BytesFrame::Null => {}
+    }
+    Ok(())
 }
 
 /// Per-command translation context for the RESP edge.

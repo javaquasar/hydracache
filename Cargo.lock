@@ -2133,6 +2133,7 @@ dependencies = [
  "bytes",
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",
+ "proptest",
  "redis-protocol",
  "thiserror 2.0.18",
 ]
