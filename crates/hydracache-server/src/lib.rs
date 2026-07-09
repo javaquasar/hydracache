@@ -19,7 +19,7 @@ pub use admin_http::{
     ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 pub use bootstrap::{
-    ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,
+    RedisSurfaceDrain, ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,
     ServerObservabilityModel, ServerReadiness, ServerRuntime, ServerState,
 };
 pub use cluster_status::{

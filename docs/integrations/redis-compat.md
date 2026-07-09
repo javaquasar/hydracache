@@ -51,6 +51,34 @@ Unsupported Redis commands are expected to diverge: real Redis may succeed, whil
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
 real Redis should return unknown command behavior.
 
+## Operator Defaults
+
+The RESP listener is disabled by default. Local development may bind it to
+`127.0.0.1:6379`, but production examples must require explicit enablement and
+explicit port exposure. Do not expose port `6379` on a public load balancer by
+default. Use private networking, NetworkPolicy, and the same auth/TLS posture as
+other externally reachable client surfaces before allowing non-loopback access.
+
+The server rejects Redis listener addresses that overlap the public daemon
+listener, cluster listener, or enabled admin listener. Disabling the listener is
+the rollback default; existing modeled RESP connections are drained/closed with
+the daemon drain path.
+
+## Rollout And Rollback
+
+Canary enablement starts with one edge/daemon, then runs the fast RESP gate,
+the pinned real Redis oracle, and the mainstream-client matrix before expanding.
+Watch command status labels, unsupported-command rate, auth/admin-disabled
+events, memory and file descriptor plateau, p99 command latency, response-order
+checks, and any cross-tenant access/audit anomaly.
+
+Rollback triggers are: auth failures spike unexpectedly, unsupported command
+rate exceeds the migration baseline, memory or fd usage does not plateau,
+response-order/pipeline checks fail, p99 latency violates the edge SLO, or audit
+events indicate wrong tenant scope. Disable the listener, drain/close existing
+RESP connections, preserve logs and fixtures, and keep the conformance manifest
+row at `candidate` or `unsupported` until the failed scenario is fixed.
+
 ## Adding A Command
 
 1. Update `redis_compat_conformance.json`.

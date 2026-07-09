@@ -52,6 +52,8 @@ pub struct ServerReadiness {
     pub accepting: bool,
     /// Whether the external client surface is accepting work.
     pub client_surface_ready: bool,
+    /// Whether the optional Redis RESP surface is accepting work.
+    pub redis_surface_ready: bool,
 }
 
 /// Admin status consumed by the Kubernetes operator.
@@ -84,6 +86,65 @@ pub struct ServerAdminAction {
     pub outcome: &'static str,
     /// Human-readable detail, safe for operator Conditions.
     pub detail: String,
+}
+
+/// Modeled Redis RESP listener runtime.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RedisSurfaceRuntime {
+    accepting: bool,
+    active_connections: u64,
+}
+
+impl RedisSurfaceRuntime {
+    fn new() -> Self {
+        Self {
+            accepting: false,
+            active_connections: 0,
+        }
+    }
+
+    fn start(&mut self) {
+        self.accepting = true;
+    }
+
+    fn accepting(&self) -> bool {
+        self.accepting
+    }
+
+    fn begin_connection(&mut self) -> bool {
+        if !self.accepting {
+            return false;
+        }
+        self.active_connections = self.active_connections.saturating_add(1);
+        true
+    }
+
+    fn finish_connection(&mut self) {
+        self.active_connections = self.active_connections.saturating_sub(1);
+    }
+
+    fn active_connections(&self) -> u64 {
+        self.active_connections
+    }
+
+    fn shutdown(&mut self) -> RedisSurfaceDrain {
+        self.accepting = false;
+        let started_with = self.active_connections;
+        self.active_connections = 0;
+        RedisSurfaceDrain {
+            started_with,
+            remaining: self.active_connections,
+        }
+    }
+}
+
+/// Result of draining modeled Redis RESP connections.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RedisSurfaceDrain {
+    /// Active RESP connections observed when drain started.
+    pub started_with: u64,
+    /// Active RESP connections after drain.
+    pub remaining: u64,
 }
 
 /// Additional read-only observability signals supplied by the daemon host.
@@ -175,9 +236,11 @@ pub struct ServerRuntime {
     accepting: bool,
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
+    redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
     observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
+    last_redis_surface_drain: Option<RedisSurfaceDrain>,
     last_drain: Option<DrainOutcome>,
 }
 
@@ -203,6 +266,11 @@ impl ServerRuntime {
         } else {
             None
         };
+        let redis_surface = if config.redis_api.enabled {
+            Some(RedisSurfaceRuntime::new())
+        } else {
+            None
+        };
         Ok(Self {
             config,
             cache,
@@ -213,9 +281,11 @@ impl ServerRuntime {
             accepting: false,
             flushed: false,
             client_surface,
+            redis_surface,
             cluster_status,
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
+            last_redis_surface_drain: None,
             last_drain: None,
         })
     }
@@ -248,6 +318,9 @@ impl ServerRuntime {
         if let Some(surface) = self.client_surface.as_mut() {
             surface.start();
         }
+        if let Some(surface) = self.redis_surface.as_mut() {
+            surface.start();
+        }
         self.services.start();
         self.state = ServerState::Running;
         self
@@ -273,6 +346,7 @@ impl ServerRuntime {
             cluster_ready: self.cluster_ready,
             accepting: self.accepting,
             client_surface_ready: self.client_surface_ready(),
+            redis_surface_ready: self.redis_surface_ready(),
         }
     }
 
@@ -329,6 +403,39 @@ impl ServerRuntime {
         self.last_client_surface_drain
     }
 
+    /// Return whether the optional Redis RESP surface is accepting work.
+    pub fn redis_surface_ready(&self) -> bool {
+        self.redis_surface
+            .as_ref()
+            .is_some_and(RedisSurfaceRuntime::accepting)
+    }
+
+    /// Begin a modeled RESP connection.
+    pub fn begin_redis_connection(&mut self) -> bool {
+        self.redis_surface
+            .as_mut()
+            .is_some_and(RedisSurfaceRuntime::begin_connection)
+    }
+
+    /// Finish a modeled RESP connection.
+    pub fn finish_redis_connection(&mut self) {
+        if let Some(surface) = self.redis_surface.as_mut() {
+            surface.finish_connection();
+        }
+    }
+
+    /// Return active modeled RESP connections.
+    pub fn redis_active_connections(&self) -> u64 {
+        self.redis_surface
+            .as_ref()
+            .map_or(0, RedisSurfaceRuntime::active_connections)
+    }
+
+    /// Return the last Redis RESP surface drain result, if the surface is enabled.
+    pub fn redis_surface_drain(&self) -> Option<RedisSurfaceDrain> {
+        self.last_redis_surface_drain
+    }
+
     /// Stop accepting new work and enter the draining state.
     pub fn begin_drain(&mut self) {
         self.begin_local_drain();
@@ -364,6 +471,14 @@ impl ServerRuntime {
                 .is_none_or(|drain| drain.remaining > 0)
             {
                 self.last_client_surface_drain = Some(surface.shutdown());
+            }
+        }
+        if let Some(surface) = self.redis_surface.as_mut() {
+            if self
+                .last_redis_surface_drain
+                .is_none_or(|drain| drain.remaining > 0)
+            {
+                self.last_redis_surface_drain = Some(surface.shutdown());
             }
         }
     }

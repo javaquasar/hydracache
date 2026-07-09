@@ -149,6 +149,36 @@ When adding or changing a RESP command:
 ```powershell
 cargo xtask doc-check
 cargo test -p xtask --test doc_check redis_compat --locked
+cargo test -p hydracache-redis-compat --locked
+cargo test -p hydracache-server --test server_lifecycle redis --locked
+```
+
+The fast crate gate covers the RESP2 codec, translator, unsupported/admin-disabled
+matrix, `HC.*` classification, golden RESP fixtures, coalesced/partial frame
+boundaries, decoder fuzz smoke, and oversized frame limits. The server lifecycle
+gate proves the listener config is off by default, address conflicts are rejected,
+and the modeled RESP surface drains when enabled.
+
+Run the Docker/client matrix before claiming a Redis-client compatibility row:
+
+```powershell
+$env:HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = '1'
+cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS -ErrorAction SilentlyContinue
+```
+
+That gated tier must use the pinned Redis images from
+`redis_compat_conformance.json` and compare supported-subset scenarios against
+real Redis after the documented normalization rules. Add Python, Node, Go, and
+JVM client rows only when their unchanged mainstream Redis clients pass the same
+scenario suite.
+
+Run the resource/hostile-input smoke before widening the listener surface:
+
+```powershell
+$env:HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE = '1'
+cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE -ErrorAction SilentlyContinue
 ```
 
 Commands without executable manifest coverage stay `candidate` or `unsupported`.

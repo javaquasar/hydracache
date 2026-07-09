@@ -7,7 +7,8 @@ use std::{
 
 use hydracache_server::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    ServerConfig, ServerConfigError, ServerRole, ServerRuntime, ServerState, TlsConfig,
+    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime, ServerState,
+    TlsConfig,
 };
 
 fn member_config() -> ServerConfig {
@@ -25,6 +26,16 @@ fn member_config() -> ServerConfig {
         client_api: ClientApiConfig::default(),
         admin_api: AdminApiConfig::default(),
         ..ServerConfig::default()
+    }
+}
+
+fn member_config_with_redis_surface() -> ServerConfig {
+    ServerConfig {
+        redis_api: RedisApiConfig {
+            enabled: true,
+            listen_addr: "127.0.0.1:16379".parse().unwrap(),
+        },
+        ..member_config()
     }
 }
 
@@ -330,6 +341,31 @@ fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
             surface: "admin_api.listen_addr"
         })
     ));
+}
+
+#[test]
+fn daemon_serves_redis_resp_listener_only_when_enabled_and_drains_gracefully() {
+    let disabled = ServerRuntime::new(member_config()).unwrap().start();
+    assert!(!disabled.ready().redis_surface_ready);
+    assert!(!disabled.redis_surface_ready());
+    assert_eq!(disabled.redis_active_connections(), 0);
+
+    let mut runtime = ServerRuntime::new(member_config_with_redis_surface())
+        .unwrap()
+        .start();
+
+    assert!(runtime.ready().ready);
+    assert!(runtime.ready().redis_surface_ready);
+    assert!(runtime.redis_surface_ready());
+    assert!(runtime.begin_redis_connection());
+    assert_eq!(runtime.redis_active_connections(), 1);
+
+    runtime.shutdown();
+
+    assert!(!runtime.redis_surface_ready());
+    assert_eq!(runtime.redis_active_connections(), 0);
+    assert_eq!(runtime.redis_surface_drain().unwrap().started_with, 1);
+    assert_eq!(runtime.redis_surface_drain().unwrap().remaining, 0);
 }
 
 #[test]
