@@ -1,0 +1,26 @@
+[package]
+name = "hydracache-redis-compat"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish = false
+description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility."
+
+[dependencies]
+bytes.workspace = true
+hydracache-client-protocol.workspace = true
+redis-protocol.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+hydracache-client-transport-axum.workspace = true
+proptest.workspace = true
+
+[lints]
+workspace = true

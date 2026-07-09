@@ -17,6 +17,7 @@ members = [
     "crates/hydracache-macros",
     "crates/hydracache-observability",
     "crates/hydracache-operator",
+    "crates/hydracache-redis-compat",
     "crates/hydracache-sandbox",
     "crates/hydracache-seaorm",
     "crates/hydracache-server",
@@ -73,6 +74,7 @@ hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.62.0" }
 hydracache-macros = { path = "crates/hydracache-macros", version = "0.62.0" }
 hydracache-observability = { path = "crates/hydracache-observability", version = "0.62.0" }
 hydracache-operator = { path = "crates/hydracache-operator", version = "0.62.0" }
+hydracache-redis-compat = { path = "crates/hydracache-redis-compat", version = "0.62.0" }
 hydracache-server = { path = "crates/hydracache-server", version = "0.62.0" }
 hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.62.0" }
 hydracache-sim = { path = "crates/hydracache-sim" }
@@ -94,6 +96,9 @@ rand_chacha = "0.9.0"
 rand_core = "0.9.5"
 rcgen = "0.14.8"
 redis = { version = "1.3.0", default-features = false, features = ["tokio-comp", "bytes"] }
+# redis-protocol 6.0.0's RESP2 frame types reference the RESP3 module at compile time.
+# HydraCache 0.63 still exposes an RESP2-only contract through hydracache-redis-compat.
+redis-protocol = { version = "6.0.0", default-features = false, features = ["std", "resp2", "resp3", "bytes"] }
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
 rustls = "0.23.41"
 sea-orm = { version = "1.1.17", default-features = false }

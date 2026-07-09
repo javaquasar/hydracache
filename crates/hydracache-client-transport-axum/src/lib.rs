@@ -421,6 +421,21 @@ impl ClientSurfaceState {
         ))
     }
 
+    /// Dispatch one verified client request from an alternate edge transport.
+    ///
+    /// This is the supported in-process seam for compatibility facades such as
+    /// the Redis RESP listener. It preserves the same dispatch accounting,
+    /// tenancy, limits, and consistency checks as `/client/v1/data` without
+    /// asking the edge listener to call the cache store directly.
+    pub fn dispatch_verified_request(
+        &self,
+        identity: &ClientIdentity,
+        envelope: ClientRequestEnvelope,
+    ) -> ClientResponseEnvelope {
+        self.record_dispatch();
+        self.handle_request(identity, envelope)
+    }
+
     fn validate_tenant_identity(
         &self,
         identity: &ClientIdentity,

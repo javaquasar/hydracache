@@ -224,3 +224,154 @@ depends_on = []
         "missing ADR index coverage check: {joined}"
     );
 }
+
+#[test]
+fn accepts_valid_redis_compat_conformance_manifest() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(integration_dir.join("redis-compat.md"), "# Redis RESP\n").unwrap();
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        r#"{
+  "version": 1,
+  "surface": "hydracache-redis-resp-edge",
+  "supported_resp": "RESP2",
+  "redis_oracle": {
+    "images": ["redis:6.2.14", "redis:7.2.5"],
+    "normalization": "exact for supported commands"
+  },
+  "commands": [
+    {
+      "name": "GET",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["get_matches_real_redis"]
+    },
+    {
+      "name": "HC.STATS",
+      "status": "hydracache_extension",
+      "kind": "hydracache_extension",
+      "oracle": "hydracache_only",
+      "tests": ["hc_stats_is_hydracache_only"]
+    }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert!(
+        problems.is_empty(),
+        "expected no problems, got: {problems:?}"
+    );
+}
+
+#[test]
+fn rejects_redis_compat_manifest_drift() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        r#"{
+  "version": 2,
+  "surface": "wrong",
+  "supported_resp": "RESP3",
+  "redis_oracle": {
+    "images": ["redis:latest"],
+    "normalization": ""
+  },
+  "commands": [
+    {
+      "name": "GET",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "candidate",
+      "tests": []
+    },
+    {
+      "name": "GET",
+      "status": "mystery",
+      "kind": "",
+      "oracle": "unknown",
+      "tests": ["bad test name"]
+    }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("redis-compat.md: file does not exist"),
+        "missing docs file check: {joined}"
+    );
+    assert!(
+        joined.contains("unsupported manifest version 2"),
+        "missing version check: {joined}"
+    );
+    assert!(
+        joined.contains("unexpected surface 'wrong'"),
+        "missing surface check: {joined}"
+    );
+    assert!(
+        joined.contains("supported_resp must be RESP2"),
+        "missing RESP2 check: {joined}"
+    );
+    assert!(
+        joined.contains("redis_oracle image 'redis:latest' must be pinned"),
+        "missing pinned-image check: {joined}"
+    );
+    assert!(
+        joined.contains("redis_oracle.normalization must not be empty"),
+        "missing normalization check: {joined}"
+    );
+    assert!(
+        joined.contains("status 'supported' requires at least one covering test"),
+        "missing supported-test check: {joined}"
+    );
+    assert!(
+        joined.contains("supported Redis command cannot use oracle 'candidate'"),
+        "missing supported-oracle check: {joined}"
+    );
+    assert!(
+        joined.contains("duplicate command name"),
+        "missing duplicate command check: {joined}"
+    );
+    assert!(
+        joined.contains("invalid status 'mystery'"),
+        "missing status check: {joined}"
+    );
+    assert!(
+        joined.contains("invalid oracle 'unknown'"),
+        "missing oracle check: {joined}"
+    );
+    assert!(
+        joined.contains("kind must not be empty"),
+        "missing kind check: {joined}"
+    );
+    assert!(
+        joined.contains("test names must be non-empty identifiers"),
+        "missing test-name check: {joined}"
+    );
+}

@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "surface": "hydracache-redis-resp-edge",
+  "supported_resp": "RESP2",
+  "redis_oracle": {
+    "images": ["redis:6.2.14", "redis:7.2.5"],
+    "normalization": "Supported Redis-subset commands compare exact RESP shape/count/order. Error text may normalize by class. TTL uses bounded tolerance only if the TTL metadata gate lands."
+  },
+  "commands": [
+    {
+      "name": "PING",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["redis_oracle_supported_subset_matches_real_redis", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
+    },
+    {
+      "name": "ECHO",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["redis_oracle_supported_subset_matches_real_redis"]
+    },
+    {
+      "name": "QUIT",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
+    },
+    {
+      "name": "HELLO 2",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["hello2_is_supported_and_hello3_behavior_matches_contract"]
+    },
+    {
+      "name": "HELLO 3",
+      "status": "unsupported",
+      "kind": "redis_subset",
+      "oracle": "documented_divergence",
+      "tests": ["hello2_is_supported_and_hello3_behavior_matches_contract", "resp3_only_inputs_are_rejected_before_mutation"]
+    },
+    {
+      "name": "AUTH",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "candidate",
+      "tests": ["auth_hello_auth_and_noauth_errors_match_contract"]
+    },
+    {
+      "name": "CLIENT SETNAME",
+      "status": "supported_with_caveat",
+      "kind": "redis_subset",
+      "oracle": "normalized_error",
+      "tests": ["nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
+    },
+    {
+      "name": "CLIENT SETINFO",
+      "status": "supported_with_caveat",
+      "kind": "redis_subset",
+      "oracle": "normalized_error",
+      "tests": ["nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
+    },
+    {
+      "name": "COMMAND",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "normalized_error",
+      "tests": ["command_reply_advertises_only_supported_subset"]
+    },
+    {
+      "name": "GET",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["get_set_del_mget_mset_roundtrip_through_client_surface", "redis_oracle_supported_subset_matches_real_redis"]
+    },
+    {
+      "name": "SET",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["get_set_del_mget_mset_roundtrip_through_client_surface", "redis_oracle_supported_subset_matches_real_redis"]
+    },
+    {
+      "name": "MGET",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["mget_preserves_order_and_represents_misses_as_nil_bulk", "redis_oracle_mget_nil_and_order_match_real_redis"]
+    },
+    {
+      "name": "DEL",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["del_and_exists_return_redis_integer_counts", "redis_oracle_del_exists_counts_match_real_redis"]
+    },
+    {
+      "name": "EXISTS",
+      "status": "supported",
+      "kind": "redis_subset",
+      "oracle": "exact",
+      "tests": ["del_and_exists_return_redis_integer_counts", "redis_oracle_del_exists_counts_match_real_redis"]
+    },
+    {
+      "name": "MSET",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "candidate",
+      "tests": ["mset_is_atomic_or_rejected_loud", "redis_oracle_mset_atomicity_matches_or_is_unsupported_loud"]
+    },
+    {
+      "name": "SET EX/PX",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "ttl_tolerance",
+      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata", "redis_oracle_ttl_matches_only_when_ttl_gate_lands"]
+    },
+    {
+      "name": "EXPIRE/PEXPIRE",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "ttl_tolerance",
+      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata", "redis_oracle_ttl_matches_only_when_ttl_gate_lands"]
+    },
+    {
+      "name": "TTL/PTTL",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "ttl_tolerance",
+      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata", "redis_oracle_ttl_matches_only_when_ttl_gate_lands"]
+    },
+    {
+      "name": "PERSIST",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "ttl_tolerance",
+      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata"]
+    },
+    {
+      "name": "SELECT",
+      "status": "candidate",
+      "kind": "redis_subset",
+      "oracle": "candidate",
+      "tests": ["select_without_explicit_namespace_mapping_is_rejected_or_maps_to_default"]
+    },
+    {
+      "name": "INFO",
+      "status": "candidate",
+      "kind": "health_probe",
+      "oracle": "candidate",
+      "tests": ["health_check_commands_are_classified_before_translation", "info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+    },
+    {
+      "name": "ROLE",
+      "status": "unsupported",
+      "kind": "health_probe",
+      "oracle": "documented_divergence",
+      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+    },
+    {
+      "name": "DBSIZE",
+      "status": "unsupported",
+      "kind": "health_probe",
+      "oracle": "documented_divergence",
+      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+    },
+    {
+      "name": "TYPE",
+      "status": "unsupported",
+      "kind": "health_probe",
+      "oracle": "documented_divergence",
+      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+    },
+    {
+      "name": "SCAN",
+      "status": "unsupported",
+      "kind": "health_probe",
+      "oracle": "documented_divergence",
+      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+    },
+    {
+      "name": "CONFIG",
+      "status": "admin_disabled",
+      "kind": "admin",
+      "oracle": "documented_divergence",
+      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+    },
+    {
+      "name": "FLUSHDB/FLUSHALL",
+      "status": "admin_disabled",
+      "kind": "admin",
+      "oracle": "documented_divergence",
+      "tests": ["flushall_is_admin_disabled_by_default"]
+    },
+    {
+      "name": "HSET/ZADD/LISTS/STREAMS/EVAL/MULTI/MODULE/CLUSTER",
+      "status": "unsupported",
+      "kind": "redis_non_subset",
+      "oracle": "documented_divergence",
+      "tests": ["unsupported_commands_fail_loud_with_stable_error", "cluster_and_moved_ask_are_never_emitted", "redis_oracle_unsupported_divergence_is_documented"]
+    },
+    {
+      "name": "HC.STATS",
+      "status": "hydracache_extension",
+      "kind": "hydracache_extension",
+      "oracle": "hydracache_only",
+      "tests": ["hc_stats_and_diagnostics_are_tenant_scoped_and_redacted", "redis_oracle_hc_extensions_are_hydracache_only"]
+    },
+    {
+      "name": "HC.DIAGNOSTICS",
+      "status": "hydracache_extension",
+      "kind": "hydracache_extension",
+      "oracle": "hydracache_only",
+      "tests": ["hc_stats_and_diagnostics_are_tenant_scoped_and_redacted", "hc_diagnostics_are_read_only_during_drain"]
+    },
+    {
+      "name": "HC.INVALIDATE",
+      "status": "hydracache_extension",
+      "kind": "hydracache_extension",
+      "oracle": "hydracache_only",
+      "tests": ["hc_invalidate_key_goes_through_client_surface_limits_and_audit"]
+    },
+    {
+      "name": "HC.NAMESPACE",
+      "status": "candidate",
+      "kind": "hydracache_extension",
+      "oracle": "candidate",
+      "tests": ["hc_namespace_requires_explicit_mapping_and_is_connection_local"]
+    },
+    {
+      "name": "HC.TAG/HC.SETTAGS",
+      "status": "candidate",
+      "kind": "hydracache_extension",
+      "oracle": "candidate",
+      "tests": ["hc_tag_commands_are_unsupported_until_native_metadata_path_exists"]
+    },
+    {
+      "name": "HC.INVALIDATE_TAG",
+      "status": "candidate",
+      "kind": "hydracache_extension",
+      "oracle": "candidate",
+      "tests": ["hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path", "hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys"]
+    }
+  ]
+}

@@ -32,6 +32,22 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 const ALLOWED_STATUS: [&str; 5] = ["shipped", "in-progress", "planned", "draft", "superseded"];
+const ALLOWED_REDIS_COMPAT_STATUS: [&str; 6] = [
+    "supported",
+    "supported_with_caveat",
+    "candidate",
+    "admin_disabled",
+    "hydracache_extension",
+    "unsupported",
+];
+const ALLOWED_REDIS_COMPAT_ORACLE: [&str; 6] = [
+    "exact",
+    "normalized_error",
+    "documented_divergence",
+    "hydracache_only",
+    "ttl_tolerance",
+    "candidate",
+];
 
 #[derive(serde::Deserialize)]
 struct Manifest {
@@ -51,6 +67,35 @@ struct Release {
     depends_on: Vec<String>,
     #[serde(default)]
     networked_control_plane: Option<bool>,
+}
+
+#[derive(serde::Deserialize)]
+struct RedisCompatManifest {
+    version: u16,
+    surface: String,
+    supported_resp: String,
+    redis_oracle: RedisOracle,
+    #[serde(default)]
+    commands: Vec<RedisCompatCommand>,
+}
+
+#[derive(serde::Deserialize)]
+struct RedisOracle {
+    #[serde(default)]
+    images: Vec<String>,
+    #[serde(default)]
+    normalization: String,
+}
+
+#[derive(serde::Deserialize)]
+struct RedisCompatCommand {
+    name: String,
+    status: String,
+    #[serde(default)]
+    kind: String,
+    oracle: String,
+    #[serde(default)]
+    tests: Vec<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -199,6 +244,7 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     problems.extend(check_in_prose_plan_links(root)?);
     problems.extend(check_adr_index(root)?);
     problems.extend(check_publishable_crates_in_publish_scripts(root)?);
+    problems.extend(check_redis_compat_conformance(root)?);
 
     Ok(problems)
 }
@@ -311,6 +357,147 @@ fn extract_quoted_hydracache_packages(text: &str) -> BTreeSet<String> {
         .filter(|value| *value == "hydracache" || value.starts_with("hydracache-"))
         .map(ToOwned::to_owned)
         .collect()
+}
+
+fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let manifest_path = root.join("docs/integrations/redis_compat_conformance.json");
+    if !manifest_path.is_file() {
+        return Ok(Vec::new());
+    }
+
+    let docs_path = root.join("docs/integrations/redis-compat.md");
+    let text = fs::read_to_string(&manifest_path)
+        .map_err(|err| format!("reading {}: {err}", manifest_path.display()))?;
+    let manifest: RedisCompatManifest = serde_json::from_str(&text)
+        .map_err(|err| format!("parsing {}: {err}", manifest_path.display()))?;
+
+    let mut problems = Vec::new();
+    if !docs_path.is_file() {
+        problems.push("docs/integrations/redis-compat.md: file does not exist".to_owned());
+    }
+    if manifest.version != 1 {
+        problems.push(format!(
+            "docs/integrations/redis_compat_conformance.json: unsupported manifest version {}",
+            manifest.version
+        ));
+    }
+    if manifest.surface != "hydracache-redis-resp-edge" {
+        problems.push(format!(
+            "docs/integrations/redis_compat_conformance.json: unexpected surface '{}'",
+            manifest.surface
+        ));
+    }
+    if manifest.supported_resp != "RESP2" {
+        problems.push(format!(
+            "docs/integrations/redis_compat_conformance.json: supported_resp must be RESP2 for 0.63.0, got '{}'",
+            manifest.supported_resp
+        ));
+    }
+    if manifest.redis_oracle.images.is_empty() {
+        problems.push(
+            "docs/integrations/redis_compat_conformance.json: redis_oracle.images must not be empty"
+                .to_owned(),
+        );
+    }
+    if manifest.redis_oracle.normalization.trim().is_empty() {
+        problems.push(
+            "docs/integrations/redis_compat_conformance.json: redis_oracle.normalization must not be empty"
+                .to_owned(),
+        );
+    }
+    for image in &manifest.redis_oracle.images {
+        if image.trim().is_empty() {
+            problems.push(
+                "docs/integrations/redis_compat_conformance.json: redis_oracle image must not be empty"
+                    .to_owned(),
+            );
+        }
+        if image.ends_with(":latest") || image == "redis" {
+            problems.push(format!(
+                "docs/integrations/redis_compat_conformance.json: redis_oracle image '{image}' must be pinned, not latest"
+            ));
+        }
+    }
+    if manifest.commands.is_empty() {
+        problems.push(
+            "docs/integrations/redis_compat_conformance.json: commands must not be empty"
+                .to_owned(),
+        );
+    }
+
+    let mut names = HashSet::new();
+    for command in &manifest.commands {
+        let source = format!(
+            "docs/integrations/redis_compat_conformance.json command '{}'",
+            command.name
+        );
+        if command.name.trim().is_empty() {
+            problems.push(format!("{source}: name must not be empty"));
+        }
+        if !names.insert(command.name.to_ascii_uppercase()) {
+            problems.push(format!("{source}: duplicate command name"));
+        }
+        if !ALLOWED_REDIS_COMPAT_STATUS.contains(&command.status.as_str()) {
+            problems.push(format!(
+                "{source}: invalid status '{}' (allowed: {})",
+                command.status,
+                ALLOWED_REDIS_COMPAT_STATUS.join(", ")
+            ));
+        }
+        if !ALLOWED_REDIS_COMPAT_ORACLE.contains(&command.oracle.as_str()) {
+            problems.push(format!(
+                "{source}: invalid oracle '{}' (allowed: {})",
+                command.oracle,
+                ALLOWED_REDIS_COMPAT_ORACLE.join(", ")
+            ));
+        }
+        if command.kind.trim().is_empty() {
+            problems.push(format!("{source}: kind must not be empty"));
+        }
+
+        let requires_tests = !matches!(command.status.as_str(), "unsupported");
+        if requires_tests && command.tests.is_empty() {
+            problems.push(format!(
+                "{source}: status '{}' requires at least one covering test",
+                command.status
+            ));
+        }
+        if command
+            .tests
+            .iter()
+            .any(|test| test.trim().is_empty() || test.contains(char::is_whitespace))
+        {
+            problems.push(format!(
+                "{source}: test names must be non-empty identifiers"
+            ));
+        }
+
+        if matches!(
+            command.status.as_str(),
+            "supported" | "supported_with_caveat"
+        ) && matches!(
+            command.oracle.as_str(),
+            "candidate" | "documented_divergence" | "hydracache_only"
+        ) {
+            problems.push(format!(
+                "{source}: supported Redis command cannot use oracle '{}'",
+                command.oracle
+            ));
+        }
+
+        if command.name.to_ascii_uppercase().starts_with("HC.")
+            && !matches!(
+                command.oracle.as_str(),
+                "hydracache_only" | "candidate" | "documented_divergence"
+            )
+        {
+            problems.push(format!(
+                "{source}: HC.* command must use hydracache_only, candidate, or documented_divergence oracle"
+            ));
+        }
+    }
+
+    Ok(problems)
 }
 
 fn check_in_prose_plan_links(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
