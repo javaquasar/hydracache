@@ -75,7 +75,7 @@ hydracache-observability = { path = "crates/hydracache-observability", version =
 hydracache-operator = { path = "crates/hydracache-operator", version = "0.62.0" }
 hydracache-server = { path = "crates/hydracache-server", version = "0.62.0" }
 hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.62.0" }
-hydracache-sim = { path = "crates/hydracache-sim", version = "0.62.0" }
+hydracache-sim = { path = "crates/hydracache-sim" }
 hydracache-sql-lint = { path = "crates/hydracache-sql-lint", version = "0.62.0" }
 hydracache-sqlx = { path = "crates/hydracache-sqlx", version = "0.62.0" }
 hydracache-transport-nats = { path = "crates/hydracache-transport-nats", version = "0.62.0" }
