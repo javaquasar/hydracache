@@ -234,3 +234,10 @@ status = "shipped"
 networked_control_plane = true
 theme = "Proof Cleanup - close the small evidence gaps found after 0.62.0 shipped: add the two missing deterministic raft-filter stale/drain tests, exercise the snapshot crash failpoints, finish the falsifiability canary map, and reconcile stale 0.62 release documentation. No new product features, no Redis/Hazelcast/Pingora/ownership-routing scope; this patch exists so the 0.62 proof ledger exactly matches its shipped claims before the next feature track starts."
 depends_on = ["0.62.0"]
+
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63_REDIS_RESP_EDGE_FACADE_PLAN.md"
+status = "planned"
+theme = "Redis RESP Edge Facade - an optional, OFF-BY-DEFAULT hydracache-redis-compat edge listener for the Redis RESP cache subset. W0 adds a versioned executable conformance manifest, real Redis oracle normalization, pinned redis-server oracle versions, RESP2/RESP3 negotiation rules, health-check command classification, and docs/test single-source-of-truth checks before any command is claimed. W1 scaffolds the crate/listener/codec; W2 translates only W0-supported Redis commands through ClientSurfaceState so tenancy/limits/consistency hold; minimum target is GET/SET/MGET/DEL plus startup handshake with Redis counts/order semantics, while TTL ships only if the metadata gate lands and MSET is atomic or unsupported-loud. W3 HC.* commands are native-or-unsupported, with no scan-and-loop fake tag invalidation. W4 rejects unsupported Redis/Cluster/Lua/transaction/module commands loudly. W5 proves golden RESP bytes, fuzz/hostile frames, pipelining/backpressure, reconnect semantics, multi-language clients, pinned Docker redis-server oracle comparison, and a network-gated multi-node HydraCache RESP e2e. W6 records COMPAT/GATES/TESTING/docs, executable examples, config/operator defaults, and rollout/rollback playbook. Not a Redis clone; no MOVED/ASK/Cluster; core and stable hydracache-client-protocol stay untouched unless explicitly re-scoped."
+depends_on = ["0.62.1"]
