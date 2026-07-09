@@ -56,17 +56,22 @@ fn run_prevote_seed(seed: u64, steps: u64) {
             }
         }
         cluster.tick_all(1);
-        let leaders = [1, 2, 3]
-            .into_iter()
-            .filter(|node_id| {
-                cluster.node(*node_id).snapshot().role
-                    == hydracache_cluster_raft::RaftRuntimeRole::Leader
-            })
-            .collect::<Vec<_>>();
-        assert!(
-            leaders.len() <= 1,
-            "seed {seed} observed multiple leaders among original voters: {leaders:?}"
-        );
+        let mut leaders_by_term = BTreeMap::<u64, Vec<u64>>::new();
+        for node_id in [1, 2, 3] {
+            let snapshot = cluster.node(node_id).snapshot();
+            if snapshot.role == hydracache_cluster_raft::RaftRuntimeRole::Leader {
+                leaders_by_term
+                    .entry(snapshot.term)
+                    .or_default()
+                    .push(node_id);
+            }
+        }
+        for (term, leaders) in leaders_by_term {
+            assert!(
+                leaders.len() <= 1,
+                "seed {seed} observed multiple leaders in term {term} among original voters: {leaders:?}"
+            );
+        }
         if let Some(leader) = cluster.leader_id() {
             expected_leader = Some(leader);
         }

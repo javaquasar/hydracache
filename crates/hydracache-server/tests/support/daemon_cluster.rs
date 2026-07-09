@@ -96,7 +96,7 @@ impl DaemonCluster {
             let (listen_addr, cluster_addr, admin_addr) = addrs.remove(0);
             let spec = DaemonNodeSpec {
                 name: format!("{name}-{index}"),
-                node_id: format!("{name}-node-{index}"),
+                node_id: member_node_id_for_addr(cluster_addr),
                 listen_addr,
                 cluster_addr,
                 admin_addr,
@@ -453,6 +453,21 @@ fn reserve_node_addrs(count: usize) -> Vec<(SocketAddr, SocketAddr, SocketAddr)>
         .chunks_exact(3)
         .map(|chunk| (chunk[0], chunk[1], chunk[2]))
         .collect()
+}
+
+fn member_node_id_for_addr(addr: SocketAddr) -> String {
+    let suffix = addr
+        .to_string()
+        .chars()
+        .map(|character| {
+            if character.is_ascii_alphanumeric() {
+                character
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>();
+    format!("member-{suffix}")
 }
 
 fn http_json(addr: SocketAddr, method: &str, path: &str, admin: bool) -> TestResult<Value> {
