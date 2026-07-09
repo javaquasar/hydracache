@@ -130,6 +130,29 @@ directly when changing sandbox or cluster-operability behavior:
 cargo test -p hydracache-sandbox --locked
 ```
 
+## Redis RESP Compatibility
+
+The Redis RESP edge facade is governed by
+[`docs/integrations/redis_compat_conformance.json`](integrations/redis_compat_conformance.json).
+That manifest is the source of truth for the supported/candidate/unsupported command matrix,
+real Redis oracle scenarios, client-smoke scenarios, and release-note command table.
+
+When adding or changing a RESP command:
+
+1. Update the conformance manifest first.
+2. Update [`docs/integrations/redis-compat.md`](integrations/redis-compat.md) from the same row.
+3. Add golden RESP fixtures and translator or unsupported-matrix tests.
+4. Add real Redis oracle expectations for supported Redis-subset commands.
+5. Keep Docker `redis-server` oracle images pinned; never use `latest`.
+6. Run the fast contract gate:
+
+```powershell
+cargo xtask doc-check
+cargo test -p xtask --test doc_check redis_compat --locked
+```
+
+Commands without executable manifest coverage stay `candidate` or `unsupported`.
+
 For the 0.36 database rollout layer specifically, run the deterministic DB
 soak route test. It covers miss, hit, write, invalidate, reload, rollback,
 loader failure, stale-on-loader-error fallback, stale-load discard,
