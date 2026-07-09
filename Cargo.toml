@@ -74,6 +74,7 @@ hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.62.0" }
 hydracache-macros = { path = "crates/hydracache-macros", version = "0.62.0" }
 hydracache-observability = { path = "crates/hydracache-observability", version = "0.62.0" }
 hydracache-operator = { path = "crates/hydracache-operator", version = "0.62.0" }
+hydracache-redis-compat = { path = "crates/hydracache-redis-compat", version = "0.62.0" }
 hydracache-server = { path = "crates/hydracache-server", version = "0.62.0" }
 hydracache-seaorm = { path = "crates/hydracache-seaorm", version = "0.62.0" }
 hydracache-sim = { path = "crates/hydracache-sim" }

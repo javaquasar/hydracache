@@ -14,8 +14,12 @@ description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset
 
 [dependencies]
 bytes.workspace = true
+hydracache-client-protocol.workspace = true
 redis-protocol.workspace = true
 thiserror.workspace = true
+
+[dev-dependencies]
+hydracache-client-transport-axum.workspace = true
 
 [lints]
 workspace = true
