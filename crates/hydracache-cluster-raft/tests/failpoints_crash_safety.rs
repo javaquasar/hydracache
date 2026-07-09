@@ -4,9 +4,12 @@ use std::collections::BTreeSet;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
 use fail::FailScenario;
-use hydracache_cluster_raft::{InMemoryRaftLogStore, RaftLogStore};
+use hydracache_cluster_raft::{
+    InMemoryRaftLogStore, RaftLogStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
+    RaftWireMessage,
+};
 use hydracache_cluster_testkit::RuntimeRaftCluster;
-use raft::eraftpb::Entry;
+use raft::eraftpb::{Entry, Message, MessageType, Snapshot};
 
 fn voter_set(cluster: &RuntimeRaftCluster, node_id: u64) -> BTreeSet<u64> {
     cluster
@@ -15,6 +18,23 @@ fn voter_set(cluster: &RuntimeRaftCluster, node_id: u64) -> BTreeSet<u64> {
         .unwrap()
         .into_iter()
         .collect()
+}
+
+fn snapshot_wire_message(index: u64, term: u64, voters: Vec<u64>) -> RaftWireMessage {
+    let mut snapshot = Snapshot::default();
+    snapshot.mut_metadata().index = index;
+    snapshot.mut_metadata().term = term;
+    snapshot.mut_metadata().mut_conf_state().voters = voters;
+
+    let mut message = Message {
+        from: 2,
+        to: 1,
+        term,
+        ..Message::default()
+    };
+    message.set_msg_type(MessageType::MsgSnapshot);
+    message.set_snapshot(snapshot);
+    RaftWireMessage::encode(&message).unwrap()
 }
 
 #[test]
@@ -37,6 +57,42 @@ fn crash_between_confchange_commit_and_save_conf_state_recovers_consistent_voter
 
     for node_id in [1, 2, 3] {
         assert_eq!(voter_set(&recovered, node_id), BTreeSet::from([1, 2, 3, 4]));
+    }
+}
+
+#[test]
+fn crash_after_snapshot_persist_before_apply_replays_or_installs_once() {
+    for failpoint in [
+        "raft_after_save_snapshot_before_entries",
+        "raft_after_install_snapshot_before_apply",
+    ] {
+        let _scenario = FailScenario::setup();
+        let runtime = RaftMetadataRuntime::with_config(
+            RaftMetadataRuntimeConfig::multi_voter("orders", 1, [1, 2]).ticks(5, 1),
+        )
+        .unwrap();
+        let wire = snapshot_wire_message(7, 2, vec![1]);
+
+        fail::cfg(failpoint, "return").unwrap();
+        let failure = runtime.step(wire).unwrap_err();
+        assert!(
+            failure.to_string().contains("snapshot"),
+            "{failpoint} should fail loudly at the snapshot boundary: {failure}"
+        );
+        fail::remove(failpoint);
+
+        runtime
+            .drain_ready()
+            .expect("snapshot ready should replay after clearing failpoint");
+        let snapshot = runtime.snapshot();
+        assert_eq!(
+            snapshot.commands_committed, 0,
+            "snapshot recovery should not double-apply metadata commands"
+        );
+        assert!(
+            snapshot.commit_index >= 7 || snapshot.applied_index >= 7,
+            "snapshot recovery should install or replay the persisted boundary once: {snapshot:?}"
+        );
     }
 }
 
@@ -98,5 +154,16 @@ fn falsifiability_canaries_turn_their_guard_tests_red() {
     assert!(
         cluster.node(2).snapshot().term > leader_term,
         "disabling pre-vote should make the isolated node inflate its term"
+    );
+    fail::remove("canary_raft_disable_prevote");
+
+    fail::cfg("canary_raft_skip_save_conf_state", "return").unwrap();
+    let mut cluster = RuntimeRaftCluster::three_node();
+    cluster.campaign(1);
+    cluster.propose_remove_voter(1, 3).unwrap();
+
+    assert!(
+        voter_set(&cluster, 1).contains(&3),
+        "skipping conf-state persistence should keep a removed voter visible to the drain guard"
     );
 }

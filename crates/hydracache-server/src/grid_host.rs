@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::env;
 use std::fmt;
 use std::fs;
@@ -42,6 +42,7 @@ const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 
 type NetworkedRaftRuntime = RaftMetadataRuntime<DurableRaftLogStore>;
 type SharedRaftPeers = Arc<RwLock<BTreeMap<u64, RaftPeer>>>;
+type SharedRaftVoterSet = Arc<RwLock<BTreeSet<u64>>>;
 
 /// Build the grid-mode cache used by a member-role daemon.
 pub(crate) fn build_member(
@@ -163,6 +164,10 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
     let route_auth = cluster_route_auth(config, &node_id)?;
     let raft_peers = Arc::new(RwLock::new((*topology.peers).clone()));
+    let last_voters = Arc::new(RwLock::new(
+        raft.voter_ids()?.into_iter().collect::<BTreeSet<_>>(),
+    ));
+    let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
     let use_network_sink =
         topology.multi_voter || matches!(start_mode, ResolvedClusterStartMode::Join);
     let message_sink: Arc<dyn RaftMessageSink> = if use_network_sink {
@@ -184,6 +189,8 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             message_sink: message_sink.clone(),
             raft_peers: raft_peers.clone(),
             diagnostics: drive_diagnostics.clone(),
+            last_voters,
+            suppressed_raft_promotions,
             local_node_id: node_id.clone(),
             local_endpoint: config.cluster_advertise_endpoint(),
             local_generation: generation,
@@ -491,6 +498,8 @@ struct GridDriveHandles {
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
     diagnostics: Arc<GridDriveDiagnostics>,
+    last_voters: SharedRaftVoterSet,
+    suppressed_raft_promotions: SharedRaftVoterSet,
     local_node_id: ClusterNodeId,
     local_endpoint: String,
     local_generation: ClusterGeneration,
@@ -562,11 +571,18 @@ async fn drive_grid_once(
         handles.local_generation,
         candidates,
     );
+    refresh_suppressed_raft_promotions(
+        &handles.last_voters,
+        &handles.suppressed_raft_promotions,
+        &handles.raft.voter_ids()?,
+        &handles.raft.members(),
+    );
     sync_raft_voters(
         &handles.raft,
         &handles.message_sink,
         &handles.raft_peers,
         handles.diagnostics.as_ref(),
+        &handles.suppressed_raft_promotions,
     )
     .await?;
     let _ = send_raft_messages_with_diagnostics(
@@ -641,23 +657,57 @@ fn refresh_raft_peers(
     }
 }
 
+fn refresh_suppressed_raft_promotions(
+    last_voters: &SharedRaftVoterSet,
+    suppressed_raft_promotions: &SharedRaftVoterSet,
+    current_voters: &[u64],
+    members: &[ClusterMember],
+) {
+    let current_voters = current_voters.iter().copied().collect::<BTreeSet<_>>();
+    let materialized_member_voters = members
+        .iter()
+        .filter(|member| member.is_member())
+        .map(|member| raft_node_id(&member.node_id))
+        .collect::<BTreeSet<_>>();
+
+    let mut last_voters = last_voters.write().expect("last raft voters poisoned");
+    let mut suppressed = suppressed_raft_promotions
+        .write()
+        .expect("suppressed raft promotions poisoned");
+    suppressed.retain(|raft_id| materialized_member_voters.contains(raft_id));
+    for removed in last_voters.difference(&current_voters) {
+        if materialized_member_voters.contains(removed) {
+            suppressed.insert(*removed);
+        }
+    }
+    *last_voters = current_voters;
+}
+
 async fn sync_raft_voters(
     raft: &Arc<NetworkedRaftRuntime>,
     message_sink: &Arc<dyn RaftMessageSink>,
     raft_peers: &SharedRaftPeers,
     diagnostics: &GridDriveDiagnostics,
+    suppressed_raft_promotions: &SharedRaftVoterSet,
 ) -> CacheResult<()> {
     let snapshot = raft.snapshot();
     if raft.leader_id() != Some(snapshot.raft_node_id) {
         return Ok(());
     }
     let current_voters = raft.voter_ids()?;
+    let suppressed = suppressed_raft_promotions
+        .read()
+        .expect("suppressed raft promotions poisoned")
+        .clone();
     for member in raft.members() {
         if !member.is_member() {
             continue;
         }
         let raft_id = raft_node_id(&member.node_id);
         if current_voters.contains(&raft_id) {
+            continue;
+        }
+        if suppressed.contains(&raft_id) {
             continue;
         }
         if !raft_peers
@@ -1761,6 +1811,8 @@ mod tests {
             message_sink: message_sink.clone(),
             raft_peers: raft_peers.clone(),
             diagnostics: Arc::new(diagnostics),
+            last_voters: Arc::new(RwLock::new(BTreeSet::new())),
+            suppressed_raft_promotions: Arc::new(RwLock::new(BTreeSet::new())),
             local_node_id: ClusterNodeId::from("local"),
             local_endpoint: "127.0.0.1:7000".to_owned(),
             local_generation: ClusterGeneration::new(1),
@@ -2017,11 +2069,62 @@ mod tests {
         .await
         .unwrap();
         let diagnostics = GridDriveDiagnostics::default();
-        sync_raft_voters(&raft, &message_sink, &raft_peers, &diagnostics)
-            .await
-            .unwrap();
+        let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
+        sync_raft_voters(
+            &raft,
+            &message_sink,
+            &raft_peers,
+            &diagnostics,
+            &suppressed_raft_promotions,
+        )
+        .await
+        .unwrap();
 
         assert!(raft.voter_ids().unwrap().contains(&member_raft_id));
+    }
+
+    #[tokio::test]
+    async fn sync_raft_voters_does_not_resurrect_recently_removed_member() {
+        let raft = Arc::new(
+            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
+                .unwrap(),
+        );
+        let sink = Arc::new(InMemoryRaftMessageSink::default());
+        let message_sink: Arc<dyn RaftMessageSink> = sink.clone();
+        let member_node = ClusterNodeId::from("member-draining");
+        let member_raft_id = raft_node_id(&member_node);
+        let raft_peers = Arc::new(RwLock::new(BTreeMap::from([(
+            member_raft_id,
+            RaftPeer {
+                node_id: member_node.clone(),
+                endpoint: "127.0.0.1:7001".to_owned(),
+            },
+        )])));
+
+        raft.join_member(
+            ClusterCandidate::member(member_node)
+                .generation(ClusterGeneration::new(1))
+                .endpoints(ClusterEndpoints::new().control("127.0.0.1:7001")),
+        )
+        .await
+        .unwrap();
+        let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::from([member_raft_id])));
+
+        sync_raft_voters(
+            &raft,
+            &message_sink,
+            &raft_peers,
+            &GridDriveDiagnostics::default(),
+            &suppressed_raft_promotions,
+        )
+        .await
+        .unwrap();
+
+        assert!(!raft.voter_ids().unwrap().contains(&member_raft_id));
+        assert!(
+            sink.messages().is_empty(),
+            "recently removed voter must not receive a resurrecting AddNode"
+        );
     }
 
     #[tokio::test]

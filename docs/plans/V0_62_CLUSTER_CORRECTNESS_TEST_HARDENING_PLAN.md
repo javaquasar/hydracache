@@ -410,12 +410,16 @@ fail::fail_point!("raft_after_install_snapshot_before_apply", |_| Err(injected_c
 fail::fail_point!("sled_append_disk_full", |_| Err(disk_full()));
 fail::fail_point!("canary_raft_skip_save_conf_state", |_| Ok(()));
 fail::fail_point!("canary_raft_disable_prevote", |_| Ok(()));
-fail::fail_point!("canary_raft_disable_confchange_dedup", |_| Ok(()));
 ```
 Points are **inert unless the feature is on** — release builds carry nothing (verify with a
 mechanical W7 feature-leak gate). TiKV configures them as `fail::cfg(name, "return")`/`"panic"`/`"pause"`
 per test. The `canary_*` points are not crash failpoints; they deliberately reintroduce known broken
 behavior so the corresponding harness test can prove it turns red.
+
+`0.62.1` execution note: the draft-only `canary_raft_disable_confchange_dedup`
+name was not implemented. The shipped falsifiability map uses
+`canary_raft_skip_save_conf_state` to turn the drain/conf-state guard red and
+`canary_raft_disable_prevote` for the pre-vote guard.
 
 **Steps.**
 1. Add `fail` dev-dep + `test-failpoints` feature; gate every `fail_point!` behind it.
@@ -425,8 +429,9 @@ behavior so the corresponding harness test can prove it turns red.
 3. Tests use `fail::cfg` to arm, drive a scenario, disarm, then reopen the durable log and assert
    integrity.
 4. Add a falsifiability canary mapping for each major guarantee: `canary_raft_skip_save_conf_state`
-   for W2, `canary_raft_disable_prevote` for F1, and `canary_raft_disable_confchange_dedup` for W1.
-   Each canary run must fail before the production test counts toward R-7.
+   for the W1 drain/conf-state and W2 persistence guards, and `canary_raft_disable_prevote` for F1.
+   Each canary run must fail before the production test counts toward R-7. `0.62.1` replaced the
+   plan-only `canary_raft_disable_confchange_dedup` draft name with the real conf-state canary.
 
 **Tests.** New `crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs`
 (`#[cfg(feature="test-failpoints")]`, run serially — `fail` is process-global, use
