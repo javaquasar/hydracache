@@ -32,6 +32,9 @@ toml.workspace = true
 
 [dev-dependencies]
 hydracache-client-protocol.workspace = true
+hydracache-cluster-testkit.workspace = true
+hydracache-sim.workspace = true
+proptest.workspace = true
 rcgen.workspace = true
 tower.workspace = true
 

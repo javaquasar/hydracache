@@ -334,6 +334,33 @@ generated `wip/*.stderr` output, and update the matching files under
 `crates/hydracache-db/tests/derive/`, or
 `crates/hydracache-db/tests/policy/`.
 
+For the 0.62 cluster correctness hardening layer specifically, run the raft
+message-filter harness, wire/golden property tests, server id-mapping property
+tests, and the serial failpoint crash-safety suite:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test raft_message_filter --locked
+cargo test -p hydracache-cluster-raft --test wire_properties --locked
+cargo test -p hydracache-cluster-raft --test golden_vectors --locked
+cargo test -p hydracache-server --test id_mapping_properties --locked
+cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
+cargo xtask verify-no-test-features
+```
+
+These tests are deterministic: message-filter cases use seeded/tick-counted
+delivery rather than wall-clock sleeps, and golden vectors are byte fixtures
+checked into `crates/hydracache-cluster-raft/tests/vectors/`. Do not retry a
+red seed and call it green; preserve the seed/trace and fix the harness or code.
+The real-process daemon kill/restart and randomized topology tiers remain
+nightly/pre-release gates because they open loopback listeners and manage child
+processes.
+
+Cluster-correctness flake policy is intentionally strict. A failed nightly must
+open an issue that includes the seed, replay manifest path, captured child logs,
+and the exact env-gated command. Quarantine is allowed for at most one day and
+must link to that issue. Silent retries, missing replay artifacts, or "could not
+reproduce" without the preserved seed do not count as green evidence.
+
 ## Cache Event Tests
 
 The cache event/listener API is covered by `crates/hydracache/src/tests/events.rs`.

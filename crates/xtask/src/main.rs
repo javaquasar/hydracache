@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("doc-check") => xtask::doc_check::run(args.collect())?,
         Some("durable-inspect") => xtask::durable_inspect::run(args.collect())?,
         Some("verify") => xtask::verify::run(args.collect())?,
+        Some("verify-no-test-features") => xtask::feature_leak::run(args.collect())?,
         Some("--help") | Some("-h") | None => print_usage(),
         Some(command) => return Err(format!("unsupported xtask command: {command}").into()),
     }
@@ -18,6 +19,7 @@ fn print_usage() {
     println!(
         "Usage:\n  \
          cargo xtask verify        # run the fast release gates (see docs/GATES.md)\n  \
+         cargo xtask verify-no-test-features  # ensure test-only features/deps are absent from release graphs\n  \
          cargo xtask doc-check     # validate docs/plans/releases.toml (RULES R-11)\n  \
          cargo xtask durable-inspect <store-dir>  # dump verified durable value records as JSON\n  \
          cargo xtask bench-budget [--budget benches/budget.toml] [--baseline benches/baseline/0_37.json] [--current target/criterion]\n\n\

@@ -129,6 +129,7 @@ pub struct RaftMetadataRuntimeConfig {
     heartbeat_tick: usize,
     max_size_per_msg: u64,
     max_inflight_msgs: usize,
+    pre_vote: bool,
 }
 
 impl RaftMetadataRuntimeConfig {
@@ -143,6 +144,7 @@ impl RaftMetadataRuntimeConfig {
             heartbeat_tick: 3,
             max_size_per_msg: 1024 * 1024,
             max_inflight_msgs: 256,
+            pre_vote: true,
         }
     }
 
@@ -161,6 +163,7 @@ impl RaftMetadataRuntimeConfig {
             heartbeat_tick: 3,
             max_size_per_msg: 1024 * 1024,
             max_inflight_msgs: 256,
+            pre_vote: true,
         }
     }
 
@@ -197,6 +200,7 @@ impl RaftMetadataRuntimeConfig {
             heartbeat_tick: 3,
             max_size_per_msg: 1024 * 1024,
             max_inflight_msgs: 256,
+            pre_vote: true,
         })
     }
 
@@ -230,13 +234,36 @@ impl RaftMetadataRuntimeConfig {
         self
     }
 
+    /// Override raft pre-vote behavior for mixed-version compatibility tests.
+    ///
+    /// The production default is `true` starting with HydraCache 0.62.0.
+    pub fn pre_vote(mut self, pre_vote: bool) -> Self {
+        self.pre_vote = pre_vote;
+        self
+    }
+
     fn raft_config(&self) -> Config {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("canary_raft_disable_prevote", |_| {
+            Config {
+                id: self.raft_node_id,
+                election_tick: self.election_tick,
+                heartbeat_tick: self.heartbeat_tick,
+                max_size_per_msg: self.max_size_per_msg,
+                max_inflight_msgs: self.max_inflight_msgs,
+                pre_vote: false,
+                applied: 0,
+                ..Default::default()
+            }
+        });
+
         Config {
             id: self.raft_node_id,
             election_tick: self.election_tick,
             heartbeat_tick: self.heartbeat_tick,
             max_size_per_msg: self.max_size_per_msg,
             max_inflight_msgs: self.max_inflight_msgs,
+            pre_vote: self.pre_vote,
             applied: 0,
             ..Default::default()
         }
@@ -354,6 +381,18 @@ impl RaftWireMessage {
     pub fn decode(&self) -> CacheResult<RaftMessage> {
         RaftMessage::parse_from_bytes(&self.payload)
             .map_err(|error| CacheError::Decode(format!("failed to decode raft message: {error}")))
+    }
+}
+
+impl RaftMetadataCommandEnvelope {
+    /// Encode this durable metadata command envelope.
+    pub fn encode(&self) -> Vec<u8> {
+        encode_envelope(self)
+    }
+
+    /// Decode a durable metadata command envelope.
+    pub fn decode(data: &[u8]) -> CacheResult<Self> {
+        decode_envelope(data)
     }
 }
 
@@ -1342,6 +1381,18 @@ where
                 store
                     .save_snapshot(ready.snapshot(), 0)
                     .map_err(to_cache_error)?;
+                #[cfg(feature = "test-failpoints")]
+                fail::fail_point!("raft_after_save_snapshot_before_entries", |_| {
+                    Err(CacheError::Backend(
+                        "injected crash after raft snapshot save before entries".to_owned(),
+                    ))
+                });
+                #[cfg(feature = "test-failpoints")]
+                fail::fail_point!("raft_after_install_snapshot_before_apply", |_| {
+                    Err(CacheError::Backend(
+                        "injected crash after raft snapshot install before apply".to_owned(),
+                    ))
+                });
             }
 
             let committed_entries = ready.take_committed_entries();
@@ -1354,6 +1405,12 @@ where
 
             if let Some(hard_state) = ready.hs() {
                 store.save_hard_state(hard_state).map_err(to_cache_error)?;
+                #[cfg(feature = "test-failpoints")]
+                fail::fail_point!("raft_after_save_hard_state_before_send", |_| {
+                    Err(CacheError::Backend(
+                        "injected crash after raft hard state save before send".to_owned(),
+                    ))
+                });
             }
 
             self.apply_committed_entries(committed_entries)?;
@@ -1398,6 +1455,14 @@ where
                         .raw_node
                         .apply_conf_change(&change)
                         .map_err(to_cache_error)?;
+                    #[cfg(feature = "test-failpoints")]
+                    fail::fail_point!("canary_raft_skip_save_conf_state", |_| { Ok(()) });
+                    #[cfg(feature = "test-failpoints")]
+                    fail::fail_point!("raft_before_save_conf_state", |_| {
+                        Err(CacheError::Backend(
+                            "injected crash before raft conf state save".to_owned(),
+                        ))
+                    });
                     self.raw_node
                         .raft
                         .raft_log
@@ -1416,6 +1481,14 @@ where
                         .raw_node
                         .apply_conf_change(&change)
                         .map_err(to_cache_error)?;
+                    #[cfg(feature = "test-failpoints")]
+                    fail::fail_point!("canary_raft_skip_save_conf_state", |_| { Ok(()) });
+                    #[cfg(feature = "test-failpoints")]
+                    fail::fail_point!("raft_before_save_conf_state", |_| {
+                        Err(CacheError::Backend(
+                            "injected crash before raft conf state save".to_owned(),
+                        ))
+                    });
                     self.raw_node
                         .raft
                         .raft_log

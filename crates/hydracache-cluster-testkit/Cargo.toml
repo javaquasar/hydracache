@@ -1,0 +1,21 @@
+[package]
+name = "hydracache-cluster-testkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Dev-only deterministic cluster correctness harnesses for HydraCache"
+publish = false
+
+[dependencies]
+anyhow = "1"
+async-trait.workspace = true
+chitchat.workspace = true
+hydracache.workspace = true
+hydracache-cluster-raft.workspace = true
+raft.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

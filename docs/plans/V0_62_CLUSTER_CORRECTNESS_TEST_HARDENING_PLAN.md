@@ -2,10 +2,11 @@
 
 > **At a glance**
 > - **What:** close the **test-infrastructure gap** between the DST simulator (core-only) and the
->   happy-path daemon E2E (one kill). Build the three harnesses the reference distributed systems in
+>   happy-path daemon E2E (one kill). Build the four harnesses the reference distributed systems in
 >   this workspace all rely on, and the correctness tests they unlock: (**W1**) a deterministic
 >   **message-filter transport** on the shipped `RaftMessageSink` seam (blueprint: raft-rs
->   `harness/src/network.rs`, TiKV `test_raftstore/src/transport_simulate.rs`); (**W2**) **failpoint**
+>   `harness/src/network.rs`, TiKV `test_raftstore/src/transport_simulate.rs`); (**W1b**) a
+>   deterministic **gossip fault transport** for chitchat discovery; (**W2**) **failpoint**
 >   injection at process-crash boundaries (blueprint: TiKV `tests/failpoints/`, `fail` crate);
 >   (**W3**) a **real-process multi-daemon harness** that actually `kill -9`s (blueprint: qdrant
 >   `tests/consensus_tests`, curvine `MiniCluster`); (**W4**) the **membership-history linearizability
@@ -24,7 +25,7 @@
 >   `LinearizabilityChecker`, the `0.60` `ConfChange`/`ConfState` path.
 > - **Unblocks:** confidence for the `1.0` "production-ready cluster" claim (mileage + these
 >   correctness gates are the evidence; no grid mechanics remain).
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > backlog: [`CROSS_PROJECT_IDEA_BACKLOG.md`](CROSS_PROJECT_IDEA_BACKLOG.md) ·
@@ -52,6 +53,10 @@ quoted so an implementer (or reviewer) can open the original and compare behavio
 | Randomized topology soak (W3 ext) | **qdrant** / **tigerbeetle** | qdrant `downscale_cluster.py`; tigerbeetle `src/testing/` VOPR discipline | seeded random join/drain/crash/restart sequence with per-step invariant checks |
 | Stale/drained peer rejection (W1/W3 ext) | **TiKV** + **Chitchat** | TiKV stale-peer tests; Chitchat tombstone/reset vocabulary in `ALGORITHM.md` | explicit tests that old messages or restarted drained storage cannot resurrect stale membership |
 | Process lifecycle discipline (W3/W7) | **Pingora** | server lifecycle/readiness/drain style | bounded readiness, bounded shutdown, child reaping, and captured logs for real-process tests |
+| Gossip fault filter (W1b) | **Chitchat** | `chitchat::transport::ChannelTransport`; `crates/hydracache-cluster-chitchat/src/lib.rs` `spawn_with_transport` | deterministic drop/delay/liveness-flap injection for the discovery plane, not only raft |
+| Falsifiability canaries (W2/W7) | **TiKV** + in-repo R-7 rule | `fail` crate plus test-only canary toggles | prove each harness test fails against a deliberately seeded broken behavior |
+| Resource sampler reuse (W3 ext) | **in-repo 0.58** | `BoundedGrowthChecker` + real RSS/fd sampler from the endurance plan | make process soaks assert bounded resource growth instead of only correctness |
+| CI/platform/flake policy (W7) | **0.59-0.61 lessons** | `.github/workflows/ci.yml`, `docs/GATES.md`, `docs/TESTING.md` | every documented gate has a CI step, platform scope, and no-silent-retry policy |
 
 ## Preflight (verified against the repo at `0.61.0`)
 
@@ -88,13 +93,30 @@ quoted so an implementer (or reviewer) can open the original and compare behavio
 - **`0.57` "no stale leader" has no falsifiable test.** The claim that `/cluster/overview` never shows
   a stale leader mid-election has never been tested against an actual partitioned-but-still-"leader"
   node — impossible without W1.
+- **No gossip-plane fault harness exists.** W1 covers raft messages only. The chitchat discovery plane
+  still has no deterministic way to drop graceful-leave markers, flap liveness
+  (`Live -> Suspect -> Dead -> Live`), or replay a stale generation after tombstone GC, even though
+  `ChitchatDiscovery::spawn_with_transport` already accepts a caller-provided transport for tests.
+- **R-7 falsifiability is stated but not mechanized.** The final gate says a test must fail against a
+  seeded-broken build, but no work item yet defines how to seed that broken behavior. W2's
+  `test-failpoints` feature must also carry test-only bug-injection canaries.
+- **Drain-vs-promotion has an untested race window.** `sync_raft_voters` promotes committed metadata
+  members missing from `voter_ids()`. If `RemoveNode` commits before the corresponding `NodeLeft`
+  metadata is visible, the leader's promotion cycle can try to add the draining node back unless the
+  drain state is explicitly excluded.
+- **Pause is not partition.** The real-process harness kills/restarts daemons, but it does not yet model
+  a frozen process that wakes with expired timers (`SIGSTOP`/`SIGCONT`, Linux-only). This is a separate
+  GC-pause class from packet loss.
+- **Inbound snapshot apply is a cold path.** The plan covers snapshot persist/apply crash windows and
+  golden bytes, but the runtime path for an inbound raft `MsgSnapshot` should either apply correctly or
+  reject loudly; it must not silently corrupt if snapshot generation remains rare.
 - **Two concrete code bugs the harnesses will expose (become F1/F2 below):**
   - **F1 — no `pre_vote`.** `RaftMetadataRuntimeConfig::raft_config` (raft lib.rs:233-243) leaves
     `pre_vote` at its `false` default. A node returning from a partition with an inflated term forces
     the stable leader to step down (term explosion). raft-rs supports `Config::pre_vote = true`.
-  - **F2 — `raft_wire_node_id` mismatch.** `raft_wire_node_id` (grid_host.rs:1072-1076) does
+  - **F2 — `raft_wire_node_id` mismatch.** `raft_wire_node_id` (grid_host.rs:1263-1267) does
     `node_id.parse::<u64>().unwrap_or_else(|_| stable_nonzero_hash(node_id))` — a node literally named
-    `"42"` maps to `42`, while `raft_node_id()` (:1068) always hashes. Inbound `step` (raft handler,
+    `"42"` maps to `42`, while `raft_node_id()` (:1259-1261) always hashes. Inbound `step` (raft handler,
     grid_host.rs:840-886 area) would attribute the message to the wrong raft id. A property test makes
     this deterministic and loud.
 
@@ -128,6 +150,49 @@ release.
    its server-operability lesson applies to W3/W7: bounded readiness, bounded
    shutdown, process-group cleanup, and captured child logs are part of the
    harness contract, not test niceties.
+5. **Falsifiability as a mechanism.** R-7 cannot stay a sentence in Final
+   Decision. Each major harness test needs a test-only canary that deliberately
+   reintroduces the bug and proves the test turns red.
+6. **Gossip fault injection.** Membership dissemination has a raft plane and a
+   chitchat plane. `0.62` must cover both enough to prove join/drain does not
+   depend on a perfectly reliable gossip announce path.
+7. **Drain-vs-promotion race.** The leader promotion loop must not resurrect a
+   draining member when `RemoveNode` and `NodeLeft` visibility are reordered.
+8. **Frozen-process class.** Real SIGKILL is necessary but not sufficient. A
+   suspended former leader that resumes after timers expire is a distinct
+   split-brain risk and belongs in the nightly tier.
+9. **Harness determinism and feature hygiene.** A seed must replay to the same
+   delivered/dropped trace, and release builds must mechanically prove that
+   `test-support`/`fail` features did not leak through feature unification.
+10. **Reuse shipped endurance samplers.** The `0.58` RSS/fd and bounded-growth
+    samplers should be attached to W3 so correctness soaks also catch process
+    growth and unexplained drive errors.
+
+### Execution Scope / Corrections
+
+- **Stage the release deliberately.** PR/MVP slice: `F1`, `F2`, `W1`, `W2`, `W5`, `W6`. Nightly/extended
+  slice: `W3`, `W1b`, `W4`, frozen-process tests, and RSS/fd sampler reuse. This is one release plan,
+  but implementation should not block the deterministic slice on nightly infrastructure.
+- **Current code anchors.** `F1` currently lives at `crates/hydracache-cluster-raft/src/lib.rs:233`.
+  `F2` currently lives at `crates/hydracache-server/src/grid_host.rs:1259-1267`. Re-grep before editing;
+  exact file:line references are review aids, not authority.
+- **Testkit decision.** Use a dev-only shared `hydracache-cluster-testkit` crate (`publish = false`,
+  consumed only through `[dev-dependencies]`) for W1/W1b/W3 helper types, traces, replay manifests,
+  and process harness utilities. Do not let each crate grow a private copy of the same harness
+  vocabulary.
+- **Testkit boundaries.** Keep W2 failpoints inside the raft crate behind `test-failpoints`; those
+  injection points must live in production code paths to guard `drain_ready`/log-store boundaries.
+  Keep server `test-support` as a minimal private seam only (`build_member_with_sink` or equivalent),
+  not a home for harness types.
+- **Dev-cycle fallback.** Preferred shape: `hydracache-cluster-testkit` owns raft/chitchat filters and
+  `DaemonCluster`. If `testkit -> hydracache-server` plus server tests `-> testkit` causes Cargo,
+  rust-analyzer, or CI friction, move only `DaemonCluster` into `crates/hydracache-server/tests/support/`
+  and keep `hydracache-cluster-testkit` server-free.
+- **W4 scope guard.** Ship a thin membership-history adapter/checker first: epoch monotonicity,
+  member-set equality per epoch, and same-term leader uniqueness. Reuse `LinearizabilityChecker` only
+  if the adapter stays small; otherwise record it as stretch work rather than expanding `0.62`.
+- **F1 extra gate.** Because `pre_vote = true` is a production consensus behavior change, it needs both
+  deterministic W1 coverage and a W3/nightly mixed restart/topology soak before release.
 
 Redis RESP and Hazelcast client compatibility stay out of `0.62`. They are
 future edge facades that depend on the cluster-correctness evidence this release
@@ -180,11 +245,13 @@ peers by falling back, but assert it in a W1 test: `mixed_prevote_cluster_still_
 
 **Tests.** `prevote_isolated_node_rejoin_does_not_depose_leader` (W1 filter harness: isolate a
 follower, let it campaign, heal, assert the original leader's term is unchanged and it stays leader —
-**falsifiable**: without F1 the leader's term jumps). Run: `cargo test -p hydracache-cluster-raft --locked`.
+**falsifiable**: without F1 the leader's term jumps). Also run a W3/nightly mixed restart/topology soak
+with `pre_vote = true`, because this is a production consensus behavior change. Run:
+`cargo test -p hydracache-cluster-raft --locked`.
 
 ## F2. Fix `raft_wire_node_id` mapping (small fix, exposed by W5)
 
-**Why.** `raft_wire_node_id` (grid_host.rs:1072-1076) and `raft_node_id` (:1068) can disagree for a
+**Why.** `raft_wire_node_id` (grid_host.rs:1263-1267) and `raft_node_id` (:1259-1261) can disagree for a
 node whose `ClusterNodeId` string parses as a `u64`. Inbound raft `step` then attributes the message
 to the wrong sender id, corrupting raft's per-peer progress tracking. The only reason it has not bitten
 is that identities are currently `member-<addr>` strings that never parse as bare integers — but
@@ -213,9 +280,8 @@ pub trait Filter: Send + Sync {
     fn after(&self, res: Result<()>) -> Result<()> { res }
 }
 ```
-HydraCache analogue (new, in a test-support module — `crates/hydracache-cluster-raft/src/test_support.rs`
-behind `#[cfg(any(test, feature = "test-support"))]`, or a shared `hydracache-cluster-testkit` dev-crate
-if both the raft crate and the server crate need it):
+HydraCache analogue (new, in a dev-only shared `hydracache-cluster-testkit` crate so W1, W1b, W3,
+replay manifests, and daemon tests share one vocabulary):
 ```rust
 pub trait RaftMessageFilter: Send + Sync {
     /// Decide the fate of one outbound message; return the (possibly empty,
@@ -236,6 +302,8 @@ TiKV `RegionPacketFilter`: `.direction(Send|Recv|Both)`, `.msg_type(MsgRequestVo
 (let n through then drop), `.when(Arc<AtomicBool>)` (conditional), `.reserve_dropped(buf)` (capture for
 assertions). Decode the raft message type from the payload once
 (`RaftWireMessage::decode()?.get_msg_type()`) so filters can target `MsgRequestVote`/`MsgAppend`/etc.
+Use `BTreeMap`/ordered vectors for filter maps and trace emission even though raft-rs uses `HashMap`;
+the HydraCache harness must prefer deterministic iteration over literal copying.
 
 **Where it plugs in.** Two levels, both already have the seam:
 1. **Runtime level (PR-tier, deterministic):** extend `NetworkedRuntimeCluster` in
@@ -249,10 +317,13 @@ assertions). Decode the raft message type from the payload once
 
 **Steps.**
 1. Add the `RaftMessageFilter` trait + `FilteredRaftMessageSink` + `cut/isolate/recover` + the
-   builder, with `reserve_dropped` capture, in the test-support module.
+   builder, with `reserve_dropped` capture, in `hydracache-cluster-testkit`.
 2. Extend `NetworkedRuntimeCluster` to route through it; add a `deliver_delayed(up_to_tick)` pump.
-3. Add a server-side test-support injection point (a `#[cfg(feature="test-support")]` setter or a
-   `build_member_with_sink` seam) so daemon tests can wrap the real sink.
+3. Add a server-side test-support injection point (a `#[cfg(feature="test-support")]`
+   `build_member_with_sink` seam or equivalent) so daemon tests can wrap the real sink. This feature
+   exposes only the private constructor seam; all filter types stay in `hydracache-cluster-testkit`.
+4. Emit a deterministic trace of delivered/dropped/delayed messages and add a meta-test that runs the
+   same seeded filter scenario twice and compares traces byte-for-byte.
 
 **Tests (PR-tier deterministic unless noted).** New file
 `crates/hydracache-cluster-raft/tests/raft_message_filter.rs`:
@@ -272,6 +343,14 @@ assertions). Decode the raft message type from the payload once
   an old `MsgAppend`/`MsgRequestVote` from that peer, deliver it after the membership epoch advances,
   and assert the old peer cannot reappear in `voter_ids()` or depose the leader. This is the explicit
   stale-peer/tombstone test missing from the first draft.
+- `leader_promotion_does_not_resurrect_draining_member` - delay the `NodeLeft` append, allow the
+  leader's promotion cycle to tick after `RemoveNode`, and assert `sync_raft_voters` does not propose
+  `AddNode` for the draining member.
+- `message_filter_replays_identically_for_same_seed` - run one filter scenario twice with the same
+  seed and assert the delivered/dropped trace is identical; this guards the harness itself.
+- `inbound_snapshot_message_is_applied_or_rejected_loud` - feed a synthetic raft `MsgSnapshot` through
+  `step` and prove the state machine either installs it safely or rejects it loudly; no silent
+  corruption on the cold snapshot path.
 - `prevote_isolated_node_rejoin_does_not_depose_leader` (F1) and
   `mixed_prevote_cluster_still_elects` (F1 compat).
 - Run: `cargo test -p hydracache-cluster-raft --locked`,
@@ -279,6 +358,40 @@ assertions). Decode the raft message type from the payload once
 
 **Risk & rollback.** Purely additive test infrastructure. The one design risk is determinism of
 "delay/reorder" — keep it tick-counted, never wall-clock (R-5), exactly as raft-rs `Network` does.
+
+## W1b. Deterministic gossip fault transport harness
+
+**Goal.** Add the same deterministic fault vocabulary to the chitchat discovery plane. Raft filters
+prove authoritative membership behavior under bad raft transport; they do not prove the join/drain
+path when gossip announcements, liveness transitions, or graceful-leave markers are lost or delayed.
+
+**Design.** Add a test-only `FilteredChitchatTransport` wrapping `chitchat::transport::Transport`.
+Reuse chitchat's in-memory `ChannelTransport` first, because `ChitchatDiscovery::spawn_with_transport`
+already exists for tests. The filter vocabulary mirrors W1 where possible:
+
+- `cut(a, b)`, `isolate(id)`, `recover()`;
+- drop/delay by source, target, key prefix, or message class where the chitchat API exposes it;
+- scripted liveness flaps (`Live -> Suspect -> Dead -> Live`) without wall-clock sleeps;
+- ordered trace emission for replay, again using ordered maps/vectors rather than `HashMap` iteration.
+
+**Steps.**
+1. Add `FilteredChitchatTransport` in `hydracache-cluster-testkit`.
+2. Wire it into `chitchat_admission_bridge`-style tests through `spawn_with_transport`.
+3. Record gossip delivered/dropped/liveness-flap traces alongside raft traces in replay manifests.
+4. Cross-link this work to backlog #8 (gossip reset/tombstone semantics) instead of pretending W1 alone
+   closes the discovery plane.
+
+**Tests.** New/extended chitchat tests:
+
+- `gossip_flap_does_not_flap_quorum` - liveness flaps must not make raft voter quorum bounce if the
+  authoritative raft view remains healthy.
+- `lost_leave_marker_behavior_is_named` - drop the graceful-leave marker and assert the documented
+  behavior: either leader timeout removal is explicit, or the gap is recorded as a known follow-up.
+- `stale_generation_candidate_resurrection_is_rejected_under_flap` - after tombstone/reset pressure,
+  a stale generation candidate must not be admitted as a fresh member.
+
+**Risk & rollback.** Additive test infrastructure. Keep it PR-tier only if it uses `ChannelTransport`
+and logical time; UDP/process versions stay network-gated.
 
 ## W2. Failpoints at crash/persist boundaries
 
@@ -295,10 +408,14 @@ fail::fail_point!("raft_before_save_conf_state", |_| Err(injected_crash()));
 fail::fail_point!("raft_after_save_hard_state_before_send", |_| Err(injected_crash()));
 fail::fail_point!("raft_after_install_snapshot_before_apply", |_| Err(injected_crash()));
 fail::fail_point!("sled_append_disk_full", |_| Err(disk_full()));
+fail::fail_point!("canary_raft_skip_save_conf_state", |_| Ok(()));
+fail::fail_point!("canary_raft_disable_prevote", |_| Ok(()));
+fail::fail_point!("canary_raft_disable_confchange_dedup", |_| Ok(()));
 ```
 Points are **inert unless the feature is on** — release builds carry nothing (verify with a
-`cargo tree`/`grep` gate note). TiKV configures them as `fail::cfg(name, "return")`/`"panic"`/`"pause"`
-per test.
+mechanical W7 feature-leak gate). TiKV configures them as `fail::cfg(name, "return")`/`"panic"`/`"pause"`
+per test. The `canary_*` points are not crash failpoints; they deliberately reintroduce known broken
+behavior so the corresponding harness test can prove it turns red.
 
 **Steps.**
 1. Add `fail` dev-dep + `test-failpoints` feature; gate every `fail_point!` behind it.
@@ -307,6 +424,9 @@ per test.
    (disk-full). Names namespaced `raft_*`.
 3. Tests use `fail::cfg` to arm, drive a scenario, disarm, then reopen the durable log and assert
    integrity.
+4. Add a falsifiability canary mapping for each major guarantee: `canary_raft_skip_save_conf_state`
+   for W2, `canary_raft_disable_prevote` for F1, and `canary_raft_disable_confchange_dedup` for W1.
+   Each canary run must fail before the production test counts toward R-7.
 
 **Tests.** New `crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs`
 (`#[cfg(feature="test-failpoints")]`, run serially — `fail` is process-global, use
@@ -323,6 +443,8 @@ per test.
   ignored in favor of a newer log prefix; never double-apply, never lose committed membership.
 - `disk_full_on_append_fails_loud_not_silent` — `append` disk-full surfaces a loud error, no partial
   commit (R-3).
+- `falsifiability_canaries_turn_their_guard_tests_red` - arm each `canary_*` point once and assert the
+  matching guard test fails; this is the mechanical version of the Final Decision's R-7 rule.
 - Run (gated): `cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1`.
 
 **Risk & rollback.** Feature-gated; PR gate runs it as a **separate** invocation (single-threaded).
@@ -338,8 +460,9 @@ vote/term honesty, and socket-level failure are real. Then a seeded randomized-t
 `kill()` = `proc.kill(); proc.wait()`; curvine (`curvine-tests/src/testing.rs`) does the Rust-native
 equivalent via `MiniCluster::with_num(&conf, master_num, worker_num)` with per-node temp dirs and a
 `start_cluster()` that cleans meta/journal dirs first. **Choose Rust-native** (curvine shape) to stay
-in-workspace and reuse `ServerConfig`: a `DaemonCluster` test helper in
-`crates/hydracache-server/tests/support/daemon_cluster.rs` that:
+in-workspace and reuse `ServerConfig`: a `DaemonCluster` helper in `hydracache-cluster-testkit` by
+default, with fallback to `crates/hydracache-server/tests/support/daemon_cluster.rs` if the server
+dev-dependency cycle causes tooling friction. It:
 - builds N `ServerConfig`s over loopback (reuse `reserve_loopback_addrs`, tests/grid_host.rs), each
   with its own temp `storage_dir`;
 - spawns each as a **child process** running the real `hydracache-server` binary
@@ -360,6 +483,13 @@ in-workspace and reuse `ServerConfig`: a `DaemonCluster` test helper in
 4. Persist a replay manifest for every failed soak: seed, operation list, node ids, ports, storage
    dirs, overview history, and child logs. This is the TigerBeetle-style "make the failure replayable"
    rule applied to real processes.
+5. Add `suspend(idx)` / `resume(idx)` for Linux nightly (`SIGSTOP`/`SIGCONT`) and skip-gracefully on
+   Windows unless a Job Objects equivalent is implemented.
+6. Reuse the `0.58` real-process RSS/fd sampler and `BoundedGrowthChecker` in the daemon soak. Bound
+   `GridDriveDiagnostics.drive_errors` to known, explained failures after the run.
+7. Document the Windows/Linux matrix explicitly: `Child::kill` is `TerminateProcess` on Windows,
+   process-group cleanup differs from Job Objects, and sled lock behavior after hard termination must
+   be covered or the nightly tier is declared Linux-CI-only.
 
 **Tests (network-gated, nightly).** New `crates/hydracache-server/tests/daemon_process_cluster.rs`:
 - `sigkill_leader_reelects_and_restarted_node_rejoins_same_storage` — real SIGKILL of the leader;
@@ -375,6 +505,11 @@ in-workspace and reuse `ServerConfig`: a `DaemonCluster` test helper in
 - `drained_node_restart_does_not_silently_resurrect_voter` - drain a node, kill it, restart from the
   same `storage_dir`, and assert it follows the `0.61` drain contract instead of rejoining as an old
   voter without a fresh join path.
+- `suspended_leader_resumes_as_follower_without_split_brain` - Linux-only nightly: suspend the leader,
+  allow a new leader to be elected, resume the old process, and assert it steps down rather than
+  reporting a concurrent leader view.
+- `daemon_process_soak_bounds_rss_fds_and_drive_errors` - attach the `0.58` sampler during the
+  randomized soak and assert process growth plateaus and drive errors are explained.
 - Run (gated): the network command in GATES.md, extended with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`.
 
 **Risk & rollback.** Child-process orphans are the real hazard — the `Drop` reaper + a process-group
@@ -392,18 +527,28 @@ daemon's `/cluster/overview`. Feed it to `hydracache-sim`'s `LinearizabilityChec
 (`crates/hydracache-sim/src/linearizability.rs`) / `InvariantChecker`
 (`src/invariants.rs`) — the same checkers the DST gate uses (per `demo/README.md`, "the actual
 invariant checker"). Assert: per-observer epoch monotonicity, no committed-`MemberUpsert` lost across a
-leader change, no two distinct member-sets reported at the same epoch (split-membership).
+leader change, no two distinct member-sets reported at the same epoch (split-membership), and no two
+observable leaders with the same `status.term`.
+
+Scope guard: implement this adapter-first. The first shipped artifact may be a small
+`MembershipHistoryChecker` purpose-built for epoch/member-set/leader-term observations. Reuse the
+generic `LinearizabilityChecker` only if the mapping remains thin and obvious; otherwise keep full
+linearizability integration as stretch work.
 
 **Steps.**
 1. Add a `MembershipHistoryRecorder` in the server test-support module that snapshots overviews.
-2. Add an adapter turning the recorded history into the checker's input shape (the checker is generic
-   over operations/values; membership epochs map to a monotone register).
-3. Wire it as an assertion at the end of the W3 soak and a dedicated W1 partition-heal test.
+2. Add the adapter-first `MembershipHistoryChecker`; only then evaluate whether the generic
+   `LinearizabilityChecker` accepts the same history without a large translation layer.
+3. Include leader id + `status.term` in the recorded history so same-term split-leader observations are
+   first-class failures.
+4. Wire it as an assertion at the end of the W3 soak and a dedicated W1 partition-heal test.
 
 **Tests.**
 - `membership_history_is_epoch_monotone_under_partition_heal` (network-gated) — partition, mutate
   membership on the majority, heal, record all observers' histories, run the checker; **falsifiable**:
   an injected out-of-order epoch fails the check.
+- `membership_history_rejects_two_leaders_in_same_term` - inject or replay a history containing two
+  distinct leaders at the same raft term and assert the checker rejects it.
 - Run (gated): with the W3 tier.
 
 **Risk & rollback.** The checker is shipped and gate-proven; the only new code is the recorder +
@@ -467,34 +612,50 @@ entry (R-4).
 cluster correctness tests (backlog #3), and reconcile the ledger.
 
 **Files.** `docs/GATES.md` (failpoint job, real-process nightly tier, property/golden in the fast
-gate), `docs/TESTING.md` (a "cluster correctness harnesses" section pointing at each harness and its
-reference blueprint), `docs/plans/CROSS_PROJECT_IDEA_BACKLOG.md` (mark #3 "Cluster Load Test Suite As A
-First-Class Gate" delivered, with pointers), `docs/COMPAT.md` (F1 pre-vote note + W6 vector policy),
-`releases.toml` + `INDEX.md` + this header.
+gate, release-feature-leak check), `docs/TESTING.md` (a "cluster correctness harnesses" section
+pointing at each harness and its reference blueprint, plus flake policy), `.github/workflows/ci.yml`
+(named steps for the failpoint and daemon-process tiers), `docs/plans/CROSS_PROJECT_IDEA_BACKLOG.md`
+(mark #3 "Cluster Load Test Suite As A First-Class Gate" delivered, with pointers), `docs/COMPAT.md`
+(F1 pre-vote note + W6 vector policy), `releases.toml` + `INDEX.md` + this header.
 
 **Steps.**
 1. GATES.md rows: `test-failpoints` gate (separate single-threaded invocation), `daemon_process_cluster`
    nightly tier, `wire_properties`/`golden_vectors` in the fast tier, and the required replay-artifact
    path for failed randomized soaks.
-2. TESTING.md: document how to add a new filter/failpoint/process test and which reference file each
+2. Add an xtask or script-backed release feature boundary check to `cargo xtask verify`: inspect
+   `cargo tree -p hydracache-server --edges features` and fail if `fail`, `test-failpoints`, or the
+   server's narrow `test-support` seam leaks into the default/release graph. `hydracache-cluster-testkit`
+   itself must be present only as a `[dev-dependencies]` consumer, never in publishable/package graphs.
+3. Add explicit `.github/workflows/ci.yml` steps for the failpoint gate and `daemon_process_cluster`
+   nightly tier; do not rely on docs-only GATES rows.
+4. TESTING.md: document how to add a new filter/failpoint/process test and which reference file each
    harness was modeled on (this plan's blueprint table).
-3. Backlog #3 and the "sandbox as regression lab" conclusion: mark delivered.
-4. Flip the manifest triple green only when every gate passes.
+5. TESTING.md: add the flake policy. A failed nightly creates an issue with seed + replay manifest,
+   may be quarantined for at most one day, and must not be silently retried into green.
+6. Document the W3 platform matrix: Linux is required for SIGSTOP/SIGCONT; Windows support must use Job
+   Objects or the test is Linux-CI-only and skip-graceful elsewhere.
+7. Add the falsifiability checklist: each new harness test maps to a `canary_*` or fixture-level
+   broken behavior and is proven red once before counting toward R-7.
+8. Backlog #3 and the "sandbox as regression lab" conclusion: mark delivered.
+9. Flip the manifest triple green only when every gate passes.
 
 ## Test coverage matrix (every new artifact has a named test)
 
 | New code / harness | Source | Covering test(s) | Tier |
 | --- | --- | --- | --- |
-| `pre_vote` (F1) | raft lib.rs:233 | `prevote_isolated_node_rejoin_does_not_depose_leader`, `mixed_prevote_cluster_still_elects` | PR |
-| wire-id fix (F2) | grid_host.rs:1068-1076 | `wire_id_mapping_is_consistent_across_sink_and_handler` | PR |
-| `RaftMessageFilter` + `FilteredRaftMessageSink` (W1) | raft test-support | `asymmetric_partition_leader_keeps_leadership_when_only_one_direction_drops`, `minority_partition_cannot_commit_but_majority_can`, `duplicate_confchange_delivery_is_idempotent`, `reordered_appends_do_not_corrupt_committed_prefix`, `retired_peer_messages_are_rejected_after_drain_epoch_advances` | PR |
+| `pre_vote` (F1) | raft lib.rs:233 | `prevote_isolated_node_rejoin_does_not_depose_leader`, `mixed_prevote_cluster_still_elects`, W3/nightly mixed restart/topology soak with `pre_vote = true` | PR + nightly |
+| wire-id fix (F2) | grid_host.rs:1259-1267 | `wire_id_mapping_is_consistent_across_sink_and_handler` | PR |
+| `hydracache-cluster-testkit` crate | dev-only `publish = false` crate | package/publishability checks prove it is dev-only; no harness types exposed through production crates | PR |
+| `RaftMessageFilter` + `FilteredRaftMessageSink` (W1) | `hydracache-cluster-testkit` | `asymmetric_partition_leader_keeps_leadership_when_only_one_direction_drops`, `minority_partition_cannot_commit_but_majority_can`, `duplicate_confchange_delivery_is_idempotent`, `reordered_appends_do_not_corrupt_committed_prefix`, `retired_peer_messages_are_rejected_after_drain_epoch_advances`, `leader_promotion_does_not_resurrect_draining_member`, `message_filter_replays_identically_for_same_seed`, `inbound_snapshot_message_is_applied_or_rejected_loud` | PR |
+| `FilteredChitchatTransport` (W1b) | `hydracache-cluster-testkit` | `gossip_flap_does_not_flap_quorum`, `lost_leave_marker_behavior_is_named`, `stale_generation_candidate_resurrection_is_rejected_under_flap` | PR or network-gated depending on transport |
 | daemon-level filter (W1) | grid_host.rs sink seam | `stale_leader_not_reported_during_partition` | network-gated |
-| failpoints (W2) | raft log_store.rs / drain_ready | `crash_between_confchange_commit_and_save_conf_state_recovers_consistent_voters`, `crash_after_hard_state_before_send_does_not_lose_committed_entry`, `crash_after_snapshot_persist_before_apply_replays_or_installs_once`, `disk_full_on_append_fails_loud_not_silent` | PR (gated feature, serial) |
-| `DaemonCluster` real-process harness (W3) | server test-support | `sigkill_leader_reelects_and_restarted_node_rejoins_same_storage`, `restarted_node_does_not_double_vote_in_same_term`, `drained_node_restart_does_not_silently_resurrect_voter` | network-gated / nightly |
+| failpoints + falsifiability canaries (W2/W7) | raft log_store.rs / drain_ready / test-failpoints | `crash_between_confchange_commit_and_save_conf_state_recovers_consistent_voters`, `crash_after_hard_state_before_send_does_not_lose_committed_entry`, `crash_after_snapshot_persist_before_apply_replays_or_installs_once`, `disk_full_on_append_fails_loud_not_silent`, `falsifiability_canaries_turn_their_guard_tests_red` | PR (gated feature, serial) |
+| `DaemonCluster` real-process harness (W3) | `hydracache-cluster-testkit` + server tests | `sigkill_leader_reelects_and_restarted_node_rejoins_same_storage`, `restarted_node_does_not_double_vote_in_same_term`, `drained_node_restart_does_not_silently_resurrect_voter`, `suspended_leader_resumes_as_follower_without_split_brain`, `daemon_process_soak_bounds_rss_fds_and_drive_errors` | network-gated / nightly |
 | randomized topology soak (W3) | server test | `randomized_topology_soak_preserves_invariants` | nightly |
-| membership linearizability (W4) | sim checker reuse | `membership_history_is_epoch_monotone_under_partition_heal` | network-gated |
+| membership linearizability (W4) | sim checker reuse | `membership_history_is_epoch_monotone_under_partition_heal`, `membership_history_rejects_two_leaders_in_same_term` | network-gated |
 | id/wire property+fuzz (W5) | proptest | `raft_wire_message_decode_never_panics`, `cluster_opaque_message_decode_rejects_malformed_loud` | PR |
 | golden vectors (W6) | committed corpus | `golden_command_envelopes_decode_to_expected`, `golden_wire_messages_decode_to_expected`, `golden_snapshot_conf_state_decodes_to_expected` | PR |
+| docs/CI/release gates (W7) | GATES.md / TESTING.md / ci.yml / xtask | `cargo xtask verify-no-test-features`, named CI steps for failpoints + daemon process tier, documented flake quarantine policy | PR + CI/nightly |
 
 **Coverage rule (DoD):** no new harness lands without a row here; PR-tier tests are deterministic and
 inside `cargo xtask verify` (failpoints as a separate serial invocation); network/nightly rows are
@@ -504,29 +665,46 @@ env-gated and skip-graceful.
 
 - `cargo xtask verify` green; the failpoint suite runs as a separate serial gate; real-process and
   randomized-soak tiers are nightly and skip-graceful without their env flags.
+- Falsifiability is mechanical: each major harness guarantee has a `canary_*` or fixture-level broken
+  behavior, and the mapped test is proven red once before it counts toward R-7.
+- Release feature graph proves `fail`/`test-failpoints`/`test-support` do not leak into default
+  release builds; `hydracache-cluster-testkit` is dev-only and `publish = false`; CI has named steps
+  for failpoints and daemon-process nightly; flake policy requires issue + seed + replay manifest, no
+  silent retries.
 - The message-filter harness exists and proves: asymmetric partition does not spuriously re-elect;
   minority cannot commit; duplicate/reordered raft messages are idempotent/safe; stale messages from a
   retired peer cannot resurrect membership; a partitioned leader is never reported live (the missing
   `0.57` falsifiable test) — all deterministic (R-5).
+- W1 additionally proves drain-vs-promotion cannot resurrect a draining member, inbound `MsgSnapshot`
+  applies or rejects loudly, and the same seed emits the same delivered/dropped trace.
+- The chitchat/gossip plane has a deterministic fault harness and proves liveness flaps, lost
+  graceful-leave markers, and stale-generation candidates cannot silently break admission/quorum
+  semantics (W1b).
 - A crash injected **between** `ConfChange` commit and `save_conf_state` recovers a consistent voter
   set; a crash after `save_hard_state` loses no committed entry; a crash around snapshot persist/apply
   recovers without double-apply or lost committed membership; disk-full on append fails loud (W2).
 - A **real SIGKILL** of the leader re-elects; the restarted process rejoins on its `storage_dir` as a
   returning member and never double-votes in a term; a drained node restart cannot silently resurrect
   an old voter; failed randomized soaks write replay manifests and child logs (W3).
+- W3 additionally covers Linux suspended-leader resume, records the platform matrix, and reuses the
+  `0.58` RSS/fd bounded-growth sampler with explained `GridDriveDiagnostics.drive_errors`.
 - Membership history under partition-heal passes the shipped `0.44` linearizability/invariant checker
   (W4); id-mapping and wire-decode property tests pass, `raft_wire_node_id` bug fixed (F2/W5); golden
   vectors decode (W6).
+- W4 additionally rejects two observable leaders in the same `status.term`.
 - `pre_vote` enabled with a documented one-release mixed window (F1, COMPAT); no production behavior
   change beyond F1/F2; embedded fast path unchanged (R-10); no new consensus/consistency level (R-1).
-- Backlog #3 marked delivered; `releases.toml` + `INDEX.md` + header flipped; `cargo xtask doc-check`
+- Backlog #3 marked delivered, backlog #8 cross-linked for gossip reset semantics;
+  `releases.toml` + `INDEX.md` + header flipped; `cargo xtask doc-check`
   green.
 
 ```powershell
 # fast (PR) tier
 cargo xtask verify
 cargo test -p hydracache-cluster-raft --locked
+cargo test -p hydracache-cluster-chitchat --locked
 cargo test -p hydracache-server --locked grid_host
+cargo xtask verify-no-test-features
 
 # failpoint gate (separate, serial)
 cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
@@ -541,8 +719,21 @@ Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E,Env:\HYDRACACHE_RUN_DAEMON_
 
 ## Final Release Decision
 
-`0.62.0` ships **only** if every gate above is green. Because this release is test infrastructure, the
-bar is inverted from a feature release: a harness that exists but proves nothing (a filter test that
-would pass even with the bug present) is worse than no test. Every W1/W2/W3 test names its
-**falsifiable** failure mode; a test that cannot fail on a seeded-broken build does not count toward the
-gate (R-7). F1/F2 are the only production changes and each reverts independently.
+`0.62.0` shipped after the fast, failpoint, networked-daemon, daemon-process,
+membership-history, pre-vote soak, and operator kind partition gates were green.
+Because this release is test infrastructure, the bar is inverted from a feature
+release: a harness that exists but proves nothing (a filter test that would pass
+even with the bug present) is worse than no test. Every W1/W2/W3 test names its
+**falsifiable** failure mode; a test that cannot fail on its canary/seeded-broken
+behavior does not count toward the gate (R-7). F1/F2 are the only production
+changes and each reverts independently.
+
+The operator kind partition proof used two live clusters on 2026-07-09. The
+ordinary kind run of `partition_probe_skips_loud_on_non_enforcing_cni` passed
+after the probe was hardened to use a dedicated `busybox` network-probe pod and
+baseline reachability check; this local kindnet build enforced NetworkPolicy and
+therefore reported `partition probe applied NetworkPolicy; healing` rather than
+the expected non-enforcing skip branch. The enforcing proof was then run on a
+fresh `disableDefaultCNI` kind cluster with Calico 3.32.1 Available:
+`kind_partition_injection_isolates_and_heals` passed with real isolation and
+heal. No kind/calico residual is carried into the release.

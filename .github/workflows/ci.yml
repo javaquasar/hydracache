@@ -65,6 +65,9 @@ jobs:
           cargo test -p xtask --test doc_check --locked
           cargo run -p xtask --locked -- doc-check
 
+      - name: Release feature leak
+        run: cargo run -p xtask --locked -- verify-no-test-features
+
       - name: SQL lint baseline drift
         run: |
           cargo test -p hydracache-sql-lint --test lint_cli --locked
@@ -80,6 +83,9 @@ jobs:
 
       - name: Soak fast budget
         run: cargo test -p hydracache-sim --test soak_budget --locked
+
+      - name: Raft failpoint crash-safety
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
 
       - name: Management console
         run: |
@@ -151,7 +157,7 @@ jobs:
         run: |
           cargo run -p hydracache-sim --bin vopr --locked -- soak --master-seed 22530 --budget-secs 60 --steps-per-seed 512 --max-seeds 128 | tee SOAK_REPORT.json
 
-      - name: Run ignored resource and operator soak sentinels
+      - name: Run ignored resource and operator skip sentinels
         run: |
           cargo test -p hydracache-server --test soak_resource --locked -- --ignored --nocapture
           cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture
@@ -160,6 +166,21 @@ jobs:
         env:
           HYDRACACHE_RUN_NETWORKED_DAEMON_E2E: "1"
         run: cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapture
+
+      - name: Run daemon-process cluster tier
+        env:
+          HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
+        run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture
+
+      - name: Run membership-history tier
+        env:
+          HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
+        run: cargo test -p hydracache-server --test membership_history --locked -- --nocapture
+
+      - name: Run pre-vote nightly soak
+        env:
+          HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK: "1"
+        run: cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture
 
       - name: Upload SOAK_REPORT
         uses: actions/upload-artifact@v4

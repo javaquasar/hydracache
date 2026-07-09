@@ -14,6 +14,7 @@ they are persisted or transmitted across processes.
 | `RaftLogStore` in-memory format | `1` | `hydracache-cluster-raft` metadata runtime | 0.41 tests cover append/replay, snapshot recovery, suffix truncation, and compaction guard semantics. Future durable engines must register their own format before rollout. | Runtime fails loud on store errors; unknown future durable formats must refuse startup. |
 | HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
+| Raft metadata golden-vector corpus | `1` | `hydracache-cluster-raft` tests/vectors | `0.62.0` records command envelopes, wire-message payloads, `ConfState`, and snapshot `ConfState` byte vectors. Readers must keep decoding the corpus with the checked expectations; intentional codec changes must regenerate the corpus in the same change and document the compatibility decision. | Golden-vector tests fail before a rolling-upgrade compatibility claim is made. |
 | `node-identity.json` member identity file | `1` | `hydracache-server` member startup | Readers accept format `1` only. The file records `cluster`, stable `node_id`, and derived `raft_node_id` so a member keeps the same raft identity across address changes. A configured `node_id` must match the persisted identity once the file exists. | Unknown future identity formats, cluster mismatches, configured-id conflicts, and node-id/raft-id mismatches refuse member startup before opening the networked grid. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
 | `ChecksummedReplicatedValueRecord` durable envelope | `1` | `hydracache` scrubber/checksum helpers | Readers accept envelope format `1`; the envelope stores a deterministic checksum over `ReplicatedValueRecord` payload fields. Scrubbers verify before serving and may repair from valid peer copies. | Checksum mismatch is reported; unrepairable corruption is not served. Unknown future envelope formats fail closed. |
@@ -331,3 +332,25 @@ W4 persists raft `ConfState` through the existing durable raft log store so vote
 add/remove survives restart. This does not introduce a separate public manifest
 or file-format version; compatibility remains governed by the existing raft log
 store and the pinned raft/protobuf dependency pair.
+
+## 0.62 Cluster Correctness Test Hardening
+
+`0.62.0` enables raft pre-vote by default in the metadata runtime. The mixed
+window is intentionally one release: pre-vote and non-pre-vote nodes can still
+exchange the same raft protocol messages, but new rolling upgrades should move
+the whole cluster to the pre-vote default before relying on partition-rejoin
+stability evidence.
+
+The release also tightens the networked daemon raft sender mapping. Wire sender
+ids are now resolved through the same stable node-id to raft-id mapping used by
+the outbound sink; unknown senders fail loud instead of falling through a
+parse-first shortcut for integer-like node ids.
+
+The raft metadata golden-vector corpus is registered as compatibility version
+`1`. It covers command envelopes, wire-message payloads, `ConfState`, and
+snapshot `ConfState` bytes. Any future codec change must either preserve these
+vectors or regenerate them with an explicit compatibility note in the same PR.
+
+The `test-failpoints` feature and `fail` dependency are test-only. They must not
+appear in the default server/operator/raft release graphs; `cargo xtask
+verify-no-test-features` enforces that boundary.

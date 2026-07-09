@@ -1,5 +1,5 @@
 use std::collections::BTreeSet;
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpListener, UdpSocket};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, MutexGuard, OnceLock};
@@ -718,36 +718,50 @@ fn shutdown_all(runtimes: &mut [Option<ServerRuntime>]) {
 
 fn reserve_loopback_addrs(count: usize) -> Vec<SocketAddr> {
     let mut addrs = Vec::new();
-    let mut last_error = None;
-    let attempts = count.saturating_mul(256).max(256);
-    for _ in 0..attempts {
-        if addrs.len() == count {
-            return addrs;
-        }
+    let mut attempts = 0;
+    let max_attempts = count.saturating_mul(512).max(512);
+    while addrs.len() < count {
+        attempts += 1;
+        assert!(
+            attempts <= max_attempts,
+            "could not reserve {count} loopback TCP/UDP addrs after {max_attempts} attempts"
+        );
 
-        let Ok(tcp) = TcpListener::bind("127.0.0.1:0") else {
-            continue;
+        let udp = match UdpSocket::bind("127.0.0.1:0") {
+            Ok(udp) => udp,
+            Err(error) if retryable_loopback_reservation_error(&error) => {
+                thread::yield_now();
+                continue;
+            }
+            Err(error) => panic!("failed to reserve loopback UDP port: {error}"),
         };
-        let addr = tcp.local_addr().unwrap();
-        if addrs.contains(&addr) {
-            continue;
-        }
-
-        match UdpSocket::bind(addr) {
-            Ok(udp) => {
+        let addr = udp
+            .local_addr()
+            .expect("reserved loopback UDP socket should report its address");
+        let tcp = match TcpListener::bind(addr) {
+            Ok(tcp) => tcp,
+            Err(error) if retryable_loopback_reservation_error(&error) => {
                 drop(udp);
-                drop(tcp);
-                addrs.push(addr);
+                thread::yield_now();
+                continue;
             }
-            Err(error) => {
-                last_error = Some(error);
-            }
+            Err(error) => panic!("failed to reserve loopback TCP port {addr}: {error}"),
+        };
+        if !addrs.contains(&addr) {
+            addrs.push(addr);
         }
+        drop(tcp);
+        drop(udp);
     }
 
-    panic!(
-        "failed to reserve {count} loopback TCP/UDP address pairs after {attempts} attempts; last error: {last_error:?}"
-    );
+    addrs
+}
+
+fn retryable_loopback_reservation_error(error: &std::io::Error) -> bool {
+    matches!(
+        error.kind(),
+        ErrorKind::AddrInUse | ErrorKind::PermissionDenied
+    )
 }
 
 fn wait_until(timeout: Duration, mut predicate: impl FnMut() -> bool) -> bool {

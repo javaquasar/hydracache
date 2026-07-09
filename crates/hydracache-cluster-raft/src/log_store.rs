@@ -281,6 +281,12 @@ impl Storage for InMemoryRaftLogStore {
 
 impl RaftLogStore for InMemoryRaftLogStore {
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_before_save_hard_state", |_| {
+            Err(RaftStoreError::new(
+                "injected crash before raft hard state save",
+            ))
+        });
         self.state
             .write()
             .expect("raft log store poisoned")
@@ -290,6 +296,12 @@ impl RaftLogStore for InMemoryRaftLogStore {
     }
 
     fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_store_before_save_conf_state", |_| {
+            Err(RaftStoreError::new(
+                "injected crash before raft store conf state save",
+            ))
+        });
         self.state
             .write()
             .expect("raft log store poisoned")
@@ -299,6 +311,10 @@ impl RaftLogStore for InMemoryRaftLogStore {
     }
 
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("sled_append_disk_full", |_| {
+            Err(RaftStoreError::new("injected disk full on raft append"))
+        });
         if entries.is_empty() {
             return Ok(());
         }
@@ -519,18 +535,36 @@ impl Storage for DurableRaftLogStore {
 #[cfg(feature = "durable-log")]
 impl RaftLogStore for DurableRaftLogStore {
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_before_save_hard_state", |_| {
+            Err(RaftStoreError::new(
+                "injected crash before durable raft hard state save",
+            ))
+        });
         self.inner.save_hard_state(hard_state)?;
         self.record_sync();
         Ok(())
     }
 
     fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_store_before_save_conf_state", |_| {
+            Err(RaftStoreError::new(
+                "injected crash before durable raft conf state save",
+            ))
+        });
         self.inner.save_conf_state(conf_state)?;
         self.record_sync();
         Ok(())
     }
 
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("sled_append_disk_full", |_| {
+            Err(RaftStoreError::new(
+                "injected disk full on durable raft append",
+            ))
+        });
         self.inner.append(entries)
     }
 
@@ -815,6 +849,12 @@ impl Storage for SledRaftLogStore {
 #[cfg(feature = "sled-log-store")]
 impl RaftLogStore for SledRaftLogStore {
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_before_save_hard_state", |_| {
+            Err(RaftStoreError::new(
+                "injected crash before sled raft hard state save",
+            ))
+        });
         self.inner.save_hard_state(hard_state)?;
         self.db
             .insert(SLED_HARD_STATE_KEY, encode_hard_state(hard_state)?)
@@ -823,6 +863,12 @@ impl RaftLogStore for SledRaftLogStore {
     }
 
     fn save_conf_state(&self, conf_state: &ConfState) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_store_before_save_conf_state", |_| {
+            Err(RaftStoreError::new(
+                "injected crash before sled raft conf state save",
+            ))
+        });
         self.inner.save_conf_state(conf_state)?;
         self.db
             .insert(SLED_CONF_STATE_KEY, encode_conf_state(conf_state)?)
@@ -831,6 +877,12 @@ impl RaftLogStore for SledRaftLogStore {
     }
 
     fn append(&self, entries: &[Entry]) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("sled_append_disk_full", |_| {
+            Err(RaftStoreError::new(
+                "injected disk full on sled raft append",
+            ))
+        });
         if let Some(first) = entries.first() {
             let keys = self
                 .db

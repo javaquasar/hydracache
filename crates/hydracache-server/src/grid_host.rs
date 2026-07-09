@@ -197,6 +197,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         node_id.clone(),
         raft.clone(),
         message_sink.clone(),
+        raft_peers.clone(),
         route_auth,
         shutdown.subscribe(),
     )
@@ -306,6 +307,7 @@ async fn spawn_cluster_transport(
     node_id: ClusterNodeId,
     raft: Arc<NetworkedRaftRuntime>,
     message_sink: Arc<dyn RaftMessageSink>,
+    raft_peers: SharedRaftPeers,
     auth: ClusterRouteAuth,
     mut shutdown: watch::Receiver<bool>,
 ) -> CacheResult<()> {
@@ -328,6 +330,7 @@ async fn spawn_cluster_transport(
             raft_node_id: raft_node_id(&node_id),
             raft,
             message_sink,
+            raft_peers,
         }),
         auth,
     )
@@ -1260,12 +1263,6 @@ fn raft_node_id(node_id: &ClusterNodeId) -> u64 {
     stable_nonzero_hash(node_id.as_str())
 }
 
-fn raft_wire_node_id(node_id: &str) -> u64 {
-    node_id
-        .parse::<u64>()
-        .unwrap_or_else(|_| stable_nonzero_hash(node_id))
-}
-
 fn stable_nonzero_hash(value: &str) -> u64 {
     const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
     const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
@@ -1660,6 +1657,7 @@ struct RaftClusterMessageHandler {
     raft_node_id: u64,
     raft: Arc<NetworkedRaftRuntime>,
     message_sink: Arc<dyn RaftMessageSink>,
+    raft_peers: SharedRaftPeers,
 }
 
 impl fmt::Debug for RaftClusterMessageHandler {
@@ -1689,7 +1687,7 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
         }
 
         let outbound = self.raft.step(RaftWireMessage {
-            from: raft_wire_node_id(&message.from),
+            from: self.resolve_wire_sender(&message.from)?,
             to: self.raft_node_id,
             term: message.term,
             payload: payload.to_vec(),
@@ -1700,6 +1698,30 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             self.node_id.to_string(),
             payload.len(),
         ))
+    }
+}
+
+impl RaftClusterMessageHandler {
+    fn resolve_wire_sender(&self, wire_from: &str) -> CacheResult<u64> {
+        if wire_from == self.node_id.as_str() {
+            return Ok(self.raft_node_id);
+        }
+        let peers = self.raft_peers.read().expect("raft peer map poisoned");
+        if let Some((raft_id, _)) = peers
+            .iter()
+            .find(|(_, peer)| peer.node_id.as_str() == wire_from)
+        {
+            return Ok(*raft_id);
+        }
+        let known = peers
+            .values()
+            .map(|peer| peer.node_id.as_str())
+            .collect::<Vec<_>>()
+            .join(", ");
+        Err(CacheError::Backend(format!(
+            "unknown raft wire sender {wire_from}; known senders: local={}, peers=[{}]",
+            self.node_id, known
+        )))
     }
 }
 
@@ -1715,6 +1737,7 @@ mod tests {
     use hydracache_cluster_transport_axum::{
         HYDRACACHE_NODE_KEY_ID_HEADER, HYDRACACHE_NODE_TOKEN_HEADER,
     };
+    use proptest::prelude::*;
     use std::collections::BTreeSet;
     use std::path::PathBuf;
 
@@ -2087,6 +2110,24 @@ mod tests {
         }
     }
 
+    fn test_raft_handler(peers: BTreeMap<u64, RaftPeer>) -> RaftClusterMessageHandler {
+        let node_id = ClusterNodeId::from("local");
+        RaftClusterMessageHandler {
+            raft_node_id: raft_node_id(&node_id),
+            node_id,
+            raft: Arc::new(
+                RaftMetadataRuntime::durable(
+                    DEFAULT_CLUSTER_NAME,
+                    1,
+                    DurableRaftLogDirectory::new(),
+                )
+                .unwrap(),
+            ),
+            message_sink: Arc::new(InMemoryRaftMessageSink::default()),
+            raft_peers: Arc::new(RwLock::new(peers)),
+        }
+    }
+
     #[test]
     fn plaintext_route_is_acknowledged_only_on_loopback_or_staged_boundary() {
         let node_id = ClusterNodeId::from("member-a");
@@ -2126,6 +2167,41 @@ mod tests {
         assert!(
             error.to_string().contains("raft node id collision"),
             "collision should fail loud: {error}"
+        );
+    }
+
+    proptest! {
+        #[test]
+        fn wire_id_mapping_is_consistent_across_sink_and_handler(
+            wire_from in "[0-9A-Za-z:_|-]{1,24}"
+        ) {
+            prop_assume!(wire_from != "local");
+            let peer_node_id = ClusterNodeId::from(wire_from.clone());
+            let peer_raft_id = raft_node_id(&peer_node_id);
+            let handler = test_raft_handler(BTreeMap::from([(
+                peer_raft_id,
+                RaftPeer {
+                    node_id: peer_node_id,
+                    endpoint: "127.0.0.1:7001".to_owned(),
+                },
+            )]));
+
+            prop_assert_eq!(
+                handler.resolve_wire_sender(&wire_from).unwrap(),
+                peer_raft_id
+            );
+        }
+    }
+
+    #[test]
+    fn wire_id_mapping_fails_loud_for_unknown_sender() {
+        let handler = test_raft_handler(BTreeMap::new());
+
+        let error = handler.resolve_wire_sender("42").unwrap_err();
+
+        assert!(
+            error.to_string().contains("unknown raft wire sender 42"),
+            "unknown sender should fail loud: {error}"
         );
     }
 

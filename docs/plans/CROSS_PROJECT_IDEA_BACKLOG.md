@@ -124,6 +124,14 @@ let user = policy
 
 ### 3. Cluster Load Test Suite As A First-Class Gate
 
+Status: delivered in `0.62.0` by
+[`V0_62_CLUSTER_CORRECTNESS_TEST_HARDENING_PLAN.md`](V0_62_CLUSTER_CORRECTNESS_TEST_HARDENING_PLAN.md).
+The standing gate now lives in `docs/GATES.md` and `docs/TESTING.md`: deterministic
+raft message filters, failpoint crash-safety canaries, real-process daemon
+kill/restart, membership-history checking, id/wire properties, golden vectors,
+and the nightly topology/pre-vote tiers. Follow-on discovery reset/tombstone
+semantics remain tracked under backlog item #8.
+
 Sources:
 
 - [Curvine knowledge base](../../../curvine/CURVINE_KNOWLEDGE_BASE.md)
@@ -274,6 +282,10 @@ Rules:
 
 ### 8. Gossip Reset Semantics For Stale Soft State
 
+Status: still open after `0.62.0`. The cluster correctness harnesses delivered
+in item #3 now provide the right home for these tests, but the Chitchat
+reset/tombstone behavior itself remains a follow-on discovery-plane item.
+
 Sources:
 
 - [Chitchat algorithm](../../../cluster_libs/chitchat/ALGORITHM.md)
@@ -324,6 +336,10 @@ Candidate work:
 - Add snapshot import/export compatibility tests.
 - Add durable log/state storage abstraction behind a feature.
 - Add transport integration tests before calling it production multi-node.
+- Keep the 0.62 deterministic raft message-filter harness as the default place
+  for asymmetric partition, duplicate, delay, and reorder regressions.
+- Keep failpoint crash-safety and golden-vector checks tied to this boundary so
+  storage/codec changes fail before they become release claims.
 
 ### 10. Optional P2P Discovery/Transport Spike
 
