@@ -126,6 +126,18 @@ Adapter and integration crates are published after the runtime and macro crates
 they depend on:
 
 ```powershell
+cargo package -p hydracache-client-protocol
+cargo publish -p hydracache-client-protocol
+
+cargo package -p hydracache-observability
+cargo publish -p hydracache-observability
+
+cargo package -p hydracache-client-transport-axum
+cargo publish -p hydracache-client-transport-axum
+
+cargo package -p hydracache-client
+cargo publish -p hydracache-client
+
 cargo package -p hydracache-cluster-chitchat
 cargo publish -p hydracache-cluster-chitchat
 
@@ -138,11 +150,11 @@ cargo publish -p hydracache-cluster-raft
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
 
-cargo package -p hydracache-observability
-cargo publish -p hydracache-observability
-
 cargo package -p hydracache-actuator-axum
 cargo publish -p hydracache-actuator-axum
+
+cargo package -p hydracache-server
+cargo publish -p hydracache-server
 
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
@@ -161,6 +173,12 @@ cargo publish -p hydracache-seaorm
 
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
+
+cargo package -p hydracache-transport-nats
+cargo publish -p hydracache-transport-nats
+
+cargo package -p hydracache-transport-redis
+cargo publish -p hydracache-transport-redis
 ```
 
 If either cluster adapter cannot resolve `hydracache = "^X.Y.Z"`, wait for the
@@ -297,6 +315,18 @@ cargo publish -p hydracache-macros
 cargo package -p hydracache
 cargo publish -p hydracache
 
+cargo package -p hydracache-client-protocol
+cargo publish -p hydracache-client-protocol
+
+cargo package -p hydracache-observability
+cargo publish -p hydracache-observability
+
+cargo package -p hydracache-client-transport-axum
+cargo publish -p hydracache-client-transport-axum
+
+cargo package -p hydracache-client
+cargo publish -p hydracache-client
+
 cargo package -p hydracache-cluster-chitchat
 cargo publish -p hydracache-cluster-chitchat
 
@@ -309,11 +339,11 @@ cargo publish -p hydracache-cluster-raft
 cargo package -p hydracache-cluster
 cargo publish -p hydracache-cluster
 
-cargo package -p hydracache-observability
-cargo publish -p hydracache-observability
-
 cargo package -p hydracache-actuator-axum
 cargo publish -p hydracache-actuator-axum
+
+cargo package -p hydracache-server
+cargo publish -p hydracache-server
 
 cargo package -p hydracache-db
 cargo publish -p hydracache-db
@@ -332,6 +362,12 @@ cargo publish -p hydracache-seaorm
 
 cargo package -p hydracache-sqlx
 cargo publish -p hydracache-sqlx
+
+cargo package -p hydracache-transport-nats
+cargo publish -p hydracache-transport-nats
+
+cargo package -p hydracache-transport-redis
+cargo publish -p hydracache-transport-redis
 ```
 
 For `0.21.0` and later, also run the full SemVer sweep from

@@ -66,7 +66,7 @@ hydracache-client-transport-axum = { path = "crates/hydracache-client-transport-
 hydracache-cluster = { path = "crates/hydracache-cluster", version = "0.62.0" }
 hydracache-cluster-chitchat = { path = "crates/hydracache-cluster-chitchat", version = "0.62.0" }
 hydracache-cluster-raft = { path = "crates/hydracache-cluster-raft", version = "0.62.0" }
-hydracache-cluster-testkit = { path = "crates/hydracache-cluster-testkit", version = "0.62.0" }
+hydracache-cluster-testkit = { path = "crates/hydracache-cluster-testkit" }
 hydracache-cluster-transport-axum = { path = "crates/hydracache-cluster-transport-axum", version = "0.62.0" }
 hydracache-db = { path = "crates/hydracache-db", version = "0.62.0" }
 hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.62.0" }

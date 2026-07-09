@@ -16,14 +16,14 @@ $packageSets = @{
     )
     adapters = @(
         "hydracache-client-protocol",
+        "hydracache-observability",
+        "hydracache-client-transport-axum",
         "hydracache-client",
         "hydracache-cluster-chitchat",
         "hydracache-cluster-transport-axum",
         "hydracache-cluster-raft",
         "hydracache-cluster",
-        "hydracache-observability",
         "hydracache-actuator-axum",
-        "hydracache-client-transport-axum",
         "hydracache-server",
         "hydracache-db",
         "hydracache-sql-lint",
