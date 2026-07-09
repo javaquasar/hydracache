@@ -5,6 +5,10 @@ use hydracache_cluster_raft::RaftWireMessage;
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
 use raft::eraftpb::{Message, MessageType};
 
+fn message_type(message: &RaftWireMessage) -> Option<MessageType> {
+    message.decode().ok().map(|decoded| decoded.get_msg_type())
+}
+
 fn voter_set(cluster: &RuntimeRaftCluster, node_id: u64) -> BTreeSet<u64> {
     cluster
         .node(node_id)
@@ -33,6 +37,86 @@ fn prevote_isolated_node_rejoin_does_not_depose_leader() {
 
     assert_eq!(cluster.leader_id(), Some(1));
     assert_eq!(cluster.node(1).snapshot().term, leader_term);
+}
+
+#[test]
+fn retired_peer_messages_are_rejected_after_drain_epoch_advances() {
+    let mut cluster = RuntimeRaftCluster::three_node();
+    cluster.campaign(1);
+    let leader_term = cluster.node(1).snapshot().term;
+
+    cluster.filters().isolate(3, [1, 2, 3]);
+    for _ in 0..20 {
+        cluster.tick_node(3);
+    }
+    let stale_from_retired_peer = cluster
+        .filters()
+        .dropped()
+        .into_iter()
+        .filter(|message| message.from == 3)
+        .collect::<Vec<_>>();
+
+    assert!(
+        stale_from_retired_peer.iter().any(|message| matches!(
+            message_type(message),
+            Some(MessageType::MsgRequestPreVote | MessageType::MsgRequestVote)
+        )),
+        "isolated peer should have reserved stale election traffic"
+    );
+
+    cluster.propose_remove_voter(1, 3).unwrap();
+    assert_eq!(voter_set(&cluster, 1), BTreeSet::from([1, 2]));
+    assert_eq!(voter_set(&cluster, 2), BTreeSet::from([1, 2]));
+
+    cluster.filters().recover();
+    cluster.drain_until_idle(stale_from_retired_peer);
+    cluster.tick_all(5);
+
+    assert_eq!(voter_set(&cluster, 1), BTreeSet::from([1, 2]));
+    assert_eq!(voter_set(&cluster, 2), BTreeSet::from([1, 2]));
+    assert_ne!(
+        cluster.leader_id(),
+        Some(3),
+        "retired peer must not become leader after stale messages replay"
+    );
+    assert_eq!(
+        cluster.node(1).snapshot().term,
+        leader_term,
+        "stale retired-peer traffic must not inflate the surviving leader term"
+    );
+}
+
+#[test]
+fn leader_promotion_does_not_resurrect_draining_member() {
+    let mut cluster = RuntimeRaftCluster::three_node();
+    cluster.campaign(1);
+    cluster.filters().add_filter(
+        RaftPacketFilter::new()
+            .from(1)
+            .to(3)
+            .message_type(MessageType::MsgAppend)
+            .action(RaftFilterAction::Delay(50)),
+    );
+
+    cluster.propose_remove_voter(1, 3).unwrap();
+    assert_eq!(voter_set(&cluster, 1), BTreeSet::from([1, 2]));
+    assert_eq!(voter_set(&cluster, 2), BTreeSet::from([1, 2]));
+
+    for _ in 0..10 {
+        cluster.tick_node(1);
+        cluster.tick_node(2);
+    }
+
+    cluster.filters().recover();
+    cluster.tick_all(10);
+
+    assert_eq!(voter_set(&cluster, 1), BTreeSet::from([1, 2]));
+    assert_eq!(voter_set(&cluster, 2), BTreeSet::from([1, 2]));
+    assert_ne!(
+        cluster.leader_id(),
+        Some(3),
+        "delayed drain traffic must not resurrect the removed voter as leader"
+    );
 }
 
 #[test]
