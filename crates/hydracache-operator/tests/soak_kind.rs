@@ -502,7 +502,7 @@ impl KindHarness {
                 }
                 Err(error) => panic!("kind soak should observe cluster resources: {error}"),
             };
-            if observation.ready_replicas >= desired {
+            if observation.ready_replicas >= desired && observation.leader.is_some() {
                 observation.assert_quorum();
                 return observation;
             }
