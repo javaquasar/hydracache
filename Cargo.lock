@@ -2161,6 +2161,7 @@ dependencies = [
  "hydracache-cluster-testkit",
  "hydracache-cluster-transport-axum",
  "hydracache-observability",
+ "hydracache-sim",
  "proptest",
  "rcgen",
  "reqwest",
