@@ -49,7 +49,10 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Performance budget (contract) | `cargo test -p xtask --test bench_budget` + `bench-budget --current benches/baseline/0_37.json` | CI + verify | budget parser + baseline contract |
 | Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
 | Coverage ratchet | `cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88` | CI (scheduled/dispatch) | mechanical line coverage floor; not a RULES R-7 numeric self-score |
-| Operator kind chaos | `cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture` | CI (scheduled/dispatch) | pod crash, NetworkPolicy partition when CNI enforcement is proven, and chaos-mesh IOChaos slow disk when the CRD exists; unsupported legs skip loud |
+| Operator kind chaos | `cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture` | CI (scheduled/dispatch) + pre-release live kind | pod crash, NetworkPolicy partition when CNI enforcement is proven, dedicated probe-pod baseline reachability so missing tools cannot pass wrong-green, and chaos-mesh IOChaos slow disk when the CRD exists; unsupported legs skip loud |
+| Real-process daemon cluster | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture` | CI (scheduled/dispatch) | child-process `hydracache-server` cluster, real leader kill/restart, no same-term double-vote, restart with durable state |
+| Membership history | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test membership_history --locked -- --nocapture` | CI (scheduled/dispatch) | recorded daemon membership histories pass the shipped 0.44 invariant/linearizability checks and reject two leaders in one term |
+| Pre-vote nightly soak | `HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK=1 cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture` | CI (scheduled/dispatch) | randomized pre-vote partition/rejoin schedules keep at most one leader per term |
 | Raft deterministic message filter | `cargo test -p hydracache-cluster-raft --test raft_message_filter --locked` | CI + verify (via workspace tests) | pre-vote partition rejoin, asymmetric partition, minority/majority commit behavior, duplicate/reordered raft messages, deterministic replay |
 | Raft wire/golden properties | `cargo test -p hydracache-cluster-raft --test wire_properties --locked` + `cargo test -p hydracache-cluster-raft --test golden_vectors --locked` + `cargo test -p hydracache-server --test id_mapping_properties --locked` | CI + verify (via workspace tests) | malformed raft wire decode rejects loud, metadata byte vectors remain stable, stable node id to raft id mapping does not parse-first |
 | Raft failpoint crash-safety | `cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1` | CI + verify | test-only failpoints prove torn raft storage windows fail loud and canaries turn red |
@@ -89,6 +92,14 @@ cargo test -p hydracache-operator --locked --test soak_kind -- --ignored --nocap
 Remove-Item Env:\HYDRACACHE_OPERATOR_KIND,Env:\HYDRACACHE_OPERATOR_NAMESPACE,Env:\HYDRACACHE_OPERATOR_CLUSTER -ErrorAction SilentlyContinue
 ```
 
+For the `0.62.0` release proof, the partition injector was run twice on 2026-07-09:
+ordinary kind passed `partition_probe_skips_loud_on_non_enforcing_cni` after the
+probe was hardened to use a dedicated `busybox` network-probe pod and pre-policy
+baseline reachability check; that local kindnet build enforced NetworkPolicy and
+therefore reported `partition probe applied NetworkPolicy; healing`. A fresh
+`disableDefaultCNI` kind cluster with Calico 3.32.1 Available then passed
+`kind_partition_injection_isolates_and_heals`.
+
 The networked daemon grid E2E is opt-in because it opens loopback TCP/UDP
 listeners and drives live daemon membership changes. The fast `grid_host` suite
 proves the skip path; the live loopback gate forms three daemons, verifies the
@@ -100,6 +111,21 @@ $env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
 cargo test -p hydracache-server --test grid_host multi_node_members_form_a_cluster_and_elect_one_leader --locked -- --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E -ErrorAction SilentlyContinue
 ```
+
+The real-process daemon tier is separate from the loopback `grid_host` tier
+because it spawns child `hydracache-server` binaries and kills them as OS
+processes:
+
+```powershell
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture
+cargo test -p hydracache-server --test membership_history --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+```
+
+Failed randomized or nightly cluster gates must preserve the seed, replay
+manifest, and child logs in the issue. A quarantine may last at most one day and
+must point to that issue; silent retries do not turn a red gate green.
 
 ## Adding a gate
 

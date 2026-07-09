@@ -56,7 +56,7 @@ fn soak_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
     spec.image = std::env::var(IMAGE_ENV).unwrap_or_else(|_| {
         panic!("{KIND_ENV}=1 soak tests require {IMAGE_ENV}=<current hydracache-server image>")
     });
-    spec.version = std::env::var(VERSION_ENV).unwrap_or_else(|_| "0.61.0-dev".to_owned());
+    spec.version = std::env::var(VERSION_ENV).unwrap_or_else(|_| "0.62.0-dev".to_owned());
     spec.replicas = replicas;
     spec.tls = None;
     spec.backup_schedule = None;

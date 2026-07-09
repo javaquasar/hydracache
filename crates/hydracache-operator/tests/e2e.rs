@@ -85,7 +85,7 @@ fn elasticity_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
             "{KIND_ENV}=1 elasticity tests require {IMAGE_ENV}=<current hydracache-server image>"
         )
     });
-    spec.version = std::env::var(VERSION_ENV).unwrap_or_else(|_| "0.61.0-dev".to_owned());
+    spec.version = std::env::var(VERSION_ENV).unwrap_or_else(|_| "0.62.0-dev".to_owned());
     spec.replicas = replicas;
     spec.tls = None;
     spec.backup_schedule = None;

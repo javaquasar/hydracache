@@ -25,7 +25,7 @@
 >   `LinearizabilityChecker`, the `0.60` `ConfChange`/`ConfState` path.
 > - **Unblocks:** confidence for the `1.0` "production-ready cluster" claim (mileage + these
 >   correctness gates are the evidence; no grid mechanics remain).
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > backlog: [`CROSS_PROJECT_IDEA_BACKLOG.md`](CROSS_PROJECT_IDEA_BACKLOG.md) ·
@@ -719,8 +719,21 @@ Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E,Env:\HYDRACACHE_RUN_DAEMON_
 
 ## Final Release Decision
 
-`0.62.0` ships **only** if every gate above is green. Because this release is test infrastructure, the
-bar is inverted from a feature release: a harness that exists but proves nothing (a filter test that
-would pass even with the bug present) is worse than no test. Every W1/W2/W3 test names its
-**falsifiable** failure mode; a test that cannot fail on its canary/seeded-broken behavior does not
-count toward the gate (R-7). F1/F2 are the only production changes and each reverts independently.
+`0.62.0` shipped after the fast, failpoint, networked-daemon, daemon-process,
+membership-history, pre-vote soak, and operator kind partition gates were green.
+Because this release is test infrastructure, the bar is inverted from a feature
+release: a harness that exists but proves nothing (a filter test that would pass
+even with the bug present) is worse than no test. Every W1/W2/W3 test names its
+**falsifiable** failure mode; a test that cannot fail on its canary/seeded-broken
+behavior does not count toward the gate (R-7). F1/F2 are the only production
+changes and each reverts independently.
+
+The operator kind partition proof used two live clusters on 2026-07-09. The
+ordinary kind run of `partition_probe_skips_loud_on_non_enforcing_cni` passed
+after the probe was hardened to use a dedicated `busybox` network-probe pod and
+baseline reachability check; this local kindnet build enforced NetworkPolicy and
+therefore reported `partition probe applied NetworkPolicy; healing` rather than
+the expected non-enforcing skip branch. The enforcing proof was then run on a
+fresh `disableDefaultCNI` kind cluster with Calico 3.32.1 Available:
+`kind_partition_injection_isolates_and_heals` passed with real isolation and
+heal. No kind/calico residual is carried into the release.

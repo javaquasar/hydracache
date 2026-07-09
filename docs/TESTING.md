@@ -355,6 +355,12 @@ The real-process daemon kill/restart and randomized topology tiers remain
 nightly/pre-release gates because they open loopback listeners and manage child
 processes.
 
+Cluster-correctness flake policy is intentionally strict. A failed nightly must
+open an issue that includes the seed, replay manifest path, captured child logs,
+and the exact env-gated command. Quarantine is allowed for at most one day and
+must link to that issue. Silent retries, missing replay artifacts, or "could not
+reproduce" without the preserved seed do not count as green evidence.
+
 ## Cache Event Tests
 
 The cache event/listener API is covered by `crates/hydracache/src/tests/events.rs`.
