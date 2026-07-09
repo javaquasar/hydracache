@@ -1994,7 +1994,9 @@ dependencies = [
 name = "hydracache-cluster-testkit"
 version = "0.60.0"
 dependencies = [
+ "anyhow",
  "async-trait",
+ "chitchat",
  "hydracache",
  "hydracache-cluster-raft",
  "raft",

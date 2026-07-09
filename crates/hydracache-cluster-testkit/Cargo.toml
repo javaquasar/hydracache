@@ -9,7 +9,9 @@ description = "Dev-only deterministic cluster correctness harnesses for HydraCac
 publish = false
 
 [dependencies]
+anyhow = "1"
 async-trait.workspace = true
+chitchat.workspace = true
 hydracache.workspace = true
 hydracache-cluster-raft.workspace = true
 raft.workspace = true

@@ -5,10 +5,16 @@
 //! do not grow test-only transport types.
 
 use std::collections::{BTreeMap, VecDeque};
+use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 
-use hydracache::{CacheResult, ClusterControlPlane, ClusterGeneration};
+use chitchat::transport::{ChannelTransport, Socket, Transport};
+use chitchat::{ChitchatMessage, Deserializable, Serializable};
+use hydracache::{
+    CacheResult, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryLiveness,
+    ClusterGeneration, ClusterNodeId,
+};
 use hydracache_cluster_raft::{
     RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole,
     RaftWireMessage,
@@ -375,6 +381,625 @@ impl RaftMessageSink for FilteredRaftMessageSink {
             self.inner.send(message).await?;
         }
         Ok(())
+    }
+}
+
+/// Delivery direction used by gossip packet filters.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GossipFilterDirection {
+    /// Match messages sent from the selected address.
+    Send,
+    /// Match messages received by the selected address.
+    Recv,
+    /// Match both directions.
+    Both,
+}
+
+/// Action taken when a gossip packet filter matches.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GossipFilterAction {
+    /// Deliver the message unchanged.
+    Pass,
+    /// Drop the message.
+    Drop,
+    /// Deliver the message after the given logical tick count.
+    Delay(u64),
+    /// Deliver the original plus `extra` duplicates.
+    Duplicate(usize),
+}
+
+/// Public message-kind label for chitchat's three-way gossip exchange.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GossipMessageType {
+    /// Scuttlebutt SYN.
+    Syn,
+    /// Scuttlebutt SYN-ACK.
+    SynAck,
+    /// Scuttlebutt ACK.
+    Ack,
+    /// Bad-cluster rejection.
+    BadCluster,
+}
+
+impl GossipMessageType {
+    fn from_message(message: &ChitchatMessage) -> Self {
+        match message {
+            ChitchatMessage::Syn { .. } => Self::Syn,
+            ChitchatMessage::SynAck { .. } => Self::SynAck,
+            ChitchatMessage::Ack { .. } => Self::Ack,
+            ChitchatMessage::BadCluster => Self::BadCluster,
+        }
+    }
+}
+
+/// Deterministic trace event emitted by the gossip filter harness.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GossipMessageTraceEvent {
+    /// Logical filter tick.
+    pub tick: u64,
+    /// Source gossip address.
+    pub from: SocketAddr,
+    /// Destination gossip address.
+    pub to: SocketAddr,
+    /// Chitchat message kind.
+    pub message_type: GossipMessageType,
+    /// Harness action label.
+    pub action: &'static str,
+}
+
+#[derive(Debug, Clone)]
+struct SerializedGossipMessage {
+    from: SocketAddr,
+    to: SocketAddr,
+    payload: Vec<u8>,
+    message_type: GossipMessageType,
+}
+
+impl SerializedGossipMessage {
+    fn new(from: SocketAddr, to: SocketAddr, message: &ChitchatMessage) -> Self {
+        Self {
+            from,
+            to,
+            payload: message.serialize_to_vec(),
+            message_type: GossipMessageType::from_message(message),
+        }
+    }
+
+    fn decode(&self) -> ChitchatMessage {
+        let mut bytes = self.payload.as_slice();
+        ChitchatMessage::deserialize(&mut bytes).expect("serialized chitchat message should decode")
+    }
+}
+
+fn clone_chitchat_message(message: &ChitchatMessage) -> ChitchatMessage {
+    let serialized = message.serialize_to_vec();
+    let mut bytes = serialized.as_slice();
+    ChitchatMessage::deserialize(&mut bytes).expect("serialized chitchat message should decode")
+}
+
+fn message_contains_prefix(message: &ChitchatMessage, prefix: &[u8]) -> bool {
+    if prefix.is_empty() {
+        return true;
+    }
+    if message
+        .serialize_to_vec()
+        .windows(prefix.len())
+        .any(|window| window == prefix)
+    {
+        return true;
+    }
+    format!("{message:?}")
+        .as_bytes()
+        .windows(prefix.len())
+        .any(|window| window == prefix)
+}
+
+/// Test-only predicate over one outbound gossip message.
+pub trait GossipMessageFilter: Send + Sync {
+    /// Decide how one message should be handled at the current logical tick.
+    fn filter(
+        &self,
+        tick: u64,
+        from: SocketAddr,
+        to: SocketAddr,
+        message: &ChitchatMessage,
+    ) -> GossipFilterAction;
+}
+
+/// A TiKV-style gossip packet filter with optional endpoint, type, and key selectors.
+#[derive(Debug)]
+pub struct GossipPacketFilter {
+    node: Option<SocketAddr>,
+    peer: Option<SocketAddr>,
+    direction: GossipFilterDirection,
+    message_type: Option<GossipMessageType>,
+    key_prefix: Option<Vec<u8>>,
+    allow_remaining: AtomicU64,
+    action: GossipFilterAction,
+}
+
+impl GossipPacketFilter {
+    /// Drop every message from `from` to `to`.
+    pub fn drop_between(from: SocketAddr, to: SocketAddr) -> Self {
+        Self::new()
+            .from(from)
+            .to(to)
+            .action(GossipFilterAction::Drop)
+    }
+
+    /// Start a pass-through filter builder.
+    pub fn new() -> Self {
+        Self {
+            node: None,
+            peer: None,
+            direction: GossipFilterDirection::Send,
+            message_type: None,
+            key_prefix: None,
+            allow_remaining: AtomicU64::new(0),
+            action: GossipFilterAction::Pass,
+        }
+    }
+
+    /// Match messages sent by this gossip address.
+    pub fn from(mut self, node: SocketAddr) -> Self {
+        self.node = Some(node);
+        self.direction = GossipFilterDirection::Send;
+        self
+    }
+
+    /// Match messages received by this gossip address.
+    pub fn recv(mut self, node: SocketAddr) -> Self {
+        self.node = Some(node);
+        self.direction = GossipFilterDirection::Recv;
+        self
+    }
+
+    /// Match messages between the selected node and this peer.
+    pub fn to(mut self, peer: SocketAddr) -> Self {
+        self.peer = Some(peer);
+        self
+    }
+
+    /// Match both send and receive directions for the selected address/peer pair.
+    pub fn both_directions(mut self) -> Self {
+        self.direction = GossipFilterDirection::Both;
+        self
+    }
+
+    /// Match only a specific chitchat message type.
+    pub fn message_type(mut self, message_type: GossipMessageType) -> Self {
+        self.message_type = Some(message_type);
+        self
+    }
+
+    /// Match serialized gossip payloads that contain this key prefix.
+    pub fn key_prefix(mut self, prefix: impl Into<Vec<u8>>) -> Self {
+        self.key_prefix = Some(prefix.into());
+        self
+    }
+
+    /// Allow the first `count` matching messages before applying the action.
+    pub fn allow(mut self, count: u64) -> Self {
+        self.allow_remaining = AtomicU64::new(count);
+        self
+    }
+
+    /// Set the action for matching messages.
+    pub fn action(mut self, action: GossipFilterAction) -> Self {
+        self.action = action;
+        self
+    }
+
+    fn matches(&self, from: SocketAddr, to: SocketAddr, message: &ChitchatMessage) -> bool {
+        if let Some(message_type) = self.message_type {
+            if GossipMessageType::from_message(message) != message_type {
+                return false;
+            }
+        }
+        if let Some(prefix) = &self.key_prefix {
+            if !message_contains_prefix(message, prefix) {
+                return false;
+            }
+        }
+
+        let Some(node) = self.node else {
+            return true;
+        };
+        let peer_matches = |peer: SocketAddr| self.peer.is_none_or(|expected| expected == peer);
+        match self.direction {
+            GossipFilterDirection::Send => from == node && peer_matches(to),
+            GossipFilterDirection::Recv => to == node && peer_matches(from),
+            GossipFilterDirection::Both => {
+                (from == node && peer_matches(to)) || (to == node && peer_matches(from))
+            }
+        }
+    }
+}
+
+impl Default for GossipPacketFilter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GossipMessageFilter for GossipPacketFilter {
+    fn filter(
+        &self,
+        _tick: u64,
+        from: SocketAddr,
+        to: SocketAddr,
+        message: &ChitchatMessage,
+    ) -> GossipFilterAction {
+        if !self.matches(from, to, message) {
+            return GossipFilterAction::Pass;
+        }
+        let mut remaining = self.allow_remaining.load(Ordering::SeqCst);
+        while remaining > 0 {
+            match self.allow_remaining.compare_exchange(
+                remaining,
+                remaining - 1,
+                Ordering::SeqCst,
+                Ordering::SeqCst,
+            ) {
+                Ok(_) => return GossipFilterAction::Pass,
+                Err(actual) => remaining = actual,
+            }
+        }
+        self.action
+    }
+}
+
+/// Shared deterministic gossip filter state.
+#[derive(Clone, Default)]
+pub struct GossipFilterSet {
+    filters: Arc<RwLock<Vec<Arc<dyn GossipMessageFilter>>>>,
+    delayed: Arc<Mutex<BTreeMap<u64, Vec<SerializedGossipMessage>>>>,
+    dropped: Arc<Mutex<Vec<SerializedGossipMessage>>>,
+    trace: Arc<Mutex<Vec<GossipMessageTraceEvent>>>,
+    tick: Arc<AtomicU64>,
+}
+
+impl GossipFilterSet {
+    /// Add one filter.
+    pub fn add_filter(&self, filter: impl GossipMessageFilter + 'static) {
+        self.filters
+            .write()
+            .expect("gossip filter set poisoned")
+            .push(Arc::new(filter));
+    }
+
+    /// Drop both directions between two gossip addresses.
+    pub fn cut(&self, left: SocketAddr, right: SocketAddr) {
+        self.add_filter(GossipPacketFilter::drop_between(left, right));
+        self.add_filter(GossipPacketFilter::drop_between(right, left));
+    }
+
+    /// Drop every message to and from one gossip address and its known peers.
+    pub fn isolate(&self, node: SocketAddr, peers: impl IntoIterator<Item = SocketAddr>) {
+        for peer in peers {
+            if peer != node {
+                self.cut(node, peer);
+            }
+        }
+    }
+
+    /// Clear filters and delayed messages.
+    pub fn recover(&self) {
+        self.filters
+            .write()
+            .expect("gossip filter set poisoned")
+            .clear();
+        self.delayed
+            .lock()
+            .expect("gossip delayed queue poisoned")
+            .clear();
+    }
+
+    /// Return the deterministic trace.
+    pub fn trace(&self) -> Vec<GossipMessageTraceEvent> {
+        self.trace
+            .lock()
+            .expect("gossip trace queue poisoned")
+            .clone()
+    }
+
+    /// Return the number of dropped gossip messages.
+    pub fn dropped_count(&self) -> usize {
+        self.dropped
+            .lock()
+            .expect("gossip dropped queue poisoned")
+            .len()
+    }
+
+    fn apply(
+        &self,
+        from: SocketAddr,
+        to: SocketAddr,
+        message: ChitchatMessage,
+    ) -> Vec<(SocketAddr, ChitchatMessage)> {
+        let tick = self.tick.load(Ordering::SeqCst);
+        let action = self
+            .filters
+            .read()
+            .expect("gossip filter set poisoned")
+            .iter()
+            .map(|filter| filter.filter(tick, from, to, &message))
+            .find(|action| *action != GossipFilterAction::Pass)
+            .unwrap_or(GossipFilterAction::Pass);
+        self.apply_action(tick, from, to, message, action)
+    }
+
+    fn advance_tick_for(&self, from: SocketAddr) -> Vec<(SocketAddr, ChitchatMessage)> {
+        let tick = self.tick.fetch_add(1, Ordering::SeqCst) + 1;
+        let mut delayed = self.delayed.lock().expect("gossip delayed queue poisoned");
+        let due_ticks = delayed
+            .range(..=tick)
+            .map(|(due_tick, _)| *due_tick)
+            .collect::<Vec<_>>();
+        let mut deliverable = Vec::new();
+        for due_tick in due_ticks {
+            let Some(messages) = delayed.remove(&due_tick) else {
+                continue;
+            };
+            let mut retained = Vec::new();
+            for message in messages {
+                if message.from == from {
+                    self.record_serialized(tick, &message, "delivered");
+                    deliverable.push((message.to, message.decode()));
+                } else {
+                    retained.push(message);
+                }
+            }
+            if !retained.is_empty() {
+                delayed.insert(due_tick, retained);
+            }
+        }
+        deliverable
+    }
+
+    fn apply_action(
+        &self,
+        tick: u64,
+        from: SocketAddr,
+        to: SocketAddr,
+        message: ChitchatMessage,
+        action: GossipFilterAction,
+    ) -> Vec<(SocketAddr, ChitchatMessage)> {
+        match action {
+            GossipFilterAction::Pass => {
+                self.record(tick, from, to, &message, "delivered");
+                vec![(to, message)]
+            }
+            GossipFilterAction::Drop => {
+                self.record(tick, from, to, &message, "dropped");
+                self.dropped
+                    .lock()
+                    .expect("gossip dropped queue poisoned")
+                    .push(SerializedGossipMessage::new(from, to, &message));
+                Vec::new()
+            }
+            GossipFilterAction::Delay(delay) => {
+                self.record(tick, from, to, &message, "delayed");
+                self.delayed
+                    .lock()
+                    .expect("gossip delayed queue poisoned")
+                    .entry(tick.saturating_add(delay.max(1)))
+                    .or_default()
+                    .push(SerializedGossipMessage::new(from, to, &message));
+                Vec::new()
+            }
+            GossipFilterAction::Duplicate(extra) => {
+                self.record(tick, from, to, &message, "delivered");
+                let mut messages = Vec::with_capacity(extra.saturating_add(1));
+                messages.push((to, clone_chitchat_message(&message)));
+                for _ in 0..extra {
+                    self.record(tick, from, to, &message, "duplicated");
+                    messages.push((to, clone_chitchat_message(&message)));
+                }
+                messages
+            }
+        }
+    }
+
+    fn record(
+        &self,
+        tick: u64,
+        from: SocketAddr,
+        to: SocketAddr,
+        message: &ChitchatMessage,
+        action: &'static str,
+    ) {
+        self.trace
+            .lock()
+            .expect("gossip trace queue poisoned")
+            .push(GossipMessageTraceEvent {
+                tick,
+                from,
+                to,
+                message_type: GossipMessageType::from_message(message),
+                action,
+            });
+    }
+
+    fn record_serialized(
+        &self,
+        tick: u64,
+        message: &SerializedGossipMessage,
+        action: &'static str,
+    ) {
+        self.trace
+            .lock()
+            .expect("gossip trace queue poisoned")
+            .push(GossipMessageTraceEvent {
+                tick,
+                from: message.from,
+                to: message.to,
+                message_type: message.message_type,
+                action,
+            });
+    }
+}
+
+/// Chitchat `Transport` decorator backed by [`GossipFilterSet`].
+pub struct FilteredChitchatTransport {
+    inner: ChannelTransport,
+    filters: GossipFilterSet,
+}
+
+impl FilteredChitchatTransport {
+    /// Create a filterable in-process chitchat transport.
+    pub fn new(inner: ChannelTransport, filters: GossipFilterSet) -> Self {
+        Self { inner, filters }
+    }
+
+    /// Create a filterable transport backed by `ChannelTransport::default()`.
+    pub fn channel(filters: GossipFilterSet) -> Self {
+        Self::new(ChannelTransport::default(), filters)
+    }
+
+    /// Return the shared filter set.
+    pub fn filters(&self) -> GossipFilterSet {
+        self.filters.clone()
+    }
+}
+
+impl Default for FilteredChitchatTransport {
+    fn default() -> Self {
+        Self::channel(GossipFilterSet::default())
+    }
+}
+
+#[async_trait::async_trait]
+impl Transport for FilteredChitchatTransport {
+    async fn open(&self, listen_addr: SocketAddr) -> anyhow::Result<Box<dyn Socket>> {
+        let inner = self.inner.open(listen_addr).await?;
+        Ok(Box::new(FilteredChitchatSocket {
+            listen_addr,
+            inner,
+            filters: self.filters.clone(),
+        }))
+    }
+}
+
+struct FilteredChitchatSocket {
+    listen_addr: SocketAddr,
+    inner: Box<dyn Socket>,
+    filters: GossipFilterSet,
+}
+
+#[async_trait::async_trait]
+impl Socket for FilteredChitchatSocket {
+    async fn send(&mut self, to: SocketAddr, message: ChitchatMessage) -> anyhow::Result<()> {
+        for (to, message) in self.filters.advance_tick_for(self.listen_addr) {
+            self.inner.send(to, message).await?;
+        }
+        for (to, message) in self.filters.apply(self.listen_addr, to, message) {
+            self.inner.send(to, message).await?;
+        }
+        Ok(())
+    }
+
+    async fn recv(&mut self) -> anyhow::Result<(SocketAddr, ChitchatMessage)> {
+        self.inner.recv().await
+    }
+}
+
+/// One deterministic liveness transition.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GossipLivenessStep {
+    /// Affected HydraCache node id.
+    pub node_id: ClusterNodeId,
+    /// Liveness state to publish.
+    pub state: ClusterDiscoveryLiveness,
+}
+
+/// Deterministic trace emitted by [`GossipLivenessScript`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GossipLivenessTraceEvent {
+    /// Logical liveness-script tick.
+    pub tick: u64,
+    /// Affected HydraCache node id.
+    pub node_id: ClusterNodeId,
+    /// Published liveness state.
+    pub state: ClusterDiscoveryLiveness,
+}
+
+/// Scripted discovery liveness changes without wall-clock sleeps.
+pub struct GossipLivenessScript {
+    steps: VecDeque<GossipLivenessStep>,
+    trace: Vec<GossipLivenessTraceEvent>,
+    tick: u64,
+}
+
+impl GossipLivenessScript {
+    /// Build a script from explicit steps.
+    pub fn new(steps: impl IntoIterator<Item = GossipLivenessStep>) -> Self {
+        Self {
+            steps: VecDeque::from_iter(steps),
+            trace: Vec::new(),
+            tick: 0,
+        }
+    }
+
+    /// Build a Live -> Suspect -> Dead -> Live flap for one node.
+    pub fn live_suspect_dead_live(node_id: impl Into<ClusterNodeId>) -> Self {
+        let node_id = node_id.into();
+        Self::new([
+            GossipLivenessStep {
+                node_id: node_id.clone(),
+                state: ClusterDiscoveryLiveness::Live,
+            },
+            GossipLivenessStep {
+                node_id: node_id.clone(),
+                state: ClusterDiscoveryLiveness::Suspect,
+            },
+            GossipLivenessStep {
+                node_id: node_id.clone(),
+                state: ClusterDiscoveryLiveness::Dead,
+            },
+            GossipLivenessStep {
+                node_id,
+                state: ClusterDiscoveryLiveness::Live,
+            },
+        ])
+    }
+
+    /// Apply the next liveness step. Returns `false` when the script is empty.
+    pub async fn apply_next<D>(&mut self, discovery: &D) -> CacheResult<bool>
+    where
+        D: ClusterDiscovery + ?Sized,
+    {
+        let Some(step) = self.steps.pop_front() else {
+            return Ok(false);
+        };
+        self.tick = self.tick.saturating_add(1);
+        match step.state {
+            ClusterDiscoveryLiveness::Live => discovery.mark_live(step.node_id.clone()).await?,
+            ClusterDiscoveryLiveness::Suspect => {
+                discovery.mark_suspect(step.node_id.clone()).await?
+            }
+            ClusterDiscoveryLiveness::Dead => discovery.mark_dead(step.node_id.clone()).await?,
+        }
+        self.trace.push(GossipLivenessTraceEvent {
+            tick: self.tick,
+            node_id: step.node_id,
+            state: step.state,
+        });
+        Ok(true)
+    }
+
+    /// Apply every remaining liveness step.
+    pub async fn apply_all<D>(&mut self, discovery: &D) -> CacheResult<()>
+    where
+        D: ClusterDiscovery + ?Sized,
+    {
+        while self.apply_next(discovery).await? {}
+        Ok(())
+    }
+
+    /// Return the deterministic liveness trace.
+    pub fn trace(&self) -> &[GossipLivenessTraceEvent] {
+        &self.trace
     }
 }
 
