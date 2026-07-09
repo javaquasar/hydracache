@@ -70,6 +70,10 @@ pub enum RedisCommand {
     HcInvalidate { key: Vec<u8> },
     /// `HC.*` command that is intentionally not enabled yet.
     HcCandidate { command: String, args: Vec<Vec<u8>> },
+    /// Health/readiness command recognized but not yet claimed.
+    HealthProbeCandidate { command: String, args: Vec<Vec<u8>> },
+    /// Dangerous or administrative Redis command disabled by default.
+    AdminDisabled { command: String, args: Vec<Vec<u8>> },
     /// Command outside the accepted W1 parser subset.
     Unsupported { verb: String, args: Vec<Vec<u8>> },
 }
@@ -234,6 +238,12 @@ pub enum RedisTranslationError {
     #[error("ERR {command} is candidate and not enabled in this release")]
     CandidateCommand {
         /// Candidate command name.
+        command: String,
+    },
+    /// Command is intentionally disabled unless a future admin gate enables it.
+    #[error("NOPERM {command} is disabled by the HydraCache Redis facade")]
+    AdminDisabled {
+        /// Disabled command name.
         command: String,
     },
     /// HydraCache protocol mapping failed before dispatch.
@@ -498,6 +508,12 @@ pub fn translate_redis_command(
         )),
         RedisCommand::HcCandidate { command, .. } => {
             return Err(RedisTranslationError::CandidateCommand { command });
+        }
+        RedisCommand::HealthProbeCandidate { command, .. } => {
+            return Err(RedisTranslationError::CandidateCommand { command });
+        }
+        RedisCommand::AdminDisabled { command, .. } => {
+            return Err(RedisTranslationError::AdminDisabled { command });
         }
         RedisCommand::Unsupported { verb, .. } => {
             return Err(RedisTranslationError::UnsupportedCommand { command: verb });
@@ -833,6 +849,14 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
                 args,
             }
         }
+        "INFO" => RedisCommand::HealthProbeCandidate {
+            command: normalized,
+            args,
+        },
+        "CONFIG" | "FLUSHDB" | "FLUSHALL" => RedisCommand::AdminDisabled {
+            command: normalized,
+            args,
+        },
         _ => RedisCommand::Unsupported {
             verb: normalized,
             args,
@@ -1226,6 +1250,123 @@ mod tests {
             invalidate,
             RedisCommand::HcInvalidate { key: b"k".to_vec() }
         );
+    }
+
+    #[test]
+    fn unsupported_commands_fail_loud_with_stable_error() {
+        let context = RedisTranslationContext::default();
+        let error = translate_redis_command(
+            RedisCommand::Unsupported {
+                verb: "HSET".to_owned(),
+                args: vec![b"k".to_vec(), b"field".to_vec(), b"value".to_vec()],
+            },
+            &context,
+        )
+        .unwrap_err();
+        assert!(matches!(
+            &error,
+            RedisTranslationError::UnsupportedCommand { command } if command == "HSET"
+        ));
+        assert_eq!(
+            encode_resp2_value(error.into_resp_value()).unwrap(),
+            b"-ERR unsupported command HSET\r\n"
+        );
+    }
+
+    #[test]
+    fn flushall_is_admin_disabled_by_default() {
+        let context = RedisTranslationContext::default();
+        let (command, _) = decode_resp2_command(b"*1\r\n$8\r\nFLUSHALL\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            command,
+            RedisCommand::AdminDisabled {
+                command: "FLUSHALL".to_owned(),
+                args: Vec::new(),
+            }
+        );
+
+        let error = translate_redis_command(command, &context).unwrap_err();
+        assert!(matches!(
+            &error,
+            RedisTranslationError::AdminDisabled { command } if command == "FLUSHALL"
+        ));
+        assert_eq!(
+            encode_resp2_value(error.into_resp_value()).unwrap(),
+            b"-NOPERM FLUSHALL is disabled by the HydraCache Redis facade\r\n"
+        );
+    }
+
+    #[test]
+    fn cluster_and_moved_ask_are_never_emitted() {
+        let context = RedisTranslationContext::default();
+        let errors = [
+            translate_redis_command(
+                RedisCommand::Unsupported {
+                    verb: "CLUSTER".to_owned(),
+                    args: vec![b"INFO".to_vec()],
+                },
+                &context,
+            )
+            .unwrap_err(),
+            translate_redis_command(
+                RedisCommand::AdminDisabled {
+                    command: "FLUSHDB".to_owned(),
+                    args: Vec::new(),
+                },
+                &context,
+            )
+            .unwrap_err(),
+            translate_redis_command(RedisCommand::Hello { version: 3 }, &context).unwrap_err(),
+        ];
+
+        for error in errors {
+            let encoded =
+                String::from_utf8(encode_resp2_value(error.into_resp_value()).unwrap()).unwrap();
+            assert!(!encoded.contains("MOVED"));
+            assert!(!encoded.contains("ASK"));
+        }
+    }
+
+    #[test]
+    fn info_role_dbsize_type_scan_and_config_follow_contract_classification() {
+        let context = RedisTranslationContext::default();
+        assert!(matches!(
+            translate_redis_command(
+                RedisCommand::HealthProbeCandidate {
+                    command: "INFO".to_owned(),
+                    args: Vec::new(),
+                },
+                &context,
+            ),
+            Err(RedisTranslationError::CandidateCommand { command }) if command == "INFO"
+        ));
+
+        for command in ["ROLE", "DBSIZE", "TYPE", "SCAN", "CLIENT LIST", "CLIENT ID"] {
+            assert!(matches!(
+                translate_redis_command(
+                    RedisCommand::Unsupported {
+                        verb: command.to_owned(),
+                        args: Vec::new(),
+                    },
+                    &context,
+                ),
+                Err(RedisTranslationError::UnsupportedCommand { command: rejected })
+                    if rejected == command
+            ));
+        }
+
+        assert!(matches!(
+            translate_redis_command(
+                RedisCommand::AdminDisabled {
+                    command: "CONFIG".to_owned(),
+                    args: vec![b"GET".to_vec(), b"*".to_vec()],
+                },
+                &context,
+            ),
+            Err(RedisTranslationError::AdminDisabled { command }) if command == "CONFIG"
+        ));
     }
 
     fn surface() -> (ClientSurfaceState, ClientIdentity) {
