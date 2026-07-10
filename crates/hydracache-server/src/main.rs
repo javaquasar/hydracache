@@ -20,19 +20,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .redis_resp_server()?
     };
     if let Some(redis_server) = redis_server {
-        let redis_addr = shared_runtime
-            .lock()
-            .expect("server runtime mutex")
-            .redis_listener_addr()
-            .expect("redis server exists only when redis_api is enabled");
+        let (redis_addr, redis_tls) = {
+            let runtime = shared_runtime.lock().expect("server runtime mutex");
+            (
+                runtime
+                    .redis_listener_addr()
+                    .expect("redis server exists only when redis_api is enabled"),
+                runtime.redis_tls_acceptor()?,
+            )
+        };
         let listener = TcpListener::bind(redis_addr).await?;
         let (redis_shutdown_tx, redis_shutdown_rx) = watch::channel(false);
         let runtime = Arc::clone(&shared_runtime);
         tokio::spawn(async move {
             let _redis_shutdown_tx = redis_shutdown_tx;
-            if let Err(error) =
-                serve_redis_listener(listener, Arc::new(redis_server), runtime, redis_shutdown_rx)
-                    .await
+            if let Err(error) = serve_redis_listener(
+                listener,
+                Arc::new(redis_server),
+                runtime,
+                redis_tls,
+                redis_shutdown_rx,
+            )
+            .await
             {
                 eprintln!("{error}");
             }

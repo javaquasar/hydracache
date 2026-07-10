@@ -424,8 +424,8 @@ impl ServerConfig {
             return Err(ServerConfigError::AdminAddressConflicts);
         }
         if self.redis_api.enabled {
-            if self.redis_api.rediss_enabled {
-                return Err(ServerConfigError::RedisRedissUnsupported);
+            if self.redis_api.rediss_enabled && !self.tls.enabled {
+                return Err(ServerConfigError::RedisRedissRequiresTls);
             }
             validate_redis_auth(&self.redis_api)?;
             if self.redis_api.listen_addr == self.listen_addr {
@@ -612,9 +612,9 @@ pub enum ServerConfigError {
         /// Token file path.
         path: PathBuf,
     },
-    /// Native rediss:// is not supported by this release's RESP listener.
-    #[error("redis_api.rediss_enabled is unsupported in 0.63.0; use external TLS/private networking plus Redis AUTH")]
-    RedisRedissUnsupported,
+    /// Native rediss:// requires server TLS material.
+    #[error("redis_api.rediss_enabled requires tls.enabled with certificate/key material")]
+    RedisRedissRequiresTls,
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {

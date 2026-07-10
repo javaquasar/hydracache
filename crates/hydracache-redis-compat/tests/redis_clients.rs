@@ -1,4 +1,6 @@
+use std::io::BufReader;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
 use std::time::Duration;
@@ -9,9 +11,11 @@ use hydracache_redis_compat::{
     RedisAuthConfig, RedisListenerConfig, RedisRespServer, DEFAULT_REDIS_NAMESPACE,
 };
 use redis::Value;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
+use tokio_rustls::TlsAcceptor;
 
 const CLIENT_MATRIX_ENV: &str = "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS";
 const CLIENT_DOCKER_FORCE_ENV: &str = "HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER";
@@ -43,6 +47,7 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
     assert!(manifest.contains("client_matrix_runs_mset_and_ttl_commands"));
     assert!(manifest.contains("client_matrix_runs_auth_required_connection_scenario"));
+    assert!(manifest.contains("client_matrix_runs_rediss_required_connection_scenario"));
     assert!(
         manifest.contains("nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset")
     );
@@ -67,6 +72,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance",
         "client_matrix_runs_mset_and_ttl_commands",
         "client_matrix_runs_auth_required_connection_scenario",
+        "client_matrix_runs_rediss_required_connection_scenario",
         "redis_oracle_unsupported_divergence_is_documented",
         "redis_oracle_hc_extensions_are_hydracache_only",
     ] {
@@ -224,6 +230,62 @@ async fn client_matrix_runs_auth_required_connection_scenario() {
         .unwrap();
     let value: String = redis::cmd("GET")
         .arg("auth:k")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(value, "v");
+
+    drop(connection);
+    drop(shutdown);
+    serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves rediss:// startup"]
+async fn client_matrix_runs_rediss_required_connection_scenario() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+
+    let (shutdown, addr, serving) = spawn_rediss_auth_resp_facade().await;
+    let client = redis::Client::open(redis_auth_rediss_insecure_url(addr)).unwrap();
+    let mut connection = client.get_multiplexed_async_connection().await.unwrap();
+    let pong: String = redis::cmd("PING")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(pong, "PONG");
+    let _: () = redis::cmd("SET")
+        .arg("rediss:k")
+        .arg("v")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    let _: () = redis::cmd("MSET")
+        .arg("rediss:a")
+        .arg("1")
+        .arg("rediss:b")
+        .arg("2")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    let _: () = redis::cmd("SET")
+        .arg("rediss:ttl")
+        .arg("v")
+        .arg("EX")
+        .arg(30)
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    let ttl: i64 = redis::cmd("TTL")
+        .arg("rediss:ttl")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert!(ttl > 0);
+    let value: String = redis::cmd("GET")
+        .arg("rediss:k")
         .query_async(&mut connection)
         .await
         .unwrap();
@@ -974,6 +1036,10 @@ fn redis_auth_url(addr: SocketAddr) -> String {
     format!("redis://default:secret@{addr}/")
 }
 
+fn redis_auth_rediss_insecure_url(addr: SocketAddr) -> String {
+    format!("rediss://default:secret@{addr}/#insecure")
+}
+
 fn docker_redis_auth_url(addr: SocketAddr) -> String {
     format!(
         "redis://default:secret@{DOCKER_HOST_GATEWAY}:{}/",
@@ -998,6 +1064,64 @@ fn unique_temp_dir(label: &str) -> std::path::PathBuf {
             .unwrap()
             .as_nanos()
     ))
+}
+
+struct TestTlsMaterial {
+    cert_path: PathBuf,
+    key_path: PathBuf,
+}
+
+fn write_test_tls_material(label: &str) -> TestTlsMaterial {
+    let dir = unique_temp_dir(label);
+    fs::create_dir_all(&dir).unwrap();
+    let rcgen::CertifiedKey { cert, signing_key } =
+        rcgen::generate_simple_self_signed(["127.0.0.1".to_owned(), "localhost".to_owned()])
+            .unwrap();
+    let cert_path = dir.join("cert.pem");
+    let key_path = dir.join("key.pem");
+    fs::write(&cert_path, cert.pem()).unwrap();
+    fs::write(&key_path, signing_key.serialize_pem()).unwrap();
+    TestTlsMaterial {
+        cert_path,
+        key_path,
+    }
+}
+
+fn rediss_acceptor(label: &str) -> TlsAcceptor {
+    install_test_rustls_provider();
+    let material = write_test_tls_material(label);
+    let certs = read_certs(&material.cert_path);
+    let key = read_private_key(&material.key_path);
+    let config = rustls::ServerConfig::builder()
+        .with_no_client_auth()
+        .with_single_cert(certs, key)
+        .unwrap();
+    TlsAcceptor::from(Arc::new(config))
+}
+
+fn read_certs(path: &Path) -> Vec<CertificateDer<'static>> {
+    let file = fs::File::open(path).unwrap();
+    let certs = rustls_pemfile::certs(&mut BufReader::new(file))
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    assert!(
+        !certs.is_empty(),
+        "test TLS certificate file should contain a certificate"
+    );
+    certs
+}
+
+fn read_private_key(path: &Path) -> PrivateKeyDer<'static> {
+    let file = fs::File::open(path).unwrap();
+    rustls_pemfile::private_key(&mut BufReader::new(file))
+        .unwrap()
+        .expect("test TLS private key file should contain a key")
+}
+
+fn install_test_rustls_provider() {
+    if rustls::crypto::CryptoProvider::get_default().is_none() {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    }
 }
 
 fn run_optional_command(label: &str, command: &mut Command) -> ClientRun {
@@ -1285,6 +1409,10 @@ async fn spawn_auth_resp_facade() -> (watch::Sender<bool>, SocketAddr, JoinHandl
     spawn_resp_facade_on("127.0.0.1:0", auth_listener_config()).await
 }
 
+async fn spawn_rediss_auth_resp_facade() -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
+    spawn_rediss_resp_facade_on("127.0.0.1:0", auth_listener_config()).await
+}
+
 async fn spawn_auth_resp_facade_for_docker_clients(
 ) -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
     spawn_resp_facade_on("0.0.0.0:0", auth_listener_config()).await
@@ -1322,6 +1450,50 @@ async fn spawn_resp_facade_on(
                     let server = Arc::clone(&server);
                     tokio::spawn(async move {
                         let _ = server.serve_connection(stream).await;
+                    });
+                }
+            }
+        }
+    });
+    (shutdown_tx, addr, serving)
+}
+
+async fn spawn_rediss_resp_facade_on(
+    bind: &str,
+    config: RedisListenerConfig,
+) -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
+    let listener = TcpListener::bind(bind).await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), addr.port());
+    let tls = rediss_acceptor("client-matrix-rediss");
+    let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+    let server = Arc::new(
+        RedisRespServer::new(
+            state,
+            RedisListenerConfig {
+                tenant: DEFAULT_REDIS_NAMESPACE.to_owned(),
+                ..config
+            },
+        )
+        .unwrap(),
+    );
+    let (shutdown_tx, mut shutdown_rx) = watch::channel(false);
+    let serving = tokio::spawn(async move {
+        loop {
+            tokio::select! {
+                changed = shutdown_rx.changed() => {
+                    if changed.is_err() || *shutdown_rx.borrow() {
+                        return;
+                    }
+                }
+                accepted = listener.accept() => {
+                    let (stream, _) = accepted.unwrap();
+                    let server = Arc::clone(&server);
+                    let tls = tls.clone();
+                    tokio::spawn(async move {
+                        if let Ok(stream) = tls.accept(stream).await {
+                            let _ = server.serve_connection(stream).await;
+                        }
                     });
                 }
             }

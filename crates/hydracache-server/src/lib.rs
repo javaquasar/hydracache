@@ -32,7 +32,7 @@ pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
     RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, TlsConfig,
 };
-pub use redis_tcp::{serve_redis_listener, RedisTcpError};
+pub use redis_tcp::{serve_redis_listener, RedisTcpError, RedisTlsAcceptor, RedisTlsError};
 pub use services::{DrainOutcome, GracefulShutdown, ServiceSet};
 pub use upgrade::{
     GracefulUpgrade, UpgradeError, UpgradePhase, UpgradePlan, UpgradeReport, UpgradeStrategy,

@@ -16,6 +16,7 @@ use crate::cluster_status::{
     ModeledClusterStatus, Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
+use crate::redis_tcp::{RedisTlsAcceptor, RedisTlsError};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
 
 /// Runtime state exposed by health/readiness checks.
@@ -476,6 +477,14 @@ impl ServerRuntime {
             return Ok(None);
         };
         RedisRespServer::new(Arc::clone(state), config.clone()).map(Some)
+    }
+
+    /// Build the optional Redis TLS acceptor when rediss:// is enabled.
+    pub fn redis_tls_acceptor(&self) -> Result<Option<RedisTlsAcceptor>, RedisTlsError> {
+        if !self.config.redis_api.enabled || !self.config.redis_api.rediss_enabled {
+            return Ok(None);
+        }
+        RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some)
     }
 
     /// Stop accepting new work and enter the draining state.

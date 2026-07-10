@@ -22,7 +22,11 @@ tokio.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true
-redis.workspace = true
+rcgen.workspace = true
+redis = { workspace = true, features = ["tokio-rustls-comp", "tls-rustls-insecure"] }
+rustls.workspace = true
+rustls-pemfile.workspace = true
+tokio-rustls.workspace = true
 
 [lints]
 workspace = true
