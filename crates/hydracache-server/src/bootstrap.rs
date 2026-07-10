@@ -239,6 +239,7 @@ pub struct ServerRuntime {
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
     redis_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
     observability: ServerObservabilityModel,
@@ -287,6 +288,11 @@ impl ServerRuntime {
         } else {
             None
         };
+        let redis_listener_config = if config.redis_api.enabled {
+            Some(config.redis_listener_config()?)
+        } else {
+            None
+        };
         Ok(Self {
             config,
             cache,
@@ -298,6 +304,7 @@ impl ServerRuntime {
             flushed: false,
             client_surface,
             redis_client_state,
+            redis_listener_config,
             redis_surface,
             cluster_status,
             observability: ServerObservabilityModel::default(),
@@ -465,7 +472,10 @@ impl ServerRuntime {
         let Some(state) = &self.redis_client_state else {
             return Ok(None);
         };
-        RedisRespServer::new(Arc::clone(state), RedisListenerConfig::default()).map(Some)
+        let Some(config) = &self.redis_listener_config else {
+            return Ok(None);
+        };
+        RedisRespServer::new(Arc::clone(state), config.clone()).map(Some)
     }
 
     /// Stop accepting new work and enter the draining state.

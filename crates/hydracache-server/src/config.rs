@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use hydracache_client_transport_axum::ClientSurfaceLimits;
+use hydracache_redis_compat::{RedisAuthConfig, RedisListenerConfig};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -131,12 +132,20 @@ impl Default for AdminApiConfig {
 }
 
 /// Optional Redis RESP edge facade policy.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RedisApiConfig {
     /// Whether the RESP listener is enabled.
     pub enabled: bool,
     /// RESP listen address, intentionally separate from HTTP/admin/cluster surfaces.
     pub listen_addr: SocketAddr,
+    /// Whether Redis AUTH is required before cache/data commands.
+    pub auth_required: bool,
+    /// Optional ACL-style username for AUTH and HELLO AUTH.
+    pub auth_username: Option<String>,
+    /// File containing the Redis AUTH token/password.
+    pub auth_token_file: Option<PathBuf>,
+    /// Whether to request native rediss:// on this listener.
+    pub rediss_enabled: bool,
 }
 
 impl Default for RedisApiConfig {
@@ -146,6 +155,10 @@ impl Default for RedisApiConfig {
             listen_addr: "127.0.0.1:6379"
                 .parse()
                 .expect("default Redis RESP listen address is valid"),
+            auth_required: false,
+            auth_username: None,
+            auth_token_file: None,
+            rediss_enabled: false,
         }
     }
 }
@@ -331,6 +344,18 @@ impl ServerConfig {
                 .parse()
                 .map_err(|_| ServerConfigError::InvalidAddress(listen))?;
         }
+        if env::var("HYDRACACHE_REDIS_AUTH_REQUIRED").as_deref() == Ok("true") {
+            config.redis_api.auth_required = true;
+        }
+        if let Ok(username) = env::var("HYDRACACHE_REDIS_AUTH_USERNAME") {
+            config.redis_api.auth_username = Some(username);
+        }
+        if let Ok(path) = env::var("HYDRACACHE_REDIS_AUTH_TOKEN_FILE") {
+            config.redis_api.auth_token_file = Some(PathBuf::from(path));
+        }
+        if env::var("HYDRACACHE_REDIS_REDISS_ENABLED").as_deref() == Ok("true") {
+            config.redis_api.rediss_enabled = true;
+        }
         config.validate()?;
         Ok(config)
     }
@@ -399,6 +424,10 @@ impl ServerConfig {
             return Err(ServerConfigError::AdminAddressConflicts);
         }
         if self.redis_api.enabled {
+            if self.redis_api.rediss_enabled {
+                return Err(ServerConfigError::RedisRedissUnsupported);
+            }
+            validate_redis_auth(&self.redis_api)?;
             if self.redis_api.listen_addr == self.listen_addr {
                 return Err(ServerConfigError::RedisAddressConflicts {
                     surface: "listen_addr",
@@ -416,6 +445,24 @@ impl ServerConfig {
             }
         }
         Ok(())
+    }
+
+    /// Build the Redis RESP listener config used by the optional edge server.
+    pub fn redis_listener_config(&self) -> Result<RedisListenerConfig, ServerConfigError> {
+        let mut config = RedisListenerConfig::default();
+        if self.redis_api.auth_required {
+            let path = self
+                .redis_api
+                .auth_token_file
+                .as_deref()
+                .ok_or(ServerConfigError::IncompleteRedisAuth)?;
+            config.auth = RedisAuthConfig {
+                required: true,
+                username: self.redis_api.auth_username.clone(),
+                password: Some(read_redis_auth_token(path)?),
+            };
+        }
+        Ok(config)
     }
 
     /// Return the configured drain timeout.
@@ -548,6 +595,26 @@ pub enum ServerConfigError {
         /// Conflicting surface.
         surface: &'static str,
     },
+    /// Redis AUTH required without readable token material.
+    #[error("redis_api auth requires auth_token_file and a non-empty token")]
+    IncompleteRedisAuth,
+    /// Redis AUTH token file could not be read.
+    #[error("failed to read redis_api.auth_token_file {path}: {source}")]
+    RedisAuthTokenRead {
+        /// Token file path.
+        path: PathBuf,
+        /// Source IO error.
+        source: std::io::Error,
+    },
+    /// Redis AUTH token file was empty.
+    #[error("redis_api.auth_token_file {path} is empty")]
+    EmptyRedisAuthToken {
+        /// Token file path.
+        path: PathBuf,
+    },
+    /// Native rediss:// is not supported by this release's RESP listener.
+    #[error("redis_api.rediss_enabled is unsupported in 0.63.0; use external TLS/private networking plus Redis AUTH")]
+    RedisRedissUnsupported,
 }
 
 fn parse_role(value: &str) -> Result<ServerRole, ServerConfigError> {
@@ -659,6 +726,42 @@ fn validate_cluster_auth_pair(
         });
     }
     Ok(())
+}
+
+fn validate_redis_auth(config: &RedisApiConfig) -> Result<(), ServerConfigError> {
+    if config
+        .auth_username
+        .as_deref()
+        .is_some_and(|username| username.trim().is_empty())
+    {
+        return Err(ServerConfigError::IncompleteRedisAuth);
+    }
+    if !config.auth_required {
+        return Ok(());
+    }
+    let Some(path) = config
+        .auth_token_file
+        .as_deref()
+        .filter(|path| non_empty_path(path))
+    else {
+        return Err(ServerConfigError::IncompleteRedisAuth);
+    };
+    read_redis_auth_token(path).map(|_| ())
+}
+
+fn read_redis_auth_token(path: &Path) -> Result<String, ServerConfigError> {
+    let token =
+        fs::read_to_string(path).map_err(|source| ServerConfigError::RedisAuthTokenRead {
+            path: path.to_path_buf(),
+            source,
+        })?;
+    let token = token.trim().to_owned();
+    if token.is_empty() {
+        return Err(ServerConfigError::EmptyRedisAuthToken {
+            path: path.to_path_buf(),
+        });
+    }
+    Ok(token)
 }
 
 fn non_empty(value: &str) -> bool {

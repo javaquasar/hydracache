@@ -1,6 +1,7 @@
 use std::{
     env,
     ffi::OsString,
+    fs,
     path::PathBuf,
     sync::{Arc, Mutex, MutexGuard},
 };
@@ -38,6 +39,7 @@ fn member_config_with_redis_surface() -> ServerConfig {
         redis_api: RedisApiConfig {
             enabled: true,
             listen_addr: "127.0.0.1:16379".parse().unwrap(),
+            ..RedisApiConfig::default()
         },
         ..member_config()
     }
@@ -73,6 +75,10 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_ADMIN_ADDR",
     "HYDRACACHE_REDIS_API_ENABLED",
     "HYDRACACHE_REDIS_ADDR",
+    "HYDRACACHE_REDIS_AUTH_REQUIRED",
+    "HYDRACACHE_REDIS_AUTH_USERNAME",
+    "HYDRACACHE_REDIS_AUTH_TOKEN_FILE",
+    "HYDRACACHE_REDIS_REDISS_ENABLED",
     "HOSTNAME",
 ];
 
@@ -114,6 +120,14 @@ impl Drop for ConfigEnvGuard {
 fn config_error_from_env(overrides: &[(&'static str, &'static str)]) -> ServerConfigError {
     let _guard = ConfigEnvGuard::new(overrides);
     ServerConfig::from_env().unwrap_err()
+}
+
+fn test_token_file(name: &str, contents: &str) -> PathBuf {
+    let dir = PathBuf::from("target/test-hydracache-server/redis-auth");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join(format!("{name}.txt"));
+    fs::write(&path, contents).unwrap();
+    path
 }
 
 #[test]
@@ -325,6 +339,23 @@ fn redis_api_is_off_by_default_and_env_gated() {
 }
 
 #[test]
+fn redis_api_auth_env_reads_token_file() {
+    let token_file = "target/test-hydracache-server/redis-auth/redis-auth-env.txt";
+    fs::create_dir_all("target/test-hydracache-server/redis-auth").unwrap();
+    fs::write(token_file, "secret\n").unwrap();
+    let _guard = ConfigEnvGuard::new(&[
+        ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+        ("HYDRACACHE_REDIS_AUTH_REQUIRED", "true"),
+        ("HYDRACACHE_REDIS_AUTH_USERNAME", "app-user"),
+        ("HYDRACACHE_REDIS_AUTH_TOKEN_FILE", token_file),
+    ]);
+    let config = ServerConfig::from_env().unwrap();
+    assert!(config.redis_api.auth_required);
+    assert_eq!(config.redis_api.auth_username.as_deref(), Some("app-user"));
+    assert!(config.redis_listener_config().unwrap().auth.required);
+}
+
+#[test]
 fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
     let mut client_conflict = member_config();
     client_conflict.redis_api.enabled = true;
@@ -345,6 +376,74 @@ fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
             surface: "admin_api.listen_addr"
         })
     ));
+}
+
+#[test]
+fn redis_api_auth_and_rediss_posture_are_explicit() {
+    let mut missing_auth = member_config_with_redis_surface();
+    missing_auth.redis_api.auth_required = true;
+    assert!(matches!(
+        missing_auth.validate(),
+        Err(ServerConfigError::IncompleteRedisAuth)
+    ));
+
+    let empty_token = test_token_file("empty-redis-auth-token", "");
+    let mut empty_auth = member_config_with_redis_surface();
+    empty_auth.redis_api.auth_required = true;
+    empty_auth.redis_api.auth_token_file = Some(empty_token);
+    assert!(matches!(
+        empty_auth.validate(),
+        Err(ServerConfigError::EmptyRedisAuthToken { .. })
+    ));
+
+    let mut rediss = member_config_with_redis_surface();
+    rediss.redis_api.rediss_enabled = true;
+    assert!(matches!(
+        rediss.validate(),
+        Err(ServerConfigError::RedisRedissUnsupported)
+    ));
+}
+
+#[tokio::test]
+async fn redis_api_auth_config_is_wired_into_resp_server() {
+    let token_file = test_token_file("redis-auth-wired", "secret\n");
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.auth_required = true;
+    config.redis_api.auth_username = Some("app-user".to_owned());
+    config.redis_api.auth_token_file = Some(token_file);
+    let server = Arc::new(
+        ServerRuntime::new(config)
+            .unwrap()
+            .start()
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let (mut client, server_io) = tokio::io::duplex(4096);
+    let serving = {
+        let server = Arc::clone(&server);
+        tokio::spawn(async move {
+            server.serve_connection(server_io).await.unwrap();
+        })
+    };
+
+    client
+        .write_all(
+            b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *3\r\n$4\r\nAUTH\r\n$8\r\napp-user\r\n$6\r\nsecret\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    let mut output = Vec::new();
+    client.read_to_end(&mut output).await.unwrap();
+    serving.await.unwrap();
+
+    assert_eq!(
+        output,
+        b"-NOAUTH Authentication required.\r\n+OK\r\n+OK\r\n+OK\r\n"
+    );
 }
 
 #[test]

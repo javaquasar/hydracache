@@ -5,7 +5,9 @@ use std::time::Duration;
 use std::{env, fs};
 
 use hydracache_client_transport_axum::{ClientSurfaceLimits, ClientSurfaceState};
-use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, DEFAULT_REDIS_NAMESPACE};
+use hydracache_redis_compat::{
+    RedisAuthConfig, RedisListenerConfig, RedisRespServer, DEFAULT_REDIS_NAMESPACE,
+};
 use redis::Value;
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -40,6 +42,7 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
     assert!(manifest.contains("client_matrix_runs_mset_and_ttl_commands"));
+    assert!(manifest.contains("client_matrix_runs_auth_required_connection_scenario"));
     assert!(
         manifest.contains("nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset")
     );
@@ -63,6 +66,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_mset_atomicity_matches_real_redis",
         "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance",
         "client_matrix_runs_mset_and_ttl_commands",
+        "client_matrix_runs_auth_required_connection_scenario",
         "redis_oracle_unsupported_divergence_is_documented",
         "redis_oracle_hc_extensions_are_hydracache_only",
     ] {
@@ -181,6 +185,56 @@ async fn client_matrix_runs_mset_and_ttl_commands() {
 }
 
 #[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves AUTH-required startup"]
+async fn client_matrix_runs_auth_required_connection_scenario() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+
+    let (shutdown, addr, serving) = spawn_auth_resp_facade().await;
+    let unauthenticated = redis::Client::open(format!("redis://{addr}/")).unwrap();
+    let mut unauthenticated = unauthenticated
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
+    let error = redis::cmd("GET")
+        .arg("auth:k")
+        .query_async::<Option<String>>(&mut unauthenticated)
+        .await
+        .unwrap_err();
+    assert!(
+        error.to_string().contains("NOAUTH"),
+        "expected NOAUTH before AUTH, got {error}"
+    );
+    drop(unauthenticated);
+
+    let client = redis::Client::open(redis_auth_url(addr)).unwrap();
+    let mut connection = client.get_multiplexed_async_connection().await.unwrap();
+    let pong: String = redis::cmd("PING")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(pong, "PONG");
+    let _: () = redis::cmd("SET")
+        .arg("auth:k")
+        .arg("v")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    let value: String = redis::cmd("GET")
+        .arg("auth:k")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(value, "v");
+
+    drop(connection);
+    drop(shutdown);
+    serving.await.unwrap();
+}
+
+#[tokio::test]
 #[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and optional Python/Node/Go/JVM client runtimes"]
 async fn nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset() {
     if !env_gate_enabled(CLIENT_MATRIX_ENV) {
@@ -188,9 +242,9 @@ async fn nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset()
         return;
     }
 
-    let (shutdown, addr, serving) = spawn_resp_facade_for_docker_clients().await;
-    let url = format!("redis://{addr}/");
-    let docker_url = docker_redis_url(addr);
+    let (shutdown, addr, serving) = spawn_auth_resp_facade_for_docker_clients().await;
+    let url = redis_auth_url(addr);
+    let docker_url = docker_redis_auth_url(addr);
     for ecosystem in ClientEcosystem::all() {
         let url = url.clone();
         let docker_url = docker_url.clone();
@@ -916,8 +970,15 @@ fn docker_volume(path: &std::path::Path) -> String {
     format!("{}:/workspace", path.display())
 }
 
-fn docker_redis_url(addr: SocketAddr) -> String {
-    format!("redis://{DOCKER_HOST_GATEWAY}:{}/", addr.port())
+fn redis_auth_url(addr: SocketAddr) -> String {
+    format!("redis://default:secret@{addr}/")
+}
+
+fn docker_redis_auth_url(addr: SocketAddr) -> String {
+    format!(
+        "redis://default:secret@{DOCKER_HOST_GATEWAY}:{}/",
+        addr.port()
+    )
 }
 
 fn maven_command() -> Command {
@@ -1217,15 +1278,22 @@ async fn wait_for_redis(addr: SocketAddr) -> Result<(), String> {
 }
 
 async fn spawn_resp_facade() -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
-    spawn_resp_facade_on("127.0.0.1:0").await
+    spawn_resp_facade_on("127.0.0.1:0", RedisListenerConfig::default()).await
 }
 
-async fn spawn_resp_facade_for_docker_clients() -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>)
-{
-    spawn_resp_facade_on("0.0.0.0:0").await
+async fn spawn_auth_resp_facade() -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
+    spawn_resp_facade_on("127.0.0.1:0", auth_listener_config()).await
 }
 
-async fn spawn_resp_facade_on(bind: &str) -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
+async fn spawn_auth_resp_facade_for_docker_clients(
+) -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
+    spawn_resp_facade_on("0.0.0.0:0", auth_listener_config()).await
+}
+
+async fn spawn_resp_facade_on(
+    bind: &str,
+    config: RedisListenerConfig,
+) -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
     let listener = TcpListener::bind(bind).await.unwrap();
     let addr = listener.local_addr().unwrap();
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), addr.port());
@@ -1235,7 +1303,7 @@ async fn spawn_resp_facade_on(bind: &str) -> (watch::Sender<bool>, SocketAddr, J
             state,
             RedisListenerConfig {
                 tenant: DEFAULT_REDIS_NAMESPACE.to_owned(),
-                ..RedisListenerConfig::default()
+                ..config
             },
         )
         .unwrap(),
@@ -1260,4 +1328,13 @@ async fn spawn_resp_facade_on(bind: &str) -> (watch::Sender<bool>, SocketAddr, J
         }
     });
     (shutdown_tx, addr, serving)
+}
+
+fn auth_listener_config() -> RedisListenerConfig {
+    let mut auth = RedisAuthConfig::required("secret");
+    auth.username = Some("default".to_owned());
+    RedisListenerConfig {
+        auth,
+        ..RedisListenerConfig::default()
+    }
 }

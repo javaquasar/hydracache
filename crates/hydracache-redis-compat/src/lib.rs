@@ -42,6 +42,11 @@ pub const DEFAULT_REDIS_READ_BUFFER_BYTES: usize = 8 * 1024;
 /// Default idle timeout for one RESP connection.
 pub const DEFAULT_REDIS_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
 
+const DEFAULT_REDIS_AUTH_USERNAME: &str = "default";
+const REDIS_NOAUTH_MESSAGE: &str = "NOAUTH Authentication required.";
+const REDIS_WRONGPASS_MESSAGE: &str =
+    "WRONGPASS invalid username-password pair or user is disabled.";
+
 /// RESP decoder resource limits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RespDecodeLimits {
@@ -78,6 +83,8 @@ pub struct RedisListenerConfig {
     pub read_buffer_bytes: usize,
     /// Idle timeout for an open RESP connection.
     pub idle_timeout: Duration,
+    /// Optional Redis AUTH policy for this listener.
+    pub auth: RedisAuthConfig,
 }
 
 impl Default for RedisListenerConfig {
@@ -89,6 +96,7 @@ impl Default for RedisListenerConfig {
             decode_limits: RespDecodeLimits::default(),
             read_buffer_bytes: DEFAULT_REDIS_READ_BUFFER_BYTES,
             idle_timeout: DEFAULT_REDIS_IDLE_TIMEOUT,
+            auth: RedisAuthConfig::default(),
         }
     }
 }
@@ -120,7 +128,87 @@ impl RedisListenerConfig {
         }
         RedisTranslationContext::new(self.namespace.clone(), "redis-resp-config")
             .map_err(|_| RedisServeError::Config("namespace must be valid"))?;
+        self.auth.validate()?;
         Ok(())
+    }
+}
+
+/// Redis AUTH policy for one RESP listener.
+#[derive(Clone, Default, PartialEq, Eq)]
+pub struct RedisAuthConfig {
+    /// Whether data/mutating commands require successful AUTH first.
+    pub required: bool,
+    /// Optional required ACL-style username. When absent, `default` is accepted for HELLO AUTH.
+    pub username: Option<String>,
+    /// Opaque password/token bytes represented as UTF-8 for config ergonomics.
+    pub password: Option<String>,
+}
+
+impl std::fmt::Debug for RedisAuthConfig {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("RedisAuthConfig")
+            .field("required", &self.required)
+            .field("username", &self.username)
+            .field("password", &self.password.as_ref().map(|_| "<redacted>"))
+            .finish()
+    }
+}
+
+impl RedisAuthConfig {
+    /// Create a required-auth policy with an optional ACL-style username.
+    pub fn required(password: impl Into<String>) -> Self {
+        Self {
+            required: true,
+            username: None,
+            password: Some(password.into()),
+        }
+    }
+
+    fn validate(&self) -> Result<(), RedisServeError> {
+        if self
+            .username
+            .as_deref()
+            .is_some_and(|username| username.trim().is_empty())
+        {
+            return Err(RedisServeError::Config(
+                "auth.username must not be empty when set",
+            ));
+        }
+        if self.required {
+            let Some(password) = self.password.as_deref() else {
+                return Err(RedisServeError::Config(
+                    "auth.password is required when auth.required=true",
+                ));
+            };
+            if password.trim().is_empty() {
+                return Err(RedisServeError::Config(
+                    "auth.password must not be empty when auth.required=true",
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn matches_attempt(&self, attempt: &RedisAuthAttempt) -> bool {
+        if !self.required {
+            return true;
+        }
+        let Some(password) = self.password.as_deref() else {
+            return false;
+        };
+        if password.as_bytes() != attempt.password.as_slice() {
+            return false;
+        }
+        match self.username.as_deref() {
+            Some(expected) => attempt
+                .username
+                .as_deref()
+                .is_some_and(|actual| actual == expected.as_bytes()),
+            None => attempt.username.as_deref().is_none_or(|actual| {
+                actual.eq_ignore_ascii_case(DEFAULT_REDIS_AUTH_USERNAME.as_bytes())
+            }),
+        }
     }
 }
 
@@ -145,7 +233,12 @@ pub enum RedisCommand {
     /// `QUIT`.
     Quit,
     /// `HELLO version ...`.
-    Hello { version: u8 },
+    Hello {
+        /// Requested RESP protocol version.
+        version: u8,
+        /// Optional `AUTH username password` clause.
+        auth: Option<RedisAuthAttempt>,
+    },
     /// `AUTH [username] password`.
     Auth {
         /// Optional ACL-style username.
@@ -204,6 +297,15 @@ pub enum RedisCommand {
     WrongArity { command: String, args: Vec<Vec<u8>> },
     /// Command outside the accepted W1 parser subset.
     Unsupported { verb: String, args: Vec<Vec<u8>> },
+}
+
+/// Redis AUTH credentials parsed from `AUTH` or `HELLO ... AUTH ...`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RedisAuthAttempt {
+    /// Optional ACL-style username.
+    pub username: Option<Vec<u8>>,
+    /// Password or opaque token bytes.
+    pub password: Vec<u8>,
 }
 
 /// Redis TTL response unit.
@@ -308,6 +410,34 @@ pub struct RedisRespServer {
     errors: AtomicU64,
 }
 
+#[derive(Debug, Clone)]
+struct RedisConnectionState {
+    identity: ClientIdentity,
+    authenticated: bool,
+}
+
+impl RedisConnectionState {
+    fn new(identity: &ClientIdentity, auth: &RedisAuthConfig) -> Self {
+        Self {
+            identity: identity.clone(),
+            authenticated: !auth.required,
+        }
+    }
+
+    fn trusted(identity: &ClientIdentity) -> Self {
+        Self {
+            identity: identity.clone(),
+            authenticated: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AuthSuccessResponse {
+    Ok,
+    Hello,
+}
+
 impl RedisRespServer {
     /// Create a Redis RESP executor around shared client surface state.
     pub fn new(
@@ -348,6 +478,7 @@ impl RedisRespServer {
         S: AsyncRead + AsyncWrite + Unpin,
     {
         self.accepted_connections.fetch_add(1, Ordering::SeqCst);
+        let mut connection = RedisConnectionState::new(&self.identity, &self.config.auth);
         let mut buffer = Vec::with_capacity(self.config.read_buffer_bytes);
         let mut read_chunk = vec![0; self.config.read_buffer_bytes];
         loop {
@@ -375,7 +506,7 @@ impl RedisRespServer {
                 buffer.drain(..consumed);
 
                 let should_close = matches!(command, RedisCommand::Quit);
-                let response = self.execute_command(command);
+                let response = self.execute_connection_command(command, &mut connection);
                 self.write_response(&mut stream, response).await?;
                 self.commands.fetch_add(1, Ordering::SeqCst);
                 if should_close {
@@ -387,6 +518,44 @@ impl RedisRespServer {
 
     /// Execute one parsed Redis command through the configured client-surface state.
     pub fn execute_command(&self, command: RedisCommand) -> RespValue {
+        let mut connection = RedisConnectionState::trusted(&self.identity);
+        self.execute_connection_command(command, &mut connection)
+    }
+
+    fn execute_connection_command(
+        &self,
+        command: RedisCommand,
+        connection: &mut RedisConnectionState,
+    ) -> RespValue {
+        match command {
+            RedisCommand::Auth { username, password } => self.apply_auth(
+                RedisAuthAttempt { username, password },
+                connection,
+                AuthSuccessResponse::Ok,
+            ),
+            RedisCommand::Hello { version, auth } => {
+                if version != 2 {
+                    self.errors.fetch_add(1, Ordering::SeqCst);
+                    RedisTranslationError::UnsupportedRespDialect { version }.into_resp_value()
+                } else if let Some(attempt) = auth {
+                    self.apply_auth(attempt, connection, AuthSuccessResponse::Hello)
+                } else {
+                    resp2_hello_response()
+                }
+            }
+            command if self.requires_auth(&command) && !connection.authenticated => {
+                self.errors.fetch_add(1, Ordering::SeqCst);
+                RespValue::Error(REDIS_NOAUTH_MESSAGE.to_owned())
+            }
+            command => self.execute_authenticated_command(command, &connection.identity),
+        }
+    }
+
+    fn execute_authenticated_command(
+        &self,
+        command: RedisCommand,
+        identity: &ClientIdentity,
+    ) -> RespValue {
         let context = match self.translation_context() {
             Ok(context) => context,
             Err(error) => {
@@ -401,26 +570,29 @@ impl RedisRespServer {
                 return error.into_resp_value();
             }
         };
-        self.execute_translated(translated)
+        self.execute_translated(translated, identity)
     }
 
-    fn execute_translated(&self, translated: RedisTranslatedCommand) -> RespValue {
+    fn execute_translated(
+        &self,
+        translated: RedisTranslatedCommand,
+        identity: &ClientIdentity,
+    ) -> RespValue {
         match translated {
             RedisTranslatedCommand::Immediate(value) => value,
-            RedisTranslatedCommand::Execute(plan) => self.execute_plan(plan),
-            RedisTranslatedCommand::Extension(extension) => self.extension_response(extension),
+            RedisTranslatedCommand::Execute(plan) => self.execute_plan(plan, identity),
+            RedisTranslatedCommand::Extension(extension) => {
+                self.extension_response(extension, identity)
+            }
         }
     }
 
-    fn execute_plan(&self, plan: RedisExecutionPlan) -> RespValue {
+    fn execute_plan(&self, plan: RedisExecutionPlan, identity: &ClientIdentity) -> RespValue {
         let mut responses = plan
             .initial_requests()
             .iter()
             .cloned()
-            .map(|request| {
-                self.state
-                    .dispatch_verified_request(&self.identity, request)
-            })
+            .map(|request| self.state.dispatch_verified_request(identity, request))
             .collect::<Vec<_>>();
         let followups = match plan.followup_requests(&responses) {
             Ok(followups) => followups,
@@ -429,10 +601,11 @@ impl RedisRespServer {
                 return error.into_resp_value();
             }
         };
-        responses.extend(followups.into_iter().map(|request| {
-            self.state
-                .dispatch_verified_request(&self.identity, request)
-        }));
+        responses.extend(
+            followups
+                .into_iter()
+                .map(|request| self.state.dispatch_verified_request(identity, request)),
+        );
         match plan.reduce(&responses) {
             Ok(value) => value,
             Err(error) => {
@@ -442,13 +615,17 @@ impl RedisRespServer {
         }
     }
 
-    fn extension_response(&self, extension: RedisExtensionRequest) -> RespValue {
+    fn extension_response(
+        &self,
+        extension: RedisExtensionRequest,
+        identity: &ClientIdentity,
+    ) -> RespValue {
         match extension {
             RedisExtensionRequest::Stats => RespValue::Array(vec![
                 bulk_static("surface"),
                 bulk_static("redis"),
                 bulk_static("tenant"),
-                RespValue::BulkString(self.identity.tenant().as_bytes().to_vec()),
+                RespValue::BulkString(identity.tenant().as_bytes().to_vec()),
                 bulk_static("dispatch_attempts"),
                 counter_value(self.state.dispatch_attempts()),
                 bulk_static("state_mutations"),
@@ -468,7 +645,7 @@ impl RedisRespServer {
                 bulk_static("namespace"),
                 RespValue::BulkString(self.config.namespace.as_bytes().to_vec()),
                 bulk_static("tenant"),
-                RespValue::BulkString(self.identity.tenant().as_bytes().to_vec()),
+                RespValue::BulkString(identity.tenant().as_bytes().to_vec()),
                 bulk_static("max_frame_bytes"),
                 counter_value(self.config.decode_limits.max_frame_bytes as u64),
                 bulk_static("max_array_elements"),
@@ -477,6 +654,44 @@ impl RedisRespServer {
                 counter_value(self.config.decode_limits.max_bulk_string_bytes as u64),
             ]),
         }
+    }
+
+    fn apply_auth(
+        &self,
+        attempt: RedisAuthAttempt,
+        connection: &mut RedisConnectionState,
+        success_response: AuthSuccessResponse,
+    ) -> RespValue {
+        if self.config.auth.matches_attempt(&attempt) {
+            connection.authenticated = true;
+            connection.identity = self.identity.clone();
+            match success_response {
+                AuthSuccessResponse::Ok => RespValue::SimpleString("OK"),
+                AuthSuccessResponse::Hello => resp2_hello_response(),
+            }
+        } else {
+            self.errors.fetch_add(1, Ordering::SeqCst);
+            RespValue::Error(REDIS_WRONGPASS_MESSAGE.to_owned())
+        }
+    }
+
+    fn requires_auth(&self, command: &RedisCommand) -> bool {
+        self.config.auth.required
+            && matches!(
+                command,
+                RedisCommand::Get { .. }
+                    | RedisCommand::Set { .. }
+                    | RedisCommand::Mset { .. }
+                    | RedisCommand::Mget { .. }
+                    | RedisCommand::Del { .. }
+                    | RedisCommand::Exists { .. }
+                    | RedisCommand::Expire { .. }
+                    | RedisCommand::Persist { .. }
+                    | RedisCommand::Ttl { .. }
+                    | RedisCommand::HcStats
+                    | RedisCommand::HcDiagnostics
+                    | RedisCommand::HcInvalidate { .. }
+            )
     }
 
     fn translation_context(&self) -> Result<RedisTranslationContext, RedisTranslationError> {
@@ -861,10 +1076,11 @@ pub fn translate_redis_command(
             RedisTranslatedCommand::Immediate(RespValue::BulkString(message))
         }
         RedisCommand::Quit => RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK")),
-        RedisCommand::Hello { version: 2 } => {
-            RedisTranslatedCommand::Immediate(resp2_hello_response())
-        }
-        RedisCommand::Hello { version } => {
+        RedisCommand::Hello {
+            version: 2,
+            auth: _,
+        } => RedisTranslatedCommand::Immediate(resp2_hello_response()),
+        RedisCommand::Hello { version, auth: _ } => {
             return Err(RedisTranslationError::UnsupportedRespDialect { version });
         }
         RedisCommand::Auth { .. } => {
@@ -1352,6 +1568,7 @@ fn command_metadata_response() -> RespValue {
         command_metadata("echo", 2, &["fast"], 0, 0, 0),
         command_metadata("quit", 1, &["fast"], 0, 0, 0),
         command_metadata("hello", -2, &["fast"], 0, 0, 0),
+        command_metadata("auth", -2, &["fast"], 0, 0, 0),
         command_metadata("client", -2, &["fast"], 0, 0, 0),
         command_metadata("command", 1, &["readonly", "fast"], 0, 0, 0),
         command_metadata("get", 2, &["readonly", "fast"], 1, 1, 1),
@@ -1448,14 +1665,7 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
             message: args.remove(0),
         },
         "QUIT" => RedisCommand::Quit,
-        "HELLO" => {
-            let version = args
-                .first()
-                .and_then(|value| std::str::from_utf8(value).ok())
-                .and_then(|value| value.parse::<u8>().ok())
-                .unwrap_or(0);
-            RedisCommand::Hello { version }
-        }
+        "HELLO" => parse_hello_command(args),
         "AUTH" if args.len() == 1 => RedisCommand::Auth {
             username: None,
             password: args.remove(0),
@@ -1463,6 +1673,10 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
         "AUTH" if args.len() == 2 => RedisCommand::Auth {
             username: Some(args.remove(0)),
             password: args.remove(0),
+        },
+        "AUTH" => RedisCommand::WrongArity {
+            command: "AUTH".to_owned(),
+            args,
         },
         "CLIENT" => parse_client_command(args),
         "COMMAND" => RedisCommand::Command,
@@ -1540,6 +1754,50 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
             args,
         },
     })
+}
+
+fn parse_hello_command(mut args: Vec<Vec<u8>>) -> RedisCommand {
+    let version = args
+        .first()
+        .and_then(|value| std::str::from_utf8(value).ok())
+        .and_then(|value| value.parse::<u8>().ok())
+        .unwrap_or(0);
+    if !args.is_empty() {
+        args.remove(0);
+    }
+
+    let mut auth = None;
+    let mut index = 0;
+    while index < args.len() {
+        if args[index].eq_ignore_ascii_case(b"AUTH") {
+            if index + 2 >= args.len() {
+                return RedisCommand::WrongArity {
+                    command: "HELLO".to_owned(),
+                    args,
+                };
+            }
+            auth = Some(RedisAuthAttempt {
+                username: Some(args[index + 1].clone()),
+                password: args[index + 2].clone(),
+            });
+            index += 3;
+        } else if args[index].eq_ignore_ascii_case(b"SETNAME") {
+            if index + 1 >= args.len() {
+                return RedisCommand::WrongArity {
+                    command: "HELLO".to_owned(),
+                    args,
+                };
+            }
+            index += 2;
+        } else {
+            return RedisCommand::Unsupported {
+                verb: "HELLO".to_owned(),
+                args,
+            };
+        }
+    }
+
+    RedisCommand::Hello { version, auth }
 }
 
 fn parse_client_command(mut args: Vec<Vec<u8>>) -> RedisCommand {
@@ -1660,6 +1918,37 @@ mod tests {
     }
 
     #[test]
+    fn command_parser_recognizes_auth_and_hello_auth() {
+        let (auth, _) =
+            decode_resp2_command(b"*3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n")
+                .unwrap()
+                .unwrap();
+        assert_eq!(
+            auth,
+            RedisCommand::Auth {
+                username: Some(b"default".to_vec()),
+                password: b"secret".to_vec()
+            }
+        );
+
+        let (hello_auth, _) = decode_resp2_command(
+            b"*5\r\n$5\r\nHELLO\r\n$1\r\n2\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n",
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            hello_auth,
+            RedisCommand::Hello {
+                version: 2,
+                auth: Some(RedisAuthAttempt {
+                    username: Some(b"default".to_vec()),
+                    password: b"secret".to_vec()
+                })
+            }
+        );
+    }
+
+    #[test]
     fn command_parser_reports_mset_wrong_arity() {
         let (command, _) =
             decode_resp2_command(b"*4\r\n$4\r\nMSET\r\n$1\r\na\r\n$1\r\n1\r\n$1\r\nb\r\n")
@@ -1697,7 +1986,14 @@ mod tests {
     #[test]
     fn hello2_is_supported_and_hello3_behavior_matches_contract() {
         let context = RedisTranslationContext::default();
-        let hello2 = translate_redis_command(RedisCommand::Hello { version: 2 }, &context).unwrap();
+        let hello2 = translate_redis_command(
+            RedisCommand::Hello {
+                version: 2,
+                auth: None,
+            },
+            &context,
+        )
+        .unwrap();
         let RedisTranslatedCommand::Immediate(RespValue::Array(fields)) = hello2 else {
             panic!("HELLO 2 should be immediate array");
         };
@@ -1708,7 +2004,13 @@ mod tests {
             )
         }));
 
-        let hello3 = translate_redis_command(RedisCommand::Hello { version: 3 }, &context);
+        let hello3 = translate_redis_command(
+            RedisCommand::Hello {
+                version: 3,
+                auth: None,
+            },
+            &context,
+        );
         assert!(matches!(
             hello3,
             Err(RedisTranslationError::UnsupportedRespDialect { version: 3 })
@@ -1725,6 +2027,7 @@ mod tests {
         let names = command_names(value);
         assert!(names.contains(&"get".to_owned()));
         assert!(names.contains(&"set".to_owned()));
+        assert!(names.contains(&"auth".to_owned()));
         assert!(names.contains(&"mset".to_owned()));
         assert!(names.contains(&"mget".to_owned()));
         assert!(names.contains(&"del".to_owned()));
@@ -2175,7 +2478,14 @@ mod tests {
                 &context,
             )
             .unwrap_err(),
-            translate_redis_command(RedisCommand::Hello { version: 3 }, &context).unwrap_err(),
+            translate_redis_command(
+                RedisCommand::Hello {
+                    version: 3,
+                    auth: None,
+                },
+                &context,
+            )
+            .unwrap_err(),
         ];
 
         for error in errors {
@@ -2294,6 +2604,110 @@ mod tests {
         assert!(!output.contains("redis-resp-test"));
     }
 
+    #[tokio::test]
+    async fn auth_hello_auth_and_noauth_errors_match_contract() {
+        let server = auth_listener(None);
+        let output = exchange(
+            &server,
+            b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *2\r\n$4\r\nAUTH\r\n$5\r\nwrong\r\n\
+              *2\r\n$4\r\nAUTH\r\n$6\r\nsecret\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.starts_with("-NOAUTH Authentication required.\r\n"));
+        assert!(
+            output.contains("-WRONGPASS invalid username-password pair or user is disabled.\r\n")
+        );
+        assert!(output.contains("+OK\r\n+OK\r\n$1\r\nv\r\n+OK\r\n"));
+        assert!(!output.contains("secret"));
+        assert!(!output.contains("wrong"));
+        assert_eq!(server.state().dispatch_attempts(), 2);
+        assert_eq!(server.metrics().errors, 2);
+
+        let hello = exchange(
+            &auth_listener(None),
+            b"*5\r\n$5\r\nHELLO\r\n$1\r\n2\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nh\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nh\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let hello = String::from_utf8(hello).unwrap();
+        assert!(hello.contains("hydracache"));
+        assert!(hello.contains("$5\r\nproto\r\n:2\r\n"));
+        assert!(hello.ends_with("+OK\r\n$1\r\nv\r\n+OK\r\n"));
+    }
+
+    #[tokio::test]
+    async fn redis_auth_required_listener_rejects_data_commands_before_auth() {
+        let server = auth_listener(None);
+        let output = exchange(
+            &server,
+            b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$8\r\nHC.STATS\r\n\
+              *1\r\n$4\r\nPING\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert_eq!(output.matches("NOAUTH Authentication required.").count(), 2);
+        assert!(output.contains("+PONG\r\n"));
+        assert!(output.ends_with("+OK\r\n"));
+        assert_eq!(server.state().dispatch_attempts(), 0);
+    }
+
+    #[tokio::test]
+    async fn redis_auth_success_binds_connection_local_client_identity() {
+        let server = auth_listener(None);
+        let first = exchange(
+            &server,
+            b"*2\r\n$4\r\nAUTH\r\n$6\r\nsecret\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        assert_eq!(first, b"+OK\r\n+OK\r\n+OK\r\n");
+        assert_eq!(server.state().dispatch_attempts(), 1);
+
+        let second = exchange(
+            &server,
+            b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        assert_eq!(second, b"-NOAUTH Authentication required.\r\n+OK\r\n");
+        assert_eq!(
+            server.state().dispatch_attempts(),
+            1,
+            "unauthenticated second connection must not reach client surface"
+        );
+    }
+
+    #[tokio::test]
+    async fn redis_auth_redacts_credentials_from_errors_logs_and_metrics() {
+        let server = auth_listener(Some("app-user"));
+        let output = exchange(
+            &server,
+            b"*3\r\n$4\r\nAUTH\r\n$8\r\napp-user\r\n$6\r\nsecret\r\n\
+              *1\r\n$14\r\nHC.DIAGNOSTICS\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.starts_with("+OK\r\n"));
+        assert!(!output.contains("secret"));
+        assert!(!output.contains("app-user"));
+        assert!(!format!("{:?}", server.config.auth).contains("secret"));
+        assert!(!format!("{:?}", server.metrics()).contains("secret"));
+    }
+
     fn surface() -> (ClientSurfaceState, ClientIdentity) {
         (
             ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap(),
@@ -2352,6 +2766,21 @@ mod tests {
     fn listener() -> RedisRespServer {
         let config = RedisListenerConfig {
             client_id: "redis-resp-test".to_owned(),
+            ..RedisListenerConfig::default()
+        };
+        RedisRespServer::new(
+            Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
+            config,
+        )
+        .unwrap()
+    }
+
+    fn auth_listener(username: Option<&str>) -> RedisRespServer {
+        let mut auth = RedisAuthConfig::required("secret");
+        auth.username = username.map(ToOwned::to_owned);
+        let config = RedisListenerConfig {
+            client_id: "redis-resp-test".to_owned(),
+            auth,
             ..RedisListenerConfig::default()
         };
         RedisRespServer::new(

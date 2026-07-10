@@ -28,7 +28,7 @@ to this page without adding or updating the manifest row first.
 | Command | Status | Oracle rule | Notes |
 | --- | --- | --- | --- |
 | `PING`, `ECHO`, `QUIT`, `HELLO 2`, `COMMAND` | `supported` | exact or documented normalized metadata | Startup handshake needed by mainstream clients. |
-| `AUTH`, `HELLO 2 AUTH` | `candidate` | candidate | Mandatory `0.63.0` release scope. Must graduate with `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, and connection-local identity tests before auth-required listeners are claimed. |
+| `AUTH`, `HELLO 2 AUTH` | `supported_with_caveat` | normalized error | Supported for auth-required listeners with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, and connection-local authenticated state. Redis ACL categories and native TLS are not implemented by this row. |
 | `CLIENT SETNAME`, `CLIENT SETINFO` | `supported_with_caveat` | normalized error/metadata | Accepted only as bounded, side-effect-free connection metadata. |
 | `GET`, `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. |
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
@@ -56,9 +56,10 @@ real Redis should return unknown command behavior.
 ## Executable Examples
 
 Every example below is covered by the `redis_clients` gated target. They use only
-the supported RESP2 cache subset, including atomic `MSET` and TTL commands. Auth-required examples
-are added only after the `AUTH`/`HELLO AUTH` gate lands. `SELECT`, RESP3, `rediss://`, and `HC.*`
-examples stay out of user-facing docs until their matching gates ship.
+the supported RESP2 cache subset, including atomic `MSET`, TTL commands, and the
+auth-required startup path. Auth-enabled examples use `redis://default:<password>@host:port/`.
+`SELECT`, RESP3, `rediss://`, and `HC.*` examples stay out of user-facing docs until their
+matching gates ship.
 
 ### redis-cli
 
@@ -72,6 +73,7 @@ redis-cli -u redis://127.0.0.1:6379 MGET demo:k demo:missing
 redis-cli -u redis://127.0.0.1:6379 SET demo:ttl v EX 30
 redis-cli -u redis://127.0.0.1:6379 TTL demo:ttl
 redis-cli -u redis://127.0.0.1:6379 DEL demo:k demo:missing
+redis-cli -u redis://default:secret@127.0.0.1:6379 GET demo:k
 ```
 
 ### Rust (redis-rs)
@@ -167,10 +169,10 @@ try (Jedis jedis = new Jedis(URI.create("redis://127.0.0.1:6379"))) {
 The RESP listener is disabled by default. Local development may bind it to
 `127.0.0.1:6379`, but production examples must require explicit enablement and
 explicit port exposure. Do not expose port `6379` on a public load balancer by
-default. The expanded `0.63.0` release scope requires Redis `AUTH` for auth-required
-listeners before production compatibility is claimed. If `rediss://` is not supported by
-the RESP listener in this release, production deployments must use external TLS/private
-network controls in addition to Redis `AUTH` before allowing non-loopback access.
+default. Auth-required listeners are configured with Redis `AUTH` token material
+from a file and may optionally require a username. Native `rediss://` is unsupported
+in `0.63.0`; production deployments must use external TLS/private-network controls
+in addition to Redis `AUTH` before allowing non-loopback access.
 
 The server rejects Redis listener addresses that overlap the public daemon
 listener, cluster listener, or enabled admin listener. Disabling the listener is
