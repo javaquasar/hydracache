@@ -149,10 +149,10 @@
     },
     {
       "name": "SELECT",
-      "status": "candidate",
+      "status": "supported_with_caveat",
       "kind": "redis_subset",
-      "oracle": "candidate",
-      "tests": ["select_without_explicit_namespace_mapping_is_rejected_or_maps_to_default"]
+      "oracle": "normalized_error",
+      "tests": ["select_zero_is_supported_as_noop_for_single_database_contract", "select_nonzero_and_invalid_db_fail_loud", "resp_listener_select_zero_ok_and_nonzero_keeps_default_database"]
     },
     {
       "name": "INFO",

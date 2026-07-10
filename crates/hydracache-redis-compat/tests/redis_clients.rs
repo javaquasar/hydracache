@@ -43,6 +43,8 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_mget_nil_and_order_match_real_redis"));
     assert!(manifest.contains("redis_oracle_mset_atomicity_matches_real_redis"));
     assert!(manifest.contains("redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"));
+    assert!(manifest.contains("select_zero_is_supported_as_noop_for_single_database_contract"));
+    assert!(manifest.contains("resp_listener_select_zero_ok_and_nonzero_keeps_default_database"));
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
     assert!(manifest.contains("CLUSTER SLOTS/NODES/INFO"));
@@ -120,7 +122,7 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
     }
 
     let (shutdown, addr, serving) = spawn_resp_facade().await;
-    let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
+    let client = redis::Client::open(format!("redis://{addr}/0")).unwrap();
     let mut connection = client.get_multiplexed_async_connection().await.unwrap();
 
     let pong: String = redis::cmd("PING")

@@ -155,6 +155,9 @@ real Redis oracle tolerance tests, and mainstream-client scenarios.
 Redis Cluster remains intentionally unsupported in `0.63.0`: `CLUSTER SLOTS`,
 `CLUSTER NODES`, and `CLUSTER INFO` must stay tied to standalone-only negative
 tests that prove no topology, hash slot metadata, `MOVED`, or `ASK` is emitted.
+Redis multi-db is intentionally not implemented: `SELECT 0` is the only
+supported logical database command and must stay tied to fast tests proving it is
+a no-op, while non-zero or invalid DB indexes fail loud before mutation.
 
 When adding or changing a RESP command:
 
@@ -175,8 +178,8 @@ cargo test -p hydracache-server --test server_lifecycle redis --locked
 The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL metadata/expiry
 compatibility, atomic `MSET`, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
 credential redaction, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
-coalesced/partial frame boundaries, Redis Cluster negative coverage, decoder fuzz smoke, and oversized
-frame limits. The server
+coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
+coverage, decoder fuzz smoke, and oversized frame limits. The server
 lifecycle gate proves the
 listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
 plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when

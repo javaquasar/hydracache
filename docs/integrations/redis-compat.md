@@ -39,7 +39,7 @@ to this page without adding or updating the manifest row first.
 | `GET`, `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. |
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
 | `SET EX/PX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `supported` | bounded TTL tolerance | Backed by `hydracache-client-protocol` v3 TTL metadata and client-surface expiry enforcement. |
-| `SELECT` | `candidate` | candidate | Requires explicit database-to-namespace mapping. |
+| `SELECT 0` | `supported_with_caveat` | normalized error | Accepted as a connection-local no-op for Redis client URL compatibility. HydraCache exposes one logical Redis database only; `SELECT 1` and every non-zero DB index fail loud with `ERR multiple Redis databases are not supported; use SELECT 0`, and invalid indexes return `ERR invalid DB index`. |
 | `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN` | `candidate` or `unsupported` | candidate or documented divergence | Health probes must be minimal and honest; no fabricated Redis server state. |
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Disabled by default. |
 | `HSET`, `ZADD`, lists, streams, Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. |
@@ -70,7 +70,8 @@ Every example below is covered by the `redis_clients` gated target. They use onl
 the supported RESP2/RESP3 cache subset, including atomic `MSET`, TTL commands, the
 auth-required startup path, and the native `rediss://` startup path. Auth-enabled examples use
 `redis://default:<password>@host:port/`; TLS examples use `rediss://default:<password>@host:port/`
-with the configured CA. `SELECT` and `HC.*` examples stay out of user-facing docs until their
+with the configured CA. URLs may include `/0`; non-zero database paths must be rejected by clients or
+surface the same loud `SELECT` error. `HC.*` examples stay out of user-facing docs until their
 matching gates ship.
 Cluster clients should use their normal standalone Redis connection path, not a
 cluster topology client, because HydraCache does not expose Redis Cluster slots
@@ -81,15 +82,16 @@ or redirects.
 Gate: `redis_clients`
 
 ```sh
-redis-cli -u redis://127.0.0.1:6379 SET demo:k v
-redis-cli -u redis://127.0.0.1:6379 GET demo:k
-redis-cli -u redis://127.0.0.1:6379 MSET demo:a 1 demo:b 2
-redis-cli -u redis://127.0.0.1:6379 MGET demo:k demo:missing
-redis-cli -u redis://127.0.0.1:6379 SET demo:ttl v EX 30
-redis-cli -u redis://127.0.0.1:6379 TTL demo:ttl
-redis-cli -u redis://127.0.0.1:6379 DEL demo:k demo:missing
-redis-cli -u redis://default:secret@127.0.0.1:6379 GET demo:k
-redis-cli --tls --cacert ca.pem -u rediss://default:secret@127.0.0.1:6379 PING
+redis-cli -u redis://127.0.0.1:6379/0 SELECT 0
+redis-cli -u redis://127.0.0.1:6379/0 SET demo:k v
+redis-cli -u redis://127.0.0.1:6379/0 GET demo:k
+redis-cli -u redis://127.0.0.1:6379/0 MSET demo:a 1 demo:b 2
+redis-cli -u redis://127.0.0.1:6379/0 MGET demo:k demo:missing
+redis-cli -u redis://127.0.0.1:6379/0 SET demo:ttl v EX 30
+redis-cli -u redis://127.0.0.1:6379/0 TTL demo:ttl
+redis-cli -u redis://127.0.0.1:6379/0 DEL demo:k demo:missing
+redis-cli -u redis://default:secret@127.0.0.1:6379/0 GET demo:k
+redis-cli --tls --cacert ca.pem -u rediss://default:secret@127.0.0.1:6379/0 PING
 ```
 
 ### Rust (redis-rs)
@@ -97,7 +99,7 @@ redis-cli --tls --cacert ca.pem -u rediss://default:secret@127.0.0.1:6379 PING
 Gate: `redis_clients`
 
 ```rust
-let client = redis::Client::open("redis://127.0.0.1:6379/")?;
+let client = redis::Client::open("redis://127.0.0.1:6379/0")?;
 let mut connection = client.get_multiplexed_async_connection().await?;
 redis::cmd("SET").arg("demo:k").arg("v").query_async::<()>(&mut connection).await?;
 redis::cmd("MSET").arg("demo:a").arg("1").arg("demo:b").arg("2").query_async::<()>(&mut connection).await?;
@@ -115,7 +117,7 @@ Gate: `redis_clients`
 ```python
 import redis
 
-r = redis.Redis.from_url("redis://127.0.0.1:6379", decode_responses=True)
+r = redis.Redis.from_url("redis://127.0.0.1:6379/0", decode_responses=True)
 assert r.set("demo:k", "v") is True
 assert r.mset({"demo:a": "1", "demo:b": "2"}) is True
 assert r.set("demo:ttl", "v", ex=30) is True
@@ -131,7 +133,7 @@ Gate: `redis_clients`
 ```javascript
 import { createClient } from "redis";
 
-const client = createClient({ url: "redis://127.0.0.1:6379" });
+const client = createClient({ url: "redis://127.0.0.1:6379/0" });
 await client.connect();
 await client.set("demo:k", "v");
 await client.mSet({ "demo:a": "1", "demo:b": "2" });
@@ -147,7 +149,7 @@ await client.quit();
 Gate: `redis_clients`
 
 ```go
-client := redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"})
+client := redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379", DB: 0})
 if err := client.Set(ctx, "demo:k", "v", 0).Err(); err != nil {
     panic(err)
 }
@@ -168,7 +170,7 @@ value, err := client.Get(ctx, "demo:k").Result()
 Gate: `redis_clients`
 
 ```java
-try (Jedis jedis = new Jedis(URI.create("redis://127.0.0.1:6379"))) {
+try (Jedis jedis = new Jedis(URI.create("redis://127.0.0.1:6379/0"))) {
   jedis.set("demo:k", "v");
   jedis.mset("demo:a", "1", "demo:b", "2");
   jedis.setex("demo:ttl", 30, "v");
@@ -196,6 +198,16 @@ listener, cluster listener, or enabled admin listener. Disabling the listener is
 the rollback default; existing RESP connections are drained or closed through
 the daemon drain path, and new RESP connections are refused once the drain gate
 closes.
+
+## Logical Database Contract
+
+HydraCache `0.63.0` does not implement Redis multi-db isolation. The RESP edge
+uses the configured HydraCache namespace as a single logical Redis database.
+`SELECT 0` is accepted as a no-op so mainstream Redis clients and connection
+strings such as `redis://host:6379/0` can bootstrap. `SELECT 1`, `SELECT 2`, and
+all other non-zero DB indexes fail loud before mutation; a failed `SELECT` never
+changes the connection keyspace. Invalid or negative DB indexes return
+`ERR invalid DB index`.
 
 ## Rollout And Rollback
 

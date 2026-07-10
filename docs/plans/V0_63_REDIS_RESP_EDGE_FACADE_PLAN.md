@@ -262,8 +262,8 @@ loose reminder.
 5. **Executable docs (W6).** Every copy-paste example in `docs/integrations/redis-compat.md` must be
    executable as a docs-smoke test. That includes `redis-cli`, Rust, Python, Node, Go, and JVM examples
    when the corresponding client matrix row is claimed. The expanded release requires executable
-   examples for `MSET`, TTL, `rediss://`, and RESP3 negotiation. Docs cannot show `HC.*` or `SELECT`
-   examples unless the matching gates are green.
+   examples for `MSET`, TTL, `SELECT 0`, `rediss://`, and RESP3 negotiation. Docs cannot show
+   `HC.*` examples or non-zero `SELECT` examples unless the matching gates are green.
 6. **Reconnect and connection-failure semantics (W5).** Add tests for close mid-command,
    close mid-pipeline, reconnect-and-retry, server drain during pipeline, and malformed response
    boundaries. A failed connection must not corrupt the next response, leak connection-local namespace
@@ -291,9 +291,9 @@ loose reminder.
 ## Dependency Graph
 
 ```
-W1 crate scaffold + RESP codec + listener config ─► W2 command translator (cache subset) ─┐
-                                                     W3 HC.* extension commands ───────────┼─► W6 server wiring + docs + gates
-                                                     W4 unsupported matrix + guardrails ───┤
+W1 crate scaffold + RESP codec + listener config ─► W2 command translator (cache subset) ─────┐
+                                                     W3 HC.* extension commands ──────────────┼─► W6 server wiring + docs + gates
+                                                     W4 unsupported matrix + guardrails ──────┤
                                                      W5 golden fixtures + client smoke + fuzz ┘
 ```
 
@@ -356,9 +356,11 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
    keys remain unchanged. Duplicate keys follow Redis order, with the last value winning.
 4. **`MGET` ordering:** supported only if the response preserves request order and represents misses
    as nil bulk entries.
-5. **`SELECT`:** supported only with explicit configured database-to-namespace mapping. Otherwise
-   `SELECT` returns a stable unsupported/configuration error and the listener uses one default
-   namespace plus optional key-prefix conventions.
+5. **`SELECT` / Redis multi-db:** `SELECT 0` is supported as a connection-local no-op for mainstream
+   Redis client URL compatibility (`redis://host:6379/0`). HydraCache `0.63.0` exposes exactly one
+   logical Redis database backed by the configured HydraCache namespace. `SELECT 1`, every other
+   non-zero DB index, negative indexes, and malformed indexes fail loud before mutation; a failed
+   `SELECT` must not change the connection keyspace or dispatch through `ClientSurfaceState`.
 6. **`COMMAND`:** mainstream clients often issue `COMMAND` during bootstrap. It can return a minimal
    honest command table for the supported subset, but it must not advertise unsupported commands.
 7. **`AUTH` / `HELLO AUTH`:** mandatory release scope. W0 defines the exact identity mapping for
@@ -389,6 +391,9 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 - `del_and_exists_return_redis_integer_counts`.
 - `mset_is_atomic_and_duplicate_keys_use_last_value`.
 - `command_reply_advertises_only_supported_subset`.
+- `select_zero_is_supported_as_noop_for_single_database_contract`.
+- `select_nonzero_and_invalid_db_fail_loud`.
+- `resp_listener_select_zero_ok_and_nonzero_keeps_default_database`.
 - `auth_hello_auth_and_noauth_errors_match_contract`.
 - `redis_auth_required_listener_rejects_data_commands_before_auth`.
 - `redis_auth_redacts_credentials_from_errors_logs_and_metrics`.
@@ -458,8 +463,9 @@ RESP response ◄──(encode)── RespValue ◄── translate(ClientRespon
 - **Values:** `GET`→`Get`, `SET`→`Put`, `MGET`→`BatchGet`, `MSET`→`BatchPut`, `DEL`→`Invalidate`,
   `EXISTS`→`Get`-probe. Binary bulk strings ↔ HydraCache value bytes (opaque).
 - **TTL:** `SET EX/PX`, `EXPIRE`/`PEXPIRE`→`Put` ttl; `TTL`/`PTTL`→read metadata; `PERSIST`.
-- **Namespace:** `SELECT n` maps to a configured namespace only if the mapping is **explicit**;
-  otherwise one configured default namespace + key prefixes (never an implicit database model).
+- **Namespace / logical DB:** the listener uses one configured HydraCache namespace as Redis DB 0.
+  `SELECT 0` is a supported no-op for Redis URL/client compatibility. Non-zero, negative, or
+  malformed DB indexes return a stable loud error and never switch namespace or keyspace.
 
 **Compatibility correction from W0.** The list above is the required support subset for the expanded
 release, not an automatic support claim. W2 may close a command only after W0 proves the target
@@ -476,6 +482,9 @@ operation exists and the RESP reply matches Redis semantics:
   Redis `MSET` to a partial HydraCache batch result.
 - `COMMAND` advertises only the commands this matrix marks supported; client bootstrap no-ops must
   never imply broader Redis compatibility.
+- `SELECT 0` returns `OK` without dispatching to the client surface. `SELECT 1` and invalid DB
+  indexes return stable RESP errors, and subsequent commands on the same connection still operate in
+  DB 0.
 - Startup no-ops (`CLIENT SETNAME`, `CLIENT SETINFO`, selected `HELLO` metadata) are accepted only
   when they are side-effect-free, bounded, and explicitly documented.
 - Health/readiness probes (`INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`, `CLIENT LIST`,
@@ -514,7 +523,9 @@ operation exists and the RESP reply matches Redis semantics:
 - `info_role_dbsize_type_scan_and_config_follow_contract_classification`.
 - `oversized_value_is_rejected_loud_not_truncated` (limits reuse, falsifiable).
 - `unauthenticated_command_returns_noauth_when_auth_required`.
-- `select_without_explicit_namespace_mapping_is_rejected_or_maps_to_default` (per config).
+- `select_zero_is_supported_as_noop_for_single_database_contract`.
+- `select_nonzero_and_invalid_db_fail_loud`.
+- `resp_listener_select_zero_ok_and_nonzero_keeps_default_database`.
 - Run: `cargo test -p hydracache-redis-compat --locked commands`.
 
 **Risk & rollback.** The load-bearing property is *no silent semantic drift* — reuse the client-surface
@@ -558,9 +569,10 @@ looping over per-key operations, or ignoring partial failures.
 2. **W3b per-key native commands.** `HC.INVALIDATE key` may ship if it maps exactly to
    `ClientRequest::Invalidate` through `ClientSurfaceState` and returns a RESP result whose count or
    status is documented. It is not allowed to bypass tenancy, rate limits, residency checks, or audit.
-3. **W3c namespace selection.** `HC.NAMESPACE name` may be a HydraCache-native alternative to Redis
-   `SELECT`, but only if `name` is present in explicit listener config and the command changes only
-   the connection-local namespace context. Unknown namespaces return a stable configuration error.
+3. **W3c namespace selection.** `HC.NAMESPACE name` may be a future HydraCache-native namespace
+   selector, but it is separate from Redis `SELECT` and remains candidate until explicit listener
+   config, tenant scoping, and connection-local semantics are proven. Redis `SELECT` stays limited to
+   `SELECT 0` as a no-op in 0.63.
 4. **W3d tag/dimension mutation is candidate until proven.** `HC.TAG`, `HC.SETTAGS`, and any tag
    attachment command are candidate commands until the implementation proves how tags/dimensions are
    stored and mutated without rewriting the value incorrectly. If the only available protocol field is
@@ -784,8 +796,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
    JVM client, but examples must not claim commands outside the supported matrix. Every example is
    executable through a docs-smoke gate; examples that require Docker, a language runtime, TLS, auth,
    or `HC.*` extensions carry the exact gate label that proves them.
-4. The doc explains namespace behavior: default namespace, optional explicit `SELECT` mapping, and
-   `HC.NAMESPACE` if shipped.
+4. The doc explains namespace behavior: one configured HydraCache namespace exposed as Redis DB 0,
+   `SELECT 0` as a no-op, non-zero/invalid DB indexes as loud errors, and `HC.NAMESPACE` only if a
+   future candidate gate ships it.
 5. The doc explains TTL honestly as supported through protocol v3 metadata: `SET EX/PX` applies
    expiry, `EXPIRE`/`PEXPIRE` mutate expiry only when the key exists, `PERSIST` clears expiry, and
    `TTL`/`PTTL` return Redis `-2`/`-1`/positive remaining-time semantics with bounded oracle
@@ -913,7 +926,7 @@ HydraCache does and does not implement.
 | `RedisCommand` + RESP codec (W1) | `hydracache-redis-compat` | `resp_frame_roundtrip_matches_redis_protocol` | PR |
 | `RedisApiConfig` + validation (W1) | `hydracache-server/src/config.rs` | `redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud` | PR |
 | Redis auth and native TLS (W0/W1/W2/W5/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs + raw TLS listener | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_env_reuses_server_tls_material`, `redis_resp_listener_accepts_rediss_auth_and_cache_commands`, `redis_resp_tls_listener_rejects_plaintext_before_mutation`, `redis_resp_tls_client_rejects_wrong_ca`, `redis_resp_tls_keeps_wrong_auth_as_wrongpass` | PR |
-| subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `set_ex_and_ttl_map_to_protocol_v3_metadata`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_and_duplicate_keys_use_last_value`, `mset_oversized_value_rejects_without_partial_mutation`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_*_namespace` | PR |
+| subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `set_ex_and_ttl_map_to_protocol_v3_metadata`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_and_duplicate_keys_use_last_value`, `mset_oversized_value_rejects_without_partial_mutation`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_zero_is_supported_as_noop_for_single_database_contract`, `select_nonzero_and_invalid_db_fail_loud`, `resp_listener_select_zero_ok_and_nonzero_keeps_default_database` | PR |
 | health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification` | PR |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
 | `HC.*` tag/dimension commands (W3d/W3e) | native tag path or unsupported matrix | `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`, `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`, `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys`, `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` if enabled | PR / candidate |
@@ -993,8 +1006,8 @@ HydraCache does and does not implement.
   request ids, credentials, or unbounded tenant-provided strings (W5/W6).
 - User-facing examples in `docs/integrations/redis-compat.md` are executable docs-smoke tests or are
   explicitly labeled with their Docker/nightly gate. The examples include supported `MSET`, TTL
-  commands, `rediss://` startup, and RESP3 negotiation. Docs cannot show untested `HC.*` or `SELECT`
-  examples.
+  commands, `SELECT 0`, `rediss://` startup, and RESP3 negotiation. Docs cannot show untested `HC.*`
+  commands or non-zero `SELECT` examples.
 - Config/operator packaging keeps the RESP listener disabled and unexposed by default. Helm/operator
   or production examples require explicit enablement, explicit port exposure, Redis `AUTH`, and TLS
   material/CA configuration.

@@ -277,6 +277,8 @@ pub enum RedisCommand {
     ClientSetInfo { args: Vec<Vec<u8>> },
     /// `COMMAND`.
     Command,
+    /// `SELECT index`.
+    Select { db: Vec<u8> },
     /// `GET key`.
     Get { key: Vec<u8> },
     /// `SET key value ...`.
@@ -726,6 +728,7 @@ impl RedisRespServer {
                     | RedisCommand::Mget { .. }
                     | RedisCommand::Del { .. }
                     | RedisCommand::Exists { .. }
+                    | RedisCommand::Select { .. }
                     | RedisCommand::Expire { .. }
                     | RedisCommand::Persist { .. }
                     | RedisCommand::Ttl { .. }
@@ -1121,6 +1124,12 @@ pub enum RedisTranslationError {
         /// Stable redacted detail.
         detail: &'static str,
     },
+    /// Redis database index is malformed or negative.
+    #[error("ERR invalid DB index")]
+    InvalidDatabaseIndex,
+    /// HydraCache exposes one Redis-compatible logical database only.
+    #[error("ERR multiple Redis databases are not supported; use SELECT 0")]
+    MultipleDatabasesUnsupported,
     /// Command has the wrong number of arguments.
     #[error("ERR wrong number of arguments for '{command}' command")]
     WrongArity {
@@ -1315,6 +1324,7 @@ pub fn translate_redis_command(
             RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK"))
         }
         RedisCommand::Command => RedisTranslatedCommand::Immediate(command_metadata_response()),
+        RedisCommand::Select { db } => translate_select(db)?,
         RedisCommand::Get { key } => RedisTranslatedCommand::Execute(single_request_plan(
             context,
             "get",
@@ -1828,6 +1838,7 @@ fn command_metadata_response() -> RespValue {
         command_metadata("auth", -2, &["fast"], 0, 0, 0),
         command_metadata("client", -2, &["fast"], 0, 0, 0),
         command_metadata("command", 1, &["readonly", "fast"], 0, 0, 0),
+        command_metadata("select", 2, &["fast"], 0, 0, 0),
         command_metadata("get", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("set", -3, &["write"], 1, 1, 1),
         command_metadata("mset", -3, &["write"], 1, -1, 2),
@@ -1862,6 +1873,22 @@ fn command_metadata(
 
 fn bulk_static(value: &'static str) -> RespValue {
     RespValue::BulkString(value.as_bytes().to_vec())
+}
+
+fn translate_select(db: Vec<u8>) -> Result<RedisTranslatedCommand, RedisTranslationError> {
+    let db = std::str::from_utf8(&db)
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+        .ok_or(RedisTranslationError::InvalidDatabaseIndex)?;
+    if db < 0 {
+        return Err(RedisTranslationError::InvalidDatabaseIndex);
+    }
+    if db != 0 {
+        return Err(RedisTranslationError::MultipleDatabasesUnsupported);
+    }
+    Ok(RedisTranslatedCommand::Immediate(RespValue::SimpleString(
+        "OK",
+    )))
 }
 
 fn redis_keys_to_structured_keys(
@@ -1952,6 +1979,11 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
         },
         "CLIENT" => parse_client_command(args),
         "COMMAND" => RedisCommand::Command,
+        "SELECT" if args.len() == 1 => RedisCommand::Select { db: args.remove(0) },
+        "SELECT" => RedisCommand::WrongArity {
+            command: "SELECT".to_owned(),
+            args,
+        },
         "GET" if args.len() == 1 => RedisCommand::Get {
             key: args.remove(0),
         },
@@ -2341,6 +2373,7 @@ mod tests {
         assert!(names.contains(&"get".to_owned()));
         assert!(names.contains(&"set".to_owned()));
         assert!(names.contains(&"auth".to_owned()));
+        assert!(names.contains(&"select".to_owned()));
         assert!(names.contains(&"mset".to_owned()));
         assert!(names.contains(&"mget".to_owned()));
         assert!(names.contains(&"del".to_owned()));
@@ -2348,6 +2381,47 @@ mod tests {
         assert!(names.contains(&"pttl".to_owned()));
         assert!(!names.contains(&"hset".to_owned()));
         assert!(!names.contains(&"cluster".to_owned()));
+    }
+
+    #[test]
+    fn select_zero_is_supported_as_noop_for_single_database_contract() {
+        let context = RedisTranslationContext::default();
+        let (command, consumed) = decode_resp2_command(b"*2\r\n$6\r\nSELECT\r\n$1\r\n0\r\n")
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(consumed, b"*2\r\n$6\r\nSELECT\r\n$1\r\n0\r\n".len());
+        assert_eq!(command, RedisCommand::Select { db: b"0".to_vec() });
+        assert_eq!(
+            translate_redis_command(command, &context).unwrap(),
+            RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK"))
+        );
+    }
+
+    #[test]
+    fn select_nonzero_and_invalid_db_fail_loud() {
+        let context = RedisTranslationContext::default();
+
+        let error = translate_redis_command(RedisCommand::Select { db: b"1".to_vec() }, &context)
+            .unwrap_err();
+        assert_eq!(error, RedisTranslationError::MultipleDatabasesUnsupported);
+        assert_eq!(
+            encode_resp2_value(error.into_resp_value()).unwrap(),
+            b"-ERR multiple Redis databases are not supported; use SELECT 0\r\n"
+        );
+
+        let error = translate_redis_command(
+            RedisCommand::Select {
+                db: b"not-a-db".to_vec(),
+            },
+            &context,
+        )
+        .unwrap_err();
+        assert_eq!(error, RedisTranslationError::InvalidDatabaseIndex);
+        assert_eq!(
+            encode_resp2_value(error.into_resp_value()).unwrap(),
+            b"-ERR invalid DB index\r\n"
+        );
     }
 
     #[test]
@@ -2925,6 +2999,36 @@ mod tests {
                 accepted_connections: 1,
                 commands: 4,
                 errors: 0,
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn resp_listener_select_zero_ok_and_nonzero_keeps_default_database() {
+        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+        let server =
+            RedisRespServer::new(Arc::clone(&state), RedisListenerConfig::default()).unwrap();
+        let output = exchange(
+            &server,
+            b"*2\r\n$6\r\nSELECT\r\n$1\r\n0\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$6\r\nSELECT\r\n$1\r\n1\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+
+        assert_eq!(
+            output,
+            b"+OK\r\n+OK\r\n-ERR multiple Redis databases are not supported; use SELECT 0\r\n$1\r\nv\r\n+OK\r\n"
+        );
+        assert_eq!(state.dispatch_attempts(), 2);
+        assert_eq!(
+            server.metrics(),
+            RedisListenerMetrics {
+                accepted_connections: 1,
+                commands: 5,
+                errors: 1,
             }
         );
     }
