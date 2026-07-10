@@ -2134,6 +2134,7 @@ dependencies = [
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",
  "proptest",
+ "redis",
  "redis-protocol",
  "thiserror 2.0.18",
  "tokio",

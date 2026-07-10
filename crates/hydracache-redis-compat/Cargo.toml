@@ -22,6 +22,7 @@ tokio.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true
+redis.workspace = true
 
 [lints]
 workspace = true
