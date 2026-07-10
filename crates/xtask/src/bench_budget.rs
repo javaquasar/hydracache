@@ -125,6 +125,24 @@ struct CriterionEstimate {
     point_estimate: f64,
 }
 
+#[derive(Debug, Deserialize)]
+struct CriterionBenchmarkId {
+    group_id: String,
+    function_id: Option<String>,
+    value_str: Option<String>,
+}
+
+impl CriterionBenchmarkId {
+    fn id(&self) -> String {
+        match (&self.function_id, &self.value_str) {
+            (Some(function), Some(value)) => format!("{}/{function}/{value}", self.group_id),
+            (Some(function), None) => format!("{}/{function}", self.group_id),
+            (None, Some(value)) => format!("{}/{value}", self.group_id),
+            (None, None) => self.group_id.clone(),
+        }
+    }
+}
+
 pub fn run(args: Vec<String>) -> Result<(), BenchBudgetError> {
     let options = BenchBudgetOptions::parse(args)?;
     let rules = load_budget(&options.budget_path)?;
@@ -312,7 +330,7 @@ fn collect_criterion_estimates(
             .parent()
             .and_then(Path::parent)
             .ok_or_else(|| BenchBudgetError::new("criterion estimates path is malformed"))?;
-        let id = bench_id(root, bench_dir)?;
+        let id = criterion_benchmark_id(root, &path, bench_dir)?;
         let bytes = fs::read(&path).map_err(|error| {
             BenchBudgetError::new(format!(
                 "failed to read criterion estimates {}: {error}",
@@ -335,6 +353,37 @@ fn collect_criterion_estimates(
         }
     }
     Ok(())
+}
+
+fn criterion_benchmark_id(
+    root: &Path,
+    estimates_path: &Path,
+    bench_dir: &Path,
+) -> Result<String, BenchBudgetError> {
+    let Some(snapshot_dir) = estimates_path.parent() else {
+        return bench_id(root, bench_dir);
+    };
+    let benchmark_path = snapshot_dir.join("benchmark.json");
+    if !benchmark_path.is_file() {
+        return bench_id(root, bench_dir);
+    }
+    let bytes = fs::read(&benchmark_path).map_err(|error| {
+        BenchBudgetError::new(format!(
+            "failed to read criterion benchmark id {}: {error}",
+            benchmark_path.display()
+        ))
+    })?;
+    let benchmark: CriterionBenchmarkId = serde_json::from_slice(&bytes).map_err(|error| {
+        BenchBudgetError::new(format!(
+            "invalid criterion benchmark id {}: {error}",
+            benchmark_path.display()
+        ))
+    })?;
+    let id = benchmark.id();
+    if id.is_empty() {
+        return Err(BenchBudgetError::new("criterion benchmark id is empty"));
+    }
+    Ok(id)
 }
 
 fn bench_id(root: &Path, bench_dir: &Path) -> Result<String, BenchBudgetError> {

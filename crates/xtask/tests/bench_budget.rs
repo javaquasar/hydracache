@@ -126,6 +126,22 @@ fn criterion_base_estimates_directory_is_loaded() {
 }
 
 #[test]
+fn criterion_benchmark_json_restores_slash_containing_ids() {
+    let root = unique_temp_dir("criterion_benchmark_json_restores_slash_containing_ids");
+    write_criterion_estimate_in_dir(&root, "hot_path_hit", "new", 123.0);
+    write_criterion_benchmark_id(&root, "hot_path_hit", "new", "hot_path/hit");
+
+    let loaded = load_measurements(&root).unwrap();
+
+    assert_eq!(
+        loaded.measurements["hot_path/hit"],
+        BenchMeasurement { mean_ns: 123.0 }
+    );
+    assert!(!loaded.measurements.contains_key("hot_path_hit"));
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
 fn criterion_new_estimates_override_base() {
     let root = unique_temp_dir("criterion_new_estimates_override_base");
     write_criterion_estimate(&root, "hot_path/hit", "base", 200.0);
@@ -162,10 +178,36 @@ fn write_criterion_estimate(root: &Path, id: &str, snapshot: &str, mean_ns: f64)
         .split('/')
         .fold(root.to_path_buf(), |path, component| path.join(component))
         .join(snapshot);
-    fs::create_dir_all(&estimate_dir).unwrap();
+    write_criterion_estimate_file(&estimate_dir, mean_ns);
+}
+
+fn write_criterion_estimate_in_dir(
+    root: &Path,
+    directory_name: &str,
+    snapshot: &str,
+    mean_ns: f64,
+) {
+    let estimate_dir = root.join(directory_name).join(snapshot);
+    write_criterion_estimate_file(&estimate_dir, mean_ns);
+}
+
+fn write_criterion_estimate_file(estimate_dir: &Path, mean_ns: f64) {
+    fs::create_dir_all(estimate_dir).unwrap();
     fs::write(
         estimate_dir.join("estimates.json"),
         format!(r#"{{"mean":{{"point_estimate":{mean_ns}}}}}"#),
+    )
+    .unwrap();
+}
+
+fn write_criterion_benchmark_id(root: &Path, directory_name: &str, snapshot: &str, group_id: &str) {
+    let estimate_dir = root.join(directory_name).join(snapshot);
+    fs::create_dir_all(&estimate_dir).unwrap();
+    fs::write(
+        estimate_dir.join("benchmark.json"),
+        format!(
+            r#"{{"group_id":"{group_id}","function_id":null,"value_str":null,"throughput":[]}}"#
+        ),
     )
     .unwrap();
 }
