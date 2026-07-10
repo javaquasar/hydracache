@@ -4,7 +4,7 @@
   "supported_resp": "RESP2",
   "redis_oracle": {
     "images": ["redis:6.2.14", "redis:7.2.5"],
-    "normalization": "Supported Redis-subset commands compare exact RESP shape/count/order. Error text may normalize by class. TTL uses bounded tolerance only if the TTL metadata gate lands."
+    "normalization": "Supported Redis-subset commands compare exact RESP shape/count/order and atomic MSET outcome. Error text may normalize by class. TTL uses bounded tolerance because remaining wall-clock time is time-sensitive."
   },
   "commands": [
     {
@@ -107,38 +107,38 @@
     },
     {
       "name": "MSET",
-      "status": "candidate",
+      "status": "supported",
       "kind": "redis_subset",
-      "oracle": "candidate",
-      "tests": ["mset_is_atomic_or_rejected_loud", "redis_oracle_mset_atomicity_matches_or_is_unsupported_loud"]
+      "oracle": "exact",
+      "tests": ["mset_is_atomic_and_duplicate_keys_use_last_value", "mset_oversized_value_rejects_without_partial_mutation", "redis_oracle_mset_atomicity_matches_real_redis"]
     },
     {
       "name": "SET EX/PX",
-      "status": "candidate",
+      "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata", "redis_oracle_ttl_matches_only_when_ttl_gate_lands"]
+      "tests": ["client_protocol_v3_registers_ttl_metadata_without_breaking_v2", "set_ex_and_px_apply_expiry_through_client_surface", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "EXPIRE/PEXPIRE",
-      "status": "candidate",
+      "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata", "redis_oracle_ttl_matches_only_when_ttl_gate_lands"]
+      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expired_keys_are_absent_for_get_mget_exists_and_del", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "TTL/PTTL",
-      "status": "candidate",
+      "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata", "redis_oracle_ttl_matches_only_when_ttl_gate_lands"]
+      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "ttl_pttl_use_bounded_tolerance_against_real_redis", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "PERSIST",
-      "status": "candidate",
+      "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata"]
+      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expired_keys_are_absent_for_get_mget_exists_and_del"]
     },
     {
       "name": "SELECT",

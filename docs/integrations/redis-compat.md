@@ -31,8 +31,8 @@ to this page without adding or updating the manifest row first.
 | `AUTH` | `candidate` | candidate | Identity mapping is release-blocking before auth-required listeners are claimed. |
 | `CLIENT SETNAME`, `CLIENT SETINFO` | `supported_with_caveat` | normalized error/metadata | Accepted only as bounded, side-effect-free connection metadata. |
 | `GET`, `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. |
-| `MSET` | `candidate` | candidate | Ships only if atomic; otherwise unsupported-loud. |
-| `SET EX/PX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `candidate` | TTL tolerance only if shipped | Current client surface needs real TTL application and remaining-TTL metadata before these can be supported. |
+| `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
+| `SET EX/PX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `supported` | bounded TTL tolerance | Backed by `hydracache-client-protocol` v3 TTL metadata and client-surface expiry enforcement. |
 | `SELECT` | `candidate` | candidate | Requires explicit database-to-namespace mapping. |
 | `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN` | `candidate` or `unsupported` | candidate or documented divergence | Health probes must be minimal and honest; no fabricated Redis server state. |
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Disabled by default. |
@@ -44,8 +44,9 @@ to this page without adding or updating the manifest row first.
 
 Compatibility scenarios run against pinned Docker `redis-server` versions and the
 HydraCache RESP facade. Supported Redis-subset commands compare exact RESP shape,
-integer counts, nil/bulk behavior, and array order. Error text may be normalized by
-class. TTL values may use bounded tolerance only if the TTL metadata gate ships.
+integer counts, nil/bulk behavior, array order, and atomic `MSET` outcome. Error text may be
+normalized by class. TTL values use bounded tolerance because wall-clock remaining time is
+time-sensitive.
 
 Unsupported Redis commands are expected to diverge: real Redis may succeed, while
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
@@ -54,8 +55,8 @@ real Redis should return unknown command behavior.
 ## Executable Examples
 
 Every example below is covered by the `redis_clients` gated target. They use only
-the supported RESP2 cache subset; TTL, `SELECT`, RESP3, `rediss://`, and `HC.*`
-examples stay out of user-facing docs until their matching gates ship.
+the supported RESP2 cache subset, including atomic `MSET` and TTL commands. `SELECT`, RESP3,
+`rediss://`, and `HC.*` examples stay out of user-facing docs until their matching gates ship.
 
 ### redis-cli
 
@@ -64,7 +65,10 @@ Gate: `redis_clients`
 ```sh
 redis-cli -u redis://127.0.0.1:6379 SET demo:k v
 redis-cli -u redis://127.0.0.1:6379 GET demo:k
+redis-cli -u redis://127.0.0.1:6379 MSET demo:a 1 demo:b 2
 redis-cli -u redis://127.0.0.1:6379 MGET demo:k demo:missing
+redis-cli -u redis://127.0.0.1:6379 SET demo:ttl v EX 30
+redis-cli -u redis://127.0.0.1:6379 TTL demo:ttl
 redis-cli -u redis://127.0.0.1:6379 DEL demo:k demo:missing
 ```
 
@@ -76,6 +80,10 @@ Gate: `redis_clients`
 let client = redis::Client::open("redis://127.0.0.1:6379/")?;
 let mut connection = client.get_multiplexed_async_connection().await?;
 redis::cmd("SET").arg("demo:k").arg("v").query_async::<()>(&mut connection).await?;
+redis::cmd("MSET").arg("demo:a").arg("1").arg("demo:b").arg("2").query_async::<()>(&mut connection).await?;
+redis::cmd("SET").arg("demo:ttl").arg("v").arg("EX").arg(30).query_async::<()>(&mut connection).await?;
+let ttl: i64 = redis::cmd("TTL").arg("demo:ttl").query_async(&mut connection).await?;
+assert!(ttl > 0);
 let value: String = redis::cmd("GET").arg("demo:k").query_async(&mut connection).await?;
 assert_eq!(value, "v");
 ```
@@ -89,6 +97,9 @@ import redis
 
 r = redis.Redis.from_url("redis://127.0.0.1:6379", decode_responses=True)
 assert r.set("demo:k", "v") is True
+assert r.mset({"demo:a": "1", "demo:b": "2"}) is True
+assert r.set("demo:ttl", "v", ex=30) is True
+assert r.ttl("demo:ttl") > 0
 assert r.get("demo:k") == "v"
 assert r.mget(["demo:k", "demo:missing"]) == ["v", None]
 ```
@@ -103,6 +114,10 @@ import { createClient } from "redis";
 const client = createClient({ url: "redis://127.0.0.1:6379" });
 await client.connect();
 await client.set("demo:k", "v");
+await client.mSet({ "demo:a": "1", "demo:b": "2" });
+await client.set("demo:ttl", "v", { EX: 30 });
+const ttl = await client.ttl("demo:ttl");
+if (ttl <= 0) throw new Error("expected positive TTL");
 const value = await client.get("demo:k");
 await client.quit();
 ```
@@ -116,6 +131,15 @@ client := redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"})
 if err := client.Set(ctx, "demo:k", "v", 0).Err(); err != nil {
     panic(err)
 }
+if err := client.MSet(ctx, "demo:a", "1", "demo:b", "2").Err(); err != nil {
+    panic(err)
+}
+if err := client.Set(ctx, "demo:ttl", "v", 30*time.Second).Err(); err != nil {
+    panic(err)
+}
+if ttl, err := client.TTL(ctx, "demo:ttl").Result(); err != nil || ttl <= 0 {
+    panic("expected positive TTL")
+}
 value, err := client.Get(ctx, "demo:k").Result()
 ```
 
@@ -126,6 +150,12 @@ Gate: `redis_clients`
 ```java
 try (Jedis jedis = new Jedis(URI.create("redis://127.0.0.1:6379"))) {
   jedis.set("demo:k", "v");
+  jedis.mset("demo:a", "1", "demo:b", "2");
+  jedis.setex("demo:ttl", 30, "v");
+  long ttl = jedis.ttl("demo:ttl");
+  if (ttl <= 0) {
+    throw new IllegalStateException("expected positive TTL");
+  }
   String value = jedis.get("demo:k");
 }
 ```
