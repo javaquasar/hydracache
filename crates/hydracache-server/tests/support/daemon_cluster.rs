@@ -61,6 +61,7 @@ pub struct DaemonNodeSpec {
     pub listen_addr: SocketAddr,
     pub cluster_addr: SocketAddr,
     pub admin_addr: SocketAddr,
+    pub redis_addr: Option<SocketAddr>,
     pub storage_dir: PathBuf,
     pub cluster_start: &'static str,
 }
@@ -82,24 +83,33 @@ pub struct DaemonCluster {
 
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, false)
+    }
+
+    pub fn start_bootstrap_with_redis(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, true)
+    }
+
+    fn start_bootstrap_inner(count: usize, name: &str, redis_enabled: bool) -> TestResult<Self> {
         let binary = server_binary()?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
 
-        let mut addrs = reserve_node_addrs(count);
+        let mut addrs = reserve_node_addrs(count, redis_enabled);
         let seed_addrs = addrs
             .iter()
-            .map(|(_, cluster_addr, _)| cluster_addr.to_string())
+            .map(|(_, cluster_addr, _, _)| cluster_addr.to_string())
             .collect::<Vec<_>>();
         let mut nodes = Vec::new();
         for index in 0..count {
-            let (listen_addr, cluster_addr, admin_addr) = addrs.remove(0);
+            let (listen_addr, cluster_addr, admin_addr, redis_addr) = addrs.remove(0);
             let spec = DaemonNodeSpec {
                 name: format!("{name}-{index}"),
                 node_id: member_node_id_for_addr(cluster_addr),
                 listen_addr,
                 cluster_addr,
                 admin_addr,
+                redis_addr,
                 storage_dir: root.join(format!("node-{index}")),
                 cluster_start: "bootstrap",
             };
@@ -134,6 +144,10 @@ impl DaemonCluster {
 
     pub fn admin_addr(&self, index: usize) -> SocketAddr {
         self.nodes[index].spec.admin_addr
+    }
+
+    pub fn redis_addr(&self, index: usize) -> Option<SocketAddr> {
+        self.nodes[index].spec.redis_addr
     }
 
     pub fn running_indices(&mut self) -> Vec<usize> {
@@ -305,7 +319,8 @@ impl DaemonNode {
         fs::create_dir_all(&self.spec.storage_dir)?;
         let stdout = File::create(&self.stdout_path)?;
         let stderr = File::create(&self.stderr_path)?;
-        let child = Command::new(binary)
+        let mut command = Command::new(binary);
+        command
             .env_remove("HYDRACACHE_GRID_INPROC")
             .env("HYDRACACHE_ROLE", "member")
             .env("HYDRACACHE_NODE_ID", &self.spec.node_id)
@@ -324,8 +339,13 @@ impl DaemonNode {
             .env("HYDRACACHE_STORAGE_DIR", &self.spec.storage_dir)
             .env("HYDRACACHE_JOIN_TIMEOUT_MS", "10000")
             .stdout(Stdio::from(stdout))
-            .stderr(Stdio::from(stderr))
-            .spawn()?;
+            .stderr(Stdio::from(stderr));
+        if let Some(redis_addr) = self.spec.redis_addr {
+            command
+                .env("HYDRACACHE_REDIS_API_ENABLED", "true")
+                .env("HYDRACACHE_REDIS_ADDR", redis_addr.to_string());
+        }
+        let child = command.spawn()?;
         self.child = Some(child);
         Ok(())
     }
@@ -440,8 +460,12 @@ fn unique_root(name: &str) -> TestResult<PathBuf> {
     )))
 }
 
-fn reserve_node_addrs(count: usize) -> Vec<(SocketAddr, SocketAddr, SocketAddr)> {
-    let listeners = (0..count * 3)
+fn reserve_node_addrs(
+    count: usize,
+    redis_enabled: bool,
+) -> Vec<(SocketAddr, SocketAddr, SocketAddr, Option<SocketAddr>)> {
+    let surface_count = if redis_enabled { 4 } else { 3 };
+    let listeners = (0..count * surface_count)
         .map(|_| TcpListener::bind("127.0.0.1:0").expect("reserve loopback port"))
         .collect::<Vec<_>>();
     let addrs = listeners
@@ -450,8 +474,15 @@ fn reserve_node_addrs(count: usize) -> Vec<(SocketAddr, SocketAddr, SocketAddr)>
         .collect::<Vec<_>>();
     drop(listeners);
     addrs
-        .chunks_exact(3)
-        .map(|chunk| (chunk[0], chunk[1], chunk[2]))
+        .chunks_exact(surface_count)
+        .map(|chunk| {
+            (
+                chunk[0],
+                chunk[1],
+                chunk[2],
+                redis_enabled.then_some(chunk[3]),
+            )
+        })
         .collect()
 }
 

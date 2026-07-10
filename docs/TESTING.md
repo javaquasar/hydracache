@@ -209,6 +209,18 @@ That gated target compiles in the fast suite and runs only when the env var is
 set. It exercises pipelined extension diagnostics redaction, oversized-frame
 failure, slowloris idle timeout, and zero-mutation behavior for hostile input.
 
+Run the multi-node daemon RESP E2E before closing the release:
+
+```powershell
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E = '1'
+cargo test -p hydracache-server --test redis_resp_multinode --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+```
+
+That gate starts real `hydracache-server` processes with the RESP listener enabled
+and verifies a supported-subset RESP roundtrip before and after a daemon
+drain/restart boundary.
+
 Commands without executable manifest coverage stay `candidate` or `unsupported`.
 
 For the 0.36 database rollout layer specifically, run the deterministic DB
