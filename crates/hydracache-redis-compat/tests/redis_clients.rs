@@ -143,7 +143,10 @@ async fn nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset()
     let (shutdown, addr, serving) = spawn_resp_facade().await;
     let url = format!("redis://{addr}/");
     for ecosystem in ClientEcosystem::all() {
-        run_external_client(ecosystem, &url);
+        let url = url.clone();
+        tokio::task::spawn_blocking(move || run_external_client(ecosystem, &url))
+            .await
+            .unwrap();
     }
     drop(shutdown);
     serving.await.unwrap();
@@ -243,10 +246,13 @@ async fn redis_oracle_unsupported_divergence_is_documented() {
     let hydracache_reply = query_reply(hydracache_addr, "HSET", &["hash", "field", "value"]).await;
 
     assert_eq!(redis_reply, OracleReply::Int(1));
-    assert!(matches!(
-        hydracache_reply,
-        OracleReply::ErrorClass(ref class) if class == "ERR"
-    ));
+    assert!(
+        matches!(
+            hydracache_reply,
+            OracleReply::ErrorClass(ref class) if class == "ERR"
+        ),
+        "HydraCache unsupported HSET should normalize to ERR, got {hydracache_reply:?}"
+    );
 
     drop(shutdown);
     hydracache_serving.await.unwrap();
@@ -267,10 +273,13 @@ async fn redis_oracle_hc_extensions_are_hydracache_only() {
     let redis_reply = query_reply(oracle.addr, "HC.STATS", &[]).await;
     let hydracache_reply = query_reply(hydracache_addr, "HC.STATS", &[]).await;
 
-    assert!(matches!(
-        redis_reply,
-        OracleReply::ErrorClass(ref class) if class == "ERR"
-    ));
+    assert!(
+        matches!(
+            redis_reply,
+            OracleReply::ErrorClass(ref class) if class == "ERR"
+        ),
+        "real Redis HC.STATS should normalize to ERR, got {redis_reply:?}"
+    );
     assert!(matches!(hydracache_reply, OracleReply::Array(_)));
 
     drop(shutdown);
@@ -403,6 +412,12 @@ fn run_go_client(redis_url: &str) -> ClientRun {
     let Ok(dir) = prepare_go_client(redis_url) else {
         return ClientRun::Skipped("could not prepare temporary Go module".to_owned());
     };
+    let mut tidy = Command::new("go");
+    tidy.arg("mod").arg("tidy").current_dir(&dir);
+    if let ClientRun::Failed(output) = run_optional_command("go mod tidy", &mut tidy) {
+        let _ = fs::remove_dir_all(&dir);
+        return ClientRun::Failed(output);
+    }
     let mut command = Command::new("go");
     command.arg("run").arg(".").current_dir(&dir);
     let result = run_optional_command("go", &mut command);
@@ -427,6 +442,7 @@ import (
     "context"
     "fmt"
     "os"
+    "time"
 
     redis "github.com/redis/go-redis/v9"
 )
@@ -437,21 +453,48 @@ func must(ok bool, message string) {{
     }}
 }}
 
+func mustNoErr(err error, message string) {{
+    if err != nil {{
+        panic(fmt.Sprintf("%s: %v", message, err))
+    }}
+}}
+
 func main() {{
     options, err := redis.ParseURL("{redis_url}")
     if err != nil {{
         panic(err)
     }}
+    options.Protocol = 2
+    options.MaxRetries = -1
+    options.ReadTimeout = 2 * time.Second
+    options.WriteTimeout = 2 * time.Second
     client := redis.NewClient(options)
     defer client.Close()
     ctx := context.Background()
-    must(client.Ping(ctx).Val() == "PONG", "PING failed")
-    must(client.Set(ctx, "go:k", "v", 0).Val() == "OK", "SET failed")
-    must(client.Get(ctx, "go:k").Val() == "v", "GET failed")
-    values := client.MGet(ctx, "go:k", "go:missing").Val()
+
+    pong, err := client.Ping(ctx).Result()
+    mustNoErr(err, "PING failed")
+    must(pong == "PONG", fmt.Sprintf("PING got %q", pong))
+
+    set, err := client.Set(ctx, "go:k", "v", 0).Result()
+    mustNoErr(err, "SET failed")
+    must(set == "OK", fmt.Sprintf("SET got %q", set))
+
+    got, err := client.Get(ctx, "go:k").Result()
+    mustNoErr(err, "GET failed")
+    must(got == "v", fmt.Sprintf("GET got %q", got))
+
+    values, err := client.MGet(ctx, "go:k", "go:missing").Result()
+    mustNoErr(err, "MGET failed")
     must(len(values) == 2 && values[0] == "v" && values[1] == nil, fmt.Sprintf("MGET failed: %#v", values))
-    must(client.Exists(ctx, "go:k", "go:missing").Val() == 1, "EXISTS failed")
-    must(client.Del(ctx, "go:k", "go:missing").Val() == 1, "DEL failed")
+
+    exists, err := client.Exists(ctx, "go:k", "go:missing").Result()
+    mustNoErr(err, "EXISTS failed")
+    must(exists == 1, fmt.Sprintf("EXISTS got %d", exists))
+
+    deleted, err := client.Del(ctx, "go:k", "go:missing").Result()
+    mustNoErr(err, "DEL failed")
+    must(deleted == 1, fmt.Sprintf("DEL got %d", deleted))
     _ = os.Stdout
 }}
 "#
@@ -650,13 +693,7 @@ async fn query_reply(addr: SocketAddr, command: &str, args: &[&str]) -> OracleRe
 }
 
 fn error_class(error: &redis::RedisError) -> String {
-    error
-        .to_string()
-        .split_whitespace()
-        .next()
-        .unwrap_or("ERR")
-        .trim_start_matches('-')
-        .to_owned()
+    error.code().unwrap_or("ERR").to_owned()
 }
 
 struct RedisOracle {
