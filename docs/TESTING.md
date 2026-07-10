@@ -162,6 +162,9 @@ a no-op, while non-zero or invalid DB indexes fail loud before mutation.
 Health/probe compatibility is intentionally minimal: `INFO` must expose only
 honest RESP facade facts, `TYPE` must return only `string` or `none` through the
 cache subset, and `ROLE`, `DBSIZE`, and `SCAN` must stay unsupported-loud.
+Admin commands are disabled by default: `CONFIG` must not fabricate Redis server
+configuration, and `FLUSHDB`/`FLUSHALL` must return stable `NOPERM` before
+dispatch so existing keys remain intact.
 
 When adding or changing a RESP command:
 
@@ -183,7 +186,8 @@ The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL me
 compatibility, atomic `MSET`, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
 credential redaction, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
-coverage, minimal `INFO`, cache-subset `TYPE`, decoder fuzz smoke, and oversized frame limits. The server
+coverage, minimal `INFO`, cache-subset `TYPE`, disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
+non-mutation, decoder fuzz smoke, and oversized frame limits. The server
 lifecycle gate proves the
 listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
 plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when

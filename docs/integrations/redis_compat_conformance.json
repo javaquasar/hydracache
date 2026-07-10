@@ -194,14 +194,14 @@
       "status": "admin_disabled",
       "kind": "admin",
       "oracle": "documented_divergence",
-      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification", "admin_commands_are_disabled_by_default_without_config_or_flush_mutation", "resp_listener_admin_commands_are_disabled_before_mutation"]
     },
     {
       "name": "FLUSHDB/FLUSHALL",
       "status": "admin_disabled",
       "kind": "admin",
       "oracle": "documented_divergence",
-      "tests": ["flushall_is_admin_disabled_by_default"]
+      "tests": ["admin_commands_are_disabled_by_default_without_config_or_flush_mutation", "resp_listener_admin_commands_are_disabled_before_mutation"]
     },
     {
       "name": "HSET/ZADD/LISTS/STREAMS/EVAL/MULTI/MODULE",

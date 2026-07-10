@@ -43,7 +43,7 @@ to this page without adding or updating the manifest row first.
 | `INFO` | `supported_with_caveat` | normalized metadata | Minimal honest RESP facade facts only: standalone mode, role, HydraCache version, RESP dialects, accepted connection count, processed command count, and RESP error count. No fake Redis memory, keyspace, replication, or cluster sections. |
 | `TYPE` | `supported_with_caveat` | exact | Returns `string` for an existing cache value and `none` for a miss. No other Redis data types are claimed. |
 | `ROLE`, `DBSIZE`, `SCAN` | `unsupported` | documented divergence | `ROLE` would fabricate Redis replication state, `DBSIZE` would imply an exact tenant/keyspace cardinality contract, and `SCAN` would expose iterable keyspace behavior HydraCache does not provide at this edge. |
-| `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Disabled by default. |
+| `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Recognized but disabled by default. `CONFIG` would imply Redis server configuration read/write support; `FLUSHDB` and `FLUSHALL` are destructive keyspace-wide operations. All return stable `NOPERM` before mutation. |
 | `HSET`, `ZADD`, lists, streams, Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. |
 | `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO` | `unsupported` | documented divergence | Standalone-only facade. No hash slots, topology, `MOVED`, or `ASK` are fabricated. |
 | `HC.STATS`, `HC.DIAGNOSTICS`, `HC.INVALIDATE` | `hydracache_extension` | HydraCache-only | Must be tenant-scoped and go through HydraCache surfaces. |
@@ -81,6 +81,27 @@ Cluster state, or per-DB keyspace sections.
 `none`. `ROLE`, `DBSIZE`, and `SCAN` remain unsupported because returning
 Redis-like replication roles, exact key counts, or iterable keyspace state would
 be misleading or unsafe for a tenant-scoped HydraCache facade.
+
+## Admin Commands
+
+`CONFIG`, `FLUSHDB`, and `FLUSHALL` are intentionally `admin_disabled`, not
+partially implemented Redis features. `CONFIG` is a Redis server administration
+interface for reading and mutating runtime settings such as memory policy,
+persistence, TLS, and ACL behavior. HydraCache does not expose those Redis
+server internals through the RESP cache facade, so returning a fake config map or
+accepting `CONFIG SET` would be wrong-but-green.
+
+`FLUSHDB` and `FLUSHALL` are destructive commands. In Redis, `FLUSHDB` removes
+all keys in the selected database and `FLUSHALL` removes all keys in all
+databases. HydraCache exposes only `SELECT 0` as a compatibility no-op and does
+not expose Redis multi-db or Redis-global server keyspace semantics. A wipe
+operation, if added later, must be a HydraCache-native admin API with explicit
+tenant/namespace scope, authorization, audit, and rollout gates.
+
+The default RESP facade returns stable `NOPERM ... is disabled by the HydraCache
+Redis facade` errors for these commands before dispatch. Tests assert that
+`CONFIG GET *` does not fabricate configuration, and that `FLUSHDB`/`FLUSHALL`
+leave existing keys intact.
 
 ## Executable Examples
 

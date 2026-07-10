@@ -372,9 +372,16 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
    and credential redaction in logs. The conformance manifest may remain `candidate` only while the
    implementation is absent; before release close, the row must graduate to supported with the same
    tests that prove the listener rejects unauthenticated data commands.
-8. **Dangerous admin commands:** `FLUSHDB`/`FLUSHALL` are `admin-disabled` by default and require an
-   explicit config switch plus admin scope before they can mutate anything. The default behavior is a
-   loud error.
+8. **Dangerous/admin commands:** `CONFIG`, `FLUSHDB`, and `FLUSHALL` are recognized but
+   `admin-disabled` by default. `CONFIG` is a Redis server-administration surface for reading or
+   changing runtime configuration; the facade must not fabricate Redis memory, persistence, TLS, ACL,
+   replication, or module configuration, and it must not accept `CONFIG SET` as if those settings
+   existed. `FLUSHDB` deletes the selected Redis database, and `FLUSHALL` deletes every Redis database;
+   under HydraCache's `SELECT 0`-only compatibility contract these would become broad destructive
+   tenant/namespace operations rather than normal cache-subset commands. The default behavior is a
+   stable `NOPERM ... is disabled by the HydraCache Redis facade` error before dispatch or mutation.
+   Any future wipe/config capability must be HydraCache-native admin API scope with explicit
+   authorization, audit, and rollout gates, not a Redis-compatible default.
 9. **RESP negotiation:** `HELLO 2` and `HELLO 3` are supported dialect negotiations for `0.63.0`.
    `HELLO 3` must enter an explicit RESP3 connection mode with RESP3 reply encoding for the same cache
    subset. Unsupported RESP3 aggregate command frames must fail loud before mutation; the listener must
@@ -411,6 +418,8 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 - `mainstream_redis_client_can_talk_to_the_facade` proves `INFO`/`TYPE` through redis-rs.
 - `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset` proves `INFO`/`TYPE`
   through Python, Node, Go, and JVM clients.
+- `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`.
+- `resp_listener_admin_commands_are_disabled_before_mutation`.
 - `auth_hello_auth_and_noauth_errors_match_contract`.
 - `redis_auth_required_listener_rejects_data_commands_before_auth`.
 - `redis_auth_redacts_credentials_from_errors_logs_and_metrics`.
@@ -647,15 +656,18 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
    `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO`, `CLUSTER KEYSLOT`, and
    `CLUSTER GETKEYSINSLOT` are intentionally not implemented, because returning fake slots or a fake
    topology would make cluster-aware clients cache an invalid routing model.
-3. `FLUSHDB`/`FLUSHALL` → loud admin-disabled error **unless** explicitly enabled in config (dangerous;
-   off by default).
+3. `CONFIG`, `FLUSHDB`, and `FLUSHALL` → loud admin-disabled error before dispatch. `CONFIG` must not
+   return fake Redis server configuration, and `FLUSHDB`/`FLUSHALL` must not remove keys in the
+   default release configuration. They remain off by default even though the parser recognizes them,
+   because destructive/admin operations need HydraCache-native authorization, scope, and audit.
 
 **Tests & requirements.**
 - `unsupported_commands_fail_loud_with_stable_error` (table-driven over the matrix).
 - `cluster_commands_decode_as_unsupported_standalone_contract`.
 - `cluster_and_moved_ask_are_never_emitted`.
 - `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`.
-- `flushall_is_admin_disabled_by_default`.
+- `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`.
+- `resp_listener_admin_commands_are_disabled_before_mutation`.
 - Run: `cargo test -p hydracache-redis-compat --locked`.
 
 **Risk & rollback.** Pure rejection surface; the matrix doc is the contract.
@@ -948,7 +960,7 @@ HydraCache does and does not implement.
 | health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification`, `info_returns_minimal_honest_facade_state`, `info_section_argument_does_not_fabricate_redis_keyspace_state`, `resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state`, `type_reports_string_or_none_through_client_surface`, `resp_listener_type_reports_string_and_none`, `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `redis_oracle_supported_subset_matches_real_redis` for `TYPE` | PR + Docker-gated / nightly |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
 | `HC.*` tag/dimension commands (W3d/W3e) | native tag path or unsupported matrix | `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`, `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`, `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys`, `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` if enabled | PR / candidate |
-| unsupported matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_commands_decode_as_unsupported_standalone_contract`, `cluster_and_moved_ask_are_never_emitted`, `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`, `flushall_is_admin_disabled_by_default` | PR |
+| unsupported/admin-disabled matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_commands_decode_as_unsupported_standalone_contract`, `cluster_and_moved_ask_are_never_emitted`, `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`, `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`, `resp_listener_admin_commands_are_disabled_before_mutation` | PR |
 | golden + fuzz + frame boundaries (W5) | committed corpus + proptest | `golden_resp_fixtures_decode_to_expected`, `resp_decoder_never_panics_on_arbitrary_bytes`, `partial_resp_frames_decode_like_complete_frames`, `multiple_resp_frames_in_one_read_are_all_processed` | PR |
 | pipelining/backpressure/resource behavior (W5) | RESP listener | `pipelined_requests_preserve_response_order`, `pipelined_mixed_success_and_error_responses_stay_ordered`, `oversized_bulk_and_array_frames_are_rejected_before_allocation_spike`, `slowloris_connection_is_timed_out_without_leaking_inflight_work`, `resp_surface_metrics_have_bounded_labels_and_no_key_or_value_leak` | PR + gated |
 | mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `client_matrix_runs_mset_and_ttl_commands`, `client_matrix_runs_resp3_negotiation_scenario`, `client_matrix_runs_auth_required_connection_scenario`, `client_matrix_runs_rediss_required_connection_scenario` | PR + Docker-gated / nightly |
@@ -989,8 +1001,9 @@ HydraCache does and does not implement.
   mutating commands with `NOAUTH` before authentication, invalid credentials return `WRONGPASS`,
   successful auth binds connection-local identity/tenant before dispatch, and credentials never appear
   in errors, logs, metrics, or diagnostics.
-- Every non-subset command fails with a **stable loud error**; no `MOVED`/`ASK`/`CLUSTER`; `FLUSHALL`
-  admin-disabled by default (W4). RESP decoder never panics on arbitrary bytes (W5, R-3).
+- Every non-subset command fails with a **stable loud error**; no `MOVED`/`ASK`/`CLUSTER`;
+  `CONFIG`, `FLUSHDB`, and `FLUSHALL` are admin-disabled by default and proven not to dispatch or
+  mutate keys (W4). RESP decoder never panics on arbitrary bytes (W5, R-3).
 - Health/readiness probes (`INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`, `CLIENT LIST`,
   `CLIENT ID`) are classified in the manifest. `INFO` returns minimal honest RESP-facade state,
   `TYPE` returns `string`/`none` for the cache subset, and `ROLE`/`DBSIZE`/`SCAN` fail unsupported.

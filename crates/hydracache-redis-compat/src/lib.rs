@@ -2972,28 +2972,67 @@ mod tests {
     }
 
     #[test]
-    fn flushall_is_admin_disabled_by_default() {
-        let context = RedisTranslationContext::default();
-        let (command, _) = decode_resp2_command(b"*1\r\n$8\r\nFLUSHALL\r\n")
-            .unwrap()
-            .unwrap();
+    fn admin_commands_are_disabled_by_default_without_config_or_flush_mutation() {
+        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+        let server =
+            RedisRespServer::new(Arc::clone(&state), RedisListenerConfig::default()).unwrap();
         assert_eq!(
-            command,
-            RedisCommand::AdminDisabled {
-                command: "FLUSHALL".to_owned(),
-                args: Vec::new(),
-            }
+            server.execute_command(RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: Vec::new(),
+            }),
+            RespValue::SimpleString("OK")
         );
+        let dispatches_after_set = state.dispatch_attempts();
+        let mutations_after_set = state.state_mutations();
 
-        let error = translate_redis_command(command, &context).unwrap_err();
-        assert!(matches!(
-            &error,
-            RedisTranslationError::AdminDisabled { command } if command == "FLUSHALL"
-        ));
+        for (raw, expected, response) in [
+            (
+                b"*3\r\n$6\r\nCONFIG\r\n$3\r\nGET\r\n$1\r\n*\r\n".as_slice(),
+                RedisCommand::AdminDisabled {
+                    command: "CONFIG".to_owned(),
+                    args: vec![b"GET".to_vec(), b"*".to_vec()],
+                },
+                RespValue::Error(
+                    "NOPERM CONFIG is disabled by the HydraCache Redis facade".to_owned(),
+                ),
+            ),
+            (
+                b"*1\r\n$7\r\nFLUSHDB\r\n".as_slice(),
+                RedisCommand::AdminDisabled {
+                    command: "FLUSHDB".to_owned(),
+                    args: Vec::new(),
+                },
+                RespValue::Error(
+                    "NOPERM FLUSHDB is disabled by the HydraCache Redis facade".to_owned(),
+                ),
+            ),
+            (
+                b"*1\r\n$8\r\nFLUSHALL\r\n".as_slice(),
+                RedisCommand::AdminDisabled {
+                    command: "FLUSHALL".to_owned(),
+                    args: Vec::new(),
+                },
+                RespValue::Error(
+                    "NOPERM FLUSHALL is disabled by the HydraCache Redis facade".to_owned(),
+                ),
+            ),
+        ] {
+            let (command, consumed) = decode_resp2_command(raw).unwrap().unwrap();
+            assert_eq!(consumed, raw.len());
+            assert_eq!(command, expected);
+            assert_eq!(server.execute_command(command), response);
+            assert_eq!(state.dispatch_attempts(), dispatches_after_set);
+            assert_eq!(state.state_mutations(), mutations_after_set);
+        }
+
         assert_eq!(
-            encode_resp2_value(error.into_resp_value()).unwrap(),
-            b"-NOPERM FLUSHALL is disabled by the HydraCache Redis facade\r\n"
+            server.execute_command(RedisCommand::Get { key: b"k".to_vec() }),
+            RespValue::BulkString(b"v".to_vec())
         );
+        assert_eq!(state.state_mutations(), 1);
+        assert_eq!(server.metrics().errors, 3);
     }
 
     #[test]
@@ -3221,6 +3260,36 @@ mod tests {
 
         assert_eq!(output, b"+OK\r\n+string\r\n+none\r\n+OK\r\n");
         assert_eq!(server.state().dispatch_attempts(), 3);
+    }
+
+    #[tokio::test]
+    async fn resp_listener_admin_commands_are_disabled_before_mutation() {
+        let server = listener();
+        let output = exchange(
+            &server,
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *3\r\n$6\r\nCONFIG\r\n$3\r\nGET\r\n$1\r\n*\r\n\
+              *1\r\n$7\r\nFLUSHDB\r\n\
+              *1\r\n$8\r\nFLUSHALL\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+
+        assert_eq!(
+            output,
+            b"+OK\r\n-NOPERM CONFIG is disabled by the HydraCache Redis facade\r\n-NOPERM FLUSHDB is disabled by the HydraCache Redis facade\r\n-NOPERM FLUSHALL is disabled by the HydraCache Redis facade\r\n$1\r\nv\r\n+OK\r\n"
+        );
+        assert_eq!(server.state().dispatch_attempts(), 2);
+        assert_eq!(server.state().state_mutations(), 1);
+        assert_eq!(
+            server.metrics(),
+            RedisListenerMetrics {
+                accepted_connections: 1,
+                commands: 6,
+                errors: 3,
+            }
+        );
     }
 
     #[tokio::test]
