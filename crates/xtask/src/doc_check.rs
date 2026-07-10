@@ -417,9 +417,9 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
             manifest.surface
         ));
     }
-    if manifest.supported_resp != "RESP2" {
+    if manifest.supported_resp != "RESP2+RESP3" {
         problems.push(format!(
-            "docs/integrations/redis_compat_conformance.json: supported_resp must be RESP2 for 0.63.0, got '{}'",
+            "docs/integrations/redis_compat_conformance.json: supported_resp must be RESP2+RESP3 for 0.63.0, got '{}'",
             manifest.supported_resp
         ));
     }

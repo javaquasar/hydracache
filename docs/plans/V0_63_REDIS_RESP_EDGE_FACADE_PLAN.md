@@ -153,13 +153,13 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
 ## Scope Expansion: Remaining 0.63.0 Proof Items
 
 This section records the explicit scope expansion for the current implementation branch. The release
-still does **not** claim RESP3, Redis Cluster, or tag-scoped invalidation unless their candidate gates
-are implemented separately. The expansion closes the compatibility proof around the already-supported
-RESP2 cache subset and adds four mandatory 0.63 work streams: atomic `MSET`, TTL/expiry commands
-backed by a registered client-protocol v3 extension, Redis startup security (`AUTH`/`HELLO AUTH`),
-and native Redis TLS (`rediss://`) on the RESP listener.
+still does **not** claim Redis Cluster or tag-scoped invalidation unless their candidate gates are
+implemented separately. The expansion closes the compatibility proof around the supported RESP2/RESP3
+cache subset and adds five mandatory 0.63 work streams: atomic `MSET`, TTL/expiry commands backed by
+a registered client-protocol v3 extension, Redis startup security (`AUTH`/`HELLO AUTH`), native Redis
+TLS (`rediss://`) on the RESP listener, and RESP3 negotiation for the same cache subset.
 
-The following four items are now mandatory release scope in addition to the six proof items below:
+The following five items are now mandatory release scope in addition to the six proof items below:
 
 1. **Atomic `MSET`.** `MSET key value [key value ...]` is mandatory supported scope and closes only
    when it is executed through `ClientSurfaceState` as an atomic batch. The batch path must validate arity,
@@ -192,6 +192,15 @@ The following four items are now mandatory release scope in addition to the six 
    return `WRONGPASS`; and logs/metrics must not expose connection-string credentials or certificate
    material. The Docker/client matrix must include at least one `rediss://` Redis-client path and docs
    may show `rediss://` examples only after that gate exists.
+5. **RESP3 negotiation and cache-subset codec.** `HELLO 3` is now mandatory supported scope for the
+   optional RESP listener. A successful `HELLO 3` switches only that connection into RESP3 response
+   encoding while preserving the same cache subset, auth, rediss, MSET, TTL, unsupported-command, and
+   tenant/limit semantics as RESP2. `HELLO 3 AUTH username password` must authenticate before sending
+   the handshake response. RESP3 command arrays with blob/simple string arguments decode to the same
+   parser-neutral `RedisCommand` model, and representative cache commands (`PING`, `SET`, `GET`,
+   `MSET`, `MGET`, `TTL`/`PTTL`, `QUIT`) must round-trip after negotiation. RESP3 `Map`, `Set`, `Push`,
+   attributes-as-command, and nested non-string argument shapes remain unsupported and must fail loud
+   before mutation; Redis Cluster and non-cache data structures remain out of scope.
 
 The following six items are now mandatory release scope:
 
@@ -237,11 +246,13 @@ loose reminder.
    Redis 7.x image unless the release explicitly narrows the compatibility claim. Updating oracle
    versions is a reviewed compatibility change with a changelog note, because real Redis behavior,
    `COMMAND` metadata, `HELLO`, and error text can evolve.
-3. **RESP2/RESP3 negotiation (W0/W1/W2/W5/W6).** RESP2 is the `0.63.0` supported dialect. `HELLO 2`
-   must produce an honest RESP2-compatible handshake. `HELLO 3` must either downgrade/reject in a
-   documented way or be marked unsupported-loud; RESP3-only frame types are rejected before mutation.
-   The docs and oracle normalization must say exactly what is compared under RESP2 and what is not
-   claimed for RESP3.
+3. **RESP2/RESP3 negotiation (W0/W1/W2/W5/W6).** RESP2 and RESP3 are the `0.63.0` supported wire
+   dialects for the same cache subset. `HELLO 2` must produce an honest RESP2-compatible handshake.
+   `HELLO 3` must switch the connection to RESP3 replies, and `HELLO 3 AUTH username password` must
+   authenticate before the handshake response. RESP3 command arrays using blob/simple string arguments
+   decode to the same parser-neutral `RedisCommand` model. Unsupported RESP3 aggregate command frames
+   (`Map`, `Set`, `Push`, attributes as commands, or nested non-string arguments) are rejected before
+   mutation. The docs and oracle normalization must say exactly what is compared under RESP2 and RESP3.
 4. **Multi-node HydraCache e2e (W5/W6).** Add a gated test that drives the RESP facade against a real
    multi-daemon HydraCache grid, not only an in-process state. The test writes through RESP, reads
    through RESP, exercises at least one leader restart/drain or node restart path, and proves the RESP
@@ -249,8 +260,8 @@ loose reminder.
 5. **Executable docs (W6).** Every copy-paste example in `docs/integrations/redis-compat.md` must be
    executable as a docs-smoke test. That includes `redis-cli`, Rust, Python, Node, Go, and JVM examples
    when the corresponding client matrix row is claimed. The expanded release requires executable
-   examples for `MSET`, TTL, and `rediss://`. Docs cannot show `HC.*`, `SELECT`, or RESP3 examples
-   unless the matching gates are green.
+   examples for `MSET`, TTL, `rediss://`, and RESP3 negotiation. Docs cannot show `HC.*` or `SELECT`
+   examples unless the matching gates are green.
 6. **Reconnect and connection-failure semantics (W5).** Add tests for close mid-command,
    close mid-pipeline, reconnect-and-retry, server drain during pipeline, and malformed response
    boundaries. A failed connection must not corrupt the next response, leak connection-local namespace
@@ -357,9 +368,10 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 8. **Dangerous admin commands:** `FLUSHDB`/`FLUSHALL` are `admin-disabled` by default and require an
    explicit config switch plus admin scope before they can mutate anything. The default behavior is a
    loud error.
-9. **RESP negotiation:** `HELLO 2` is the only supported dialect negotiation for `0.63.0` unless W0
-   explicitly graduates more. `HELLO 3` and RESP3-only frames must be classified as downgrade,
-   unsupported-loud, or candidate; they must not accidentally enter a half-RESP3 mode.
+9. **RESP negotiation:** `HELLO 2` and `HELLO 3` are supported dialect negotiations for `0.63.0`.
+   `HELLO 3` must enter an explicit RESP3 connection mode with RESP3 reply encoding for the same cache
+   subset. Unsupported RESP3 aggregate command frames must fail loud before mutation; the listener must
+   not accidentally enter a half-RESP3 mode where negotiation succeeds but replies stay RESP2.
 10. **Health/readiness commands:** classify `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`,
    `CLIENT LIST`, `CLIENT ID`, and similar framework probes. Minimal honest replies are allowed only
    when every returned field is true for HydraCache; fabricated Redis internals are forbidden.
@@ -406,7 +418,7 @@ pipeline so the codec choice is swappable.
 root `Cargo.toml` `[workspace].members`.
 
 **Codec decision (blueprint §"Existing Rust Building Blocks").** Production codec = **`redis-protocol`**
-(RESP2 now, RESP3 later — `Bytes`-based, streaming, Tokio codec, fuzzable) under a **HydraCache-owned
+(RESP2 and RESP3 — `Bytes`-based, streaming, Tokio codec, fuzzable) under a **HydraCache-owned
 Tokio listener**, so lifecycle/TLS/auth/metrics/backpressure/drain stay consistent with
 `hydracache-server`. `redcon` may be used only for a throwaway PoC; do **not** hand-write RESP parsing.
 Vet license/maintenance/RESP2+3/zero-copy before pinning; record the ADR (`docs/adr/…-resp-codec.md`).
@@ -784,11 +796,11 @@ enough that a later contributor cannot accidentally widen or weaken it.
 **W6c compatibility register.**
 1. `docs/COMPAT.md` gets a new artifact row for the RESP edge surface, for example
    `HydraCache Redis RESP edge surface | RESP2 subset v1`.
-2. The row records that RESP2 is the supported wire dialect for `0.63.0`; RESP3 is future/candidate.
+2. The row records that RESP2 and RESP3 are the supported wire dialects for `0.63.0`.
 3. The register updates the existing `hydracache-client-protocol` artifact from version `2` to
    version `3` with additive TTL metadata/expiry request and response shapes. W6 also records that v2
    clients remain accepted and do not receive v3-only responses unless they negotiate protocol v3.
-4. The row names the failure mode: unsupported commands, unknown RESP3-only frames, oversized frames,
+4. The row names the failure mode: unsupported commands, unsupported RESP3 aggregate command frames, oversized frames,
    unauthenticated commands, wrong tenant scope, and malformed/truncated frames fail loud before
    mutation.
 5. If `HC.*` commands ship, the row names their compatibility version and says whether they are edge
@@ -890,7 +902,7 @@ HydraCache does and does not implement.
 | conformance manifest (W0/W5/W6) | `docs/integrations/redis_compat_conformance.json` or `.yaml` | `redis_compat_conformance_manifest_is_the_single_source_of_truth`, `redis_compat_conformance_manifest_drives_client_and_oracle_scenarios`, `redis_compat_conformance_manifest_is_referenced_by_docs_tests_and_oracle` | PR |
 | client protocol v3 TTL metadata (W0/W2/W6) | `hydracache-client-protocol` + `docs/COMPAT.md` | `client_protocol_v3_registers_ttl_metadata_without_breaking_v2`, `protocol_v2_clients_do_not_receive_v3_ttl_shapes`, `compat_register_mentions_client_protocol_v3_ttl_extension` | PR |
 | client-surface expiry semantics (W2) | `hydracache-client-transport-axum` | `set_ex_and_px_apply_expiry_through_client_surface`, `expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`, `expired_keys_are_absent_for_get_mget_exists_and_del` | PR |
-| RESP2/RESP3 negotiation (W0/W1/W2/W5) | `hydracache-redis-compat` + conformance manifest | `resp2_hello_is_supported_and_resp3_is_rejected_or_downgraded_as_documented`, `resp2_frames_are_accepted_and_resp3_only_frames_fail_loud_before_mutation`, `hello2_is_supported_and_hello3_behavior_matches_contract`, `resp3_only_inputs_are_rejected_before_mutation` | PR |
+| RESP2/RESP3 negotiation (W0/W1/W2/W5) | `hydracache-redis-compat` + conformance manifest | `hello2_and_hello3_are_supported_and_switch_dialect`, `resp3_commands_roundtrip_supported_cache_subset`, `resp3_unsupported_aggregate_inputs_fail_before_mutation` | PR |
 | `RedisCommand` + RESP codec (W1) | `hydracache-redis-compat` | `resp_frame_roundtrip_matches_redis_protocol` | PR |
 | `RedisApiConfig` + validation (W1) | `hydracache-server/src/config.rs` | `redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud` | PR |
 | Redis auth and native TLS (W0/W1/W2/W5/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs + raw TLS listener | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_env_reuses_server_tls_material`, `redis_resp_listener_accepts_rediss_auth_and_cache_commands`, `redis_resp_tls_listener_rejects_plaintext_before_mutation`, `redis_resp_tls_client_rejects_wrong_ca`, `redis_resp_tls_keeps_wrong_auth_as_wrongpass` | PR |
@@ -932,9 +944,9 @@ HydraCache does and does not implement.
   divergence is documented; `HC.*` commands are documented as HydraCache-only and return unknown
   command on real Redis. Redis oracle images are pinned and documented; no `latest` oracle image is
   allowed in gates.
-- RESP2 negotiation is explicit and tested: `HELLO 2` works as documented; `HELLO 3` and RESP3-only
-  inputs are rejected, downgraded, or left candidate exactly as W0 specifies, with no silent mixed
-  dialect mode.
+- RESP2/RESP3 negotiation is explicit and tested: `HELLO 2` works as documented, `HELLO 3` switches
+  the connection to RESP3 replies for the supported cache subset, and unsupported RESP3 aggregate
+  command frames fail before mutation with no silent mixed dialect mode.
 - Redis `AUTH` and `HELLO 2 AUTH` are explicit and tested: auth-required listeners reject data and
   mutating commands with `NOAUTH` before authentication, invalid credentials return `WRONGPASS`,
   successful auth binds connection-local identity/tenant before dispatch, and credentials never appear
@@ -974,7 +986,8 @@ HydraCache does and does not implement.
   request ids, credentials, or unbounded tenant-provided strings (W5/W6).
 - User-facing examples in `docs/integrations/redis-compat.md` are executable docs-smoke tests or are
   explicitly labeled with their Docker/nightly gate. The examples include supported `MSET`, TTL
-  commands, and `rediss://` startup. Docs cannot show untested `HC.*`, `SELECT`, or RESP3 examples.
+  commands, `rediss://` startup, and RESP3 negotiation. Docs cannot show untested `HC.*` or `SELECT`
+  examples.
 - Config/operator packaging keeps the RESP listener disabled and unexposed by default. Helm/operator
   or production examples require explicit enablement, explicit port exposure, Redis `AUTH`, and TLS
   material/CA configuration.

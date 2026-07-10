@@ -273,7 +273,7 @@ depends_on = []
         r#"{
   "version": 1,
   "surface": "hydracache-redis-resp-edge",
-  "supported_resp": "RESP2",
+  "supported_resp": "RESP2+RESP3",
   "redis_oracle": {
     "images": ["redis:6.2.14", "redis:7.2.5"],
     "normalization": "exact for supported commands"
@@ -452,8 +452,8 @@ depends_on = []
         "missing surface check: {joined}"
     );
     assert!(
-        joined.contains("supported_resp must be RESP2"),
-        "missing RESP2 check: {joined}"
+        joined.contains("supported_resp must be RESP2+RESP3"),
+        "missing RESP2+RESP3 check: {joined}"
     );
     assert!(
         joined.contains("redis_oracle image 'redis:latest' must be pinned"),

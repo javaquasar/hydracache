@@ -27,7 +27,7 @@ to this page without adding or updating the manifest row first.
 
 | Command | Status | Oracle rule | Notes |
 | --- | --- | --- | --- |
-| `PING`, `ECHO`, `QUIT`, `HELLO 2`, `COMMAND` | `supported` | exact or documented normalized metadata | Startup handshake needed by mainstream clients. |
+| `PING`, `ECHO`, `QUIT`, `HELLO 2`, `HELLO 3`, `COMMAND` | `supported` | exact or documented normalized metadata | Startup handshake needed by mainstream clients. `HELLO 3` switches the connection to RESP3 for the same cache subset. |
 | `AUTH`, `HELLO 2 AUTH` | `supported_with_caveat` | normalized error | Supported for auth-required listeners with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, and connection-local authenticated state. Redis ACL categories are not implemented by this row. |
 | `rediss://` listener TLS | `supported_with_caveat` | normalized error | Native Redis TLS is supported for the RESP listener when explicitly enabled and backed by server TLS certificate/key material. TLS protects transport; Redis `AUTH` remains the application-layer gate. |
 | `CLIENT SETNAME`, `CLIENT SETINFO` | `supported_with_caveat` | normalized error/metadata | Accepted only as bounded, side-effect-free connection metadata. |
@@ -57,11 +57,11 @@ real Redis should return unknown command behavior.
 ## Executable Examples
 
 Every example below is covered by the `redis_clients` gated target. They use only
-the supported RESP2 cache subset, including atomic `MSET`, TTL commands, the
+the supported RESP2/RESP3 cache subset, including atomic `MSET`, TTL commands, the
 auth-required startup path, and the native `rediss://` startup path. Auth-enabled examples use
 `redis://default:<password>@host:port/`; TLS examples use `rediss://default:<password>@host:port/`
-with the configured CA. `SELECT`, RESP3, and `HC.*` examples stay out of user-facing docs until
-their matching gates ship.
+with the configured CA. `SELECT` and `HC.*` examples stay out of user-facing docs until their
+matching gates ship.
 
 ### redis-cli
 
