@@ -51,6 +51,85 @@ Unsupported Redis commands are expected to diverge: real Redis may succeed, whil
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
 real Redis should return unknown command behavior.
 
+## Executable Examples
+
+Every example below is covered by the `redis_clients` gated target. They use only
+the supported RESP2 cache subset; TTL, `SELECT`, RESP3, `rediss://`, and `HC.*`
+examples stay out of user-facing docs until their matching gates ship.
+
+### redis-cli
+
+Gate: `redis_clients`
+
+```sh
+redis-cli -u redis://127.0.0.1:6379 SET demo:k v
+redis-cli -u redis://127.0.0.1:6379 GET demo:k
+redis-cli -u redis://127.0.0.1:6379 MGET demo:k demo:missing
+redis-cli -u redis://127.0.0.1:6379 DEL demo:k demo:missing
+```
+
+### Rust (redis-rs)
+
+Gate: `redis_clients`
+
+```rust
+let client = redis::Client::open("redis://127.0.0.1:6379/")?;
+let mut connection = client.get_multiplexed_async_connection().await?;
+redis::cmd("SET").arg("demo:k").arg("v").query_async::<()>(&mut connection).await?;
+let value: String = redis::cmd("GET").arg("demo:k").query_async(&mut connection).await?;
+assert_eq!(value, "v");
+```
+
+### Python (redis-py)
+
+Gate: `redis_clients`
+
+```python
+import redis
+
+r = redis.Redis.from_url("redis://127.0.0.1:6379", decode_responses=True)
+assert r.set("demo:k", "v") is True
+assert r.get("demo:k") == "v"
+assert r.mget(["demo:k", "demo:missing"]) == ["v", None]
+```
+
+### Node (node-redis)
+
+Gate: `redis_clients`
+
+```javascript
+import { createClient } from "redis";
+
+const client = createClient({ url: "redis://127.0.0.1:6379" });
+await client.connect();
+await client.set("demo:k", "v");
+const value = await client.get("demo:k");
+await client.quit();
+```
+
+### Go (go-redis)
+
+Gate: `redis_clients`
+
+```go
+client := redis.NewClient(&redis.Options{Addr: "127.0.0.1:6379"})
+if err := client.Set(ctx, "demo:k", "v", 0).Err(); err != nil {
+    panic(err)
+}
+value, err := client.Get(ctx, "demo:k").Result()
+```
+
+### JVM (Jedis)
+
+Gate: `redis_clients`
+
+```java
+try (Jedis jedis = new Jedis(URI.create("redis://127.0.0.1:6379"))) {
+  jedis.set("demo:k", "v");
+  String value = jedis.get("demo:k");
+}
+```
+
 ## Operator Defaults
 
 The RESP listener is disabled by default. Local development may bind it to

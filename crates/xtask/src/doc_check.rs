@@ -252,6 +252,7 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     problems.extend(check_adr_index(root)?);
     problems.extend(check_publishable_crates_in_publish_scripts(root)?);
     problems.extend(check_redis_compat_conformance(root)?);
+    problems.extend(check_redis_compat_docs_examples(root)?);
 
     Ok(problems)
 }
@@ -527,6 +528,53 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
     }
 
     Ok(problems)
+}
+
+fn check_redis_compat_docs_examples(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let docs_path = root.join("docs/integrations/redis-compat.md");
+    if !docs_path.is_file() {
+        return Ok(Vec::new());
+    }
+    let text = fs::read_to_string(&docs_path)
+        .map_err(|err| format!("reading {}: {err}", docs_path.display()))?;
+    if !text.contains("## Executable Examples") {
+        return Ok(Vec::new());
+    }
+
+    let mut problems = Vec::new();
+    for heading in [
+        "### redis-cli",
+        "### Rust (redis-rs)",
+        "### Python (redis-py)",
+        "### Node (node-redis)",
+        "### Go (go-redis)",
+        "### JVM (Jedis)",
+    ] {
+        let Some(section) = section_after_heading(&text, heading) else {
+            problems.push(format!(
+                "docs/integrations/redis-compat.md: missing executable example section '{heading}'"
+            ));
+            continue;
+        };
+        if !section.contains("Gate: `redis_clients`") {
+            problems.push(format!(
+                "docs/integrations/redis-compat.md: example section '{heading}' must name Gate: `redis_clients`"
+            ));
+        }
+        if !section.contains("```") {
+            problems.push(format!(
+                "docs/integrations/redis-compat.md: example section '{heading}' must include a fenced code block"
+            ));
+        }
+    }
+    Ok(problems)
+}
+
+fn section_after_heading<'a>(text: &'a str, heading: &str) -> Option<&'a str> {
+    let start = text.find(heading)?;
+    let rest = &text[start + heading.len()..];
+    let end = rest.find("\n### ").unwrap_or(rest.len());
+    Some(&rest[..end])
 }
 
 fn check_in_prose_plan_links(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {

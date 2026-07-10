@@ -263,7 +263,11 @@ depends_on = []
     let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
     let integration_dir = root.join("docs/integrations");
     fs::create_dir_all(&integration_dir).unwrap();
-    fs::write(integration_dir.join("redis-compat.md"), "# Redis RESP\n").unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
     fs::write(
         integration_dir.join("redis_compat_conformance.json"),
         r#"{
@@ -300,6 +304,93 @@ depends_on = []
         problems.is_empty(),
         "expected no problems, got: {problems:?}"
     );
+}
+
+#[test]
+fn rejects_redis_compat_docs_examples_without_gate_labels() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        "# Redis RESP\n\n## Executable Examples\n\n### redis-cli\n\n```sh\nredis-cli PING\n```\n",
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("example section '### redis-cli' must name Gate: `redis_clients`"),
+        "missing redis-cli gate-label check: {joined}"
+    );
+    assert!(
+        joined.contains("missing executable example section '### Rust (redis-rs)'"),
+        "missing required language example check: {joined}"
+    );
+}
+
+fn redis_compat_docs_with_examples() -> &'static str {
+    r#"# Redis RESP
+
+## Executable Examples
+
+### redis-cli
+
+Gate: `redis_clients`
+
+```sh
+redis-cli PING
+```
+
+### Rust (redis-rs)
+
+Gate: `redis_clients`
+
+```rust
+let _ = redis::cmd("PING");
+```
+
+### Python (redis-py)
+
+Gate: `redis_clients`
+
+```python
+print("PING")
+```
+
+### Node (node-redis)
+
+Gate: `redis_clients`
+
+```javascript
+console.log("PING");
+```
+
+### Go (go-redis)
+
+Gate: `redis_clients`
+
+```go
+fmt.Println("PING")
+```
+
+### JVM (Jedis)
+
+Gate: `redis_clients`
+
+```java
+System.out.println("PING");
+```
+"#
 }
 
 #[test]
