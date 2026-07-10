@@ -61,8 +61,9 @@ other externally reachable client surfaces before allowing non-loopback access.
 
 The server rejects Redis listener addresses that overlap the public daemon
 listener, cluster listener, or enabled admin listener. Disabling the listener is
-the rollback default; existing modeled RESP connections are drained/closed with
-the daemon drain path.
+the rollback default; existing RESP connections are drained or closed through
+the daemon drain path, and new RESP connections are refused once the drain gate
+closes.
 
 ## Rollout And Rollback
 

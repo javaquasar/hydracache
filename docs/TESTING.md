@@ -168,7 +168,8 @@ The fast crate gate covers the RESP2 codec, translator, unsupported/admin-disabl
 matrix, `HC.*` classification, golden RESP fixtures, coalesced/partial frame
 boundaries, decoder fuzz smoke, and oversized frame limits. The server lifecycle
 gate proves the listener config is off by default, address conflicts are rejected,
-and the modeled RESP surface drains when enabled.
+the real TCP RESP listener starts when enabled, and the drain gate closes new RESP
+connections instead of serving them.
 
 Run the Docker/client matrix before claiming a Redis-client compatibility row:
 
@@ -178,7 +179,8 @@ cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored
 Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS -ErrorAction SilentlyContinue
 ```
 
-That gated tier must use the pinned Redis images from
+That gated tier contains a compiled `redis-rs` mainstream-client smoke and the
+real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
 real Redis after the documented normalization rules. Add Python, Node, Go, and
 JVM client rows only when their unchanged mainstream Redis clients pass the same
@@ -191,6 +193,10 @@ $env:HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE = '1'
 cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE -ErrorAction SilentlyContinue
 ```
+
+That gated target compiles in the fast suite and runs only when the env var is
+set. It exercises pipelined extension diagnostics redaction, oversized-frame
+failure, slowloris idle timeout, and zero-mutation behavior for hostile input.
 
 Commands without executable manifest coverage stay `candidate` or `unsupported`.
 
