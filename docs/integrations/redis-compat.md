@@ -28,7 +28,7 @@ to this page without adding or updating the manifest row first.
 | Command | Status | Oracle rule | Notes |
 | --- | --- | --- | --- |
 | `PING`, `ECHO`, `QUIT`, `HELLO 2`, `COMMAND` | `supported` | exact or documented normalized metadata | Startup handshake needed by mainstream clients. |
-| `AUTH` | `candidate` | candidate | Identity mapping is release-blocking before auth-required listeners are claimed. |
+| `AUTH`, `HELLO 2 AUTH` | `candidate` | candidate | Mandatory `0.63.0` release scope. Must graduate with `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, and connection-local identity tests before auth-required listeners are claimed. |
 | `CLIENT SETNAME`, `CLIENT SETINFO` | `supported_with_caveat` | normalized error/metadata | Accepted only as bounded, side-effect-free connection metadata. |
 | `GET`, `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. |
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
@@ -46,7 +46,8 @@ Compatibility scenarios run against pinned Docker `redis-server` versions and th
 HydraCache RESP facade. Supported Redis-subset commands compare exact RESP shape,
 integer counts, nil/bulk behavior, array order, and atomic `MSET` outcome. Error text may be
 normalized by class. TTL values use bounded tolerance because wall-clock remaining time is
-time-sensitive.
+time-sensitive. Auth scenarios compare Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` classes and must never
+expose credential material in replies, logs, metrics, or diagnostics.
 
 Unsupported Redis commands are expected to diverge: real Redis may succeed, while
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
@@ -55,8 +56,9 @@ real Redis should return unknown command behavior.
 ## Executable Examples
 
 Every example below is covered by the `redis_clients` gated target. They use only
-the supported RESP2 cache subset, including atomic `MSET` and TTL commands. `SELECT`, RESP3,
-`rediss://`, and `HC.*` examples stay out of user-facing docs until their matching gates ship.
+the supported RESP2 cache subset, including atomic `MSET` and TTL commands. Auth-required examples
+are added only after the `AUTH`/`HELLO AUTH` gate lands. `SELECT`, RESP3, `rediss://`, and `HC.*`
+examples stay out of user-facing docs until their matching gates ship.
 
 ### redis-cli
 
@@ -165,8 +167,10 @@ try (Jedis jedis = new Jedis(URI.create("redis://127.0.0.1:6379"))) {
 The RESP listener is disabled by default. Local development may bind it to
 `127.0.0.1:6379`, but production examples must require explicit enablement and
 explicit port exposure. Do not expose port `6379` on a public load balancer by
-default. Use private networking, NetworkPolicy, and the same auth/TLS posture as
-other externally reachable client surfaces before allowing non-loopback access.
+default. The expanded `0.63.0` release scope requires Redis `AUTH` for auth-required
+listeners before production compatibility is claimed. If `rediss://` is not supported by
+the RESP listener in this release, production deployments must use external TLS/private
+network controls in addition to Redis `AUTH` before allowing non-loopback access.
 
 The server rejects Redis listener addresses that overlap the public daemon
 listener, cluster listener, or enabled admin listener. Disabling the listener is

@@ -4,7 +4,7 @@
   "supported_resp": "RESP2",
   "redis_oracle": {
     "images": ["redis:6.2.14", "redis:7.2.5"],
-    "normalization": "Supported Redis-subset commands compare exact RESP shape/count/order and atomic MSET outcome. Error text may normalize by class. TTL uses bounded tolerance because remaining wall-clock time is time-sensitive."
+    "normalization": "Supported Redis-subset commands compare exact RESP shape/count/order and atomic MSET outcome. Error text may normalize by class. TTL uses bounded tolerance because remaining wall-clock time is time-sensitive. Auth scenarios compare Redis-shaped NOAUTH/WRONGPASS/OK classes and must never expose credential material."
   },
   "commands": [
     {
@@ -43,11 +43,11 @@
       "tests": ["hello2_is_supported_and_hello3_behavior_matches_contract", "resp3_only_inputs_are_rejected_before_mutation"]
     },
     {
-      "name": "AUTH",
+      "name": "AUTH/HELLO 2 AUTH",
       "status": "candidate",
       "kind": "redis_subset",
       "oracle": "candidate",
-      "tests": ["auth_hello_auth_and_noauth_errors_match_contract"]
+      "tests": ["auth_hello_auth_and_noauth_errors_match_contract", "redis_auth_required_listener_rejects_data_commands_before_auth", "redis_auth_success_binds_connection_local_client_identity", "redis_auth_redacts_credentials_from_errors_logs_and_metrics"]
     },
     {
       "name": "CLIENT SETNAME",
