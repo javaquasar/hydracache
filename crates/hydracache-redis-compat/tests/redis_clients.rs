@@ -38,6 +38,40 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     }
 }
 
+#[test]
+fn redis_client_heavy_gate_is_executable_and_env_gated() {
+    let source = include_str!("redis_clients.rs");
+    let gates = include_str!("../../../docs/GATES.md");
+    let testing = include_str!("../../../docs/TESTING.md");
+
+    for test_name in [
+        "mainstream_redis_client_can_talk_to_the_facade",
+        "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset",
+        "redis_oracle_supported_subset_matches_real_redis",
+        "redis_oracle_del_exists_counts_match_real_redis",
+        "redis_oracle_mget_nil_and_order_match_real_redis",
+        "redis_oracle_unsupported_divergence_is_documented",
+        "redis_oracle_hc_extensions_are_hydracache_only",
+    ] {
+        assert!(
+            source.contains(&format!("async fn {test_name}"))
+                || source.contains(&format!("fn {test_name}"))
+        );
+        assert!(source.contains("#[ignore"));
+    }
+    for env_var in [
+        CLIENT_MATRIX_ENV,
+        "HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON",
+        "HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE",
+        "HYDRACACHE_REQUIRE_REDIS_CLIENT_GO",
+        "HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM",
+    ] {
+        assert!(source.contains(env_var));
+        assert!(testing.contains(env_var));
+    }
+    assert!(gates.contains("--test redis_clients"));
+}
+
 #[tokio::test]
 #[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; uses mainstream redis-rs client path"]
 async fn mainstream_redis_client_can_talk_to_the_facade() {

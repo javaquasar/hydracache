@@ -186,6 +186,17 @@ real Redis after the documented normalization rules. Add Python, Node, Go, and
 JVM client rows only when their unchanged mainstream Redis clients pass the same
 scenario suite.
 
+By default, missing optional Python/Node/Go/JVM runtimes or client libraries skip
+loud inside the ignored matrix. To make one row mandatory in a nightly job, set
+the matching require flag alongside `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS`:
+
+```powershell
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_GO = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM = '1'
+```
+
 Run the resource/hostile-input smoke before widening the listener surface:
 
 ```powershell

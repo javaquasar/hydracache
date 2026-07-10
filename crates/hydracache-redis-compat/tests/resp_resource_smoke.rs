@@ -22,6 +22,24 @@ fn resource_smoke_gate_manifest_and_docs_are_wired() {
     assert!(gates.contains("no key/value leakage in logs or metrics"));
 }
 
+#[test]
+fn resource_smoke_heavy_gate_is_executable_and_env_gated() {
+    let source = include_str!("resp_resource_smoke.rs");
+    let gates = include_str!("../../../docs/GATES.md");
+    let testing = include_str!("../../../docs/TESTING.md");
+
+    for test_name in [
+        "resp_resource_smoke_bounds_pipelined_connection_and_redacts_extension_output",
+        "slowloris_and_oversized_frames_fail_loud_without_mutation",
+    ] {
+        assert!(source.contains(&format!("async fn {test_name}")));
+        assert!(source.contains("#[ignore"));
+    }
+    assert!(source.contains(RESOURCE_SMOKE_ENV));
+    assert!(gates.contains("--test resp_resource_smoke"));
+    assert!(testing.contains(RESOURCE_SMOKE_ENV));
+}
+
 #[tokio::test]
 #[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1; resource/hostile-input smoke"]
 async fn resp_resource_smoke_bounds_pipelined_connection_and_redacts_extension_output() {
