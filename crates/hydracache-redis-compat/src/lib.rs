@@ -10,8 +10,8 @@ use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
 use hydracache_client_protocol::{
-    ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, Namespace, StructuredKey,
+    BatchPutEntry, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
+    ClientResponseEnvelope, Namespace, StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
 use redis_protocol::resp2::decode::decode_bytes;
@@ -170,12 +170,24 @@ pub enum RedisCommand {
         /// Additional SET modifiers retained for W0/W2 semantic validation.
         options: Vec<Vec<u8>>,
     },
+    /// `MSET key value [key value ...]`.
+    Mset { entries: Vec<(Vec<u8>, Vec<u8>)> },
     /// `MGET key...`.
     Mget { keys: Vec<Vec<u8>> },
     /// `DEL key...`.
     Del { keys: Vec<Vec<u8>> },
     /// `EXISTS key...`.
     Exists { keys: Vec<Vec<u8>> },
+    /// `EXPIRE key seconds` or `PEXPIRE key milliseconds`.
+    Expire {
+        key: Vec<u8>,
+        ttl: Vec<u8>,
+        unit: RedisTtlUnit,
+    },
+    /// `PERSIST key`.
+    Persist { key: Vec<u8> },
+    /// `TTL key` or `PTTL key`.
+    Ttl { key: Vec<u8>, unit: RedisTtlUnit },
     /// `HC.STATS`.
     HcStats,
     /// `HC.DIAGNOSTICS`.
@@ -188,8 +200,19 @@ pub enum RedisCommand {
     HealthProbeCandidate { command: String, args: Vec<Vec<u8>> },
     /// Dangerous or administrative Redis command disabled by default.
     AdminDisabled { command: String, args: Vec<Vec<u8>> },
+    /// Recognized command with invalid arity.
+    WrongArity { command: String, args: Vec<Vec<u8>> },
     /// Command outside the accepted W1 parser subset.
     Unsupported { verb: String, args: Vec<Vec<u8>> },
+}
+
+/// Redis TTL response unit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RedisTtlUnit {
+    /// Seconds, for `TTL`.
+    Seconds,
+    /// Milliseconds, for `PTTL`.
+    Milliseconds,
 }
 
 /// RESP value helpers used by the future listener.
@@ -659,6 +682,12 @@ pub enum RedisTranslationError {
         /// Stable redacted detail.
         detail: &'static str,
     },
+    /// Command has the wrong number of arguments.
+    #[error("ERR wrong number of arguments for '{command}' command")]
+    WrongArity {
+        /// Command name.
+        command: String,
+    },
     /// Command is recognized but remains candidate until native support lands.
     #[error("ERR {command} is candidate and not enabled in this release")]
     CandidateCommand {
@@ -790,9 +819,12 @@ enum RedisFollowup {
 enum RedisResponseReducer {
     Get,
     Set,
+    Mset,
     Mget { expected_items: usize },
     Del { expected_items: usize },
     Exists { expected_items: usize },
+    Expiry,
+    Ttl { unit: RedisTtlUnit },
     Invalidate,
 }
 
@@ -804,9 +836,12 @@ impl RedisResponseReducer {
         match self {
             Self::Get => reduce_get(responses),
             Self::Set => reduce_set(responses),
+            Self::Mset => reduce_mset(responses),
             Self::Mget { expected_items } => reduce_mget(responses, *expected_items),
             Self::Del { expected_items } => reduce_del(responses, *expected_items),
             Self::Exists { expected_items } => reduce_exists(responses, *expected_items),
+            Self::Expiry => reduce_expiry(responses),
+            Self::Ttl { unit } => reduce_ttl(responses, *unit),
             Self::Invalidate => reduce_invalidate(responses),
         }
     }
@@ -855,11 +890,7 @@ pub fn translate_redis_command(
             value,
             options,
         } => {
-            if !options.is_empty() {
-                return Err(RedisTranslationError::UnsupportedShape {
-                    detail: "SET options are candidate until TTL and option semantics are gated",
-                });
-            }
+            let ttl_ms = parse_set_ttl_ms(&options)?;
             RedisTranslatedCommand::Execute(single_request_plan(
                 context,
                 "set",
@@ -867,10 +898,30 @@ pub fn translate_redis_command(
                     ns: context.namespace.clone(),
                     key: redis_key_to_structured_key(&key)?,
                     value,
-                    ttl_ms: None,
+                    ttl_ms,
                     dimensions: Vec::new(),
                 },
                 RedisResponseReducer::Set,
+            ))
+        }
+        RedisCommand::Mset { entries } => {
+            let entries = entries
+                .into_iter()
+                .map(|(key, value)| {
+                    Ok(BatchPutEntry {
+                        key: redis_key_to_structured_key(&key)?,
+                        value,
+                    })
+                })
+                .collect::<Result<Vec<_>, RedisTranslationError>>()?;
+            RedisTranslatedCommand::Execute(single_request_plan(
+                context,
+                "mset",
+                ClientRequest::BatchPut {
+                    ns: context.namespace.clone(),
+                    entries,
+                },
+                RedisResponseReducer::Mset,
             ))
         }
         RedisCommand::Mget { keys } => {
@@ -918,6 +969,37 @@ pub fn translate_redis_command(
                 RedisResponseReducer::Exists { expected_items },
             ))
         }
+        RedisCommand::Expire { key, ttl, unit } => {
+            let ttl_ms = parse_expire_ttl_ms(unit, &ttl)?;
+            RedisTranslatedCommand::Execute(single_request_plan(
+                context,
+                "expire",
+                ClientRequest::Expire {
+                    ns: context.namespace.clone(),
+                    key: redis_key_to_structured_key(&key)?,
+                    ttl_ms,
+                },
+                RedisResponseReducer::Expiry,
+            ))
+        }
+        RedisCommand::Persist { key } => RedisTranslatedCommand::Execute(single_request_plan(
+            context,
+            "persist",
+            ClientRequest::Persist {
+                ns: context.namespace.clone(),
+                key: redis_key_to_structured_key(&key)?,
+            },
+            RedisResponseReducer::Expiry,
+        )),
+        RedisCommand::Ttl { key, unit } => RedisTranslatedCommand::Execute(single_request_plan(
+            context,
+            "ttl",
+            ClientRequest::GetTtl {
+                ns: context.namespace.clone(),
+                key: redis_key_to_structured_key(&key)?,
+            },
+            RedisResponseReducer::Ttl { unit },
+        )),
         RedisCommand::HcStats => RedisTranslatedCommand::Extension(RedisExtensionRequest::Stats),
         RedisCommand::HcDiagnostics => {
             RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics)
@@ -939,6 +1021,9 @@ pub fn translate_redis_command(
         }
         RedisCommand::AdminDisabled { command, .. } => {
             return Err(RedisTranslationError::AdminDisabled { command });
+        }
+        RedisCommand::WrongArity { command, .. } => {
+            return Err(RedisTranslationError::WrongArity { command });
         }
         RedisCommand::Unsupported { verb, .. } => {
             return Err(RedisTranslationError::UnsupportedCommand { command: verb });
@@ -975,6 +1060,21 @@ fn reduce_set(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTr
     let response = single_response(responses)?;
     match &response.result {
         Ok(ClientResponse::Stored) => Ok(RespValue::SimpleString("OK")),
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
+}
+
+fn reduce_mset(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::Batch { items }) => {
+            if let Some(error) = items.iter().find_map(|item| item.result.as_ref().err()) {
+                Ok(client_error_to_resp(error))
+            } else {
+                Ok(RespValue::SimpleString("OK"))
+            }
+        }
         Err(error) => Ok(client_error_to_resp(error)),
         Ok(other) => unexpected_response(other),
     }
@@ -1035,6 +1135,29 @@ fn reduce_exists(
     Ok(RespValue::Integer(
         values.iter().filter(|value| value.is_some()).count() as i64,
     ))
+}
+
+fn reduce_expiry(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::Expiry { applied }) => Ok(RespValue::Integer(i64::from(*applied))),
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
+}
+
+fn reduce_ttl(
+    responses: &[ClientResponseEnvelope],
+    unit: RedisTtlUnit,
+) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::Ttl { state }) => {
+            Ok(RespValue::Integer(ttl_state_to_integer(*state, unit)))
+        }
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
 }
 
 fn reduce_invalidate(
@@ -1103,6 +1226,91 @@ fn optional_bulk(value: Option<Vec<u8>>) -> RespValue {
     }
 }
 
+fn ttl_state_to_integer(state: TtlState, unit: RedisTtlUnit) -> i64 {
+    match state {
+        TtlState::Missing => -2,
+        TtlState::Persistent => -1,
+        TtlState::ExpiresIn { ttl_ms } => match unit {
+            RedisTtlUnit::Milliseconds => ttl_ms.min(i64::MAX as u64) as i64,
+            RedisTtlUnit::Seconds => ttl_ms
+                .saturating_add(999)
+                .saturating_div(1_000)
+                .min(i64::MAX as u64) as i64,
+        },
+    }
+}
+
+fn parse_set_ttl_ms(options: &[Vec<u8>]) -> Result<Option<u64>, RedisTranslationError> {
+    match options {
+        [] => Ok(None),
+        [unit, value] => parse_positive_ttl_ms(unit, value).map(Some),
+        _ => Err(RedisTranslationError::UnsupportedShape {
+            detail: "SET supports only EX seconds or PX milliseconds options in this release",
+        }),
+    }
+}
+
+fn parse_positive_ttl_ms(unit: &[u8], value: &[u8]) -> Result<u64, RedisTranslationError> {
+    let value = ascii_decimal_u64(value)?;
+    if value == 0 {
+        return Err(RedisTranslationError::UnsupportedShape {
+            detail: "SET EX/PX requires a positive TTL",
+        });
+    }
+    ttl_unit_to_millis(unit, value)
+}
+
+fn parse_expire_ttl_ms(unit: RedisTtlUnit, value: &[u8]) -> Result<u64, RedisTranslationError> {
+    let value = ascii_decimal_i64(value)?;
+    if value <= 0 {
+        return Ok(0);
+    }
+    match unit {
+        RedisTtlUnit::Seconds => {
+            (value as u64)
+                .checked_mul(1_000)
+                .ok_or(RedisTranslationError::UnsupportedShape {
+                    detail: "TTL value is too large",
+                })
+        }
+        RedisTtlUnit::Milliseconds => Ok(value as u64),
+    }
+}
+
+fn ttl_unit_to_millis(unit: &[u8], value: u64) -> Result<u64, RedisTranslationError> {
+    if unit.eq_ignore_ascii_case(b"EX") {
+        value
+            .checked_mul(1_000)
+            .ok_or(RedisTranslationError::UnsupportedShape {
+                detail: "TTL value is too large",
+            })
+    } else if unit.eq_ignore_ascii_case(b"PX") {
+        Ok(value)
+    } else {
+        Err(RedisTranslationError::UnsupportedShape {
+            detail: "SET supports only EX seconds or PX milliseconds options in this release",
+        })
+    }
+}
+
+fn ascii_decimal_u64(value: &[u8]) -> Result<u64, RedisTranslationError> {
+    std::str::from_utf8(value)
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .ok_or(RedisTranslationError::UnsupportedShape {
+            detail: "TTL value must be an integer",
+        })
+}
+
+fn ascii_decimal_i64(value: &[u8]) -> Result<i64, RedisTranslationError> {
+    std::str::from_utf8(value)
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+        .ok_or(RedisTranslationError::UnsupportedShape {
+            detail: "TTL value must be an integer",
+        })
+}
+
 fn unexpected_response<T>(response: &ClientResponse) -> Result<T, RedisTranslationError> {
     Err(RedisTranslationError::UnexpectedClientResponse {
         detail: format!("{response:?}"),
@@ -1148,9 +1356,15 @@ fn command_metadata_response() -> RespValue {
         command_metadata("command", 1, &["readonly", "fast"], 0, 0, 0),
         command_metadata("get", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("set", -3, &["write"], 1, 1, 1),
+        command_metadata("mset", -3, &["write"], 1, -1, 2),
         command_metadata("mget", -2, &["readonly", "fast"], 1, -1, 1),
         command_metadata("del", -2, &["write"], 1, -1, 1),
         command_metadata("exists", -2, &["readonly", "fast"], 1, -1, 1),
+        command_metadata("expire", 3, &["write", "fast"], 1, 1, 1),
+        command_metadata("pexpire", 3, &["write", "fast"], 1, 1, 1),
+        command_metadata("persist", 2, &["write", "fast"], 1, 1, 1),
+        command_metadata("ttl", 2, &["readonly", "fast"], 1, 1, 1),
+        command_metadata("pttl", 2, &["readonly", "fast"], 1, 1, 1),
     ])
 }
 
@@ -1260,9 +1474,48 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
             value: args.remove(0),
             options: args,
         },
+        "SET" => RedisCommand::WrongArity {
+            command: "SET".to_owned(),
+            args,
+        },
+        "MSET" if !args.is_empty() && args.len() % 2 == 0 => RedisCommand::Mset {
+            entries: args
+                .chunks_exact(2)
+                .map(|pair| (pair[0].clone(), pair[1].clone()))
+                .collect(),
+        },
+        "MSET" => RedisCommand::WrongArity {
+            command: "MSET".to_owned(),
+            args,
+        },
         "MGET" if !args.is_empty() => RedisCommand::Mget { keys: args },
         "DEL" if !args.is_empty() => RedisCommand::Del { keys: args },
         "EXISTS" if !args.is_empty() => RedisCommand::Exists { keys: args },
+        "EXPIRE" if args.len() == 2 => RedisCommand::Expire {
+            key: args.remove(0),
+            ttl: args.remove(0),
+            unit: RedisTtlUnit::Seconds,
+        },
+        "PEXPIRE" if args.len() == 2 => RedisCommand::Expire {
+            key: args.remove(0),
+            ttl: args.remove(0),
+            unit: RedisTtlUnit::Milliseconds,
+        },
+        "PERSIST" if args.len() == 1 => RedisCommand::Persist {
+            key: args.remove(0),
+        },
+        "TTL" if args.len() == 1 => RedisCommand::Ttl {
+            key: args.remove(0),
+            unit: RedisTtlUnit::Seconds,
+        },
+        "PTTL" if args.len() == 1 => RedisCommand::Ttl {
+            key: args.remove(0),
+            unit: RedisTtlUnit::Milliseconds,
+        },
+        "EXPIRE" | "PEXPIRE" | "PERSIST" | "TTL" | "PTTL" => RedisCommand::WrongArity {
+            command: normalized,
+            args,
+        },
         "HC.STATS" if args.is_empty() => RedisCommand::HcStats,
         "HC.DIAGNOSTICS" if args.is_empty() => RedisCommand::HcDiagnostics,
         "HC.INVALIDATE" if args.len() == 1 => RedisCommand::HcInvalidate {
@@ -1366,6 +1619,62 @@ mod tests {
     }
 
     #[test]
+    fn command_parser_recognizes_mset_and_ttl_family() {
+        let (mset, _) = decode_resp2_command(
+            b"*5\r\n$4\r\nMSET\r\n$1\r\na\r\n$1\r\n1\r\n$1\r\nb\r\n$1\r\n2\r\n",
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            mset,
+            RedisCommand::Mset {
+                entries: vec![
+                    (b"a".to_vec(), b"1".to_vec()),
+                    (b"b".to_vec(), b"2".to_vec())
+                ]
+            }
+        );
+
+        let (expire, _) = decode_resp2_command(b"*3\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$2\r\n30\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            expire,
+            RedisCommand::Expire {
+                key: b"k".to_vec(),
+                ttl: b"30".to_vec(),
+                unit: RedisTtlUnit::Seconds
+            }
+        );
+
+        let (pttl, _) = decode_resp2_command(b"*2\r\n$4\r\nPTTL\r\n$1\r\nk\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            pttl,
+            RedisCommand::Ttl {
+                key: b"k".to_vec(),
+                unit: RedisTtlUnit::Milliseconds
+            }
+        );
+    }
+
+    #[test]
+    fn command_parser_reports_mset_wrong_arity() {
+        let (command, _) =
+            decode_resp2_command(b"*4\r\n$4\r\nMSET\r\n$1\r\na\r\n$1\r\n1\r\n$1\r\nb\r\n")
+                .unwrap()
+                .unwrap();
+        assert_eq!(
+            command,
+            RedisCommand::WrongArity {
+                command: "MSET".to_owned(),
+                args: vec![b"a".to_vec(), b"1".to_vec(), b"b".to_vec()]
+            }
+        );
+    }
+
+    #[test]
     fn unsupported_command_is_loudly_classified_without_semantic_mapping() {
         let input = b"*3\r\n$4\r\nHSET\r\n$1\r\nk\r\n$1\r\nv\r\n";
         let (command, _) = decode_resp2_command(input).unwrap().unwrap();
@@ -1416,8 +1725,11 @@ mod tests {
         let names = command_names(value);
         assert!(names.contains(&"get".to_owned()));
         assert!(names.contains(&"set".to_owned()));
+        assert!(names.contains(&"mset".to_owned()));
         assert!(names.contains(&"mget".to_owned()));
         assert!(names.contains(&"del".to_owned()));
+        assert!(names.contains(&"ttl".to_owned()));
+        assert!(names.contains(&"pttl".to_owned()));
         assert!(!names.contains(&"hset".to_owned()));
         assert!(!names.contains(&"cluster".to_owned()));
     }
@@ -1456,29 +1768,79 @@ mod tests {
             run_command(
                 &state,
                 &identity,
-                RedisCommand::Del {
-                    keys: vec![b"k".to_vec(), b"missing".to_vec()],
+                RedisCommand::Mset {
+                    entries: vec![
+                        (b"a".to_vec(), b"1".to_vec()),
+                        (b"b".to_vec(), b"2".to_vec()),
+                        (b"a".to_vec(), b"3".to_vec()),
+                    ],
                 },
             ),
-            RespValue::Integer(1)
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Mget {
+                    keys: vec![b"a".to_vec(), b"b".to_vec()],
+                },
+            ),
+            RespValue::Array(vec![
+                RespValue::BulkString(b"3".to_vec()),
+                RespValue::BulkString(b"2".to_vec())
+            ])
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Del {
+                    keys: vec![
+                        b"k".to_vec(),
+                        b"a".to_vec(),
+                        b"b".to_vec(),
+                        b"missing".to_vec()
+                    ],
+                },
+            ),
+            RespValue::Integer(3)
         );
         assert_eq!(
             run_command(&state, &identity, RedisCommand::Get { key: b"k".to_vec() },),
             RespValue::Null
         );
+    }
 
-        let context = RedisTranslationContext::default();
-        let mset = translate_redis_command(
-            RedisCommand::Unsupported {
-                verb: "MSET".to_owned(),
-                args: Vec::new(),
+    #[test]
+    fn mset_oversized_value_rejects_without_partial_mutation() {
+        let state = ClientSurfaceState::new(ClientSurfaceLimits {
+            max_value_bytes: 2,
+            ..ClientSurfaceLimits::default()
+        })
+        .unwrap();
+        let identity = ClientIdentity::new("redis-client", DEFAULT_REDIS_NAMESPACE).unwrap();
+
+        let response = run_command(
+            &state,
+            &identity,
+            RedisCommand::Mset {
+                entries: vec![
+                    (b"a".to_vec(), b"ok".to_vec()),
+                    (b"b".to_vec(), b"too-large".to_vec()),
+                ],
             },
-            &context,
         );
-        assert!(matches!(
-            mset,
-            Err(RedisTranslationError::UnsupportedCommand { command }) if command == "MSET"
-        ));
+        let RespValue::Error(error) = response else {
+            panic!("MSET with oversized value should return RESP error");
+        };
+        assert!(error.contains("too large"));
+
+        assert_eq!(
+            run_command(&state, &identity, RedisCommand::Get { key: b"a".to_vec() },),
+            RespValue::Null
+        );
+        assert_eq!(state.state_mutations(), 0);
     }
 
     #[test]
@@ -1555,20 +1917,89 @@ mod tests {
     }
 
     #[test]
-    fn ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata() {
-        let context = RedisTranslationContext::default();
-        let translated = translate_redis_command(
-            RedisCommand::Set {
-                key: b"k".to_vec(),
-                value: b"v".to_vec(),
-                options: vec![b"EX".to_vec(), b"10".to_vec()],
-            },
-            &context,
+    fn expire_pexpire_persist_and_ttl_pttl_match_redis_semantics() {
+        let (state, identity) = surface();
+        state.set_cache_time_for_tests(Some(1_000));
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"v".to_vec(),
+                    options: vec![b"EX".to_vec(), b"10".to_vec()],
+                },
+            ),
+            RespValue::SimpleString("OK")
         );
-        assert!(matches!(
-            translated,
-            Err(RedisTranslationError::UnsupportedShape { detail }) if detail.contains("TTL")
-        ));
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(10)
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Expire {
+                    key: b"k".to_vec(),
+                    ttl: b"250".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+            ),
+            RespValue::Integer(1)
+        );
+        state.advance_cache_time_for_tests(50);
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+            ),
+            RespValue::Integer(200)
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Persist { key: b"k".to_vec() },
+            ),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(-1)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"missing".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(-2)
+        );
     }
 
     #[test]

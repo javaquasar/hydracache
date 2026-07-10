@@ -35,8 +35,11 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_supported_subset_matches_real_redis"));
     assert!(manifest.contains("redis_oracle_del_exists_counts_match_real_redis"));
     assert!(manifest.contains("redis_oracle_mget_nil_and_order_match_real_redis"));
+    assert!(manifest.contains("redis_oracle_mset_atomicity_matches_real_redis"));
+    assert!(manifest.contains("redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"));
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
+    assert!(manifest.contains("client_matrix_runs_mset_and_ttl_commands"));
     assert!(
         manifest.contains("nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset")
     );
@@ -57,6 +60,9 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_supported_subset_matches_real_redis",
         "redis_oracle_del_exists_counts_match_real_redis",
         "redis_oracle_mget_nil_and_order_match_real_redis",
+        "redis_oracle_mset_atomicity_matches_real_redis",
+        "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance",
+        "client_matrix_runs_mset_and_ttl_commands",
         "redis_oracle_unsupported_divergence_is_documented",
         "redis_oracle_hc_extensions_are_hydracache_only",
     ] {
@@ -128,6 +134,10 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
         .unwrap();
     assert_eq!(values, vec![Some("v".to_owned()), None]);
 
+    run_redis_rs_mset_ttl_scenario(&mut connection, "rust")
+        .await
+        .unwrap();
+
     let exists: i64 = redis::cmd("EXISTS")
         .arg("k")
         .arg("missing")
@@ -143,6 +153,27 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
         .await
         .unwrap();
     assert_eq!(deleted, 1);
+
+    drop(connection);
+    drop(shutdown);
+    serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves MSET and TTL client commands"]
+async fn client_matrix_runs_mset_and_ttl_commands() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+
+    let (shutdown, addr, serving) = spawn_resp_facade().await;
+    let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
+    let mut connection = client.get_multiplexed_async_connection().await.unwrap();
+
+    run_redis_rs_mset_ttl_scenario(&mut connection, "matrix")
+        .await
+        .unwrap();
 
     drop(connection);
     drop(shutdown);
@@ -244,6 +275,49 @@ async fn redis_oracle_mget_nil_and_order_match_real_redis() {
     let hydracache_replies = run_mget_order_scenario(hydracache_addr, "mget").await;
 
     assert_eq!(hydracache_replies, redis_replies);
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_mset_atomicity_matches_real_redis() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    let redis_replies = run_mset_scenario(oracle.addr, "mset").await;
+    let hydracache_replies = run_mset_scenario(hydracache_addr, "mset").await;
+
+    assert_eq!(hydracache_replies, redis_replies);
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_ttl_matches_real_redis_with_bounded_tolerance() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    assert_ttl_scenario_shape(run_ttl_scenario(oracle.addr, "ttl-oracle").await, "redis");
+    assert_ttl_scenario_shape(
+        run_ttl_scenario(hydracache_addr, "ttl-oracle").await,
+        "hydracache",
+    );
 
     drop(shutdown);
     hydracache_serving.await.unwrap();
@@ -371,6 +445,57 @@ fn run_external_client(ecosystem: ClientEcosystem, redis_url: &str, docker_redis
     }
 }
 
+async fn run_redis_rs_mset_ttl_scenario(
+    connection: &mut redis::aio::MultiplexedConnection,
+    prefix: &str,
+) -> redis::RedisResult<()> {
+    let a = format!("{prefix}:a");
+    let b = format!("{prefix}:b");
+    let ttl_key = format!("{prefix}:ttl");
+
+    redis::cmd("MSET")
+        .arg(&a)
+        .arg("1")
+        .arg(&b)
+        .arg("2")
+        .query_async::<()>(connection)
+        .await?;
+    let values: Vec<Option<String>> = redis::cmd("MGET")
+        .arg(&a)
+        .arg(&b)
+        .query_async(connection)
+        .await?;
+    assert_eq!(values, vec![Some("1".to_owned()), Some("2".to_owned())]);
+
+    redis::cmd("SET")
+        .arg(&ttl_key)
+        .arg("v")
+        .arg("PX")
+        .arg(5_000)
+        .query_async::<()>(connection)
+        .await?;
+    let pttl: i64 = redis::cmd("PTTL")
+        .arg(&ttl_key)
+        .query_async(connection)
+        .await?;
+    assert!(
+        (1..=5_000).contains(&pttl),
+        "PTTL should be positive and bounded, got {pttl}"
+    );
+    let persisted: i64 = redis::cmd("PERSIST")
+        .arg(&ttl_key)
+        .query_async(connection)
+        .await?;
+    assert_eq!(persisted, 1);
+    let ttl: i64 = redis::cmd("TTL")
+        .arg(&ttl_key)
+        .query_async(connection)
+        .await?;
+    assert_eq!(ttl, -1);
+
+    Ok(())
+}
+
 fn run_external_client_with_local_fallback(
     ecosystem: ClientEcosystem,
     redis_url: &str,
@@ -428,6 +553,13 @@ r = redis.Redis.from_url(sys.argv[1], decode_responses=True)
 assert r.ping() is True
 assert r.set("python:k", "v") is True
 assert r.get("python:k") == "v"
+assert r.mset({"python:a": "1", "python:b": "2"}) is True
+assert r.mget(["python:a", "python:b"]) == ["1", "2"]
+assert r.set("python:ttl", "v", px=5000) is True
+pttl = r.pttl("python:ttl")
+assert 0 < pttl <= 5000
+assert r.persist("python:ttl") is True
+assert r.ttl("python:ttl") == -1
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
 assert r.exists("python:k", "python:missing") == 1
 assert r.delete("python:k", "python:missing") == 1
@@ -446,6 +578,13 @@ r = redis.Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
 assert r.ping() is True
 assert r.set("python:k", "v") is True
 assert r.get("python:k") == "v"
+assert r.mset({"python:a": "1", "python:b": "2"}) is True
+assert r.mget(["python:a", "python:b"]) == ["1", "2"]
+assert r.set("python:ttl", "v", px=5000) is True
+pttl = r.pttl("python:ttl")
+assert 0 < pttl <= 5000
+assert r.persist("python:ttl") is True
+assert r.ttl("python:ttl") == -1
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
 assert r.exists("python:k", "python:missing") == 1
 assert r.delete("python:k", "python:missing") == 1
@@ -476,6 +615,14 @@ fn run_node_client(redis_url: &str) -> ClientRun {
   if (await client.ping() !== "PONG") throw new Error("PING failed");
   if (await client.set("node:k", "v") !== "OK") throw new Error("SET failed");
   if (await client.get("node:k") !== "v") throw new Error("GET failed");
+  if (await client.sendCommand(["MSET", "node:a", "1", "node:b", "2"]) !== "OK") throw new Error("MSET failed");
+  const msetValues = await client.mGet(["node:a", "node:b"]);
+  if (JSON.stringify(msetValues) !== JSON.stringify(["1", "2"])) throw new Error(`MSET/MGET failed: ${JSON.stringify(msetValues)}`);
+  if (await client.sendCommand(["SET", "node:ttl", "v", "PX", "5000"]) !== "OK") throw new Error("SET PX failed");
+  const pttl = Number(await client.sendCommand(["PTTL", "node:ttl"]));
+  if (!(pttl > 0 && pttl <= 5000)) throw new Error(`PTTL out of range: ${pttl}`);
+  if (Number(await client.sendCommand(["PERSIST", "node:ttl"])) !== 1) throw new Error("PERSIST failed");
+  if (Number(await client.sendCommand(["TTL", "node:ttl"])) !== -1) throw new Error("TTL after PERSIST failed");
   const values = await client.mGet(["node:k", "node:missing"]);
   if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
   if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
@@ -504,6 +651,14 @@ fn run_node_client_docker(redis_url: &str) -> ClientRun {
   if (await client.ping() !== "PONG") throw new Error("PING failed");
   if (await client.set("node:k", "v") !== "OK") throw new Error("SET failed");
   if (await client.get("node:k") !== "v") throw new Error("GET failed");
+  if (await client.sendCommand(["MSET", "node:a", "1", "node:b", "2"]) !== "OK") throw new Error("MSET failed");
+  const msetValues = await client.mGet(["node:a", "node:b"]);
+  if (JSON.stringify(msetValues) !== JSON.stringify(["1", "2"])) throw new Error(`MSET/MGET failed: ${JSON.stringify(msetValues)}`);
+  if (await client.sendCommand(["SET", "node:ttl", "v", "PX", "5000"]) !== "OK") throw new Error("SET PX failed");
+  const pttl = Number(await client.sendCommand(["PTTL", "node:ttl"]));
+  if (!(pttl > 0 && pttl <= 5000)) throw new Error(`PTTL out of range: ${pttl}`);
+  if (Number(await client.sendCommand(["PERSIST", "node:ttl"])) !== 1) throw new Error("PERSIST failed");
+  if (Number(await client.sendCommand(["TTL", "node:ttl"])) !== -1) throw new Error("TTL after PERSIST failed");
   const values = await client.mGet(["node:k", "node:missing"]);
   if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
   if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
@@ -600,6 +755,24 @@ func main() {{
     got, err := client.Get(ctx, "go:k").Result()
     mustNoErr(err, "GET failed")
     must(got == "v", fmt.Sprintf("GET got %q", got))
+
+    mustNoErr(client.MSet(ctx, "go:a", "1", "go:b", "2").Err(), "MSET failed")
+    msetValues, err := client.MGet(ctx, "go:a", "go:b").Result()
+    mustNoErr(err, "MSET/MGET failed")
+    must(len(msetValues) == 2 && msetValues[0] == "1" && msetValues[1] == "2", fmt.Sprintf("MSET/MGET failed: %#v", msetValues))
+
+    setTtl, err := client.Set(ctx, "go:ttl", "v", 5*time.Second).Result()
+    mustNoErr(err, "SET PX/EX failed")
+    must(setTtl == "OK", fmt.Sprintf("SET TTL got %q", setTtl))
+    pttl, err := client.PTTL(ctx, "go:ttl").Result()
+    mustNoErr(err, "PTTL failed")
+    must(pttl > 0 && pttl <= 5*time.Second, fmt.Sprintf("PTTL out of range: %v", pttl))
+    persisted, err := client.Persist(ctx, "go:ttl").Result()
+    mustNoErr(err, "PERSIST failed")
+    must(persisted, "PERSIST returned false")
+    ttl, err := client.TTL(ctx, "go:ttl").Result()
+    mustNoErr(err, "TTL after PERSIST failed")
+    must(ttl == -1*time.Nanosecond, fmt.Sprintf("TTL after PERSIST got %v", ttl))
 
     values, err := client.MGet(ctx, "go:k", "go:missing").Result()
     mustNoErr(err, "MGET failed")
@@ -701,6 +874,14 @@ public final class RedisClientSmoke {
       must("PONG".equals(jedis.ping()), "PING failed");
       must("OK".equals(jedis.set("jvm:k", "v")), "SET failed");
       must("v".equals(jedis.get("jvm:k")), "GET failed");
+      must("OK".equals(jedis.mset("jvm:a", "1", "jvm:b", "2")), "MSET failed");
+      List<String> msetValues = jedis.mget("jvm:a", "jvm:b");
+      must(msetValues.size() == 2 && "1".equals(msetValues.get(0)) && "2".equals(msetValues.get(1)), "MSET/MGET failed");
+      must("OK".equals(jedis.setex("jvm:ttl", 5, "v")), "SETEX failed");
+      long ttl = jedis.ttl("jvm:ttl");
+      must(ttl > 0L && ttl <= 5L, "TTL out of range");
+      must(jedis.persist("jvm:ttl") == 1L, "PERSIST failed");
+      must(jedis.ttl("jvm:ttl") == -1L, "TTL after PERSIST failed");
       List<String> values = jedis.mget("jvm:k", "jvm:missing");
       must(values.size() == 2 && "v".equals(values.get(0)) && values.get(1) == null, "MGET failed");
       must(jedis.exists("jvm:k", "jvm:missing") == 1L, "EXISTS failed");
@@ -805,12 +986,16 @@ impl OracleReply {
 
 async fn run_supported_subset_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
     let key = format!("{prefix}:k");
+    let first = format!("{prefix}:a");
+    let second = format!("{prefix}:b");
     let missing = format!("{prefix}:missing");
     vec![
         query_reply(addr, "PING", &[]).await,
         query_reply(addr, "ECHO", &["hello"]).await,
         query_reply(addr, "SET", &[&key, "v"]).await,
         query_reply(addr, "GET", &[&key]).await,
+        query_reply(addr, "MSET", &[&first, "1", &second, "2", &first, "3"]).await,
+        query_reply(addr, "MGET", &[&first, &second]).await,
         query_reply(addr, "MGET", &[&key, &missing]).await,
         query_reply(addr, "EXISTS", &[&key, &missing]).await,
         query_reply(addr, "DEL", &[&key, &missing]).await,
@@ -840,6 +1025,71 @@ async fn run_mget_order_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleRe
         query_reply(addr, "SET", &[&second, "2"]).await,
         query_reply(addr, "MGET", &[&second, &missing, &first]).await,
     ]
+}
+
+async fn run_mset_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let first = format!("{prefix}:first");
+    let second = format!("{prefix}:second");
+    vec![
+        query_reply(addr, "MSET", &[&first, "1", &second, "2", &first, "3"]).await,
+        query_reply(addr, "MGET", &[&first, &second]).await,
+    ]
+}
+
+async fn run_ttl_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let key = format!("{prefix}:key");
+    let missing = format!("{prefix}:missing");
+    vec![
+        query_reply(addr, "SET", &[&key, "v", "PX", "5000"]).await,
+        query_reply(addr, "PTTL", &[&key]).await,
+        query_reply(addr, "TTL", &[&key]).await,
+        query_reply(addr, "PERSIST", &[&key]).await,
+        query_reply(addr, "TTL", &[&key]).await,
+        query_reply(addr, "EXPIRE", &[&key, "1"]).await,
+        query_reply(addr, "TTL", &[&key]).await,
+        query_reply(addr, "TTL", &[&missing]).await,
+    ]
+}
+
+fn assert_ttl_scenario_shape(replies: Vec<OracleReply>, label: &str) {
+    assert_eq!(replies.len(), 8, "{label}: unexpected TTL scenario length");
+    assert_eq!(
+        replies[0],
+        OracleReply::Status("OK".to_owned()),
+        "{label}: SET PX"
+    );
+    let OracleReply::Int(pttl) = replies[1] else {
+        panic!("{label}: PTTL should return integer, got {:?}", replies[1]);
+    };
+    assert!(
+        (1..=5_000).contains(&pttl),
+        "{label}: PTTL should be within 1..=5000, got {pttl}"
+    );
+    let OracleReply::Int(ttl) = replies[2] else {
+        panic!("{label}: TTL should return integer, got {:?}", replies[2]);
+    };
+    assert!(
+        (1..=5).contains(&ttl),
+        "{label}: TTL should be within 1..=5, got {ttl}"
+    );
+    assert_eq!(replies[3], OracleReply::Int(1), "{label}: PERSIST");
+    assert_eq!(
+        replies[4],
+        OracleReply::Int(-1),
+        "{label}: TTL after PERSIST"
+    );
+    assert_eq!(replies[5], OracleReply::Int(1), "{label}: EXPIRE");
+    let OracleReply::Int(expiring_ttl) = replies[6] else {
+        panic!(
+            "{label}: TTL after EXPIRE should return integer, got {:?}",
+            replies[6]
+        );
+    };
+    assert!(
+        (0..=1).contains(&expiring_ttl),
+        "{label}: TTL after EXPIRE should be within 0..=1, got {expiring_ttl}"
+    );
+    assert_eq!(replies[7], OracleReply::Int(-2), "{label}: TTL missing");
 }
 
 async fn query_reply(addr: SocketAddr, command: &str, args: &[&str]) -> OracleReply {

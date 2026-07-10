@@ -110,28 +110,28 @@
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "exact",
-      "tests": ["mset_is_atomic_and_duplicate_keys_use_last_value", "mset_oversized_value_rejects_without_partial_mutation", "redis_oracle_mset_atomicity_matches_real_redis"]
+      "tests": ["mset_is_atomic_and_duplicate_keys_use_last_value", "mset_oversized_value_rejects_without_partial_mutation", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_mset_atomicity_matches_real_redis"]
     },
     {
       "name": "SET EX/PX",
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["client_protocol_v3_registers_ttl_metadata_without_breaking_v2", "set_ex_and_px_apply_expiry_through_client_surface", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
+      "tests": ["client_protocol_v3_registers_ttl_metadata_without_breaking_v2", "set_ex_and_px_apply_expiry_through_client_surface", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "EXPIRE/PEXPIRE",
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expired_keys_are_absent_for_get_mget_exists_and_del", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
+      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expired_keys_are_absent_for_get_mget_exists_and_del", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "TTL/PTTL",
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "ttl_pttl_use_bounded_tolerance_against_real_redis", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
+      "tests": ["expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "ttl_pttl_use_bounded_tolerance_against_real_redis", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "PERSIST",
