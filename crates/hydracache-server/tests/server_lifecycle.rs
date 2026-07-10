@@ -448,6 +448,57 @@ async fn redis_tcp_listener_accepts_real_socket_and_honors_drain_gate() {
     serving.await.unwrap().unwrap();
 }
 
+#[tokio::test]
+async fn server_drain_during_pipeline_has_documented_completion_or_close_behavior() {
+    let runtime = Arc::new(Mutex::new(
+        ServerRuntime::new(member_config_with_redis_surface())
+            .unwrap()
+            .start(),
+    ));
+    let server = Arc::new(
+        runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    let serving = tokio::spawn(serve_redis_listener(
+        listener,
+        Arc::clone(&server),
+        Arc::clone(&runtime),
+        shutdown_rx,
+    ));
+
+    let mut socket = TcpStream::connect(addr).await.unwrap();
+    socket
+        .write_all(
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    runtime.lock().expect("server runtime mutex").shutdown();
+
+    let mut output = Vec::new();
+    match socket.read_to_end(&mut output).await {
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::ConnectionReset => {}
+        Err(error) => panic!("unexpected drain read error: {error}"),
+    }
+    assert!(
+        output == b"+OK\r\n$1\r\nv\r\n+OK\r\n" || output.is_empty(),
+        "drain should complete accepted pipeline or close before RESP output, got {output:?}"
+    );
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
 #[test]
 fn server_lifecycle_env_config_parses_join_mode_and_advertise_endpoint() {
     let _guard = ConfigEnvGuard::new(&[

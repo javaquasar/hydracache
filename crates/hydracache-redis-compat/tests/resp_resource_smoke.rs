@@ -41,6 +41,95 @@ fn resource_smoke_heavy_gate_is_executable_and_env_gated() {
 }
 
 #[tokio::test]
+async fn connection_close_mid_command_does_not_corrupt_next_response() {
+    let server = listener(RedisListenerConfig::default());
+    let (mut client, server_io) = tokio::io::duplex(4096);
+    let serve = async {
+        server.serve_connection(server_io).await.unwrap();
+    };
+    let client = async {
+        client
+            .write_all(b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n")
+            .await
+            .unwrap();
+        client.shutdown().await.unwrap();
+        let mut output = Vec::new();
+        client.read_to_end(&mut output).await.unwrap();
+        output
+    };
+    let (_, output) = tokio::join!(serve, client);
+    assert!(output.is_empty());
+    assert_eq!(server.state().state_mutations(), 0);
+
+    let output = exchange(
+        &server,
+        b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+          *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    assert_eq!(output, b"+OK\r\n$1\r\nv\r\n+OK\r\n");
+}
+
+#[tokio::test]
+async fn connection_close_mid_pipeline_preserves_committed_response_boundaries() {
+    let server = listener(RedisListenerConfig::default());
+    let (mut client, server_io) = tokio::io::duplex(4096);
+    let serve = async {
+        server.serve_connection(server_io).await.unwrap();
+    };
+    let client = async {
+        client
+            .write_all(
+                b"*3\r\n$3\r\nSET\r\n$1\r\na\r\n$1\r\n1\r\n\
+                  *2\r\n$3\r\nGET\r\n$1\r\na\r\n\
+                  *3\r\n$3\r\nSET\r\n$1\r\nb\r\n",
+            )
+            .await
+            .unwrap();
+        client.shutdown().await.unwrap();
+        let mut output = Vec::new();
+        client.read_to_end(&mut output).await.unwrap();
+        output
+    };
+    let (_, output) = tokio::join!(serve, client);
+
+    assert_eq!(output, b"+OK\r\n$1\r\n1\r\n");
+    let retry = exchange(
+        &server,
+        b"*2\r\n$3\r\nGET\r\n$1\r\nb\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    assert_eq!(retry, b"$-1\r\n+OK\r\n");
+}
+
+#[tokio::test]
+async fn reconnect_and_retry_does_not_leak_connection_local_namespace() {
+    let server = listener(RedisListenerConfig::default());
+    let (mut client, server_io) = tokio::io::duplex(4096);
+    let serve = async {
+        server.serve_connection(server_io).await.unwrap();
+    };
+    let client = async {
+        client.write_all(b"*2\r\n$4\r\nECHO\r\n$").await.unwrap();
+        client.shutdown().await.unwrap();
+    };
+    tokio::join!(serve, client);
+
+    let output = exchange(
+        &server,
+        b"*2\r\n$4\r\nECHO\r\n$5\r\nretry\r\n\
+          *3\r\n$3\r\nSET\r\n$7\r\nretry:k\r\n$1\r\nv\r\n\
+          *2\r\n$3\r\nGET\r\n$7\r\nretry:k\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+
+    assert_eq!(output, b"$5\r\nretry\r\n+OK\r\n$1\r\nv\r\n+OK\r\n");
+}
+
+#[tokio::test]
 #[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1; resource/hostile-input smoke"]
 async fn resp_resource_smoke_bounds_pipelined_connection_and_redacts_extension_output() {
     if !env_gate_enabled(RESOURCE_SMOKE_ENV) {
