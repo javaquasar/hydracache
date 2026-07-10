@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use xtask::bench_budget::{
-    check_budget, load_measurements, parse_budget, BenchMeasurement, BenchMeasurements,
+    check_budget, load_budget, load_measurements, parse_budget, BenchMeasurement, BenchMeasurements,
 };
 
 #[test]
@@ -156,6 +156,29 @@ fn criterion_new_estimates_override_base() {
     let _ = fs::remove_dir_all(root);
 }
 
+#[test]
+fn repository_budget_accepts_current_ci_benchmark_shape() {
+    let workspace = workspace_root();
+    let rules = load_budget(workspace.join("benches/budget.toml")).unwrap();
+    let baseline = load_measurements(workspace.join("benches/baseline/0_37.json")).unwrap();
+    let current = measurements([
+        ("hot_path/event_publish_no_subscriber", 2_200.0),
+        ("hot_path/hit", 260.0),
+        ("hot_path/miss", 180.0),
+        ("hot_path/single_flight_16", 65_000.0),
+        ("outbox_write/write_with_outbox", 10_000.0),
+        ("outbox_write/write_without_outbox", 5.0),
+    ]);
+
+    let report = check_budget(&rules, &baseline, &current);
+
+    assert!(
+        report.passed(),
+        "repository budget should accept current CI-shaped measurements: {:?}",
+        report.failures
+    );
+}
+
 fn measurements<const N: usize>(items: [(&str, f64); N]) -> BenchMeasurements {
     BenchMeasurements {
         version: 1,
@@ -171,6 +194,14 @@ fn unique_temp_dir(name: &str) -> PathBuf {
     let path = std::env::temp_dir().join(format!("hydracache_xtask_{name}_{}", std::process::id()));
     let _ = fs::remove_dir_all(&path);
     path
+}
+
+fn workspace_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("xtask crate should live under crates/xtask")
+        .to_path_buf()
 }
 
 fn write_criterion_estimate(root: &Path, id: &str, snapshot: &str, mean_ns: f64) {
