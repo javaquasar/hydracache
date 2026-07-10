@@ -1,19 +1,25 @@
 //! Redis RESP edge compatibility primitives.
 //!
 //! This crate owns the parser-neutral command model for the optional Redis
-//! facade. The production listener is wired later; W1 keeps the RESP codec
-//! dependency contained here so the core and stable HydraCache client protocol
-//! remain untouched.
+//! facade. The RESP listener executes through the same verified client-surface
+//! dispatch seam as the stable HydraCache client API.
+
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
 use hydracache_client_protocol::{
     ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientResponseEnvelope, Namespace, StructuredKey,
 };
+use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
 use redis_protocol::resp2::decode::decode_bytes;
 use redis_protocol::resp2::encode::extend_encode;
 use redis_protocol::resp2::types::BytesFrame;
 use thiserror::Error;
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::time;
 
 /// RESP dialect claimed by the 0.63 edge surface.
 pub const SUPPORTED_RESP_DIALECT: &str = "RESP2";
@@ -29,6 +35,12 @@ pub const DEFAULT_MAX_RESP_ARRAY_ELEMENTS: usize = 1024;
 
 /// Default maximum RESP bulk/simple string bytes accepted before command translation.
 pub const DEFAULT_MAX_RESP_BULK_STRING_BYTES: usize = 16 * 1024 * 1024;
+
+/// Default per-read buffer size for RESP sockets.
+pub const DEFAULT_REDIS_READ_BUFFER_BYTES: usize = 8 * 1024;
+
+/// Default idle timeout for one RESP connection.
+pub const DEFAULT_REDIS_IDLE_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// RESP decoder resource limits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,6 +61,78 @@ impl Default for RespDecodeLimits {
             max_bulk_string_bytes: DEFAULT_MAX_RESP_BULK_STRING_BYTES,
         }
     }
+}
+
+/// Listener-level configuration for the Redis RESP edge.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RedisListenerConfig {
+    /// Namespace used for Redis key/value commands.
+    pub namespace: String,
+    /// Verified client id used when dispatching through the HydraCache client surface.
+    pub client_id: String,
+    /// Tenant bound to the verified Redis edge identity.
+    pub tenant: String,
+    /// RESP decoder limits.
+    pub decode_limits: RespDecodeLimits,
+    /// Bytes read from the socket per read operation.
+    pub read_buffer_bytes: usize,
+    /// Idle timeout for an open RESP connection.
+    pub idle_timeout: Duration,
+}
+
+impl Default for RedisListenerConfig {
+    fn default() -> Self {
+        Self {
+            namespace: DEFAULT_REDIS_NAMESPACE.to_owned(),
+            client_id: "redis-resp".to_owned(),
+            tenant: DEFAULT_REDIS_NAMESPACE.to_owned(),
+            decode_limits: RespDecodeLimits::default(),
+            read_buffer_bytes: DEFAULT_REDIS_READ_BUFFER_BYTES,
+            idle_timeout: DEFAULT_REDIS_IDLE_TIMEOUT,
+        }
+    }
+}
+
+impl RedisListenerConfig {
+    fn validate(&self) -> Result<(), RedisServeError> {
+        if self.read_buffer_bytes == 0 {
+            return Err(RedisServeError::Config(
+                "read_buffer_bytes must be non-zero",
+            ));
+        }
+        if self.idle_timeout.is_zero() {
+            return Err(RedisServeError::Config("idle_timeout must be non-zero"));
+        }
+        if self.decode_limits.max_frame_bytes == 0 {
+            return Err(RedisServeError::Config(
+                "decode_limits.max_frame_bytes must be non-zero",
+            ));
+        }
+        if self.decode_limits.max_array_elements == 0 {
+            return Err(RedisServeError::Config(
+                "decode_limits.max_array_elements must be non-zero",
+            ));
+        }
+        if self.decode_limits.max_bulk_string_bytes == 0 {
+            return Err(RedisServeError::Config(
+                "decode_limits.max_bulk_string_bytes must be non-zero",
+            ));
+        }
+        RedisTranslationContext::new(self.namespace.clone(), "redis-resp-config")
+            .map_err(|_| RedisServeError::Config("namespace must be valid"))?;
+        Ok(())
+    }
+}
+
+/// Snapshot of listener counters.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RedisListenerMetrics {
+    /// Connections accepted by this in-process listener.
+    pub accepted_connections: u64,
+    /// RESP commands answered by this listener.
+    pub commands: u64,
+    /// Decode/translation/encode failures surfaced as RESP errors.
+    pub errors: u64,
 }
 
 /// Parser-neutral Redis command subset.
@@ -170,6 +254,241 @@ pub enum RedisCompatError {
     /// Command verb is not valid UTF-8.
     #[error("Redis command verb must be UTF-8")]
     NonUtf8Verb,
+}
+
+/// Runtime errors from serving a RESP connection.
+#[derive(Debug, Error)]
+pub enum RedisServeError {
+    /// Static listener config is invalid.
+    #[error("redis listener config error: {0}")]
+    Config(&'static str),
+    /// The configured Redis edge identity could not be verified.
+    #[error("redis listener identity error: {0}")]
+    Identity(String),
+    /// The socket failed while reading or writing.
+    #[error("redis listener io error: {0}")]
+    Io(#[from] std::io::Error),
+    /// RESP response encoding failed.
+    #[error("redis listener codec error: {0}")]
+    Codec(#[from] RedisCompatError),
+}
+
+/// RESP connection executor backed by the HydraCache client surface.
+#[derive(Debug)]
+pub struct RedisRespServer {
+    state: Arc<ClientSurfaceState>,
+    identity: ClientIdentity,
+    config: RedisListenerConfig,
+    next_request_id: AtomicU64,
+    accepted_connections: AtomicU64,
+    commands: AtomicU64,
+    errors: AtomicU64,
+}
+
+impl RedisRespServer {
+    /// Create a Redis RESP executor around shared client surface state.
+    pub fn new(
+        state: Arc<ClientSurfaceState>,
+        config: RedisListenerConfig,
+    ) -> Result<Self, RedisServeError> {
+        config.validate()?;
+        let identity = ClientIdentity::new(config.client_id.clone(), config.tenant.clone())
+            .map_err(|error| RedisServeError::Identity(error.to_string()))?;
+        Ok(Self {
+            state,
+            identity,
+            config,
+            next_request_id: AtomicU64::new(1),
+            accepted_connections: AtomicU64::new(0),
+            commands: AtomicU64::new(0),
+            errors: AtomicU64::new(0),
+        })
+    }
+
+    /// Return the shared client surface state.
+    pub fn state(&self) -> Arc<ClientSurfaceState> {
+        Arc::clone(&self.state)
+    }
+
+    /// Return listener counters.
+    pub fn metrics(&self) -> RedisListenerMetrics {
+        RedisListenerMetrics {
+            accepted_connections: self.accepted_connections.load(Ordering::SeqCst),
+            commands: self.commands.load(Ordering::SeqCst),
+            errors: self.errors.load(Ordering::SeqCst),
+        }
+    }
+
+    /// Serve one RESP connection until EOF, QUIT, idle timeout, or malformed input.
+    pub async fn serve_connection<S>(&self, mut stream: S) -> Result<(), RedisServeError>
+    where
+        S: AsyncRead + AsyncWrite + Unpin,
+    {
+        self.accepted_connections.fetch_add(1, Ordering::SeqCst);
+        let mut buffer = Vec::with_capacity(self.config.read_buffer_bytes);
+        let mut read_chunk = vec![0; self.config.read_buffer_bytes];
+        loop {
+            let bytes_read =
+                match time::timeout(self.config.idle_timeout, stream.read(&mut read_chunk)).await {
+                    Ok(result) => result?,
+                    Err(_) => return Ok(()),
+                };
+            if bytes_read == 0 {
+                return Ok(());
+            }
+            buffer.extend_from_slice(&read_chunk[..bytes_read]);
+
+            while !buffer.is_empty() {
+                let decoded = decode_resp2_command_with_limits(&buffer, self.config.decode_limits);
+                let (command, consumed) = match decoded {
+                    Ok(Some(decoded)) => decoded,
+                    Ok(None) => break,
+                    Err(error) => {
+                        self.write_error(&mut stream, format!("ERR {error}"))
+                            .await?;
+                        return Ok(());
+                    }
+                };
+                buffer.drain(..consumed);
+
+                let should_close = matches!(command, RedisCommand::Quit);
+                let response = self.execute_command(command);
+                self.write_response(&mut stream, response).await?;
+                self.commands.fetch_add(1, Ordering::SeqCst);
+                if should_close {
+                    return Ok(());
+                }
+            }
+        }
+    }
+
+    /// Execute one parsed Redis command through the configured client-surface state.
+    pub fn execute_command(&self, command: RedisCommand) -> RespValue {
+        let context = match self.translation_context() {
+            Ok(context) => context,
+            Err(error) => {
+                self.errors.fetch_add(1, Ordering::SeqCst);
+                return error.into_resp_value();
+            }
+        };
+        let translated = match translate_redis_command(command, &context) {
+            Ok(translated) => translated,
+            Err(error) => {
+                self.errors.fetch_add(1, Ordering::SeqCst);
+                return error.into_resp_value();
+            }
+        };
+        self.execute_translated(translated)
+    }
+
+    fn execute_translated(&self, translated: RedisTranslatedCommand) -> RespValue {
+        match translated {
+            RedisTranslatedCommand::Immediate(value) => value,
+            RedisTranslatedCommand::Execute(plan) => self.execute_plan(plan),
+            RedisTranslatedCommand::Extension(extension) => self.extension_response(extension),
+        }
+    }
+
+    fn execute_plan(&self, plan: RedisExecutionPlan) -> RespValue {
+        let mut responses = plan
+            .initial_requests()
+            .iter()
+            .cloned()
+            .map(|request| {
+                self.state
+                    .dispatch_verified_request(&self.identity, request)
+            })
+            .collect::<Vec<_>>();
+        let followups = match plan.followup_requests(&responses) {
+            Ok(followups) => followups,
+            Err(error) => {
+                self.errors.fetch_add(1, Ordering::SeqCst);
+                return error.into_resp_value();
+            }
+        };
+        responses.extend(followups.into_iter().map(|request| {
+            self.state
+                .dispatch_verified_request(&self.identity, request)
+        }));
+        match plan.reduce(&responses) {
+            Ok(value) => value,
+            Err(error) => {
+                self.errors.fetch_add(1, Ordering::SeqCst);
+                error.into_resp_value()
+            }
+        }
+    }
+
+    fn extension_response(&self, extension: RedisExtensionRequest) -> RespValue {
+        match extension {
+            RedisExtensionRequest::Stats => RespValue::Array(vec![
+                bulk_static("surface"),
+                bulk_static("redis"),
+                bulk_static("tenant"),
+                RespValue::BulkString(self.identity.tenant().as_bytes().to_vec()),
+                bulk_static("dispatch_attempts"),
+                counter_value(self.state.dispatch_attempts()),
+                bulk_static("state_mutations"),
+                counter_value(self.state.state_mutations()),
+                bulk_static("active_subscriptions"),
+                counter_value(self.state.active_subscriptions()),
+                bulk_static("accepted_connections"),
+                counter_value(self.metrics().accepted_connections),
+                bulk_static("commands"),
+                counter_value(self.metrics().commands),
+                bulk_static("errors"),
+                counter_value(self.metrics().errors),
+            ]),
+            RedisExtensionRequest::Diagnostics => RespValue::Array(vec![
+                bulk_static("protocol"),
+                bulk_static(SUPPORTED_RESP_DIALECT),
+                bulk_static("namespace"),
+                RespValue::BulkString(self.config.namespace.as_bytes().to_vec()),
+                bulk_static("tenant"),
+                RespValue::BulkString(self.identity.tenant().as_bytes().to_vec()),
+                bulk_static("max_frame_bytes"),
+                counter_value(self.config.decode_limits.max_frame_bytes as u64),
+                bulk_static("max_array_elements"),
+                counter_value(self.config.decode_limits.max_array_elements as u64),
+                bulk_static("max_bulk_string_bytes"),
+                counter_value(self.config.decode_limits.max_bulk_string_bytes as u64),
+            ]),
+        }
+    }
+
+    fn translation_context(&self) -> Result<RedisTranslationContext, RedisTranslationError> {
+        let request_id = self.next_request_id.fetch_add(1, Ordering::SeqCst);
+        RedisTranslationContext::new(
+            self.config.namespace.clone(),
+            format!("redis-resp-{request_id}"),
+        )
+    }
+
+    async fn write_response<S>(
+        &self,
+        stream: &mut S,
+        response: RespValue,
+    ) -> Result<(), RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        let encoded = encode_resp2_value(response)?;
+        stream.write_all(&encoded).await?;
+        stream.flush().await?;
+        Ok(())
+    }
+
+    async fn write_error<S>(&self, stream: &mut S, message: String) -> Result<(), RedisServeError>
+    where
+        S: AsyncWrite + Unpin,
+    {
+        self.errors.fetch_add(1, Ordering::SeqCst);
+        self.write_response(stream, RespValue::Error(message)).await
+    }
+}
+
+fn counter_value(value: u64) -> RespValue {
+    RespValue::Integer(value.min(i64::MAX as u64) as i64)
 }
 
 /// Decode one RESP2 command frame.
@@ -1005,6 +1324,7 @@ mod tests {
     use hydracache_client_transport_axum::{
         ClientIdentity, ClientSurfaceLimits, ClientSurfaceState,
     };
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
     #[test]
     fn facade_advertises_resp2_only_for_this_release() {
@@ -1475,6 +1795,74 @@ mod tests {
         ));
     }
 
+    #[tokio::test]
+    async fn resp_listener_serves_pipelined_get_set_over_io() {
+        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+        let server =
+            RedisRespServer::new(Arc::clone(&state), RedisListenerConfig::default()).unwrap();
+        let output = exchange(
+            &server,
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *3\r\n$4\r\nMGET\r\n$1\r\nk\r\n$7\r\nmissing\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+
+        assert_eq!(output, b"+OK\r\n$1\r\nv\r\n*2\r\n$1\r\nv\r\n$-1\r\n+OK\r\n");
+        assert_eq!(state.dispatch_attempts(), 3);
+        assert_eq!(
+            server.metrics(),
+            RedisListenerMetrics {
+                accepted_connections: 1,
+                commands: 4,
+                errors: 0,
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn resp_listener_surfaces_errors_without_moved_or_ask() {
+        let server = listener();
+        let output = exchange(
+            &server,
+            b"*3\r\n$4\r\nHSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *1\r\n$4\r\nPING\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.contains("-ERR unsupported command HSET\r\n"));
+        assert!(output.contains("+PONG\r\n"));
+        assert!(output.contains("+OK\r\n"));
+        assert!(!output.contains("MOVED"));
+        assert!(!output.contains("ASK"));
+        assert_eq!(server.metrics().errors, 1);
+    }
+
+    #[tokio::test]
+    async fn hc_stats_and_diagnostics_over_resp_are_bounded_and_redacted() {
+        let server = listener();
+        let output = exchange(
+            &server,
+            b"*3\r\n$3\r\nSET\r\n$10\r\nsecret-key\r\n$12\r\nsecret-value\r\n\
+              *1\r\n$8\r\nHC.STATS\r\n\
+              *1\r\n$14\r\nHC.DIAGNOSTICS\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.contains("dispatch_attempts"));
+        assert!(output.contains("state_mutations"));
+        assert!(output.contains(SUPPORTED_RESP_DIALECT));
+        assert!(output.contains(DEFAULT_REDIS_NAMESPACE));
+        assert!(!output.contains("secret-key"));
+        assert!(!output.contains("secret-value"));
+        assert!(!output.contains("redis-resp-test"));
+    }
+
     fn surface() -> (ClientSurfaceState, ClientIdentity) {
         (
             ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap(),
@@ -1528,5 +1916,32 @@ mod tests {
                 String::from_utf8(name.clone()).unwrap()
             })
             .collect()
+    }
+
+    fn listener() -> RedisRespServer {
+        let config = RedisListenerConfig {
+            client_id: "redis-resp-test".to_owned(),
+            ..RedisListenerConfig::default()
+        };
+        RedisRespServer::new(
+            Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
+            config,
+        )
+        .unwrap()
+    }
+
+    async fn exchange(server: &RedisRespServer, input: &'static [u8]) -> Vec<u8> {
+        let (mut client, server_io) = tokio::io::duplex(4096);
+        let serve = async {
+            server.serve_connection(server_io).await.unwrap();
+        };
+        let client = async {
+            client.write_all(input).await.unwrap();
+            let mut output = Vec::new();
+            client.read_to_end(&mut output).await.unwrap();
+            output
+        };
+        let (_, output) = tokio::join!(serve, client);
+        output
     }
 }
