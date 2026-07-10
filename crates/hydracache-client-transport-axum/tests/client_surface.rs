@@ -6,7 +6,7 @@ use hydracache::{
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
     ClientResponse, ClientResponseEnvelope, ClientWireMessage, EntryEventProjection, Namespace,
-    StructuredKey, Watermark, PROTOCOL_VERSION,
+    StructuredKey, TtlState, Watermark, PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
@@ -135,6 +135,177 @@ async fn client_surface_get_put_invalidate_round_trip() {
         panic!("expected value response");
     };
     assert!(value.is_none());
+
+    let batch = ClientRequestEnvelope::new(
+        "batch-expired",
+        ClientRequest::BatchGet {
+            ns: ns(),
+            keys: vec![key("ttl")],
+        },
+    );
+    let ClientResponse::Batch { items } = send(&surface, batch).await.result.unwrap() else {
+        panic!("expected batch response");
+    };
+    assert_eq!(items[0].result.as_ref().unwrap(), &None);
+}
+
+#[tokio::test]
+async fn set_ex_and_px_apply_expiry_through_client_surface() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+
+    let put = ClientRequestEnvelope::new(
+        "put-ttl",
+        ClientRequest::Put {
+            ns: ns(),
+            key: key("ttl"),
+            value: b"short".to_vec(),
+            ttl_ms: Some(100),
+            dimensions: Vec::new(),
+        },
+    );
+    assert!(matches!(
+        send(&surface, put).await.result.unwrap(),
+        ClientResponse::Stored
+    ));
+
+    let ttl = ClientRequestEnvelope::new(
+        "ttl-1",
+        ClientRequest::GetTtl {
+            ns: ns(),
+            key: key("ttl"),
+        },
+    );
+    let ClientResponse::Ttl {
+        state: TtlState::ExpiresIn { ttl_ms },
+    } = send(&surface, ttl).await.result.unwrap()
+    else {
+        panic!("expected expiring TTL response");
+    };
+    assert_eq!(ttl_ms, 100);
+
+    surface.state().advance_cache_time_for_tests(101);
+    let get = ClientRequestEnvelope::new(
+        "get-expired",
+        ClientRequest::Get {
+            ns: ns(),
+            key: key("ttl"),
+        },
+    );
+    let ClientResponse::Value { value } = send(&surface, get).await.result.unwrap() else {
+        panic!("expected value response");
+    };
+    assert!(value.is_none());
+}
+
+#[tokio::test]
+async fn expire_pexpire_persist_and_ttl_pttl_match_redis_semantics() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(10_000));
+
+    let put = ClientRequestEnvelope::new(
+        "put-persistent",
+        ClientRequest::Put {
+            ns: ns(),
+            key: key("ttl-meta"),
+            value: b"value".to_vec(),
+            ttl_ms: None,
+            dimensions: Vec::new(),
+        },
+    );
+    assert!(send(&surface, put).await.result.is_ok());
+
+    let ttl = || {
+        ClientRequestEnvelope::new(
+            "ttl-meta",
+            ClientRequest::GetTtl {
+                ns: ns(),
+                key: key("ttl-meta"),
+            },
+        )
+    };
+    assert_eq!(
+        send(&surface, ttl()).await.result.unwrap(),
+        ClientResponse::Ttl {
+            state: TtlState::Persistent
+        }
+    );
+
+    let expire = ClientRequestEnvelope::new(
+        "expire",
+        ClientRequest::Expire {
+            ns: ns(),
+            key: key("ttl-meta"),
+            ttl_ms: 250,
+        },
+    );
+    assert_eq!(
+        send(&surface, expire).await.result.unwrap(),
+        ClientResponse::Expiry { applied: true }
+    );
+
+    surface.state().advance_cache_time_for_tests(50);
+    let ClientResponse::Ttl {
+        state: TtlState::ExpiresIn { ttl_ms },
+    } = send(&surface, ttl()).await.result.unwrap()
+    else {
+        panic!("expected expiring TTL response");
+    };
+    assert_eq!(ttl_ms, 200);
+
+    let persist = ClientRequestEnvelope::new(
+        "persist",
+        ClientRequest::Persist {
+            ns: ns(),
+            key: key("ttl-meta"),
+        },
+    );
+    assert_eq!(
+        send(&surface, persist).await.result.unwrap(),
+        ClientResponse::Expiry { applied: true }
+    );
+    assert_eq!(
+        send(&surface, ttl()).await.result.unwrap(),
+        ClientResponse::Ttl {
+            state: TtlState::Persistent
+        }
+    );
+
+    let missing = ClientRequestEnvelope::new(
+        "ttl-missing",
+        ClientRequest::GetTtl {
+            ns: ns(),
+            key: key("missing"),
+        },
+    );
+    assert_eq!(
+        send(&surface, missing).await.result.unwrap(),
+        ClientResponse::Ttl {
+            state: TtlState::Missing
+        }
+    );
+}
+
+#[tokio::test]
+async fn protocol_v2_clients_do_not_receive_v3_ttl_shapes() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let mut request = ClientRequestEnvelope::new(
+        "ttl-v2",
+        ClientRequest::GetTtl {
+            ns: ns(),
+            key: key("ttl"),
+        },
+    );
+    request.protocol_version = 2;
+
+    let (frame_version, response) = send_with_frame_version(&surface, request, 2).await;
+
+    assert_eq!(frame_version, 2);
+    assert_eq!(response.protocol_version, 2);
+    assert_eq!(
+        response.result.unwrap_err().code,
+        ClientErrorCode::IncompatibleVersion
+    );
 }
 
 #[tokio::test]
@@ -163,7 +334,7 @@ async fn client_surface_subscribe_entry_events_uses_bounded_subscription_family(
 }
 
 #[tokio::test]
-async fn client_surface_batch_partial_failures_preserve_order_and_item_status() {
+async fn client_surface_batch_put_is_atomic_when_an_item_is_too_large() {
     let limits = ClientSurfaceLimits {
         max_value_bytes: 4,
         ..ClientSurfaceLimits::default()
@@ -186,17 +357,21 @@ async fn client_surface_batch_partial_failures_preserve_order_and_item_status() 
         },
     );
 
-    let ClientResponse::Batch { items } = send(&surface, batch).await.result.unwrap() else {
-        panic!("expected batch response");
-    };
+    let error = send(&surface, batch).await.result.unwrap_err();
+    assert_eq!(error.code, ClientErrorCode::TooLarge);
 
-    assert_eq!(items[0].index, 0);
-    assert!(items[0].result.is_ok());
-    assert_eq!(items[1].index, 1);
-    assert_eq!(
-        items[1].result.as_ref().unwrap_err().code,
-        ClientErrorCode::TooLarge
+    let get = ClientRequestEnvelope::new(
+        "get-after-rejected-batch",
+        ClientRequest::Get {
+            ns: ns(),
+            key: key("1"),
+        },
     );
+    let ClientResponse::Value { value } = send(&surface, get).await.result.unwrap() else {
+        panic!("expected value response");
+    };
+    assert!(value.is_none());
+    assert_eq!(surface.state().state_mutations(), 0);
 }
 
 #[tokio::test]

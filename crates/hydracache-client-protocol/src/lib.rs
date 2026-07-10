@@ -15,10 +15,13 @@ pub mod java_migration;
 pub const MIN_PROTOCOL_VERSION: u16 = 1;
 
 /// Highest supported external client protocol version.
-pub const PROTOCOL_VERSION: u16 = 2;
+pub const PROTOCOL_VERSION: u16 = 3;
 
 /// First protocol version that carries the IMap/Fenced Lock operation family.
 pub const LOCK_PROTOCOL_VERSION: u16 = 2;
+
+/// First protocol version that carries TTL metadata and explicit expiry operations.
+pub const TTL_PROTOCOL_VERSION: u16 = 3;
 
 /// Bytes used by the unsigned length prefix.
 pub const LENGTH_PREFIX_BYTES: usize = 4;
@@ -632,6 +635,16 @@ pub enum ClientRequest {
         ns: Namespace,
         entries: Vec<BatchPutEntry>,
     },
+    /// Set or replace the expiry for one key.
+    Expire {
+        ns: Namespace,
+        key: StructuredKey,
+        ttl_ms: u64,
+    },
+    /// Remove the expiry for one key without changing its value.
+    Persist { ns: Namespace, key: StructuredKey },
+    /// Read remaining TTL metadata for one key.
+    GetTtl { ns: Namespace, key: StructuredKey },
     /// Evict a whole namespace/region mapping.
     EvictRegion { ns: Namespace },
     /// Subscribe to invalidations.
@@ -696,12 +709,18 @@ impl ClientRequest {
     pub fn minimum_protocol_version(&self) -> u16 {
         match self {
             Self::Get { .. }
-            | Self::Put { .. }
             | Self::Invalidate { .. }
             | Self::BatchGet { .. }
             | Self::BatchPut { .. }
             | Self::EvictRegion { .. }
             | Self::SubscribeInvalidations { .. } => MIN_PROTOCOL_VERSION,
+            Self::Put {
+                ttl_ms: Some(_), ..
+            }
+            | Self::Expire { .. }
+            | Self::Persist { .. }
+            | Self::GetTtl { .. } => TTL_PROTOCOL_VERSION,
+            Self::Put { ttl_ms: None, .. } => MIN_PROTOCOL_VERSION,
             Self::SubscribeEntryEvents { .. }
             | Self::TryLock { .. }
             | Self::Unlock { .. }
@@ -729,6 +748,9 @@ impl ClientRequest {
             Self::Invalidate { .. } => "invalidate",
             Self::BatchGet { .. } => "batch_get",
             Self::BatchPut { .. } => "batch_put",
+            Self::Expire { .. } => "expire",
+            Self::Persist { .. } => "persist",
+            Self::GetTtl { .. } => "get_ttl",
             Self::EvictRegion { .. } => "evict_region",
             Self::SubscribeInvalidations { .. } => "subscribe_invalidations",
             Self::SubscribeEntryEvents { .. } => "subscribe_entry_events",
@@ -801,6 +823,16 @@ pub enum ClientResponse {
     Invalidated,
     /// Batch result in request order.
     Batch { items: Vec<BatchItemStatus> },
+    /// Expiry mutation result.
+    Expiry {
+        /// Whether the key existed and the expiry state changed as requested.
+        applied: bool,
+    },
+    /// Remaining TTL metadata.
+    Ttl {
+        /// Redis-compatible remaining TTL state.
+        state: TtlState,
+    },
     /// Region/namespace eviction accepted.
     Evicted,
     /// Subscription accepted.
@@ -819,6 +851,18 @@ pub enum ClientResponse {
     CasApplied { new_version: u64 },
     /// CAS did not apply; carries the current live value if present.
     CasMismatch { current: Option<Vec<u8>> },
+}
+
+/// Redis-compatible remaining TTL state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TtlState {
+    /// Key does not exist or is already expired.
+    Missing,
+    /// Key exists and has no expiry.
+    Persistent,
+    /// Key exists and has a positive remaining TTL in milliseconds.
+    ExpiresIn { ttl_ms: u64 },
 }
 
 /// Per-item batch status.
