@@ -46,6 +46,7 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
     assert!(manifest.contains("client_matrix_runs_mset_and_ttl_commands"));
+    assert!(manifest.contains("client_matrix_runs_resp3_negotiation_scenario"));
     assert!(manifest.contains("client_matrix_runs_auth_required_connection_scenario"));
     assert!(manifest.contains("client_matrix_runs_rediss_required_connection_scenario"));
     assert!(
@@ -71,6 +72,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_mset_atomicity_matches_real_redis",
         "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance",
         "client_matrix_runs_mset_and_ttl_commands",
+        "client_matrix_runs_resp3_negotiation_scenario",
         "client_matrix_runs_auth_required_connection_scenario",
         "client_matrix_runs_rediss_required_connection_scenario",
         "redis_oracle_unsupported_divergence_is_documented",
@@ -184,6 +186,47 @@ async fn client_matrix_runs_mset_and_ttl_commands() {
     run_redis_rs_mset_ttl_scenario(&mut connection, "matrix")
         .await
         .unwrap();
+
+    drop(connection);
+    drop(shutdown);
+    serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves redis-rs RESP3 negotiation"]
+async fn client_matrix_runs_resp3_negotiation_scenario() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+
+    let (shutdown, addr, serving) = spawn_resp_facade().await;
+    let client = redis::Client::open(format!("redis://{addr}/?protocol=resp3")).unwrap();
+    let mut connection = client.get_multiplexed_async_connection().await.unwrap();
+
+    let pong: String = redis::cmd("PING")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(pong, "PONG");
+
+    run_redis_rs_mset_ttl_scenario(&mut connection, "resp3")
+        .await
+        .unwrap();
+
+    let _: () = redis::cmd("SET")
+        .arg("resp3:k")
+        .arg("v")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    let values: Vec<Option<String>> = redis::cmd("MGET")
+        .arg("resp3:k")
+        .arg("resp3:missing")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(values, vec![Some("v".to_owned()), None]);
 
     drop(connection);
     drop(shutdown);

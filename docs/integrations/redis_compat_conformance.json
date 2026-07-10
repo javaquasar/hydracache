@@ -33,14 +33,14 @@
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "exact",
-      "tests": ["hello2_is_supported_and_hello3_behavior_matches_contract"]
+      "tests": ["hello2_and_hello3_are_supported_and_switch_dialect"]
     },
     {
       "name": "HELLO 3",
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "exact",
-      "tests": ["hello2_and_hello3_are_supported_and_switch_dialect", "resp3_commands_roundtrip_supported_cache_subset", "resp3_unsupported_aggregate_inputs_fail_before_mutation"]
+      "tests": ["hello2_and_hello3_are_supported_and_switch_dialect", "resp3_commands_roundtrip_supported_cache_subset", "resp3_unsupported_aggregate_inputs_fail_before_mutation", "client_matrix_runs_resp3_negotiation_scenario"]
     },
     {
       "name": "AUTH/HELLO 2 AUTH",

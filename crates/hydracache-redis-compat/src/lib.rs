@@ -14,15 +14,21 @@ use hydracache_client_protocol::{
     ClientResponseEnvelope, Namespace, StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
-use redis_protocol::resp2::decode::decode_bytes;
-use redis_protocol::resp2::encode::extend_encode;
-use redis_protocol::resp2::types::BytesFrame;
+use redis_protocol::resp2::{
+    decode::decode_bytes as decode_resp2_bytes, encode::extend_encode as extend_encode_resp2,
+    types::BytesFrame as Resp2BytesFrame,
+};
+use redis_protocol::resp3::{
+    decode::complete::decode_bytes as decode_resp3_bytes,
+    encode::complete::extend_encode as extend_encode_resp3,
+    types::{BytesFrame as Resp3BytesFrame, FrameMap as Resp3FrameMap},
+};
 use thiserror::Error;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::time;
 
-/// RESP dialect claimed by the 0.63 edge surface.
-pub const SUPPORTED_RESP_DIALECT: &str = "RESP2";
+/// RESP dialects claimed by the 0.63 edge surface.
+pub const SUPPORTED_RESP_DIALECT: &str = "RESP2+RESP3";
 
 /// Default namespace used when no explicit RESP namespace mapping exists.
 pub const DEFAULT_REDIS_NAMESPACE: &str = "redis";
@@ -46,6 +52,25 @@ const DEFAULT_REDIS_AUTH_USERNAME: &str = "default";
 const REDIS_NOAUTH_MESSAGE: &str = "NOAUTH Authentication required.";
 const REDIS_WRONGPASS_MESSAGE: &str =
     "WRONGPASS invalid username-password pair or user is disabled.";
+
+/// RESP wire dialect used by one connection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RespDialect {
+    /// RESP2 request decoding and response encoding.
+    Resp2,
+    /// RESP3 request decoding and response encoding.
+    Resp3,
+}
+
+impl RespDialect {
+    fn from_hello_version(version: u8) -> Option<Self> {
+        match version {
+            2 => Some(Self::Resp2),
+            3 => Some(Self::Resp3),
+            _ => None,
+        }
+    }
+}
 
 /// RESP decoder resource limits.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -328,6 +353,8 @@ pub enum RespValue {
     BulkString(Vec<u8>),
     /// Array response.
     Array(Vec<RespValue>),
+    /// RESP3 map response.
+    Map(Vec<(RespValue, RespValue)>),
     /// Null bulk response.
     Null,
     /// RESP error response with a stable, redacted message.
@@ -338,10 +365,10 @@ pub enum RespValue {
 #[derive(Debug, Error)]
 pub enum RedisCompatError {
     /// The underlying RESP codec rejected the bytes.
-    #[error("RESP2 decode error: {0}")]
+    #[error("RESP decode error: {0}")]
     Decode(String),
     /// The underlying RESP encoder rejected the response.
-    #[error("RESP2 encode error: {0}")]
+    #[error("RESP encode error: {0}")]
     Encode(String),
     /// Buffered RESP frame is too large.
     #[error("RESP frame too large: {actual} bytes exceeds {max} bytes")]
@@ -414,6 +441,7 @@ pub struct RedisRespServer {
 struct RedisConnectionState {
     identity: ClientIdentity,
     authenticated: bool,
+    dialect: RespDialect,
 }
 
 impl RedisConnectionState {
@@ -421,6 +449,7 @@ impl RedisConnectionState {
         Self {
             identity: identity.clone(),
             authenticated: !auth.required,
+            dialect: RespDialect::Resp2,
         }
     }
 
@@ -428,6 +457,7 @@ impl RedisConnectionState {
         Self {
             identity: identity.clone(),
             authenticated: true,
+            dialect: RespDialect::Resp2,
         }
     }
 }
@@ -435,7 +465,7 @@ impl RedisConnectionState {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum AuthSuccessResponse {
     Ok,
-    Hello,
+    Hello { dialect: RespDialect },
 }
 
 impl RedisRespServer {
@@ -493,12 +523,16 @@ impl RedisRespServer {
             buffer.extend_from_slice(&read_chunk[..bytes_read]);
 
             while !buffer.is_empty() {
-                let decoded = decode_resp2_command_with_limits(&buffer, self.config.decode_limits);
+                let decoded = decode_resp_command_with_limits(
+                    &buffer,
+                    connection.dialect,
+                    self.config.decode_limits,
+                );
                 let (command, consumed) = match decoded {
                     Ok(Some(decoded)) => decoded,
                     Ok(None) => break,
                     Err(error) => {
-                        self.write_error(&mut stream, format!("ERR {error}"))
+                        self.write_error(&mut stream, connection.dialect, format!("ERR {error}"))
                             .await?;
                         return Ok(());
                     }
@@ -507,7 +541,8 @@ impl RedisRespServer {
 
                 let should_close = matches!(command, RedisCommand::Quit);
                 let response = self.execute_connection_command(command, &mut connection);
-                self.write_response(&mut stream, response).await?;
+                self.write_response(&mut stream, connection.dialect, response)
+                    .await?;
                 self.commands.fetch_add(1, Ordering::SeqCst);
                 if should_close {
                     return Ok(());
@@ -534,13 +569,16 @@ impl RedisRespServer {
                 AuthSuccessResponse::Ok,
             ),
             RedisCommand::Hello { version, auth } => {
-                if version != 2 {
+                let Some(dialect) = RespDialect::from_hello_version(version) else {
                     self.errors.fetch_add(1, Ordering::SeqCst);
-                    RedisTranslationError::UnsupportedRespDialect { version }.into_resp_value()
-                } else if let Some(attempt) = auth {
-                    self.apply_auth(attempt, connection, AuthSuccessResponse::Hello)
+                    return RedisTranslationError::UnsupportedRespDialect { version }
+                        .into_resp_value();
+                };
+                if let Some(attempt) = auth {
+                    self.apply_auth(attempt, connection, AuthSuccessResponse::Hello { dialect })
                 } else {
-                    resp2_hello_response()
+                    connection.dialect = dialect;
+                    hello_response(dialect)
                 }
             }
             command if self.requires_auth(&command) && !connection.authenticated => {
@@ -667,7 +705,10 @@ impl RedisRespServer {
             connection.identity = self.identity.clone();
             match success_response {
                 AuthSuccessResponse::Ok => RespValue::SimpleString("OK"),
-                AuthSuccessResponse::Hello => resp2_hello_response(),
+                AuthSuccessResponse::Hello { dialect } => {
+                    connection.dialect = dialect;
+                    hello_response(dialect)
+                }
             }
         } else {
             self.errors.fetch_add(1, Ordering::SeqCst);
@@ -705,23 +746,30 @@ impl RedisRespServer {
     async fn write_response<S>(
         &self,
         stream: &mut S,
+        dialect: RespDialect,
         response: RespValue,
     ) -> Result<(), RedisServeError>
     where
         S: AsyncWrite + Unpin,
     {
-        let encoded = encode_resp2_value(response)?;
+        let encoded = encode_resp_value(response, dialect)?;
         stream.write_all(&encoded).await?;
         stream.flush().await?;
         Ok(())
     }
 
-    async fn write_error<S>(&self, stream: &mut S, message: String) -> Result<(), RedisServeError>
+    async fn write_error<S>(
+        &self,
+        stream: &mut S,
+        dialect: RespDialect,
+        message: String,
+    ) -> Result<(), RedisServeError>
     where
         S: AsyncWrite + Unpin,
     {
         self.errors.fetch_add(1, Ordering::SeqCst);
-        self.write_response(stream, RespValue::Error(message)).await
+        self.write_response(stream, dialect, RespValue::Error(message))
+            .await
     }
 }
 
@@ -734,6 +782,13 @@ pub fn decode_resp2_command(
     input: &[u8],
 ) -> Result<Option<(RedisCommand, usize)>, RedisCompatError> {
     decode_resp2_command_with_limits(input, RespDecodeLimits::default())
+}
+
+/// Decode one RESP3 command frame.
+pub fn decode_resp3_command(
+    input: &[u8],
+) -> Result<Option<(RedisCommand, usize)>, RedisCompatError> {
+    decode_resp3_command_with_limits(input, RespDecodeLimits::default())
 }
 
 /// Decode one RESP2 command frame with resource limits.
@@ -749,48 +804,147 @@ pub fn decode_resp2_command_with_limits(
     }
     let bytes = Bytes::copy_from_slice(input);
     let Some((frame, consumed)) =
-        decode_bytes(&bytes).map_err(|error| RedisCompatError::Decode(error.to_string()))?
+        decode_resp2_bytes(&bytes).map_err(|error| RedisCompatError::Decode(error.to_string()))?
     else {
         return Ok(None);
     };
-    enforce_frame_limits(&frame, limits)?;
-    let command = command_from_frame(frame)?;
+    enforce_resp2_frame_limits(&frame, limits)?;
+    let command = command_from_resp2_frame(frame)?;
     Ok(Some((command, consumed)))
+}
+
+/// Decode one RESP3 command frame with resource limits.
+pub fn decode_resp3_command_with_limits(
+    input: &[u8],
+    limits: RespDecodeLimits,
+) -> Result<Option<(RedisCommand, usize)>, RedisCompatError> {
+    if input.len() > limits.max_frame_bytes {
+        return Err(RedisCompatError::FrameTooLarge {
+            actual: input.len(),
+            max: limits.max_frame_bytes,
+        });
+    }
+    let bytes = Bytes::copy_from_slice(input);
+    let Some((frame, consumed)) =
+        decode_resp3_bytes(&bytes).map_err(|error| RedisCompatError::Decode(error.to_string()))?
+    else {
+        return Ok(None);
+    };
+    enforce_resp3_frame_limits(&frame, limits)?;
+    let command = command_from_resp3_frame(frame)?;
+    Ok(Some((command, consumed)))
+}
+
+fn decode_resp_command_with_limits(
+    input: &[u8],
+    dialect: RespDialect,
+    limits: RespDecodeLimits,
+) -> Result<Option<(RedisCommand, usize)>, RedisCompatError> {
+    match dialect {
+        RespDialect::Resp2 => decode_resp2_command_with_limits(input, limits),
+        RespDialect::Resp3 => decode_resp3_command_with_limits(input, limits),
+    }
 }
 
 /// Encode a RESP2 response value.
 pub fn encode_resp2_value(value: RespValue) -> Result<Vec<u8>, RedisCompatError> {
-    let frame = resp_value_to_frame(value);
+    let frame = resp_value_to_resp2_frame(value);
     let mut output = BytesMut::new();
-    extend_encode(&mut output, &frame, false)
+    extend_encode_resp2(&mut output, &frame, false)
         .map_err(|error| RedisCompatError::Encode(error.to_string()))?;
     Ok(output.to_vec())
 }
 
-fn resp_value_to_frame(value: RespValue) -> BytesFrame {
-    match value {
-        RespValue::SimpleString(value) => {
-            BytesFrame::SimpleString(Bytes::from_static(value.as_bytes()))
-        }
-        RespValue::Integer(value) => BytesFrame::Integer(value),
-        RespValue::BulkString(value) => BytesFrame::BulkString(Bytes::from(value)),
-        RespValue::Array(values) => BytesFrame::Array(
-            values
-                .into_iter()
-                .map(resp_value_to_frame)
-                .collect::<Vec<_>>(),
-        ),
-        RespValue::Null => BytesFrame::Null,
-        RespValue::Error(value) => BytesFrame::Error(value.into()),
+/// Encode a RESP3 response value.
+pub fn encode_resp3_value(value: RespValue) -> Result<Vec<u8>, RedisCompatError> {
+    let frame = resp_value_to_resp3_frame(value);
+    let mut output = BytesMut::new();
+    extend_encode_resp3(&mut output, &frame, false)
+        .map_err(|error| RedisCompatError::Encode(error.to_string()))?;
+    Ok(output.to_vec())
+}
+
+fn encode_resp_value(value: RespValue, dialect: RespDialect) -> Result<Vec<u8>, RedisCompatError> {
+    match dialect {
+        RespDialect::Resp2 => encode_resp2_value(value),
+        RespDialect::Resp3 => encode_resp3_value(value),
     }
 }
 
-fn enforce_frame_limits(
-    frame: &BytesFrame,
+fn resp_value_to_resp2_frame(value: RespValue) -> Resp2BytesFrame {
+    match value {
+        RespValue::SimpleString(value) => {
+            Resp2BytesFrame::SimpleString(Bytes::from_static(value.as_bytes()))
+        }
+        RespValue::Integer(value) => Resp2BytesFrame::Integer(value),
+        RespValue::BulkString(value) => Resp2BytesFrame::BulkString(Bytes::from(value)),
+        RespValue::Array(values) => Resp2BytesFrame::Array(
+            values
+                .into_iter()
+                .map(resp_value_to_resp2_frame)
+                .collect::<Vec<_>>(),
+        ),
+        RespValue::Map(values) => Resp2BytesFrame::Array(
+            values
+                .into_iter()
+                .flat_map(|(key, value)| {
+                    [
+                        resp_value_to_resp2_frame(key),
+                        resp_value_to_resp2_frame(value),
+                    ]
+                })
+                .collect::<Vec<_>>(),
+        ),
+        RespValue::Null => Resp2BytesFrame::Null,
+        RespValue::Error(value) => Resp2BytesFrame::Error(value.into()),
+    }
+}
+
+fn resp_value_to_resp3_frame(value: RespValue) -> Resp3BytesFrame {
+    match value {
+        RespValue::SimpleString(value) => Resp3BytesFrame::SimpleString {
+            data: Bytes::from_static(value.as_bytes()),
+            attributes: None,
+        },
+        RespValue::Integer(value) => Resp3BytesFrame::Number {
+            data: value,
+            attributes: None,
+        },
+        RespValue::BulkString(value) => Resp3BytesFrame::BlobString {
+            data: Bytes::from(value),
+            attributes: None,
+        },
+        RespValue::Array(values) => Resp3BytesFrame::Array {
+            data: values.into_iter().map(resp_value_to_resp3_frame).collect(),
+            attributes: None,
+        },
+        RespValue::Map(values) => {
+            let mut data = Resp3FrameMap::default();
+            for (key, value) in values {
+                data.insert(
+                    resp_value_to_resp3_frame(key),
+                    resp_value_to_resp3_frame(value),
+                );
+            }
+            Resp3BytesFrame::Map {
+                data,
+                attributes: None,
+            }
+        }
+        RespValue::Null => Resp3BytesFrame::Null,
+        RespValue::Error(value) => Resp3BytesFrame::SimpleError {
+            data: value.into(),
+            attributes: None,
+        },
+    }
+}
+
+fn enforce_resp2_frame_limits(
+    frame: &Resp2BytesFrame,
     limits: RespDecodeLimits,
 ) -> Result<(), RedisCompatError> {
     match frame {
-        BytesFrame::Array(items) => {
+        Resp2BytesFrame::Array(items) => {
             if items.len() > limits.max_array_elements {
                 return Err(RedisCompatError::ArrayTooLarge {
                     actual: items.len(),
@@ -798,10 +952,10 @@ fn enforce_frame_limits(
                 });
             }
             for item in items {
-                enforce_frame_limits(item, limits)?;
+                enforce_resp2_frame_limits(item, limits)?;
             }
         }
-        BytesFrame::BulkString(bytes) | BytesFrame::SimpleString(bytes) => {
+        Resp2BytesFrame::BulkString(bytes) | Resp2BytesFrame::SimpleString(bytes) => {
             if bytes.len() > limits.max_bulk_string_bytes {
                 return Err(RedisCompatError::BulkStringTooLarge {
                     actual: bytes.len(),
@@ -809,7 +963,7 @@ fn enforce_frame_limits(
                 });
             }
         }
-        BytesFrame::Error(error) => {
+        Resp2BytesFrame::Error(error) => {
             if error.len() > limits.max_bulk_string_bytes {
                 return Err(RedisCompatError::BulkStringTooLarge {
                     actual: error.len(),
@@ -817,7 +971,77 @@ fn enforce_frame_limits(
                 });
             }
         }
-        BytesFrame::Integer(_) | BytesFrame::Null => {}
+        Resp2BytesFrame::Integer(_) | Resp2BytesFrame::Null => {}
+    }
+    Ok(())
+}
+
+fn enforce_resp3_frame_limits(
+    frame: &Resp3BytesFrame,
+    limits: RespDecodeLimits,
+) -> Result<(), RedisCompatError> {
+    match frame {
+        Resp3BytesFrame::Array { data, .. } | Resp3BytesFrame::Push { data, .. } => {
+            if data.len() > limits.max_array_elements {
+                return Err(RedisCompatError::ArrayTooLarge {
+                    actual: data.len(),
+                    max: limits.max_array_elements,
+                });
+            }
+            for item in data {
+                enforce_resp3_frame_limits(item, limits)?;
+            }
+        }
+        Resp3BytesFrame::Map { data, .. } => {
+            let actual = data.len().saturating_mul(2);
+            if actual > limits.max_array_elements {
+                return Err(RedisCompatError::ArrayTooLarge {
+                    actual,
+                    max: limits.max_array_elements,
+                });
+            }
+            for (key, value) in data {
+                enforce_resp3_frame_limits(key, limits)?;
+                enforce_resp3_frame_limits(value, limits)?;
+            }
+        }
+        Resp3BytesFrame::Set { data, .. } => {
+            if data.len() > limits.max_array_elements {
+                return Err(RedisCompatError::ArrayTooLarge {
+                    actual: data.len(),
+                    max: limits.max_array_elements,
+                });
+            }
+            for item in data {
+                enforce_resp3_frame_limits(item, limits)?;
+            }
+        }
+        Resp3BytesFrame::BlobString { data, .. }
+        | Resp3BytesFrame::SimpleString { data, .. }
+        | Resp3BytesFrame::BlobError { data, .. }
+        | Resp3BytesFrame::BigNumber { data, .. }
+        | Resp3BytesFrame::VerbatimString { data, .. }
+        | Resp3BytesFrame::ChunkedString(data) => {
+            if data.len() > limits.max_bulk_string_bytes {
+                return Err(RedisCompatError::BulkStringTooLarge {
+                    actual: data.len(),
+                    max: limits.max_bulk_string_bytes,
+                });
+            }
+        }
+        Resp3BytesFrame::SimpleError { data, .. } => {
+            if data.len() > limits.max_bulk_string_bytes {
+                return Err(RedisCompatError::BulkStringTooLarge {
+                    actual: data.len(),
+                    max: limits.max_bulk_string_bytes,
+                });
+            }
+        }
+        Resp3BytesFrame::Number { .. }
+        | Resp3BytesFrame::Double { .. }
+        | Resp3BytesFrame::Boolean { .. }
+        | Resp3BytesFrame::Null
+        | Resp3BytesFrame::Hello { .. } => {}
     }
     Ok(())
 }
@@ -1076,12 +1300,11 @@ pub fn translate_redis_command(
             RedisTranslatedCommand::Immediate(RespValue::BulkString(message))
         }
         RedisCommand::Quit => RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK")),
-        RedisCommand::Hello {
-            version: 2,
-            auth: _,
-        } => RedisTranslatedCommand::Immediate(resp2_hello_response()),
         RedisCommand::Hello { version, auth: _ } => {
-            return Err(RedisTranslationError::UnsupportedRespDialect { version });
+            let Some(dialect) = RespDialect::from_hello_version(version) else {
+                return Err(RedisTranslationError::UnsupportedRespDialect { version });
+            };
+            RedisTranslatedCommand::Immediate(hello_response(dialect))
         }
         RedisCommand::Auth { .. } => {
             return Err(RedisTranslationError::UnsupportedCommand {
@@ -1543,6 +1766,13 @@ fn client_error_to_unexpected(error: &ClientErrorEnvelope) -> RedisTranslationEr
     }
 }
 
+fn hello_response(dialect: RespDialect) -> RespValue {
+    match dialect {
+        RespDialect::Resp2 => resp2_hello_response(),
+        RespDialect::Resp3 => resp3_hello_response(),
+    }
+}
+
 fn resp2_hello_response() -> RespValue {
     RespValue::Array(vec![
         bulk_static("server"),
@@ -1559,6 +1789,33 @@ fn resp2_hello_response() -> RespValue {
         bulk_static("master"),
         bulk_static("modules"),
         RespValue::Array(Vec::new()),
+    ])
+}
+
+fn resp3_hello_response() -> RespValue {
+    RespValue::Map(vec![
+        (
+            RespValue::SimpleString("server"),
+            RespValue::SimpleString("hydracache"),
+        ),
+        (
+            RespValue::SimpleString("version"),
+            RespValue::SimpleString(env!("CARGO_PKG_VERSION")),
+        ),
+        (RespValue::SimpleString("proto"), RespValue::Integer(3)),
+        (RespValue::SimpleString("id"), RespValue::Integer(0)),
+        (
+            RespValue::SimpleString("mode"),
+            RespValue::SimpleString("standalone"),
+        ),
+        (
+            RespValue::SimpleString("role"),
+            RespValue::SimpleString("master"),
+        ),
+        (
+            RespValue::SimpleString("modules"),
+            RespValue::Array(Vec::new()),
+        ),
     ])
 }
 
@@ -1642,14 +1899,29 @@ fn dedupe_structured_keys(keys: Vec<StructuredKey>) -> Vec<StructuredKey> {
     unique
 }
 
-fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatError> {
-    let BytesFrame::Array(frames) = frame else {
+fn command_from_resp2_frame(frame: Resp2BytesFrame) -> Result<RedisCommand, RedisCompatError> {
+    let Resp2BytesFrame::Array(frames) = frame else {
         return Err(RedisCompatError::NonArrayCommand);
     };
-    let mut args = frames
+    let args = frames
         .into_iter()
-        .map(frame_bytes)
+        .map(resp2_frame_bytes)
         .collect::<Result<Vec<_>, _>>()?;
+    command_from_args(args)
+}
+
+fn command_from_resp3_frame(frame: Resp3BytesFrame) -> Result<RedisCommand, RedisCompatError> {
+    let Resp3BytesFrame::Array { data, .. } = frame else {
+        return Err(RedisCompatError::NonArrayCommand);
+    };
+    let args = data
+        .into_iter()
+        .map(resp3_frame_bytes)
+        .collect::<Result<Vec<_>, _>>()?;
+    command_from_args(args)
+}
+
+fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompatError> {
     if args.is_empty() {
         return Err(RedisCompatError::EmptyCommand);
     }
@@ -1692,7 +1964,7 @@ fn command_from_frame(frame: BytesFrame) -> Result<RedisCommand, RedisCompatErro
             command: "SET".to_owned(),
             args,
         },
-        "MSET" if !args.is_empty() && args.len() % 2 == 0 => RedisCommand::Mset {
+        "MSET" if !args.is_empty() && args.len().is_multiple_of(2) => RedisCommand::Mset {
             entries: args
                 .chunks_exact(2)
                 .map(|pair| (pair[0].clone(), pair[1].clone()))
@@ -1822,9 +2094,21 @@ fn parse_client_command(mut args: Vec<Vec<u8>>) -> RedisCommand {
     }
 }
 
-fn frame_bytes(frame: BytesFrame) -> Result<Vec<u8>, RedisCompatError> {
+fn resp2_frame_bytes(frame: Resp2BytesFrame) -> Result<Vec<u8>, RedisCompatError> {
     match frame {
-        BytesFrame::BulkString(bytes) | BytesFrame::SimpleString(bytes) => Ok(bytes.to_vec()),
+        Resp2BytesFrame::BulkString(bytes) | Resp2BytesFrame::SimpleString(bytes) => {
+            Ok(bytes.to_vec())
+        }
+        _ => Err(RedisCompatError::NonStringArgument),
+    }
+}
+
+fn resp3_frame_bytes(frame: Resp3BytesFrame) -> Result<Vec<u8>, RedisCompatError> {
+    match frame {
+        Resp3BytesFrame::BlobString { data, .. }
+        | Resp3BytesFrame::SimpleString { data, .. }
+        | Resp3BytesFrame::VerbatimString { data, .. } => Ok(data.to_vec()),
+        Resp3BytesFrame::Number { data, .. } => Ok(data.to_string().into_bytes()),
         _ => Err(RedisCompatError::NonStringArgument),
     }
 }
@@ -1838,8 +2122,8 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
     #[test]
-    fn facade_advertises_resp2_only_for_this_release() {
-        assert_eq!(SUPPORTED_RESP_DIALECT, "RESP2");
+    fn facade_advertises_resp2_and_resp3_for_this_release() {
+        assert_eq!(SUPPORTED_RESP_DIALECT, "RESP2+RESP3");
     }
 
     #[test]
@@ -1860,6 +2144,34 @@ mod tests {
         let error = encode_resp2_value(RespValue::Error("ERR unsupported command HSET".to_owned()))
             .unwrap();
         assert_eq!(error, b"-ERR unsupported command HSET\r\n");
+
+        let resp3_null = encode_resp3_value(RespValue::Null).unwrap();
+        assert_eq!(resp3_null, b"_\r\n");
+    }
+
+    #[test]
+    fn resp3_command_frames_decode_to_same_parser_neutral_model() {
+        let input = b"*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n";
+        let (command, consumed) = decode_resp3_command(input).unwrap().unwrap();
+        assert_eq!(consumed, input.len());
+        assert_eq!(
+            command,
+            RedisCommand::Get {
+                key: b"key".to_vec()
+            }
+        );
+
+        let (expire, _) = decode_resp3_command(b"*3\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n:30\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            expire,
+            RedisCommand::Expire {
+                key: b"k".to_vec(),
+                ttl: b"30".to_vec(),
+                unit: RedisTtlUnit::Seconds
+            }
+        );
     }
 
     #[test]
@@ -1984,7 +2296,7 @@ mod tests {
     }
 
     #[test]
-    fn hello2_is_supported_and_hello3_behavior_matches_contract() {
+    fn hello2_and_hello3_are_supported_and_switch_dialect() {
         let context = RedisTranslationContext::default();
         let hello2 = translate_redis_command(
             RedisCommand::Hello {
@@ -2010,11 +2322,12 @@ mod tests {
                 auth: None,
             },
             &context,
-        );
-        assert!(matches!(
-            hello3,
-            Err(RedisTranslationError::UnsupportedRespDialect { version: 3 })
-        ));
+        )
+        .unwrap();
+        let RedisTranslatedCommand::Immediate(RespValue::Map(fields)) = hello3 else {
+            panic!("HELLO 3 should be immediate RESP3 map");
+        };
+        assert!(fields.contains(&(RespValue::SimpleString("proto"), RespValue::Integer(3))));
     }
 
     #[test]
@@ -2479,9 +2792,9 @@ mod tests {
             )
             .unwrap_err(),
             translate_redis_command(
-                RedisCommand::Hello {
-                    version: 3,
-                    auth: None,
+                RedisCommand::Unsupported {
+                    verb: "HSET".to_owned(),
+                    args: vec![b"k".to_vec(), b"field".to_vec(), b"v".to_vec()],
                 },
                 &context,
             )
@@ -2563,6 +2876,48 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn resp3_commands_roundtrip_supported_cache_subset() {
+        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+        let server =
+            RedisRespServer::new(Arc::clone(&state), RedisListenerConfig::default()).unwrap();
+        let output = exchange(
+            &server,
+            b"*2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *5\r\n$4\r\nMSET\r\n$1\r\na\r\n$1\r\n1\r\n$1\r\nb\r\n$1\r\n2\r\n\
+              *3\r\n$4\r\nMGET\r\n$1\r\nk\r\n$7\r\nmissing\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.starts_with("%7\r\n"));
+        assert!(output.contains("+proto\r\n:3\r\n"));
+        assert!(output.ends_with("+OK\r\n$1\r\nv\r\n+OK\r\n*2\r\n$1\r\nv\r\n_\r\n+OK\r\n"));
+        assert_eq!(state.dispatch_attempts(), 4);
+    }
+
+    #[tokio::test]
+    async fn resp3_unsupported_aggregate_inputs_fail_before_mutation() {
+        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+        let server =
+            RedisRespServer::new(Arc::clone(&state), RedisListenerConfig::default()).unwrap();
+        let output = exchange(
+            &server,
+            b"*2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n\
+              *3\r\n$3\r\nSET\r\n%1\r\n+a\r\n+b\r\n$1\r\nv\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.contains("+proto\r\n:3\r\n"));
+        assert!(output.contains("-ERR Redis command argument must be a bulk or simple string\r\n"));
+        assert_eq!(state.dispatch_attempts(), 0);
+        assert_eq!(server.metrics().errors, 1);
+    }
+
+    #[tokio::test]
     async fn resp_listener_surfaces_errors_without_moved_or_ask() {
         let server = listener();
         let output = exchange(
@@ -2641,6 +2996,18 @@ mod tests {
         assert!(hello.contains("hydracache"));
         assert!(hello.contains("$5\r\nproto\r\n:2\r\n"));
         assert!(hello.ends_with("+OK\r\n$1\r\nv\r\n+OK\r\n"));
+
+        let hello3 = exchange(
+            &auth_listener(None),
+            b"*5\r\n$5\r\nHELLO\r\n$1\r\n3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n\
+              *3\r\n$3\r\nSET\r\n$2\r\nh3\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$2\r\nh3\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let hello3 = String::from_utf8(hello3).unwrap();
+        assert!(hello3.contains("+proto\r\n:3\r\n"));
+        assert!(hello3.ends_with("+OK\r\n$1\r\nv\r\n+OK\r\n"));
     }
 
     #[tokio::test]
