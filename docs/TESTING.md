@@ -102,6 +102,17 @@ Release readiness can also be dry-run before the final version bump and tag:
 .\scripts\verify-release-readiness.ps1 -Version 0.34.0 -DryRun
 ```
 
+GitHub release notes are published by the `Publish Release Notes` workflow.
+When a tag such as `v0.62.1` is pushed, the workflow reads
+`docs/releases/0.62.1.md` and creates or updates the matching GitHub Release.
+For backfilling old tags, run the workflow manually with the `version` input.
+
+For versions present in `docs/plans/releases.toml`, the manifest entry must be
+`status = "shipped"` before the workflow will publish. `cargo xtask doc-check`
+also requires every shipped manifest release to have
+`docs/releases/<version>.md`, so missing public notes fail before a release is
+tagged.
+
 On Windows release machines, prefer a serial cargo build before running the
 full gate if linker file locks have appeared recently:
 

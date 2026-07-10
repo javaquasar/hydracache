@@ -53,11 +53,37 @@ depends_on = ["0.38.0"]
         manifest,
         &["docs/plans/A.md", "docs/plans/B.md", "docs/plans/DRAFT.md"],
     );
+    fs::create_dir_all(root.join("docs/releases")).unwrap();
+    fs::write(
+        root.join("docs/releases/0.37.0.md"),
+        "# HydraCache 0.37.0\n",
+    )
+    .unwrap();
     let problems = doc_check::check(&root).unwrap();
     cleanup(&root);
     assert!(
         problems.is_empty(),
         "expected no problems, got: {problems:?}"
+    );
+}
+
+#[test]
+fn detects_shipped_release_without_release_notes() {
+    let manifest = r#"
+[[release]]
+version = "0.37.0"
+file = "docs/plans/A.md"
+status = "shipped"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/A.md"]);
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("shipped release '0.37.0' is missing docs/releases/0.37.0.md"),
+        "missing release-note check: {joined}"
     );
 }
 

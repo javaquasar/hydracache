@@ -17,6 +17,9 @@
 //!   header agree with its manifest `status` (TD-0006). A header that drifts
 //!   (e.g. a shipped plan still saying "planned") fails the gate instead of
 //!   passing silently. Plans that use a prose status (drafts) are skipped.
+//! - every shipped non-legacy release in `releases.toml` has a matching
+//!   `docs/releases/<version>.md` note so GitHub release publishing cannot pass
+//!   with missing public notes.
 //! - every ADR uses the single `0001-title.md` filename scheme, has a unique
 //!   number, and is listed from `docs/adr/README.md`.
 //! - every publishable workspace crate is present in both release publish scripts.
@@ -241,10 +244,36 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     }
 
     problems.extend(check_plan_header_status(root, &manifest.release)?);
+    problems.extend(check_release_notes_for_shipped_releases(
+        root,
+        &manifest.release,
+    )?);
     problems.extend(check_in_prose_plan_links(root)?);
     problems.extend(check_adr_index(root)?);
     problems.extend(check_publishable_crates_in_publish_scripts(root)?);
     problems.extend(check_redis_compat_conformance(root)?);
+
+    Ok(problems)
+}
+
+fn check_release_notes_for_shipped_releases(
+    root: &Path,
+    releases: &[Release],
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    for r in releases {
+        if r.status != "shipped" || r.version == "TBD" {
+            continue;
+        }
+
+        let note = format!("docs/releases/{}.md", r.version);
+        if !root.join(&note).is_file() {
+            problems.push(format!(
+                "{}: shipped release '{}' is missing {}",
+                r.file, r.version, note
+            ));
+        }
+    }
 
     Ok(problems)
 }
