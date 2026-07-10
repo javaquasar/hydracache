@@ -20,7 +20,8 @@
 >   replication are explicit **anti-references**.
 > - **Sequencing note:** this is **outward adoption before/around `1.0`**. Because it is an edge crate
 >   that never touches the frozen core, a subsequent `1.0` stabilization can proceed independently.
-> - **Status:** planned.
+> - **Status:** in-progress; scope expanded on 2026-07-10 to include the six remaining
+>   compatibility-proof items listed below before the release can close.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md) ·
@@ -133,6 +134,36 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
    bounded memory and file descriptors under many idle and pipelined connections, bounded metric label
    cardinality, no key/value leakage in logs or metrics, and no unbounded allocation on hostile RESP
    frames.
+
+## Scope Expansion: Remaining 0.63.0 Proof Items
+
+This section records the explicit scope expansion for the current implementation branch. The release
+still does **not** claim RESP3, TTL, Redis Cluster, `MSET` atomicity, or tag-scoped invalidation unless
+their candidate gates are implemented separately. The expansion closes the compatibility proof around
+the already-supported RESP2 cache subset.
+
+The following six items are now mandatory release scope:
+
+1. **Real Redis oracle.** The `redis_clients` gate must run the supported subset against HydraCache and
+   pinned real Redis oracle images (`redis:6.2.14`, `redis:7.2.5`) and compare normalized replies for
+   `PING`, `ECHO`, `GET`, `SET`, `MGET`, `DEL`, and `EXISTS`.
+2. **Mainstream client matrix.** The `redis_clients` gate must keep the Rust `redis-rs` smoke and add
+   executable, gated Python, Node, Go, and JVM rows. Missing runtimes skip loud only when the nightly
+   gate is not explicitly enabled for that runtime.
+3. **Executable heavy gates.** The `redis_clients` and `resp_resource_smoke` targets must compile in
+   the fast tier and run their ignored scenarios only when the documented env vars are set.
+4. **Reconnect and failure semantics.** RESP listener tests must cover close mid-command, close
+   mid-pipeline, reconnect-and-retry, and drain during pipeline without response corruption or
+   connection-local state leakage.
+5. **Multi-node RESP e2e.** A network-gated server test must drive the RESP listener against a real
+   daemon/grid path and exercise at least one restart or drain boundary. The fast tier may compile the
+   harness and keep the scenario ignored/env-gated.
+6. **Executable docs/examples.** Examples in `docs/integrations/redis-compat.md` must either be
+   executable in a docs-smoke gate or explicitly labeled with the Docker/nightly gate that proves them.
+
+Each item remains one closed task with its own commit. Before each commit, run the targeted tests for
+the changed crate or docs gate. The final release still requires the global gates after this branch is
+merged.
 
 ## Additional Strengthening Pass: executable compatibility contract
 
