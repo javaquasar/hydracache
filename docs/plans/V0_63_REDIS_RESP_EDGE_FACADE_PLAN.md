@@ -648,6 +648,29 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
 
 **Goal.** Everything outside the subset fails **loud and stable**, never wrong-but-green.
 
+**Deferred Redis data-structure scope assessment.** The table below is part of the 0.63 contract,
+not a backlog hint. These commands are useful in Redis ecosystems, but adding them would move the
+release from a cache-subset RESP facade into Redis-compatible data-structure server territory. They
+therefore stay unsupported in 0.63 unless a later release adds native HydraCache protocol/client-surface
+operations, atomicity rules, limits, observability, and real Redis oracle coverage for the exact subset.
+
+| Area | Complexity | Potential upside | Why not included in 0.63 |
+| --- | --- | --- | --- |
+| Hashes: `HSET`, `HGET`, `HDEL`, `HMGET`, `HEXISTS`, `HLEN` | Medium-high | Helps session fields, small object maps, metadata blobs, and frameworks that store partial object state in Redis hashes. This is the most plausible future data-structure subset if implemented as native single-key map operations. | Requires atomic read-modify-write or native map updates through the HydraCache client surface, TTL behavior for the whole structure, Redis count/nil semantics, size limits, and concurrency tests. A facade-only blob/JSON implementation would be wrong under concurrent field updates. |
+| Sorted sets: `ZADD`, `ZRANGE`, `ZREM`, score/rank queries | High | Enables leaderboards, rate-limit buckets, delayed scheduling patterns, and priority/rank lookups used by Redis-heavy applications. | Needs ordered indexes by score/member, floating-point score compatibility, deterministic tie-breaking, range queries, atomic updates, memory accounting, and real Redis oracle tests. HydraCache currently exposes key/value cache operations, not per-key ordered index semantics. |
+| Lists: `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, blocking list ops | High | Covers queue-like workloads and simple producer/consumer patterns many Redis clients use. | List order, head/tail mutation, blocking operations, fairness, reconnect behavior, and consumer backpressure are outside the current cache-subset model. Shipping non-blocking-only or approximate queues would create wrong expectations for Redis clients. |
+| Streams: `XADD`, `XREAD`, consumer groups, pending entries | Very high | Would support event-log and stream-processing migration stories, including consumer-group based fanout. | Streams are an append log with IDs, consumer groups, pending entries, ack/reclaim behavior, trimming, and replay semantics. That conflicts with the 0.63 non-goal that HydraCache is not an event log; implementing it honestly would be a separate product-sized release. |
+| Lua / `EVAL` / script cache | Very high and security-sensitive | Some Redis applications rely on scripts for atomic multi-command workflows and server-side business logic. | Requires sandboxing, CPU/memory/time limits, deterministic execution, script cache semantics, command allowlists, auth isolation, and atomic execution across every command the script can call. It would bypass the simple command-by-command client-surface mapping that makes 0.63 safe. |
+| Transactions: `MULTI`, `EXEC`, `DISCARD`, `WATCH` | High | Helps clients that group Redis operations and expect Redis transaction error/queue semantics. | Requires connection-local command queues, Redis error ordering, atomic commit semantics, `WATCH` conflict detection, and cross-command reducer behavior. Current 0.63 commands are executed directly through `ClientSurfaceState`, one command at a time. |
+| Modules and Redis module commands | Product-sized / not planned | Would allow custom Redis commands/types from existing Redis module ecosystems. | Redis modules depend on a server-side ABI/API and custom data types. Supporting that would make HydraCache a Redis server clone, not a RESP cache-subset facade. This should remain a permanent non-goal unless the product direction changes explicitly. |
+| Pub/Sub: `PUBLISH`, `SUBSCRIBE`, pattern subscriptions | Medium-high | Could improve migration for cache-notification style users and simple fanout listeners. | General Redis pub/sub is broader than HydraCache invalidation. It needs subscription lifecycle, pattern matching, delivery/backpressure rules, connection-mode behavior, and reconnect semantics. 0.63 keeps any pub/sub-like behavior limited to native HydraCache invalidation surfaces, not a general message bus. |
+
+**Future path.** If this scope is ever expanded, hashes should be the first candidate because they can
+be bounded to one key and mapped to native single-key map operations. That future release must add the
+protocol operations first and then graduate a narrow hash subset from unsupported to supported. Sorted
+sets, lists, streams, Lua, transactions, modules, and general pub/sub stay out of 0.63 because they are
+either new data models, execution engines, or messaging systems rather than cache-subset RESP commands.
+
 **Steps.**
 1. A stable `ERR unsupported command '<CMD>'` for `HSET`/`ZADD`/lists/streams/`EVAL`/`MULTI`/`EXEC`/
    modules/`SUBSCRIBE` (unless invalidation-scoped)/`CLUSTER`/etc. A committed **matrix** doc lists
