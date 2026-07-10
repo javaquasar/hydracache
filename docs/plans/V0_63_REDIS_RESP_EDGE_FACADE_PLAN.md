@@ -88,7 +88,9 @@ targeted client-protocol v3 expansion for TTL metadata rather than a new cache A
   `ERR unsupported command` (R-3) — never silently wrong.
 - **No Redis Cluster.** No `MOVED`/`ASK` redirections, no hash slots, no gossip authority — authority
   stays **raft + epoch** (R-1). Redis Cluster and async replication are **anti-references**, not to be
-  copied.
+  copied. `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO`, and related cluster topology commands
+  must return the stable unsupported-command error; cluster-aware clients must connect in standalone
+  Redis mode.
 - **Does not replace `hydracache-client-protocol`.** The stable frame contract (namespace, structured
   keys, idempotency, consistency labels, locks/CAS, residency, versioned compat) stays authoritative;
   the facade *translates into it*. The only protocol change in the expanded 0.63 scope is a registered
@@ -612,12 +614,17 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
    modules/`SUBSCRIBE` (unless invalidation-scoped)/`CLUSTER`/etc. A committed **matrix** doc lists
    supported vs unsupported.
 2. No `MOVED`/`ASK`; `CLUSTER *` → unsupported (authority stays raft+epoch, R-1).
+   `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO`, `CLUSTER KEYSLOT`, and
+   `CLUSTER GETKEYSINSLOT` are intentionally not implemented, because returning fake slots or a fake
+   topology would make cluster-aware clients cache an invalid routing model.
 3. `FLUSHDB`/`FLUSHALL` → loud admin-disabled error **unless** explicitly enabled in config (dangerous;
    off by default).
 
 **Tests & requirements.**
 - `unsupported_commands_fail_loud_with_stable_error` (table-driven over the matrix).
+- `cluster_commands_decode_as_unsupported_standalone_contract`.
 - `cluster_and_moved_ask_are_never_emitted`.
+- `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`.
 - `flushall_is_admin_disabled_by_default`.
 - Run: `cargo test -p hydracache-redis-compat --locked`.
 
@@ -910,7 +917,7 @@ HydraCache does and does not implement.
 | health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification` | PR |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
 | `HC.*` tag/dimension commands (W3d/W3e) | native tag path or unsupported matrix | `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`, `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`, `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys`, `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` if enabled | PR / candidate |
-| unsupported matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_and_moved_ask_are_never_emitted`, `flushall_is_admin_disabled_by_default` | PR |
+| unsupported matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_commands_decode_as_unsupported_standalone_contract`, `cluster_and_moved_ask_are_never_emitted`, `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`, `flushall_is_admin_disabled_by_default` | PR |
 | golden + fuzz + frame boundaries (W5) | committed corpus + proptest | `golden_resp_fixtures_decode_to_expected`, `resp_decoder_never_panics_on_arbitrary_bytes`, `partial_resp_frames_decode_like_complete_frames`, `multiple_resp_frames_in_one_read_are_all_processed` | PR |
 | pipelining/backpressure/resource behavior (W5) | RESP listener | `pipelined_requests_preserve_response_order`, `pipelined_mixed_success_and_error_responses_stay_ordered`, `oversized_bulk_and_array_frames_are_rejected_before_allocation_spike`, `slowloris_connection_is_timed_out_without_leaking_inflight_work`, `resp_surface_metrics_have_bounded_labels_and_no_key_or_value_leak` | PR + gated |
 | mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `client_matrix_runs_mset_and_ttl_commands`, `client_matrix_runs_resp3_negotiation_scenario`, `client_matrix_runs_auth_required_connection_scenario`, `client_matrix_runs_rediss_required_connection_scenario` | PR + Docker-gated / nightly |

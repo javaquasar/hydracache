@@ -2774,15 +2774,32 @@ mod tests {
     #[test]
     fn cluster_and_moved_ask_are_never_emitted() {
         let context = RedisTranslationContext::default();
-        let errors = [
-            translate_redis_command(
-                RedisCommand::Unsupported {
-                    verb: "CLUSTER".to_owned(),
-                    args: vec![b"INFO".to_vec()],
-                },
-                &context,
-            )
-            .unwrap_err(),
+        let cluster_subcommands = [
+            "INFO",
+            "SLOTS",
+            "NODES",
+            "SHARDS",
+            "KEYSLOT",
+            "GETKEYSINSLOT",
+        ];
+        for subcommand in cluster_subcommands {
+            let command = RedisCommand::Unsupported {
+                verb: "CLUSTER".to_owned(),
+                args: vec![subcommand.as_bytes().to_vec()],
+            };
+            let error = translate_redis_command(command, &context).unwrap_err();
+            assert!(matches!(
+                &error,
+                RedisTranslationError::UnsupportedCommand { command } if command == "CLUSTER"
+            ));
+            let encoded =
+                String::from_utf8(encode_resp2_value(error.into_resp_value()).unwrap()).unwrap();
+            assert_eq!(encoded, "-ERR unsupported command CLUSTER\r\n");
+            assert!(!encoded.contains("MOVED"));
+            assert!(!encoded.contains("ASK"));
+        }
+
+        let non_cluster_errors = [
             translate_redis_command(
                 RedisCommand::AdminDisabled {
                     command: "FLUSHDB".to_owned(),
@@ -2801,11 +2818,48 @@ mod tests {
             .unwrap_err(),
         ];
 
-        for error in errors {
+        for error in non_cluster_errors {
             let encoded =
                 String::from_utf8(encode_resp2_value(error.into_resp_value()).unwrap()).unwrap();
             assert!(!encoded.contains("MOVED"));
             assert!(!encoded.contains("ASK"));
+        }
+    }
+
+    #[test]
+    fn cluster_commands_decode_as_unsupported_standalone_contract() {
+        for (input, expected_args) in [
+            (
+                b"*2\r\n$7\r\nCLUSTER\r\n$5\r\nSLOTS\r\n".as_slice(),
+                vec![b"SLOTS".to_vec()],
+            ),
+            (
+                b"*2\r\n$7\r\nCLUSTER\r\n$5\r\nNODES\r\n".as_slice(),
+                vec![b"NODES".to_vec()],
+            ),
+            (
+                b"*2\r\n$7\r\nCLUSTER\r\n$4\r\nINFO\r\n".as_slice(),
+                vec![b"INFO".to_vec()],
+            ),
+            (
+                b"*3\r\n$7\r\nCLUSTER\r\n$7\r\nKEYSLOT\r\n$3\r\nkey\r\n".as_slice(),
+                vec![b"KEYSLOT".to_vec(), b"key".to_vec()],
+            ),
+            (
+                b"*4\r\n$7\r\nCLUSTER\r\n$13\r\nGETKEYSINSLOT\r\n$1\r\n0\r\n$2\r\n10\r\n"
+                    .as_slice(),
+                vec![b"GETKEYSINSLOT".to_vec(), b"0".to_vec(), b"10".to_vec()],
+            ),
+        ] {
+            let (command, consumed) = decode_resp2_command(input).unwrap().unwrap();
+            assert_eq!(consumed, input.len());
+            assert_eq!(
+                command,
+                RedisCommand::Unsupported {
+                    verb: "CLUSTER".to_owned(),
+                    args: expected_args
+                }
+            );
         }
     }
 
@@ -2935,6 +2989,36 @@ mod tests {
         assert!(!output.contains("MOVED"));
         assert!(!output.contains("ASK"));
         assert_eq!(server.metrics().errors, 1);
+    }
+
+    #[tokio::test]
+    async fn cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects() {
+        let server = listener();
+        let output = exchange(
+            &server,
+            b"*2\r\n$7\r\nCLUSTER\r\n$5\r\nSLOTS\r\n\
+              *2\r\n$7\r\nCLUSTER\r\n$5\r\nNODES\r\n\
+              *2\r\n$7\r\nCLUSTER\r\n$4\r\nINFO\r\n\
+              *2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n\
+              *2\r\n$7\r\nCLUSTER\r\n$5\r\nSLOTS\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert_eq!(
+            output
+                .matches("-ERR unsupported command CLUSTER\r\n")
+                .count(),
+            4
+        );
+        assert!(output.contains("+proto\r\n:3\r\n"));
+        assert!(output.ends_with("+OK\r\n"));
+        assert!(!output.contains("MOVED"));
+        assert!(!output.contains("ASK"));
+        assert!(!output.contains("slot"));
+        assert!(!output.contains("node"));
+        assert_eq!(server.metrics().errors, 4);
     }
 
     #[tokio::test]

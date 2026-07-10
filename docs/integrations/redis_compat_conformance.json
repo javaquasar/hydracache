@@ -204,11 +204,18 @@
       "tests": ["flushall_is_admin_disabled_by_default"]
     },
     {
-      "name": "HSET/ZADD/LISTS/STREAMS/EVAL/MULTI/MODULE/CLUSTER",
+      "name": "HSET/ZADD/LISTS/STREAMS/EVAL/MULTI/MODULE",
       "status": "unsupported",
       "kind": "redis_non_subset",
       "oracle": "documented_divergence",
-      "tests": ["unsupported_commands_fail_loud_with_stable_error", "cluster_and_moved_ask_are_never_emitted", "redis_oracle_unsupported_divergence_is_documented"]
+      "tests": ["unsupported_commands_fail_loud_with_stable_error", "redis_oracle_unsupported_divergence_is_documented"]
+    },
+    {
+      "name": "CLUSTER SLOTS/NODES/INFO",
+      "status": "unsupported",
+      "kind": "redis_cluster",
+      "oracle": "documented_divergence",
+      "tests": ["cluster_commands_decode_as_unsupported_standalone_contract", "cluster_and_moved_ask_are_never_emitted", "cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects"]
     },
     {
       "name": "HC.STATS",

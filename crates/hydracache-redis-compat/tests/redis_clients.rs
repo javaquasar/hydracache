@@ -45,6 +45,10 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"));
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
+    assert!(manifest.contains("CLUSTER SLOTS/NODES/INFO"));
+    assert!(manifest.contains("cluster_commands_decode_as_unsupported_standalone_contract"));
+    assert!(manifest
+        .contains("cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects"));
     assert!(manifest.contains("client_matrix_runs_mset_and_ttl_commands"));
     assert!(manifest.contains("client_matrix_runs_resp3_negotiation_scenario"));
     assert!(manifest.contains("client_matrix_runs_auth_required_connection_scenario"));

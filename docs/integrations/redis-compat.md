@@ -6,6 +6,11 @@ The listener is off by default, translates RESP commands into HydraCache client-
 operations, and must preserve tenancy, limits, and consistency by going through
 `ClientSurfaceState`.
 
+The facade is a standalone Redis endpoint. Redis Cluster is intentionally not
+implemented: there are no hash slots, no cluster topology, and no `MOVED` or
+`ASK` redirects. Cluster-aware Redis clients must be configured in ordinary
+standalone mode when talking to HydraCache.
+
 The executable contract is
 [`redis_compat_conformance.json`](redis_compat_conformance.json). That manifest is
 the source of truth for the docs matrix, translator tests, real Redis oracle
@@ -37,7 +42,8 @@ to this page without adding or updating the manifest row first.
 | `SELECT` | `candidate` | candidate | Requires explicit database-to-namespace mapping. |
 | `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN` | `candidate` or `unsupported` | candidate or documented divergence | Health probes must be minimal and honest; no fabricated Redis server state. |
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Disabled by default. |
-| `HSET`, `ZADD`, lists, streams, Lua, transactions, modules, `CLUSTER` | `unsupported` | documented divergence | HydraCache is not a Redis clone and does not emit `MOVED` or `ASK`. |
+| `HSET`, `ZADD`, lists, streams, Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. |
+| `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO` | `unsupported` | documented divergence | Standalone-only facade. No hash slots, topology, `MOVED`, or `ASK` are fabricated. |
 | `HC.STATS`, `HC.DIAGNOSTICS`, `HC.INVALIDATE` | `hydracache_extension` | HydraCache-only | Must be tenant-scoped and go through HydraCache surfaces. |
 | `HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, `HC.INVALIDATE_TAG` | `candidate` | candidate | Tag invalidation ships only with a native tag-scoped path; scan-and-loop is forbidden. |
 
@@ -54,6 +60,10 @@ Unsupported Redis commands are expected to diverge: real Redis may succeed, whil
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
 real Redis should return unknown command behavior.
 
+Redis Cluster is a documented non-goal rather than a partial implementation.
+`CLUSTER *` commands return a stable unsupported error, and the facade never
+returns topology, hash slot metadata, `MOVED`, or `ASK`.
+
 ## Executable Examples
 
 Every example below is covered by the `redis_clients` gated target. They use only
@@ -62,6 +72,9 @@ auth-required startup path, and the native `rediss://` startup path. Auth-enable
 `redis://default:<password>@host:port/`; TLS examples use `rediss://default:<password>@host:port/`
 with the configured CA. `SELECT` and `HC.*` examples stay out of user-facing docs until their
 matching gates ship.
+Cluster clients should use their normal standalone Redis connection path, not a
+cluster topology client, because HydraCache does not expose Redis Cluster slots
+or redirects.
 
 ### redis-cli
 
