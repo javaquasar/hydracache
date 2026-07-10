@@ -611,6 +611,25 @@ looping over per-key operations, or ignoring partial failures.
    same semantics. A loop over currently visible keys is not acceptable: it can miss concurrent writes,
    cross tenant boundaries, produce partial success, and pretend to be a single semantic operation.
 
+**Candidate command value and complexity.** These rows explain why the commands stay in the 0.63
+manifest as `candidate` rather than `supported`. They are useful HydraCache-native extensions, but
+supporting them honestly requires metadata and invalidation mechanics the current RESP edge must not
+invent locally.
+
+| Command group | What it would give clients | Implementation complexity now | Why it stays candidate in 0.63 |
+| --- | --- | --- | --- |
+| `HC.NAMESPACE name` | A HydraCache-aware RESP client could switch or inspect an explicit namespace without abusing Redis `SELECT`. This helps diagnostics, migration tooling, and future multi-namespace clients. | Low-medium for read-only reporting; medium-high for connection-local switching because it affects auth, tenant boundaries, metrics, request ids, and retry behavior. | The release already defines Redis `SELECT 0` as a no-op single-DB contract. Namespace switching needs a separate HydraCache contract for listener config, allowed namespace set, auth mapping, and connection-local state. Without that contract it could bypass tenant isolation or make examples imply Redis multi-db support. |
+| `HC.TAG key tag` | Attach one tag/dimension to an existing key so later invalidation can target a logical group instead of relying on key prefixes. | Medium-high. Needs native metadata mutation or a proven update path that does not rewrite value bytes incorrectly. | Today the safe client-surface path is value-centric. A facade-only implementation would need to read the value, rewrite metadata, and put it back, which is not an honest atomic metadata operation under concurrent writes, expiry, limits, or tenant checks. |
+| `HC.SETTAGS key tag...` | Replace the tag set for a key, useful for frameworks that know the complete dependency set for a cached object. | High. Requires atomic replace semantics, duplicate/tag normalization rules, limits on tag count/size, cross-tenant rejection, and index maintenance. | Replacing tags is stronger than adding one tag. It must define whether missing keys create metadata, whether existing value TTL is preserved, how stale index entries are removed, and how partial failure is reported. None of that belongs in an edge-only RESP shim. |
+| `HC.INVALIDATE_TAG tag` | The main payoff: group invalidation without `SCAN pattern -> DEL`. It could clear all keys associated with a model/table/entity tag while preserving unrelated keys. | High. Requires a native tag index or native tag-scoped invalidation path, plus concurrency, expiry, tenant isolation, and bounded-work tests. | A scan-and-loop over visible keys is explicitly forbidden. It can miss concurrent writes, cross a namespace boundary, partially delete keys, overload the listener, and still look successful to the client. Until a native path exists, returning unsupported is safer than a fake group invalidation. |
+
+**Native path required before support.** To graduate W3d/W3e from candidate, a later change must add
+or reuse a native metadata/tag path that covers: tag storage with the value metadata, tag index
+maintenance on `SET`/overwrite/`DEL`/expiry, per-tenant namespace scoping, bounded tag count and tag
+byte limits, atomic update semantics, redacted observability, and canary tests proving a scan-and-loop
+implementation fails. `HC.NAMESPACE` may graduate independently only as a scoped connection metadata
+feature; it must not become Redis multi-db by another name.
+
 **Compatibility rule.** Extending `hydracache-client-protocol` for W3 is not allowed as an incidental
 side effect of this edge release. If W3 requires a new public `ClientRequest` variant, the release must
 be explicitly re-scoped as a client-protocol compatibility release, `docs/COMPAT.md` must register the
@@ -721,6 +740,22 @@ either new data models, execution engines, or messaging systems rather than cach
   conformance manifest from W0 and executes the same scenario ids against HydraCache, real Redis
   oracle, and mainstream clients. Golden fixtures are keyed by manifest scenario id so a docs or
   translator change cannot leave stale fixtures behind.
+- **Targeted tests are not the final compatibility claim.** Fast code tests prove parser, translator,
+  listener, auth/TLS, TTL, `MSET`, `INFO`/`TYPE`, unsupported, and admin-disabled behavior in the
+  changed Rust modules. They do not by themselves prove that mainstream clients and real Redis oracle
+  behavior match across languages and Redis versions. The final `0.63.0` compatibility claim requires
+  the Docker/nightly matrix below before release notes can say the Redis client ecosystem is covered.
+  If the heavy matrix is not green, the release may still carry implemented code, but the release
+  status must say "targeted tests passed; ecosystem/oracle proof pending" rather than claiming broad
+  Redis compatibility.
+- **Heavy proof tiers and cost.**
+
+  | Gate | What it proves | Implementation or run complexity | Release meaning |
+  | --- | --- | --- | --- |
+  | Fast `hydracache-redis-compat` tests | RESP codec, command mapping, reducers, listener I/O, targeted auth/TLS/TTL/MSET/INFO/TYPE/admin-disabled behavior. | Low to run; PR-tier. | Required for every code change, but not enough for final external compatibility claims. |
+  | Docker/client matrix | Python, Node, Go, JVM, and Rust clients can bootstrap and execute the supported subset through normal Redis client APIs, including auth, `rediss://`, RESP3 where supported, TTL, `MSET`, `SELECT 0`, `INFO`, and `TYPE`. | Medium-high to run because it depends on Docker, language images/toolchains, host networking, TLS material, and skip/require env flags. | Required before saying "mainstream Redis clients work" in the release ledger. Missing optional local runtimes may skip only when Docker fallback is unavailable and the row is not marked mandatory. |
+  | Pinned real Redis oracle | Supported Redis-subset replies match pinned `redis-server` images after documented normalization; unsupported/admin-disabled/HC rows diverge only in the documented way. | Medium-high because it starts Docker Redis images, normalizes Redis version differences, and must avoid `latest`. | Required before saying HydraCache matches Redis behavior for the claimed subset. |
+  | Resource/reconnect/multi-node gates | Slowloris/oversized input, connection-close/retry, resource bounds, metric redaction, and real multi-daemon routing do not break the RESP facade. | High and environment-sensitive; nightly/pre-release rather than PR-tier. | Required before production release confidence; failures narrow or block operational claims, not parser support. |
 - **Fast client proof:** `redis-rs` remains the PR-tier smoke because it is already natural in the Rust
   workspace and can be a dev-dependency without adding a new language runtime to the fast gate.
 - **Nightly client matrix:** Docker-gated jobs should run at least one client from each ecosystem that

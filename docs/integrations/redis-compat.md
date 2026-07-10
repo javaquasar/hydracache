@@ -62,6 +62,13 @@ Unsupported Redis commands are expected to diverge: real Redis may succeed, whil
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
 real Redis should return unknown command behavior.
 
+Targeted Rust tests are not the final compatibility claim. Before release, the
+Docker/client matrix must prove the same supported subset through mainstream
+Python, Node, Go, JVM, and Rust Redis clients, and the pinned Redis oracle must
+compare the subset against the documented Redis image tags. If those heavy gates
+are not green, release notes must say the implementation has targeted coverage
+but ecosystem/oracle proof is still pending.
+
 Redis Cluster is a documented non-goal rather than a partial implementation.
 `CLUSTER *` commands return a stable unsupported error, and the facade never
 returns topology, hash slot metadata, `MOVED`, or `ASK`.
@@ -102,6 +109,26 @@ The default RESP facade returns stable `NOPERM ... is disabled by the HydraCache
 Redis facade` errors for these commands before dispatch. Tests assert that
 `CONFIG GET *` does not fabricate configuration, and that `FLUSHDB`/`FLUSHALL`
 leave existing keys intact.
+
+## HydraCache Extension Candidates
+
+`HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, and `HC.INVALIDATE_TAG` are candidate
+HydraCache extensions rather than Redis commands. Their value is clear:
+HydraCache-aware RESP clients could inspect or select a namespace and attach
+tags to keys so a later group invalidation can remove related cache entries
+without `SCAN pattern -> DEL`.
+
+They stay candidate in `0.63.0` because honest support requires native metadata
+and tag invalidation behavior. `HC.TAG` and `HC.SETTAGS` need atomic metadata
+updates that preserve values, TTLs, tenant boundaries, limits, and tag indexes.
+`HC.INVALIDATE_TAG` needs a native tag-scoped invalidation path or a proven
+internal tag index. A loop over visible keys is forbidden because it can miss
+concurrent writes, cross a namespace boundary, partially delete keys, and still
+look successful to the client.
+
+`HC.NAMESPACE` can graduate independently only after the listener has an
+explicit namespace allowlist, auth mapping, and connection-local semantics. It
+must not become Redis multi-db support by another name.
 
 ## Executable Examples
 

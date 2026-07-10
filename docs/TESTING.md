@@ -208,6 +208,10 @@ real Redis after the documented normalization rules, including RESP3 negotiation
 minimal `INFO`, cache-subset `TYPE`, exact `MSET` behavior, bounded TTL tolerance,
 auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
 exercising the same scenario suite through unchanged mainstream Redis clients.
+Passing targeted Rust tests is not enough for the final release claim: if this
+Docker/client matrix or the pinned real Redis oracle is not green, release notes
+must describe the implementation as targeted-test covered with ecosystem/oracle
+proof pending.
 
 By default, each optional Python/Node/Go/JVM row first tries the local mainstream
 client. If a local runtime or client library is missing and Docker is available,
