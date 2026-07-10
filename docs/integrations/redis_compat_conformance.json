@@ -50,6 +50,13 @@
       "tests": ["auth_hello_auth_and_noauth_errors_match_contract", "redis_auth_required_listener_rejects_data_commands_before_auth", "redis_auth_success_binds_connection_local_client_identity", "redis_auth_redacts_credentials_from_errors_logs_and_metrics", "client_matrix_runs_auth_required_connection_scenario"]
     },
     {
+      "name": "rediss:// listener TLS",
+      "status": "supported_with_caveat",
+      "kind": "transport_security",
+      "oracle": "normalized_error",
+      "tests": ["redis_api_rediss_env_reuses_server_tls_material", "redis_resp_listener_accepts_rediss_auth_and_cache_commands", "redis_resp_tls_listener_rejects_plaintext_before_mutation", "redis_resp_tls_client_rejects_wrong_ca", "redis_resp_tls_keeps_wrong_auth_as_wrongpass", "client_matrix_runs_rediss_required_connection_scenario"]
+    },
+    {
       "name": "CLIENT SETNAME",
       "status": "supported_with_caveat",
       "kind": "redis_subset",

@@ -23,8 +23,8 @@
 >   that never touches the frozen core, a subsequent `1.0` stabilization can proceed independently.
 > - **Status:** in-progress; scope expanded on 2026-07-10 to include the six remaining
 >   compatibility-proof items plus mandatory `MSET` atomicity, Redis TTL support through a
->   registered client-protocol v3 extension, and the Redis `AUTH`/`HELLO AUTH` plus TLS posture
->   decision before the release can close.
+>   registered client-protocol v3 extension, Redis `AUTH`/`HELLO AUTH`, and native `rediss://`
+>   support before the release can close.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md) ·
@@ -143,23 +143,23 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
    bounded memory and file descriptors under many idle and pipelined connections, bounded metric label
    cardinality, no key/value leakage in logs or metrics, and no unbounded allocation on hostile RESP
    frames.
-9. **Make authentication and TLS posture release-blocking.** `AUTH` and `HELLO AUTH` must work for an
+9. **Make authentication and native Redis TLS release-blocking.** `AUTH` and `HELLO AUTH` must work for an
    auth-required listener with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` behavior before `0.63.0` can
-   claim mainstream Redis-client compatibility. TLS is mandatory as an explicit posture decision:
-   either `rediss://` is backed by the existing server TLS/mTLS config and tested, or it is marked
-   unsupported for `0.63.0` with production examples requiring Redis `AUTH` plus external
-   TLS/private-network controls.
+   claim mainstream Redis-client compatibility. Native Redis TLS is mandatory in the same release:
+   `rediss://` must be backed by the existing server TLS certificate/key material, must reject
+   plaintext on TLS listeners, must fail loud for wrong CA or wrong AUTH, and must prove a successful
+   `rediss://` Redis-client path before production exposure is documented.
 
 ## Scope Expansion: Remaining 0.63.0 Proof Items
 
 This section records the explicit scope expansion for the current implementation branch. The release
 still does **not** claim RESP3, Redis Cluster, or tag-scoped invalidation unless their candidate gates
 are implemented separately. The expansion closes the compatibility proof around the already-supported
-RESP2 cache subset and adds three mandatory 0.63 work streams: atomic `MSET`, TTL/expiry commands
-backed by a registered client-protocol v3 extension, and Redis startup security (`AUTH`/`HELLO AUTH`
-plus an explicit TLS posture).
+RESP2 cache subset and adds four mandatory 0.63 work streams: atomic `MSET`, TTL/expiry commands
+backed by a registered client-protocol v3 extension, Redis startup security (`AUTH`/`HELLO AUTH`),
+and native Redis TLS (`rediss://`) on the RESP listener.
 
-The following three items are now mandatory release scope in addition to the six proof items below:
+The following four items are now mandatory release scope in addition to the six proof items below:
 
 1. **Atomic `MSET`.** `MSET key value [key value ...]` is mandatory supported scope and closes only
    when it is executed through `ClientSurfaceState` as an atomic batch. The batch path must validate arity,
@@ -174,17 +174,24 @@ The following three items are now mandatory release scope in addition to the six
    apply TTL on write, remove expired keys before reads/counts/batch reads, expose remaining TTL using
    Redis semantics (`-2` missing, `-1` no expiry, positive seconds/milliseconds when expiring), and
    preserve existing v2 behavior for clients that do not negotiate v3.
-3. **Redis `AUTH`/`HELLO AUTH` and TLS posture.** `AUTH password`, `AUTH username password`, and
+3. **Redis `AUTH`/`HELLO AUTH`.** `AUTH password`, `AUTH username password`, and
    `HELLO 2 AUTH username password` are mandatory release scope for auth-required RESP listeners.
    The listener keeps unauthenticated loopback development possible by default, but when auth is
    configured every data or mutating command fails with Redis-shaped `NOAUTH` until successful
    authentication. Invalid credentials return `WRONGPASS` without leaking usernames, passwords,
    connection strings, tenant names beyond the configured public identity, or raw client metadata.
    Successful auth binds the connection-local Redis identity to a HydraCache client-surface
-   `ClientIdentity`/tenant before any cache request is dispatched. TLS must be explicit in the same
-   release: either `rediss://` uses existing server TLS/mTLS material and has a falsifiable handshake
-   test, or `rediss://` is documented unsupported for `0.63.0` and production rollout docs require
-   external TLS/private-network controls plus Redis `AUTH`.
+   `ClientIdentity`/tenant before any cache request is dispatched.
+4. **Native Redis TLS / `rediss://`.** `rediss://` is now mandatory supported scope for the optional
+   RESP listener. The server config must enable Redis TLS explicitly, reuse the existing server TLS
+   certificate/key material by default, and keep Redis `AUTH` as the application-layer protection
+   above TLS. Implementation must add a TLS acceptor around the raw RESP TCP listener without changing
+   RESP2 command semantics. Tests must cover a successful TLS handshake followed by `AUTH`, `PING`,
+   `SET`, `GET`, `MSET`, and TTL commands; plaintext sent to a TLS listener must fail before mutation;
+   a client using the wrong CA must fail the handshake; invalid Redis credentials over TLS must still
+   return `WRONGPASS`; and logs/metrics must not expose connection-string credentials or certificate
+   material. The Docker/client matrix must include at least one `rediss://` Redis-client path and docs
+   may show `rediss://` examples only after that gate exists.
 
 The following six items are now mandatory release scope:
 
@@ -194,7 +201,8 @@ The following six items are now mandatory release scope:
 2. **Mainstream client matrix.** The `redis_clients` gate must keep the Rust `redis-rs` smoke and add
    executable, gated Python, Node, Go, and JVM rows. Each client row must exercise plain `MSET`,
    `SET EX` or `SET PX`, at least one TTL read (`TTL` or `PTTL`), and an auth-required connection
-   scenario in addition to the existing cache subset. Missing runtimes skip loud only when the nightly
+   scenario in addition to the existing cache subset. The matrix must also include a `rediss://`
+   startup scenario using pinned test TLS material. Missing runtimes skip loud only when the nightly
    gate is not explicitly enabled for that runtime.
 3. **Executable heavy gates.** The `redis_clients` and `resp_resource_smoke` targets must compile in
    the fast tier and run their ignored scenarios only when the documented env vars are set.
@@ -241,7 +249,7 @@ loose reminder.
 5. **Executable docs (W6).** Every copy-paste example in `docs/integrations/redis-compat.md` must be
    executable as a docs-smoke test. That includes `redis-cli`, Rust, Python, Node, Go, and JVM examples
    when the corresponding client matrix row is claimed. The expanded release requires executable
-   examples for `MSET` and TTL. Docs cannot show `HC.*`, `SELECT`, RESP3, or `rediss://` examples
+   examples for `MSET`, TTL, and `rediss://`. Docs cannot show `HC.*`, `SELECT`, or RESP3 examples
    unless the matching gates are green.
 6. **Reconnect and connection-failure semantics (W5).** Add tests for close mid-command,
    close mid-pipeline, reconnect-and-retry, server drain during pipeline, and malformed response
@@ -370,7 +378,11 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 - `auth_hello_auth_and_noauth_errors_match_contract`.
 - `redis_auth_required_listener_rejects_data_commands_before_auth`.
 - `redis_auth_redacts_credentials_from_errors_logs_and_metrics`.
-- `redis_api_rediss_mode_is_supported_or_explicitly_unsupported`.
+- `redis_api_rediss_env_reuses_server_tls_material`.
+- `redis_resp_listener_accepts_rediss_auth_and_cache_commands`.
+- `redis_resp_tls_listener_rejects_plaintext_before_mutation`.
+- `redis_resp_tls_client_rejects_wrong_ca`.
+- `redis_resp_tls_keeps_wrong_auth_as_wrongpass`.
 - `redis_compat_conformance_manifest_is_the_single_source_of_truth`.
 - `resp2_hello_is_supported_and_resp3_is_rejected_or_downgraded_as_documented`.
 - `health_check_commands_are_classified_before_translation`.
@@ -706,9 +718,9 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
 the reread doc into the tracked backlog.
 
 **Steps.**
-1. Start/stop the RESP listener with the daemon; drain through `graceful_shutdown` (`0.56`); TLS via
-   `0.48` when configured or explicit `rediss://` unsupported posture for `0.63.0`; bounded-label
-   metrics for the RESP surface (R-6).
+1. Start/stop the RESP listener with the daemon; drain through `graceful_shutdown` (`0.56`);
+   native `rediss://` via the existing server TLS certificate/key material when Redis TLS is enabled;
+   bounded-label metrics for the RESP surface (R-6).
 2. Docs: `docs/integrations/redis-compat.md` (supported matrix, `HC.*`, config, positioning) with the
    headline **"Redis protocol compatible for the cache subset, not Redis feature compatible."**
 3. COMPAT: register both the RESP surface (RESP2 subset v1) and the additive
@@ -738,9 +750,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
 3. Shutdown uses the existing daemon drain/graceful-shutdown path. In-flight commands either finish
    inside the configured drain window or receive a stable connection-close/error behavior documented
    in `docs/integrations/redis-compat.md`.
-4. TLS behavior is explicit: either the RESP listener reuses the existing TLS/mTLS server config and
-   documents `rediss://`, or `rediss://` is marked unsupported for `0.63.0`. The release cannot leave
-   TLS ambiguous.
+4. TLS behavior is explicit: the RESP listener reuses the existing server TLS certificate/key material
+   for `rediss://`, rejects plaintext on a TLS listener before mutation, and documents which CA/client
+   settings are required. The release cannot leave TLS ambiguous.
 5. Auth-required listeners reject all mutating/data commands before successful `AUTH` or `HELLO AUTH`,
    while allowing only the pre-auth handshake commands W0 marks safe.
 
@@ -881,7 +893,7 @@ HydraCache does and does not implement.
 | RESP2/RESP3 negotiation (W0/W1/W2/W5) | `hydracache-redis-compat` + conformance manifest | `resp2_hello_is_supported_and_resp3_is_rejected_or_downgraded_as_documented`, `resp2_frames_are_accepted_and_resp3_only_frames_fail_loud_before_mutation`, `hello2_is_supported_and_hello3_behavior_matches_contract`, `resp3_only_inputs_are_rejected_before_mutation` | PR |
 | `RedisCommand` + RESP codec (W1) | `hydracache-redis-compat` | `resp_frame_roundtrip_matches_redis_protocol` | PR |
 | `RedisApiConfig` + validation (W1) | `hydracache-server/src/config.rs` | `redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud` | PR |
-| Redis auth and TLS posture (W0/W1/W2/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_mode_is_supported_or_explicitly_unsupported` | PR |
+| Redis auth and native TLS (W0/W1/W2/W5/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs + raw TLS listener | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_env_reuses_server_tls_material`, `redis_resp_listener_accepts_rediss_auth_and_cache_commands`, `redis_resp_tls_listener_rejects_plaintext_before_mutation`, `redis_resp_tls_client_rejects_wrong_ca`, `redis_resp_tls_keeps_wrong_auth_as_wrongpass` | PR |
 | subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `set_ex_and_ttl_map_to_protocol_v3_metadata`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_and_duplicate_keys_use_last_value`, `mset_oversized_value_rejects_without_partial_mutation`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_*_namespace` | PR |
 | health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification` | PR |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
@@ -889,7 +901,7 @@ HydraCache does and does not implement.
 | unsupported matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_and_moved_ask_are_never_emitted`, `flushall_is_admin_disabled_by_default` | PR |
 | golden + fuzz + frame boundaries (W5) | committed corpus + proptest | `golden_resp_fixtures_decode_to_expected`, `resp_decoder_never_panics_on_arbitrary_bytes`, `partial_resp_frames_decode_like_complete_frames`, `multiple_resp_frames_in_one_read_are_all_processed` | PR |
 | pipelining/backpressure/resource behavior (W5) | RESP listener | `pipelined_requests_preserve_response_order`, `pipelined_mixed_success_and_error_responses_stay_ordered`, `oversized_bulk_and_array_frames_are_rejected_before_allocation_spike`, `slowloris_connection_is_timed_out_without_leaking_inflight_work`, `resp_surface_metrics_have_bounded_labels_and_no_key_or_value_leak` | PR + gated |
-| mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `client_matrix_runs_mset_and_ttl_commands`, `client_matrix_runs_auth_required_connection_scenario` | PR + Docker-gated / nightly |
+| mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `client_matrix_runs_mset_and_ttl_commands`, `client_matrix_runs_auth_required_connection_scenario`, `client_matrix_runs_rediss_required_connection_scenario` | PR + Docker-gated / nightly |
 | real Redis oracle (W5) | pinned Docker `redis-server` versions + same client scenario suite against Redis and HydraCache | `redis_oracle_supported_subset_matches_real_redis`, `redis_oracle_uses_pinned_redis_versions`, `redis_oracle_del_exists_counts_match_real_redis`, `redis_oracle_mget_nil_and_order_match_real_redis`, `redis_oracle_mset_atomicity_matches_real_redis`, `redis_oracle_ttl_matches_real_redis_with_bounded_tolerance`, `redis_oracle_unsupported_divergence_is_documented`, `redis_oracle_hc_extensions_are_hydracache_only` | Docker-gated / nightly |
 | reconnect/failure semantics (W5) | RESP listener live tests | `connection_close_mid_command_does_not_corrupt_next_response`, `connection_close_mid_pipeline_preserves_committed_response_boundaries`, `reconnect_and_retry_does_not_leak_connection_local_namespace`, `server_drain_during_pipeline_has_documented_completion_or_close_behavior` | Docker-gated / nightly |
 | multi-node RESP e2e (W5) | real multi-daemon HydraCache grid + RESP listener | `multinode_resp_facade_roundtrip_survives_node_restart_or_drain` | network-gated / nightly |
@@ -954,18 +966,18 @@ HydraCache does and does not implement.
 - Listener is **off by default**, on its own port, distinct-address-validated; embedded/core fast path
   byte-for-byte unchanged (R-10); `hydracache-client-protocol` v3 is registered as an additive TTL
   metadata/expiry extension and v2 clients remain accepted (R-4).
-- TLS/rediss behavior is explicit: either supported through the existing TLS/mTLS config and tested, or
-  documented unsupported for `0.63.0`; production docs require Redis `AUTH` plus external TLS/private
-  network controls when `rediss://` is not supported; auth credentials are redacted from logs and
-  errors (W6).
+- TLS/rediss behavior is explicit and implemented: `rediss://` uses the existing server TLS
+  certificate/key material, plaintext is rejected on TLS listeners before mutation, wrong CA fails the
+  client handshake, wrong Redis credentials over TLS return `WRONGPASS`, and auth credentials or
+  certificate material are redacted from logs and errors (W6).
 - Metrics/logs/audit use bounded labels and never include key bytes, value bytes, raw client names,
   request ids, credentials, or unbounded tenant-provided strings (W5/W6).
 - User-facing examples in `docs/integrations/redis-compat.md` are executable docs-smoke tests or are
-  explicitly labeled with their Docker/nightly gate. The examples include supported `MSET` and TTL
-  commands. Docs cannot show untested `HC.*`, `SELECT`, RESP3, or `rediss://` examples.
+  explicitly labeled with their Docker/nightly gate. The examples include supported `MSET`, TTL
+  commands, and `rediss://` startup. Docs cannot show untested `HC.*`, `SELECT`, or RESP3 examples.
 - Config/operator packaging keeps the RESP listener disabled and unexposed by default. Helm/operator
-  or production examples require explicit enablement, explicit port exposure, and documented auth/TLS
-  or network controls.
+  or production examples require explicit enablement, explicit port exposure, Redis `AUTH`, and TLS
+  material/CA configuration.
 - The rollout/rollback playbook is complete: canary path, metrics and audit events to watch, rollback
   triggers, disable procedure, connection drain/close behavior, and evidence capture are all named.
 - No new consensus/consistency level (R-1); positioning states "cache subset, not feature compatible";

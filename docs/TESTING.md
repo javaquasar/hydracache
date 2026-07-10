@@ -147,10 +147,11 @@ The Redis RESP edge facade is governed by
 [`docs/integrations/redis_compat_conformance.json`](integrations/redis_compat_conformance.json).
 That manifest is the source of truth for the supported/candidate/unsupported command matrix,
 real Redis oracle scenarios, client-smoke scenarios, and release-note command table.
-For `0.63.0`, `MSET`, Redis TTL commands, Redis `AUTH`/`HELLO AUTH`, and TLS/rediss posture are
+For `0.63.0`, `MSET`, Redis TTL commands, Redis `AUTH`/`HELLO AUTH`, and native `rediss://` are
 supported release scope: the manifest rows must stay tied to atomic batch tests, protocol v3 TTL
 metadata/expiry tests, client-surface expiry tests, auth-required listener tests, credential redaction
-tests, real Redis oracle tolerance tests, and mainstream-client scenarios.
+tests, TLS handshake/plaintext/wrong-CA tests, real Redis oracle tolerance tests, and mainstream-client
+scenarios.
 
 When adding or changing a RESP command:
 
@@ -172,9 +173,9 @@ The fast crate gate covers the RESP2 codec, translator, protocol v3 TTL metadata
 atomic `MSET`, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners, credential redaction,
 unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures, coalesced/partial
 frame boundaries, decoder fuzz smoke, and oversized frame limits. The server lifecycle gate proves the
-listener config is off by default, address conflicts are rejected, TLS/rediss behavior is explicit,
-the real TCP RESP listener starts when enabled, and the drain gate closes new RESP
-connections instead of serving them.
+listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
+plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when
+enabled, and the drain gate closes new RESP connections instead of serving them.
 
 Run the Docker/client matrix before claiming a Redis-client compatibility row:
 
@@ -188,8 +189,8 @@ That gated tier contains a compiled `redis-rs` mainstream-client smoke and the
 real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
 real Redis after the documented normalization rules, including exact `MSET` behavior, bounded TTL
-tolerance, and auth-required startup. Python, Node, Go, and JVM client rows must keep exercising the
-same scenario suite through unchanged mainstream Redis clients.
+tolerance, auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must
+keep exercising the same scenario suite through unchanged mainstream Redis clients.
 
 By default, each optional Python/Node/Go/JVM row first tries the local mainstream
 client. If a local runtime or client library is missing and Docker is available,
