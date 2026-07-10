@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 use std::process::Command;
 use std::sync::Arc;
 use std::time::Duration;
+use std::{env, fs};
 
 use hydracache_client_transport_axum::{ClientSurfaceLimits, ClientSurfaceState};
 use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, DEFAULT_REDIS_NAMESPACE};
@@ -11,6 +12,7 @@ use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
 const CLIENT_MATRIX_ENV: &str = "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS";
+const CLIENT_RUNTIME_SKIP_EXIT: i32 = 42;
 const PINNED_REDIS_IMAGES: [&str; 2] = ["redis:6.2.14", "redis:7.2.5"];
 
 #[test]
@@ -31,6 +33,9 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(
         manifest.contains("nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset")
     );
+    for ecosystem in ["python", "node", "go", "jvm"] {
+        assert!(testing.to_ascii_lowercase().contains(ecosystem));
+    }
 }
 
 #[tokio::test]
@@ -89,6 +94,23 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
     assert_eq!(deleted, 1);
 
     drop(connection);
+    drop(shutdown);
+    serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and optional Python/Node/Go/JVM client runtimes"]
+async fn nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+
+    let (shutdown, addr, serving) = spawn_resp_facade().await;
+    let url = format!("redis://{addr}/");
+    for ecosystem in ClientEcosystem::all() {
+        run_external_client(ecosystem, &url);
+    }
     drop(shutdown);
     serving.await.unwrap();
 }
@@ -223,6 +245,297 @@ async fn redis_oracle_hc_extensions_are_hydracache_only() {
 
 fn env_gate_enabled(name: &str) -> bool {
     std::env::var(name).is_ok_and(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+}
+
+#[derive(Debug, Clone, Copy)]
+enum ClientEcosystem {
+    Python,
+    Node,
+    Go,
+    Jvm,
+}
+
+impl ClientEcosystem {
+    fn all() -> [Self; 4] {
+        [Self::Python, Self::Node, Self::Go, Self::Jvm]
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::Python => "python",
+            Self::Node => "node",
+            Self::Go => "go",
+            Self::Jvm => "jvm",
+        }
+    }
+
+    fn require_env(self) -> &'static str {
+        match self {
+            Self::Python => "HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON",
+            Self::Node => "HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE",
+            Self::Go => "HYDRACACHE_REQUIRE_REDIS_CLIENT_GO",
+            Self::Jvm => "HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM",
+        }
+    }
+}
+
+fn run_external_client(ecosystem: ClientEcosystem, redis_url: &str) {
+    let result = match ecosystem {
+        ClientEcosystem::Python => run_python_client(redis_url),
+        ClientEcosystem::Node => run_node_client(redis_url),
+        ClientEcosystem::Go => run_go_client(redis_url),
+        ClientEcosystem::Jvm => run_jvm_client(redis_url),
+    };
+    match result {
+        ClientRun::Passed => {}
+        ClientRun::Skipped(reason) if !env_gate_enabled(ecosystem.require_env()) => {
+            eprintln!(
+                "skipping {} Redis client matrix row: {reason}",
+                ecosystem.label()
+            );
+        }
+        ClientRun::Skipped(reason) => panic!(
+            "{} Redis client matrix row was required but skipped: {reason}",
+            ecosystem.label()
+        ),
+        ClientRun::Failed(output) => panic!(
+            "{} Redis client matrix row failed:\n{}",
+            ecosystem.label(),
+            output
+        ),
+    }
+}
+
+enum ClientRun {
+    Passed,
+    Skipped(String),
+    Failed(String),
+}
+
+fn run_python_client(redis_url: &str) -> ClientRun {
+    let script = r#"
+import sys
+try:
+    import redis
+except Exception as exc:
+    print(f"missing python redis client: {exc}")
+    sys.exit(42)
+r = redis.Redis.from_url(sys.argv[1], decode_responses=True)
+assert r.ping() is True
+assert r.set("python:k", "v") is True
+assert r.get("python:k") == "v"
+assert r.mget(["python:k", "python:missing"]) == ["v", None]
+assert r.exists("python:k", "python:missing") == 1
+assert r.delete("python:k", "python:missing") == 1
+"#;
+    run_optional_command(
+        "python",
+        Command::new("python").arg("-c").arg(script).arg(redis_url),
+    )
+}
+
+fn run_node_client(redis_url: &str) -> ClientRun {
+    let script = r#"
+(async () => {
+  let redis;
+  try {
+    redis = require("redis");
+  } catch (error) {
+    console.log(`missing node redis client: ${error}`);
+    process.exit(42);
+  }
+  const client = redis.createClient({ url: process.argv[1] });
+  await client.connect();
+  if (await client.ping() !== "PONG") throw new Error("PING failed");
+  if (await client.set("node:k", "v") !== "OK") throw new Error("SET failed");
+  if (await client.get("node:k") !== "v") throw new Error("GET failed");
+  const values = await client.mGet(["node:k", "node:missing"]);
+  if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
+  if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
+  if (await client.del(["node:k", "node:missing"]) !== 1) throw new Error("DEL failed");
+  await client.quit();
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+"#;
+    run_optional_command(
+        "node",
+        Command::new("node").arg("-e").arg(script).arg(redis_url),
+    )
+}
+
+fn run_go_client(redis_url: &str) -> ClientRun {
+    let Ok(dir) = prepare_go_client(redis_url) else {
+        return ClientRun::Skipped("could not prepare temporary Go module".to_owned());
+    };
+    let mut command = Command::new("go");
+    command.arg("run").arg(".").current_dir(&dir);
+    let result = run_optional_command("go", &mut command);
+    let _ = fs::remove_dir_all(dir);
+    result
+}
+
+fn prepare_go_client(redis_url: &str) -> Result<std::path::PathBuf, std::io::Error> {
+    let dir = unique_temp_dir("go-client");
+    fs::create_dir_all(&dir)?;
+    fs::write(
+        dir.join("go.mod"),
+        "module hydracache-redis-client-smoke\n\ngo 1.22\n\nrequire github.com/redis/go-redis/v9 v9.7.0\n",
+    )?;
+    fs::write(
+        dir.join("main.go"),
+        format!(
+            r#"
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+
+    redis "github.com/redis/go-redis/v9"
+)
+
+func must(ok bool, message string) {{
+    if !ok {{
+        panic(message)
+    }}
+}}
+
+func main() {{
+    options, err := redis.ParseURL("{redis_url}")
+    if err != nil {{
+        panic(err)
+    }}
+    client := redis.NewClient(options)
+    defer client.Close()
+    ctx := context.Background()
+    must(client.Ping(ctx).Val() == "PONG", "PING failed")
+    must(client.Set(ctx, "go:k", "v", 0).Val() == "OK", "SET failed")
+    must(client.Get(ctx, "go:k").Val() == "v", "GET failed")
+    values := client.MGet(ctx, "go:k", "go:missing").Val()
+    must(len(values) == 2 && values[0] == "v" && values[1] == nil, fmt.Sprintf("MGET failed: %#v", values))
+    must(client.Exists(ctx, "go:k", "go:missing").Val() == 1, "EXISTS failed")
+    must(client.Del(ctx, "go:k", "go:missing").Val() == 1, "DEL failed")
+    _ = os.Stdout
+}}
+"#
+        ),
+    )?;
+    Ok(dir)
+}
+
+fn run_jvm_client(redis_url: &str) -> ClientRun {
+    let Ok(dir) = prepare_jvm_client() else {
+        return ClientRun::Skipped("could not prepare temporary JVM module".to_owned());
+    };
+    let mut command = Command::new("mvn");
+    command
+        .args(["-q", "-f", "pom.xml", "compile", "exec:java"])
+        .env("REDIS_URL", redis_url)
+        .current_dir(&dir);
+    let result = run_optional_command("mvn", &mut command);
+    let _ = fs::remove_dir_all(dir);
+    result
+}
+
+fn prepare_jvm_client() -> Result<std::path::PathBuf, std::io::Error> {
+    let dir = unique_temp_dir("jvm-client");
+    fs::create_dir_all(dir.join("src/main/java/hydracache"))?;
+    fs::write(
+        dir.join("pom.xml"),
+        r#"<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.hydracache</groupId>
+  <artifactId>redis-client-smoke</artifactId>
+  <version>1.0.0</version>
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>5.2.0</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <mainClass>hydracache.RedisClientSmoke</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>"#,
+    )?;
+    fs::write(
+        dir.join("src/main/java/hydracache/RedisClientSmoke.java"),
+        r#"package hydracache;
+
+import java.net.URI;
+import java.util.List;
+import redis.clients.jedis.Jedis;
+
+public final class RedisClientSmoke {
+  public static void main(String[] args) {
+    try (Jedis jedis = new Jedis(URI.create(System.getenv("REDIS_URL")))) {
+      must("PONG".equals(jedis.ping()), "PING failed");
+      must("OK".equals(jedis.set("jvm:k", "v")), "SET failed");
+      must("v".equals(jedis.get("jvm:k")), "GET failed");
+      List<String> values = jedis.mget("jvm:k", "jvm:missing");
+      must(values.size() == 2 && "v".equals(values.get(0)) && values.get(1) == null, "MGET failed");
+      must(jedis.exists("jvm:k", "jvm:missing") == 1L, "EXISTS failed");
+      must(jedis.del("jvm:k", "jvm:missing") == 1L, "DEL failed");
+    }
+  }
+
+  private static void must(boolean ok, String message) {
+    if (!ok) {
+      throw new IllegalStateException(message);
+    }
+  }
+}
+"#,
+    )?;
+    Ok(dir)
+}
+
+fn unique_temp_dir(label: &str) -> std::path::PathBuf {
+    env::temp_dir().join(format!(
+        "hydracache-redis-{label}-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ))
+}
+
+fn run_optional_command(label: &str, command: &mut Command) -> ClientRun {
+    let output = match command.output() {
+        Ok(output) => output,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return ClientRun::Skipped(format!("{label} executable not found"));
+        }
+        Err(error) => return ClientRun::Failed(error.to_string()),
+    };
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let combined = format!("{stdout}{stderr}");
+    if output.status.success() {
+        ClientRun::Passed
+    } else if output.status.code() == Some(CLIENT_RUNTIME_SKIP_EXIT) {
+        ClientRun::Skipped(combined)
+    } else {
+        ClientRun::Failed(combined)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
