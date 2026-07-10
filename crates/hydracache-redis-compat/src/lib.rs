@@ -277,8 +277,12 @@ pub enum RedisCommand {
     ClientSetInfo { args: Vec<Vec<u8>> },
     /// `COMMAND`.
     Command,
+    /// `INFO [section]`.
+    Info { section: Option<Vec<u8>> },
     /// `SELECT index`.
     Select { db: Vec<u8> },
+    /// `TYPE key`.
+    Type { key: Vec<u8> },
     /// `GET key`.
     Get { key: Vec<u8> },
     /// `SET key value ...`.
@@ -596,6 +600,9 @@ impl RedisRespServer {
         command: RedisCommand,
         identity: &ClientIdentity,
     ) -> RespValue {
+        if matches!(&command, RedisCommand::Info { .. }) {
+            return info_response(self.metrics());
+        }
         let context = match self.translation_context() {
             Ok(context) => context,
             Err(error) => {
@@ -728,7 +735,9 @@ impl RedisRespServer {
                     | RedisCommand::Mget { .. }
                     | RedisCommand::Del { .. }
                     | RedisCommand::Exists { .. }
+                    | RedisCommand::Info { .. }
                     | RedisCommand::Select { .. }
+                    | RedisCommand::Type { .. }
                     | RedisCommand::Expire { .. }
                     | RedisCommand::Persist { .. }
                     | RedisCommand::Ttl { .. }
@@ -1271,6 +1280,7 @@ enum RedisResponseReducer {
     Mget { expected_items: usize },
     Del { expected_items: usize },
     Exists { expected_items: usize },
+    Type,
     Expiry,
     Ttl { unit: RedisTtlUnit },
     Invalidate,
@@ -1288,6 +1298,7 @@ impl RedisResponseReducer {
             Self::Mget { expected_items } => reduce_mget(responses, *expected_items),
             Self::Del { expected_items } => reduce_del(responses, *expected_items),
             Self::Exists { expected_items } => reduce_exists(responses, *expected_items),
+            Self::Type => reduce_type(responses),
             Self::Expiry => reduce_expiry(responses),
             Self::Ttl { unit } => reduce_ttl(responses, *unit),
             Self::Invalidate => reduce_invalidate(responses),
@@ -1324,7 +1335,19 @@ pub fn translate_redis_command(
             RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK"))
         }
         RedisCommand::Command => RedisTranslatedCommand::Immediate(command_metadata_response()),
+        RedisCommand::Info { .. } => {
+            RedisTranslatedCommand::Immediate(info_response(RedisListenerMetrics::default()))
+        }
         RedisCommand::Select { db } => translate_select(db)?,
+        RedisCommand::Type { key } => RedisTranslatedCommand::Execute(single_request_plan(
+            context,
+            "type",
+            ClientRequest::Get {
+                ns: context.namespace.clone(),
+                key: redis_key_to_structured_key(&key)?,
+            },
+            RedisResponseReducer::Type,
+        )),
         RedisCommand::Get { key } => RedisTranslatedCommand::Execute(single_request_plan(
             context,
             "get",
@@ -1586,6 +1609,19 @@ fn reduce_exists(
     ))
 }
 
+fn reduce_type(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::Value { value }) => Ok(RespValue::SimpleString(if value.is_some() {
+            "string"
+        } else {
+            "none"
+        })),
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
+}
+
 fn reduce_expiry(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTranslationError> {
     let response = single_response(responses)?;
     match &response.result {
@@ -1838,7 +1874,9 @@ fn command_metadata_response() -> RespValue {
         command_metadata("auth", -2, &["fast"], 0, 0, 0),
         command_metadata("client", -2, &["fast"], 0, 0, 0),
         command_metadata("command", 1, &["readonly", "fast"], 0, 0, 0),
+        command_metadata("info", -1, &["readonly", "fast"], 0, 0, 0),
         command_metadata("select", 2, &["fast"], 0, 0, 0),
+        command_metadata("type", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("get", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("set", -3, &["write"], 1, 1, 1),
         command_metadata("mset", -3, &["write"], 1, -1, 2),
@@ -1873,6 +1911,20 @@ fn command_metadata(
 
 fn bulk_static(value: &'static str) -> RespValue {
     RespValue::BulkString(value.as_bytes().to_vec())
+}
+
+fn info_response(metrics: RedisListenerMetrics) -> RespValue {
+    RespValue::BulkString(
+        format!(
+            "# Server\r\nredis_mode:standalone\r\nrole:master\r\nhydracache_version:{}\r\nhydracache_resp:{}\r\n\r\n# Stats\r\ntotal_connections_received:{}\r\ntotal_commands_processed:{}\r\nhydracache_resp_errors:{}\r\n",
+            env!("CARGO_PKG_VERSION"),
+            SUPPORTED_RESP_DIALECT,
+            metrics.accepted_connections,
+            metrics.commands,
+            metrics.errors
+        )
+        .into_bytes(),
+    )
 }
 
 fn translate_select(db: Vec<u8>) -> Result<RedisTranslatedCommand, RedisTranslationError> {
@@ -1979,9 +2031,23 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
         },
         "CLIENT" => parse_client_command(args),
         "COMMAND" => RedisCommand::Command,
+        "INFO" if args.len() <= 1 => RedisCommand::Info {
+            section: args.into_iter().next(),
+        },
+        "INFO" => RedisCommand::WrongArity {
+            command: "INFO".to_owned(),
+            args,
+        },
         "SELECT" if args.len() == 1 => RedisCommand::Select { db: args.remove(0) },
         "SELECT" => RedisCommand::WrongArity {
             command: "SELECT".to_owned(),
+            args,
+        },
+        "TYPE" if args.len() == 1 => RedisCommand::Type {
+            key: args.remove(0),
+        },
+        "TYPE" => RedisCommand::WrongArity {
+            command: "TYPE".to_owned(),
             args,
         },
         "GET" if args.len() == 1 => RedisCommand::Get {
@@ -2045,10 +2111,6 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
                 args,
             }
         }
-        "INFO" => RedisCommand::HealthProbeCandidate {
-            command: normalized,
-            args,
-        },
         "CONFIG" | "FLUSHDB" | "FLUSHALL" => RedisCommand::AdminDisabled {
             command: normalized,
             args,
@@ -2373,7 +2435,9 @@ mod tests {
         assert!(names.contains(&"get".to_owned()));
         assert!(names.contains(&"set".to_owned()));
         assert!(names.contains(&"auth".to_owned()));
+        assert!(names.contains(&"info".to_owned()));
         assert!(names.contains(&"select".to_owned()));
+        assert!(names.contains(&"type".to_owned()));
         assert!(names.contains(&"mset".to_owned()));
         assert!(names.contains(&"mget".to_owned()));
         assert!(names.contains(&"del".to_owned()));
@@ -2381,6 +2445,61 @@ mod tests {
         assert!(names.contains(&"pttl".to_owned()));
         assert!(!names.contains(&"hset".to_owned()));
         assert!(!names.contains(&"cluster".to_owned()));
+    }
+
+    #[test]
+    fn info_returns_minimal_honest_facade_state() {
+        let context = RedisTranslationContext::default();
+        let (command, consumed) = decode_resp2_command(b"*1\r\n$4\r\nINFO\r\n")
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(consumed, b"*1\r\n$4\r\nINFO\r\n".len());
+        assert_eq!(command, RedisCommand::Info { section: None });
+        let RedisTranslatedCommand::Immediate(RespValue::BulkString(info)) =
+            translate_redis_command(command, &context).unwrap()
+        else {
+            panic!("INFO should be an immediate bulk string");
+        };
+        let info = String::from_utf8(info).unwrap();
+        assert!(info.contains("# Server\r\n"));
+        assert!(info.contains("redis_mode:standalone\r\n"));
+        assert!(info.contains("role:master\r\n"));
+        assert!(info.contains("hydracache_version:"));
+        assert!(info.contains("hydracache_resp:RESP2+RESP3\r\n"));
+        assert!(info.contains("# Stats\r\n"));
+        assert!(info.contains("total_connections_received:0\r\n"));
+        assert!(info.contains("total_commands_processed:0\r\n"));
+        assert!(!info.contains("used_memory"));
+        assert!(!info.contains("cluster_enabled"));
+        assert!(!info.contains("db0:"));
+    }
+
+    #[test]
+    fn info_section_argument_does_not_fabricate_redis_keyspace_state() {
+        let context = RedisTranslationContext::default();
+        let (command, consumed) = decode_resp2_command(b"*2\r\n$4\r\nINFO\r\n$8\r\nkeyspace\r\n")
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(consumed, b"*2\r\n$4\r\nINFO\r\n$8\r\nkeyspace\r\n".len());
+        assert_eq!(
+            command,
+            RedisCommand::Info {
+                section: Some(b"keyspace".to_vec())
+            }
+        );
+        let RedisTranslatedCommand::Immediate(RespValue::BulkString(info)) =
+            translate_redis_command(command, &context).unwrap()
+        else {
+            panic!("INFO keyspace should be an immediate bulk string");
+        };
+        let info = String::from_utf8(info).unwrap();
+        assert!(info.contains("redis_mode:standalone\r\n"));
+        assert!(info.contains("hydracache_resp:RESP2+RESP3\r\n"));
+        assert!(!info.contains("db0:"));
+        assert!(!info.contains("keys="));
+        assert!(!info.contains("expires="));
     }
 
     #[test]
@@ -2499,6 +2618,38 @@ mod tests {
         assert_eq!(
             run_command(&state, &identity, RedisCommand::Get { key: b"k".to_vec() },),
             RespValue::Null
+        );
+    }
+
+    #[test]
+    fn type_reports_string_or_none_through_client_surface() {
+        let (state, identity) = surface();
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"v".to_vec(),
+                    options: Vec::new(),
+                },
+            ),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(&state, &identity, RedisCommand::Type { key: b"k".to_vec() },),
+            RespValue::SimpleString("string")
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Type {
+                    key: b"missing".to_vec(),
+                },
+            ),
+            RespValue::SimpleString("none")
         );
     }
 
@@ -2941,17 +3092,15 @@ mod tests {
     fn info_role_dbsize_type_scan_and_config_follow_contract_classification() {
         let context = RedisTranslationContext::default();
         assert!(matches!(
-            translate_redis_command(
-                RedisCommand::HealthProbeCandidate {
-                    command: "INFO".to_owned(),
-                    args: Vec::new(),
-                },
-                &context,
-            ),
-            Err(RedisTranslationError::CandidateCommand { command }) if command == "INFO"
+            translate_redis_command(RedisCommand::Info { section: None }, &context),
+            Ok(RedisTranslatedCommand::Immediate(RespValue::BulkString(_)))
+        ));
+        assert!(matches!(
+            translate_redis_command(RedisCommand::Type { key: b"k".to_vec() }, &context),
+            Ok(RedisTranslatedCommand::Execute(_))
         ));
 
-        for command in ["ROLE", "DBSIZE", "TYPE", "SCAN", "CLIENT LIST", "CLIENT ID"] {
+        for command in ["ROLE", "DBSIZE", "SCAN", "CLIENT LIST", "CLIENT ID"] {
             assert!(matches!(
                 translate_redis_command(
                     RedisCommand::Unsupported {
@@ -3031,6 +3180,47 @@ mod tests {
                 errors: 1,
             }
         );
+    }
+
+    #[tokio::test]
+    async fn resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state() {
+        let server = listener();
+        let output = exchange(
+            &server,
+            b"*1\r\n$4\r\nPING\r\n\
+              *1\r\n$4\r\nINFO\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+        let output = String::from_utf8(output).unwrap();
+
+        assert!(output.starts_with("+PONG\r\n$"));
+        assert!(output.contains("# Server\r\n"));
+        assert!(output.contains("redis_mode:standalone\r\n"));
+        assert!(output.contains("role:master\r\n"));
+        assert!(output.contains("hydracache_resp:RESP2+RESP3\r\n"));
+        assert!(output.contains("total_connections_received:1\r\n"));
+        assert!(output.contains("total_commands_processed:1\r\n"));
+        assert!(output.ends_with("+OK\r\n"));
+        assert!(!output.contains("used_memory"));
+        assert!(!output.contains("cluster_enabled"));
+        assert!(!output.contains("db0:"));
+    }
+
+    #[tokio::test]
+    async fn resp_listener_type_reports_string_and_none() {
+        let server = listener();
+        let output = exchange(
+            &server,
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$4\r\nTYPE\r\n$1\r\nk\r\n\
+              *2\r\n$4\r\nTYPE\r\n$7\r\nmissing\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await;
+
+        assert_eq!(output, b"+OK\r\n+string\r\n+none\r\n+OK\r\n");
+        assert_eq!(server.state().dispatch_attempts(), 3);
     }
 
     #[tokio::test]

@@ -45,6 +45,13 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"));
     assert!(manifest.contains("select_zero_is_supported_as_noop_for_single_database_contract"));
     assert!(manifest.contains("resp_listener_select_zero_ok_and_nonzero_keeps_default_database"));
+    assert!(manifest.contains("info_returns_minimal_honest_facade_state"));
+    assert!(manifest.contains("info_section_argument_does_not_fabricate_redis_keyspace_state"));
+    assert!(
+        manifest.contains("resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state")
+    );
+    assert!(manifest.contains("type_reports_string_or_none_through_client_surface"));
+    assert!(manifest.contains("resp_listener_type_reports_string_and_none"));
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
     assert!(manifest.contains("CLUSTER SLOTS/NODES/INFO"));
@@ -131,6 +138,15 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
         .unwrap();
     assert_eq!(pong, "PONG");
 
+    let info: String = redis::cmd("INFO")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert!(info.contains("redis_mode:standalone"));
+    assert!(info.contains("hydracache_resp:RESP2+RESP3"));
+    assert!(!info.contains("used_memory"));
+    assert!(!info.contains("db0:"));
+
     let _: () = redis::cmd("SET")
         .arg("k")
         .arg("v")
@@ -143,6 +159,19 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
         .await
         .unwrap();
     assert_eq!(value, "v");
+
+    let existing_type: String = redis::cmd("TYPE")
+        .arg("k")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(existing_type, "string");
+    let missing_type: String = redis::cmd("TYPE")
+        .arg("missing")
+        .query_async(&mut connection)
+        .await
+        .unwrap();
+    assert_eq!(missing_type, "none");
 
     let values: Vec<Option<String>> = redis::cmd("MGET")
         .arg("k")
@@ -716,8 +745,15 @@ except Exception as exc:
     sys.exit(42)
 r = redis.Redis.from_url(sys.argv[1], decode_responses=True)
 assert r.ping() is True
+info = r.info()
+assert info["redis_mode"] == "standalone"
+assert info["hydracache_resp"] == "RESP2+RESP3"
+assert "used_memory" not in info
+assert "db0" not in info
 assert r.set("python:k", "v") is True
 assert r.get("python:k") == "v"
+assert r.type("python:k") == "string"
+assert r.type("python:missing") == "none"
 assert r.mset({"python:a": "1", "python:b": "2"}) is True
 assert r.mget(["python:a", "python:b"]) == ["1", "2"]
 assert r.set("python:ttl", "v", px=5000) is True
@@ -741,8 +777,15 @@ import os
 import redis
 r = redis.Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
 assert r.ping() is True
+info = r.info()
+assert info["redis_mode"] == "standalone"
+assert info["hydracache_resp"] == "RESP2+RESP3"
+assert "used_memory" not in info
+assert "db0" not in info
 assert r.set("python:k", "v") is True
 assert r.get("python:k") == "v"
+assert r.type("python:k") == "string"
+assert r.type("python:missing") == "none"
 assert r.mset({"python:a": "1", "python:b": "2"}) is True
 assert r.mget(["python:a", "python:b"]) == ["1", "2"]
 assert r.set("python:ttl", "v", px=5000) is True
@@ -778,8 +821,14 @@ fn run_node_client(redis_url: &str) -> ClientRun {
   const client = redis.createClient({ url: process.argv[1] });
   await client.connect();
   if (await client.ping() !== "PONG") throw new Error("PING failed");
+  const info = await client.sendCommand(["INFO"]);
+  if (!info.includes("redis_mode:standalone")) throw new Error("INFO missing standalone mode");
+  if (!info.includes("hydracache_resp:RESP2+RESP3")) throw new Error("INFO missing RESP dialects");
+  if (info.includes("used_memory") || info.includes("db0:")) throw new Error("INFO fabricated Redis server state");
   if (await client.set("node:k", "v") !== "OK") throw new Error("SET failed");
   if (await client.get("node:k") !== "v") throw new Error("GET failed");
+  if (await client.sendCommand(["TYPE", "node:k"]) !== "string") throw new Error("TYPE existing failed");
+  if (await client.sendCommand(["TYPE", "node:missing"]) !== "none") throw new Error("TYPE missing failed");
   if (await client.sendCommand(["MSET", "node:a", "1", "node:b", "2"]) !== "OK") throw new Error("MSET failed");
   const msetValues = await client.mGet(["node:a", "node:b"]);
   if (JSON.stringify(msetValues) !== JSON.stringify(["1", "2"])) throw new Error(`MSET/MGET failed: ${JSON.stringify(msetValues)}`);
@@ -814,8 +863,14 @@ fn run_node_client_docker(redis_url: &str) -> ClientRun {
   });
   await client.connect();
   if (await client.ping() !== "PONG") throw new Error("PING failed");
+  const info = await client.sendCommand(["INFO"]);
+  if (!info.includes("redis_mode:standalone")) throw new Error("INFO missing standalone mode");
+  if (!info.includes("hydracache_resp:RESP2+RESP3")) throw new Error("INFO missing RESP dialects");
+  if (info.includes("used_memory") || info.includes("db0:")) throw new Error("INFO fabricated Redis server state");
   if (await client.set("node:k", "v") !== "OK") throw new Error("SET failed");
   if (await client.get("node:k") !== "v") throw new Error("GET failed");
+  if (await client.sendCommand(["TYPE", "node:k"]) !== "string") throw new Error("TYPE existing failed");
+  if (await client.sendCommand(["TYPE", "node:missing"]) !== "none") throw new Error("TYPE missing failed");
   if (await client.sendCommand(["MSET", "node:a", "1", "node:b", "2"]) !== "OK") throw new Error("MSET failed");
   const msetValues = await client.mGet(["node:a", "node:b"]);
   if (JSON.stringify(msetValues) !== JSON.stringify(["1", "2"])) throw new Error(`MSET/MGET failed: ${JSON.stringify(msetValues)}`);
@@ -879,6 +934,7 @@ import (
     "context"
     "fmt"
     "os"
+    "strings"
     "time"
 
     redis "github.com/redis/go-redis/v9"
@@ -913,6 +969,12 @@ func main() {{
     mustNoErr(err, "PING failed")
     must(pong == "PONG", fmt.Sprintf("PING got %q", pong))
 
+    info, err := client.Info(ctx).Result()
+    mustNoErr(err, "INFO failed")
+    must(strings.Contains(info, "redis_mode:standalone"), "INFO missing standalone mode")
+    must(strings.Contains(info, "hydracache_resp:RESP2+RESP3"), "INFO missing RESP dialects")
+    must(!strings.Contains(info, "used_memory") && !strings.Contains(info, "db0:"), "INFO fabricated Redis server state")
+
     set, err := client.Set(ctx, "go:k", "v", 0).Result()
     mustNoErr(err, "SET failed")
     must(set == "OK", fmt.Sprintf("SET got %q", set))
@@ -920,6 +982,13 @@ func main() {{
     got, err := client.Get(ctx, "go:k").Result()
     mustNoErr(err, "GET failed")
     must(got == "v", fmt.Sprintf("GET got %q", got))
+
+    existingType, err := client.Type(ctx, "go:k").Result()
+    mustNoErr(err, "TYPE existing failed")
+    must(existingType == "string", fmt.Sprintf("TYPE existing got %q", existingType))
+    missingType, err := client.Type(ctx, "go:missing").Result()
+    mustNoErr(err, "TYPE missing failed")
+    must(missingType == "none", fmt.Sprintf("TYPE missing got %q", missingType))
 
     mustNoErr(client.MSet(ctx, "go:a", "1", "go:b", "2").Err(), "MSET failed")
     msetValues, err := client.MGet(ctx, "go:a", "go:b").Result()
@@ -1037,8 +1106,14 @@ public final class RedisClientSmoke {
   public static void main(String[] args) {
     try (Jedis jedis = new Jedis(URI.create(System.getenv("REDIS_URL")))) {
       must("PONG".equals(jedis.ping()), "PING failed");
+      String info = jedis.info();
+      must(info.contains("redis_mode:standalone"), "INFO missing standalone mode");
+      must(info.contains("hydracache_resp:RESP2+RESP3"), "INFO missing RESP dialects");
+      must(!info.contains("used_memory") && !info.contains("db0:"), "INFO fabricated Redis server state");
       must("OK".equals(jedis.set("jvm:k", "v")), "SET failed");
       must("v".equals(jedis.get("jvm:k")), "GET failed");
+      must("string".equals(jedis.type("jvm:k")), "TYPE existing failed");
+      must("none".equals(jedis.type("jvm:missing")), "TYPE missing failed");
       must("OK".equals(jedis.mset("jvm:a", "1", "jvm:b", "2")), "MSET failed");
       List<String> msetValues = jedis.mget("jvm:a", "jvm:b");
       must(msetValues.size() == 2 && "1".equals(msetValues.get(0)) && "2".equals(msetValues.get(1)), "MSET/MGET failed");
@@ -1228,6 +1303,8 @@ async fn run_supported_subset_scenario(addr: SocketAddr, prefix: &str) -> Vec<Or
         query_reply(addr, "ECHO", &["hello"]).await,
         query_reply(addr, "SET", &[&key, "v"]).await,
         query_reply(addr, "GET", &[&key]).await,
+        query_reply(addr, "TYPE", &[&key]).await,
+        query_reply(addr, "TYPE", &[&missing]).await,
         query_reply(addr, "MSET", &[&first, "1", &second, "2", &first, "3"]).await,
         query_reply(addr, "MGET", &[&first, &second]).await,
         query_reply(addr, "MGET", &[&key, &missing]).await,

@@ -147,17 +147,21 @@ The Redis RESP edge facade is governed by
 [`docs/integrations/redis_compat_conformance.json`](integrations/redis_compat_conformance.json).
 That manifest is the source of truth for the supported/candidate/unsupported command matrix,
 real Redis oracle scenarios, client-smoke scenarios, and release-note command table.
-For `0.63.0`, RESP3 negotiation, `MSET`, Redis TTL commands, Redis `AUTH`/`HELLO AUTH`, and native
-`rediss://` are supported release scope: the manifest rows must stay tied to RESP3 negotiation/codec
-tests, atomic batch tests, protocol v3 TTL metadata/expiry tests, client-surface expiry tests,
-auth-required listener tests, credential redaction tests, TLS handshake/plaintext/wrong-CA tests,
-real Redis oracle tolerance tests, and mainstream-client scenarios.
+For `0.63.0`, RESP3 negotiation, `MSET`, minimal `INFO`, cache-subset `TYPE`, Redis TTL commands,
+Redis `AUTH`/`HELLO AUTH`, and native `rediss://` are supported release scope: the manifest rows
+must stay tied to RESP3 negotiation/codec tests, atomic batch tests, health/probe honesty tests,
+protocol v3 TTL metadata/expiry tests, client-surface expiry tests, auth-required listener tests,
+credential redaction tests, TLS handshake/plaintext/wrong-CA tests, real Redis oracle tolerance
+tests, and mainstream-client scenarios.
 Redis Cluster remains intentionally unsupported in `0.63.0`: `CLUSTER SLOTS`,
 `CLUSTER NODES`, and `CLUSTER INFO` must stay tied to standalone-only negative
 tests that prove no topology, hash slot metadata, `MOVED`, or `ASK` is emitted.
 Redis multi-db is intentionally not implemented: `SELECT 0` is the only
 supported logical database command and must stay tied to fast tests proving it is
 a no-op, while non-zero or invalid DB indexes fail loud before mutation.
+Health/probe compatibility is intentionally minimal: `INFO` must expose only
+honest RESP facade facts, `TYPE` must return only `string` or `none` through the
+cache subset, and `ROLE`, `DBSIZE`, and `SCAN` must stay unsupported-loud.
 
 When adding or changing a RESP command:
 
@@ -179,7 +183,7 @@ The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL me
 compatibility, atomic `MSET`, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
 credential redaction, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
-coverage, decoder fuzz smoke, and oversized frame limits. The server
+coverage, minimal `INFO`, cache-subset `TYPE`, decoder fuzz smoke, and oversized frame limits. The server
 lifecycle gate proves the
 listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
 plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when
@@ -196,10 +200,10 @@ Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS -ErrorAction SilentlyContin
 That gated tier contains a compiled `redis-rs` mainstream-client smoke and the
 real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
-real Redis after the documented normalization rules, including RESP3 negotiation, exact `MSET`
-behavior, bounded TTL tolerance, auth-required startup, and `rediss://` startup. Python, Node, Go,
-and JVM client rows must keep exercising the same scenario suite through unchanged mainstream Redis
-clients.
+real Redis after the documented normalization rules, including RESP3 negotiation, `SELECT 0`,
+minimal `INFO`, cache-subset `TYPE`, exact `MSET` behavior, bounded TTL tolerance,
+auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
+exercising the same scenario suite through unchanged mainstream Redis clients.
 
 By default, each optional Python/Node/Go/JVM row first tries the local mainstream
 client. If a local runtime or client library is missing and Docker is available,

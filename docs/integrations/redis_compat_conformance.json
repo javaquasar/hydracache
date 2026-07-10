@@ -156,10 +156,10 @@
     },
     {
       "name": "INFO",
-      "status": "candidate",
+      "status": "supported_with_caveat",
       "kind": "health_probe",
-      "oracle": "candidate",
-      "tests": ["health_check_commands_are_classified_before_translation", "info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+      "oracle": "normalized_metadata",
+      "tests": ["info_returns_minimal_honest_facade_state", "info_section_argument_does_not_fabricate_redis_keyspace_state", "resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state", "info_role_dbsize_type_scan_and_config_follow_contract_classification", "mainstream_redis_client_can_talk_to_the_facade", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
     {
       "name": "ROLE",
@@ -177,10 +177,10 @@
     },
     {
       "name": "TYPE",
-      "status": "unsupported",
+      "status": "supported_with_caveat",
       "kind": "health_probe",
-      "oracle": "documented_divergence",
-      "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
+      "oracle": "exact",
+      "tests": ["type_reports_string_or_none_through_client_surface", "resp_listener_type_reports_string_and_none", "info_role_dbsize_type_scan_and_config_follow_contract_classification", "mainstream_redis_client_can_talk_to_the_facade", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset", "redis_oracle_supported_subset_matches_real_redis"]
     },
     {
       "name": "SCAN",

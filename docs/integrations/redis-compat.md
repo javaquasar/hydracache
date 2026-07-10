@@ -40,7 +40,9 @@ to this page without adding or updating the manifest row first.
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
 | `SET EX/PX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `supported` | bounded TTL tolerance | Backed by `hydracache-client-protocol` v3 TTL metadata and client-surface expiry enforcement. |
 | `SELECT 0` | `supported_with_caveat` | normalized error | Accepted as a connection-local no-op for Redis client URL compatibility. HydraCache exposes one logical Redis database only; `SELECT 1` and every non-zero DB index fail loud with `ERR multiple Redis databases are not supported; use SELECT 0`, and invalid indexes return `ERR invalid DB index`. |
-| `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN` | `candidate` or `unsupported` | candidate or documented divergence | Health probes must be minimal and honest; no fabricated Redis server state. |
+| `INFO` | `supported_with_caveat` | normalized metadata | Minimal honest RESP facade facts only: standalone mode, role, HydraCache version, RESP dialects, accepted connection count, processed command count, and RESP error count. No fake Redis memory, keyspace, replication, or cluster sections. |
+| `TYPE` | `supported_with_caveat` | exact | Returns `string` for an existing cache value and `none` for a miss. No other Redis data types are claimed. |
+| `ROLE`, `DBSIZE`, `SCAN` | `unsupported` | documented divergence | `ROLE` would fabricate Redis replication state, `DBSIZE` would imply an exact tenant/keyspace cardinality contract, and `SCAN` would expose iterable keyspace behavior HydraCache does not provide at this edge. |
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Disabled by default. |
 | `HSET`, `ZADD`, lists, streams, Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. |
 | `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO` | `unsupported` | documented divergence | Standalone-only facade. No hash slots, topology, `MOVED`, or `ASK` are fabricated. |
@@ -64,6 +66,22 @@ Redis Cluster is a documented non-goal rather than a partial implementation.
 `CLUSTER *` commands return a stable unsupported error, and the facade never
 returns topology, hash slot metadata, `MOVED`, or `ASK`.
 
+## Health And Probe Commands
+
+HydraCache keeps Redis health/probe support deliberately small. `PING`,
+`HELLO`, `COMMAND`, `CLIENT SETNAME`, and `CLIENT SETINFO` cover mainstream
+client startup and liveness. `INFO` is supported only as a minimal honest facade
+snapshot, not as a Redis server inventory. Its response may include standalone
+mode, `role:master`, HydraCache package version, supported RESP dialects,
+accepted connection count, processed command count, and RESP error count. It
+does not include memory, database cardinality, replication offsets, Redis
+Cluster state, or per-DB keyspace sections.
+
+`TYPE key` is supported for the cache subset and returns only `string` or
+`none`. `ROLE`, `DBSIZE`, and `SCAN` remain unsupported because returning
+Redis-like replication roles, exact key counts, or iterable keyspace state would
+be misleading or unsafe for a tenant-scoped HydraCache facade.
+
 ## Executable Examples
 
 Every example below is covered by the `redis_clients` gated target. They use only
@@ -83,8 +101,10 @@ Gate: `redis_clients`
 
 ```sh
 redis-cli -u redis://127.0.0.1:6379/0 SELECT 0
+redis-cli -u redis://127.0.0.1:6379/0 INFO
 redis-cli -u redis://127.0.0.1:6379/0 SET demo:k v
 redis-cli -u redis://127.0.0.1:6379/0 GET demo:k
+redis-cli -u redis://127.0.0.1:6379/0 TYPE demo:k
 redis-cli -u redis://127.0.0.1:6379/0 MSET demo:a 1 demo:b 2
 redis-cli -u redis://127.0.0.1:6379/0 MGET demo:k demo:missing
 redis-cli -u redis://127.0.0.1:6379/0 SET demo:ttl v EX 30

@@ -287,6 +287,13 @@ depends_on = []
       "tests": ["get_matches_real_redis"]
     },
     {
+      "name": "INFO",
+      "status": "supported_with_caveat",
+      "kind": "health_probe",
+      "oracle": "normalized_metadata",
+      "tests": ["info_returns_minimal_metadata"]
+    },
+    {
       "name": "HC.STATS",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",

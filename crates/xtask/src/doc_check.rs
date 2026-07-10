@@ -43,9 +43,10 @@ const ALLOWED_REDIS_COMPAT_STATUS: [&str; 6] = [
     "hydracache_extension",
     "unsupported",
 ];
-const ALLOWED_REDIS_COMPAT_ORACLE: [&str; 6] = [
+const ALLOWED_REDIS_COMPAT_ORACLE: [&str; 7] = [
     "exact",
     "normalized_error",
+    "normalized_metadata",
     "documented_divergence",
     "hydracache_only",
     "ttl_tolerance",
