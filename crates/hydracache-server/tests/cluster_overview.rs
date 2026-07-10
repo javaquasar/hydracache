@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use axum::body::{to_bytes, Body};
@@ -14,14 +15,20 @@ use hydracache_server::{
 use serde_json::{json, Value};
 use tower::ServiceExt;
 
+static STORAGE_SEQ: AtomicU64 = AtomicU64::new(0);
+
 fn member_config() -> ServerConfig {
+    let storage_seq = STORAGE_SEQ.fetch_add(1, Ordering::Relaxed);
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
-        storage_dir: Some(PathBuf::from("target/test-hydracache-cluster-overview")),
+        storage_dir: Some(PathBuf::from(format!(
+            "target/test-hydracache-cluster-overview/{}-{storage_seq}",
+            std::process::id()
+        ))),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
         cluster_auth: ClusterAuthConfig::default(),
