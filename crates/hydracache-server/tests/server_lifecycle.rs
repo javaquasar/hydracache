@@ -2,14 +2,18 @@ use std::{
     env,
     ffi::OsString,
     path::PathBuf,
-    sync::{Mutex, MutexGuard},
+    sync::{Arc, Mutex, MutexGuard},
 };
 
+use hydracache_redis_compat::{RedisCommand, RespValue};
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime, ServerState,
-    TlsConfig,
+    serve_redis_listener, AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig,
+    ClusterStartMode, RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime,
+    ServerState, TlsConfig,
 };
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::watch;
 
 fn member_config() -> ServerConfig {
     ServerConfig {
@@ -369,6 +373,82 @@ fn daemon_serves_redis_resp_listener_only_when_enabled_and_drains_gracefully() {
 }
 
 #[test]
+fn redis_resp_server_uses_client_surface_state_without_enabling_client_api_routes() {
+    let mut config = member_config_with_redis_surface();
+    config.client_api.enabled = false;
+    let runtime = ServerRuntime::new(config).unwrap().start();
+    let server = runtime.redis_resp_server().unwrap().unwrap();
+
+    assert!(!runtime.client_surface_ready());
+    assert_eq!(
+        server.execute_command(RedisCommand::Set {
+            key: b"k".to_vec(),
+            value: b"v".to_vec(),
+            options: Vec::new(),
+        }),
+        RespValue::SimpleString("OK")
+    );
+    assert_eq!(
+        server.execute_command(RedisCommand::Get { key: b"k".to_vec() }),
+        RespValue::BulkString(b"v".to_vec())
+    );
+}
+
+#[tokio::test]
+async fn redis_tcp_listener_accepts_real_socket_and_honors_drain_gate() {
+    let runtime = Arc::new(Mutex::new(
+        ServerRuntime::new(member_config_with_redis_surface())
+            .unwrap()
+            .start(),
+    ));
+    let server = Arc::new(
+        runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    let serving = tokio::spawn(serve_redis_listener(
+        listener,
+        Arc::clone(&server),
+        Arc::clone(&runtime),
+        shutdown_rx,
+    ));
+
+    let mut socket = TcpStream::connect(addr).await.unwrap();
+    socket
+        .write_all(
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    let mut output = Vec::new();
+    socket.read_to_end(&mut output).await.unwrap();
+    assert_eq!(output, b"+OK\r\n$1\r\nv\r\n+OK\r\n");
+
+    wait_for_no_redis_connections(&runtime).await;
+    runtime.lock().expect("server runtime mutex").shutdown();
+
+    let mut rejected = TcpStream::connect(addr).await.unwrap();
+    rejected.write_all(b"*1\r\n$4\r\nPING\r\n").await.unwrap();
+    let mut byte = [0; 1];
+    match rejected.read(&mut byte).await {
+        Ok(0) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::ConnectionReset => {}
+        other => panic!("drained Redis listener should close without RESP output: {other:?}"),
+    }
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[test]
 fn server_lifecycle_env_config_parses_join_mode_and_advertise_endpoint() {
     let _guard = ConfigEnvGuard::new(&[
         ("HYDRACACHE_ROLE", "member"),
@@ -412,6 +492,20 @@ fn server_lifecycle_env_config_parses_join_mode_and_advertise_endpoint() {
     );
     assert!(config.tls.acknowledge_insecure);
     assert!(!config.admin_api.enabled);
+}
+
+async fn wait_for_no_redis_connections(runtime: &Arc<Mutex<ServerRuntime>>) {
+    for _ in 0..10 {
+        if runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_active_connections()
+            == 0
+        {
+            return;
+        }
+        tokio::task::yield_now().await;
+    }
 }
 
 #[test]
