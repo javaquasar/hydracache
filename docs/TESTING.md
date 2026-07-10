@@ -186,15 +186,35 @@ real Redis after the documented normalization rules. Add Python, Node, Go, and
 JVM client rows only when their unchanged mainstream Redis clients pass the same
 scenario suite.
 
-By default, missing optional Python/Node/Go/JVM runtimes or client libraries skip
-loud inside the ignored matrix. To make one row mandatory in a nightly job, set
-the matching require flag alongside `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS`:
+By default, each optional Python/Node/Go/JVM row first tries the local mainstream
+client. If a local runtime or client library is missing and Docker is available,
+the Python, Node, and JVM rows fall back to pinned containerized client images:
+`python:3.13.7-slim` with `redis==5.2.1`,
+`node:24.6.0-bookworm-slim` with `redis@4.7.0`, and
+`maven:3.9.11-eclipse-temurin-17` with `Jedis 5.2.0`. The Docker rows connect
+back to the host RESP facade through `host.docker.internal`, so Docker Desktop
+or Docker's `host-gateway` support must be available. The Go row uses the local
+Go toolchain and `go-redis/v9 v9.7.0`.
+
+If both the local client and Docker fallback are unavailable, the row skips loud
+inside the ignored matrix. To make one row mandatory in a nightly job, set the
+matching require flag alongside `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS`:
 
 ```powershell
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_GO = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM = '1'
+```
+
+To prove the containerized Python/Node/JVM paths specifically, force Docker
+fallback for rows that have container coverage:
+
+```powershell
+$env:HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = '1'
+$env:HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER = '1'
+cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset --nocapture
+Remove-Item Env:\HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER -ErrorAction SilentlyContinue
 ```
 
 Run the resource/hostile-input smoke before widening the listener surface:

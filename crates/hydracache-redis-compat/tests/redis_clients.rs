@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::process::Command;
 use std::sync::Arc;
 use std::time::Duration;
@@ -12,8 +12,15 @@ use tokio::sync::watch;
 use tokio::task::JoinHandle;
 
 const CLIENT_MATRIX_ENV: &str = "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS";
+const CLIENT_DOCKER_FORCE_ENV: &str = "HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER";
 const CLIENT_RUNTIME_SKIP_EXIT: i32 = 42;
 const PINNED_REDIS_IMAGES: [&str; 2] = ["redis:6.2.14", "redis:7.2.5"];
+const DOCKER_HOST_GATEWAY: &str = "host.docker.internal";
+const PYTHON_CLIENT_DOCKER_IMAGE: &str = "python:3.13.7-slim";
+const PYTHON_CLIENT_DOCKER_PACKAGE: &str = "redis==5.2.1";
+const NODE_CLIENT_DOCKER_IMAGE: &str = "node:24.6.0-bookworm-slim";
+const NODE_CLIENT_DOCKER_PACKAGE: &str = "redis@4.7.0";
+const JVM_CLIENT_DOCKER_IMAGE: &str = "maven:3.9.11-eclipse-temurin-17";
 
 #[test]
 fn redis_client_gate_manifest_and_docs_are_wired() {
@@ -61,6 +68,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
     }
     for env_var in [
         CLIENT_MATRIX_ENV,
+        CLIENT_DOCKER_FORCE_ENV,
         "HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON",
         "HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE",
         "HYDRACACHE_REQUIRE_REDIS_CLIENT_GO",
@@ -70,6 +78,15 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         assert!(testing.contains(env_var));
     }
     assert!(gates.contains("--test redis_clients"));
+    for docker_image in [
+        PYTHON_CLIENT_DOCKER_IMAGE,
+        NODE_CLIENT_DOCKER_IMAGE,
+        JVM_CLIENT_DOCKER_IMAGE,
+    ] {
+        assert!(source.contains(docker_image));
+        assert!(testing.contains(docker_image));
+    }
+    assert!(source.contains(DOCKER_HOST_GATEWAY));
 }
 
 #[tokio::test]
@@ -140,11 +157,13 @@ async fn nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset()
         return;
     }
 
-    let (shutdown, addr, serving) = spawn_resp_facade().await;
+    let (shutdown, addr, serving) = spawn_resp_facade_for_docker_clients().await;
     let url = format!("redis://{addr}/");
+    let docker_url = docker_redis_url(addr);
     for ecosystem in ClientEcosystem::all() {
         let url = url.clone();
-        tokio::task::spawn_blocking(move || run_external_client(ecosystem, &url))
+        let docker_url = docker_url.clone();
+        tokio::task::spawn_blocking(move || run_external_client(ecosystem, &url, &docker_url))
             .await
             .unwrap();
     }
@@ -320,14 +339,17 @@ impl ClientEcosystem {
             Self::Jvm => "HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM",
         }
     }
+
+    fn has_docker_fallback(self) -> bool {
+        matches!(self, Self::Python | Self::Node | Self::Jvm)
+    }
 }
 
-fn run_external_client(ecosystem: ClientEcosystem, redis_url: &str) {
-    let result = match ecosystem {
-        ClientEcosystem::Python => run_python_client(redis_url),
-        ClientEcosystem::Node => run_node_client(redis_url),
-        ClientEcosystem::Go => run_go_client(redis_url),
-        ClientEcosystem::Jvm => run_jvm_client(redis_url),
+fn run_external_client(ecosystem: ClientEcosystem, redis_url: &str, docker_redis_url: &str) {
+    let result = if env_gate_enabled(CLIENT_DOCKER_FORCE_ENV) && ecosystem.has_docker_fallback() {
+        run_docker_client(ecosystem, docker_redis_url)
+    } else {
+        run_external_client_with_local_fallback(ecosystem, redis_url, docker_redis_url)
     };
     match result {
         ClientRun::Passed => {}
@@ -349,10 +371,49 @@ fn run_external_client(ecosystem: ClientEcosystem, redis_url: &str) {
     }
 }
 
+fn run_external_client_with_local_fallback(
+    ecosystem: ClientEcosystem,
+    redis_url: &str,
+    docker_redis_url: &str,
+) -> ClientRun {
+    let local_result = match ecosystem {
+        ClientEcosystem::Python => run_python_client(redis_url),
+        ClientEcosystem::Node => run_node_client(redis_url),
+        ClientEcosystem::Go => run_go_client(redis_url),
+        ClientEcosystem::Jvm => run_jvm_client(redis_url),
+    };
+    match local_result {
+        ClientRun::Passed | ClientRun::Failed(_) => local_result,
+        ClientRun::Skipped(local_reason) => match run_docker_client(ecosystem, docker_redis_url) {
+            ClientRun::Passed => ClientRun::Passed,
+            ClientRun::Skipped(docker_reason) => ClientRun::Skipped(format!(
+                "{local_reason}; Docker fallback skipped: {docker_reason}"
+            )),
+            ClientRun::Failed(output) => ClientRun::Failed(format!(
+                "local row skipped: {local_reason}\nDocker fallback failed:\n{output}"
+            )),
+        },
+    }
+}
+
 enum ClientRun {
     Passed,
     Skipped(String),
     Failed(String),
+}
+
+fn run_docker_client(ecosystem: ClientEcosystem, redis_url: &str) -> ClientRun {
+    if !docker_available() {
+        return ClientRun::Skipped("docker CLI is not available".to_owned());
+    }
+    match ecosystem {
+        ClientEcosystem::Python => run_python_client_docker(redis_url),
+        ClientEcosystem::Node => run_node_client_docker(redis_url),
+        ClientEcosystem::Go => {
+            ClientRun::Skipped("Go client uses the local Go toolchain".to_owned())
+        }
+        ClientEcosystem::Jvm => run_jvm_client_docker(redis_url),
+    }
 }
 
 fn run_python_client(redis_url: &str) -> ClientRun {
@@ -375,6 +436,29 @@ assert r.delete("python:k", "python:missing") == 1
         "python",
         Command::new("python").arg("-c").arg(script).arg(redis_url),
     )
+}
+
+fn run_python_client_docker(redis_url: &str) -> ClientRun {
+    let script = r#"
+import os
+import redis
+r = redis.Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
+assert r.ping() is True
+assert r.set("python:k", "v") is True
+assert r.get("python:k") == "v"
+assert r.mget(["python:k", "python:missing"]) == ["v", None]
+assert r.exists("python:k", "python:missing") == 1
+assert r.delete("python:k", "python:missing") == 1
+"#;
+    let mut command = docker_client_command(redis_url);
+    command
+        .arg(PYTHON_CLIENT_DOCKER_IMAGE)
+        .arg("sh")
+        .arg("-lc")
+        .arg(format!(
+        "python -m pip install --quiet --disable-pip-version-check {PYTHON_CLIENT_DOCKER_PACKAGE} && python - <<'PY'\n{script}\nPY"
+    ));
+    run_optional_command("docker redis-py", &mut command)
 }
 
 fn run_node_client(redis_url: &str) -> ClientRun {
@@ -406,6 +490,39 @@ fn run_node_client(redis_url: &str) -> ClientRun {
         "node",
         Command::new("node").arg("-e").arg(script).arg(redis_url),
     )
+}
+
+fn run_node_client_docker(redis_url: &str) -> ClientRun {
+    let script = r#"
+(async () => {
+  const redis = require("redis");
+  const client = redis.createClient({
+    url: process.env.REDIS_URL,
+    socket: { reconnectStrategy: false }
+  });
+  await client.connect();
+  if (await client.ping() !== "PONG") throw new Error("PING failed");
+  if (await client.set("node:k", "v") !== "OK") throw new Error("SET failed");
+  if (await client.get("node:k") !== "v") throw new Error("GET failed");
+  const values = await client.mGet(["node:k", "node:missing"]);
+  if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
+  if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
+  if (await client.del(["node:k", "node:missing"]) !== 1) throw new Error("DEL failed");
+  await client.quit();
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+"#;
+    let mut command = docker_client_command(redis_url);
+    command
+        .arg(NODE_CLIENT_DOCKER_IMAGE)
+        .arg("sh")
+        .arg("-lc")
+        .arg(format!(
+        "mkdir -p /tmp/hydracache-redis-client && cd /tmp/hydracache-redis-client && npm init -y >/dev/null 2>&1 && npm install --no-audit --no-fund --silent {NODE_CLIENT_DOCKER_PACKAGE} >/dev/null && node - <<'NODE'\n{script}\nNODE"
+    ));
+    run_optional_command("docker node-redis", &mut command)
 }
 
 fn run_go_client(redis_url: &str) -> ClientRun {
@@ -507,12 +624,30 @@ fn run_jvm_client(redis_url: &str) -> ClientRun {
     let Ok(dir) = prepare_jvm_client() else {
         return ClientRun::Skipped("could not prepare temporary JVM module".to_owned());
     };
-    let mut command = Command::new("mvn");
+    let mut command = maven_command();
     command
         .args(["-q", "-f", "pom.xml", "compile", "exec:java"])
         .env("REDIS_URL", redis_url)
         .current_dir(&dir);
     let result = run_optional_command("mvn", &mut command);
+    let _ = fs::remove_dir_all(dir);
+    result
+}
+
+fn run_jvm_client_docker(redis_url: &str) -> ClientRun {
+    let Ok(dir) = prepare_jvm_client() else {
+        return ClientRun::Skipped("could not prepare temporary JVM module".to_owned());
+    };
+    let volume = docker_volume(&dir);
+    let mut command = docker_client_command(redis_url);
+    command
+        .arg("-v")
+        .arg(volume)
+        .arg("-w")
+        .arg("/workspace")
+        .arg(JVM_CLIENT_DOCKER_IMAGE)
+        .args(["mvn", "-q", "-f", "pom.xml", "compile", "exec:java"]);
+    let result = run_optional_command("docker jedis", &mut command);
     let _ = fs::remove_dir_all(dir);
     result
 }
@@ -582,6 +717,34 @@ public final class RedisClientSmoke {
 "#,
     )?;
     Ok(dir)
+}
+
+fn docker_client_command(redis_url: &str) -> Command {
+    let mut command = Command::new("docker");
+    command
+        .arg("run")
+        .arg("--rm")
+        .arg("--add-host")
+        .arg(format!("{DOCKER_HOST_GATEWAY}:host-gateway"))
+        .arg("-e")
+        .arg(format!("REDIS_URL={redis_url}"));
+    command
+}
+
+fn docker_volume(path: &std::path::Path) -> String {
+    format!("{}:/workspace", path.display())
+}
+
+fn docker_redis_url(addr: SocketAddr) -> String {
+    format!("redis://{DOCKER_HOST_GATEWAY}:{}/", addr.port())
+}
+
+fn maven_command() -> Command {
+    if cfg!(windows) {
+        Command::new("mvn.cmd")
+    } else {
+        Command::new("mvn")
+    }
 }
 
 fn unique_temp_dir(label: &str) -> std::path::PathBuf {
@@ -804,8 +967,18 @@ async fn wait_for_redis(addr: SocketAddr) -> Result<(), String> {
 }
 
 async fn spawn_resp_facade() -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
-    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    spawn_resp_facade_on("127.0.0.1:0").await
+}
+
+async fn spawn_resp_facade_for_docker_clients() -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>)
+{
+    spawn_resp_facade_on("0.0.0.0:0").await
+}
+
+async fn spawn_resp_facade_on(bind: &str) -> (watch::Sender<bool>, SocketAddr, JoinHandle<()>) {
+    let listener = TcpListener::bind(bind).await.unwrap();
     let addr = listener.local_addr().unwrap();
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), addr.port());
     let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
     let server = Arc::new(
         RedisRespServer::new(

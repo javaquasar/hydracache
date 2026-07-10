@@ -561,7 +561,10 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
 - **Nightly client matrix:** Docker-gated jobs should run at least one client from each ecosystem that
   matters for the adoption story: Python (`redis-py`), Node (`node-redis` or `ioredis`), Go
   (`go-redis`), and JVM (`Lettuce` or `Jedis`). Each client must connect without custom protocol
-  shims and run the same contract subset W0 marks supported.
+  shims and run the same contract subset W0 marks supported. Local client installations are allowed
+  for fast developer loops, but the release gate must also have a Docker fallback with pinned
+  language/client images so Python/Node/JVM rows remain reproducible on clean machines while the Go
+  row stays covered through the local Go toolchain.
 - **Real Redis oracle:** the same mainstream-client scenario suite must run against a real
   Docker-managed `redis-server` and against the HydraCache RESP facade. Redis Docker tags are pinned
   (no `latest`) and the tested versions are recorded in `docs/GATES.md`; the default target is one
