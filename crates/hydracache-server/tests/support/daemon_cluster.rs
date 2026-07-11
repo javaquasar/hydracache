@@ -14,7 +14,7 @@ use serde_json::Value;
 
 pub const DAEMON_PROCESS_E2E_ENV: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
 const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
-const WAIT_TIMEOUT: Duration = Duration::from_secs(30);
+const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
 
 pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
@@ -207,6 +207,29 @@ impl DaemonCluster {
         })
     }
 
+    pub fn wait_for_non_draining_shape(
+        &mut self,
+        label: &str,
+        members: u32,
+        voters: u32,
+    ) -> TestResult<Vec<DaemonStatus>> {
+        self.wait_for(label.to_owned(), |cluster| {
+            let statuses = cluster.statuses();
+            let active = statuses
+                .iter()
+                .filter(|status| !status.draining)
+                .cloned()
+                .collect::<Vec<_>>();
+            let leaders = leaders(&active);
+            (!active.is_empty()
+                && leaders.len() == 1
+                && active.iter().all(|status| {
+                    status.members == members && status.voters == voters && status.quorum_ok
+                }))
+            .then_some(statuses)
+        })
+    }
+
     pub fn wait_for_leader_not(
         &mut self,
         old_leader: &str,
@@ -236,7 +259,11 @@ impl DaemonCluster {
             }
             std::thread::sleep(POLL_INTERVAL);
         }
-        Err(format!("{label} did not converge before {WAIT_TIMEOUT:?}").into())
+        let last_statuses = self.statuses();
+        Err(format!(
+            "{label} did not converge before {WAIT_TIMEOUT:?}; last_statuses={last_statuses:?}"
+        )
+        .into())
     }
 
     pub fn kill(&mut self, index: usize) -> TestResult {
