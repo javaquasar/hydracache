@@ -127,11 +127,32 @@
       "tests": ["client_protocol_v3_registers_ttl_metadata_without_breaking_v2", "set_ex_and_px_apply_expiry_through_client_surface", "setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
-      "name": "SET NX/XX/GET/KEEPTTL",
+      "name": "SET NX PX/EX",
+      "status": "supported",
+      "kind": "redis_lock_subset",
+      "oracle": "ttl_tolerance",
+      "tests": ["set_nx_px_acquires_missing_key_and_contention_returns_null", "set_nx_ex_ttl_uses_seconds_and_expires", "client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases", "redis_oracle_set_nx_px_lock_acquire_matches_real_redis"]
+    },
+    {
+      "name": "EVAL/EVALSHA lock release and extend scripts",
+      "status": "supported",
+      "kind": "redis_lock_subset",
+      "oracle": "ttl_tolerance",
+      "tests": ["eval_known_unlock_script_deletes_only_matching_token", "eval_redlock_single_resource_scripts_acquire_extend_and_release", "eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args", "redis_oracle_lock_unlock_script_matches_real_redis", "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"]
+    },
+    {
+      "name": "SCRIPT LOAD/EXISTS lock script allowlist",
+      "status": "supported_with_caveat",
+      "kind": "redis_lock_subset",
+      "oracle": "normalized_metadata",
+      "tests": ["script_load_exists_and_evalsha_are_allowlist_scoped"]
+    },
+    {
+      "name": "SET NX without TTL, SET XX/GET/KEEPTTL",
       "status": "unsupported",
       "kind": "redis_option_non_subset",
       "oracle": "documented_divergence",
-      "tests": ["set_write_conditional_options_follow_conformance_contract", "set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error", "client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation", "redis_oracle_set_options_are_documented_divergence"]
+      "tests": ["set_write_conditional_options_follow_conformance_contract", "redis_oracle_set_options_are_documented_divergence"]
     },
     {
       "name": "SET EXAT/PXAT",
@@ -218,11 +239,11 @@
       "tests": ["admin_commands_are_disabled_by_default_without_config_or_flush_mutation", "resp_listener_admin_commands_are_disabled_before_mutation"]
     },
     {
-      "name": "HSET/ZADD/LISTS/STREAMS/EVAL/MULTI/MODULE",
+      "name": "HSET/ZADD/LISTS/STREAMS/general EVAL/MULTI/MODULE",
       "status": "unsupported",
       "kind": "redis_non_subset",
       "oracle": "documented_divergence",
-      "tests": ["unsupported_commands_fail_loud_with_stable_error", "redis_oracle_unsupported_divergence_is_documented"]
+      "tests": ["unsupported_commands_fail_loud_with_stable_error", "unknown_eval_script_fails_loud_before_mutation", "redis_oracle_unsupported_divergence_is_documented"]
     },
     {
       "name": "CLUSTER SLOTS/NODES/INFO",

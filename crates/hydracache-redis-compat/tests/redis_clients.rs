@@ -25,8 +25,12 @@ const DOCKER_HOST_GATEWAY: &str = "host.docker.internal";
 const PYTHON_CLIENT_DOCKER_IMAGE: &str = "python:3.13.7-slim";
 const PYTHON_CLIENT_DOCKER_PACKAGE: &str = "redis==5.2.1";
 const NODE_CLIENT_DOCKER_IMAGE: &str = "node:24.6.0-bookworm-slim";
-const NODE_CLIENT_DOCKER_PACKAGE: &str = "redis@4.7.0";
+const NODE_CLIENT_DOCKER_PACKAGE: &str = "redis@4.7.0 redlock@5.0.0-beta.2";
 const JVM_CLIENT_DOCKER_IMAGE: &str = "maven:3.9.11-eclipse-temurin-17";
+const LOCK_RELEASE_SCRIPT: &str =
+    "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+const LOCK_EXTEND_SCRIPT: &str =
+    "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
 
 #[test]
 fn redis_client_gate_manifest_and_docs_are_wired() {
@@ -43,10 +47,15 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_mget_nil_and_order_match_real_redis"));
     assert!(manifest.contains("redis_oracle_mset_atomicity_matches_real_redis"));
     assert!(manifest.contains("redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"));
-    assert!(manifest.contains("SET NX/XX/GET/KEEPTTL"));
+    assert!(manifest.contains("SET NX PX/EX"));
+    assert!(manifest.contains("SET NX without TTL, SET XX/GET/KEEPTTL"));
     assert!(manifest.contains("SET EXAT/PXAT"));
-    assert!(manifest.contains("set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error"));
-    assert!(manifest.contains("client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation"));
+    assert!(manifest.contains("set_nx_px_acquires_missing_key_and_contention_returns_null"));
+    assert!(manifest.contains("client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases"));
+    assert!(manifest.contains("eval_known_unlock_script_deletes_only_matching_token"));
+    assert!(manifest.contains("script_load_exists_and_evalsha_are_allowlist_scoped"));
+    assert!(manifest
+        .contains("eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args"));
     assert!(manifest.contains("redis_oracle_ttl_edge_cases_match_real_redis"));
     assert!(manifest.contains("redis_oracle_set_options_are_documented_divergence"));
     assert!(manifest.contains("select_zero_is_supported_as_noop_for_single_database_contract"));
@@ -96,10 +105,13 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_ttl_edge_cases_match_real_redis",
         "client_matrix_runs_mset_and_ttl_commands",
         "client_matrix_runs_resp3_negotiation_scenario",
-        "client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation",
+        "client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases",
         "client_matrix_runs_auth_required_connection_scenario",
         "client_matrix_runs_rediss_required_connection_scenario",
         "client_matrix_runs_hydracache_tag_extension_scenario",
+        "redis_oracle_set_nx_px_lock_acquire_matches_real_redis",
+        "redis_oracle_lock_unlock_script_matches_real_redis",
+        "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance",
         "redis_oracle_set_options_are_documented_divergence",
         "redis_oracle_unsupported_divergence_is_documented",
         "redis_oracle_hc_extensions_are_hydracache_only",
@@ -198,6 +210,9 @@ async fn mainstream_redis_client_can_talk_to_the_facade() {
     run_redis_rs_mset_ttl_scenario(&mut connection, "rust")
         .await
         .unwrap();
+    run_redis_rs_lock_scenario(&mut connection, "rust")
+        .await
+        .unwrap();
 
     let exists: i64 = redis::cmd("EXISTS")
         .arg("k")
@@ -242,8 +257,8 @@ async fn client_matrix_runs_mset_and_ttl_commands() {
 }
 
 #[tokio::test]
-#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves raw SET NX PX fails loud promptly"]
-async fn client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation() {
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves SET NX PX lock acquire/contention/release"]
+async fn client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases() {
     if !env_gate_enabled(CLIENT_MATRIX_ENV) {
         eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
         return;
@@ -253,29 +268,13 @@ async fn client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation() {
     let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
     let mut connection = client.get_multiplexed_async_connection().await.unwrap();
 
-    let result = tokio::time::timeout(
+    tokio::time::timeout(
         Duration::from_secs(2),
-        redis::cmd("SET")
-            .arg("lock:k")
-            .arg("token")
-            .arg("NX")
-            .arg("PX")
-            .arg(5_000)
-            .query_async::<Value>(&mut connection),
+        run_redis_rs_lock_scenario(&mut connection, "rust-lock"),
     )
     .await
-    .expect("raw SET NX PX should fail promptly in the 0.63 contract");
-    let error = result.expect_err("SET NX PX must fail loud in the 0.63 contract");
-    assert!(
-        error.to_string().to_ascii_lowercase().contains("syntax"),
-        "expected Redis-shaped syntax error, got {error}"
-    );
-    let value: Option<String> = redis::cmd("GET")
-        .arg("lock:k")
-        .query_async(&mut connection)
-        .await
-        .unwrap();
-    assert_eq!(value, None);
+    .expect("SET NX PX lock scenario should finish promptly")
+    .unwrap();
 
     drop(connection);
     drop(shutdown);
@@ -616,6 +615,71 @@ async fn redis_oracle_ttl_edge_cases_match_real_redis() {
 
 #[tokio::test]
 #[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_set_nx_px_lock_acquire_matches_real_redis() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    let redis_replies = run_lock_acquire_scenario(oracle.addr, "lock-acquire").await;
+    let hydracache_replies = run_lock_acquire_scenario(hydracache_addr, "lock-acquire").await;
+    assert_eq!(hydracache_replies, redis_replies);
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_lock_unlock_script_matches_real_redis() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    let redis_replies = run_lock_release_scenario(oracle.addr, "lock-release").await;
+    let hydracache_replies = run_lock_release_scenario(hydracache_addr, "lock-release").await;
+    assert_eq!(hydracache_replies, redis_replies);
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    assert_lock_extend_shape(
+        run_lock_extend_scenario(oracle.addr, "lock-extend").await,
+        "redis",
+    );
+    assert_lock_extend_shape(
+        run_lock_extend_scenario(hydracache_addr, "lock-extend").await,
+        "hydracache",
+    );
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
 async fn redis_oracle_set_options_are_documented_divergence() {
     if !env_gate_enabled(CLIENT_MATRIX_ENV) {
         eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
@@ -626,26 +690,30 @@ async fn redis_oracle_set_options_are_documented_divergence() {
     };
     let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
 
-    let redis_set = query_reply(oracle.addr, "SET", &["lock:k", "token", "NX", "PX", "5000"]).await;
-    let redis_get = query_reply(oracle.addr, "GET", &["lock:k"]).await;
-    let hydracache_set = query_reply(
+    let redis_seed = query_reply(oracle.addr, "SET", &["set-options:k", "old"]).await;
+    let redis_reply = query_reply(oracle.addr, "SET", &["set-options:k", "new", "XX", "GET"]).await;
+    let redis_get = query_reply(oracle.addr, "GET", &["set-options:k"]).await;
+    let hydracache_seed = query_reply(hydracache_addr, "SET", &["set-options:k", "old"]).await;
+    let hydracache_reply = query_reply(
         hydracache_addr,
         "SET",
-        &["lock:k", "token", "NX", "PX", "5000"],
+        &["set-options:k", "new", "XX", "GET"],
     )
     .await;
-    let hydracache_get = query_reply(hydracache_addr, "GET", &["lock:k"]).await;
+    let hydracache_get = query_reply(hydracache_addr, "GET", &["set-options:k"]).await;
 
-    assert_eq!(redis_set, OracleReply::Status("OK".to_owned()));
-    assert_eq!(redis_get, OracleReply::Bulk(b"token".to_vec()));
+    assert_eq!(redis_seed, OracleReply::Status("OK".to_owned()));
+    assert_eq!(hydracache_seed, OracleReply::Status("OK".to_owned()));
+    assert_eq!(redis_reply, OracleReply::Bulk(b"old".to_vec()));
+    assert_eq!(redis_get, OracleReply::Bulk(b"new".to_vec()));
     assert!(
         matches!(
-            hydracache_set,
+            hydracache_reply,
             OracleReply::ErrorClass(ref class) if class == "ERR"
         ),
-        "HydraCache SET NX PX should normalize to ERR, got {hydracache_set:?}"
+        "HydraCache SET XX GET should normalize to ERR, got {hydracache_reply:?}"
     );
-    assert_eq!(hydracache_get, OracleReply::Nil);
+    assert_eq!(hydracache_get, OracleReply::Bulk(b"old".to_vec()));
 
     drop(shutdown);
     hydracache_serving.await.unwrap();
@@ -842,6 +910,68 @@ async fn run_redis_rs_mset_ttl_scenario(
     Ok(())
 }
 
+async fn run_redis_rs_lock_scenario(
+    connection: &mut redis::aio::MultiplexedConnection,
+    prefix: &str,
+) -> redis::RedisResult<()> {
+    let key = format!("{prefix}:lock");
+    let first: Option<String> = redis::cmd("SET")
+        .arg(&key)
+        .arg("owner")
+        .arg("NX")
+        .arg("PX")
+        .arg(5_000)
+        .query_async(connection)
+        .await?;
+    assert_eq!(first.as_deref(), Some("OK"));
+
+    let contender: Option<String> = redis::cmd("SET")
+        .arg(&key)
+        .arg("contender")
+        .arg("NX")
+        .arg("PX")
+        .arg(5_000)
+        .query_async(connection)
+        .await?;
+    assert_eq!(contender, None);
+
+    let current: String = redis::cmd("GET").arg(&key).query_async(connection).await?;
+    assert_eq!(current, "owner");
+
+    let wrong_release: i64 = redis::cmd("EVAL")
+        .arg(LOCK_RELEASE_SCRIPT)
+        .arg(1)
+        .arg(&key)
+        .arg("contender")
+        .query_async(connection)
+        .await?;
+    assert_eq!(wrong_release, 0);
+
+    let extended: i64 = redis::cmd("EVAL")
+        .arg(LOCK_EXTEND_SCRIPT)
+        .arg(1)
+        .arg(&key)
+        .arg("owner")
+        .arg(5_000)
+        .query_async(connection)
+        .await?;
+    assert_eq!(extended, 1);
+
+    let released: i64 = redis::cmd("EVAL")
+        .arg(LOCK_RELEASE_SCRIPT)
+        .arg(1)
+        .arg(&key)
+        .arg("owner")
+        .query_async(connection)
+        .await?;
+    assert_eq!(released, 1);
+
+    let after_release: Option<String> = redis::cmd("GET").arg(&key).query_async(connection).await?;
+    assert_eq!(after_release, None);
+
+    Ok(())
+}
+
 async fn run_redis_rs_hc_tag_scenario(
     connection: &mut redis::aio::MultiplexedConnection,
     prefix: &str,
@@ -987,6 +1117,14 @@ pttl = r.pttl("python:ttl")
 assert 0 < pttl <= 5000
 assert r.persist("python:ttl") is True
 assert r.ttl("python:ttl") == -1
+rb = redis.Redis.from_url(sys.argv[1], decode_responses=False)
+lock = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
+assert lock.acquire(blocking=False) is True
+contender = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
+assert contender.acquire(blocking=False) is False
+assert lock.extend(5) is True
+lock.release()
+assert rb.get("python:lock") is None
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
 assert r.exists("python:k", "python:missing") == 1
 assert r.delete("python:k", "python:missing") == 1
@@ -1030,6 +1168,14 @@ pttl = r.pttl("python:ttl")
 assert 0 < pttl <= 5000
 assert r.persist("python:ttl") is True
 assert r.ttl("python:ttl") == -1
+rb = redis.Redis.from_url(os.environ["REDIS_URL"], decode_responses=False)
+lock = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
+assert lock.acquire(blocking=False) is True
+contender = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
+assert contender.acquire(blocking=False) is False
+assert lock.extend(5) is True
+lock.release()
+assert rb.get("python:lock") is None
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
 assert r.exists("python:k", "python:missing") == 1
 assert r.delete("python:k", "python:missing") == 1
@@ -1066,8 +1212,26 @@ fn run_node_client(redis_url: &str) -> ClientRun {
     console.log(`missing node redis client: ${error}`);
     process.exit(42);
   }
+  let Redlock;
+  try {
+    Redlock = require("redlock").default;
+  } catch (error) {
+    console.log(`missing node redlock client: ${error}`);
+    process.exit(42);
+  }
+  function attachRedlockNodeRedisAdapter(client) {
+    const evalCommand = client.eval.bind(client);
+    const evalShaCommand = client.evalSha.bind(client);
+    const split = (numKeys, args) => ({
+      keys: args.slice(0, numKeys),
+      arguments: args.slice(numKeys).map(String)
+    });
+    client.eval = (script, numKeys, args) => evalCommand(script, split(numKeys, args));
+    client.evalsha = (sha, numKeys, args) => evalShaCommand(sha, split(numKeys, args));
+  }
   const client = redis.createClient({ url: process.argv[1] });
   await client.connect();
+  attachRedlockNodeRedisAdapter(client);
   if (await client.ping() !== "PONG") throw new Error("PING failed");
   const info = await client.sendCommand(["INFO"]);
   if (!info.includes("redis_mode:standalone")) throw new Error("INFO missing standalone mode");
@@ -1085,6 +1249,18 @@ fn run_node_client(redis_url: &str) -> ClientRun {
   if (!(pttl > 0 && pttl <= 5000)) throw new Error(`PTTL out of range: ${pttl}`);
   if (Number(await client.sendCommand(["PERSIST", "node:ttl"])) !== 1) throw new Error("PERSIST failed");
   if (Number(await client.sendCommand(["TTL", "node:ttl"])) !== -1) throw new Error("TTL after PERSIST failed");
+  const redlock = new Redlock([client], { retryCount: 0, retryDelay: 1, retryJitter: 0 });
+  let lock = await redlock.acquire(["node:lock"], 5000);
+  let contended = false;
+  try {
+    await redlock.acquire(["node:lock"], 5000);
+  } catch (error) {
+    contended = true;
+  }
+  if (!contended) throw new Error("redlock contention unexpectedly acquired");
+  lock = await lock.extend(5000);
+  await lock.release();
+  if (await client.get("node:lock") !== null) throw new Error("redlock release left value behind");
   const values = await client.mGet(["node:k", "node:missing"]);
   if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
   if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
@@ -1117,11 +1293,23 @@ fn run_node_client_docker(redis_url: &str) -> ClientRun {
     let script = r#"
 (async () => {
   const redis = require("redis");
+  const Redlock = require("redlock").default;
+  function attachRedlockNodeRedisAdapter(client) {
+    const evalCommand = client.eval.bind(client);
+    const evalShaCommand = client.evalSha.bind(client);
+    const split = (numKeys, args) => ({
+      keys: args.slice(0, numKeys),
+      arguments: args.slice(numKeys).map(String)
+    });
+    client.eval = (script, numKeys, args) => evalCommand(script, split(numKeys, args));
+    client.evalsha = (sha, numKeys, args) => evalShaCommand(sha, split(numKeys, args));
+  }
   const client = redis.createClient({
     url: process.env.REDIS_URL,
     socket: { reconnectStrategy: false }
   });
   await client.connect();
+  attachRedlockNodeRedisAdapter(client);
   if (await client.ping() !== "PONG") throw new Error("PING failed");
   const info = await client.sendCommand(["INFO"]);
   if (!info.includes("redis_mode:standalone")) throw new Error("INFO missing standalone mode");
@@ -1139,6 +1327,18 @@ fn run_node_client_docker(redis_url: &str) -> ClientRun {
   if (!(pttl > 0 && pttl <= 5000)) throw new Error(`PTTL out of range: ${pttl}`);
   if (Number(await client.sendCommand(["PERSIST", "node:ttl"])) !== 1) throw new Error("PERSIST failed");
   if (Number(await client.sendCommand(["TTL", "node:ttl"])) !== -1) throw new Error("TTL after PERSIST failed");
+  const redlock = new Redlock([client], { retryCount: 0, retryDelay: 1, retryJitter: 0 });
+  let lock = await redlock.acquire(["node:lock"], 5000);
+  let contended = false;
+  try {
+    await redlock.acquire(["node:lock"], 5000);
+  } catch (error) {
+    contended = true;
+  }
+  if (!contended) throw new Error("redlock contention unexpectedly acquired");
+  lock = await lock.extend(5000);
+  await lock.release();
+  if (await client.get("node:lock") !== null) throw new Error("redlock release left value behind");
   const values = await client.mGet(["node:k", "node:missing"]);
   if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
   if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
@@ -1719,6 +1919,46 @@ async fn run_ttl_edge_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleRepl
     ]
 }
 
+async fn run_lock_acquire_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let key = format!("{prefix}:key");
+    vec![
+        query_reply(addr, "SET", &[&key, "owner", "NX", "PX", "5000"]).await,
+        query_reply(addr, "SET", &[&key, "contender", "NX", "PX", "5000"]).await,
+        query_reply(addr, "GET", &[&key]).await,
+    ]
+}
+
+async fn run_lock_release_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let key = format!("{prefix}:key");
+    vec![
+        query_reply(addr, "SET", &[&key, "owner", "NX", "PX", "5000"]).await,
+        query_reply(addr, "EVAL", &[LOCK_RELEASE_SCRIPT, "1", &key, "contender"]).await,
+        query_reply(addr, "GET", &[&key]).await,
+        query_reply(addr, "EVAL", &[LOCK_RELEASE_SCRIPT, "1", &key, "owner"]).await,
+        query_reply(addr, "GET", &[&key]).await,
+    ]
+}
+
+async fn run_lock_extend_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let key = format!("{prefix}:key");
+    vec![
+        query_reply(addr, "SET", &[&key, "owner", "NX", "PX", "100"]).await,
+        query_reply(
+            addr,
+            "EVAL",
+            &[LOCK_EXTEND_SCRIPT, "1", &key, "contender", "5000"],
+        )
+        .await,
+        query_reply(
+            addr,
+            "EVAL",
+            &[LOCK_EXTEND_SCRIPT, "1", &key, "owner", "5000"],
+        )
+        .await,
+        query_reply(addr, "PTTL", &[&key]).await,
+    ]
+}
+
 fn assert_ttl_scenario_shape(replies: Vec<OracleReply>, label: &str) {
     assert_eq!(replies.len(), 8, "{label}: unexpected TTL scenario length");
     assert_eq!(
@@ -1758,6 +1998,35 @@ fn assert_ttl_scenario_shape(replies: Vec<OracleReply>, label: &str) {
         "{label}: TTL after EXPIRE should be within 0..=1, got {expiring_ttl}"
     );
     assert_eq!(replies[7], OracleReply::Int(-2), "{label}: TTL missing");
+}
+
+fn assert_lock_extend_shape(replies: Vec<OracleReply>, label: &str) {
+    assert_eq!(
+        replies.len(),
+        4,
+        "{label}: unexpected lock extend scenario length"
+    );
+    assert_eq!(
+        replies[0],
+        OracleReply::Status("OK".to_owned()),
+        "{label}: SET NX PX"
+    );
+    assert_eq!(
+        replies[1],
+        OracleReply::Int(0),
+        "{label}: wrong token extend"
+    );
+    assert_eq!(replies[2], OracleReply::Int(1), "{label}: owner extend");
+    let OracleReply::Int(pttl) = replies[3] else {
+        panic!(
+            "{label}: PTTL after extend should return integer, got {:?}",
+            replies[3]
+        );
+    };
+    assert!(
+        (1..=5_000).contains(&pttl),
+        "{label}: PTTL after extend should be within 1..=5000, got {pttl}"
+    );
 }
 
 async fn query_reply(addr: SocketAddr, command: &str, args: &[&str]) -> OracleReply {

@@ -12,7 +12,7 @@ use std::time::Duration;
 use bytes::{Bytes, BytesMut};
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, Namespace, StructuredKey, TtlState,
+    ClientResponseEnvelope, ConditionalPutCondition, Namespace, StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
 use redis_protocol::resp2::{
@@ -55,6 +55,57 @@ const REDIS_WRONGPASS_MESSAGE: &str =
     "WRONGPASS invalid username-password pair or user is disabled.";
 const REDIS_SYNTAX_ERROR: &str = "syntax error";
 const REDIS_INVALID_SET_EXPIRE_TIME: &str = "invalid expire time in 'set' command";
+const REDIS_UNSUPPORTED_LUA_SCRIPT: &str = "unsupported Lua script";
+
+const LOCK_RELEASE_SCRIPT_SIMPLE: &str =
+    "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+const LOCK_EXTEND_SCRIPT_SIMPLE: &str =
+    "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
+const LOCK_ACQUIRE_SCRIPT_REDLOCK: &str = r#"
+  -- Return 0 if an entry already exists.
+  for i, key in ipairs(KEYS) do
+    if redis.call("exists", key) == 1 then
+      return 0
+    end
+  end
+
+  -- Create an entry for each provided key.
+  for i, key in ipairs(KEYS) do
+    redis.call("set", key, ARGV[1], "PX", ARGV[2])
+  end
+
+  -- Return the number of entries added.
+  return #KEYS
+"#;
+const LOCK_EXTEND_SCRIPT_REDLOCK: &str = r#"
+  -- Return 0 if an entry exists with a *different* lock value.
+  for i, key in ipairs(KEYS) do
+    if redis.call("get", key) ~= ARGV[1] then
+      return 0
+    end
+  end
+
+  -- Update the entry for each provided key.
+  for i, key in ipairs(KEYS) do
+    redis.call("set", key, ARGV[1], "PX", ARGV[2])
+  end
+
+  -- Return the number of entries updated.
+  return #KEYS
+"#;
+const LOCK_RELEASE_SCRIPT_REDLOCK: &str = r#"
+  local count = 0
+  for i, key in ipairs(KEYS) do
+    -- Only remove entries for *this* lock value.
+    if redis.call("get", key) == ARGV[1] then
+      redis.pcall("del", key)
+      count = count + 1
+    end
+  end
+
+  -- Return the number of entries removed.
+  return count
+"#;
 
 /// RESP wire dialect used by one connection.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -315,6 +366,22 @@ pub enum RedisCommand {
     Persist { key: Vec<u8> },
     /// `TTL key` or `PTTL key`.
     Ttl { key: Vec<u8>, unit: RedisTtlUnit },
+    /// `EVAL script numkeys key [arg ...]`.
+    Eval {
+        script: Vec<u8>,
+        numkeys: Vec<u8>,
+        keys_and_args: Vec<Vec<u8>>,
+    },
+    /// `EVALSHA sha numkeys key [arg ...]`.
+    EvalSha {
+        sha: Vec<u8>,
+        numkeys: Vec<u8>,
+        keys_and_args: Vec<Vec<u8>>,
+    },
+    /// `SCRIPT LOAD script`.
+    ScriptLoad { script: Vec<u8> },
+    /// `SCRIPT EXISTS sha [sha ...]`.
+    ScriptExists { shas: Vec<Vec<u8>> },
     /// `HC.STATS`.
     HcStats,
     /// `HC.DIAGNOSTICS`.
@@ -357,6 +424,13 @@ pub enum RedisTtlUnit {
     Seconds,
     /// Milliseconds, for `PTTL`.
     Milliseconds,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RedisLockScriptKind {
+    Acquire,
+    Release,
+    Extend,
 }
 
 /// RESP value helpers used by the future listener.
@@ -449,6 +523,7 @@ pub struct RedisRespServer {
     identity: ClientIdentity,
     config: RedisListenerConfig,
     tag_index: Mutex<RedisTagIndex>,
+    script_cache: Mutex<BTreeMap<String, RedisLockScriptKind>>,
     next_request_id: AtomicU64,
     accepted_connections: AtomicU64,
     commands: AtomicU64,
@@ -500,6 +575,7 @@ impl RedisRespServer {
             identity,
             config,
             tag_index: Mutex::new(RedisTagIndex::default()),
+            script_cache: Mutex::new(BTreeMap::new()),
             next_request_id: AtomicU64::new(1),
             accepted_connections: AtomicU64::new(0),
             commands: AtomicU64::new(0),
@@ -613,6 +689,23 @@ impl RedisRespServer {
         command: RedisCommand,
         identity: &ClientIdentity,
     ) -> RespValue {
+        match command {
+            RedisCommand::ScriptLoad { script } => self.script_load_response(script),
+            RedisCommand::ScriptExists { shas } => self.script_exists_response(shas),
+            command => {
+                if matches!(&command, RedisCommand::Info { .. }) {
+                    return info_response(self.metrics());
+                }
+                self.execute_translatable_authenticated_command(command, identity)
+            }
+        }
+    }
+
+    fn execute_translatable_authenticated_command(
+        &self,
+        command: RedisCommand,
+        identity: &ClientIdentity,
+    ) -> RespValue {
         if matches!(&command, RedisCommand::Info { .. }) {
             return info_response(self.metrics());
         }
@@ -634,6 +727,33 @@ impl RedisRespServer {
         let response = self.execute_translated(translated, identity);
         cleanup.apply_if_success(&self.tag_index, &response);
         response
+    }
+
+    fn script_load_response(&self, script: Vec<u8>) -> RespValue {
+        let Some(kind) = classify_lock_script(&script) else {
+            self.errors.fetch_add(1, Ordering::SeqCst);
+            return RespValue::Error(format!("ERR {REDIS_UNSUPPORTED_LUA_SCRIPT}"));
+        };
+        let sha = sha1_hex(&script);
+        self.script_cache
+            .lock()
+            .expect("redis script cache mutex")
+            .insert(sha.clone(), kind);
+        RespValue::BulkString(sha.into_bytes())
+    }
+
+    fn script_exists_response(&self, shas: Vec<Vec<u8>>) -> RespValue {
+        let cache = self.script_cache.lock().expect("redis script cache mutex");
+        RespValue::Array(
+            shas.into_iter()
+                .map(|sha| {
+                    let exists = std::str::from_utf8(&sha)
+                        .ok()
+                        .is_some_and(|sha| cache.contains_key(&sha.to_ascii_lowercase()));
+                    RespValue::Integer(i64::from(exists))
+                })
+                .collect(),
+        )
     }
 
     fn execute_translated(
@@ -932,6 +1052,10 @@ impl RedisRespServer {
                     | RedisCommand::Expire { .. }
                     | RedisCommand::Persist { .. }
                     | RedisCommand::Ttl { .. }
+                    | RedisCommand::Eval { .. }
+                    | RedisCommand::EvalSha { .. }
+                    | RedisCommand::ScriptLoad { .. }
+                    | RedisCommand::ScriptExists { .. }
                     | RedisCommand::HcStats
                     | RedisCommand::HcDiagnostics
                     | RedisCommand::HcInvalidate { .. }
@@ -944,10 +1068,16 @@ impl RedisRespServer {
 
     fn translation_context(&self) -> Result<RedisTranslationContext, RedisTranslationError> {
         let request_id = self.next_request_id.fetch_add(1, Ordering::SeqCst);
-        RedisTranslationContext::new(
+        Ok(RedisTranslationContext::new(
             self.config.namespace.clone(),
             format!("redis-resp-{request_id}"),
-        )
+        )?
+        .with_loaded_scripts(
+            self.script_cache
+                .lock()
+                .expect("redis script cache mutex")
+                .clone(),
+        ))
     }
 
     async fn write_response<S>(
@@ -1361,6 +1491,7 @@ fn enforce_resp3_frame_limits(
 pub struct RedisTranslationContext {
     namespace: Namespace,
     request_id: String,
+    loaded_scripts: BTreeMap<String, RedisLockScriptKind>,
 }
 
 impl RedisTranslationContext {
@@ -1382,6 +1513,7 @@ impl RedisTranslationContext {
         Ok(Self {
             namespace,
             request_id,
+            loaded_scripts: BTreeMap::new(),
         })
     }
 
@@ -1395,6 +1527,22 @@ impl RedisTranslationContext {
         &self.request_id
     }
 
+    fn with_loaded_scripts(
+        mut self,
+        loaded_scripts: BTreeMap<String, RedisLockScriptKind>,
+    ) -> Self {
+        self.loaded_scripts = loaded_scripts;
+        self
+    }
+
+    fn resolve_script_sha(&self, sha: &[u8]) -> Option<RedisLockScriptKind> {
+        let sha = std::str::from_utf8(sha).ok()?.to_ascii_lowercase();
+        self.loaded_scripts
+            .get(&sha)
+            .copied()
+            .or_else(|| known_lock_script_sha(&sha))
+    }
+
     fn request_id_for(&self, suffix: impl std::fmt::Display) -> String {
         format!("{}-{suffix}", self.request_id)
     }
@@ -1406,6 +1554,7 @@ impl Default for RedisTranslationContext {
             namespace: Namespace::new(DEFAULT_REDIS_NAMESPACE)
                 .expect("default Redis namespace is valid"),
             request_id: "redis-resp".to_owned(),
+            loaded_scripts: BTreeMap::new(),
         }
     }
 }
@@ -1431,6 +1580,9 @@ pub enum RedisTranslationError {
         /// Stable redacted detail.
         detail: &'static str,
     },
+    /// Lua script SHA is unknown to the lock-script allowlist/cache.
+    #[error("NOSCRIPT No matching script. Please use EVAL.")]
+    NoScript,
     /// Redis database index is malformed or negative.
     #[error("ERR invalid DB index")]
     InvalidDatabaseIndex,
@@ -1582,6 +1734,7 @@ enum RedisFollowup {
 enum RedisResponseReducer {
     Get,
     Set,
+    ConditionalStoredInteger,
     Mset,
     Mget { expected_items: usize },
     Del { expected_items: usize },
@@ -1590,6 +1743,7 @@ enum RedisResponseReducer {
     Expiry,
     Ttl { unit: RedisTtlUnit },
     Invalidate,
+    CompareValueApplied,
 }
 
 impl RedisResponseReducer {
@@ -1600,6 +1754,7 @@ impl RedisResponseReducer {
         match self {
             Self::Get => reduce_get(responses),
             Self::Set => reduce_set(responses),
+            Self::ConditionalStoredInteger => reduce_conditional_stored_integer(responses),
             Self::Mset => reduce_mset(responses),
             Self::Mget { expected_items } => reduce_mget(responses, *expected_items),
             Self::Del { expected_items } => reduce_del(responses, *expected_items),
@@ -1608,6 +1763,7 @@ impl RedisResponseReducer {
             Self::Expiry => reduce_expiry(responses),
             Self::Ttl { unit } => reduce_ttl(responses, *unit),
             Self::Invalidate => reduce_invalidate(responses),
+            Self::CompareValueApplied => reduce_compare_value_applied(responses),
         }
     }
 }
@@ -1668,17 +1824,28 @@ pub fn translate_redis_command(
             value,
             options,
         } => {
-            let ttl_ms = parse_set_ttl_ms(&options)?;
-            RedisTranslatedCommand::Execute(single_request_plan(
-                context,
-                "set",
-                ClientRequest::Put {
+            let options = parse_set_options(&options)?;
+            let key = redis_key_to_structured_key(&key)?;
+            let request = match options {
+                RedisSetOptions::Upsert { ttl_ms } => ClientRequest::Put {
                     ns: context.namespace.clone(),
-                    key: redis_key_to_structured_key(&key)?,
+                    key,
                     value,
                     ttl_ms,
                     dimensions: Vec::new(),
                 },
+                RedisSetOptions::IfAbsent { ttl_ms } => ClientRequest::ConditionalPut {
+                    ns: context.namespace.clone(),
+                    key,
+                    value,
+                    ttl_ms: Some(ttl_ms),
+                    condition: ConditionalPutCondition::IfAbsent,
+                },
+            };
+            RedisTranslatedCommand::Execute(single_request_plan(
+                context,
+                "set",
+                request,
                 RedisResponseReducer::Set,
             ))
         }
@@ -1778,6 +1945,43 @@ pub fn translate_redis_command(
             },
             RedisResponseReducer::Ttl { unit },
         )),
+        RedisCommand::Eval {
+            script,
+            numkeys,
+            keys_and_args,
+        } => {
+            let Some(kind) = classify_lock_script(&script) else {
+                return Err(RedisTranslationError::UnsupportedShape {
+                    detail: REDIS_UNSUPPORTED_LUA_SCRIPT,
+                });
+            };
+            RedisTranslatedCommand::Execute(translate_lock_script(
+                context,
+                kind,
+                &numkeys,
+                keys_and_args,
+            )?)
+        }
+        RedisCommand::EvalSha {
+            sha,
+            numkeys,
+            keys_and_args,
+        } => {
+            let Some(kind) = context.resolve_script_sha(&sha) else {
+                return Err(RedisTranslationError::NoScript);
+            };
+            RedisTranslatedCommand::Execute(translate_lock_script(
+                context,
+                kind,
+                &numkeys,
+                keys_and_args,
+            )?)
+        }
+        RedisCommand::ScriptLoad { .. } | RedisCommand::ScriptExists { .. } => {
+            return Err(RedisTranslationError::UnsupportedShape {
+                detail: "SCRIPT LOAD/EXISTS require listener script cache",
+            });
+        }
         RedisCommand::HcStats => RedisTranslatedCommand::Extension(RedisExtensionRequest::Stats),
         RedisCommand::HcDiagnostics => {
             RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics)
@@ -1849,6 +2053,84 @@ fn single_request_plan(
     }
 }
 
+fn translate_lock_script(
+    context: &RedisTranslationContext,
+    kind: RedisLockScriptKind,
+    numkeys: &[u8],
+    keys_and_args: Vec<Vec<u8>>,
+) -> Result<RedisExecutionPlan, RedisTranslationError> {
+    let numkeys = ascii_decimal_u64(numkeys)?;
+    if numkeys != 1 {
+        return Err(RedisTranslationError::UnsupportedShape {
+            detail: REDIS_SYNTAX_ERROR,
+        });
+    }
+    match kind {
+        RedisLockScriptKind::Acquire => {
+            if keys_and_args.len() != 3 {
+                return Err(RedisTranslationError::UnsupportedShape {
+                    detail: REDIS_SYNTAX_ERROR,
+                });
+            }
+            let key = redis_key_to_structured_key(&keys_and_args[0])?;
+            let value = keys_and_args[1].clone();
+            let ttl_ms = parse_positive_ttl_ms(b"PX", &keys_and_args[2])?;
+            Ok(single_request_plan(
+                context,
+                "eval-acquire",
+                ClientRequest::ConditionalPut {
+                    ns: context.namespace.clone(),
+                    key,
+                    value,
+                    condition: ConditionalPutCondition::IfAbsent,
+                    ttl_ms: Some(ttl_ms),
+                },
+                RedisResponseReducer::ConditionalStoredInteger,
+            ))
+        }
+        RedisLockScriptKind::Release => {
+            if keys_and_args.len() != 2 {
+                return Err(RedisTranslationError::UnsupportedShape {
+                    detail: REDIS_SYNTAX_ERROR,
+                });
+            }
+            let key = redis_key_to_structured_key(&keys_and_args[0])?;
+            let expected_value = keys_and_args[1].clone();
+            Ok(single_request_plan(
+                context,
+                "eval-release",
+                ClientRequest::CompareValueAndInvalidate {
+                    ns: context.namespace.clone(),
+                    key,
+                    expected_value,
+                },
+                RedisResponseReducer::CompareValueApplied,
+            ))
+        }
+        RedisLockScriptKind::Extend => {
+            if keys_and_args.len() < 3 {
+                return Err(RedisTranslationError::UnsupportedShape {
+                    detail: REDIS_SYNTAX_ERROR,
+                });
+            }
+            let key = redis_key_to_structured_key(&keys_and_args[0])?;
+            let expected_value = keys_and_args[1].clone();
+            let ttl_ms = parse_positive_ttl_ms(b"PX", &keys_and_args[2])?;
+            Ok(single_request_plan(
+                context,
+                "eval-extend",
+                ClientRequest::CompareValueAndExpire {
+                    ns: context.namespace.clone(),
+                    key,
+                    expected_value,
+                    ttl_ms,
+                },
+                RedisResponseReducer::CompareValueApplied,
+            ))
+        }
+    }
+}
+
 fn reduce_get(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTranslationError> {
     let response = single_response(responses)?;
     match &response.result {
@@ -1862,6 +2144,21 @@ fn reduce_set(responses: &[ClientResponseEnvelope]) -> Result<RespValue, RedisTr
     let response = single_response(responses)?;
     match &response.result {
         Ok(ClientResponse::Stored) => Ok(RespValue::SimpleString("OK")),
+        Ok(ClientResponse::ConditionalStored { stored: true }) => Ok(RespValue::SimpleString("OK")),
+        Ok(ClientResponse::ConditionalStored { stored: false }) => Ok(RespValue::Null),
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
+}
+
+fn reduce_conditional_stored_integer(
+    responses: &[ClientResponseEnvelope],
+) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::ConditionalStored { stored }) => {
+            Ok(RespValue::Integer(i64::from(*stored)))
+        }
         Err(error) => Ok(client_error_to_resp(error)),
         Ok(other) => unexpected_response(other),
     }
@@ -1986,6 +2283,19 @@ fn reduce_invalidate(
     }
 }
 
+fn reduce_compare_value_applied(
+    responses: &[ClientResponseEnvelope],
+) -> Result<RespValue, RedisTranslationError> {
+    let response = single_response(responses)?;
+    match &response.result {
+        Ok(ClientResponse::CompareValueApplied { applied }) => {
+            Ok(RespValue::Integer(i64::from(*applied)))
+        }
+        Err(error) => Ok(client_error_to_resp(error)),
+        Ok(other) => unexpected_response(other),
+    }
+}
+
 fn single_response(
     responses: &[ClientResponseEnvelope],
 ) -> Result<&ClientResponseEnvelope, RedisTranslationError> {
@@ -2055,11 +2365,168 @@ fn ttl_state_to_integer(state: TtlState, unit: RedisTtlUnit) -> i64 {
     }
 }
 
-fn parse_set_ttl_ms(options: &[Vec<u8>]) -> Result<Option<u64>, RedisTranslationError> {
-    match options {
-        [] => Ok(None),
-        [unit, value] => parse_positive_ttl_ms(unit, value).map(Some),
-        _ => Err(RedisTranslationError::UnsupportedShape {
+fn classify_lock_script(script: &[u8]) -> Option<RedisLockScriptKind> {
+    let canonical = canonical_lua(script);
+    if canonical == canonical_lua(LOCK_ACQUIRE_SCRIPT_REDLOCK.as_bytes()) {
+        Some(RedisLockScriptKind::Acquire)
+    } else if canonical == canonical_lua(LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes())
+        || canonical
+            == "localtoken=redis.call('get',keys[1])ifnottokenortoken~=argv[1]thenreturn0endredis.call('del',keys[1])return1"
+        || canonical == canonical_lua(LOCK_RELEASE_SCRIPT_REDLOCK.as_bytes())
+    {
+        Some(RedisLockScriptKind::Release)
+    } else if canonical == canonical_lua(LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes())
+        || canonical
+            == "localtoken=redis.call('get',keys[1])ifnottokenortoken~=argv[1]thenreturn0endlocalexpiration=redis.call('pttl',keys[1])ifnotexpirationthenexpiration=0endifexpiration<0thenreturn0endlocalnewttl=argv[2]ifargv[3]=='0'thennewttl=argv[2]+expirationendredis.call('pexpire',keys[1],newttl)return1"
+        || canonical == canonical_lua(LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes())
+    {
+        Some(RedisLockScriptKind::Extend)
+    } else {
+        None
+    }
+}
+
+fn known_lock_script_sha(sha: &str) -> Option<RedisLockScriptKind> {
+    let sha = sha.to_ascii_lowercase();
+    if sha == sha1_hex(LOCK_ACQUIRE_SCRIPT_REDLOCK.as_bytes()) {
+        Some(RedisLockScriptKind::Acquire)
+    } else if sha == sha1_hex(LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes())
+        || sha == sha1_hex(LOCK_RELEASE_SCRIPT_REDLOCK.as_bytes())
+    {
+        Some(RedisLockScriptKind::Release)
+    } else if sha == sha1_hex(LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes())
+        || sha == sha1_hex(LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes())
+    {
+        Some(RedisLockScriptKind::Extend)
+    } else {
+        None
+    }
+}
+
+fn canonical_lua(script: &[u8]) -> String {
+    String::from_utf8_lossy(script)
+        .chars()
+        .filter_map(|ch| {
+            if ch.is_ascii_whitespace() || ch == ';' {
+                None
+            } else if ch == '"' {
+                Some('\'')
+            } else {
+                Some(ch.to_ascii_lowercase())
+            }
+        })
+        .collect()
+}
+
+fn sha1_hex(bytes: &[u8]) -> String {
+    let mut h0 = 0x6745_2301u32;
+    let mut h1 = 0xefcd_ab89u32;
+    let mut h2 = 0x98ba_dcfeu32;
+    let mut h3 = 0x1032_5476u32;
+    let mut h4 = 0xc3d2_e1f0u32;
+
+    let bit_len = (bytes.len() as u64).wrapping_mul(8);
+    let mut message = bytes.to_vec();
+    message.push(0x80);
+    while message.len() % 64 != 56 {
+        message.push(0);
+    }
+    message.extend_from_slice(&bit_len.to_be_bytes());
+
+    for chunk in message.chunks_exact(64) {
+        let mut words = [0u32; 80];
+        for (index, word) in words.iter_mut().take(16).enumerate() {
+            let start = index * 4;
+            *word = u32::from_be_bytes([
+                chunk[start],
+                chunk[start + 1],
+                chunk[start + 2],
+                chunk[start + 3],
+            ]);
+        }
+        for index in 16..80 {
+            words[index] =
+                (words[index - 3] ^ words[index - 8] ^ words[index - 14] ^ words[index - 16])
+                    .rotate_left(1);
+        }
+
+        let mut a = h0;
+        let mut b = h1;
+        let mut c = h2;
+        let mut d = h3;
+        let mut e = h4;
+        for (index, word) in words.iter().enumerate() {
+            let (f, k) = match index {
+                0..=19 => ((b & c) | ((!b) & d), 0x5a82_7999),
+                20..=39 => (b ^ c ^ d, 0x6ed9_eba1),
+                40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1b_bcdc),
+                _ => (b ^ c ^ d, 0xca62_c1d6),
+            };
+            let temp = a
+                .rotate_left(5)
+                .wrapping_add(f)
+                .wrapping_add(e)
+                .wrapping_add(k)
+                .wrapping_add(*word);
+            e = d;
+            d = c;
+            c = b.rotate_left(30);
+            b = a;
+            a = temp;
+        }
+        h0 = h0.wrapping_add(a);
+        h1 = h1.wrapping_add(b);
+        h2 = h2.wrapping_add(c);
+        h3 = h3.wrapping_add(d);
+        h4 = h4.wrapping_add(e);
+    }
+
+    format!("{h0:08x}{h1:08x}{h2:08x}{h3:08x}{h4:08x}")
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RedisSetOptions {
+    Upsert { ttl_ms: Option<u64> },
+    IfAbsent { ttl_ms: u64 },
+}
+
+fn parse_set_options(options: &[Vec<u8>]) -> Result<RedisSetOptions, RedisTranslationError> {
+    if options.is_empty() {
+        return Ok(RedisSetOptions::Upsert { ttl_ms: None });
+    }
+
+    let mut ttl_ms = None;
+    let mut if_absent = false;
+    let mut index = 0;
+    while index < options.len() {
+        let option = &options[index];
+        if option.eq_ignore_ascii_case(b"NX") {
+            if if_absent {
+                return Err(RedisTranslationError::UnsupportedShape {
+                    detail: REDIS_SYNTAX_ERROR,
+                });
+            }
+            if_absent = true;
+            index += 1;
+        } else if option.eq_ignore_ascii_case(b"EX") || option.eq_ignore_ascii_case(b"PX") {
+            if ttl_ms.is_some() || index + 1 >= options.len() {
+                return Err(RedisTranslationError::UnsupportedShape {
+                    detail: REDIS_SYNTAX_ERROR,
+                });
+            }
+            ttl_ms = Some(parse_positive_ttl_ms(option, &options[index + 1])?);
+            index += 2;
+        } else {
+            return Err(RedisTranslationError::UnsupportedShape {
+                detail: REDIS_SYNTAX_ERROR,
+            });
+        }
+    }
+
+    match (if_absent, ttl_ms) {
+        (false, ttl_ms) => Ok(RedisSetOptions::Upsert { ttl_ms }),
+        (true, Some(ttl_ms)) => Ok(RedisSetOptions::IfAbsent { ttl_ms }),
+        (true, None) => Err(RedisTranslationError::UnsupportedShape {
             detail: REDIS_SYNTAX_ERROR,
         }),
     }
@@ -2492,6 +2959,21 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
             command: normalized,
             args,
         },
+        "EVAL" if args.len() >= 2 => RedisCommand::Eval {
+            script: args.remove(0),
+            numkeys: args.remove(0),
+            keys_and_args: args,
+        },
+        "EVALSHA" if args.len() >= 2 => RedisCommand::EvalSha {
+            sha: args.remove(0),
+            numkeys: args.remove(0),
+            keys_and_args: args,
+        },
+        "EVAL" | "EVALSHA" => RedisCommand::WrongArity {
+            command: normalized,
+            args,
+        },
+        "SCRIPT" => parse_script_command(args),
         "HC.STATS" if args.is_empty() => RedisCommand::HcStats,
         "HC.DIAGNOSTICS" if args.is_empty() => RedisCommand::HcDiagnostics,
         "HC.INVALIDATE" if args.len() == 1 => RedisCommand::HcInvalidate {
@@ -2600,6 +3082,32 @@ fn parse_client_command(mut args: Vec<Vec<u8>>) -> RedisCommand {
         },
         _ => RedisCommand::Unsupported {
             verb: format!("CLIENT {subcommand}"),
+            args,
+        },
+    }
+}
+
+fn parse_script_command(mut args: Vec<Vec<u8>>) -> RedisCommand {
+    let Some(subcommand) = args.first() else {
+        return RedisCommand::Unsupported {
+            verb: "SCRIPT".to_owned(),
+            args,
+        };
+    };
+    let subcommand = String::from_utf8_lossy(subcommand).to_ascii_uppercase();
+    match subcommand.as_str() {
+        "LOAD" if args.len() == 2 => RedisCommand::ScriptLoad {
+            script: args.remove(1),
+        },
+        "EXISTS" if args.len() >= 2 => RedisCommand::ScriptExists {
+            shas: args.into_iter().skip(1).collect(),
+        },
+        "LOAD" | "EXISTS" => RedisCommand::WrongArity {
+            command: format!("SCRIPT {subcommand}"),
+            args,
+        },
+        _ => RedisCommand::Unsupported {
+            verb: format!("SCRIPT {subcommand}"),
             args,
         },
     }
@@ -3348,8 +3856,18 @@ mod tests {
             vec![b"KEEPTTL".to_vec()],
             vec![b"EXAT".to_vec(), b"2000".to_vec()],
             vec![b"PXAT".to_vec(), b"2000".to_vec()],
-            vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
-            vec![b"EX".to_vec(), b"5".to_vec(), b"NX".to_vec()],
+            vec![
+                b"NX".to_vec(),
+                b"NX".to_vec(),
+                b"PX".to_vec(),
+                b"5000".to_vec(),
+            ],
+            vec![
+                b"PX".to_vec(),
+                b"5000".to_vec(),
+                b"EX".to_vec(),
+                b"5".to_vec(),
+            ],
         ];
 
         for options in option_cases {
@@ -3370,7 +3888,7 @@ mod tests {
     }
 
     #[test]
-    fn set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error() {
+    fn set_nx_px_acquires_missing_key_and_contention_returns_null() {
         let server = listener();
 
         assert_eq!(
@@ -3379,16 +3897,281 @@ mod tests {
                 value: b"token".to_vec(),
                 options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
             }),
-            RespValue::Error("ERR syntax error".to_owned())
+            RespValue::SimpleString("OK")
         );
-        assert_eq!(server.state().dispatch_attempts(), 0);
-        assert_eq!(server.state().state_mutations(), 0);
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"contender".to_vec(),
+                options: vec![b"PX".to_vec(), b"5000".to_vec(), b"NX".to_vec()],
+            }),
+            RespValue::Null
+        );
 
         assert_eq!(
             server.execute_command(RedisCommand::Get {
                 key: b"lock:k".to_vec()
             }),
+            RespValue::BulkString(b"token".to_vec())
+        );
+    }
+
+    #[test]
+    fn set_nx_ex_ttl_uses_seconds_and_expires() {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"token".to_vec(),
+                options: vec![b"NX".to_vec(), b"EX".to_vec(), b"1".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        server.state().advance_cache_time_for_tests(1_001);
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"new-token".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::BulkString(b"new-token".to_vec())
+        );
+    }
+
+    #[test]
+    fn eval_known_unlock_script_deletes_only_matching_token() {
+        let server = listener();
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"wrong".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::BulkString(b"owner".to_vec())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
             RespValue::Null
+        );
+    }
+
+    #[test]
+    fn eval_redlock_single_resource_scripts_acquire_extend_and_release() {
+        let server = listener();
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_ACQUIRE_SCRIPT_REDLOCK.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_ACQUIRE_SCRIPT_REDLOCK.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"contender".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"6000".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_REDLOCK.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"contender".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_REDLOCK.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::Null
+        );
+    }
+
+    #[test]
+    fn script_load_exists_and_evalsha_are_allowlist_scoped() {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"100".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        let RespValue::BulkString(sha) = server.execute_command(RedisCommand::ScriptLoad {
+            script: LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes().to_vec(),
+        }) else {
+            panic!("SCRIPT LOAD should return a SHA bulk string");
+        };
+        assert_eq!(
+            server.execute_command(RedisCommand::ScriptExists {
+                shas: vec![sha.clone(), b"unknown".to_vec()],
+            }),
+            RespValue::Array(vec![RespValue::Integer(1), RespValue::Integer(0)])
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::EvalSha {
+                sha,
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"1000".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+
+        server.state().advance_cache_time_for_tests(150);
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::BulkString(b"owner".to_vec())
+        );
+    }
+
+    #[test]
+    fn eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args() {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"100".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"2".to_vec(),
+                keys_and_args: vec![
+                    b"lock:k".to_vec(),
+                    b"other".to_vec(),
+                    b"owner".to_vec(),
+                    b"1000".to_vec(),
+                ],
+            }),
+            RespValue::Error("ERR syntax error".to_owned())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"other".to_vec(), b"owner".to_vec(), b"1000".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"1000".to_vec(), b"owner".to_vec()],
+            }),
+            RespValue::Error("ERR TTL value must be an integer".to_owned())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"1000".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+
+        server.state().advance_cache_time_for_tests(150);
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::BulkString(b"owner".to_vec())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"other".to_vec()
+            }),
+            RespValue::Null
+        );
+    }
+
+    #[test]
+    fn unknown_eval_script_fails_loud_before_mutation() {
+        let server = listener();
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"owner".to_vec(),
+                options: Vec::new(),
+            }),
+            RespValue::SimpleString("OK")
+        );
+        let response = server.execute_command(RedisCommand::Eval {
+            script: b"return redis.call('set', KEYS[1], ARGV[1])".to_vec(),
+            numkeys: b"1".to_vec(),
+            keys_and_args: vec![b"lock:k".to_vec(), b"changed".to_vec()],
+        });
+        assert_eq!(
+            response,
+            RespValue::Error("ERR unsupported Lua script".to_owned())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::BulkString(b"owner".to_vec())
         );
     }
 

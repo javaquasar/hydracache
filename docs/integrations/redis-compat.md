@@ -39,14 +39,16 @@ to this page without adding or updating the manifest row first.
 | `GET`, bare `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. Bare `SET` means no conditional, return-old-value, retention, or absolute-expiry options. |
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
 | `SET EX/PX`, `SETEX`, `PSETEX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `supported` | bounded TTL tolerance | Backed by `hydracache-client-protocol` v3 TTL metadata and client-surface expiry enforcement. `SETEX`/`PSETEX` are normalized to the same `SET EX/PX` path used by mainstream clients such as Jedis. |
-| `SET NX`, `SET XX`, `SET GET`, `SET KEEPTTL` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped `ERR syntax error`. Conditional `SET` is Redis' lock/write-conditional primitive; HydraCache 0.63 does not fake it with a read-then-write race. The 0.63 proof is a raw `SET NX PX` fail-loud check, not a real lock-library API claim. Redis lock migration is split into `docs/plans/V0_65_REDIS_LOCK_COMPATIBILITY_PLAN.md`, which uses protocol v4 for lock-conditional operations and requires atomic client-surface plus client/oracle proof before any support claim. |
+| `SET NX PX`, `SET NX EX` | `supported` | bounded TTL tolerance | Narrow single-key Redis lock acquire subset backed by `hydracache-client-protocol` v4 `ConditionalPut IfAbsent`. Success returns `OK`, contention returns nil/null, expired keys are treated as absent, and the mutation is atomic inside `ClientSurfaceState`. `SET NX` without a TTL remains unsupported because the release only claims expiring lock acquire semantics. |
+| `EVAL`/`EVALSHA` lock release/extend scripts, `SCRIPT LOAD`/`SCRIPT EXISTS` | `supported_with_caveat` | bounded TTL tolerance / normalized metadata | Only reviewed lock-script fingerprints are accepted: redis-py `Lock` release/extend/reacquire shapes, the simple token-safe release/extend idioms, and `redlock@5.0.0-beta.2` single-resource acquire/extend/release scripts. Unknown or changed Lua returns a stable error before mutation. HydraCache does not run general Lua and does not implement Redis script-cache persistence beyond per-listener allowlisted `SCRIPT LOAD` metadata. |
+| `SET NX` without TTL, `SET XX`, `SET GET`, `SET KEEPTTL` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped errors. HydraCache supports only the expiring `NX` lock-acquire subset; compare-and-return-old-value, retention, and non-expiring conditional writes are outside the 0.63 contract. |
 | `SET EXAT`, `SET PXAT` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped `ERR syntax error`. These absolute-expiry options are not conditional lock primitives; they are deferred candidates because they need a separate contract for server clock source, past timestamp behavior, overflow, TTL tolerance, and real Redis oracle/client rows. |
 | `SELECT 0` | `supported_with_caveat` | normalized error | Accepted as a connection-local no-op for Redis client URL compatibility. HydraCache exposes one logical Redis database only; `SELECT 1` and every non-zero DB index fail loud with `ERR multiple Redis databases are not supported; use SELECT 0`, and invalid indexes return `ERR invalid DB index`. |
 | `INFO` | `supported_with_caveat` | normalized metadata | Minimal honest RESP facade facts only: standalone mode, role, HydraCache version, RESP dialects, accepted connection count, processed command count, and RESP error count. No fake Redis memory, keyspace, replication, or cluster sections. |
 | `TYPE` | `supported_with_caveat` | exact | Returns `string` for an existing cache value and `none` for a miss. No other Redis data types are claimed. |
 | `ROLE`, `DBSIZE`, `SCAN` | `unsupported` | documented divergence | `ROLE` would fabricate Redis replication state, `DBSIZE` would imply an exact tenant/keyspace cardinality contract, and `SCAN` would expose iterable keyspace behavior HydraCache does not provide at this edge. |
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Recognized but disabled by default. `CONFIG` would imply Redis server configuration read/write support; `FLUSHDB` and `FLUSHALL` are destructive keyspace-wide operations. All return stable `NOPERM` before mutation. |
-| `HSET`, `ZADD`, lists, streams, Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. |
+| `HSET`, `ZADD`, lists, streams, general Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. The only Lua accepted in 0.63 is the narrow lock-script allowlist above. |
 | `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO` | `unsupported` | documented divergence | Standalone-only facade. No hash slots, topology, `MOVED`, or `ASK` are fabricated. |
 | `HC.STATS`, `HC.DIAGNOSTICS`, `HC.INVALIDATE` | `hydracache_extension` | HydraCache-only | Must be tenant-scoped and go through HydraCache surfaces. |
 | `HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, `HC.INVALIDATE_TAG` | `hydracache_extension` | HydraCache-only | `HC.NAMESPACE` is listener-scoped. Tag metadata is RESP-listener-local, attached only to existing keys, and `HC.INVALIDATE_TAG` invalidates tagged live keys through `ClientSurfaceState`; it does not scan the Redis keyspace or claim Redis Cluster/global tag semantics. |
@@ -57,8 +59,10 @@ Compatibility scenarios run against pinned Docker `redis-server` versions and th
 HydraCache RESP facade. Supported Redis-subset commands compare exact RESP shape,
 integer counts, nil/bulk behavior, array order, and atomic `MSET` outcome. Error text may be
 normalized by class. TTL values use bounded tolerance because wall-clock remaining time is
-time-sensitive. Auth scenarios compare Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` classes and must never
-expose credential material in replies, logs, metrics, or diagnostics.
+time-sensitive. The lock subset compares `SET NX PX/EX` acquire/contention, token-safe release, and
+token-safe extension against real Redis with bounded TTL tolerance. Auth scenarios compare
+Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` classes and must never expose credential material in replies,
+logs, metrics, or diagnostics.
 
 Unsupported Redis commands are expected to diverge: real Redis may succeed, while
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
@@ -70,7 +74,10 @@ real Redis does not implement them.
 Targeted Rust tests are not the final compatibility claim. Before release, the
 Docker/client matrix must prove the same supported subset through mainstream
 Python, Node, Go, JVM, and Rust Redis clients, and the pinned Redis oracle must
-compare the subset against the documented Redis image tags. If those heavy gates
+compare the subset against the documented Redis image tags. The 0.63 lock-library claim is limited
+to redis-py `Lock` and Node `redlock@5.0.0-beta.2` single-resource rows; Go/JVM lock libraries and
+Redisson full locks require their own reviewed script traces before support can be claimed. If those
+heavy gates
 are not green, release notes must say the implementation has targeted coverage
 but ecosystem/oracle proof is still pending.
 

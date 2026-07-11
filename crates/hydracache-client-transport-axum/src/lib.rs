@@ -295,6 +295,15 @@ struct StoredValue {
     expires_at_ms: Option<u64>,
 }
 
+struct ConditionalPutArgs {
+    request_id: String,
+    ns: Namespace,
+    key: StructuredKey,
+    value: Vec<u8>,
+    ttl_ms: Option<u64>,
+    condition: ConditionalPutCondition,
+}
+
 impl StoredValue {
     fn persistent(value: Vec<u8>) -> Self {
         Self {
@@ -721,12 +730,14 @@ impl ClientSurfaceState {
                 condition,
             } => self.handle_conditional_put(
                 identity,
-                envelope.request_id,
-                ns,
-                key,
-                value,
-                ttl_ms,
-                condition,
+                ConditionalPutArgs {
+                    request_id: envelope.request_id,
+                    ns,
+                    key,
+                    value,
+                    ttl_ms,
+                    condition,
+                },
             ),
             ClientRequest::CompareValueAndInvalidate {
                 ns,
@@ -1209,13 +1220,16 @@ impl ClientSurfaceState {
     fn handle_conditional_put(
         &self,
         identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        value: Vec<u8>,
-        ttl_ms: Option<u64>,
-        condition: ConditionalPutCondition,
+        args: ConditionalPutArgs,
     ) -> ClientResponseEnvelope {
+        let ConditionalPutArgs {
+            request_id,
+            ns,
+            key,
+            value,
+            ttl_ms,
+            condition,
+        } = args;
         if value.len() > self.limits.max_value_bytes {
             return ClientResponseEnvelope::error(
                 request_id,

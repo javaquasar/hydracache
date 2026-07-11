@@ -212,9 +212,12 @@ real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
 real Redis after the documented normalization rules, including RESP3 negotiation, `SELECT 0`,
 minimal `INFO`, cache-subset `TYPE`, exact `MSET` behavior, bounded TTL tolerance,
-non-positive and missing-key expiry return edges, the documented `SET NX PX` unsupported-loud lock
-idiom divergence, HydraCache-only `HC.NAMESPACE`/tag extensions, auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
-exercising the same scenario suite through unchanged mainstream Redis clients.
+non-positive and missing-key expiry return edges, `SET NX PX/EX` lock acquire/contention,
+token-safe lock release/extend script shims, HydraCache-only `HC.NAMESPACE`/tag extensions,
+auth-required startup, and `rediss://` startup. Python and Node rows additionally exercise
+redis-py `Lock` and Node `redlock` single-resource APIs; Go and JVM rows keep exercising the
+mainstream Redis client subset and may add a lock-library row only after that library's script trace
+is explicitly allowlisted.
 Passing targeted Rust tests is not enough for the final release claim: if this
 Docker/client matrix or the pinned real Redis oracle is not green, release notes
 must describe the implementation as targeted-test covered with ecosystem/oracle
@@ -224,7 +227,7 @@ By default, each optional Python/Node/Go/JVM row first tries the local mainstrea
 client. If a local runtime or client library is missing and Docker is available,
 the Python, Node, and JVM rows fall back to pinned containerized client images:
 `python:3.13.7-slim` with `redis==5.2.1`,
-`node:24.6.0-bookworm-slim` with `redis@4.7.0`, and
+`node:24.6.0-bookworm-slim` with `redis@4.7.0 redlock@5.0.0-beta.2`, and
 `maven:3.9.11-eclipse-temurin-17` with `Jedis 5.2.0`. The Docker rows connect
 back to the host RESP facade through `host.docker.internal`, so Docker Desktop
 or Docker's `host-gateway` support must be available. The Go row uses the local
