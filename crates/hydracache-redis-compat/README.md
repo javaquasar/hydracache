@@ -44,6 +44,26 @@ keys or fabricate Redis server state. A future destructive/admin capability
 should be a HydraCache-native admin API with explicit scope, authorization,
 audit, and rollout gates rather than a Redis-compatible default.
 
+## HydraCache Tag Extensions
+
+`HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, and `HC.INVALIDATE_TAG` are
+HydraCache-only RESP extension commands:
+
+- `HC.NAMESPACE` reports the listener namespace; `HC.NAMESPACE <same>` returns
+  `OK`; any other namespace fails loud. This is not Redis multi-db support.
+- `HC.TAG key tag [tag ...]` attaches non-empty UTF-8 tags to an existing live
+  key in this listener's local tag index and returns the number of newly added
+  tags.
+- `HC.SETTAGS key tag [tag ...]` replaces the listener-local tag set for an
+  existing live key and returns the number of unique tags stored.
+- `HC.INVALIDATE_TAG tag` looks up only keys explicitly tagged through this
+  listener and invalidates live matches through `ClientSurfaceState`.
+
+The tag index is edge-local and in-memory. It is not a Redis Cluster topology,
+not a persisted global HydraCache tag index, and not a scan over visible keys.
+Missing or expired keys return/count as `0`; stale tag entries are pruned during
+tag invalidation.
+
 The executable source of truth is
 `docs/integrations/redis_compat_conformance.json`; the user-facing explanation is
 `docs/integrations/redis-compat.md`.
@@ -59,5 +79,10 @@ The release plan and conformance manifest pin this contract to executable tests:
 - `resp_listener_type_reports_string_and_none`
 - `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`
 - `resp_listener_admin_commands_are_disabled_before_mutation`
+- `hc_namespace_is_listener_scoped_not_redis_multidb`
+- `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`
+- `hc_tag_missing_key_does_not_create_metadata_or_mutate`
+- `hc_invalidate_tag_prunes_expired_keys_without_counting_them`
+- `client_matrix_runs_hydracache_tag_extension_scenario`
 - `mainstream_redis_client_can_talk_to_the_facade`
 - `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`

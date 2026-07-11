@@ -54,6 +54,9 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("resp_listener_type_reports_string_and_none"));
     assert!(manifest.contains("redis_oracle_unsupported_divergence_is_documented"));
     assert!(manifest.contains("redis_oracle_hc_extensions_are_hydracache_only"));
+    assert!(manifest.contains("client_matrix_runs_hydracache_tag_extension_scenario"));
+    assert!(manifest
+        .contains("hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface"));
     assert!(manifest.contains("CLUSTER SLOTS/NODES/INFO"));
     assert!(manifest.contains("cluster_commands_decode_as_unsupported_standalone_contract"));
     assert!(manifest
@@ -88,6 +91,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "client_matrix_runs_resp3_negotiation_scenario",
         "client_matrix_runs_auth_required_connection_scenario",
         "client_matrix_runs_rediss_required_connection_scenario",
+        "client_matrix_runs_hydracache_tag_extension_scenario",
         "redis_oracle_unsupported_divergence_is_documented",
         "redis_oracle_hc_extensions_are_hydracache_only",
     ] {
@@ -375,6 +379,27 @@ async fn client_matrix_runs_rediss_required_connection_scenario() {
 }
 
 #[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves HydraCache HC tag extensions through redis-rs"]
+async fn client_matrix_runs_hydracache_tag_extension_scenario() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+
+    let (shutdown, addr, serving) = spawn_resp_facade().await;
+    let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
+    let mut connection = client.get_multiplexed_async_connection().await.unwrap();
+
+    run_redis_rs_hc_tag_scenario(&mut connection, "rust-hc")
+        .await
+        .unwrap();
+
+    drop(connection);
+    drop(shutdown);
+    serving.await.unwrap();
+}
+
+#[tokio::test]
 #[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and optional Python/Node/Go/JVM client runtimes"]
 async fn nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset() {
     if !env_gate_enabled(CLIENT_MATRIX_ENV) {
@@ -559,6 +584,13 @@ async fn redis_oracle_hc_extensions_are_hydracache_only() {
 
     let redis_reply = query_reply(oracle.addr, "HC.STATS", &[]).await;
     let hydracache_reply = query_reply(hydracache_addr, "HC.STATS", &[]).await;
+    let redis_tag_reply = query_reply(oracle.addr, "HC.TAG", &["hc:key", "model"]).await;
+    let hydracache_set = query_reply(hydracache_addr, "SET", &["hc:key", "v"]).await;
+    let hydracache_tag_reply = query_reply(hydracache_addr, "HC.TAG", &["hc:key", "model"]).await;
+    let hydracache_invalidate_tag_reply =
+        query_reply(hydracache_addr, "HC.INVALIDATE_TAG", &["model"]).await;
+    let hydracache_get_after_tag_invalidate =
+        query_reply(hydracache_addr, "GET", &["hc:key"]).await;
 
     assert!(
         matches!(
@@ -568,6 +600,17 @@ async fn redis_oracle_hc_extensions_are_hydracache_only() {
         "real Redis HC.STATS should normalize to ERR, got {redis_reply:?}"
     );
     assert!(matches!(hydracache_reply, OracleReply::Array(_)));
+    assert!(
+        matches!(
+            redis_tag_reply,
+            OracleReply::ErrorClass(ref class) if class == "ERR"
+        ),
+        "real Redis HC.TAG should normalize to ERR, got {redis_tag_reply:?}"
+    );
+    assert_eq!(hydracache_set, OracleReply::Status("OK".to_owned()));
+    assert_eq!(hydracache_tag_reply, OracleReply::Int(1));
+    assert_eq!(hydracache_invalidate_tag_reply, OracleReply::Int(1));
+    assert_eq!(hydracache_get_after_tag_invalidate, OracleReply::Nil);
 
     drop(shutdown);
     hydracache_serving.await.unwrap();
@@ -690,6 +733,80 @@ async fn run_redis_rs_mset_ttl_scenario(
     Ok(())
 }
 
+async fn run_redis_rs_hc_tag_scenario(
+    connection: &mut redis::aio::MultiplexedConnection,
+    prefix: &str,
+) -> redis::RedisResult<()> {
+    let first = format!("{prefix}:tagged:1");
+    let second = format!("{prefix}:tagged:2");
+    let keep = format!("{prefix}:untagged");
+
+    let namespace: String = redis::cmd("HC.NAMESPACE").query_async(connection).await?;
+    assert_eq!(namespace, DEFAULT_REDIS_NAMESPACE);
+    let selected: String = redis::cmd("HC.NAMESPACE")
+        .arg(DEFAULT_REDIS_NAMESPACE)
+        .query_async(connection)
+        .await?;
+    assert_eq!(selected, "OK");
+
+    redis::cmd("SET")
+        .arg(&first)
+        .arg("v1")
+        .query_async::<()>(connection)
+        .await?;
+    redis::cmd("SET")
+        .arg(&second)
+        .arg("v2")
+        .query_async::<()>(connection)
+        .await?;
+    redis::cmd("SET")
+        .arg(&keep)
+        .arg("keep")
+        .query_async::<()>(connection)
+        .await?;
+
+    let added: i64 = redis::cmd("HC.TAG")
+        .arg(&first)
+        .arg("model")
+        .arg("shared")
+        .query_async(connection)
+        .await?;
+    assert_eq!(added, 2);
+    let duplicate: i64 = redis::cmd("HC.TAG")
+        .arg(&first)
+        .arg("model")
+        .query_async(connection)
+        .await?;
+    assert_eq!(duplicate, 0);
+    let replaced: i64 = redis::cmd("HC.SETTAGS")
+        .arg(&second)
+        .arg("model")
+        .arg("model")
+        .query_async(connection)
+        .await?;
+    assert_eq!(replaced, 1);
+
+    let invalidated: i64 = redis::cmd("HC.INVALIDATE_TAG")
+        .arg("model")
+        .query_async(connection)
+        .await?;
+    assert_eq!(invalidated, 2);
+    let values: Vec<Option<String>> = redis::cmd("MGET")
+        .arg(&first)
+        .arg(&second)
+        .arg(&keep)
+        .query_async(connection)
+        .await?;
+    assert_eq!(values, vec![None, None, Some("keep".to_owned())]);
+    let invalidated_again: i64 = redis::cmd("HC.INVALIDATE_TAG")
+        .arg("model")
+        .query_async(connection)
+        .await?;
+    assert_eq!(invalidated_again, 0);
+
+    Ok(())
+}
+
 fn run_external_client_with_local_fallback(
     ecosystem: ClientEcosystem,
     redis_url: &str,
@@ -764,6 +881,17 @@ assert r.ttl("python:ttl") == -1
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
 assert r.exists("python:k", "python:missing") == 1
 assert r.delete("python:k", "python:missing") == 1
+assert r.execute_command("HC.NAMESPACE") == "redis"
+assert r.execute_command("HC.NAMESPACE", "redis") == "OK"
+assert r.set("python:hc:a", "1") is True
+assert r.set("python:hc:b", "2") is True
+assert r.set("python:hc:keep", "keep") is True
+assert r.execute_command("HC.TAG", "python:hc:a", "model", "shared") == 2
+assert r.execute_command("HC.TAG", "python:hc:a", "model") == 0
+assert r.execute_command("HC.SETTAGS", "python:hc:b", "model", "model") == 1
+assert r.execute_command("HC.INVALIDATE_TAG", "model") == 2
+assert r.mget(["python:hc:a", "python:hc:b", "python:hc:keep"]) == [None, None, "keep"]
+assert r.execute_command("HC.INVALIDATE_TAG", "model") == 0
 "#;
     run_optional_command(
         "python",
@@ -796,6 +924,17 @@ assert r.ttl("python:ttl") == -1
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
 assert r.exists("python:k", "python:missing") == 1
 assert r.delete("python:k", "python:missing") == 1
+assert r.execute_command("HC.NAMESPACE") == "redis"
+assert r.execute_command("HC.NAMESPACE", "redis") == "OK"
+assert r.set("python:hc:a", "1") is True
+assert r.set("python:hc:b", "2") is True
+assert r.set("python:hc:keep", "keep") is True
+assert r.execute_command("HC.TAG", "python:hc:a", "model", "shared") == 2
+assert r.execute_command("HC.TAG", "python:hc:a", "model") == 0
+assert r.execute_command("HC.SETTAGS", "python:hc:b", "model", "model") == 1
+assert r.execute_command("HC.INVALIDATE_TAG", "model") == 2
+assert r.mget(["python:hc:a", "python:hc:b", "python:hc:keep"]) == [None, None, "keep"]
+assert r.execute_command("HC.INVALIDATE_TAG", "model") == 0
 "#;
     let mut command = docker_client_command(redis_url);
     command
@@ -841,6 +980,18 @@ fn run_node_client(redis_url: &str) -> ClientRun {
   if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
   if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
   if (await client.del(["node:k", "node:missing"]) !== 1) throw new Error("DEL failed");
+  if (await client.sendCommand(["HC.NAMESPACE"]) !== "redis") throw new Error("HC.NAMESPACE failed");
+  if (await client.sendCommand(["HC.NAMESPACE", "redis"]) !== "OK") throw new Error("HC.NAMESPACE select failed");
+  if (await client.set("node:hc:a", "1") !== "OK") throw new Error("HC SET a failed");
+  if (await client.set("node:hc:b", "2") !== "OK") throw new Error("HC SET b failed");
+  if (await client.set("node:hc:keep", "keep") !== "OK") throw new Error("HC SET keep failed");
+  if (Number(await client.sendCommand(["HC.TAG", "node:hc:a", "model", "shared"])) !== 2) throw new Error("HC.TAG failed");
+  if (Number(await client.sendCommand(["HC.TAG", "node:hc:a", "model"])) !== 0) throw new Error("HC.TAG duplicate failed");
+  if (Number(await client.sendCommand(["HC.SETTAGS", "node:hc:b", "model", "model"])) !== 1) throw new Error("HC.SETTAGS failed");
+  if (Number(await client.sendCommand(["HC.INVALIDATE_TAG", "model"])) !== 2) throw new Error("HC.INVALIDATE_TAG failed");
+  const hcValues = await client.mGet(["node:hc:a", "node:hc:b", "node:hc:keep"]);
+  if (JSON.stringify(hcValues) !== JSON.stringify([null, null, "keep"])) throw new Error(`HC invalidate failed: ${JSON.stringify(hcValues)}`);
+  if (Number(await client.sendCommand(["HC.INVALIDATE_TAG", "model"])) !== 0) throw new Error("HC.INVALIDATE_TAG repeat failed");
   await client.quit();
 })().catch((error) => {
   console.error(error);
@@ -883,6 +1034,18 @@ fn run_node_client_docker(redis_url: &str) -> ClientRun {
   if (JSON.stringify(values) !== JSON.stringify(["v", null])) throw new Error(`MGET failed: ${JSON.stringify(values)}`);
   if (await client.exists(["node:k", "node:missing"]) !== 1) throw new Error("EXISTS failed");
   if (await client.del(["node:k", "node:missing"]) !== 1) throw new Error("DEL failed");
+  if (await client.sendCommand(["HC.NAMESPACE"]) !== "redis") throw new Error("HC.NAMESPACE failed");
+  if (await client.sendCommand(["HC.NAMESPACE", "redis"]) !== "OK") throw new Error("HC.NAMESPACE select failed");
+  if (await client.set("node:hc:a", "1") !== "OK") throw new Error("HC SET a failed");
+  if (await client.set("node:hc:b", "2") !== "OK") throw new Error("HC SET b failed");
+  if (await client.set("node:hc:keep", "keep") !== "OK") throw new Error("HC SET keep failed");
+  if (Number(await client.sendCommand(["HC.TAG", "node:hc:a", "model", "shared"])) !== 2) throw new Error("HC.TAG failed");
+  if (Number(await client.sendCommand(["HC.TAG", "node:hc:a", "model"])) !== 0) throw new Error("HC.TAG duplicate failed");
+  if (Number(await client.sendCommand(["HC.SETTAGS", "node:hc:b", "model", "model"])) !== 1) throw new Error("HC.SETTAGS failed");
+  if (Number(await client.sendCommand(["HC.INVALIDATE_TAG", "model"])) !== 2) throw new Error("HC.INVALIDATE_TAG failed");
+  const hcValues = await client.mGet(["node:hc:a", "node:hc:b", "node:hc:keep"]);
+  if (JSON.stringify(hcValues) !== JSON.stringify([null, null, "keep"])) throw new Error(`HC invalidate failed: ${JSON.stringify(hcValues)}`);
+  if (Number(await client.sendCommand(["HC.INVALIDATE_TAG", "model"])) !== 0) throw new Error("HC.INVALIDATE_TAG repeat failed");
   await client.quit();
 })().catch((error) => {
   console.error(error);
@@ -1019,6 +1182,34 @@ func main() {{
     deleted, err := client.Del(ctx, "go:k", "go:missing").Result()
     mustNoErr(err, "DEL failed")
     must(deleted == 1, fmt.Sprintf("DEL got %d", deleted))
+
+    namespace, err := client.Do(ctx, "HC.NAMESPACE").Text()
+    mustNoErr(err, "HC.NAMESPACE failed")
+    must(namespace == "redis", fmt.Sprintf("HC.NAMESPACE got %q", namespace))
+    selected, err := client.Do(ctx, "HC.NAMESPACE", "redis").Text()
+    mustNoErr(err, "HC.NAMESPACE select failed")
+    must(selected == "OK", fmt.Sprintf("HC.NAMESPACE select got %q", selected))
+    mustNoErr(client.Set(ctx, "go:hc:a", "1", 0).Err(), "HC SET a failed")
+    mustNoErr(client.Set(ctx, "go:hc:b", "2", 0).Err(), "HC SET b failed")
+    mustNoErr(client.Set(ctx, "go:hc:keep", "keep", 0).Err(), "HC SET keep failed")
+    added, err := client.Do(ctx, "HC.TAG", "go:hc:a", "model", "shared").Int()
+    mustNoErr(err, "HC.TAG failed")
+    must(added == 2, fmt.Sprintf("HC.TAG got %d", added))
+    duplicate, err := client.Do(ctx, "HC.TAG", "go:hc:a", "model").Int()
+    mustNoErr(err, "HC.TAG duplicate failed")
+    must(duplicate == 0, fmt.Sprintf("HC.TAG duplicate got %d", duplicate))
+    replaced, err := client.Do(ctx, "HC.SETTAGS", "go:hc:b", "model", "model").Int()
+    mustNoErr(err, "HC.SETTAGS failed")
+    must(replaced == 1, fmt.Sprintf("HC.SETTAGS got %d", replaced))
+    invalidated, err := client.Do(ctx, "HC.INVALIDATE_TAG", "model").Int()
+    mustNoErr(err, "HC.INVALIDATE_TAG failed")
+    must(invalidated == 2, fmt.Sprintf("HC.INVALIDATE_TAG got %d", invalidated))
+    hcValues, err := client.MGet(ctx, "go:hc:a", "go:hc:b", "go:hc:keep").Result()
+    mustNoErr(err, "HC MGET failed")
+    must(len(hcValues) == 3 && hcValues[0] == nil && hcValues[1] == nil && hcValues[2] == "keep", fmt.Sprintf("HC invalidate failed: %#v", hcValues))
+    invalidatedAgain, err := client.Do(ctx, "HC.INVALIDATE_TAG", "model").Int()
+    mustNoErr(err, "HC.INVALIDATE_TAG repeat failed")
+    must(invalidatedAgain == 0, fmt.Sprintf("HC.INVALIDATE_TAG repeat got %d", invalidatedAgain))
     _ = os.Stdout
 }}
 "#
@@ -1099,8 +1290,10 @@ fn prepare_jvm_client() -> Result<std::path::PathBuf, std::io::Error> {
         r#"package hydracache;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.commands.ProtocolCommand;
 
 public final class RedisClientSmoke {
   public static void main(String[] args) {
@@ -1126,6 +1319,36 @@ public final class RedisClientSmoke {
       must(values.size() == 2 && "v".equals(values.get(0)) && values.get(1) == null, "MGET failed");
       must(jedis.exists("jvm:k", "jvm:missing") == 1L, "EXISTS failed");
       must(jedis.del("jvm:k", "jvm:missing") == 1L, "DEL failed");
+      must("redis".equals(jedis.sendCommand(HcCommand.NAMESPACE)), "HC.NAMESPACE failed");
+      must("OK".equals(jedis.sendCommand(HcCommand.NAMESPACE, "redis")), "HC.NAMESPACE select failed");
+      must("OK".equals(jedis.set("jvm:hc:a", "1")), "HC SET a failed");
+      must("OK".equals(jedis.set("jvm:hc:b", "2")), "HC SET b failed");
+      must("OK".equals(jedis.set("jvm:hc:keep", "keep")), "HC SET keep failed");
+      must(Long.valueOf(2L).equals(jedis.sendCommand(HcCommand.TAG, "jvm:hc:a", "model", "shared")), "HC.TAG failed");
+      must(Long.valueOf(0L).equals(jedis.sendCommand(HcCommand.TAG, "jvm:hc:a", "model")), "HC.TAG duplicate failed");
+      must(Long.valueOf(1L).equals(jedis.sendCommand(HcCommand.SETTAGS, "jvm:hc:b", "model", "model")), "HC.SETTAGS failed");
+      must(Long.valueOf(2L).equals(jedis.sendCommand(HcCommand.INVALIDATE_TAG, "model")), "HC.INVALIDATE_TAG failed");
+      List<String> hcValues = jedis.mget("jvm:hc:a", "jvm:hc:b", "jvm:hc:keep");
+      must(hcValues.size() == 3 && hcValues.get(0) == null && hcValues.get(1) == null && "keep".equals(hcValues.get(2)), "HC invalidate failed");
+      must(Long.valueOf(0L).equals(jedis.sendCommand(HcCommand.INVALIDATE_TAG, "model")), "HC.INVALIDATE_TAG repeat failed");
+    }
+  }
+
+  private enum HcCommand implements ProtocolCommand {
+    NAMESPACE("HC.NAMESPACE"),
+    TAG("HC.TAG"),
+    SETTAGS("HC.SETTAGS"),
+    INVALIDATE_TAG("HC.INVALIDATE_TAG");
+
+    private final byte[] raw;
+
+    HcCommand(String raw) {
+      this.raw = raw.getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
     }
   }
 

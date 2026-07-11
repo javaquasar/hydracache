@@ -47,7 +47,7 @@ to this page without adding or updating the manifest row first.
 | `HSET`, `ZADD`, lists, streams, Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. |
 | `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO` | `unsupported` | documented divergence | Standalone-only facade. No hash slots, topology, `MOVED`, or `ASK` are fabricated. |
 | `HC.STATS`, `HC.DIAGNOSTICS`, `HC.INVALIDATE` | `hydracache_extension` | HydraCache-only | Must be tenant-scoped and go through HydraCache surfaces. |
-| `HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, `HC.INVALIDATE_TAG` | `candidate` | candidate | Tag invalidation ships only with a native tag-scoped path; scan-and-loop is forbidden. |
+| `HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, `HC.INVALIDATE_TAG` | `hydracache_extension` | HydraCache-only | `HC.NAMESPACE` is listener-scoped. Tag metadata is RESP-listener-local, attached only to existing keys, and `HC.INVALIDATE_TAG` invalidates tagged live keys through `ClientSurfaceState`; it does not scan the Redis keyspace or claim Redis Cluster/global tag semantics. |
 
 ## Real Redis Oracle
 
@@ -60,7 +60,10 @@ expose credential material in replies, logs, metrics, or diagnostics.
 
 Unsupported Redis commands are expected to diverge: real Redis may succeed, while
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:
-real Redis should return unknown command behavior.
+real Redis should return unknown command behavior. The heavy client matrix also
+exercises the HydraCache-only tag extension path through mainstream clients, but
+those commands are not compared for exact behavior against real Redis because
+real Redis does not implement them.
 
 Targeted Rust tests are not the final compatibility claim. Before release, the
 Docker/client matrix must prove the same supported subset through mainstream
@@ -110,35 +113,39 @@ Redis facade` errors for these commands before dispatch. Tests assert that
 `CONFIG GET *` does not fabricate configuration, and that `FLUSHDB`/`FLUSHALL`
 leave existing keys intact.
 
-## HydraCache Extension Candidates
+## HydraCache Extension Tag Scope
 
-`HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, and `HC.INVALIDATE_TAG` are candidate
-HydraCache extensions rather than Redis commands. Their value is clear:
-HydraCache-aware RESP clients could inspect or select a namespace and attach
-tags to keys so a later group invalidation can remove related cache entries
-without `SCAN pattern -> DEL`.
+`HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, and `HC.INVALIDATE_TAG` are
+HydraCache-only extension commands rather than Redis commands. `HC.NAMESPACE`
+without arguments returns the namespace configured on the RESP listener.
+`HC.NAMESPACE <same-name>` returns `OK`; any other namespace fails loud. It is
+not Redis multi-db support and does not change the `SELECT 0` contract.
 
-They stay candidate in `0.63.0` because honest support requires native metadata
-and tag invalidation behavior. `HC.TAG` and `HC.SETTAGS` need atomic metadata
-updates that preserve values, TTLs, tenant boundaries, limits, and tag indexes.
-`HC.INVALIDATE_TAG` needs a native tag-scoped invalidation path or a proven
-internal tag index. A loop over visible keys is forbidden because it can miss
-concurrent writes, cross a namespace boundary, partially delete keys, and still
-look successful to the client.
+`HC.TAG key tag [tag ...]` attaches tags to an existing live cache key in the
+RESP listener's local tag index and returns the number of newly attached tags.
+`HC.SETTAGS key tag [tag ...]` replaces that key's local tag set and returns the
+number of unique tags now attached. Missing or expired keys return `0` and do
+not create metadata. Tags are non-empty UTF-8 strings; keys remain binary-safe
+Redis bulk strings.
 
-`HC.NAMESPACE` can graduate independently only after the listener has an
-explicit namespace allowlist, auth mapping, and connection-local semantics. It
-must not become Redis multi-db support by another name.
+`HC.INVALIDATE_TAG tag` looks up only keys that were explicitly tagged through
+this listener and invalidates live matches through `ClientSurfaceState` using
+per-key `ClientRequest::Invalidate`. It returns the number of live keys
+invalidated, prunes stale expired/deleted tag entries, and leaves untagged keys
+untouched. It is deliberately not implemented as `SCAN pattern -> DEL`, and it
+does not claim cross-listener, persisted, Redis Cluster, or HydraCache-core-wide
+tag metadata semantics. A future native global tag index can replace this
+edge-local path only with its own compatibility entry and tests.
 
 ## Executable Examples
 
-Every example below is covered by the `redis_clients` gated target. They use only
-the supported RESP2/RESP3 cache subset, including atomic `MSET`, TTL commands, the
-auth-required startup path, and the native `rediss://` startup path. Auth-enabled examples use
+Every example below is covered by the `redis_clients` gated target. They use the
+supported RESP2/RESP3 cache subset, including atomic `MSET`, TTL commands, the
+HydraCache-only tag extension path, the auth-required startup path, and the native `rediss://` startup path. Auth-enabled examples use
 `redis://default:<password>@host:port/`; TLS examples use `rediss://default:<password>@host:port/`
 with the configured CA. URLs may include `/0`; non-zero database paths must be rejected by clients or
-surface the same loud `SELECT` error. `HC.*` examples stay out of user-facing docs until their
-matching gates ship.
+surface the same loud `SELECT` error. The `HC.*` examples are HydraCache-only and
+should not be sent to a real Redis server except in divergence/oracle tests.
 Cluster clients should use their normal standalone Redis connection path, not a
 cluster topology client, because HydraCache does not expose Redis Cluster slots
 or redirects.
@@ -157,6 +164,9 @@ redis-cli -u redis://127.0.0.1:6379/0 MSET demo:a 1 demo:b 2
 redis-cli -u redis://127.0.0.1:6379/0 MGET demo:k demo:missing
 redis-cli -u redis://127.0.0.1:6379/0 SET demo:ttl v EX 30
 redis-cli -u redis://127.0.0.1:6379/0 TTL demo:ttl
+redis-cli -u redis://127.0.0.1:6379/0 HC.NAMESPACE
+redis-cli -u redis://127.0.0.1:6379/0 HC.TAG demo:k model
+redis-cli -u redis://127.0.0.1:6379/0 HC.INVALIDATE_TAG model
 redis-cli -u redis://127.0.0.1:6379/0 DEL demo:k demo:missing
 redis-cli -u redis://default:secret@127.0.0.1:6379/0 GET demo:k
 redis-cli --tls --cacert ca.pem -u rediss://default:secret@127.0.0.1:6379/0 PING
@@ -176,6 +186,10 @@ let ttl: i64 = redis::cmd("TTL").arg("demo:ttl").query_async(&mut connection).aw
 assert!(ttl > 0);
 let value: String = redis::cmd("GET").arg("demo:k").query_async(&mut connection).await?;
 assert_eq!(value, "v");
+let added: i64 = redis::cmd("HC.TAG").arg("demo:k").arg("model").query_async(&mut connection).await?;
+assert_eq!(added, 1);
+let invalidated: i64 = redis::cmd("HC.INVALIDATE_TAG").arg("model").query_async(&mut connection).await?;
+assert_eq!(invalidated, 1);
 ```
 
 ### Python (redis-py)

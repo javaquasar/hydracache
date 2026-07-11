@@ -155,11 +155,12 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
 ## Scope Expansion: Remaining 0.63.0 Proof Items
 
 This section records the explicit scope expansion for the current implementation branch. The release
-still does **not** claim Redis Cluster or tag-scoped invalidation unless their candidate gates are
-implemented separately. The expansion closes the compatibility proof around the supported RESP2/RESP3
-cache subset and adds five mandatory 0.63 work streams: atomic `MSET`, TTL/expiry commands backed by
-a registered client-protocol v3 extension, Redis startup security (`AUTH`/`HELLO AUTH`), native Redis
-TLS (`rediss://`) on the RESP listener, and RESP3 negotiation for the same cache subset.
+still does **not** claim Redis Cluster or global/persisted tag-scoped invalidation; the 0.63 tag work is
+limited to the documented RESP-listener-local `HC.*` extension path. The expansion closes the
+compatibility proof around the supported RESP2/RESP3 cache subset and adds five mandatory 0.63 work
+streams: atomic `MSET`, TTL/expiry commands backed by a registered client-protocol v3 extension, Redis
+startup security (`AUTH`/`HELLO AUTH`), native Redis TLS (`rediss://`) on the RESP listener, and RESP3
+negotiation for the same cache subset.
 
 The following five items are now mandatory release scope in addition to the six proof items below:
 
@@ -564,16 +565,19 @@ execution rather than re-implementing. Revert removes the translator.
 plain Redis clients get basic cache behavior and HydraCache-aware clients get tags/invalidation without
 leaving RESP.
 
-**Commands (blueprint §"HydraCache Extensions").** `HC.TAG key tag…` / `HC.SETTAGS`,
-`HC.INVALIDATE key`, `HC.INVALIDATE_TAG tag`, `HC.NAMESPACE name`, `HC.STATS`, `HC.DIAGNOSTICS` — mapped
-to existing dimensions/tag metadata, `Invalidate`, or the diagnostics read-model only where those
-native operations are proven. `HC.INVALIDATE_TAG` requires a tag-scoped
-invalidate op; if `ClientRequest` has only per-key `Invalidate`, either extend the request family
-(COMPAT-registered) **or** scope this command to the tag-invalidation path the cache already exposes —
-decide and record; do not fake a per-key loop as tag invalidation.
+**Commands (blueprint §"HydraCache Extensions").** `HC.TAG key tag...` / `HC.SETTAGS`,
+`HC.INVALIDATE key`, `HC.INVALIDATE_TAG tag`, `HC.NAMESPACE [name]`, `HC.STATS`, `HC.DIAGNOSTICS` —
+mapped to existing diagnostics, per-key `Invalidate`, or the RESP listener's edge-local tag metadata
+path. In 0.63 the tag path is deliberately **listener-local and in-memory**: `HC.TAG`/`HC.SETTAGS`
+attach non-empty UTF-8 tags only to existing live keys, and `HC.INVALIDATE_TAG` invalidates live tagged
+keys through `ClientSurfaceState` using `ClientRequest::Invalidate`. It is not a scan over the visible
+keyspace, not Redis Cluster, and not a persisted/global HydraCache tag index.
 
 **Tests & requirements.**
-- `hc_tag_then_invalidate_tag_evicts_the_tagged_keys` (falsifiable: untagged key survives).
+- `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`
+  (falsifiable: untagged key survives).
+- `hc_tag_missing_key_does_not_create_metadata_or_mutate`.
+- `hc_invalidate_tag_prunes_expired_keys_without_counting_them`.
 - `hc_stats_and_diagnostics_are_read_only`.
 - Run: `cargo test -p hydracache-redis-compat --locked`.
 
@@ -596,39 +600,33 @@ looping over per-key operations, or ignoring partial failures.
 2. **W3b per-key native commands.** `HC.INVALIDATE key` may ship if it maps exactly to
    `ClientRequest::Invalidate` through `ClientSurfaceState` and returns a RESP result whose count or
    status is documented. It is not allowed to bypass tenancy, rate limits, residency checks, or audit.
-3. **W3c namespace selection.** `HC.NAMESPACE name` may be a future HydraCache-native namespace
-   selector, but it is separate from Redis `SELECT` and remains candidate until explicit listener
-   config, tenant scoping, and connection-local semantics are proven. Redis `SELECT` stays limited to
-   `SELECT 0` as a no-op in 0.63.
-4. **W3d tag/dimension mutation is candidate until proven.** `HC.TAG`, `HC.SETTAGS`, and any tag
-   attachment command are candidate commands until the implementation proves how tags/dimensions are
-   stored and mutated without rewriting the value incorrectly. If the only available protocol field is
-   `Put { dimensions }`, the command must define whether it replaces the value, rewrites metadata
-   only, or is unsupported. A metadata-only tag mutation must not require the client to resend value
-   bytes unless the command name and docs make that explicit.
-5. **W3e tag invalidation is the strictest gate.** `HC.INVALIDATE_TAG tag` ships only if there is a
-   real tag-scoped invalidation operation or a proven internal tag index/invalidation path with the
-   same semantics. A loop over currently visible keys is not acceptable: it can miss concurrent writes,
-   cross tenant boundaries, produce partial success, and pretend to be a single semantic operation.
+3. **W3c namespace reporting and same-namespace confirmation.** `HC.NAMESPACE` returns the listener
+   namespace, and `HC.NAMESPACE <same-name>` returns `OK`. Any other namespace fails loud. This is
+   intentionally separate from Redis `SELECT`; Redis `SELECT` stays limited to `SELECT 0` as a no-op.
+4. **W3d edge-local tag mutation.** `HC.TAG` and `HC.SETTAGS` mutate only the RESP listener's local
+   in-memory tag index. They first prove the key is live through `ClientSurfaceState`, preserve value
+   bytes and TTL by not rewriting the value, reject empty/non-UTF-8 tags, return `0` for missing keys,
+   and clean local metadata after successful `DEL`/`HC.INVALIDATE`.
+5. **W3e edge-local tag invalidation.** `HC.INVALIDATE_TAG tag` reads only keys previously tagged
+   through this listener, verifies live values with `BatchGet`, invalidates live matches through
+   `ClientRequest::Invalidate`, returns the live invalidation count, prunes stale expired/deleted
+   entries, and leaves untagged keys untouched. It is not a scan-and-loop over visible Redis keys.
 
-**Candidate command value and complexity.** These rows explain why the commands stay in the 0.63
-manifest as `candidate` rather than `supported`. They are useful HydraCache-native extensions, but
-supporting them honestly requires metadata and invalidation mechanics the current RESP edge must not
-invent locally.
+**Implemented value, complexity, and deferred global scope.** These rows record what 0.63 includes and
+what remains outside the release claim. The implementation is useful for HydraCache-aware RESP clients
+that route through one listener, while a persisted/core-wide tag index remains future work.
 
-| Command group | What it would give clients | Implementation complexity now | Why it stays candidate in 0.63 |
+| Command group | What it gives clients in 0.63 | Implementation complexity now | Deferred / not claimed |
 | --- | --- | --- | --- |
-| `HC.NAMESPACE name` | A HydraCache-aware RESP client could switch or inspect an explicit namespace without abusing Redis `SELECT`. This helps diagnostics, migration tooling, and future multi-namespace clients. | Low-medium for read-only reporting; medium-high for connection-local switching because it affects auth, tenant boundaries, metrics, request ids, and retry behavior. | The release already defines Redis `SELECT 0` as a no-op single-DB contract. Namespace switching needs a separate HydraCache contract for listener config, allowed namespace set, auth mapping, and connection-local state. Without that contract it could bypass tenant isolation or make examples imply Redis multi-db support. |
-| `HC.TAG key tag` | Attach one tag/dimension to an existing key so later invalidation can target a logical group instead of relying on key prefixes. | Medium-high. Needs native metadata mutation or a proven update path that does not rewrite value bytes incorrectly. | Today the safe client-surface path is value-centric. A facade-only implementation would need to read the value, rewrite metadata, and put it back, which is not an honest atomic metadata operation under concurrent writes, expiry, limits, or tenant checks. |
-| `HC.SETTAGS key tag...` | Replace the tag set for a key, useful for frameworks that know the complete dependency set for a cached object. | High. Requires atomic replace semantics, duplicate/tag normalization rules, limits on tag count/size, cross-tenant rejection, and index maintenance. | Replacing tags is stronger than adding one tag. It must define whether missing keys create metadata, whether existing value TTL is preserved, how stale index entries are removed, and how partial failure is reported. None of that belongs in an edge-only RESP shim. |
-| `HC.INVALIDATE_TAG tag` | The main payoff: group invalidation without `SCAN pattern -> DEL`. It could clear all keys associated with a model/table/entity tag while preserving unrelated keys. | High. Requires a native tag index or native tag-scoped invalidation path, plus concurrency, expiry, tenant isolation, and bounded-work tests. | A scan-and-loop over visible keys is explicitly forbidden. It can miss concurrent writes, cross a namespace boundary, partially delete keys, overload the listener, and still look successful to the client. Until a native path exists, returning unsupported is safer than a fake group invalidation. |
+| `HC.NAMESPACE [name]` | HydraCache-aware clients can inspect the configured listener namespace and assert they are connected to the expected namespace without abusing Redis `SELECT`. | Low for reporting/same-namespace confirmation because it does not change connection state. | Switching to arbitrary namespaces, namespace allowlists, and auth remapping remain out of scope. It must not become Redis multi-db by another name. |
+| `HC.TAG key tag...` | Adds one or more tags to an existing live key so a later extension command can invalidate a logical group. Duplicate tags are idempotent and return only newly added count. | Medium. Needs live-key lookup, tag normalization, local index maintenance, and cleanup after explicit key invalidation. | Tags are listener-local/in-memory, not persisted, not shared across listeners, and not visible to the core outside this RESP facade. |
+| `HC.SETTAGS key tag...` | Replaces the complete local tag set for an existing live key while preserving the value and TTL. Duplicate input tags collapse to one stored tag. | Medium-high. Requires replace semantics, stale reverse-index cleanup, missing-key handling, and value/TTL preservation. | No atomic cross-listener metadata transaction and no protocol-level `dimensions` mutation claim. |
+| `HC.INVALIDATE_TAG tag` | Invalidates live keys associated with a local tag without `SCAN pattern -> DEL`; untagged keys survive and stale expired/deleted entries are pruned. | High. Requires bounded local index lookup, live `BatchGet` verification, per-key invalidation through `ClientSurfaceState`, and partial-failure tests. | No Redis Cluster hash slots/topology, no global tag invalidation, and no persisted tag state after listener restart. |
 
-**Native path required before support.** To graduate W3d/W3e from candidate, a later change must add
-or reuse a native metadata/tag path that covers: tag storage with the value metadata, tag index
-maintenance on `SET`/overwrite/`DEL`/expiry, per-tenant namespace scoping, bounded tag count and tag
-byte limits, atomic update semantics, redacted observability, and canary tests proving a scan-and-loop
-implementation fails. `HC.NAMESPACE` may graduate independently only as a scoped connection metadata
-feature; it must not become Redis multi-db by another name.
+**Future native path.** A later core-wide tag release can replace the edge-local path only with an
+explicit compatibility entry. It must cover persisted/global tag metadata, tag index maintenance on
+all write/delete/expiry paths, per-tenant namespace scoping, bounded tag count and tag byte limits,
+atomic update semantics, redacted observability, and canary tests proving scan-and-loop behavior fails.
 
 **Compatibility rule.** Extending `hydracache-client-protocol` for W3 is not allowed as an incidental
 side effect of this edge release. If W3 requires a new public `ClientRequest` variant, the release must
@@ -649,19 +647,17 @@ helpers where they do not become public protocol, or keep the `HC.*` command uns
 **Additional tests & requirements.**
 - `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`.
 - `hc_diagnostics_are_read_only_during_drain`.
-- `hc_namespace_requires_explicit_mapping_and_is_connection_local`.
+- `hc_namespace_is_listener_scoped_not_redis_multidb`.
 - `hc_invalidate_key_goes_through_client_surface_limits_and_audit`.
-- `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`.
-- `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`.
-- `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys` (canary-style guard: a test-only fake
-  scan implementation must fail under concurrent tagged writes or partial visibility).
-- `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` (only enabled after the
-  native tag path exists).
-- `hc_cross_tenant_tag_invalidation_is_rejected`.
+- `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`.
+- `hc_tag_missing_key_does_not_create_metadata_or_mutate`.
+- `hc_invalidate_tag_prunes_expired_keys_without_counting_them`.
+- `client_matrix_runs_hydracache_tag_extension_scenario`.
+- `redis_oracle_hc_extensions_are_hydracache_only`.
 
-**W3 release decision.** It is acceptable for `0.63.0` to ship only W3a/W3b plus documented
-unsupported-loud tag commands. It is not acceptable to ship a fake `HC.INVALIDATE_TAG` because the
-feature name would imply a stronger atomic/scoped operation than the facade can prove.
+**W3 release decision.** `0.63.0` ships W3a/W3b plus the scoped W3c-W3e edge-local tag path. The
+claim is intentionally narrower than a native global tag system: no scan-and-loop, no cross-listener
+metadata, no Redis Cluster behavior, and no persisted tag index.
 
 ## W4. Unsupported-command matrix + guardrails
 
@@ -952,9 +948,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
 2. `docs/plans/INDEX.md`, `docs/plans/releases.toml`, this plan header, and the eventual release note
    `docs/releases/0.63.0.md` are flipped together. No manifest points at a claim that docs/gates do
    not prove.
-3. If tag invalidation remains candidate/unsupported, the release note says that plainly under
-   "Not shipped in 0.63.0" so the absence is intentional, not a hidden gap. TTL must not be listed
-   there because it is mandatory scope for the expanded release.
+3. The release note describes `HC.INVALIDATE_TAG` as an edge-local RESP listener extension and lists
+   global/persisted/core-wide tag metadata under "Not shipped in 0.63.0". TTL must not be listed there
+   because it is mandatory scope for the expanded release.
 4. The release note includes the exact supported command list and the exact unsupported classes.
 5. Any follow-up work discovered by W0 becomes either a technical-debt entry or a future plan row with
    owner, gate, and reason, not an orphan TODO inside code comments.
@@ -1017,7 +1013,7 @@ HydraCache does and does not implement.
 | subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `set_ex_and_ttl_map_to_protocol_v3_metadata`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_and_duplicate_keys_use_last_value`, `mset_oversized_value_rejects_without_partial_mutation`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_zero_is_supported_as_noop_for_single_database_contract`, `select_nonzero_and_invalid_db_fail_loud`, `resp_listener_select_zero_ok_and_nonzero_keeps_default_database` | PR |
 | health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification`, `info_returns_minimal_honest_facade_state`, `info_section_argument_does_not_fabricate_redis_keyspace_state`, `resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state`, `type_reports_string_or_none_through_client_surface`, `resp_listener_type_reports_string_and_none`, `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `redis_oracle_supported_subset_matches_real_redis` for `TYPE` | PR + Docker-gated / nightly |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
-| `HC.*` tag/dimension commands (W3d/W3e) | native tag path or unsupported matrix | `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`, `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`, `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys`, `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` if enabled | PR / candidate |
+| `HC.*` tag/dimension commands (W3c/W3d/W3e) | RESP-listener-local tag index + `ClientSurfaceState` invalidation path | `hc_namespace_is_listener_scoped_not_redis_multidb`, `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`, `hc_tag_missing_key_does_not_create_metadata_or_mutate`, `hc_invalidate_tag_prunes_expired_keys_without_counting_them`, `client_matrix_runs_hydracache_tag_extension_scenario`, `redis_oracle_hc_extensions_are_hydracache_only` | PR + Docker-gated / nightly |
 | unsupported/admin-disabled matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_commands_decode_as_unsupported_standalone_contract`, `cluster_and_moved_ask_are_never_emitted`, `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`, `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`, `resp_listener_admin_commands_are_disabled_before_mutation` | PR |
 | golden + fuzz + frame boundaries (W5) | committed corpus + proptest | `golden_resp_fixtures_decode_to_expected`, `resp_decoder_never_panics_on_arbitrary_bytes`, `partial_resp_frames_decode_like_complete_frames`, `multiple_resp_frames_in_one_read_are_all_processed` | PR |
 | pipelining/backpressure/resource behavior (W5) | RESP listener | `pipelined_requests_preserve_response_order`, `pipelined_mixed_success_and_error_responses_stay_ordered`, `oversized_bulk_and_array_frames_are_rejected_before_allocation_spike`, `slowloris_connection_is_timed_out_without_leaking_inflight_work`, `resp_surface_metrics_have_bounded_labels_and_no_key_or_value_leak` | PR + gated |
@@ -1083,8 +1079,9 @@ HydraCache does and does not implement.
   supported commands (W0/W2).
 - Tags/invalidation are only via explicit `HC.*` — no raw prefix-invalidation over binary keys, no
   scan-and-loop fake tag invalidation, no cross-tenant tag mutation (W3).
-- `HC.INVALIDATE_TAG` ships only if a native tag-scoped invalidation path exists and is tested;
-  otherwise it is unsupported-loud and documented as not shipped (W3).
+- `HC.NAMESPACE`/`HC.TAG`/`HC.SETTAGS`/`HC.INVALIDATE_TAG` ship only as the documented
+  RESP-listener-local extension path; global/persisted/core-wide tag invalidation remains out of
+  scope unless a future native tag release adds its own compatibility entry and tests (W3).
 - Listener is **off by default**, on its own port, distinct-address-validated; embedded/core fast path
   byte-for-byte unchanged (R-10); `hydracache-client-protocol` v3 is registered as an additive TTL
   metadata/expiry extension and v2 clients remain accepted (R-4).

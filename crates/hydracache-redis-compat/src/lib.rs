@@ -4,8 +4,9 @@
 //! facade. The RESP listener executes through the same verified client-surface
 //! dispatch seam as the stable HydraCache client API.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
@@ -318,6 +319,14 @@ pub enum RedisCommand {
     HcDiagnostics,
     /// `HC.INVALIDATE key`.
     HcInvalidate { key: Vec<u8> },
+    /// `HC.NAMESPACE [namespace]`.
+    HcNamespace { namespace: Option<Vec<u8>> },
+    /// `HC.TAG key tag [tag ...]`.
+    HcTag { key: Vec<u8>, tags: Vec<Vec<u8>> },
+    /// `HC.SETTAGS key tag [tag ...]`.
+    HcSetTags { key: Vec<u8>, tags: Vec<Vec<u8>> },
+    /// `HC.INVALIDATE_TAG tag`.
+    HcInvalidateTag { tag: Vec<u8> },
     /// `HC.*` command that is intentionally not enabled yet.
     HcCandidate { command: String, args: Vec<Vec<u8>> },
     /// Health/readiness command recognized but not yet claimed.
@@ -437,6 +446,7 @@ pub struct RedisRespServer {
     state: Arc<ClientSurfaceState>,
     identity: ClientIdentity,
     config: RedisListenerConfig,
+    tag_index: Mutex<RedisTagIndex>,
     next_request_id: AtomicU64,
     accepted_connections: AtomicU64,
     commands: AtomicU64,
@@ -487,6 +497,7 @@ impl RedisRespServer {
             state,
             identity,
             config,
+            tag_index: Mutex::new(RedisTagIndex::default()),
             next_request_id: AtomicU64::new(1),
             accepted_connections: AtomicU64::new(0),
             commands: AtomicU64::new(0),
@@ -603,6 +614,7 @@ impl RedisRespServer {
         if matches!(&command, RedisCommand::Info { .. }) {
             return info_response(self.metrics());
         }
+        let cleanup = RedisTagCleanup::from_command(&command);
         let context = match self.translation_context() {
             Ok(context) => context,
             Err(error) => {
@@ -617,7 +629,9 @@ impl RedisRespServer {
                 return error.into_resp_value();
             }
         };
-        self.execute_translated(translated, identity)
+        let response = self.execute_translated(translated, identity);
+        cleanup.apply_if_success(&self.tag_index, &response);
+        response
     }
 
     fn execute_translated(
@@ -667,8 +681,22 @@ impl RedisRespServer {
         extension: RedisExtensionRequest,
         identity: &ClientIdentity,
     ) -> RespValue {
+        match self.extension_response_result(extension, identity) {
+            Ok(value) => value,
+            Err(error) => {
+                self.errors.fetch_add(1, Ordering::SeqCst);
+                error.into_resp_value()
+            }
+        }
+    }
+
+    fn extension_response_result(
+        &self,
+        extension: RedisExtensionRequest,
+        identity: &ClientIdentity,
+    ) -> Result<RespValue, RedisTranslationError> {
         match extension {
-            RedisExtensionRequest::Stats => RespValue::Array(vec![
+            RedisExtensionRequest::Stats => Ok(RespValue::Array(vec![
                 bulk_static("surface"),
                 bulk_static("redis"),
                 bulk_static("tenant"),
@@ -685,8 +713,8 @@ impl RedisRespServer {
                 counter_value(self.metrics().commands),
                 bulk_static("errors"),
                 counter_value(self.metrics().errors),
-            ]),
-            RedisExtensionRequest::Diagnostics => RespValue::Array(vec![
+            ])),
+            RedisExtensionRequest::Diagnostics => Ok(RespValue::Array(vec![
                 bulk_static("protocol"),
                 bulk_static(SUPPORTED_RESP_DIALECT),
                 bulk_static("namespace"),
@@ -699,8 +727,169 @@ impl RedisRespServer {
                 counter_value(self.config.decode_limits.max_array_elements as u64),
                 bulk_static("max_bulk_string_bytes"),
                 counter_value(self.config.decode_limits.max_bulk_string_bytes as u64),
-            ]),
+            ])),
+            RedisExtensionRequest::Namespace { requested } => {
+                self.namespace_extension_response(requested)
+            }
+            RedisExtensionRequest::Tag { key, tags } => {
+                self.tag_extension_response(identity, key, tags, RedisTagMode::Add)
+            }
+            RedisExtensionRequest::SetTags { key, tags } => {
+                self.tag_extension_response(identity, key, tags, RedisTagMode::Replace)
+            }
+            RedisExtensionRequest::InvalidateTag { tag } => {
+                self.invalidate_tag_extension_response(identity, tag)
+            }
         }
+    }
+
+    fn namespace_extension_response(
+        &self,
+        requested: Option<String>,
+    ) -> Result<RespValue, RedisTranslationError> {
+        match requested {
+            None => Ok(RespValue::BulkString(
+                self.config.namespace.as_bytes().to_vec(),
+            )),
+            Some(namespace) if namespace == self.config.namespace => {
+                Ok(RespValue::SimpleString("OK"))
+            }
+            Some(_) => Err(RedisTranslationError::UnsupportedShape {
+                detail: "HC.NAMESPACE can select only the configured listener namespace",
+            }),
+        }
+    }
+
+    fn tag_extension_response(
+        &self,
+        identity: &ClientIdentity,
+        key: Vec<u8>,
+        tags: Vec<String>,
+        mode: RedisTagMode,
+    ) -> Result<RespValue, RedisTranslationError> {
+        let namespace = self.configured_namespace()?;
+        if !self.live_key_exists(identity, &namespace, &key)? {
+            self.tag_index
+                .lock()
+                .expect("redis tag index mutex")
+                .remove_key(&key);
+            return Ok(RespValue::Integer(0));
+        }
+
+        let changed = {
+            let mut index = self.tag_index.lock().expect("redis tag index mutex");
+            match mode {
+                RedisTagMode::Add => index.add_tags(&key, &tags),
+                RedisTagMode::Replace => index.set_tags(&key, &tags),
+            }
+        };
+        Ok(RespValue::Integer(changed.min(i64::MAX as usize) as i64))
+    }
+
+    fn invalidate_tag_extension_response(
+        &self,
+        identity: &ClientIdentity,
+        tag: String,
+    ) -> Result<RespValue, RedisTranslationError> {
+        let namespace = self.configured_namespace()?;
+        let raw_keys = self
+            .tag_index
+            .lock()
+            .expect("redis tag index mutex")
+            .keys_for_tag(&tag);
+        if raw_keys.is_empty() {
+            return Ok(RespValue::Integer(0));
+        }
+
+        let structured_keys = raw_keys
+            .iter()
+            .map(|key| redis_key_to_structured_key(key))
+            .collect::<Result<Vec<_>, _>>()?;
+        let lookup = self.state.dispatch_verified_request(
+            identity,
+            ClientRequestEnvelope::new(
+                self.next_internal_request_id("hc-invalidate-tag-lookup"),
+                ClientRequest::BatchGet {
+                    ns: namespace.clone(),
+                    keys: structured_keys.clone(),
+                },
+            ),
+        );
+        if let Err(error) = &lookup.result {
+            return Ok(client_error_to_resp(error));
+        }
+        let values = batch_values(&lookup, raw_keys.len())?;
+        let mut invalidated = 0usize;
+
+        for (index, value) in values.into_iter().enumerate() {
+            if value.is_none() {
+                self.tag_index
+                    .lock()
+                    .expect("redis tag index mutex")
+                    .remove_key(&raw_keys[index]);
+                continue;
+            }
+
+            let response = self.state.dispatch_verified_request(
+                identity,
+                ClientRequestEnvelope::new(
+                    self.next_internal_request_id(format!("hc-invalidate-tag-{index}")),
+                    ClientRequest::Invalidate {
+                        ns: namespace.clone(),
+                        key: structured_keys[index].clone(),
+                    },
+                ),
+            );
+            match &response.result {
+                Ok(ClientResponse::Invalidated) => {
+                    invalidated += 1;
+                    self.tag_index
+                        .lock()
+                        .expect("redis tag index mutex")
+                        .remove_key(&raw_keys[index]);
+                }
+                Err(error) => return Ok(client_error_to_resp(error)),
+                Ok(other) => return unexpected_response(other),
+            }
+        }
+
+        Ok(RespValue::Integer(invalidated.min(i64::MAX as usize) as i64))
+    }
+
+    fn live_key_exists(
+        &self,
+        identity: &ClientIdentity,
+        namespace: &Namespace,
+        key: &[u8],
+    ) -> Result<bool, RedisTranslationError> {
+        let response = self.state.dispatch_verified_request(
+            identity,
+            ClientRequestEnvelope::new(
+                self.next_internal_request_id("hc-tag-lookup"),
+                ClientRequest::Get {
+                    ns: namespace.clone(),
+                    key: redis_key_to_structured_key(key)?,
+                },
+            ),
+        );
+        match &response.result {
+            Ok(ClientResponse::Value { value }) => Ok(value.is_some()),
+            Err(error) => Err(client_error_to_unexpected(error)),
+            Ok(other) => unexpected_response(other),
+        }
+    }
+
+    fn configured_namespace(&self) -> Result<Namespace, RedisTranslationError> {
+        Namespace::new(self.config.namespace.clone()).map_err(|error| {
+            RedisTranslationError::Protocol {
+                detail: error.to_string(),
+            }
+        })
+    }
+
+    fn next_internal_request_id(&self, suffix: impl std::fmt::Display) -> String {
+        let request_id = self.next_request_id.fetch_add(1, Ordering::SeqCst);
+        format!("redis-resp-{request_id}-{suffix}")
     }
 
     fn apply_auth(
@@ -744,6 +933,10 @@ impl RedisRespServer {
                     | RedisCommand::HcStats
                     | RedisCommand::HcDiagnostics
                     | RedisCommand::HcInvalidate { .. }
+                    | RedisCommand::HcNamespace { .. }
+                    | RedisCommand::HcTag { .. }
+                    | RedisCommand::HcSetTags { .. }
+                    | RedisCommand::HcInvalidateTag { .. }
             )
     }
 
@@ -782,6 +975,109 @@ impl RedisRespServer {
         self.errors.fetch_add(1, Ordering::SeqCst);
         self.write_response(stream, dialect, RespValue::Error(message))
             .await
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RedisTagMode {
+    Add,
+    Replace,
+}
+
+#[derive(Debug, Default)]
+struct RedisTagIndex {
+    key_tags: BTreeMap<Vec<u8>, BTreeSet<String>>,
+    tag_keys: BTreeMap<String, BTreeSet<Vec<u8>>>,
+}
+
+impl RedisTagIndex {
+    fn add_tags(&mut self, key: &[u8], tags: &[String]) -> usize {
+        let key = key.to_vec();
+        let mut added = 0usize;
+        for tag in tags {
+            let inserted = self
+                .key_tags
+                .entry(key.clone())
+                .or_default()
+                .insert(tag.clone());
+            if inserted {
+                self.tag_keys
+                    .entry(tag.clone())
+                    .or_default()
+                    .insert(key.clone());
+                added += 1;
+            }
+        }
+        added
+    }
+
+    fn set_tags(&mut self, key: &[u8], tags: &[String]) -> usize {
+        self.remove_key(key);
+        let unique_tags = tags.iter().cloned().collect::<BTreeSet<_>>();
+        for tag in &unique_tags {
+            self.key_tags
+                .entry(key.to_vec())
+                .or_default()
+                .insert(tag.clone());
+            self.tag_keys
+                .entry(tag.clone())
+                .or_default()
+                .insert(key.to_vec());
+        }
+        unique_tags.len()
+    }
+
+    fn keys_for_tag(&self, tag: &str) -> Vec<Vec<u8>> {
+        self.tag_keys
+            .get(tag)
+            .map(|keys| keys.iter().cloned().collect())
+            .unwrap_or_default()
+    }
+
+    fn remove_key(&mut self, key: &[u8]) {
+        let Some(tags) = self.key_tags.remove(key) else {
+            return;
+        };
+        for tag in tags {
+            let remove_tag = if let Some(keys) = self.tag_keys.get_mut(&tag) {
+                keys.remove(key);
+                keys.is_empty()
+            } else {
+                false
+            };
+            if remove_tag {
+                self.tag_keys.remove(&tag);
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum RedisTagCleanup {
+    None,
+    RemoveKeys(Vec<Vec<u8>>),
+}
+
+impl RedisTagCleanup {
+    fn from_command(command: &RedisCommand) -> Self {
+        match command {
+            RedisCommand::Del { keys } => Self::RemoveKeys(keys.clone()),
+            RedisCommand::HcInvalidate { key } => Self::RemoveKeys(vec![key.clone()]),
+            _ => Self::None,
+        }
+    }
+
+    fn apply_if_success(self, tag_index: &Mutex<RedisTagIndex>, response: &RespValue) {
+        if matches!(response, RespValue::Error(_)) {
+            return;
+        }
+        let Self::RemoveKeys(keys) = self else {
+            return;
+        };
+        let mut index = tag_index.lock().expect("redis tag index mutex");
+        for key in keys {
+            index.remove_key(&key);
+        }
     }
 }
 
@@ -1196,6 +1492,14 @@ pub enum RedisExtensionRequest {
     Stats,
     /// Tenant-scoped bounded diagnostics snapshot.
     Diagnostics,
+    /// Listener namespace inspection or same-namespace confirmation.
+    Namespace { requested: Option<String> },
+    /// Add tags to an existing key in the RESP listener's local tag index.
+    Tag { key: Vec<u8>, tags: Vec<String> },
+    /// Replace tags for an existing key in the RESP listener's local tag index.
+    SetTags { key: Vec<u8>, tags: Vec<String> },
+    /// Invalidate keys associated with a tag in the RESP listener's local tag index.
+    InvalidateTag { tag: String },
 }
 
 /// HydraCache client-surface execution plan for one Redis command.
@@ -1475,6 +1779,30 @@ pub fn translate_redis_command(
         RedisCommand::HcStats => RedisTranslatedCommand::Extension(RedisExtensionRequest::Stats),
         RedisCommand::HcDiagnostics => {
             RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics)
+        }
+        RedisCommand::HcNamespace { namespace } => {
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Namespace {
+                requested: namespace
+                    .map(|namespace| parse_hc_label("HC.NAMESPACE", namespace))
+                    .transpose()?,
+            })
+        }
+        RedisCommand::HcTag { key, tags } => {
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Tag {
+                key,
+                tags: parse_hc_tags("HC.TAG", tags)?,
+            })
+        }
+        RedisCommand::HcSetTags { key, tags } => {
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::SetTags {
+                key,
+                tags: parse_hc_tags("HC.SETTAGS", tags)?,
+            })
+        }
+        RedisCommand::HcInvalidateTag { tag } => {
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::InvalidateTag {
+                tag: parse_hc_label("HC.INVALIDATE_TAG", tag)?,
+            })
         }
         RedisCommand::HcInvalidate { key } => RedisTranslatedCommand::Execute(single_request_plan(
             context,
@@ -1796,6 +2124,35 @@ fn ascii_decimal_i64(value: &[u8]) -> Result<i64, RedisTranslationError> {
         })
 }
 
+fn parse_hc_tags(
+    command: &'static str,
+    tags: Vec<Vec<u8>>,
+) -> Result<Vec<String>, RedisTranslationError> {
+    tags.into_iter()
+        .map(|tag| parse_hc_label(command, tag))
+        .collect()
+}
+
+fn parse_hc_label(command: &'static str, value: Vec<u8>) -> Result<String, RedisTranslationError> {
+    let value = String::from_utf8(value).map_err(|_| RedisTranslationError::UnsupportedShape {
+        detail: hc_label_error(command),
+    })?;
+    if value.is_empty() {
+        return Err(RedisTranslationError::UnsupportedShape {
+            detail: hc_label_error(command),
+        });
+    }
+    Ok(value)
+}
+
+fn hc_label_error(command: &'static str) -> &'static str {
+    match command {
+        "HC.NAMESPACE" => "HC.NAMESPACE requires a non-empty UTF-8 namespace",
+        "HC.TAG" | "HC.SETTAGS" | "HC.INVALIDATE_TAG" => "HC tags must be non-empty UTF-8 strings",
+        _ => "HC labels must be non-empty UTF-8 strings",
+    }
+}
+
 fn unexpected_response<T>(response: &ClientResponse) -> Result<T, RedisTranslationError> {
     Err(RedisTranslationError::UnexpectedClientResponse {
         detail: format!("{response:?}"),
@@ -1888,6 +2245,13 @@ fn command_metadata_response() -> RespValue {
         command_metadata("persist", 2, &["write", "fast"], 1, 1, 1),
         command_metadata("ttl", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("pttl", 2, &["readonly", "fast"], 1, 1, 1),
+        command_metadata("hc.stats", 1, &["readonly", "fast"], 0, 0, 0),
+        command_metadata("hc.diagnostics", 1, &["readonly", "fast"], 0, 0, 0),
+        command_metadata("hc.invalidate", 2, &["write", "fast"], 1, 1, 1),
+        command_metadata("hc.namespace", -1, &["readonly", "fast"], 0, 0, 0),
+        command_metadata("hc.tag", -3, &["write", "fast"], 1, 1, 1),
+        command_metadata("hc.settags", -3, &["write", "fast"], 1, 1, 1),
+        command_metadata("hc.invalidate_tag", 2, &["write"], 0, 0, 0),
     ])
 }
 
@@ -2105,12 +2469,37 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
         "HC.INVALIDATE" if args.len() == 1 => RedisCommand::HcInvalidate {
             key: args.remove(0),
         },
-        "HC.NAMESPACE" | "HC.TAG" | "HC.SETTAGS" | "HC.INVALIDATE_TAG" => {
-            RedisCommand::HcCandidate {
-                command: normalized,
-                args,
-            }
-        }
+        "HC.NAMESPACE" if args.is_empty() => RedisCommand::HcNamespace { namespace: None },
+        "HC.NAMESPACE" if args.len() == 1 => RedisCommand::HcNamespace {
+            namespace: Some(args.remove(0)),
+        },
+        "HC.NAMESPACE" => RedisCommand::WrongArity {
+            command: "HC.NAMESPACE".to_owned(),
+            args,
+        },
+        "HC.TAG" if args.len() >= 2 => RedisCommand::HcTag {
+            key: args.remove(0),
+            tags: args,
+        },
+        "HC.TAG" => RedisCommand::WrongArity {
+            command: "HC.TAG".to_owned(),
+            args,
+        },
+        "HC.SETTAGS" if args.len() >= 2 => RedisCommand::HcSetTags {
+            key: args.remove(0),
+            tags: args,
+        },
+        "HC.SETTAGS" => RedisCommand::WrongArity {
+            command: "HC.SETTAGS".to_owned(),
+            args,
+        },
+        "HC.INVALIDATE_TAG" if args.len() == 1 => RedisCommand::HcInvalidateTag {
+            tag: args.remove(0),
+        },
+        "HC.INVALIDATE_TAG" => RedisCommand::WrongArity {
+            command: "HC.INVALIDATE_TAG".to_owned(),
+            args,
+        },
         "CONFIG" | "FLUSHDB" | "FLUSHALL" => RedisCommand::AdminDisabled {
             command: normalized,
             args,
@@ -2443,6 +2832,10 @@ mod tests {
         assert!(names.contains(&"del".to_owned()));
         assert!(names.contains(&"ttl".to_owned()));
         assert!(names.contains(&"pttl".to_owned()));
+        assert!(names.contains(&"hc.namespace".to_owned()));
+        assert!(names.contains(&"hc.tag".to_owned()));
+        assert!(names.contains(&"hc.settags".to_owned()));
+        assert!(names.contains(&"hc.invalidate_tag".to_owned()));
         assert!(!names.contains(&"hset".to_owned()));
         assert!(!names.contains(&"cluster".to_owned()));
     }
@@ -2899,39 +3292,197 @@ mod tests {
             translate_redis_command(RedisCommand::HcDiagnostics, &context).unwrap(),
             RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics)
         );
+        assert_eq!(
+            translate_redis_command(
+                RedisCommand::HcNamespace {
+                    namespace: Some(b"redis".to_vec())
+                },
+                &context
+            )
+            .unwrap(),
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Namespace {
+                requested: Some("redis".to_owned())
+            })
+        );
+        assert_eq!(
+            translate_redis_command(
+                RedisCommand::HcTag {
+                    key: b"k".to_vec(),
+                    tags: vec![b"model".to_vec()]
+                },
+                &context
+            )
+            .unwrap(),
+            RedisTranslatedCommand::Extension(RedisExtensionRequest::Tag {
+                key: b"k".to_vec(),
+                tags: vec!["model".to_owned()]
+            })
+        );
     }
 
     #[test]
-    fn hc_tag_commands_are_unsupported_until_native_metadata_path_exists() {
-        let context = RedisTranslationContext::default();
-        let translated = translate_redis_command(
-            RedisCommand::HcCandidate {
-                command: "HC.TAG".to_owned(),
-                args: vec![b"k".to_vec(), b"tag".to_vec()],
-            },
-            &context,
+    fn hc_namespace_is_listener_scoped_not_redis_multidb() {
+        let server = listener();
+
+        assert_eq!(
+            server.execute_command(RedisCommand::HcNamespace { namespace: None }),
+            RespValue::BulkString(DEFAULT_REDIS_NAMESPACE.as_bytes().to_vec())
         );
-        assert!(matches!(
-            translated,
-            Err(RedisTranslationError::CandidateCommand { command }) if command == "HC.TAG"
-        ));
+        assert_eq!(
+            server.execute_command(RedisCommand::HcNamespace {
+                namespace: Some(DEFAULT_REDIS_NAMESPACE.as_bytes().to_vec())
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcNamespace {
+                namespace: Some(b"other".to_vec())
+            }),
+            RespValue::Error(
+                "ERR HC.NAMESPACE can select only the configured listener namespace".to_owned()
+            )
+        );
     }
 
     #[test]
-    fn hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys() {
-        let context = RedisTranslationContext::default();
-        let translated = translate_redis_command(
-            RedisCommand::HcCandidate {
-                command: "HC.INVALIDATE_TAG".to_owned(),
-                args: vec![b"tag".to_vec()],
-            },
-            &context,
+    fn hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface() {
+        let server = listener();
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"tagged:1".to_vec(),
+                value: b"v1".to_vec(),
+                options: Vec::new(),
+            }),
+            RespValue::SimpleString("OK")
         );
-        assert!(matches!(
-            translated,
-            Err(RedisTranslationError::CandidateCommand { command })
-                if command == "HC.INVALIDATE_TAG"
-        ));
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"tagged:2".to_vec(),
+                value: b"v2".to_vec(),
+                options: Vec::new(),
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"untagged".to_vec(),
+                value: b"keep".to_vec(),
+                options: Vec::new(),
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::HcTag {
+                key: b"tagged:1".to_vec(),
+                tags: vec![b"model".to_vec(), b"shared".to_vec()],
+            }),
+            RespValue::Integer(2)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcTag {
+                key: b"tagged:1".to_vec(),
+                tags: vec![b"model".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcSetTags {
+                key: b"tagged:2".to_vec(),
+                tags: vec![b"model".to_vec(), b"model".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::HcInvalidateTag {
+                tag: b"model".to_vec(),
+            }),
+            RespValue::Integer(2)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"tagged:1".to_vec()
+            }),
+            RespValue::Null
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"tagged:2".to_vec()
+            }),
+            RespValue::Null
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"untagged".to_vec()
+            }),
+            RespValue::BulkString(b"keep".to_vec())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcInvalidateTag {
+                tag: b"model".to_vec(),
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(server.state().state_mutations(), 5);
+    }
+
+    #[test]
+    fn hc_tag_missing_key_does_not_create_metadata_or_mutate() {
+        let server = listener();
+
+        assert_eq!(
+            server.execute_command(RedisCommand::HcTag {
+                key: b"missing".to_vec(),
+                tags: vec![b"model".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcInvalidateTag {
+                tag: b"model".to_vec(),
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(server.state().state_mutations(), 0);
+    }
+
+    #[test]
+    fn hc_invalidate_tag_prunes_expired_keys_without_counting_them() {
+        let state = Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap());
+        state.set_cache_time_for_tests(Some(1_000));
+        let server =
+            RedisRespServer::new(Arc::clone(&state), RedisListenerConfig::default()).unwrap();
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"expiring".to_vec(),
+                value: b"v".to_vec(),
+                options: vec![b"PX".to_vec(), b"10".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcTag {
+                key: b"expiring".to_vec(),
+                tags: vec![b"model".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+
+        state.advance_cache_time_for_tests(20);
+        assert_eq!(
+            server.execute_command(RedisCommand::HcInvalidateTag {
+                tag: b"model".to_vec(),
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::HcInvalidateTag {
+                tag: b"model".to_vec(),
+            }),
+            RespValue::Integer(0)
+        );
     }
 
     #[test]
@@ -2947,6 +3498,28 @@ mod tests {
         assert_eq!(
             invalidate,
             RedisCommand::HcInvalidate { key: b"k".to_vec() }
+        );
+
+        let (tag, _) = decode_resp2_command(b"*3\r\n$6\r\nHC.TAG\r\n$1\r\nk\r\n$5\r\nmodel\r\n")
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            tag,
+            RedisCommand::HcTag {
+                key: b"k".to_vec(),
+                tags: vec![b"model".to_vec()]
+            }
+        );
+
+        let (invalidate_tag, _) =
+            decode_resp2_command(b"*2\r\n$17\r\nHC.INVALIDATE_TAG\r\n$5\r\nmodel\r\n")
+                .unwrap()
+                .unwrap();
+        assert_eq!(
+            invalidate_tag,
+            RedisCommand::HcInvalidateTag {
+                tag: b"model".to_vec()
+            }
         );
     }
 

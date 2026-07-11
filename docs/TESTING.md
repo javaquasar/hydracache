@@ -148,11 +148,11 @@ The Redis RESP edge facade is governed by
 That manifest is the source of truth for the supported/candidate/unsupported command matrix,
 real Redis oracle scenarios, client-smoke scenarios, and release-note command table.
 For `0.63.0`, RESP3 negotiation, `MSET`, minimal `INFO`, cache-subset `TYPE`, Redis TTL commands,
-Redis `AUTH`/`HELLO AUTH`, and native `rediss://` are supported release scope: the manifest rows
+Redis `AUTH`/`HELLO AUTH`, native `rediss://`, and HydraCache-only `HC.NAMESPACE`/tag extensions are supported release scope: the manifest rows
 must stay tied to RESP3 negotiation/codec tests, atomic batch tests, health/probe honesty tests,
 protocol v3 TTL metadata/expiry tests, client-surface expiry tests, auth-required listener tests,
-credential redaction tests, TLS handshake/plaintext/wrong-CA tests, real Redis oracle tolerance
-tests, and mainstream-client scenarios.
+credential redaction tests, TLS handshake/plaintext/wrong-CA tests, edge-local tag invalidation tests,
+real Redis oracle tolerance/divergence tests, and mainstream-client scenarios.
 Redis Cluster remains intentionally unsupported in `0.63.0`: `CLUSTER SLOTS`,
 `CLUSTER NODES`, and `CLUSTER INFO` must stay tied to standalone-only negative
 tests that prove no topology, hash slot metadata, `MOVED`, or `ASK` is emitted.
@@ -165,6 +165,11 @@ cache subset, and `ROLE`, `DBSIZE`, and `SCAN` must stay unsupported-loud.
 Admin commands are disabled by default: `CONFIG` must not fabricate Redis server
 configuration, and `FLUSHDB`/`FLUSHALL` must return stable `NOPERM` before
 dispatch so existing keys remain intact.
+HydraCache tag extensions are listener-local, not Redis-native: `HC.NAMESPACE`
+must stay listener-scoped, `HC.TAG`/`HC.SETTAGS` must attach metadata only to
+existing live keys, and `HC.INVALIDATE_TAG` must invalidate through
+`ClientSurfaceState` without scanning the Redis keyspace or claiming
+cross-listener/global tag semantics.
 
 When adding or changing a RESP command:
 
@@ -186,7 +191,8 @@ The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL me
 compatibility, atomic `MSET`, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
 credential redaction, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
-coverage, minimal `INFO`, cache-subset `TYPE`, disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
+coverage, minimal `INFO`, cache-subset `TYPE`, edge-local `HC.NAMESPACE`/tag invalidation,
+disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
 non-mutation, decoder fuzz smoke, and oversized frame limits. The server
 lifecycle gate proves the
 listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
@@ -206,7 +212,7 @@ real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
 real Redis after the documented normalization rules, including RESP3 negotiation, `SELECT 0`,
 minimal `INFO`, cache-subset `TYPE`, exact `MSET` behavior, bounded TTL tolerance,
-auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
+HydraCache-only `HC.NAMESPACE`/tag extensions, auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
 exercising the same scenario suite through unchanged mainstream Redis clients.
 Passing targeted Rust tests is not enough for the final release claim: if this
 Docker/client matrix or the pinned real Redis oracle is not green, release notes

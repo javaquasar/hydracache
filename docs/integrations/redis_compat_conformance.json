@@ -240,24 +240,24 @@
     },
     {
       "name": "HC.NAMESPACE",
-      "status": "candidate",
+      "status": "hydracache_extension",
       "kind": "hydracache_extension",
-      "oracle": "candidate",
-      "tests": ["hc_namespace_requires_explicit_mapping_and_is_connection_local"]
+      "oracle": "hydracache_only",
+      "tests": ["hc_namespace_is_listener_scoped_not_redis_multidb", "client_matrix_runs_hydracache_tag_extension_scenario", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
     {
       "name": "HC.TAG/HC.SETTAGS",
-      "status": "candidate",
+      "status": "hydracache_extension",
       "kind": "hydracache_extension",
-      "oracle": "candidate",
-      "tests": ["hc_tag_commands_are_unsupported_until_native_metadata_path_exists"]
+      "oracle": "hydracache_only",
+      "tests": ["hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface", "hc_tag_missing_key_does_not_create_metadata_or_mutate", "client_matrix_runs_hydracache_tag_extension_scenario", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset", "redis_oracle_hc_extensions_are_hydracache_only"]
     },
     {
       "name": "HC.INVALIDATE_TAG",
-      "status": "candidate",
+      "status": "hydracache_extension",
       "kind": "hydracache_extension",
-      "oracle": "candidate",
-      "tests": ["hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path", "hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys"]
+      "oracle": "hydracache_only",
+      "tests": ["hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface", "hc_invalidate_tag_prunes_expired_keys_without_counting_them", "client_matrix_runs_hydracache_tag_extension_scenario", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset", "redis_oracle_hc_extensions_are_hydracache_only"]
     }
   ]
 }
