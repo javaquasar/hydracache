@@ -70,6 +70,7 @@ pub struct DaemonNodeSpec {
 pub struct DaemonNode {
     spec: DaemonNodeSpec,
     child: Option<Child>,
+    suspended: bool,
     stdout_path: PathBuf,
     stderr_path: PathBuf,
 }
@@ -153,7 +154,7 @@ impl DaemonCluster {
     pub fn running_indices(&mut self) -> Vec<usize> {
         let mut running = Vec::new();
         for (index, node) in self.nodes.iter_mut().enumerate() {
-            if node.is_running() {
+            if node.is_serving() {
                 running.push(index);
             }
         }
@@ -307,6 +308,7 @@ impl DaemonNode {
         Self {
             spec,
             child: None,
+            suspended: false,
             stdout_path,
             stderr_path,
         }
@@ -347,7 +349,12 @@ impl DaemonNode {
         }
         let child = command.spawn()?;
         self.child = Some(child);
+        self.suspended = false;
         Ok(())
+    }
+
+    fn is_serving(&mut self) -> bool {
+        self.is_running() && !self.suspended
     }
 
     fn is_running(&mut self) -> bool {
@@ -368,6 +375,7 @@ impl DaemonNode {
         let Some(mut child) = self.child.take() else {
             return Ok(());
         };
+        self.suspended = false;
         if child.try_wait()?.is_none() {
             child.kill()?;
         }
@@ -380,7 +388,7 @@ impl DaemonNode {
     }
 
     #[cfg(target_os = "linux")]
-    fn signal(&self, signal: &str) -> TestResult {
+    fn signal(&mut self, signal: &str) -> TestResult {
         let pid = self
             .child
             .as_ref()
@@ -392,6 +400,11 @@ impl DaemonNode {
             .arg(pid)
             .status()?;
         if status.success() {
+            match signal {
+                "STOP" => self.suspended = true,
+                "CONT" => self.suspended = false,
+                _ => {}
+            }
             Ok(())
         } else {
             Err(format!("kill -{signal} failed with {status}").into())
