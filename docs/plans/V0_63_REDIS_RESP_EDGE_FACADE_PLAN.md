@@ -1033,6 +1033,261 @@ HydraCache does and does not implement.
 **Coverage rule (DoD):** no new command/type lands without a row; PR-tier deterministic and in
 `cargo xtask verify`; Docker-gated client smoke is env-gated skip-graceful.
 
+## Redis Lock Migration Scope Expansion (conditional 0.63 addendum)
+
+This addendum is for the case where `0.63.0` must support migration of mainstream Redis clients that
+use Redis as a single-instance lock endpoint. It changes the current A1 posture only after the
+implementation and proof land: until every row below is implemented and green, `SET NX PX` remains the
+documented unsupported-loud divergence described in A1 and in the release note.
+
+### Goal And Non-Goals
+
+**Goal.** Support the narrow Redis lock subset used by common libraries for acquire, safe release, and
+safe TTL extension:
+
+- `SET lock_key token NX PX ttl_ms` and `SET lock_key token NX EX ttl_seconds`.
+- Existing-key acquire failure returns Redis nil/null, not an error.
+- Token-safe release deletes only if the stored value still equals the caller's token.
+- Token-safe extension updates expiry only if the stored value still equals the caller's token.
+- TTL expiry makes an expired lock immediately acquirable.
+- Behavior is proven through real Redis client libraries, not only raw command tests.
+
+**Non-goals for this lock subset.**
+
+- No Redis Cluster lock routing, hash slots, `MOVED`, `ASK`, or Redlock quorum semantics.
+- No general Lua runtime. `EVAL`/`EVALSHA`, if added, are an allowlisted lock-script compatibility shim.
+- No Redis transactions (`MULTI`/`EXEC`/`WATCH`) and no general scriptable command execution.
+- No `SET GET`, `SET KEEPTTL`, `SET EXAT`, or `SET PXAT` unless each gets its own supported contract.
+- No full Redisson claim unless the real Redisson command trace is implemented. Standard Redisson locks
+  can require hashes, Lua, pub/sub, watchdog renewal, and unlock messages, which is larger than a
+  single-string lock subset.
+- No claim that Redis-compatible locks are fencing locks or CP locks. HydraCache native fenced-lock APIs
+  remain the correctness path for systems that require fencing tokens.
+
+### Compatibility Tiers
+
+| Tier | Target | 0.63 claim if implemented | Required commands/scripts | Status before implementation |
+| --- | --- | --- | --- | --- |
+| L0 | Raw Redis lock idiom | `SET k token NX PX ttl` works like Redis for single-key string locks | `SET NX PX/EX`, `PTTL`, expiry, nil-on-contention | Planned by this addendum |
+| L1 | redis-py `Lock`-style clients | Acquire, release, and extend/reacquire work against HydraCache | L0 plus token-safe Lua release/extend shim or equivalent script commands | Planned by this addendum |
+| L2 | Node redlock-style clients in single-endpoint mode | Single-node acquire/release/extend work; no quorum claim | L0/L1 plus client-matrix scenario through the library API | Planned by this addendum |
+| L3 | Go Redis lock libraries | `go-redis` based lock library acquire/release/refresh works | L0/L1 plus Go library matrix | Planned by this addendum |
+| L4 | Redisson full lock | Only if command analysis proves the required subset is implemented | Likely hashes + Lua + pub/sub + watchdog behavior | Not included by default; fail loud or move to larger release |
+
+### Contract Changes Required
+
+1. Split the current conformance row `SET NX/XX/GET/KEEPTTL/EXAT/PXAT`.
+   - `SET NX PX/EX` becomes `supported` only after implementation.
+   - `SET XX`, `SET GET`, `SET KEEPTTL`, `SET EXAT`, and `SET PXAT` remain `unsupported` unless each
+     receives a supported contract and tests.
+2. Add explicit lock rows to `docs/integrations/redis_compat_conformance.json`:
+   - `SET NX PX/EX` -> `supported`, oracle `ttl_tolerance`.
+   - `EVAL/EVALSHA lock-release script` -> `supported_with_caveat`, oracle `exact`.
+   - `EVAL/EVALSHA lock-extend script` -> `supported_with_caveat`, oracle `ttl_tolerance`.
+   - `SCRIPT LOAD/EXISTS` for known lock scripts -> `supported_with_caveat`, oracle `normalized_metadata`.
+   - General `EVAL`, unknown scripts, multi-key scripts, and unsupported script commands -> `unsupported`.
+3. Update `docs/integrations/redis-compat.md` and `docs/releases/0.63.0.md`.
+   - Remove `SET NX PX` from "Not Shipped" only after all lock gates pass.
+   - Add a "Redis lock-compatible subset" section stating single-endpoint scope, no cluster/quorum, no
+     full Lua, and no Redisson full-lock claim unless separately proven.
+4. Update `COMMAND` metadata so it does not over-advertise general Lua. If script shims are supported,
+   metadata must explain the allowlist caveat through docs and tests.
+
+### Implementation Plan
+
+**L1. Add atomic conditional mutation to the client surface.**
+
+The RESP translator must never implement lock acquire as `GET` followed by `SET`. The conditional write
+must be one atomic client-surface operation:
+
+- Add an additive client-protocol operation such as
+  `ConditionalPut { ns, key, value, condition: IfAbsent | IfPresentValue(Vec<u8>), ttl_ms }`.
+- Add a result shape such as `ConditionalStored { stored: bool }`, where `false` maps to Redis null for
+  `SET NX`.
+- Register the protocol addition in compat docs. If changing protocol v3 would violate compatibility
+  policy, register protocol v4 for lock conditional operations and keep v2/v3 clients rejected from the
+  new shape with explicit incompatible-version tests.
+- Implement the operation in `ClientSurfaceState` under the store lock, using the same expiry cleanup
+  path as `GET`/`EXPIRE` so expired locks are absent before evaluating `NX`.
+- Reuse existing tenant limits, max value bytes, max key bytes, auth identity, idempotency/deadline,
+  metrics, and audit behavior. Lock token/key/value bytes must not appear in logs, metrics, or
+  diagnostics.
+
+**L2. Add token-safe release and extension primitives.**
+
+Common lock libraries release and extend using Lua because `DEL key` is unsafe. HydraCache needs native
+atomic equivalents:
+
+- `CompareValueAndInvalidate { ns, key, expected_value }` -> returns an applied count.
+- `CompareValueAndExpire { ns, key, expected_value, ttl_ms }` -> returns an applied count.
+- Both operations first treat expired entries as missing.
+- Wrong token returns `0` and leaves the key untouched.
+- Missing or expired key returns `0`.
+- Matching token returns `1`; release removes the key, extension updates TTL.
+- These operations must be single-store-lock mutations in `ClientSurfaceState` and versioned in the
+  client protocol if exposed beyond the in-process RESP facade.
+
+**L3. Extend Redis `SET` option parsing.**
+
+Replace `parse_set_ttl_ms` with a structured parser:
+
+- Accept Redis-compatible option order for the supported subset: `NX` plus exactly one relative TTL
+  (`EX seconds` or `PX milliseconds`).
+- Reject duplicate options, missing TTL values, non-integer TTL, zero/negative TTL, overflow, `XX`,
+  `GET`, `KEEPTTL`, `EXAT`, `PXAT`, and unknown options with Redis-shaped errors.
+- Preserve current bare `SET` and `SET EX/PX` behavior.
+- Map successful `SET NX PX/EX` to `ConditionalPut IfAbsent`.
+- Map contention (`stored=false`) to Redis null (`$-1` in RESP2, `_` in RESP3).
+- Keep `SETEX`/`PSETEX` on the existing unconditional TTL path.
+
+**L4. Add lock-script compatibility shim.**
+
+Do not embed a general Lua VM in 0.63. Implement an allowlisted script shim:
+
+- Parse `EVAL script numkeys key [arg...]`, `EVALSHA sha numkeys key [arg...]`, `SCRIPT LOAD script`,
+  and `SCRIPT EXISTS sha [sha...]`.
+- Normalize known lock scripts by SHA1 and by a conservative whitespace-insensitive canonical form.
+- Supported release script shapes:
+  - Release:
+    `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end`
+    -> `CompareValueAndInvalidate`.
+  - Extend:
+    `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("pexpire", KEYS[1], ARGV[2]) else return 0 end`
+    -> `CompareValueAndExpire`.
+  - Optional `expire` variant if a selected client uses seconds rather than milliseconds.
+- Reject unknown scripts, multi-key scripts, scripts that call unsupported Redis commands, invalid
+  `numkeys`, wrong arity, and non-string arguments before mutation.
+- Return Redis-compatible integer results for known scripts and Redis-shaped errors for unsupported
+  script shapes.
+- Cache only allowlisted `SCRIPT LOAD` SHA metadata per listener/process; do not claim a general Redis
+  script cache.
+
+**L5. Client-library compatibility analysis.**
+
+Before choosing exact client matrix rows, inspect real command traces for each target library:
+
+- `redis-py Lock`: expected to use `SET NX PX` for acquire and Lua scripts for release/extend.
+- Node redlock-style library: expected to use `SET NX PX` and Lua release/extend scripts in
+  single-node mode.
+- Go: select one maintained `go-redis` based lock library and pin its version.
+- JVM:
+  - Direct Jedis/Lettuce examples can stay within L0/L1.
+  - Redisson compatibility requires a command trace first. If it needs hashes/pubsub/watchdog semantics,
+    either add those rows explicitly or document Redisson full-lock as out of scope for 0.63.
+
+### Test Plan
+
+**Fast translator and reducer tests (`hydracache-redis-compat`).**
+
+- `set_nx_px_acquires_missing_key_and_returns_ok`.
+- `set_nx_px_existing_key_returns_null_without_mutation`.
+- `set_nx_ex_ttl_uses_seconds_and_expires`.
+- `set_nx_rejects_missing_or_invalid_ttl`.
+- `set_nx_rejects_get_keepttl_exat_pxat_and_xx_until_supported`.
+- `set_nx_contention_uses_resp2_null_and_resp3_null`.
+- `eval_known_unlock_script_deletes_only_matching_token`.
+- `eval_known_unlock_script_wrong_token_returns_zero_without_mutation`.
+- `eval_known_extend_script_updates_ttl_only_for_matching_token`.
+- `evalsha_requires_script_load_or_known_allowlisted_sha`.
+- `unknown_eval_script_fails_loud_before_mutation`.
+- `script_load_and_exists_are_allowlist_scoped_not_general_lua_cache`.
+- `command_metadata_advertises_lock_subset_without_claiming_general_lua`.
+
+**Client-surface/protocol tests.**
+
+- `conditional_put_if_absent_is_atomic_under_contention`.
+- `conditional_put_treats_expired_key_as_absent`.
+- `conditional_put_existing_key_preserves_value_and_ttl`.
+- `compare_value_invalidate_removes_only_matching_token`.
+- `compare_value_expire_extends_only_matching_token`.
+- `compare_value_operations_return_zero_for_missing_or_expired_keys`.
+- `protocol_v2_v3_clients_do_not_receive_lock_conditional_shapes`.
+- `client_protocol_v4_registers_lock_conditional_operations` (or equivalent v3-extension test if the
+  compatibility policy chooses v3).
+
+**Concurrency/race tests.**
+
+- Spawn N concurrent `SET NX PX` attempts against one key; exactly one succeeds, every loser returns
+  null, and the stored token is the winner's token.
+- Release by a losing token returns `0` and does not delete the winner's lock.
+- After TTL expiry, a new `SET NX PX` succeeds and stores a new token.
+- Extension by the winner keeps the lock alive beyond the original TTL; extension by a wrong token does
+  not.
+
+**Wire/RESP tests.**
+
+- Pipelined `SET NX PX`, `PTTL`, script release, and `GET` preserve response order.
+- RESP3 negotiated connection returns null for contention using RESP3 null encoding.
+- Oversized script body, too many keys, and unsupported aggregate RESP3 arguments fail before mutation.
+
+**Pinned real Redis oracle tests.**
+
+Add Docker-gated comparisons against `redis:6.2.14` and `redis:7.2.5`:
+
+- `redis_oracle_set_nx_px_lock_acquire_matches_real_redis`.
+- `redis_oracle_set_nx_px_contention_and_expiry_match_real_redis`.
+- `redis_oracle_lock_unlock_script_matches_real_redis`.
+- `redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance`.
+- `redis_oracle_unknown_lua_is_documented_divergence`.
+
+These tests must run with `HYDRACACHE_REQUIRE_REDIS_ORACLE=1`; skip-only green is not acceptable for a
+lock compatibility claim.
+
+**Mainstream client matrix.**
+
+Add env-gated tests that use the libraries' normal APIs, not handcrafted command sequences:
+
+- `client_matrix_python_redis_py_lock_acquire_release_extend`.
+- `client_matrix_node_redlock_single_endpoint_acquire_release_extend`.
+- `client_matrix_go_redis_lock_library_acquire_release_refresh`.
+- `client_matrix_jvm_jedis_or_lettuce_lock_script_acquire_release_extend`.
+- `client_matrix_redisson_lock_is_supported_or_fails_loud_by_contract`.
+
+For each supported client row:
+
+- Acquire succeeds for the first owner.
+- Concurrent/second acquire fails or times out according to the library's normal API.
+- Release with the owning token succeeds.
+- Release with a stale/wrong token does not delete the current lock.
+- Extend/refresh succeeds only for the owning token.
+- Expired lock can be reacquired.
+- Client disconnect/reconnect does not leave connection-local auth or script metadata in an unsafe state.
+
+**Negative compatibility tests.**
+
+- Unknown Lua scripts fail with a stable Redis-shaped error and no mutation.
+- Redisson full-lock command traces that require unsupported hashes/pubsub fail loud if L4 is not
+  implemented.
+- `SET GET`, `SET KEEPTTL`, `SET EXAT`, `SET PXAT`, and `SET XX` remain documented unsupported rows
+  unless separately promoted.
+- Multi-key lock scripts are rejected; no accidental distributed/cluster lock claim.
+
+**Security, observability, and limits tests.**
+
+- Lock keys, values/tokens, script bodies, and script arguments are not present in logs, metrics,
+  `HC.STATS`, or `HC.DIAGNOSTICS`.
+- Script body length, number of keys, number of arguments, and argument bytes are bounded by existing
+  RESP decode limits or stricter script limits.
+- Auth-required listeners return `NOAUTH` before any lock mutation.
+- TLS/rediss lock client paths are covered if the release claims secure lock migration.
+
+### Gate Additions
+
+- Fast gate: `cargo test -p hydracache-redis-compat --locked lock`.
+- Client-surface gate: `cargo test -p hydracache-client-transport-axum --locked lock`.
+- Protocol compat gate: `cargo test -p hydracache-client-protocol --locked lock`.
+- Docker/client gate:
+  `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 HYDRACACHE_REQUIRE_REDIS_ORACLE=1 cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture`.
+- If Python/Node/Go/JVM lock-library rows are release claims, set the matching require flags so skipped
+  ecosystem rows fail the gate.
+
+### Release Decision For The Lock Expansion
+
+`0.63.0` may claim Redis lock-library migration support only if L0/L1 are implemented and the selected
+client-library rows are green against Docker/pinned Redis oracle. If any lock-library row is not green,
+the release must keep the current A1 posture: `SET NX PX` remains unsupported-loud, Redis lock
+libraries are named as not supported, and the release note must not imply lock compatibility.
+
 ## Gates (Definition of Done for the release)
 
 - `cargo xtask verify` green; RESP client smoke Docker-gated + skip-graceful; W0 command-contract
