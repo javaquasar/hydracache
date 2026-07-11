@@ -249,3 +249,10 @@ status = "planned"
 networked_control_plane = true
 theme = "Raft Snapshot & Agentic Debugging Test Expansion - expand the post-0.62 cluster proof suite around mutable snapshot aliasing, mid-membership snapshot restore, committed-tail convergence after snapshot install, fail-loud apply contradictions, deterministic flake capture, and AI/agent debugging guardrails inspired by Andrii Rodionov's Hazelcast Raft snapshot bug analysis. Test-first, feature-light; no Redis/Hazelcast protocol, ownership-routing, or new consensus scope."
 depends_on = ["0.63.0"]
+
+[[release]]
+version = "0.65.0"
+file = "docs/plans/V0_65_REDIS_LOCK_COMPATIBILITY_PLAN.md"
+status = "planned"
+theme = "Redis Lock Compatibility Subset - a dedicated follow-up to the 0.63 RESP cache facade for single-endpoint Redis lock migration. Decides protocol v4 for lock-conditional operations, keeps protocol v3 TTL-only, adds atomic ConditionalPut plus compare-value invalidate/expire primitives, supports only reviewed/pinned lock-script shims rather than general Lua, and requires pinned real Redis oracle plus API-level redis-py/redlock/go/JVM client-library rows before any lock compatibility claim. No Redis Cluster, MOVED/ASK, Redlock quorum, general Lua, transactions, pub/sub, or Redisson full-lock claim by default."
+depends_on = ["0.64.0"]

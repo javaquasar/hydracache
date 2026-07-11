@@ -210,6 +210,14 @@ v0 foundations
                           = anti-references; not a Redis clone; edge crate, core untouched and client
                           protocol v3 registered only for TTL metadata/expiry.
                           protocol untouched (R-4/R-10); compatible with a later 1.0 freeze)
+
+   0.64 Raft Snapshot & Agentic Debugging Test Expansion
+        -> 0.65 Redis Lock Compatibility Subset (dedicated compatibility release:
+           protocol v4 for lock-conditional operations, protocol v3 remains TTL-only;
+           ConditionalPut + compare-value invalidate/expire; pinned lock-script shims;
+           API-level redis-py/redlock/Go/JVM matrix + pinned real Redis oracle; no
+           Cluster/MOVED/ASK, Redlock quorum, general Lua, transactions, or Redisson
+           full-lock claim by default)
 ```
 
 ## Roadmap status (what / why / after / unblocks)
@@ -248,6 +256,8 @@ v0 foundations
 | [0.63.0](V0_63_REDIS_RESP_EDGE_FACADE_PLAN.md) | in-progress | **Redis RESP Edge Facade** — an optional, **off-by-default** edge server mode (new `hydracache-redis-compat` crate + own listener, default `:6379`) speaking the **Redis RESP** protocol for the **cache subset**, so existing Redis clients point at HydraCache by changing a connection string. **Translates** RESP into `ClientRequest`/`ClientResponse` and **reuses** `ClientSurfaceState` for tenancy/limits/consistency — no cache-access re-implementation; core stays untouched while `hydracache-client-protocol` v3 is registered only for TTL metadata/expiry (R-4). W0 adds a versioned conformance manifest and real-Redis oracle normalization before commands are claimed; required target is `GET/SET/MGET/MSET/DEL` + startup handshake with Redis counts/order semantics, `SELECT 0` as the only logical DB selector, atomic `MSET`, minimal honest `INFO`, cache-subset `TYPE`, `SET EX/PX`/`EXPIRE`/`PEXPIRE`/`PERSIST`/`TTL`/`PTTL` through protocol v3, Redis `AUTH`/`HELLO 2 AUTH`, and native `rediss://` transport security backed by server TLS material; **`HC.*`** is native-or-unsupported, with no scan-and-loop fake tag invalidation; **loud** `ERR unsupported` for everything else; **no** `MOVED`/`ASK`/Cluster (authority stays raft+epoch, R-1); golden RESP fixtures + pinned Docker `redis-server` oracle + Docker-gated multi-language client smoke + decode fuzz + pipelining/reconnect/resource/multi-node checks | Close the named POSITIONING adoption gap (non-Rust reach) with the highest-leverage **outward** step — "change the connection string, not the code"; an **edge crate** that never touches the frozen core, so compatible with a later `1.0` freeze; Redis Cluster/async-replication are **anti-references**; not a Redis clone, not an event log (R-9); off by default, fast path unchanged (R-10) | 0.62.1 | — |
 
 | [0.64.0](V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md) | planned | **Raft Snapshot & Agentic Debugging Test Expansion** - expands the post-`0.62` cluster proof suite around the Hazelcast Raft snapshot bug class captured in [article note 002](../articles/002-raft-snapshot-agent-bug.md): snapshot immutability/deep-copy proof, mid-membership snapshot restore plus committed-tail replay, fail-loud apply contradictions, deterministic flake capture, and falsifiability canaries for snapshot aliasing/tail skipping/log downgrades. Test-first and feature-light; no Redis/Hazelcast protocol, ownership-routing, or new consensus scope | `0.62.1` closed the first proof cleanup, but the Hazelcast case shows a deeper class of bugs: snapshots that look valid while secretly aliasing live state and later reject the membership tail. `0.64` turns that lesson into mechanical tests and agent-debugging guardrails before broader cluster features resume | 0.63.0 | 1.0 |
+
+| [0.65.0](V0_65_REDIS_LOCK_COMPATIBILITY_PLAN.md) | planned | **Redis Lock Compatibility Subset** - dedicated follow-up to the `0.63` RESP cache facade for selected single-endpoint Redis lock migrations. Decides `hydracache-client-protocol` v4 for lock-conditional operations, keeps protocol v3 TTL-only, adds atomic `ConditionalPut` plus compare-value invalidate/expire, uses reviewed pinned lock-script shims instead of general Lua, and requires pinned real Redis oracle plus API-level redis-py/redlock/Go/JVM matrix rows before any lock claim | `0.63` correctly keeps `SET NX PX` unsupported-loud; supporting real lock libraries is a larger compatibility release with protocol, atomicity, script, and ecosystem-proof implications. Keeping it separate prevents Redis lock support from becoming a hidden third expansion of `0.63` | 0.64.0 | 1.0 |
 
 `0.43` debt closure:
 [`V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md`](V0_43_DEBT_CLOSURE_AND_REFACTOR_PLAN.md)

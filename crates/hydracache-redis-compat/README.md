@@ -17,7 +17,9 @@ absolute-expiry candidates rather than lock primitives. Supporting them later
 requires an explicit server-clock, past-timestamp, overflow, TTL-tolerance, and
 oracle/client test contract. The current gated proof covers raw `SET NX PX`
 fail-loud/no-mutation behavior; it does not claim redis-py `Lock`, redlock, or
-Redisson lock-library API compatibility.
+Redisson lock-library API compatibility. Redis lock migration is tracked as the
+dedicated `docs/plans/V0_65_REDIS_LOCK_COMPATIBILITY_PLAN.md` follow-up, with
+protocol v4 reserved for lock-conditional operations.
 
 ## Health And Probe Commands
 
