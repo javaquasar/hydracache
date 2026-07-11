@@ -45,6 +45,8 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("SET NX/XX/GET/KEEPTTL/EXAT/PXAT"));
     assert!(manifest.contains("set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error"));
     assert!(manifest.contains("client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging"));
+    assert!(manifest.contains("redis_oracle_ttl_edge_cases_match_real_redis"));
+    assert!(manifest.contains("redis_oracle_set_options_are_documented_divergence"));
     assert!(manifest.contains("select_zero_is_supported_as_noop_for_single_database_contract"));
     assert!(manifest.contains("resp_listener_select_zero_ok_and_nonzero_keeps_default_database"));
     assert!(manifest.contains("info_returns_minimal_honest_facade_state"));
@@ -89,12 +91,14 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_mget_nil_and_order_match_real_redis",
         "redis_oracle_mset_atomicity_matches_real_redis",
         "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance",
+        "redis_oracle_ttl_edge_cases_match_real_redis",
         "client_matrix_runs_mset_and_ttl_commands",
         "client_matrix_runs_resp3_negotiation_scenario",
         "client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging",
         "client_matrix_runs_auth_required_connection_scenario",
         "client_matrix_runs_rediss_required_connection_scenario",
         "client_matrix_runs_hydracache_tag_extension_scenario",
+        "redis_oracle_set_options_are_documented_divergence",
         "redis_oracle_unsupported_divergence_is_documented",
         "redis_oracle_hc_extensions_are_hydracache_only",
     ] {
@@ -577,6 +581,64 @@ async fn redis_oracle_ttl_matches_real_redis_with_bounded_tolerance() {
         run_ttl_scenario(hydracache_addr, "ttl-oracle").await,
         "hydracache",
     );
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_ttl_edge_cases_match_real_redis() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    let redis_replies = run_ttl_edge_scenario(oracle.addr, "ttl-edge").await;
+    let hydracache_replies = run_ttl_edge_scenario(hydracache_addr, "ttl-edge").await;
+
+    assert_eq!(hydracache_replies, redis_replies);
+
+    drop(shutdown);
+    hydracache_serving.await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"]
+async fn redis_oracle_set_options_are_documented_divergence() {
+    if !env_gate_enabled(CLIENT_MATRIX_ENV) {
+        eprintln!("skipping real Redis oracle; set {CLIENT_MATRIX_ENV}=1 to run it");
+        return;
+    }
+    let Some(oracle) = RedisOracle::start_first_available().await else {
+        return;
+    };
+    let (shutdown, hydracache_addr, hydracache_serving) = spawn_resp_facade().await;
+
+    let redis_set = query_reply(oracle.addr, "SET", &["lock:k", "token", "NX", "PX", "5000"]).await;
+    let redis_get = query_reply(oracle.addr, "GET", &["lock:k"]).await;
+    let hydracache_set = query_reply(
+        hydracache_addr,
+        "SET",
+        &["lock:k", "token", "NX", "PX", "5000"],
+    )
+    .await;
+    let hydracache_get = query_reply(hydracache_addr, "GET", &["lock:k"]).await;
+
+    assert_eq!(redis_set, OracleReply::Status("OK".to_owned()));
+    assert_eq!(redis_get, OracleReply::Bulk(b"token".to_vec()));
+    assert!(
+        matches!(
+            hydracache_set,
+            OracleReply::ErrorClass(ref class) if class == "ERR"
+        ),
+        "HydraCache SET NX PX should normalize to ERR, got {hydracache_set:?}"
+    );
+    assert_eq!(hydracache_get, OracleReply::Nil);
 
     drop(shutdown);
     hydracache_serving.await.unwrap();
@@ -1627,6 +1689,26 @@ async fn run_ttl_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
         query_reply(addr, "EXPIRE", &[&key, "1"]).await,
         query_reply(addr, "TTL", &[&key]).await,
         query_reply(addr, "TTL", &[&missing]).await,
+    ]
+}
+
+async fn run_ttl_edge_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let zero = format!("{prefix}:zero");
+    let negative = format!("{prefix}:negative");
+    let missing = format!("{prefix}:missing");
+    vec![
+        query_reply(addr, "SET", &[&zero, "v"]).await,
+        query_reply(addr, "EXPIRE", &[&zero, "0"]).await,
+        query_reply(addr, "GET", &[&zero]).await,
+        query_reply(addr, "EXISTS", &[&zero]).await,
+        query_reply(addr, "TTL", &[&zero]).await,
+        query_reply(addr, "MGET", &[&zero, &missing]).await,
+        query_reply(addr, "SET", &[&negative, "v"]).await,
+        query_reply(addr, "PEXPIRE", &[&negative, "-1"]).await,
+        query_reply(addr, "GET", &[&negative]).await,
+        query_reply(addr, "EXPIRE", &[&missing, "30"]).await,
+        query_reply(addr, "PEXPIRE", &[&missing, "250"]).await,
+        query_reply(addr, "PERSIST", &[&missing]).await,
     ]
 }
 

@@ -212,7 +212,8 @@ real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
 real Redis after the documented normalization rules, including RESP3 negotiation, `SELECT 0`,
 minimal `INFO`, cache-subset `TYPE`, exact `MSET` behavior, bounded TTL tolerance,
-HydraCache-only `HC.NAMESPACE`/tag extensions, auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
+non-positive and missing-key expiry return edges, the documented `SET NX PX` unsupported-loud lock
+idiom divergence, HydraCache-only `HC.NAMESPACE`/tag extensions, auth-required startup, and `rediss://` startup. Python, Node, Go, and JVM client rows must keep
 exercising the same scenario suite through unchanged mainstream Redis clients.
 Passing targeted Rust tests is not enough for the final release claim: if this
 Docker/client matrix or the pinned real Redis oracle is not green, release notes

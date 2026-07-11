@@ -131,14 +131,14 @@
       "status": "unsupported",
       "kind": "redis_option_non_subset",
       "oracle": "documented_divergence",
-      "tests": ["set_write_conditional_options_follow_conformance_contract", "set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error", "client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging"]
+      "tests": ["set_write_conditional_options_follow_conformance_contract", "set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error", "client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging", "redis_oracle_set_options_are_documented_divergence"]
     },
     {
       "name": "EXPIRE/PEXPIRE",
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_zero_or_negative_deletes_key_and_returns_one", "expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl", "expired_keys_are_absent_for_get_mget_exists_and_del", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
+      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_zero_or_negative_deletes_key_and_returns_one", "expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl", "expired_keys_are_absent_for_get_mget_exists_and_del", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance", "redis_oracle_ttl_edge_cases_match_real_redis"]
     },
     {
       "name": "TTL/PTTL",
@@ -152,7 +152,7 @@
       "status": "supported",
       "kind": "redis_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_pexpire_and_persist_on_missing_key_return_zero", "expired_keys_are_absent_for_get_mget_exists_and_del"]
+      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_pexpire_and_persist_on_missing_key_return_zero", "expired_keys_are_absent_for_get_mget_exists_and_del", "redis_oracle_ttl_edge_cases_match_real_redis"]
     },
     {
       "name": "SELECT",
