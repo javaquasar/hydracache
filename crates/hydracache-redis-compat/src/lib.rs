@@ -53,6 +53,8 @@ const DEFAULT_REDIS_AUTH_USERNAME: &str = "default";
 const REDIS_NOAUTH_MESSAGE: &str = "NOAUTH Authentication required.";
 const REDIS_WRONGPASS_MESSAGE: &str =
     "WRONGPASS invalid username-password pair or user is disabled.";
+const REDIS_SYNTAX_ERROR: &str = "syntax error";
+const REDIS_INVALID_SET_EXPIRE_TIME: &str = "invalid expire time in 'set' command";
 
 /// RESP wire dialect used by one connection.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -2058,7 +2060,7 @@ fn parse_set_ttl_ms(options: &[Vec<u8>]) -> Result<Option<u64>, RedisTranslation
         [] => Ok(None),
         [unit, value] => parse_positive_ttl_ms(unit, value).map(Some),
         _ => Err(RedisTranslationError::UnsupportedShape {
-            detail: "SET supports only EX seconds or PX milliseconds options in this release",
+            detail: REDIS_SYNTAX_ERROR,
         }),
     }
 }
@@ -2067,7 +2069,7 @@ fn parse_positive_ttl_ms(unit: &[u8], value: &[u8]) -> Result<u64, RedisTranslat
     let value = ascii_decimal_u64(value)?;
     if value == 0 {
         return Err(RedisTranslationError::UnsupportedShape {
-            detail: "SET EX/PX requires a positive TTL",
+            detail: REDIS_INVALID_SET_EXPIRE_TIME,
         });
     }
     ttl_unit_to_millis(unit, value)
@@ -2095,13 +2097,13 @@ fn ttl_unit_to_millis(unit: &[u8], value: u64) -> Result<u64, RedisTranslationEr
         value
             .checked_mul(1_000)
             .ok_or(RedisTranslationError::UnsupportedShape {
-                detail: "TTL value is too large",
+                detail: REDIS_INVALID_SET_EXPIRE_TIME,
             })
     } else if unit.eq_ignore_ascii_case(b"PX") {
         Ok(value)
     } else {
         Err(RedisTranslationError::UnsupportedShape {
-            detail: "SET supports only EX seconds or PX milliseconds options in this release",
+            detail: REDIS_SYNTAX_ERROR,
         })
     }
 }
@@ -3334,6 +3336,280 @@ mod tests {
             ),
             RespValue::Integer(250)
         );
+    }
+
+    #[test]
+    fn set_write_conditional_options_follow_conformance_contract() {
+        let context = RedisTranslationContext::default();
+        let option_cases = [
+            vec![b"NX".to_vec()],
+            vec![b"XX".to_vec()],
+            vec![b"GET".to_vec()],
+            vec![b"KEEPTTL".to_vec()],
+            vec![b"EXAT".to_vec(), b"2000".to_vec()],
+            vec![b"PXAT".to_vec(), b"2000".to_vec()],
+            vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            vec![b"EX".to_vec(), b"5".to_vec(), b"NX".to_vec()],
+        ];
+
+        for options in option_cases {
+            let error = translate_redis_command(
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"v".to_vec(),
+                    options,
+                },
+                &context,
+            )
+            .unwrap_err();
+            assert_eq!(
+                encode_resp2_value(error.into_resp_value()).unwrap(),
+                b"-ERR syntax error\r\n"
+            );
+        }
+    }
+
+    #[test]
+    fn set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error() {
+        let server = listener();
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"token".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::Error("ERR syntax error".to_owned())
+        );
+        assert_eq!(server.state().dispatch_attempts(), 0);
+        assert_eq!(server.state().state_mutations(), 0);
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::Null
+        );
+    }
+
+    #[test]
+    fn expire_zero_or_negative_deletes_key_and_returns_one() {
+        let (state, identity) = surface();
+        state.set_cache_time_for_tests(Some(1_000));
+
+        run_command(
+            &state,
+            &identity,
+            RedisCommand::Set {
+                key: b"zero".to_vec(),
+                value: b"v".to_vec(),
+                options: Vec::new(),
+            },
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Expire {
+                    key: b"zero".to_vec(),
+                    ttl: b"0".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Get {
+                    key: b"zero".to_vec()
+                },
+            ),
+            RespValue::Null
+        );
+
+        run_command(
+            &state,
+            &identity,
+            RedisCommand::Set {
+                key: b"negative".to_vec(),
+                value: b"v".to_vec(),
+                options: Vec::new(),
+            },
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Expire {
+                    key: b"negative".to_vec(),
+                    ttl: b"-1".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+            ),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Get {
+                    key: b"negative".to_vec()
+                },
+            ),
+            RespValue::Null
+        );
+    }
+
+    #[test]
+    fn expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl() {
+        let (state, identity) = surface();
+        state.set_cache_time_for_tests(Some(1_000));
+        run_command(
+            &state,
+            &identity,
+            RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: Vec::new(),
+            },
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Expire {
+                    key: b"k".to_vec(),
+                    ttl: b"0".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            run_command(&state, &identity, RedisCommand::Get { key: b"k".to_vec() }),
+            RespValue::Null
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Mget {
+                    keys: vec![b"k".to_vec()]
+                },
+            ),
+            RespValue::Array(vec![RespValue::Null])
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Exists {
+                    keys: vec![b"k".to_vec()]
+                },
+            ),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(-2)
+        );
+    }
+
+    #[test]
+    fn expire_pexpire_and_persist_on_missing_key_return_zero() {
+        let (state, identity) = surface();
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Expire {
+                    key: b"missing".to_vec(),
+                    ttl: b"30".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Expire {
+                    key: b"missing".to_vec(),
+                    ttl: b"250".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+            ),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Persist {
+                    key: b"missing".to_vec()
+                },
+            ),
+            RespValue::Integer(0)
+        );
+    }
+
+    #[test]
+    fn rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization() {
+        let context = RedisTranslationContext::default();
+
+        let set_option_error = translate_redis_command(
+            RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: vec![b"NX".to_vec()],
+            },
+            &context,
+        )
+        .unwrap_err();
+        assert_eq!(
+            encode_resp2_value(set_option_error.into_resp_value()).unwrap(),
+            b"-ERR syntax error\r\n"
+        );
+
+        let set_zero_ttl_error = translate_redis_command(
+            RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: vec![b"EX".to_vec(), b"0".to_vec()],
+            },
+            &context,
+        )
+        .unwrap_err();
+        assert_eq!(
+            encode_resp2_value(set_zero_ttl_error.into_resp_value()).unwrap(),
+            b"-ERR invalid expire time in 'set' command\r\n"
+        );
+
+        let expire_overflow_error = translate_redis_command(
+            RedisCommand::Expire {
+                key: b"k".to_vec(),
+                ttl: b"9223372036854775807".to_vec(),
+                unit: RedisTtlUnit::Seconds,
+            },
+            &context,
+        )
+        .unwrap_err();
+        let encoded =
+            String::from_utf8(encode_resp2_value(expire_overflow_error.into_resp_value()).unwrap())
+                .unwrap();
+        assert!(encoded.starts_with("-ERR "));
     }
 
     #[test]

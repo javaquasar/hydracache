@@ -4,6 +4,14 @@
 subset. It is protocol-compatible for selected cache commands; it is not a Redis
 server clone.
 
+## SET Option Scope
+
+HydraCache 0.63 supports bare `SET` plus TTL-bearing `SET EX/PX`, `SETEX`, and
+`PSETEX`. Redis write-conditional and retention options (`NX`, `XX`, `GET`,
+`KEEPTTL`, `EXAT`, `PXAT`) stay unsupported-loud and return `ERR syntax error`
+before dispatch. Those options are Redis lock/conditional-write semantics; they
+must not be faked with a read-then-write path.
+
 ## Health And Probe Commands
 
 The facade supports only probe commands whose replies can be stated honestly:
@@ -73,6 +81,12 @@ The executable source of truth is
 The release plan and conformance manifest pin this contract to executable tests:
 
 - `info_returns_minimal_honest_facade_state`
+- `set_write_conditional_options_follow_conformance_contract`
+- `set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error`
+- `expire_zero_or_negative_deletes_key_and_returns_one`
+- `expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl`
+- `expire_pexpire_and_persist_on_missing_key_return_zero`
+- `rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization`
 - `info_section_argument_does_not_fabricate_redis_keyspace_state`
 - `resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state`
 - `type_reports_string_or_none_through_client_surface`
