@@ -210,6 +210,9 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
+
       - name: Enforce coverage floor
         run: cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88
 
