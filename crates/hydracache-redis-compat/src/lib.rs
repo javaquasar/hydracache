@@ -286,7 +286,7 @@ pub enum RedisCommand {
     Type { key: Vec<u8> },
     /// `GET key`.
     Get { key: Vec<u8> },
-    /// `SET key value ...`.
+    /// `SET key value ...`, or legacy TTL aliases `SETEX`/`PSETEX` normalized to `SET EX/PX`.
     Set {
         /// Binary-safe Redis key.
         key: Vec<u8>,
@@ -2236,6 +2236,8 @@ fn command_metadata_response() -> RespValue {
         command_metadata("type", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("get", 2, &["readonly", "fast"], 1, 1, 1),
         command_metadata("set", -3, &["write"], 1, 1, 1),
+        command_metadata("setex", 4, &["write"], 1, 1, 1),
+        command_metadata("psetex", 4, &["write"], 1, 1, 1),
         command_metadata("mset", -3, &["write"], 1, -1, 2),
         command_metadata("mget", -2, &["readonly", "fast"], 1, -1, 1),
         command_metadata("del", -2, &["write"], 1, -1, 1),
@@ -2424,6 +2426,30 @@ fn command_from_args(mut args: Vec<Vec<u8>>) -> Result<RedisCommand, RedisCompat
         },
         "SET" => RedisCommand::WrongArity {
             command: "SET".to_owned(),
+            args,
+        },
+        "SETEX" if args.len() == 3 => {
+            let key = args.remove(0);
+            let ttl = args.remove(0);
+            let value = args.remove(0);
+            RedisCommand::Set {
+                key,
+                value,
+                options: vec![b"EX".to_vec(), ttl],
+            }
+        }
+        "PSETEX" if args.len() == 3 => {
+            let key = args.remove(0);
+            let ttl = args.remove(0);
+            let value = args.remove(0);
+            RedisCommand::Set {
+                key,
+                value,
+                options: vec![b"PX".to_vec(), ttl],
+            }
+        }
+        "SETEX" | "PSETEX" => RedisCommand::WrongArity {
+            command: normalized,
             args,
         },
         "MSET" if !args.is_empty() && args.len().is_multiple_of(2) => RedisCommand::Mset {
@@ -2708,6 +2734,32 @@ mod tests {
             RedisCommand::Ttl {
                 key: b"k".to_vec(),
                 unit: RedisTtlUnit::Milliseconds
+            }
+        );
+
+        let (setex, _) =
+            decode_resp2_command(b"*4\r\n$5\r\nSETEX\r\n$1\r\nk\r\n$2\r\n30\r\n$1\r\nv\r\n")
+                .unwrap()
+                .unwrap();
+        assert_eq!(
+            setex,
+            RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: vec![b"EX".to_vec(), b"30".to_vec()]
+            }
+        );
+
+        let (psetex, _) =
+            decode_resp2_command(b"*4\r\n$6\r\nPSETEX\r\n$1\r\nk\r\n$3\r\n250\r\n$1\r\nv\r\n")
+                .unwrap()
+                .unwrap();
+        assert_eq!(
+            psetex,
+            RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: vec![b"PX".to_vec(), b"250".to_vec()]
             }
         );
     }
@@ -3151,7 +3203,7 @@ mod tests {
     }
 
     #[test]
-    fn expire_pexpire_persist_and_ttl_pttl_match_redis_semantics() {
+    fn setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics() {
         let (state, identity) = surface();
         state.set_cache_time_for_tests(Some(1_000));
 
@@ -3233,6 +3285,54 @@ mod tests {
                 },
             ),
             RespValue::Integer(-2)
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Set {
+                    key: b"setex".to_vec(),
+                    value: b"v".to_vec(),
+                    options: vec![b"EX".to_vec(), b"5".to_vec()],
+                },
+            ),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"setex".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(5)
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Set {
+                    key: b"psetex".to_vec(),
+                    value: b"v".to_vec(),
+                    options: vec![b"PX".to_vec(), b"250".to_vec()],
+                },
+            ),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"psetex".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+            ),
+            RespValue::Integer(250)
         );
     }
 

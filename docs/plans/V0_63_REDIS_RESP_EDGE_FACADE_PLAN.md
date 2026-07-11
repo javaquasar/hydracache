@@ -56,7 +56,7 @@ changed crate + downstream; full `verify` at merge/tag.
   `ClientRequest::Put` already carries `ttl_ms`, but the current client-surface dispatch drops that
   field (`ttl_ms: _`) before `handle_put`, and `handle_put` stores only value bytes. `ClientResponse`
   returns `Value { value }` without remaining-TTL metadata. The 2026-07-10 expansion makes
-  `SET EX/PX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` mandatory release scope, so W0/W2 must
+  `SET EX/PX`, `SETEX`/`PSETEX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` mandatory release scope, so W0/W2 must
   register protocol v3, make the client surface apply TTL, and expose enough metadata to answer
   remaining TTL before these commands can be marked done. Similarly, `Put` carries
   `dimensions: Vec<String>` rather than a proven RESP tag contract, and `BatchPutEntry` carries only
@@ -119,7 +119,7 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
 2. **Treat TTL as a release-blocking protocol expansion, not a free mapping.** Current preflight shows
    that `ttl_ms` is present in the protocol but not enforced by the client surface, and the response
    shape lacks remaining-TTL metadata. The expanded release requires W0/W2 to land a registered
-   protocol v3 TTL metadata path, real expiry enforcement, and Redis-compatible `SET EX/PX`,
+   protocol v3 TTL metadata path, real expiry enforcement, and Redis-compatible `SET EX/PX`, `SETEX`/`PSETEX`,
    `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` behavior.
 3. **Separate command support levels.** The docs matrix must distinguish `supported`, `supported with
    caveat`, `HydraCache extension`, `admin-disabled`, `candidate`, and `unsupported`. A command cannot
@@ -347,7 +347,7 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 - **Covering tests:** at least one named test for every supported/candidate row.
 
 **Release-blocking semantic decisions.**
-1. **TTL:** `SET EX/PX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` are mandatory release scope.
+1. **TTL:** `SET EX/PX`, `SETEX`/`PSETEX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` are mandatory release scope.
    W0 registers `hydracache-client-protocol` v3 as an additive extension with explicit expiry
    mutation and remaining-TTL metadata. W2 cannot close until the client surface applies TTL on write,
    expires keys before reads/counts, exposes Redis remaining-TTL semantics, and keeps v2 clients
@@ -489,7 +489,7 @@ RESP response ◄──(encode)── RespValue ◄── translate(ClientRespon
   `AUTH`, `CLIENT SETNAME`/`SETINFO`, `COMMAND` — minimal honest replies / no-ops where safe.
 - **Values:** `GET`→`Get`, `SET`→`Put`, `MGET`→`BatchGet`, `MSET`→`BatchPut`, `DEL`→`Invalidate`,
   `EXISTS`→`Get`-probe. Binary bulk strings ↔ HydraCache value bytes (opaque).
-- **TTL:** `SET EX/PX`, `EXPIRE`/`PEXPIRE`→`Put` ttl; `TTL`/`PTTL`→read metadata; `PERSIST`.
+- **TTL:** `SET EX/PX` plus `SETEX`/`PSETEX` aliases, `EXPIRE`/`PEXPIRE`→`Put` ttl; `TTL`/`PTTL`→read metadata; `PERSIST`.
 - **Namespace / logical DB:** the listener uses one configured HydraCache namespace as Redis DB 0.
   `SELECT 0` is a supported no-op for Redis URL/client compatibility. Non-zero, negative, or
   malformed DB indexes return a stable loud error and never switch namespace or keyspace.
@@ -537,7 +537,7 @@ operation exists and the RESP reply matches Redis semantics:
 - `get_set_del_mget_mset_roundtrip_through_client_surface`.
 - `client_protocol_v3_registers_ttl_metadata_without_breaking_v2`.
 - `set_ex_and_px_apply_expiry_through_client_surface`.
-- `expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`.
+- `setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`.
 - `expired_keys_are_absent_for_get_mget_exists_and_del`.
 - `ttl_pttl_use_bounded_tolerance_against_real_redis`.
 - `del_and_exists_return_redis_integer_counts`.

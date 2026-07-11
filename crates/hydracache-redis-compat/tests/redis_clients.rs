@@ -1319,8 +1319,8 @@ public final class RedisClientSmoke {
       must(values.size() == 2 && "v".equals(values.get(0)) && values.get(1) == null, "MGET failed");
       must(jedis.exists("jvm:k", "jvm:missing") == 1L, "EXISTS failed");
       must(jedis.del("jvm:k", "jvm:missing") == 1L, "DEL failed");
-      must("redis".equals(jedis.sendCommand(HcCommand.NAMESPACE)), "HC.NAMESPACE failed");
-      must("OK".equals(jedis.sendCommand(HcCommand.NAMESPACE, "redis")), "HC.NAMESPACE select failed");
+      must("redis".equals(asString(jedis.sendCommand(HcCommand.NAMESPACE))), "HC.NAMESPACE failed");
+      must("OK".equals(asString(jedis.sendCommand(HcCommand.NAMESPACE, "redis"))), "HC.NAMESPACE select failed");
       must("OK".equals(jedis.set("jvm:hc:a", "1")), "HC SET a failed");
       must("OK".equals(jedis.set("jvm:hc:b", "2")), "HC SET b failed");
       must("OK".equals(jedis.set("jvm:hc:keep", "keep")), "HC SET keep failed");
@@ -1350,6 +1350,13 @@ public final class RedisClientSmoke {
     public byte[] getRaw() {
       return raw;
     }
+  }
+
+  private static String asString(Object value) {
+    if (value instanceof byte[] bytes) {
+      return new String(bytes, StandardCharsets.UTF_8);
+    }
+    return String.valueOf(value);
   }
 
   private static void must(boolean ok, String message) {

@@ -188,7 +188,7 @@ cargo test -p hydracache-server --test server_lifecycle redis --locked
 ```
 
 The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL metadata/expiry
-compatibility, atomic `MSET`, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
+compatibility, atomic `MSET`, `SETEX`/`PSETEX` normalization to the same protocol v3 expiry path, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
 credential redaction, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
 coverage, minimal `INFO`, cache-subset `TYPE`, edge-local `HC.NAMESPACE`/tag invalidation,
