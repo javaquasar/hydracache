@@ -482,34 +482,6 @@ fn reserve_node_addrs(
         .collect()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::reserve_node_addrs;
-
-    #[test]
-    fn reserve_node_addrs_skips_redis_surface_when_disabled() {
-        let addrs = reserve_node_addrs(3, false);
-
-        assert_eq!(addrs.len(), 3);
-        assert!(addrs
-            .iter()
-            .all(|(_, _, _, redis_addr)| redis_addr.is_none()));
-    }
-
-    #[test]
-    fn reserve_node_addrs_reserves_redis_surface_when_enabled() {
-        let addrs = reserve_node_addrs(2, true);
-
-        assert_eq!(addrs.len(), 2);
-        for (http_addr, gossip_addr, raft_addr, redis_addr) in addrs {
-            let redis_addr = redis_addr.expect("redis surface should be reserved");
-            assert_ne!(http_addr, redis_addr);
-            assert_ne!(gossip_addr, redis_addr);
-            assert_ne!(raft_addr, redis_addr);
-        }
-    }
-}
-
 fn member_node_id_for_addr(addr: SocketAddr) -> String {
     let suffix = addr
         .to_string()
@@ -562,4 +534,32 @@ fn u32_field(value: &Value, field: &'static str) -> TestResult<u32> {
         .and_then(Value::as_u64)
         .ok_or_else(|| format!("admin status missing {field}"))?;
     Ok(u32::try_from(raw)?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::reserve_node_addrs;
+
+    #[test]
+    fn reserve_node_addrs_skips_redis_surface_when_disabled() {
+        let addrs = reserve_node_addrs(3, false);
+
+        assert_eq!(addrs.len(), 3);
+        assert!(addrs
+            .iter()
+            .all(|(_, _, _, redis_addr)| redis_addr.is_none()));
+    }
+
+    #[test]
+    fn reserve_node_addrs_reserves_redis_surface_when_enabled() {
+        let addrs = reserve_node_addrs(2, true);
+
+        assert_eq!(addrs.len(), 2);
+        for (http_addr, gossip_addr, raft_addr, redis_addr) in addrs {
+            let redis_addr = redis_addr.expect("redis surface should be reserved");
+            assert_ne!(http_addr, redis_addr);
+            assert_ne!(gossip_addr, redis_addr);
+            assert_ne!(raft_addr, redis_addr);
+        }
+    }
 }

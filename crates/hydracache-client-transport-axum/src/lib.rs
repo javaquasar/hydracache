@@ -216,6 +216,15 @@ struct CompareAndSetCommand {
     level: LockConsistency,
 }
 
+struct PutCommand {
+    request_id: String,
+    idempotency_key: Option<String>,
+    ns: Namespace,
+    key: StructuredKey,
+    value: Vec<u8>,
+    ttl_ms: Option<u64>,
+}
+
 impl ClientLockService {
     fn new() -> Self {
         Self {
@@ -616,12 +625,14 @@ impl ClientSurfaceState {
                 dimensions: _,
             } => self.handle_put(
                 identity,
-                envelope.request_id,
-                envelope.idempotency_key,
-                ns,
-                key,
-                value,
-                ttl_ms,
+                PutCommand {
+                    request_id: envelope.request_id,
+                    idempotency_key: envelope.idempotency_key,
+                    ns,
+                    key,
+                    value,
+                    ttl_ms,
+                },
             ),
             ClientRequest::Invalidate { ns, key } => {
                 if let Err(error) = self.admit_request(identity) {
@@ -1041,16 +1052,15 @@ impl ClientSurfaceState {
         let _ = self.audit.lock().expect("audit mutex").record(&event);
     }
 
-    fn handle_put(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        idempotency_key: Option<String>,
-        ns: Namespace,
-        key: StructuredKey,
-        value: Vec<u8>,
-        ttl_ms: Option<u64>,
-    ) -> ClientResponseEnvelope {
+    fn handle_put(&self, identity: &ClientIdentity, command: PutCommand) -> ClientResponseEnvelope {
+        let PutCommand {
+            request_id,
+            idempotency_key,
+            ns,
+            key,
+            value,
+            ttl_ms,
+        } = command;
         if value.len() > self.limits.max_value_bytes {
             return ClientResponseEnvelope::error(
                 request_id,
