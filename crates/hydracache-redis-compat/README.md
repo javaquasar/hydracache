@@ -8,9 +8,16 @@ server clone.
 
 HydraCache 0.63 supports bare `SET` plus TTL-bearing `SET EX/PX`, `SETEX`, and
 `PSETEX`. Redis write-conditional and retention options (`NX`, `XX`, `GET`,
-`KEEPTTL`, `EXAT`, `PXAT`) stay unsupported-loud and return `ERR syntax error`
-before dispatch. Those options are Redis lock/conditional-write semantics; they
-must not be faked with a read-then-write path.
+`KEEPTTL`) stay unsupported-loud and return `ERR syntax error` before dispatch.
+Those options include Redis lock/conditional-write semantics and must not be
+faked with a read-then-write path.
+
+`SET EXAT` and `SET PXAT` also stay unsupported-loud in 0.63, but they are
+absolute-expiry candidates rather than lock primitives. Supporting them later
+requires an explicit server-clock, past-timestamp, overflow, TTL-tolerance, and
+oracle/client test contract. The current gated proof covers raw `SET NX PX`
+fail-loud/no-mutation behavior; it does not claim redis-py `Lock`, redlock, or
+Redisson lock-library API compatibility.
 
 ## Health And Probe Commands
 
@@ -83,6 +90,7 @@ The release plan and conformance manifest pin this contract to executable tests:
 - `info_returns_minimal_honest_facade_state`
 - `set_write_conditional_options_follow_conformance_contract`
 - `set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error`
+- `client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation`
 - `expire_zero_or_negative_deletes_key_and_returns_one`
 - `expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl`
 - `expire_pexpire_and_persist_on_missing_key_return_zero`

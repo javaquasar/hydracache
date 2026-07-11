@@ -43,9 +43,10 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("redis_oracle_mget_nil_and_order_match_real_redis"));
     assert!(manifest.contains("redis_oracle_mset_atomicity_matches_real_redis"));
     assert!(manifest.contains("redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"));
-    assert!(manifest.contains("SET NX/XX/GET/KEEPTTL/EXAT/PXAT"));
+    assert!(manifest.contains("SET NX/XX/GET/KEEPTTL"));
+    assert!(manifest.contains("SET EXAT/PXAT"));
     assert!(manifest.contains("set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error"));
-    assert!(manifest.contains("client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging"));
+    assert!(manifest.contains("client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation"));
     assert!(manifest.contains("redis_oracle_ttl_edge_cases_match_real_redis"));
     assert!(manifest.contains("redis_oracle_set_options_are_documented_divergence"));
     assert!(manifest.contains("select_zero_is_supported_as_noop_for_single_database_contract"));
@@ -95,7 +96,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
         "redis_oracle_ttl_edge_cases_match_real_redis",
         "client_matrix_runs_mset_and_ttl_commands",
         "client_matrix_runs_resp3_negotiation_scenario",
-        "client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging",
+        "client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation",
         "client_matrix_runs_auth_required_connection_scenario",
         "client_matrix_runs_rediss_required_connection_scenario",
         "client_matrix_runs_hydracache_tag_extension_scenario",
@@ -241,8 +242,8 @@ async fn client_matrix_runs_mset_and_ttl_commands() {
 }
 
 #[tokio::test]
-#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves SET NX PX lock idiom fails loud"]
-async fn client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging() {
+#[ignore = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves raw SET NX PX fails loud promptly"]
+async fn client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation() {
     if !env_gate_enabled(CLIENT_MATRIX_ENV) {
         eprintln!("skipping Redis client matrix; set {CLIENT_MATRIX_ENV}=1 to run it");
         return;
@@ -252,14 +253,18 @@ async fn client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging() {
     let client = redis::Client::open(format!("redis://{addr}/")).unwrap();
     let mut connection = client.get_multiplexed_async_connection().await.unwrap();
 
-    let result = redis::cmd("SET")
-        .arg("lock:k")
-        .arg("token")
-        .arg("NX")
-        .arg("PX")
-        .arg(5_000)
-        .query_async::<Value>(&mut connection)
-        .await;
+    let result = tokio::time::timeout(
+        Duration::from_secs(2),
+        redis::cmd("SET")
+            .arg("lock:k")
+            .arg("token")
+            .arg("NX")
+            .arg("PX")
+            .arg(5_000)
+            .query_async::<Value>(&mut connection),
+    )
+    .await
+    .expect("raw SET NX PX should fail promptly in the 0.63 contract");
     let error = result.expect_err("SET NX PX must fail loud in the 0.63 contract");
     assert!(
         error.to_string().to_ascii_lowercase().contains("syntax"),

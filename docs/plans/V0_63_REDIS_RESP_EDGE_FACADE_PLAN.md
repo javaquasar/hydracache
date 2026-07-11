@@ -1076,10 +1076,13 @@ safe TTL extension:
 
 ### Contract Changes Required
 
-1. Split the current conformance row `SET NX/XX/GET/KEEPTTL/EXAT/PXAT`.
-   - `SET NX PX/EX` becomes `supported` only after implementation.
-   - `SET XX`, `SET GET`, `SET KEEPTTL`, `SET EXAT`, and `SET PXAT` remain `unsupported` unless each
-     receives a supported contract and tests.
+1. Promote only the relevant part of the current conformance rows.
+   - `SET NX PX/EX` moves out of the unsupported `SET NX/XX/GET/KEEPTTL` row and becomes `supported`
+     only after implementation.
+   - `SET XX`, `SET GET`, and `SET KEEPTTL` remain `unsupported` unless each receives a supported
+     contract and tests.
+   - `SET EXAT`/`PXAT` remain in their absolute-expiry candidate row unless the release also implements
+     server-clock, past-timestamp, overflow, TTL-tolerance, and oracle/client coverage for them.
 2. Add explicit lock rows to `docs/integrations/redis_compat_conformance.json`:
    - `SET NX PX/EX` -> `supported`, oracle `ttl_tolerance`.
    - `EVAL/EVALSHA lock-release script` -> `supported_with_caveat`, oracle `exact`.
@@ -1371,31 +1374,41 @@ the translator is broadly accurate: `EXISTS k k`/`DEL k k` duplicate counting, `
 `-2`/`-1`/positive, `SET EX/PX`, `SETEX`/`PSETEX`, and `PERSIST` are correct and already covered in the
 fast tier (`del_and_exists_return_redis_integer_counts`,
 `setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`,
-`mget_preserves_order_and_represents_misses_as_nil_bulk`). No correctness bug was found in the
-translator. The review found **one impactful compatibility gap** and **two unverified return edges**
-that must close — or be explicitly narrowed in the conformance manifest — before `0.63.0` ships. These
-items are additive to W0–W6: they do not widen the supported surface, they make the already-claimed
-surface honest. Each is one closed task with its own commit; run the targeted crate tests before each
-commit.
+`mget_preserves_order_and_represents_misses_as_nil_bulk`). No correctness bug was found in the audited
+SET/EXPIRE/TTL/PERSIST edges. This pass does not re-certify RESP3 response forms, atomic `MSET`
+rollback, AUTH credential redaction, or binary-key handling; those remain covered by W1/W2/W5 and their
+own targeted tests. The review found **one impactful compatibility gap** and **two unverified return
+edges** that must close, or be explicitly narrowed in the conformance manifest, before `0.63.0` ships.
+These items are additive to W0-W6: they do not widen the supported surface, they make the
+already-claimed surface honest. Each is one closed task with its own commit; run the targeted crate
+tests before each commit.
 
-### A1. `SET` write-conditional and retention options (NX/XX/GET/KEEPTTL/EXAT/PXAT)
+### A1. `SET` unsupported option families (NX/XX/GET/KEEPTTL and EXAT/PXAT)
 **Finding.** `parse_set_ttl_ms` accepts only `[]` or `[EX|PX, value]`; every other option shape is
 rejected as a translation error. `SET key value NX`, `SET key value XX`, `SET key value KEEPTTL`,
 `SET key value GET`, and the canonical lock idiom `SET key value NX PX ttl` therefore fail. This is
 loud, not silent, but it breaks the Redis distributed-lock primitive that mainstream lock libraries
 (redis-py `Lock`, node `redlock`, Redisson locks) depend on — the highest-value real-world Redis idiom
-after plain GET/SET.
+after plain GET/SET. `EXAT`/`PXAT` are a different family: absolute-expiry options, not conditional
+lock primitives, and they are discussed below as deferred candidates.
 **0.63 decision.** Choose path (a) for this release: declare these forms explicitly
 `unsupported-loud`. `SET NX`/`XX` is not a parser nicety; it is the Redis single-key conditional write
 primitive used by lock libraries. Shipping it safely would require an atomic client-surface
 conditional write path and a real client/oracle matrix, not a read-then-write shim. Therefore 0.63 keeps
 the supported write surface to bare `SET` plus `SET EX/PX`/`SETEX`/`PSETEX`, and every conditional,
-return-old-value, retention, or absolute-expiry option (`NX`, `XX`, `GET`, `KEEPTTL`, `EXAT`, `PXAT`)
-returns a Redis-shaped `ERR syntax error` before dispatch. This is intentional documented divergence:
-no silent success, no dropped option, no lock primitive that appears to work while racing.
+return-old-value, or retention option (`NX`, `XX`, `GET`, `KEEPTTL`) returns a Redis-shaped
+`ERR syntax error` before dispatch. This is intentional documented divergence: no silent success, no
+dropped option, no lock primitive that appears to work while racing.
+
+`SET EXAT`/`PXAT` also return `ERR syntax error` in 0.63, but for a separate scope reason. They are
+near-term absolute-expiry candidates because they can map to the TTL path as `timestamp - now`, but
+support needs an explicit server-clock source, past-timestamp deletion semantics, overflow handling,
+TTL tolerance, and pinned Redis oracle/client rows. They must not be described as lock-conditionals.
 **DoD tests.** `set_write_conditional_options_follow_conformance_contract`,
 `set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error`, plus the env-gated
-`client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging` row.
+`client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation` row. This row uses a raw
+`redis-rs` command and proves prompt fail-loud/no-mutation behavior; it is not a redis-py `Lock`,
+node `redlock`, or Redisson API proof.
 
 ### A2. `EXPIRE`/`PEXPIRE` with non-positive TTL
 **Finding.** `parse_expire_ttl_ms` collapses `value <= 0` to `ttl_ms = 0`. The store's
@@ -1428,15 +1441,22 @@ edges whose exact Redis wording is not part of the supported subset contract.
 
 | New code | Source | Covering test(s) | Tier |
 | --- | --- | --- | --- |
-| `SET` write-conditional/retention contract (A1) | `hydracache-redis-compat` + conformance manifest + client matrix | `set_write_conditional_options_follow_conformance_contract`, `set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error`, `client_matrix_set_nx_px_lock_idiom_fails_loud_without_hanging` | PR + Docker-gated |
+| `SET` write-conditional/retention contract (A1) | `hydracache-redis-compat` + conformance manifest + client matrix | `set_write_conditional_options_follow_conformance_contract`, `set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error`, `client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation` | PR + Docker-gated |
 | non-positive `EXPIRE` return/side-effect (A2) | `hydracache-redis-compat` | `expire_zero_or_negative_deletes_key_and_returns_one`, `expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl` | PR |
 | missing-key expiry return (A3) | `hydracache-redis-compat` | `expire_pexpire_and_persist_on_missing_key_return_zero` | PR |
 | rejected-shape error normalization (A4) | `hydracache-redis-compat` + oracle-normalization notes | `rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization` | PR |
 
 ### Gate additions
-- `SET` write-conditional/retention options (NX/XX/GET/KEEPTTL/EXAT/PXAT) have a single declared
-  behavior in the conformance manifest — supported-atomic **or** unsupported-loud with a Redis-shaped
-  error — proven by a client-matrix lock-idiom row. No silent success, no silent drop, no hang.
+- `SET` write-conditional/retention options (NX/XX/GET/KEEPTTL) have a single declared 0.63 behavior
+  in the conformance manifest: unsupported-loud with a Redis-shaped error, proven by fast translator
+  tests and the raw client-matrix `SET NX PX` row. No silent success, no silent drop, no mutation after
+  rejection, and no unbounded wait.
+- `SET EXAT`/`PXAT` are a separate unsupported absolute-expiry candidate row. The release note and
+  Redis compatibility docs must explain why they are deferred instead of bundling them with
+  conditional lock semantics.
+- The release note must include a named positioning callout that Redis lock libraries are not supported
+  in 0.63. No gate may describe the raw `SET NX PX` row as proof of redis-py `Lock`, node `redlock`,
+  or Redisson behavior; those claims require the lock-expansion client-library rows above.
 - `EXPIRE`/`PEXPIRE` with `0`/negative TTL delete the key and return `1` for existing keys, and the key
   is absent afterward. `EXPIRE`/`PEXPIRE`/`PERSIST` on a missing key return `0`. All asserted in the
   **fast tier**, not only the gated oracle.
