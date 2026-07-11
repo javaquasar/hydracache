@@ -18,6 +18,7 @@ use tokio_rustls::TlsAcceptor;
 
 const CLIENT_MATRIX_ENV: &str = "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS";
 const CLIENT_DOCKER_FORCE_ENV: &str = "HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER";
+const REDIS_ORACLE_REQUIRE_ENV: &str = "HYDRACACHE_REQUIRE_REDIS_ORACLE";
 const CLIENT_RUNTIME_SKIP_EXIT: i32 = 42;
 const PINNED_REDIS_IMAGES: [&str; 2] = ["redis:6.2.14", "redis:7.2.5"];
 const DOCKER_HOST_GATEWAY: &str = "host.docker.internal";
@@ -111,6 +112,7 @@ fn redis_client_heavy_gate_is_executable_and_env_gated() {
     for env_var in [
         CLIENT_MATRIX_ENV,
         CLIENT_DOCKER_FORCE_ENV,
+        REDIS_ORACLE_REQUIRE_ENV,
         "HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON",
         "HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE",
         "HYDRACACHE_REQUIRE_REDIS_CLIENT_GO",
@@ -1778,6 +1780,9 @@ struct RedisOracle {
 impl RedisOracle {
     async fn start_first_available() -> Option<Self> {
         if !docker_available() {
+            if env_gate_enabled(REDIS_ORACLE_REQUIRE_ENV) {
+                panic!("real Redis oracle was required but docker CLI is not available");
+            }
             eprintln!("skipping real Redis oracle; docker CLI is not available");
             return None;
         }

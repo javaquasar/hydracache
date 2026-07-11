@@ -235,11 +235,16 @@ inside the ignored matrix. To make one row mandatory in a nightly job, set the
 matching require flag alongside `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS`:
 
 ```powershell
+$env:HYDRACACHE_REQUIRE_REDIS_ORACLE = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_GO = '1'
 $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM = '1'
 ```
+
+For release-proof runs, `HYDRACACHE_REQUIRE_REDIS_ORACLE=1` is mandatory: the
+pinned Redis oracle rows must fail if Docker is unavailable instead of producing
+a skip-only green.
 
 To prove the containerized Python/Node/JVM paths specifically, force Docker
 fallback for rows that have container coverage:
