@@ -1,4 +1,3 @@
-use std::io::BufReader;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -11,7 +10,7 @@ use hydracache_redis_compat::{
     RedisAuthConfig, RedisListenerConfig, RedisRespServer, DEFAULT_REDIS_NAMESPACE,
 };
 use redis::Value;
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer};
 use tokio::net::TcpListener;
 use tokio::sync::watch;
 use tokio::task::JoinHandle;
@@ -1454,8 +1453,8 @@ fn rediss_acceptor(label: &str) -> TlsAcceptor {
 }
 
 fn read_certs(path: &Path) -> Vec<CertificateDer<'static>> {
-    let file = fs::File::open(path).unwrap();
-    let certs = rustls_pemfile::certs(&mut BufReader::new(file))
+    let pem = fs::read(path).unwrap();
+    let certs = CertificateDer::pem_slice_iter(&pem)
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
     assert!(
@@ -1466,10 +1465,8 @@ fn read_certs(path: &Path) -> Vec<CertificateDer<'static>> {
 }
 
 fn read_private_key(path: &Path) -> PrivateKeyDer<'static> {
-    let file = fs::File::open(path).unwrap();
-    rustls_pemfile::private_key(&mut BufReader::new(file))
-        .unwrap()
-        .expect("test TLS private key file should contain a key")
+    let pem = fs::read(path).unwrap();
+    PrivateKeyDer::from_pem_slice(&pem).expect("test TLS private key file should contain a key")
 }
 
 fn install_test_rustls_provider() {

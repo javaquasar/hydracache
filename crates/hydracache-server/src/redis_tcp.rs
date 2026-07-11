@@ -1,10 +1,12 @@
 use std::fs;
-use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use hydracache_redis_compat::RedisRespServer;
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::pki_types::{
+    pem::{Error as PemError, PemObject},
+    CertificateDer, PrivateKeyDer,
+};
 use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -93,7 +95,7 @@ pub enum RedisTlsError {
         /// Certificate path.
         path: PathBuf,
         /// Parse source.
-        source: std::io::Error,
+        source: PemError,
     },
     /// Private key file could not be read.
     #[error("failed to read redis TLS private key {path}: {source}")]
@@ -112,7 +114,7 @@ pub enum RedisTlsError {
         /// Private key path.
         path: PathBuf,
         /// Parse source.
-        source: std::io::Error,
+        source: PemError,
     },
     /// rustls rejected the certificate/key pair.
     #[error("invalid redis TLS certificate/key pair {cert_path} / {key_path}: {source}")]
@@ -175,11 +177,11 @@ pub async fn serve_redis_listener(
 }
 
 fn read_certs(path: &Path) -> Result<Vec<CertificateDer<'static>>, RedisTlsError> {
-    let file = fs::File::open(path).map_err(|source| RedisTlsError::CertRead {
+    let pem = fs::read(path).map_err(|source| RedisTlsError::CertRead {
         path: path.to_path_buf(),
         source,
     })?;
-    let certs = rustls_pemfile::certs(&mut BufReader::new(file))
+    let certs = CertificateDer::pem_slice_iter(&pem)
         .collect::<Result<Vec<_>, _>>()
         .map_err(|source| RedisTlsError::CertParse {
             path: path.to_path_buf(),
@@ -194,18 +196,20 @@ fn read_certs(path: &Path) -> Result<Vec<CertificateDer<'static>>, RedisTlsError
 }
 
 fn read_private_key(path: &Path) -> Result<PrivateKeyDer<'static>, RedisTlsError> {
-    let file = fs::File::open(path).map_err(|source| RedisTlsError::KeyRead {
+    let pem = fs::read(path).map_err(|source| RedisTlsError::KeyRead {
         path: path.to_path_buf(),
         source,
     })?;
-    rustls_pemfile::private_key(&mut BufReader::new(file))
-        .map_err(|source| RedisTlsError::KeyParse {
+    match PrivateKeyDer::from_pem_slice(&pem) {
+        Ok(key) => Ok(key),
+        Err(PemError::NoItemsFound) => Err(RedisTlsError::EmptyKey {
+            path: path.to_path_buf(),
+        }),
+        Err(source) => Err(RedisTlsError::KeyParse {
             path: path.to_path_buf(),
             source,
-        })?
-        .ok_or_else(|| RedisTlsError::EmptyKey {
-            path: path.to_path_buf(),
-        })
+        }),
+    }
 }
 
 fn install_default_rustls_provider() {

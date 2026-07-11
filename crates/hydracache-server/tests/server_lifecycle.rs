@@ -12,7 +12,7 @@ use hydracache_server::{
     ClusterStartMode, RedisApiConfig, RedisTcpError, ServerConfig, ServerConfigError, ServerRole,
     ServerRuntime, ServerState, TlsConfig,
 };
-use rustls::pki_types::ServerName;
+use rustls::pki_types::{pem::PemObject, CertificateDer, ServerName};
 use rustls::RootCertStore;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -206,8 +206,8 @@ fn install_test_rustls_provider() {
 
 fn rediss_connector(ca_path: &Path) -> TlsConnector {
     install_test_rustls_provider();
-    let file = fs::File::open(ca_path).unwrap();
-    let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(file))
+    let pem = fs::read(ca_path).unwrap();
+    let certs = CertificateDer::pem_slice_iter(&pem)
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
     let mut roots = RootCertStore::empty();
