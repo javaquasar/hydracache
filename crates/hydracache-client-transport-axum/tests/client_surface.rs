@@ -5,8 +5,8 @@ use hydracache::{
 };
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
-    ClientResponse, ClientResponseEnvelope, ClientWireMessage, EntryEventProjection, Namespace,
-    StructuredKey, TtlState, Watermark, PROTOCOL_VERSION,
+    ClientResponse, ClientResponseEnvelope, ClientWireMessage, ConditionalPutCondition,
+    EntryEventProjection, Namespace, StructuredKey, TtlState, Watermark, PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
@@ -306,6 +306,255 @@ async fn protocol_v2_clients_do_not_receive_v3_ttl_shapes() {
         response.result.unwrap_err().code,
         ClientErrorCode::IncompatibleVersion
     );
+}
+
+#[tokio::test]
+async fn protocol_v2_v3_clients_do_not_receive_lock_conditional_shapes() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    let mut request = ClientRequestEnvelope::new(
+        "lock-v3",
+        ClientRequest::ConditionalPut {
+            ns: ns(),
+            key: key("lock"),
+            value: b"token".to_vec(),
+            ttl_ms: Some(5_000),
+            condition: ConditionalPutCondition::IfAbsent,
+        },
+    );
+    request.protocol_version = 3;
+
+    let (frame_version, response) = send_with_frame_version(&surface, request, 3).await;
+
+    assert_eq!(frame_version, 3);
+    assert_eq!(response.protocol_version, 3);
+    assert_eq!(
+        response.result.unwrap_err().code,
+        ClientErrorCode::IncompatibleVersion
+    );
+    assert_eq!(surface.state().state_mutations(), 0);
+}
+
+#[tokio::test]
+async fn conditional_put_if_absent_is_atomic_under_contention() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+
+    let acquire = |request_id: &str, token: &'static [u8]| {
+        ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::ConditionalPut {
+                ns: ns(),
+                key: key("lock"),
+                value: token.to_vec(),
+                ttl_ms: Some(5_000),
+                condition: ConditionalPutCondition::IfAbsent,
+            },
+        )
+    };
+
+    assert_eq!(
+        send(&surface, acquire("lock-1", b"token-1"))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::ConditionalStored { stored: true }
+    );
+    assert_eq!(
+        send(&surface, acquire("lock-2", b"token-2"))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::ConditionalStored { stored: false }
+    );
+
+    let ClientResponse::Value { value } = send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "lock-get",
+            ClientRequest::Get {
+                ns: ns(),
+                key: key("lock"),
+            },
+        ),
+    )
+    .await
+    .result
+    .unwrap() else {
+        panic!("expected value response");
+    };
+    assert_eq!(value, Some(b"token-1".to_vec()));
+    assert_eq!(surface.state().state_mutations(), 1);
+}
+
+#[tokio::test]
+async fn conditional_put_treats_expired_key_as_absent() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+
+    let put = |request_id: &str, token: &'static [u8], ttl_ms| {
+        ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::ConditionalPut {
+                ns: ns(),
+                key: key("lock"),
+                value: token.to_vec(),
+                ttl_ms: Some(ttl_ms),
+                condition: ConditionalPutCondition::IfAbsent,
+            },
+        )
+    };
+
+    assert_eq!(
+        send(&surface, put("lock-1", b"token-1", 10))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::ConditionalStored { stored: true }
+    );
+    surface.state().advance_cache_time_for_tests(11);
+    assert_eq!(
+        send(&surface, put("lock-2", b"token-2", 10))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::ConditionalStored { stored: true }
+    );
+}
+
+#[tokio::test]
+async fn compare_value_invalidate_removes_only_matching_token() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+    let put = ClientRequestEnvelope::new(
+        "put-lock",
+        ClientRequest::ConditionalPut {
+            ns: ns(),
+            key: key("lock"),
+            value: b"owner".to_vec(),
+            ttl_ms: Some(5_000),
+            condition: ConditionalPutCondition::IfAbsent,
+        },
+    );
+    assert!(send(&surface, put).await.result.is_ok());
+
+    let release = |request_id: &str, token: &'static [u8]| {
+        ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::CompareValueAndInvalidate {
+                ns: ns(),
+                key: key("lock"),
+                expected_value: token.to_vec(),
+            },
+        )
+    };
+    assert_eq!(
+        send(&surface, release("wrong", b"wrong"))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::CompareValueApplied { applied: false }
+    );
+    let ClientResponse::Value { value } = send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "get-after-wrong",
+            ClientRequest::Get {
+                ns: ns(),
+                key: key("lock"),
+            },
+        ),
+    )
+    .await
+    .result
+    .unwrap() else {
+        panic!("expected value response");
+    };
+    assert_eq!(value, Some(b"owner".to_vec()));
+
+    assert_eq!(
+        send(&surface, release("right", b"owner"))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::CompareValueApplied { applied: true }
+    );
+    let ClientResponse::Value { value } = send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "get-after-right",
+            ClientRequest::Get {
+                ns: ns(),
+                key: key("lock"),
+            },
+        ),
+    )
+    .await
+    .result
+    .unwrap() else {
+        panic!("expected value response");
+    };
+    assert!(value.is_none());
+}
+
+#[tokio::test]
+async fn compare_value_expire_extends_only_matching_token() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+    let put = ClientRequestEnvelope::new(
+        "put-lock",
+        ClientRequest::ConditionalPut {
+            ns: ns(),
+            key: key("lock"),
+            value: b"owner".to_vec(),
+            ttl_ms: Some(100),
+            condition: ConditionalPutCondition::IfAbsent,
+        },
+    );
+    assert!(send(&surface, put).await.result.is_ok());
+
+    let extend = |request_id: &str, token: &'static [u8], ttl_ms| {
+        ClientRequestEnvelope::new(
+            request_id,
+            ClientRequest::CompareValueAndExpire {
+                ns: ns(),
+                key: key("lock"),
+                expected_value: token.to_vec(),
+                ttl_ms,
+            },
+        )
+    };
+    assert_eq!(
+        send(&surface, extend("wrong", b"wrong", 1_000))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::CompareValueApplied { applied: false }
+    );
+    surface.state().advance_cache_time_for_tests(50);
+    assert_eq!(
+        send(&surface, extend("right", b"owner", 1_000))
+            .await
+            .result
+            .unwrap(),
+        ClientResponse::CompareValueApplied { applied: true }
+    );
+    surface.state().advance_cache_time_for_tests(100);
+    let ClientResponse::Value { value } = send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "get-extended",
+            ClientRequest::Get {
+                ns: ns(),
+                key: key("lock"),
+            },
+        ),
+    )
+    .await
+    .result
+    .unwrap() else {
+        panic!("expected value response");
+    };
+    assert_eq!(value, Some(b"owner".to_vec()));
 }
 
 #[tokio::test]

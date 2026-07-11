@@ -23,8 +23,8 @@ use hydracache::{
 use hydracache_client_protocol::{
     protocol_version_supported, BatchItemStatus, BatchPutEntry, CasExpectation, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, LockConsistency, Namespace,
-    StructuredKey, TtlState, VersionHandshake, PROTOCOL_VERSION,
+    ClientResponseEnvelope, ClientWireMessage, ConditionalPutCondition, InvalidationEvent,
+    LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake, PROTOCOL_VERSION,
 };
 use hydracache_observability::{AuditEvent, AuditRecorder, InMemoryAuditSink, TenantStatus};
 use serde::{Deserialize, Serialize};
@@ -713,6 +713,45 @@ impl ClientSurfaceState {
             ClientRequest::GetTtl { ns, key } => {
                 self.handle_get_ttl(identity, envelope.request_id, ns, key)
             }
+            ClientRequest::ConditionalPut {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                condition,
+            } => self.handle_conditional_put(
+                identity,
+                envelope.request_id,
+                ns,
+                key,
+                value,
+                ttl_ms,
+                condition,
+            ),
+            ClientRequest::CompareValueAndInvalidate {
+                ns,
+                key,
+                expected_value,
+            } => self.handle_compare_value_invalidate(
+                identity,
+                envelope.request_id,
+                ns,
+                key,
+                expected_value,
+            ),
+            ClientRequest::CompareValueAndExpire {
+                ns,
+                key,
+                expected_value,
+                ttl_ms,
+            } => self.handle_compare_value_expire(
+                identity,
+                envelope.request_id,
+                ns,
+                key,
+                expected_value,
+                ttl_ms,
+            ),
             ClientRequest::EvictRegion { ns } => {
                 if let Err(error) = self.admit_request(identity) {
                     ClientResponseEnvelope::error(envelope.request_id, error)
@@ -1167,6 +1206,150 @@ impl ClientSurfaceState {
         ClientResponseEnvelope::ok(request_id, ClientResponse::Ttl { state })
     }
 
+    fn handle_conditional_put(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        value: Vec<u8>,
+        ttl_ms: Option<u64>,
+        condition: ConditionalPutCondition,
+    ) -> ClientResponseEnvelope {
+        if value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
+            );
+        }
+        if let ConditionalPutCondition::IfPresentValue(expected) = &condition {
+            if expected.len() > self.limits.max_value_bytes {
+                return ClientResponseEnvelope::error(
+                    request_id,
+                    ClientErrorEnvelope::new(
+                        ClientErrorCode::TooLarge,
+                        false,
+                        "expected value too large",
+                    ),
+                );
+            }
+        }
+        if let Err(error) = self.admit_put(identity, &ns, &key, value.len() as u64) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let map_key = store_key(&ns, &key);
+        let mut store = self.store.lock().expect("store mutex");
+        let stored = match condition {
+            ConditionalPutCondition::IfAbsent => {
+                if live_entry_mut(&mut store, &map_key, now_ms).is_some() {
+                    false
+                } else {
+                    store.insert(map_key, stored_value(value, now_ms, ttl_ms));
+                    true
+                }
+            }
+            ConditionalPutCondition::IfPresentValue(expected) => {
+                let should_store = live_entry_mut(&mut store, &map_key, now_ms)
+                    .is_some_and(|entry| entry.value == expected);
+                if should_store {
+                    store.insert(map_key, stored_value(value, now_ms, ttl_ms));
+                    true
+                } else {
+                    false
+                }
+            }
+        };
+        drop(store);
+        if stored {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::ConditionalStored { stored })
+    }
+
+    fn handle_compare_value_invalidate(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        expected_value: Vec<u8>,
+    ) -> ClientResponseEnvelope {
+        if expected_value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::TooLarge,
+                    false,
+                    "expected value too large",
+                ),
+            );
+        }
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let map_key = store_key(&ns, &key);
+        let mut store = self.store.lock().expect("store mutex");
+        let applied = live_entry_mut(&mut store, &map_key, now_ms)
+            .is_some_and(|entry| entry.value == expected_value);
+        if applied {
+            store.remove(&map_key);
+        }
+        drop(store);
+        if applied {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
+    }
+
+    fn handle_compare_value_expire(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        expected_value: Vec<u8>,
+        ttl_ms: u64,
+    ) -> ClientResponseEnvelope {
+        if expected_value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::TooLarge,
+                    false,
+                    "expected value too large",
+                ),
+            );
+        }
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let mut store = self.store.lock().expect("store mutex");
+        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
+            .map(|entry| {
+                if entry.value == expected_value {
+                    entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                    true
+                } else {
+                    false
+                }
+            })
+            .unwrap_or(false);
+        drop(store);
+        if applied {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
+    }
+
     fn admit_request(&self, identity: &ClientIdentity) -> Result<(), ClientErrorEnvelope> {
         if let Some(isolation) = &self.isolation {
             isolation
@@ -1526,6 +1709,13 @@ fn live_value(
         return None;
     }
     store.get(key).map(|entry| entry.value.clone())
+}
+
+fn stored_value(value: Vec<u8>, now_ms: u64, ttl_ms: Option<u64>) -> StoredValue {
+    match ttl_ms {
+        Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
+        None => StoredValue::persistent(value),
+    }
 }
 
 fn live_entry_mut<'a>(
