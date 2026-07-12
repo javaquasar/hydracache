@@ -36,6 +36,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          cache-targets: false
           shared-key: simulator-demo
 
       - name: Install wasm-pack
