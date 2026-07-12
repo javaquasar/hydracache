@@ -130,6 +130,59 @@ jobs:
       - name: Enforce performance budget
         run: cargo run -p xtask --locked -- bench-budget --current target/criterion
 
+  redis-compat-release-proof:
+    name: Redis Compatibility Release Proof
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.x"
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: redis-compat-release-proof
+
+      - name: Check Docker availability
+        run: |
+          docker version
+          docker info
+
+      - name: Redis fast checks
+        run: |
+          cargo fmt --all -- --check
+          cargo test -p xtask --test doc_check redis_compat --locked -- --nocapture
+          cargo test -p hydracache-redis-compat --locked
+          cargo test -p hydracache-server --test server_lifecycle redis --locked
+          cargo clippy -p hydracache-redis-compat --all-targets --locked -- -D warnings
+
+      - name: Redis Docker/client/oracle matrix
+        env:
+          HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS: "1"
+          HYDRACACHE_REQUIRE_REDIS_ORACLE: "1"
+          HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_GO: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM: "1"
+        run: cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture
+
+      - name: Redis resource smoke
+        env:
+          HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE: "1"
+        run: cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture
+
   dst-nightly-soak:
     name: DST and Soak Nightly
     runs-on: ubuntu-latest

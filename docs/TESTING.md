@@ -207,6 +207,15 @@ cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored
 Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS -ErrorAction SilentlyContinue
 ```
 
+The CI workflow has a manual/scheduled job named `Redis Compatibility Release
+Proof` for this tier. It repeats the Redis checks normally run locally (`fmt`,
+`redis_compat` doc-check, `hydracache-redis-compat` tests,
+`hydracache-server` Redis lifecycle test, and Redis clippy), then runs the
+Docker/client/oracle matrix with required oracle and required Python/Node/Go/JVM
+rows, and finally runs the RESP resource smoke. This job is not part of normal
+push/PR fast CI; trigger it with `workflow_dispatch` or wait for the scheduled
+run.
+
 That gated tier contains a compiled `redis-rs` mainstream-client smoke and the
 real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
