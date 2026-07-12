@@ -300,7 +300,14 @@ Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
 
 That gate starts real `hydracache-server` processes with the RESP listener enabled
 and verifies a supported-subset RESP roundtrip before and after a daemon
-drain/restart boundary.
+drain/restart boundary for one selected RESP endpoint. It is a lifecycle and
+edge-wiring gate, not a distributed Redis consistency proof. The 0.63 Plan B
+scope also requires node-local sentinels: write through RESP endpoint A and read
+through endpoint B must document the expected miss, and lock acquire through
+endpoint A and endpoint B must document that multi-endpoint Redis lock mutual
+exclusion is not claimed. The sentinel names are
+`multinode_resp_facade_documents_node_local_state` and
+`multinode_resp_lock_subset_is_single_endpoint_only`.
 
 Commands without executable manifest coverage stay `candidate` or `unsupported`.
 

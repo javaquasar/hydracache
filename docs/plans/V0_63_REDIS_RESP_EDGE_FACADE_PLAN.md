@@ -6,7 +6,7 @@
 >   semantics, so polyglot stacks can point **existing mainstream Redis clients** at HydraCache by
 >   changing a connection string — **not** by rewriting cache code. It **translates** RESP into the
 >   `ClientRequest`/`ClientResponse` family and **reuses** the client-surface execution layer
->   (tenancy, limits, consistency); the expanded 0.63 scope registers a targeted
+>   (tenancy, limits, accounting, protocol-version gates); the expanded 0.63 scope registers a targeted
 >   `hydracache-client-protocol` v3 extension for TTL metadata, but it does **not** re-implement
 >   cache access and does **not** make HydraCache a Redis clone.
 > - **Why:** the honest #1 remaining weakness is **adoption reach for non-Rust stacks** (POSITIONING:
@@ -52,9 +52,12 @@ changed crate + downstream; full `verify` at merge/tag.
   `crates/hydracache-client-transport-axum/src/lib.rs`: `ClientSurfaceState` (lib.rs:283) turns a
   request into a `ClientResponseEnvelope` (:491/:704/…), applying **tenancy** (`TenantStatus`,
   quotas), **limits** (`ClientSurfaceLimits`, :75, `max_value_bytes`/`max_batch_*`), auth identity
-  (`HYDRACACHE_CLIENT_ID_HEADER`/`TENANT_HEADER`), and the lock/CAS semantics. The RESP facade drives
+  (`HYDRACACHE_CLIENT_ID_HEADER`/`TENANT_HEADER`), and the lock/CAS semantics for the selected
+  `ClientSurfaceState`. The RESP facade drives
   this in-process — it does **not** re-serialize over the wire and does **not** call the cache
-  directly, so tenancy/limits/consistency are preserved for free.
+  directly, so tenancy, limits, metrics, redaction, auth state, and protocol gates are preserved. This
+  does **not** by itself make RESP state cross-daemon or distributed-lock safe; the `0.63` release must
+  either implement a replicated backend or explicitly claim only a single-endpoint/node-local facade.
 - **The TTL/tag claims require explicit protocol and execution work.**
   `ClientRequest::Put` already carries `ttl_ms`, but the current client-surface dispatch drops that
   field (`ttl_ms: _`) before `handle_put`, and `handle_put` stores only value bytes. `ClientResponse`
@@ -79,10 +82,54 @@ changed crate + downstream; full `verify` at merge/tag.
 ## Release Theme
 
 Let existing Redis clients talk to HydraCache for the **cache subset**, honestly: RESP in, native
-`ClientRequest` execution (tenancy/limits/consistency) underneath, HydraCache-native concepts
+`ClientRequest` execution underneath, HydraCache-native concepts
 (tags/invalidation/diagnostics) exposed as explicit `HC.*` extension commands, everything outside the
 subset **failing loud**. An edge accelerator — **not** a Redis clone, **not** Redis Cluster, and only a
-targeted client-protocol v3 expansion for TTL metadata rather than a new cache API family.
+targeted client-protocol v3/v4 expansion for TTL and lock metadata rather than a new cache API family.
+
+In `0.63`, the release claim is explicitly **single-endpoint and node-local**: the RESP listener
+preserves client-surface tenancy, limits, accounting, auth, redaction, and protocol-version gates for
+the daemon that owns that listener, but it does not claim cross-daemon Redis key visibility or
+distributed Redis lock safety.
+
+## Plan B: Single-Endpoint Node-Local Posture
+
+The 2026-07-12 release audit found that the RESP facade currently stores the cache subset in the
+`ClientSurfaceState` backing map owned by one daemon process. That is a valid edge-facade starting
+point, but it is not a replicated Redis-compatible data plane. `0.63` therefore chooses **Plan B**:
+ship the single-endpoint facade honestly, document and test the boundary, and leave the distributed
+RESP backend for a later release instead of silently implying cross-node semantics.
+
+Planned `0.63` changes:
+
+1. **Positioning and docs.** `redis-compat.md`, implementation notes, COMPAT, GATES, TESTING,
+   release notes, and this plan must say that RESP data and Redis-lock state are node-local to the
+   daemon/listener that served the connection.
+2. **Runtime/operational guardrails.** The release must expose or log an explicit
+   `redis_scope=node-local` posture for the RESP listener and must document that production examples
+   use one selected endpoint, not a load-balanced Service/VIP spanning multiple daemons. A future
+   runtime config acknowledgement can make non-loopback exposure fail loud unless the operator accepts
+   the node-local scope.
+3. **Negative sentinels.** Add network-gated tests that document the boundary: write via RESP node A
+   and read via RESP node B returns a miss, and `SET key token NX PX ttl` can succeed on node A and
+   node B independently. These tests must be named as documented-divergence sentinels, not as
+   distributed support.
+4. **Gate wording.** The multi-node RESP E2E gate proves listener lifecycle, drain/restart behavior,
+   and that the edge path still goes through `ClientSurfaceState`; it must not claim cross-node Redis
+   consistency or distributed lock safety.
+5. **Release note.** The release note must include a named callout: "single-endpoint Redis RESP
+   facade; no cross-daemon Redis key visibility; no multi-endpoint Redis lock mutual exclusion."
+
+What remains for a future Plan A / distributed RESP backend:
+
+- a replicated/grid-aware backend seam for RESP values and TTL metadata;
+- cross-node `GET`/`SET`/`DEL`/`EXISTS`/`MGET` visibility with defined consistency semantics;
+- a real atomic `MSET` contract across keys and ownership boundaries, or a loud narrowed contract;
+- distributed `SET NX PX/EX` and token-safe release/extend semantics backed by the lock/CAS engine;
+- tests for write-on-A/read-on-B, lock-acquire-on-A/contention-on-B, release-on-A/acquire-on-B,
+  extend-on-A/TTL-visible-on-B, and restart/drain under those scenarios;
+- updated Redis-client/oracle claims that distinguish standalone endpoint compatibility from
+  distributed HydraCache semantics.
 
 ## Non-Goals
 
@@ -261,10 +308,12 @@ loose reminder.
    decode to the same parser-neutral `RedisCommand` model. Unsupported RESP3 aggregate command frames
    (`Map`, `Set`, `Push`, attributes as commands, or nested non-string arguments) are rejected before
    mutation. The docs and oracle normalization must say exactly what is compared under RESP2 and RESP3.
-4. **Multi-node HydraCache e2e (W5/W6).** Add a gated test that drives the RESP facade against a real
-   multi-daemon HydraCache grid, not only an in-process state. The test writes through RESP, reads
-   through RESP, exercises at least one leader restart/drain or node restart path, and proves the RESP
-   edge still goes through tenancy, limits, and consistency rather than bypassing the cluster surface.
+4. **Multi-node HydraCache e2e (W5/W6).** Add gated tests that drive the RESP facade against real
+   multi-daemon HydraCache processes, not only in-process state. The positive scenario writes and reads
+   through one selected RESP endpoint before and after a member restart/drain, proving listener
+   lifecycle and edge wiring through `ClientSurfaceState`. Separate negative sentinels document that
+   cross-endpoint RESP key visibility and multi-endpoint Redis lock exclusion are **not** claimed in
+   `0.63`.
 5. **Executable docs (W6).** Every copy-paste example in `docs/integrations/redis-compat.md` must be
    executable as a docs-smoke test. That includes `redis-cli`, Rust, Python, Node, Go, and JVM examples
    when the corresponding client matrix row is claimed. The expanded release requires executable
@@ -488,7 +537,8 @@ RESP response ◄──(encode)── RespValue ◄── translate(ClientRespon
 ## W2. Command translator — the cache subset
 
 **Goal.** Translate the honest MVP subset into `ClientRequest` and back, executing through
-`ClientSurfaceState` so tenancy/limits/consistency hold.
+`ClientSurfaceState` so tenancy, limits, metrics, auth state, redaction, and protocol gates hold for
+the selected RESP endpoint.
 
 **MVP subset (blueprint §"MVP Command Subset").**
 - **Connection/compat (many clients issue these before user code):** `PING`, `ECHO`, `QUIT`, `HELLO`,
@@ -797,10 +847,12 @@ either new data models, execution engines, or messaging systems rather than cach
   during daemon drain; reconnects with the same client library; and verifies no response corruption,
   cross-connection namespace leak, or ambiguous partial mutation. Idempotency-key behavior must be
   documented for retryable writes.
-- **Multi-node HydraCache e2e:** a Docker/network-gated test runs the RESP listener against a real
-  multi-daemon HydraCache grid. The scenario writes through RESP, reads through RESP, restarts or
-  drains one grid node, and verifies the facade still goes through tenant/limit/consistency paths. This
-  proves the facade is an edge to the shipped client surface, not an in-process-only cache shortcut.
+- **Multi-node HydraCache e2e:** Docker/network-gated tests run the RESP listener against real
+  multi-daemon HydraCache processes. The positive scenario writes and reads through one selected RESP
+  endpoint before and after a member drain/restart. Negative sentinels document the Plan B boundary:
+  RESP writes on endpoint A are not visible on endpoint B, and Redis lock acquire can succeed
+  independently on two endpoints. This proves lifecycle and node-local scope, not distributed Redis
+  consistency.
 
 **Additional tests & requirements.**
 - `pipelined_requests_preserve_response_order`.
@@ -1028,7 +1080,7 @@ HydraCache does and does not implement.
 | mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `client_matrix_runs_mset_and_ttl_commands`, `client_matrix_runs_resp3_negotiation_scenario`, `client_matrix_runs_auth_required_connection_scenario`, `client_matrix_runs_rediss_required_connection_scenario` | PR + Docker-gated / nightly |
 | real Redis oracle (W5) | pinned Docker `redis-server` versions + same client scenario suite against Redis and HydraCache | `redis_oracle_supported_subset_matches_real_redis`, `redis_oracle_uses_pinned_redis_versions`, `redis_oracle_del_exists_counts_match_real_redis`, `redis_oracle_mget_nil_and_order_match_real_redis`, `redis_oracle_mset_atomicity_matches_real_redis`, `redis_oracle_ttl_matches_real_redis_with_bounded_tolerance`, `redis_oracle_unsupported_divergence_is_documented`, `redis_oracle_hc_extensions_are_hydracache_only` | Docker-gated / nightly |
 | reconnect/failure semantics (W5) | RESP listener live tests | `connection_close_mid_command_does_not_corrupt_next_response`, `connection_close_mid_pipeline_preserves_committed_response_boundaries`, `reconnect_and_retry_does_not_leak_connection_local_namespace`, `server_drain_during_pipeline_has_documented_completion_or_close_behavior` | Docker-gated / nightly |
-| multi-node RESP e2e (W5) | real multi-daemon HydraCache grid + RESP listener | `multinode_resp_facade_roundtrip_survives_node_restart_or_drain` | network-gated / nightly |
+| multi-node RESP e2e (W5) | real multi-daemon HydraCache processes + RESP listener | `multinode_resp_facade_roundtrip_survives_node_restart_or_drain`, `multinode_resp_facade_documents_node_local_state`, `multinode_resp_lock_subset_is_single_endpoint_only` | network-gated / nightly |
 | daemon RESP lifecycle (W6) | `hydracache-server` | `daemon_serves_resp_listener_only_when_enabled_and_drains_gracefully` | PR |
 | executable docs (W6) | `docs/integrations/redis-compat.md` examples | `redis_compat_docs_examples_are_executable_or_gated_with_labels` | PR + Docker-gated |
 | release ledger/docs/gates (W6) | `COMPAT.md` / `GATES.md` / `TESTING.md` / release notes | `redis_compat_docs_matrix_has_test_for_every_supported_command`, `redis_compat_translator_has_no_command_missing_from_docs_matrix`, `compat_register_mentions_resp2_subset_and_failure_modes`, `gates_include_fast_contract_and_docker_client_matrix_rows`, `testing_docs_explain_how_to_add_a_resp_command`, `redis_oracle_versions_are_pinned_and_documented`, `oracle_normalization_rules_are_documented_and_checked`, `release_note_lists_supported_and_not_shipped_commands` | PR |
@@ -1394,11 +1446,12 @@ lock-library claim.
 - Connection-close and reconnect behavior is tested: close mid-command, close mid-pipeline, drain
   during pipeline, and reconnect-and-retry cannot corrupt response boundaries, leak connection-local
   namespace state, or hide ambiguous partial writes.
-- A network-gated multi-node HydraCache RESP e2e writes and reads through the facade across a real
-  daemon/grid restart or drain, proving the edge listener does not bypass tenancy, limits, or
-  consistency.
-- Tenancy/limits/consistency are enforced because the facade drives `ClientSurfaceState`, not the cache
-  directly; an oversized value is rejected loud, not truncated (W2).
+- A network-gated multi-node HydraCache RESP E2E writes and reads through one selected endpoint across
+  a real daemon restart or drain, and negative sentinels document that cross-endpoint RESP visibility
+  and multi-endpoint Redis lock exclusion are not claimed in `0.63`.
+- Tenancy, limits, metrics, auth state, redaction, and protocol gates are enforced because the facade
+  drives `ClientSurfaceState`, not the cache directly; an oversized value is rejected loud, not
+  truncated (W2).
 - `DEL`/`EXISTS` return Redis-style integer counts; `MGET` preserves order and nil misses; `MSET` is
   atomic with duplicate-key last-write-wins semantics; `SET EX/PX`, `EXPIRE`/`PEXPIRE`, `PERSIST`,
   `TTL`, and `PTTL` match Redis semantics with bounded TTL tolerance; `COMMAND` advertises only
@@ -1518,10 +1571,12 @@ edges whose exact Redis wording is not part of the supported subset contract.
 - `SET EXAT`/`PXAT` are a separate unsupported absolute-expiry candidate row. The release note and
   Redis compatibility docs must explain why they are deferred instead of bundling them with
   conditional lock semantics.
-- The release note must include a named positioning callout that only the narrow single-endpoint lock
-  subset is supported. redis-py `Lock` and Node `redlock@5.0.0-beta.2` single-resource rows are proof
-  only for those pinned library paths. Redisson full locks, Redlock quorum, multi-key locks, and
-  unreviewed Go/JVM lock libraries remain unsupported unless separate allowlist rows land.
+- The release note must include a named positioning callout that only the narrow single-endpoint,
+  node-local lock subset is supported. redis-py `Lock` and Node `redlock@5.0.0-beta.2`
+  single-resource rows are proof only for one RESP endpoint and those pinned library paths. Redisson
+  full locks, Redlock quorum, multi-key locks, multi-endpoint Redis lock mutual exclusion, and
+  unreviewed Go/JVM lock libraries remain unsupported unless separate allowlist and distributed-backend
+  rows land.
 - `EXPIRE`/`PEXPIRE` with `0`/negative TTL delete the key and return `1` for existing keys, and the key
   is absent afterward. `EXPIRE`/`PEXPIRE`/`PERSIST` on a missing key return `0`. All asserted in the
   **fast tier**, not only the gated oracle.

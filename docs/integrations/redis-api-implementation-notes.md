@@ -23,6 +23,15 @@ the public client path. That keeps tenant scope, request limits, deadlines,
 state mutation rules, auditability, and protocol-version checks aligned with the
 normal HydraCache client API.
 
+In `0.63.0`, that state is intentionally scoped to the daemon process that owns
+the RESP listener. The Redis facade is therefore a node-local edge facade, not a
+replicated Redis data plane. A value written through RESP endpoint A is not
+claimed to be visible through RESP endpoint B, and Redis lock acquire/release
+scripts are safe only for clients using the same selected endpoint. This
+node-local posture is a release contract, not an accident: distributed RESP
+state requires a separate grid-aware backend, cross-endpoint visibility tests,
+and distributed lock contention tests.
+
 ## Data Model
 
 The Redis-compatible data model is a cache-subset model:
@@ -30,10 +39,10 @@ The Redis-compatible data model is a cache-subset model:
 - keys are Redis bulk-string bytes;
 - values are opaque byte strings stored as HydraCache cache entries;
 - supported reads and writes preserve Redis nil, integer-count, and array-order
-  behavior for the claimed subset;
+  behavior for the claimed subset on one selected RESP endpoint;
 - TTL support is mapped onto HydraCache client protocol v3 expiry metadata;
 - Redis lock acquire/release/extend support is mapped onto protocol v4
-  conditional value operations;
+  conditional value operations for the same endpoint;
 - Redis hashes, sorted sets, lists, streams, modules, transactions, pub/sub, and
   general Lua are intentionally outside this facade.
 
@@ -130,6 +139,12 @@ Redis Cluster is intentionally not implemented. The facade does not compute hash
 slots, does not maintain Redis cluster topology, does not answer `CLUSTER *`,
 and never emits `MOVED` or `ASK`. Cluster-aware Redis clients must be configured
 in standalone mode when targeting HydraCache.
+
+Standalone also means "one selected HydraCache RESP endpoint" for this release.
+Operators must not infer distributed Redis semantics from a multi-daemon
+HydraCache deployment. The multi-node daemon tests prove listener lifecycle and
+document the node-local boundary; they do not prove cross-daemon Redis key
+visibility or multi-endpoint lock mutual exclusion.
 
 ## Honest Probe And Admin Posture
 

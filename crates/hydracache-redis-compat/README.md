@@ -130,10 +130,14 @@ The release plan and conformance manifest pin this contract to executable tests:
 - `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`
 - `resp_listener_admin_commands_are_disabled_before_mutation`
 
-The lock-library compatibility claim is not complete until the Docker/client
-matrix is run with both `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1` and
+The lock-library compatibility claim is single-endpoint only and is not complete
+until the Docker/client matrix is run with both
+`HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1` and
 `HYDRACACHE_REQUIRE_REDIS_ORACLE=1`; skip-only green is not enough for the
-redis-py/redlock lock subset.
+redis-py/redlock lock subset. The multi-daemon release proof must also keep the
+planned node-local sentinels wired:
+- `multinode_resp_facade_documents_node_local_state`
+- `multinode_resp_lock_subset_is_single_endpoint_only`
 - `hc_namespace_is_listener_scoped_not_redis_multidb`
 - `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`
 - `hc_tag_missing_key_does_not_create_metadata_or_mutate`
