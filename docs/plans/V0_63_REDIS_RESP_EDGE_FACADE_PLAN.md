@@ -1122,11 +1122,22 @@ Common lock libraries release and extend using Lua because `DEL key` is unsafe. 
 atomic equivalents:
 
 - `CompareValueAndInvalidate { ns, key, expected_value }` -> returns an applied count.
-- `CompareValueAndExpire { ns, key, expected_value, ttl_ms }` -> returns an applied count.
+- `CompareValueAndExpire { ns, key, expected_value, ttl_ms, mode }` -> returns an applied count.
+  `mode=Replace` sets the remaining TTL to `ttl_ms`; `mode=ReplaceIfExpiring` sets the TTL only
+  when the live entry already has an expiry; `mode=AddToRemaining` adds `ttl_ms` to the current
+  remaining TTL. The latter two modes are required for redis-py `Lock.extend`, whose script returns
+  `0` for missing/persistent keys and whose default `replace_ttl=False` adds the requested extension
+  to the existing remaining TTL rather than replacing it.
 - Both operations first treat expired entries as missing.
 - Wrong token returns `0` and leaves the key untouched.
 - Missing or expired key returns `0`.
-- Matching token returns `1`; release removes the key, extension updates TTL.
+- Matching token returns `1`; release removes the key, extension updates TTL according to the declared
+  expiry mode. redis-py `replace_ttl=False` must preserve the current remaining TTL and add the
+  requested extension under the same store lock; replacing it with only the requested extension is a
+  safety bug because it can make a live owner lose the lock earlier than the client library believes.
+- redis-py extension on a matching but persistent key returns `0` and leaves the key persistent,
+  matching the script's `PTTL < 0` branch. Simple token-safe `PEXPIRE` and pinned Node redlock
+  replacement scripts keep replacement semantics because their scripts do not require an existing TTL.
 - These operations must be single-store-lock mutations in `ClientSurfaceState` and versioned in the
   client protocol if exposed beyond the in-process RESP facade.
 
@@ -1160,10 +1171,16 @@ Do not embed a general Lua VM in this release. Implement an allowlisted script s
     -> `CompareValueAndInvalidate`.
   - Extend:
     `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("pexpire", KEYS[1], ARGV[2]) else return 0 end`
-    -> `CompareValueAndExpire`.
+    -> `CompareValueAndExpire mode=Replace`.
+  - redis-py extend:
+    reviewed pinned redis-py `Lock` script reads `PTTL`, returns `0` when the key is missing or
+    persistent, uses `ARGV[3] == '0'` for additive extension, and uses replacement only for
+    `replace_ttl=True`. This maps to `CompareValueAndExpire mode=AddToRemaining` for `ARGV[3]='0'`
+    and `mode=ReplaceIfExpiring` for `ARGV[3]='1'`.
   - Optional `expire` variant if a selected client uses seconds rather than milliseconds.
 - Reject unknown scripts, multi-key scripts, scripts that call unsupported Redis commands, invalid
-  `numkeys`, wrong arity, and non-string arguments before mutation.
+  `numkeys`, wrong arity, invalid redis-py `replace_ttl` flags, and non-string arguments before
+  mutation. Known script shims must use strict arity so extra arguments are not silently ignored.
 - Return Redis-compatible integer results for known scripts and Redis-shaped errors for unsupported
   script shapes.
 - Cache only allowlisted `SCRIPT LOAD` SHA metadata per listener/process; do not claim a general Redis
@@ -1197,6 +1214,7 @@ Before choosing exact client matrix rows, inspect real command traces for each t
 - `eval_known_unlock_script_deletes_only_matching_token`.
 - `eval_known_unlock_script_wrong_token_returns_zero_without_mutation`.
 - `eval_known_extend_script_updates_ttl_only_for_matching_token`.
+- `eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys`.
 - `eval_unlock_script_maps_keys1_to_lock_key_and_argv1_to_token`.
 - `eval_extend_script_maps_keys1_to_lock_key_argv1_to_token_and_argv2_to_ttl`.
 - `eval_extend_script_rejects_missing_swapped_or_non_integer_argv2_without_mutation`.
@@ -1212,6 +1230,8 @@ Before choosing exact client matrix rows, inspect real command traces for each t
 - `conditional_put_existing_key_preserves_value_and_ttl`.
 - `compare_value_invalidate_removes_only_matching_token`.
 - `compare_value_expire_extends_only_matching_token`.
+- `compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend`.
+- `compare_value_expire_expiring_only_rejects_persistent_or_missing_keys`.
 - `compare_value_operations_return_zero_for_missing_or_expired_keys`.
 - `protocol_v2_v3_clients_do_not_receive_lock_conditional_shapes`.
 - `client_protocol_v4_registers_lock_conditional_operations`.
@@ -1240,6 +1260,9 @@ Add Docker-gated comparisons against `redis:6.2.14` and `redis:7.2.5`:
 - `redis_oracle_set_nx_px_contention_and_expiry_match_real_redis`.
 - `redis_oracle_lock_unlock_script_matches_real_redis`.
 - `redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance`.
+- `redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance` must include redis-py
+  `replace_ttl=False` additive behavior (`PTTL` after extend is greater than the replacement TTL),
+  `replace_ttl=True` replacement behavior, and persistent-key `0`/no-mutation behavior.
 - `redis_oracle_unknown_lua_is_documented_divergence`.
 
 These tests must run with `HYDRACACHE_REQUIRE_REDIS_ORACLE=1`; skip-only green is not acceptable for a
@@ -1262,6 +1285,8 @@ For each supported client row:
 - Release with the owning token succeeds.
 - Release with a stale/wrong token does not delete the current lock.
 - Extend/refresh succeeds only for the owning token.
+- redis-py `Lock.extend(default replace_ttl=False)` proves the post-extend TTL is greater than the
+  original lock timeout, so replacing the remaining TTL with only the extension cannot pass.
 - Expired lock can be reacquired.
 - Client disconnect/reconnect does not leave connection-local auth or script metadata in an unsafe state.
 

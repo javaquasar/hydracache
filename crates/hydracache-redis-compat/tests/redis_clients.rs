@@ -31,6 +31,25 @@ const LOCK_RELEASE_SCRIPT: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 const LOCK_EXTEND_SCRIPT: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
+const LOCK_EXTEND_SCRIPT_REDIS_PY: &str = r#"
+local token = redis.call('get', KEYS[1])
+if not token or token ~= ARGV[1] then
+    return 0
+end
+local expiration = redis.call('pttl', KEYS[1])
+if not expiration then
+    expiration = 0
+end
+if expiration < 0 then
+    return 0
+end
+local newttl = ARGV[2]
+if ARGV[3] == '0' then
+    newttl = ARGV[2] + expiration
+end
+redis.call('pexpire', KEYS[1], newttl)
+return 1
+"#;
 
 #[test]
 fn redis_client_gate_manifest_and_docs_are_wired() {
@@ -673,6 +692,14 @@ async fn redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance()
         run_lock_extend_scenario(hydracache_addr, "lock-extend").await,
         "hydracache",
     );
+    assert_redis_py_lock_extend_shape(
+        run_redis_py_lock_extend_scenario(oracle.addr, "redis-py-lock-extend").await,
+        "redis",
+    );
+    assert_redis_py_lock_extend_shape(
+        run_redis_py_lock_extend_scenario(hydracache_addr, "redis-py-lock-extend").await,
+        "hydracache",
+    );
 
     drop(shutdown);
     hydracache_serving.await.unwrap();
@@ -1122,7 +1149,11 @@ lock = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
 assert lock.acquire(blocking=False) is True
 contender = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
 assert contender.acquire(blocking=False) is False
+before_extend = rb.pttl("python:lock")
+assert 0 < before_extend <= 5000
 assert lock.extend(5) is True
+after_extend = rb.pttl("python:lock")
+assert after_extend > 5000
 lock.release()
 assert rb.get("python:lock") is None
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
@@ -1173,7 +1204,11 @@ lock = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
 assert lock.acquire(blocking=False) is True
 contender = rb.lock("python:lock", timeout=5, blocking_timeout=0.1)
 assert contender.acquire(blocking=False) is False
+before_extend = rb.pttl("python:lock")
+assert 0 < before_extend <= 5000
 assert lock.extend(5) is True
+after_extend = rb.pttl("python:lock")
+assert after_extend > 5000
 lock.release()
 assert rb.get("python:lock") is None
 assert r.mget(["python:k", "python:missing"]) == ["v", None]
@@ -1959,6 +1994,56 @@ async fn run_lock_extend_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleR
     ]
 }
 
+async fn run_redis_py_lock_extend_scenario(addr: SocketAddr, prefix: &str) -> Vec<OracleReply> {
+    let key = format!("{prefix}:key");
+    let persistent_key = format!("{prefix}:persistent");
+    vec![
+        query_reply(addr, "SET", &[&key, "owner", "NX", "PX", "10000"]).await,
+        query_reply(
+            addr,
+            "EVAL",
+            &[
+                LOCK_EXTEND_SCRIPT_REDIS_PY,
+                "1",
+                &key,
+                "contender",
+                "5000",
+                "0",
+            ],
+        )
+        .await,
+        query_reply(
+            addr,
+            "EVAL",
+            &[LOCK_EXTEND_SCRIPT_REDIS_PY, "1", &key, "owner", "5000", "0"],
+        )
+        .await,
+        query_reply(addr, "PTTL", &[&key]).await,
+        query_reply(
+            addr,
+            "EVAL",
+            &[LOCK_EXTEND_SCRIPT_REDIS_PY, "1", &key, "owner", "4000", "1"],
+        )
+        .await,
+        query_reply(addr, "PTTL", &[&key]).await,
+        query_reply(addr, "SET", &[&persistent_key, "owner"]).await,
+        query_reply(
+            addr,
+            "EVAL",
+            &[
+                LOCK_EXTEND_SCRIPT_REDIS_PY,
+                "1",
+                &persistent_key,
+                "owner",
+                "5000",
+                "0",
+            ],
+        )
+        .await,
+        query_reply(addr, "PTTL", &[&persistent_key]).await,
+    ]
+}
+
 fn assert_ttl_scenario_shape(replies: Vec<OracleReply>, label: &str) {
     assert_eq!(replies.len(), 8, "{label}: unexpected TTL scenario length");
     assert_eq!(
@@ -2026,6 +2111,69 @@ fn assert_lock_extend_shape(replies: Vec<OracleReply>, label: &str) {
     assert!(
         (1..=5_000).contains(&pttl),
         "{label}: PTTL after extend should be within 1..=5000, got {pttl}"
+    );
+}
+
+fn assert_redis_py_lock_extend_shape(replies: Vec<OracleReply>, label: &str) {
+    assert_eq!(
+        replies.len(),
+        9,
+        "{label}: unexpected redis-py lock extend scenario length"
+    );
+    assert_eq!(
+        replies[0],
+        OracleReply::Status("OK".to_owned()),
+        "{label}: SET NX PX"
+    );
+    assert_eq!(
+        replies[1],
+        OracleReply::Int(0),
+        "{label}: wrong token additive extend"
+    );
+    assert_eq!(
+        replies[2],
+        OracleReply::Int(1),
+        "{label}: owner additive extend"
+    );
+    let OracleReply::Int(additive_pttl) = replies[3] else {
+        panic!(
+            "{label}: PTTL after additive redis-py extend should return integer, got {:?}",
+            replies[3]
+        );
+    };
+    assert!(
+        (5_001..=15_000).contains(&additive_pttl),
+        "{label}: additive extend should preserve remaining TTL and add new TTL, got {additive_pttl}"
+    );
+    assert_eq!(
+        replies[4],
+        OracleReply::Int(1),
+        "{label}: owner replace_ttl extend"
+    );
+    let OracleReply::Int(replace_pttl) = replies[5] else {
+        panic!(
+            "{label}: PTTL after replace_ttl redis-py extend should return integer, got {:?}",
+            replies[5]
+        );
+    };
+    assert!(
+        (1..=4_000).contains(&replace_pttl),
+        "{label}: replace_ttl extend should replace remaining TTL, got {replace_pttl}"
+    );
+    assert_eq!(
+        replies[6],
+        OracleReply::Status("OK".to_owned()),
+        "{label}: persistent SET"
+    );
+    assert_eq!(
+        replies[7],
+        OracleReply::Int(0),
+        "{label}: redis-py extend on persistent key"
+    );
+    assert_eq!(
+        replies[8],
+        OracleReply::Int(-1),
+        "{label}: persistent key should remain persistent"
     );
 }
 

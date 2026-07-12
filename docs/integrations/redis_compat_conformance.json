@@ -138,7 +138,7 @@
       "status": "supported",
       "kind": "redis_lock_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["eval_known_unlock_script_deletes_only_matching_token", "eval_redlock_single_resource_scripts_acquire_extend_and_release", "eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args", "redis_oracle_lock_unlock_script_matches_real_redis", "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"]
+      "tests": ["eval_known_unlock_script_deletes_only_matching_token", "eval_redlock_single_resource_scripts_acquire_extend_and_release", "eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args", "eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys", "compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend", "compare_value_expire_expiring_only_rejects_persistent_or_missing_keys", "redis_oracle_lock_unlock_script_matches_real_redis", "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"]
     },
     {
       "name": "SCRIPT LOAD/EXISTS lock script allowlist",

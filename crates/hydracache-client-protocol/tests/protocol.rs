@@ -4,10 +4,10 @@ use std::path::Path;
 use hydracache_client_protocol::{
     require_protocol_version, ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
     ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
-    ClientWireMessage, ConditionalPutCondition, InvalidationEvent, Namespace, ReadConsistency,
-    RegionId, RepairAction, StructuredKey, SubscriptionWatermarkTracker, VersionHandshake,
-    Watermark, MIN_PROTOCOL_VERSION, PROTOCOL_VERSION, REDIS_LOCK_PROTOCOL_VERSION,
-    TTL_PROTOCOL_VERSION,
+    ClientWireMessage, CompareValueExpireMode, ConditionalPutCondition, InvalidationEvent,
+    Namespace, ReadConsistency, RegionId, RepairAction, StructuredKey,
+    SubscriptionWatermarkTracker, VersionHandshake, Watermark, MIN_PROTOCOL_VERSION,
+    PROTOCOL_VERSION, REDIS_LOCK_PROTOCOL_VERSION, TTL_PROTOCOL_VERSION,
 };
 
 fn ns() -> Namespace {
@@ -162,6 +162,21 @@ fn client_protocol_v4_registers_lock_conditional_operations() {
             key: key("lock"),
             expected_value: b"token".to_vec(),
             ttl_ms: 5_000,
+            mode: CompareValueExpireMode::Replace,
+        },
+        ClientRequest::CompareValueAndExpire {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"token".to_vec(),
+            ttl_ms: 5_000,
+            mode: CompareValueExpireMode::ReplaceIfExpiring,
+        },
+        ClientRequest::CompareValueAndExpire {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"token".to_vec(),
+            ttl_ms: 5_000,
+            mode: CompareValueExpireMode::AddToRemaining,
         },
     ] {
         assert_eq!(

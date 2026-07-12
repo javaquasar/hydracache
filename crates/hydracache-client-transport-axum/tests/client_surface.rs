@@ -5,8 +5,9 @@ use hydracache::{
 };
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
-    ClientResponse, ClientResponseEnvelope, ClientWireMessage, ConditionalPutCondition,
-    EntryEventProjection, Namespace, StructuredKey, TtlState, Watermark, PROTOCOL_VERSION,
+    ClientResponse, ClientResponseEnvelope, ClientWireMessage, CompareValueExpireMode,
+    ConditionalPutCondition, EntryEventProjection, Namespace, StructuredKey, TtlState, Watermark,
+    PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
@@ -520,6 +521,7 @@ async fn compare_value_expire_extends_only_matching_token() {
                 key: key("lock"),
                 expected_value: token.to_vec(),
                 ttl_ms,
+                mode: CompareValueExpireMode::Replace,
             },
         )
     };
@@ -555,6 +557,126 @@ async fn compare_value_expire_extends_only_matching_token() {
         panic!("expected value response");
     };
     assert_eq!(value, Some(b"owner".to_vec()));
+}
+
+#[tokio::test]
+async fn compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+    assert!(send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "put-lock",
+            ClientRequest::ConditionalPut {
+                ns: ns(),
+                key: key("lock"),
+                value: b"owner".to_vec(),
+                ttl_ms: Some(100),
+                condition: ConditionalPutCondition::IfAbsent,
+            },
+        ),
+    )
+    .await
+    .result
+    .is_ok());
+
+    surface.state().advance_cache_time_for_tests(25);
+    let extend = ClientRequestEnvelope::new(
+        "extend-additive",
+        ClientRequest::CompareValueAndExpire {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"owner".to_vec(),
+            ttl_ms: 40,
+            mode: CompareValueExpireMode::AddToRemaining,
+        },
+    );
+    assert_eq!(
+        send(&surface, extend).await.result.unwrap(),
+        ClientResponse::CompareValueApplied { applied: true }
+    );
+
+    let ClientResponse::Ttl { state } = send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "get-ttl",
+            ClientRequest::GetTtl {
+                ns: ns(),
+                key: key("lock"),
+            },
+        ),
+    )
+    .await
+    .result
+    .unwrap() else {
+        panic!("expected TTL response");
+    };
+    assert_eq!(state, TtlState::ExpiresIn { ttl_ms: 115 });
+}
+
+#[tokio::test]
+async fn compare_value_expire_expiring_only_rejects_persistent_or_missing_keys() {
+    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+    surface.state().set_cache_time_for_tests(Some(1_000));
+    assert!(send(
+        &surface,
+        ClientRequestEnvelope::new(
+            "put-persistent",
+            ClientRequest::Put {
+                ns: ns(),
+                key: key("lock"),
+                value: b"owner".to_vec(),
+                ttl_ms: None,
+                dimensions: Vec::new(),
+            },
+        ),
+    )
+    .await
+    .result
+    .is_ok());
+
+    for (request_id, key_id, mode) in [
+        (
+            "replace-if-expiring-persistent",
+            "lock",
+            CompareValueExpireMode::ReplaceIfExpiring,
+        ),
+        (
+            "add-to-remaining-persistent",
+            "lock",
+            CompareValueExpireMode::AddToRemaining,
+        ),
+        (
+            "replace-if-expiring-missing",
+            "missing",
+            CompareValueExpireMode::ReplaceIfExpiring,
+        ),
+        (
+            "add-to-remaining-missing",
+            "missing",
+            CompareValueExpireMode::AddToRemaining,
+        ),
+    ] {
+        assert_eq!(
+            send(
+                &surface,
+                ClientRequestEnvelope::new(
+                    request_id,
+                    ClientRequest::CompareValueAndExpire {
+                        ns: ns(),
+                        key: key(key_id),
+                        expected_value: b"owner".to_vec(),
+                        ttl_ms: 40,
+                        mode,
+                    },
+                ),
+            )
+            .await
+            .result
+            .unwrap(),
+            ClientResponse::CompareValueApplied { applied: false }
+        );
+    }
 }
 
 #[tokio::test]

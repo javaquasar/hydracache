@@ -12,7 +12,8 @@ use std::time::Duration;
 use bytes::{Bytes, BytesMut};
 use hydracache_client_protocol::{
     BatchPutEntry, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ConditionalPutCondition, Namespace, StructuredKey, TtlState,
+    ClientResponseEnvelope, CompareValueExpireMode, ConditionalPutCondition, Namespace,
+    StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
 use redis_protocol::resp2::{
@@ -61,6 +62,25 @@ const LOCK_RELEASE_SCRIPT_SIMPLE: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 const LOCK_EXTEND_SCRIPT_SIMPLE: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
+const LOCK_EXTEND_SCRIPT_REDIS_PY: &str = r#"
+local token = redis.call('get', KEYS[1])
+if not token or token ~= ARGV[1] then
+  return 0
+end
+local expiration = redis.call('pttl', KEYS[1])
+if not expiration then
+  expiration = 0
+end
+if expiration < 0 then
+  return 0
+end
+local newttl = ARGV[2]
+if ARGV[3] == '0' then
+  newttl = ARGV[2] + expiration
+end
+redis.call('pexpire', KEYS[1], newttl)
+return 1
+"#;
 const LOCK_ACQUIRE_SCRIPT_REDLOCK: &str = r#"
   -- Return 0 if an entry already exists.
   for i, key in ipairs(KEYS) do
@@ -430,7 +450,13 @@ pub enum RedisTtlUnit {
 enum RedisLockScriptKind {
     Acquire,
     Release,
-    Extend,
+    Extend(RedisLockExtendScript),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RedisLockExtendScript {
+    Replace,
+    RedisPy,
 }
 
 /// RESP value helpers used by the future listener.
@@ -2107,8 +2133,28 @@ fn translate_lock_script(
                 RedisResponseReducer::CompareValueApplied,
             ))
         }
-        RedisLockScriptKind::Extend => {
-            if keys_and_args.len() < 3 {
+        RedisLockScriptKind::Extend(script) => {
+            let (expected_arity, mode) = match script {
+                RedisLockExtendScript::Replace => (3, CompareValueExpireMode::Replace),
+                RedisLockExtendScript::RedisPy => {
+                    if keys_and_args.len() != 4 {
+                        return Err(RedisTranslationError::UnsupportedShape {
+                            detail: REDIS_SYNTAX_ERROR,
+                        });
+                    }
+                    let mode = match keys_and_args[3].as_slice() {
+                        b"0" => CompareValueExpireMode::AddToRemaining,
+                        b"1" => CompareValueExpireMode::ReplaceIfExpiring,
+                        _ => {
+                            return Err(RedisTranslationError::UnsupportedShape {
+                                detail: REDIS_SYNTAX_ERROR,
+                            });
+                        }
+                    };
+                    (4, mode)
+                }
+            };
+            if keys_and_args.len() != expected_arity {
                 return Err(RedisTranslationError::UnsupportedShape {
                     detail: REDIS_SYNTAX_ERROR,
                 });
@@ -2124,6 +2170,7 @@ fn translate_lock_script(
                     key,
                     expected_value,
                     ttl_ms,
+                    mode,
                 },
                 RedisResponseReducer::CompareValueApplied,
             ))
@@ -2376,11 +2423,11 @@ fn classify_lock_script(script: &[u8]) -> Option<RedisLockScriptKind> {
     {
         Some(RedisLockScriptKind::Release)
     } else if canonical == canonical_lua(LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes())
-        || canonical
-            == "localtoken=redis.call('get',keys[1])ifnottokenortoken~=argv[1]thenreturn0endlocalexpiration=redis.call('pttl',keys[1])ifnotexpirationthenexpiration=0endifexpiration<0thenreturn0endlocalnewttl=argv[2]ifargv[3]=='0'thennewttl=argv[2]+expirationendredis.call('pexpire',keys[1],newttl)return1"
         || canonical == canonical_lua(LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes())
     {
-        Some(RedisLockScriptKind::Extend)
+        Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace))
+    } else if canonical == canonical_lua(LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes()) {
+        Some(RedisLockScriptKind::Extend(RedisLockExtendScript::RedisPy))
     } else {
         None
     }
@@ -2397,7 +2444,9 @@ fn known_lock_script_sha(sha: &str) -> Option<RedisLockScriptKind> {
     } else if sha == sha1_hex(LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes())
         || sha == sha1_hex(LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes())
     {
-        Some(RedisLockScriptKind::Extend)
+        Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace))
+    } else if sha == sha1_hex(LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes()) {
+        Some(RedisLockScriptKind::Extend(RedisLockExtendScript::RedisPy))
     } else {
         None
     }
@@ -4144,6 +4193,117 @@ mod tests {
                 key: b"other".to_vec()
             }),
             RespValue::Null
+        );
+    }
+
+    #[test]
+    fn eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys() {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"100".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        server.state().advance_cache_time_for_tests(25);
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![
+                    b"lock:k".to_vec(),
+                    b"owner".to_vec(),
+                    b"40".to_vec(),
+                    b"0".to_vec(),
+                ],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Ttl {
+                key: b"lock:k".to_vec(),
+                unit: RedisTtlUnit::Milliseconds,
+            }),
+            RespValue::Integer(115)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![
+                    b"lock:k".to_vec(),
+                    b"owner".to_vec(),
+                    b"40".to_vec(),
+                    b"1".to_vec(),
+                ],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Ttl {
+                key: b"lock:k".to_vec(),
+                unit: RedisTtlUnit::Milliseconds,
+            }),
+            RespValue::Integer(40)
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:persistent".to_vec(),
+                value: b"owner".to_vec(),
+                options: Vec::new(),
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![
+                    b"lock:persistent".to_vec(),
+                    b"owner".to_vec(),
+                    b"40".to_vec(),
+                    b"0".to_vec(),
+                ],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![
+                    b"lock:persistent".to_vec(),
+                    b"owner".to_vec(),
+                    b"40".to_vec(),
+                    b"1".to_vec(),
+                ],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Ttl {
+                key: b"lock:persistent".to_vec(),
+                unit: RedisTtlUnit::Milliseconds,
+            }),
+            RespValue::Integer(-1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![
+                    b"lock:k".to_vec(),
+                    b"owner".to_vec(),
+                    b"40".to_vec(),
+                    b"maybe".to_vec(),
+                ],
+            }),
+            RespValue::Error("ERR syntax error".to_owned())
         );
     }
 

@@ -65,6 +65,25 @@ wrong arity, wrong `KEYS`/`ARGV` mapping, or non-string arguments return stable
 errors before mutation. `SCRIPT LOAD` and `SCRIPT EXISTS` are metadata helpers
 for the same allowlist, not a general Redis script cache.
 
+Redis lock extension is a safety-sensitive part of the facade. The protocol v4
+`CompareValueAndExpire` request carries an explicit expiry mode:
+
+- `Replace` sets the remaining TTL to the requested TTL. It is used for simple
+  token-safe `PEXPIRE` scripts and the pinned Node redlock single-resource
+  replacement script.
+- `ReplaceIfExpiring` sets the TTL only if the live matching value already has
+  an expiry. It is used by redis-py `Lock.extend(..., replace_ttl=True)`, whose
+  script first checks `PTTL` and returns `0` for missing or persistent keys.
+- `AddToRemaining` adds the requested TTL to the current remaining TTL under the
+  same store lock. It is used by redis-py `Lock.extend(...)` default
+  `replace_ttl=False`.
+
+This distinction is part of the correctness contract. Treating redis-py default
+extend as `expires_at = now + ttl_ms` would shorten an existing lock instead of
+adding to it; a client could believe it still owns the lock while HydraCache has
+already expired it and allowed another owner to acquire it. Tests must therefore
+prove both the additive TTL result and the persistent-key `0`/no-mutation branch.
+
 ## Protocol And Connection Behavior
 
 The facade supports RESP2 and RESP3 for the same command subset. `HELLO 2` and

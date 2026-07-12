@@ -18,6 +18,14 @@ unsupported-loud. `SET NX` without TTL, `SET XX`, `SET GET`, and `SET KEEPTTL`
 return Redis-shaped errors before dispatch and must not be faked with a
 read-then-write path.
 
+Lock release and extension are supported only through reviewed Lua-script
+fingerprints. redis-py `Lock.extend` is handled with its real `replace_ttl`
+semantics: the default `replace_ttl=False` adds the requested extension to the
+current remaining TTL, `replace_ttl=True` replaces the TTL only when the key is
+already expiring, and persistent or missing keys return `0` without mutation.
+This behavior is safety-critical because replacing instead of adding can expire a
+lock before the owning client believes it has ended.
+
 `SET EXAT` and `SET PXAT` also stay unsupported-loud in 0.63, but they are
 absolute-expiry candidates rather than lock primitives. Supporting them later
 requires an explicit server-clock, past-timestamp, overflow, TTL-tolerance, and
@@ -97,6 +105,9 @@ The release plan and conformance manifest pin this contract to executable tests:
 - `set_nx_px_acquires_missing_key_and_contention_returns_null`
 - `set_nx_ex_ttl_uses_seconds_and_expires`
 - `client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases`
+- `eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys`
+- `compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend`
+- `compare_value_expire_expiring_only_rejects_persistent_or_missing_keys`
 - `expire_zero_or_negative_deletes_key_and_returns_one`
 - `expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl`
 - `expire_pexpire_and_persist_on_missing_key_return_zero`

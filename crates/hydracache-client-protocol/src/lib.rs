@@ -668,6 +668,7 @@ pub enum ClientRequest {
         key: StructuredKey,
         expected_value: Vec<u8>,
         ttl_ms: u64,
+        mode: CompareValueExpireMode,
     },
     /// Evict a whole namespace/region mapping.
     EvictRegion { ns: Namespace },
@@ -803,6 +804,18 @@ pub enum ConditionalPutCondition {
     IfAbsent,
     /// Store only if the current live value exactly matches the supplied bytes.
     IfPresentValue(Vec<u8>),
+}
+
+/// Expiry update mode for token-safe Redis lock extension.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CompareValueExpireMode {
+    /// Replace the remaining TTL with the supplied TTL.
+    Replace,
+    /// Replace the remaining TTL only when the current live entry already has an expiry.
+    ReplaceIfExpiring,
+    /// Add the supplied TTL to the current remaining TTL.
+    AddToRemaining,
 }
 
 /// One batch put entry.

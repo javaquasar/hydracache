@@ -23,8 +23,9 @@ use hydracache::{
 use hydracache_client_protocol::{
     protocol_version_supported, BatchItemStatus, BatchPutEntry, CasExpectation, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ClientWireMessage, ConditionalPutCondition, InvalidationEvent,
-    LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake, PROTOCOL_VERSION,
+    ClientResponseEnvelope, ClientWireMessage, CompareValueExpireMode, ConditionalPutCondition,
+    InvalidationEvent, LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake,
+    PROTOCOL_VERSION,
 };
 use hydracache_observability::{AuditEvent, AuditRecorder, InMemoryAuditSink, TenantStatus};
 use serde::{Deserialize, Serialize};
@@ -302,6 +303,15 @@ struct ConditionalPutArgs {
     value: Vec<u8>,
     ttl_ms: Option<u64>,
     condition: ConditionalPutCondition,
+}
+
+struct CompareValueExpireArgs {
+    request_id: String,
+    ns: Namespace,
+    key: StructuredKey,
+    expected_value: Vec<u8>,
+    ttl_ms: u64,
+    mode: CompareValueExpireMode,
 }
 
 impl StoredValue {
@@ -755,13 +765,17 @@ impl ClientSurfaceState {
                 key,
                 expected_value,
                 ttl_ms,
+                mode,
             } => self.handle_compare_value_expire(
                 identity,
-                envelope.request_id,
-                ns,
-                key,
-                expected_value,
-                ttl_ms,
+                CompareValueExpireArgs {
+                    request_id: envelope.request_id,
+                    ns,
+                    key,
+                    expected_value,
+                    ttl_ms,
+                    mode,
+                },
             ),
             ClientRequest::EvictRegion { ns } => {
                 if let Err(error) = self.admit_request(identity) {
@@ -1324,12 +1338,16 @@ impl ClientSurfaceState {
     fn handle_compare_value_expire(
         &self,
         identity: &ClientIdentity,
-        request_id: String,
-        ns: Namespace,
-        key: StructuredKey,
-        expected_value: Vec<u8>,
-        ttl_ms: u64,
+        args: CompareValueExpireArgs,
     ) -> ClientResponseEnvelope {
+        let CompareValueExpireArgs {
+            request_id,
+            ns,
+            key,
+            expected_value,
+            ttl_ms,
+            mode,
+        } = args;
         if expected_value.len() > self.limits.max_value_bytes {
             return ClientResponseEnvelope::error(
                 request_id,
@@ -1349,8 +1367,28 @@ impl ClientSurfaceState {
         let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
             .map(|entry| {
                 if entry.value == expected_value {
-                    entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
-                    true
+                    match mode {
+                        CompareValueExpireMode::Replace => {
+                            entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                            true
+                        }
+                        CompareValueExpireMode::ReplaceIfExpiring => {
+                            if entry.expires_at_ms.is_some() {
+                                entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        CompareValueExpireMode::AddToRemaining => {
+                            if let Some(expires_at_ms) = entry.expires_at_ms {
+                                entry.expires_at_ms = Some(expires_at_ms.saturating_add(ttl_ms));
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    }
                 } else {
                     false
                 }
