@@ -55,6 +55,10 @@ not a replacement for the release correctness gates.
 For the read-only operations console served by the server admin surface, see
 [`docs/management-center.md`](docs/management-center.md).
 
+For the optional Redis RESP API facade, including implementation boundaries and
+Redis-specific caveats, see
+[`docs/integrations/redis-api-implementation-notes.md`](docs/integrations/redis-api-implementation-notes.md).
+
 ![HydraCache Management Center](docs/images/management-center.png)
 
 For database production-readiness rules around keys, tags, transactions,

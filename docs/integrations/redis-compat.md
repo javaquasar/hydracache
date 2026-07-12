@@ -11,6 +11,9 @@ implemented: there are no hash slots, no cluster topology, and no `MOVED` or
 `ASK` redirects. Cluster-aware Redis clients must be configured in ordinary
 standalone mode when talking to HydraCache.
 
+For implementation-level boundaries and translation notes, see
+[`redis-api-implementation-notes.md`](redis-api-implementation-notes.md).
+
 The executable contract is
 [`redis_compat_conformance.json`](redis_compat_conformance.json). That manifest is
 the source of truth for the docs matrix, translator tests, real Redis oracle

@@ -6,20 +6,22 @@ server clone.
 
 ## SET Option Scope
 
-HydraCache 0.63 supports bare `SET` plus TTL-bearing `SET EX/PX`, `SETEX`, and
-`PSETEX`. Redis write-conditional and retention options (`NX`, `XX`, `GET`,
-`KEEPTTL`) stay unsupported-loud and return `ERR syntax error` before dispatch.
-Those options include Redis lock/conditional-write semantics and must not be
-faked with a read-then-write path.
+HydraCache 0.63 supports bare `SET`, TTL-bearing `SET EX/PX`, `SETEX`,
+`PSETEX`, and the narrow expiring Redis lock-acquire subset `SET NX PX/EX`.
+The lock-acquire path is backed by `hydracache-client-protocol` v4
+`ConditionalPut IfAbsent`, so success returns `OK`, contention returns Redis
+nil/null, expired keys are treated as absent, and the write is atomic inside the
+client surface.
+
+Redis conditional and retention shapes outside that lock-acquire subset remain
+unsupported-loud. `SET NX` without TTL, `SET XX`, `SET GET`, and `SET KEEPTTL`
+return Redis-shaped errors before dispatch and must not be faked with a
+read-then-write path.
 
 `SET EXAT` and `SET PXAT` also stay unsupported-loud in 0.63, but they are
 absolute-expiry candidates rather than lock primitives. Supporting them later
 requires an explicit server-clock, past-timestamp, overflow, TTL-tolerance, and
-oracle/client test contract. The current gated proof covers raw `SET NX PX`
-fail-loud/no-mutation behavior; it does not claim redis-py `Lock`, redlock, or
-Redisson lock-library API compatibility. Redis lock migration is tracked as the
-dedicated `docs/plans/V0_65_REDIS_LOCK_COMPATIBILITY_PLAN.md` follow-up, with
-protocol v4 reserved for lock-conditional operations.
+oracle/client test contract.
 
 ## Health And Probe Commands
 
@@ -83,7 +85,8 @@ tag invalidation.
 
 The executable source of truth is
 `docs/integrations/redis_compat_conformance.json`; the user-facing explanation is
-`docs/integrations/redis-compat.md`.
+`docs/integrations/redis-compat.md`, and implementation-level notes live in
+`docs/integrations/redis-api-implementation-notes.md`.
 
 ## Test Anchors
 
@@ -91,8 +94,9 @@ The release plan and conformance manifest pin this contract to executable tests:
 
 - `info_returns_minimal_honest_facade_state`
 - `set_write_conditional_options_follow_conformance_contract`
-- `set_nx_px_lock_idiom_has_declared_behavior_and_redis_shaped_error`
-- `client_matrix_raw_set_nx_px_fails_loud_promptly_without_mutation`
+- `set_nx_px_acquires_missing_key_and_contention_returns_null`
+- `set_nx_ex_ttl_uses_seconds_and_expires`
+- `client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases`
 - `expire_zero_or_negative_deletes_key_and_returns_one`
 - `expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl`
 - `expire_pexpire_and_persist_on_missing_key_return_zero`
