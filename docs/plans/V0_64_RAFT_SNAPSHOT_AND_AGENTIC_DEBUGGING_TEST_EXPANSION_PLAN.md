@@ -8,7 +8,11 @@
 > - **Why:** `0.62.0` and `0.62.1` proved the raft/gossip/failpoint harness layer, but they mainly
 >   cover message faults and crash windows. The Hazelcast case shows another dangerous class:
 >   snapshots that appear valid but secretly share mutable state with the live state machine and later
->   reject the committed log tail. `0.64` makes that class mechanically testable.
+>   reject the committed log tail. The `0.63` GitHub nightly failure in
+>   `suspended_leader_resumes_as_follower_without_split_brain` also showed a related Raft-layer
+>   liveness gap: a peer can accept TCP and then stop replying, so the transport must be bounded and
+>   the proof suite must show the drive loop cannot hide correctness contradictions behind an
+>   unbounded send. `0.64` makes both classes mechanically testable.
 > - **After (depends on):** `0.63.0` Redis RESP Edge Facade, `0.62.1` proof cleanup, and the existing
 >   `hydracache-cluster-testkit` / `test-failpoints` gates.
 > - **Unblocks:** stronger `1.0` correctness evidence and safer future ownership-routing or
@@ -52,6 +56,9 @@ The article's transferable lesson for HydraCache:
   production compaction subsystem unless a tiny seam is required to test existing snapshot paths.
 - No "fix flaky test by weakening it" changes.
 - No lowering or hiding state-machine apply errors to make noisy tests quiet.
+- No silent retry/quarantine of Raft transport flakes. A hung peer, stuck TCP accept, stalled TLS
+  handshake, or `SIGSTOP`/`SIGCONT` schedule must either be bounded by the transport contract or
+  produce a replayable diagnostic that names why the stronger claim is not proven.
 
 ## Preflight
 
@@ -64,6 +71,9 @@ Before implementation, re-grep the current repo:
   `raft_after_install_snapshot_before_apply`, `canary_raft_skip_save_conf_state`
 - tests: `failpoints_crash_safety.rs`, `raft_message_filter.rs`, `durable_runtime.rs`,
   `persistent_log.rs`, `networked_raft.rs`
+- Raft transport/liveness paths: `HttpRaftMessageSink`, `raft_http_client`,
+  `send_raft_messages_with_diagnostics`, `drive_grid_once`, `daemon_process_cluster.rs`,
+  and `suspended_leader_resumes_as_follower_without_split_brain`
 
 Audit question:
 
@@ -219,13 +229,64 @@ cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
 cargo xtask doc-check
 ```
 
+## W5a. Raft Transport Timeout And Frozen-Peer Proof
+
+Goal: extend the Raft proof suite with the failure class exposed by the `0.63` CI run on
+2026-07-12: a peer process can be alive at the OS/TCP level but make no application progress. This
+is not a snapshot bug by itself, but it can mask snapshot, election, or membership contradictions by
+stalling the real drive loop instead of producing a bounded send failure.
+
+Required tests:
+
+- `http_raft_sink_times_out_when_peer_accepts_without_reply` - a peer accepts TCP and never writes an
+  HTTP response; `HttpRaftMessageSink::send` must return a bounded error rather than waiting
+  forever.
+- `raft_drive_continues_after_bounded_peer_send_timeout` - a failed send to one peer is recorded in
+  `GridDriveDiagnostics`, while the drive loop can still tick/drain ready state and process later
+  messages.
+- `suspended_leader_resume_gate_is_safety_not_unbounded_liveness` - the Linux real-process
+  `SIGSTOP`/`SIGCONT` test must prove one of two honest outcomes: either the two live voters elect a
+  single replacement leader within the configured window and the resumed old leader steps down, or
+  the cluster resumes to a single-leader/no-split-brain state with a diagnostic explaining that the
+  stronger failover claim was not proven on that runner.
+- `frozen_peer_send_failure_is_replayable` - failed daemon-process runs must preserve child logs,
+  last `/admin/status` samples, known leader/term/voter set, and the bounded-send error so an agent
+  cannot close the failure as "environmental" without evidence.
+
+Design:
+
+- Keep the immediate `0.63` hotfix (`fix(cluster): bound raft http sends`) as the minimum production
+  safety fix, but treat `0.64` as the proof expansion: test plain HTTP, TLS, accepted-but-silent
+  sockets, refused connections, and slow responses.
+- Assert timeout bounds at the transport seam, not by sleeping for the whole daemon test timeout.
+  Transport tests should complete in seconds and fail with a precise error if a request can hang.
+- Separate liveness from safety in real-process `SIGSTOP` tests. "New leader elected while old leader
+  is frozen" is a stronger liveness claim; "no split brain and recovery to one leader after resume" is
+  the required safety claim. If the stronger claim is expected, the test must say so and include
+  diagnostics when the runner does not prove it.
+- Feed bounded-send failures into the same contradiction ledger as snapshot failures: a stalled peer
+  must be classified as timeout-bounded transport behavior, not as a hidden state-machine error.
+
+Definition of Done:
+
+```powershell
+cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
+cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+cargo test -p hydracache-server --test daemon_process_cluster suspended_leader_resumes_as_follower_without_split_brain --locked -- --test-threads=1 --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+```
+
 ## W6. CI And Release Gates
 
 Add or update gate documentation:
 
 - fast tier: snapshot immutability, mid-membership snapshot replay, fail-loud malformed snapshot,
   canary guard, feature-leak check;
-- nightly tier: randomized snapshot timing over membership changes, seeded and replayable;
+- transport tier: bounded Raft HTTP send failures, frozen-peer diagnostics, and daemon-process
+  `SIGSTOP`/`SIGCONT` safety recovery;
+- nightly tier: randomized snapshot timing over membership changes, seeded and replayable, with
+  contradiction-ledger artifacts for any unexplained transport or state-machine failure;
 - docs: `GATES.md`, `TESTING.md`, release notes, and `COMPAT.md` if snapshot bytes/format claims change.
 
 Fast release gate:
@@ -235,6 +296,7 @@ cargo test -p hydracache-cluster-raft snapshot_immutability --locked
 cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
 cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --test golden_vectors --locked
+cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -245,6 +307,9 @@ Nightly/replay gate:
 $env:HYDRACACHE_RUN_SNAPSHOT_MEMBERSHIP_SOAK='1'
 cargo test -p hydracache-cluster-raft --test snapshot_membership_soak --locked -- --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_SNAPSHOT_MEMBERSHIP_SOAK -ErrorAction SilentlyContinue
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+cargo test -p hydracache-server --test daemon_process_cluster suspended_leader_resumes_as_follower_without_split_brain --locked -- --test-threads=1 --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
 ```
 
 ## Final Release Decision
@@ -254,6 +319,9 @@ Ship `0.64.0` only when:
 - snapshot exports are proven immutable under later live mutations;
 - mid-membership snapshot restore plus committed-tail replay converges to the authoritative member set;
 - malformed/inconsistent snapshots fail loudly with useful trace context;
+- Raft HTTP transport has bounded send behavior for silent/stalled peers, and frozen-peer daemon
+  scenarios either prove failover plus old-leader stepdown or record a bounded, replayable diagnostic
+  while still proving no split brain after recovery;
 - each new proof has a falsifiability canary or equivalent fixture bug toggle;
 - rare/flaky failures produce deterministic replay evidence and a contradiction ledger;
 - no release graph contains test-only failpoints, canaries, or testkit dependencies;
