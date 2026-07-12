@@ -37,6 +37,8 @@ const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
+const RAFT_HTTP_CONNECT_TIMEOUT: Duration = Duration::from_millis(500);
+const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const NODE_IDENTITY_FILE: &str = "node-identity.json";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -1099,7 +1101,12 @@ impl RaftMessageSink for HttpRaftMessageSink {
 
 fn raft_http_client(config: &ServerConfig) -> CacheResult<(&'static str, reqwest::Client)> {
     if !config.tls.enabled {
-        return Ok(("http", reqwest::Client::new()));
+        return Ok((
+            "http",
+            raft_http_client_builder().build().map_err(|error| {
+                CacheError::Backend(format!("failed to build raft HTTP client: {error}"))
+            })?,
+        ));
     }
     install_default_rustls_provider();
     let ca_path = config
@@ -1119,13 +1126,19 @@ fn raft_http_client(config: &ServerConfig) -> CacheResult<(&'static str, reqwest
             ca_path.display()
         ))
     })?;
-    let client = reqwest::Client::builder()
+    let client = raft_http_client_builder()
         .add_root_certificate(certificate)
         .build()
         .map_err(|error| {
             CacheError::Backend(format!("failed to build TLS raft client: {error}"))
         })?;
     Ok(("https", client))
+}
+
+fn raft_http_client_builder() -> reqwest::ClientBuilder {
+    reqwest::Client::builder()
+        .connect_timeout(RAFT_HTTP_CONNECT_TIMEOUT)
+        .timeout(RAFT_HTTP_REQUEST_TIMEOUT)
 }
 
 fn install_default_rustls_provider() {
@@ -2419,6 +2432,53 @@ mod tests {
 
         assert_eq!(headers[HYDRACACHE_NODE_KEY_ID_HEADER], "k1");
         assert_eq!(headers[HYDRACACHE_NODE_TOKEN_HEADER], "secret");
+    }
+
+    #[tokio::test]
+    async fn http_raft_sink_times_out_when_peer_accepts_without_reply() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let peer_addr = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let (_stream, _addr) = listener.accept().await.unwrap();
+            tokio::time::sleep(RAFT_HTTP_REQUEST_TIMEOUT + Duration::from_secs(2)).await;
+        });
+        let mut peers = BTreeMap::new();
+        peers.insert(
+            2,
+            RaftPeer {
+                node_id: ClusterNodeId::from("peer"),
+                endpoint: peer_addr.to_string(),
+            },
+        );
+        let sink = HttpRaftMessageSink::new(
+            ClusterNodeId::from("local"),
+            1,
+            Arc::new(RwLock::new(peers)),
+            ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true),
+            &test_member_config("127.0.0.1:7000"),
+        )
+        .unwrap();
+        let message = RaftWireMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            payload: Vec::new(),
+        };
+
+        let result =
+            tokio::time::timeout(RAFT_HTTP_REQUEST_TIMEOUT + Duration::from_secs(1), async {
+                sink.send(message).await
+            })
+            .await;
+
+        server.abort();
+        let error = result
+            .expect("raft send should use the bounded HTTP client timeout")
+            .expect_err("silent peer should time out");
+        assert!(
+            error.to_string().contains("failed to send raft message"),
+            "timeout should be reported as a raft send failure: {error}"
+        );
     }
 
     #[tokio::test]
