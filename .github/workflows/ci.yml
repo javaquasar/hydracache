@@ -183,7 +183,7 @@ jobs:
         run: cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture
 
       - name: Upload SOAK_REPORT
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
@@ -225,7 +225,7 @@ jobs:
 
       - name: Upload coverage artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-ratchet
           path: |
