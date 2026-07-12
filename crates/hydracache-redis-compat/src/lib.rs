@@ -3390,6 +3390,70 @@ mod tests {
     }
 
     #[test]
+    fn malformed_resp_frames_fail_loudly_like_redis_protocol_suite() {
+        let decode_error_frames: &[&[u8]] = &[
+            b"*3\r\n$3\r\nSET\r\n$1\r\nx\r\nfooz\r\n",
+            b"*3\r\n$3\r\nSET\r\n$1\r\nx\r\n$-10\r\n",
+            b"*3\r\n$3\r\nSET\r\n$1\r\nx\r\n$blabla\r\n",
+        ];
+        for frame in decode_error_frames {
+            assert!(
+                matches!(
+                    decode_resp2_command(frame),
+                    Err(RedisCompatError::Decode(_))
+                ),
+                "frame should be rejected by RESP decoder: {frame:?}"
+            );
+        }
+
+        assert!(matches!(
+            decode_resp2_command(b":1\r\n"),
+            Err(RedisCompatError::NonArrayCommand)
+        ));
+        assert!(matches!(
+            decode_resp2_command(b"*0\r\n"),
+            Err(RedisCompatError::EmptyCommand)
+        ));
+        assert!(matches!(
+            decode_resp2_command(b"*2\r\n$3\r\nGET\r\n:1\r\n"),
+            Err(RedisCompatError::NonStringArgument)
+        ));
+    }
+
+    #[test]
+    fn resp_decode_limits_reject_oversized_arrays_and_bulk_strings() {
+        let limits = RespDecodeLimits {
+            max_frame_bytes: 1024,
+            max_array_elements: 2,
+            max_bulk_string_bytes: 128,
+        };
+        assert!(matches!(
+            decode_resp2_command_with_limits(b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n", limits),
+            Err(RedisCompatError::ArrayTooLarge { actual: 3, max: 2 })
+        ));
+
+        let limits = RespDecodeLimits {
+            max_frame_bytes: 1024,
+            max_array_elements: 8,
+            max_bulk_string_bytes: 1,
+        };
+        assert!(matches!(
+            decode_resp2_command_with_limits(b"*2\r\n$3\r\nGET\r\n$2\r\nkk\r\n", limits),
+            Err(RedisCompatError::BulkStringTooLarge { actual: 3, max: 1 })
+        ));
+
+        let limits = RespDecodeLimits {
+            max_frame_bytes: 8,
+            max_array_elements: 8,
+            max_bulk_string_bytes: 128,
+        };
+        assert!(matches!(
+            decode_resp2_command_with_limits(b"*1\r\n$4\r\nPING\r\n", limits),
+            Err(RedisCompatError::FrameTooLarge { actual: 14, max: 8 })
+        ));
+    }
+
+    #[test]
     fn hello2_and_hello3_are_supported_and_switch_dialect() {
         let context = RedisTranslationContext::default();
         let hello2 = translate_redis_command(
@@ -3996,6 +4060,64 @@ mod tests {
     }
 
     #[test]
+    fn plain_set_removes_existing_ttl_like_redis() {
+        let (state, identity) = surface();
+        state.set_cache_time_for_tests(Some(1_000));
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"volatile".to_vec(),
+                    options: vec![b"EX".to_vec(), b"100".to_vec()],
+                },
+            ),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(100)
+        );
+
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"persistent".to_vec(),
+                    options: Vec::new(),
+                },
+            ),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(
+            run_command(&state, &identity, RedisCommand::Get { key: b"k".to_vec() }),
+            RespValue::BulkString(b"persistent".to_vec())
+        );
+        assert_eq!(
+            run_command(
+                &state,
+                &identity,
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+            ),
+            RespValue::Integer(-1)
+        );
+    }
+
+    #[test]
     fn eval_known_unlock_script_deletes_only_matching_token() {
         let server = listener();
         assert_eq!(
@@ -4106,19 +4228,53 @@ mod tests {
         }) else {
             panic!("SCRIPT LOAD should return a SHA bulk string");
         };
+        let upper_sha = sha.iter().map(u8::to_ascii_uppercase).collect::<Vec<_>>();
         assert_eq!(
             server.execute_command(RedisCommand::ScriptExists {
-                shas: vec![sha.clone(), b"unknown".to_vec()],
+                shas: vec![
+                    sha.clone(),
+                    sha.clone(),
+                    upper_sha.clone(),
+                    b"unknown".to_vec()
+                ],
             }),
-            RespValue::Array(vec![RespValue::Integer(1), RespValue::Integer(0)])
+            RespValue::Array(vec![
+                RespValue::Integer(1),
+                RespValue::Integer(1),
+                RespValue::Integer(1),
+                RespValue::Integer(0)
+            ])
         );
         assert_eq!(
             server.execute_command(RedisCommand::EvalSha {
-                sha,
+                sha: sha.clone(),
                 numkeys: b"1".to_vec(),
                 keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"1000".to_vec()],
             }),
             RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::EvalSha {
+                sha: upper_sha,
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"750".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+
+        let unsupported_script = b"return 'not a lock script'".to_vec();
+        let unsupported_sha = sha1_hex(&unsupported_script).into_bytes();
+        assert_eq!(
+            server.execute_command(RedisCommand::ScriptLoad {
+                script: unsupported_script,
+            }),
+            RespValue::Error("ERR unsupported Lua script".to_owned())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::ScriptExists {
+                shas: vec![unsupported_sha],
+            }),
+            RespValue::Array(vec![RespValue::Integer(0)])
         );
 
         server.state().advance_cache_time_for_tests(150);
@@ -4506,6 +4662,68 @@ mod tests {
             ),
             RespValue::Integer(0)
         );
+    }
+
+    #[test]
+    fn expire_options_are_unsupported_without_mutating_existing_ttl() {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"k".to_vec(),
+                value: b"v".to_vec(),
+                options: vec![b"EX".to_vec(), b"100".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        let option_frames: &[(&[u8], &[u8])] = &[
+            (
+                b"*4\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$3\r\n200\r\n$2\r\nNX\r\n",
+                b"NX",
+            ),
+            (
+                b"*4\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$3\r\n200\r\n$2\r\nXX\r\n",
+                b"XX",
+            ),
+            (
+                b"*4\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$3\r\n200\r\n$2\r\nGT\r\n",
+                b"GT",
+            ),
+            (
+                b"*4\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$3\r\n200\r\n$2\r\nLT\r\n",
+                b"LT",
+            ),
+            (
+                b"*4\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$3\r\n200\r\n$2\r\nAB\r\n",
+                b"AB",
+            ),
+        ];
+
+        for (frame, option) in option_frames {
+            let (command, consumed) = decode_resp2_command(frame).unwrap().unwrap();
+            assert_eq!(consumed, frame.len());
+            assert!(
+                matches!(
+                    &command,
+                    RedisCommand::WrongArity { command, args }
+                        if command == "EXPIRE"
+                            && args.last().is_some_and(|arg| arg.eq_ignore_ascii_case(option))
+                ),
+                "EXPIRE option should stay outside the supported shape: {option:?}"
+            );
+            assert_eq!(
+                server.execute_command(command),
+                RespValue::Error("ERR wrong number of arguments for 'EXPIRE' command".to_owned())
+            );
+            assert_eq!(
+                server.execute_command(RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                }),
+                RespValue::Integer(100)
+            );
+        }
     }
 
     #[test]
