@@ -59,11 +59,22 @@ contention returns Redis nil/null, expired keys are treated as absent, and the
 write is atomic inside the client surface. `SET NX` without TTL, `SET XX`,
 `SET GET`, and `SET KEEPTTL` remain outside the claimed subset.
 
-`EVAL` and `EVALSHA` do not run arbitrary Lua. Only reviewed lock release and
-extension script shapes are accepted. Unknown scripts, changed library scripts,
-wrong arity, wrong `KEYS`/`ARGV` mapping, or non-string arguments return stable
-errors before mutation. `SCRIPT LOAD` and `SCRIPT EXISTS` are metadata helpers
-for the same allowlist, not a general Redis script cache.
+`EVAL` and `EVALSHA` do not run arbitrary Lua. Only reviewed lock release,
+extension, and reacquire script shapes are accepted. The reviewed client-library
+surface for 0.63 is pinned to `redis-py==5.2.1`, `redis@4.7.0`, and
+`redlock@5.0.0-beta.2`; a version bump or script-body change is a reviewed
+compatibility change and must update code, SHA tests, conformance metadata,
+docs, and the Docker/client matrix together. Unknown scripts, changed library
+scripts, wrong arity, wrong `KEYS`/`ARGV` mapping, or non-string arguments return
+stable errors before mutation. `SCRIPT LOAD` and `SCRIPT EXISTS` are metadata
+helpers for the same allowlist, not a general Redis script cache.
+
+The lock-script SHA path is covered by independent known-answer tests, not only
+by self-consistency. The fast tier pins standard SHA1 vectors and exact reviewed
+script fingerprints, including redis-py 5.2.1 `Lock.release`
+`c3f8721cbb97f72bc19e972846bd7aaf91901658`, `Lock.extend`
+`a4e8783852e6b949f9ef3a97212805108459a890`, and `Lock.reacquire`
+`1cac51482acf5858da00f6d685d68f886cd6b6b2`.
 
 Redis lock extension is a safety-sensitive part of the facade. The protocol v4
 `CompareValueAndExpire` request carries an explicit expiry mode:
@@ -83,6 +94,9 @@ extend as `expires_at = now + ttl_ms` would shorten an existing lock instead of
 adding to it; a client could believe it still owns the lock while HydraCache has
 already expired it and allowed another owner to acquire it. Tests must therefore
 prove both the additive TTL result and the persistent-key `0`/no-mutation branch.
+They must also prove redis-py release/reacquire exact script acceptance and the
+full Docker/client/oracle gate before the release note can claim redis-py or
+Node redlock lock-library compatibility.
 
 ## Protocol And Connection Behavior
 

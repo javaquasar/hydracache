@@ -43,7 +43,7 @@ to this page without adding or updating the manifest row first.
 | `MSET` | `supported` | exact | Atomic batch write through `ClientSurfaceState`; duplicate keys use Redis last-value-wins ordering. |
 | `SET EX/PX`, `SETEX`, `PSETEX`, `EXPIRE`, `PEXPIRE`, `TTL`, `PTTL`, `PERSIST` | `supported` | bounded TTL tolerance | Backed by `hydracache-client-protocol` v3 TTL metadata and client-surface expiry enforcement. `SETEX`/`PSETEX` are normalized to the same `SET EX/PX` path used by mainstream clients such as Jedis. |
 | `SET NX PX`, `SET NX EX` | `supported` | bounded TTL tolerance | Narrow single-key Redis lock acquire subset backed by `hydracache-client-protocol` v4 `ConditionalPut IfAbsent`. Success returns `OK`, contention returns nil/null, expired keys are treated as absent, and the mutation is atomic inside `ClientSurfaceState`. `SET NX` without a TTL remains unsupported because the release only claims expiring lock acquire semantics. |
-| `EVAL`/`EVALSHA` lock release/extend scripts, `SCRIPT LOAD`/`SCRIPT EXISTS` | `supported_with_caveat` | bounded TTL tolerance / normalized metadata | Only reviewed lock-script fingerprints are accepted: redis-py `Lock` release/extend/reacquire shapes, the simple token-safe release/extend idioms, and `redlock@5.0.0-beta.2` single-resource acquire/extend/release scripts. redis-py default `replace_ttl=False` adds the requested extension to the current remaining TTL; `replace_ttl=True` replaces TTL only when the key is already expiring; persistent/missing keys return `0`. Unknown or changed Lua returns a stable error before mutation. HydraCache does not run general Lua and does not implement Redis script-cache persistence beyond per-listener allowlisted `SCRIPT LOAD` metadata. |
+| `EVAL`/`EVALSHA` lock release/extend scripts, `SCRIPT LOAD`/`SCRIPT EXISTS` | `supported_with_caveat` | bounded TTL tolerance / normalized metadata | Only reviewed lock-script fingerprints are accepted: redis-py `Lock` release/extend/reacquire shapes pinned to `redis-py==5.2.1`, the simple token-safe release/extend idioms, and Node `redis@4.7.0` + `redlock@5.0.0-beta.2` single-resource acquire/extend/release scripts. redis-py default `replace_ttl=False` adds the requested extension to the current remaining TTL; `replace_ttl=True` replaces TTL only when the key is already expiring; persistent/missing keys return `0`. Unknown or changed Lua returns a stable error before mutation. Exact SHA1 known-answer tests pin the reviewed script fingerprints; HydraCache does not run general Lua and does not implement Redis script-cache persistence beyond per-listener allowlisted `SCRIPT LOAD` metadata. |
 | `SET NX` without TTL, `SET XX`, `SET GET`, `SET KEEPTTL` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped errors. HydraCache supports only the expiring `NX` lock-acquire subset; compare-and-return-old-value, retention, and non-expiring conditional writes are outside the 0.63 contract. |
 | `SET EXAT`, `SET PXAT` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped `ERR syntax error`. These absolute-expiry options are not conditional lock primitives; they are deferred candidates because they need a separate contract for server clock source, past timestamp behavior, overflow, TTL tolerance, and real Redis oracle/client rows. |
 | `SELECT 0` | `supported_with_caveat` | normalized error | Accepted as a connection-local no-op for Redis client URL compatibility. HydraCache exposes one logical Redis database only; `SELECT 1` and every non-zero DB index fail loud with `ERR multiple Redis databases are not supported; use SELECT 0`, and invalid indexes return `ERR invalid DB index`. |
@@ -78,12 +78,13 @@ real Redis does not implement them.
 Targeted Rust tests are not the final compatibility claim. Before release, the
 Docker/client matrix must prove the same supported subset through mainstream
 Python, Node, Go, JVM, and Rust Redis clients, and the pinned Redis oracle must
-compare the subset against the documented Redis image tags. The 0.63 lock-library claim is limited
-to redis-py `Lock` and Node `redlock@5.0.0-beta.2` single-resource rows; Go/JVM lock libraries and
-Redisson full locks require their own reviewed script traces before support can be claimed. If those
-heavy gates
-are not green, release notes must say the implementation has targeted coverage
-but ecosystem/oracle proof is still pending.
+compare the subset against the documented Redis image tags. The 0.63
+lock-library claim is limited to redis-py `Lock` from `redis-py==5.2.1` and Node
+`redlock@5.0.0-beta.2` single-resource rows through `redis@4.7.0`; Go/JVM lock
+libraries and Redisson full locks require their own reviewed script traces before
+support can be claimed. If those heavy gates are not green, release notes must
+say the implementation has targeted coverage but ecosystem/oracle proof is still
+pending.
 
 Redis Cluster is a documented non-goal rather than a partial implementation.
 `CLUSTER *` commands return a stable unsupported error, and the facade never

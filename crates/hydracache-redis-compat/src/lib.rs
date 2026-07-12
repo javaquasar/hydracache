@@ -62,25 +62,42 @@ const LOCK_RELEASE_SCRIPT_SIMPLE: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
 const LOCK_EXTEND_SCRIPT_SIMPLE: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
+const LOCK_RELEASE_SCRIPT_REDIS_PY: &str = r#"
+        local token = redis.call('get', KEYS[1])
+        if not token or token ~= ARGV[1] then
+            return 0
+        end
+        redis.call('del', KEYS[1])
+        return 1
+    "#;
 const LOCK_EXTEND_SCRIPT_REDIS_PY: &str = r#"
-local token = redis.call('get', KEYS[1])
-if not token or token ~= ARGV[1] then
-  return 0
-end
-local expiration = redis.call('pttl', KEYS[1])
-if not expiration then
-  expiration = 0
-end
-if expiration < 0 then
-  return 0
-end
-local newttl = ARGV[2]
-if ARGV[3] == '0' then
-  newttl = ARGV[2] + expiration
-end
-redis.call('pexpire', KEYS[1], newttl)
-return 1
-"#;
+        local token = redis.call('get', KEYS[1])
+        if not token or token ~= ARGV[1] then
+            return 0
+        end
+        local expiration = redis.call('pttl', KEYS[1])
+        if not expiration then
+            expiration = 0
+        end
+        if expiration < 0 then
+            return 0
+        end
+
+        local newttl = ARGV[2]
+        if ARGV[3] == "0" then
+            newttl = ARGV[2] + expiration
+        end
+        redis.call('pexpire', KEYS[1], newttl)
+        return 1
+    "#;
+const LOCK_REACQUIRE_SCRIPT_REDIS_PY: &str = r#"
+        local token = redis.call('get', KEYS[1])
+        if not token or token ~= ARGV[1] then
+            return 0
+        end
+        redis.call('pexpire', KEYS[1], ARGV[2])
+        return 1
+    "#;
 const LOCK_ACQUIRE_SCRIPT_REDLOCK: &str = r#"
   -- Return 0 if an entry already exists.
   for i, key in ipairs(KEYS) do
@@ -2417,12 +2434,12 @@ fn classify_lock_script(script: &[u8]) -> Option<RedisLockScriptKind> {
     if canonical == canonical_lua(LOCK_ACQUIRE_SCRIPT_REDLOCK.as_bytes()) {
         Some(RedisLockScriptKind::Acquire)
     } else if canonical == canonical_lua(LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes())
-        || canonical
-            == "localtoken=redis.call('get',keys[1])ifnottokenortoken~=argv[1]thenreturn0endredis.call('del',keys[1])return1"
+        || canonical == canonical_lua(LOCK_RELEASE_SCRIPT_REDIS_PY.as_bytes())
         || canonical == canonical_lua(LOCK_RELEASE_SCRIPT_REDLOCK.as_bytes())
     {
         Some(RedisLockScriptKind::Release)
     } else if canonical == canonical_lua(LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes())
+        || canonical == canonical_lua(LOCK_REACQUIRE_SCRIPT_REDIS_PY.as_bytes())
         || canonical == canonical_lua(LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes())
     {
         Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace))
@@ -2438,10 +2455,12 @@ fn known_lock_script_sha(sha: &str) -> Option<RedisLockScriptKind> {
     if sha == sha1_hex(LOCK_ACQUIRE_SCRIPT_REDLOCK.as_bytes()) {
         Some(RedisLockScriptKind::Acquire)
     } else if sha == sha1_hex(LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes())
+        || sha == sha1_hex(LOCK_RELEASE_SCRIPT_REDIS_PY.as_bytes())
         || sha == sha1_hex(LOCK_RELEASE_SCRIPT_REDLOCK.as_bytes())
     {
         Some(RedisLockScriptKind::Release)
     } else if sha == sha1_hex(LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes())
+        || sha == sha1_hex(LOCK_REACQUIRE_SCRIPT_REDIS_PY.as_bytes())
         || sha == sha1_hex(LOCK_EXTEND_SCRIPT_REDLOCK.as_bytes())
     {
         Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace))
@@ -3454,6 +3473,89 @@ mod tests {
     }
 
     #[test]
+    fn sha1_hex_matches_known_answer_vectors() {
+        assert_eq!(sha1_hex(b""), "da39a3ee5e6b4b0d3255bfef95601890afd80709");
+        assert_eq!(sha1_hex(b"abc"), "a9993e364706816aba3e25717850c26c9cd0d89d");
+        assert_eq!(
+            sha1_hex(b"return 'loaded'"),
+            "b534286061d4b9e4026607613b95c06c06015ae8"
+        );
+    }
+
+    #[test]
+    fn lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions() {
+        let cases = [
+            (
+                "simple release",
+                LOCK_RELEASE_SCRIPT_SIMPLE,
+                "e9f69f2beb755be68b5e456ee2ce9aadfbc4ebf4",
+                Some(RedisLockScriptKind::Release),
+            ),
+            (
+                "simple extend",
+                LOCK_EXTEND_SCRIPT_SIMPLE,
+                "9136fcf51831e5cf49f109b6e9c97d5b675280d6",
+                Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace)),
+            ),
+            (
+                "redis-py 5.2.1 release",
+                LOCK_RELEASE_SCRIPT_REDIS_PY,
+                "c3f8721cbb97f72bc19e972846bd7aaf91901658",
+                Some(RedisLockScriptKind::Release),
+            ),
+            (
+                "redis-py 5.2.1 extend",
+                LOCK_EXTEND_SCRIPT_REDIS_PY,
+                "a4e8783852e6b949f9ef3a97212805108459a890",
+                Some(RedisLockScriptKind::Extend(RedisLockExtendScript::RedisPy)),
+            ),
+            (
+                "redis-py 5.2.1 reacquire",
+                LOCK_REACQUIRE_SCRIPT_REDIS_PY,
+                "1cac51482acf5858da00f6d685d68f886cd6b6b2",
+                Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace)),
+            ),
+            (
+                "redlock 5.0.0-beta.2 acquire",
+                LOCK_ACQUIRE_SCRIPT_REDLOCK,
+                "96da70f7716f27d278a5218544df37fd8b0a5e4c",
+                Some(RedisLockScriptKind::Acquire),
+            ),
+            (
+                "redlock 5.0.0-beta.2 extend",
+                LOCK_EXTEND_SCRIPT_REDLOCK,
+                "aed6f382e410db8ba7926d4e5e9aab410bf2a78a",
+                Some(RedisLockScriptKind::Extend(RedisLockExtendScript::Replace)),
+            ),
+            (
+                "redlock 5.0.0-beta.2 release",
+                LOCK_RELEASE_SCRIPT_REDLOCK,
+                "e4612211c9f8f51c257e26e056b0a654b3187242",
+                Some(RedisLockScriptKind::Release),
+            ),
+        ];
+
+        for (label, script, expected_sha, expected_kind) in cases {
+            assert_eq!(sha1_hex(script.as_bytes()), expected_sha, "{label}");
+            assert_eq!(
+                classify_lock_script(script.as_bytes()),
+                expected_kind,
+                "{label}"
+            );
+            assert_eq!(
+                known_lock_script_sha(expected_sha),
+                expected_kind,
+                "{label}"
+            );
+            assert_eq!(
+                known_lock_script_sha(&expected_sha.to_ascii_uppercase()),
+                expected_kind,
+                "{label} uppercase"
+            );
+        }
+    }
+
+    #[test]
     fn hello2_and_hello3_are_supported_and_switch_dialect() {
         let context = RedisTranslationContext::default();
         let hello2 = translate_redis_command(
@@ -4160,6 +4262,67 @@ mod tests {
     }
 
     #[test]
+    fn eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted() {
+        let server = listener();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock:k".to_vec(),
+                value: b"owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"100".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"wrong".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_REACQUIRE_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"wrong".to_vec(), b"750".to_vec()],
+            }),
+            RespValue::Integer(0)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_REACQUIRE_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec(), b"750".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Ttl {
+                key: b"lock:k".to_vec(),
+                unit: RedisTtlUnit::Milliseconds,
+            }),
+            RespValue::Integer(750)
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock:k".to_vec(), b"owner".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock:k".to_vec()
+            }),
+            RespValue::Null
+        );
+    }
+
+    #[test]
     fn eval_redlock_single_resource_scripts_acquire_extend_and_release() {
         let server = listener();
         assert_eq!(
@@ -4228,6 +4391,25 @@ mod tests {
         }) else {
             panic!("SCRIPT LOAD should return a SHA bulk string");
         };
+        assert_eq!(sha, b"9136fcf51831e5cf49f109b6e9c97d5b675280d6");
+        assert_eq!(
+            server.execute_command(RedisCommand::ScriptLoad {
+                script: LOCK_RELEASE_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+            }),
+            RespValue::BulkString(b"c3f8721cbb97f72bc19e972846bd7aaf91901658".to_vec())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::ScriptLoad {
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+            }),
+            RespValue::BulkString(b"a4e8783852e6b949f9ef3a97212805108459a890".to_vec())
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::ScriptLoad {
+                script: LOCK_REACQUIRE_SCRIPT_REDIS_PY.as_bytes().to_vec(),
+            }),
+            RespValue::BulkString(b"1cac51482acf5858da00f6d685d68f886cd6b6b2".to_vec())
+        );
         let upper_sha = sha.iter().map(u8::to_ascii_uppercase).collect::<Vec<_>>();
         assert_eq!(
             server.execute_command(RedisCommand::ScriptExists {
@@ -4235,10 +4417,16 @@ mod tests {
                     sha.clone(),
                     sha.clone(),
                     upper_sha.clone(),
+                    b"c3f8721cbb97f72bc19e972846bd7aaf91901658".to_vec(),
+                    b"a4e8783852e6b949f9ef3a97212805108459a890".to_vec(),
+                    b"1cac51482acf5858da00f6d685d68f886cd6b6b2".to_vec(),
                     b"unknown".to_vec()
                 ],
             }),
             RespValue::Array(vec![
+                RespValue::Integer(1),
+                RespValue::Integer(1),
+                RespValue::Integer(1),
                 RespValue::Integer(1),
                 RespValue::Integer(1),
                 RespValue::Integer(1),

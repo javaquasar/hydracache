@@ -218,6 +218,10 @@ auth-required startup, and `rediss://` startup. Python and Node rows additionall
 redis-py `Lock` and Node `redlock` single-resource APIs; Go and JVM rows keep exercising the
 mainstream Redis client subset and may add a lock-library row only after that library's script trace
 is explicitly allowlisted.
+The fast tier must also keep `sha1_hex_matches_known_answer_vectors`,
+`lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`, and
+`eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted` green so the
+script SHA path is validated independently of the facade's own SHA resolver.
 Passing targeted Rust tests is not enough for the final release claim: if this
 Docker/client matrix or the pinned real Redis oracle is not green, release notes
 must describe the implementation as targeted-test covered with ecosystem/oracle
@@ -247,7 +251,10 @@ $env:HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM = '1'
 
 For release-proof runs, `HYDRACACHE_REQUIRE_REDIS_ORACLE=1` is mandatory: the
 pinned Redis oracle rows must fail if Docker is unavailable instead of producing
-a skip-only green.
+a skip-only green. For the redis-py/redlock lock-library claim, the Python and
+Node rows must also run against the pinned versions above; a local client with a
+different redis-py version skips rather than silently broadening the reviewed
+compatibility surface.
 
 To prove the containerized Python/Node/JVM paths specifically, force Docker
 fallback for rows that have container coverage:

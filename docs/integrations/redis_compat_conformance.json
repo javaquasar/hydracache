@@ -138,14 +138,16 @@
       "status": "supported",
       "kind": "redis_lock_subset",
       "oracle": "ttl_tolerance",
-      "tests": ["eval_known_unlock_script_deletes_only_matching_token", "eval_redlock_single_resource_scripts_acquire_extend_and_release", "eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args", "eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys", "compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend", "compare_value_expire_expiring_only_rejects_persistent_or_missing_keys", "redis_oracle_lock_unlock_script_matches_real_redis", "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"]
+      "reviewed_clients": ["redis-py==5.2.1", "redis@4.7.0", "redlock@5.0.0-beta.2"],
+      "tests": ["sha1_hex_matches_known_answer_vectors", "lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions", "eval_known_unlock_script_deletes_only_matching_token", "eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted", "eval_redlock_single_resource_scripts_acquire_extend_and_release", "eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args", "eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys", "compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend", "compare_value_expire_expiring_only_rejects_persistent_or_missing_keys", "redis_oracle_lock_unlock_script_matches_real_redis", "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"]
     },
     {
       "name": "SCRIPT LOAD/EXISTS lock script allowlist",
       "status": "supported_with_caveat",
       "kind": "redis_lock_subset",
       "oracle": "normalized_metadata",
-      "tests": ["script_load_exists_and_evalsha_are_allowlist_scoped"]
+      "reviewed_clients": ["redis-py==5.2.1", "redis@4.7.0", "redlock@5.0.0-beta.2"],
+      "tests": ["sha1_hex_matches_known_answer_vectors", "lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions", "script_load_exists_and_evalsha_are_allowlist_scoped"]
     },
     {
       "name": "SET NX without TTL, SET XX/GET/KEEPTTL",

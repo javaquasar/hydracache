@@ -19,12 +19,19 @@ return Redis-shaped errors before dispatch and must not be faked with a
 read-then-write path.
 
 Lock release and extension are supported only through reviewed Lua-script
-fingerprints. redis-py `Lock.extend` is handled with its real `replace_ttl`
-semantics: the default `replace_ttl=False` adds the requested extension to the
-current remaining TTL, `replace_ttl=True` replaces the TTL only when the key is
-already expiring, and persistent or missing keys return `0` without mutation.
-This behavior is safety-critical because replacing instead of adding can expire a
-lock before the owning client believes it has ended.
+fingerprints. The reviewed client-library surface for 0.63 is pinned to
+`redis-py==5.2.1`, `redis@4.7.0`, and `redlock@5.0.0-beta.2`. redis-py
+`Lock.release`, `Lock.extend`, and `Lock.reacquire` are accepted by exact SHA1
+fingerprint and by the conservative reviewed canonical form; any client-library
+upgrade that changes a script body is a compatibility change, not an automatic
+extension of support.
+
+redis-py `Lock.extend` is handled with its real `replace_ttl` semantics: the
+default `replace_ttl=False` adds the requested extension to the current remaining
+TTL, `replace_ttl=True` replaces the TTL only when the key is already expiring,
+and persistent or missing keys return `0` without mutation. This behavior is
+safety-critical because replacing instead of adding can expire a lock before the
+owning client believes it has ended.
 
 `SET EXAT` and `SET PXAT` also stay unsupported-loud in 0.63, but they are
 absolute-expiry candidates rather than lock primitives. Supporting them later
@@ -100,11 +107,14 @@ The executable source of truth is
 
 The release plan and conformance manifest pin this contract to executable tests:
 
+- `sha1_hex_matches_known_answer_vectors`
+- `lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`
 - `info_returns_minimal_honest_facade_state`
 - `set_write_conditional_options_follow_conformance_contract`
 - `set_nx_px_acquires_missing_key_and_contention_returns_null`
 - `set_nx_ex_ttl_uses_seconds_and_expires`
 - `client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases`
+- `eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted`
 - `eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys`
 - `compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend`
 - `compare_value_expire_expiring_only_rejects_persistent_or_missing_keys`
@@ -118,6 +128,11 @@ The release plan and conformance manifest pin this contract to executable tests:
 - `resp_listener_type_reports_string_and_none`
 - `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`
 - `resp_listener_admin_commands_are_disabled_before_mutation`
+
+The lock-library compatibility claim is not complete until the Docker/client
+matrix is run with both `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1` and
+`HYDRACACHE_REQUIRE_REDIS_ORACLE=1`; skip-only green is not enough for the
+redis-py/redlock lock subset.
 - `hc_namespace_is_listener_scoped_not_redis_multidb`
 - `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`
 - `hc_tag_missing_key_does_not_create_metadata_or_mutate`

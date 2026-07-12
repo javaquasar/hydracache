@@ -32,24 +32,25 @@ const LOCK_RELEASE_SCRIPT: &str =
 const LOCK_EXTEND_SCRIPT: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
 const LOCK_EXTEND_SCRIPT_REDIS_PY: &str = r#"
-local token = redis.call('get', KEYS[1])
-if not token or token ~= ARGV[1] then
-    return 0
-end
-local expiration = redis.call('pttl', KEYS[1])
-if not expiration then
-    expiration = 0
-end
-if expiration < 0 then
-    return 0
-end
-local newttl = ARGV[2]
-if ARGV[3] == '0' then
-    newttl = ARGV[2] + expiration
-end
-redis.call('pexpire', KEYS[1], newttl)
-return 1
-"#;
+        local token = redis.call('get', KEYS[1])
+        if not token or token ~= ARGV[1] then
+            return 0
+        end
+        local expiration = redis.call('pttl', KEYS[1])
+        if not expiration then
+            expiration = 0
+        end
+        if expiration < 0 then
+            return 0
+        end
+
+        local newttl = ARGV[2]
+        if ARGV[3] == "0" then
+            newttl = ARGV[2] + expiration
+        end
+        redis.call('pexpire', KEYS[1], newttl)
+        return 1
+    "#;
 
 #[test]
 fn redis_client_gate_manifest_and_docs_are_wired() {
@@ -60,7 +61,12 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(gates.contains(CLIENT_MATRIX_ENV));
     assert!(gates.contains("--test redis_clients"));
     assert!(testing.contains("--test redis_clients"));
+    assert!(testing.contains(PYTHON_CLIENT_DOCKER_PACKAGE));
+    assert!(testing.contains(NODE_CLIENT_DOCKER_PACKAGE));
     assert!(manifest.contains(r#""images": ["redis:6.2.14", "redis:7.2.5"]"#));
+    assert!(manifest.contains("redis-py==5.2.1"));
+    assert!(manifest.contains("redis@4.7.0"));
+    assert!(manifest.contains("redlock@5.0.0-beta.2"));
     assert!(manifest.contains("redis_oracle_supported_subset_matches_real_redis"));
     assert!(manifest.contains("redis_oracle_del_exists_counts_match_real_redis"));
     assert!(manifest.contains("redis_oracle_mget_nil_and_order_match_real_redis"));
@@ -71,7 +77,12 @@ fn redis_client_gate_manifest_and_docs_are_wired() {
     assert!(manifest.contains("SET EXAT/PXAT"));
     assert!(manifest.contains("set_nx_px_acquires_missing_key_and_contention_returns_null"));
     assert!(manifest.contains("client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases"));
+    assert!(manifest.contains("sha1_hex_matches_known_answer_vectors"));
+    assert!(
+        manifest.contains("lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions")
+    );
     assert!(manifest.contains("eval_known_unlock_script_deletes_only_matching_token"));
+    assert!(manifest.contains("eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted"));
     assert!(manifest.contains("script_load_exists_and_evalsha_are_allowlist_scoped"));
     assert!(manifest
         .contains("eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args"));
@@ -1126,6 +1137,9 @@ try:
 except Exception as exc:
     print(f"missing python redis client: {exc}")
     sys.exit(42)
+if redis.__version__ != "5.2.1":
+    print(f"unsupported python redis client version: {redis.__version__}")
+    sys.exit(42)
 r = redis.Redis.from_url(sys.argv[1], decode_responses=True)
 assert r.ping() is True
 info = r.info()
@@ -1181,6 +1195,7 @@ fn run_python_client_docker(redis_url: &str) -> ClientRun {
     let script = r#"
 import os
 import redis
+assert redis.__version__ == "5.2.1"
 r = redis.Redis.from_url(os.environ["REDIS_URL"], decode_responses=True)
 assert r.ping() is True
 info = r.info()

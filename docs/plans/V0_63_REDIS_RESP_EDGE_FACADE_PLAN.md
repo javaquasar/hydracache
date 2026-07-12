@@ -1161,14 +1161,22 @@ Do not embed a general Lua VM in this release. Implement an allowlisted script s
 - Parse `EVAL script numkeys key [arg...]`, `EVALSHA sha numkeys key [arg...]`, `SCRIPT LOAD script`,
   and `SCRIPT EXISTS sha [sha...]`.
 - Normalize known lock scripts by pinned client-library version, exact SHA1, and a reviewed conservative
-  canonical form. A client-library bump that changes a script body, argument order, or command trace is
-  a reviewed compatibility change and must update the manifest, docs, oracle rows, and client matrix
-  together. Whitespace-insensitive canonicalization is only a post-review convenience, not a promise
-  that arbitrary equivalent Lua will be accepted.
+  canonical form. The reviewed 0.63 lock-library surface is `redis-py==5.2.1`, Node
+  `redis@4.7.0`, and `redlock@5.0.0-beta.2`. A client-library bump that changes a script body,
+  argument order, or command trace is a reviewed compatibility change and must update the manifest,
+  docs, oracle rows, exact SHA tests, and client matrix together. Whitespace-insensitive
+  canonicalization is only a post-review convenience, not a promise that arbitrary equivalent Lua will
+  be accepted.
+- Cover `sha1_hex` with independent known-answer tests (`""`, `"abc"`, and Redis' `return 'loaded'`
+  script SHA) and freeze every reviewed lock-script SHA in fast tests so `known_lock_script_sha` is not
+  merely self-consistent.
 - Supported release script shapes:
   - Release:
     `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end`
     -> `CompareValueAndInvalidate`.
+  - redis-py release:
+    exact redis-py 5.2.1 `Lock.release` script, SHA
+    `c3f8721cbb97f72bc19e972846bd7aaf91901658` -> `CompareValueAndInvalidate`.
   - Extend:
     `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("pexpire", KEYS[1], ARGV[2]) else return 0 end`
     -> `CompareValueAndExpire mode=Replace`.
@@ -1176,7 +1184,11 @@ Do not embed a general Lua VM in this release. Implement an allowlisted script s
     reviewed pinned redis-py `Lock` script reads `PTTL`, returns `0` when the key is missing or
     persistent, uses `ARGV[3] == '0'` for additive extension, and uses replacement only for
     `replace_ttl=True`. This maps to `CompareValueAndExpire mode=AddToRemaining` for `ARGV[3]='0'`
-    and `mode=ReplaceIfExpiring` for `ARGV[3]='1'`.
+    and `mode=ReplaceIfExpiring` for `ARGV[3]='1'`; exact redis-py 5.2.1 SHA is
+    `a4e8783852e6b949f9ef3a97212805108459a890`.
+  - redis-py reacquire:
+    exact redis-py 5.2.1 `Lock.reacquire` script, SHA
+    `1cac51482acf5858da00f6d685d68f886cd6b6b2` -> `CompareValueAndExpire mode=Replace`.
   - Optional `expire` variant if a selected client uses seconds rather than milliseconds.
 - Reject unknown scripts, multi-key scripts, scripts that call unsupported Redis commands, invalid
   `numkeys`, wrong arity, invalid redis-py `replace_ttl` flags, and non-string arguments before
@@ -1213,6 +1225,9 @@ Before choosing exact client matrix rows, inspect real command traces for each t
 - `set_nx_contention_uses_resp2_null_and_resp3_null`.
 - `eval_known_unlock_script_deletes_only_matching_token`.
 - `eval_known_unlock_script_wrong_token_returns_zero_without_mutation`.
+- `sha1_hex_matches_known_answer_vectors`.
+- `lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`.
+- `eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted`.
 - `eval_known_extend_script_updates_ttl_only_for_matching_token`.
 - `eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys`.
 - `eval_unlock_script_maps_keys1_to_lock_key_and_argv1_to_token`.
@@ -1326,6 +1341,14 @@ Docker-gated oracle/client rows are green. The release must not imply Redis Clus
 quorum semantics, Redisson full-lock compatibility, multi-key locks, general Lua, or unreviewed Go/JVM
 lock-library support. If the heavy matrix is not green, release notes must state that the lock subset is
 implemented with targeted coverage but ecosystem/oracle proof is pending.
+
+The lock-specific ship blockers are: independent SHA1 known-answer vectors are green; reviewed
+lock-script SHA fingerprints are frozen for `redis-py==5.2.1`, Node `redis@4.7.0`, and
+`redlock@5.0.0-beta.2`; redis-py release/extend/reacquire exact scripts pass fast tests; and the
+Docker/client/oracle command
+`HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 HYDRACACHE_REQUIRE_REDIS_ORACLE=1 cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture`
+has one green release-proof run. A skip-only matrix result is not acceptable for the redis-py/redlock
+lock-library claim.
 
 ## Gates (Definition of Done for the release)
 
