@@ -314,6 +314,60 @@ depends_on = []
 }
 
 #[test]
+fn rejects_redis_compat_deployment_scope_without_multinode_sentinel() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        r#"{
+  "version": 1,
+  "surface": "hydracache-redis-resp-edge",
+  "supported_resp": "RESP2+RESP3",
+  "redis_oracle": {
+    "images": ["redis:6.2.14", "redis:7.2.5"],
+    "normalization": "exact for supported commands"
+  },
+  "commands": [
+    {
+      "name": "Cross-endpoint RESP key visibility",
+      "status": "unsupported",
+      "kind": "deployment_scope",
+      "oracle": "documented_divergence",
+      "tests": ["missing_multinode_sentinel"]
+    }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("required for Redis deployment_scope rows but could not be read"),
+        "missing deployment_scope multinode test-file check: {joined}"
+    );
+    assert!(
+        joined.contains("deployment_scope test 'missing_multinode_sentinel' must be implemented in crates/hydracache-server/tests/redis_resp_multinode.rs"),
+        "missing deployment_scope sentinel implementation check: {joined}"
+    );
+}
+
+#[test]
 fn rejects_redis_compat_docs_examples_without_gate_labels() {
     let manifest = r#"
 [[release]]

@@ -2836,7 +2836,7 @@ fn bulk_static(value: &'static str) -> RespValue {
 fn info_response(metrics: RedisListenerMetrics) -> RespValue {
     RespValue::BulkString(
         format!(
-            "# Server\r\nredis_mode:standalone\r\nrole:master\r\nhydracache_version:{}\r\nhydracache_resp:{}\r\n\r\n# Stats\r\ntotal_connections_received:{}\r\ntotal_commands_processed:{}\r\nhydracache_resp_errors:{}\r\n",
+            "# Server\r\nredis_mode:standalone\r\nredis_scope:node-local\r\nrole:master\r\nhydracache_version:{}\r\nhydracache_resp:{}\r\n\r\n# Stats\r\ntotal_connections_received:{}\r\ntotal_commands_processed:{}\r\nhydracache_resp_errors:{}\r\n",
             env!("CARGO_PKG_VERSION"),
             SUPPORTED_RESP_DIALECT,
             metrics.accepted_connections,
@@ -3651,6 +3651,7 @@ mod tests {
         let info = String::from_utf8(info).unwrap();
         assert!(info.contains("# Server\r\n"));
         assert!(info.contains("redis_mode:standalone\r\n"));
+        assert!(info.contains("redis_scope:node-local\r\n"));
         assert!(info.contains("role:master\r\n"));
         assert!(info.contains("hydracache_version:"));
         assert!(info.contains("hydracache_resp:RESP2+RESP3\r\n"));
@@ -3683,6 +3684,7 @@ mod tests {
         };
         let info = String::from_utf8(info).unwrap();
         assert!(info.contains("redis_mode:standalone\r\n"));
+        assert!(info.contains("redis_scope:node-local\r\n"));
         assert!(info.contains("hydracache_resp:RESP2+RESP3\r\n"));
         assert!(!info.contains("db0:"));
         assert!(!info.contains("keys="));
@@ -5551,6 +5553,7 @@ mod tests {
         assert!(output.starts_with("+PONG\r\n$"));
         assert!(output.contains("# Server\r\n"));
         assert!(output.contains("redis_mode:standalone\r\n"));
+        assert!(output.contains("redis_scope:node-local\r\n"));
         assert!(output.contains("role:master\r\n"));
         assert!(output.contains("hydracache_resp:RESP2+RESP3\r\n"));
         assert!(output.contains("total_connections_received:1\r\n"));

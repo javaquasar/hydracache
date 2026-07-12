@@ -106,10 +106,11 @@ Planned `0.63` changes:
    release notes, and this plan must say that RESP data and Redis-lock state are node-local to the
    daemon/listener that served the connection.
 2. **Runtime/operational guardrails.** The release must expose or log an explicit
-   `redis_scope=node-local` posture for the RESP listener and must document that production examples
-   use one selected endpoint, not a load-balanced Service/VIP spanning multiple daemons. A future
-   runtime config acknowledgement can make non-loopback exposure fail loud unless the operator accepts
-   the node-local scope.
+   `redis_scope=node-local` posture for the RESP listener. The required `0.63` implementation is the
+   `INFO` field `redis_scope:node-local`, plus docs that production examples use one selected
+   endpoint, not a load-balanced Service/VIP spanning multiple daemons. A future runtime config
+   acknowledgement can make non-loopback exposure fail loud unless the operator accepts the
+   node-local scope.
 3. **Negative sentinels.** Add network-gated tests that document the boundary: write via RESP node A
    and read via RESP node B returns a miss, and `SET key token NX PX ttl` can succeed on node A and
    node B independently. These tests must be named as documented-divergence sentinels, not as
@@ -119,6 +120,10 @@ Planned `0.63` changes:
    consistency or distributed lock safety.
 5. **Release note.** The release note must include a named callout: "single-endpoint Redis RESP
    facade; no cross-daemon Redis key visibility; no multi-endpoint Redis lock mutual exclusion."
+6. **Executable drift guard.** `cargo xtask doc-check` must reject `deployment_scope` manifest rows
+   whose sentinel test names are not implemented in
+   `crates/hydracache-server/tests/redis_resp_multinode.rs`. This keeps Plan B from becoming a
+   documentation-only claim when the manifest, plan, and tests drift apart.
 
 What remains for a future Plan A / distributed RESP backend:
 
@@ -852,7 +857,8 @@ either new data models, execution engines, or messaging systems rather than cach
   endpoint before and after a member drain/restart. Negative sentinels document the Plan B boundary:
   RESP writes on endpoint A are not visible on endpoint B, and Redis lock acquire can succeed
   independently on two endpoints. This proves lifecycle and node-local scope, not distributed Redis
-  consistency.
+  consistency. `INFO` must also expose `redis_scope:node-local` so the same posture is observable at
+  runtime.
 
 **Additional tests & requirements.**
 - `pipelined_requests_preserve_response_order`.
@@ -1083,7 +1089,7 @@ HydraCache does and does not implement.
 | multi-node RESP e2e (W5) | real multi-daemon HydraCache processes + RESP listener | `multinode_resp_facade_roundtrip_survives_node_restart_or_drain`, `multinode_resp_facade_documents_node_local_state`, `multinode_resp_lock_subset_is_single_endpoint_only` | network-gated / nightly |
 | daemon RESP lifecycle (W6) | `hydracache-server` | `daemon_serves_resp_listener_only_when_enabled_and_drains_gracefully` | PR |
 | executable docs (W6) | `docs/integrations/redis-compat.md` examples | `redis_compat_docs_examples_are_executable_or_gated_with_labels` | PR + Docker-gated |
-| release ledger/docs/gates (W6) | `COMPAT.md` / `GATES.md` / `TESTING.md` / release notes | `redis_compat_docs_matrix_has_test_for_every_supported_command`, `redis_compat_translator_has_no_command_missing_from_docs_matrix`, `compat_register_mentions_resp2_subset_and_failure_modes`, `gates_include_fast_contract_and_docker_client_matrix_rows`, `testing_docs_explain_how_to_add_a_resp_command`, `redis_oracle_versions_are_pinned_and_documented`, `oracle_normalization_rules_are_documented_and_checked`, `release_note_lists_supported_and_not_shipped_commands` | PR |
+| release ledger/docs/gates (W6) | `COMPAT.md` / `GATES.md` / `TESTING.md` / release notes | `redis_compat_docs_matrix_has_test_for_every_supported_command`, `redis_compat_translator_has_no_command_missing_from_docs_matrix`, `redis_compat_deployment_scope_rows_require_multinode_sentinels`, `compat_register_mentions_resp2_subset_and_failure_modes`, `gates_include_fast_contract_and_docker_client_matrix_rows`, `testing_docs_explain_how_to_add_a_resp_command`, `redis_oracle_versions_are_pinned_and_documented`, `oracle_normalization_rules_are_documented_and_checked`, `release_note_lists_supported_and_not_shipped_commands` | PR |
 | config/operator packaging and rollback docs (W6) | config examples / operator docs / production guide | `redis_api_config_examples_keep_listener_disabled_by_default`, `redis_api_operator_packaging_does_not_expose_port_by_default`, `redis_api_rollout_and_rollback_playbook_names_metrics_and_triggers` | PR |
 | security/observability docs and behavior (W6) | listener logs/metrics/docs | `resp_metrics_do_not_include_unbounded_labels`, `auth_and_connection_logs_redact_credentials`, `redis_api_tls_mode_is_explicitly_documented` | PR |
 

@@ -16,6 +16,7 @@ plane: RESP key/value state and the Redis lock subset are node-local to the
 daemon/listener that handled the connection. Use one selected RESP endpoint for
 the facade. Do not put multiple HydraCache daemons behind one Redis Service/VIP
 and expect Redis-style cross-endpoint key visibility or lock mutual exclusion.
+`INFO` reports this runtime posture as `redis_scope:node-local`.
 
 For implementation-level boundaries and translation notes, see
 [`redis-api-implementation-notes.md`](redis-api-implementation-notes.md).
@@ -53,7 +54,7 @@ to this page without adding or updating the manifest row first.
 | `SET NX` without TTL, `SET XX`, `SET GET`, `SET KEEPTTL` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped errors. HydraCache supports only the expiring `NX` lock-acquire subset; compare-and-return-old-value, retention, and non-expiring conditional writes are outside the 0.63 contract. |
 | `SET EXAT`, `SET PXAT` | `unsupported` | documented divergence | Rejected before dispatch with Redis-shaped `ERR syntax error`. These absolute-expiry options are not conditional lock primitives; they are deferred candidates because they need a separate contract for server clock source, past timestamp behavior, overflow, TTL tolerance, and real Redis oracle/client rows. |
 | `SELECT 0` | `supported_with_caveat` | normalized error | Accepted as a connection-local no-op for Redis client URL compatibility. HydraCache exposes one logical Redis database only; `SELECT 1` and every non-zero DB index fail loud with `ERR multiple Redis databases are not supported; use SELECT 0`, and invalid indexes return `ERR invalid DB index`. |
-| `INFO` | `supported_with_caveat` | normalized metadata | Minimal honest RESP facade facts only: standalone mode, role, HydraCache version, RESP dialects, accepted connection count, processed command count, and RESP error count. No fake Redis memory, keyspace, replication, or cluster sections. |
+| `INFO` | `supported_with_caveat` | normalized metadata | Minimal honest RESP facade facts only: standalone mode, `redis_scope:node-local`, role, HydraCache version, RESP dialects, accepted connection count, processed command count, and RESP error count. No fake Redis memory, keyspace, replication, or cluster sections. |
 | `TYPE` | `supported_with_caveat` | exact | Returns `string` for an existing cache value and `none` for a miss. No other Redis data types are claimed. |
 | `ROLE`, `DBSIZE`, `SCAN` | `unsupported` | documented divergence | `ROLE` would fabricate Redis replication state, `DBSIZE` would imply an exact tenant/keyspace cardinality contract, and `SCAN` would expose iterable keyspace behavior HydraCache does not provide at this edge. |
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Recognized but disabled by default. `CONFIG` would imply Redis server configuration read/write support; `FLUSHDB` and `FLUSHALL` are destructive keyspace-wide operations. All return stable `NOPERM` before mutation. |
@@ -302,9 +303,10 @@ deployments must enable both Redis `AUTH` and TLS before allowing non-loopback a
 For `0.63.0`, production deployments must route Redis clients to one selected
 daemon RESP endpoint. A load-balanced Redis Service/VIP across multiple
 HydraCache daemons is not a supported Redis deployment shape because RESP state
-and Redis locks are node-local. If a later release adds a replicated RESP
-backend, this section must be updated together with cross-endpoint visibility and
-lock-contention tests.
+and Redis locks are node-local. `INFO` must show `redis_scope:node-local` for
+this release. If a later release adds a replicated RESP backend, this section
+must be updated together with cross-endpoint visibility and lock-contention
+tests.
 
 The server rejects Redis listener addresses that overlap the public daemon
 listener, cluster listener, or enabled admin listener. Disabling the listener is

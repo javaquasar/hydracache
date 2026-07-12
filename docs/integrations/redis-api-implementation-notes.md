@@ -30,7 +30,9 @@ claimed to be visible through RESP endpoint B, and Redis lock acquire/release
 scripts are safe only for clients using the same selected endpoint. This
 node-local posture is a release contract, not an accident: distributed RESP
 state requires a separate grid-aware backend, cross-endpoint visibility tests,
-and distributed lock contention tests.
+and distributed lock contention tests. Runtime probes expose the same boundary:
+`INFO` includes `redis_scope:node-local` so smoke tests and operators can verify
+the deployed facade posture without inferring it from documentation alone.
 
 ## Data Model
 
@@ -144,7 +146,11 @@ Standalone also means "one selected HydraCache RESP endpoint" for this release.
 Operators must not infer distributed Redis semantics from a multi-daemon
 HydraCache deployment. The multi-node daemon tests prove listener lifecycle and
 document the node-local boundary; they do not prove cross-daemon Redis key
-visibility or multi-endpoint lock mutual exclusion.
+visibility or multi-endpoint lock mutual exclusion. The sentinel tests named in
+the conformance manifest intentionally show that endpoint A and endpoint B keep
+independent RESP key/lock state in `0.63.0`; a future release that claims
+replicated RESP state must replace these documented-divergence rows with
+cross-endpoint success and contention tests.
 
 ## Honest Probe And Admin Posture
 
@@ -152,9 +158,10 @@ Probe commands are limited to facts HydraCache can state honestly. `PING`,
 `HELLO`, `COMMAND`, `CLIENT SETNAME`, `CLIENT SETINFO`, minimal `INFO`, and
 cache-subset `TYPE` are supported with the caveats documented in
 [`redis-compat.md`](redis-compat.md). `INFO` reports facade facts such as
-standalone mode, role, HydraCache version, supported RESP dialects, accepted
-connections, processed commands, and RESP errors. It does not fabricate Redis
-memory, keyspace, persistence, replication, or cluster sections.
+standalone mode, `redis_scope:node-local`, role, HydraCache version, supported
+RESP dialects, accepted connections, processed commands, and RESP errors. It
+does not fabricate Redis memory, keyspace, persistence, replication, or cluster
+sections.
 
 `CONFIG`, `FLUSHDB`, and `FLUSHALL` are recognized but disabled by default.
 They return stable `NOPERM` errors before dispatch because they would otherwise

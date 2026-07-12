@@ -456,6 +456,26 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
         );
     }
 
+    let has_deployment_scope = manifest
+        .commands
+        .iter()
+        .any(|command| command.kind == "deployment_scope");
+    let redis_multinode_test_path =
+        root.join("crates/hydracache-server/tests/redis_resp_multinode.rs");
+    let redis_multinode_tests = if has_deployment_scope {
+        match fs::read_to_string(&redis_multinode_test_path) {
+            Ok(text) => text,
+            Err(err) => {
+                problems.push(format!(
+                    "crates/hydracache-server/tests/redis_resp_multinode.rs: required for Redis deployment_scope rows but could not be read: {err}"
+                ));
+                String::new()
+            }
+        }
+    } else {
+        String::new()
+    };
+
     let mut names = HashSet::new();
     for command in &manifest.commands {
         let source = format!(
@@ -501,6 +521,26 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
             problems.push(format!(
                 "{source}: test names must be non-empty identifiers"
             ));
+        }
+
+        if command.kind == "deployment_scope" {
+            if command.oracle != "documented_divergence" {
+                problems.push(format!(
+                    "{source}: deployment_scope rows must use documented_divergence oracle"
+                ));
+            }
+            if command.tests.is_empty() {
+                problems.push(format!(
+                    "{source}: deployment_scope rows require at least one multinode sentinel test"
+                ));
+            }
+            for test in &command.tests {
+                if !redis_multinode_tests.contains(&format!("fn {test}(")) {
+                    problems.push(format!(
+                        "{source}: deployment_scope test '{test}' must be implemented in crates/hydracache-server/tests/redis_resp_multinode.rs"
+                    ));
+                }
+            }
         }
 
         if matches!(
