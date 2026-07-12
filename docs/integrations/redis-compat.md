@@ -36,7 +36,7 @@ to this page without adding or updating the manifest row first.
 | Command | Status | Oracle rule | Notes |
 | --- | --- | --- | --- |
 | `PING`, `ECHO`, `QUIT`, `HELLO 2`, `HELLO 3`, `COMMAND` | `supported` | exact or documented normalized metadata | Startup handshake needed by mainstream clients. `HELLO 3` switches the connection to RESP3 for the same cache subset. |
-| `AUTH`, `HELLO 2 AUTH` | `supported_with_caveat` | normalized error | Supported for auth-required listeners with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, and connection-local authenticated state. Redis ACL categories are not implemented by this row. |
+| `AUTH`, `HELLO 2 AUTH` | `supported_with_caveat` | normalized error | Supported for auth-required listeners with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK`, credential redaction, hardened password comparison, and connection-local authenticated state. Redis ACL categories are not implemented by this row. |
 | `rediss://` listener TLS | `supported_with_caveat` | normalized error | Native Redis TLS is supported for the RESP listener when explicitly enabled and backed by server TLS certificate/key material. TLS protects transport; Redis `AUTH` remains the application-layer gate. |
 | `CLIENT SETNAME`, `CLIENT SETINFO` | `supported_with_caveat` | normalized error/metadata | Accepted only as bounded, side-effect-free connection metadata. |
 | `GET`, bare `SET`, `MGET`, `DEL`, `EXISTS` | `supported` | exact | Counts, nils, and ordering must match real Redis. Bare `SET` means no conditional, return-old-value, retention, or absolute-expiry options. |
@@ -65,8 +65,9 @@ normalized by class. TTL values use bounded tolerance because wall-clock remaini
 time-sensitive. The lock subset compares `SET NX PX/EX` acquire/contention, token-safe release, and
 token-safe extension against real Redis with bounded TTL tolerance, including redis-py additive
 `extend` semantics and persistent-key `0`/no-mutation behavior. Auth scenarios compare
-Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` classes and must never expose credential material in replies,
-logs, metrics, or diagnostics.
+Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` classes, use hardened password comparison
+instead of prefix-dependent byte equality, and must never expose credential
+material in replies, logs, metrics, or diagnostics.
 
 Unsupported Redis commands are expected to diverge: real Redis may succeed, while
 HydraCache returns the documented loud error. `HC.*` commands are HydraCache-only:

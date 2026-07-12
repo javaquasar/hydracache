@@ -151,8 +151,8 @@ For `0.63.0`, RESP3 negotiation, `MSET`, minimal `INFO`, cache-subset `TYPE`, Re
 Redis `AUTH`/`HELLO AUTH`, native `rediss://`, and HydraCache-only `HC.NAMESPACE`/tag extensions are supported release scope: the manifest rows
 must stay tied to RESP3 negotiation/codec tests, atomic batch tests, health/probe honesty tests,
 protocol v3 TTL metadata/expiry tests, client-surface expiry tests, auth-required listener tests,
-credential redaction tests, TLS handshake/plaintext/wrong-CA tests, edge-local tag invalidation tests,
-real Redis oracle tolerance/divergence tests, and mainstream-client scenarios.
+credential redaction and hardened password-comparison tests, TLS handshake/plaintext/wrong-CA tests,
+edge-local tag invalidation tests, real Redis oracle tolerance/divergence tests, and mainstream-client scenarios.
 Redis Cluster remains intentionally unsupported in `0.63.0`: `CLUSTER SLOTS`,
 `CLUSTER NODES`, and `CLUSTER INFO` must stay tied to standalone-only negative
 tests that prove no topology, hash slot metadata, `MOVED`, or `ASK` is emitted.
@@ -189,7 +189,7 @@ cargo test -p hydracache-server --test server_lifecycle redis --locked
 
 The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL metadata/expiry
 compatibility, atomic `MSET`, `SETEX`/`PSETEX` normalization to the same protocol v3 expiry path, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
-credential redaction, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
+credential redaction, hardened password comparison, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
 coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
 coverage, minimal `INFO`, cache-subset `TYPE`, edge-local `HC.NAMESPACE`/tag invalidation,
 disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
@@ -230,7 +230,10 @@ is explicitly allowlisted.
 The fast tier must also keep `sha1_hex_matches_known_answer_vectors`,
 `lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`, and
 `eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted` green so the
-script SHA path is validated independently of the facade's own SHA resolver.
+script SHA path is validated independently of the facade's own SHA resolver. The
+same fast tier keeps `redis_auth_uses_hardened_credential_comparison_contract`
+green so Redis `AUTH` does not regress to prefix-dependent password comparison
+while still returning Redis-shaped `WRONGPASS`.
 Passing targeted Rust tests is not enough for the final release claim: if this
 Docker/client matrix or the pinned real Redis oracle is not green, release notes
 must describe the implementation as targeted-test covered with ecosystem/oracle

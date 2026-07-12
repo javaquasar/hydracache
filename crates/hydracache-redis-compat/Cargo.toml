@@ -17,6 +17,7 @@ bytes.workspace = true
 hydracache-client-protocol.workspace = true
 hydracache-client-transport-axum.workspace = true
 redis-protocol.workspace = true
+subtle.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 

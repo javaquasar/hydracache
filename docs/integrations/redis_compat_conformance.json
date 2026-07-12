@@ -47,7 +47,7 @@
       "status": "supported_with_caveat",
       "kind": "redis_subset",
       "oracle": "normalized_error",
-      "tests": ["auth_hello_auth_and_noauth_errors_match_contract", "redis_auth_required_listener_rejects_data_commands_before_auth", "redis_auth_success_binds_connection_local_client_identity", "redis_auth_redacts_credentials_from_errors_logs_and_metrics", "client_matrix_runs_auth_required_connection_scenario"]
+      "tests": ["auth_hello_auth_and_noauth_errors_match_contract", "redis_auth_uses_hardened_credential_comparison_contract", "redis_auth_required_listener_rejects_data_commands_before_auth", "redis_auth_success_binds_connection_local_client_identity", "redis_auth_redacts_credentials_from_errors_logs_and_metrics", "client_matrix_runs_auth_required_connection_scenario"]
     },
     {
       "name": "rediss:// listener TLS",

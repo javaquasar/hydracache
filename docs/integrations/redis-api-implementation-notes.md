@@ -108,7 +108,12 @@ malformed, oversized, or truncated input cannot mutate cache state.
 Redis `AUTH` is connection-local and maps to the configured listener token. It
 returns Redis-shaped `NOAUTH`, `WRONGPASS`, and `OK` classes and must redact
 credential material from replies, logs, metrics, and diagnostics. Redis ACLs are
-not implemented.
+not implemented. Password checks use the Redis hardening posture: the configured
+password is compared through a hardened constant-time byte comparison, and the
+username match is evaluated independently instead of returning early on password
+failure. This keeps `WRONGPASS` behavior from depending on a matching password
+prefix while preserving the documented `AUTH password`, `AUTH username password`,
+and `HELLO ... AUTH username password` shapes.
 
 Native `rediss://` is a transport option for the RESP listener when explicitly
 enabled with server TLS material. TLS and Redis `AUTH` are independent gates:

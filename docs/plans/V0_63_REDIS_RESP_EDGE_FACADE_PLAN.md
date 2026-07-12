@@ -186,7 +186,9 @@ The following five items are now mandatory release scope in addition to the six 
    configured every data or mutating command fails with Redis-shaped `NOAUTH` until successful
    authentication. Invalid credentials return `WRONGPASS` without leaking usernames, passwords,
    connection strings, tenant names beyond the configured public identity, or raw client metadata.
-   Successful auth binds the connection-local Redis identity to a HydraCache client-surface
+   Password comparison must be hardened against prefix-dependent early exits, and username matching
+   must be evaluated independently so `WRONGPASS` timing is not a password-prefix oracle. Successful
+   auth binds the connection-local Redis identity to a HydraCache client-surface
    `ClientIdentity`/tenant before any cache request is dispatched.
 4. **Native Redis TLS / `rediss://`.** `rediss://` is now mandatory supported scope for the optional
    RESP listener. The server config must enable Redis TLS explicitly, reuse the existing server TLS
@@ -425,6 +427,7 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 - `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`.
 - `resp_listener_admin_commands_are_disabled_before_mutation`.
 - `auth_hello_auth_and_noauth_errors_match_contract`.
+- `redis_auth_uses_hardened_credential_comparison_contract`.
 - `redis_auth_required_listener_rejects_data_commands_before_auth`.
 - `redis_auth_redacts_credentials_from_errors_logs_and_metrics`.
 - `redis_api_rediss_env_reuses_server_tls_material`.
@@ -937,7 +940,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
 1. RESP metrics use bounded labels only: command family/status/protocol version/auth state, never key,
    value, raw client name, request id, tenant-provided tag, or arbitrary error text.
 2. Errors and logs redact credentials from `AUTH`, `HELLO AUTH`, connection strings, and client
-   library debug metadata.
+   library debug metadata. Redis `AUTH` password checks use hardened comparison rather than
+   prefix-dependent byte equality, and the fast tier pins that behavior with
+   `redis_auth_uses_hardened_credential_comparison_contract`.
 3. Audit events exist for auth failures, admin-disabled commands, `HC.*` mutating commands, and
    dangerous command attempts (`FLUSHDB`, `FLUSHALL`, `CONFIG`, `MODULE`, `EVAL`).
 4. Diagnostics commands are tenant-scoped and read-only. Cross-tenant data leakage is a release
@@ -1012,7 +1017,7 @@ HydraCache does and does not implement.
 | RESP2/RESP3 negotiation (W0/W1/W2/W5) | `hydracache-redis-compat` + conformance manifest | `hello2_and_hello3_are_supported_and_switch_dialect`, `resp3_commands_roundtrip_supported_cache_subset`, `resp3_unsupported_aggregate_inputs_fail_before_mutation`, `client_matrix_runs_resp3_negotiation_scenario` | PR |
 | `RedisCommand` + RESP codec (W1) | `hydracache-redis-compat` | `resp_frame_roundtrip_matches_redis_protocol` | PR |
 | `RedisApiConfig` + validation (W1) | `hydracache-server/src/config.rs` | `redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud` | PR |
-| Redis auth and native TLS (W0/W1/W2/W5/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs + raw TLS listener | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_env_reuses_server_tls_material`, `redis_resp_listener_accepts_rediss_auth_and_cache_commands`, `redis_resp_tls_listener_rejects_plaintext_before_mutation`, `redis_resp_tls_client_rejects_wrong_ca`, `redis_resp_tls_keeps_wrong_auth_as_wrongpass` | PR |
+| Redis auth and native TLS (W0/W1/W2/W5/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs + raw TLS listener | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_uses_hardened_credential_comparison_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_env_reuses_server_tls_material`, `redis_resp_listener_accepts_rediss_auth_and_cache_commands`, `redis_resp_tls_listener_rejects_plaintext_before_mutation`, `redis_resp_tls_client_rejects_wrong_ca`, `redis_resp_tls_keeps_wrong_auth_as_wrongpass` | PR |
 | subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `set_ex_and_ttl_map_to_protocol_v3_metadata`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_and_duplicate_keys_use_last_value`, `mset_oversized_value_rejects_without_partial_mutation`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_zero_is_supported_as_noop_for_single_database_contract`, `select_nonzero_and_invalid_db_fail_loud`, `resp_listener_select_zero_ok_and_nonzero_keeps_default_database` | PR |
 | health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification`, `info_returns_minimal_honest_facade_state`, `info_section_argument_does_not_fabricate_redis_keyspace_state`, `resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state`, `type_reports_string_or_none_through_client_surface`, `resp_listener_type_reports_string_and_none`, `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `redis_oracle_supported_subset_matches_real_redis` for `TYPE` | PR + Docker-gated / nightly |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
@@ -1373,8 +1378,9 @@ lock-library claim.
   command frames fail before mutation with no silent mixed dialect mode.
 - Redis `AUTH` and `HELLO 2 AUTH` are explicit and tested: auth-required listeners reject data and
   mutating commands with `NOAUTH` before authentication, invalid credentials return `WRONGPASS`,
-  successful auth binds connection-local identity/tenant before dispatch, and credentials never appear
-  in errors, logs, metrics, or diagnostics.
+  password comparison is hardened against prefix-dependent early exits, successful auth binds
+  connection-local identity/tenant before dispatch, and credentials never appear in errors, logs,
+  metrics, or diagnostics.
 - Every non-subset command fails with a **stable loud error**; no `MOVED`/`ASK`/`CLUSTER`;
   `CONFIG`, `FLUSHDB`, and `FLUSHALL` are admin-disabled by default and proven not to dispatch or
   mutate keys (W4). RESP decoder never panics on arbitrary bytes (W5, R-3).

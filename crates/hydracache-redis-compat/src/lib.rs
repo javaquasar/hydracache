@@ -25,6 +25,7 @@ use redis_protocol::resp3::{
     encode::complete::extend_encode as extend_encode_resp3,
     types::{BytesFrame as Resp3BytesFrame, FrameMap as Resp3FrameMap},
 };
+use subtle::ConstantTimeEq;
 use thiserror::Error;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::time;
@@ -313,19 +314,35 @@ impl RedisAuthConfig {
         let Some(password) = self.password.as_deref() else {
             return false;
         };
-        if password.as_bytes() != attempt.password.as_slice() {
-            return false;
-        }
-        match self.username.as_deref() {
+        let password_matches = hardened_bytes_eq(password.as_bytes(), attempt.password.as_slice());
+        let username_matches = match self.username.as_deref() {
             Some(expected) => attempt
                 .username
                 .as_deref()
-                .is_some_and(|actual| actual == expected.as_bytes()),
+                .is_some_and(|actual| hardened_bytes_eq(expected.as_bytes(), actual)),
             None => attempt.username.as_deref().is_none_or(|actual| {
                 actual.eq_ignore_ascii_case(DEFAULT_REDIS_AUTH_USERNAME.as_bytes())
             }),
-        }
+        };
+
+        password_matches & username_matches
     }
+}
+
+fn hardened_bytes_eq(expected: &[u8], actual: &[u8]) -> bool {
+    let common_len = expected.len().min(actual.len());
+    let prefix_matches: bool = expected[..common_len].ct_eq(&actual[..common_len]).into();
+    let length_matches = expected.len() == actual.len();
+    let mut trailing_diff = 0u8;
+
+    for byte in expected[common_len..]
+        .iter()
+        .chain(actual[common_len..].iter())
+    {
+        trailing_diff |= *byte;
+    }
+
+    prefix_matches & length_matches & (trailing_diff == 0)
 }
 
 /// Snapshot of listener counters.
@@ -5753,6 +5770,51 @@ mod tests {
         let hello3 = String::from_utf8(hello3).unwrap();
         assert!(hello3.contains("+proto\r\n:3\r\n"));
         assert!(hello3.ends_with("+OK\r\n$1\r\nv\r\n+OK\r\n"));
+    }
+
+    #[test]
+    fn redis_auth_uses_hardened_credential_comparison_contract() {
+        let mut auth = RedisAuthConfig::required("secret-token");
+        auth.username = Some("app-user".to_owned());
+
+        assert!(auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"app-user".to_vec()),
+            password: b"secret-token".to_vec(),
+        }));
+        assert!(!auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"app-user".to_vec()),
+            password: b"secret-toke".to_vec(),
+        }));
+        assert!(!auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"app-user".to_vec()),
+            password: b"secret-token-extra".to_vec(),
+        }));
+        assert!(!auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"other-user".to_vec()),
+            password: b"secret-token".to_vec(),
+        }));
+        assert!(!auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"other-user".to_vec()),
+            password: b"wrong-prefix".to_vec(),
+        }));
+
+        let default_user_auth = RedisAuthConfig::required("secret-token");
+        assert!(default_user_auth.matches_attempt(&RedisAuthAttempt {
+            username: None,
+            password: b"secret-token".to_vec(),
+        }));
+        assert!(default_user_auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"DEFAULT".to_vec()),
+            password: b"secret-token".to_vec(),
+        }));
+        assert!(!default_user_auth.matches_attempt(&RedisAuthAttempt {
+            username: Some(b"other-user".to_vec()),
+            password: b"secret-token".to_vec(),
+        }));
+
+        assert!(hardened_bytes_eq(b"secret-token", b"secret-token"));
+        assert!(!hardened_bytes_eq(b"secret-token", b"secret-toke"));
+        assert!(!hardened_bytes_eq(b"secret-token", b"secret-token\0"));
     }
 
     #[tokio::test]

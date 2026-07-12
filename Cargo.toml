@@ -110,6 +110,7 @@ sled = "0.34.7"
 slog = "2.7"
 sqlx = { version = "0.8", default-features = false }
 sqlparser = "0.62.0"
+subtle = "2.6.1"
 syn = { version = "2", features = ["full"] }
 testcontainers-modules = { version = "0.15.0", features = ["postgres", "redis", "nats"] }
 thiserror = "2.0.18"

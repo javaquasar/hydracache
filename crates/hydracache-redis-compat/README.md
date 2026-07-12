@@ -109,6 +109,7 @@ The release plan and conformance manifest pin this contract to executable tests:
 
 - `sha1_hex_matches_known_answer_vectors`
 - `lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`
+- `redis_auth_uses_hardened_credential_comparison_contract`
 - `info_returns_minimal_honest_facade_state`
 - `set_write_conditional_options_follow_conformance_contract`
 - `set_nx_px_acquires_missing_key_and_contention_returns_null`
