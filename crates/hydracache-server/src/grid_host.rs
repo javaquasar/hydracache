@@ -9,7 +9,7 @@ use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, Once, RwLock};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
@@ -39,6 +39,7 @@ const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const NODE_IDENTITY_FILE: &str = "node-identity.json";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
+static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 type NetworkedRaftRuntime = RaftMetadataRuntime<DurableRaftLogStore>;
 type SharedRaftPeers = Arc<RwLock<BTreeMap<u64, RaftPeer>>>;
@@ -1227,19 +1228,7 @@ fn resolve_member_identity(
 ) -> CacheResult<MemberIdentity> {
     let path = storage_dir.join(NODE_IDENTITY_FILE);
     if path.exists() {
-        let persisted = read_persisted_node_identity(&path)?;
-        let identity = persisted.into_member_identity()?;
-        if let Some(configured_node_id) = configured_member_node_id(config) {
-            if configured_node_id != identity.node_id {
-                return Err(CacheError::Backend(format!(
-                    "configured node_id {} conflicts with persisted node identity {} in {}",
-                    configured_node_id,
-                    identity.node_id,
-                    path.display()
-                )));
-            }
-        }
-        return Ok(identity);
+        return read_member_identity(config, &path);
     }
 
     fs::create_dir_all(storage_dir).map_err(|error| {
@@ -1253,16 +1242,71 @@ fn resolve_member_identity(
     let persisted = PersistedNodeIdentity::new(node_id.clone(), raft_node_id);
     let text = serde_json::to_string_pretty(&persisted)
         .map_err(|error| CacheError::Backend(format!("failed to encode node identity: {error}")))?;
-    fs::write(&path, text).map_err(|error| {
-        CacheError::Backend(format!(
-            "failed to write node identity {}: {error}",
-            path.display()
-        ))
-    })?;
+    if !write_node_identity_create_once(&path, &text)? {
+        return read_member_identity(config, &path);
+    }
     Ok(MemberIdentity {
         node_id,
         raft_node_id,
     })
+}
+
+fn read_member_identity(config: &ServerConfig, path: &Path) -> CacheResult<MemberIdentity> {
+    let persisted = read_persisted_node_identity(path)?;
+    let identity = persisted.into_member_identity()?;
+    if let Some(configured_node_id) = configured_member_node_id(config) {
+        if configured_node_id != identity.node_id {
+            return Err(CacheError::Backend(format!(
+                "configured node_id {} conflicts with persisted node identity {} in {}",
+                configured_node_id,
+                identity.node_id,
+                path.display()
+            )));
+        }
+    }
+    Ok(identity)
+}
+
+fn write_node_identity_create_once(path: &Path, text: &str) -> CacheResult<bool> {
+    let storage_dir = path.parent().ok_or_else(|| {
+        CacheError::Backend(format!(
+            "node identity path {} has no parent directory",
+            path.display()
+        ))
+    })?;
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let sequence = NODE_IDENTITY_TEMP_SEQ.fetch_add(1, Ordering::Relaxed);
+    let temp_path = storage_dir.join(format!(
+        ".{NODE_IDENTITY_FILE}.{}.{}.{}.tmp",
+        std::process::id(),
+        unique,
+        sequence
+    ));
+    fs::write(&temp_path, text).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to write temporary node identity {}: {error}",
+            temp_path.display()
+        ))
+    })?;
+    let link_result = fs::hard_link(&temp_path, path);
+    let cleanup_result = fs::remove_file(&temp_path);
+    if let Err(error) = cleanup_result {
+        return Err(CacheError::Backend(format!(
+            "failed to remove temporary node identity {}: {error}",
+            temp_path.display()
+        )));
+    }
+    match link_result {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => Ok(false),
+        Err(error) => Err(CacheError::Backend(format!(
+            "failed to persist node identity {}: {error}",
+            path.display()
+        ))),
+    }
 }
 
 fn read_persisted_node_identity(path: &Path) -> CacheResult<PersistedNodeIdentity> {
@@ -1857,6 +1901,48 @@ mod tests {
             ResolvedClusterStartMode::Bootstrap
         );
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn member_identity_creation_is_safe_under_concurrent_startup() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let dir = PathBuf::from(format!(
+            "target/test-hydracache-grid-host/unit/identity-concurrent-{}-{unique}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&dir);
+
+        let mut config = test_member_config("127.0.0.1:7000");
+        config.node_id = Some("member-concurrent".to_owned());
+        let config = Arc::new(config);
+        let handles = (0..24)
+            .map(|_| {
+                let config = Arc::clone(&config);
+                let dir = dir.clone();
+                std::thread::spawn(move || resolve_member_identity(config.as_ref(), &dir).unwrap())
+            })
+            .collect::<Vec<_>>();
+
+        let identities = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>();
+        let first = identities.first().unwrap();
+        assert!(identities.iter().all(|identity| identity == first));
+
+        let identity_path = dir.join(NODE_IDENTITY_FILE);
+        let persisted = read_persisted_node_identity(&identity_path).unwrap();
+        assert_eq!(persisted.into_member_identity().unwrap(), first.clone());
+        let leftovers = fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_name().to_string_lossy().ends_with(".tmp"))
+            .count();
+        assert_eq!(leftovers, 0);
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[tokio::test]

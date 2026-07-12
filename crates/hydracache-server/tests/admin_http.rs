@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use axum::body::{to_bytes, Body};
@@ -19,6 +20,20 @@ use tower::ServiceExt;
 mod admin_http {
     use super::*;
 
+    static STORAGE_SEQ: AtomicU64 = AtomicU64::new(0);
+
+    fn test_path(label: &str) -> PathBuf {
+        let seq = STORAGE_SEQ.fetch_add(1, Ordering::SeqCst);
+        PathBuf::from(format!(
+            "target/test-hydracache-server-admin/{label}-{}-{seq}",
+            std::process::id()
+        ))
+    }
+
+    fn file_url(path: PathBuf) -> String {
+        format!("file://{}", path.to_string_lossy().replace('\\', "/"))
+    }
+
     fn member_config() -> ServerConfig {
         ServerConfig {
             role: ServerRole::Member,
@@ -26,7 +41,7 @@ mod admin_http {
             cluster_addr: "127.0.0.1:0".parse().unwrap(),
             node_id: None,
             seeds: vec!["127.0.0.1:0".to_owned()],
-            storage_dir: Some(PathBuf::from("target/test-hydracache-server-admin")),
+            storage_dir: Some(test_path("member")),
             drain_timeout_ms: 1_000,
             tls: TlsConfig::default(),
             cluster_auth: ClusterAuthConfig::default(),
@@ -41,7 +56,7 @@ mod admin_http {
         ServerConfig {
             backup: BackupConfig {
                 enabled: true,
-                location: Some("file://target/test-hydracache-backups".to_owned()),
+                location: Some(file_url(test_path("backups"))),
             },
             ..member_config()
         }
