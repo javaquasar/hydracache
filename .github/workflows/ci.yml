@@ -170,7 +170,7 @@ jobs:
       - name: Run daemon-process cluster tier
         env:
           HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
-        run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture
+        run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
 
       - name: Run membership-history tier
         env:

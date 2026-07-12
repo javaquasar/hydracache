@@ -55,7 +55,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Performance budget (run) | `cargo bench …` then `bench-budget --current target/criterion` | CI (scheduled/dispatch) | real regression vs `benches/budget.toml` |
 | Coverage ratchet | `cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88` | CI (scheduled/dispatch) | mechanical line coverage floor; not a RULES R-7 numeric self-score |
 | Operator kind chaos | `cargo test -p hydracache-operator --test soak_kind --locked -- --ignored --nocapture` | CI (scheduled/dispatch) + pre-release live kind | pod crash, NetworkPolicy partition when CNI enforcement is proven, dedicated probe-pod baseline reachability so missing tools cannot pass wrong-green, and chaos-mesh IOChaos slow disk when the CRD exists; unsupported legs skip loud |
-| Real-process daemon cluster | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture` | CI (scheduled/dispatch) | child-process `hydracache-server` cluster, real leader kill/restart, no same-term double-vote, restart with durable state |
+| Real-process daemon cluster | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture` | CI (scheduled/dispatch) | serialized child-process `hydracache-server` cluster scenarios, real leader kill/restart/suspend, no same-term double-vote, restart with durable state |
 | Membership history | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test membership_history --locked -- --nocapture` | CI (scheduled/dispatch) | recorded daemon membership histories pass the shipped 0.44 invariant/linearizability checks and reject two leaders in one term |
 | Pre-vote nightly soak | `HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK=1 cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture` | CI (scheduled/dispatch) | randomized pre-vote partition/rejoin schedules keep at most one leader per term |
 | Raft deterministic message filter | `cargo test -p hydracache-cluster-raft --test raft_message_filter --locked` | CI + verify (via workspace tests) | pre-vote partition rejoin, asymmetric partition, minority/majority commit behavior, duplicate/reordered raft messages, deterministic replay |
@@ -123,7 +123,7 @@ processes:
 
 ```powershell
 $env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture
+cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
 cargo test -p hydracache-server --test membership_history --locked -- --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
 ```

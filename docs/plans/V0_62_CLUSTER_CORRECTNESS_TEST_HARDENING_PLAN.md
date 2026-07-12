@@ -717,7 +717,7 @@ cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoin
 # network-gated + nightly tiers
 $env:HYDRACACHE_RUN_NETWORKED_DAEMON_E2E='1'
 $env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture
+cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
 cargo test -p hydracache-server --test grid_host --locked -- --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_NETWORKED_DAEMON_E2E,Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
 ```
