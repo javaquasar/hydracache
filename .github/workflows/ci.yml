@@ -43,6 +43,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
           cache-targets: false
 
       - name: Install cargo-deny
@@ -107,6 +108,10 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
+
   performance-budget:
     name: Performance Budget
     runs-on: ubuntu-latest
@@ -122,6 +127,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
           cache-targets: false
           shared-key: performance-budget
 
@@ -151,10 +157,12 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: "1.22.x"
+          cache: false
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
           cache-targets: false
           shared-key: redis-compat-release-proof
 
@@ -202,6 +210,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
           cache-targets: false
           shared-key: dst-nightly-soak
 
@@ -263,6 +272,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
           cache-targets: false
           shared-key: coverage-ratchet
 
@@ -291,6 +301,10 @@ jobs:
             target/llvm-cov-html
             target/llvm-cov.lcov
 
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
+
   msrv:
     name: MSRV 1.88.0
     runs-on: ubuntu-latest
@@ -305,6 +319,7 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
           cache-targets: false
           shared-key: msrv-1.88.0
 
@@ -316,3 +331,7 @@ jobs:
 
       - name: Test MSRV
         run: cargo test --workspace --locked
+
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests

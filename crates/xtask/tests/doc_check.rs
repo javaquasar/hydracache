@@ -2,9 +2,12 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use xtask::doc_check;
+
+static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 /// Create a throwaway repo root under the system temp dir with the given
 /// `releases.toml` body and (optionally) referenced plan files.
@@ -13,7 +16,11 @@ fn scratch_root(manifest: &str, plan_files: &[&str]) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    let root = std::env::temp_dir().join(format!("hydracache_doc_check_{nanos}"));
+    let counter = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let root = std::env::temp_dir().join(format!(
+        "hydracache_doc_check_{}_{nanos}_{counter}",
+        std::process::id()
+    ));
     fs::create_dir_all(root.join("docs/plans")).unwrap();
     fs::write(root.join("docs/plans/releases.toml"), manifest).unwrap();
     for file in plan_files {
