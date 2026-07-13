@@ -1697,6 +1697,12 @@ where
         if snapshot.data.is_empty() {
             return Ok(());
         }
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_install_snapshot_oom", |_| {
+            Err(CacheError::Backend(
+                "injected OOM during raft snapshot install".to_owned(),
+            ))
+        });
         let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
         if export.cluster_name != self.cluster.name() {
             return Err(CacheError::Backend(format!(

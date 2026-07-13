@@ -543,6 +543,7 @@ cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
 cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
 cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```

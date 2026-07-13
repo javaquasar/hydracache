@@ -496,7 +496,7 @@ error, no partial persisted snapshot, and that a subsequent recovery reads the l
 
 **Run locally.**
 ```powershell
-cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
 ```
 **Run in CI.** `rust` job step "Raft snapshot resource faults" (`--features test-failpoints`).
 **DoD.** Both green; canary red; no partial snapshot survives a failed save.
@@ -623,7 +623,7 @@ cargo test -p hydracache-cluster-raft --locked `
   --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
 cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
-cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -640,7 +640,7 @@ GitHub (`rust` job, new steps):
       - name: Raft rejoin after compaction
         run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
       - name: Raft snapshot resource failpoints
-        run: cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
 ```
 
 ### Heavy tier - real-process / soak / wide-scope, gated job + env vars

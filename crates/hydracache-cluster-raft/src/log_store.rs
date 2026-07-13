@@ -351,6 +351,12 @@ impl RaftLogStore for InMemoryRaftLogStore {
         snapshot: &Snapshot,
         preserve_log_entries: usize,
     ) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_save_snapshot_disk_full", |_| {
+            Err(RaftStoreError::new(
+                "injected disk full during raft snapshot save",
+            ))
+        });
         let mut state = self.state.write().expect("raft log store poisoned");
         let snapshot_index = snapshot.get_metadata().index;
         state.snapshot = snapshot.clone();

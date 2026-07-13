@@ -112,6 +112,9 @@ jobs:
       - name: Raft rejoin after compaction
         run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 
+      - name: Raft snapshot resource faults
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
+
       - name: Management console
         run: |
           npm --prefix console ci
