@@ -15,7 +15,13 @@
 >   (W15-W21) then adds mechanical "test the tests" power: mutation testing of the snapshot/apply/
 >   membership paths, a Miri run of the immutability proofs, an enforced canary-completeness meta-gate,
 >   nemesis determinism + shrinking, a frozen bad-seed regression corpus, a raft-corpus category-coverage
->   assertion, and a unified invariant catalog.
+>   assertion, and a unified invariant catalog. Finally, a cross-domain coverage expansion (W22-W28)
+>   closes whole categories of test we lacked, each citing its third-party blueprint and the principle
+>   behind it: trace-driven cache hit-rate vs the Belady optimum (Caffeine `simulator`), exhaustive
+>   bounded model checking (`stateright`), a multi-surface cargo-fuzz corpus (TiKV/DataFusion `fuzz`), a
+>   reusable Jepsen-style linearizability oracle library (Knossos), loom interleaving checks on the
+>   lock/ring fast paths (`moka`), connection/pool chaos (pgcat/Pingora/HikariCP), and differential +
+>   Redis/Hazelcast-mined behavioral corpora (DataFusion/Redis/Hazelcast).
 > - **Why:** `0.62.0` and `0.62.1` proved the raft/gossip/failpoint harness layer, but they mainly
 >   cover message faults and crash windows. The Hazelcast case shows another dangerous class:
 >   snapshots that appear valid but secretly share mutable state with the live state machine and later
@@ -969,6 +975,299 @@ cargo test -p hydracache-cluster-testkit invariant_catalog --locked
 
 **Run in CI.** Fast `rust` job; the refactored W1-W14 tests continue to run in their existing lanes.
 
+## Cross-Domain Test Coverage Expansion (W22-W28)
+
+W1-W21 harden the raft/snapshot/membership core. A gap analysis against the distributed and cache
+projects checked out in the workspace root (`C:\Workspace\prj\jq\cashe\*`) found whole **categories** of
+test we do not have yet - not more snapshot scenarios, but different *kinds* of proof. This section
+broadens `0.64` from a raft-snapshot expansion into a **cross-domain correctness coverage** release.
+Each item names the third-party blueprint it copies **and the principle** that makes the technique catch
+a class of bug our existing tests structurally cannot. All are test-only, in-process/library tier (no
+product surface, no `0.66` real-process tier), runnable locally and in GitHub CI, gated tiers skip loud.
+
+Grounding grep (verified): HydraCache today has `proptest` (33), `criterion` (50), `loom` (present),
+`miri` (2), but **zero** `hit_rate`, `stateright`, `cargo-fuzz`, or `jepsen` usage - those are the gaps
+below.
+
+### W22. Trace-Driven Cache Efficiency & Hit-Rate Quality (blueprint: Caffeine `simulator/`; principle: measure a real policy against the Belady optimum)
+
+**Principle.** A cache can be perfectly *correct* and still *useless* if its eviction/TTL throws away the
+wrong entries. Correctness tests never catch a bad hit-rate. Caffeine's simulator encodes the principle
+"**bound how far a real policy is from the theoretical optimum**": replay a real access trace, compute
+the offline **Belady/MIN optimal** hit-rate (the best any policy could achieve with future knowledge),
+and assert the real policy stays within a tolerance of it - and beats simple baselines (LRU/LFU). This
+turns "is our cache good?" from opinion into a measured, regressible number.
+
+**Why we lack it.** `hit_rate` = 0 matches in-repo; `admission.rs` is *overload* admission (FIFO
+backlog), not an *eviction* policy with a quality claim. Nothing proves our eviction/TTL delivers a
+useful hit-rate.
+
+**Blueprint (verified files).** `cashe/caffeine/simulator/src/main/resources/*.trace.{gz,xz}` (gcc,
+gzip, mcf, swim, twolf, `request.trace`), `cashe/caffeine/simulator/.../policy/**` (35 policy classes),
+and the Belady optimal policy; also `cashe/moka` for a Rust cache's own hit-rate assertions.
+
+**Files to change.** New `crates/hydracache-cache-sim` (dev/bench crate, `publish = false`) with a
+trace loader, a Belady offline optimum, LRU/LFU baselines, and the HydraCache eviction/TTL policy under
+test; committed small traces under `crates/hydracache-cache-sim/traces/` (or download-gated for large
+ones).
+
+**Design.**
+- Replay each trace through the real eviction/TTL path at a fixed capacity; record hit-rate.
+- Assert `hydracache_hit_rate >= belady_optimal * (1 - tolerance)` and `>= lru_baseline` for each trace.
+- A `SIM_REPORT` artifact records per-trace hit-rate so a regression is visible.
+
+**Required tests:**
+- `eviction_hit_rate_is_within_tolerance_of_belady_optimum_on_standard_traces`.
+- `eviction_beats_lru_and_lfu_baselines_on_skewed_zipfian_trace`.
+- `ttl_expiry_does_not_collapse_hit_rate_under_recency_skew`.
+
+**Canary.** `canary_random_eviction_policy_fails_the_hit_rate_bound` - swapping in random eviction must
+break the Belady-tolerance assertion (proves the bound actually discriminates).
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cache-sim eviction_hit_rate --locked
+```
+
+**Run in CI.** Fast `rust` job (small committed traces); large-trace sweep in the nightly lane.
+
+### W23. Exhaustive Bounded Model Checking (blueprint: `stateright`; ScyllaDB `test/raft/fsm_test.cc`; principle: exhaustive small-scope beats random large-scope)
+
+**Principle.** Random DST (`0.44`) samples the schedule space and finds bugs *probabilistically* - it can
+run a million seeds and still miss a 5-message interleaving. Model checking encodes the principle
+"**for a small enough configuration, enumerate every reachable state and prove the invariant holds in
+all of them**" (Newcombe/AWS TLA+; `stateright` is the Rust actor-model checker). It is the only
+technique that gives *absence*-of-bug evidence for the modeled scope, not just *presence* of a passing
+run.
+
+**Why we lack it.** `stateright`/`model_check` = 0. We have random DST and property tests, but no
+exhaustive enumeration of the membership/commit protocol.
+
+**Blueprint.** `stateright` crate (actor model + BFS/DFS state exploration + always/eventually
+properties); `cashe/scylladb/test/raft/fsm_test.cc` (direct FSM property tests); the AWS "Use of Formal
+Methods at Amazon" principle of model-checking the protocol, not the code.
+
+**Files to change.** New `crates/hydracache-cluster-raft/tests/model_check.rs` with a `stateright`
+dev-dependency; a minimal actor model of the metadata membership + commit state machine (not the raft-rs
+impl - a spec-level model), scoped to N <= 4 nodes and a bounded message budget.
+
+**Design.**
+- Model ConfChange add/remove, commit, snapshot-install as actor transitions.
+- Always-properties: single leader per term, no committed entry lost, membership never diverges from the
+  committed ConfState. Eventually-properties: the cluster converges after faults stop.
+- `stateright` explores the full reachable state space for the bounded scope; any violation prints the
+  minimal counterexample trace.
+
+**Required tests:**
+- `bounded_model_check_membership_and_commit_invariants_hold_for_up_to_4_nodes`.
+
+**Canary.** `canary_model_allows_a_dropped_committed_entry` - a fixture model that drops a committed
+entry must produce a counterexample.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cluster-raft --test model_check --locked
+```
+
+**Run in CI.** Fast `rust` job for the small scope; wider scope (more nodes/messages) in the nightly
+lane.
+
+### W24. Multi-Target Continuous Fuzzing Infrastructure (blueprint: TiKV `fuzz/`, DataFusion `tests/fuzz_cases`; principle: coverage-guided mutation + a persistent corpus)
+
+**Principle.** Property tests (`proptest`) generate *random* inputs from a shrinkable strategy;
+coverage-guided fuzzers encode a stronger principle: "**mutate inputs toward new code coverage and keep
+a persistent corpus of interesting inputs**", so they reach states a human strategy never enumerates and
+never lose a crash-finding input. TiKV runs the same targets under afl + honggfuzz + libfuzzer with
+committed seed corpora; DataFusion fuzzes query paths in `fuzz_cases`.
+
+**Why we lack it.** `cargo-fuzz`/`fuzz_target` = 0. `0.66` W9 adds *one* wire target; the broader,
+persistent multi-surface fuzz infrastructure is absent.
+
+**Blueprint (verified).** `cashe/tikv/fuzz/{fuzzer-afl,fuzzer-honggfuzz,fuzzer-libfuzzer,common/seeds}`,
+`cashe/datafusion/datafusion/core/tests/fuzz_cases`.
+
+**Files to change.** New `fuzz/` workspace member with `cargo-fuzz` targets for the highest-risk parsers:
+`fuzz_config_parse`, `fuzz_kv_codec` (StructuredKey/value encode-decode round-trip), `fuzz_resp_command`
+(RESP command parse), `fuzz_snapshot_decode`; committed seed corpora under `fuzz/corpus/*`; deterministic
+`crates/*/tests/fuzz_corpus_regression.rs` that replays each corpus in normal `cargo test` (so CI without
+a fuzzer still regresses the corpus).
+
+**Design.**
+- Each target: arbitrary bytes -> parse/decode -> assert no panic, no unbounded allocation (reuse frame
+  limits), and round-trip identity where applicable; a reject never mutates state.
+- Any crash input is added to the committed corpus and becomes a permanent regression (W19 discipline).
+
+**Required tests:**
+- `fuzz_corpus_regression_replays_every_committed_seed_without_panic_or_unbounded_alloc`.
+- fuzz targets themselves (nightly `cargo +nightly fuzz run <target> -- -max_total_time=60`).
+
+**Canary.** `canary_fuzz_corpus_regression_is_not_actually_executed` (corpus size == executed count).
+
+**DoD.**
+```powershell
+cargo test --workspace fuzz_corpus_regression --locked
+# nightly / local deep fuzz (requires nightly + cargo-fuzz):
+# cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60
+```
+
+**Run in CI.** Corpus regression in the fast `rust` job; `cargo fuzz` time-boxed in the nightly lane,
+skip-loud when the nightly toolchain/cargo-fuzz is unavailable.
+
+### W25. Model-Based Linearizability Oracle & Generator Library (blueprint: Jepsen/Knossos, ScyllaDB `randomized_nemesis_test.cc`; principle: an independent reference model as the oracle)
+
+**Principle.** You cannot check linearizability by eyeballing a history; Jepsen's principle is "**record a
+concurrent history of invoke/complete events and search for a sequential witness against an independent
+model**". The model is trivially correct; if no witness exists, the *system* is wrong. This release
+builds the reusable **library** (generator + history recorder + model checker) that `0.66` W7 will drive
+against real processes over the wire.
+
+**Why we lack it / relationship to 0.66.** `jepsen` = 0. The `0.66` W7 external harness needs a checker;
+`0.64` builds and unit-proves that checker library in-process so `0.66` only adds the process driver.
+No duplicate claim: `0.64` proves the *oracle*; `0.66` proves the *cluster* with it.
+
+**Blueprint.** Jepsen (Clojure) + Knossos/Elle linearizability checkers; `cashe/scylladb/test/raft/
+randomized_nemesis_test.cc`; reuse `crates/hydracache-sim/src/linearizability.rs`.
+
+**Files to change.** Promote/extend `crates/hydracache-sim/src/linearizability.rs` into a reusable
+`history` + `checker` + `generator` API; new `crates/hydracache-sim/tests/linearizability_oracle.rs`.
+
+**Design.**
+- Generator: seeded concurrent op stream. Recorder: append-only history with monotonic timestamps.
+  Checker: search for a linearization (wall-clock-respecting) against the KV/register model.
+- Prove the checker on known-good and known-bad histories (the oracle must discriminate).
+
+**Required tests:**
+- `linearizability_checker_accepts_a_valid_history_and_rejects_a_stale_read_history`.
+- `checker_rejects_a_lost_write_and_a_reordered_commit_history`.
+
+**Canary.** `canary_checker_accepts_a_known_nonlinearizable_history` - a broken checker that passes a
+hand-built violation must fail this test.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-sim --test linearizability_oracle --locked
+```
+
+**Run in CI.** Fast `rust` job.
+
+### W26. loom Concurrency Model Checking Deepening (blueprint: `moka` `cfg(moka_loom)`, `loom` crate; principle: enumerate all thread interleavings under the C11 memory model)
+
+**Principle.** A normal multi-threaded test runs *one* interleaving chosen by the OS scheduler; a data
+race or missed-wakeup may need a specific one in a million. `loom` encodes "**exhaustively explore every
+permitted interleaving and every allowed memory-ordering outcome under the C11 model**", catching
+atomics/lock bugs Miri and stress tests miss. `moka` gates this behind `cfg(moka_loom)`.
+
+**Why deepen.** `loom` is present (grep hits) but its coverage of the *concurrency-critical* paths is
+unclear: the fenced-lock `SingleKeyConditionalStore`, the invalidation ring, and the client-surface
+`ConditionalPut`/`CompareValue` atomic path are exactly where interleaving bugs would live.
+
+**Blueprint.** `cashe/moka` `[target.'cfg(moka_loom)'.dev-dependencies] loom = "0.7"` and its loom test
+modules.
+
+**Files to change.** Add `cfg(hydracache_loom)` loom dev-dependency + loom test modules over the
+single-key conditional store, the invalidation ring publish/subscribe, and the client-surface
+conditional-put; a CI lane `RUSTFLAGS="--cfg hydracache_loom"`.
+
+**Design.**
+- Model 2-3 threads racing acquire/release/compare-value on one key; assert mutual exclusion and
+  fence-monotonicity hold under *every* interleaving loom explores.
+- Model concurrent publish + subscribe on the invalidation ring; assert no lost/duplicated fence.
+
+**Required tests:**
+- `loom_single_key_conditional_store_is_mutually_exclusive_under_all_interleavings`.
+- `loom_invalidation_ring_never_loses_or_duplicates_a_fence`.
+
+**Canary.** `canary_loom_conditional_store_with_a_relaxed_ordering_races` - weakening an ordering to
+`Relaxed` must make loom find a violation.
+
+**DoD.**
+```powershell
+$env:RUSTFLAGS='--cfg hydracache_loom'
+cargo test -p hydracache-cluster-raft loom_ --locked
+Remove-Item Env:\RUSTFLAGS -ErrorAction SilentlyContinue
+```
+
+**Run in CI.** Dedicated `loom` lane (loom builds are slow; scoped modules keep it bounded).
+
+### W27. Connection & Resource Chaos For The Client / RESP Surface (blueprint: pgcat, Pingora, HikariCP; principle: adversarial connection lifecycle + pool exhaustion + leak detection)
+
+**Principle.** A server can be protocol-correct and still fall over on *connection* pathology: slow
+clients, half-open sockets, protocol desync, pool exhaustion, and connection leaks under churn. Proxy and
+pool projects encode "**treat the connection lifecycle as an adversary**" - pgcat/Pingora fuzz slow and
+malformed clients; HikariCP's whole test suite is leak detection, validation-on-borrow, and pool-timeout
+behavior. `0.63` covers reconnect/pipeline/slowloris; the pool/leak/desync dimension is untested.
+
+**Blueprint.** `cashe/pgcat` (connection pool + slow-client tests), `cashe/pingora` (proxy connection
+lifecycle), `cashe/hikaricp` (pool leak detection, `connectionTimeout`, validation).
+
+**Files to change.** New `crates/hydracache-redis-compat/tests/connection_chaos.rs` and/or
+`crates/hydracache-client-transport-axum/tests/pool_resource.rs`.
+
+**Design.**
+- Half-open / abrupt-reset mid-request: the server frees the connection, leaks no in-flight work, next
+  connection is unaffected.
+- Connection-limit exhaustion: new connections are rejected/bounded (loud), not OOM; recovers after.
+- Leak detection: churn N connections; assert the in-flight/connection counters return to baseline
+  (HikariCP leak-detector principle).
+- Protocol desync (bytes from a different framing): loud reject, connection closed, no state mutation.
+
+**Required tests:**
+- `half_open_and_reset_connections_free_resources_without_leaking_inflight_work`.
+- `connection_limit_exhaustion_is_bounded_and_recovers_not_ooms`.
+- `connection_churn_returns_counters_to_baseline_no_leak`.
+
+**Canary.** `canary_connection_reset_leaks_an_inflight_ticket`.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-redis-compat connection_chaos --locked
+cargo test -p hydracache-client-transport-axum pool_resource --locked
+```
+
+**Run in CI.** Fast `rust` job; sustained-churn variant in the nightly lane.
+
+### W28. Differential & Corpus-Mined Behavioral Tests (blueprint: DataFusion differential fuzzing, Redis `tests/unit/*.tcl`, Hazelcast split-brain suite; principle: differential oracle + a mined real-world edge corpus)
+
+**Principle.** Two independent ways to compute the same answer should agree (differential); and the best
+edge cases are the ones real projects already found (corpus mining). DataFusion runs the same query
+through optimized and unoptimized execution and diffs the results; Redis ships thousands of behavioral
+`.tcl` assertions; Hazelcast has a hardened split-brain/merge suite. We can *borrow* those edge lists
+instead of re-deriving them.
+
+**Why we lack it.** We test each mode in isolation; no differential across consistency levels or the
+in-process vs networked path, and our Redis edge list is hand-written, not mined from Redis's own suite.
+
+**Blueprint.** `cashe/datafusion` `fuzz_cases` (optimized-vs-reference diff), `cashe/redis/tests/unit/*.tcl`
++ `tests/integration`, `cashe/hazelcast` split-brain/merge tests.
+
+**Files to change.** New `crates/hydracache-cluster-raft/tests/differential_modes.rs` (consistency-level
+differential); extend `crates/hydracache-redis-compat` conformance with a Redis-suite-mined edge corpus
+under `docs/integrations/redis_edge_corpus.md` + tests; a documented split-brain scenario list mined from
+Hazelcast folded into the existing DST/partition tests.
+
+**Design.**
+- Differential: the same committed op stream read at two consistency levels agrees where the contract
+  says it must; the in-process and networked metadata paths return the same committed result for the
+  same schedule.
+- Corpus-mined: translate a curated subset of Redis `.tcl` command-edge assertions into oracle rows
+  (nil shapes, integer counts, error classes) so our RESP edge coverage matches Redis's own regressions.
+
+**Required tests:**
+- `same_op_stream_agrees_across_consistency_levels_where_contract_requires`.
+- `redis_mined_edge_corpus_matches_oracle_for_supported_subset`.
+- `hazelcast_mined_split_brain_scenarios_never_lose_a_committed_write`.
+
+**Canary.** `canary_differential_passes_when_two_modes_disagree`.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cluster-raft --test differential_modes --locked
+cargo test -p hydracache-redis-compat redis_mined_edge_corpus --locked
+```
+
+**Run in CI.** Fast `rust` job; corpus-mined RESP rows join the existing Docker-gated oracle lane where
+they need a live Redis.
+
 ## Final Release Decision
 
 Ship `0.64.0` only when:
@@ -992,6 +1291,16 @@ Ship `0.64.0` only when:
   nemesis is same-seed deterministic and shrinks failures to a minimal schedule (W18), every historical
   bad seed replays green in the fast tier (W19), the raft corpus covers every required etcd edge category
   (W20), and the unified invariant catalog flags each seeded violation (W21);
+- the cross-domain coverage expansion holds, each citing its third-party blueprint and principle:
+  trace-driven cache hit-rate stays within tolerance of the Belady optimum and beats LRU/LFU (W22,
+  Caffeine `simulator`); bounded model checking enumerates the membership/commit state space with no
+  invariant violation (W23, `stateright`); the multi-surface fuzz corpus never panics/allocates unbounded
+  and each crash input is a permanent regression (W24, TiKV/DataFusion `fuzz`); the linearizability
+  oracle library accepts valid and rejects non-linearizable histories (W25, Jepsen/Knossos - the checker
+  `0.66` W7 drives externally); loom finds no interleaving that breaks the conditional-store/ring
+  invariants (W26, `moka`); connection/pool chaos frees resources and bounds exhaustion without leaks
+  (W27, pgcat/Pingora/HikariCP); differential across modes plus Redis/Hazelcast-mined corpora agree with
+  the oracle and lose no committed write (W28, DataFusion/Redis/Hazelcast);
 - rare/flaky failures produce deterministic replay evidence (printed seed + uploaded artifacts) and a
   contradiction ledger;
 - every new test runs both locally and in GitHub CI - deterministic tests in the fast `rust` job,
