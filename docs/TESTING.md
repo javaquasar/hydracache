@@ -686,6 +686,18 @@ membership/voter outcome. The shrinker test uses a fixture failure so the fast
 suite can prove the shrink algorithm returns a one-step-minimal reproducing
 schedule without waiting for a naturally failing randomized seed.
 
+The W19 frozen bad-seed corpus lives at
+`crates/hydracache-cluster-raft/tests/vectors/bad_seeds.json` and is replayed by
+the same fast nemesis test file:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test nemesis_membership known_bad_seeds_replay_green_in_fast_tier --locked
+```
+
+Every corpus entry must include a suite, seed, step count, and reason. The guard
+counts executed entries so a fake-green loader cannot parse the JSON and skip
+the replay loop.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and

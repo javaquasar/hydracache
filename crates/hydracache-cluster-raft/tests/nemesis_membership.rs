@@ -3,6 +3,23 @@ use std::time::{Duration, Instant};
 
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftRuntimeRole};
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
+use serde::Deserialize;
+
+const BAD_SEEDS_JSON: &str = include_str!("vectors/bad_seeds.json");
+
+#[derive(Debug, Deserialize)]
+struct BadSeedCorpus {
+    version: u32,
+    seeds: Vec<BadSeed>,
+}
+
+#[derive(Debug, Deserialize)]
+struct BadSeed {
+    suite: String,
+    seed: u64,
+    steps: usize,
+    reason: String,
+}
 
 #[derive(Debug)]
 struct DeterministicRng {
@@ -25,6 +42,10 @@ impl DeterministicRng {
     fn choose(&mut self, upper: usize) -> usize {
         (self.next() as usize) % upper
     }
+}
+
+fn bad_seed_corpus() -> BadSeedCorpus {
+    serde_json::from_str(BAD_SEEDS_JSON).expect("bad_seeds.json must be valid JSON")
 }
 
 #[derive(Debug)]
@@ -313,6 +334,32 @@ async fn nemesis_replays_identically_for_same_seed() {
     assert_eq!(left, right);
 }
 
+#[tokio::test]
+async fn known_bad_seeds_replay_green_in_fast_tier() {
+    let corpus = bad_seed_corpus();
+    assert_eq!(corpus.version, 1);
+    assert!(
+        !corpus.seeds.is_empty(),
+        "bad-seed corpus must keep at least one replay sentinel"
+    );
+
+    let mut replayed = 0usize;
+    for entry in &corpus.seeds {
+        assert!(
+            !entry.reason.trim().is_empty(),
+            "bad seed {entry:?} must carry review context"
+        );
+        match entry.suite.as_str() {
+            "nemesis_membership" => {
+                run_seed(entry.seed, entry.steps).await;
+                replayed += 1;
+            }
+            other => panic!("unsupported bad-seed suite `{other}` in corpus"),
+        }
+    }
+    assert_eq!(replayed, corpus.seeds.len());
+}
+
 #[test]
 fn nemesis_failure_shrinks_to_minimal_reproducing_schedule() {
     let schedule = vec![
@@ -374,5 +421,16 @@ fn canary_nemesis_shrinker_returns_a_nonreproducing_schedule() {
     assert!(
         !fixture_schedule_reproduces_failure(&broken_minimal),
         "canary models a broken shrinker returning a schedule that no longer reproduces"
+    );
+}
+
+#[test]
+fn canary_bad_seed_corpus_is_not_actually_executed() {
+    let corpus = bad_seed_corpus();
+    let replayed_by_stubbed_loop = 0usize;
+    assert_ne!(
+        replayed_by_stubbed_loop,
+        corpus.seeds.len(),
+        "canary models a fake-green bad-seed gate that loads the corpus but never replays it"
     );
 }

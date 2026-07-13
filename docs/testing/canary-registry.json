@@ -222,6 +222,19 @@
       },
       "red_evidence": "The canary models a shrinker that returns a non-reproducing schedule; W18 must require exact replay and one-step-minimal reproducing schedules.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W19",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+        "function": "known_bad_seeds_replay_green_in_fast_tier"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+        "function": "canary_bad_seed_corpus_is_not_actually_executed"
+      },
+      "red_evidence": "The canary models loading bad_seeds.json without replaying it; W19 must count every corpus entry as executed.",
+      "makes_guard_fail": true
     }
   ]
 }
