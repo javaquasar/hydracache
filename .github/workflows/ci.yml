@@ -68,6 +68,11 @@ jobs:
           cargo test -p xtask --test doc_check --locked
           cargo run -p xtask --locked -- doc-check
 
+      - name: Raft mutation baseline
+        run: |
+          cargo test -p xtask --test mutants --locked
+          cargo run -p xtask --locked -- mutants
+
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
 
@@ -351,6 +356,43 @@ jobs:
             target/hydracache-contradiction-ledger/**
             target/hydracache-daemon-logs/**
             target/test-hydracache-daemon-process/**
+          if-no-files-found: ignore
+
+  raft-mutation-testing:
+    name: Raft Mutation Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-mutation-testing
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants --locked
+
+      - name: Run Raft mutation baseline
+        env:
+          HYDRACACHE_RUN_RAFT_MUTANTS: "1"
+        run: |
+          cargo test -p xtask --test mutants --locked
+          cargo run -p xtask --locked -- mutants
+
+      - name: Upload mutation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: raft-mutation-testing
+          path: target/hydracache-mutants/**
           if-no-files-found: ignore
 
   coverage-ratchet:

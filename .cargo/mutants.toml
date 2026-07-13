@@ -1,0 +1,23 @@
+# HydraCache 0.64 Raft mutation-testing scope.
+#
+# The `cargo xtask mutants` command treats this file as the reviewed scope for
+# the W15 release gate. The dedicated CI lane may pass it through to
+# cargo-mutants, but the fast gate always validates that these critical paths
+# stay listed before accepting a mutation report baseline.
+
+[hydracache]
+scope = [
+  "crates/hydracache-cluster-raft/src/lib.rs",
+  "crates/hydracache-cluster-raft/src/log_store.rs",
+]
+required_tests = [
+  "cargo test -p hydracache-cluster-raft snapshot_immutability --locked",
+  "cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked",
+  "cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1",
+  "cargo test -p hydracache-cluster-raft --test rejoin_after_compaction --features test-failpoints --locked -- --test-threads=1",
+  "cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked",
+]
+
+[hydracache.report]
+path = "target/hydracache-mutants/report.txt"
+baseline = "docs/testing/mutation-baseline.md"

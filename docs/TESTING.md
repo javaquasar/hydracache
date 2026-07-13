@@ -624,6 +624,22 @@ per-node Raft tick rates through `RuntimeRaftCluster`, `SimClock` backward-jump
 coverage for the fenced lock store, and the existing lock-safety report to keep
 fence monotonicity and zombie rejection tied to the release proof.
 
+The W15 mutation baseline is a test-the-tests gate for the snapshot/apply/
+membership paths. Fast CI always validates the reviewed scope and baseline:
+
+```powershell
+cargo test -p xtask --test mutants --locked
+cargo xtask mutants
+```
+
+If `target/hydracache-mutants/report.txt` is present, `cargo xtask mutants`
+diffs every `SURVIVED ...` line against
+[`docs/testing/mutation-baseline.md`](testing/mutation-baseline.md) and fails on
+untriaged survivors. Without that cached report it skips loud. The scheduled
+GitHub `Raft Mutation Testing` lane sets `HYDRACACHE_RUN_RAFT_MUTANTS=1`,
+installs `cargo-mutants`, and executes the slow mutation run over the scoped
+Raft paths in `.cargo/mutants.toml`.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and
