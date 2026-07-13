@@ -58,6 +58,28 @@ fn triaged_survivor_in_baseline_is_accepted() {
     cleanup(&root);
 }
 
+#[test]
+fn canary_mutants_config_uses_hydracache_table_rejected() {
+    let root = scratch_root();
+    write_required_files(&root);
+    fs::write(
+        root.join(".cargo/mutants.toml"),
+        r#"
+[hydracache]
+scope = ["crates/hydracache-cluster-raft/src/lib.rs"]
+"#,
+    )
+    .unwrap();
+
+    let error = check_mutation_baseline(&root).unwrap_err();
+    cleanup(&root);
+
+    assert!(
+        error.contains("native cargo-mutants config"),
+        "unexpected error: {error}"
+    );
+}
+
 fn workspace_root() -> PathBuf {
     let mut dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     while !dir.join("docs/plans/releases.toml").is_file() {
@@ -87,18 +109,17 @@ fn write_required_files(root: &Path) {
     fs::write(
         root.join(".cargo/mutants.toml"),
         r#"
-[hydracache]
-scope = [
+examine_globs = [
   "crates/hydracache-cluster-raft/src/lib.rs",
   "crates/hydracache-cluster-raft/src/log_store.rs",
 ]
-required_tests = [
-  "cargo test -p hydracache-cluster-raft snapshot_immutability --locked",
-  "cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked",
-  "cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1",
-  "cargo test -p hydracache-cluster-raft --test rejoin_after_compaction --features test-failpoints --locked -- --test-threads=1",
-  "cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked",
-]
+output = "target/hydracache-mutants"
+test_package = ["hydracache-cluster-raft"]
+# cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+# cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+# cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+# cargo test -p hydracache-cluster-raft --test rejoin_after_compaction --features test-failpoints --locked -- --test-threads=1
+# cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
 "#,
     )
     .unwrap();

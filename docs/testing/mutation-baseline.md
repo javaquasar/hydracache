@@ -1,9 +1,11 @@
 # Raft Mutation Baseline
 
-This baseline belongs to the `0.64` W15 mutation-testing gate. The scoped paths
-are the Raft snapshot, apply, membership, and log-store surfaces that can make a
-snapshot look valid while hiding lost membership tail, stale ConfState, or
-mutated durable log behavior.
+This baseline belongs to the `0.64` W15 mutation-testing gate. `.cargo/mutants.toml`
+is a native cargo-mutants config, because cargo-mutants reads that path by
+default and rejects unknown project-local tables. The scoped paths are the Raft
+snapshot, apply, membership, and log-store surfaces that can make a snapshot
+look valid while hiding lost membership tail, stale ConfState, or mutated
+durable log behavior.
 
 ## Scope
 

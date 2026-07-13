@@ -48,6 +48,13 @@ pub fn check_mutation_baseline(root: &Path) -> Result<(), String> {
     let report_path = root.join(REPORT_PATH);
 
     let config = read_required(&config_path)?;
+    if config.contains("[hydracache]") {
+        return Err(format!(
+            "{CONFIG_PATH} must stay a native cargo-mutants config; do not add HydraCache-only tables"
+        ));
+    }
+    toml::from_str::<toml::Value>(&config)
+        .map_err(|error| format!("parsing {CONFIG_PATH}: {error}"))?;
     for scope in REQUIRED_SCOPES {
         if !config.contains(scope) {
             return Err(format!(

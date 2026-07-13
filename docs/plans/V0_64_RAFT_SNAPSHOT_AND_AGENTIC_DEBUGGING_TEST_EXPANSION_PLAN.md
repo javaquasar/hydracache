@@ -765,10 +765,13 @@ message-filter/gossip harnesses have same-seed replay tests.
 **Goal.** Prove the W1-W14 tests actually **kill injected faults**, not only the hand-picked canaries. A
 surviving mutant in the snapshot/apply/ConfChange/log-store paths is an untested behavior.
 
-**Files to change.** Add `cargo-mutants` config `.cargo/mutants.toml` (or `mutants.toml`) scoped to
-`crates/hydracache-cluster-raft/src/log_store.rs`, snapshot export/restore, apply, and ConfChange
-modules; new `xtask` subcommand `mutants` (or a CI lane) that runs it with a baseline allowlist; a
-committed `docs/testing/mutation-baseline.md` listing any triaged/allowed survivors with a reason.
+**Files to change.** Add native `cargo-mutants` config `.cargo/mutants.toml` scoped with
+`examine_globs` to `crates/hydracache-cluster-raft/src/log_store.rs`, snapshot export/restore,
+apply, and ConfChange modules; new `xtask` subcommand `mutants` (or a CI lane) that runs it with a
+baseline allowlist; a committed `docs/testing/mutation-baseline.md` listing any triaged/allowed
+survivors with a reason. The config must stay in cargo-mutants' own schema because cargo-mutants
+reads `.cargo/mutants.toml` by default and the scheduled CI lane passes it directly through
+`cargo mutants --config`; HydraCache-only tables such as `[hydracache]` are intentionally rejected.
 
 **Design.**
 - Run `cargo mutants` over the scoped modules; every survivor must be either killed by adding/tightening
@@ -778,10 +781,13 @@ committed `docs/testing/mutation-baseline.md` listing any triaged/allowed surviv
 
 **Required tests / checks:**
 - `mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths`.
+- `canary_mutants_config_uses_hydracache_table_rejected`.
 - Baseline file present and referenced from `GATES.md`.
 
 **Canary.** `canary_mutants_baseline_hides_a_live_survivor` - a fixture that adds a real survivor without
-a baseline entry must fail the gate.
+a baseline entry must fail the gate. `canary_mutants_config_uses_hydracache_table_rejected` keeps the
+config in the native cargo-mutants schema, so the slow GitHub lane cannot fail before mutation testing
+starts with `unknown field hydracache`.
 
 **DoD.**
 ```powershell

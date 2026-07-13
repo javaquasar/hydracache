@@ -625,7 +625,12 @@ coverage for the fenced lock store, and the existing lock-safety report to keep
 fence monotonicity and zombie rejection tied to the release proof.
 
 The W15 mutation baseline is a test-the-tests gate for the snapshot/apply/
-membership paths. Fast CI always validates the reviewed scope and baseline:
+membership paths. `.cargo/mutants.toml` must stay a native cargo-mutants config
+(`examine_globs`, `test_package`, `features`, and related cargo-mutants keys),
+because the slow CI lane passes that file directly to `cargo mutants --config`.
+HydraCache-only tables such as `[hydracache]` are rejected by the xtask canary
+before the slow lane starts. Fast CI always validates the reviewed scope and
+baseline:
 
 ```powershell
 cargo test -p xtask --test mutants --locked
