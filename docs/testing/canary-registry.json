@@ -274,6 +274,19 @@
       },
       "red_evidence": "The canary runs the same bounded model with a faulty snapshot-install transition that drops the last committed entry; W23 must discover a no-committed-entry-lost counterexample.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W25",
+      "guard": {
+        "file": "crates/hydracache-sim/tests/linearizability_oracle.rs",
+        "function": "linearizability_checker_accepts_a_valid_history_and_rejects_a_stale_read_history"
+      },
+      "canary": {
+        "file": "crates/hydracache-sim/tests/linearizability_oracle.rs",
+        "function": "canary_checker_accepts_a_known_nonlinearizable_history"
+      },
+      "red_evidence": "The canary fixture models a broken oracle that accepts a known lost-write history; W25 must reject the same history with the real sequential-witness checker.",
+      "makes_guard_fail": true
     }
   ]
 }
