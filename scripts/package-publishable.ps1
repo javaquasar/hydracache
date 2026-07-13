@@ -24,6 +24,7 @@ $packageSets = @{
         "hydracache-cluster-raft",
         "hydracache-cluster",
         "hydracache-actuator-axum",
+        "hydracache-redis-compat",
         "hydracache-server",
         "hydracache-db",
         "hydracache-sql-lint",
