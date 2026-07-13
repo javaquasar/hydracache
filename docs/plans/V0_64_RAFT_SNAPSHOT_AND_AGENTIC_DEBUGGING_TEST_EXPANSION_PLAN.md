@@ -8,10 +8,10 @@
 >   systems checked out in the workspace root - TiKV, ScyllaDB, TigerBeetle, qdrant) widens this from
 >   one bug class into a **strict snapshot+membership corner-case grid**: a composed-fault
 >   linearizability nemesis, a ported raft corner-case corpus, snapshot byte corruption/torn/misdirected
->   proofs, real-process rejoin-after-log-compaction, disk-full/OOM at snapshot boundaries, an
+>   proofs, in-process `MsgSnapshot` rejoin-after-compaction, disk-full/OOM at snapshot boundaries, an
 >   exhaustive small-scope grid, proposal/ConfChange idempotency under retry, and clock-skew safety -
 >   all runnable both locally and in GitHub CI (fast tier on every PR, gated nightly for
->   real-process/soak/wide-scope).
+>   soak/wide-scope; daemon-process compaction remains a future seam).
 > - **Why:** `0.62.0` and `0.62.1` proved the raft/gossip/failpoint harness layer, but they mainly
 >   cover message faults and crash windows. The Hazelcast case shows another dangerous class:
 >   snapshots that appear valid but secretly share mutable state with the live state machine and later
@@ -93,6 +93,21 @@ state machine after export or persistence?
 If the answer is "impossible in Rust" because the type owns bytes/values, prove it with tests anyway.
 Rust prevents many aliasing classes, but `Arc`, interior mutability, shallow clones, and test fixtures
 can still encode delayed aliasing mistakes.
+
+## Implementation Map For Audits
+
+This release is implemented across three crates. Use this map before concluding a W-item is missing:
+
+| Item | Implemented where | Required command | Important boundary |
+| --- | --- | --- | --- |
+| W9 snapshot corruption | `crates/hydracache-cluster-raft/tests/snapshot_corruption.rs`; checksum envelope in `crates/hydracache-cluster-raft/src/log_store.rs` | `cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked` | Intentional `sled-log-store` gate; default and `test-failpoints` runs show `0 tests` by design. |
+| W10 rejoin after compaction | `crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs`; metadata snapshot payload in `crates/hydracache-cluster-raft/src/lib.rs` | `cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1` | Current 0.64 claim is in-process real `raft-rs MsgSnapshot`; daemon-process disk compaction is not claimed until server exposes a compaction seam. |
+| W12 exhaustive grid | `crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs` | `cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked` | Wide scope uses `HYDRACACHE_GRID_SCOPE=wide`; the grid also guards `applied_index >= commands.len()` after replay. |
+| W13 proposal idempotency | `crates/hydracache-cluster-raft/tests/proposal_idempotency.rs`; restartable harness in `crates/hydracache-cluster-testkit/src/lib.rs` | `cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked` | Covers ConfChange retry after persisted raft snapshot + restart, plus metadata command-id retry after `from_snapshot`. |
+| W14 clock skew/backward jump | `crates/hydracache-sim/tests/clock_skew_safety.rs`; dev-dep on `hydracache-cluster-testkit` in `crates/hydracache-sim/Cargo.toml` | `cargo test -p hydracache-sim --test clock_skew_safety --locked` | Intentional location in `hydracache-sim`, not `hydracache-cluster-raft`, to avoid a dependency cycle. |
+
+Most W7-W14 tests also have explicit fast CI steps in `.github/workflows/ci.yml`; heavier/wide replay
+coverage is wired through the scheduled/manual `Raft Corner-Case Nightly` job.
 
 ## W1. Snapshot Immutability And Aliasing Proof
 
@@ -426,23 +441,28 @@ identity/index mismatch (this is the subtle one).
 
 **Run locally.** `cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked`
 **Run in CI.** `rust` job step "Snapshot corruption".
+**Implementation note.** This file is intentionally guarded by `#![cfg(feature = "sled-log-store")]`.
+Running it without `--features sled-log-store` (including with only `--features test-failpoints`) will
+compile as `0 tests`; that is not a missing W9 implementation.
 **DoD.** All three green; canary red; misdirected case proves identity check beyond checksum.
 
-## W10. Rejoin-After-Compaction, Real Processes (blueprint: qdrant `test_consensus_compaction.py`, `test_cluster_rejoin.py`)
+## W10. Rejoin-After-Compaction Core Proof; Real-Process Follow-Up (blueprint: qdrant `test_consensus_compaction.py`, `test_cluster_rejoin.py`)
 
-**Goal / what it proves.** The production-shaped core scenario end-to-end: a lagging node isolated past
-the point where the leader **compacts the log** must, on rejoin, be caught up via **InstallSnapshot**
-(not AppendEntries), apply the remaining tail, and converge - including a leader restart mid-catch-up.
+**Goal / what it proves.** The current 0.64 core proof: a lagging runtime isolated past the point
+where the leader compacts the log is caught up via real raft-rs **InstallSnapshot**, applies the
+remaining tail, and converges. A full daemon-process version remains a follow-up until the server has
+a disk-backed compaction seam.
 
-**Files to change.** Extend `crates/hydracache-server/tests/daemon_process_cluster.rs`; reuse
-`DaemonCluster` (`start_bootstrap`, `wait_for_shape`, `drain`, `kill`) and whatever compaction trigger
-`InMemoryRaftLogStore`/`sled_log_store` exposes (add a small test-only `compact_now` seam if none
-exists - no behavior change).
+**Files changed.** `crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs` plus the metadata
+snapshot payload/install path in `crates/hydracache-cluster-raft/src/lib.rs`. Do **not** look for a
+daemon-process test in `crates/hydracache-server/tests/daemon_process_cluster.rs` for this release;
+that is explicitly future work.
 
-**Design.** 3-daemon cluster; isolate node C; drive enough committed membership+kv commands on {A,B}
-to force a snapshot/compaction past C's index; heal C; assert C is caught up by snapshot (observe the
-snapshot/catch-up path, e.g. via `/admin/status` or a metric) then applies the tail and its member set
-equals the authoritative set. Variant: `kill`+restart the leader while C is catching up.
+**Design.** In the fast tier, drive a three-runtime `raft-rs` cluster, isolate a lagging runtime past
+leader compaction, heal it, assert it is caught up by `MsgSnapshot`, then assert committed tail replay
+converges to authoritative membership. The daemon-process design (3 daemon cluster, isolate node C,
+force on-disk compaction, heal C, observe catch-up via admin status/metric, then leader restart
+variant) is preserved as a future gate only after the server seam exists.
 
 **Required tests**:
 `rejoined_lagging_runtime_is_caught_up_via_installsnapshot_after_log_compaction` and
@@ -556,7 +576,8 @@ snapshot/restart boundary). Separately, replay a stable metadata command id afte
 ## W14. Clock Skew / Backward Jump (blueprint: TigerBeetle `time.zig`; ScyllaDB `failure_detector_test.cc`)
 
 **Goal / what it proves.** Adversarial timing (per-node skew, backward jumps) never produces two
-leaders and never breaks lease/lock safety; the phi-accrual detector degrades safely.
+leaders and never breaks lease/lock safety. This release models timing through deterministic raft tick
+skew and `SimClock` backward jumps; it does not claim a separate phi-accrual detector implementation.
 
 **Files to change.** New `crates/hydracache-sim/tests/clock_skew_safety.rs`; reuse
 `crates/hydracache-sim/src/clock.rs` (`SimClock`) and `LogicalTime`; reuse `hydracache-sim`
