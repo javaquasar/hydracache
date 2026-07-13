@@ -78,6 +78,9 @@ jobs:
           cargo test -p xtask --test canary_check --locked
           cargo run -p xtask --locked -- canary-check
 
+      - name: Fuzz corpus regression
+        run: cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked
+
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
 
@@ -386,6 +389,52 @@ jobs:
         env:
           RUSTFLAGS: --cfg hydracache_loom
         run: cargo test -p hydracache-cluster-raft --test loom_concurrency --locked -- --nocapture
+
+  fuzz-nightly:
+    name: Fuzz Nightly
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: fuzz-nightly
+
+      - name: Install nightly and cargo-fuzz
+        id: fuzz-runtime
+        shell: bash
+        run: |
+          set +e
+          rustup toolchain install nightly
+          if [ "$?" -ne 0 ]; then
+            echo "::warning::nightly toolchain unavailable; skipping fuzz-nightly"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cargo install cargo-fuzz --locked
+          if [ "$?" -ne 0 ]; then
+            echo "::warning::cargo-fuzz unavailable; skipping fuzz-nightly"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run time-boxed fuzz targets
+        if: steps.fuzz-runtime.outputs.available == 'true'
+        run: |
+          cargo +nightly fuzz run fuzz_config_parse --manifest-path fuzz/Cargo.toml -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_kv_codec --manifest-path fuzz/Cargo.toml -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_resp_command --manifest-path fuzz/Cargo.toml -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_snapshot_decode --manifest-path fuzz/Cargo.toml -- -max_total_time=60
 
   raft-mutation-testing:
     name: Raft Mutation Testing

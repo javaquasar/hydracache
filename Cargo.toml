@@ -29,6 +29,7 @@ members = [
     "crates/hydracache-transport-nats",
     "crates/hydracache-transport-redis",
     "crates/xtask",
+    "fuzz",
 ]
 resolver = "2"
 
@@ -45,7 +46,7 @@ keywords = ["cache", "caching", "async", "runtime"]
 categories = ["caching", "asynchronous"]
 
 [workspace.lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)", "cfg(hydracache_loom)"] }
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)", "cfg(fuzzing)", "cfg(hydracache_loom)"] }
 
 [workspace.dependencies]
 async-nats = { version = "0.49.1", default-features = false, features = ["ring"] }

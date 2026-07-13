@@ -1,0 +1,48 @@
+[package]
+name = "hydracache-fuzz"
+version = "0.0.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+hydracache-client-protocol.workspace = true
+hydracache-redis-compat.workspace = true
+hydracache-server.workspace = true
+libfuzzer-sys = "0.4"
+protobuf.workspace = true
+raft.workspace = true
+
+[[bin]]
+name = "fuzz_config_parse"
+path = "fuzz_targets/fuzz_config_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_kv_codec"
+path = "fuzz_targets/fuzz_kv_codec.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_resp_command"
+path = "fuzz_targets/fuzz_resp_command.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_snapshot_decode"
+path = "fuzz_targets/fuzz_snapshot_decode.rs"
+test = false
+doc = false
+bench = false
+
+[lints]
+workspace = true

@@ -2134,6 +2134,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-fuzz"
+version = "0.0.0"
+dependencies = [
+ "hydracache-client-protocol",
+ "hydracache-redis-compat",
+ "hydracache-server",
+ "libfuzzer-sys",
+ "protobuf",
+ "raft",
+]
+
+[[package]]
 name = "hydracache-macros"
 version = "0.62.0"
 dependencies = [
@@ -2919,6 +2931,16 @@ name = "libc"
 version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
+
+[[package]]
+name = "libfuzzer-sys"
+version = "0.4.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9fd2f41a1cba099f79a0b6b6c35656cf7c03351a7bae8ff0f28f25270f929d2"
+dependencies = [
+ "arbitrary",
+ "cc",
+]
 
 [[package]]
 name = "libm"

@@ -289,6 +289,19 @@
       "makes_guard_fail": true
     },
     {
+      "w_item": "W24",
+      "guard": {
+        "file": "fuzz/tests/fuzz_corpus_regression.rs",
+        "function": "fuzz_corpus_regression_replays_every_committed_seed_without_panic_or_unbounded_alloc"
+      },
+      "canary": {
+        "file": "fuzz/tests/fuzz_corpus_regression.rs",
+        "function": "canary_fuzz_corpus_regression_is_not_actually_executed"
+      },
+      "red_evidence": "The canary models a broken corpus runner that counts zero executed seeds; W24 must require committed corpus size and replay count to match.",
+      "makes_guard_fail": true
+    },
+    {
       "w_item": "W25",
       "guard": {
         "file": "crates/hydracache-sim/tests/linearizability_oracle.rs",
