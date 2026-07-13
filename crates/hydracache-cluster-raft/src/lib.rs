@@ -108,10 +108,11 @@ pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStor
 
 use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
-    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
+    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage, Snapshot,
 };
 use raft::storage::Storage;
 use raft::{Config, RawNode, StateRole};
+use serde::{Deserialize, Serialize};
 use slog::{o, Logger};
 use tokio::time::{sleep, Duration};
 
@@ -312,6 +313,8 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub role: RaftRuntimeRole,
     /// Number of metadata commands applied from committed Raft entries.
     pub commands_committed: usize,
+    /// Number of raft snapshots installed into the metadata state machine.
+    pub snapshot_installs: u64,
     /// Last applied metadata command, if any.
     pub last_command: Option<RaftMetadataCommand>,
     /// Number of duplicate command ids skipped by the metadata state machine.
@@ -321,7 +324,7 @@ pub struct RaftMetadataRuntimeSnapshot {
 }
 
 /// Metadata command plus a stable idempotency key.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataCommandEnvelope {
     /// Stable command id used to deduplicate retries.
     pub command_id: String,
@@ -435,7 +438,7 @@ impl RaftMessageSink for InMemoryRaftMessageSink {
 /// This is not a durable multi-node Raft log format yet. It captures the
 /// materialized metadata commands that have already been applied so a new
 /// runtime can rebuild the same membership view.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataRuntimeExport {
     /// Logical cluster name.
     pub cluster_name: String,
@@ -445,6 +448,58 @@ pub struct RaftMetadataRuntimeExport {
     pub applied_index: u64,
     /// Applied command envelopes in order.
     pub commands: Vec<RaftMetadataCommandEnvelope>,
+}
+
+const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
+const RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION: u32 = 1;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct RaftMetadataSnapshotPayload {
+    format_version: u32,
+    cluster_name: String,
+    source_raft_node_id: u64,
+    applied_index: u64,
+    commands: Vec<RaftMetadataCommandEnvelope>,
+}
+
+#[cfg(feature = "test-failpoints")]
+fn encode_metadata_snapshot_payload(snapshot: &RaftMetadataRuntimeExport) -> CacheResult<Vec<u8>> {
+    let payload = RaftMetadataSnapshotPayload {
+        format_version: RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION,
+        cluster_name: snapshot.cluster_name.clone(),
+        source_raft_node_id: snapshot.raft_node_id,
+        applied_index: snapshot.applied_index,
+        commands: snapshot.commands.clone(),
+    };
+    let mut bytes = Vec::from(RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC.as_slice());
+    bytes.extend(serde_json::to_vec(&payload).map_err(|error| {
+        CacheError::Backend(format!("failed to encode raft metadata snapshot: {error}"))
+    })?);
+    Ok(bytes)
+}
+
+fn decode_metadata_snapshot_payload(bytes: &[u8]) -> CacheResult<RaftMetadataRuntimeExport> {
+    let payload = bytes
+        .strip_prefix(RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC)
+        .ok_or_else(|| {
+            CacheError::Backend("unsupported raft metadata snapshot payload".to_owned())
+        })?;
+    let payload: RaftMetadataSnapshotPayload =
+        serde_json::from_slice(payload).map_err(|error| {
+            CacheError::Backend(format!("failed to decode raft metadata snapshot: {error}"))
+        })?;
+    if payload.format_version != RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION {
+        return Err(CacheError::Backend(format!(
+            "unsupported raft metadata snapshot payload version {}",
+            payload.format_version
+        )));
+    }
+    Ok(RaftMetadataRuntimeExport {
+        cluster_name: payload.cluster_name,
+        raft_node_id: payload.source_raft_node_id,
+        applied_index: payload.applied_index,
+        commands: payload.commands,
+    })
 }
 
 /// Storage seam for exported raft metadata snapshots.
@@ -564,6 +619,7 @@ where
     results: Vec<RaftCommandResult>,
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
+    snapshot_installs: u64,
     #[cfg(test)]
     fail_next_proposal: bool,
 }
@@ -731,6 +787,7 @@ where
             results: Vec::new(),
             outbound_messages: Vec::new(),
             applied_index: 0,
+            snapshot_installs: 0,
             #[cfg(test)]
             fail_next_proposal: false,
         };
@@ -836,6 +893,16 @@ where
             .drain_ready()
     }
 
+    /// Force a metadata snapshot at the current applied index for compaction
+    /// proof tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn compact_applied_log_to_snapshot_for_tests(&self) -> CacheResult<u64> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .compact_applied_log_to_snapshot_for_tests(self.raft_node_id)
+    }
+
     /// Return outbound messages captured while committing metadata commands.
     pub fn take_outbound_messages(&self) -> Vec<RaftWireMessage> {
         std::mem::take(
@@ -905,6 +972,7 @@ where
             applied_index: state.applied_index,
             role: state.raw_node.raft.state.into(),
             commands_committed: state.commands.len(),
+            snapshot_installs: state.snapshot_installs,
             last_command: state
                 .commands
                 .last()
@@ -1461,6 +1529,39 @@ where
         Ok(result)
     }
 
+    #[cfg(feature = "test-failpoints")]
+    fn compact_applied_log_to_snapshot_for_tests(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+        if self.applied_index == 0 {
+            return Err(CacheError::Backend(
+                "cannot compact raft metadata log before any entry is applied".to_owned(),
+            ));
+        }
+        let store = self.raw_node.raft.raft_log.store.clone();
+        let term = store
+            .term(self.applied_index)
+            .unwrap_or(self.raw_node.raft.term);
+        let conf_state = store
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .clone();
+        let export = RaftMetadataRuntimeExport {
+            cluster_name: self.cluster.name().to_owned(),
+            raft_node_id,
+            applied_index: self.applied_index,
+            commands: self.commands.clone(),
+        };
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = self.applied_index;
+        snapshot.mut_metadata().term = term;
+        snapshot.mut_metadata().set_conf_state(conf_state);
+        snapshot.data = encode_metadata_snapshot_payload(&export)?.into();
+        store
+            .save_snapshot(&snapshot, usize::MAX)
+            .map_err(to_cache_error)?;
+        Ok(self.applied_index)
+    }
+
     fn drain_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
         let mut outbound = Vec::new();
         while self.raw_node.has_ready() {
@@ -1483,6 +1584,7 @@ where
                         "injected crash after raft snapshot install before apply".to_owned(),
                     ))
                 });
+                self.install_metadata_snapshot(ready.snapshot())?;
             }
 
             let committed_entries = ready.take_committed_entries();
@@ -1588,6 +1690,37 @@ where
                 }
             }
         }
+        Ok(())
+    }
+
+    fn install_metadata_snapshot(&mut self, snapshot: &Snapshot) -> CacheResult<()> {
+        if snapshot.data.is_empty() {
+            return Ok(());
+        }
+        let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
+        if export.cluster_name != self.cluster.name() {
+            return Err(CacheError::Backend(format!(
+                "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
+                export.cluster_name,
+                self.cluster.name()
+            )));
+        }
+        validate_snapshot_apply_contract(&export)?;
+        self.commands.clear();
+        self.applied_command_ids.clear();
+        self.results.clear();
+        self.applied_index = export.applied_index;
+        for envelope in export.commands {
+            materialize_snapshot_command(&self.cluster, &envelope.command)?;
+            if !self.applied_command_ids.insert(envelope.command_id.clone()) {
+                return Err(CacheError::Backend(format!(
+                    "duplicate raft snapshot command id '{}'",
+                    envelope.command_id
+                )));
+            }
+            self.commands.push(envelope);
+        }
+        self.snapshot_installs = self.snapshot_installs.saturating_add(1);
         Ok(())
     }
 }

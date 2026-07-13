@@ -2005,6 +2005,7 @@ dependencies = [
  "proptest",
  "protobuf",
  "raft",
+ "serde",
  "serde_json",
  "sled",
  "slog",

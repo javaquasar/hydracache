@@ -57,9 +57,8 @@ fn snapshot_with_alias_canary(
     captured: RaftMetadataRuntimeExport,
     live: &RaftMetadataRuntime,
 ) -> RaftMetadataRuntimeExport {
-    fail::fail_point!("canary_raft_snapshot_aliases_live_state", |_| {
-        return live.export_snapshot();
-    });
+    fail::fail_point!("canary_raft_snapshot_aliases_live_state", |_| live
+        .export_snapshot());
     captured
 }
 
@@ -67,9 +66,7 @@ async fn replay_tail_with_canary(
     runtime: &RaftMetadataRuntime,
     tail: &[RaftMetadataCommandEnvelope],
 ) {
-    fail::fail_point!("canary_raft_snapshot_skips_tail_apply", |_| {
-        return;
-    });
+    fail::fail_point!("canary_raft_snapshot_skips_tail_apply", |_| ());
     for envelope in tail {
         match &envelope.command {
             RaftMetadataCommand::MemberUpsert {
@@ -114,7 +111,7 @@ fn restore_with_downgrade_canary(
         Ok(runtime) => Ok(runtime),
         Err(error) => {
             fail::fail_point!("canary_raft_snapshot_downgrades_apply_error", |_| {
-                return RaftMetadataRuntime::single_node("orders", 1);
+                RaftMetadataRuntime::single_node("orders", 1)
             });
             Err(error)
         }

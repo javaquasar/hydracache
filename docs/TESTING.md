@@ -542,6 +542,7 @@ cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bou
 cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
 cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
 cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -574,6 +575,13 @@ runtime surfaces instead of importing another implementation's private harness.
 The vectors must stay readable and reviewable; if a future Raft change needs a
 new external-inspired scenario, add it here with a short blueprint comment and a
 canary that would fail if the check became non-falsifiable.
+
+The W10 fast proof is an in-process `raft-rs` proof, not a daemon on-disk
+compaction claim. It forces a metadata snapshot payload into the raft snapshot
+path, isolates a lagging runtime past compaction, then proves `MsgSnapshot` plus
+tail replay restores membership. Real-process daemon compaction remains a
+nightly/pre-release claim only when the server exposes a disk-backed compaction
+seam and uploads daemon replay artifacts.
 
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,

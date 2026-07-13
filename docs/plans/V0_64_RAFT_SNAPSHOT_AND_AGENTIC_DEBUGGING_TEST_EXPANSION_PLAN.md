@@ -444,22 +444,35 @@ to force a snapshot/compaction past C's index; heal C; assert C is caught up by 
 snapshot/catch-up path, e.g. via `/admin/status` or a metric) then applies the tail and its member set
 equals the authoritative set. Variant: `kill`+restart the leader while C is catching up.
 
-**Required tests** (real-process, gated):
-`rejoined_lagging_daemon_is_caught_up_via_installsnapshot_after_log_compaction`,
-`rejoin_after_compaction_survives_leader_restart_midway`.
+**Required tests**:
+`rejoined_lagging_runtime_is_caught_up_via_installsnapshot_after_log_compaction` and
+`rejoin_after_compaction_survives_tail_commit_midway` in the fast in-process raft-rs tier. These
+prove the real `MsgSnapshot` + metadata-payload install path without introducing a daemon admin
+compaction API. The original real-process names
+`rejoined_lagging_daemon_is_caught_up_via_installsnapshot_after_log_compaction` and
+`rejoin_after_compaction_survives_leader_restart_midway` remain nightly/pre-release claims only after
+the daemon exposes a disk-backed compaction seam; until then the release must not claim daemon
+on-disk compaction.
 
 **Canary.** `canary_rejoin_serves_stale_local_membership_after_snapshot` (test-only fixture) - guard red.
 
 **Run locally.**
 ```powershell
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
+```
+
+Real-process daemon follow-up, once a disk-backed compaction seam exists:
+```powershell
 $env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
 cargo test -p hydracache-server --test daemon_process_cluster rejoin_after_compaction --locked -- --test-threads=1 --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
 ```
-**Run in CI.** Gated `raft-corner-case-nightly` job with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`
+**Run in CI.** Fast in-process proof runs in the `rust` job. The daemon follow-up belongs to the
+gated `raft-corner-case-nightly` job with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1` once the seam exists
 (Linux runner; upload child logs on failure).
-**DoD.** Both tests prove the snapshot catch-up path (not AppendEntries) and convergence; failure
-preserves child logs + last status samples for replay; canary red.
+**DoD.** Fast proof shows `MsgSnapshot` and convergence; daemon proof is not claimed until it proves
+the snapshot catch-up path (not AppendEntries) and preserves child logs + last status samples for
+replay; canary red.
 
 ## W11. Disk-Full / Memory-Limit At Snapshot Boundaries (blueprint: TiKV `test_disk_full.rs`, `test_disk_snap_br.rs`, `test_memory_usage_limit.rs`)
 
@@ -609,6 +622,7 @@ cargo test -p hydracache-cluster-raft --locked `
   --test nemesis_membership --test raft_corpus_vectors `
   --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
 cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
 cargo xtask verify-no-test-features
 cargo xtask doc-check
@@ -623,6 +637,8 @@ GitHub (`rust` job, new steps):
             --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
       - name: Snapshot corruption
         run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+      - name: Raft rejoin after compaction
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
       - name: Raft snapshot resource failpoints
         run: cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
 ```

@@ -109,6 +109,9 @@ jobs:
       - name: Snapshot corruption
         run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 
+      - name: Raft rejoin after compaction
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
+
       - name: Management console
         run: |
           npm --prefix console ci

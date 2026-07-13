@@ -67,7 +67,7 @@ pub trait ClusterControlPlane: fmt::Debug + Send + Sync {
 /// This is intentionally small and transport-neutral. A future `raft-rs`
 /// adapter can use the same command shape as the replicated state-machine input
 /// while keeping [`HydraCache::client`] and [`HydraCache::member`] unchanged.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum RaftMetadataCommand {
     /// A member was admitted or updated.
     MemberUpsert {
