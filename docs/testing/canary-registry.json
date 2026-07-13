@@ -261,6 +261,19 @@
       },
       "red_evidence": "The canary seeds a lost committed command; W21 must report the no-lost-committed-entry invariant violation.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W23",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/model_check.rs",
+        "function": "bounded_model_check_membership_and_commit_invariants_hold_for_up_to_4_nodes"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/model_check.rs",
+        "function": "canary_model_allows_a_dropped_committed_entry"
+      },
+      "red_evidence": "The canary runs the same bounded model with a faulty snapshot-install transition that drops the last committed entry; W23 must discover a no-committed-entry-lost counterexample.",
+      "makes_guard_fail": true
     }
   ]
 }

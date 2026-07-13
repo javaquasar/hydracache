@@ -34,5 +34,6 @@ hydracache-cluster-testkit.workspace = true
 hydracache-cluster-transport-axum.workspace = true
 proptest.workspace = true
 serde_json.workspace = true
+stateright.workspace = true
 tokio.workspace = true
 tower.workspace = true
