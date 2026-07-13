@@ -300,6 +300,19 @@
       },
       "red_evidence": "The canary fixture models a broken oracle that accepts a known lost-write history; W25 must reject the same history with the real sequential-witness checker.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W27",
+      "guard": {
+        "file": "crates/hydracache-redis-compat/tests/connection_chaos.rs",
+        "function": "half_open_and_reset_connections_free_resources_without_leaking_inflight_work"
+      },
+      "canary": {
+        "file": "crates/hydracache-redis-compat/tests/connection_chaos.rs",
+        "function": "canary_connection_reset_leaks_an_inflight_ticket"
+      },
+      "red_evidence": "The canary deliberately leaks the only in-flight ticket; W27 resource-chaos guards must observe that the pool remains exhausted instead of returning to baseline.",
+      "makes_guard_fail": true
     }
   ]
 }
