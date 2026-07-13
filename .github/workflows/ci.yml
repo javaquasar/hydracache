@@ -90,6 +90,16 @@ jobs:
       - name: Raft failpoint crash-safety
         run: cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
 
+      - name: Raft snapshot and transport proof
+        run: |
+          cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+          cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+          cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+          cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
+          cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
+          cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
+          cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
+
       - name: Management console
         run: |
           npm --prefix console ci
@@ -238,6 +248,14 @@ jobs:
         env:
           HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
         run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
+
+      - name: Upload daemon-process replay artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: daemon-process-replay-artifacts
+          path: target/test-hydracache-daemon-process/**
+          if-no-files-found: ignore
 
       - name: Run membership-history tier
         env:

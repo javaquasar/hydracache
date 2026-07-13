@@ -528,6 +528,26 @@ cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoin
 cargo xtask verify-no-test-features
 ```
 
+For the 0.64 Raft snapshot and agentic-debugging proof layer, run the focused
+snapshot/replay/transport gates:
+
+```powershell
+cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
+cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
+cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
+cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
+cargo xtask verify-no-test-features
+cargo xtask doc-check
+```
+
+The nightly daemon-process tier runs with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`
+and uploads `target/test-hydracache-daemon-process/**` as replay evidence. Those
+artifacts contain child stdout/stderr logs, the preserved storage roots, and the
+status snapshots needed by the contradiction ledger.
+
 These tests are deterministic: message-filter cases use seeded/tick-counted
 delivery rather than wall-clock sleeps, and golden vectors are byte fixtures
 checked into `crates/hydracache-cluster-raft/tests/vectors/`. Do not retry a
