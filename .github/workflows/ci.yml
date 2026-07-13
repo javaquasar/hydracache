@@ -103,6 +103,9 @@ jobs:
       - name: Raft nemesis membership fast
         run: cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
 
+      - name: Raft corpus vectors
+        run: cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
+
       - name: Management console
         run: |
           npm --prefix console ci

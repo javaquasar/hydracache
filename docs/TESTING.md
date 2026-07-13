@@ -540,6 +540,7 @@ cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_
 cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
 cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
 cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
+cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -565,6 +566,13 @@ red seed and call it green; preserve the seed/trace and fix the harness or code.
 The real-process daemon kill/restart and randomized topology tiers remain
 nightly/pre-release gates because they open loopback listeners and manage child
 processes.
+
+The W8 corpus-vector tier is intentionally smaller than the external Raft test
+suites it borrows from: it translates the relevant safety ideas into HydraCache
+runtime surfaces instead of importing another implementation's private harness.
+The vectors must stay readable and reviewable; if a future Raft change needs a
+new external-inspired scenario, add it here with a short blueprint comment and a
+canary that would fail if the check became non-falsifiable.
 
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
