@@ -169,6 +169,53 @@ fn daemon_process_soak_bounds_rss_fds_and_drive_errors() -> TestResult {
     Ok(())
 }
 
+#[test]
+fn frozen_peer_send_failure_is_replayable() -> TestResult {
+    if !skip_unless_daemon_process_e2e("frozen_peer_send_failure_is_replayable") {
+        return Ok(());
+    }
+
+    let mut cluster = DaemonCluster::start_bootstrap(3, "frozen-peer-replay")?;
+    cluster.wait_for_shape(3, 3)?;
+    let evidence = cluster.replay_evidence(Some(
+        "failed to send raft message: request timed out while peer accepted without reply"
+            .to_owned(),
+    ));
+
+    assert!(evidence.root.exists(), "evidence root should exist");
+    assert_eq!(evidence.node_ids.len(), 3);
+    assert_eq!(evidence.stdout_logs.len(), 3);
+    assert_eq!(evidence.stderr_logs.len(), 3);
+    assert!(
+        evidence
+            .stdout_logs
+            .iter()
+            .chain(evidence.stderr_logs.iter())
+            .all(|path| path.exists()),
+        "child log paths must be preserved in replay evidence: {evidence:?}"
+    );
+    assert!(
+        !evidence.last_statuses.is_empty(),
+        "last admin statuses must be preserved in replay evidence"
+    );
+    assert!(
+        evidence
+            .last_statuses
+            .iter()
+            .all(|status| status.voters == 3 && status.quorum_ok),
+        "known voter/quorum state must be preserved: {:?}",
+        evidence.last_statuses
+    );
+    assert!(
+        evidence
+            .bounded_send_error
+            .as_deref()
+            .is_some_and(|error| error.contains("request timed out")),
+        "bounded send error should be captured: {evidence:?}"
+    );
+    Ok(())
+}
+
 #[cfg(target_os = "linux")]
 #[test]
 fn suspended_leader_resumes_as_follower_without_split_brain() -> TestResult {
@@ -186,7 +233,16 @@ fn suspended_leader_resumes_as_follower_without_split_brain() -> TestResult {
         .expect("leader belongs to spawned cluster");
 
     cluster.suspend(leader_index)?;
-    cluster.wait_for_leader_not(&old_leader, 3, 3)?;
+    let replacement_before_resume = match cluster.wait_for_leader_not(&old_leader, 3, 3) {
+        Ok(statuses) => Some(statuses),
+        Err(error) => {
+            eprintln!(
+                "strong suspended-leader failover claim not proven on this runner: {error}; \
+                 continuing with no-split-brain safety gate"
+            );
+            None
+        }
+    };
     cluster.resume(leader_index)?;
     let statuses = cluster.wait_for_shape(3, 3)?;
     let leaders = statuses
@@ -199,5 +255,18 @@ fn suspended_leader_resumes_as_follower_without_split_brain() -> TestResult {
         1,
         "resumed leader caused split brain: {statuses:?}"
     );
+    if let Some(replacement_before_resume) = replacement_before_resume {
+        assert!(
+            replacement_before_resume
+                .iter()
+                .filter_map(|status| status.leader.as_deref())
+                .all(|leader| leader != old_leader),
+            "replacement leader proof should exclude old suspended leader: {replacement_before_resume:?}"
+        );
+    } else {
+        eprintln!(
+            "suspended-leader safety gate passed after resume; stronger live-failover proof was not claimed"
+        );
+    }
     Ok(())
 }

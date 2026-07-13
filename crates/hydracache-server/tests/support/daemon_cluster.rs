@@ -82,6 +82,16 @@ pub struct DaemonCluster {
     nodes: Vec<DaemonNode>,
 }
 
+#[derive(Debug, Clone)]
+pub struct DaemonReplayEvidence {
+    pub root: PathBuf,
+    pub node_ids: Vec<String>,
+    pub stdout_logs: Vec<PathBuf>,
+    pub stderr_logs: Vec<PathBuf>,
+    pub last_statuses: Vec<DaemonStatus>,
+    pub bounded_send_error: Option<String>,
+}
+
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
         Self::start_bootstrap_inner(count, name, false)
@@ -296,6 +306,25 @@ impl DaemonCluster {
             client_in_flight: 0,
             subscriber_pending: 0,
         })
+    }
+
+    pub fn replay_evidence(&mut self, bounded_send_error: Option<String>) -> DaemonReplayEvidence {
+        DaemonReplayEvidence {
+            root: self.root.clone(),
+            node_ids: self.node_ids(),
+            stdout_logs: self
+                .nodes
+                .iter()
+                .map(|node| node.stdout_path.clone())
+                .collect(),
+            stderr_logs: self
+                .nodes
+                .iter()
+                .map(|node| node.stderr_path.clone())
+                .collect(),
+            last_statuses: self.statuses(),
+            bounded_send_error,
+        }
     }
 
     #[cfg(target_os = "linux")]

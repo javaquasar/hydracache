@@ -2297,6 +2297,72 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn raft_drive_continues_after_bounded_peer_send_timeout() {
+        let delivered_to_live_peer = Arc::new(tokio::sync::Notify::new());
+        let sink: Arc<dyn RaftMessageSink> = Arc::new(SlowPeerRaftMessageSink {
+            slow_peer: 2,
+            live_peer: 3,
+            delivered_to_live_peer: Arc::clone(&delivered_to_live_peer),
+        });
+        let diagnostics = GridDriveDiagnostics::default();
+        let messages = vec![
+            RaftWireMessage {
+                from: 1,
+                to: 2,
+                term: 1,
+                payload: Vec::new(),
+            },
+            RaftWireMessage {
+                from: 1,
+                to: 3,
+                term: 1,
+                payload: Vec::new(),
+            },
+        ];
+
+        let first_error = send_raft_messages_with_diagnostics(&sink, messages, Some(&diagnostics))
+            .await
+            .unwrap_err();
+        assert!(
+            first_error.to_string().contains("slow peer unavailable"),
+            "bounded peer failure should be surfaced: {first_error}"
+        );
+        assert_eq!(diagnostics.snapshot().send_failures, 1);
+        tokio::time::timeout(
+            Duration::from_millis(100),
+            delivered_to_live_peer.notified(),
+        )
+        .await
+        .expect("first batch should still reach the live peer");
+
+        send_raft_messages_with_diagnostics(
+            &sink,
+            vec![RaftWireMessage {
+                from: 1,
+                to: 3,
+                term: 1,
+                payload: Vec::new(),
+            }],
+            Some(&diagnostics),
+        )
+        .await
+        .unwrap();
+
+        tokio::time::timeout(
+            Duration::from_millis(100),
+            delivered_to_live_peer.notified(),
+        )
+        .await
+        .expect("later live-peer message should still be processed after a bounded peer failure");
+        let snapshot = diagnostics.snapshot();
+        assert_eq!(snapshot.send_failures, 1);
+        assert!(snapshot
+            .last_error
+            .as_deref()
+            .is_some_and(|error| error.contains("slow peer unavailable")));
+    }
+
+    #[tokio::test]
     async fn raft_send_batch_does_not_head_of_line_block_live_peers() {
         let delivered_to_live_peer = Arc::new(tokio::sync::Notify::new());
         let sink: Arc<dyn RaftMessageSink> = Arc::new(SlowPeerRaftMessageSink {
