@@ -539,6 +539,7 @@ cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
 cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
 cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
 cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
+cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -547,6 +548,15 @@ The nightly daemon-process tier runs with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`
 and uploads `target/test-hydracache-daemon-process/**` as replay evidence. Those
 artifacts contain child stdout/stderr logs, the preserved storage roots, and the
 status snapshots needed by the contradiction ledger.
+
+For the W7 seed-range nemesis soak, run:
+
+```powershell
+$env:HYDRACACHE_RUN_RAFT_NEMESIS_SOAK='1'
+$env:HYDRACACHE_NEMESIS_BUDGET_SECS='60'
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS -ErrorAction SilentlyContinue
+```
 
 These tests are deterministic: message-filter cases use seeded/tick-counted
 delivery rather than wall-clock sleeps, and golden vectors are byte fixtures

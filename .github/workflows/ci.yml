@@ -100,6 +100,9 @@ jobs:
           cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
           cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
 
+      - name: Raft nemesis membership fast
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
+
       - name: Management console
         run: |
           npm --prefix console ci
@@ -266,6 +269,12 @@ jobs:
         env:
           HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK: "1"
         run: cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture
+
+      - name: Run raft nemesis nightly soak
+        env:
+          HYDRACACHE_RUN_RAFT_NEMESIS_SOAK: "1"
+          HYDRACACHE_NEMESIS_BUDGET_SECS: "60"
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
 
       - name: Upload SOAK_REPORT
         uses: actions/upload-artifact@v6
