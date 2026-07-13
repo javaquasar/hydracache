@@ -544,6 +544,7 @@ cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
 cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -583,6 +584,12 @@ path, isolates a lagging runtime past compaction, then proves `MsgSnapshot` plus
 tail replay restores membership. Real-process daemon compaction remains a
 nightly/pre-release claim only when the server exposes a disk-backed compaction
 seam and uploads daemon replay artifacts.
+
+The W12 exhaustive grid is finite rather than sampled: it enumerates membership
+operation, real snapshot prefix, and restart point. It also protects the
+snapshot apply contract that a restored runtime must never export a snapshot
+with fewer applied indexes than applied command envelopes after replaying a
+committed tail.
 
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,

@@ -1624,7 +1624,7 @@ where
 
     fn apply_committed_entries(&mut self, entries: Vec<Entry>) -> CacheResult<()> {
         for entry in entries {
-            self.applied_index = entry.index;
+            self.applied_index = self.applied_index.max(entry.index);
             if entry.data.is_empty() {
                 continue;
             }
@@ -1634,6 +1634,7 @@ where
                     if self.applied_command_ids.insert(envelope.command_id.clone()) {
                         materialize_committed_command(&self.cluster, &envelope.command)?;
                         self.commands.push(envelope);
+                        self.applied_index = self.applied_index.max(self.commands.len() as u64);
                     }
                 }
                 EntryType::EntryConfChange => {

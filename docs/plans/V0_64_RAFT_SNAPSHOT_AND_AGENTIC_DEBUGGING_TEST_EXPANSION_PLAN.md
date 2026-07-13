@@ -507,12 +507,17 @@ cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot
 {membership-op} x {snapshot-index} x {restart-point} is enumerated **exhaustively** on a small scope,
 not sampled, so every discrete snapshot/membership boundary is covered.
 
-**Files to change.** New `crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs`; small
-`exhaustigen`-style generator helper in `crates/hydracache-sim/src/rng.rs` or `scenarios.rs`.
+**Files to change.** New `crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs`; a narrow
+runtime invariant fix is allowed if the grid proves that replay after snapshot restore can produce an
+invalid export.
 
 **Design.** Enumerate the bounded grid deterministically; for each cell run the W2 mid-membership
-snapshot+tail flow and assert convergence + authoritative membership. Keep the scope small enough for
-the fast tier; expose a `HYDRACACHE_GRID_SCOPE` env to widen it in nightly.
+snapshot+tail flow from real intermediate `export_snapshot()` values and assert convergence +
+authoritative membership. The grid must include restart-before-tail, restart-after-first-tail, and
+restart-between-every-tail-command boundaries. It also guards the snapshot apply contract
+`applied_index >= commands.len()` after a restored runtime replays additional committed commands.
+Keep the scope small enough for the fast tier; expose a `HYDRACACHE_GRID_SCOPE` env to widen it in
+nightly.
 
 **Required tests** (fast): `exhaustive_snapshot_index_x_membership_op_x_restart_point_grid_converges`.
 
@@ -522,7 +527,7 @@ the fast tier; expose a `HYDRACACHE_GRID_SCOPE` env to widen it in nightly.
 **Run in CI.** `rust` job step "Snapshot exhaustive grid (small scope)"; widened scope in the nightly
 job via `HYDRACACHE_GRID_SCOPE=wide`.
 **DoD.** Full small-scope grid green; wide scope green in nightly; a seeded aliasing canary is caught by
-the grid.
+the grid; replay after snapshot restore cannot lower `applied_index` or export an invalid snapshot.
 
 ## W13. Idempotency of ConfChange/Proposal Under Retry (blueprint: TigerBeetle `reply_sequence.zig`; TiKV `test_cmd_epoch_checker.rs`)
 
