@@ -303,6 +303,56 @@ jobs:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
 
+  raft-corner-case-nightly:
+    name: Raft Corner-Case Nightly
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-corner-case-nightly
+
+      - name: Raft nemesis soak
+        env:
+          HYDRACACHE_RUN_RAFT_NEMESIS_SOAK: "1"
+          HYDRACACHE_NEMESIS_BUDGET_SECS: "300"
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+
+      - name: Snapshot exhaustive grid wide
+        env:
+          HYDRACACHE_GRID_SCOPE: "wide"
+        run: cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked -- --nocapture
+
+      - name: Rejoin after compaction proof
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1 --nocapture
+
+      - name: Snapshot resource faults
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1 --nocapture
+
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
+
+      - name: Upload raft corner-case artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: raft-corner-case-artifacts
+          path: |
+            target/hydracache-contradiction-ledger/**
+            target/hydracache-daemon-logs/**
+            target/test-hydracache-daemon-process/**
+          if-no-files-found: ignore
+
   coverage-ratchet:
     name: Coverage Ratchet
     runs-on: ubuntu-latest

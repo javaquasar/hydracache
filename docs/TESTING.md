@@ -565,6 +565,26 @@ cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_ove
 Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS -ErrorAction SilentlyContinue
 ```
 
+The GitHub `Raft Corner-Case Nightly` job is the offloaded heavy/wide tier for
+W7-W14. To reproduce it locally with a shorter budget:
+
+```powershell
+$env:HYDRACACHE_RUN_RAFT_NEMESIS_SOAK='1'
+$env:HYDRACACHE_NEMESIS_BUDGET_SECS='60'
+$env:HYDRACACHE_GRID_SCOPE='wide'
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked -- --nocapture
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS, Env:\HYDRACACHE_GRID_SCOPE -ErrorAction SilentlyContinue
+```
+
+Real-process daemon compaction remains outside the shipped W10 claim until the
+server exposes a disk-backed compaction seam; the nightly job uploads any
+available contradiction-ledger or daemon artifacts but does not pretend that
+missing future seam is already covered.
+
 These tests are deterministic: message-filter cases use seeded/tick-counted
 delivery rather than wall-clock sleeps, and golden vectors are byte fixtures
 checked into `crates/hydracache-cluster-raft/tests/vectors/`. Do not retry a

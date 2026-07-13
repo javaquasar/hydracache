@@ -461,12 +461,9 @@ on-disk compaction.
 cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 ```
 
-Real-process daemon follow-up, once a disk-backed compaction seam exists:
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test daemon_process_cluster rejoin_after_compaction --locked -- --test-threads=1 --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+Real-process daemon follow-up is a future gate only after `hydracache-server` exposes a disk-backed
+compaction seam and a named daemon-process test for rejoin-after-compaction exists. Do not add a
+placeholder command to CI before that test can execute.
 **Run in CI.** Fast in-process proof runs in the `rust` job. The daemon follow-up belongs to the
 gated `raft-corner-case-nightly` job with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1` once the seam exists
 (Linux runner; upload child logs on failure).
@@ -670,40 +667,52 @@ GitHub (new job):
     name: Raft Corner-Case Nightly
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    env:
-      HYDRACACHE_RUN_RAFT_NEMESIS_SOAK: "1"
-      HYDRACACHE_NEMESIS_BUDGET_SECS: "300"
-      HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
-      HYDRACACHE_GRID_SCOPE: "wide"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Rust        # same toolchain step as the rust job
         uses: dtolnay/rust-toolchain@stable
       - name: Raft nemesis soak
+        env:
+          HYDRACACHE_RUN_RAFT_NEMESIS_SOAK: "1"
+          HYDRACACHE_NEMESIS_BUDGET_SECS: "300"
         run: cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
-      - name: Rejoin-after-compaction (real process)
-        run: cargo test -p hydracache-server --test daemon_process_cluster rejoin_after_compaction --locked -- --test-threads=1 --nocapture
       - name: Snapshot exhaustive grid (wide)
+        env:
+          HYDRACACHE_GRID_SCOPE: "wide"
         run: cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked -- --nocapture
+      - name: Rejoin after compaction proof
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1 --nocapture
+      - name: Snapshot resource faults
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1 --nocapture
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
       - name: Upload failure artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
+        if: always()
+        uses: actions/upload-artifact@v6
         with:
           name: raft-corner-case-artifacts
           path: |
             target/hydracache-contradiction-ledger/**
             target/hydracache-daemon-logs/**
+            target/test-hydracache-daemon-process/**
+          if-no-files-found: ignore
 ```
 
 Local (same behavior as the gated job):
 ```powershell
 $env:HYDRACACHE_RUN_RAFT_NEMESIS_SOAK='1'; $env:HYDRACACHE_NEMESIS_BUDGET_SECS='60'
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'; $env:HYDRACACHE_GRID_SCOPE='wide'
+$env:HYDRACACHE_GRID_SCOPE='wide'
 cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
-cargo test -p hydracache-server --test daemon_process_cluster rejoin_after_compaction --locked -- --test-threads=1 --nocapture
 cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS, Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E, Env:\HYDRACACHE_GRID_SCOPE -ErrorAction SilentlyContinue
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS, Env:\HYDRACACHE_GRID_SCOPE -ErrorAction SilentlyContinue
 ```
+
+The daemon-process `rejoin_after_compaction` command remains a future/pre-release extension until
+`hydracache-server` exposes a disk-backed compaction seam. The current nightly job deliberately runs
+only existing W7-W14 commands rather than documenting a green gate that cannot execute.
 
 ### Rules that keep both tiers honest
 
