@@ -1006,6 +1006,12 @@ const SLED_SNAPSHOT_KEY: &[u8] = b"meta:snapshot";
 const SLED_APPLIED_KEY: &[u8] = b"meta:applied";
 #[cfg(feature = "sled-log-store")]
 const SLED_ENTRY_PREFIX: &[u8] = b"entry:";
+#[cfg(feature = "sled-log-store")]
+const SLED_SNAPSHOT_ENVELOPE_MAGIC: &[u8; 8] = b"HCSNAP01";
+#[cfg(feature = "sled-log-store")]
+const SLED_SNAPSHOT_ENVELOPE_VERSION: u32 = 1;
+#[cfg(feature = "sled-log-store")]
+const SLED_SNAPSHOT_ENVELOPE_HEADER_LEN: usize = 28;
 
 #[cfg(feature = "sled-log-store")]
 fn sled_error(error: sled::Error) -> RaftStoreError {
@@ -1039,6 +1045,14 @@ fn decode_u64(bytes: &[u8]) -> RaftStoreResult<u64> {
         .try_into()
         .map_err(|_| RaftStoreError::new("invalid sled raft u64 value"))?;
     Ok(u64::from_be_bytes(bytes))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_u32(bytes: &[u8]) -> RaftStoreResult<u32> {
+    let bytes: [u8; 4] = bytes
+        .try_into()
+        .map_err(|_| RaftStoreError::new("invalid sled raft u32 value"))?;
+    Ok(u32::from_be_bytes(bytes))
 }
 
 #[cfg(feature = "sled-log-store")]
@@ -1079,12 +1093,71 @@ fn decode_conf_state(bytes: &[u8]) -> RaftStoreResult<ConfState> {
 
 #[cfg(feature = "sled-log-store")]
 fn encode_snapshot(snapshot: &Snapshot) -> RaftStoreResult<Vec<u8>> {
-    protobuf::Message::write_to_bytes(snapshot)
-        .map_err(|error| RaftStoreError::new(format!("failed to encode raft snapshot: {error}")))
+    let payload = protobuf::Message::write_to_bytes(snapshot)
+        .map_err(|error| RaftStoreError::new(format!("failed to encode raft snapshot: {error}")))?;
+    let mut encoded = Vec::with_capacity(SLED_SNAPSHOT_ENVELOPE_HEADER_LEN + payload.len());
+    encoded.extend_from_slice(SLED_SNAPSHOT_ENVELOPE_MAGIC);
+    encoded.extend_from_slice(&SLED_SNAPSHOT_ENVELOPE_VERSION.to_be_bytes());
+    encoded.extend_from_slice(&(payload.len() as u64).to_be_bytes());
+    encoded.extend_from_slice(&snapshot_payload_checksum(&payload).to_be_bytes());
+    encoded.extend_from_slice(&payload);
+    Ok(encoded)
 }
 
 #[cfg(feature = "sled-log-store")]
 fn decode_snapshot(bytes: &[u8]) -> RaftStoreResult<Snapshot> {
+    if bytes.starts_with(SLED_SNAPSHOT_ENVELOPE_MAGIC) {
+        return decode_snapshot_envelope(bytes);
+    }
     Snapshot::parse_from_bytes(bytes)
         .map_err(|error| RaftStoreError::new(format!("failed to decode raft snapshot: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn decode_snapshot_envelope(bytes: &[u8]) -> RaftStoreResult<Snapshot> {
+    if bytes.len() < SLED_SNAPSHOT_ENVELOPE_HEADER_LEN {
+        return Err(RaftStoreError::new(format!(
+            "truncated raft snapshot checksum envelope: expected at least {} bytes, got {}",
+            SLED_SNAPSHOT_ENVELOPE_HEADER_LEN,
+            bytes.len()
+        )));
+    }
+    let version = decode_u32(&bytes[8..12])?;
+    if version != SLED_SNAPSHOT_ENVELOPE_VERSION {
+        return Err(RaftStoreError::new(format!(
+            "unsupported raft snapshot checksum envelope version {version}"
+        )));
+    }
+    let payload_len = decode_u64(&bytes[12..20])? as usize;
+    let expected_checksum = decode_u64(&bytes[20..28])?;
+    let expected_len = SLED_SNAPSHOT_ENVELOPE_HEADER_LEN
+        .checked_add(payload_len)
+        .ok_or_else(|| RaftStoreError::new("raft snapshot checksum envelope length overflow"))?;
+    if bytes.len() != expected_len {
+        return Err(RaftStoreError::new(format!(
+            "truncated raft snapshot checksum envelope: expected {expected_len} bytes, got {}",
+            bytes.len()
+        )));
+    }
+    let payload = &bytes[SLED_SNAPSHOT_ENVELOPE_HEADER_LEN..];
+    let actual_checksum = snapshot_payload_checksum(payload);
+    if actual_checksum != expected_checksum {
+        return Err(RaftStoreError::new(format!(
+            "raft snapshot checksum mismatch: expected {expected_checksum:#x}, actual {actual_checksum:#x}"
+        )));
+    }
+    Snapshot::parse_from_bytes(payload)
+        .map_err(|error| RaftStoreError::new(format!("failed to decode raft snapshot: {error}")))
+}
+
+#[cfg(feature = "sled-log-store")]
+fn snapshot_payload_checksum(bytes: &[u8]) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+    const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+    let mut hash = FNV_OFFSET;
+    for byte in bytes {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash
 }

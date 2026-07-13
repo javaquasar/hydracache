@@ -106,6 +106,9 @@ jobs:
       - name: Raft corpus vectors
         run: cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
 
+      - name: Snapshot corruption
+        run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+
       - name: Management console
         run: |
           npm --prefix console ci

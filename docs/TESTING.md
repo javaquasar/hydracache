@@ -541,6 +541,7 @@ cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_
 cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
 cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
 cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
+cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```

@@ -424,7 +424,7 @@ identity/index mismatch (this is the subtle one).
 
 **Canary.** `canary_snapshot_skips_checksum_and_applies_corrupt_bytes` - guard must go red.
 
-**Run locally.** `cargo test -p hydracache-cluster-raft --test snapshot_corruption --locked`
+**Run locally.** `cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked`
 **Run in CI.** `rust` job step "Snapshot corruption".
 **DoD.** All three green; canary red; misdirected case proves identity check beyond checksum.
 
@@ -606,8 +606,9 @@ These are in-process, seeded, and fast. Add them as explicit steps in the `rust`
 Local:
 ```powershell
 cargo test -p hydracache-cluster-raft --locked `
-  --test nemesis_membership --test raft_corpus_vectors --test snapshot_corruption `
+  --test nemesis_membership --test raft_corpus_vectors `
   --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
+cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
 cargo xtask verify-no-test-features
 cargo xtask doc-check
@@ -618,8 +619,10 @@ GitHub (`rust` job, new steps):
       - name: Raft corner-case fast suite
         run: |
           cargo test -p hydracache-cluster-raft --locked \
-            --test nemesis_membership --test raft_corpus_vectors --test snapshot_corruption \
+            --test nemesis_membership --test raft_corpus_vectors \
             --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
+      - name: Snapshot corruption
+        run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
       - name: Raft snapshot resource failpoints
         run: cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_resource --locked -- --test-threads=1
 ```
