@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "release": "0.64.0",
+  "entries": [
+    {
+      "w_item": "W1",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs",
+        "function": "exported_snapshot_is_immutable_after_live_membership_mutation"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs",
+        "function": "canary_snapshot_shares_a_mutable_arc_across_export"
+      },
+      "red_evidence": "The canary models exported snapshot aliasing live mutable state; the W1 guard must fail if live membership mutation changes the captured export.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W2",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/raft_snapshot_membership.rs",
+        "function": "mid_membership_snapshot_then_tail_replay_converges_to_authoritative_membership"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs",
+        "function": "canary_exhaustive_grid_catches_tail_skip"
+      },
+      "red_evidence": "The canary represents a skipped membership tail after snapshot restore; W2 convergence must go red when the tail is not replayed.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W3",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_apply.rs",
+        "function": "membership_tail_apply_error_after_snapshot_is_release_blocking"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs",
+        "function": "snapshot_falsifiability_canaries_turn_their_guard_tests_red"
+      },
+      "red_evidence": "The failpoint canary downgrades a snapshot apply error; W3 must fail rather than accept a stale runtime.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W4",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs",
+        "function": "snapshot_falsifiability_canaries_turn_their_guard_tests_red"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs",
+        "function": "snapshot_with_alias_canary"
+      },
+      "red_evidence": "The failpoint helper replaces a captured snapshot with a live export; the W4 falsifiability test asserts the paired guards panic.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W5",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_replay_manifest.rs",
+        "function": "snapshot_replay_manifest_contains_contradiction_ledger_fields"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_replay_manifest.rs",
+        "function": "snapshot_replay_manifest_rejects_environmental_closure_with_unexplained_apply_error"
+      },
+      "red_evidence": "The negative manifest fixture tries to close unexplained apply errors as environmental; the ledger guard must reject it.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W7",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+        "function": "nemesis_snapshot_membership_linearizable_under_composed_faults"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+        "function": "canary_nemesis_accepts_stale_member_set_after_restore"
+      },
+      "red_evidence": "The canary models accepting a stale member set after restore; W7 membership convergence must reject that state.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W8",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs",
+        "function": "raft_corpus_stale_term_install_snapshot_is_rejected"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs",
+        "function": "canary_raft_corpus_accepts_stale_term_snapshot"
+      },
+      "red_evidence": "The canary accepts a stale-term snapshot; the corpus guard must fail if stale snapshots are treated as valid.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W9",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_corruption.rs",
+        "function": "snapshot_bitflip_fails_loud_checksum"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_corruption.rs",
+        "function": "canary_snapshot_skips_checksum_and_applies_corrupt_bytes"
+      },
+      "red_evidence": "The canary models corrupt bytes accepted as valid; W9 checksum guards must fail this state.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W10",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs",
+        "function": "rejoined_lagging_runtime_is_caught_up_via_installsnapshot_after_log_compaction"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs",
+        "function": "canary_rejoin_serves_stale_local_membership_after_snapshot"
+      },
+      "red_evidence": "The canary serves stale local membership after InstallSnapshot; W10 must catch the stale view.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W11",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_resource_faults.rs",
+        "function": "disk_full_during_save_snapshot_fails_loud_without_partial_state"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_resource_faults.rs",
+        "function": "canary_disk_full_snapshot_persists_partial_bytes"
+      },
+      "red_evidence": "The canary makes a failed snapshot save leave visible partial state; W11 must reject partial visibility.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W12",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs",
+        "function": "exhaustive_snapshot_index_x_membership_op_x_restart_point_grid_converges"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs",
+        "function": "canary_exhaustive_grid_catches_tail_skip"
+      },
+      "red_evidence": "The canary tail-skip state must be caught by at least one exhaustive grid cell.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W13",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/proposal_idempotency.rs",
+        "function": "retried_confchange_is_not_double_applied_across_snapshot_and_restart"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/proposal_idempotency.rs",
+        "function": "canary_confchange_double_applies_on_retry"
+      },
+      "red_evidence": "The canary double-applies a retried ConfChange; W13 idempotency must fail this outcome.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W14",
+      "guard": {
+        "file": "crates/hydracache-sim/tests/clock_skew_safety.rs",
+        "function": "clock_skew_does_not_produce_two_leaders"
+      },
+      "canary": {
+        "file": "crates/hydracache-sim/tests/clock_skew_safety.rs",
+        "function": "canary_clock_skew_allows_two_leaders"
+      },
+      "red_evidence": "The canary allows two leaders in one term; W14 clock-skew safety must fail that outcome.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W15",
+      "guard": {
+        "file": "crates/xtask/tests/mutants.rs",
+        "function": "mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/mutants.rs",
+        "function": "canary_mutants_baseline_hides_a_live_survivor"
+      },
+      "red_evidence": "The canary injects an untriaged survivor line; W15 must fail the mutation baseline check.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W16",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs",
+        "function": "miri_snapshot_store_returns_deep_cloned_export"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs",
+        "function": "canary_snapshot_shares_a_mutable_arc_across_export"
+      },
+      "red_evidence": "The canary models mutable Arc aliasing across export; W16 Miri-safe deep-clone guard must fail that shape.",
+      "makes_guard_fail": true
+    },
+    {
+      "w_item": "W17",
+      "guard": {
+        "file": "crates/xtask/tests/canary_check.rs",
+        "function": "every_w_item_has_a_registered_canary_that_references_real_functions"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/canary_check.rs",
+        "function": "canary_registry_lists_a_canary_that_does_not_fail_its_guard"
+      },
+      "red_evidence": "The canary registry fixture lists an inert canary; W17 must reject entries where makes_guard_fail is false.",
+      "makes_guard_fail": true
+    }
+  ]
+}

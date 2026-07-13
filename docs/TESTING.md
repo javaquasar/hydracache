@@ -661,6 +661,19 @@ Windows IOCP). The canary
 `canary_snapshot_shares_a_mutable_arc_across_export` preserves the forbidden W1
 shape: an exported snapshot must not alias live mutable membership state.
 
+The W17 canary registry is the machine-readable map from proof item to falsifier:
+
+```powershell
+cargo test -p xtask --test canary_check --locked
+cargo xtask canary-check
+```
+
+`docs/testing/canary-registry.json` must point every implemented W-item at a real
+guard function and a real canary function. Each entry also records `red_evidence`
+and `makes_guard_fail=true`; an inert canary entry is rejected by
+`canary_registry_lists_a_canary_that_does_not_fail_its_guard`. W18-W21 must add
+their own registry entries in the same commit that introduces their tests.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and

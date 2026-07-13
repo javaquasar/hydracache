@@ -73,6 +73,11 @@ jobs:
           cargo test -p xtask --test mutants --locked
           cargo run -p xtask --locked -- mutants
 
+      - name: Canary completeness
+        run: |
+          cargo test -p xtask --test canary_check --locked
+          cargo run -p xtask --locked -- canary-check
+
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
 
