@@ -739,15 +739,49 @@ async fn send_raft_messages_with_diagnostics(
     messages: Vec<RaftWireMessage>,
     diagnostics: Option<&GridDriveDiagnostics>,
 ) -> CacheResult<()> {
-    let mut last_error = None;
+    let mut messages_by_peer = BTreeMap::<u64, Vec<RaftWireMessage>>::new();
     for message in messages {
-        if let Err(error) = message_sink.send(message).await {
-            if let Some(diagnostics) = diagnostics {
-                diagnostics.record_send_failure(error.to_string());
+        messages_by_peer
+            .entry(message.to)
+            .or_default()
+            .push(message);
+    }
+
+    let mut sends = tokio::task::JoinSet::new();
+    for (_peer, peer_messages) in messages_by_peer {
+        let message_sink = Arc::clone(message_sink);
+        sends.spawn(async move {
+            let mut errors = Vec::new();
+            for message in peer_messages {
+                if let Err(error) = message_sink.send(message).await {
+                    errors.push(error.to_string());
+                }
             }
-            last_error = Some(error.to_string());
+            errors
+        });
+    }
+
+    let mut last_error = None;
+    while let Some(result) = sends.join_next().await {
+        match result {
+            Ok(errors) => {
+                for error in errors {
+                    if let Some(diagnostics) = diagnostics {
+                        diagnostics.record_send_failure(error.clone());
+                    }
+                    last_error = Some(error);
+                }
+            }
+            Err(error) => {
+                let error = format!("raft send task failed: {error}");
+                if let Some(diagnostics) = diagnostics {
+                    diagnostics.record_send_failure(error.clone());
+                }
+                last_error = Some(error);
+            }
         }
     }
+
     if let Some(error) = last_error {
         return Err(CacheError::Backend(format!(
             "one or more raft messages failed: {error}"
@@ -2263,6 +2297,50 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn raft_send_batch_does_not_head_of_line_block_live_peers() {
+        let delivered_to_live_peer = Arc::new(tokio::sync::Notify::new());
+        let sink: Arc<dyn RaftMessageSink> = Arc::new(SlowPeerRaftMessageSink {
+            slow_peer: 2,
+            live_peer: 3,
+            delivered_to_live_peer: Arc::clone(&delivered_to_live_peer),
+        });
+        let messages = vec![
+            RaftWireMessage {
+                from: 1,
+                to: 2,
+                term: 1,
+                payload: Vec::new(),
+            },
+            RaftWireMessage {
+                from: 1,
+                to: 3,
+                term: 1,
+                payload: Vec::new(),
+            },
+        ];
+        let send = tokio::spawn({
+            let sink = Arc::clone(&sink);
+            async move { send_raft_messages_with_diagnostics(&sink, messages, None).await }
+        });
+
+        tokio::time::timeout(
+            Duration::from_millis(100),
+            delivered_to_live_peer.notified(),
+        )
+        .await
+        .expect("slow peer must not block delivery to another peer");
+
+        let error = send
+            .await
+            .expect("send task should not panic")
+            .expect_err("slow peer failure should still be reported");
+        assert!(
+            error.to_string().contains("slow peer unavailable"),
+            "slow peer error should be preserved: {error}"
+        );
+    }
+
+    #[tokio::test]
     async fn single_voter_sink_does_not_accumulate() {
         let sink = NoopRaftMessageSink;
         let message = RaftWireMessage {
@@ -2309,6 +2387,27 @@ mod tests {
     impl RaftMessageSink for FailingRaftMessageSink {
         async fn send(&self, _message: RaftWireMessage) -> CacheResult<()> {
             Err(CacheError::Backend("forced raft send failure".to_owned()))
+        }
+    }
+
+    #[derive(Debug)]
+    struct SlowPeerRaftMessageSink {
+        slow_peer: u64,
+        live_peer: u64,
+        delivered_to_live_peer: Arc<tokio::sync::Notify>,
+    }
+
+    #[async_trait::async_trait]
+    impl RaftMessageSink for SlowPeerRaftMessageSink {
+        async fn send(&self, message: RaftWireMessage) -> CacheResult<()> {
+            if message.to == self.slow_peer {
+                tokio::time::sleep(Duration::from_millis(250)).await;
+                return Err(CacheError::Backend("slow peer unavailable".to_owned()));
+            }
+            if message.to == self.live_peer {
+                self.delivered_to_live_peer.notify_one();
+            }
+            Ok(())
         }
     }
 
