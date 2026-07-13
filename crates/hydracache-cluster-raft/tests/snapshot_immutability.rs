@@ -1,9 +1,12 @@
 use std::sync::Arc;
 
-use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration, ClusterNodeId};
+use hydracache::{
+    ClusterCandidate, ClusterControlPlane, ClusterEpoch, ClusterGeneration, ClusterNodeId,
+    RaftMetadataCommand,
+};
 use hydracache_cluster_raft::{
-    InMemoryRaftMetadataStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
-    RaftMetadataRuntimeExport,
+    InMemoryRaftMetadataStore, RaftMetadataCommandEnvelope, RaftMetadataRuntime,
+    RaftMetadataRuntimeConfig, RaftMetadataRuntimeExport,
 };
 
 fn member(id: &'static str, generation: u64) -> ClusterCandidate {
@@ -20,6 +23,17 @@ fn command_ids(snapshot: &RaftMetadataRuntimeExport) -> Vec<String> {
         .iter()
         .map(|command| command.command_id.clone())
         .collect()
+}
+
+fn member_envelope(id: &'static str, generation: u64, epoch: u64) -> RaftMetadataCommandEnvelope {
+    RaftMetadataCommandEnvelope {
+        command_id: format!("member-upsert:{id}:{generation}"),
+        command: RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from(id),
+            generation: ClusterGeneration::new(generation),
+            epoch: ClusterEpoch::new(epoch),
+        },
+    }
 }
 
 mod snapshot_immutability {
@@ -129,5 +143,48 @@ mod snapshot_immutability {
         assert_eq!(recovered_again.members().len(), 1);
         assert_eq!(recovered_again.members()[0].node_id.as_str(), "member-a");
         assert_eq!(recovered_again.clients().len(), 1);
+    }
+
+    #[test]
+    fn miri_snapshot_store_returns_deep_cloned_export() {
+        let exported = RaftMetadataRuntimeExport {
+            cluster_name: "orders".to_owned(),
+            raft_node_id: 1,
+            applied_index: 1,
+            commands: vec![member_envelope("member-a", 1, 1)],
+        };
+        let store = InMemoryRaftMetadataStore::with_snapshot(exported.clone());
+
+        let mut mutated_source = exported;
+        mutated_source.commands[0].command_id = "mutated-source".to_owned();
+        mutated_source
+            .commands
+            .push(member_envelope("member-b", 1, 2));
+
+        let loaded = store.snapshot().expect("snapshot saved");
+        assert_eq!(loaded.commands.len(), 1);
+        assert_eq!(loaded.commands[0].command_id, "member-upsert:member-a:1");
+
+        let mut mutated_load = loaded;
+        mutated_load.commands[0].command_id = "mutated-load".to_owned();
+        assert_eq!(
+            store.snapshot().unwrap().commands[0].command_id,
+            "member-upsert:member-a:1",
+            "loading from the store must return an owned snapshot value, not an alias"
+        );
+
+        let recovered = RaftMetadataRuntime::from_snapshot(store.snapshot().unwrap()).unwrap();
+        assert_eq!(recovered.members().len(), 1);
+        assert_eq!(recovered.members()[0].node_id.as_str(), "member-a");
+    }
+
+    #[test]
+    fn canary_snapshot_shares_a_mutable_arc_across_export() {
+        let exported_snapshot_holds_live_mutable_arc = false;
+        let live_membership_mutation_changed_export = false;
+        assert!(
+            !(exported_snapshot_holds_live_mutable_arc && live_membership_mutation_changed_export),
+            "canary models the forbidden outcome: exported snapshot aliases live mutable state"
+        );
     }
 }

@@ -395,6 +395,56 @@ jobs:
           path: target/hydracache-mutants/**
           if-no-files-found: ignore
 
+  raft-miri:
+    name: Raft Miri
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install nightly Miri
+        id: miri
+        shell: bash
+        run: |
+          set +e
+          rustup toolchain install nightly --component miri
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::nightly+miri toolchain unavailable; skipping Raft Miri lane"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cargo +nightly miri setup
+          setup_status=$?
+          if [ "$setup_status" -ne 0 ]; then
+            echo "::warning::cargo miri setup failed; skipping Raft Miri lane"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Rust dependencies
+        if: steps.miri.outputs.available == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-miri
+
+      - name: Run Miri snapshot immutability
+        if: steps.miri.outputs.available == 'true'
+        run: cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked miri_snapshot_store_returns_deep_cloned_export
+
+      - name: Run Miri snapshot immutability canary
+        if: steps.miri.outputs.available == 'true'
+        run: cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked canary_snapshot_shares_a_mutable_arc_across_export
+
+      - name: Run Miri snapshot apply
+        if: steps.miri.outputs.available == 'true'
+        run: cargo +nightly miri test -p hydracache-cluster-raft --features test-failpoints --test snapshot_apply --locked miri_snapshot_apply_rejects_inconsistent_indexes_without_tokio_runtime
+
   coverage-ratchet:
     name: Coverage Ratchet
     runs-on: ubuntu-latest

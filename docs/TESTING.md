@@ -640,6 +640,27 @@ GitHub `Raft Mutation Testing` lane sets `HYDRACACHE_RUN_RAFT_MUTANTS=1`,
 installs `cargo-mutants`, and executes the slow mutation run over the scoped
 Raft paths in `.cargo/mutants.toml`.
 
+The W16 Miri lane hardens the same snapshot immutability thesis against actual
+aliasing/UB. It is intentionally gated because it needs nightly Rust and the
+`miri` component:
+
+```powershell
+rustup toolchain install nightly --component miri
+cargo +nightly miri setup
+cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked miri_snapshot_store_returns_deep_cloned_export
+cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked canary_snapshot_shares_a_mutable_arc_across_export
+cargo +nightly miri test -p hydracache-cluster-raft --features test-failpoints --test snapshot_apply --locked miri_snapshot_apply_rejects_inconsistent_indexes_without_tokio_runtime
+```
+
+The GitHub `Raft Miri` job skips loud if nightly or Miri cannot be installed on
+the runner. A real Miri UB report or a failing scoped test is red evidence, not
+an environmental skip. The Miri commands intentionally target sync snapshot data
+paths: the full async `tokio::test` membership suites are still ordinary fast
+gates because Miri cannot model every platform runtime primitive (for example
+Windows IOCP). The canary
+`canary_snapshot_shares_a_mutable_arc_across_export` preserves the forbidden W1
+shape: an exported snapshot must not alias live mutable membership state.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and

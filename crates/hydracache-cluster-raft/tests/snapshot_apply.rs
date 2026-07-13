@@ -17,6 +17,21 @@ fn assert_error_contains(error: impl ToString, expected: &[&str]) {
 mod snapshot_apply {
     use super::*;
 
+    fn member_envelope(
+        id: &'static str,
+        generation: u64,
+        epoch: u64,
+    ) -> RaftMetadataCommandEnvelope {
+        RaftMetadataCommandEnvelope {
+            command_id: format!("member-upsert:{id}:{generation}"),
+            command: RaftMetadataCommand::MemberUpsert {
+                node_id: ClusterNodeId::from(id),
+                generation: ClusterGeneration::new(generation),
+                epoch: ClusterEpoch::new(epoch),
+            },
+        }
+    }
+
     #[tokio::test]
     async fn membership_tail_apply_error_after_snapshot_is_release_blocking() {
         let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
@@ -95,6 +110,28 @@ mod snapshot_apply {
                 "tail_index=1",
                 "command_id=wrong-command-id",
                 "expected_command_id=member-upsert:member-a:1",
+            ],
+        );
+    }
+
+    #[test]
+    fn miri_snapshot_apply_rejects_inconsistent_indexes_without_tokio_runtime() {
+        let snapshot = hydracache_cluster_raft::RaftMetadataRuntimeExport {
+            cluster_name: "orders".to_owned(),
+            raft_node_id: 1,
+            applied_index: 0,
+            commands: vec![member_envelope("member-a", 1, 1)],
+        };
+
+        let error = RaftMetadataRuntime::from_snapshot(snapshot).unwrap_err();
+
+        assert_error_contains(
+            error,
+            &[
+                "raft snapshot apply error",
+                "inconsistent snapshot membership indexes",
+                "snapshot_index=0",
+                "command_count=1",
             ],
         );
     }
