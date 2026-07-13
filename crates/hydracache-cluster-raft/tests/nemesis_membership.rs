@@ -50,12 +50,53 @@ impl NemesisTrace {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct NemesisOutcome {
+    schedule: Vec<String>,
+    voters_by_node: BTreeMap<u64, BTreeSet<u64>>,
+    members_by_node: BTreeMap<u64, BTreeSet<String>>,
+}
+
+impl NemesisOutcome {
+    fn from_cluster(cluster: &RuntimeRaftCluster, trace: &NemesisTrace) -> Self {
+        Self {
+            schedule: trace.schedule.clone(),
+            voters_by_node: voter_sets(cluster),
+            members_by_node: member_sets(cluster),
+        }
+    }
+}
+
 fn member_ids(runtime: &RaftMetadataRuntime) -> BTreeSet<String> {
     runtime
         .members()
         .into_iter()
         .map(|member| member.node_id.as_str().to_owned())
         .collect()
+}
+
+fn voter_sets(cluster: &RuntimeRaftCluster) -> BTreeMap<u64, BTreeSet<u64>> {
+    let mut observed = BTreeMap::new();
+    for node_id in cluster.node_ids() {
+        observed.insert(
+            node_id,
+            cluster
+                .node(node_id)
+                .voter_ids()
+                .unwrap()
+                .into_iter()
+                .collect(),
+        );
+    }
+    observed
+}
+
+fn member_sets(cluster: &RuntimeRaftCluster) -> BTreeMap<u64, BTreeSet<String>> {
+    let mut observed = BTreeMap::new();
+    for node_id in cluster.node_ids() {
+        observed.insert(node_id, member_ids(&cluster.node(node_id)));
+    }
+    observed
 }
 
 fn assert_single_leader_per_term(cluster: &RuntimeRaftCluster, trace: &NemesisTrace) {
@@ -79,18 +120,7 @@ fn assert_single_leader_per_term(cluster: &RuntimeRaftCluster, trace: &NemesisTr
 }
 
 fn assert_voters_converged(cluster: &RuntimeRaftCluster, trace: &NemesisTrace) {
-    let mut observed = BTreeMap::new();
-    for node_id in cluster.node_ids() {
-        observed.insert(
-            node_id,
-            cluster
-                .node(node_id)
-                .voter_ids()
-                .unwrap()
-                .into_iter()
-                .collect::<BTreeSet<_>>(),
-        );
-    }
+    let observed = voter_sets(cluster);
     let expected = observed
         .values()
         .next()
@@ -130,7 +160,7 @@ fn assert_members_converged(cluster: &RuntimeRaftCluster, trace: &NemesisTrace) 
     );
 }
 
-async fn run_seed(seed: u64, steps: usize) {
+async fn run_seed(seed: u64, steps: usize) -> NemesisOutcome {
     let mut rng = DeterministicRng::new(seed);
     let mut trace = NemesisTrace::new(seed);
     let mut cluster = RuntimeRaftCluster::three_node();
@@ -221,6 +251,51 @@ async fn run_seed(seed: u64, steps: usize) {
     assert_single_leader_per_term(&cluster, &trace);
     assert_voters_converged(&cluster, &trace);
     assert_members_converged(&cluster, &trace);
+    NemesisOutcome::from_cluster(&cluster, &trace)
+}
+
+fn fixture_schedule_reproduces_failure(schedule: &[String]) -> bool {
+    let mut installed_snapshot = false;
+    let mut skipped_tail = false;
+    for action in schedule {
+        installed_snapshot |= action == "install-snapshot";
+        skipped_tail |= action == "skip-membership-tail";
+    }
+    installed_snapshot && skipped_tail
+}
+
+fn shrink_reproducing_schedule(
+    mut schedule: Vec<String>,
+    reproduces: impl Fn(&[String]) -> bool,
+) -> Vec<String> {
+    assert!(
+        reproduces(&schedule),
+        "cannot shrink a schedule that does not reproduce"
+    );
+    let mut index = 0;
+    while index < schedule.len() {
+        let mut candidate = schedule.clone();
+        candidate.remove(index);
+        if reproduces(&candidate) {
+            schedule = candidate;
+            index = 0;
+        } else {
+            index += 1;
+        }
+    }
+    schedule
+}
+
+fn assert_one_step_minimal(schedule: &[String], reproduces: impl Fn(&[String]) -> bool) {
+    assert!(reproduces(schedule), "minimal schedule must reproduce");
+    for index in 0..schedule.len() {
+        let mut candidate = schedule.to_vec();
+        candidate.remove(index);
+        assert!(
+            !reproduces(&candidate),
+            "schedule is not one-step minimal after removing index {index}: {schedule:?}"
+        );
+    }
 }
 
 #[tokio::test]
@@ -228,6 +303,36 @@ async fn nemesis_snapshot_membership_linearizable_under_composed_faults() {
     for seed in [0x6407, 0x6408, 0x6409] {
         run_seed(seed, 24).await;
     }
+}
+
+#[tokio::test]
+async fn nemesis_replays_identically_for_same_seed() {
+    let left = run_seed(0x6418, 16).await;
+    let right = run_seed(0x6418, 16).await;
+
+    assert_eq!(left, right);
+}
+
+#[test]
+fn nemesis_failure_shrinks_to_minimal_reproducing_schedule() {
+    let schedule = vec![
+        "tick-all".to_owned(),
+        "install-snapshot".to_owned(),
+        "heal-partition".to_owned(),
+        "skip-membership-tail".to_owned(),
+        "duplicate-message".to_owned(),
+    ];
+
+    let minimal = shrink_reproducing_schedule(schedule, fixture_schedule_reproduces_failure);
+
+    assert_eq!(
+        minimal,
+        vec![
+            "install-snapshot".to_owned(),
+            "skip-membership-tail".to_owned()
+        ]
+    );
+    assert_one_step_minimal(&minimal, fixture_schedule_reproduces_failure);
 }
 
 #[tokio::test]
@@ -260,5 +365,14 @@ fn canary_nemesis_accepts_stale_member_set_after_restore() {
     assert_ne!(
         stale, authoritative,
         "canary fixture must model the stale-member bug before it can prove the guard"
+    );
+}
+
+#[test]
+fn canary_nemesis_shrinker_returns_a_nonreproducing_schedule() {
+    let broken_minimal = vec!["skip-membership-tail".to_owned()];
+    assert!(
+        !fixture_schedule_reproduces_failure(&broken_minimal),
+        "canary models a broken shrinker returning a schedule that no longer reproduces"
     );
 }

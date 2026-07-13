@@ -674,6 +674,18 @@ and `makes_guard_fail=true`; an inert canary entry is rejected by
 `canary_registry_lists_a_canary_that_does_not_fail_its_guard`. W18-W21 must add
 their own registry entries in the same commit that introduces their tests.
 
+The W18 nemesis determinism checks are part of the existing fast nemesis test:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_replays_identically_for_same_seed --locked
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_failure_shrinks_to_minimal_reproducing_schedule --locked
+```
+
+The same-seed check compares the generated schedule and final committed
+membership/voter outcome. The shrinker test uses a fixture failure so the fast
+suite can prove the shrink algorithm returns a one-step-minimal reproducing
+schedule without waiting for a naturally failing randomized seed.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and

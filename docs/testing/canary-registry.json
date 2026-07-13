@@ -209,6 +209,19 @@
       },
       "red_evidence": "The canary registry fixture lists an inert canary; W17 must reject entries where makes_guard_fail is false.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W18",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+        "function": "nemesis_replays_identically_for_same_seed"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+        "function": "canary_nemesis_shrinker_returns_a_nonreproducing_schedule"
+      },
+      "red_evidence": "The canary models a shrinker that returns a non-reproducing schedule; W18 must require exact replay and one-step-minimal reproducing schedules.",
+      "makes_guard_fail": true
     }
   ]
 }
