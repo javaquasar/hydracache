@@ -11,7 +11,11 @@
 >   proofs, in-process `MsgSnapshot` rejoin-after-compaction, disk-full/OOM at snapshot boundaries, an
 >   exhaustive small-scope grid, proposal/ConfChange idempotency under retry, and clock-skew safety -
 >   all runnable both locally and in GitHub CI (fast tier on every PR, gated nightly for
->   soak/wide-scope; daemon-process compaction remains a future seam).
+>   soak/wide-scope; daemon-process compaction remains a future seam). A pre-release strengthening pass
+>   (W15-W21) then adds mechanical "test the tests" power: mutation testing of the snapshot/apply/
+>   membership paths, a Miri run of the immutability proofs, an enforced canary-completeness meta-gate,
+>   nemesis determinism + shrinking, a frozen bad-seed regression corpus, a raft-corpus category-coverage
+>   assertion, and a unified invariant catalog.
 > - **Why:** `0.62.0` and `0.62.1` proved the raft/gossip/failpoint harness layer, but they mainly
 >   cover message faults and crash windows. The Hazelcast case shows another dangerous class:
 >   snapshots that appear valid but secretly share mutable state with the live state machine and later
@@ -745,6 +749,220 @@ only existing W7-W14 commands rather than documenting a green gate that cannot e
 - `docs/GATES.md` and `docs/TESTING.md` must list both the fast-tier command and the gated job with its
   env vars, so a developer can reproduce any CI failure locally verbatim.
 
+## Pre-Release Strengthening Pass (W15-W21)
+
+The `0.64` thesis is "force falsification rather than plausible story generation." W1-W14 prove specific
+scenarios and each carries a hand-picked canary, but a canary only falsifies the exact bug it encodes.
+This pass adds mechanical "test the tests" strength while the release is still open. All items are
+in-process/test-only (no product surface, no `0.66` process tier), each runs **locally and in GitHub
+CI**, and gated tiers **skip loud** unless their runner is present. Already-present strengths are not
+re-added here: CI already runs the `sled-log-store`/`test-failpoints`/`clock_skew` feature lanes, the
+ContradictionLedger is an executable validated manifest (`snapshot_replay_manifest.rs`), and the
+message-filter/gossip harnesses have same-seed replay tests.
+
+### W15. Mutation Testing Of Snapshot / Apply / Membership Paths (blueprint: `cargo-mutants`; the `0.64` falsification thesis)
+
+**Goal.** Prove the W1-W14 tests actually **kill injected faults**, not only the hand-picked canaries. A
+surviving mutant in the snapshot/apply/ConfChange/log-store paths is an untested behavior.
+
+**Files to change.** Add `cargo-mutants` config `.cargo/mutants.toml` (or `mutants.toml`) scoped to
+`crates/hydracache-cluster-raft/src/log_store.rs`, snapshot export/restore, apply, and ConfChange
+modules; new `xtask` subcommand `mutants` (or a CI lane) that runs it with a baseline allowlist; a
+committed `docs/testing/mutation-baseline.md` listing any triaged/allowed survivors with a reason.
+
+**Design.**
+- Run `cargo mutants` over the scoped modules; every survivor must be either killed by adding/tightening
+  a test in the same release or explicitly triaged in the baseline with a written justification (`R-11`).
+- The gate fails on any **new** survivor not in the baseline, so future edits cannot silently reduce
+  test power.
+
+**Required tests / checks:**
+- `mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths`.
+- Baseline file present and referenced from `GATES.md`.
+
+**Canary.** `canary_mutants_baseline_hides_a_live_survivor` - a fixture that adds a real survivor without
+a baseline entry must fail the gate.
+
+**DoD.**
+```powershell
+cargo xtask mutants   # or: cargo mutants --in-place --file crates/hydracache-cluster-raft/src/log_store.rs ...
+```
+
+**Run in CI.** Scheduled/`workflow_dispatch` lane `Raft Mutation Testing` (mutation runs are slow); the
+baseline-no-untriaged-survivors check runs fast in the `rust` job when a cached mutants report exists,
+else skips loud.
+
+### W16. Miri Aliasing/UB Run For The Immutability Proofs (blueprint: the W1 aliasing thesis; `cargo miri`)
+
+**Goal.** Detect **actual** aliasing/UB that the type system and normal tests miss - directly hardening
+W1 ("a snapshot must not alias live mutable state"), whose own Preflight warns that `Arc`, interior
+mutability, and shallow clones can encode delayed aliasing.
+
+**Files to change.** No source change expected; add a CI lane and a `docs/TESTING.md` runbook block.
+If a test uses timing/threads Miri cannot model, add a `#[cfg_attr(miri, ignore)]` with a comment and a
+narrower Miri-safe variant.
+
+**Design.**
+- Run `cargo +nightly miri test -p hydracache-cluster-raft` scoped to `snapshot_immutability`,
+  `raft_snapshot_membership`, and `snapshot_apply` (the value/aliasing-sensitive suites).
+- Any UB/aliasing report fails loud; this catches what a behavioral canary cannot.
+
+**Required tests / checks:**
+- `snapshot_immutability` + `snapshot_apply` pass under Miri.
+
+**Canary.** `canary_snapshot_shares_a_mutable_arc_across_export` - a fixture that shares a mutable `Arc`
+between the live runtime and the exported snapshot must be flagged by Miri (or by a strengthened W1
+assertion if Miri cannot reach it).
+
+**DoD.**
+```powershell
+# requires nightly toolchain + miri component; skip loud if absent
+cargo +nightly miri test -p hydracache-cluster-raft snapshot_immutability
+```
+
+**Run in CI.** Lane `Raft Miri` (nightly toolchain, skip-loud when unavailable), fast enough for the
+scoped suites to run on PR when the toolchain is cached.
+
+### W17. Enforced Canary-Completeness Meta-Gate (blueprint: extends the `0.62.1` canary map from a doc list to an invariant)
+
+**Goal.** Make "every proof has a canary that goes red without the guard" a **mechanical** invariant, not
+a prose promise - so no future W-item lands without falsification evidence.
+
+**Files to change.** New `crates/xtask/src/canary_check.rs` (wired into `doc-check` or a new `xtask
+canary-check`); a machine-readable canary registry (extend the plan's Implementation Map or a
+`docs/testing/canary-registry.json`) mapping each guard test to its canary and its enabling
+feature/fixture.
+
+**Design.**
+- Static check: every W-item in the plan names >=1 canary, and every registry canary references a real
+  `fn ...` and a real guard `fn ...`.
+- Dynamic check (a harness test): for each registry entry, building/running with the canary fixture
+  enabled makes the paired guard test **fail**; if the guard still passes, the canary is fake -> fail.
+
+**Required tests / checks:**
+- `every_w_item_has_a_registered_canary_that_references_real_functions`.
+- `each_canary_makes_its_paired_guard_fail_red`.
+
+**Canary.** `canary_registry_lists_a_canary_that_does_not_fail_its_guard` - a deliberately inert canary
+entry must fail the dynamic check.
+
+**DoD.**
+```powershell
+cargo run -p xtask --locked -- canary-check
+```
+
+**Run in CI.** Fast `rust` job step "Canary completeness".
+
+### W18. Nemesis Determinism + Shrinking (blueprint: `0.44` shrinking; `0.53.1` 1000-seed determinism gate)
+
+**Goal.** Guarantee a nemesis failure yields a **minimal, exactly-replayable** schedule. Today
+`nemesis_membership` uses `DeterministicRng` and the filter/gossip harnesses have same-seed replay, but
+the nemesis itself has no explicit determinism gate or shrinker.
+
+**Files to change.** Extend `crates/hydracache-cluster-raft/tests/nemesis_membership.rs`; reuse the
+`0.44` shrinking machinery (`crates/hydracache-sim`) for schedule minimization.
+
+**Design.**
+- Determinism gate: the same seed produces a byte-identical fault schedule and identical committed
+  outcome across two runs (mirror `message_filter_replays_identically_for_same_seed`).
+- Shrinker: on a failing seed, minimize the schedule to the fewest steps that still violate the
+  invariant, and print/emit the minimal schedule into the contradiction ledger artifact.
+
+**Required tests:**
+- `nemesis_replays_identically_for_same_seed`.
+- `nemesis_failure_shrinks_to_minimal_reproducing_schedule` (uses a fixture-injected failure).
+
+**Canary.** `canary_nemesis_shrinker_returns_a_nonreproducing_schedule` - a broken shrinker that returns
+a schedule which no longer reproduces must fail.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_replays_identically_for_same_seed --locked
+```
+
+**Run in CI.** Fast `rust` job; shrinking exercised in the nightly soak lane.
+
+### W19. Frozen Bad-Seed Regression Corpus (blueprint: `0.44`/`0.62` golden-vector discipline)
+
+**Goal.** Any seed that ever failed nemesis/exhaustive-grid during development or nightly becomes a
+**permanent fast-tier regression**, so a fixed bug cannot silently regress and a nightly discovery is not
+lost.
+
+**Files to change.** New `crates/hydracache-cluster-raft/tests/vectors/bad_seeds.json` (committed seed
+corpus); extend `nemesis_membership.rs`/`snapshot_exhaustive_grid.rs` to replay the corpus in the fast
+tier.
+
+**Design.**
+- The nightly job, on a failing seed, prints it and (via runbook) it is added to `bad_seeds.json`.
+- A fast test replays every corpus seed and asserts convergence/invariants - permanently.
+
+**Required tests:**
+- `known_bad_seeds_replay_green_in_fast_tier`.
+
+**Canary.** `canary_bad_seed_corpus_is_not_actually_executed` - a fixture that stubs out the replay loop
+must fail a count assertion (corpus size == executed count).
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cluster-raft --test nemesis_membership known_bad_seeds_replay_green_in_fast_tier --locked
+```
+
+**Run in CI.** Fast `rust` job.
+
+### W20. Raft Corpus Category-Coverage Assertion (blueprint: ScyllaDB `etcd_test.cc` category set)
+
+**Goal.** Prove the ported raft corpus (W8) covers **every** canonical etcd/raft-rs edge-case category,
+so a category cannot silently be dropped.
+
+**Files to change.** Extend `crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs` with a category
+enum and a coverage assertion.
+
+**Design.**
+- Enumerate the required categories (leader completeness, log matching, commit-index safety,
+  snapshot-then-append, single-step ConfChange safety, pre-vote, leadership transfer, term monotonicity).
+- Assert each category has >=1 vector; a missing category fails loud.
+
+**Required tests:**
+- `raft_corpus_covers_every_required_etcd_edge_category`.
+
+**Canary.** `canary_corpus_coverage_passes_with_a_missing_category` - removing a category's vectors must
+fail the coverage assertion.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cluster-raft --test raft_corpus_vectors raft_corpus_covers_every_required_etcd_edge_category --locked
+```
+
+**Run in CI.** Fast `rust` job.
+
+### W21. Unified Invariant Catalog (blueprint: TigerBeetle/FoundationDB shared-invariant checkers)
+
+**Goal.** Replace scattered per-test assertions with one **named invariant set** checked uniformly, so
+every existing and future in-process test asserts the full set and coverage is systematic, not ad hoc.
+
+**Files to change.** New `crates/hydracache-cluster-testkit/src/invariants.rs` exposing
+`assert_cluster_invariants(&view)` covering: no-lost-committed-entry, membership-linearizable,
+snapshot-immutable-vs-live, apply-fail-loud, fence/term-monotonic; refactor W1-W14 tests to call it at
+their assertion points (behavior-preserving).
+
+**Design.**
+- One function evaluates the whole invariant set against a runtime/history view and fails loud on the
+  first violation with context (index/term/member sets).
+- Adding a new test that calls the catalog automatically inherits the full invariant coverage.
+
+**Required tests:**
+- `invariant_catalog_flags_each_seeded_violation` (feed a view violating each invariant; each is caught).
+
+**Canary.** `canary_invariant_catalog_misses_a_lost_committed_entry` - disabling the no-lost-committed
+check must let a lost-entry fixture pass, failing this canary's guard.
+
+**DoD.**
+```powershell
+cargo test -p hydracache-cluster-testkit invariant_catalog --locked
+```
+
+**Run in CI.** Fast `rust` job; the refactored W1-W14 tests continue to run in their existing lanes.
+
 ## Final Release Decision
 
 Ship `0.64.0` only when:
@@ -762,6 +980,12 @@ Ship `0.64.0` only when:
   retried ConfChange is exactly-once across snapshot+restart (W13), and clock skew/backward jumps
   never produce two leaders or break fence safety (W14);
 - each new proof has a falsifiability canary that goes red without the guard;
+- the pre-release strengthening pass holds: mutation testing leaves no untriaged survivor in the
+  snapshot/apply/membership paths (W15), the immutability proofs pass under Miri (W16), the
+  canary-completeness meta-gate proves every guard has a canary that actually fails it (W17), the
+  nemesis is same-seed deterministic and shrinks failures to a minimal schedule (W18), every historical
+  bad seed replays green in the fast tier (W19), the raft corpus covers every required etcd edge category
+  (W20), and the unified invariant catalog flags each seeded violation (W21);
 - rare/flaky failures produce deterministic replay evidence (printed seed + uploaded artifacts) and a
   contradiction ledger;
 - every new test runs both locally and in GitHub CI - deterministic tests in the fast `rust` job,
