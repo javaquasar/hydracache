@@ -313,6 +313,19 @@
       },
       "red_evidence": "The canary deliberately leaks the only in-flight ticket; W27 resource-chaos guards must observe that the pool remains exhausted instead of returning to baseline.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W28",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/differential_modes.rs",
+        "function": "same_op_stream_agrees_across_consistency_levels_where_contract_requires"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/differential_modes.rs",
+        "function": "canary_differential_passes_when_two_modes_disagree"
+      },
+      "red_evidence": "The canary builds two committed-mode views with different members and command counts; W28 differential guards must reject a checker that passes stale-mode disagreement.",
+      "makes_guard_fail": true
     }
   ]
 }
