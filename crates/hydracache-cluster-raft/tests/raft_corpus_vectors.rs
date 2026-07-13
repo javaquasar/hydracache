@@ -4,6 +4,56 @@ use hydracache_cluster_raft::{RaftRuntimeRole, RaftWireMessage};
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
 use raft::eraftpb::{Message, MessageType, Snapshot};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum CorpusCategory {
+    InstallSnapshotThenAppendEntries,
+    StaleTermSnapshotRejection,
+    SingleStepConfChangeQuorum,
+    LogMatching,
+    CommitIndexBounds,
+}
+
+#[derive(Debug)]
+struct CorpusVector {
+    name: &'static str,
+    category: CorpusCategory,
+}
+
+const REQUIRED_CATEGORIES: &[CorpusCategory] = &[
+    CorpusCategory::InstallSnapshotThenAppendEntries,
+    CorpusCategory::StaleTermSnapshotRejection,
+    CorpusCategory::SingleStepConfChangeQuorum,
+    CorpusCategory::LogMatching,
+    CorpusCategory::CommitIndexBounds,
+];
+
+const CORPUS_VECTORS: &[CorpusVector] = &[
+    CorpusVector {
+        name: "raft_corpus_install_snapshot_then_append_entries_converges",
+        category: CorpusCategory::InstallSnapshotThenAppendEntries,
+    },
+    CorpusVector {
+        name: "raft_corpus_stale_term_install_snapshot_is_rejected",
+        category: CorpusCategory::StaleTermSnapshotRejection,
+    },
+    CorpusVector {
+        name: "raft_corpus_single_step_confchange_preserves_quorum_safety",
+        category: CorpusCategory::SingleStepConfChangeQuorum,
+    },
+    CorpusVector {
+        name: "raft_corpus_log_matching_and_commit_index_safety",
+        category: CorpusCategory::LogMatching,
+    },
+    CorpusVector {
+        name: "raft_corpus_log_matching_and_commit_index_safety",
+        category: CorpusCategory::CommitIndexBounds,
+    },
+];
+
+fn corpus_categories(vectors: &[CorpusVector]) -> BTreeSet<CorpusCategory> {
+    vectors.iter().map(|vector| vector.category).collect()
+}
+
 fn voter_set(cluster: &RuntimeRaftCluster, node_id: u64) -> BTreeSet<u64> {
     cluster
         .node(node_id)
@@ -33,6 +83,21 @@ fn snapshot_message(
     message.set_msg_type(MessageType::MsgSnapshot);
     message.set_snapshot(snapshot);
     RaftWireMessage::encode(&message).unwrap()
+}
+
+#[test]
+fn raft_corpus_covers_every_required_etcd_edge_category() {
+    let present = corpus_categories(CORPUS_VECTORS);
+    let required = REQUIRED_CATEGORIES.iter().copied().collect::<BTreeSet<_>>();
+    let missing = required.difference(&present).collect::<Vec<_>>();
+    assert!(
+        missing.is_empty(),
+        "raft corpus is missing required edge categories: {missing:?}; vectors={:?}",
+        CORPUS_VECTORS
+            .iter()
+            .map(|vector| vector.name)
+            .collect::<Vec<_>>()
+    );
 }
 
 #[tokio::test]
@@ -146,5 +211,20 @@ fn canary_raft_corpus_accepts_stale_term_snapshot() {
     assert!(
         after_term < before_term,
         "canary fixture must model an impossible stale-term downgrade"
+    );
+}
+
+#[test]
+fn canary_corpus_coverage_passes_with_a_missing_category() {
+    let incomplete_vectors = [CorpusVector {
+        name: "raft_corpus_stale_term_install_snapshot_is_rejected",
+        category: CorpusCategory::StaleTermSnapshotRejection,
+    }];
+    let present = corpus_categories(&incomplete_vectors);
+    let required = REQUIRED_CATEGORIES.iter().copied().collect::<BTreeSet<_>>();
+    let missing = required.difference(&present).collect::<Vec<_>>();
+    assert!(
+        !missing.is_empty(),
+        "canary models a fake-green corpus coverage gate that missed categories"
     );
 }

@@ -235,6 +235,19 @@
       },
       "red_evidence": "The canary models loading bad_seeds.json without replaying it; W19 must count every corpus entry as executed.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W20",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs",
+        "function": "raft_corpus_covers_every_required_etcd_edge_category"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs",
+        "function": "canary_corpus_coverage_passes_with_a_missing_category"
+      },
+      "red_evidence": "The canary removes categories from the corpus table; W20 must fail when any required etcd edge category is missing.",
+      "makes_guard_fail": true
     }
   ]
 }

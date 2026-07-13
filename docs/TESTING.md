@@ -698,6 +698,16 @@ Every corpus entry must include a suite, seed, step count, and reason. The guard
 counts executed entries so a fake-green loader cannot parse the JSON and skip
 the replay loop.
 
+The W20 corpus category gate is in `raft_corpus_vectors.rs`:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test raft_corpus_vectors raft_corpus_covers_every_required_etcd_edge_category --locked
+```
+
+The file keeps a `REQUIRED_CATEGORIES` table beside the vector tests. A vector
+may cover more than one category, but removing the last representative for any
+required etcd/raft edge category must make the category guard fail.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and
