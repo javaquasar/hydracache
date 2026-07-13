@@ -7,7 +7,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use axum::body::Bytes;
 use axum::extract::State;
@@ -23,8 +23,9 @@ use hydracache::{
 use hydracache_client_protocol::{
     protocol_version_supported, BatchItemStatus, BatchPutEntry, CasExpectation, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, ClientWireMessage, InvalidationEvent, LockConsistency, Namespace,
-    StructuredKey, VersionHandshake, PROTOCOL_VERSION,
+    ClientResponseEnvelope, ClientWireMessage, CompareValueExpireMode, ConditionalPutCondition,
+    InvalidationEvent, LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake,
+    PROTOCOL_VERSION,
 };
 use hydracache_observability::{AuditEvent, AuditRecorder, InMemoryAuditSink, TenantStatus};
 use serde::{Deserialize, Serialize};
@@ -216,6 +217,15 @@ struct CompareAndSetCommand {
     level: LockConsistency,
 }
 
+struct PutCommand {
+    request_id: String,
+    idempotency_key: Option<String>,
+    ns: Namespace,
+    key: StructuredKey,
+    value: Vec<u8>,
+    ttl_ms: Option<u64>,
+}
+
 impl ClientLockService {
     fn new() -> Self {
         Self {
@@ -278,6 +288,63 @@ impl ClientLockService {
     }
 }
 
+type StoreKey = (String, String);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StoredValue {
+    value: Vec<u8>,
+    expires_at_ms: Option<u64>,
+}
+
+struct ConditionalPutArgs {
+    request_id: String,
+    ns: Namespace,
+    key: StructuredKey,
+    value: Vec<u8>,
+    ttl_ms: Option<u64>,
+    condition: ConditionalPutCondition,
+}
+
+struct CompareValueExpireArgs {
+    request_id: String,
+    ns: Namespace,
+    key: StructuredKey,
+    expected_value: Vec<u8>,
+    ttl_ms: u64,
+    mode: CompareValueExpireMode,
+}
+
+impl StoredValue {
+    fn persistent(value: Vec<u8>) -> Self {
+        Self {
+            value,
+            expires_at_ms: None,
+        }
+    }
+
+    fn with_ttl(value: Vec<u8>, now_ms: u64, ttl_ms: u64) -> Self {
+        Self {
+            value,
+            expires_at_ms: Some(now_ms.saturating_add(ttl_ms)),
+        }
+    }
+
+    fn is_expired(&self, now_ms: u64) -> bool {
+        self.expires_at_ms
+            .is_some_and(|expires_at_ms| expires_at_ms <= now_ms)
+    }
+
+    fn ttl_state(&self, now_ms: u64) -> TtlState {
+        match self.expires_at_ms {
+            Some(expires_at_ms) if expires_at_ms <= now_ms => TtlState::Missing,
+            Some(expires_at_ms) => TtlState::ExpiresIn {
+                ttl_ms: expires_at_ms.saturating_sub(now_ms),
+            },
+            None => TtlState::Persistent,
+        }
+    }
+}
+
 /// Shared state for the public client surface.
 #[derive(Debug)]
 pub struct ClientSurfaceState {
@@ -288,7 +355,8 @@ pub struct ClientSurfaceState {
     rejected_oversized: AtomicU64,
     active_subscriptions: AtomicU64,
     next_message_id: AtomicU64,
-    store: Mutex<BTreeMap<(String, String), Vec<u8>>>,
+    store: Mutex<BTreeMap<StoreKey, StoredValue>>,
+    cache_now_ms_for_tests: Mutex<Option<u64>>,
     events: Mutex<Vec<InvalidationEvent>>,
     idempotency_keys: Mutex<BTreeSet<String>>,
     lock_service: Mutex<ClientLockService>,
@@ -311,6 +379,7 @@ impl ClientSurfaceState {
             active_subscriptions: AtomicU64::new(0),
             next_message_id: AtomicU64::new(1),
             store: Mutex::new(BTreeMap::new()),
+            cache_now_ms_for_tests: Mutex::new(None),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
             lock_service: Mutex::new(ClientLockService::new()),
@@ -336,6 +405,7 @@ impl ClientSurfaceState {
             active_subscriptions: AtomicU64::new(0),
             next_message_id: AtomicU64::new(1),
             store: Mutex::new(BTreeMap::new()),
+            cache_now_ms_for_tests: Mutex::new(None),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
             lock_service: Mutex::new(ClientLockService::new()),
@@ -389,6 +459,24 @@ impl ClientSurfaceState {
             .lock()
             .expect("lock service mutex")
             .advance_time_for_tests(millis);
+    }
+
+    /// Override the modeled cache wall clock for deterministic expiry tests.
+    pub fn set_cache_time_for_tests(&self, now_ms: Option<u64>) {
+        *self
+            .cache_now_ms_for_tests
+            .lock()
+            .expect("cache clock mutex") = now_ms;
+    }
+
+    /// Advance the modeled cache wall clock for deterministic expiry tests.
+    pub fn advance_cache_time_for_tests(&self, millis: u64) {
+        let mut now = self
+            .cache_now_ms_for_tests
+            .lock()
+            .expect("cache clock mutex");
+        let base = now.unwrap_or_else(system_time_millis);
+        *now = Some(base.saturating_add(millis));
     }
 
     /// Return recorded consumer audit events for integration tests.
@@ -465,6 +553,13 @@ impl ClientSurfaceState {
         self.dispatch_attempts.fetch_add(1, Ordering::SeqCst);
     }
 
+    fn now_ms(&self) -> u64 {
+        self.cache_now_ms_for_tests
+            .lock()
+            .expect("cache clock mutex")
+            .unwrap_or_else(system_time_millis)
+    }
+
     fn begin_subscription(&self) {
         self.active_subscriptions.fetch_add(1, Ordering::SeqCst);
     }
@@ -532,12 +627,12 @@ impl ClientSurfaceState {
                 if let Err(error) = self.admit_request(identity) {
                     ClientResponseEnvelope::error(envelope.request_id, error)
                 } else {
-                    let value = self
-                        .store
-                        .lock()
-                        .expect("store mutex")
-                        .get(&store_key(&ns, &key))
-                        .cloned();
+                    let now_ms = self.now_ms();
+                    let value = live_value(
+                        &mut self.store.lock().expect("store mutex"),
+                        &store_key(&ns, &key),
+                        now_ms,
+                    );
                     ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Value { value })
                 }
             }
@@ -545,15 +640,18 @@ impl ClientSurfaceState {
                 ns,
                 key,
                 value,
-                ttl_ms: _,
+                ttl_ms,
                 dimensions: _,
             } => self.handle_put(
                 identity,
-                envelope.request_id,
-                envelope.idempotency_key,
-                ns,
-                key,
-                value,
+                PutCommand {
+                    request_id: envelope.request_id,
+                    idempotency_key: envelope.idempotency_key,
+                    ns,
+                    key,
+                    value,
+                    ttl_ms,
+                },
             ),
             ClientRequest::Invalidate { ns, key } => {
                 if let Err(error) = self.admit_request(identity) {
@@ -572,13 +670,14 @@ impl ClientSurfaceState {
                 if let Err(error) = self.admit_request(identity) {
                     ClientResponseEnvelope::error(envelope.request_id, error)
                 } else {
-                    let store = self.store.lock().expect("store mutex");
+                    let now_ms = self.now_ms();
+                    let mut store = self.store.lock().expect("store mutex");
                     let items = keys
                         .iter()
                         .enumerate()
                         .map(|(index, key)| BatchItemStatus {
                             index,
-                            result: Ok(store.get(&store_key(&ns, key)).cloned()),
+                            result: Ok(live_value(&mut store, &store_key(&ns, key), now_ms)),
                         })
                         .collect();
                     ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
@@ -587,23 +686,33 @@ impl ClientSurfaceState {
             ClientRequest::BatchPut { ns, entries } => {
                 if let Err(error) = self.admit_batch_put(identity, &ns, &entries) {
                     ClientResponseEnvelope::error(envelope.request_id, error)
+                } else if let Some((_, entry)) = entries
+                    .iter()
+                    .enumerate()
+                    .find(|(_, entry)| entry.value.len() > self.limits.max_value_bytes)
+                {
+                    ClientResponseEnvelope::error(
+                        envelope.request_id,
+                        ClientErrorEnvelope::new(
+                            ClientErrorCode::TooLarge,
+                            false,
+                            format!(
+                                "batch item value too large: {} bytes exceeds {}",
+                                entry.value.len(),
+                                self.limits.max_value_bytes
+                            ),
+                        ),
+                    )
                 } else {
                     let mut store = self.store.lock().expect("store mutex");
                     let items = entries
                         .into_iter()
                         .enumerate()
                         .map(|(index, entry)| {
-                            if entry.value.len() > self.limits.max_value_bytes {
-                                return BatchItemStatus {
-                                    index,
-                                    result: Err(ClientErrorEnvelope::new(
-                                        ClientErrorCode::TooLarge,
-                                        false,
-                                        "batch item value too large",
-                                    )),
-                                };
-                            }
-                            store.insert(store_key(&ns, &entry.key), entry.value);
+                            store.insert(
+                                store_key(&ns, &entry.key),
+                                StoredValue::persistent(entry.value),
+                            );
                             self.state_mutations.fetch_add(1, Ordering::SeqCst);
                             BatchItemStatus {
                                 index,
@@ -614,6 +723,60 @@ impl ClientSurfaceState {
                     ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
                 }
             }
+            ClientRequest::Expire { ns, key, ttl_ms } => {
+                self.handle_expire(identity, envelope.request_id, ns, key, ttl_ms)
+            }
+            ClientRequest::Persist { ns, key } => {
+                self.handle_persist(identity, envelope.request_id, ns, key)
+            }
+            ClientRequest::GetTtl { ns, key } => {
+                self.handle_get_ttl(identity, envelope.request_id, ns, key)
+            }
+            ClientRequest::ConditionalPut {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                condition,
+            } => self.handle_conditional_put(
+                identity,
+                ConditionalPutArgs {
+                    request_id: envelope.request_id,
+                    ns,
+                    key,
+                    value,
+                    ttl_ms,
+                    condition,
+                },
+            ),
+            ClientRequest::CompareValueAndInvalidate {
+                ns,
+                key,
+                expected_value,
+            } => self.handle_compare_value_invalidate(
+                identity,
+                envelope.request_id,
+                ns,
+                key,
+                expected_value,
+            ),
+            ClientRequest::CompareValueAndExpire {
+                ns,
+                key,
+                expected_value,
+                ttl_ms,
+                mode,
+            } => self.handle_compare_value_expire(
+                identity,
+                CompareValueExpireArgs {
+                    request_id: envelope.request_id,
+                    ns,
+                    key,
+                    expected_value,
+                    ttl_ms,
+                    mode,
+                },
+            ),
             ClientRequest::EvictRegion { ns } => {
                 if let Err(error) = self.admit_request(identity) {
                     ClientResponseEnvelope::error(envelope.request_id, error)
@@ -874,12 +1037,11 @@ impl ClientSurfaceState {
         }
 
         let map_key = store_key(&ns, &key);
-        let live_value = self
-            .store
-            .lock()
-            .expect("store mutex")
-            .get(&map_key)
-            .cloned();
+        let live_value = live_value(
+            &mut self.store.lock().expect("store mutex"),
+            &map_key,
+            self.now_ms(),
+        );
         let cas_key = lock_key(&ns, &key);
         let value_for_response = new_value.clone();
         let level = lock_consistency(level);
@@ -904,7 +1066,7 @@ impl ClientSurfaceState {
             self.store
                 .lock()
                 .expect("store mutex")
-                .insert(map_key, value_for_response);
+                .insert(map_key, StoredValue::persistent(value_for_response));
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
         }
@@ -925,12 +1087,11 @@ impl ClientSurfaceState {
         }
 
         let map_key = store_key(&ns, &key);
-        let live_value = self
-            .store
-            .lock()
-            .expect("store mutex")
-            .get(&map_key)
-            .cloned();
+        let live_value = live_value(
+            &mut self.store.lock().expect("store mutex"),
+            &map_key,
+            self.now_ms(),
+        );
         let cas_key = lock_key(&ns, &key);
         let level = lock_consistency(level);
         let result = self
@@ -955,15 +1116,15 @@ impl ClientSurfaceState {
         let _ = self.audit.lock().expect("audit mutex").record(&event);
     }
 
-    fn handle_put(
-        &self,
-        identity: &ClientIdentity,
-        request_id: String,
-        idempotency_key: Option<String>,
-        ns: Namespace,
-        key: StructuredKey,
-        value: Vec<u8>,
-    ) -> ClientResponseEnvelope {
+    fn handle_put(&self, identity: &ClientIdentity, command: PutCommand) -> ClientResponseEnvelope {
+        let PutCommand {
+            request_id,
+            idempotency_key,
+            ns,
+            key,
+            value,
+            ttl_ms,
+        } = command;
         if value.len() > self.limits.max_value_bytes {
             return ClientResponseEnvelope::error(
                 request_id,
@@ -985,13 +1146,260 @@ impl ClientSurfaceState {
                 .expect("idempotency mutex")
                 .insert(idempotency_key);
         }
+        let stored = match ttl_ms {
+            Some(ttl_ms) => StoredValue::with_ttl(value, self.now_ms(), ttl_ms),
+            None => StoredValue::persistent(value),
+        };
         self.store
             .lock()
             .expect("store mutex")
-            .insert(store_key(&ns, &key), value);
+            .insert(store_key(&ns, &key), stored);
         self.state_mutations.fetch_add(1, Ordering::SeqCst);
         self.record_invalidation(ns, key);
         ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
+    }
+
+    fn handle_expire(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        ttl_ms: u64,
+    ) -> ClientResponseEnvelope {
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let mut store = self.store.lock().expect("store mutex");
+        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
+            .map(|entry| {
+                entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                true
+            })
+            .unwrap_or(false);
+        drop(store);
+        if applied {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
+    }
+
+    fn handle_persist(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+    ) -> ClientResponseEnvelope {
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let mut store = self.store.lock().expect("store mutex");
+        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
+            .map(|entry| entry.expires_at_ms.take().is_some())
+            .unwrap_or(false);
+        drop(store);
+        if applied {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::Expiry { applied })
+    }
+
+    fn handle_get_ttl(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+    ) -> ClientResponseEnvelope {
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let state = ttl_state(
+            &mut self.store.lock().expect("store mutex"),
+            &store_key(&ns, &key),
+            now_ms,
+        );
+        ClientResponseEnvelope::ok(request_id, ClientResponse::Ttl { state })
+    }
+
+    fn handle_conditional_put(
+        &self,
+        identity: &ClientIdentity,
+        args: ConditionalPutArgs,
+    ) -> ClientResponseEnvelope {
+        let ConditionalPutArgs {
+            request_id,
+            ns,
+            key,
+            value,
+            ttl_ms,
+            condition,
+        } = args;
+        if value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
+            );
+        }
+        if let ConditionalPutCondition::IfPresentValue(expected) = &condition {
+            if expected.len() > self.limits.max_value_bytes {
+                return ClientResponseEnvelope::error(
+                    request_id,
+                    ClientErrorEnvelope::new(
+                        ClientErrorCode::TooLarge,
+                        false,
+                        "expected value too large",
+                    ),
+                );
+            }
+        }
+        if let Err(error) = self.admit_put(identity, &ns, &key, value.len() as u64) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let map_key = store_key(&ns, &key);
+        let mut store = self.store.lock().expect("store mutex");
+        let stored = match condition {
+            ConditionalPutCondition::IfAbsent => {
+                if live_entry_mut(&mut store, &map_key, now_ms).is_some() {
+                    false
+                } else {
+                    store.insert(map_key, stored_value(value, now_ms, ttl_ms));
+                    true
+                }
+            }
+            ConditionalPutCondition::IfPresentValue(expected) => {
+                let should_store = live_entry_mut(&mut store, &map_key, now_ms)
+                    .is_some_and(|entry| entry.value == expected);
+                if should_store {
+                    store.insert(map_key, stored_value(value, now_ms, ttl_ms));
+                    true
+                } else {
+                    false
+                }
+            }
+        };
+        drop(store);
+        if stored {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::ConditionalStored { stored })
+    }
+
+    fn handle_compare_value_invalidate(
+        &self,
+        identity: &ClientIdentity,
+        request_id: String,
+        ns: Namespace,
+        key: StructuredKey,
+        expected_value: Vec<u8>,
+    ) -> ClientResponseEnvelope {
+        if expected_value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::TooLarge,
+                    false,
+                    "expected value too large",
+                ),
+            );
+        }
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let map_key = store_key(&ns, &key);
+        let mut store = self.store.lock().expect("store mutex");
+        let applied = live_entry_mut(&mut store, &map_key, now_ms)
+            .is_some_and(|entry| entry.value == expected_value);
+        if applied {
+            store.remove(&map_key);
+        }
+        drop(store);
+        if applied {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
+    }
+
+    fn handle_compare_value_expire(
+        &self,
+        identity: &ClientIdentity,
+        args: CompareValueExpireArgs,
+    ) -> ClientResponseEnvelope {
+        let CompareValueExpireArgs {
+            request_id,
+            ns,
+            key,
+            expected_value,
+            ttl_ms,
+            mode,
+        } = args;
+        if expected_value.len() > self.limits.max_value_bytes {
+            return ClientResponseEnvelope::error(
+                request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::TooLarge,
+                    false,
+                    "expected value too large",
+                ),
+            );
+        }
+        if let Err(error) = self.admit_request(identity) {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+
+        let now_ms = self.now_ms();
+        let mut store = self.store.lock().expect("store mutex");
+        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
+            .map(|entry| {
+                if entry.value == expected_value {
+                    match mode {
+                        CompareValueExpireMode::Replace => {
+                            entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                            true
+                        }
+                        CompareValueExpireMode::ReplaceIfExpiring => {
+                            if entry.expires_at_ms.is_some() {
+                                entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        CompareValueExpireMode::AddToRemaining => {
+                            if let Some(expires_at_ms) = entry.expires_at_ms {
+                                entry.expires_at_ms = Some(expires_at_ms.saturating_add(ttl_ms));
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    }
+                } else {
+                    false
+                }
+            })
+            .unwrap_or(false);
+        drop(store);
+        if applied {
+            self.state_mutations.fetch_add(1, Ordering::SeqCst);
+            self.record_invalidation(ns, key);
+        }
+        ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
     }
 
     fn admit_request(&self, identity: &ClientIdentity) -> Result<(), ClientErrorEnvelope> {
@@ -1343,7 +1751,57 @@ fn lock_error_envelope(error: ConditionalError) -> ClientErrorEnvelope {
     ClientErrorEnvelope::new(code, false, error.to_string())
 }
 
-fn store_key(ns: &Namespace, key: &StructuredKey) -> (String, String) {
+fn live_value(
+    store: &mut BTreeMap<StoreKey, StoredValue>,
+    key: &StoreKey,
+    now_ms: u64,
+) -> Option<Vec<u8>> {
+    if store.get(key).is_some_and(|entry| entry.is_expired(now_ms)) {
+        store.remove(key);
+        return None;
+    }
+    store.get(key).map(|entry| entry.value.clone())
+}
+
+fn stored_value(value: Vec<u8>, now_ms: u64, ttl_ms: Option<u64>) -> StoredValue {
+    match ttl_ms {
+        Some(ttl_ms) => StoredValue::with_ttl(value, now_ms, ttl_ms),
+        None => StoredValue::persistent(value),
+    }
+}
+
+fn live_entry_mut<'a>(
+    store: &'a mut BTreeMap<StoreKey, StoredValue>,
+    key: &StoreKey,
+    now_ms: u64,
+) -> Option<&'a mut StoredValue> {
+    if store.get(key).is_some_and(|entry| entry.is_expired(now_ms)) {
+        store.remove(key);
+        return None;
+    }
+    store.get_mut(key)
+}
+
+fn ttl_state(store: &mut BTreeMap<StoreKey, StoredValue>, key: &StoreKey, now_ms: u64) -> TtlState {
+    let Some(entry) = store.get(key) else {
+        return TtlState::Missing;
+    };
+    let state = entry.ttl_state(now_ms);
+    if matches!(state, TtlState::Missing) {
+        store.remove(key);
+    }
+    state
+}
+
+fn system_time_millis() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+        .min(u128::from(u64::MAX)) as u64
+}
+
+fn store_key(ns: &Namespace, key: &StructuredKey) -> StoreKey {
     (ns.as_str().to_owned(), key.stable_key())
 }
 

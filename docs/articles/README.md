@@ -10,6 +10,7 @@ This directory contains external-facing article drafts for HydraCache.
 ## Drafts
 
 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](001-why-rust-needs-cache-semantics.md)
+- [002 - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
 
 ## Planned Articles
 

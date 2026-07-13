@@ -2,9 +2,12 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use xtask::doc_check;
+
+static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 /// Create a throwaway repo root under the system temp dir with the given
 /// `releases.toml` body and (optionally) referenced plan files.
@@ -13,7 +16,11 @@ fn scratch_root(manifest: &str, plan_files: &[&str]) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    let root = std::env::temp_dir().join(format!("hydracache_doc_check_{nanos}"));
+    let counter = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let root = std::env::temp_dir().join(format!(
+        "hydracache_doc_check_{}_{nanos}_{counter}",
+        std::process::id()
+    ));
     fs::create_dir_all(root.join("docs/plans")).unwrap();
     fs::write(root.join("docs/plans/releases.toml"), manifest).unwrap();
     for file in plan_files {
@@ -53,11 +60,37 @@ depends_on = ["0.38.0"]
         manifest,
         &["docs/plans/A.md", "docs/plans/B.md", "docs/plans/DRAFT.md"],
     );
+    fs::create_dir_all(root.join("docs/releases")).unwrap();
+    fs::write(
+        root.join("docs/releases/0.37.0.md"),
+        "# HydraCache 0.37.0\n",
+    )
+    .unwrap();
     let problems = doc_check::check(&root).unwrap();
     cleanup(&root);
     assert!(
         problems.is_empty(),
         "expected no problems, got: {problems:?}"
+    );
+}
+
+#[test]
+fn detects_shipped_release_without_release_notes() {
+    let manifest = r#"
+[[release]]
+version = "0.37.0"
+file = "docs/plans/A.md"
+status = "shipped"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/A.md"]);
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("shipped release '0.37.0' is missing docs/releases/0.37.0.md"),
+        "missing release-note check: {joined}"
     );
 }
 
@@ -237,13 +270,17 @@ depends_on = []
     let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
     let integration_dir = root.join("docs/integrations");
     fs::create_dir_all(&integration_dir).unwrap();
-    fs::write(integration_dir.join("redis-compat.md"), "# Redis RESP\n").unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
     fs::write(
         integration_dir.join("redis_compat_conformance.json"),
         r#"{
   "version": 1,
   "surface": "hydracache-redis-resp-edge",
-  "supported_resp": "RESP2",
+  "supported_resp": "RESP2+RESP3",
   "redis_oracle": {
     "images": ["redis:6.2.14", "redis:7.2.5"],
     "normalization": "exact for supported commands"
@@ -255,6 +292,13 @@ depends_on = []
       "kind": "redis_subset",
       "oracle": "exact",
       "tests": ["get_matches_real_redis"]
+    },
+    {
+      "name": "INFO",
+      "status": "supported_with_caveat",
+      "kind": "health_probe",
+      "oracle": "normalized_metadata",
+      "tests": ["info_returns_minimal_metadata"]
     },
     {
       "name": "HC.STATS",
@@ -274,6 +318,147 @@ depends_on = []
         problems.is_empty(),
         "expected no problems, got: {problems:?}"
     );
+}
+
+#[test]
+fn rejects_redis_compat_deployment_scope_without_multinode_sentinel() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        r#"{
+  "version": 1,
+  "surface": "hydracache-redis-resp-edge",
+  "supported_resp": "RESP2+RESP3",
+  "redis_oracle": {
+    "images": ["redis:6.2.14", "redis:7.2.5"],
+    "normalization": "exact for supported commands"
+  },
+  "commands": [
+    {
+      "name": "Cross-endpoint RESP key visibility",
+      "status": "unsupported",
+      "kind": "deployment_scope",
+      "oracle": "documented_divergence",
+      "tests": ["missing_multinode_sentinel"]
+    }
+  ]
+}"#,
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("required for Redis deployment_scope rows but could not be read"),
+        "missing deployment_scope multinode test-file check: {joined}"
+    );
+    assert!(
+        joined.contains("deployment_scope test 'missing_multinode_sentinel' must be implemented in crates/hydracache-server/tests/redis_resp_multinode.rs"),
+        "missing deployment_scope sentinel implementation check: {joined}"
+    );
+}
+
+#[test]
+fn rejects_redis_compat_docs_examples_without_gate_labels() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        "# Redis RESP\n\n## Executable Examples\n\n### redis-cli\n\n```sh\nredis-cli PING\n```\n",
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("example section '### redis-cli' must name Gate: `redis_clients`"),
+        "missing redis-cli gate-label check: {joined}"
+    );
+    assert!(
+        joined.contains("missing executable example section '### Rust (redis-rs)'"),
+        "missing required language example check: {joined}"
+    );
+}
+
+fn redis_compat_docs_with_examples() -> &'static str {
+    r#"# Redis RESP
+
+## Executable Examples
+
+### redis-cli
+
+Gate: `redis_clients`
+
+```sh
+redis-cli PING
+```
+
+### Rust (redis-rs)
+
+Gate: `redis_clients`
+
+```rust
+let _ = redis::cmd("PING");
+```
+
+### Python (redis-py)
+
+Gate: `redis_clients`
+
+```python
+print("PING")
+```
+
+### Node (node-redis)
+
+Gate: `redis_clients`
+
+```javascript
+console.log("PING");
+```
+
+### Go (go-redis)
+
+Gate: `redis_clients`
+
+```go
+fmt.Println("PING")
+```
+
+### JVM (Jedis)
+
+Gate: `redis_clients`
+
+```java
+System.out.println("PING");
+```
+"#
 }
 
 #[test]
@@ -335,8 +520,8 @@ depends_on = []
         "missing surface check: {joined}"
     );
     assert!(
-        joined.contains("supported_resp must be RESP2"),
-        "missing RESP2 check: {joined}"
+        joined.contains("supported_resp must be RESP2+RESP3"),
+        "missing RESP2+RESP3 check: {joined}"
     );
     assert!(
         joined.contains("redis_oracle image 'redis:latest' must be pinned"),

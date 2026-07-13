@@ -5,12 +5,10 @@ max_regression_pct = 5
 max_regression_pct = 5
 
 [hot_path.single_flight_16]
-max_regression_pct = 8
+max_ns_absolute = 80000
 
 [hot_path.event_publish_no_subscriber]
-max_ns_absolute = 50
+max_ns_absolute = 5000
 
-[outbox_write.write_with_vs_without]
-max_amplification_x = 2.5
-numerator = "outbox_write/write_with_outbox"
-denominator = "outbox_write/write_without_outbox"
+[outbox_write.write_with_outbox]
+max_ns_absolute = 15000

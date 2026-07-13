@@ -14,7 +14,7 @@ use serde_json::Value;
 
 pub const DAEMON_PROCESS_E2E_ENV: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
 const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
-const WAIT_TIMEOUT: Duration = Duration::from_secs(30);
+const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
 
 pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
@@ -61,6 +61,7 @@ pub struct DaemonNodeSpec {
     pub listen_addr: SocketAddr,
     pub cluster_addr: SocketAddr,
     pub admin_addr: SocketAddr,
+    pub redis_addr: Option<SocketAddr>,
     pub storage_dir: PathBuf,
     pub cluster_start: &'static str,
 }
@@ -69,6 +70,7 @@ pub struct DaemonNodeSpec {
 pub struct DaemonNode {
     spec: DaemonNodeSpec,
     child: Option<Child>,
+    suspended: bool,
     stdout_path: PathBuf,
     stderr_path: PathBuf,
 }
@@ -82,24 +84,33 @@ pub struct DaemonCluster {
 
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, false)
+    }
+
+    pub fn start_bootstrap_with_redis(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, true)
+    }
+
+    fn start_bootstrap_inner(count: usize, name: &str, redis_enabled: bool) -> TestResult<Self> {
         let binary = server_binary()?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
 
-        let mut addrs = reserve_node_addrs(count);
+        let mut addrs = reserve_node_addrs(count, redis_enabled);
         let seed_addrs = addrs
             .iter()
-            .map(|(_, cluster_addr, _)| cluster_addr.to_string())
+            .map(|(_, cluster_addr, _, _)| cluster_addr.to_string())
             .collect::<Vec<_>>();
         let mut nodes = Vec::new();
         for index in 0..count {
-            let (listen_addr, cluster_addr, admin_addr) = addrs.remove(0);
+            let (listen_addr, cluster_addr, admin_addr, redis_addr) = addrs.remove(0);
             let spec = DaemonNodeSpec {
                 name: format!("{name}-{index}"),
                 node_id: member_node_id_for_addr(cluster_addr),
                 listen_addr,
                 cluster_addr,
                 admin_addr,
+                redis_addr,
                 storage_dir: root.join(format!("node-{index}")),
                 cluster_start: "bootstrap",
             };
@@ -136,10 +147,14 @@ impl DaemonCluster {
         self.nodes[index].spec.admin_addr
     }
 
+    pub fn redis_addr(&self, index: usize) -> Option<SocketAddr> {
+        self.nodes[index].spec.redis_addr
+    }
+
     pub fn running_indices(&mut self) -> Vec<usize> {
         let mut running = Vec::new();
         for (index, node) in self.nodes.iter_mut().enumerate() {
-            if node.is_running() {
+            if node.is_serving() {
                 running.push(index);
             }
         }
@@ -192,6 +207,29 @@ impl DaemonCluster {
         })
     }
 
+    pub fn wait_for_non_draining_shape(
+        &mut self,
+        label: &str,
+        members: u32,
+        voters: u32,
+    ) -> TestResult<Vec<DaemonStatus>> {
+        self.wait_for(label.to_owned(), |cluster| {
+            let statuses = cluster.statuses();
+            let active = statuses
+                .iter()
+                .filter(|status| !status.draining)
+                .cloned()
+                .collect::<Vec<_>>();
+            let leaders = leaders(&active);
+            (!active.is_empty()
+                && leaders.len() == 1
+                && active.iter().all(|status| {
+                    status.members == members && status.voters == voters && status.quorum_ok
+                }))
+            .then_some(statuses)
+        })
+    }
+
     pub fn wait_for_leader_not(
         &mut self,
         old_leader: &str,
@@ -221,7 +259,11 @@ impl DaemonCluster {
             }
             std::thread::sleep(POLL_INTERVAL);
         }
-        Err(format!("{label} did not converge before {WAIT_TIMEOUT:?}").into())
+        let last_statuses = self.statuses();
+        Err(format!(
+            "{label} did not converge before {WAIT_TIMEOUT:?}; last_statuses={last_statuses:?}"
+        )
+        .into())
     }
 
     pub fn kill(&mut self, index: usize) -> TestResult {
@@ -293,6 +335,7 @@ impl DaemonNode {
         Self {
             spec,
             child: None,
+            suspended: false,
             stdout_path,
             stderr_path,
         }
@@ -305,7 +348,8 @@ impl DaemonNode {
         fs::create_dir_all(&self.spec.storage_dir)?;
         let stdout = File::create(&self.stdout_path)?;
         let stderr = File::create(&self.stderr_path)?;
-        let child = Command::new(binary)
+        let mut command = Command::new(binary);
+        command
             .env_remove("HYDRACACHE_GRID_INPROC")
             .env("HYDRACACHE_ROLE", "member")
             .env("HYDRACACHE_NODE_ID", &self.spec.node_id)
@@ -324,10 +368,20 @@ impl DaemonNode {
             .env("HYDRACACHE_STORAGE_DIR", &self.spec.storage_dir)
             .env("HYDRACACHE_JOIN_TIMEOUT_MS", "10000")
             .stdout(Stdio::from(stdout))
-            .stderr(Stdio::from(stderr))
-            .spawn()?;
+            .stderr(Stdio::from(stderr));
+        if let Some(redis_addr) = self.spec.redis_addr {
+            command
+                .env("HYDRACACHE_REDIS_API_ENABLED", "true")
+                .env("HYDRACACHE_REDIS_ADDR", redis_addr.to_string());
+        }
+        let child = command.spawn()?;
         self.child = Some(child);
+        self.suspended = false;
         Ok(())
+    }
+
+    fn is_serving(&mut self) -> bool {
+        self.is_running() && !self.suspended
     }
 
     fn is_running(&mut self) -> bool {
@@ -348,6 +402,7 @@ impl DaemonNode {
         let Some(mut child) = self.child.take() else {
             return Ok(());
         };
+        self.suspended = false;
         if child.try_wait()?.is_none() {
             child.kill()?;
         }
@@ -360,7 +415,7 @@ impl DaemonNode {
     }
 
     #[cfg(target_os = "linux")]
-    fn signal(&self, signal: &str) -> TestResult {
+    fn signal(&mut self, signal: &str) -> TestResult {
         let pid = self
             .child
             .as_ref()
@@ -372,6 +427,11 @@ impl DaemonNode {
             .arg(pid)
             .status()?;
         if status.success() {
+            match signal {
+                "STOP" => self.suspended = true,
+                "CONT" => self.suspended = false,
+                _ => {}
+            }
             Ok(())
         } else {
             Err(format!("kill -{signal} failed with {status}").into())
@@ -440,8 +500,12 @@ fn unique_root(name: &str) -> TestResult<PathBuf> {
     )))
 }
 
-fn reserve_node_addrs(count: usize) -> Vec<(SocketAddr, SocketAddr, SocketAddr)> {
-    let listeners = (0..count * 3)
+fn reserve_node_addrs(
+    count: usize,
+    redis_enabled: bool,
+) -> Vec<(SocketAddr, SocketAddr, SocketAddr, Option<SocketAddr>)> {
+    let surface_count = if redis_enabled { 4 } else { 3 };
+    let listeners = (0..count * surface_count)
         .map(|_| TcpListener::bind("127.0.0.1:0").expect("reserve loopback port"))
         .collect::<Vec<_>>();
     let addrs = listeners
@@ -450,8 +514,11 @@ fn reserve_node_addrs(count: usize) -> Vec<(SocketAddr, SocketAddr, SocketAddr)>
         .collect::<Vec<_>>();
     drop(listeners);
     addrs
-        .chunks_exact(3)
-        .map(|chunk| (chunk[0], chunk[1], chunk[2]))
+        .chunks_exact(surface_count)
+        .map(|chunk| {
+            let redis_addr = redis_enabled.then(|| chunk[3]);
+            (chunk[0], chunk[1], chunk[2], redis_addr)
+        })
         .collect()
 }
 
@@ -507,4 +574,32 @@ fn u32_field(value: &Value, field: &'static str) -> TestResult<u32> {
         .and_then(Value::as_u64)
         .ok_or_else(|| format!("admin status missing {field}"))?;
     Ok(u32::try_from(raw)?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::reserve_node_addrs;
+
+    #[test]
+    fn reserve_node_addrs_skips_redis_surface_when_disabled() {
+        let addrs = reserve_node_addrs(3, false);
+
+        assert_eq!(addrs.len(), 3);
+        assert!(addrs
+            .iter()
+            .all(|(_, _, _, redis_addr)| redis_addr.is_none()));
+    }
+
+    #[test]
+    fn reserve_node_addrs_reserves_redis_surface_when_enabled() {
+        let addrs = reserve_node_addrs(2, true);
+
+        assert_eq!(addrs.len(), 2);
+        for (http_addr, gossip_addr, raft_addr, redis_addr) in addrs {
+            let redis_addr = redis_addr.expect("redis surface should be reserved");
+            assert_ne!(http_addr, redis_addr);
+            assert_ne!(gossip_addr, redis_addr);
+            assert_ne!(raft_addr, redis_addr);
+        }
+    }
 }

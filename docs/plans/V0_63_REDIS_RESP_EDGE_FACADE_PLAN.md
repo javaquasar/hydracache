@@ -5,9 +5,10 @@
 >   the **Redis RESP wire protocol** for the subset of commands that maps cleanly to HydraCache cache
 >   semantics, so polyglot stacks can point **existing mainstream Redis clients** at HydraCache by
 >   changing a connection string — **not** by rewriting cache code. It **translates** RESP into the
->   already-shipped `ClientRequest`/`ClientResponse` family and **reuses** the client-surface execution
->   layer (tenancy, limits, consistency); it does **not** re-implement cache access, does **not** touch
->   the stable `hydracache-client-protocol`, and does **not** make HydraCache a Redis clone.
+>   `ClientRequest`/`ClientResponse` family and **reuses** the client-surface execution layer
+>   (tenancy, limits, accounting, protocol-version gates); the expanded 0.63 scope registers a targeted
+>   `hydracache-client-protocol` v3 extension for TTL metadata, but it does **not** re-implement
+>   cache access and does **not** make HydraCache a Redis clone.
 > - **Why:** the honest #1 remaining weakness is **adoption reach for non-Rust stacks** (POSITIONING:
 >   SDK breadth is Rust + Python; no drop-in wire). A RESP facade is the single highest-leverage
 >   *outward* step: "change the connection string, not the code." It is an **edge crate** — the core
@@ -20,7 +21,13 @@
 >   replication are explicit **anti-references**.
 > - **Sequencing note:** this is **outward adoption before/around `1.0`**. Because it is an edge crate
 >   that never touches the frozen core, a subsequent `1.0` stabilization can proceed independently.
-> - **Status:** planned.
+> - **Status:** shipped as `0.63.0`; scope expanded on 2026-07-10 to include the six remaining
+>   compatibility-proof items plus mandatory `MSET` atomicity, Redis TTL support through a
+>   registered client-protocol v3 extension, Redis `AUTH`/`HELLO AUTH`, and native `rediss://`
+>   support as release scope. A semantic accuracy audit pass was added on 2026-07-11
+>   (see "Semantic Accuracy Audit Pass") after a post-implementation review of command return
+>   semantics; it does not widen the supported surface, it closes accuracy gaps in the already-claimed
+>   surface before ship.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) · rules: [`../RULES.md`](../RULES.md) ·
 > positioning: [`../POSITIONING.md`](../POSITIONING.md) ·
@@ -37,23 +44,29 @@ changed crate + downstream; full `verify` at merge/tag.
   `ClientRequest` (lib.rs:612) = `Get { ns, key }`, `Put { ns, key, value, ttl_ms?, dimensions }` (:616),
   `Invalidate { ns, key }` (:624), `BatchGet` (:626), `BatchPut { entries }` (:631),
   `CompareAndSet` (:678), plus the lock family; `ClientResponse` (:795); `ClientRequestEnvelope`
-  (:552); `Namespace` / `StructuredKey`. Protocol is postcard, `PROTOCOL_VERSION = 2`. **The facade
-  maps RESP verbs onto these — it invents no new cache op.**
+  (:552); `Namespace` / `StructuredKey`. Protocol is postcard, currently `PROTOCOL_VERSION = 2`.
+  **The expanded release adds protocol v3 only for TTL metadata and explicit expiry operations; the
+  facade still maps RESP verbs onto native client-surface operations instead of inventing an
+  alternate cache path.**
 - **The execution layer to reuse (do NOT bypass) exists.**
   `crates/hydracache-client-transport-axum/src/lib.rs`: `ClientSurfaceState` (lib.rs:283) turns a
   request into a `ClientResponseEnvelope` (:491/:704/…), applying **tenancy** (`TenantStatus`,
   quotas), **limits** (`ClientSurfaceLimits`, :75, `max_value_bytes`/`max_batch_*`), auth identity
-  (`HYDRACACHE_CLIENT_ID_HEADER`/`TENANT_HEADER`), and the lock/CAS semantics. The RESP facade drives
+  (`HYDRACACHE_CLIENT_ID_HEADER`/`TENANT_HEADER`), and the lock/CAS semantics for the selected
+  `ClientSurfaceState`. The RESP facade drives
   this in-process — it does **not** re-serialize over the wire and does **not** call the cache
-  directly, so tenancy/limits/consistency are preserved for free.
-- **The TTL/tag claims are not implementation-ready without an explicit semantic audit.**
+  directly, so tenancy, limits, metrics, redaction, auth state, and protocol gates are preserved. This
+  does **not** by itself make RESP state cross-daemon or distributed-lock safe; the `0.63` release must
+  either implement a replicated backend or explicitly claim only a single-endpoint/node-local facade.
+- **The TTL/tag claims require explicit protocol and execution work.**
   `ClientRequest::Put` already carries `ttl_ms`, but the current client-surface dispatch drops that
   field (`ttl_ms: _`) before `handle_put`, and `handle_put` stores only value bytes. `ClientResponse`
-  returns `Value { value }` without remaining-TTL metadata. That means `SET EX/PX`, `EXPIRE`/`PEXPIRE`,
-  `PERSIST`, `TTL`, and `PTTL` cannot be claimed as Redis-compatible until W0 either lands the missing
-  execution/read-metadata support or marks those commands unsupported-loud. Similarly, `Put` carries
+  returns `Value { value }` without remaining-TTL metadata. The 2026-07-10 expansion makes
+  `SET EX/PX`, `SETEX`/`PSETEX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` mandatory release scope, so W0/W2 must
+  register protocol v3, make the client surface apply TTL, and expose enough metadata to answer
+  remaining TTL before these commands can be marked done. Similarly, `Put` carries
   `dimensions: Vec<String>` rather than a proven RESP tag contract, and `BatchPutEntry` carries only
-  key/value bytes. W0 turns these assumptions into release blockers before W2/W3 implementation.
+  key/value bytes. W0 turns tag assumptions into release blockers before W3 implementation.
 - **There is no server-side RESP codec in the workspace.** No `redis-protocol` / `redcon` /
   server-`redis` in any `Cargo.toml` (the `redis` crate is used only as a *client* by
   `hydracache-transport-redis` for the invalidation transport). W1 adds a RESP codec as a new,
@@ -69,10 +82,59 @@ changed crate + downstream; full `verify` at merge/tag.
 ## Release Theme
 
 Let existing Redis clients talk to HydraCache for the **cache subset**, honestly: RESP in, native
-`ClientRequest` execution (tenancy/limits/consistency) underneath, HydraCache-native concepts
+`ClientRequest` execution underneath, HydraCache-native concepts
 (tags/invalidation/diagnostics) exposed as explicit `HC.*` extension commands, everything outside the
-subset **failing loud**. An edge accelerator — **not** a Redis clone, **not** Redis Cluster, **not** a
-change to the stable client protocol or the core.
+subset **failing loud**. An edge accelerator — **not** a Redis clone, **not** Redis Cluster, and only a
+targeted client-protocol v3/v4 expansion for TTL and lock metadata rather than a new cache API family.
+
+In `0.63`, the release claim is explicitly **single-endpoint and node-local**: the RESP listener
+preserves client-surface tenancy, limits, accounting, auth, redaction, and protocol-version gates for
+the daemon that owns that listener, but it does not claim cross-daemon Redis key visibility or
+distributed Redis lock safety.
+
+## Plan B: Single-Endpoint Node-Local Posture
+
+The 2026-07-12 release audit found that the RESP facade currently stores the cache subset in the
+`ClientSurfaceState` backing map owned by one daemon process. That is a valid edge-facade starting
+point, but it is not a replicated Redis-compatible data plane. `0.63` therefore chooses **Plan B**:
+ship the single-endpoint facade honestly, document and test the boundary, and leave the distributed
+RESP backend for a later release instead of silently implying cross-node semantics.
+
+Planned `0.63` changes:
+
+1. **Positioning and docs.** `redis-compat.md`, implementation notes, COMPAT, GATES, TESTING,
+   release notes, and this plan must say that RESP data and Redis-lock state are node-local to the
+   daemon/listener that served the connection.
+2. **Runtime/operational guardrails.** The release must expose or log an explicit
+   `redis_scope=node-local` posture for the RESP listener. The required `0.63` implementation is the
+   `INFO` field `redis_scope:node-local`, plus docs that production examples use one selected
+   endpoint, not a load-balanced Service/VIP spanning multiple daemons. A future runtime config
+   acknowledgement can make non-loopback exposure fail loud unless the operator accepts the
+   node-local scope.
+3. **Negative sentinels.** Add network-gated tests that document the boundary: write via RESP node A
+   and read via RESP node B returns a miss, and `SET key token NX PX ttl` can succeed on node A and
+   node B independently. These tests must be named as documented-divergence sentinels, not as
+   distributed support.
+4. **Gate wording.** The multi-node RESP E2E gate proves listener lifecycle, drain/restart behavior,
+   and that the edge path still goes through `ClientSurfaceState`; it must not claim cross-node Redis
+   consistency or distributed lock safety.
+5. **Release note.** The release note must include a named callout: "single-endpoint Redis RESP
+   facade; no cross-daemon Redis key visibility; no multi-endpoint Redis lock mutual exclusion."
+6. **Executable drift guard.** `cargo xtask doc-check` must reject `deployment_scope` manifest rows
+   whose sentinel test names are not implemented in
+   `crates/hydracache-server/tests/redis_resp_multinode.rs`. This keeps Plan B from becoming a
+   documentation-only claim when the manifest, plan, and tests drift apart.
+
+What remains for a future Plan A / distributed RESP backend:
+
+- a replicated/grid-aware backend seam for RESP values and TTL metadata;
+- cross-node `GET`/`SET`/`DEL`/`EXISTS`/`MGET` visibility with defined consistency semantics;
+- a real atomic `MSET` contract across keys and ownership boundaries, or a loud narrowed contract;
+- distributed `SET NX PX/EX` and token-safe release/extend semantics backed by the lock/CAS engine;
+- tests for write-on-A/read-on-B, lock-acquire-on-A/contention-on-B, release-on-A/acquire-on-B,
+  extend-on-A/TTL-visible-on-B, and restart/drain under those scenarios;
+- updated Redis-client/oracle claims that distinguish standalone endpoint compatibility from
+  distributed HydraCache semantics.
 
 ## Non-Goals
 
@@ -81,16 +143,20 @@ change to the stable client protocol or the core.
   `ERR unsupported command` (R-3) — never silently wrong.
 - **No Redis Cluster.** No `MOVED`/`ASK` redirections, no hash slots, no gossip authority — authority
   stays **raft + epoch** (R-1). Redis Cluster and async replication are **anti-references**, not to be
-  copied.
+  copied. `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO`, and related cluster topology commands
+  must return the stable unsupported-command error; cluster-aware clients must connect in standalone
+  Redis mode.
 - **Does not replace `hydracache-client-protocol`.** The stable frame contract (namespace, structured
   keys, idempotency, consistency labels, locks/CAS, residency, versioned compat) stays authoritative;
-  the facade *translates into it*, and touching it is out of scope (R-4).
+  the facade *translates into it*. The only protocol change in the expanded 0.63 scope is a registered
+  v3 additive extension for TTL metadata and expiry operations.
 - **No raw prefix-invalidation over internal binary keys.** Tag/structured invalidation is expressed
   only through explicit `HC.*` extension commands or configured namespace/tag conventions.
 - **Pub/Sub is not a general message bus.** If offered at all, scoped to **invalidation notifications
   only**; otherwise unsupported-loud (not an event log — R-9).
-- **Off by default; core untouched (R-10).** The listener is opt-in; embedded caching and the
-  client-surface path are byte-for-byte unchanged. Edge crate → compatible with a later `1.0` freeze.
+- **Off by default; core untouched (R-10).** The listener is opt-in; embedded caching stays unchanged.
+  The client-surface path changes only to honor protocol v3 TTL semantics that are already part of
+  HydraCache's cache model. Edge crate → compatible with a later `1.0` freeze.
 - **No Hazelcast facade here.** That is a separate, heavier future plan (member illusion).
 
 ## Release Strengthening Pass
@@ -105,10 +171,11 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
    table with the Redis behavior, HydraCache target operation, exact RESP reply shape, caveats, auth
    requirements, and covering tests. This prevents W2 from accidentally treating "parsable" as
    "compatible."
-2. **Treat TTL as a release-blocking decision, not a free mapping.** Current preflight shows that
-   `ttl_ms` is present in the protocol but not enforced by the client surface, and the response shape
-   lacks remaining-TTL metadata. W0 must either land the missing metadata path or move all TTL commands
-   to unsupported-loud for `0.63.0`.
+2. **Treat TTL as a release-blocking protocol expansion, not a free mapping.** Current preflight shows
+   that `ttl_ms` is present in the protocol but not enforced by the client surface, and the response
+   shape lacks remaining-TTL metadata. The expanded release requires W0/W2 to land a registered
+   protocol v3 TTL metadata path, real expiry enforcement, and Redis-compatible `SET EX/PX`, `SETEX`/`PSETEX`,
+   `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` behavior.
 3. **Separate command support levels.** The docs matrix must distinguish `supported`, `supported with
    caveat`, `HydraCache extension`, `admin-disabled`, `candidate`, and `unsupported`. A command cannot
    be `supported` if it returns the wrong count, has weaker atomicity, mutates through a different
@@ -133,6 +200,93 @@ documented as `unsupported` or `candidate`, and the facade returns a stable loud
    bounded memory and file descriptors under many idle and pipelined connections, bounded metric label
    cardinality, no key/value leakage in logs or metrics, and no unbounded allocation on hostile RESP
    frames.
+9. **Make authentication and native Redis TLS release-blocking.** `AUTH` and `HELLO AUTH` must work for an
+   auth-required listener with Redis-shaped `NOAUTH`/`WRONGPASS`/`OK` behavior before `0.63.0` can
+   claim mainstream Redis-client compatibility. Native Redis TLS is mandatory in the same release:
+   `rediss://` must be backed by the existing server TLS certificate/key material, must reject
+   plaintext on TLS listeners, must fail loud for wrong CA or wrong AUTH, and must prove a successful
+   `rediss://` Redis-client path before production exposure is documented.
+
+## Scope Expansion: Remaining 0.63.0 Proof Items
+
+This section records the explicit scope expansion for the current implementation branch. The release
+still does **not** claim Redis Cluster or global/persisted tag-scoped invalidation; the 0.63 tag work is
+limited to the documented RESP-listener-local `HC.*` extension path. The expansion closes the
+compatibility proof around the supported RESP2/RESP3 cache subset and adds five mandatory 0.63 work
+streams: atomic `MSET`, TTL/expiry commands backed by a registered client-protocol v3 extension, Redis
+startup security (`AUTH`/`HELLO AUTH`), native Redis TLS (`rediss://`) on the RESP listener, and RESP3
+negotiation for the same cache subset.
+
+The following five items are now mandatory release scope in addition to the six proof items below:
+
+1. **Atomic `MSET`.** `MSET key value [key value ...]` is mandatory supported scope and closes only
+   when it is executed through `ClientSurfaceState` as an atomic batch. The batch path must validate arity,
+   total batch limits, per-item value limits, tenant quota, and duplicate-key ordering before any
+   mutation. Redis duplicate-key semantics are required: later values in the same command win. A
+   rejected command must leave all touched keys unchanged, including keys written earlier in the same
+   command. The facade returns Redis `OK` only after the whole batch is applied.
+2. **Protocol v3 TTL and expiry support.** `SET key value EX seconds`, `SET key value PX milliseconds`,
+   `EXPIRE`, `PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` are mandatory supported scope and close only after
+   `hydracache-client-protocol` registers v3 additive request/response shapes for expiry mutation and
+   remaining-TTL metadata. `ClientSurfaceState` must store value bytes together with optional expiry,
+   apply TTL on write, remove expired keys before reads/counts/batch reads, expose remaining TTL using
+   Redis semantics (`-2` missing, `-1` no expiry, positive seconds/milliseconds when expiring), and
+   preserve existing v2 behavior for clients that do not negotiate v3.
+3. **Redis `AUTH`/`HELLO AUTH`.** `AUTH password`, `AUTH username password`, and
+   `HELLO 2 AUTH username password` are mandatory release scope for auth-required RESP listeners.
+   The listener keeps unauthenticated loopback development possible by default, but when auth is
+   configured every data or mutating command fails with Redis-shaped `NOAUTH` until successful
+   authentication. Invalid credentials return `WRONGPASS` without leaking usernames, passwords,
+   connection strings, tenant names beyond the configured public identity, or raw client metadata.
+   Password comparison must be hardened against prefix-dependent early exits, and username matching
+   must be evaluated independently so `WRONGPASS` timing is not a password-prefix oracle. Successful
+   auth binds the connection-local Redis identity to a HydraCache client-surface
+   `ClientIdentity`/tenant before any cache request is dispatched.
+4. **Native Redis TLS / `rediss://`.** `rediss://` is now mandatory supported scope for the optional
+   RESP listener. The server config must enable Redis TLS explicitly, reuse the existing server TLS
+   certificate/key material by default, and keep Redis `AUTH` as the application-layer protection
+   above TLS. Implementation must add a TLS acceptor around the raw RESP TCP listener without changing
+   RESP2 command semantics. Tests must cover a successful TLS handshake followed by `AUTH`, `PING`,
+   `SET`, `GET`, `MSET`, and TTL commands; plaintext sent to a TLS listener must fail before mutation;
+   a client using the wrong CA must fail the handshake; invalid Redis credentials over TLS must still
+   return `WRONGPASS`; and logs/metrics must not expose connection-string credentials or certificate
+   material. The Docker/client matrix must include at least one `rediss://` Redis-client path and docs
+   may show `rediss://` examples only after that gate exists.
+5. **RESP3 negotiation and cache-subset codec.** `HELLO 3` is now mandatory supported scope for the
+   optional RESP listener. A successful `HELLO 3` switches only that connection into RESP3 response
+   encoding while preserving the same cache subset, auth, rediss, MSET, TTL, unsupported-command, and
+   tenant/limit semantics as RESP2. `HELLO 3 AUTH username password` must authenticate before sending
+   the handshake response. RESP3 command arrays with blob/simple string arguments decode to the same
+   parser-neutral `RedisCommand` model, and representative cache commands (`PING`, `SET`, `GET`,
+   `MSET`, `MGET`, `TTL`/`PTTL`, `QUIT`) must round-trip after negotiation. RESP3 `Map`, `Set`, `Push`,
+   attributes-as-command, and nested non-string argument shapes remain unsupported and must fail loud
+   before mutation; Redis Cluster and non-cache data structures remain out of scope.
+
+The following six items are now mandatory release scope:
+
+1. **Real Redis oracle.** The `redis_clients` gate must run the supported subset against HydraCache and
+   pinned real Redis oracle images (`redis:6.2.14`, `redis:7.2.5`) and compare normalized replies for
+   `PING`, `ECHO`, `GET`, `SET`, `MGET`, `DEL`, `EXISTS`, `MSET`, and the supported TTL commands.
+2. **Mainstream client matrix.** The `redis_clients` gate must keep the Rust `redis-rs` smoke and add
+   executable, gated Python, Node, Go, and JVM rows. Each client row must exercise plain `MSET`,
+   `SET EX` or `SET PX`, at least one TTL read (`TTL` or `PTTL`), and an auth-required connection
+   scenario in addition to the existing cache subset. The matrix must also include a `rediss://`
+   startup scenario using pinned test TLS material. Missing runtimes skip loud only when the nightly
+   gate is not explicitly enabled for that runtime.
+3. **Executable heavy gates.** The `redis_clients` and `resp_resource_smoke` targets must compile in
+   the fast tier and run their ignored scenarios only when the documented env vars are set.
+4. **Reconnect and failure semantics.** RESP listener tests must cover close mid-command, close
+   mid-pipeline, reconnect-and-retry, and drain during pipeline without response corruption or
+   connection-local state leakage.
+5. **Multi-node RESP e2e.** A network-gated server test must drive the RESP listener against a real
+   daemon/grid path and exercise at least one restart or drain boundary. The fast tier may compile the
+   harness and keep the scenario ignored/env-gated.
+6. **Executable docs/examples.** Examples in `docs/integrations/redis-compat.md` must either be
+   executable in a docs-smoke gate or explicitly labeled with the Docker/nightly gate that proves them.
+
+Each item remains one closed task with its own commit. Before each commit, run the targeted tests for
+the changed crate or docs gate. The final release still requires the global gates after this branch is
+merged.
 
 ## Additional Strengthening Pass: executable compatibility contract
 
@@ -152,37 +306,46 @@ loose reminder.
    Redis 7.x image unless the release explicitly narrows the compatibility claim. Updating oracle
    versions is a reviewed compatibility change with a changelog note, because real Redis behavior,
    `COMMAND` metadata, `HELLO`, and error text can evolve.
-3. **RESP2/RESP3 negotiation (W0/W1/W2/W5/W6).** RESP2 is the `0.63.0` supported dialect. `HELLO 2`
-   must produce an honest RESP2-compatible handshake. `HELLO 3` must either downgrade/reject in a
-   documented way or be marked unsupported-loud; RESP3-only frame types are rejected before mutation.
-   The docs and oracle normalization must say exactly what is compared under RESP2 and what is not
-   claimed for RESP3.
-4. **Multi-node HydraCache e2e (W5/W6).** Add a gated test that drives the RESP facade against a real
-   multi-daemon HydraCache grid, not only an in-process state. The test writes through RESP, reads
-   through RESP, exercises at least one leader restart/drain or node restart path, and proves the RESP
-   edge still goes through tenancy, limits, and consistency rather than bypassing the cluster surface.
+3. **RESP2/RESP3 negotiation (W0/W1/W2/W5/W6).** RESP2 and RESP3 are the `0.63.0` supported wire
+   dialects for the same cache subset. `HELLO 2` must produce an honest RESP2-compatible handshake.
+   `HELLO 3` must switch the connection to RESP3 replies, and `HELLO 3 AUTH username password` must
+   authenticate before the handshake response. RESP3 command arrays using blob/simple string arguments
+   decode to the same parser-neutral `RedisCommand` model. Unsupported RESP3 aggregate command frames
+   (`Map`, `Set`, `Push`, attributes as commands, or nested non-string arguments) are rejected before
+   mutation. The docs and oracle normalization must say exactly what is compared under RESP2 and RESP3.
+4. **Multi-node HydraCache e2e (W5/W6).** Add gated tests that drive the RESP facade against real
+   multi-daemon HydraCache processes, not only in-process state. The positive scenario writes and reads
+   through one selected RESP endpoint before and after a member restart/drain, proving listener
+   lifecycle and edge wiring through `ClientSurfaceState`. Separate negative sentinels document that
+   cross-endpoint RESP key visibility and multi-endpoint Redis lock exclusion are **not** claimed in
+   `0.63`.
 5. **Executable docs (W6).** Every copy-paste example in `docs/integrations/redis-compat.md` must be
    executable as a docs-smoke test. That includes `redis-cli`, Rust, Python, Node, Go, and JVM examples
-   when the corresponding client matrix row is claimed. Docs cannot show TTL, `HC.*`, `SELECT`, or
-   `rediss://` examples unless the matching gates are green.
+   when the corresponding client matrix row is claimed. The expanded release requires executable
+   examples for `MSET`, TTL, `SELECT 0`, `rediss://`, and RESP3 negotiation. Docs cannot show
+   `HC.*` examples or non-zero `SELECT` examples unless the matching gates are green.
 6. **Reconnect and connection-failure semantics (W5).** Add tests for close mid-command,
    close mid-pipeline, reconnect-and-retry, server drain during pipeline, and malformed response
    boundaries. A failed connection must not corrupt the next response, leak connection-local namespace
    state across connections, or apply an ambiguous partial write without idempotency evidence.
 7. **Client health-check commands (W0/W2/W5).** W0 must explicitly classify common framework probes:
    `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`, `CLIENT LIST`, `CLIENT ID`, and related
-   health/readiness commands. Each is either a minimal honest reply, a safe no-op, admin-disabled, or
-   unsupported-loud. A framework should never pass readiness because HydraCache returned a fabricated
-   Redis server state.
+   health/readiness commands. `INFO` and `TYPE` are supported-with-caveat probe commands only:
+   `INFO` returns minimal honest RESP-facade facts, and `TYPE` returns `string`/`none` for the cache
+   subset. `ROLE`, `DBSIZE`, and `SCAN` stay unsupported-loud because replication role, exact
+   keyspace size, and iterable keyspace state would fabricate or overexpose Redis server behavior.
+   A framework should never pass readiness because HydraCache returned a fabricated Redis server
+   state.
 8. **Config/operator packaging (W6).** The server config, sample configs, Helm/operator docs, and any
    production guide must prove the RESP listener is disabled by default, not exposed by default, and
    enabled only by explicit config. If Kubernetes/operator packaging exists, the plan must cover port
    exposure, service annotations, TLS/auth secrets, NetworkPolicy guidance, and rollback defaults.
 9. **Oracle normalization rules (W0/W5/W6).** The real Redis oracle must define what is compared
-   exactly and what is normalized. Integer counts, nil/bulk shape, array order, and success/failure
-   class match exactly for supported commands. Error text may be normalized by class/code. TTL values
-   compare with a bounded tolerance only if TTL support ships. Unsupported divergence is allowed only
-   when the conformance manifest says HydraCache is intentionally not Redis-compatible for that row.
+   exactly and what is normalized. Integer counts, nil/bulk shape, array order, atomic `MSET` outcome,
+   and success/failure class match exactly for supported commands. Error text may be normalized by
+   class/code. TTL values compare with bounded tolerance because TTL support is now required scope.
+   Unsupported divergence is allowed only when the conformance manifest says HydraCache is
+   intentionally not Redis-compatible for that row.
 10. **Rollout/rollback playbook (W6).** Add an operator-facing playbook for canary enablement,
     production monitoring, rollback triggers, and disable procedure. It must name the metrics and
     audit events to watch, how to turn off the listener safely, whether restart is required, what to do
@@ -191,9 +354,9 @@ loose reminder.
 ## Dependency Graph
 
 ```
-W1 crate scaffold + RESP codec + listener config ─► W2 command translator (cache subset) ─┐
-                                                     W3 HC.* extension commands ───────────┼─► W6 server wiring + docs + gates
-                                                     W4 unsupported matrix + guardrails ───┤
+W1 crate scaffold + RESP codec + listener config ─► W2 command translator (cache subset) ─────┐
+                                                     W3 HC.* extension commands ──────────────┼─► W6 server wiring + docs + gates
+                                                     W4 unsupported matrix + guardrails ──────┤
                                                      W5 golden fixtures + client smoke + fuzz ┘
 ```
 
@@ -243,35 +406,55 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 - **Covering tests:** at least one named test for every supported/candidate row.
 
 **Release-blocking semantic decisions.**
-1. **TTL:** `SET EX/PX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` are `candidate` until the
-   client surface both applies TTL on write and exposes enough metadata to answer remaining TTL. If
-   that support is not implemented in `0.63.0`, the docs matrix marks TTL commands unsupported-loud
-   and the mainstream-client smoke omits TTL from the required proof.
+1. **TTL:** `SET EX/PX`, `SETEX`/`PSETEX`, `EXPIRE`/`PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` are mandatory release scope.
+   W0 registers `hydracache-client-protocol` v3 as an additive extension with explicit expiry
+   mutation and remaining-TTL metadata. W2 cannot close until the client surface applies TTL on write,
+   expires keys before reads/counts, exposes Redis remaining-TTL semantics, and keeps v2 clients
+   backward-compatible.
 2. **`DEL` / `EXISTS` counts:** accepted only if the translator returns Redis-style integer counts.
    `DEL` must count keys actually removed. `EXISTS` must count keys currently present. Returning only
    `OK` or boolean is not compatible.
-3. **`MSET` atomicity:** accepted only if the batch path admits the whole batch before mutation and
-   cannot partially store entries. If HydraCache keeps per-item partial results, `MSET` is rejected
-   loud or documented as a non-Redis `HC.MSET_PARTIAL` style extension, not as Redis `MSET`.
+3. **`MSET` atomicity:** mandatory release scope. The batch path admits the whole batch before
+   mutation and cannot partially store entries. If any entry violates limits or shape, all touched
+   keys remain unchanged. Duplicate keys follow Redis order, with the last value winning.
 4. **`MGET` ordering:** supported only if the response preserves request order and represents misses
    as nil bulk entries.
-5. **`SELECT`:** supported only with explicit configured database-to-namespace mapping. Otherwise
-   `SELECT` returns a stable unsupported/configuration error and the listener uses one default
-   namespace plus optional key-prefix conventions.
+5. **`SELECT` / Redis multi-db:** `SELECT 0` is supported as a connection-local no-op for mainstream
+   Redis client URL compatibility (`redis://host:6379/0`). HydraCache `0.63.0` exposes exactly one
+   logical Redis database backed by the configured HydraCache namespace. `SELECT 1`, every other
+   non-zero DB index, negative indexes, and malformed indexes fail loud before mutation; a failed
+   `SELECT` must not change the connection keyspace or dispatch through `ClientSurfaceState`.
 6. **`COMMAND`:** mainstream clients often issue `COMMAND` during bootstrap. It can return a minimal
    honest command table for the supported subset, but it must not advertise unsupported commands.
-7. **`AUTH` / `HELLO AUTH`:** W0 defines the exact identity mapping for `AUTH password` and
-   `AUTH username password`, including tenant/client-id derivation, `NOAUTH`, `WRONGPASS`, and
-   credential redaction in logs.
-8. **Dangerous admin commands:** `FLUSHDB`/`FLUSHALL` are `admin-disabled` by default and require an
-   explicit config switch plus admin scope before they can mutate anything. The default behavior is a
-   loud error.
-9. **RESP negotiation:** `HELLO 2` is the only supported dialect negotiation for `0.63.0` unless W0
-   explicitly graduates more. `HELLO 3` and RESP3-only frames must be classified as downgrade,
-   unsupported-loud, or candidate; they must not accidentally enter a half-RESP3 mode.
+7. **`AUTH` / `HELLO AUTH`:** mandatory release scope. W0 defines the exact identity mapping for
+   `AUTH password`, `AUTH username password`, and `HELLO 2 AUTH username password`, including
+   connection-local authenticated state, tenant/client-id derivation, `NOAUTH`, `WRONGPASS`, `OK`,
+   and credential redaction in logs. The conformance manifest may remain `candidate` only while the
+   implementation is absent; before release close, the row must graduate to supported with the same
+   tests that prove the listener rejects unauthenticated data commands.
+8. **Dangerous/admin commands:** `CONFIG`, `FLUSHDB`, and `FLUSHALL` are recognized but
+   `admin-disabled` by default. `CONFIG` is a Redis server-administration surface for reading or
+   changing runtime configuration; the facade must not fabricate Redis memory, persistence, TLS, ACL,
+   replication, or module configuration, and it must not accept `CONFIG SET` as if those settings
+   existed. `FLUSHDB` deletes the selected Redis database, and `FLUSHALL` deletes every Redis database;
+   under HydraCache's `SELECT 0`-only compatibility contract these would become broad destructive
+   tenant/namespace operations rather than normal cache-subset commands. The default behavior is a
+   stable `NOPERM ... is disabled by the HydraCache Redis facade` error before dispatch or mutation.
+   Any future wipe/config capability must be HydraCache-native admin API scope with explicit
+   authorization, audit, and rollout gates, not a Redis-compatible default.
+9. **RESP negotiation:** `HELLO 2` and `HELLO 3` are supported dialect negotiations for `0.63.0`.
+   `HELLO 3` must enter an explicit RESP3 connection mode with RESP3 reply encoding for the same cache
+   subset. Unsupported RESP3 aggregate command frames must fail loud before mutation; the listener must
+   not accidentally enter a half-RESP3 mode where negotiation succeeds but replies stay RESP2.
 10. **Health/readiness commands:** classify `INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`,
-   `CLIENT LIST`, `CLIENT ID`, and similar framework probes. Minimal honest replies are allowed only
-   when every returned field is true for HydraCache; fabricated Redis internals are forbidden.
+   `CLIENT LIST`, `CLIENT ID`, and similar framework probes. `INFO` is supported only as a minimal
+   bulk-string facade snapshot: standalone mode, role, HydraCache package version, supported RESP
+   dialects, accepted connection count, processed command count, and RESP error count. It must not
+   include Redis memory, DB keyspace, replication offsets, cluster topology, or other fabricated
+   internals. `TYPE key` is supported only for the cache subset and returns `string` for a present
+   value or `none` for a miss. `ROLE`, `DBSIZE`, and `SCAN` stay unsupported because Redis replication
+   role, exact keyspace cardinality, and iterable keyspace semantics are not safe or honest claims for
+   this edge.
 11. **Conformance manifest ownership:** the command matrix in `redis-compat.md`, the test fixtures,
    the real Redis oracle, and the release-note supported-command table must be generated from or
    checked against the same versioned manifest. Hand-maintained duplicate command lists are release
@@ -279,11 +462,33 @@ optional fixture data under `crates/hydracache-redis-compat/tests/fixtures/comma
 
 **Tests & requirements.**
 - `redis_command_contract_has_no_supported_row_without_test`.
-- `ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata`.
+- `client_protocol_v3_registers_ttl_metadata_without_breaking_v2`.
+- `ttl_commands_require_protocol_v3_metadata_and_surface_expiry`.
 - `del_and_exists_return_redis_integer_counts`.
-- `mset_is_atomic_or_rejected_loud`.
+- `mset_is_atomic_and_duplicate_keys_use_last_value`.
 - `command_reply_advertises_only_supported_subset`.
+- `select_zero_is_supported_as_noop_for_single_database_contract`.
+- `select_nonzero_and_invalid_db_fail_loud`.
+- `resp_listener_select_zero_ok_and_nonzero_keeps_default_database`.
+- `info_returns_minimal_honest_facade_state`.
+- `info_section_argument_does_not_fabricate_redis_keyspace_state`.
+- `resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state`.
+- `type_reports_string_or_none_through_client_surface`.
+- `resp_listener_type_reports_string_and_none`.
+- `mainstream_redis_client_can_talk_to_the_facade` proves `INFO`/`TYPE` through redis-rs.
+- `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset` proves `INFO`/`TYPE`
+  through Python, Node, Go, and JVM clients.
+- `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`.
+- `resp_listener_admin_commands_are_disabled_before_mutation`.
 - `auth_hello_auth_and_noauth_errors_match_contract`.
+- `redis_auth_uses_hardened_credential_comparison_contract`.
+- `redis_auth_required_listener_rejects_data_commands_before_auth`.
+- `redis_auth_redacts_credentials_from_errors_logs_and_metrics`.
+- `redis_api_rediss_env_reuses_server_tls_material`.
+- `redis_resp_listener_accepts_rediss_auth_and_cache_commands`.
+- `redis_resp_tls_listener_rejects_plaintext_before_mutation`.
+- `redis_resp_tls_client_rejects_wrong_ca`.
+- `redis_resp_tls_keeps_wrong_auth_as_wrongpass`.
 - `redis_compat_conformance_manifest_is_the_single_source_of_truth`.
 - `resp2_hello_is_supported_and_resp3_is_rejected_or_downgraded_as_documented`.
 - `health_check_commands_are_classified_before_translation`.
@@ -307,7 +512,7 @@ pipeline so the codec choice is swappable.
 root `Cargo.toml` `[workspace].members`.
 
 **Codec decision (blueprint §"Existing Rust Building Blocks").** Production codec = **`redis-protocol`**
-(RESP2 now, RESP3 later — `Bytes`-based, streaming, Tokio codec, fuzzable) under a **HydraCache-owned
+(RESP2 and RESP3 — `Bytes`-based, streaming, Tokio codec, fuzzable) under a **HydraCache-owned
 Tokio listener**, so lifecycle/TLS/auth/metrics/backpressure/drain stay consistent with
 `hydracache-server`. `redcon` may be used only for a throwaway PoC; do **not** hand-write RESP parsing.
 Vet license/maintenance/RESP2+3/zero-copy before pinning; record the ADR (`docs/adr/…-resp-codec.md`).
@@ -337,58 +542,79 @@ RESP response ◄──(encode)── RespValue ◄── translate(ClientRespon
 ## W2. Command translator — the cache subset
 
 **Goal.** Translate the honest MVP subset into `ClientRequest` and back, executing through
-`ClientSurfaceState` so tenancy/limits/consistency hold.
+`ClientSurfaceState` so tenancy, limits, metrics, auth state, redaction, and protocol gates hold for
+the selected RESP endpoint.
 
 **MVP subset (blueprint §"MVP Command Subset").**
 - **Connection/compat (many clients issue these before user code):** `PING`, `ECHO`, `QUIT`, `HELLO`,
   `AUTH`, `CLIENT SETNAME`/`SETINFO`, `COMMAND` — minimal honest replies / no-ops where safe.
 - **Values:** `GET`→`Get`, `SET`→`Put`, `MGET`→`BatchGet`, `MSET`→`BatchPut`, `DEL`→`Invalidate`,
   `EXISTS`→`Get`-probe. Binary bulk strings ↔ HydraCache value bytes (opaque).
-- **TTL:** `SET EX/PX`, `EXPIRE`/`PEXPIRE`→`Put` ttl; `TTL`/`PTTL`→read metadata; `PERSIST`.
-- **Namespace:** `SELECT n` maps to a configured namespace only if the mapping is **explicit**;
-  otherwise one configured default namespace + key prefixes (never an implicit database model).
+- **TTL:** `SET EX/PX` plus `SETEX`/`PSETEX` aliases, `EXPIRE`/`PEXPIRE`→`Put` ttl; `TTL`/`PTTL`→read metadata; `PERSIST`.
+- **Namespace / logical DB:** the listener uses one configured HydraCache namespace as Redis DB 0.
+  `SELECT 0` is a supported no-op for Redis URL/client compatibility. Non-zero, negative, or
+  malformed DB indexes return a stable loud error and never switch namespace or keyspace.
 
-**Compatibility correction from W0.** The list above is the candidate subset, not an automatic support
-claim. W2 may mark a command supported only after W0 proves the target operation exists and the RESP
-reply matches Redis semantics:
-- `SET EX/PX`, `EXPIRE`, `PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` require real TTL application plus
-  remaining-TTL metadata. If the execution layer still drops `ttl_ms` or cannot expose remaining TTL,
-  these commands return a stable unsupported error in `0.63.0`.
+**Compatibility correction from W0.** The list above is the required support subset for the expanded
+release, not an automatic support claim. W2 may close a command only after W0 proves the target
+operation exists and the RESP reply matches Redis semantics:
+- `SET EX/PX`, `EXPIRE`, `PEXPIRE`, `PERSIST`, `TTL`, and `PTTL` require protocol v3 expiry
+  operations, real TTL application, and remaining-TTL metadata. The execution layer must stop dropping
+  `ttl_ms`, store expiry metadata, remove expired keys before reads/counts, and return Redis TTL
+  semantics with bounded oracle tolerance.
 - `DEL` returns an integer count of keys actually removed, not just `OK`.
 - `EXISTS` returns an integer count of currently present keys, including multi-key input if accepted.
 - `MGET` preserves request order and emits nil bulk entries for misses.
-- `MSET` is supported only if all entries are admitted before any mutation and the batch cannot
-  partially succeed. Otherwise `MSET` is unsupported-loud; do not map Redis `MSET` to a partial
-  HydraCache batch result.
+- `MSET` is supported only when all entries are admitted before any mutation and the batch cannot
+  partially succeed. Duplicate keys are applied in request order with last value winning. Do not map
+  Redis `MSET` to a partial HydraCache batch result.
 - `COMMAND` advertises only the commands this matrix marks supported; client bootstrap no-ops must
   never imply broader Redis compatibility.
+- `SELECT 0` returns `OK` without dispatching to the client surface. `SELECT 1` and invalid DB
+  indexes return stable RESP errors, and subsequent commands on the same connection still operate in
+  DB 0.
 - Startup no-ops (`CLIENT SETNAME`, `CLIENT SETINFO`, selected `HELLO` metadata) are accepted only
   when they are side-effect-free, bounded, and explicitly documented.
 - Health/readiness probes (`INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`, `CLIENT LIST`,
-  `CLIENT ID`) follow the W0 classification. If a minimal reply is returned, every field must be true
-  for HydraCache; otherwise the command is unsupported-loud or admin-disabled.
+  `CLIENT ID`) follow the W0 classification. `INFO` returns only true RESP-facade fields; `TYPE`
+  returns only `string`/`none` through the same `Get` path as cache reads; `ROLE`, `DBSIZE`, and
+  `SCAN` remain unsupported-loud.
 
 **Steps.**
 1. `RedisCommand → ClientRequest` (+ the reverse `ClientResponse → RespValue`), through
    `ClientSurfaceState` (tenancy/limits enforced; a value over `max_value_bytes` returns a loud RESP
    error, not a truncation).
 2. Auth: `AUTH`/`HELLO AUTH` maps to the client-surface identity (client-id/tenant); an unauthenticated
-   command on an auth-required listener returns `NOAUTH`.
+   command on an auth-required listener returns `NOAUTH`, invalid credentials return `WRONGPASS`, and
+   successful authentication is connection-local and completed before any cache command reaches
+   `ClientSurfaceState`.
 3. Honest replies for startup no-ops so real clients connect.
+4. Protocol v3 TTL operations: expiry metadata in request/response types, v3 negotiation/gating,
+   v2 compatibility tests, and client-surface storage of value plus optional expiry timestamp.
+5. Atomic batch apply for `MSET`: pre-validate batch size, per-value limits, tenant quota, and command
+   arity before mutating the store; return a Redis error without partial writes on any rejection.
 
 **Tests & requirements.** `crates/hydracache-redis-compat/tests/commands.rs`
 - `get_set_del_mget_mset_roundtrip_through_client_surface`.
-- `set_ex_and_ttl_map_to_put_ttl_and_metadata` (enabled only if W0 lands real TTL support).
-- `ttl_commands_are_unsupported_loud_until_metadata_gate_lands` (delete this only if TTL support lands
-  and the positive TTL tests replace it).
+- `client_protocol_v3_registers_ttl_metadata_without_breaking_v2`.
+- `set_ex_and_px_apply_expiry_through_client_surface`.
+- `setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`.
+- `expired_keys_are_absent_for_get_mget_exists_and_del`.
+- `ttl_pttl_use_bounded_tolerance_against_real_redis`.
 - `del_and_exists_return_redis_integer_counts`.
 - `mget_preserves_order_and_represents_misses_as_nil_bulk`.
-- `mset_is_atomic_or_rejected_loud`.
+- `mset_is_atomic_and_duplicate_keys_use_last_value`.
+- `mset_oversized_value_rejects_without_partial_mutation`.
 - `command_reply_advertises_only_supported_subset`.
+- `auth_hello_auth_and_noauth_errors_match_contract`.
+- `redis_auth_required_listener_rejects_data_commands_before_auth`.
+- `redis_auth_success_binds_connection_local_client_identity`.
 - `info_role_dbsize_type_scan_and_config_follow_contract_classification`.
 - `oversized_value_is_rejected_loud_not_truncated` (limits reuse, falsifiable).
 - `unauthenticated_command_returns_noauth_when_auth_required`.
-- `select_without_explicit_namespace_mapping_is_rejected_or_maps_to_default` (per config).
+- `select_zero_is_supported_as_noop_for_single_database_contract`.
+- `select_nonzero_and_invalid_db_fail_loud`.
+- `resp_listener_select_zero_ok_and_nonzero_keeps_default_database`.
 - Run: `cargo test -p hydracache-redis-compat --locked commands`.
 
 **Risk & rollback.** The load-bearing property is *no silent semantic drift* — reuse the client-surface
@@ -400,16 +626,19 @@ execution rather than re-implementing. Revert removes the translator.
 plain Redis clients get basic cache behavior and HydraCache-aware clients get tags/invalidation without
 leaving RESP.
 
-**Commands (blueprint §"HydraCache Extensions").** `HC.TAG key tag…` / `HC.SETTAGS`,
-`HC.INVALIDATE key`, `HC.INVALIDATE_TAG tag`, `HC.NAMESPACE name`, `HC.STATS`, `HC.DIAGNOSTICS` — mapped
-to existing dimensions/tag metadata, `Invalidate`, or the diagnostics read-model only where those
-native operations are proven. `HC.INVALIDATE_TAG` requires a tag-scoped
-invalidate op; if `ClientRequest` has only per-key `Invalidate`, either extend the request family
-(COMPAT-registered) **or** scope this command to the tag-invalidation path the cache already exposes —
-decide and record; do not fake a per-key loop as tag invalidation.
+**Commands (blueprint §"HydraCache Extensions").** `HC.TAG key tag...` / `HC.SETTAGS`,
+`HC.INVALIDATE key`, `HC.INVALIDATE_TAG tag`, `HC.NAMESPACE [name]`, `HC.STATS`, `HC.DIAGNOSTICS` —
+mapped to existing diagnostics, per-key `Invalidate`, or the RESP listener's edge-local tag metadata
+path. In 0.63 the tag path is deliberately **listener-local and in-memory**: `HC.TAG`/`HC.SETTAGS`
+attach non-empty UTF-8 tags only to existing live keys, and `HC.INVALIDATE_TAG` invalidates live tagged
+keys through `ClientSurfaceState` using `ClientRequest::Invalidate`. It is not a scan over the visible
+keyspace, not Redis Cluster, and not a persisted/global HydraCache tag index.
 
 **Tests & requirements.**
-- `hc_tag_then_invalidate_tag_evicts_the_tagged_keys` (falsifiable: untagged key survives).
+- `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`
+  (falsifiable: untagged key survives).
+- `hc_tag_missing_key_does_not_create_metadata_or_mutate`.
+- `hc_invalidate_tag_prunes_expired_keys_without_counting_them`.
 - `hc_stats_and_diagnostics_are_read_only`.
 - Run: `cargo test -p hydracache-redis-compat --locked`.
 
@@ -432,19 +661,33 @@ looping over per-key operations, or ignoring partial failures.
 2. **W3b per-key native commands.** `HC.INVALIDATE key` may ship if it maps exactly to
    `ClientRequest::Invalidate` through `ClientSurfaceState` and returns a RESP result whose count or
    status is documented. It is not allowed to bypass tenancy, rate limits, residency checks, or audit.
-3. **W3c namespace selection.** `HC.NAMESPACE name` may be a HydraCache-native alternative to Redis
-   `SELECT`, but only if `name` is present in explicit listener config and the command changes only
-   the connection-local namespace context. Unknown namespaces return a stable configuration error.
-4. **W3d tag/dimension mutation is candidate until proven.** `HC.TAG`, `HC.SETTAGS`, and any tag
-   attachment command are candidate commands until the implementation proves how tags/dimensions are
-   stored and mutated without rewriting the value incorrectly. If the only available protocol field is
-   `Put { dimensions }`, the command must define whether it replaces the value, rewrites metadata
-   only, or is unsupported. A metadata-only tag mutation must not require the client to resend value
-   bytes unless the command name and docs make that explicit.
-5. **W3e tag invalidation is the strictest gate.** `HC.INVALIDATE_TAG tag` ships only if there is a
-   real tag-scoped invalidation operation or a proven internal tag index/invalidation path with the
-   same semantics. A loop over currently visible keys is not acceptable: it can miss concurrent writes,
-   cross tenant boundaries, produce partial success, and pretend to be a single semantic operation.
+3. **W3c namespace reporting and same-namespace confirmation.** `HC.NAMESPACE` returns the listener
+   namespace, and `HC.NAMESPACE <same-name>` returns `OK`. Any other namespace fails loud. This is
+   intentionally separate from Redis `SELECT`; Redis `SELECT` stays limited to `SELECT 0` as a no-op.
+4. **W3d edge-local tag mutation.** `HC.TAG` and `HC.SETTAGS` mutate only the RESP listener's local
+   in-memory tag index. They first prove the key is live through `ClientSurfaceState`, preserve value
+   bytes and TTL by not rewriting the value, reject empty/non-UTF-8 tags, return `0` for missing keys,
+   and clean local metadata after successful `DEL`/`HC.INVALIDATE`.
+5. **W3e edge-local tag invalidation.** `HC.INVALIDATE_TAG tag` reads only keys previously tagged
+   through this listener, verifies live values with `BatchGet`, invalidates live matches through
+   `ClientRequest::Invalidate`, returns the live invalidation count, prunes stale expired/deleted
+   entries, and leaves untagged keys untouched. It is not a scan-and-loop over visible Redis keys.
+
+**Implemented value, complexity, and deferred global scope.** These rows record what 0.63 includes and
+what remains outside the release claim. The implementation is useful for HydraCache-aware RESP clients
+that route through one listener, while a persisted/core-wide tag index remains future work.
+
+| Command group | What it gives clients in 0.63 | Implementation complexity now | Deferred / not claimed |
+| --- | --- | --- | --- |
+| `HC.NAMESPACE [name]` | HydraCache-aware clients can inspect the configured listener namespace and assert they are connected to the expected namespace without abusing Redis `SELECT`. | Low for reporting/same-namespace confirmation because it does not change connection state. | Switching to arbitrary namespaces, namespace allowlists, and auth remapping remain out of scope. It must not become Redis multi-db by another name. |
+| `HC.TAG key tag...` | Adds one or more tags to an existing live key so a later extension command can invalidate a logical group. Duplicate tags are idempotent and return only newly added count. | Medium. Needs live-key lookup, tag normalization, local index maintenance, and cleanup after explicit key invalidation. | Tags are listener-local/in-memory, not persisted, not shared across listeners, and not visible to the core outside this RESP facade. |
+| `HC.SETTAGS key tag...` | Replaces the complete local tag set for an existing live key while preserving the value and TTL. Duplicate input tags collapse to one stored tag. | Medium-high. Requires replace semantics, stale reverse-index cleanup, missing-key handling, and value/TTL preservation. | No atomic cross-listener metadata transaction and no protocol-level `dimensions` mutation claim. |
+| `HC.INVALIDATE_TAG tag` | Invalidates live keys associated with a local tag without `SCAN pattern -> DEL`; untagged keys survive and stale expired/deleted entries are pruned. | High. Requires bounded local index lookup, live `BatchGet` verification, per-key invalidation through `ClientSurfaceState`, and partial-failure tests. | No Redis Cluster hash slots/topology, no global tag invalidation, and no persisted tag state after listener restart. |
+
+**Future native path.** A later core-wide tag release can replace the edge-local path only with an
+explicit compatibility entry. It must cover persisted/global tag metadata, tag index maintenance on
+all write/delete/expiry paths, per-tenant namespace scoping, bounded tag count and tag byte limits,
+atomic update semantics, redacted observability, and canary tests proving scan-and-loop behavior fails.
 
 **Compatibility rule.** Extending `hydracache-client-protocol` for W3 is not allowed as an incidental
 side effect of this edge release. If W3 requires a new public `ClientRequest` variant, the release must
@@ -465,36 +708,65 @@ helpers where they do not become public protocol, or keep the `HC.*` command uns
 **Additional tests & requirements.**
 - `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`.
 - `hc_diagnostics_are_read_only_during_drain`.
-- `hc_namespace_requires_explicit_mapping_and_is_connection_local`.
+- `hc_namespace_is_listener_scoped_not_redis_multidb`.
 - `hc_invalidate_key_goes_through_client_surface_limits_and_audit`.
-- `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`.
-- `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`.
-- `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys` (canary-style guard: a test-only fake
-  scan implementation must fail under concurrent tagged writes or partial visibility).
-- `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` (only enabled after the
-  native tag path exists).
-- `hc_cross_tenant_tag_invalidation_is_rejected`.
+- `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`.
+- `hc_tag_missing_key_does_not_create_metadata_or_mutate`.
+- `hc_invalidate_tag_prunes_expired_keys_without_counting_them`.
+- `client_matrix_runs_hydracache_tag_extension_scenario`.
+- `redis_oracle_hc_extensions_are_hydracache_only`.
 
-**W3 release decision.** It is acceptable for `0.63.0` to ship only W3a/W3b plus documented
-unsupported-loud tag commands. It is not acceptable to ship a fake `HC.INVALIDATE_TAG` because the
-feature name would imply a stronger atomic/scoped operation than the facade can prove.
+**W3 release decision.** `0.63.0` ships W3a/W3b plus the scoped W3c-W3e edge-local tag path. The
+claim is intentionally narrower than a native global tag system: no scan-and-loop, no cross-listener
+metadata, no Redis Cluster behavior, and no persisted tag index.
 
 ## W4. Unsupported-command matrix + guardrails
 
 **Goal.** Everything outside the subset fails **loud and stable**, never wrong-but-green.
+
+**Deferred Redis data-structure scope assessment.** The table below is part of the 0.63 contract,
+not a backlog hint. These commands are useful in Redis ecosystems, but adding them would move the
+release from a cache-subset RESP facade into Redis-compatible data-structure server territory. They
+therefore stay unsupported in 0.63 unless a later release adds native HydraCache protocol/client-surface
+operations, atomicity rules, limits, observability, and real Redis oracle coverage for the exact subset.
+
+| Area | Complexity | Potential upside | Why not included in 0.63 |
+| --- | --- | --- | --- |
+| Hashes: `HSET`, `HGET`, `HDEL`, `HMGET`, `HEXISTS`, `HLEN` | Medium-high | Helps session fields, small object maps, metadata blobs, and frameworks that store partial object state in Redis hashes. This is the most plausible future data-structure subset if implemented as native single-key map operations. | Requires atomic read-modify-write or native map updates through the HydraCache client surface, TTL behavior for the whole structure, Redis count/nil semantics, size limits, and concurrency tests. A facade-only blob/JSON implementation would be wrong under concurrent field updates. |
+| Sorted sets: `ZADD`, `ZRANGE`, `ZREM`, score/rank queries | High | Enables leaderboards, rate-limit buckets, delayed scheduling patterns, and priority/rank lookups used by Redis-heavy applications. | Needs ordered indexes by score/member, floating-point score compatibility, deterministic tie-breaking, range queries, atomic updates, memory accounting, and real Redis oracle tests. HydraCache currently exposes key/value cache operations, not per-key ordered index semantics. |
+| Lists: `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, blocking list ops | High | Covers queue-like workloads and simple producer/consumer patterns many Redis clients use. | List order, head/tail mutation, blocking operations, fairness, reconnect behavior, and consumer backpressure are outside the current cache-subset model. Shipping non-blocking-only or approximate queues would create wrong expectations for Redis clients. |
+| Streams: `XADD`, `XREAD`, consumer groups, pending entries | Very high | Would support event-log and stream-processing migration stories, including consumer-group based fanout. | Streams are an append log with IDs, consumer groups, pending entries, ack/reclaim behavior, trimming, and replay semantics. That conflicts with the 0.63 non-goal that HydraCache is not an event log; implementing it honestly would be a separate product-sized release. |
+| Lua / `EVAL` / script cache | Very high and security-sensitive | Some Redis applications rely on scripts for atomic multi-command workflows and server-side business logic. | Requires sandboxing, CPU/memory/time limits, deterministic execution, script cache semantics, command allowlists, auth isolation, and atomic execution across every command the script can call. It would bypass the simple command-by-command client-surface mapping that makes 0.63 safe. |
+| Transactions: `MULTI`, `EXEC`, `DISCARD`, `WATCH` | High | Helps clients that group Redis operations and expect Redis transaction error/queue semantics. | Requires connection-local command queues, Redis error ordering, atomic commit semantics, `WATCH` conflict detection, and cross-command reducer behavior. Current 0.63 commands are executed directly through `ClientSurfaceState`, one command at a time. |
+| Modules and Redis module commands | Product-sized / not planned | Would allow custom Redis commands/types from existing Redis module ecosystems. | Redis modules depend on a server-side ABI/API and custom data types. Supporting that would make HydraCache a Redis server clone, not a RESP cache-subset facade. This should remain a permanent non-goal unless the product direction changes explicitly. |
+| Pub/Sub: `PUBLISH`, `SUBSCRIBE`, pattern subscriptions | Medium-high | Could improve migration for cache-notification style users and simple fanout listeners. | General Redis pub/sub is broader than HydraCache invalidation. It needs subscription lifecycle, pattern matching, delivery/backpressure rules, connection-mode behavior, and reconnect semantics. 0.63 keeps any pub/sub-like behavior limited to native HydraCache invalidation surfaces, not a general message bus. |
+
+**Future path.** If this scope is ever expanded, hashes should be the first candidate because they can
+be bounded to one key and mapped to native single-key map operations. That future release must add the
+protocol operations first and then graduate a narrow hash subset from unsupported to supported. Sorted
+sets, lists, streams, Lua, transactions, modules, and general pub/sub stay out of 0.63 because they are
+either new data models, execution engines, or messaging systems rather than cache-subset RESP commands.
 
 **Steps.**
 1. A stable `ERR unsupported command '<CMD>'` for `HSET`/`ZADD`/lists/streams/`EVAL`/`MULTI`/`EXEC`/
    modules/`SUBSCRIBE` (unless invalidation-scoped)/`CLUSTER`/etc. A committed **matrix** doc lists
    supported vs unsupported.
 2. No `MOVED`/`ASK`; `CLUSTER *` → unsupported (authority stays raft+epoch, R-1).
-3. `FLUSHDB`/`FLUSHALL` → loud admin-disabled error **unless** explicitly enabled in config (dangerous;
-   off by default).
+   `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO`, `CLUSTER KEYSLOT`, and
+   `CLUSTER GETKEYSINSLOT` are intentionally not implemented, because returning fake slots or a fake
+   topology would make cluster-aware clients cache an invalid routing model.
+3. `CONFIG`, `FLUSHDB`, and `FLUSHALL` → loud admin-disabled error before dispatch. `CONFIG` must not
+   return fake Redis server configuration, and `FLUSHDB`/`FLUSHALL` must not remove keys in the
+   default release configuration. They remain off by default even though the parser recognizes them,
+   because destructive/admin operations need HydraCache-native authorization, scope, and audit.
 
 **Tests & requirements.**
 - `unsupported_commands_fail_loud_with_stable_error` (table-driven over the matrix).
+- `cluster_commands_decode_as_unsupported_standalone_contract`.
 - `cluster_and_moved_ask_are_never_emitted`.
-- `flushall_is_admin_disabled_by_default`.
+- `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`.
+- `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`.
+- `resp_listener_admin_commands_are_disabled_before_mutation`.
 - Run: `cargo test -p hydracache-redis-compat --locked`.
 
 **Risk & rollback.** Pure rejection surface; the matrix doc is the contract.
@@ -508,9 +780,9 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
    `0.62` `golden_vectors`): `.resp` byte corpus decoded to expected `RedisCommand`/`RespValue`.
 2. **Mainstream-client smoke (Docker/gated, skip-graceful):** run the `redis`/`redis-rs` client (as a
    *dev-dependency*, client role) against a live `hydracache-redis-compat` listener for
-   the W0-supported subset — proves an off-the-shelf client interoperates. TTL is included only if W0
-   lands the metadata gate; otherwise the smoke proves the supported non-TTL subset and the TTL
-   unsupported-loud behavior.
+   the W0-supported subset — proves an off-the-shelf client interoperates. The expanded smoke includes
+   `MSET`, `SET EX` or `SET PX`, expiry observation through `TTL`/`PTTL`, post-expiry absence, and an
+   auth-required connection path.
 3. **Fuzz/property:** `proptest` over arbitrary bytes → decoder returns a value or a loud `Err`, never
    panics/`unwrap` (R-3); truncated/oversized/garbage frames.
 
@@ -525,12 +797,31 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
   conformance manifest from W0 and executes the same scenario ids against HydraCache, real Redis
   oracle, and mainstream clients. Golden fixtures are keyed by manifest scenario id so a docs or
   translator change cannot leave stale fixtures behind.
+- **Targeted tests are not the final compatibility claim.** Fast code tests prove parser, translator,
+  listener, auth/TLS, TTL, `MSET`, `INFO`/`TYPE`, unsupported, and admin-disabled behavior in the
+  changed Rust modules. They do not by themselves prove that mainstream clients and real Redis oracle
+  behavior match across languages and Redis versions. The final `0.63.0` compatibility claim requires
+  the Docker/nightly matrix below before release notes can say the Redis client ecosystem is covered.
+  If the heavy matrix is not green, the release may still carry implemented code, but the release
+  status must say "targeted tests passed; ecosystem/oracle proof pending" rather than claiming broad
+  Redis compatibility.
+- **Heavy proof tiers and cost.**
+
+  | Gate | What it proves | Implementation or run complexity | Release meaning |
+  | --- | --- | --- | --- |
+  | Fast `hydracache-redis-compat` tests | RESP codec, command mapping, reducers, listener I/O, targeted auth/TLS/TTL/MSET/INFO/TYPE/admin-disabled behavior. | Low to run; PR-tier. | Required for every code change, but not enough for final external compatibility claims. |
+  | Docker/client matrix | Python, Node, Go, JVM, and Rust clients can bootstrap and execute the supported subset through normal Redis client APIs, including auth, `rediss://`, RESP3 where supported, TTL, `MSET`, `SELECT 0`, `INFO`, and `TYPE`. | Medium-high to run because it depends on Docker, language images/toolchains, host networking, TLS material, and skip/require env flags. | Required before saying "mainstream Redis clients work" in the release ledger. Missing optional local runtimes may skip only when Docker fallback is unavailable and the row is not marked mandatory. |
+  | Pinned real Redis oracle | Supported Redis-subset replies match pinned `redis-server` images after documented normalization; unsupported/admin-disabled/HC rows diverge only in the documented way. | Medium-high because it starts Docker Redis images, normalizes Redis version differences, and must avoid `latest`. | Required before saying HydraCache matches Redis behavior for the claimed subset. |
+  | Resource/reconnect/multi-node gates | Slowloris/oversized input, connection-close/retry, resource bounds, metric redaction, and real multi-daemon routing do not break the RESP facade. | High and environment-sensitive; nightly/pre-release rather than PR-tier. | Required before production release confidence; failures narrow or block operational claims, not parser support. |
 - **Fast client proof:** `redis-rs` remains the PR-tier smoke because it is already natural in the Rust
   workspace and can be a dev-dependency without adding a new language runtime to the fast gate.
 - **Nightly client matrix:** Docker-gated jobs should run at least one client from each ecosystem that
   matters for the adoption story: Python (`redis-py`), Node (`node-redis` or `ioredis`), Go
   (`go-redis`), and JVM (`Lettuce` or `Jedis`). Each client must connect without custom protocol
-  shims and run the same contract subset W0 marks supported.
+  shims and run the same contract subset W0 marks supported. Local client installations are allowed
+  for fast developer loops, but the release gate must also have a Docker fallback with pinned
+  language/client images so Python/Node/JVM rows remain reproducible on clean machines while the Go
+  row stays covered through the local Go toolchain.
 - **Real Redis oracle:** the same mainstream-client scenario suite must run against a real
   Docker-managed `redis-server` and against the HydraCache RESP facade. Redis Docker tags are pinned
   (no `latest`) and the tested versions are recorded in `docs/GATES.md`; the default target is one
@@ -544,8 +835,10 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
   handshake, and representative RESP3-only inputs. `HELLO 3` behavior must match W0 exactly: downgrade,
   unsupported-loud, or candidate. A connection must not silently switch into an untested mixed dialect.
 - **Startup handshake fixtures:** commit request/response fixtures for `PING`, `HELLO`, `AUTH`,
-  `CLIENT SETNAME`, `CLIENT SETINFO`, `COMMAND`, and `QUIT`. These are not "nice to have"; they are
-  what lets mainstream clients reach user commands.
+  `HELLO 2 AUTH`, `CLIENT SETNAME`, `CLIENT SETINFO`, `COMMAND`, and `QUIT`. These are not "nice to
+  have"; they are what lets mainstream clients reach user commands. Auth fixtures include `NOAUTH`
+  before auth, `WRONGPASS` for invalid credentials, `OK` for valid credentials, and no credential
+  material in errors/log probes.
 - **Pipelining:** add fixtures and live tests where a client sends multiple commands before reading
   any response. Responses must be emitted in request order, even when some commands fail.
 - **Partial frames:** split a RESP frame across multiple TCP reads and coalesce multiple frames into
@@ -559,10 +852,13 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
   during daemon drain; reconnects with the same client library; and verifies no response corruption,
   cross-connection namespace leak, or ambiguous partial mutation. Idempotency-key behavior must be
   documented for retryable writes.
-- **Multi-node HydraCache e2e:** a Docker/network-gated test runs the RESP listener against a real
-  multi-daemon HydraCache grid. The scenario writes through RESP, reads through RESP, restarts or
-  drains one grid node, and verifies the facade still goes through tenant/limit/consistency paths. This
-  proves the facade is an edge to the shipped client surface, not an in-process-only cache shortcut.
+- **Multi-node HydraCache e2e:** Docker/network-gated tests run the RESP listener against real
+  multi-daemon HydraCache processes. The positive scenario writes and reads through one selected RESP
+  endpoint before and after a member drain/restart. Negative sentinels document the Plan B boundary:
+  RESP writes on endpoint A are not visible on endpoint B, and Redis lock acquire can succeed
+  independently on two endpoints. This proves lifecycle and node-local scope, not distributed Redis
+  consistency. `INFO` must also expose `redis_scope:node-local` so the same posture is observable at
+  runtime.
 
 **Additional tests & requirements.**
 - `pipelined_requests_preserve_response_order`.
@@ -572,17 +868,20 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
 - `oversized_bulk_and_array_frames_are_rejected_before_allocation_spike`.
 - `slowloris_connection_is_timed_out_without_leaking_inflight_work`.
 - `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`.
+- `client_matrix_runs_auth_required_connection_scenario`.
 - `redis_compat_conformance_manifest_drives_client_and_oracle_scenarios`.
 - `redis_oracle_supported_subset_matches_real_redis`.
 - `redis_oracle_uses_pinned_redis_versions`.
 - `redis_oracle_del_exists_counts_match_real_redis`.
 - `redis_oracle_mget_nil_and_order_match_real_redis`.
-- `redis_oracle_mset_atomicity_matches_or_is_unsupported_loud`.
-- `redis_oracle_ttl_matches_only_when_ttl_gate_lands`.
+- `redis_oracle_mset_atomicity_matches_real_redis`.
+- `redis_oracle_ttl_matches_real_redis_with_bounded_tolerance`.
 - `redis_oracle_unsupported_divergence_is_documented`.
 - `redis_oracle_hc_extensions_are_hydracache_only`.
-- `hello2_is_supported_and_hello3_behavior_matches_contract`.
+- `hello2_and_hello3_are_supported_and_switch_dialect`.
 - `resp3_only_inputs_are_rejected_before_mutation`.
+- `auth_hello_auth_and_noauth_errors_match_contract`.
+- `redis_auth_redacts_credentials_from_errors_logs_and_metrics`.
 - `resp_surface_metrics_have_bounded_labels_and_no_key_or_value_leak`.
 - `connection_close_mid_command_does_not_corrupt_next_response`.
 - `connection_close_mid_pipeline_preserves_committed_response_boundaries`.
@@ -598,13 +897,14 @@ feature name would imply a stronger atomic/scoped operation than the facade can 
 the reread doc into the tracked backlog.
 
 **Steps.**
-1. Start/stop the RESP listener with the daemon; drain through `graceful_shutdown` (`0.56`); TLS via
-   `0.48` when configured; bounded-label metrics for the RESP surface (R-6).
+1. Start/stop the RESP listener with the daemon; drain through `graceful_shutdown` (`0.56`);
+   native `rediss://` via the existing server TLS certificate/key material when Redis TLS is enabled;
+   bounded-label metrics for the RESP surface (R-6).
 2. Docs: `docs/integrations/redis-compat.md` (supported matrix, `HC.*`, config, positioning) with the
    headline **"Redis protocol compatible for the cache subset, not Redis feature compatible."**
-3. COMPAT: the facade does **not** alter `hydracache-client-protocol`; note the RESP surface + its
-   version support (RESP2 now) in `docs/COMPAT.md` (R-4); any `HC.*` that extends `ClientRequest` is
-   registered.
+3. COMPAT: register both the RESP surface (RESP2 subset v1) and the additive
+   `hydracache-client-protocol` v3 TTL metadata/expiry extension in `docs/COMPAT.md` (R-4); any
+   `HC.*` that extends `ClientRequest` is registered separately.
 4. Backlog hygiene: **fold `CROSS_PROJECT_REREAD_IMPROVEMENT_PLAN.md` Redis-facade item into the
    tracked `CROSS_PROJECT_IDEA_BACKLOG.md`** (it is currently an untracked doc); mark this plan its
    home.
@@ -629,9 +929,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
 3. Shutdown uses the existing daemon drain/graceful-shutdown path. In-flight commands either finish
    inside the configured drain window or receive a stable connection-close/error behavior documented
    in `docs/integrations/redis-compat.md`.
-4. TLS behavior is explicit: either the RESP listener reuses the existing TLS/mTLS server config and
-   documents `rediss://`, or `rediss://` is marked unsupported for `0.63.0`. The release cannot leave
-   TLS ambiguous.
+4. TLS behavior is explicit: the RESP listener reuses the existing server TLS certificate/key material
+   for `rediss://`, rejects plaintext on a TLS listener before mutation, and documents which CA/client
+   settings are required. The release cannot leave TLS ambiguous.
 5. Auth-required listeners reject all mutating/data commands before successful `AUTH` or `HELLO AUTH`,
    while allowing only the pre-auth handshake commands W0 marks safe.
 
@@ -644,28 +944,31 @@ enough that a later contributor cannot accidentally widen or weaken it.
    JVM client, but examples must not claim commands outside the supported matrix. Every example is
    executable through a docs-smoke gate; examples that require Docker, a language runtime, TLS, auth,
    or `HC.*` extensions carry the exact gate label that proves them.
-4. The doc explains namespace behavior: default namespace, optional explicit `SELECT` mapping, and
-   `HC.NAMESPACE` if shipped.
-5. The doc explains TTL honestly: supported with metadata proof, or unsupported-loud with the exact
-   error. There must be no stale mention of `TTL` in happy-path examples if W0 keeps TTL candidate.
+4. The doc explains namespace behavior: one configured HydraCache namespace exposed as Redis DB 0,
+   `SELECT 0` as a no-op, non-zero/invalid DB indexes as loud errors, and `HC.NAMESPACE` only if a
+   future candidate gate ships it.
+5. The doc explains TTL honestly as supported through protocol v3 metadata: `SET EX/PX` applies
+   expiry, `EXPIRE`/`PEXPIRE` mutate expiry only when the key exists, `PERSIST` clears expiry, and
+   `TTL`/`PTTL` return Redis `-2`/`-1`/positive remaining-time semantics with bounded oracle
+   tolerance.
 6. The doc explains `HC.*` status command by command, especially whether tag commands are supported,
    candidate, or unsupported-loud.
 7. The doc has a migration-warning section for Redis features HydraCache intentionally does not
    provide: hashes, sorted sets, lists, streams, Lua, transactions, modules, Redis Cluster, async
    replication, and general Pub/Sub.
 8. The doc includes the oracle-normalization rules from W0: exact matches, normalized errors,
-   TTL tolerances if shipped, and documented divergence for unsupported commands.
+   bounded TTL tolerances, and documented divergence for unsupported commands.
 9. The doc includes the supported `redis-server` oracle versions used by the release gate and the
    policy for updating those pinned versions.
 
 **W6c compatibility register.**
 1. `docs/COMPAT.md` gets a new artifact row for the RESP edge surface, for example
    `HydraCache Redis RESP edge surface | RESP2 subset v1`.
-2. The row records that RESP2 is the supported wire dialect for `0.63.0`; RESP3 is future/candidate.
-3. The row records that the stable `hydracache-client-protocol` remains version `2` unless W3 forces
-   an explicit re-scope. If a public protocol variant is added, W6 must update the protocol row and the
-   release theme before merge.
-4. The row names the failure mode: unsupported commands, unknown RESP3-only frames, oversized frames,
+2. The row records that RESP2 and RESP3 are the supported wire dialects for `0.63.0`.
+3. The register updates the existing `hydracache-client-protocol` artifact from version `2` to
+   version `3` with additive TTL metadata/expiry request and response shapes. W6 also records that v2
+   clients remain accepted and do not receive v3-only responses unless they negotiate protocol v3.
+4. The row names the failure mode: unsupported commands, unsupported RESP3 aggregate command frames, oversized frames,
    unauthenticated commands, wrong tenant scope, and malformed/truncated frames fail loud before
    mutation.
 5. If `HC.*` commands ship, the row names their compatibility version and says whether they are edge
@@ -695,7 +998,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
 1. RESP metrics use bounded labels only: command family/status/protocol version/auth state, never key,
    value, raw client name, request id, tenant-provided tag, or arbitrary error text.
 2. Errors and logs redact credentials from `AUTH`, `HELLO AUTH`, connection strings, and client
-   library debug metadata.
+   library debug metadata. Redis `AUTH` password checks use hardened comparison rather than
+   prefix-dependent byte equality, and the fast tier pins that behavior with
+   `redis_auth_uses_hardened_credential_comparison_contract`.
 3. Audit events exist for auth failures, admin-disabled commands, `HC.*` mutating commands, and
    dangerous command attempts (`FLUSHDB`, `FLUSHALL`, `CONFIG`, `MODULE`, `EVAL`).
 4. Diagnostics commands are tenant-scoped and read-only. Cross-tenant data leakage is a release
@@ -709,8 +1014,9 @@ enough that a later contributor cannot accidentally widen or weaken it.
 2. `docs/plans/INDEX.md`, `docs/plans/releases.toml`, this plan header, and the eventual release note
    `docs/releases/0.63.0.md` are flipped together. No manifest points at a claim that docs/gates do
    not prove.
-3. If TTL or tag invalidation remain candidate/unsupported, the release note says that plainly under
-   "Not shipped in 0.63.0" so the absence is intentional, not a hidden gap.
+3. The release note describes `HC.INVALIDATE_TAG` as an edge-local RESP listener extension and lists
+   global/persisted/core-wide tag metadata under "Not shipped in 0.63.0". TTL must not be listed there
+   because it is mandatory scope for the expanded release.
 4. The release note includes the exact supported command list and the exact unsupported classes.
 5. Any follow-up work discovered by W0 becomes either a technical-debt entry or a future plan row with
    owner, gate, and reason, not an orphan TODO inside code comments.
@@ -764,29 +1070,348 @@ HydraCache does and does not implement.
 | --- | --- | --- | --- |
 | semantic command contract (W0) | `docs/integrations/redis-compat.md` + contract fixtures | `redis_command_contract_has_no_supported_row_without_test`, `command_reply_advertises_only_supported_subset`, `oracle_normalization_rules_are_declared_for_every_supported_command` | PR |
 | conformance manifest (W0/W5/W6) | `docs/integrations/redis_compat_conformance.json` or `.yaml` | `redis_compat_conformance_manifest_is_the_single_source_of_truth`, `redis_compat_conformance_manifest_drives_client_and_oracle_scenarios`, `redis_compat_conformance_manifest_is_referenced_by_docs_tests_and_oracle` | PR |
-| TTL support decision (W0/W2) | client surface + docs matrix | `ttl_commands_are_candidate_until_client_surface_exposes_ttl_metadata`, `ttl_commands_are_unsupported_loud_until_metadata_gate_lands` or the positive TTL metadata tests | PR |
-| RESP2/RESP3 negotiation (W0/W1/W2/W5) | `hydracache-redis-compat` + conformance manifest | `resp2_hello_is_supported_and_resp3_is_rejected_or_downgraded_as_documented`, `resp2_frames_are_accepted_and_resp3_only_frames_fail_loud_before_mutation`, `hello2_is_supported_and_hello3_behavior_matches_contract`, `resp3_only_inputs_are_rejected_before_mutation` | PR |
+| client protocol v3 TTL metadata (W0/W2/W6) | `hydracache-client-protocol` + `docs/COMPAT.md` | `client_protocol_v3_registers_ttl_metadata_without_breaking_v2`, `protocol_v2_clients_do_not_receive_v3_ttl_shapes`, `compat_register_mentions_client_protocol_v3_ttl_extension` | PR |
+| client-surface expiry semantics (W2) | `hydracache-client-transport-axum` | `set_ex_and_px_apply_expiry_through_client_surface`, `expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`, `expired_keys_are_absent_for_get_mget_exists_and_del` | PR |
+| RESP2/RESP3 negotiation (W0/W1/W2/W5) | `hydracache-redis-compat` + conformance manifest | `hello2_and_hello3_are_supported_and_switch_dialect`, `resp3_commands_roundtrip_supported_cache_subset`, `resp3_unsupported_aggregate_inputs_fail_before_mutation`, `client_matrix_runs_resp3_negotiation_scenario` | PR |
 | `RedisCommand` + RESP codec (W1) | `hydracache-redis-compat` | `resp_frame_roundtrip_matches_redis_protocol` | PR |
 | `RedisApiConfig` + validation (W1) | `hydracache-server/src/config.rs` | `redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud` | PR |
-| subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_or_rejected_loud`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_*_namespace` | PR |
-| health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification` | PR |
+| Redis auth and native TLS (W0/W1/W2/W5/W6) | `hydracache-redis-compat` + `hydracache-server` config/docs + raw TLS listener | `auth_hello_auth_and_noauth_errors_match_contract`, `redis_auth_uses_hardened_credential_comparison_contract`, `redis_auth_required_listener_rejects_data_commands_before_auth`, `redis_auth_success_binds_connection_local_client_identity`, `redis_auth_redacts_credentials_from_errors_logs_and_metrics`, `redis_api_rediss_env_reuses_server_tls_material`, `redis_resp_listener_accepts_rediss_auth_and_cache_commands`, `redis_resp_tls_listener_rejects_plaintext_before_mutation`, `redis_resp_tls_client_rejects_wrong_ca`, `redis_resp_tls_keeps_wrong_auth_as_wrongpass` | PR |
+| subset translator (W2) | `hydracache-redis-compat` | `get_set_del_mget_mset_roundtrip_through_client_surface`, `set_ex_and_ttl_map_to_protocol_v3_metadata`, `del_and_exists_return_redis_integer_counts`, `mget_preserves_order_and_represents_misses_as_nil_bulk`, `mset_is_atomic_and_duplicate_keys_use_last_value`, `mset_oversized_value_rejects_without_partial_mutation`, `oversized_value_is_rejected_loud_not_truncated`, `unauthenticated_command_returns_noauth_when_auth_required`, `select_zero_is_supported_as_noop_for_single_database_contract`, `select_nonzero_and_invalid_db_fail_loud`, `resp_listener_select_zero_ok_and_nonzero_keeps_default_database` | PR |
+| health/readiness command classification (W0/W2) | conformance manifest + translator/unsupported matrix | `health_check_commands_are_classified_before_translation`, `info_role_dbsize_type_scan_and_config_follow_contract_classification`, `info_returns_minimal_honest_facade_state`, `info_section_argument_does_not_fabricate_redis_keyspace_state`, `resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state`, `type_reports_string_or_none_through_client_surface`, `resp_listener_type_reports_string_and_none`, `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `redis_oracle_supported_subset_matches_real_redis` for `TYPE` | PR + Docker-gated / nightly |
 | `HC.*` read-only/per-key extensions (W3a/W3b) | `hydracache-redis-compat` | `hc_stats_and_diagnostics_are_tenant_scoped_and_redacted`, `hc_diagnostics_are_read_only_during_drain`, `hc_invalidate_key_goes_through_client_surface_limits_and_audit` | PR |
-| `HC.*` tag/dimension commands (W3d/W3e) | native tag path or unsupported matrix | `hc_tag_commands_are_unsupported_until_native_metadata_path_exists`, `hc_invalidate_tag_is_unsupported_without_native_tag_invalidation_path`, `hc_invalidate_tag_does_not_scan_and_loop_over_visible_keys`, `hc_tag_then_invalidate_tag_evicts_tagged_keys_and_preserves_untagged_keys` if enabled | PR / candidate |
-| unsupported matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_and_moved_ask_are_never_emitted`, `flushall_is_admin_disabled_by_default` | PR |
+| `HC.*` tag/dimension commands (W3c/W3d/W3e) | RESP-listener-local tag index + `ClientSurfaceState` invalidation path | `hc_namespace_is_listener_scoped_not_redis_multidb`, `hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface`, `hc_tag_missing_key_does_not_create_metadata_or_mutate`, `hc_invalidate_tag_prunes_expired_keys_without_counting_them`, `client_matrix_runs_hydracache_tag_extension_scenario`, `redis_oracle_hc_extensions_are_hydracache_only` | PR + Docker-gated / nightly |
+| unsupported/admin-disabled matrix (W4) | `hydracache-redis-compat` | `unsupported_commands_fail_loud_with_stable_error`, `cluster_commands_decode_as_unsupported_standalone_contract`, `cluster_and_moved_ask_are_never_emitted`, `cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects`, `admin_commands_are_disabled_by_default_without_config_or_flush_mutation`, `resp_listener_admin_commands_are_disabled_before_mutation` | PR |
 | golden + fuzz + frame boundaries (W5) | committed corpus + proptest | `golden_resp_fixtures_decode_to_expected`, `resp_decoder_never_panics_on_arbitrary_bytes`, `partial_resp_frames_decode_like_complete_frames`, `multiple_resp_frames_in_one_read_are_all_processed` | PR |
 | pipelining/backpressure/resource behavior (W5) | RESP listener | `pipelined_requests_preserve_response_order`, `pipelined_mixed_success_and_error_responses_stay_ordered`, `oversized_bulk_and_array_frames_are_rejected_before_allocation_spike`, `slowloris_connection_is_timed_out_without_leaking_inflight_work`, `resp_surface_metrics_have_bounded_labels_and_no_key_or_value_leak` | PR + gated |
-| mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset` | PR + Docker-gated / nightly |
-| real Redis oracle (W5) | pinned Docker `redis-server` versions + same client scenario suite against Redis and HydraCache | `redis_oracle_supported_subset_matches_real_redis`, `redis_oracle_uses_pinned_redis_versions`, `redis_oracle_del_exists_counts_match_real_redis`, `redis_oracle_mget_nil_and_order_match_real_redis`, `redis_oracle_mset_atomicity_matches_or_is_unsupported_loud`, `redis_oracle_ttl_matches_only_when_ttl_gate_lands`, `redis_oracle_unsupported_divergence_is_documented`, `redis_oracle_hc_extensions_are_hydracache_only` | Docker-gated / nightly |
+| mainstream client smoke (W5) | dev-dep `redis` client + Docker language clients | `mainstream_redis_client_can_talk_to_the_facade`, `nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset`, `client_matrix_runs_mset_and_ttl_commands`, `client_matrix_runs_resp3_negotiation_scenario`, `client_matrix_runs_auth_required_connection_scenario`, `client_matrix_runs_rediss_required_connection_scenario` | PR + Docker-gated / nightly |
+| real Redis oracle (W5) | pinned Docker `redis-server` versions + same client scenario suite against Redis and HydraCache | `redis_oracle_supported_subset_matches_real_redis`, `redis_oracle_uses_pinned_redis_versions`, `redis_oracle_del_exists_counts_match_real_redis`, `redis_oracle_mget_nil_and_order_match_real_redis`, `redis_oracle_mset_atomicity_matches_real_redis`, `redis_oracle_ttl_matches_real_redis_with_bounded_tolerance`, `redis_oracle_unsupported_divergence_is_documented`, `redis_oracle_hc_extensions_are_hydracache_only` | Docker-gated / nightly |
 | reconnect/failure semantics (W5) | RESP listener live tests | `connection_close_mid_command_does_not_corrupt_next_response`, `connection_close_mid_pipeline_preserves_committed_response_boundaries`, `reconnect_and_retry_does_not_leak_connection_local_namespace`, `server_drain_during_pipeline_has_documented_completion_or_close_behavior` | Docker-gated / nightly |
-| multi-node RESP e2e (W5) | real multi-daemon HydraCache grid + RESP listener | `multinode_resp_facade_roundtrip_survives_node_restart_or_drain` | network-gated / nightly |
+| multi-node RESP e2e (W5) | real multi-daemon HydraCache processes + RESP listener | `multinode_resp_facade_roundtrip_survives_node_restart_or_drain`, `multinode_resp_facade_documents_node_local_state`, `multinode_resp_lock_subset_is_single_endpoint_only` | network-gated / nightly |
 | daemon RESP lifecycle (W6) | `hydracache-server` | `daemon_serves_resp_listener_only_when_enabled_and_drains_gracefully` | PR |
 | executable docs (W6) | `docs/integrations/redis-compat.md` examples | `redis_compat_docs_examples_are_executable_or_gated_with_labels` | PR + Docker-gated |
-| release ledger/docs/gates (W6) | `COMPAT.md` / `GATES.md` / `TESTING.md` / release notes | `redis_compat_docs_matrix_has_test_for_every_supported_command`, `redis_compat_translator_has_no_command_missing_from_docs_matrix`, `compat_register_mentions_resp2_subset_and_failure_modes`, `gates_include_fast_contract_and_docker_client_matrix_rows`, `testing_docs_explain_how_to_add_a_resp_command`, `redis_oracle_versions_are_pinned_and_documented`, `oracle_normalization_rules_are_documented_and_checked`, `release_note_lists_supported_and_not_shipped_commands` | PR |
+| release ledger/docs/gates (W6) | `COMPAT.md` / `GATES.md` / `TESTING.md` / release notes | `redis_compat_docs_matrix_has_test_for_every_supported_command`, `redis_compat_translator_has_no_command_missing_from_docs_matrix`, `redis_compat_deployment_scope_rows_require_multinode_sentinels`, `compat_register_mentions_resp2_subset_and_failure_modes`, `gates_include_fast_contract_and_docker_client_matrix_rows`, `testing_docs_explain_how_to_add_a_resp_command`, `redis_oracle_versions_are_pinned_and_documented`, `oracle_normalization_rules_are_documented_and_checked`, `release_note_lists_supported_and_not_shipped_commands` | PR |
 | config/operator packaging and rollback docs (W6) | config examples / operator docs / production guide | `redis_api_config_examples_keep_listener_disabled_by_default`, `redis_api_operator_packaging_does_not_expose_port_by_default`, `redis_api_rollout_and_rollback_playbook_names_metrics_and_triggers` | PR |
 | security/observability docs and behavior (W6) | listener logs/metrics/docs | `resp_metrics_do_not_include_unbounded_labels`, `auth_and_connection_logs_redact_credentials`, `redis_api_tls_mode_is_explicitly_documented` | PR |
 
 **Coverage rule (DoD):** no new command/type lands without a row; PR-tier deterministic and in
 `cargo xtask verify`; Docker-gated client smoke is env-gated skip-graceful.
+
+## Redis Lock Migration Scope (integrated into 0.63)
+
+This section absorbs the former Redis lock compatibility follow-up into `0.63.0`. The release now
+claims the narrow single-endpoint lock subset only when the protocol v4 client-surface operations,
+RESP translator, reviewed lock-script allowlist, conformance manifest, docs, and gated client/oracle
+rows are in lockstep. The claim is intentionally smaller than Redis-the-product: no Redis Cluster, no
+Redlock quorum, no Redisson full-lock/watchdog/pubsub surface, and no general Lua runtime.
+
+### Goal And Non-Goals
+
+**Goal.** Support the narrow Redis lock subset used by common libraries for acquire, safe release, and
+safe TTL extension:
+
+- `SET lock_key token NX PX ttl_ms` and `SET lock_key token NX EX ttl_seconds`.
+- Existing-key acquire failure returns Redis nil/null, not an error.
+- Token-safe release deletes only if the stored value still equals the caller's token.
+- Token-safe extension updates expiry only if the stored value still equals the caller's token.
+- TTL expiry makes an expired lock immediately acquirable.
+- Behavior is proven through real Redis client libraries, not only raw command tests.
+
+**Non-goals for this lock subset.**
+
+- No Redis Cluster lock routing, hash slots, `MOVED`, `ASK`, or Redlock quorum semantics.
+- No general Lua runtime. `EVAL`/`EVALSHA`, if added, are an allowlisted lock-script compatibility shim.
+- No Redis transactions (`MULTI`/`EXEC`/`WATCH`) and no general scriptable command execution.
+- No `SET GET`, `SET KEEPTTL`, `SET EXAT`, or `SET PXAT` unless each gets its own supported contract.
+- No full Redisson claim unless the real Redisson command trace is implemented. Standard Redisson locks
+  can require hashes, Lua, pub/sub, watchdog renewal, and unlock messages, which is larger than a
+  single-string lock subset.
+- No claim that Redis-compatible locks are fencing locks or CP locks. HydraCache native fenced-lock APIs
+  remain the correctness path for systems that require fencing tokens.
+
+### Compatibility Tiers
+
+| Tier | Target | 0.63 claim | Required commands/scripts | Status |
+| --- | --- | --- | --- | --- |
+| L0 | Raw Redis lock idiom | `SET k token NX PX/EX ttl` works like Redis for single-key string locks | `SET NX PX/EX`, `PTTL`, expiry, nil-on-contention | In 0.63 scope |
+| L1 | redis-py `Lock`-style clients | Acquire, release, and extend/reacquire work against HydraCache through the library API | L0 plus pinned redis-py token-safe Lua release/extend shim | In 0.63 scope |
+| L2 | Node `redlock` single-resource clients | Single-endpoint acquire/release/extend work; no quorum claim | Pinned `redlock@5.0.0-beta.2` single-resource Lua acquire/extend/release scripts | In 0.63 scope |
+| L3 | Other Go/JVM lock libraries | Only after the exact library script trace is reviewed and allowlisted | Library-specific scripts such as `bsm/redislock` or Redisson are larger than L0/L2 | Documented out of scope for 0.63 lock claim |
+| L4 | Redisson full lock | Not claimed | Hashes + Lua + pub/sub + watchdog behavior | Unsupported/fail-loud by default |
+
+### Contract Changes Required
+
+1. Promote only the relevant part of the current conformance rows.
+   - `SET NX PX/EX` moves out of the unsupported `SET NX/XX/GET/KEEPTTL` row and becomes `supported`.
+   - `SET XX`, `SET GET`, and `SET KEEPTTL` remain `unsupported` unless each receives a supported
+     contract and tests.
+   - `SET EXAT`/`PXAT` remain in their absolute-expiry candidate row unless the release also implements
+     server-clock, past-timestamp, overflow, TTL-tolerance, and oracle/client coverage for them.
+2. Add explicit lock rows to `docs/integrations/redis_compat_conformance.json`:
+   - `SET NX PX/EX` -> `supported`, oracle `ttl_tolerance`.
+   - `EVAL/EVALSHA lock-release script` -> `supported_with_caveat`, oracle `exact`.
+   - `EVAL/EVALSHA lock-extend script` -> `supported_with_caveat`, oracle `ttl_tolerance`.
+   - `SCRIPT LOAD/EXISTS` for known lock scripts -> `supported_with_caveat`, oracle `normalized_metadata`.
+   - General `EVAL`, unknown scripts, multi-key scripts, and unsupported script commands -> `unsupported`.
+3. Update `docs/integrations/redis-compat.md` and the `0.63.0` release note.
+   - Remove `SET NX PX` from "Not Shipped" once all lock gates pass.
+   - Add a "Redis lock-compatible subset" section stating single-endpoint scope, no cluster/quorum, no
+     full Lua, and no Redisson full-lock claim unless separately proven.
+4. Update `COMMAND` metadata so it does not over-advertise general Lua. If script shims are supported,
+   metadata must explain the allowlist caveat through docs and tests.
+
+### Implementation Plan
+
+**L1. Add atomic conditional mutation to the client surface.**
+
+The RESP translator must never implement lock acquire as `GET` followed by `SET`. The conditional write
+must be one atomic client-surface operation:
+
+- Add an additive client-protocol operation such as
+  `ConditionalPut { ns, key, value, condition: IfAbsent | IfPresentValue(Vec<u8>), ttl_ms }`.
+- Add a result shape such as `ConditionalStored { stored: bool }`, where `false` maps to Redis null for
+  `SET NX`.
+- Register these lock operations as `hydracache-client-protocol` v4. Protocol v3 remains the
+  `0.63.0` TTL-only extension; v2/v3 clients must be rejected from v4 lock shapes before mutation with
+  explicit incompatible-version tests.
+- Implement the operation in `ClientSurfaceState` under the store lock, using the same expiry cleanup
+  path as `GET`/`EXPIRE` so expired locks are absent before evaluating `NX`.
+- Reuse existing tenant limits, max value bytes, max key bytes, auth identity, idempotency/deadline,
+  metrics, and audit behavior. Lock token/key/value bytes must not appear in logs, metrics, or
+  diagnostics.
+
+**L2. Add token-safe release and extension primitives.**
+
+Common lock libraries release and extend using Lua because `DEL key` is unsafe. HydraCache needs native
+atomic equivalents:
+
+- `CompareValueAndInvalidate { ns, key, expected_value }` -> returns an applied count.
+- `CompareValueAndExpire { ns, key, expected_value, ttl_ms, mode }` -> returns an applied count.
+  `mode=Replace` sets the remaining TTL to `ttl_ms`; `mode=ReplaceIfExpiring` sets the TTL only
+  when the live entry already has an expiry; `mode=AddToRemaining` adds `ttl_ms` to the current
+  remaining TTL. The latter two modes are required for redis-py `Lock.extend`, whose script returns
+  `0` for missing/persistent keys and whose default `replace_ttl=False` adds the requested extension
+  to the existing remaining TTL rather than replacing it.
+- Both operations first treat expired entries as missing.
+- Wrong token returns `0` and leaves the key untouched.
+- Missing or expired key returns `0`.
+- Matching token returns `1`; release removes the key, extension updates TTL according to the declared
+  expiry mode. redis-py `replace_ttl=False` must preserve the current remaining TTL and add the
+  requested extension under the same store lock; replacing it with only the requested extension is a
+  safety bug because it can make a live owner lose the lock earlier than the client library believes.
+- redis-py extension on a matching but persistent key returns `0` and leaves the key persistent,
+  matching the script's `PTTL < 0` branch. Simple token-safe `PEXPIRE` and pinned Node redlock
+  replacement scripts keep replacement semantics because their scripts do not require an existing TTL.
+- These operations must be single-store-lock mutations in `ClientSurfaceState` and versioned in the
+  client protocol if exposed beyond the in-process RESP facade.
+
+**L3. Extend Redis `SET` option parsing.**
+
+Replace `parse_set_ttl_ms` with a structured parser:
+
+- Accept Redis-compatible option order for the supported subset: `NX` plus exactly one relative TTL
+  (`EX seconds` or `PX milliseconds`).
+- Reject duplicate options, missing TTL values, non-integer TTL, zero/negative TTL, overflow, `XX`,
+  `GET`, `KEEPTTL`, `EXAT`, `PXAT`, and unknown options with Redis-shaped errors.
+- Preserve current bare `SET` and `SET EX/PX` behavior.
+- Map successful `SET NX PX/EX` to `ConditionalPut IfAbsent`.
+- Map contention (`stored=false`) to Redis null (`$-1` in RESP2, `_` in RESP3).
+- Keep `SETEX`/`PSETEX` on the existing unconditional TTL path.
+
+**L4. Add lock-script compatibility shim.**
+
+Do not embed a general Lua VM in this release. Implement an allowlisted script shim:
+
+- Parse `EVAL script numkeys key [arg...]`, `EVALSHA sha numkeys key [arg...]`, `SCRIPT LOAD script`,
+  and `SCRIPT EXISTS sha [sha...]`.
+- Normalize known lock scripts by pinned client-library version, exact SHA1, and a reviewed conservative
+  canonical form. The reviewed 0.63 lock-library surface is `redis-py==5.2.1`, Node
+  `redis@4.7.0`, and `redlock@5.0.0-beta.2`. A client-library bump that changes a script body,
+  argument order, or command trace is a reviewed compatibility change and must update the manifest,
+  docs, oracle rows, exact SHA tests, and client matrix together. Whitespace-insensitive
+  canonicalization is only a post-review convenience, not a promise that arbitrary equivalent Lua will
+  be accepted.
+- Cover `sha1_hex` with independent known-answer tests (`""`, `"abc"`, and Redis' `return 'loaded'`
+  script SHA) and freeze every reviewed lock-script SHA in fast tests so `known_lock_script_sha` is not
+  merely self-consistent.
+- Supported release script shapes:
+  - Release:
+    `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end`
+    -> `CompareValueAndInvalidate`.
+  - redis-py release:
+    exact redis-py 5.2.1 `Lock.release` script, SHA
+    `c3f8721cbb97f72bc19e972846bd7aaf91901658` -> `CompareValueAndInvalidate`.
+  - Extend:
+    `if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("pexpire", KEYS[1], ARGV[2]) else return 0 end`
+    -> `CompareValueAndExpire mode=Replace`.
+  - redis-py extend:
+    reviewed pinned redis-py `Lock` script reads `PTTL`, returns `0` when the key is missing or
+    persistent, uses `ARGV[3] == '0'` for additive extension, and uses replacement only for
+    `replace_ttl=True`. This maps to `CompareValueAndExpire mode=AddToRemaining` for `ARGV[3]='0'`
+    and `mode=ReplaceIfExpiring` for `ARGV[3]='1'`; exact redis-py 5.2.1 SHA is
+    `a4e8783852e6b949f9ef3a97212805108459a890`.
+  - redis-py reacquire:
+    exact redis-py 5.2.1 `Lock.reacquire` script, SHA
+    `1cac51482acf5858da00f6d685d68f886cd6b6b2` -> `CompareValueAndExpire mode=Replace`.
+  - Optional `expire` variant if a selected client uses seconds rather than milliseconds.
+- Reject unknown scripts, multi-key scripts, scripts that call unsupported Redis commands, invalid
+  `numkeys`, wrong arity, invalid redis-py `replace_ttl` flags, and non-string arguments before
+  mutation. Known script shims must use strict arity so extra arguments are not silently ignored.
+- Return Redis-compatible integer results for known scripts and Redis-shaped errors for unsupported
+  script shapes.
+- Cache only allowlisted `SCRIPT LOAD` SHA metadata per listener/process; do not claim a general Redis
+  script cache.
+
+**L5. Client-library compatibility analysis.**
+
+Before choosing exact client matrix rows, inspect real command traces for each target library:
+
+- `redis-py Lock`: expected to use `SET NX PX` for acquire and Lua scripts for release/extend.
+- Node redlock-style library: `redlock@5.0.0-beta.2` uses Lua acquire/extend/release scripts even
+  for a single resource, so those exact script fingerprints must be reviewed and pinned.
+- Go: `go-redis/v9` remains in the mainstream client matrix. A Go lock-library claim requires a
+  separate reviewed script trace; for example, `bsm/redislock` uses `MSETNX`, `GETRANGE`, `MGET`,
+  and `redis.status_reply`, which is larger than the L0/L2 shim.
+- JVM:
+  - Direct Jedis/Lettuce examples can stay within L0/L1.
+  - Redisson compatibility requires a command trace first. If it needs hashes/pubsub/watchdog semantics,
+    either add those rows explicitly or document Redisson full-lock as out of scope for the follow-up.
+
+### Test Plan
+
+**Fast translator and reducer tests (`hydracache-redis-compat`).**
+
+- `set_nx_px_acquires_missing_key_and_returns_ok`.
+- `set_nx_px_existing_key_returns_null_without_mutation`.
+- `set_nx_ex_ttl_uses_seconds_and_expires`.
+- `set_nx_rejects_missing_or_invalid_ttl`.
+- `set_nx_rejects_get_keepttl_exat_pxat_and_xx_until_supported`.
+- `set_nx_contention_uses_resp2_null_and_resp3_null`.
+- `eval_known_unlock_script_deletes_only_matching_token`.
+- `eval_known_unlock_script_wrong_token_returns_zero_without_mutation`.
+- `sha1_hex_matches_known_answer_vectors`.
+- `lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`.
+- `eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted`.
+- `eval_known_extend_script_updates_ttl_only_for_matching_token`.
+- `eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys`.
+- `eval_unlock_script_maps_keys1_to_lock_key_and_argv1_to_token`.
+- `eval_extend_script_maps_keys1_to_lock_key_argv1_to_token_and_argv2_to_ttl`.
+- `eval_extend_script_rejects_missing_swapped_or_non_integer_argv2_without_mutation`.
+- `evalsha_requires_script_load_or_known_allowlisted_sha`.
+- `unknown_eval_script_fails_loud_before_mutation`.
+- `script_load_and_exists_are_allowlist_scoped_not_general_lua_cache`.
+- `command_metadata_advertises_lock_subset_without_claiming_general_lua`.
+
+**Client-surface/protocol tests.**
+
+- `conditional_put_if_absent_is_atomic_under_contention`.
+- `conditional_put_treats_expired_key_as_absent`.
+- `conditional_put_existing_key_preserves_value_and_ttl`.
+- `compare_value_invalidate_removes_only_matching_token`.
+- `compare_value_expire_extends_only_matching_token`.
+- `compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend`.
+- `compare_value_expire_expiring_only_rejects_persistent_or_missing_keys`.
+- `compare_value_operations_return_zero_for_missing_or_expired_keys`.
+- `protocol_v2_v3_clients_do_not_receive_lock_conditional_shapes`.
+- `client_protocol_v4_registers_lock_conditional_operations`.
+- `compat_register_mentions_client_protocol_v4_lock_extension`.
+
+**Concurrency/race tests.**
+
+- Spawn N concurrent `SET NX PX` attempts against one key; exactly one succeeds, every loser returns
+  null, and the stored token is the winner's token.
+- Release by a losing token returns `0` and does not delete the winner's lock.
+- After TTL expiry, a new `SET NX PX` succeeds and stores a new token.
+- Extension by the winner keeps the lock alive beyond the original TTL; extension by a wrong token does
+  not.
+
+**Wire/RESP tests.**
+
+- Pipelined `SET NX PX`, `PTTL`, script release, and `GET` preserve response order.
+- RESP3 negotiated connection returns null for contention using RESP3 null encoding.
+- Oversized script body, too many keys, and unsupported aggregate RESP3 arguments fail before mutation.
+
+**Pinned real Redis oracle tests.**
+
+Add Docker-gated comparisons against `redis:6.2.14` and `redis:7.2.5`:
+
+- `redis_oracle_set_nx_px_lock_acquire_matches_real_redis`.
+- `redis_oracle_set_nx_px_contention_and_expiry_match_real_redis`.
+- `redis_oracle_lock_unlock_script_matches_real_redis`.
+- `redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance`.
+- `redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance` must include redis-py
+  `replace_ttl=False` additive behavior (`PTTL` after extend is greater than the replacement TTL),
+  `replace_ttl=True` replacement behavior, and persistent-key `0`/no-mutation behavior.
+- `redis_oracle_unknown_lua_is_documented_divergence`.
+
+These tests must run with `HYDRACACHE_REQUIRE_REDIS_ORACLE=1`; skip-only green is not acceptable for a
+lock compatibility claim.
+
+**Mainstream client matrix.**
+
+Add env-gated tests that use the libraries' normal APIs, not handcrafted command sequences:
+
+- `client_matrix_python_redis_py_lock_acquire_release_extend`.
+- `client_matrix_node_redlock_single_endpoint_acquire_release_extend`.
+- `client_matrix_go_redis_lock_library_acquire_release_refresh`.
+- `client_matrix_jvm_jedis_or_lettuce_lock_script_acquire_release_extend`.
+- `client_matrix_redisson_lock_is_supported_or_fails_loud_by_contract`.
+
+For each supported client row:
+
+- Acquire succeeds for the first owner.
+- Concurrent/second acquire fails or times out according to the library's normal API.
+- Release with the owning token succeeds.
+- Release with a stale/wrong token does not delete the current lock.
+- Extend/refresh succeeds only for the owning token.
+- redis-py `Lock.extend(default replace_ttl=False)` proves the post-extend TTL is greater than the
+  original lock timeout, so replacing the remaining TTL with only the extension cannot pass.
+- Expired lock can be reacquired.
+- Client disconnect/reconnect does not leave connection-local auth or script metadata in an unsafe state.
+
+**Negative compatibility tests.**
+
+- Unknown Lua scripts fail with a stable Redis-shaped error and no mutation.
+- Redisson full-lock command traces that require unsupported hashes/pubsub fail loud if L4 is not
+  implemented.
+- `SET GET`, `SET KEEPTTL`, `SET EXAT`, `SET PXAT`, and `SET XX` remain documented unsupported rows
+  unless separately promoted.
+- Multi-key lock scripts are rejected; no accidental distributed/cluster lock claim.
+
+**Security, observability, and limits tests.**
+
+- Lock keys, values/tokens, script bodies, and script arguments are not present in logs, metrics,
+  `HC.STATS`, or `HC.DIAGNOSTICS`.
+- Script body length, number of keys, number of arguments, and argument bytes are bounded by existing
+  RESP decode limits or stricter script limits.
+- Auth-required listeners return `NOAUTH` before any lock mutation.
+- TLS/rediss lock client paths are covered if the release claims secure lock migration.
+
+### Gate Additions
+
+- Fast gate: `cargo test -p hydracache-redis-compat --locked lock`.
+- Client-surface gate: `cargo test -p hydracache-client-transport-axum --locked lock`.
+- Protocol compat gate: `cargo test -p hydracache-client-protocol --locked lock`.
+- Docker/client gate:
+  `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 HYDRACACHE_REQUIRE_REDIS_ORACLE=1 cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture`.
+- If Python/Node/Go/JVM lock-library rows are release claims, set the matching require flags so skipped
+  ecosystem rows fail the gate.
+
+### Release Decision For The Lock Expansion
+
+`0.63.0` may claim the narrow Redis lock-compatible subset only for L0/L1 and the pinned Node
+single-resource L2 row after the fast tests, protocol/client-surface tests, manifest/doc checks, and
+Docker-gated oracle/client rows are green. The release must not imply Redis Cluster locks, Redlock
+quorum semantics, Redisson full-lock compatibility, multi-key locks, general Lua, or unreviewed Go/JVM
+lock-library support. If the heavy matrix is not green, release notes must state that the lock subset is
+implemented with targeted coverage but ecosystem/oracle proof is pending.
+
+The lock-specific ship blockers are: independent SHA1 known-answer vectors are green; reviewed
+lock-script SHA fingerprints are frozen for `redis-py==5.2.1`, Node `redis@4.7.0`, and
+`redlock@5.0.0-beta.2`; redis-py release/extend/reacquire exact scripts pass fast tests; and the
+Docker/client/oracle command
+`HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 HYDRACACHE_REQUIRE_REDIS_ORACLE=1 cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture`
+has one green release-proof run. A skip-only matrix result is not acceptable for the redis-py/redlock
+lock-library claim.
 
 ## Gates (Definition of Done for the release)
 
@@ -795,53 +1420,69 @@ HydraCache does and does not implement.
 - The versioned Redis compatibility conformance manifest is the single source of truth for docs,
   translator tests, golden fixtures, real Redis oracle scenarios, client smoke, and release notes.
 - A **mainstream Redis client** performs the W0-supported subset against the facade unchanged. The
-  minimum required subset is GET/SET/MGET/DEL plus startup handshake. TTL is included only if W0/W2
-  land real TTL application and remaining-TTL metadata; otherwise TTL commands are unsupported-loud
-  and listed under "Not shipped in 0.63.0."
+  minimum required subset is GET/SET/MGET/MSET/DEL plus startup handshake and the supported TTL
+  commands. The release cannot close until real TTL application, remaining-TTL metadata,
+  post-expiry absence, and auth-required startup are proven through the client surface.
 - Docker/nightly client matrix proves the supported subset through Python, Node, Go, and JVM Redis
-  clients, or the release note explicitly narrows the client-support claim to the clients that passed.
+  clients, including `MSET`, `SET EX`/`SET PX`, `TTL`/`PTTL`, and post-expiry reads, or the release
+  note explicitly narrows the client-support claim to the clients that passed.
 - The same client scenario suite runs against Docker `redis-server` and HydraCache. W0-supported
   Redis-subset replies match real Redis after documented normalization; unsupported Redis-command
   divergence is documented; `HC.*` commands are documented as HydraCache-only and return unknown
   command on real Redis. Redis oracle images are pinned and documented; no `latest` oracle image is
   allowed in gates.
-- RESP2 negotiation is explicit and tested: `HELLO 2` works as documented; `HELLO 3` and RESP3-only
-  inputs are rejected, downgraded, or left candidate exactly as W0 specifies, with no silent mixed
-  dialect mode.
-- Every non-subset command fails with a **stable loud error**; no `MOVED`/`ASK`/`CLUSTER`; `FLUSHALL`
-  admin-disabled by default (W4). RESP decoder never panics on arbitrary bytes (W5, R-3).
+- RESP2/RESP3 negotiation is explicit and tested: `HELLO 2` works as documented, `HELLO 3` switches
+  the connection to RESP3 replies for the supported cache subset, and unsupported RESP3 aggregate
+  command frames fail before mutation with no silent mixed dialect mode.
+- Redis `AUTH` and `HELLO 2 AUTH` are explicit and tested: auth-required listeners reject data and
+  mutating commands with `NOAUTH` before authentication, invalid credentials return `WRONGPASS`,
+  password comparison is hardened against prefix-dependent early exits, successful auth binds
+  connection-local identity/tenant before dispatch, and credentials never appear in errors, logs,
+  metrics, or diagnostics.
+- Every non-subset command fails with a **stable loud error**; no `MOVED`/`ASK`/`CLUSTER`;
+  `CONFIG`, `FLUSHDB`, and `FLUSHALL` are admin-disabled by default and proven not to dispatch or
+  mutate keys (W4). RESP decoder never panics on arbitrary bytes (W5, R-3).
 - Health/readiness probes (`INFO`, `ROLE`, `DBSIZE`, `TYPE`, `SCAN`, `CONFIG`, `CLIENT LIST`,
-  `CLIENT ID`) are classified in the manifest and either return minimal honest replies or fail
-  unsupported/admin-disabled. No fabricated Redis server state is exposed.
+  `CLIENT ID`) are classified in the manifest. `INFO` returns minimal honest RESP-facade state,
+  `TYPE` returns `string`/`none` for the cache subset, and `ROLE`/`DBSIZE`/`SCAN` fail unsupported.
+  No fabricated Redis server state is exposed.
 - Pipelined commands preserve response order; partial frames and coalesced frames decode like the
   golden corpus; oversized/hostile RESP frames are rejected before unbounded allocation; slowloris
   connections time out without leaking in-flight work (W5).
 - Connection-close and reconnect behavior is tested: close mid-command, close mid-pipeline, drain
   during pipeline, and reconnect-and-retry cannot corrupt response boundaries, leak connection-local
   namespace state, or hide ambiguous partial writes.
-- A network-gated multi-node HydraCache RESP e2e writes and reads through the facade across a real
-  daemon/grid restart or drain, proving the edge listener does not bypass tenancy, limits, or
-  consistency.
-- Tenancy/limits/consistency are enforced because the facade drives `ClientSurfaceState`, not the cache
-  directly; an oversized value is rejected loud, not truncated (W2).
+- A network-gated multi-node HydraCache RESP E2E writes and reads through one selected endpoint across
+  a real daemon restart or drain, and negative sentinels document that cross-endpoint RESP visibility
+  and multi-endpoint Redis lock exclusion are not claimed in `0.63`.
+- Tenancy, limits, metrics, auth state, redaction, and protocol gates are enforced because the facade
+  drives `ClientSurfaceState`, not the cache directly; an oversized value is rejected loud, not
+  truncated (W2).
 - `DEL`/`EXISTS` return Redis-style integer counts; `MGET` preserves order and nil misses; `MSET` is
-  atomic or unsupported-loud; `COMMAND` advertises only supported commands (W0/W2).
+  atomic with duplicate-key last-write-wins semantics; `SET EX/PX`, `EXPIRE`/`PEXPIRE`, `PERSIST`,
+  `TTL`, and `PTTL` match Redis semantics with bounded TTL tolerance; `COMMAND` advertises only
+  supported commands (W0/W2).
 - Tags/invalidation are only via explicit `HC.*` — no raw prefix-invalidation over binary keys, no
   scan-and-loop fake tag invalidation, no cross-tenant tag mutation (W3).
-- `HC.INVALIDATE_TAG` ships only if a native tag-scoped invalidation path exists and is tested;
-  otherwise it is unsupported-loud and documented as not shipped (W3).
+- `HC.NAMESPACE`/`HC.TAG`/`HC.SETTAGS`/`HC.INVALIDATE_TAG` ship only as the documented
+  RESP-listener-local extension path; global/persisted/core-wide tag invalidation remains out of
+  scope unless a future native tag release adds its own compatibility entry and tests (W3).
 - Listener is **off by default**, on its own port, distinct-address-validated; embedded/core fast path
-  byte-for-byte unchanged (R-10); the stable `hydracache-client-protocol` is untouched (R-4).
-- TLS/rediss behavior is explicit: either supported through the existing TLS/mTLS config and tested, or
-  documented unsupported for `0.63.0`; auth credentials are redacted from logs and errors (W6).
+  byte-for-byte unchanged (R-10); `hydracache-client-protocol` v3 is registered as an additive TTL
+  metadata/expiry extension and v2 clients remain accepted (R-4).
+- TLS/rediss behavior is explicit and implemented: `rediss://` uses the existing server TLS
+  certificate/key material, plaintext is rejected on TLS listeners before mutation, wrong CA fails the
+  client handshake, wrong Redis credentials over TLS return `WRONGPASS`, and auth credentials or
+  certificate material are redacted from logs and errors (W6).
 - Metrics/logs/audit use bounded labels and never include key bytes, value bytes, raw client names,
   request ids, credentials, or unbounded tenant-provided strings (W5/W6).
 - User-facing examples in `docs/integrations/redis-compat.md` are executable docs-smoke tests or are
-  explicitly labeled with their Docker/nightly gate. Docs cannot show untested TTL, `HC.*`, `SELECT`,
-  RESP3, or `rediss://` examples.
+  explicitly labeled with their Docker/nightly gate. The examples include supported `MSET`, TTL
+  commands, `SELECT 0`, `rediss://` startup, and RESP3 negotiation. Docs cannot show untested `HC.*`
+  commands or non-zero `SELECT` examples.
 - Config/operator packaging keeps the RESP listener disabled and unexposed by default. Helm/operator
-  or production examples require explicit enablement, explicit port exposure, and documented auth/TLS
-  or network controls.
+  or production examples require explicit enablement, explicit port exposure, Redis `AUTH`, and TLS
+  material/CA configuration.
 - The rollout/rollback playbook is complete: canary path, metrics and audit events to watch, rollback
   triggers, disable procedure, connection drain/close behavior, and evidence capture are all named.
 - No new consensus/consistency level (R-1); positioning states "cache subset, not feature compatible";
@@ -849,6 +1490,104 @@ HydraCache does and does not implement.
 - `docs/integrations/redis-compat.md`, `docs/COMPAT.md`, `docs/GATES.md`, `docs/TESTING.md`,
   `releases.toml`, `INDEX.md`, plan header, and `docs/releases/0.63.0.md` are reconciled together;
   `doc-check` green.
+
+## Semantic Accuracy Audit Pass (post-implementation review, 2026-07-11)
+
+A post-implementation code review of `hydracache-redis-compat` against real Redis semantics confirmed
+the translator is broadly accurate: `EXISTS k k`/`DEL k k` duplicate counting, `MGET` order/nil, `TTL`
+`-2`/`-1`/positive, `SET EX/PX`, `SETEX`/`PSETEX`, and `PERSIST` are correct and already covered in the
+fast tier (`del_and_exists_return_redis_integer_counts`,
+`setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics`,
+`mget_preserves_order_and_represents_misses_as_nil_bulk`). No correctness bug was found in the audited
+SET/EXPIRE/TTL/PERSIST edges. This pass does not re-certify RESP3 response forms, atomic `MSET`
+rollback, AUTH credential redaction, or binary-key handling; those remain covered by W1/W2/W5 and their
+own targeted tests. The review found **one impactful compatibility gap** and **two unverified return
+edges** that must close, or be explicitly narrowed in the conformance manifest, before `0.63.0` ships.
+These items are additive to W0-W6: they do not widen the supported surface, they make the
+already-claimed surface honest. Each is one closed task with its own commit; run the targeted crate
+tests before each commit.
+
+### A1. `SET` conditional option families (supported lock subset vs unsupported retention forms)
+**Finding.** `parse_set_ttl_ms` accepts only `[]` or `[EX|PX, value]`; every other option shape is
+rejected as a translation error. `SET key value NX`, `SET key value XX`, `SET key value KEEPTTL`,
+`SET key value GET`, and the canonical lock idiom `SET key value NX PX ttl` therefore fail. This is
+loud, not silent, but it breaks the Redis distributed-lock primitive that mainstream lock libraries
+(redis-py `Lock`, node `redlock`, Redisson locks) depend on — the highest-value real-world Redis idiom
+after plain GET/SET. `EXAT`/`PXAT` are a different family: absolute-expiry options, not conditional
+lock primitives, and they are discussed below as deferred candidates.
+**0.63 decision.** Implement the safe subset instead of rejecting the lock idiom. `SET key value NX PX
+ttl_ms` and `SET key value NX EX ttl_seconds` are supported through protocol v4 `ConditionalPut
+IfAbsent` under the client-surface store lock. Success returns `OK`; contention returns Redis nil/null;
+expired keys are treated as absent before the condition is evaluated. `SET NX` without a TTL, `SET XX`,
+`SET GET`, and `SET KEEPTTL` remain unsupported-loud because they are separate conditional/retention
+semantics and are not required for the narrow expiring lock acquire contract.
+
+`SET EXAT`/`PXAT` also return `ERR syntax error` in 0.63, but for a separate scope reason. They are
+near-term absolute-expiry candidates because they can map to the TTL path as `timestamp - now`, but
+support needs an explicit server-clock source, past-timestamp deletion semantics, overflow handling,
+TTL tolerance, and pinned Redis oracle/client rows. They must not be described as lock-conditionals.
+**DoD tests.** `set_write_conditional_options_follow_conformance_contract`,
+`set_nx_px_acquires_missing_key_and_contention_returns_null`, `set_nx_ex_ttl_uses_seconds_and_expires`,
+`conditional_put_if_absent_is_atomic_under_contention`, the env-gated
+`client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases`, and the pinned-oracle
+`redis_oracle_set_nx_px_lock_acquire_matches_real_redis` row.
+
+### A2. `EXPIRE`/`PEXPIRE` with non-positive TTL
+**Finding.** `parse_expire_ttl_ms` collapses `value <= 0` to `ttl_ms = 0`. The store's
+`expires_at = now` with `is_expired: expires_at <= now` does make the key vanish immediately (correct
+side effect), but **no fast-tier test asserts the Redis return contract**: `EXPIRE existing 0`/negative
+must delete the key and return `1`, and the key must be absent for subsequent
+`GET`/`MGET`/`EXISTS`/`TTL`. This is a silent zone in the executable compatibility contract the release
+promises.
+**DoD tests.** `expire_zero_or_negative_deletes_key_and_returns_one`,
+`expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl`.
+
+### A3. `EXPIRE`/`PEXPIRE`/`PERSIST` on a missing key
+**Finding.** `reduce_expiry` returns the client-surface `applied` flag, but no fast-tier test asserts
+the missing-key contract: `EXPIRE missing …` → `0`, `PERSIST missing` → `0`.
+**DoD test.** `expire_pexpire_and_persist_on_missing_key_return_zero`.
+
+### A4. Redis-shaped error text for rejected option/TTL shapes (cosmetic, class-normalized)
+**Finding.** Rejected SET-option and oversized-TTL shapes surface custom messages
+("SET supports only EX seconds or PX milliseconds options in this release", "TTL value is too large")
+instead of native Redis text (`ERR syntax error`, `ERR invalid expire time in 'set' command`). The
+oracle normalizes by error class (`ERR`), so gates pass, but the human-facing text differs from real
+Redis and can confuse operators reading logs side by side.
+**0.63 decision.** Align the high-value human-facing `SET` rejection text where cheap: unsupported SET
+option shapes return `ERR syntax error`, and invalid `SET EX/PX` TTL returns Redis-shaped invalid
+expire-time text. Keep the broader oracle rule as class-normalized for other rejected TTL/resource
+edges whose exact Redis wording is not part of the supported subset contract.
+**DoD test.** `rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization`.
+
+### Coverage matrix additions
+
+| New code | Source | Covering test(s) | Tier |
+| --- | --- | --- | --- |
+| `SET NX PX/EX` lock acquire and unsupported retention contract (A1) | `hydracache-redis-compat` + conformance manifest + client matrix | `set_write_conditional_options_follow_conformance_contract`, `set_nx_px_acquires_missing_key_and_contention_returns_null`, `set_nx_ex_ttl_uses_seconds_and_expires`, `client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases`, `redis_oracle_set_nx_px_lock_acquire_matches_real_redis` | PR + Docker-gated |
+| non-positive `EXPIRE` return/side-effect (A2) | `hydracache-redis-compat` | `expire_zero_or_negative_deletes_key_and_returns_one`, `expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl` | PR |
+| missing-key expiry return (A3) | `hydracache-redis-compat` | `expire_pexpire_and_persist_on_missing_key_return_zero` | PR |
+| rejected-shape error normalization (A4) | `hydracache-redis-compat` + oracle-normalization notes | `rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization` | PR |
+
+### Gate additions
+- `SET NX PX/EX` has a single declared 0.63 behavior in the conformance manifest: supported atomic
+  expiring lock acquire with Redis `OK`/nil response semantics, proven by fast translator tests,
+  protocol v4 client-surface tests, the client-matrix lock row, and pinned Redis oracle rows. `SET NX`
+  without TTL, `SET XX`, `SET GET`, and `SET KEEPTTL` remain unsupported-loud with no mutation after
+  rejection and no unbounded wait.
+- `SET EXAT`/`PXAT` are a separate unsupported absolute-expiry candidate row. The release note and
+  Redis compatibility docs must explain why they are deferred instead of bundling them with
+  conditional lock semantics.
+- The release note must include a named positioning callout that only the narrow single-endpoint,
+  node-local lock subset is supported. redis-py `Lock` and Node `redlock@5.0.0-beta.2`
+  single-resource rows are proof only for one RESP endpoint and those pinned library paths. Redisson
+  full locks, Redlock quorum, multi-key locks, multi-endpoint Redis lock mutual exclusion, and
+  unreviewed Go/JVM lock libraries remain unsupported unless separate allowlist and distributed-backend
+  rows land.
+- `EXPIRE`/`PEXPIRE` with `0`/negative TTL delete the key and return `1` for existing keys, and the key
+  is absent afterward. `EXPIRE`/`PEXPIRE`/`PERSIST` on a missing key return `0`. All asserted in the
+  **fast tier**, not only the gated oracle.
+- Rejected option/TTL shapes either match Redis error text or are explicitly documented as
+  class-normalized in the oracle-normalization notes.
 
 ## Final Release Decision
 
@@ -861,5 +1600,5 @@ proves real clients, pinned real Redis oracle behavior, hostile bytes, reconnect
 HydraCache behavior; W6 records the compatibility surface, executable docs, packaging defaults, and
 rollout/rollback evidence so future releases cannot widen it by accident. Every command names its
 behavior, unsupported is loud, and the executable contract is the proof it actually interoperates. The
-stable client protocol and the core stay untouched unless the release is explicitly re-scoped and
-registered as a protocol compatibility change.
+core stays untouched, while the client protocol is explicitly re-scoped for registered additive v3
+TTL metadata/expiry operations and v4 Redis lock-conditional operations with compatibility tests.

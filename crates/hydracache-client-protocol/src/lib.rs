@@ -15,10 +15,16 @@ pub mod java_migration;
 pub const MIN_PROTOCOL_VERSION: u16 = 1;
 
 /// Highest supported external client protocol version.
-pub const PROTOCOL_VERSION: u16 = 2;
+pub const PROTOCOL_VERSION: u16 = 4;
 
 /// First protocol version that carries the IMap/Fenced Lock operation family.
 pub const LOCK_PROTOCOL_VERSION: u16 = 2;
+
+/// First protocol version that carries TTL metadata and explicit expiry operations.
+pub const TTL_PROTOCOL_VERSION: u16 = 3;
+
+/// First protocol version that carries Redis-lock conditional value operations.
+pub const REDIS_LOCK_PROTOCOL_VERSION: u16 = 4;
 
 /// Bytes used by the unsigned length prefix.
 pub const LENGTH_PREFIX_BYTES: usize = 4;
@@ -632,6 +638,38 @@ pub enum ClientRequest {
         ns: Namespace,
         entries: Vec<BatchPutEntry>,
     },
+    /// Set or replace the expiry for one key.
+    Expire {
+        ns: Namespace,
+        key: StructuredKey,
+        ttl_ms: u64,
+    },
+    /// Remove the expiry for one key without changing its value.
+    Persist { ns: Namespace, key: StructuredKey },
+    /// Read remaining TTL metadata for one key.
+    GetTtl { ns: Namespace, key: StructuredKey },
+    /// Store one value only when the declared condition holds.
+    ConditionalPut {
+        ns: Namespace,
+        key: StructuredKey,
+        value: Vec<u8>,
+        ttl_ms: Option<u64>,
+        condition: ConditionalPutCondition,
+    },
+    /// Invalidate one key only when the current live value matches.
+    CompareValueAndInvalidate {
+        ns: Namespace,
+        key: StructuredKey,
+        expected_value: Vec<u8>,
+    },
+    /// Replace expiry only when the current live value matches.
+    CompareValueAndExpire {
+        ns: Namespace,
+        key: StructuredKey,
+        expected_value: Vec<u8>,
+        ttl_ms: u64,
+        mode: CompareValueExpireMode,
+    },
     /// Evict a whole namespace/region mapping.
     EvictRegion { ns: Namespace },
     /// Subscribe to invalidations.
@@ -696,12 +734,21 @@ impl ClientRequest {
     pub fn minimum_protocol_version(&self) -> u16 {
         match self {
             Self::Get { .. }
-            | Self::Put { .. }
             | Self::Invalidate { .. }
             | Self::BatchGet { .. }
             | Self::BatchPut { .. }
             | Self::EvictRegion { .. }
             | Self::SubscribeInvalidations { .. } => MIN_PROTOCOL_VERSION,
+            Self::Put {
+                ttl_ms: Some(_), ..
+            }
+            | Self::Expire { .. }
+            | Self::Persist { .. }
+            | Self::GetTtl { .. } => TTL_PROTOCOL_VERSION,
+            Self::ConditionalPut { .. }
+            | Self::CompareValueAndInvalidate { .. }
+            | Self::CompareValueAndExpire { .. } => REDIS_LOCK_PROTOCOL_VERSION,
+            Self::Put { ttl_ms: None, .. } => MIN_PROTOCOL_VERSION,
             Self::SubscribeEntryEvents { .. }
             | Self::TryLock { .. }
             | Self::Unlock { .. }
@@ -729,6 +776,12 @@ impl ClientRequest {
             Self::Invalidate { .. } => "invalidate",
             Self::BatchGet { .. } => "batch_get",
             Self::BatchPut { .. } => "batch_put",
+            Self::Expire { .. } => "expire",
+            Self::Persist { .. } => "persist",
+            Self::GetTtl { .. } => "get_ttl",
+            Self::ConditionalPut { .. } => "conditional_put",
+            Self::CompareValueAndInvalidate { .. } => "compare_value_and_invalidate",
+            Self::CompareValueAndExpire { .. } => "compare_value_and_expire",
             Self::EvictRegion { .. } => "evict_region",
             Self::SubscribeInvalidations { .. } => "subscribe_invalidations",
             Self::SubscribeEntryEvents { .. } => "subscribe_entry_events",
@@ -741,6 +794,28 @@ impl ClientRequest {
             Self::RemoveIfValue { .. } => "remove_if_value",
         }
     }
+}
+
+/// Condition used by v4 conditional value writes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ConditionalPutCondition {
+    /// Store only if the key is missing or expired.
+    IfAbsent,
+    /// Store only if the current live value exactly matches the supplied bytes.
+    IfPresentValue(Vec<u8>),
+}
+
+/// Expiry update mode for token-safe Redis lock extension.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CompareValueExpireMode {
+    /// Replace the remaining TTL with the supplied TTL.
+    Replace,
+    /// Replace the remaining TTL only when the current live entry already has an expiry.
+    ReplaceIfExpiring,
+    /// Add the supplied TTL to the current remaining TTL.
+    AddToRemaining,
 }
 
 /// One batch put entry.
@@ -801,6 +876,26 @@ pub enum ClientResponse {
     Invalidated,
     /// Batch result in request order.
     Batch { items: Vec<BatchItemStatus> },
+    /// Expiry mutation result.
+    Expiry {
+        /// Whether the key existed and the expiry state changed as requested.
+        applied: bool,
+    },
+    /// Remaining TTL metadata.
+    Ttl {
+        /// Redis-compatible remaining TTL state.
+        state: TtlState,
+    },
+    /// Conditional put result.
+    ConditionalStored {
+        /// Whether the value was stored.
+        stored: bool,
+    },
+    /// Compare-value mutation result.
+    CompareValueApplied {
+        /// Whether the compare-value mutation was applied.
+        applied: bool,
+    },
     /// Region/namespace eviction accepted.
     Evicted,
     /// Subscription accepted.
@@ -819,6 +914,18 @@ pub enum ClientResponse {
     CasApplied { new_version: u64 },
     /// CAS did not apply; carries the current live value if present.
     CasMismatch { current: Option<Vec<u8>> },
+}
+
+/// Redis-compatible remaining TTL state.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TtlState {
+    /// Key does not exist or is already expired.
+    Missing,
+    /// Key exists and has no expiry.
+    Persistent,
+    /// Key exists and has a positive remaining TTL in milliseconds.
+    ExpiresIn { ttl_ms: u64 },
 }
 
 /// Per-item batch status.

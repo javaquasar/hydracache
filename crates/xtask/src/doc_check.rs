@@ -17,6 +17,9 @@
 //!   header agree with its manifest `status` (TD-0006). A header that drifts
 //!   (e.g. a shipped plan still saying "planned") fails the gate instead of
 //!   passing silently. Plans that use a prose status (drafts) are skipped.
+//! - every shipped non-legacy release in `releases.toml` has a matching
+//!   `docs/releases/<version>.md` note so GitHub release publishing cannot pass
+//!   with missing public notes.
 //! - every ADR uses the single `0001-title.md` filename scheme, has a unique
 //!   number, and is listed from `docs/adr/README.md`.
 //! - every publishable workspace crate is present in both release publish scripts.
@@ -40,9 +43,10 @@ const ALLOWED_REDIS_COMPAT_STATUS: [&str; 6] = [
     "hydracache_extension",
     "unsupported",
 ];
-const ALLOWED_REDIS_COMPAT_ORACLE: [&str; 6] = [
+const ALLOWED_REDIS_COMPAT_ORACLE: [&str; 7] = [
     "exact",
     "normalized_error",
+    "normalized_metadata",
     "documented_divergence",
     "hydracache_only",
     "ttl_tolerance",
@@ -241,10 +245,37 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     }
 
     problems.extend(check_plan_header_status(root, &manifest.release)?);
+    problems.extend(check_release_notes_for_shipped_releases(
+        root,
+        &manifest.release,
+    )?);
     problems.extend(check_in_prose_plan_links(root)?);
     problems.extend(check_adr_index(root)?);
     problems.extend(check_publishable_crates_in_publish_scripts(root)?);
     problems.extend(check_redis_compat_conformance(root)?);
+    problems.extend(check_redis_compat_docs_examples(root)?);
+
+    Ok(problems)
+}
+
+fn check_release_notes_for_shipped_releases(
+    root: &Path,
+    releases: &[Release],
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    for r in releases {
+        if r.status != "shipped" || r.version == "TBD" {
+            continue;
+        }
+
+        let note = format!("docs/releases/{}.md", r.version);
+        if !root.join(&note).is_file() {
+            problems.push(format!(
+                "{}: shipped release '{}' is missing {}",
+                r.file, r.version, note
+            ));
+        }
+    }
 
     Ok(problems)
 }
@@ -387,9 +418,9 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
             manifest.surface
         ));
     }
-    if manifest.supported_resp != "RESP2" {
+    if manifest.supported_resp != "RESP2+RESP3" {
         problems.push(format!(
-            "docs/integrations/redis_compat_conformance.json: supported_resp must be RESP2 for 0.63.0, got '{}'",
+            "docs/integrations/redis_compat_conformance.json: supported_resp must be RESP2+RESP3 for 0.63.0, got '{}'",
             manifest.supported_resp
         ));
     }
@@ -424,6 +455,26 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
                 .to_owned(),
         );
     }
+
+    let has_deployment_scope = manifest
+        .commands
+        .iter()
+        .any(|command| command.kind == "deployment_scope");
+    let redis_multinode_test_path =
+        root.join("crates/hydracache-server/tests/redis_resp_multinode.rs");
+    let redis_multinode_tests = if has_deployment_scope {
+        match fs::read_to_string(&redis_multinode_test_path) {
+            Ok(text) => text,
+            Err(err) => {
+                problems.push(format!(
+                    "crates/hydracache-server/tests/redis_resp_multinode.rs: required for Redis deployment_scope rows but could not be read: {err}"
+                ));
+                String::new()
+            }
+        }
+    } else {
+        String::new()
+    };
 
     let mut names = HashSet::new();
     for command in &manifest.commands {
@@ -472,6 +523,26 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
             ));
         }
 
+        if command.kind == "deployment_scope" {
+            if command.oracle != "documented_divergence" {
+                problems.push(format!(
+                    "{source}: deployment_scope rows must use documented_divergence oracle"
+                ));
+            }
+            if command.tests.is_empty() {
+                problems.push(format!(
+                    "{source}: deployment_scope rows require at least one multinode sentinel test"
+                ));
+            }
+            for test in &command.tests {
+                if !redis_multinode_tests.contains(&format!("fn {test}(")) {
+                    problems.push(format!(
+                        "{source}: deployment_scope test '{test}' must be implemented in crates/hydracache-server/tests/redis_resp_multinode.rs"
+                    ));
+                }
+            }
+        }
+
         if matches!(
             command.status.as_str(),
             "supported" | "supported_with_caveat"
@@ -498,6 +569,53 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
     }
 
     Ok(problems)
+}
+
+fn check_redis_compat_docs_examples(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
+    let docs_path = root.join("docs/integrations/redis-compat.md");
+    if !docs_path.is_file() {
+        return Ok(Vec::new());
+    }
+    let text = fs::read_to_string(&docs_path)
+        .map_err(|err| format!("reading {}: {err}", docs_path.display()))?;
+    if !text.contains("## Executable Examples") {
+        return Ok(Vec::new());
+    }
+
+    let mut problems = Vec::new();
+    for heading in [
+        "### redis-cli",
+        "### Rust (redis-rs)",
+        "### Python (redis-py)",
+        "### Node (node-redis)",
+        "### Go (go-redis)",
+        "### JVM (Jedis)",
+    ] {
+        let Some(section) = section_after_heading(&text, heading) else {
+            problems.push(format!(
+                "docs/integrations/redis-compat.md: missing executable example section '{heading}'"
+            ));
+            continue;
+        };
+        if !section.contains("Gate: `redis_clients`") {
+            problems.push(format!(
+                "docs/integrations/redis-compat.md: example section '{heading}' must name Gate: `redis_clients`"
+            ));
+        }
+        if !section.contains("```") {
+            problems.push(format!(
+                "docs/integrations/redis-compat.md: example section '{heading}' must include a fenced code block"
+            ));
+        }
+    }
+    Ok(problems)
+}
+
+fn section_after_heading<'a>(text: &'a str, heading: &str) -> Option<&'a str> {
+    let start = text.find(heading)?;
+    let rest = &text[start + heading.len()..];
+    let end = rest.find("\n### ").unwrap_or(rest.len());
+    Some(&rest[..end])
 }
 
 fn check_in_prose_plan_links(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {

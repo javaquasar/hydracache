@@ -42,6 +42,9 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
 
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
@@ -105,6 +108,10 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
+
   performance-budget:
     name: Performance Budget
     runs-on: ubuntu-latest
@@ -120,6 +127,8 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
           shared-key: performance-budget
 
       - name: Run criterion benchmarks
@@ -129,6 +138,62 @@ jobs:
 
       - name: Enforce performance budget
         run: cargo run -p xtask --locked -- bench-budget --current target/criterion
+
+  redis-compat-release-proof:
+    name: Redis Compatibility Release Proof
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.22.x"
+          cache: false
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: redis-compat-release-proof
+
+      - name: Check Docker availability
+        run: |
+          docker version
+          docker info
+
+      - name: Redis fast checks
+        run: |
+          cargo fmt --all -- --check
+          cargo test -p xtask --test doc_check redis_compat --locked -- --nocapture
+          cargo test -p hydracache-redis-compat --locked
+          cargo test -p hydracache-server --test server_lifecycle redis --locked
+          cargo clippy -p hydracache-redis-compat --all-targets --locked -- -D warnings
+
+      - name: Redis Docker/client/oracle matrix
+        env:
+          HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS: "1"
+          HYDRACACHE_REQUIRE_REDIS_ORACLE: "1"
+          HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_GO: "1"
+          HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM: "1"
+        run: cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored --nocapture
+
+      - name: Redis resource smoke
+        env:
+          HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE: "1"
+        run: cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture
 
   dst-nightly-soak:
     name: DST and Soak Nightly
@@ -145,6 +210,8 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
           shared-key: dst-nightly-soak
 
       - name: Run deterministic simulation seeds
@@ -170,7 +237,7 @@ jobs:
       - name: Run daemon-process cluster tier
         env:
           HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
-        run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --nocapture
+        run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
 
       - name: Run membership-history tier
         env:
@@ -183,7 +250,7 @@ jobs:
         run: cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture
 
       - name: Upload SOAK_REPORT
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
@@ -205,10 +272,15 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
           shared-key: coverage-ratchet
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@cargo-deny
 
       - name: Enforce coverage floor
         run: cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88
@@ -222,12 +294,16 @@ jobs:
 
       - name: Upload coverage artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-ratchet
           path: |
             target/llvm-cov-html
             target/llvm-cov.lcov
+
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests
 
   msrv:
     name: MSRV 1.88.0
@@ -243,6 +319,8 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
           shared-key: msrv-1.88.0
 
       - name: Install cargo-deny
@@ -253,3 +331,7 @@ jobs:
 
       - name: Test MSRV
         run: cargo test --workspace --locked
+
+      - name: Clean Rust test scratch links
+        if: always()
+        run: rm -rf target/tests

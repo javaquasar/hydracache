@@ -55,6 +55,10 @@ not a replacement for the release correctness gates.
 For the read-only operations console served by the server admin surface, see
 [`docs/management-center.md`](docs/management-center.md).
 
+For the optional Redis RESP API facade, including implementation boundaries and
+Redis-specific caveats, see
+[`docs/integrations/redis-api-implementation-notes.md`](docs/integrations/redis-api-implementation-notes.md).
+
 ![HydraCache Management Center](docs/images/management-center.png)
 
 For database production-readiness rules around keys, tags, transactions,
@@ -1949,6 +1953,15 @@ lines should be investigated before release.
 Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
+- [docs/releases/0.63.0.md](docs/releases/0.63.0.md) - Redis RESP edge facade release.
+- [docs/releases/0.62.1.md](docs/releases/0.62.1.md) - cluster proof cleanup patch notes.
+- [docs/releases/0.62.0.md](docs/releases/0.62.0.md) - cluster correctness test hardening release.
+- [docs/releases/0.61.0.md](docs/releases/0.61.0.md) - cluster elasticity and quality release.
+- [docs/releases/0.60.0.md](docs/releases/0.60.0.md) - networked grid hardening release.
+- [docs/releases/0.59.0.md](docs/releases/0.59.0.md) - networked daemon grid hosting release.
+- [docs/releases/0.58.0.md](docs/releases/0.58.0.md) - endurance soak and overload hardening release.
+- [docs/releases/0.57.1.md](docs/releases/0.57.1.md) - technical debt closure patch notes.
+- [docs/releases/0.57.0.md](docs/releases/0.57.0.md) - Management Center and observability release.
 - [docs/releases/0.56.0.md](docs/releases/0.56.0.md) - Kubernetes Operator release.
 - [docs/releases/0.55.0.md](docs/releases/0.55.0.md) - durable store hardening release.
 - [docs/releases/0.54.0.md](docs/releases/0.54.0.md) - external invalidation transports release.

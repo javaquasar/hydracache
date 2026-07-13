@@ -1,15 +1,24 @@
 use std::{
     env,
     ffi::OsString,
-    path::PathBuf,
-    sync::{Mutex, MutexGuard},
+    fs,
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex, MutexGuard},
 };
 
+use hydracache_redis_compat::{RedisCommand, RespValue};
 use hydracache_server::{
-    AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,
-    RedisApiConfig, ServerConfig, ServerConfigError, ServerRole, ServerRuntime, ServerState,
-    TlsConfig,
+    serve_redis_listener, AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig,
+    ClusterStartMode, RedisApiConfig, RedisTcpError, ServerConfig, ServerConfigError, ServerRole,
+    ServerRuntime, ServerState, TlsConfig,
 };
+use rustls::pki_types::{pem::PemObject, CertificateDer, ServerName};
+use rustls::RootCertStore;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::watch;
+use tokio::task::JoinHandle;
+use tokio_rustls::TlsConnector;
 
 fn member_config() -> ServerConfig {
     ServerConfig {
@@ -34,6 +43,7 @@ fn member_config_with_redis_surface() -> ServerConfig {
         redis_api: RedisApiConfig {
             enabled: true,
             listen_addr: "127.0.0.1:16379".parse().unwrap(),
+            ..RedisApiConfig::default()
         },
         ..member_config()
     }
@@ -69,6 +79,10 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_ADMIN_ADDR",
     "HYDRACACHE_REDIS_API_ENABLED",
     "HYDRACACHE_REDIS_ADDR",
+    "HYDRACACHE_REDIS_AUTH_REQUIRED",
+    "HYDRACACHE_REDIS_AUTH_USERNAME",
+    "HYDRACACHE_REDIS_AUTH_TOKEN_FILE",
+    "HYDRACACHE_REDIS_REDISS_ENABLED",
     "HOSTNAME",
 ];
 
@@ -79,6 +93,15 @@ struct ConfigEnvGuard {
 
 impl ConfigEnvGuard {
     fn new(overrides: &[(&'static str, &'static str)]) -> Self {
+        Self::new_owned(
+            overrides
+                .iter()
+                .map(|(name, value)| (*name, OsString::from(value)))
+                .collect(),
+        )
+    }
+
+    fn new_owned(overrides: Vec<(&'static str, OsString)>) -> Self {
         let lock = CONFIG_ENV_LOCK.lock().unwrap();
         let saved = CONFIG_ENV_VARS
             .iter()
@@ -110,6 +133,141 @@ impl Drop for ConfigEnvGuard {
 fn config_error_from_env(overrides: &[(&'static str, &'static str)]) -> ServerConfigError {
     let _guard = ConfigEnvGuard::new(overrides);
     ServerConfig::from_env().unwrap_err()
+}
+
+fn test_token_file(name: &str, contents: &str) -> PathBuf {
+    let dir = PathBuf::from("target/test-hydracache-server/redis-auth");
+    fs::create_dir_all(&dir).unwrap();
+    let path = dir.join(format!("{name}.txt"));
+    fs::write(&path, contents).unwrap();
+    path
+}
+
+fn configure_cluster_auth(config: &mut ServerConfig, name: &str) {
+    let token_file = test_token_file(&format!("{name}-cluster-auth"), "cluster-secret\n");
+    config.cluster_auth.key_id = Some("k1".to_owned());
+    config.cluster_auth.token_file = Some(token_file);
+}
+
+struct TestTlsMaterial {
+    cert_path: PathBuf,
+    key_path: PathBuf,
+    ca_path: PathBuf,
+}
+
+fn write_test_tls_material(name: &str) -> TestTlsMaterial {
+    let dir = PathBuf::from("target/test-hydracache-server/redis-tls").join(name);
+    fs::create_dir_all(&dir).unwrap();
+    let rcgen::CertifiedKey { cert, signing_key } =
+        rcgen::generate_simple_self_signed(["127.0.0.1".to_owned(), "localhost".to_owned()])
+            .unwrap();
+    let cert_path = dir.join("cert.pem");
+    let key_path = dir.join("key.pem");
+    let ca_path = dir.join("ca.pem");
+    fs::write(&cert_path, cert.pem()).unwrap();
+    fs::write(&key_path, signing_key.serialize_pem()).unwrap();
+    fs::write(&ca_path, cert.pem()).unwrap();
+    TestTlsMaterial {
+        cert_path,
+        key_path,
+        ca_path,
+    }
+}
+
+fn configure_redis_tls(config: &mut ServerConfig, name: &str) -> TestTlsMaterial {
+    let material = write_test_tls_material(name);
+    config.tls = TlsConfig {
+        enabled: true,
+        cert_path: Some(material.cert_path.clone()),
+        key_path: Some(material.key_path.clone()),
+        ca_path: Some(material.ca_path.clone()),
+        acknowledge_insecure: false,
+    };
+    config.redis_api.rediss_enabled = true;
+    configure_cluster_auth(config, name);
+    material
+}
+
+fn rediss_auth_config(name: &str) -> (ServerConfig, TestTlsMaterial) {
+    let token_file = test_token_file(&format!("{name}-redis-auth"), "secret\n");
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.auth_required = true;
+    config.redis_api.auth_username = Some("default".to_owned());
+    config.redis_api.auth_token_file = Some(token_file);
+    let material = configure_redis_tls(&mut config, name);
+    (config, material)
+}
+
+fn install_test_rustls_provider() {
+    if rustls::crypto::CryptoProvider::get_default().is_none() {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    }
+}
+
+fn rediss_connector(ca_path: &Path) -> TlsConnector {
+    install_test_rustls_provider();
+    let pem = fs::read(ca_path).unwrap();
+    let certs = CertificateDer::pem_slice_iter(&pem)
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    let mut roots = RootCertStore::empty();
+    for cert in certs {
+        roots.add(cert).unwrap();
+    }
+    let config = rustls::ClientConfig::builder()
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    TlsConnector::from(Arc::new(config))
+}
+
+async fn start_redis_listener(
+    config: ServerConfig,
+) -> (
+    Arc<Mutex<ServerRuntime>>,
+    std::net::SocketAddr,
+    watch::Sender<bool>,
+    JoinHandle<Result<(), RedisTcpError>>,
+) {
+    let runtime = Arc::new(Mutex::new(ServerRuntime::new(config).unwrap().start()));
+    let server = Arc::new(
+        runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let tls = runtime
+        .lock()
+        .expect("server runtime mutex")
+        .redis_tls_acceptor()
+        .unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    let serving = tokio::spawn(serve_redis_listener(
+        listener,
+        server,
+        Arc::clone(&runtime),
+        tls,
+        shutdown_rx,
+    ));
+    (runtime, addr, shutdown_tx, serving)
+}
+
+async fn rediss_exchange(addr: std::net::SocketAddr, ca_path: &Path, input: &[u8]) -> Vec<u8> {
+    let connector = rediss_connector(ca_path);
+    let tcp = TcpStream::connect(addr).await.unwrap();
+    let server_name = ServerName::try_from("localhost").unwrap();
+    let mut stream = connector.connect(server_name, tcp).await.unwrap();
+    stream.write_all(input).await.unwrap();
+    let mut output = Vec::new();
+    match stream.read_to_end(&mut output).await {
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::UnexpectedEof => {}
+        Err(error) => panic!("failed to read rediss response: {error}"),
+    }
+    output
 }
 
 #[test]
@@ -321,6 +479,23 @@ fn redis_api_is_off_by_default_and_env_gated() {
 }
 
 #[test]
+fn redis_api_auth_env_reads_token_file() {
+    let token_file = "target/test-hydracache-server/redis-auth/redis-auth-env.txt";
+    fs::create_dir_all("target/test-hydracache-server/redis-auth").unwrap();
+    fs::write(token_file, "secret\n").unwrap();
+    let _guard = ConfigEnvGuard::new(&[
+        ("HYDRACACHE_REDIS_API_ENABLED", "true"),
+        ("HYDRACACHE_REDIS_AUTH_REQUIRED", "true"),
+        ("HYDRACACHE_REDIS_AUTH_USERNAME", "app-user"),
+        ("HYDRACACHE_REDIS_AUTH_TOKEN_FILE", token_file),
+    ]);
+    let config = ServerConfig::from_env().unwrap();
+    assert!(config.redis_api.auth_required);
+    assert_eq!(config.redis_api.auth_username.as_deref(), Some("app-user"));
+    assert!(config.redis_listener_config().unwrap().auth.required);
+}
+
+#[test]
 fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
     let mut client_conflict = member_config();
     client_conflict.redis_api.enabled = true;
@@ -341,6 +516,116 @@ fn redis_api_addr_conflicting_with_client_or_admin_is_rejected_loud() {
             surface: "admin_api.listen_addr"
         })
     ));
+}
+
+#[test]
+fn redis_api_auth_and_rediss_posture_are_explicit() {
+    let mut missing_auth = member_config_with_redis_surface();
+    missing_auth.redis_api.auth_required = true;
+    assert!(matches!(
+        missing_auth.validate(),
+        Err(ServerConfigError::IncompleteRedisAuth)
+    ));
+
+    let empty_token = test_token_file("empty-redis-auth-token", "");
+    let mut empty_auth = member_config_with_redis_surface();
+    empty_auth.redis_api.auth_required = true;
+    empty_auth.redis_api.auth_token_file = Some(empty_token);
+    assert!(matches!(
+        empty_auth.validate(),
+        Err(ServerConfigError::EmptyRedisAuthToken { .. })
+    ));
+
+    let mut rediss = member_config_with_redis_surface();
+    rediss.redis_api.rediss_enabled = true;
+    assert!(matches!(
+        rediss.validate(),
+        Err(ServerConfigError::RedisRedissRequiresTls)
+    ));
+
+    let mut rediss_with_tls = member_config_with_redis_surface();
+    configure_redis_tls(&mut rediss_with_tls, "rediss-config-valid");
+    rediss_with_tls.validate().unwrap();
+    let runtime = ServerRuntime::new(rediss_with_tls).unwrap().start();
+    assert!(runtime.redis_tls_acceptor().unwrap().is_some());
+}
+
+#[test]
+fn redis_api_rediss_env_reuses_server_tls_material() {
+    let material = write_test_tls_material("rediss-env");
+    let cluster_auth_token = test_token_file("rediss-env-cluster-auth", "cluster-secret\n");
+    let _guard = ConfigEnvGuard::new_owned(vec![
+        ("HYDRACACHE_REDIS_API_ENABLED", OsString::from("true")),
+        ("HYDRACACHE_REDIS_REDISS_ENABLED", OsString::from("true")),
+        ("HYDRACACHE_TLS_ENABLED", OsString::from("true")),
+        (
+            "HYDRACACHE_CLUSTER_AUTH_KEY_ID",
+            OsString::from("rediss-env"),
+        ),
+        (
+            "HYDRACACHE_CLUSTER_AUTH_TOKEN_FILE",
+            cluster_auth_token.as_os_str().to_owned(),
+        ),
+        (
+            "HYDRACACHE_TLS_CERT_PATH",
+            material.cert_path.as_os_str().to_owned(),
+        ),
+        (
+            "HYDRACACHE_TLS_KEY_PATH",
+            material.key_path.as_os_str().to_owned(),
+        ),
+        (
+            "HYDRACACHE_TLS_CA_PATH",
+            material.ca_path.as_os_str().to_owned(),
+        ),
+    ]);
+    let config = ServerConfig::from_env().unwrap();
+    assert!(config.redis_api.enabled);
+    assert!(config.redis_api.rediss_enabled);
+    let runtime = ServerRuntime::new(config).unwrap().start();
+    assert!(runtime.redis_tls_acceptor().unwrap().is_some());
+}
+
+#[tokio::test]
+async fn redis_api_auth_config_is_wired_into_resp_server() {
+    let token_file = test_token_file("redis-auth-wired", "secret\n");
+    let mut config = member_config_with_redis_surface();
+    config.redis_api.auth_required = true;
+    config.redis_api.auth_username = Some("app-user".to_owned());
+    config.redis_api.auth_token_file = Some(token_file);
+    let server = Arc::new(
+        ServerRuntime::new(config)
+            .unwrap()
+            .start()
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let (mut client, server_io) = tokio::io::duplex(4096);
+    let serving = {
+        let server = Arc::clone(&server);
+        tokio::spawn(async move {
+            server.serve_connection(server_io).await.unwrap();
+        })
+    };
+
+    client
+        .write_all(
+            b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *3\r\n$4\r\nAUTH\r\n$8\r\napp-user\r\n$6\r\nsecret\r\n\
+              *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    let mut output = Vec::new();
+    client.read_to_end(&mut output).await.unwrap();
+    serving.await.unwrap();
+
+    assert_eq!(
+        output,
+        b"-NOAUTH Authentication required.\r\n+OK\r\n+OK\r\n+OK\r\n"
+    );
 }
 
 #[test]
@@ -366,6 +651,240 @@ fn daemon_serves_redis_resp_listener_only_when_enabled_and_drains_gracefully() {
     assert_eq!(runtime.redis_active_connections(), 0);
     assert_eq!(runtime.redis_surface_drain().unwrap().started_with, 1);
     assert_eq!(runtime.redis_surface_drain().unwrap().remaining, 0);
+}
+
+#[test]
+fn redis_resp_server_uses_client_surface_state_without_enabling_client_api_routes() {
+    let mut config = member_config_with_redis_surface();
+    config.client_api.enabled = false;
+    let runtime = ServerRuntime::new(config).unwrap().start();
+    let server = runtime.redis_resp_server().unwrap().unwrap();
+
+    assert!(!runtime.client_surface_ready());
+    assert_eq!(
+        server.execute_command(RedisCommand::Set {
+            key: b"k".to_vec(),
+            value: b"v".to_vec(),
+            options: Vec::new(),
+        }),
+        RespValue::SimpleString("OK")
+    );
+    assert_eq!(
+        server.execute_command(RedisCommand::Get { key: b"k".to_vec() }),
+        RespValue::BulkString(b"v".to_vec())
+    );
+}
+
+#[tokio::test]
+async fn redis_tcp_listener_accepts_real_socket_and_honors_drain_gate() {
+    let runtime = Arc::new(Mutex::new(
+        ServerRuntime::new(member_config_with_redis_surface())
+            .unwrap()
+            .start(),
+    ));
+    let server = Arc::new(
+        runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    let serving = tokio::spawn(serve_redis_listener(
+        listener,
+        Arc::clone(&server),
+        Arc::clone(&runtime),
+        None,
+        shutdown_rx,
+    ));
+
+    let mut socket = TcpStream::connect(addr).await.unwrap();
+    socket
+        .write_all(
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    let mut output = Vec::new();
+    socket.read_to_end(&mut output).await.unwrap();
+    assert_eq!(output, b"+OK\r\n$1\r\nv\r\n+OK\r\n");
+
+    wait_for_no_redis_connections(&runtime).await;
+    runtime.lock().expect("server runtime mutex").shutdown();
+
+    let mut rejected = TcpStream::connect(addr).await.unwrap();
+    rejected.write_all(b"*1\r\n$4\r\nPING\r\n").await.unwrap();
+    let mut byte = [0; 1];
+    match rejected.read(&mut byte).await {
+        Ok(0) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::ConnectionReset => {}
+        other => panic!("drained Redis listener should close without RESP output: {other:?}"),
+    }
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn redis_resp_listener_accepts_rediss_auth_and_cache_commands() {
+    let (config, material) = rediss_auth_config("rediss-positive");
+    let (_runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+
+    let output = rediss_exchange(
+        addr,
+        &material.ca_path,
+        b"*3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n\
+          *1\r\n$4\r\nPING\r\n\
+          *3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+          *5\r\n$4\r\nMSET\r\n$1\r\na\r\n$1\r\n1\r\n$1\r\nb\r\n$1\r\n2\r\n\
+          *5\r\n$3\r\nSET\r\n$3\r\nttl\r\n$1\r\nv\r\n$2\r\nPX\r\n$5\r\n50000\r\n\
+          *2\r\n$3\r\nTTL\r\n$3\r\nttl\r\n\
+          *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    let output = String::from_utf8(output).unwrap();
+
+    assert!(output.starts_with("+OK\r\n+PONG\r\n+OK\r\n+OK\r\n+OK\r\n:"));
+    assert!(output.contains("\r\n$1\r\nv\r\n+OK\r\n"));
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn redis_resp_tls_listener_rejects_plaintext_before_mutation() {
+    let (config, material) = rediss_auth_config("rediss-plaintext");
+    let (_runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+
+    let mut plaintext = TcpStream::connect(addr).await.unwrap();
+    plaintext
+        .write_all(
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    let mut byte = [0; 1];
+    match plaintext.read(&mut byte).await {
+        Ok(0) => {}
+        Ok(_) => assert!(
+            !matches!(byte[0], b'+' | b'-' | b':' | b'$' | b'*'),
+            "TLS listener should not return RESP framing to plaintext"
+        ),
+        Err(error) if error.kind() == std::io::ErrorKind::ConnectionReset => {}
+        other => panic!("TLS listener should close plaintext without RESP output: {other:?}"),
+    }
+
+    let output = rediss_exchange(
+        addr,
+        &material.ca_path,
+        b"*3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$6\r\nsecret\r\n\
+          *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    assert_eq!(output, b"+OK\r\n$-1\r\n+OK\r\n");
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn redis_resp_tls_client_rejects_wrong_ca() {
+    let (config, _material) = rediss_auth_config("rediss-wrong-ca");
+    let wrong_material = write_test_tls_material("rediss-wrong-ca-client");
+    let (_runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+
+    let connector = rediss_connector(&wrong_material.ca_path);
+    let tcp = TcpStream::connect(addr).await.unwrap();
+    let server_name = ServerName::try_from("localhost").unwrap();
+    let result = connector.connect(server_name, tcp).await;
+    assert!(
+        result.is_err(),
+        "wrong CA should reject the rediss handshake"
+    );
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn redis_resp_tls_keeps_wrong_auth_as_wrongpass() {
+    let (config, material) = rediss_auth_config("rediss-wrong-auth");
+    let (_runtime, addr, shutdown_tx, serving) = start_redis_listener(config).await;
+
+    let output = rediss_exchange(
+        addr,
+        &material.ca_path,
+        b"*3\r\n$4\r\nAUTH\r\n$7\r\ndefault\r\n$5\r\nwrong\r\n\
+          *1\r\n$4\r\nQUIT\r\n",
+    )
+    .await;
+    let output = String::from_utf8(output).unwrap();
+    assert!(output.starts_with("-WRONGPASS invalid username-password pair or user is disabled."));
+    assert!(!output.contains("secret"));
+    assert!(!output.contains("wrong\r\n"));
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
+}
+
+#[tokio::test]
+async fn server_drain_during_pipeline_has_documented_completion_or_close_behavior() {
+    let runtime = Arc::new(Mutex::new(
+        ServerRuntime::new(member_config_with_redis_surface())
+            .unwrap()
+            .start(),
+    ));
+    let server = Arc::new(
+        runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_resp_server()
+            .unwrap()
+            .unwrap(),
+    );
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (shutdown_tx, shutdown_rx) = watch::channel(false);
+    let serving = tokio::spawn(serve_redis_listener(
+        listener,
+        Arc::clone(&server),
+        Arc::clone(&runtime),
+        None,
+        shutdown_rx,
+    ));
+
+    let mut socket = TcpStream::connect(addr).await.unwrap();
+    socket
+        .write_all(
+            b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n\
+              *2\r\n$3\r\nGET\r\n$1\r\nk\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    runtime.lock().expect("server runtime mutex").shutdown();
+
+    let mut output = Vec::new();
+    match socket.read_to_end(&mut output).await {
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::ConnectionReset => {}
+        Err(error) => panic!("unexpected drain read error: {error}"),
+    }
+    assert!(
+        output == b"+OK\r\n$1\r\nv\r\n+OK\r\n" || output.is_empty(),
+        "drain should complete accepted pipeline or close before RESP output, got {output:?}"
+    );
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
 }
 
 #[test]
@@ -412,6 +931,20 @@ fn server_lifecycle_env_config_parses_join_mode_and_advertise_endpoint() {
     );
     assert!(config.tls.acknowledge_insecure);
     assert!(!config.admin_api.enabled);
+}
+
+async fn wait_for_no_redis_connections(runtime: &Arc<Mutex<ServerRuntime>>) {
+    for _ in 0..10 {
+        if runtime
+            .lock()
+            .expect("server runtime mutex")
+            .redis_active_connections()
+            == 0
+        {
+            return;
+        }
+        tokio::task::yield_now().await;
+    }
 }
 
 #[test]

@@ -1,0 +1,141 @@
+name: Publish Release Notes
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "HydraCache version to publish, without the leading v"
+        required: true
+        default: "0.63.0"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: release-notes
+
+      - name: Resolve release version
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Version must look like a SemVer value without leading v, got: $version" >&2
+            exit 1
+          fi
+
+          tag="v$version"
+          git fetch --force --tags
+          if ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag does not exist. Create/push the tag before publishing release notes." >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "notes=docs/releases/$version.md" >> "$GITHUB_OUTPUT"
+
+      - name: Run docs consistency gate
+        run: cargo run -p xtask --locked -- doc-check
+
+      - name: Validate release notes source
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_NOTES: ${{ steps.release.outputs.notes }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -f "$RELEASE_NOTES" ]]; then
+            echo "$RELEASE_NOTES does not exist." >&2
+            exit 1
+          fi
+
+          python - <<'PY'
+          import os
+          import pathlib
+          import re
+          import sys
+
+          version = os.environ["RELEASE_VERSION"]
+          manifest = pathlib.Path("docs/plans/releases.toml")
+          text = manifest.read_text(encoding="utf-8")
+
+          for block in re.split(r"(?m)^\[\[release\]\]\s*$", text):
+              version_match = re.search(r'(?m)^\s*version\s*=\s*"([^"]+)"', block)
+              if not version_match or version_match.group(1) != version:
+                  continue
+
+              status_match = re.search(r'(?m)^\s*status\s*=\s*"([^"]+)"', block)
+              status = status_match.group(1) if status_match else ""
+              if status != "shipped":
+                  print(
+                      f"{manifest}: release {version} has status {status!r}; "
+                      "only shipped manifest releases may be published to GitHub.",
+                      file=sys.stderr,
+                  )
+                  sys.exit(1)
+              break
+          else:
+              print(
+                  f"{manifest}: release {version} is not in the manifest; "
+                  "publishing as a legacy release with docs/releases notes only."
+              )
+          PY
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_NOTES: ${{ steps.release.outputs.notes }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          title="HydraCache $RELEASE_VERSION"
+          prerelease_flag=()
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            prerelease_flag=(--prerelease)
+          fi
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "$title" \
+              --notes-file "$RELEASE_NOTES" \
+              "${prerelease_flag[@]}"
+          else
+            gh release create "$RELEASE_TAG" \
+              --title "$title" \
+              --notes-file "$RELEASE_NOTES" \
+              --verify-tag \
+              "${prerelease_flag[@]}"
+          fi

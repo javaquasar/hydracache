@@ -102,6 +102,17 @@ Release readiness can also be dry-run before the final version bump and tag:
 .\scripts\verify-release-readiness.ps1 -Version 0.34.0 -DryRun
 ```
 
+GitHub release notes are published by the `Publish Release Notes` workflow.
+When a tag such as `v0.63.0` is pushed, the workflow reads
+`docs/releases/0.63.0.md` and creates or updates the matching GitHub Release.
+For backfilling old tags, run the workflow manually with the `version` input.
+
+For versions present in `docs/plans/releases.toml`, the manifest entry must be
+`status = "shipped"` before the workflow will publish. `cargo xtask doc-check`
+also requires every shipped manifest release to have
+`docs/releases/<version>.md`, so missing public notes fail before a release is
+tagged.
+
 On Windows release machines, prefer a serial cargo build before running the
 full gate if linker file locks have appeared recently:
 
@@ -136,6 +147,29 @@ The Redis RESP edge facade is governed by
 [`docs/integrations/redis_compat_conformance.json`](integrations/redis_compat_conformance.json).
 That manifest is the source of truth for the supported/candidate/unsupported command matrix,
 real Redis oracle scenarios, client-smoke scenarios, and release-note command table.
+For `0.63.0`, RESP3 negotiation, `MSET`, minimal `INFO`, cache-subset `TYPE`, Redis TTL commands,
+Redis `AUTH`/`HELLO AUTH`, native `rediss://`, and HydraCache-only `HC.NAMESPACE`/tag extensions are supported release scope: the manifest rows
+must stay tied to RESP3 negotiation/codec tests, atomic batch tests, health/probe honesty tests,
+protocol v3 TTL metadata/expiry tests, client-surface expiry tests, auth-required listener tests,
+credential redaction and hardened password-comparison tests, TLS handshake/plaintext/wrong-CA tests,
+edge-local tag invalidation tests, real Redis oracle tolerance/divergence tests, and mainstream-client scenarios.
+Redis Cluster remains intentionally unsupported in `0.63.0`: `CLUSTER SLOTS`,
+`CLUSTER NODES`, and `CLUSTER INFO` must stay tied to standalone-only negative
+tests that prove no topology, hash slot metadata, `MOVED`, or `ASK` is emitted.
+Redis multi-db is intentionally not implemented: `SELECT 0` is the only
+supported logical database command and must stay tied to fast tests proving it is
+a no-op, while non-zero or invalid DB indexes fail loud before mutation.
+Health/probe compatibility is intentionally minimal: `INFO` must expose only
+honest RESP facade facts, `TYPE` must return only `string` or `none` through the
+cache subset, and `ROLE`, `DBSIZE`, and `SCAN` must stay unsupported-loud.
+Admin commands are disabled by default: `CONFIG` must not fabricate Redis server
+configuration, and `FLUSHDB`/`FLUSHALL` must return stable `NOPERM` before
+dispatch so existing keys remain intact.
+HydraCache tag extensions are listener-local, not Redis-native: `HC.NAMESPACE`
+must stay listener-scoped, `HC.TAG`/`HC.SETTAGS` must attach metadata only to
+existing live keys, and `HC.INVALIDATE_TAG` must invalidate through
+`ClientSurfaceState` without scanning the Redis keyspace or claiming
+cross-listener/global tag semantics.
 
 When adding or changing a RESP command:
 
@@ -153,11 +187,17 @@ cargo test -p hydracache-redis-compat --locked
 cargo test -p hydracache-server --test server_lifecycle redis --locked
 ```
 
-The fast crate gate covers the RESP2 codec, translator, unsupported/admin-disabled
-matrix, `HC.*` classification, golden RESP fixtures, coalesced/partial frame
-boundaries, decoder fuzz smoke, and oversized frame limits. The server lifecycle
-gate proves the listener config is off by default, address conflicts are rejected,
-and the modeled RESP surface drains when enabled.
+The fast crate gate covers the RESP2/RESP3 codec, translator, protocol v3 TTL metadata/expiry
+compatibility, atomic `MSET`, `SETEX`/`PSETEX` normalization to the same protocol v3 expiry path, Redis `AUTH`/`HELLO AUTH` behavior for auth-required listeners,
+credential redaction, hardened password comparison, unsupported/admin-disabled matrix, `HC.*` classification, golden RESP fixtures,
+coalesced/partial frame boundaries, Redis Cluster negative coverage, `SELECT 0` single-database
+coverage, minimal `INFO`, cache-subset `TYPE`, edge-local `HC.NAMESPACE`/tag invalidation,
+disabled `CONFIG`/`FLUSHDB`/`FLUSHALL`
+non-mutation, decoder fuzz smoke, and oversized frame limits. The server
+lifecycle gate proves the
+listener config is off by default, address conflicts are rejected, Redis TLS material is validated,
+plaintext is rejected on TLS listeners before mutation, the real TCP/TLS RESP listener starts when
+enabled, and the drain gate closes new RESP connections instead of serving them.
 
 Run the Docker/client matrix before claiming a Redis-client compatibility row:
 
@@ -167,11 +207,76 @@ cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored
 Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS -ErrorAction SilentlyContinue
 ```
 
-That gated tier must use the pinned Redis images from
+The CI workflow has a manual/scheduled job named `Redis Compatibility Release
+Proof` for this tier. It repeats the Redis checks normally run locally (`fmt`,
+`redis_compat` doc-check, `hydracache-redis-compat` tests,
+`hydracache-server` Redis lifecycle test, and Redis clippy), then runs the
+Docker/client/oracle matrix with required oracle and required Python/Node/Go/JVM
+rows, and finally runs the RESP resource smoke. This job is not part of normal
+push/PR fast CI; trigger it with `workflow_dispatch` or wait for the scheduled
+run.
+
+That gated tier contains a compiled `redis-rs` mainstream-client smoke and the
+real Redis oracle sentinels. It must use the pinned Redis images from
 `redis_compat_conformance.json` and compare supported-subset scenarios against
-real Redis after the documented normalization rules. Add Python, Node, Go, and
-JVM client rows only when their unchanged mainstream Redis clients pass the same
-scenario suite.
+real Redis after the documented normalization rules, including RESP3 negotiation, `SELECT 0`,
+minimal `INFO`, cache-subset `TYPE`, exact `MSET` behavior, bounded TTL tolerance,
+non-positive and missing-key expiry return edges, `SET NX PX/EX` lock acquire/contention,
+token-safe lock release/extend script shims, HydraCache-only `HC.NAMESPACE`/tag extensions,
+auth-required startup, and `rediss://` startup. Python and Node rows additionally exercise
+redis-py `Lock` and Node `redlock` single-resource APIs; Go and JVM rows keep exercising the
+mainstream Redis client subset and may add a lock-library row only after that library's script trace
+is explicitly allowlisted.
+The fast tier must also keep `sha1_hex_matches_known_answer_vectors`,
+`lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions`, and
+`eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted` green so the
+script SHA path is validated independently of the facade's own SHA resolver. The
+same fast tier keeps `redis_auth_uses_hardened_credential_comparison_contract`
+green so Redis `AUTH` does not regress to prefix-dependent password comparison
+while still returning Redis-shaped `WRONGPASS`.
+Passing targeted Rust tests is not enough for the final release claim: if this
+Docker/client matrix or the pinned real Redis oracle is not green, release notes
+must describe the implementation as targeted-test covered with ecosystem/oracle
+proof pending.
+
+By default, each optional Python/Node/Go/JVM row first tries the local mainstream
+client. If a local runtime or client library is missing and Docker is available,
+the Python, Node, and JVM rows fall back to pinned containerized client images:
+`python:3.13.7-slim` with `redis==5.2.1`,
+`node:24.6.0-bookworm-slim` with `redis@4.7.0 redlock@5.0.0-beta.2`, and
+`maven:3.9.11-eclipse-temurin-17` with `Jedis 5.2.0`. The Docker rows connect
+back to the host RESP facade through `host.docker.internal`, so Docker Desktop
+or Docker's `host-gateway` support must be available. The Go row uses the local
+Go toolchain and `go-redis/v9 v9.7.0`.
+
+If both the local client and Docker fallback are unavailable, the row skips loud
+inside the ignored matrix. To make one row mandatory in a nightly job, set the
+matching require flag alongside `HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS`:
+
+```powershell
+$env:HYDRACACHE_REQUIRE_REDIS_ORACLE = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_GO = '1'
+$env:HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM = '1'
+```
+
+For release-proof runs, `HYDRACACHE_REQUIRE_REDIS_ORACLE=1` is mandatory: the
+pinned Redis oracle rows must fail if Docker is unavailable instead of producing
+a skip-only green. For the redis-py/redlock lock-library claim, the Python and
+Node rows must also run against the pinned versions above; a local client with a
+different redis-py version skips rather than silently broadening the reviewed
+compatibility surface.
+
+To prove the containerized Python/Node/JVM paths specifically, force Docker
+fallback for rows that have container coverage:
+
+```powershell
+$env:HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = '1'
+$env:HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER = '1'
+cargo test -p hydracache-redis-compat --test redis_clients --locked -- --ignored nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset --nocapture
+Remove-Item Env:\HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER -ErrorAction SilentlyContinue
+```
 
 Run the resource/hostile-input smoke before widening the listener surface:
 
@@ -180,6 +285,29 @@ $env:HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE = '1'
 cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked -- --ignored --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE -ErrorAction SilentlyContinue
 ```
+
+That gated target compiles in the fast suite and runs only when the env var is
+set. It exercises pipelined extension diagnostics redaction, oversized-frame
+failure, slowloris idle timeout, and zero-mutation behavior for hostile input.
+
+Run the multi-node daemon RESP E2E before closing the release:
+
+```powershell
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E = '1'
+cargo test -p hydracache-server --test redis_resp_multinode --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+```
+
+That gate starts real `hydracache-server` processes with the RESP listener enabled
+and verifies a supported-subset RESP roundtrip before and after a daemon
+drain/restart boundary for one selected RESP endpoint. It is a lifecycle and
+edge-wiring gate, not a distributed Redis consistency proof. The 0.63 Plan B
+scope also requires node-local sentinels: write through RESP endpoint A and read
+through endpoint B must document the expected miss, and lock acquire through
+endpoint A and endpoint B must document that multi-endpoint Redis lock mutual
+exclusion is not claimed. The sentinel names are
+`multinode_resp_facade_documents_node_local_state` and
+`multinode_resp_lock_subset_is_single_endpoint_only`.
 
 Commands without executable manifest coverage stay `candidate` or `unsupported`.
 

@@ -87,6 +87,7 @@ fn drained_node_restart_does_not_silently_resurrect_voter() -> TestResult {
         .expect("cluster has a follower to drain");
 
     let _ = cluster.drain(drain_index)?;
+    cluster.wait_for_non_draining_shape("drain removal committed before follower kill", 2, 2)?;
     cluster.kill(drain_index)?;
     cluster.wait_for_shape(2, 2)?;
     cluster.restart(drain_index)?;

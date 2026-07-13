@@ -5,7 +5,9 @@ use hydracache_observability::{
     HydraCacheRegistry, LeaderView, LifecycleView, PartitionSummary, TopologyReshardPhase,
     TopologyStatusSource,
 };
+use hydracache_redis_compat::{RedisListenerConfig, RedisRespServer, RedisServeError};
 use serde::Serialize;
+use std::net::SocketAddr;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -14,6 +16,7 @@ use crate::cluster_status::{
     ModeledClusterStatus, Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
+use crate::redis_tcp::{RedisTlsAcceptor, RedisTlsError};
 use crate::services::{DrainOutcome, GracefulShutdown, ServiceSet};
 
 /// Runtime state exposed by health/readiness checks.
@@ -236,6 +239,8 @@ pub struct ServerRuntime {
     accepting: bool,
     flushed: bool,
     client_surface: Option<ClientSurfaceRuntime>,
+    redis_client_state: Option<Arc<hydracache_client_transport_axum::ClientSurfaceState>>,
+    redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
     observability: ServerObservabilityModel,
@@ -266,8 +271,26 @@ impl ServerRuntime {
         } else {
             None
         };
+        let redis_client_state = if config.redis_api.enabled {
+            Some(match &client_surface {
+                Some(surface) => surface.state(),
+                None => Arc::new(
+                    hydracache_client_transport_axum::ClientSurfaceState::new(
+                        config.client_api.limits,
+                    )
+                    .map_err(|error| ServerConfigError::InvalidClientApi(error.to_string()))?,
+                ),
+            })
+        } else {
+            None
+        };
         let redis_surface = if config.redis_api.enabled {
             Some(RedisSurfaceRuntime::new())
+        } else {
+            None
+        };
+        let redis_listener_config = if config.redis_api.enabled {
+            Some(config.redis_listener_config()?)
         } else {
             None
         };
@@ -281,6 +304,8 @@ impl ServerRuntime {
             accepting: false,
             flushed: false,
             client_surface,
+            redis_client_state,
+            redis_listener_config,
             redis_surface,
             cluster_status,
             observability: ServerObservabilityModel::default(),
@@ -434,6 +459,32 @@ impl ServerRuntime {
     /// Return the last Redis RESP surface drain result, if the surface is enabled.
     pub fn redis_surface_drain(&self) -> Option<RedisSurfaceDrain> {
         self.last_redis_surface_drain
+    }
+
+    /// Return the Redis RESP bind address when that optional listener is enabled.
+    pub fn redis_listener_addr(&self) -> Option<SocketAddr> {
+        self.redis_surface
+            .as_ref()
+            .map(|_| self.config.redis_api.listen_addr)
+    }
+
+    /// Build a Redis RESP executor using this runtime's shared client-surface state.
+    pub fn redis_resp_server(&self) -> Result<Option<RedisRespServer>, RedisServeError> {
+        let Some(state) = &self.redis_client_state else {
+            return Ok(None);
+        };
+        let Some(config) = &self.redis_listener_config else {
+            return Ok(None);
+        };
+        RedisRespServer::new(Arc::clone(state), config.clone()).map(Some)
+    }
+
+    /// Build the optional Redis TLS acceptor when rediss:// is enabled.
+    pub fn redis_tls_acceptor(&self) -> Result<Option<RedisTlsAcceptor>, RedisTlsError> {
+        if !self.config.redis_api.enabled || !self.config.redis_api.rediss_enabled {
+            return Ok(None);
+        }
+        RedisTlsAcceptor::from_tls_config(&self.config.tls).map(Some)
     }
 
     /// Stop accepting new work and enter the draining state.

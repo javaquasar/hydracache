@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-readme.workspace = true
+readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
 publish = false
@@ -15,12 +15,18 @@ description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset
 [dependencies]
 bytes.workspace = true
 hydracache-client-protocol.workspace = true
+hydracache-client-transport-axum.workspace = true
 redis-protocol.workspace = true
+subtle.workspace = true
 thiserror.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
-hydracache-client-transport-axum.workspace = true
 proptest.workspace = true
+rcgen.workspace = true
+redis = { workspace = true, features = ["tokio-rustls-comp", "tls-rustls-insecure"] }
+rustls.workspace = true
+tokio-rustls.workspace = true
 
 [lints]
 workspace = true

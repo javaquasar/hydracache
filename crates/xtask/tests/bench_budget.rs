@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use xtask::bench_budget::{
-    check_budget, load_measurements, parse_budget, BenchMeasurement, BenchMeasurements,
+    check_budget, load_budget, load_measurements, parse_budget, BenchMeasurement, BenchMeasurements,
 };
 
 #[test]
@@ -126,6 +126,22 @@ fn criterion_base_estimates_directory_is_loaded() {
 }
 
 #[test]
+fn criterion_benchmark_json_restores_slash_containing_ids() {
+    let root = unique_temp_dir("criterion_benchmark_json_restores_slash_containing_ids");
+    write_criterion_estimate_in_dir(&root, "hot_path_hit", "new", 123.0);
+    write_criterion_benchmark_id(&root, "hot_path_hit", "new", "hot_path/hit");
+
+    let loaded = load_measurements(&root).unwrap();
+
+    assert_eq!(
+        loaded.measurements["hot_path/hit"],
+        BenchMeasurement { mean_ns: 123.0 }
+    );
+    assert!(!loaded.measurements.contains_key("hot_path_hit"));
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
 fn criterion_new_estimates_override_base() {
     let root = unique_temp_dir("criterion_new_estimates_override_base");
     write_criterion_estimate(&root, "hot_path/hit", "base", 200.0);
@@ -138,6 +154,29 @@ fn criterion_new_estimates_override_base() {
         BenchMeasurement { mean_ns: 123.0 }
     );
     let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn repository_budget_accepts_current_ci_benchmark_shape() {
+    let workspace = workspace_root();
+    let rules = load_budget(workspace.join("benches/budget.toml")).unwrap();
+    let baseline = load_measurements(workspace.join("benches/baseline/0_37.json")).unwrap();
+    let current = measurements([
+        ("hot_path/event_publish_no_subscriber", 2_200.0),
+        ("hot_path/hit", 260.0),
+        ("hot_path/miss", 180.0),
+        ("hot_path/single_flight_16", 65_000.0),
+        ("outbox_write/write_with_outbox", 10_000.0),
+        ("outbox_write/write_without_outbox", 5.0),
+    ]);
+
+    let report = check_budget(&rules, &baseline, &current);
+
+    assert!(
+        report.passed(),
+        "repository budget should accept current CI-shaped measurements: {:?}",
+        report.failures
+    );
 }
 
 fn measurements<const N: usize>(items: [(&str, f64); N]) -> BenchMeasurements {
@@ -157,15 +196,49 @@ fn unique_temp_dir(name: &str) -> PathBuf {
     path
 }
 
+fn workspace_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("xtask crate should live under crates/xtask")
+        .to_path_buf()
+}
+
 fn write_criterion_estimate(root: &Path, id: &str, snapshot: &str, mean_ns: f64) {
     let estimate_dir = id
         .split('/')
         .fold(root.to_path_buf(), |path, component| path.join(component))
         .join(snapshot);
-    fs::create_dir_all(&estimate_dir).unwrap();
+    write_criterion_estimate_file(&estimate_dir, mean_ns);
+}
+
+fn write_criterion_estimate_in_dir(
+    root: &Path,
+    directory_name: &str,
+    snapshot: &str,
+    mean_ns: f64,
+) {
+    let estimate_dir = root.join(directory_name).join(snapshot);
+    write_criterion_estimate_file(&estimate_dir, mean_ns);
+}
+
+fn write_criterion_estimate_file(estimate_dir: &Path, mean_ns: f64) {
+    fs::create_dir_all(estimate_dir).unwrap();
     fs::write(
         estimate_dir.join("estimates.json"),
         format!(r#"{{"mean":{{"point_estimate":{mean_ns}}}}}"#),
+    )
+    .unwrap();
+}
+
+fn write_criterion_benchmark_id(root: &Path, directory_name: &str, snapshot: &str, group_id: &str) {
+    let estimate_dir = root.join(directory_name).join(snapshot);
+    fs::create_dir_all(&estimate_dir).unwrap();
+    fs::write(
+        estimate_dir.join("benchmark.json"),
+        format!(
+            r#"{{"group_id":"{group_id}","function_id":null,"value_str":null,"throughput":[]}}"#
+        ),
     )
     .unwrap();
 }

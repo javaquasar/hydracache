@@ -4,9 +4,10 @@ use std::path::Path;
 use hydracache_client_protocol::{
     require_protocol_version, ClientContext, ClientErrorCode, ClientErrorEnvelope, ClientFrame,
     ClientRequest, ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope,
-    ClientWireMessage, InvalidationEvent, Namespace, ReadConsistency, RegionId, RepairAction,
-    StructuredKey, SubscriptionWatermarkTracker, VersionHandshake, Watermark, MIN_PROTOCOL_VERSION,
-    PROTOCOL_VERSION,
+    ClientWireMessage, CompareValueExpireMode, ConditionalPutCondition, InvalidationEvent,
+    Namespace, ReadConsistency, RegionId, RepairAction, StructuredKey,
+    SubscriptionWatermarkTracker, VersionHandshake, Watermark, MIN_PROTOCOL_VERSION,
+    PROTOCOL_VERSION, REDIS_LOCK_PROTOCOL_VERSION, TTL_PROTOCOL_VERSION,
 };
 
 fn ns() -> Namespace {
@@ -19,10 +20,10 @@ fn key(id: &str) -> StructuredKey {
 
 #[test]
 fn protocol_version_handshake_picks_highest_common() {
-    let client = VersionHandshake::new(1, 3);
-    let server = VersionHandshake::new(1, 2);
+    let client = VersionHandshake::new(1, PROTOCOL_VERSION);
+    let server = VersionHandshake::new(1, PROTOCOL_VERSION);
 
-    assert_eq!(client.negotiate(server).unwrap(), 2);
+    assert_eq!(client.negotiate(server).unwrap(), PROTOCOL_VERSION);
 }
 
 #[test]
@@ -67,6 +68,127 @@ fn protocol_default_handshake_advertises_v1_to_v2_window() {
 
     assert_eq!(handshake.min, MIN_PROTOCOL_VERSION);
     assert_eq!(handshake.max, PROTOCOL_VERSION);
+}
+
+#[test]
+fn client_protocol_v3_registers_ttl_metadata_without_breaking_v2() {
+    assert_eq!(TTL_PROTOCOL_VERSION, 3);
+    assert_eq!(PROTOCOL_VERSION, 4);
+
+    let put_without_ttl = ClientRequest::Put {
+        ns: ns(),
+        key: key("42"),
+        value: vec![1, 2, 3],
+        ttl_ms: None,
+        dimensions: Vec::new(),
+    };
+    assert_eq!(
+        put_without_ttl.minimum_protocol_version(),
+        MIN_PROTOCOL_VERSION
+    );
+    assert!(put_without_ttl.ensure_supported_by(2).is_ok());
+
+    let put_with_ttl = ClientRequest::Put {
+        ns: ns(),
+        key: key("42"),
+        value: vec![1, 2, 3],
+        ttl_ms: Some(1_000),
+        dimensions: Vec::new(),
+    };
+    assert_eq!(
+        put_with_ttl.minimum_protocol_version(),
+        TTL_PROTOCOL_VERSION
+    );
+    assert_eq!(
+        put_with_ttl.ensure_supported_by(2).unwrap_err().code,
+        ClientErrorCode::IncompatibleVersion
+    );
+    assert!(put_with_ttl.ensure_supported_by(3).is_ok());
+
+    for request in [
+        ClientRequest::Expire {
+            ns: ns(),
+            key: key("42"),
+            ttl_ms: 1_000,
+        },
+        ClientRequest::Persist {
+            ns: ns(),
+            key: key("42"),
+        },
+        ClientRequest::GetTtl {
+            ns: ns(),
+            key: key("42"),
+        },
+    ] {
+        assert_eq!(request.minimum_protocol_version(), TTL_PROTOCOL_VERSION);
+        assert_eq!(
+            request.ensure_supported_by(2).unwrap_err().code,
+            ClientErrorCode::IncompatibleVersion
+        );
+        assert!(request.ensure_supported_by(3).is_ok());
+    }
+}
+
+#[test]
+fn client_protocol_v4_registers_lock_conditional_operations() {
+    assert_eq!(REDIS_LOCK_PROTOCOL_VERSION, 4);
+    assert_eq!(PROTOCOL_VERSION, 4);
+
+    let conditional_put = ClientRequest::ConditionalPut {
+        ns: ns(),
+        key: key("lock"),
+        value: b"token".to_vec(),
+        ttl_ms: Some(5_000),
+        condition: ConditionalPutCondition::IfAbsent,
+    };
+    assert_eq!(
+        conditional_put.minimum_protocol_version(),
+        REDIS_LOCK_PROTOCOL_VERSION
+    );
+    assert_eq!(
+        conditional_put.ensure_supported_by(3).unwrap_err().code,
+        ClientErrorCode::IncompatibleVersion
+    );
+    assert!(conditional_put.ensure_supported_by(4).is_ok());
+
+    for request in [
+        ClientRequest::CompareValueAndInvalidate {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"token".to_vec(),
+        },
+        ClientRequest::CompareValueAndExpire {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"token".to_vec(),
+            ttl_ms: 5_000,
+            mode: CompareValueExpireMode::Replace,
+        },
+        ClientRequest::CompareValueAndExpire {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"token".to_vec(),
+            ttl_ms: 5_000,
+            mode: CompareValueExpireMode::ReplaceIfExpiring,
+        },
+        ClientRequest::CompareValueAndExpire {
+            ns: ns(),
+            key: key("lock"),
+            expected_value: b"token".to_vec(),
+            ttl_ms: 5_000,
+            mode: CompareValueExpireMode::AddToRemaining,
+        },
+    ] {
+        assert_eq!(
+            request.minimum_protocol_version(),
+            REDIS_LOCK_PROTOCOL_VERSION
+        );
+        assert_eq!(
+            request.ensure_supported_by(3).unwrap_err().code,
+            ClientErrorCode::IncompatibleVersion
+        );
+        assert!(request.ensure_supported_by(4).is_ok());
+    }
 }
 
 #[test]
