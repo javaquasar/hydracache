@@ -1954,6 +1954,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-cache-sim"
+version = "0.62.0"
+
+[[package]]
 name = "hydracache-cdc-postgres"
 version = "0.62.0"
 dependencies = [

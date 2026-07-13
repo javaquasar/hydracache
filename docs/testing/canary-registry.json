@@ -263,6 +263,19 @@
       "makes_guard_fail": true
     },
     {
+      "w_item": "W22",
+      "guard": {
+        "file": "crates/hydracache-cache-sim/tests/cache_efficiency.rs",
+        "function": "eviction_hit_rate_is_within_tolerance_of_belady_optimum_on_standard_traces"
+      },
+      "canary": {
+        "file": "crates/hydracache-cache-sim/tests/cache_efficiency.rs",
+        "function": "canary_random_eviction_policy_fails_the_hit_rate_bound"
+      },
+      "red_evidence": "The canary replays the same committed trace with deterministic random eviction and proves it violates the Belady tolerance; W22 must fail if the hit-rate bound stops discriminating.",
+      "makes_guard_fail": true
+    },
+    {
       "w_item": "W23",
       "guard": {
         "file": "crates/hydracache-cluster-raft/tests/model_check.rs",

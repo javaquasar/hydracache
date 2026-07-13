@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/hydracache-cdc-postgres",
+    "crates/hydracache-cache-sim",
     "crates/hydracache",
     "crates/hydracache-actuator-axum",
     "crates/hydracache-client",
