@@ -37,3 +37,9 @@ serde_json.workspace = true
 stateright.workspace = true
 tokio.workspace = true
 tower.workspace = true
+
+[target.'cfg(hydracache_loom)'.dev-dependencies]
+loom.workspace = true
+
+[lints]
+workspace = true

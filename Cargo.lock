@@ -2044,6 +2044,7 @@ dependencies = [
  "hydracache-cluster-chitchat",
  "hydracache-cluster-testkit",
  "hydracache-cluster-transport-axum",
+ "loom",
  "proptest",
  "protobuf",
  "raft",

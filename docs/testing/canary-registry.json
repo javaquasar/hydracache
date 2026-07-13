@@ -302,6 +302,19 @@
       "makes_guard_fail": true
     },
     {
+      "w_item": "W26",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/loom_concurrency.rs",
+        "function": "loom_single_key_conditional_store_is_mutually_exclusive_under_all_interleavings"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/loom_concurrency.rs",
+        "function": "canary_loom_conditional_store_with_a_relaxed_ordering_races"
+      },
+      "red_evidence": "The canary swaps mutual exclusion for relaxed load/store acquisition; W26 loom guards must find an interleaving with multiple winners.",
+      "makes_guard_fail": true
+    },
+    {
       "w_item": "W27",
       "guard": {
         "file": "crates/hydracache-redis-compat/tests/connection_chaos.rs",

@@ -363,6 +363,30 @@ jobs:
             target/test-hydracache-daemon-process/**
           if-no-files-found: ignore
 
+  raft-loom:
+    name: Raft Loom
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-loom
+
+      - name: Run loom concurrency checks
+        env:
+          RUSTFLAGS: --cfg hydracache_loom
+        run: cargo test -p hydracache-cluster-raft --test loom_concurrency --locked -- --nocapture
+
   raft-mutation-testing:
     name: Raft Mutation Testing
     runs-on: ubuntu-latest

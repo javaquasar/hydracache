@@ -45,7 +45,7 @@ keywords = ["cache", "caching", "async", "runtime"]
 categories = ["caching", "asynchronous"]
 
 [workspace.lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)"] }
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)", "cfg(hydracache_loom)"] }
 
 [workspace.dependencies]
 async-nats = { version = "0.49.1", default-features = false, features = ["ring"] }
