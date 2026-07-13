@@ -535,13 +535,17 @@ the grid; replay after snapshot restore cannot lower `applied_index` or export a
 double-applied** across snapshot and restart (e.g., an add-voter applied twice, or a duplicate
 ConfChange changing the voter set twice).
 
-**Files to change.** New `crates/hydracache-cluster-raft/tests/proposal_idempotency.rs`; reuse the
-message-filter to drop the response and force a client retry; reuse `RuntimeRaftCluster`.
+**Files to change.** New `crates/hydracache-cluster-raft/tests/proposal_idempotency.rs`; extend
+`hydracache-cluster-testkit::RuntimeRaftCluster` with a restart-on-existing-store helper and a
+test-only Raft snapshot save helper; reuse the message-filter to duplicate/reorder append delivery and
+force a client retry.
 
-**Design.** Propose a ConfChange, drop the commit response so the client retries with the same command
-id, then snapshot + restart the leader. Assert the final `ConfState` reflects the operation **once**;
-duplicate/reordered ConfChange is safe (matches `0.62`'s duplicate-ConfChange assertion but now across
-a snapshot/restart boundary).
+**Design.** Propose a ConfChange under duplicate/reordered append delivery, persist a Raft snapshot
+with the current `ConfState`, restart the node on the same in-memory log store, then retry the same
+ConfChange. Assert the final `ConfState` reflects the operation **once**; duplicate/reordered
+ConfChange is safe (matches `0.62`'s duplicate-ConfChange assertion but now across a
+snapshot/restart boundary). Separately, replay a stable metadata command id after
+`export_snapshot`/`from_snapshot` and assert the metadata command journal does not grow.
 
 **Required tests** (fast): `retried_confchange_is_not_double_applied_across_snapshot_and_restart`,
 `duplicate_reordered_proposal_is_idempotent_after_snapshot`.

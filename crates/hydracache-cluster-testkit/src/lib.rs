@@ -12,14 +12,14 @@ use std::sync::{Arc, Mutex, RwLock};
 use chitchat::transport::{ChannelTransport, Socket, Transport};
 use chitchat::{ChitchatMessage, Deserializable, Serializable};
 use hydracache::{
-    CacheResult, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryLiveness,
+    CacheError, CacheResult, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryLiveness,
     ClusterGeneration, ClusterNodeId,
 };
 use hydracache_cluster_raft::{
-    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole,
-    RaftWireMessage,
+    InMemoryRaftLogStore, RaftLogStore, RaftMessageSink, RaftMetadataRuntime,
+    RaftMetadataRuntimeConfig, RaftRuntimeRole, RaftWireMessage,
 };
-use raft::eraftpb::MessageType;
+use raft::eraftpb::{MessageType, Snapshot};
 
 /// Delivery direction used by packet filters.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1006,6 +1006,8 @@ impl GossipLivenessScript {
 /// Deterministic in-process raft runtime cluster used by PR-tier tests.
 pub struct RuntimeRaftCluster {
     nodes: BTreeMap<u64, Arc<RaftMetadataRuntime>>,
+    configs: BTreeMap<u64, RaftMetadataRuntimeConfig>,
+    stores: BTreeMap<u64, InMemoryRaftLogStore>,
     filters: RaftFilterSet,
     delivered: Vec<RaftWireMessage>,
 }
@@ -1022,23 +1024,7 @@ impl RuntimeRaftCluster {
         I: IntoIterator<Item = u64>,
     {
         let voters = voters.into_iter().collect::<Vec<_>>();
-        let nodes = voters
-            .iter()
-            .copied()
-            .map(|id| {
-                let config = RaftMetadataRuntimeConfig::multi_voter("orders", id, voters.clone())
-                    .ticks(5, 1);
-                (
-                    id,
-                    Arc::new(RaftMetadataRuntime::with_config(config).unwrap()),
-                )
-            })
-            .collect();
-        Self {
-            nodes,
-            filters: RaftFilterSet::default(),
-            delivered: Vec::new(),
-        }
+        Self::with_voters_and_prevote(voters, BTreeMap::new())
     }
 
     /// Create a cluster where selected nodes override the default pre-vote setting.
@@ -1047,25 +1033,68 @@ impl RuntimeRaftCluster {
         I: IntoIterator<Item = u64>,
     {
         let voters = voters.into_iter().collect::<Vec<_>>();
-        let nodes = voters
-            .iter()
-            .copied()
-            .map(|id| {
-                let pre_vote = overrides.get(&id).copied().unwrap_or(true);
-                let config = RaftMetadataRuntimeConfig::multi_voter("orders", id, voters.clone())
-                    .pre_vote(pre_vote)
-                    .ticks(5, 1);
-                (
-                    id,
-                    Arc::new(RaftMetadataRuntime::with_config(config).unwrap()),
-                )
-            })
-            .collect();
+        Self::with_voters_and_prevote(voters, overrides)
+    }
+
+    fn with_voters_and_prevote(voters: Vec<u64>, overrides: BTreeMap<u64, bool>) -> Self {
+        let mut nodes = BTreeMap::new();
+        let mut configs = BTreeMap::new();
+        let mut stores = BTreeMap::new();
+        for id in voters.iter().copied() {
+            let pre_vote = overrides.get(&id).copied().unwrap_or(true);
+            let config = RaftMetadataRuntimeConfig::multi_voter("orders", id, voters.clone())
+                .pre_vote(pre_vote)
+                .ticks(5, 1);
+            let store = InMemoryRaftLogStore::new_with_conf_state((voters.clone(), vec![]));
+            let runtime = RaftMetadataRuntime::with_storage(config.clone(), store.clone()).unwrap();
+            nodes.insert(id, Arc::new(runtime));
+            configs.insert(id, config);
+            stores.insert(id, store);
+        }
         Self {
             nodes,
+            configs,
+            stores,
             filters: RaftFilterSet::default(),
             delivered: Vec::new(),
         }
+    }
+
+    /// Restart one runtime over its existing in-memory raft log store.
+    pub fn restart_node(&mut self, node_id: u64) -> CacheResult<()> {
+        let config = self
+            .configs
+            .get(&node_id)
+            .cloned()
+            .ok_or_else(|| CacheError::Backend(format!("unknown raft node {node_id}")))?;
+        let store =
+            self.stores.get(&node_id).cloned().ok_or_else(|| {
+                CacheError::Backend(format!("missing raft store for node {node_id}"))
+            })?;
+        let runtime = RaftMetadataRuntime::with_storage(config, store)?;
+        self.nodes.insert(node_id, Arc::new(runtime));
+        Ok(())
+    }
+
+    /// Persist a raft snapshot for one node using its current applied index and conf state.
+    pub fn save_snapshot_for_node(&self, node_id: u64) -> CacheResult<u64> {
+        let runtime = self.node(node_id);
+        let runtime_snapshot = runtime.snapshot();
+        let store = self
+            .stores
+            .get(&node_id)
+            .ok_or_else(|| CacheError::Backend(format!("missing raft store for node {node_id}")))?;
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = runtime_snapshot.applied_index;
+        snapshot.mut_metadata().term = runtime_snapshot.term;
+        snapshot
+            .mut_metadata()
+            .mut_conf_state()
+            .set_voters(runtime.voter_ids()?);
+        store
+            .save_snapshot(&snapshot, usize::MAX)
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
+        Ok(runtime_snapshot.applied_index)
     }
 
     /// Return the shared filter set.

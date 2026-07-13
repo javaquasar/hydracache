@@ -545,6 +545,7 @@ cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_
 cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
+cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -590,6 +591,11 @@ operation, real snapshot prefix, and restart point. It also protects the
 snapshot apply contract that a restored runtime must never export a snapshot
 with fewer applied indexes than applied command envelopes after replaying a
 committed tail.
+
+The W13 proposal-idempotency gate uses the cluster testkit's restartable
+in-memory Raft log seam. It persists a Raft snapshot with the current
+`ConfState`, restarts the node on the same store, retries the ConfChange, and
+also covers metadata command-id retry after `export_snapshot`/`from_snapshot`.
 
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,

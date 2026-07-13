@@ -118,6 +118,9 @@ jobs:
       - name: Snapshot exhaustive grid
         run: cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
 
+      - name: Proposal idempotency
+        run: cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
+
       - name: Management console
         run: |
           npm --prefix console ci
