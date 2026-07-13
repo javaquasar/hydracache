@@ -953,6 +953,8 @@ where
     }
 
     fn restore_export(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
+        validate_snapshot_apply_contract(&snapshot)?;
+        let snapshot_index = snapshot.applied_index;
         {
             let mut state = self.raft.lock().expect("raft metadata state poisoned");
             state.commands.clear();
@@ -960,8 +962,12 @@ where
             state.results.clear();
             state.applied_index = snapshot.applied_index;
         }
-        for envelope in snapshot.commands {
-            self.apply_recovered_envelope(envelope)?;
+        for (offset, envelope) in snapshot.commands.into_iter().enumerate() {
+            let tail_index = offset + 1;
+            let command_id = envelope.command_id.clone();
+            self.apply_snapshot_envelope(envelope).map_err(|error| {
+                snapshot_apply_error(snapshot_index, tail_index, &command_id, error)
+            })?;
         }
         Ok(())
     }
@@ -1027,8 +1033,20 @@ where
         state.propose_voter_change(raft_node_id, change_type)
     }
 
-    fn apply_recovered_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
-        self.apply_recovered_envelope_at(envelope, 0)
+    fn apply_snapshot_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
+        materialize_snapshot_command(&self.cluster, &envelope.command)?;
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        if !state
+            .applied_command_ids
+            .insert(envelope.command_id.clone())
+        {
+            return Err(CacheError::Backend(format!(
+                "duplicate raft snapshot command id '{}'",
+                envelope.command_id
+            )));
+        }
+        state.commands.push(envelope);
+        Ok(())
     }
 
     fn apply_recovered_envelope_at(
@@ -1114,6 +1132,50 @@ fn validate_snapshot_identity(
             "raft metadata store snapshot node {} does not match configured node {}",
             snapshot.raft_node_id, config.raft_node_id
         )));
+    }
+    Ok(())
+}
+
+fn validate_snapshot_apply_contract(snapshot: &RaftMetadataRuntimeExport) -> CacheResult<()> {
+    if snapshot.applied_index < snapshot.commands.len() as u64 {
+        let tail_index = snapshot.applied_index.saturating_add(1).max(1) as usize;
+        let command_id = snapshot
+            .commands
+            .get(tail_index.saturating_sub(1))
+            .or_else(|| snapshot.commands.last())
+            .map(|envelope| envelope.command_id.as_str())
+            .unwrap_or("<none>");
+        return Err(CacheError::Backend(format!(
+            "raft snapshot apply error: inconsistent snapshot membership indexes: snapshot_index={}, command_count={}, tail_index={}, command_id={}",
+            snapshot.applied_index,
+            snapshot.commands.len(),
+            tail_index,
+            command_id
+        )));
+    }
+
+    let mut seen = BTreeSet::new();
+    for (offset, envelope) in snapshot.commands.iter().enumerate() {
+        let tail_index = offset + 1;
+        if envelope.command_id.is_empty() {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot apply error: empty command id: snapshot_index={}, tail_index={}",
+                snapshot.applied_index, tail_index
+            )));
+        }
+        let expected = command_id_for(&envelope.command);
+        if envelope.command_id != expected {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot apply error: command id does not match command: snapshot_index={}, tail_index={}, command_id={}, expected_command_id={}",
+                snapshot.applied_index, tail_index, envelope.command_id, expected
+            )));
+        }
+        if !seen.insert(envelope.command_id.as_str()) {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot apply error: duplicate command id: snapshot_index={}, tail_index={}, command_id={}",
+                snapshot.applied_index, tail_index, envelope.command_id
+            )));
+        }
     }
     Ok(())
 }
@@ -1235,6 +1297,34 @@ fn materialize_command(
         }
         RaftMetadataCommand::CommitTopology { .. } => Ok(None),
     }
+}
+
+fn materialize_snapshot_command(
+    cluster: &InMemoryCluster,
+    command: &RaftMetadataCommand,
+) -> CacheResult<Option<ClusterMembershipEvent>> {
+    if let RaftMetadataCommand::NodeLeft { node_id, role, .. } = command {
+        let present = find_materialized(cluster, node_id, *role).is_some();
+        if !present {
+            return Err(CacheError::Backend(format!(
+                "node-left references absent {:?} '{}'",
+                role, node_id
+            )));
+        }
+    }
+    materialize_command(cluster, command)
+}
+
+fn snapshot_apply_error(
+    snapshot_index: u64,
+    tail_index: usize,
+    command_id: &str,
+    error: CacheError,
+) -> CacheError {
+    CacheError::Backend(format!(
+        "raft snapshot apply error: snapshot_index={}, tail_index={}, command_id={}: {}",
+        snapshot_index, tail_index, command_id, error
+    ))
 }
 
 fn materialize_committed_command(
