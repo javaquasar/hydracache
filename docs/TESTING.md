@@ -542,6 +542,15 @@ and the exact env-gated command. Quarantine is allowed for at most one day and
 must link to that issue. Silent retries, missing replay artifacts, or "could not
 reproduce" without the preserved seed do not count as green evidence.
 
+Raft snapshot and membership failures also use the agentic-debugging
+contradiction ledger in
+[`docs/testing/agentic-debugging.md`](testing/agentic-debugging.md). The ledger
+must list the current hypothesis, supporting and contradicting evidence,
+unexplained state-machine errors, replay seed, schedule, trace artifact, and a
+decision. A failure cannot be closed as environmental while Raft apply, snapshot
+restore, membership divergence, or invariant errors remain unexplained, and a
+log-level downgrade cannot be the fix for a correctness contradiction.
+
 ## Cache Event Tests
 
 The cache event/listener API is covered by `crates/hydracache/src/tests/events.rs`.
