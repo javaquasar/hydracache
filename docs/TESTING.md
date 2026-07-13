@@ -546,6 +546,7 @@ cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_a
 cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
 cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
+cargo test -p hydracache-sim --test clock_skew_safety --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
@@ -596,6 +597,12 @@ The W13 proposal-idempotency gate uses the cluster testkit's restartable
 in-memory Raft log seam. It persists a Raft snapshot with the current
 `ConfState`, restarts the node on the same store, retries the ConfChange, and
 also covers metadata command-id retry after `export_snapshot`/`from_snapshot`.
+
+The W14 clock-skew gate lives in `hydracache-sim/tests` instead of
+`hydracache-cluster-raft/tests` to avoid a dependency cycle. It uses skewed
+per-node Raft tick rates through `RuntimeRaftCluster`, `SimClock` backward-jump
+coverage for the fenced lock store, and the existing lock-safety report to keep
+fence monotonicity and zombie rejection tied to the release proof.
 
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,

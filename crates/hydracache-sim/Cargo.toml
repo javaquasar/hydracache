@@ -27,3 +27,6 @@ hydracache-cluster-raft = { workspace = true }
 protobuf = { workspace = true }
 raft = { workspace = true }
 slog = { workspace = true }
+
+[dev-dependencies]
+hydracache-cluster-testkit = { workspace = true }

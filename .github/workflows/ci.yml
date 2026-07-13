@@ -121,6 +121,9 @@ jobs:
       - name: Proposal idempotency
         run: cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
 
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked
+
       - name: Management console
         run: |
           npm --prefix console ci

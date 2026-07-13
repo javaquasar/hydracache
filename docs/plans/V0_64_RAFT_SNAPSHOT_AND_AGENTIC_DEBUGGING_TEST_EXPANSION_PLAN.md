@@ -561,20 +561,24 @@ snapshot/restart boundary). Separately, replay a stable metadata command id afte
 **Goal / what it proves.** Adversarial timing (per-node skew, backward jumps) never produces two
 leaders and never breaks lease/lock safety; the phi-accrual detector degrades safely.
 
-**Files to change.** New `crates/hydracache-cluster-raft/tests/clock_skew_safety.rs`; reuse
+**Files to change.** New `crates/hydracache-sim/tests/clock_skew_safety.rs`; reuse
 `crates/hydracache-sim/src/clock.rs` (`SimClock`) and `LogicalTime`; reuse `hydracache-sim`
-`lock_safety.rs` invariants for the lease/lock assertion.
+`lock_safety.rs` invariants for the lease/lock assertion; add `hydracache-cluster-testkit` as a
+`hydracache-sim` dev-dependency so the test can drive `RuntimeRaftCluster` without creating a
+`hydracache-cluster-raft -> hydracache-sim -> hydracache-cluster-raft` dependency cycle.
 
-**Design.** Drive election + a lease/fenced-lock workload while injecting per-node clock skew and a
-backward jump on the leader; assert single-leader-per-term, fence monotonicity, and no zombie
-lock-holder (reuse the `0.46`/`0.52` fenced-lock invariants).
+**Design.** Drive election under skewed per-node tick rates and a leader partition/heal schedule while
+recording leaders by term; assert single-leader-per-term. Separately, drive a fenced-lock workload
+through a backward `SimClock` jump: the jump must not expire the live owner early, post-expiry
+reacquire must advance the fence, and a zombie release with the old fence must fail. Re-run the
+existing lock-safety report to keep fence monotonicity and zombie rejection tied to the release gate.
 
 **Required tests** (fast, deterministic): `clock_skew_does_not_produce_two_leaders`,
 `backward_clock_jump_preserves_fence_monotonicity_and_no_zombie_holder`.
 
 **Canary.** `canary_clock_skew_allows_two_leaders` - guard red.
 
-**Run locally.** `cargo test -p hydracache-cluster-raft --test clock_skew_safety --locked`
+**Run locally.** `cargo test -p hydracache-sim --test clock_skew_safety --locked`
 **Run in CI.** `rust` job step "Clock skew safety".
 **DoD.** Both green; canary red; fence monotonicity holds under skew + backward jump.
 
@@ -629,7 +633,8 @@ Local:
 ```powershell
 cargo test -p hydracache-cluster-raft --locked `
   --test nemesis_membership --test raft_corpus_vectors `
-  --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
+  --test snapshot_exhaustive_grid --test proposal_idempotency
+cargo test -p hydracache-sim --test clock_skew_safety --locked
 cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
 cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
 cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
@@ -643,7 +648,8 @@ GitHub (`rust` job, new steps):
         run: |
           cargo test -p hydracache-cluster-raft --locked \
             --test nemesis_membership --test raft_corpus_vectors \
-            --test snapshot_exhaustive_grid --test proposal_idempotency --test clock_skew_safety
+            --test snapshot_exhaustive_grid --test proposal_idempotency
+          cargo test -p hydracache-sim --test clock_skew_safety --locked
       - name: Snapshot corruption
         run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
       - name: Raft rejoin after compaction
