@@ -21,10 +21,10 @@
 >   replication are explicit **anti-references**.
 > - **Sequencing note:** this is **outward adoption before/around `1.0`**. Because it is an edge crate
 >   that never touches the frozen core, a subsequent `1.0` stabilization can proceed independently.
-> - **Status:** in-progress; scope expanded on 2026-07-10 to include the six remaining
+> - **Status:** shipped as `0.63.0`; scope expanded on 2026-07-10 to include the six remaining
 >   compatibility-proof items plus mandatory `MSET` atomicity, Redis TTL support through a
 >   registered client-protocol v3 extension, Redis `AUTH`/`HELLO AUTH`, and native `rediss://`
->   support before the release can close. A semantic accuracy audit pass was added on 2026-07-11
+>   support as release scope. A semantic accuracy audit pass was added on 2026-07-11
 >   (see "Semantic Accuracy Audit Pass") after a post-implementation review of command return
 >   semantics; it does not widen the supported surface, it closes accuracy gaps in the already-claimed
 >   surface before ship.

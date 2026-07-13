@@ -103,8 +103,8 @@ Release readiness can also be dry-run before the final version bump and tag:
 ```
 
 GitHub release notes are published by the `Publish Release Notes` workflow.
-When a tag such as `v0.62.1` is pushed, the workflow reads
-`docs/releases/0.62.1.md` and creates or updates the matching GitHub Release.
+When a tag such as `v0.63.0` is pushed, the workflow reads
+`docs/releases/0.63.0.md` and creates or updates the matching GitHub Release.
 For backfilling old tags, run the workflow manually with the `version` input.
 
 For versions present in `docs/plans/releases.toml`, the manifest entry must be

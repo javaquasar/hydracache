@@ -9,7 +9,7 @@ on:
       version:
         description: "HydraCache version to publish, without the leading v"
         required: true
-        default: "0.62.1"
+        default: "0.63.0"
 
 permissions:
   contents: write
