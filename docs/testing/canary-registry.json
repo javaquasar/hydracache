@@ -248,6 +248,19 @@
       },
       "red_evidence": "The canary removes categories from the corpus table; W20 must fail when any required etcd edge category is missing.",
       "makes_guard_fail": true
+    },
+    {
+      "w_item": "W21",
+      "guard": {
+        "file": "crates/hydracache-cluster-testkit/tests/invariants.rs",
+        "function": "invariant_catalog_flags_each_seeded_violation"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-testkit/tests/invariants.rs",
+        "function": "canary_invariant_catalog_misses_a_lost_committed_entry"
+      },
+      "red_evidence": "The canary seeds a lost committed command; W21 must report the no-lost-committed-entry invariant violation.",
+      "makes_guard_fail": true
     }
   ]
 }

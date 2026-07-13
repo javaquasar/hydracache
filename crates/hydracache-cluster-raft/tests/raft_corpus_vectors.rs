@@ -1,7 +1,10 @@
 use std::collections::BTreeSet;
 
 use hydracache_cluster_raft::{RaftRuntimeRole, RaftWireMessage};
-use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
+use hydracache_cluster_testkit::{
+    invariants::{assert_cluster_invariants, ClusterInvariantView},
+    RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster,
+};
 use raft::eraftpb::{Message, MessageType, Snapshot};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -133,6 +136,7 @@ async fn raft_corpus_install_snapshot_then_append_entries_converges() {
             .node(node_id)
             .command_applied("member-upsert:member-b:1"));
     }
+    assert_cluster_invariants(&ClusterInvariantView::from_runtime_raft_cluster(&cluster));
 }
 
 #[test]
@@ -202,6 +206,7 @@ async fn raft_corpus_log_matching_and_commit_index_safety() {
             .node(node_id)
             .command_applied("member-upsert:member-b:1"));
     }
+    assert_cluster_invariants(&ClusterInvariantView::from_runtime_raft_cluster(&cluster));
 }
 
 #[test]

@@ -2,7 +2,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::time::{Duration, Instant};
 
 use hydracache_cluster_raft::{RaftMetadataRuntime, RaftRuntimeRole};
-use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
+use hydracache_cluster_testkit::{
+    invariants::{assert_cluster_invariants, ClusterInvariantView},
+    RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster,
+};
 use serde::Deserialize;
 
 const BAD_SEEDS_JSON: &str = include_str!("vectors/bad_seeds.json");
@@ -272,6 +275,7 @@ async fn run_seed(seed: u64, steps: usize) -> NemesisOutcome {
     assert_single_leader_per_term(&cluster, &trace);
     assert_voters_converged(&cluster, &trace);
     assert_members_converged(&cluster, &trace);
+    assert_cluster_invariants(&ClusterInvariantView::from_runtime_raft_cluster(&cluster));
     NemesisOutcome::from_cluster(&cluster, &trace)
 }
 

@@ -4,6 +4,8 @@
 //! dev-dependencies. It owns the fault-injection vocabulary so production crates
 //! do not grow test-only transport types.
 
+pub mod invariants;
+
 use std::collections::{BTreeMap, VecDeque};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};

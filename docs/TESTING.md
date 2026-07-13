@@ -708,6 +708,18 @@ The file keeps a `REQUIRED_CATEGORIES` table beside the vector tests. A vector
 may cover more than one category, but removing the last representative for any
 required etcd/raft edge category must make the category guard fail.
 
+The W21 invariant catalog lives in `hydracache-cluster-testkit` and is shared by
+the nemesis/corpus convergence tests:
+
+```powershell
+cargo test -p hydracache-cluster-testkit --test invariants --locked
+```
+
+`ClusterInvariantView::from_runtime_raft_cluster` captures leaders by term,
+voter sets, materialized member sets, and applied command ids. The shared
+`assert_cluster_invariants` catalog checks no two leaders share a term, settled
+voters/members agree, and committed commands are not lost on any node.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and
