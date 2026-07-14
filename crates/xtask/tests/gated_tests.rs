@@ -86,7 +86,9 @@ fn wildcard_registration_does_not_hide_a_new_ignored_test() {
     let problems = check_registry(&root).unwrap();
     cleanup(&root);
     assert!(
-        problems.iter().any(|problem| problem.contains("unregistered ignored test")),
+        problems
+            .iter()
+            .any(|problem| problem.contains("unregistered ignored test")),
         "a wildcard must not auto-register future ignored tests: {problems:#?}"
     );
 }

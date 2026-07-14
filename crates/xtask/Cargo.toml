@@ -12,6 +12,7 @@ hydracache = { workspace = true, features = ["durable-value-store"] }
 serde.workspace = true
 serde_json.workspace = true
 syn = { version = "2.0", features = ["full", "visit"] }
+time = { version = "0.3.36", features = ["formatting", "parsing"] }
 toml.workspace = true
 
 [lints]
