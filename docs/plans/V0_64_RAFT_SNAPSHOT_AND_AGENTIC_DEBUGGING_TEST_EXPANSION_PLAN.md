@@ -911,30 +911,34 @@ ledger before ship.
 W1 ("a snapshot must not alias live mutable state"), whose own Preflight warns that `Arc`, interior
 mutability, and shallow clones can encode delayed aliasing.
 
-**Files to change.** No source change expected; add a CI lane and a `docs/TESTING.md` runbook block.
-If a test uses timing/threads Miri cannot model, add a `#[cfg_attr(miri, ignore)]` with a comment and a
-narrower Miri-safe variant.
+**Implemented files.** `crates/xtask/src/miri_check.rs`, its structural test,
+`docs/testing/gated-test-registry.toml`, the `Raft Miri` CI lane, and the `docs/TESTING.md` runbook.
+Tests using timing/threads that Miri cannot model stay in ordinary Raft tiers; the wrapper owns the
+narrow synchronous Miri-safe variants.
 
 **Design.**
-- Run `cargo +nightly miri test -p hydracache-cluster-raft` scoped to `snapshot_immutability`,
-  `raft_snapshot_membership`, and `snapshot_apply` (the value/aliasing-sensitive suites).
+- Run pinned `nightly-2026-07-01` Miri scoped to `snapshot_immutability` and the synchronous
+  `snapshot_apply` proof. Async membership behavior remains in the normal Raft suite.
 - Any UB/aliasing report fails loud; this catches what a behavioral canary cannot.
+- Emit `target/test-evidence/0.64/miri-snapshot-safety.json`; the registered
+  `tool.miri.snapshot-safety` gate requires an exact-candidate receipt before ship.
 
 **Required tests / checks:**
 - `snapshot_immutability` + `snapshot_apply` pass under Miri.
 
-**Canary.** `canary_snapshot_shares_a_mutable_arc_across_export` - a fixture that shares a mutable `Arc`
-between the live runtime and the exported snapshot must be flagged by Miri (or by a strengthened W1
-assertion if Miri cannot reach it).
+**Canary boundary.** The strengthened W1 assertion
+`canary_snapshot_shares_a_mutable_arc_across_export` rejects the aliasing shape, while W16's independent
+TSan `UnsafeCell` fixture proves that the runtime race detector itself goes red. The plan does not claim
+that a boolean assertion is a Miri UB report.
 
 **DoD.**
 ```powershell
 # requires nightly toolchain + miri component; skip loud if absent
-cargo +nightly miri test -p hydracache-cluster-raft snapshot_immutability
+cargo xtask miri-check
 ```
 
-**Run in CI.** Lane `Raft Miri` (nightly toolchain, skip-loud when unavailable), fast enough for the
-scoped suites to run on PR when the toolchain is cached.
+**Run in CI.** Scheduled/dispatch lane `Raft Miri` (pinned nightly, skip-loud when unavailable).
+An unavailable toolchain does not produce release evidence and therefore cannot satisfy W16.
 
 #### ThreadSanitizer Complement Shared With W26/W34
 

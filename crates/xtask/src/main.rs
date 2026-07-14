@@ -20,6 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Some("fast-suite-check") => xtask::fast_suite::run(args.collect())?,
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
+        Some("miri-check") => xtask::miri_check::run(args.collect())?,
         Some("mutants") => xtask::mutants::run(args.collect())?,
         Some("quarantine-check") => xtask::quarantine::run(args.collect())?,
         Some("raft-spec-check") => xtask::raft_spec_check::run(args.collect())?,
@@ -49,6 +50,7 @@ fn print_usage() {
          cargo xtask evidence-run --release 0.64 --gate <id>  # execute a registered gate and write a receipt\n  \
          cargo xtask fast-suite-check --release 0.64  # validate fast-suite budgets and receipts\n  \
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
+         cargo xtask miri-check  # run pinned Miri-safe snapshot proofs (skip loud when unavailable)\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \

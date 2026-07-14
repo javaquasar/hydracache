@@ -669,16 +669,18 @@ aliasing/UB. It is intentionally gated because it needs nightly Rust and the
 `miri` component:
 
 ```powershell
-rustup toolchain install nightly --component miri
-cargo +nightly miri setup
-cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked miri_snapshot_store_returns_deep_cloned_export
-cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked canary_snapshot_shares_a_mutable_arc_across_export
-cargo +nightly miri test -p hydracache-cluster-raft --features test-failpoints --test snapshot_apply --locked miri_snapshot_apply_rejects_inconsistent_indexes_without_tokio_runtime
+rustup toolchain install nightly-2026-07-01 --component miri
+cargo +nightly-2026-07-01 miri setup
+cargo xtask miri-check
+# exact Linux release evidence:
+cargo xtask evidence-run --release 0.64 --gate tool.miri.snapshot-safety
 ```
 
-The GitHub `Raft Miri` job skips loud if nightly or Miri cannot be installed on
-the runner. A real Miri UB report or a failing scoped test is red evidence, not
-an environmental skip. The Miri commands intentionally target sync snapshot data
+The GitHub `Raft Miri` job pins `nightly-2026-07-01` and skips loud if that
+toolchain or Miri cannot be installed on the runner. Such a skip creates no ship
+receipt. A real Miri UB report or a failing scoped test is red evidence. The
+successful wrapper writes `miri-snapshot-safety.json`, and `evidence-run` binds
+it to the exact commit and registry digest. The Miri commands intentionally target sync snapshot data
 paths: the full async `tokio::test` membership suites are still ordinary fast
 gates because Miri cannot model every platform runtime primitive (for example
 Windows IOCP). The canary

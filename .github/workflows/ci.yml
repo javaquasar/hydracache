@@ -516,14 +516,14 @@ jobs:
         shell: bash
         run: |
           set +e
-          rustup toolchain install nightly --component miri
+          rustup toolchain install nightly-2026-07-01 --component miri
           status=$?
           if [ "$status" -ne 0 ]; then
             echo "::warning::nightly+miri toolchain unavailable; skipping Raft Miri lane"
             echo "available=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          cargo +nightly miri setup
+          cargo +nightly-2026-07-01 miri setup
           setup_status=$?
           if [ "$setup_status" -ne 0 ]; then
             echo "::warning::cargo miri setup failed; skipping Raft Miri lane"
@@ -540,17 +540,19 @@ jobs:
           cache-targets: false
           shared-key: raft-miri
 
-      - name: Run Miri snapshot immutability
+      - name: Run commit-bound Miri snapshot proofs
         if: steps.miri.outputs.available == 'true'
-        run: cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked miri_snapshot_store_returns_deep_cloned_export
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.miri.snapshot-safety
 
-      - name: Run Miri snapshot immutability canary
-        if: steps.miri.outputs.available == 'true'
-        run: cargo +nightly miri test -p hydracache-cluster-raft --test snapshot_immutability --locked canary_snapshot_shares_a_mutable_arc_across_export
-
-      - name: Run Miri snapshot apply
-        if: steps.miri.outputs.available == 'true'
-        run: cargo +nightly miri test -p hydracache-cluster-raft --features test-failpoints --test snapshot_apply --locked miri_snapshot_apply_rejects_inconsistent_indexes_without_tokio_runtime
+      - name: Upload Miri evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-miri-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.64/miri-snapshot-safety.json
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
 
   thread-sanitizer:
     name: ThreadSanitizer

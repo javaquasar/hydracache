@@ -4738,6 +4738,72 @@ platform = "any"
 HYDRACACHE_REQUIRE_TLC = "1"
 
 [[gate]]
+id = "tool.miri.snapshot-safety"
+kind = "external_tool"
+source = "crates/xtask/src/miri_check.rs"
+package = "xtask"
+target = "miri-check"
+test = "snapshot-safety"
+cfg = "target_os=linux"
+env = "HYDRACACHE_REQUIRE_MIRI"
+reason = "Pinned Miri executes the synchronous snapshot clone and fail-loud apply proofs"
+tier = "nightly"
+required_features = ["test-failpoints"]
+required_env = ["HYDRACACHE_REQUIRE_MIRI"]
+required_tools = ["rust-nightly-2026-07-01", "miri"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/miri-snapshot-safety.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-miri"
+step = "Run commit-bound Miri snapshot proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "miri-check"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_MIRI = "1"
+
+[[gate]]
+id = "env.hydracache-require-miri"
+kind = "env_gate"
+source = "crates/xtask/src/miri_check.rs"
+package = "xtask"
+target = "miri-check"
+test = ""
+cfg = "target_os=linux"
+env = "HYDRACACHE_REQUIRE_MIRI"
+reason = "Local missing Miri skips loudly; required release Miri proof must fail rather than skip"
+tier = "nightly"
+required_features = ["test-failpoints"]
+required_env = ["HYDRACACHE_REQUIRE_MIRI"]
+required_tools = ["rust-nightly-2026-07-01", "miri"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-miri"
+step = "Run commit-bound Miri snapshot proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "miri-check"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_MIRI = "1"
+
+[[gate]]
 id = "tool.determinism-sweep"
 kind = "external_tool"
 source = "crates/xtask/src/determinism_sweep.rs"

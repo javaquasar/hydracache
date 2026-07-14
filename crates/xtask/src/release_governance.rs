@@ -12,6 +12,7 @@ use crate::doc_check;
 use crate::fast_suite;
 use crate::feature_leak;
 use crate::gated_tests::{self, GateEntry};
+use crate::miri_check;
 use crate::quarantine;
 use crate::raft_spec_check;
 
@@ -111,6 +112,11 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         "raft-spec-check",
         raft_spec_check::structural_check(root)?,
     ));
+    report.completed_checks += 1;
+
+    if let Err(error) = miri_check::structural_check(root) {
+        report.problems.push(format!("miri-check: {error}"));
+    }
     report.completed_checks += 1;
 
     let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
