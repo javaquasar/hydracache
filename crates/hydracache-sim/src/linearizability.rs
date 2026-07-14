@@ -241,13 +241,6 @@ struct SearchState {
     witness: Vec<usize>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct CompletedWrite {
-    key: String,
-    returned_at: LogicalTime,
-    value: Option<Vec<u8>>,
-}
-
 /// Register-style linearizability checker for completed history events.
 #[derive(Debug, Clone, Default)]
 pub struct LinearizabilityChecker;
@@ -346,7 +339,6 @@ fn operation_kind(op: &WorkloadOp, result: &Option<WorkloadResult>) -> Option<Op
         }),
         (_, Some(WorkloadResult::Error(_))) => Some(OperationKind::Noop),
         (_, Some(WorkloadResult::Rejected)) => Some(OperationKind::Noop),
-        (_, None) => None,
         _ => None,
     }
 }
@@ -440,22 +432,91 @@ fn diagnostic_key(operations: &[Operation]) -> String {
         .unwrap_or_else(|| "<history>".to_owned())
 }
 
-#[allow(dead_code)]
-fn completed_write(event: &crate::HistoryEvent) -> Option<CompletedWrite> {
-    let returned_at = event.returned_at?;
-    match operation_kind(&event.op, &event.result)? {
-        OperationKind::Write { key, value } | OperationKind::Cas { key, value, .. } => {
-            Some(CompletedWrite {
-                key,
-                returned_at,
-                value: Some(value),
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cas(result: Option<WorkloadResult>) -> Option<OperationKind> {
+        operation_kind(
+            &WorkloadOp::CompareAndSet {
+                key: "k".to_owned(),
+                expected: Some(b"old".to_vec()),
+                value: b"new".to_vec(),
+            },
+            &result,
+        )
+    }
+
+    #[test]
+    fn generator_emits_the_requested_completed_history() {
+        let mut generator =
+            LinearizabilityGenerator::new(LinearizabilityGeneratorConfig::default());
+        let history = generator.completed_history(7);
+
+        assert_eq!(history.events().len(), 7);
+        assert_eq!(history.completed().count(), 7);
+        assert_eq!(LinearizabilityChecker.check(&history).checked_operations, 7);
+    }
+
+    #[test]
+    fn operation_classification_keeps_cas_noop_and_pending_distinct() {
+        assert!(matches!(
+            cas(Some(WorkloadResult::Accepted { sequence: 1 })),
+            Some(OperationKind::Cas { accepted: true, .. })
+        ));
+        assert!(matches!(
+            cas(Some(WorkloadResult::Rejected)),
+            Some(OperationKind::Cas {
+                accepted: false,
+                ..
             })
-        }
-        OperationKind::Delete { key } => Some(CompletedWrite {
-            key,
-            returned_at,
-            value: None,
-        }),
-        OperationKind::Read { .. } | OperationKind::Noop => None,
+        ));
+        let put = WorkloadOp::Put {
+            key: "k".to_owned(),
+            value: b"v".to_vec(),
+        };
+        assert_eq!(
+            operation_kind(&put, &Some(WorkloadResult::Error("timeout".to_owned()))),
+            Some(OperationKind::Noop)
+        );
+        assert_eq!(
+            operation_kind(&put, &Some(WorkloadResult::Rejected)),
+            Some(OperationKind::Noop)
+        );
+        assert_eq!(operation_kind(&put, &None), None);
+    }
+
+    #[test]
+    fn real_time_boundary_and_register_transitions_are_exact() {
+        let operations = vec![
+            Operation {
+                event_index: 0,
+                invoked_at: LogicalTime::from_millis(1),
+                returned_at: LogicalTime::from_millis(2),
+                kind: OperationKind::Write {
+                    key: "k".to_owned(),
+                    value: b"v".to_vec(),
+                },
+            },
+            Operation {
+                event_index: 1,
+                invoked_at: LogicalTime::from_millis(2),
+                returned_at: LogicalTime::from_millis(3),
+                kind: OperationKind::Read {
+                    key: "k".to_owned(),
+                    observed: Some(b"v".to_vec()),
+                },
+            },
+        ];
+        assert!(!predecessors_placed(&operations, &[false, false], 1));
+        assert!(predecessors_placed(&operations, &[true, false], 1));
+
+        let written = apply_operation(&RegisterState::default(), &operations[0].kind).unwrap();
+        assert!(apply_operation(&written, &operations[1].kind).is_some());
+        let stale = OperationKind::Read {
+            key: "k".to_owned(),
+            observed: Some(b"stale".to_vec()),
+        };
+        assert!(apply_operation(&written, &stale).is_none());
     }
 }

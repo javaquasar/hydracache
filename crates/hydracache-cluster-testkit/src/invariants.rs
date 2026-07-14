@@ -165,3 +165,61 @@ pub fn cluster_invariant_violations(view: &ClusterInvariantView) -> Vec<String> 
 
     violations
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn healthy_view() -> ClusterInvariantView {
+        let command = "member-upsert:member-a:1".to_owned();
+        ClusterInvariantView {
+            leaders_by_term: BTreeMap::from([(7, vec![1])]),
+            voter_sets_by_node: BTreeMap::from([
+                (1, BTreeSet::from([1, 2, 3])),
+                (2, BTreeSet::from([1, 2, 3])),
+                (3, BTreeSet::from([1, 2, 3])),
+            ]),
+            member_sets_by_node: BTreeMap::from([
+                (1, BTreeSet::from(["member-a".to_owned()])),
+                (2, BTreeSet::from(["member-a".to_owned()])),
+                (3, BTreeSet::from(["member-a".to_owned()])),
+            ]),
+            committed_command_ids: BTreeSet::from([command.clone()]),
+            applied_command_ids_by_node: BTreeMap::from([
+                (1, BTreeSet::from([command.clone()])),
+                (2, BTreeSet::from([command.clone()])),
+                (3, BTreeSet::from([command])),
+            ]),
+        }
+    }
+
+    #[test]
+    fn converged_view_has_no_false_positive_invariant() {
+        let view = healthy_view();
+        assert!(cluster_invariant_violations(&view).is_empty());
+        assert_cluster_invariants(&view);
+    }
+
+    #[test]
+    fn invariant_assertion_panics_for_a_real_violation() {
+        let mut view = healthy_view();
+        view.leaders_by_term.insert(7, vec![1, 2]);
+
+        assert!(std::panic::catch_unwind(|| assert_cluster_invariants(&view)).is_err());
+    }
+
+    #[test]
+    fn runtime_view_records_only_the_actual_leader() {
+        let mut cluster = RuntimeRaftCluster::three_node();
+        cluster.campaign(1);
+        let view = ClusterInvariantView::from_runtime_raft_cluster(&cluster);
+        let leaders = view
+            .leaders_by_term
+            .values()
+            .flatten()
+            .copied()
+            .collect::<Vec<_>>();
+
+        assert_eq!(leaders, vec![1]);
+    }
+}

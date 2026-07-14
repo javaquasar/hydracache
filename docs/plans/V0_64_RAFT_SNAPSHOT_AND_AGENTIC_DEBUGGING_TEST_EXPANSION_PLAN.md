@@ -904,6 +904,23 @@ fields. Do not baseline these survivors. The explicit `applied: 0` struct entry 
 because `raft::Config::default()` already defines zero; retaining a redundant entry creates an
 equivalent delete-field mutant that no behavioral test can distinguish.
 
+The complete first matrix run then exposed the remaining proof gaps; keep this list as the executable
+scope of the W15 repair rather than treating the ten failed shards as one infrastructure failure. Product
+shards must distinguish observed leader ids, commit-zero and non-zero recovery, predicted member epochs,
+materialized generations, client role parsing, and voter-change rejection without a known leader. Log
+store contracts must exercise exact lower/upper entry bounds, overwrite and compaction boundaries,
+snapshot tail preservation and monotonically increasing request indexes, byte-budget equality, quorum
+math, persisted term/commit/applied progress, fsync accounting, proposed-entry metadata, empty/default
+snapshot envelopes, and sled reopen behavior. Proof-oracle shards must exercise completed-history
+generation, accepted and rejected compare-and-swap classification, error/rejection no-op handling,
+pending operations, the exact real-time predecessor boundary, valid and stale reads, healthy invariant
+views, actual runtime leader classification, and a deliberate two-leader rejection. Tests belong inside
+the mutated library crates when an integration target would not be selected by `cargo-mutants`. Remove
+dead helpers and rewrite behaviorally equivalent branches only when no observable contract can
+distinguish the mutation; document that equivalence in the fixing commit. None of these survivors may be
+added to either baseline. The repair is complete only when all eight product shards and both proof-oracle
+shards report zero missed mutants on the same commit.
+
 **Canary.** `canary_mutants_baseline_hides_a_live_survivor` - a fixture that adds a real survivor without
 a baseline entry must fail the gate. `canary_mutants_config_uses_hydracache_table_rejected` keeps the
 config in the native cargo-mutants schema, so the slow GitHub lane cannot fail before mutation testing
