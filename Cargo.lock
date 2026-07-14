@@ -2067,6 +2067,7 @@ dependencies = [
  "hydracache",
  "hydracache-cluster-raft",
  "raft",
+ "serde_json",
  "tokio",
 ]
 

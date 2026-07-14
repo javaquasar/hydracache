@@ -111,7 +111,7 @@ use raft::eraftpb::{
     ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage, Snapshot,
 };
 use raft::storage::Storage;
-use raft::{Config, RawNode, StateRole};
+use raft::{Config, RawNode, SnapshotStatus, StateRole};
 use serde::{Deserialize, Serialize};
 use slog::{o, Logger};
 use tokio::time::{sleep, Duration};
@@ -891,6 +891,25 @@ where
             .lock()
             .expect("raft metadata state poisoned")
             .drain_ready()
+    }
+
+    /// Report completion or failure of a snapshot transport attempt.
+    ///
+    /// Raft keeps a follower in snapshot progress until the transport reports
+    /// an outcome. Reporting failure releases that progress for a bounded retry.
+    pub fn report_snapshot_delivery(
+        &self,
+        peer_id: u64,
+        delivered: bool,
+    ) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        let status = if delivered {
+            SnapshotStatus::Finish
+        } else {
+            SnapshotStatus::Failure
+        };
+        state.raw_node.report_snapshot(peer_id, status);
+        state.drain_ready()
     }
 
     /// Force a metadata snapshot at the current applied index for compaction
