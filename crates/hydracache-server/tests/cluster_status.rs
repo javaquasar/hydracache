@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use axum::body::{to_bytes, Body};
@@ -20,14 +21,20 @@ use hydracache_server::{
 use serde_json::Value;
 use tower::ServiceExt;
 
-fn member_config() -> ServerConfig {
+static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+fn member_config(test_name: &str) -> ServerConfig {
+    let sequence = STORAGE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
-        storage_dir: Some(PathBuf::from("target/test-hydracache-server-status")),
+        storage_dir: Some(
+            PathBuf::from("target/test-hydracache-server-status")
+                .join(format!("{test_name}-{}-{sequence}", std::process::id())),
+        ),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
         cluster_auth: ClusterAuthConfig::default(),
@@ -43,7 +50,7 @@ fn local_config() -> ServerConfig {
         role: ServerRole::Local,
         seeds: Vec::new(),
         storage_dir: None,
-        ..member_config()
+        ..member_config("local")
     }
 }
 
@@ -83,7 +90,7 @@ mod cluster_status {
     #[test]
     fn live_status_reports_real_members_term_and_epoch() {
         let provider = live_provider(FakeGrid::three_members());
-        let runtime = ServerRuntime::new(member_config())
+        let runtime = ServerRuntime::new(member_config("live-members"))
             .unwrap()
             .with_cluster_status_provider(provider)
             .start();
@@ -105,7 +112,7 @@ mod cluster_status {
             leader: None,
             ..FakeGrid::three_members()
         });
-        let runtime = ServerRuntime::new(member_config())
+        let runtime = ServerRuntime::new(member_config("leader-election"))
             .unwrap()
             .with_cluster_status_provider(provider)
             .start();
