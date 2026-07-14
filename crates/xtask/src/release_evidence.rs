@@ -11,6 +11,7 @@ use syn::visit::Visit;
 
 use crate::doc_check;
 use crate::evidence_run::{self, EvidenceOutcome, EvidenceReceipt};
+use crate::fast_suite::{self, FastSuiteEntry};
 use crate::gated_tests::{self, GateEntry};
 use crate::quarantine;
 
@@ -142,7 +143,8 @@ pub fn build_report(
     let definition = load_release_definition(root, release)?;
     let manifest = load_manifest(root, release)?;
     let gates = gated_tests::load_registry(root)?;
-    validate_manifest(root, &definition, &manifest, &gates)?;
+    let fast_suites = fast_suite::load_registry(root)?;
+    validate_manifest(root, &definition, &manifest, &gates, &fast_suites)?;
 
     let (source_commit, current_worktree_dirty) = git_identity(root)?;
     let mut global_reasons = Vec::new();
@@ -166,11 +168,17 @@ pub fn build_report(
         .iter()
         .map(|entry| entry.gate_id.as_str())
         .collect();
-    let gates_by_id: BTreeMap<_, _> = gates
+    let mut gates_by_id: BTreeMap<_, _> = gates
         .gate
         .iter()
-        .map(|gate| (gate.id.as_str(), gate))
+        .map(|gate| (gate.id.as_str(), ReceiptGate::Gated(gate)))
         .collect();
+    gates_by_id.extend(
+        fast_suites
+            .suite
+            .iter()
+            .map(|suite| (suite.id.as_str(), ReceiptGate::Fast(suite))),
+    );
 
     let mut work_items = Vec::new();
     for item in &manifest.work_item {
@@ -272,6 +280,70 @@ pub fn receipt_problems(
     gate: &GateEntry,
     receipt: &EvidenceReceipt,
 ) -> Vec<String> {
+    receipt_problems_for(
+        root,
+        release,
+        source_commit,
+        ReceiptGate::Gated(gate),
+        receipt,
+    )
+}
+
+pub fn fast_receipt_problems(
+    root: &Path,
+    release: &str,
+    source_commit: &str,
+    suite: &FastSuiteEntry,
+    receipt: &EvidenceReceipt,
+) -> Vec<String> {
+    receipt_problems_for(
+        root,
+        release,
+        source_commit,
+        ReceiptGate::Fast(suite),
+        receipt,
+    )
+}
+
+#[derive(Clone, Copy)]
+enum ReceiptGate<'a> {
+    Gated(&'a GateEntry),
+    Fast(&'a FastSuiteEntry),
+}
+
+impl<'a> ReceiptGate<'a> {
+    fn id(self) -> &'a str {
+        match self {
+            Self::Gated(gate) => &gate.id,
+            Self::Fast(suite) => &suite.id,
+        }
+    }
+
+    fn artifacts(self) -> &'a [String] {
+        match self {
+            Self::Gated(gate) => &gate.artifacts,
+            Self::Fast(suite) => &suite.artifacts,
+        }
+    }
+
+    fn expected_digests(
+        self,
+        root: &Path,
+    ) -> Result<evidence_run::ExpectedDigests, Box<dyn Error>> {
+        match self {
+            Self::Gated(gate) => evidence_run::expected_digests(root, gate),
+            Self::Fast(suite) => evidence_run::expected_fast_digests(root, suite),
+        }
+    }
+}
+
+fn receipt_problems_for(
+    root: &Path,
+    release: &str,
+    source_commit: &str,
+    gate: ReceiptGate<'_>,
+    receipt: &EvidenceReceipt,
+) -> Vec<String> {
     let mut problems = Vec::new();
     if receipt.schema_version != 1 {
         problems.push("unsupported receipt schema".to_owned());
@@ -279,7 +351,7 @@ pub fn receipt_problems(
     if normalize_release(&receipt.release) != normalize_release(release) {
         problems.push("wrong release".to_owned());
     }
-    if receipt.gate_id != gate.id {
+    if receipt.gate_id != gate.id() {
         problems.push("wrong gate id".to_owned());
     }
     if receipt.source_commit != source_commit {
@@ -288,7 +360,7 @@ pub fn receipt_problems(
     if receipt.dirty_worktree {
         problems.push("receipt was produced from a dirty worktree".to_owned());
     }
-    match evidence_run::expected_digests(root, gate) {
+    match gate.expected_digests(root) {
         Ok(expected) => {
             if receipt.command_digest != expected.command {
                 problems.push("stale command digest".to_owned());
@@ -323,7 +395,7 @@ pub fn receipt_problems(
         .iter()
         .map(|artifact| (artifact.path.as_str(), artifact))
         .collect();
-    for expected in &gate.artifacts {
+    for expected in gate.artifacts() {
         let Some(recorded) = receipt_artifacts.get(expected.as_str()) else {
             problems.push(format!("missing artifact receipt for {expected}"));
             continue;
@@ -347,7 +419,7 @@ fn all_gates_green(
     release: &str,
     source_commit: &str,
     gate_ids: &[String],
-    gates: &BTreeMap<&str, &GateEntry>,
+    gates: &BTreeMap<&str, ReceiptGate<'_>>,
     receipts: &BTreeMap<String, Vec<EvidenceReceipt>>,
     reasons: &mut Vec<String>,
 ) -> bool {
@@ -366,7 +438,7 @@ fn all_gates_green(
         }
         let mut candidate_reasons = Vec::new();
         let valid = candidates.iter().any(|receipt| {
-            let problems = receipt_problems(root, release, source_commit, gate, receipt);
+            let problems = receipt_problems_for(root, release, source_commit, *gate, receipt);
             if problems.is_empty() {
                 true
             } else {
@@ -444,6 +516,7 @@ fn validate_manifest(
     definition: &ReleaseDefinition,
     manifest: &EvidenceManifest,
     gates: &gated_tests::GatedTestRegistry,
+    fast_suites: &fast_suite::FastSuiteRegistry,
 ) -> Result<(), Box<dyn Error>> {
     let mut problems = Vec::new();
     if manifest.schema_version != 1 {
@@ -470,13 +543,29 @@ fn validate_manifest(
     }
     let plan = fs::read_to_string(root.join(&definition.plan))?;
     let gate_ids: BTreeSet<_> = gates.gate.iter().map(|gate| gate.id.as_str()).collect();
+    let fast_ids: BTreeSet<_> = fast_suites
+        .suite
+        .iter()
+        .map(|suite| suite.id.as_str())
+        .collect();
     for item in &manifest.work_item {
         if !plan_has_work_item(&plan, &item.id) {
             problems.push(format!("{} has no heading in the release plan", item.id));
         }
-        for gate_id in item.fast_gate_ids.iter().chain(&item.gated_gate_ids) {
+        for gate_id in &item.fast_gate_ids {
+            if !fast_ids.contains(gate_id.as_str()) {
+                problems.push(format!(
+                    "{} references unknown fast suite {gate_id}",
+                    item.id
+                ));
+            }
+        }
+        for gate_id in &item.gated_gate_ids {
             if !gate_ids.contains(gate_id.as_str()) {
-                problems.push(format!("{} references unknown gate {gate_id}", item.id));
+                problems.push(format!(
+                    "{} references unknown gated proof {gate_id}",
+                    item.id
+                ));
             }
         }
     }
@@ -598,25 +687,52 @@ fn template_manifest(
         .into_iter()
         .map(|entry| (entry.w_item, entry.guard))
         .collect();
+    let existing: BTreeMap<_, _> = load_manifest(root, &definition.version)
+        .ok()
+        .map(|manifest| {
+            manifest
+                .work_item
+                .into_iter()
+                .map(|item| (item.id.clone(), item))
+                .collect()
+        })
+        .unwrap_or_default();
+    let fast_suites = fast_suite::load_registry(root)?;
     let work_item = definition
         .work_items
         .iter()
         .map(|id| {
             let guard = by_id.get(id);
+            let current = existing.get(id);
             EvidenceWorkItem {
                 id: id.clone(),
-                required_sources: guard.iter().map(|guard| guard.file.clone()).collect(),
-                required_tests: guard
+                required_sources: current
+                    .map(|item| item.required_sources.clone())
+                    .unwrap_or_else(|| guard.iter().map(|guard| guard.file.clone()).collect()),
+                required_tests: current
+                    .map(|item| item.required_tests.clone())
+                    .unwrap_or_else(|| {
+                        guard
+                            .iter()
+                            .map(|guard| RequiredTest {
+                                source: guard.file.clone(),
+                                function: guard.function.clone(),
+                            })
+                            .collect()
+                    }),
+                required_artifacts: current
+                    .map(|item| item.required_artifacts.clone())
+                    .unwrap_or_default(),
+                fast_gate_ids: fast_suites
+                    .suite
                     .iter()
-                    .map(|guard| RequiredTest {
-                        source: guard.file.clone(),
-                        function: guard.function.clone(),
-                    })
+                    .filter(|suite| suite.work_items.contains(id))
+                    .map(|suite| suite.id.clone())
                     .collect(),
-                required_artifacts: vec![],
-                fast_gate_ids: vec![],
-                gated_gate_ids: vec![],
-                ship_required: true,
+                gated_gate_ids: current
+                    .map(|item| item.gated_gate_ids.clone())
+                    .unwrap_or_default(),
+                ship_required: current.map(|item| item.ship_required).unwrap_or(true),
             }
         })
         .collect();

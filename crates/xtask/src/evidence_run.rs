@@ -15,6 +15,7 @@ use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 
 use crate::doc_check;
+use crate::fast_suite;
 use crate::gated_tests::{self, CommandSpec, GateEntry};
 
 pub const DEFAULT_RECEIPTS_DIR: &str = "target/release-evidence/receipts";
@@ -109,29 +110,17 @@ pub fn execute_gate(
 ) -> Result<ExecutionResult, Box<dyn Error>> {
     validate_identifier(gate_id)?;
     let receipts_dir = resolve_receipts_dir(root, receipts_dir)?;
-    let registry = gated_tests::load_registry(root)?;
-    if !release_matches(&registry.release, release) {
-        return Err(format!(
-            "gated registry release {} does not match requested release {release}",
-            registry.release
-        )
-        .into());
-    }
-    let gate = registry
-        .gate
-        .iter()
-        .find(|gate| gate.id == gate_id)
-        .ok_or_else(|| format!("unknown gate id {gate_id}"))?;
+    let gate = resolve_registered_gate(root, release, gate_id)?;
     validate_command(&gate.command)?;
-    let artifact_paths = validate_artifact_paths(root, gate)?;
+    let artifact_paths = validate_artifact_paths(root, &gate.artifacts)?;
 
-    let expected = expected_digests(root, gate)?;
+    let expected = expected_digests_for(root, &gate.registry_path, &gate.id, &gate.command)?;
     let (source_commit, dirty_worktree) = git_identity(root)?;
     let started = OffsetDateTime::now_utc();
     let timer = Instant::now();
 
     let process = if platform_matches(&gate.command.platform) {
-        execute_command(root, gate)
+        execute_command(root, &gate.command, gate.timeout_seconds)
     } else {
         ProcessResult {
             outcome: EvidenceOutcome::Skip,
@@ -203,9 +192,25 @@ pub fn execute_gate(
 }
 
 pub fn expected_digests(root: &Path, gate: &GateEntry) -> Result<ExpectedDigests, Box<dyn Error>> {
-    let registry = sha256(&fs::read(root.join(gated_tests::REGISTRY_PATH))?);
-    let command = sha256(&serde_json::to_vec(&gate.command)?);
-    let input = sha256(format!("{}\n{registry}\n{command}", gate.id).as_bytes());
+    expected_digests_for(root, gated_tests::REGISTRY_PATH, &gate.id, &gate.command)
+}
+
+pub fn expected_fast_digests(
+    root: &Path,
+    suite: &fast_suite::FastSuiteEntry,
+) -> Result<ExpectedDigests, Box<dyn Error>> {
+    expected_digests_for(root, fast_suite::REGISTRY_PATH, &suite.id, &suite.command)
+}
+
+fn expected_digests_for(
+    root: &Path,
+    registry_path: &str,
+    id: &str,
+    command_spec: &CommandSpec,
+) -> Result<ExpectedDigests, Box<dyn Error>> {
+    let registry = sha256(&fs::read(root.join(registry_path))?);
+    let command = sha256(&serde_json::to_vec(command_spec)?);
+    let input = sha256(format!("{id}\n{registry}\n{command}").as_bytes());
     Ok(ExpectedDigests {
         command,
         registry,
@@ -222,8 +227,8 @@ pub fn exit_code_for(receipt: &EvidenceReceipt) -> i32 {
     }
 }
 
-fn execute_command(root: &Path, gate: &GateEntry) -> ProcessResult {
-    let cwd = match resolve_cwd(root, &gate.command.cwd) {
+fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64) -> ProcessResult {
+    let cwd = match resolve_cwd(root, &command_spec.cwd) {
         Ok(cwd) => cwd,
         Err(error) => {
             return ProcessResult {
@@ -234,10 +239,10 @@ fn execute_command(root: &Path, gate: &GateEntry) -> ProcessResult {
             };
         }
     };
-    let mut command = Command::new(&gate.command.program);
+    let mut command = Command::new(&command_spec.program);
     command
-        .args(&gate.command.args)
-        .envs(&gate.command.env)
+        .args(&command_spec.args)
+        .envs(&command_spec.env)
         .current_dir(cwd)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
@@ -256,7 +261,7 @@ fn execute_command(root: &Path, gate: &GateEntry) -> ProcessResult {
     };
     let stdout = child.stdout.take().map(read_pipe);
     let stderr = child.stderr.take().map(read_pipe);
-    let deadline = Instant::now() + StdDuration::from_secs(gate.timeout_seconds.max(1));
+    let deadline = Instant::now() + StdDuration::from_secs(timeout_seconds.max(1));
     let (outcome, status) = loop {
         match child.try_wait() {
             Ok(Some(status)) => {
@@ -400,9 +405,9 @@ fn resolve_cwd(root: &Path, cwd: &str) -> Result<PathBuf, Box<dyn Error>> {
 
 fn validate_artifact_paths(
     root: &Path,
-    gate: &GateEntry,
+    artifacts: &[String],
 ) -> Result<Vec<(String, PathBuf)>, Box<dyn Error>> {
-    gate.artifacts
+    artifacts
         .iter()
         .map(|declared| {
             let relative = safe_relative_path(declared)?;
@@ -415,6 +420,57 @@ fn validate_artifact_paths(
             Ok((declared.replace('\\', "/"), root.join(relative)))
         })
         .collect()
+}
+
+struct RegisteredGate {
+    id: String,
+    command: CommandSpec,
+    timeout_seconds: u64,
+    artifacts: Vec<String>,
+    registry_path: &'static str,
+}
+
+fn resolve_registered_gate(
+    root: &Path,
+    release: &str,
+    gate_id: &str,
+) -> Result<RegisteredGate, Box<dyn Error>> {
+    let gated = gated_tests::load_registry(root)?;
+    if !release_matches(&gated.release, release) {
+        return Err(format!(
+            "gated registry release {} does not match requested release {release}",
+            gated.release
+        )
+        .into());
+    }
+    if let Some(gate) = gated.gate.into_iter().find(|gate| gate.id == gate_id) {
+        return Ok(RegisteredGate {
+            id: gate.id,
+            command: gate.command,
+            timeout_seconds: gate.timeout_seconds,
+            artifacts: gate.artifacts,
+            registry_path: gated_tests::REGISTRY_PATH,
+        });
+    }
+
+    let fast = fast_suite::load_registry(root)?;
+    if !release_matches(&fast.release, release) {
+        return Err(format!(
+            "fast-suite registry release {} does not match requested release {release}",
+            fast.release
+        )
+        .into());
+    }
+    if let Some(suite) = fast.suite.into_iter().find(|suite| suite.id == gate_id) {
+        return Ok(RegisteredGate {
+            id: suite.id,
+            command: suite.command,
+            timeout_seconds: suite.timeout_seconds,
+            artifacts: suite.artifacts,
+            registry_path: fast_suite::REGISTRY_PATH,
+        });
+    }
+    Err(format!("unknown gate id {gate_id}").into())
 }
 
 fn safe_relative_path(value: &str) -> Result<PathBuf, Box<dyn Error>> {

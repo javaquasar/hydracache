@@ -200,3 +200,74 @@ fn evidence_executor_rejects_shells_path_traversal_and_artifacts_outside_target(
     assert!(error.to_string().contains("shell program is forbidden"));
     fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn evidence_executor_runs_a_registered_fast_suite_without_shell_indirection() {
+    let root = temp_root("fast-suite");
+    let gated = xtask::gated_tests::GatedTestRegistry {
+        schema_version: 1,
+        release: "0.64.0".to_owned(),
+        gate: vec![],
+    };
+    fs::write(
+        root.join(xtask::gated_tests::REGISTRY_PATH),
+        toml::to_string_pretty(&gated).unwrap(),
+    )
+    .unwrap();
+    let mut env = BTreeMap::new();
+    env.insert(CHILD_ENV.to_owned(), "pass".to_owned());
+    let fast = xtask::fast_suite::FastSuiteRegistry {
+        schema_version: 1,
+        release: "0.64.0".to_owned(),
+        nextest_version: "0.9.137".to_owned(),
+        aggregate_budget_seconds: 1_500,
+        suite: vec![xtask::fast_suite::FastSuiteEntry {
+            id: "fast.fixture".to_owned(),
+            work_items: vec!["W1".to_owned()],
+            timeout_seconds: 5,
+            budget_seconds: 5,
+            deterministic: false,
+            artifacts: vec![],
+            logical_digest_artifact: String::new(),
+            baseline: xtask::fast_suite::Baseline {
+                status: xtask::fast_suite::BaselineStatus::Unmeasured,
+                commit: String::new(),
+                toolchain: String::new(),
+                linux_ci_median_seconds: 0,
+                noise_allowance_seconds: 0,
+            },
+            command: xtask::gated_tests::CommandSpec {
+                program: std::env::current_exe()
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned(),
+                args: vec![
+                    "--exact".to_owned(),
+                    "evidence_child_helper".to_owned(),
+                    "--nocapture".to_owned(),
+                ],
+                env,
+                cwd: ".".to_owned(),
+                platform: "any".to_owned(),
+            },
+        }],
+    };
+    fs::write(
+        root.join(xtask::fast_suite::REGISTRY_PATH),
+        toml::to_string_pretty(&fast).unwrap(),
+    )
+    .unwrap();
+    run(&root, "git", &["add", "."]);
+    run(&root, "git", &["commit", "-q", "-m", "fast fixture"]);
+
+    let result = xtask::evidence_run::execute_gate(
+        &root,
+        "0.64",
+        "fast.fixture",
+        Path::new("target/receipts"),
+    )
+    .unwrap();
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    assert!(result.receipt.stdout.contains("logical pass"));
+    fs::remove_dir_all(root).unwrap();
+}
