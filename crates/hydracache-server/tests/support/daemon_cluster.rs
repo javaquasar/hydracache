@@ -2,6 +2,7 @@
 
 use std::collections::BTreeSet;
 use std::error::Error;
+use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
@@ -561,9 +562,25 @@ pub fn leaders(statuses: &[DaemonStatus]) -> BTreeSet<String> {
 }
 
 fn server_binary() -> TestResult<PathBuf> {
-    std::env::var_os(SERVER_BIN_ENV)
+    resolve_server_binary(
+        std::env::var_os(SERVER_BIN_ENV),
+        option_env!("CARGO_BIN_EXE_hydracache-server"),
+    )
+}
+
+pub fn resolve_server_binary(
+    runtime_binary: Option<OsString>,
+    compile_time_binary: Option<&str>,
+) -> TestResult<PathBuf> {
+    runtime_binary
         .map(PathBuf::from)
-        .ok_or_else(|| format!("{SERVER_BIN_ENV} is not set; run through cargo test").into())
+        .or_else(|| compile_time_binary.map(PathBuf::from))
+        .ok_or_else(|| {
+            format!(
+                "{SERVER_BIN_ENV} is unavailable at runtime and compile time; run through cargo test"
+            )
+            .into()
+        })
 }
 
 fn unique_root(name: &str) -> TestResult<PathBuf> {

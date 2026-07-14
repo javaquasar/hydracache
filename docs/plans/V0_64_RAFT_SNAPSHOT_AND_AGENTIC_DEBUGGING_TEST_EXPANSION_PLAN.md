@@ -1961,7 +1961,10 @@ Redis connections, and cancelled clients.
 
 **Files to change.** Add `crates/hydracache-server/tests/daemon_resource_budget.rs` and a JSON artifact
 schema. Use the existing DaemonCluster harness and a test-only cross-platform process sampler; Linux
-`/proc` FD/RSS rows are gated, while portable child/connection/task counters run everywhere.
+`/proc` FD/RSS rows are gated, while portable child/connection/task counters run everywhere. The
+shared daemon harness must resolve `CARGO_BIN_EXE_hydracache-server` from Cargo's compile-time
+integration-test environment when older/MSRV Cargo does not propagate the variable to the running
+test process; an explicit runtime value remains a supported override.
 
 **Required scenario:** warm the daemon; record baseline; repeat peer restart/rejoin, short client and
 RESP connections, cancelled admin requests, and a held/released snapshot-message schedule; quiesce;
@@ -1972,6 +1975,7 @@ platform, seed, and budget to JSON.
 **Required tests:**
 
 - `daemon_cluster_churn_returns_portable_resources_to_baseline`;
+- `daemon_harness_falls_back_to_the_compile_time_binary_for_msrv_cargo`;
 - `linux_fd_and_rss_budget_is_bounded_after_quiescence` (gated);
 - `resource_budget_artifact_contains_baseline_peak_final_and_platform`.
 

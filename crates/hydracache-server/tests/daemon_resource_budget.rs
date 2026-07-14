@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
 use raft::eraftpb::MessageType;
 use serde::{Deserialize, Serialize};
-use support::daemon_cluster::{DaemonCluster, TestResult};
+use support::daemon_cluster::{resolve_server_binary, DaemonCluster, TestResult};
 
 const SEED: u64 = 0x0D64_0037;
 const PORTABLE_ARTIFACT: &str = "daemon-resource-budget-portable.json";
@@ -355,6 +355,21 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
     for field in ["baseline", "peak", "final_sample", "platform", "samples"] {
         assert!(schema.contains(&format!("\"{field}\"")));
     }
+}
+
+#[test]
+fn daemon_harness_falls_back_to_the_compile_time_binary_for_msrv_cargo() {
+    let binary = resolve_server_binary(None, option_env!("CARGO_BIN_EXE_hydracache-server"))
+        .expect("Cargo must expose the package binary while compiling its integration tests");
+    let file_name = binary
+        .file_name()
+        .and_then(|name| name.to_str())
+        .expect("server binary path must end in a UTF-8 file name");
+    assert!(
+        file_name == "hydracache-server" || file_name == "hydracache-server.exe",
+        "unexpected server binary path: {}",
+        binary.display()
+    );
 }
 
 #[test]
