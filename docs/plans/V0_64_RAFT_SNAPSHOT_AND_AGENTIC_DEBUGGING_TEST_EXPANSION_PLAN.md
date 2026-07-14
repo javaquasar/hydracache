@@ -1551,6 +1551,16 @@ a current-vs-current substitute. The 0.64 release process also emits and freezes
 0.64 fixture bundle for 0.65, establishing a one-release rolling chain without postponing the first
 enforced compatibility gate.
 
+**Branch/version preflight (must precede W32 implementation).** The 0.64 feature branch was created
+before the final 0.63 version/publish commits. Before generating or reviewing any W32 fixture, integrate
+the tagged `main` history into the feature branch. Because the feature branch is already published, a
+normal merge is preferred over rewriting shared history. `compat-check --preflight-only` must fail unless
+`v0.63.0` is an ancestor of `HEAD`, every in-workspace HydraCache package/path dependency is version-
+aligned at `0.63.0` or the explicit 0.64 development version, and no stale internal `0.62.0` dependency
+remains. External dependencies that independently use version `0.62.0` are not an error. The generated
+current fixture records `producer_release = "0.64.0-dev"` plus the exact commit until the final release
+version is applied.
+
 **Required matrix:** previous supported Raft wire message -> current decoder; previous ConfState and
 snapshot -> current restore; current writer -> current reader roundtrip; unsupported future version ->
 fail loud; public API diff against the latest published baseline. Fixture regeneration must be a
@@ -1561,6 +1571,7 @@ reviewed compatibility change, never an automatic overwrite in the test.
 - `previous_release_raft_wire_and_snapshot_fixtures_decode_to_frozen_semantics`;
 - `unsupported_future_format_fails_loud_without_mutation`;
 - `current_release_emits_next_compat_fixture_manifest_without_overwriting_previous`;
+- `compat_preflight_rejects_a_branch_without_v063_ancestry_or_with_stale_internal_versions`;
 - `xtask compat-check` validates manifest hashes, coverage, and the API baseline.
 
 **Canary.** `canary_compat_gate_silently_regenerates_a_changed_golden` must fail when a fixture hash or
@@ -1569,6 +1580,7 @@ semantic expectation changes without an explicit manifest update.
 **DoD.**
 
 ```powershell
+cargo run --manifest-path crates\xtask\Cargo.toml -- compat-check --preflight-only
 cargo test -p hydracache-cluster-raft --test compat_matrix --locked -j 2
 cargo run --manifest-path crates\xtask\Cargo.toml -- compat-check
 ```

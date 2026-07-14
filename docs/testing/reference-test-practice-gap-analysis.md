@@ -483,8 +483,10 @@ change rather than a silent `0.64.x` exception.
   handoff while snapshot delivery is in flight.
 - W31: checked-in durable corruption and interrupted-recovery corpus for formats
   that exist in 0.64.
-- W32: reproducible `v0.63.0` wire/snapshot fixture consumption, public Rust API
-  compatibility diff, and generation of the frozen 0.64 bundle for 0.65.
+- W32: first merge the published `v0.63.0` history into the already-shared 0.64
+  branch and reject stale internal `0.62.0` versions; then consume reproducible
+  `v0.63.0` wire/snapshot fixtures, run the public Rust API compatibility diff,
+  and generate the frozen `0.64.0-dev` bundle for 0.65.
 - W33: machine-checkable registry for every ignored, env-gated, and cfg-gated
   proof plus a lightweight umbrella that validates all release meta-gates and
   their CI wiring without pretending to execute heavy lanes.
