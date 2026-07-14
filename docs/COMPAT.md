@@ -61,6 +61,20 @@ they are persisted or transmitted across processes.
 - Forward-only migrations must be idempotent: applying the same migration twice
   leaves the artifact at the same version.
 
+## Server Configuration Reader Policy
+
+`ServerConfig` TOML is an additive, human-authored startup document rather than a
+versioned durable or wire artifact. Readers ignore unknown fields so a newer
+configuration can be inspected or rolled back by an older binary, but every
+recognized field and every TLS, authentication, listener, and role combination
+is validated before any listener is materialized. Environment loading starts
+from secure defaults, applies StatefulSet-derived identity, and gives an
+explicit `HYDRACACHE_CLUSTER_START` value precedence over ordinal inference.
+HydraCache does not merge a TOML file and environment variables implicitly;
+callers select one source. Credential files are read only for validation/runtime
+construction, and credential bytes must never appear in config serialization,
+`Debug`, startup errors, or metric labels.
+
 ## 0.37 Baseline
 
 `0.37.0` starts this register with the existing invalidation frame and the new

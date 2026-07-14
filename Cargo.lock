@@ -2175,6 +2175,7 @@ dependencies = [
  "futures-util",
  "k8s-openapi",
  "kube",
+ "proptest",
  "reqwest",
  "rustls",
  "schemars 1.2.1",
