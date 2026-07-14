@@ -3,7 +3,7 @@ fn release_governance_check_accepts_current_structural_meta_gates() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let report = xtask::release_governance::check(&root, "0.64").unwrap();
     assert!(report.problems.is_empty(), "{:#?}", report.problems);
-    assert!(report
+    assert!(!report
         .todos
         .iter()
         .any(|todo| todo.contains("TODO-W32-COMPAT-CHECK")));

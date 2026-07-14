@@ -59,6 +59,7 @@ pub enum GateKind {
     IgnoredTest,
     CfgTestTarget,
     EnvGate,
+    ExternalTool,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
@@ -797,7 +798,9 @@ fn validate_registry(
             problems.push(format!("{REGISTRY_PATH}: duplicate gate id `{}`", gate.id));
         }
         validate_entry_shape(gate, &mut problems);
-        if !discovered.iter().any(|item| entry_matches(gate, item)) {
+        if gate.kind != GateKind::ExternalTool
+            && !discovered.iter().any(|item| entry_matches(gate, item))
+        {
             problems.push(format!(
                 "{REGISTRY_PATH}: stale gate `{}` does not resolve to a discovered gate",
                 gate.id
@@ -865,6 +868,10 @@ fn validate_entry_shape(gate: &GateEntry, problems: &mut Vec<String>) {
         )),
         GateKind::EnvGate if gate.env.trim().is_empty() => problems.push(format!(
             "{REGISTRY_PATH}: env-gate `{}` is missing env",
+            gate.id
+        )),
+        GateKind::ExternalTool if gate.required_tools.is_empty() => problems.push(format!(
+            "{REGISTRY_PATH}: external-tool gate `{}` is missing required_tools",
             gate.id
         )),
         _ => {}

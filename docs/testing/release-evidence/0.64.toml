@@ -413,12 +413,19 @@ function = "interrupted_recovery_never_activates_partial_or_misdirected_state"
 
 [[work_item]]
 id = "W32"
-required_sources = []
-required_tests = []
+required_sources = [
+    "crates/hydracache-cluster-raft/tests/compat_matrix.rs",
+    "crates/xtask/src/compat_check.rs",
+    "docs/testing/compat/v0.63.0.json",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = ["tool.cargo-semver-checks.v063-baseline"]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compat_matrix.rs"
+function = "previous_release_raft_wire_and_snapshot_fixtures_decode_to_frozen_semantics"
 
 [[work_item]]
 id = "W33"

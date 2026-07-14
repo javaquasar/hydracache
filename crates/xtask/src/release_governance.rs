@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use serde_yaml::{Mapping, Value};
 
 use crate::canary_check;
+use crate::compat_check;
 use crate::doc_check;
 use crate::fast_suite;
 use crate::feature_leak;
@@ -54,6 +55,11 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
 
     report
         .problems
+        .extend(prefix("compat-check", compat_check::manifest_check(root)?));
+    report.completed_checks += 1;
+
+    report
+        .problems
         .extend(feature_leak::check(root)?.into_iter().map(|leak| {
             format!(
                 "verify-no-test-features: {} contains {} ({})",
@@ -93,13 +99,10 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         .extend(ci_wiring_problems(root, &gates.gate)?);
     report.completed_checks += 1;
 
-    for (id, path) in [
-        ("TODO-W32-COMPAT-CHECK", "crates/xtask/src/compat_check.rs"),
-        (
-            "TODO-W38-RAFT-SPEC-CHECK",
-            "crates/xtask/src/raft_spec_check.rs",
-        ),
-    ] {
+    for (id, path) in [(
+        "TODO-W38-RAFT-SPEC-CHECK",
+        "crates/xtask/src/raft_spec_check.rs",
+    )] {
         if root.join(path).is_file() {
             report.completed_checks += 1;
         } else {
