@@ -1969,7 +1969,9 @@ test process; an explicit runtime value remains a supported override.
 **Required scenario:** warm the daemon; record baseline; repeat peer restart/rejoin, short client and
 RESP connections, cancelled admin requests, and a held/released snapshot-message schedule; quiesce;
 sample multiple times. Assert no monotonic handle/FD growth, active logical counters return to baseline,
-RSS stays within a documented noise budget, and the cluster still commits after churn. Emit samples,
+RSS stays within a documented noise budget, and the cluster still commits after churn. Before selecting
+or restarting a follower, use the bounded `DaemonCluster::wait_for_shape` contract so instrumented and
+MSRV builds must observe one converged leader rather than racing a transient election. Emit samples,
 platform, seed, and budget to JSON.
 
 **Required tests:**

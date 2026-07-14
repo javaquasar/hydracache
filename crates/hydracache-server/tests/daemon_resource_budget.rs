@@ -185,10 +185,11 @@ fn churn_daemon_cluster(
         let _ = cluster.admin_status(round % 3)?;
 
         samples.push(portable_sample(cluster, 0, 0));
-        let leader = cluster
-            .admin_status(round % 3)?
+        let statuses = cluster.wait_for_shape(3, 3)?;
+        let leader = statuses[0]
             .leader
-            .ok_or("cluster has no leader before follower restart")?;
+            .clone()
+            .ok_or("stable cluster shape has no leader before follower restart")?;
         let node_ids = cluster.node_ids();
         let followers = node_ids
             .iter()
@@ -199,7 +200,7 @@ fn churn_daemon_cluster(
         cluster.kill(follower)?;
         samples.push(portable_sample(cluster, 0, 0));
         cluster.restart(follower)?;
-        cluster.wait_for_responsive_shape(3, 3, 3)?;
+        cluster.wait_for_shape(3, 3)?;
         cluster.wait_for_running_children(3)?;
         samples.push(portable_sample(cluster, 0, 0));
     }
@@ -238,7 +239,7 @@ async fn exercise_held_snapshot_schedule() -> usize {
 #[tokio::test]
 async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestResult {
     let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, "w37-portable")?;
-    cluster.wait_for_responsive_shape(3, 3, 3)?;
+    cluster.wait_for_shape(3, 3)?;
     let mut samples = vec![portable_sample(&mut cluster, 0, 0)];
 
     churn_daemon_cluster(&mut cluster, 3, &mut samples)?;
