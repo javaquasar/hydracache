@@ -18,6 +18,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -60,6 +61,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -102,6 +104,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -144,6 +147,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -186,6 +190,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -228,6 +233,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -270,6 +276,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -312,6 +319,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -354,6 +362,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -396,6 +405,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -438,6 +448,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -480,6 +491,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -522,6 +534,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -564,6 +577,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -606,6 +620,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -648,6 +663,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -690,6 +706,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -732,6 +749,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -774,6 +792,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -816,6 +835,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -858,6 +878,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -900,6 +921,7 @@ required_tools = []
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -942,6 +964,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -984,6 +1007,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1026,6 +1050,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1068,6 +1093,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1110,6 +1136,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1152,6 +1179,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1194,6 +1222,7 @@ required_tools = ["mysql"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1236,6 +1265,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1280,6 +1310,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1324,6 +1355,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1368,6 +1400,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1412,6 +1445,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1454,6 +1488,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1496,6 +1531,7 @@ required_tools = []
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1538,6 +1574,7 @@ required_tools = ["kind"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1581,6 +1618,7 @@ required_tools = ["kind"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1624,6 +1662,7 @@ required_tools = ["kind"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1667,6 +1706,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1710,6 +1750,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1753,6 +1794,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1796,6 +1838,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1839,6 +1882,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1882,6 +1926,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1925,6 +1970,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -1968,6 +2014,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2011,6 +2058,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2054,6 +2102,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2097,6 +2146,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2140,6 +2190,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2183,6 +2234,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2226,6 +2278,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2269,6 +2322,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2312,6 +2366,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2355,6 +2410,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2398,6 +2454,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2441,6 +2498,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2484,6 +2542,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2527,6 +2586,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2570,6 +2630,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2613,6 +2674,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2656,6 +2718,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2701,6 +2764,7 @@ required_tools = [
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2743,6 +2807,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2785,6 +2850,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2827,6 +2893,7 @@ required_tools = ["kind"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2869,6 +2936,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2911,6 +2979,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2953,6 +3022,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -2993,6 +3063,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3033,6 +3104,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3073,6 +3145,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3113,6 +3186,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3153,6 +3227,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3193,6 +3268,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3233,6 +3309,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3273,6 +3350,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3312,6 +3390,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3352,6 +3431,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3392,6 +3472,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3432,6 +3513,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3472,6 +3554,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3512,6 +3595,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3552,6 +3636,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3592,6 +3677,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3632,6 +3718,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3672,6 +3759,7 @@ required_tools = ["postgres"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3711,6 +3799,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = true
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3750,6 +3839,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3789,6 +3879,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3828,6 +3919,7 @@ required_tools = ["mysql"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3871,6 +3963,7 @@ required_tools = [
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3910,6 +4003,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3949,6 +4043,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -3988,6 +4083,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4027,6 +4123,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4066,6 +4163,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4105,6 +4203,7 @@ required_tools = ["docker"]
 timeout_seconds = 3600
 owner_release = "0.64.0"
 ship_mandatory = true
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4144,6 +4243,7 @@ required_tools = []
 timeout_seconds = 900
 owner_release = "0.64.0"
 ship_mandatory = true
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4179,6 +4279,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4218,6 +4319,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4257,6 +4359,7 @@ required_tools = []
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4296,6 +4399,7 @@ required_tools = ["cargo-mutants"]
 timeout_seconds = 1800
 owner_release = "0.64.0"
 ship_mandatory = false
+artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"

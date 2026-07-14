@@ -2,6 +2,7 @@ pub mod bench_budget;
 pub mod canary_check;
 pub mod doc_check;
 pub mod durable_inspect;
+pub mod evidence_run;
 pub mod feature_leak;
 pub mod gated_tests;
 pub mod mutants;

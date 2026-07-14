@@ -47,6 +47,8 @@ pub struct GateEntry {
     pub timeout_seconds: u64,
     pub owner_release: String,
     pub ship_mandatory: bool,
+    #[serde(default)]
+    pub artifacts: Vec<String>,
     pub ci: CiRegistration,
     pub command: CommandSpec,
 }
@@ -477,6 +479,7 @@ fn template_entry(discovered: &DiscoveredGate) -> GateEntry {
                 timeout_seconds: timeout_for_tier(tier),
                 owner_release: RELEASE.to_owned(),
                 ship_mandatory: false,
+                artifacts: Vec::new(),
                 ci: ci.clone(),
                 command: cargo_test_command(package, target, Some(test)),
             }
@@ -515,6 +518,7 @@ fn template_entry(discovered: &DiscoveredGate) -> GateEntry {
                 timeout_seconds: timeout_for_tier(GateTier::Nightly),
                 owner_release: RELEASE.to_owned(),
                 ship_mandatory: false,
+                artifacts: Vec::new(),
                 ci,
                 command,
             }
@@ -543,6 +547,7 @@ fn template_entry(discovered: &DiscoveredGate) -> GateEntry {
                         | "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"
                         | "HYDRACACHE_REQUIRE_REDIS_ORACLE"
                 ),
+                artifacts: Vec::new(),
                 ci,
                 command,
             }

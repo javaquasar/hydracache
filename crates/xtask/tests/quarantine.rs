@@ -39,6 +39,7 @@ fn write_gate_registry(root: &Path, ship_mandatory: bool) {
             timeout_seconds: 60,
             owner_release: "0.64.0".to_owned(),
             ship_mandatory,
+            artifacts: vec![],
             ci: xtask::gated_tests::CiRegistration {
                 workflow: ".github/workflows/ci.yml".to_owned(),
                 job: "test".to_owned(),
