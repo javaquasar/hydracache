@@ -12,6 +12,7 @@ use crate::fast_suite;
 use crate::feature_leak;
 use crate::gated_tests::{self, GateEntry};
 use crate::quarantine;
+use crate::raft_spec_check;
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let (root, release) = parse_args(args)?;
@@ -99,16 +100,11 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         .extend(ci_wiring_problems(root, &gates.gate)?);
     report.completed_checks += 1;
 
-    for (id, path) in [(
-        "TODO-W38-RAFT-SPEC-CHECK",
-        "crates/xtask/src/raft_spec_check.rs",
-    )] {
-        if root.join(path).is_file() {
-            report.completed_checks += 1;
-        } else {
-            report.todos.push(format!("{id}: missing {path}"));
-        }
-    }
+    report.problems.extend(prefix(
+        "raft-spec-check",
+        raft_spec_check::structural_check(root)?,
+    ));
+    report.completed_checks += 1;
     Ok(report)
 }
 

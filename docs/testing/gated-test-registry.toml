@@ -4631,3 +4631,147 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "tool.tla-tlc.raft-election-fast"
+kind = "external_tool"
+source = "docs/specs/RaftElection.tla"
+package = "xtask"
+target = "raft-spec-check"
+test = "fast"
+cfg = ""
+env = "HYDRACACHE_REQUIRE_TLC"
+reason = "Pinned TLC exhaustively checks the bounded three-node Raft safety model"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TLC"]
+required_tools = [
+    "java>=17",
+    "tla2tools.jar=1.7.4@sha256:936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+]
+timeout_seconds = 300
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/raft-spec-fast.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "raft-spec-check", "--scope", "fast"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TLC = "1"
+
+[[gate]]
+id = "tool.tla-tlc.raft-election-canary"
+kind = "external_tool"
+source = "docs/specs/RaftElectionCanary.tla"
+package = "xtask"
+target = "raft-spec-check"
+test = "canary"
+cfg = ""
+env = "HYDRACACHE_REQUIRE_TLC"
+reason = "Pinned TLC must falsify the unsafe second-leader canary"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TLC"]
+required_tools = [
+    "java>=17",
+    "tla2tools.jar=1.7.4@sha256:936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+]
+timeout_seconds = 60
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/raft-spec-canary.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "raft-spec-check", "--scope", "canary"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TLC = "1"
+
+[[gate]]
+id = "env.hydracache-require-tlc"
+kind = "env_gate"
+source = "crates/xtask/src/raft_spec_check.rs"
+package = "xtask"
+target = "raft-spec-check"
+test = ""
+cfg = ""
+env = "HYDRACACHE_REQUIRE_TLC"
+reason = "Local missing Java or tla2tools skips loudly; required release proof must fail instead"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TLC"]
+required_tools = [
+    "java>=17",
+    "tla2tools.jar=1.7.4@sha256:936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+]
+timeout_seconds = 300
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "raft-spec-check", "--scope", "fast"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TLC = "1"
+
+[[gate]]
+id = "tool.tla-tlc.raft-election-nightly"
+kind = "external_tool"
+source = "docs/specs/RaftElection.tla"
+package = "xtask"
+target = "raft-spec-check"
+test = "nightly"
+cfg = ""
+env = "HYDRACACHE_REQUIRE_TLC"
+reason = "Pinned TLC explores the wider four-node election/recovery model and liveness property"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TLC"]
+required_tools = [
+    "java>=17",
+    "tla2tools.jar=1.7.4@sha256:936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+]
+timeout_seconds = 7200
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = ["target/test-evidence/0.64/raft-spec-nightly.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "raft-spec-check", "--scope", "nightly"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TLC = "1"

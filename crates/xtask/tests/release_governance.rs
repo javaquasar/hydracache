@@ -7,7 +7,7 @@ fn release_governance_check_accepts_current_structural_meta_gates() {
         .todos
         .iter()
         .any(|todo| todo.contains("TODO-W32-COMPAT-CHECK")));
-    assert!(report
+    assert!(!report
         .todos
         .iter()
         .any(|todo| todo.contains("TODO-W38-RAFT-SPEC-CHECK")));

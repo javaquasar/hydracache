@@ -9,6 +9,7 @@ pub mod feature_leak;
 pub mod gated_tests;
 pub mod mutants;
 pub mod quarantine;
+pub mod raft_spec_check;
 pub mod release_evidence;
 pub mod release_governance;
 pub mod verify;

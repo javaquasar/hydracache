@@ -4,6 +4,18 @@ use hydracache_cluster_raft::RaftRuntimeRole;
 
 use crate::RuntimeRaftCluster;
 
+/// Stable ids shared by the implementation catalog and the W38 TLA+ model.
+pub const RAFT_SPEC_INVARIANT_IDS: &[&str] = &[
+    "HC-RAFT-INV-ONE-LEADER-PER-TERM",
+    "HC-RAFT-INV-TERM-MONOTONIC",
+    "HC-RAFT-INV-COMMIT-MONOTONIC",
+    "HC-RAFT-INV-COMMITTED-PREFIX",
+    "HC-RAFT-INV-APPLIED-LE-COMMIT",
+    "HC-RAFT-INV-SNAPSHOT-IDENTITY",
+    "HC-RAFT-INV-SNAPSHOT-MONOTONIC",
+    "HC-RAFT-INV-REMOVED-NODE-NO-AUTHORITY",
+];
+
 /// Stable view consumed by the shared cluster invariant catalog.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClusterInvariantView {

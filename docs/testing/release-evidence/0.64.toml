@@ -527,9 +527,28 @@ function = "resource_budget_artifact_contains_baseline_peak_final_and_platform"
 
 [[work_item]]
 id = "W38"
-required_sources = []
-required_tests = []
+required_sources = [
+    "docs/specs/RaftElection.tla",
+    "docs/specs/RaftElectionCanary.tla",
+    "docs/specs/raft-election-fast.cfg",
+    "docs/specs/raft-election-nightly.cfg",
+    "docs/specs/raft-election-canary.cfg",
+    "docs/specs/tla-toolchain.toml",
+    "docs/specs/README.md",
+    "crates/xtask/src/raft_spec_check.rs",
+]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = [
+    "tool.tla-tlc.raft-election-fast",
+    "tool.tla-tlc.raft-election-canary",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/raft_spec_check.rs"
+function = "raft_spec_structural_contract_maps_every_invariant_to_rust_evidence"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/raft_spec_check.rs"
+function = "main_model_cannot_import_the_negative_canary"

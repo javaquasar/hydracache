@@ -19,6 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
         Some("mutants") => xtask::mutants::run(args.collect())?,
         Some("quarantine-check") => xtask::quarantine::run(args.collect())?,
+        Some("raft-spec-check") => xtask::raft_spec_check::run(args.collect())?,
         Some("release-evidence") => xtask::release_evidence::run(args.collect())?,
         Some("release-governance-check") => xtask::release_governance::run(args.collect())?,
         Some("verify") => xtask::verify::run(args.collect())?,
@@ -43,6 +44,7 @@ fn print_usage() {
          cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask quarantine-check --release 0.64  # validate temporary test quarantines\n  \
+         cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \
          cargo xtask release-governance-check --release 0.64  # run structural release meta-gates\n  \
          cargo xtask bench-budget [--budget benches/budget.toml] [--baseline benches/baseline/0_37.json] [--current target/criterion]\n\n\
