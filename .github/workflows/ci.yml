@@ -7,6 +7,11 @@ on:
       - master
   pull_request:
   workflow_dispatch:
+    inputs:
+      gated_gate_id:
+        description: "Exact gate id from docs/testing/gated-test-registry.toml"
+        required: false
+        type: string
   schedule:
     - cron: "0 3 * * 1"
 
@@ -49,6 +54,11 @@ jobs:
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
 
+      - name: Install pinned cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
       - name: Format
         run: cargo fmt --all -- --check
 
@@ -83,6 +93,9 @@ jobs:
 
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
+
+      - name: Release governance
+        run: cargo run -p xtask --locked -- release-governance-check --release 0.64
 
       - name: SQL lint baseline drift
         run: |
@@ -145,7 +158,10 @@ jobs:
           npm --prefix console test
 
       - name: Test
-        run: cargo test --workspace --locked
+        run: cargo nextest run --workspace --profile ci --locked
+
+      - name: Doctests
+        run: cargo test --workspace --doc --locked
 
       - name: Documentation
         env:
@@ -603,3 +619,33 @@ jobs:
       - name: Clean Rust test scratch links
         if: always()
         run: rm -rf target/tests
+
+  gated-proof-registry:
+    name: Registered Gated Proof
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.gated_gate_id != ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: registered-gated-proof
+
+      - name: Run registered gated proofs
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate "${{ inputs.gated_gate_id }}"
+
+      - name: Upload registered gated proof receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-evidence-${{ github.sha }}-${{ inputs.gated_gate_id }}"
+          path: target/release-evidence/receipts
+          if-no-files-found: error

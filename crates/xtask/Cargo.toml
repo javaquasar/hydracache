@@ -11,6 +11,7 @@ description = "HydraCache repository automation tasks."
 hydracache = { workspace = true, features = ["durable-value-store"] }
 serde.workspace = true
 serde_json.workspace = true
+serde_yaml = "0.9.34"
 sha2.workspace = true
 syn = { version = "2.0", features = ["full", "visit"] }
 time = { version = "0.3.36", features = ["formatting", "parsing"] }
