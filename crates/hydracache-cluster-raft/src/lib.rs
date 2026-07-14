@@ -1168,7 +1168,7 @@ where
         envelope: RaftMetadataCommandEnvelope,
         index: u64,
     ) -> CacheResult<()> {
-        materialize_command(&self.cluster, &envelope.command)?;
+        materialize_committed_command(&self.cluster, &envelope.command)?;
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
         if state
             .applied_command_ids

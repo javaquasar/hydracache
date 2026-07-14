@@ -1,6 +1,12 @@
-use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration};
+use hydracache::{
+    ClusterCandidate, ClusterControlPlane, ClusterGeneration, ClusterNodeId, RaftMetadataCommand,
+};
 use hydracache_cluster_raft::{InMemoryRaftLogStore, RaftLogStore, RaftMetadataRuntime};
-use raft::eraftpb::{ConfState, Entry, Snapshot};
+#[cfg(feature = "sled-log-store")]
+use hydracache_cluster_raft::{
+    RaftMetadataCommandEnvelope, RaftMetadataRuntimeConfig, SledRaftLogStore,
+};
+use raft::eraftpb::{ConfState, Entry, HardState, Snapshot};
 use raft::storage::{GetEntriesContext, Storage};
 use raft::{Error as RaftError, StorageError};
 
@@ -156,8 +162,6 @@ fn persistent_log_sled_log_store_feature_example_compiles_and_behaves() {
 #[cfg(feature = "sled-log-store")]
 #[tokio::test]
 async fn sled_runtime_reopens_committed_log_before_raw_node_initialization() {
-    use hydracache_cluster_raft::RaftMetadataRuntimeConfig;
-
     let path = temp_sled_path("runtime-reopen");
     let config = RaftMetadataRuntimeConfig::single_node("restart", 1);
     let runtime = RaftMetadataRuntime::sled_with_config(config.clone(), &path).unwrap();
@@ -178,5 +182,60 @@ async fn sled_runtime_reopens_committed_log_before_raw_node_initialization() {
         .iter()
         .any(|member| member.node_id.as_str() == "member-a"));
     drop(reopened);
+    let _ = std::fs::remove_dir_all(path);
+}
+
+#[cfg(feature = "sled-log-store")]
+#[test]
+fn sled_runtime_replay_matches_live_apply_for_stale_committed_generation() {
+    let path = temp_sled_path("runtime-stale-generation-replay");
+    let store = SledRaftLogStore::open(&path).unwrap();
+    let conf_state = ConfState::from((vec![1], vec![]));
+    store.initialize_with_conf_state((vec![1], vec![]));
+    store.save_conf_state(&conf_state).unwrap();
+
+    let envelope = |generation| RaftMetadataCommandEnvelope {
+        command_id: format!("member-upsert:member-a:{generation}"),
+        command: RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from("member-a"),
+            generation: ClusterGeneration::new(generation),
+            epoch: hydracache::ClusterEpoch::new(generation),
+        },
+    };
+    let entries = [
+        Entry {
+            index: 1,
+            term: 1,
+            data: envelope(2).encode().into(),
+            ..Entry::default()
+        },
+        Entry {
+            index: 2,
+            term: 1,
+            data: envelope(1).encode().into(),
+            ..Entry::default()
+        },
+    ];
+    store.append(&entries).unwrap();
+    let mut hard_state = HardState::default();
+    hard_state.term = 1;
+    hard_state.vote = 1;
+    hard_state.commit = 2;
+    store.save_hard_state(&hard_state).unwrap();
+    drop(store);
+
+    let runtime = RaftMetadataRuntime::sled_with_config(
+        RaftMetadataRuntimeConfig::single_node("restart", 1),
+        &path,
+    )
+    .unwrap();
+    let member = runtime
+        .members()
+        .into_iter()
+        .find(|member| member.node_id.as_str() == "member-a")
+        .unwrap();
+    assert_eq!(member.generation, ClusterGeneration::new(2));
+    assert_eq!(runtime.command_envelopes().len(), 2);
+    drop(runtime);
     let _ = std::fs::remove_dir_all(path);
 }
