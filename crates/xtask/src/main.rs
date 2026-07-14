@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("raft-spec-check") => xtask::raft_spec_check::run(args.collect())?,
         Some("release-evidence") => xtask::release_evidence::run(args.collect())?,
         Some("release-governance-check") => xtask::release_governance::run(args.collect())?,
+        Some("tsan-check") => xtask::tsan_check::run(args.collect())?,
         Some("verify") => xtask::verify::run(args.collect())?,
         Some("verify-no-test-features") => xtask::feature_leak::run(args.collect())?,
         Some("--help") | Some("-h") | None => print_usage(),
@@ -47,6 +48,7 @@ fn print_usage() {
          cargo xtask raft-spec-check --structural|--scope <fast|canary|nightly>  # validate/run the pinned TLA+ model\n  \
          cargo xtask release-evidence --release 0.64  # derive the per-W release evidence matrix\n  \
          cargo xtask release-governance-check --release 0.64  # run structural release meta-gates\n  \
+         cargo xtask tsan-check --scope <suites|canary>  # run pinned Linux ThreadSanitizer proof\n  \
          cargo xtask bench-budget [--budget benches/budget.toml] [--baseline benches/baseline/0_37.json] [--current target/criterion]\n\n\
          (The `cargo xtask` alias is defined in .cargo/config.toml; `cargo run -p xtask -- <cmd>` also works.)"
     );

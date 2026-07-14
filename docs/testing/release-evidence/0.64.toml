@@ -250,15 +250,30 @@ function = "proof_oracle_config_rejects_integration_test_glue_as_the_only_scope"
 
 [[work_item]]
 id = "W16"
-required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_immutability.rs"]
+required_sources = [
+    "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs",
+    "crates/hydracache-cluster-raft/tests/tsan_canary.rs",
+    "crates/xtask/src/tsan_check.rs",
+]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = [
+    "tool.tsan.concurrent-suites",
+    "tool.tsan.race-canary",
+]
 ship_required = true
 
 [[work_item.required_tests]]
 source = "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs"
 function = "miri_snapshot_store_returns_deep_cloned_export"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/tsan_canary.rs"
+function = "canary_tsan_detects_test_fixture_data_race"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/tsan_check.rs"
+function = "tsan_red_canary_evidence_requires_nonzero_and_normalized_race_signature"
 
 [[work_item]]
 id = "W17"
@@ -370,10 +385,18 @@ function = "linearizability_checker_accepts_a_valid_history_and_rejects_a_stale_
 
 [[work_item]]
 id = "W26"
-required_sources = ["crates/hydracache-cluster-raft/tests/loom_concurrency.rs"]
+required_sources = [
+    "crates/hydracache-cluster-raft/tests/loom_concurrency.rs",
+    "crates/hydracache-cluster-raft/tests/tsan_canary.rs",
+    "crates/xtask/src/tsan_check.rs",
+]
 required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = [
+    "cfg.hydracache-cluster-raft.loom-concurrency",
+    "tool.tsan.concurrent-suites",
+    "tool.tsan.race-canary",
+]
 ship_required = true
 
 [[work_item.required_tests]]

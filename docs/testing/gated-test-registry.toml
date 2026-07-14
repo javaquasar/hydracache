@@ -4702,6 +4702,171 @@ platform = "any"
 HYDRACACHE_REQUIRE_TLC = "1"
 
 [[gate]]
+id = "tool.tsan.concurrent-suites"
+kind = "external_tool"
+source = "crates/xtask/src/tsan_check.rs"
+package = "xtask"
+target = "tsan-check"
+test = "suites"
+cfg = "target_os=linux"
+env = "HYDRACACHE_REQUIRE_TSAN"
+reason = "Pinned ThreadSanitizer executes ordinary cache and Raft concurrency suites"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TSAN"]
+required_tools = ["rust-nightly-2026-07-01", "rust-src", "ThreadSanitizer"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/tsan-suites.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "tsan-check", "--scope", "suites"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TSAN = "1"
+
+[[gate]]
+id = "ignored.hydracache-cluster-raft.tsan-canary.canary-tsan-detects-test-fixture-data-race"
+kind = "ignored_test"
+source = "crates/hydracache-cluster-raft/tests/tsan_canary.rs"
+package = "hydracache-cluster-raft"
+target = "tsan_canary"
+test = "canary_tsan_detects_test_fixture_data_race"
+cfg = "target_os=linux"
+env = "HYDRACACHE_REQUIRE_TSAN"
+reason = "Deliberate data race must only execute inside the pinned TSan wrapper"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TSAN"]
+required_tools = ["rust-nightly-2026-07-01", "rust-src", "ThreadSanitizer"]
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = ["target/test-evidence/0.64/tsan-canary.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "tsan-check", "--scope", "canary"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TSAN = "1"
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.tsan-canary"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/tsan_canary.rs"
+package = "hydracache-cluster-raft"
+target = "tsan_canary"
+test = ""
+cfg = 'target_os = "linux"'
+env = ""
+reason = "The deliberate TSan race fixture is compiled only on Linux"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["rust-nightly-2026-07-01", "rust-src", "ThreadSanitizer"]
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "tsan-check", "--scope", "canary"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TSAN = "1"
+
+[[gate]]
+id = "tool.tsan.race-canary"
+kind = "external_tool"
+source = "crates/hydracache-cluster-raft/tests/tsan_canary.rs"
+package = "xtask"
+target = "tsan-check"
+test = "canary_tsan_detects_test_fixture_data_race"
+cfg = "target_os=linux"
+env = "HYDRACACHE_REQUIRE_TSAN"
+reason = "Pinned ThreadSanitizer must report the isolated UnsafeCell fixture as a data race"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TSAN"]
+required_tools = ["rust-nightly-2026-07-01", "rust-src", "ThreadSanitizer"]
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/tsan-canary.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "tsan-check", "--scope", "canary"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TSAN = "1"
+
+[[gate]]
+id = "env.hydracache-require-tsan"
+kind = "env_gate"
+source = "crates/xtask/src/tsan_check.rs"
+package = "xtask"
+target = "tsan-check"
+test = ""
+cfg = "target_os=linux"
+env = "HYDRACACHE_REQUIRE_TSAN"
+reason = "Local unsupported hosts skip loudly; release TSan proofs fail rather than skip"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_TSAN"]
+required_tools = ["rust-nightly-2026-07-01", "rust-src", "ThreadSanitizer"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "tsan-check", "--scope", "suites"]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_TSAN = "1"
+
+[[gate]]
 id = "tool.tla-tlc.raft-election-canary"
 kind = "external_tool"
 source = "docs/specs/RaftElectionCanary.tla"

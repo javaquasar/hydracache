@@ -12,4 +12,5 @@ pub mod quarantine;
 pub mod raft_spec_check;
 pub mod release_evidence;
 pub mod release_governance;
+pub mod tsan_check;
 pub mod verify;

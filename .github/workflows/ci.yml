@@ -541,6 +541,41 @@ jobs:
         if: steps.miri.outputs.available == 'true'
         run: cargo +nightly miri test -p hydracache-cluster-raft --features test-failpoints --test snapshot_apply --locked miri_snapshot_apply_rejects_inconsistent_indexes_without_tokio_runtime
 
+  thread-sanitizer:
+    name: ThreadSanitizer
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install pinned nightly with rust-src
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: thread-sanitizer-nightly-2026-07-01
+
+      - name: Run ordinary threaded suites under TSan
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.concurrent-suites
+
+      - name: Prove TSan detects the isolated race canary
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.race-canary
+
+      - name: Upload TSan evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "thread-sanitizer-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.64/tsan-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
   coverage-ratchet:
     name: Coverage Ratchet
     runs-on: ubuntu-latest
@@ -661,6 +696,10 @@ jobs:
       - name: Install pinned cargo-mutants
         if: contains(inputs.gated_gate_id, 'mutants')
         run: cargo install cargo-mutants --version 27.1.0 --locked
+
+      - name: Install pinned ThreadSanitizer toolchain
+        if: startsWith(inputs.gated_gate_id, 'tool.tsan.')
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
 
       - name: Run registered gated proofs
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate "${{ inputs.gated_gate_id }}"

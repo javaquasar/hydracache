@@ -673,6 +673,18 @@ Windows IOCP). The canary
 `canary_snapshot_shares_a_mutable_arc_across_export` preserves the forbidden W1
 shape: an exported snapshot must not alias live mutable membership state.
 
+ThreadSanitizer complements Miri and loom by executing ordinary threaded cache
+and Raft suites on Linux. The lane pins `nightly-2026-07-01`, `rust-src`,
+`-Zbuild-std`, and `-Zsanitizer=thread`. Its ignored `UnsafeCell` fixture is
+test-only and must produce a bounded `ThreadSanitizer: data race` report; a
+green canary, unrelated panic, timeout, unsupported-host skip, or unpinned
+toolchain is not release evidence.
+
+```powershell
+cargo xtask tsan-check --scope suites
+cargo xtask tsan-check --scope canary
+```
+
 The W17 canary registry is the machine-readable map from proof item to falsifier:
 
 ```powershell
