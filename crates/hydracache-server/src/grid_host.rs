@@ -256,7 +256,12 @@ fn next_member_generation(
     raft: &NetworkedRaftRuntime,
     node_id: &ClusterNodeId,
 ) -> ClusterGeneration {
-    raft.commands()
+    let materialized = raft
+        .members()
+        .into_iter()
+        .filter_map(|member| (member.node_id == *node_id).then_some(member.generation));
+    let retained = raft
+        .commands()
         .into_iter()
         .filter_map(|command| match command {
             RaftMetadataCommand::MemberUpsert {
@@ -265,7 +270,9 @@ fn next_member_generation(
                 ..
             } if command_node_id == *node_id => Some(generation),
             _ => None,
-        })
+        });
+    materialized
+        .chain(retained)
         .max()
         .map(ClusterGeneration::next)
         .unwrap_or_else(|| ClusterGeneration::new(1))
@@ -282,14 +289,19 @@ async fn networked_member_cache(
         .cluster(DEFAULT_CLUSTER_NAME)
         .control_plane(raft)
         .discovery(discovery)
-        .node_id(node_id)
+        .node_id(node_id.clone())
         .generation(generation)
         .bind(config.cluster_addr.to_string())
         .diagnostics_endpoint(format!("http://{}", config.admin_api.listen_addr));
     for seed in &config.seeds {
         builder = builder.bootstrap(seed.clone());
     }
-    builder.start().await
+    builder.start().await.map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to admit local member {node_id} at generation {}: {error}",
+            generation.value()
+        ))
+    })
 }
 
 async fn inprocess_member_cache(
