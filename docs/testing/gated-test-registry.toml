@@ -3455,6 +3455,51 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "ignored.hydracache-sandbox.adapter-behavior-corpus.postgres-docker-executes-adapter-behavior-corpus-when-claimed"
+kind = "ignored_test"
+source = "crates/hydracache-sandbox/tests/adapter_behavior_corpus.rs"
+package = "hydracache-sandbox"
+target = "adapter_behavior_corpus"
+test = "postgres_docker_executes_adapter_behavior_corpus_when_claimed"
+cfg = ""
+env = ""
+reason = "Docker adapter corpus; requires HYDRACACHE_RUN_ADAPTER_CORPUS_DOCKER=1"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_ADAPTER_CORPUS_DOCKER"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-sandbox",
+    "--test",
+    "adapter_behavior_corpus",
+    "postgres_docker_executes_adapter_behavior_corpus_when_claimed",
+    "--locked",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_ADAPTER_CORPUS_DOCKER = "1"
+
+[[gate]]
 id = "cfg.hydracache-cluster-raft.durable-recovery-corpus"
 kind = "cfg_test_target"
 source = "crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs"

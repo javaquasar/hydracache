@@ -461,12 +461,20 @@ function = "cache_core_matrix_preserves_invalidation_and_singleflight_invariants
 
 [[work_item]]
 id = "W35"
-required_sources = []
-required_tests = []
+required_sources = [
+    "crates/hydracache-sandbox/tests/adapter_behavior_corpus.rs",
+    "crates/hydracache-sandbox/tests/corpus/adapters/core.json",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = [
+    "ignored.hydracache-sandbox.adapter-behavior-corpus.postgres-docker-executes-adapter-behavior-corpus-when-claimed",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-sandbox/tests/adapter_behavior_corpus.rs"
+function = "sqlite_executes_every_adapter_behavior_scenario"
 
 [[work_item]]
 id = "W36"
