@@ -114,6 +114,10 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     report.completed_checks += 1;
 
     let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
+    report
+        .problems
+        .extend(release_execution_wiring_problems(&workflow)?);
+    report.completed_checks += 1;
     for required in [
         "canary-sweep --release 0.64 --tier fast",
         "dynamic-canary-sweep:",
@@ -127,6 +131,72 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     }
     report.completed_checks += 1;
     Ok(report)
+}
+
+pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    let workflow = parse_workflow(text)?;
+    let mut problems = Vec::new();
+    for (job, required_steps) in [
+        (
+            "rust",
+            &[
+                "Raft nemesis membership fast",
+                "Raft corpus vectors",
+                "Snapshot corruption",
+                "Raft rejoin after compaction",
+                "Raft snapshot resource faults",
+                "Snapshot exhaustive grid",
+                "Proposal idempotency",
+                "Clock skew safety",
+            ][..],
+        ),
+        (
+            "raft-corner-case-nightly",
+            &[
+                "Raft nemesis soak",
+                "Snapshot exhaustive grid wide",
+                "Rejoin after compaction proof",
+                "Snapshot resource faults",
+                "Clock skew safety",
+                "Upload raft corner-case artifacts",
+            ][..],
+        ),
+        ("dst-nightly-soak", &["Run daemon-process cluster tier"][..]),
+    ] {
+        let Some(steps) = workflow.jobs.get(job) else {
+            problems.push(format!("release execution matrix is missing job {job}"));
+            continue;
+        };
+        for step in required_steps {
+            if !steps.contains(*step) {
+                problems.push(format!("job {job} is missing required step {step:?}"));
+            }
+        }
+    }
+    for job in ["raft-corner-case-nightly", "dst-nightly-soak"] {
+        let condition = workflow
+            .conditions
+            .get(job)
+            .map(String::as_str)
+            .unwrap_or("");
+        if !condition.contains("schedule") || !condition.contains("workflow_dispatch") {
+            problems.push(format!(
+                "heavy job {job} must be gated by schedule or workflow_dispatch"
+            ));
+        }
+    }
+    for required in [
+        "evidence-run --release 0.64 --gate env.hydracache-run-raft-nemesis-soak",
+        "evidence-run --release 0.64 --gate env.hydracache-grid-scope",
+        "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.rejoin-after-compaction",
+        "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults",
+        "evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!("release execution matrix is missing `{required}`"));
+        }
+    }
+    Ok(problems)
 }
 
 pub fn ci_wiring_problems(root: &Path, gates: &[GateEntry]) -> Result<Vec<String>, Box<dyn Error>> {
@@ -164,6 +234,7 @@ pub fn ci_wiring_problems(root: &Path, gates: &[GateEntry]) -> Result<Vec<String
 #[derive(Debug, Default)]
 struct WorkflowShape {
     jobs: BTreeMap<String, BTreeSet<String>>,
+    conditions: BTreeMap<String, String>,
 }
 
 fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
@@ -188,6 +259,11 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
             }
         }
         shape.jobs.insert(job_id.to_owned(), steps);
+        if let Some(condition) = mapping_value(job.as_mapping(), "if").and_then(Value::as_str) {
+            shape
+                .conditions
+                .insert(job_id.to_owned(), condition.to_owned());
+        }
     }
     Ok(shape)
 }

@@ -135,19 +135,44 @@ function = "coverage_floor_matches_post_064_measured_baseline_without_decreasing
 
 [[work_item]]
 id = "W6b"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/release_governance.rs",
+    "docs/testing/fast-suite-registry.toml",
+    "docs/testing/gated-test-registry.toml",
+]
+required_artifacts = [
+    "docs/testing/fast-suite-registry.toml",
+    "docs/testing/gated-test-registry.toml",
+]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = [
+    "cfg.hydracache-cluster-raft.rejoin-after-compaction",
+    "cfg.hydracache-cluster-raft.snapshot-resource-faults",
+    "env.hydracache-grid-scope",
+    "env.hydracache-run-daemon-process-e2e",
+    "env.hydracache-run-raft-nemesis-soak",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_governance_check_accepts_current_structural_meta_gates"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_governance_check_rejects_an_unwired_or_missing_meta_gate"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands"
 
 [[work_item]]
 id = "W7"
 required_sources = ["crates/hydracache-cluster-raft/tests/nemesis_membership.rs"]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = ["env.hydracache-run-raft-nemesis-soak"]
 ship_required = true
 
 [[work_item.required_tests]]
@@ -186,7 +211,7 @@ fast_gate_ids = [
     "fast.raft-failpoints",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = []
+gated_gate_ids = ["cfg.hydracache-cluster-raft.rejoin-after-compaction"]
 ship_required = true
 
 [[work_item.required_tests]]
@@ -201,7 +226,7 @@ fast_gate_ids = [
     "fast.raft-failpoints",
     "fast.workspace-nextest",
 ]
-gated_gate_ids = []
+gated_gate_ids = ["cfg.hydracache-cluster-raft.snapshot-resource-faults"]
 ship_required = true
 
 [[work_item.required_tests]]
@@ -213,7 +238,7 @@ id = "W12"
 required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs"]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = ["env.hydracache-grid-scope"]
 ship_required = true
 
 [[work_item.required_tests]]

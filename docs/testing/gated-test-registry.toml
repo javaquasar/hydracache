@@ -3469,8 +3469,8 @@ artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "raft-corner-case-nightly"
+step = "Rejoin after compaction proof"
 
 [gate.command]
 program = "cargo"
@@ -3678,8 +3678,8 @@ artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "raft-corner-case-nightly"
+step = "Snapshot resource faults"
 
 [gate.command]
 program = "cargo"
@@ -3964,8 +3964,8 @@ artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "raft-corner-case-nightly"
+step = "Raft nemesis soak"
 
 [gate.command]
 program = "cargo"
@@ -3982,6 +3982,7 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_RUN_RAFT_NEMESIS_SOAK = "1"
+HYDRACACHE_NEMESIS_BUDGET_SECS = "300"
 
 [[gate]]
 id = "env.hydracache-run-prevote-nightly-soak"
@@ -4044,8 +4045,8 @@ artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "raft-corner-case-nightly"
+step = "Snapshot exhaustive grid wide"
 
 [gate.command]
 program = "cargo"
@@ -4061,7 +4062,7 @@ cwd = "."
 platform = "any"
 
 [gate.command.env]
-HYDRACACHE_GRID_SCOPE = "1"
+HYDRACACHE_GRID_SCOPE = "wide"
 
 [[gate]]
 id = "env.hydracache-test-mysql-url"
@@ -4524,8 +4525,8 @@ artifacts = []
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "dst-nightly-soak"
+step = "Run daemon-process cluster tier"
 
 [gate.command]
 program = "cargo"

@@ -119,11 +119,14 @@ can still encode delayed aliasing mistakes.
 
 ## Implementation Map For Audits
 
-The already-implemented portion is distributed across the crates below. Use this map before concluding
-an existing W-item is missing; W29-W38 remain planned until they move out of the separate extension map:
+The implemented portion is distributed across the crates below. Use this map before concluding
+an existing W-item is missing; `docs/testing/release-evidence/0.64.toml` remains the mechanical
+authority for implementation and exact-candidate proof state:
 
 | Item | Implemented where | Required command | Important boundary |
 | --- | --- | --- | --- |
+| W6 suite health and coverage | `docs/testing/fast-suite-registry.toml`; `docs/testing/test-quarantine.toml`; `docs/testing/coverage-ratchet.toml`; xtask `fast-suite-check`, `quarantine-check`, and `coverage-ratchet-check` | `cargo xtask release-governance-check --release 0.64`; exact candidate: `cargo xtask evidence-run --release 0.64 --gate tool.coverage-ratchet` | Coverage stays an 88% non-regression floor until a clean exact-candidate measurement records reviewed provenance; no invented baseline is accepted. |
+| W6b local/CI execution parity | `.github/workflows/ci.yml`; `crates/xtask/src/release_governance.rs`; registered W7-W14 gates | `cargo test -p xtask --test release_governance --locked`; `cargo xtask release-governance-check --release 0.64` | Fast commands are explicit PR steps; heavy nemesis/grid/rejoin/resource/daemon rows run through `evidence-run` and require exact-commit receipts. |
 | W9 snapshot corruption | `crates/hydracache-cluster-raft/tests/snapshot_corruption.rs`; checksum envelope in `crates/hydracache-cluster-raft/src/log_store.rs` | `cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked` | Intentional `sled-log-store` gate; default and `test-failpoints` runs show `0 tests` by design. |
 | W10 rejoin after compaction | `crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs`; metadata snapshot payload in `crates/hydracache-cluster-raft/src/lib.rs` | `cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1` | Current 0.64 claim is in-process real `raft-rs MsgSnapshot`; daemon-process disk compaction is not claimed until server exposes a compaction seam. |
 | W12 exhaustive grid | `crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs` | `cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked` | Wide scope uses `HYDRACACHE_GRID_SCOPE=wide`; the grid also guards `applied_index >= commands.len()` after replay. |
@@ -141,13 +144,13 @@ an existing W-item is missing; W29-W38 remain planned until they move out of the
 Most W7-W14 tests also have explicit fast CI steps in `.github/workflows/ci.yml`; heavier/wide replay
 coverage is wired through the scheduled/manual `Raft Corner-Case Nightly` job.
 
-### Planned W29-W38 Extension Map
+### W29-W38 Extension Implementation Map
 
-The rows below are approved release scope, not implementation claims. Move a row into the implemented
-map only after its named command is green and its CI lane exists. A fast-tier pass never substitutes
-for the explicitly named `0.66` real-process continuation.
+The extension artifacts below have landed. This table describes their proof boundary; it is not a
+claim that every exact-candidate heavy receipt is already green. A fast-tier pass never substitutes
+for a registered heavy receipt or the explicitly named `0.66` real-process continuation.
 
-| Item | Planned artifact | 0.64 proof boundary | Required continuation |
+| Item | Implemented artifact | 0.64 proof boundary | Required continuation |
 | --- | --- | --- | --- |
 | W29 leadership handoff/read safety | `crates/hydracache-cluster-raft/tests/leadership_handoff.rs` | Real `raft-rs` messages in `RuntimeRaftCluster`; committed metadata and existing session guarantees stay monotonic across handoff, stale-term work fails loud, lagging/non-voter targets never become authoritative. This is not a lease-read API claim. | Wire-level client reads during rolling process leadership changes remain 0.66 W2/W7. |
 | W30 snapshot delivery/backpressure | `crates/hydracache-cluster-raft/tests/snapshot_delivery_chaos.rs`; `crates/hydracache/tests/invalidation_backpressure.rs` | Deterministic delay/duplicate/reorder/abort, multi-follower fan-out, and handoff-during-delivery schedules over existing message/stream seams; bounded queues and consensus/invalidation progress. No production streaming snapshot feature is added. | Slow TCP receivers, receiver process kill, and OS buffers remain 0.66 W1/W5. |

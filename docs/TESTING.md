@@ -624,6 +624,18 @@ per-node Raft tick rates through `RuntimeRaftCluster`, `SimClock` backward-jump
 coverage for the fenced lock store, and the existing lock-safety report to keep
 fence monotonicity and zombie rejection tied to the release proof.
 
+W6b keeps the local and GitHub command matrices mechanically identical. The
+ordinary W7-W14 rows are explicit steps in the `rust` job; nemesis soak, the
+wide snapshot grid, feature-gated rejoin/resource-fault proofs, and the daemon
+process tier run through their entries in `gated-test-registry.toml`. The heavy
+jobs invoke those entries via `evidence-run`, so a direct ad hoc command cannot
+silently stand in for an exact-commit release receipt. Validate the wiring with:
+
+```powershell
+cargo test -p xtask --test release_governance --locked
+cargo xtask release-governance-check --release 0.64
+```
+
 The W15 mutation baseline is a test-the-tests gate for the snapshot/apply/
 membership paths. `.cargo/mutants.toml` must stay a native cargo-mutants config
 (`examine_globs`, `test_package`, `features`, and related cargo-mutants keys),

@@ -43,3 +43,21 @@ fn release_governance_check_rejects_an_unwired_or_missing_meta_gate() {
         .iter()
         .any(|problem| problem.contains("missing step")));
 }
+
+#[test]
+fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let problems = xtask::release_governance::release_execution_wiring_problems(&workflow).unwrap();
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    let broken = workflow.replacen(
+        "evidence-run --release 0.64 --gate env.hydracache-grid-scope",
+        "coverage-command-was-silently-removed",
+        1,
+    );
+    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("env.hydracache-grid-scope")));
+}
