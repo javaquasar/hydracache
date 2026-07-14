@@ -77,6 +77,13 @@ pub struct ExecutionResult {
     pub receipt: EvidenceReceipt,
 }
 
+#[derive(Debug, Clone)]
+pub struct ExpectedDigests {
+    pub command: String,
+    pub registry: String,
+    pub input: String,
+}
+
 pub fn run(args: Vec<String>) -> Result<i32, Box<dyn Error>> {
     let options = Options::parse(args)?;
     let result = execute_gate(
@@ -118,11 +125,7 @@ pub fn execute_gate(
     validate_command(&gate.command)?;
     let artifact_paths = validate_artifact_paths(root, gate)?;
 
-    let registry_bytes = fs::read(root.join(gated_tests::REGISTRY_PATH))?;
-    let registry_digest = sha256(&registry_bytes);
-    let command_bytes = serde_json::to_vec(&gate.command)?;
-    let command_digest = sha256(&command_bytes);
-    let input_digest = sha256(format!("{gate_id}\n{registry_digest}\n{command_digest}").as_bytes());
+    let expected = expected_digests(root, gate)?;
     let (source_commit, dirty_worktree) = git_identity(root)?;
     let started = OffsetDateTime::now_utc();
     let timer = Instant::now();
@@ -170,9 +173,9 @@ pub fn execute_gate(
         gate_id: gate_id.to_owned(),
         source_commit,
         dirty_worktree,
-        command_digest,
-        registry_digest,
-        input_digest,
+        command_digest: expected.command,
+        registry_digest: expected.registry,
+        input_digest: expected.input,
         toolchain: command_output("rustc", &["--version"]).unwrap_or_else(|| "unknown".to_owned()),
         container_identity: container_identity(),
         platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
@@ -196,6 +199,17 @@ pub fn execute_gate(
     Ok(ExecutionResult {
         receipt_path,
         receipt,
+    })
+}
+
+pub fn expected_digests(root: &Path, gate: &GateEntry) -> Result<ExpectedDigests, Box<dyn Error>> {
+    let registry = sha256(&fs::read(root.join(gated_tests::REGISTRY_PATH))?);
+    let command = sha256(&serde_json::to_vec(&gate.command)?);
+    let input = sha256(format!("{}\n{registry}\n{command}", gate.id).as_bytes());
+    Ok(ExpectedDigests {
+        command,
+        registry,
+        input,
     })
 }
 

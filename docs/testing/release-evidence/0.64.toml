@@ -1,0 +1,455 @@
+schema_version = 1
+release = "0.64.0"
+plan = "docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md"
+
+[[work_item]]
+id = "W1"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_immutability.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs"
+function = "exported_snapshot_is_immutable_after_live_membership_mutation"
+
+[[work_item]]
+id = "W2"
+required_sources = ["crates/hydracache-cluster-raft/tests/raft_snapshot_membership.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/raft_snapshot_membership.rs"
+function = "mid_membership_snapshot_then_tail_replay_converges_to_authoritative_membership"
+
+[[work_item]]
+id = "W3"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_apply.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_apply.rs"
+function = "membership_tail_apply_error_after_snapshot_is_release_blocking"
+
+[[work_item]]
+id = "W4"
+required_sources = ["crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs"
+function = "snapshot_falsifiability_canaries_turn_their_guard_tests_red"
+
+[[work_item]]
+id = "W5"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_replay_manifest.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_replay_manifest.rs"
+function = "snapshot_replay_manifest_contains_contradiction_ledger_fields"
+
+[[work_item]]
+id = "W5a"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W6"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W6b"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W7"
+required_sources = ["crates/hydracache-cluster-raft/tests/nemesis_membership.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/nemesis_membership.rs"
+function = "nemesis_snapshot_membership_linearizable_under_composed_faults"
+
+[[work_item]]
+id = "W8"
+required_sources = ["crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs"
+function = "raft_corpus_stale_term_install_snapshot_is_rejected"
+
+[[work_item]]
+id = "W9"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_corruption.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_corruption.rs"
+function = "snapshot_bitflip_fails_loud_checksum"
+
+[[work_item]]
+id = "W10"
+required_sources = ["crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs"
+function = "rejoined_lagging_runtime_is_caught_up_via_installsnapshot_after_log_compaction"
+
+[[work_item]]
+id = "W11"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_resource_faults.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_resource_faults.rs"
+function = "disk_full_during_save_snapshot_fails_loud_without_partial_state"
+
+[[work_item]]
+id = "W12"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs"
+function = "exhaustive_snapshot_index_x_membership_op_x_restart_point_grid_converges"
+
+[[work_item]]
+id = "W13"
+required_sources = ["crates/hydracache-cluster-raft/tests/proposal_idempotency.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/proposal_idempotency.rs"
+function = "retried_confchange_is_not_double_applied_across_snapshot_and_restart"
+
+[[work_item]]
+id = "W14"
+required_sources = ["crates/hydracache-sim/tests/clock_skew_safety.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-sim/tests/clock_skew_safety.rs"
+function = "clock_skew_does_not_produce_two_leaders"
+
+[[work_item]]
+id = "W15"
+required_sources = ["crates/xtask/tests/mutants.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/mutants.rs"
+function = "mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths"
+
+[[work_item]]
+id = "W16"
+required_sources = ["crates/hydracache-cluster-raft/tests/snapshot_immutability.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_immutability.rs"
+function = "miri_snapshot_store_returns_deep_cloned_export"
+
+[[work_item]]
+id = "W17"
+required_sources = ["crates/xtask/tests/canary_check.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "every_w_item_has_a_registered_canary_that_references_real_functions"
+
+[[work_item]]
+id = "W18"
+required_sources = ["crates/hydracache-cluster-raft/tests/nemesis_membership.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/nemesis_membership.rs"
+function = "nemesis_replays_identically_for_same_seed"
+
+[[work_item]]
+id = "W19"
+required_sources = ["crates/hydracache-cluster-raft/tests/nemesis_membership.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/nemesis_membership.rs"
+function = "known_bad_seeds_replay_green_in_fast_tier"
+
+[[work_item]]
+id = "W20"
+required_sources = ["crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/raft_corpus_vectors.rs"
+function = "raft_corpus_covers_every_required_etcd_edge_category"
+
+[[work_item]]
+id = "W21"
+required_sources = ["crates/hydracache-cluster-testkit/tests/invariants.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-testkit/tests/invariants.rs"
+function = "invariant_catalog_flags_each_seeded_violation"
+
+[[work_item]]
+id = "W22"
+required_sources = ["crates/hydracache-cache-sim/tests/cache_efficiency.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cache-sim/tests/cache_efficiency.rs"
+function = "eviction_hit_rate_is_within_tolerance_of_belady_optimum_on_standard_traces"
+
+[[work_item]]
+id = "W23"
+required_sources = ["crates/hydracache-cluster-raft/tests/model_check.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/model_check.rs"
+function = "bounded_model_check_membership_and_commit_invariants_hold_for_up_to_4_nodes"
+
+[[work_item]]
+id = "W24"
+required_sources = ["fuzz/tests/fuzz_corpus_regression.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "fuzz/tests/fuzz_corpus_regression.rs"
+function = "fuzz_corpus_regression_replays_every_committed_seed_without_panic_or_unbounded_alloc"
+
+[[work_item]]
+id = "W25"
+required_sources = ["crates/hydracache-sim/tests/linearizability_oracle.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-sim/tests/linearizability_oracle.rs"
+function = "linearizability_checker_accepts_a_valid_history_and_rejects_a_stale_read_history"
+
+[[work_item]]
+id = "W26"
+required_sources = ["crates/hydracache-cluster-raft/tests/loom_concurrency.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/loom_concurrency.rs"
+function = "loom_single_key_conditional_store_is_mutually_exclusive_under_all_interleavings"
+
+[[work_item]]
+id = "W27"
+required_sources = ["crates/hydracache-redis-compat/tests/connection_chaos.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/tests/connection_chaos.rs"
+function = "half_open_and_reset_connections_free_resources_without_leaking_inflight_work"
+
+[[work_item]]
+id = "W28"
+required_sources = ["crates/hydracache-cluster-raft/tests/differential_modes.rs"]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/differential_modes.rs"
+function = "same_op_stream_agrees_across_consistency_levels_where_contract_requires"
+
+[[work_item]]
+id = "W29"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W30"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W31"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W32"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W33"
+required_sources = [
+    "crates/xtask/src/gated_tests.rs",
+    "crates/xtask/src/quarantine.rs",
+    "crates/xtask/src/evidence_run.rs",
+    "crates/xtask/src/release_evidence.rs",
+    "docs/testing/gated-test-registry.toml",
+    "docs/testing/test-quarantine.toml",
+    "docs/testing/release-evidence/0.64.toml",
+]
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_evidence.rs"
+function = "release_evidence_reports_every_manifest_work_item_exactly_once"
+
+[[work_item]]
+id = "W34"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W35"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W36"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W37"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W38"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
