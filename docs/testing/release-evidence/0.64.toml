@@ -367,30 +367,49 @@ function = "same_op_stream_agrees_across_consistency_levels_where_contract_requi
 
 [[work_item]]
 id = "W29"
-required_sources = []
-required_tests = []
+required_sources = ["crates/hydracache-cluster-raft/tests/leadership_handoff.rs"]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/leadership_handoff.rs"
+function = "leadership_handoff_preserves_committed_prefix_and_exactly_once_proposal_outcome"
 
 [[work_item]]
 id = "W30"
-required_sources = []
-required_tests = []
+required_sources = [
+    "crates/hydracache-cluster-raft/tests/snapshot_delivery_chaos.rs",
+    "crates/hydracache/tests/invalidation_backpressure.rs",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/snapshot_delivery_chaos.rs"
+function = "newer_snapshot_then_delayed_older_snapshot_never_rolls_state_back"
+
+[[work_item.required_tests]]
+source = "crates/hydracache/tests/invalidation_backpressure.rs"
+function = "lagged_invalidation_subscriber_fails_conservatively_without_unbounded_queue_growth"
+
 [[work_item]]
 id = "W31"
-required_sources = []
-required_tests = []
+required_sources = [
+    "crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs",
+    "crates/hydracache-cluster-raft/tests/corpus/durable-recovery/cases.json",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.raft-sled-snapshot"]
 gated_gate_ids = []
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs"
+function = "interrupted_recovery_never_activates_partial_or_misdirected_state"
 
 [[work_item]]
 id = "W32"

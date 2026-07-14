@@ -3415,6 +3415,47 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "cfg.hydracache-cluster-raft.durable-recovery-corpus"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs"
+package = "hydracache-cluster-raft"
+target = "durable_recovery_corpus"
+test = ""
+cfg = 'feature = "sled-log-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sled-log-store")'
+tier = "nightly"
+required_features = ["sled-log-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "durable_recovery_corpus",
+    "--locked",
+    "--features",
+    "sled-log-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-cluster-raft.sled-log-store"
 kind = "cfg_test_target"
 source = "crates/hydracache-cluster-raft/tests/sled_log_store.rs"
