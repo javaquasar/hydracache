@@ -825,9 +825,7 @@ where
             raft: Mutex::new(state),
             metadata_store,
         };
-        if initial_state.hard_state.commit > 0 {
-            runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
-        }
+        runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
         Ok(runtime)
     }
 
@@ -2055,6 +2053,9 @@ mod tests {
         assert_eq!(snapshot.role, RaftRuntimeRole::Leader);
         assert_eq!(runtime.leader_id(), Some(1));
         assert_eq!(snapshot.commands_committed, 0);
+
+        let non_default_id = RaftMetadataRuntime::single_node("billing", 7).unwrap();
+        assert_eq!(non_default_id.leader_id(), Some(7));
     }
 
     #[test]
@@ -2367,6 +2368,7 @@ mod tests {
                 if node_id.as_str() == "client-a"
         ));
         assert_eq!(parse_role("local").unwrap(), ClusterRole::Local);
+        assert_eq!(parse_role("client").unwrap(), ClusterRole::Client);
     }
 
     #[test]
@@ -2461,6 +2463,56 @@ mod tests {
         assert!(debug.contains("RaftRuntimeState"));
         assert!(debug.contains("commands"));
         assert!(debug.contains("applied_index"));
+    }
+
+    #[test]
+    fn predicted_member_epoch_advances_only_for_newer_membership() {
+        let cluster = InMemoryCluster::new("orders");
+        let first = ClusterCandidate::member("member-a").generation(ClusterGeneration::new(3));
+        assert_eq!(predicted_member_epoch(&cluster, &first).value(), 1);
+        cluster.join_member(first).unwrap();
+        let current_epoch = cluster.epoch();
+
+        for generation in [2, 3] {
+            let candidate =
+                ClusterCandidate::member("member-a").generation(ClusterGeneration::new(generation));
+            assert_eq!(predicted_member_epoch(&cluster, &candidate), current_epoch);
+        }
+        let newer = ClusterCandidate::member("member-a").generation(ClusterGeneration::new(4));
+        assert_eq!(
+            predicted_member_epoch(&cluster, &newer).value(),
+            current_epoch.value() + 1
+        );
+        let different = ClusterCandidate::member("member-b").generation(ClusterGeneration::new(1));
+        assert_eq!(
+            predicted_member_epoch(&cluster, &different).value(),
+            current_epoch.value() + 1
+        );
+    }
+
+    #[test]
+    fn committed_replay_accepts_an_already_newer_materialized_member() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(5)))
+            .unwrap();
+        let replay = RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from("member-a"),
+            generation: ClusterGeneration::new(3),
+            epoch: cluster.epoch(),
+        };
+
+        materialize_committed_command(&cluster, &replay).unwrap();
+        assert_eq!(cluster.members()[0].generation, ClusterGeneration::new(5));
+    }
+
+    #[test]
+    fn voter_change_without_a_known_leader_fails_loud() {
+        let config = RaftMetadataRuntimeConfig::multi_voter("orders", 2, [1, 2, 3]);
+        let runtime = RaftMetadataRuntime::with_config(config).unwrap();
+
+        let error = runtime.request_remove_voter(2).unwrap_err();
+        assert!(error.to_string().contains("require a known leader"));
     }
 
     #[test]
