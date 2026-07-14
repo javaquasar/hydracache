@@ -1882,12 +1882,25 @@ mod tests {
     use std::collections::BTreeSet;
     use std::path::PathBuf;
 
+    fn test_raft_runtime() -> Arc<NetworkedRaftRuntime> {
+        let sequence = NODE_IDENTITY_TEMP_SEQ.fetch_add(1, Ordering::Relaxed);
+        let path = PathBuf::from(format!(
+            "target/test-hydracache-grid-host/unit/raft-runtime-{}-{sequence}",
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&path);
+        Arc::new(
+            RaftMetadataRuntime::sled_with_config(
+                RaftMetadataRuntimeConfig::single_node(DEFAULT_CLUSTER_NAME, 1),
+                path,
+            )
+            .unwrap(),
+        )
+    }
+
     #[tokio::test]
     async fn drive_loop_admits_a_gossip_candidate_into_the_shared_raft_runtime() {
-        let raft = Arc::new(
-            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
-                .unwrap(),
-        );
+        let raft = test_raft_runtime();
         let discovery = Arc::new(InMemoryClusterDiscovery::new());
         let bridge = ClusterAdmissionBridge::new(discovery.clone(), raft.clone());
         let message_sink: Arc<dyn RaftMessageSink> = Arc::new(InMemoryRaftMessageSink::default());
@@ -2179,10 +2192,7 @@ mod tests {
 
     #[tokio::test]
     async fn sync_raft_voters_adds_admitted_member_with_known_peer() {
-        let raft = Arc::new(
-            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
-                .unwrap(),
-        );
+        let raft = test_raft_runtime();
         let message_sink: Arc<dyn RaftMessageSink> = Arc::new(InMemoryRaftMessageSink::default());
         let member_node = ClusterNodeId::from("member-a");
         let member_raft_id = raft_node_id(&member_node);
@@ -2218,10 +2228,7 @@ mod tests {
 
     #[tokio::test]
     async fn sync_raft_voters_does_not_resurrect_recently_removed_member() {
-        let raft = Arc::new(
-            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
-                .unwrap(),
-        );
+        let raft = test_raft_runtime();
         let sink = Arc::new(InMemoryRaftMessageSink::default());
         let message_sink: Arc<dyn RaftMessageSink> = sink.clone();
         let member_node = ClusterNodeId::from("member-draining");
@@ -2262,10 +2269,7 @@ mod tests {
 
     #[tokio::test]
     async fn wait_for_join_complete_returns_when_self_is_voter() {
-        let raft = Arc::new(
-            RaftMetadataRuntime::durable(DEFAULT_CLUSTER_NAME, 1, DurableRaftLogDirectory::new())
-                .unwrap(),
-        );
+        let raft = test_raft_runtime();
 
         wait_for_join_complete(&raft, 1, Duration::from_millis(1))
             .await
@@ -2482,14 +2486,7 @@ mod tests {
         RaftClusterMessageHandler {
             raft_node_id: raft_node_id(&node_id),
             node_id,
-            raft: Arc::new(
-                RaftMetadataRuntime::durable(
-                    DEFAULT_CLUSTER_NAME,
-                    1,
-                    DurableRaftLogDirectory::new(),
-                )
-                .unwrap(),
-            ),
+            raft: test_raft_runtime(),
             message_sink: Arc::new(InMemoryRaftMessageSink::default()),
             raft_peers: Arc::new(RwLock::new(peers)),
         }
