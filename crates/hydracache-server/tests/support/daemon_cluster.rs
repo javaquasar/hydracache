@@ -308,6 +308,30 @@ impl DaemonCluster {
         })
     }
 
+    pub fn running_child_count(&mut self) -> usize {
+        self.running_indices().len()
+    }
+
+    pub fn wait_for_running_children(&mut self, expected: usize) -> TestResult {
+        self.wait_for(format!("running children={expected}"), |cluster| {
+            (cluster.running_child_count() == expected).then_some(())
+        })
+    }
+
+    pub fn os_resource_totals(&mut self) -> Option<(u64, u64)> {
+        let running = self.running_indices();
+        let samples = running
+            .iter()
+            .filter_map(|index| self.nodes[*index].resource_sample())
+            .collect::<Vec<_>>();
+        (samples.len() == running.len() && !samples.is_empty()).then(|| {
+            (
+                samples.iter().map(|sample| sample.rss_kib).sum(),
+                samples.iter().map(|sample| sample.open_fds).sum(),
+            )
+        })
+    }
+
     pub fn replay_evidence(&mut self, bounded_send_error: Option<String>) -> DaemonReplayEvidence {
         DaemonReplayEvidence {
             root: self.root.clone(),

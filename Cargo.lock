@@ -2263,6 +2263,7 @@ dependencies = [
  "hydracache-redis-compat",
  "hydracache-sim",
  "proptest",
+ "raft",
  "rcgen",
  "reqwest",
  "rustls",

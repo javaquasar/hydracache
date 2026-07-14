@@ -4509,6 +4509,94 @@ platform = "any"
 HYDRACACHE_RUN_DAEMON_PROCESS_E2E = "1"
 
 [[gate]]
+id = "ignored.hydracache-server.daemon-resource-budget.linux-fd-and-rss-budget-is-bounded-after-quiescence"
+kind = "ignored_test"
+source = "crates/hydracache-server/tests/daemon_resource_budget.rs"
+package = "hydracache-server"
+target = "daemon_resource_budget"
+test = "linux_fd_and_rss_budget_is_bounded_after_quiescence"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX"
+reason = "manual/nightly Linux /proc FD and RSS budget"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/daemon-resource-budget-linux.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "daemon_resource_budget",
+    "--locked",
+    "linux_fd_and_rss_budget_is_bounded_after_quiescence",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX = "1"
+
+[[gate]]
+id = "env.hydracache-run-daemon-resource-linux"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/daemon_resource_budget.rs"
+package = "hydracache-server"
+target = "daemon_resource_budget"
+test = "linux_fd_and_rss_budget_is_bounded_after_quiescence"
+cfg = "target_os=linux"
+env = "HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = ["target/test-evidence/0.64/daemon-resource-budget-linux.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "daemon_resource_budget",
+    "--locked",
+    "linux_fd_and_rss_budget_is_bounded_after_quiescence",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX = "1"
+
+[[gate]]
 id = "env.hydracache-run-raft-mutants"
 kind = "env_gate"
 source = "crates/xtask/src/gated_tests.rs"

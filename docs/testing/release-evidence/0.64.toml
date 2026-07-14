@@ -502,12 +502,28 @@ function = "operator_manifest_roundtrip_preserves_security_and_storage_contract"
 
 [[work_item]]
 id = "W37"
-required_sources = []
-required_tests = []
-required_artifacts = []
+required_sources = [
+    "crates/hydracache-server/tests/daemon_resource_budget.rs",
+    "docs/testing/schemas/daemon-resource-budget.schema.json",
+]
+required_artifacts = ["docs/testing/schemas/daemon-resource-budget.schema.json"]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = [
+    "ignored.hydracache-server.daemon-resource-budget.linux-fd-and-rss-budget-is-bounded-after-quiescence",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/daemon_resource_budget.rs"
+function = "daemon_cluster_churn_returns_portable_resources_to_baseline"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/daemon_resource_budget.rs"
+function = "linux_fd_and_rss_budget_is_bounded_after_quiescence"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/daemon_resource_budget.rs"
+function = "resource_budget_artifact_contains_baseline_peak_final_and_platform"
 
 [[work_item]]
 id = "W38"
