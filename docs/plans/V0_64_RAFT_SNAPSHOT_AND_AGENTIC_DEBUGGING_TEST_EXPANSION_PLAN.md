@@ -958,7 +958,11 @@ checked-in job.
 
 Scope the lane to real threaded tests rather than loom models: the W34 cache concurrency matrix, selected
 `hydracache-cluster-raft` runtime contention/handoff/snapshot-delivery tests, and other suites explicitly
-registered as `tsan=true`. Keep suppressions minimal, reviewed, and committed with owner/reason. A tiny
+registered as `tsan=true`. Keep parallel `libtest` execution enabled. The only reviewed suppression is the
+`moka 0.12.15` `MiniArc` release/fence stack: TSan cannot model the acquire fence (Rust's own `Arc` uses an
+acquire load under TSan), so concurrent cache teardown otherwise produces a false free-vs-fetch_sub report.
+The structural check permits exactly that one signature and evidence schema v2 records the suppression-file
+digest; a Moka version bump or wider rule requires explicit review. A tiny
 test-only `UnsafeCell` race fixture must produce a TSan report, proving the runner is instrumented; it is
 never linked into product/release graphs.
 
@@ -970,8 +974,11 @@ never linked into product/release graphs.
   and the red canary receipt are mandatory for ship.
 
 ```bash
+TSAN_SUPPRESSIONS="$(pwd)/docs/testing/tsan-suppressions.txt"
+TSAN_OPTIONS="halt_on_error=1:exitcode=66:suppressions=${TSAN_SUPPRESSIONS}" \
 RUSTFLAGS="-Zsanitizer=thread" cargo +nightly-YYYY-MM-DD test -Zbuild-std \
   --target x86_64-unknown-linux-gnu -p hydracache --test cache_core_concurrency_matrix --locked
+TSAN_OPTIONS="halt_on_error=1:exitcode=66:suppressions=${TSAN_SUPPRESSIONS}" \
 RUSTFLAGS="-Zsanitizer=thread" cargo +nightly-YYYY-MM-DD test -Zbuild-std \
   --target x86_64-unknown-linux-gnu -p hydracache-cluster-raft \
   --test leadership_handoff --test snapshot_delivery_chaos --locked

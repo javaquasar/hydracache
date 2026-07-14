@@ -695,7 +695,13 @@ shape: an exported snapshot must not alias live mutable membership state.
 
 ThreadSanitizer complements Miri and loom by executing ordinary threaded cache
 and Raft suites on Linux. The lane pins `nightly-2026-07-01`, `rust-src`,
-`-Zbuild-std`, and `-Zsanitizer=thread`. Its ignored `UnsafeCell` fixture is
+`-Zbuild-std`, and `-Zsanitizer=thread`. The sole reviewed suppression in
+`docs/testing/tsan-suppressions.txt` covers `moka 0.12.15`'s `MiniArc`
+release/fence false positive: TSan cannot model memory fences, while Rust's own
+`Arc` substitutes an acquire load under the sanitizer. The runner keeps
+parallel `libtest`, Tokio, cache, and Raft execution enabled, validates that no
+broader suppression was added, and binds the suppression digest into evidence.
+Its ignored `UnsafeCell` fixture is
 test-only and must produce a bounded `ThreadSanitizer: data race` report; a
 green canary, unrelated panic, timeout, unsupported-host skip, or unpinned
 toolchain is not release evidence.

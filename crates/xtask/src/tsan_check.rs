@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 pub const PINNED_NIGHTLY: &str = "nightly-2026-07-01";
 const TARGET: &str = "x86_64-unknown-linux-gnu";
 const REQUIRE_ENV: &str = "HYDRACACHE_REQUIRE_TSAN";
+const SUPPRESSIONS_PATH: &str = "docs/testing/tsan-suppressions.txt";
 
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -27,6 +28,7 @@ struct TSanEvidence {
     scope: Scope,
     expected_race_detected: bool,
     normalized_signature: String,
+    suppressions_sha256: String,
     output_sha256: String,
 }
 
@@ -60,6 +62,23 @@ pub fn structural_check(root: &Path) -> Result<(), Box<dyn Error>> {
     if !workflow.contains(PINNED_NIGHTLY) || !workflow.contains("thread-sanitizer") {
         return Err("CI is not wired to the pinned ThreadSanitizer lane".into());
     }
+    let suppressions = fs::read_to_string(root.join(SUPPRESSIONS_PATH))?;
+    if !suppressions.contains("Owner: release 0.64 W16/W26")
+        || !suppressions.contains("Moka 0.12.15")
+        || !suppressions.contains("cannot model memory fences")
+    {
+        return Err("TSan suppression must retain its reviewed owner and fence rationale".into());
+    }
+    let active_suppressions = suppressions
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .collect::<Vec<_>>();
+    if active_suppressions != ["race:moka::common::concurrent::arc::MiniArc"] {
+        return Err(
+            "TSan suppressions must contain only the reviewed Moka MiniArc fence rule".into(),
+        );
+    }
     Ok(())
 }
 
@@ -70,29 +89,39 @@ pub fn canary_output_is_expected_red(success: bool, output: &str) -> bool {
 }
 
 fn run_suites(root: &Path) -> Result<(), Box<dyn Error>> {
-    for args in [
-        vec![
-            "-p",
-            "hydracache",
-            "--test",
+    let tsan_options = tsan_options(root)?;
+    for (name, args) in [
+        (
             "cache_core_concurrency_matrix",
-        ],
-        vec![
-            "-p",
-            "hydracache-cluster-raft",
-            "--test",
+            vec![
+                "-p",
+                "hydracache",
+                "--test",
+                "cache_core_concurrency_matrix",
+            ],
+        ),
+        (
             "leadership_handoff",
-        ],
-        vec![
-            "-p",
-            "hydracache-cluster-raft",
-            "--test",
+            vec![
+                "-p",
+                "hydracache-cluster-raft",
+                "--test",
+                "leadership_handoff",
+            ],
+        ),
+        (
             "snapshot_delivery_chaos",
-        ],
+            vec![
+                "-p",
+                "hydracache-cluster-raft",
+                "--test",
+                "snapshot_delivery_chaos",
+            ],
+        ),
     ] {
-        let output = cargo_tsan(root, &args, &[])?;
+        let output = cargo_tsan(root, &args, &[("TSAN_OPTIONS", tsan_options.as_str())])?;
         if !output.status.success() {
-            return unexpected("suite", &output);
+            return unexpected(name, &output);
         }
     }
     write_artifact(
@@ -107,6 +136,7 @@ fn run_suites(root: &Path) -> Result<(), Box<dyn Error>> {
 }
 
 fn run_canary(root: &Path) -> Result<(), Box<dyn Error>> {
+    let tsan_options = tsan_options(root)?;
     let output = cargo_tsan(
         root,
         &[
@@ -120,7 +150,7 @@ fn run_canary(root: &Path) -> Result<(), Box<dyn Error>> {
             "canary_tsan_detects_test_fixture_data_race",
             "--nocapture",
         ],
-        &[("TSAN_OPTIONS", "halt_on_error=1 exitcode=66")],
+        &[("TSAN_OPTIONS", tsan_options.as_str())],
     )?;
     let text = combined(&output);
     if !canary_output_is_expected_red(output.status.success(), &text) {
@@ -135,6 +165,14 @@ fn run_canary(root: &Path) -> Result<(), Box<dyn Error>> {
     )?;
     println!("tsan-check: Canary expected-red OK");
     Ok(())
+}
+
+fn tsan_options(root: &Path) -> Result<String, Box<dyn Error>> {
+    let suppressions = root.join(SUPPRESSIONS_PATH).canonicalize()?;
+    Ok(format!(
+        "halt_on_error=1:exitcode=66:suppressions={}",
+        suppressions.display()
+    ))
 }
 
 fn cargo_tsan(root: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<Output, Box<dyn Error>> {
@@ -190,7 +228,7 @@ fn write_artifact(
     output: &[u8],
 ) -> Result<(), Box<dyn Error>> {
     let artifact = TSanEvidence {
-        schema_version: 1,
+        schema_version: 2,
         release: "0.64",
         source_commit: git_commit(root),
         toolchain: PINNED_NIGHTLY,
@@ -198,10 +236,8 @@ fn write_artifact(
         scope,
         expected_race_detected,
         normalized_signature: signature.to_owned(),
-        output_sha256: Sha256::digest(output)
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect(),
+        suppressions_sha256: sha256_hex(&fs::read(root.join(SUPPRESSIONS_PATH))?),
+        output_sha256: sha256_hex(output),
     };
     let name = match scope {
         Scope::Suites => "tsan-suites.json",
@@ -211,6 +247,13 @@ fn write_artifact(
     fs::create_dir_all(path.parent().expect("artifact parent"))?;
     fs::write(path, serde_json::to_vec_pretty(&artifact)?)?;
     Ok(())
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 fn git_commit(root: &Path) -> String {

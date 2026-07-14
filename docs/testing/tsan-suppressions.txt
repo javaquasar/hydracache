@@ -1,0 +1,12 @@
+# Owner: release 0.64 W16/W26 ThreadSanitizer gate.
+#
+# Rust's Arc implementation replaces its acquire fence with an acquire load
+# under ThreadSanitizer because TSan cannot model memory fences. Moka 0.12.15
+# MiniArc uses the same correct release/fence reference-count algorithm but has
+# no sanitizer-specific load, producing a false free-vs-fetch_sub report when
+# independent cache teardown overlaps through crossbeam-epoch.
+#
+# Keep this rule limited to the MiniArc drop stack. Any version bump or broader
+# suppression is a reviewed compatibility change and must update the evidence
+# digest and the structural contract in crates/xtask/src/tsan_check.rs.
+race:moka::common::concurrent::arc::MiniArc
