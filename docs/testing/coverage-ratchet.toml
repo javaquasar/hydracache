@@ -1,0 +1,13 @@
+schema_version = 1
+release = "0.64.0"
+tool = "cargo-llvm-cov"
+tool_version = "0.8.7"
+minimum_floor_percent = 88.0
+configured_floor_percent = 88.0
+baseline_status = "unmeasured"
+baseline_commit = ""
+baseline_toolchain = ""
+baseline_lines_percent = 0.0
+raw_report_artifact = "target/test-evidence/0.64/coverage-summary.json"
+evidence_artifact = "target/test-evidence/0.64/coverage-ratchet.json"
+

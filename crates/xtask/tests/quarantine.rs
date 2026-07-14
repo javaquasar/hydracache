@@ -213,3 +213,80 @@ platform = "any"
 
     fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn quarantine_registry_rejects_missing_issue_owner_replay_or_expiry() {
+    let root = temp_root("required-fields");
+    write_gate_registry(&root, true);
+    fs::write(
+        root.join(xtask::quarantine::QUARANTINE_PATH),
+        r#"
+schema_version = 1
+release = "0.64.0"
+
+[[quarantine]]
+gate_id = "ignored.pkg.target.test"
+issue = ""
+owner = ""
+reason = "missing required evidence"
+created_at = "2026-07-14T10:00:00Z"
+expiry_at = "2026-07-14T10:00:00Z"
+[quarantine.replay]
+program = ""
+cwd = "."
+platform = "any"
+[quarantine.replay.env]
+"#,
+    )
+    .unwrap();
+    let report =
+        xtask::quarantine::check_at(&root, "0.64", timestamp("2026-07-14T12:00:00Z")).unwrap();
+    for required in ["issue", "owner", "replay", "expiry"] {
+        assert!(
+            report
+                .problems
+                .iter()
+                .any(|problem| problem.to_lowercase().contains(required)),
+            "missing {required} rejection: {:?}",
+            report.problems
+        );
+    }
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn release_ship_gate_rejects_every_active_quarantine() {
+    let root = temp_root("ship-rejection");
+    write_gate_registry(&root, true);
+    fs::write(
+        root.join(xtask::quarantine::QUARANTINE_PATH),
+        r#"
+schema_version = 1
+release = "0.64.0"
+
+[[quarantine]]
+gate_id = "ignored.pkg.target.test"
+issue = "HC-640"
+owner = "release-engineering"
+reason = "bounded investigation"
+created_at = "2026-07-14T10:00:00Z"
+expiry_at = "2026-07-15T10:00:00Z"
+[quarantine.replay]
+program = "cargo"
+args = ["test"]
+cwd = "."
+platform = "any"
+[quarantine.replay.env]
+"#,
+    )
+    .unwrap();
+    let report =
+        xtask::quarantine::check_at(&root, "0.64", timestamp("2026-07-14T12:00:00Z")).unwrap();
+    assert!(report.problems.is_empty(), "{:?}", report.problems);
+    assert!(report.active.iter().all(|entry| entry.ship_mandatory));
+    assert!(
+        !report.active.is_empty(),
+        "ship must see the active quarantine"
+    );
+    fs::remove_dir_all(root).unwrap();
+}

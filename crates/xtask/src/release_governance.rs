@@ -7,6 +7,7 @@ use serde_yaml::{Mapping, Value};
 
 use crate::canary_check;
 use crate::compat_check;
+use crate::coverage_ratchet;
 use crate::doc_check;
 use crate::fast_suite;
 use crate::feature_leak;
@@ -52,6 +53,12 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     report
         .problems
         .extend(prefix("doc-check", doc_check::check(root)?));
+    report.completed_checks += 1;
+
+    report.problems.extend(prefix(
+        "coverage-ratchet-check",
+        coverage_ratchet::validate_contract(root, &coverage_ratchet::load_config(root)?)?,
+    ));
     report.completed_checks += 1;
 
     report

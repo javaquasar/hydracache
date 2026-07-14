@@ -1107,6 +1107,19 @@ The current practical target is split by surface area:
   `95%+` line coverage.
 - Visible uncovered source lines should be investigated before release.
 
+The 0.64 ratchet contract lives in `docs/testing/coverage-ratchet.toml`. Validate its
+floor, provenance state, pinned `cargo-llvm-cov` version, artifact paths, and CI wiring
+without running the workspace suite:
+
+```powershell
+cargo xtask coverage-ratchet-check --structural
+```
+
+The scheduled/manual release lane executes the registered `tool.coverage-ratchet` gate.
+It writes the raw LLVM JSON plus `coverage-ratchet.json`, and `evidence-run` binds both
+artifacts to the exact candidate commit. Until that clean candidate measurement is
+reviewed, the baseline remains `unmeasured` and the existing 88% floor is retained.
+
 The initial `0.24.0` baseline measured on 2026-06-11 was:
 
 ```text

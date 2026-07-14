@@ -83,3 +83,29 @@ fn fast_suite_check_rejects_slow_receipt_without_reclassifying_the_suite() {
     assert_eq!(suite.id, "fast.fuzz-corpus-regression");
     fs::remove_dir_all(directory).unwrap();
 }
+
+#[test]
+fn fast_suite_registry_rejects_missing_timeout_budget_or_command() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let mut registry = xtask::fast_suite::load_registry(&root).unwrap();
+    registry.suite[0].timeout_seconds = 0;
+    registry.suite[1].budget_seconds = 0;
+    registry.suite[2].command.program.clear();
+    let problems = xtask::fast_suite::validate_registry(&root, &registry, "0.64", None).unwrap();
+    assert_eq!(
+        problems
+            .iter()
+            .filter(|problem| problem.contains("incomplete execution contract"))
+            .count(),
+        3
+    );
+}
+
+#[test]
+fn fast_suite_budget_rejects_an_unreviewed_runtime_regression() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let mut registry = xtask::fast_suite::load_registry(&root).unwrap();
+    registry.suite[0].budget_seconds = registry.aggregate_budget_seconds + 1;
+    let problems = xtask::fast_suite::validate_registry(&root, &registry, "0.64", None).unwrap();
+    assert!(problems.iter().any(|problem| problem.contains("above")));
+}

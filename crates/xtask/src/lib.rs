@@ -2,6 +2,7 @@ pub mod bench_budget;
 pub mod canary_check;
 pub mod canary_sweep;
 pub mod compat_check;
+pub mod coverage_ratchet;
 pub mod determinism_sweep;
 pub mod doc_check;
 pub mod durable_inspect;

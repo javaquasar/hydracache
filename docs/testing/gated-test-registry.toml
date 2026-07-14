@@ -45,6 +45,41 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "tool.coverage-ratchet"
+kind = "external_tool"
+source = "crates/xtask/src/coverage_ratchet.rs"
+package = "xtask"
+target = "coverage-ratchet-check"
+test = "coverage_floor_matches_post_064_measured_baseline_without_decreasing_88"
+cfg = ""
+env = ""
+reason = "Pinned cargo-llvm-cov measures the exact candidate and enforces the non-decreasing line floor"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["cargo-llvm-cov=0.8.7", "llvm-tools-preview"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = [
+    "target/test-evidence/0.64/coverage-summary.json",
+    "target/test-evidence/0.64/coverage-ratchet.json",
+]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "coverage-ratchet"
+step = "Run commit-bound coverage ratchet"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "coverage-ratchet-check", "--run"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "tool.cargo-semver-checks.v063-baseline"
 kind = "external_tool"
 source = "docs/testing/compat/v0.63.0.json"

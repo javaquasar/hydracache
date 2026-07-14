@@ -656,13 +656,15 @@ jobs:
           shared-key: coverage-ratchet
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov@0.8.7
 
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
 
-      - name: Enforce coverage floor
-        run: cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88
+      - name: Run commit-bound coverage ratchet
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.coverage-ratchet
 
       - name: Generate coverage artifacts on failure
         if: failure()
@@ -671,14 +673,17 @@ jobs:
           cargo llvm-cov report --html --output-dir target/llvm-cov-html
           cargo llvm-cov report --lcov --output-path target/llvm-cov.lcov
 
-      - name: Upload coverage artifacts on failure
-        if: failure()
+      - name: Upload coverage evidence
+        if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: coverage-ratchet
+          name: "coverage-ratchet-${{ github.sha }}"
           path: |
             target/llvm-cov-html
             target/llvm-cov.lcov
+            target/test-evidence/0.64/coverage-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Clean Rust test scratch links
         if: always()
