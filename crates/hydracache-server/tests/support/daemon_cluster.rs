@@ -217,6 +217,27 @@ impl DaemonCluster {
         })
     }
 
+    pub fn wait_for_responsive_shape(
+        &mut self,
+        expected_statuses: usize,
+        members: u32,
+        voters: u32,
+    ) -> TestResult<Vec<DaemonStatus>> {
+        self.wait_for(
+            format!("responsive={expected_statuses} members={members} voters={voters}"),
+            |cluster| {
+                let statuses = cluster.statuses();
+                let leaders = leaders(&statuses);
+                (statuses.len() == expected_statuses
+                    && leaders.len() == 1
+                    && statuses.iter().all(|status| {
+                        status.members == members && status.voters == voters && status.quorum_ok
+                    }))
+                .then_some(statuses)
+            },
+        )
+    }
+
     pub fn wait_for_non_draining_shape(
         &mut self,
         label: &str,

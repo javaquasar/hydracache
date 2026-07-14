@@ -199,7 +199,7 @@ fn churn_daemon_cluster(
         cluster.kill(follower)?;
         samples.push(portable_sample(cluster, 0, 0));
         cluster.restart(follower)?;
-        cluster.wait_for_shape(3, 3)?;
+        cluster.wait_for_responsive_shape(3, 3, 3)?;
         cluster.wait_for_running_children(3)?;
         samples.push(portable_sample(cluster, 0, 0));
     }
@@ -238,13 +238,13 @@ async fn exercise_held_snapshot_schedule() -> usize {
 #[tokio::test]
 async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestResult {
     let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, "w37-portable")?;
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     let mut samples = vec![portable_sample(&mut cluster, 0, 0)];
 
     churn_daemon_cluster(&mut cluster, 3, &mut samples)?;
     let held_peak = exercise_held_snapshot_schedule().await;
     samples.push(portable_sample(&mut cluster, 0, held_peak as u64));
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     cluster.wait_for_running_children(3)?;
     samples.push(portable_sample(&mut cluster, 0, 0));
 
@@ -278,7 +278,7 @@ fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
         return Err(format!("set {LINUX_GATE_ENV}=1 to claim the Linux resource proof").into());
     }
     let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, "w37-linux")?;
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     let mut samples = vec![linux_sample(&mut cluster)?];
     churn_daemon_cluster(&mut cluster, 5, &mut Vec::new())?;
     for _ in 0..5 {
@@ -316,7 +316,7 @@ fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
                 .all(|sample| sample.rss_kib == tails[0].rss_kib),
         "every post-quiescence sample still grew monotonically: {artifact:?}"
     );
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     artifact.write(LINUX_ARTIFACT)?;
     Ok(())
 }
