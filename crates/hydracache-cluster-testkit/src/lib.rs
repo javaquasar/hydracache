@@ -21,7 +21,7 @@ use hydracache_cluster_raft::{
     InMemoryRaftLogStore, RaftLogStore, RaftMessageSink, RaftMetadataRuntime,
     RaftMetadataRuntimeConfig, RaftRuntimeRole, RaftWireMessage,
 };
-use raft::eraftpb::{MessageType, Snapshot};
+use raft::eraftpb::{Message as RaftMessage, MessageType, Snapshot};
 
 /// Delivery direction used by packet filters.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1130,6 +1130,30 @@ impl RuntimeRaftCluster {
     pub fn campaign(&mut self, node_id: u64) {
         let messages = self.node(node_id).campaign().unwrap();
         self.drain_until_idle(messages);
+    }
+
+    /// Request a real raft-rs leadership transfer through the deterministic network.
+    pub fn request_leadership_transfer(
+        &mut self,
+        leader_id: u64,
+        transferee_id: u64,
+    ) -> CacheResult<()> {
+        if !self.nodes.contains_key(&transferee_id) {
+            return Err(CacheError::Backend(format!(
+                "unknown leadership transferee {transferee_id}"
+            )));
+        }
+        if !self.node(leader_id).voter_ids()?.contains(&transferee_id) {
+            return Err(CacheError::Backend(format!(
+                "ineligible non-voter leadership transferee {transferee_id}"
+            )));
+        }
+        let mut message = RaftMessage::default();
+        message.from = transferee_id;
+        message.to = leader_id;
+        message.set_msg_type(MessageType::MsgTransferLeader);
+        self.drain_until_idle([RaftWireMessage::encode(&message)?]);
+        Ok(())
     }
 
     /// Tick one node and drain the resulting network.
