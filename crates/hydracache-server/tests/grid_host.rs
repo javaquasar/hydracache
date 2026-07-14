@@ -2,6 +2,7 @@ use std::collections::BTreeSet;
 use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpListener, UdpSocket};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -13,7 +14,10 @@ use hydracache_server::{
 };
 use serde_json::json;
 
+static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
 fn member_config(name: &str) -> ServerConfig {
+    let sequence = STORAGE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
@@ -21,7 +25,8 @@ fn member_config(name: &str) -> ServerConfig {
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from(format!(
-            "target/test-hydracache-grid-host/{name}"
+            "target/test-hydracache-grid-host/{name}-{}-{sequence}",
+            std::process::id()
         ))),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
