@@ -11,14 +11,14 @@ use hydracache_server::{
 use serde_json::Value;
 use tower::ServiceExt;
 
-fn member_config() -> ServerConfig {
+fn member_config(test_name: &str) -> ServerConfig {
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
-        storage_dir: Some(PathBuf::from("target/test-hydracache-actuator-mount")),
+        storage_dir: Some(PathBuf::from("target/test-hydracache-actuator-mount").join(test_name)),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
         cluster_auth: ClusterAuthConfig::default(),
@@ -44,7 +44,11 @@ async fn json_response(response: axum::response::Response) -> Value {
 
 #[tokio::test]
 async fn actuator_json_is_served_on_the_admin_port() {
-    let surface = AdminHttpSurface::new(ServerRuntime::new(member_config()).unwrap().start());
+    let surface = AdminHttpSurface::new(
+        ServerRuntime::new(member_config("admin-port"))
+            .unwrap()
+            .start(),
+    );
 
     let health = surface
         .routes()
@@ -103,7 +107,9 @@ async fn actuator_is_absent_on_the_client_port() {
 #[tokio::test]
 async fn actuator_is_served_during_drain() {
     let runtime = Arc::new(Mutex::new(
-        ServerRuntime::new(member_config()).unwrap().start(),
+        ServerRuntime::new(member_config("during-drain"))
+            .unwrap()
+            .start(),
     ));
     let surface = AdminHttpSurface::from_shared(Arc::clone(&runtime));
     runtime.lock().unwrap().begin_drain();
