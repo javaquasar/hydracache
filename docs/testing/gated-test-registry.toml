@@ -1,0 +1,4315 @@
+schema_version = 1
+release = "0.64.0"
+
+[[gate]]
+id = "ignored.hydracache.allocation-profile.profile-bulk-tag-invalidation"
+kind = "ignored_test"
+source = "crates/hydracache/tests/allocation_profile.rs"
+package = "hydracache"
+target = "allocation_profile"
+test = "profile_bulk_tag_invalidation"
+cfg = ""
+env = ""
+reason = "manual allocation profile; run with --ignored --nocapture"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "allocation_profile",
+    "--locked",
+    "profile_bulk_tag_invalidation",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.allocation-profile.profile-contains-key-metadata-hits"
+kind = "ignored_test"
+source = "crates/hydracache/tests/allocation_profile.rs"
+package = "hydracache"
+target = "allocation_profile"
+test = "profile_contains_key_metadata_hits"
+cfg = ""
+env = ""
+reason = "manual allocation profile; run with --ignored --nocapture"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "allocation_profile",
+    "--locked",
+    "profile_contains_key_metadata_hits",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.allocation-profile.profile-event-preflight-modes"
+kind = "ignored_test"
+source = "crates/hydracache/tests/allocation_profile.rs"
+package = "hydracache"
+target = "allocation_profile"
+test = "profile_event_preflight_modes"
+cfg = ""
+env = ""
+reason = "manual allocation profile; run with --ignored --nocapture"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "allocation_profile",
+    "--locked",
+    "profile_event_preflight_modes",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.allocation-profile.profile-hot-get-hits"
+kind = "ignored_test"
+source = "crates/hydracache/tests/allocation_profile.rs"
+package = "hydracache"
+target = "allocation_profile"
+test = "profile_hot_get_hits"
+cfg = ""
+env = ""
+reason = "manual allocation profile; run with --ignored --nocapture"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "allocation_profile",
+    "--locked",
+    "profile_hot_get_hits",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.allocation-profile.profile-typed-hot-get-hits"
+kind = "ignored_test"
+source = "crates/hydracache/tests/allocation_profile.rs"
+package = "hydracache"
+target = "allocation_profile"
+test = "profile_typed_hot_get_hits"
+cfg = ""
+env = ""
+reason = "manual allocation profile; run with --ignored --nocapture"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "allocation_profile",
+    "--locked",
+    "profile_typed_hot_get_hits",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.atomic-invalidation.atomic-invalidation-saga-survives-dispatcher-crash"
+kind = "ignored_test"
+source = "crates/hydracache/tests/atomic_invalidation.rs"
+package = "hydracache"
+target = "atomic_invalidation"
+test = "atomic_invalidation_saga_survives_dispatcher_crash"
+cfg = ""
+env = ""
+reason = "chaos gate: dispatcher crash/resume"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "atomic_invalidation",
+    "--locked",
+    "atomic_invalidation_saga_survives_dispatcher_crash",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.backup-restore.backup-restore-restore-under-simulated-faults"
+kind = "ignored_test"
+source = "crates/hydracache/tests/backup_restore.rs"
+package = "hydracache"
+target = "backup_restore"
+test = "backup_restore_restore_under_simulated_faults"
+cfg = ""
+env = ""
+reason = "chaos gate: run with simulator fault injection in nightly validation"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "backup_restore",
+    "--locked",
+    "backup_restore_restore_under_simulated_faults",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.causal-consistency.causal-consistency-holds-under-partition-and-reorder"
+kind = "ignored_test"
+source = "crates/hydracache/tests/causal_consistency.rs"
+package = "hydracache"
+target = "causal_consistency"
+test = "causal_consistency_holds_under_partition_and_reorder"
+cfg = ""
+env = ""
+reason = "fault-injection scenario for partition and message reordering"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "causal_consistency",
+    "--locked",
+    "causal_consistency_holds_under_partition_and_reorder",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.cluster-load-stability.in-memory-cluster-survives-manual-load-test"
+kind = "ignored_test"
+source = "crates/hydracache/tests/cluster_load_stability.rs"
+package = "hydracache"
+target = "cluster_load_stability"
+test = "in_memory_cluster_survives_manual_load_test"
+cfg = ""
+env = ""
+reason = "manual cluster load test; run with --ignored --nocapture"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "cluster_load_stability",
+    "--locked",
+    "in_memory_cluster_survives_manual_load_test",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.cluster-pilot-soak.cluster-pilot-soak"
+kind = "ignored_test"
+source = "crates/hydracache/tests/cluster_pilot_soak.rs"
+package = "hydracache"
+target = "cluster_pilot_soak"
+test = "cluster_pilot_soak"
+cfg = ""
+env = ""
+reason = "pilot soak is an on-demand release gate; run with --ignored --nocapture"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "cluster_pilot_soak",
+    "--locked",
+    "cluster_pilot_soak",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.cluster-staging-gate.cluster-staging-gate-soak-under-sustained-load"
+kind = "ignored_test"
+source = "crates/hydracache/tests/cluster_staging_gate.rs"
+package = "hydracache"
+target = "cluster_staging_gate"
+test = "cluster_staging_gate_soak_under_sustained_load"
+cfg = ""
+env = ""
+reason = "soak: wall-clock thresholds, run manually"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "cluster_staging_gate",
+    "--locked",
+    "cluster_staging_gate_soak_under_sustained_load",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.conditional-writes.conditional-writes-lock-survives-partition-via-raft-authority"
+kind = "ignored_test"
+source = "crates/hydracache/tests/conditional_writes.rs"
+package = "hydracache"
+target = "conditional_writes"
+test = "conditional_writes_lock_survives_partition_via_raft_authority"
+cfg = ""
+env = ""
+reason = "chaos marker: lock survives partition via partition-home authority"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "conditional_writes",
+    "--locked",
+    "conditional_writes_lock_survives_partition_via_raft_authority",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.hinted-handoff.hinted-handoff-replica-recovers-after-hint-window-falls-back-to-repair"
+kind = "ignored_test"
+source = "crates/hydracache/tests/hinted_handoff.rs"
+package = "hydracache"
+target = "hinted_handoff"
+test = "hinted_handoff_replica_recovers_after_hint_window_falls_back_to_repair"
+cfg = ""
+env = ""
+reason = "chaos marker: outage beyond hint window falls back to Merkle repair"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "hinted_handoff",
+    "--locked",
+    "hinted_handoff_replica_recovers_after_hint_window_falls_back_to_repair",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.merkle-repair.merkle-repair-session-resumes-after-coordinator-crash"
+kind = "ignored_test"
+source = "crates/hydracache/tests/merkle_repair.rs"
+package = "hydracache"
+target = "merkle_repair"
+test = "merkle_repair_session_resumes_after_coordinator_crash"
+cfg = ""
+env = ""
+reason = "chaos marker: resumable repair after coordinator crash"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "merkle_repair",
+    "--locked",
+    "merkle_repair_session_resumes_after_coordinator_crash",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.online-reshard.online-reshard-coordinator-crash-resumes-live-move"
+kind = "ignored_test"
+source = "crates/hydracache/tests/online_reshard.rs"
+package = "hydracache"
+target = "online_reshard"
+test = "online_reshard_coordinator_crash_resumes_live_move"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored when exercising live reshard coordinator crash"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "online_reshard",
+    "--locked",
+    "online_reshard_coordinator_crash_resumes_live_move",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.read-your-writes-live.read-your-writes-live-ryw-holds-during-single-node-failure"
+kind = "ignored_test"
+source = "crates/hydracache/tests/read_your_writes_live.rs"
+package = "hydracache"
+target = "read_your_writes_live"
+test = "read_your_writes_live_ryw_holds_during_single_node_failure"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored when exercising single-node failure"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "read_your_writes_live",
+    "--locked",
+    "read_your_writes_live_ryw_holds_during_single_node_failure",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.region-failover.region-failover-whole-region-loss-self-heals-to-target-rf"
+kind = "ignored_test"
+source = "crates/hydracache/tests/region_failover.rs"
+package = "hydracache"
+target = "region_failover"
+test = "region_failover_whole_region_loss_self_heals_to_target_rf"
+cfg = ""
+env = ""
+reason = "chaos gate: whole-region loss self-heals to target RF"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "region_failover",
+    "--locked",
+    "region_failover_whole_region_loss_self_heals_to_target_rf",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.region-link.region-link-cross-region-converges-after-partition-heal"
+kind = "ignored_test"
+source = "crates/hydracache/tests/region_link.rs"
+package = "hydracache"
+target = "region_link"
+test = "region_link_cross_region_converges_after_partition_heal"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored for cross-region partition-heal convergence"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "region_link",
+    "--locked",
+    "region_link_cross_region_converges_after_partition_heal",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.replication-under-load-live.replication-under-load-live-anti-entropy-converges-after-partition-heal-chaos"
+kind = "ignored_test"
+source = "crates/hydracache/tests/replication_under_load_live.rs"
+package = "hydracache"
+target = "replication_under_load_live"
+test = "replication_under_load_live_anti_entropy_converges_after_partition_heal_chaos"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored when exercising slow backup partitions"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "replication_under_load_live",
+    "--locked",
+    "replication_under_load_live_anti_entropy_converges_after_partition_heal_chaos",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.residency.residency-holds-under-region-failover"
+kind = "ignored_test"
+source = "crates/hydracache/tests/residency.rs"
+package = "hydracache"
+target = "residency"
+test = "residency_holds_under_region_failover"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored for region failover residency governance"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "residency",
+    "--locked",
+    "residency_holds_under_region_failover",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.self-heal.self-heal-zone-loss-self-heals-to-target-rf"
+kind = "ignored_test"
+source = "crates/hydracache/tests/self_heal.rs"
+package = "hydracache"
+target = "self_heal"
+test = "self_heal_zone_loss_self_heals_to_target_rf"
+cfg = ""
+env = ""
+reason = "chaos gate: zone-loss self-heal"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "self_heal",
+    "--locked",
+    "self_heal_zone_loss_self_heals_to_target_rf",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.session-ryw.session-ryw-holds-across-region-failover"
+kind = "ignored_test"
+source = "crates/hydracache/tests/session_ryw.rs"
+package = "hydracache"
+target = "session_ryw"
+test = "session_ryw_holds_across_region_failover"
+cfg = ""
+env = ""
+reason = "fault-injection scenario for a networked multi-region runner"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "session_ryw",
+    "--locked",
+    "session_ryw_holds_across_region_failover",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.split-brain-live.split-brain-live-split-then-heal-under-churn-converges"
+kind = "ignored_test"
+source = "crates/hydracache/tests/split_brain_live.rs"
+package = "hydracache"
+target = "split_brain_live"
+test = "split_brain_live_split_then_heal_under_churn_converges"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored when exercising partition heal under churn"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "split_brain_live",
+    "--locked",
+    "split_brain_live_split_then_heal_under_churn_converges",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache.zone-placement.zone-placement-live-single-zone-loss-keeps-quorum"
+kind = "ignored_test"
+source = "crates/hydracache/tests/zone_placement.rs"
+package = "hydracache"
+target = "zone_placement"
+test = "zone_placement_live_single_zone_loss_keeps_quorum"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored when exercising live zone-loss placement"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "zone_placement",
+    "--locked",
+    "zone_placement_live_single_zone_loss_keeps_quorum",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-cdc-postgres.synthetic.pg-logical-replication-smoke"
+kind = "ignored_test"
+source = "crates/hydracache-cdc-postgres/tests/synthetic.rs"
+package = "hydracache-cdc-postgres"
+target = "synthetic"
+test = "pg_logical_replication_smoke"
+cfg = ""
+env = ""
+reason = "requires a Postgres logical replication slot"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cdc-postgres",
+    "--test",
+    "synthetic",
+    "--locked",
+    "pg_logical_replication_smoke",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-client.conformance.non-jvm-sdk-conformance"
+kind = "ignored_test"
+source = "crates/hydracache-client/tests/conformance.rs"
+package = "hydracache-client"
+target = "conformance"
+test = "non_jvm_sdk_conformance"
+cfg = ""
+env = ""
+reason = "nightly Docker tier: runs Python SDK runner against a live grid"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-client",
+    "--test",
+    "conformance",
+    "--locked",
+    "non_jvm_sdk_conformance",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-cluster-raft.golden-vectors.regenerate-golden-vectors"
+kind = "ignored_test"
+source = "crates/hydracache-cluster-raft/tests/golden_vectors.rs"
+package = "hydracache-cluster-raft"
+target = "golden_vectors"
+test = "regenerate_golden_vectors"
+cfg = ""
+env = ""
+reason = "regenerates committed golden vectors; run only for intentional format changes"
+tier = "manual"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "golden_vectors",
+    "--locked",
+    "regenerate_golden_vectors",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-cluster-raft.networked-raft.networked-raft-leader-crash-under-load-loses-no-committed-command"
+kind = "ignored_test"
+source = "crates/hydracache-cluster-raft/tests/networked_raft.rs"
+package = "hydracache-cluster-raft"
+target = "networked_raft"
+test = "networked_raft_leader_crash_under_load_loses_no_committed_command"
+cfg = ""
+env = ""
+reason = "chaos gate: run with -- --ignored when exercising leader crash under load"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "networked_raft",
+    "--locked",
+    "networked_raft_leader_crash_under_load_loses_no_committed_command",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.mysql-hooks.mysql-trigger-outbox-worker-end-to-end"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/mysql_hooks.rs"
+package = "hydracache-db"
+target = "mysql_hooks"
+test = "mysql_trigger_outbox_worker_end_to_end"
+cfg = ""
+env = ""
+reason = "requires a MySQL test container and HYDRACACHE_TEST_MYSQL_URL"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_MYSQL_URL"]
+required_tools = ["mysql"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "mysql_hooks",
+    "--locked",
+    "mysql_trigger_outbox_worker_end_to_end",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.outbox-postgres.lost-notify-is-recovered-by-poll"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/outbox_postgres.rs"
+package = "hydracache-db"
+target = "outbox_postgres"
+test = "lost_notify_is_recovered_by_poll"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_TEST_POSTGRES_URL or a testcontainers harness"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_postgres",
+    "--features",
+    "sqlx-outbox",
+    "--locked",
+    "lost_notify_is_recovered_by_poll",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.outbox-postgres.pg-commit-position-uses-txid"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/outbox_postgres.rs"
+package = "hydracache-db"
+target = "outbox_postgres"
+test = "pg_commit_position_uses_txid"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_TEST_POSTGRES_URL or a testcontainers harness"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_postgres",
+    "--features",
+    "sqlx-outbox",
+    "--locked",
+    "pg_commit_position_uses_txid",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.outbox-postgres.pg-crash-window-replays"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/outbox_postgres.rs"
+package = "hydracache-db"
+target = "outbox_postgres"
+test = "pg_crash_window_replays"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_TEST_POSTGRES_URL or a testcontainers harness"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_postgres",
+    "--features",
+    "sqlx-outbox",
+    "--locked",
+    "pg_crash_window_replays",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.outbox-postgres.pg-notify-source-receives-intent-payload"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/outbox_postgres.rs"
+package = "hydracache-db"
+target = "outbox_postgres"
+test = "pg_notify_source_receives_intent_payload"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_TEST_POSTGRES_URL or a testcontainers harness"
+tier = "external"
+required_features = ["sqlx-outbox"]
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_postgres",
+    "--features",
+    "sqlx-outbox",
+    "--locked",
+    "pg_notify_source_receives_intent_payload",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.postgres-hooks.pg-listen-notify-wakeup"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/postgres_hooks.rs"
+package = "hydracache-db"
+target = "postgres_hooks"
+test = "pg_listen_notify_wakeup"
+cfg = ""
+env = ""
+reason = "requires a Postgres test container and HYDRACACHE_TEST_POSTGRES_URL"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "postgres_hooks",
+    "--locked",
+    "pg_listen_notify_wakeup",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-db.postgres-hooks.pg-trigger-outbox-worker-end-to-end"
+kind = "ignored_test"
+source = "crates/hydracache-db/tests/postgres_hooks.rs"
+package = "hydracache-db"
+target = "postgres_hooks"
+test = "pg_trigger_outbox_worker_end_to_end"
+cfg = ""
+env = ""
+reason = "requires a Postgres test container and HYDRACACHE_TEST_POSTGRES_URL"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "postgres_hooks",
+    "--locked",
+    "pg_trigger_outbox_worker_end_to_end",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-observability.session-observability.session-observability-guarantees-survive-region-failover"
+kind = "ignored_test"
+source = "crates/hydracache-observability/tests/session_observability.rs"
+package = "hydracache-observability"
+target = "session_observability"
+test = "session_observability_guarantees_survive_region_failover"
+cfg = ""
+env = ""
+reason = "networked failover chaos scenario for promoted region repair"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-observability",
+    "--test",
+    "session_observability",
+    "--locked",
+    "session_observability_guarantees_survive_region_failover",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-operator.soak-kind.kind-partition-injection-isolates-and-heals"
+kind = "ignored_test"
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = "kind_partition_injection_isolates_and_heals"
+cfg = ""
+env = ""
+reason = "kind/calico-gated: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_OPERATOR_KIND"]
+required_tools = ["kind"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+    "kind_partition_injection_isolates_and_heals",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_KIND = "1"
+
+[[gate]]
+id = "ignored.hydracache-operator.soak-kind.leader-is-always-reestablished-after-pod-crash"
+kind = "ignored_test"
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = "leader_is_always_reestablished_after_pod_crash"
+cfg = ""
+env = ""
+reason = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_OPERATOR_KIND"]
+required_tools = ["kind"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+    "leader_is_always_reestablished_after_pod_crash",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_KIND = "1"
+
+[[gate]]
+id = "ignored.hydracache-operator.soak-kind.multi-node-chaos-soak-loses-no-committed-write"
+kind = "ignored_test"
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = "multi_node_chaos_soak_loses_no_committed_write"
+cfg = ""
+env = ""
+reason = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_OPERATOR_KIND"]
+required_tools = ["kind"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+    "multi_node_chaos_soak_loses_no_committed_write",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_KIND = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.client-matrix-runs-auth-required-connection-scenario"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "client_matrix_runs_auth_required_connection_scenario"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves AUTH-required startup"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "client_matrix_runs_auth_required_connection_scenario",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.client-matrix-runs-hydracache-tag-extension-scenario"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "client_matrix_runs_hydracache_tag_extension_scenario"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves HydraCache HC tag extensions through redis-rs"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "client_matrix_runs_hydracache_tag_extension_scenario",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.client-matrix-runs-mset-and-ttl-commands"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "client_matrix_runs_mset_and_ttl_commands"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves MSET and TTL client commands"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "client_matrix_runs_mset_and_ttl_commands",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.client-matrix-runs-rediss-required-connection-scenario"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "client_matrix_runs_rediss_required_connection_scenario"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves rediss:// startup"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "client_matrix_runs_rediss_required_connection_scenario",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.client-matrix-runs-resp3-negotiation-scenario"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "client_matrix_runs_resp3_negotiation_scenario"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves redis-rs RESP3 negotiation"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "client_matrix_runs_resp3_negotiation_scenario",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.client-matrix-set-nx-px-lock-idiom-acquires-contends-and-releases"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; proves SET NX PX lock acquire/contention/release"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.mainstream-redis-client-can-talk-to-the-facade"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "mainstream_redis_client_can_talk_to_the_facade"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1; uses mainstream redis-rs client path"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "mainstream_redis_client_can_talk_to_the_facade",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.nightly-python-node-go-jvm-clients-bootstrap-and-run-supported-subset"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and optional Python/Node/Go/JVM client runtimes"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-del-exists-counts-match-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_del_exists_counts_match_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_del_exists_counts_match_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-hc-extensions-are-hydracache-only"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_hc_extensions_are_hydracache_only"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_hc_extensions_are_hydracache_only",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-lock-extend-script-matches-real-redis-with-ttl-tolerance"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-lock-unlock-script-matches-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_lock_unlock_script_matches_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_lock_unlock_script_matches_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-mget-nil-and-order-match-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_mget_nil_and_order_match_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_mget_nil_and_order_match_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-mset-atomicity-matches-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_mset_atomicity_matches_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_mset_atomicity_matches_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-set-nx-px-lock-acquire-matches-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_set_nx_px_lock_acquire_matches_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_set_nx_px_lock_acquire_matches_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-set-options-are-documented-divergence"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_set_options_are_documented_divergence"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_set_options_are_documented_divergence",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-supported-subset-matches-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_supported_subset_matches_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_supported_subset_matches_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-ttl-edge-cases-match-real-redis"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_ttl_edge_cases_match_real_redis"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_ttl_edge_cases_match_real_redis",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-ttl-matches-real-redis-with-bounded-tolerance"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-unsupported-divergence-is-documented"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_unsupported_divergence_is_documented"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_unsupported_divergence_is_documented",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.redis-clients.redis-oracle-uses-pinned-redis-versions"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = "redis_oracle_uses_pinned_redis_versions"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS=1 and Docker-pinned Redis oracle images"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+    "redis_oracle_uses_pinned_redis_versions",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.resp-resource-smoke.resp-resource-smoke-bounds-pipelined-connection-and-redacts-extension-output"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/resp_resource_smoke.rs"
+package = "hydracache-redis-compat"
+target = "resp_resource_smoke"
+test = "resp_resource_smoke_bounds_pipelined_connection_and_redacts_extension_output"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1; resource/hostile-input smoke"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "resp_resource_smoke",
+    "--locked",
+    "resp_resource_smoke_bounds_pipelined_connection_and_redacts_extension_output",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE = "1"
+
+[[gate]]
+id = "ignored.hydracache-redis-compat.resp-resource-smoke.slowloris-and-oversized-frames-fail-loud-without-mutation"
+kind = "ignored_test"
+source = "crates/hydracache-redis-compat/tests/resp_resource_smoke.rs"
+package = "hydracache-redis-compat"
+target = "resp_resource_smoke"
+test = "slowloris_and_oversized_frames_fail_loud_without_mutation"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE=1; slowloris/oversized frame smoke"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "resp_resource_smoke",
+    "--locked",
+    "slowloris_and_oversized_frames_fail_loud_without_mutation",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE = "1"
+
+[[gate]]
+id = "ignored.hydracache-server.deploy-smoke.deploy-smoke-image-builds-and-container-serves-health"
+kind = "ignored_test"
+source = "crates/hydracache-server/tests/deploy_smoke.rs"
+package = "hydracache-server"
+target = "deploy_smoke"
+test = "deploy_smoke_image_builds_and_container_serves_health"
+cfg = ""
+env = ""
+reason = "nightly gate: requires Docker daemon"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "deploy_smoke",
+    "--locked",
+    "deploy_smoke_image_builds_and_container_serves_health",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-server.deploy-smoke.deploy-smoke-kind-statefulset-forms-quorum-and-survives-rolling-update"
+kind = "ignored_test"
+source = "crates/hydracache-server/tests/deploy_smoke.rs"
+package = "hydracache-server"
+target = "deploy_smoke"
+test = "deploy_smoke_kind_statefulset_forms_quorum_and_survives_rolling_update"
+cfg = ""
+env = ""
+reason = "nightly gate: requires kind and kubectl"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = [
+    "kind",
+    "kubectl",
+]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "deploy_smoke",
+    "--locked",
+    "deploy_smoke_kind_statefulset_forms_quorum_and_survives_rolling_update",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-server.soak-resource.real-server-rss-and-fds-plateau-under-sustained-load"
+kind = "ignored_test"
+source = "crates/hydracache-server/tests/soak_resource.rs"
+package = "hydracache-server"
+target = "soak_resource"
+test = "real_server_rss_and_fds_plateau_under_sustained_load"
+cfg = ""
+env = ""
+reason = "manual/nightly resource plateau check"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "soak_resource",
+    "--locked",
+    "real_server_rss_and_fds_plateau_under_sustained_load",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-sim.persistence-recovery.persistence-recovery-kind-drill-covers-storage-faults"
+kind = "ignored_test"
+source = "crates/hydracache-sim/tests/persistence_recovery.rs"
+package = "hydracache-sim"
+target = "persistence_recovery"
+test = "persistence_recovery_kind_drill_covers_storage_faults"
+cfg = ""
+env = ""
+reason = "nightly gate: pair persistence recovery model with broader storage fault drill"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-sim",
+    "--test",
+    "persistence_recovery",
+    "--locked",
+    "persistence_recovery_kind_drill_covers_storage_faults",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-sim.upgrade-and-recovery.upgrade-and-recovery-kind-drill-replays-the-same-fault-model"
+kind = "ignored_test"
+source = "crates/hydracache-sim/tests/upgrade_and_recovery.rs"
+package = "hydracache-sim"
+target = "upgrade_and_recovery"
+test = "upgrade_and_recovery_kind_drill_replays_the_same_fault_model"
+cfg = ""
+env = ""
+reason = "nightly gate: pair deterministic model with kind rolling update and restore drill"
+tier = "external"
+required_features = []
+required_env = []
+required_tools = ["kind"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-sim",
+    "--test",
+    "upgrade_and_recovery",
+    "--locked",
+    "upgrade_and_recovery_kind_drill_replays_the_same_fault_model",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-sql-lint.postgres-catalog.pg-missing-permission-clear-error"
+kind = "ignored_test"
+source = "crates/hydracache-sql-lint/tests/postgres_catalog.rs"
+package = "hydracache-sql-lint"
+target = "postgres_catalog"
+test = "pg_missing_permission_clear_error"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_TEST_POSTGRES_URL and a readonly role"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-sql-lint",
+    "--test",
+    "postgres_catalog",
+    "--locked",
+    "pg_missing_permission_clear_error",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-sql-lint.postgres-catalog.pg-view-dependency-expansion"
+kind = "ignored_test"
+source = "crates/hydracache-sql-lint/tests/postgres_catalog.rs"
+package = "hydracache-sql-lint"
+target = "postgres_catalog"
+test = "pg_view_dependency_expansion"
+cfg = ""
+env = ""
+reason = "requires HYDRACACHE_TEST_POSTGRES_URL and catalog grants"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-sql-lint",
+    "--test",
+    "postgres_catalog",
+    "--locked",
+    "pg_view_dependency_expansion",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.durability-write-path"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/durability_write_path.rs"
+package = "hydracache"
+target = "durability_write_path"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "durability_write_path",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.durable-inspect"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/durable_inspect.rs"
+package = "hydracache"
+target = "durable_inspect"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "durable_inspect",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.durable-maintenance"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/durable_maintenance.rs"
+package = "hydracache"
+target = "durable_maintenance"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "durable_maintenance",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.durable-scrub"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/durable_scrub.rs"
+package = "hydracache"
+target = "durable_scrub"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "durable_scrub",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.durable-value-store"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/durable_value_store.rs"
+package = "hydracache"
+target = "durable_value_store"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "durable_value_store",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.persistence-recovery"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/persistence_recovery.rs"
+package = "hydracache"
+target = "persistence_recovery"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "persistence_recovery",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache.replicated-store-ext"
+kind = "cfg_test_target"
+source = "crates/hydracache/tests/replicated_store_ext.rs"
+package = "hydracache"
+target = "replicated_store_ext"
+test = ""
+cfg = 'feature = "durable-value-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "durable-value-store")'
+tier = "nightly"
+required_features = ["durable-value-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache",
+    "--test",
+    "replicated_store_ext",
+    "--locked",
+    "--features",
+    "durable-value-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.failpoints-crash-safety"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/failpoints_crash_safety.rs"
+package = "hydracache-cluster-raft"
+target = "failpoints_crash_safety"
+test = ""
+cfg = 'feature = "test-failpoints"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "test-failpoints")'
+tier = "nightly"
+required_features = ["test-failpoints"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "failpoints_crash_safety",
+    "--locked",
+    "--features",
+    "test-failpoints",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.loom-concurrency"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/loom_concurrency.rs"
+package = "hydracache-cluster-raft"
+target = "loom_concurrency"
+test = ""
+cfg = "hydracache_loom"
+env = ""
+reason = "Cargo test target is compiled only under cfg(hydracache_loom)"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "loom_concurrency",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+RUSTFLAGS = "--cfg hydracache_loom"
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.rejoin-after-compaction"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs"
+package = "hydracache-cluster-raft"
+target = "rejoin_after_compaction"
+test = ""
+cfg = 'feature = "test-failpoints"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "test-failpoints")'
+tier = "nightly"
+required_features = ["test-failpoints"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "rejoin_after_compaction",
+    "--locked",
+    "--features",
+    "test-failpoints",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.sled-log-store"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/sled_log_store.rs"
+package = "hydracache-cluster-raft"
+target = "sled_log_store"
+test = ""
+cfg = 'feature = "sled-log-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sled-log-store")'
+tier = "nightly"
+required_features = ["sled-log-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "sled_log_store",
+    "--locked",
+    "--features",
+    "sled-log-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.snapshot-corruption"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/snapshot_corruption.rs"
+package = "hydracache-cluster-raft"
+target = "snapshot_corruption"
+test = ""
+cfg = 'feature = "sled-log-store"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sled-log-store")'
+tier = "nightly"
+required_features = ["sled-log-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "snapshot_corruption",
+    "--locked",
+    "--features",
+    "sled-log-store",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.snapshot-resource-faults"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/snapshot_resource_faults.rs"
+package = "hydracache-cluster-raft"
+target = "snapshot_resource_faults"
+test = ""
+cfg = 'feature = "test-failpoints"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "test-failpoints")'
+tier = "nightly"
+required_features = ["test-failpoints"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "snapshot_resource_faults",
+    "--locked",
+    "--features",
+    "test-failpoints",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-db.outbox-postgres"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/outbox_postgres.rs"
+package = "hydracache-db"
+target = "outbox_postgres"
+test = ""
+cfg = 'feature = "sqlx-outbox"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sqlx-outbox")'
+tier = "nightly"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_postgres",
+    "--locked",
+    "--features",
+    "sqlx-outbox",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-db.outbox-schema-migration"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/outbox_schema_migration.rs"
+package = "hydracache-db"
+target = "outbox_schema_migration"
+test = ""
+cfg = 'feature = "sqlx-outbox"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sqlx-outbox")'
+tier = "nightly"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_schema_migration",
+    "--locked",
+    "--features",
+    "sqlx-outbox",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-db.outbox-sqlite"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/outbox_sqlite.rs"
+package = "hydracache-db"
+target = "outbox_sqlite"
+test = ""
+cfg = 'feature = "sqlx-outbox"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sqlx-outbox")'
+tier = "nightly"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_sqlite",
+    "--locked",
+    "--features",
+    "sqlx-outbox",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-db.reconcile-sqlite"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/reconcile_sqlite.rs"
+package = "hydracache-db"
+target = "reconcile_sqlite"
+test = ""
+cfg = 'feature = "sqlx-outbox"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sqlx-outbox")'
+tier = "nightly"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "reconcile_sqlite",
+    "--locked",
+    "--features",
+    "sqlx-outbox",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "cfg.hydracache-db.sqlite-hooks"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/sqlite_hooks.rs"
+package = "hydracache-db"
+target = "sqlite_hooks"
+test = ""
+cfg = 'feature = "sqlx-outbox"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sqlx-outbox")'
+tier = "nightly"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "sqlite_hooks",
+    "--locked",
+    "--features",
+    "sqlx-outbox",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "env.hydracache-test-postgres-url"
+kind = "env_gate"
+source = "crates/hydracache-cdc-postgres/tests/synthetic.rs"
+package = "hydracache-db"
+target = "postgres_hooks"
+test = ""
+cfg = ""
+env = "HYDRACACHE_TEST_POSTGRES_URL"
+reason = "Execution is explicitly gated by HYDRACACHE_TEST_POSTGRES_URL"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_POSTGRES_URL"]
+required_tools = ["postgres"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "postgres_hooks",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_TEST_POSTGRES_URL = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-nemesis-soak"
+kind = "env_gate"
+source = "crates/hydracache-cluster-raft/tests/nemesis_membership.rs"
+package = "hydracache-cluster-raft"
+target = "nemesis_membership"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_NEMESIS_SOAK"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_RAFT_NEMESIS_SOAK"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_NEMESIS_SOAK"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "nemesis_membership",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_NEMESIS_SOAK = "1"
+
+[[gate]]
+id = "env.hydracache-run-prevote-nightly-soak"
+kind = "env_gate"
+source = "crates/hydracache-cluster-raft/tests/prevote_nightly_soak.rs"
+package = "hydracache-cluster-raft"
+target = "prevote_nightly_soak"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "prevote_nightly_soak",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK = "1"
+
+[[gate]]
+id = "env.hydracache-grid-scope"
+kind = "env_gate"
+source = "crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs"
+package = "hydracache-cluster-raft"
+target = "snapshot_exhaustive_grid"
+test = ""
+cfg = ""
+env = "HYDRACACHE_GRID_SCOPE"
+reason = "Execution is explicitly gated by HYDRACACHE_GRID_SCOPE"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_GRID_SCOPE"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "snapshot_exhaustive_grid",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_GRID_SCOPE = "1"
+
+[[gate]]
+id = "env.hydracache-test-mysql-url"
+kind = "env_gate"
+source = "crates/hydracache-db/tests/mysql_hooks.rs"
+package = "hydracache-db"
+target = "mysql_hooks"
+test = ""
+cfg = ""
+env = "HYDRACACHE_TEST_MYSQL_URL"
+reason = "Execution is explicitly gated by HYDRACACHE_TEST_MYSQL_URL"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_TEST_MYSQL_URL"]
+required_tools = ["mysql"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "mysql_hooks",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_TEST_MYSQL_URL = "1"
+
+[[gate]]
+id = "env.hydracache-operator-kind"
+kind = "env_gate"
+source = "crates/hydracache-operator/tests/e2e.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = ""
+cfg = ""
+env = "HYDRACACHE_OPERATOR_KIND"
+reason = "Execution is explicitly gated by HYDRACACHE_OPERATOR_KIND"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_OPERATOR_KIND"]
+required_tools = [
+    "docker",
+    "kind",
+    "kubectl",
+]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_KIND = "1"
+
+[[gate]]
+id = "env.hydracache-force-redis-client-docker"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = ""
+cfg = ""
+env = "HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER"
+reason = "Execution is explicitly gated by HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_FORCE_REDIS_CLIENT_DOCKER = "1"
+
+[[gate]]
+id = "env.hydracache-require-redis-client-go"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = ""
+cfg = ""
+env = "HYDRACACHE_REQUIRE_REDIS_CLIENT_GO"
+reason = "Execution is explicitly gated by HYDRACACHE_REQUIRE_REDIS_CLIENT_GO"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_REDIS_CLIENT_GO"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_REDIS_CLIENT_GO = "1"
+
+[[gate]]
+id = "env.hydracache-require-redis-client-jvm"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = ""
+cfg = ""
+env = "HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM"
+reason = "Execution is explicitly gated by HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_REDIS_CLIENT_JVM = "1"
+
+[[gate]]
+id = "env.hydracache-require-redis-client-node"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = ""
+cfg = ""
+env = "HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE"
+reason = "Execution is explicitly gated by HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_REDIS_CLIENT_NODE = "1"
+
+[[gate]]
+id = "env.hydracache-require-redis-client-python"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = ""
+cfg = ""
+env = "HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON"
+reason = "Execution is explicitly gated by HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_REDIS_CLIENT_PYTHON = "1"
+
+[[gate]]
+id = "env.hydracache-require-redis-oracle"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "hydracache-redis-compat"
+target = "redis_clients"
+test = ""
+cfg = ""
+env = "HYDRACACHE_REQUIRE_REDIS_ORACLE"
+reason = "Execution is explicitly gated by HYDRACACHE_REQUIRE_REDIS_ORACLE"
+tier = "external"
+required_features = []
+required_env = ["HYDRACACHE_REQUIRE_REDIS_ORACLE"]
+required_tools = ["docker"]
+timeout_seconds = 3600
+owner_release = "0.64.0"
+ship_mandatory = true
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "redis_clients",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_REQUIRE_REDIS_ORACLE = "1"
+
+[[gate]]
+id = "env.hydracache-run-redis-compat-clients"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/redis_clients.rs"
+package = "workspace"
+target = "environment"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"]
+required_tools = []
+timeout_seconds = 900
+owner_release = "0.64.0"
+ship_mandatory = true
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "xtask",
+    "gated-test-check",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-redis-compat-resource-smoke"
+kind = "env_gate"
+source = "crates/hydracache-redis-compat/tests/resp_resource_smoke.rs"
+package = "hydracache-redis-compat"
+target = "resp_resource_smoke"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-redis-compat",
+    "--test",
+    "resp_resource_smoke",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_COMPAT_RESOURCE_SMOKE = "1"
+
+[[gate]]
+id = "env.hydracache-run-networked-daemon-e2e"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/grid_host.rs"
+package = "hydracache-server"
+target = "grid_host"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_NETWORKED_DAEMON_E2E"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_NETWORKED_DAEMON_E2E"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_NETWORKED_DAEMON_E2E"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "grid_host",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_NETWORKED_DAEMON_E2E = "1"
+
+[[gate]]
+id = "env.hydracache-run-daemon-process-e2e"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/support/daemon_cluster.rs"
+package = "hydracache-server"
+target = "daemon_process_cluster"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_DAEMON_PROCESS_E2E"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_DAEMON_PROCESS_E2E"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "daemon_process_cluster",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_DAEMON_PROCESS_E2E = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants"
+kind = "env_gate"
+source = "crates/xtask/src/gated_tests.rs"
+package = "xtask"
+target = "mutants"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_RAFT_MUTANTS"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants"]
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "xtask",
+    "mutants",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"

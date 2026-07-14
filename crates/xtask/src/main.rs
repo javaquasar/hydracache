@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
         Some("doc-check") => xtask::doc_check::run(args.collect())?,
         Some("durable-inspect") => xtask::durable_inspect::run(args.collect())?,
+        Some("gated-test-check") => xtask::gated_tests::run(args.collect())?,
         Some("mutants") => xtask::mutants::run(args.collect())?,
         Some("verify") => xtask::verify::run(args.collect())?,
         Some("verify-no-test-features") => xtask::feature_leak::run(args.collect())?,
@@ -25,6 +26,7 @@ fn print_usage() {
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
          cargo xtask doc-check     # validate docs/plans/releases.toml (RULES R-11)\n  \
          cargo xtask durable-inspect <store-dir>  # dump verified durable value records as JSON\n  \
+         cargo xtask gated-test-check  # validate every ignored/cfg/env-gated test registration\n  \
          cargo xtask mutants       # validate the Raft mutation-testing baseline, optionally run cargo-mutants\n  \
          cargo xtask bench-budget [--budget benches/budget.toml] [--baseline benches/baseline/0_37.json] [--current target/criterion]\n\n\
          (The `cargo xtask` alias is defined in .cargo/config.toml; `cargo run -p xtask -- <cmd>` also works.)"

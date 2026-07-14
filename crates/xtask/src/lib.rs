@@ -3,5 +3,6 @@ pub mod canary_check;
 pub mod doc_check;
 pub mod durable_inspect;
 pub mod feature_leak;
+pub mod gated_tests;
 pub mod mutants;
 pub mod verify;
