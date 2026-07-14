@@ -4609,11 +4609,11 @@ reason = "Execution is explicitly gated by HYDRACACHE_RUN_RAFT_MUTANTS"
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
-required_tools = ["cargo-mutants"]
+required_tools = ["cargo-mutants=27.1.0"]
 timeout_seconds = 1800
 owner_release = "0.64.0"
-ship_mandatory = false
-artifacts = []
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -4631,6 +4631,39 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-proof-oracle-mutants"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "proof-oracles"
+cfg = ""
+env = "HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS"
+reason = "Pinned cargo-mutants campaign must kill decision-branch mutants in correctness oracles"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants-proof-oracles/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--scope", "proof-oracles"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS = "1"
 
 [[gate]]
 id = "tool.tla-tlc.raft-election-fast"

@@ -1,0 +1,14 @@
+# HydraCache 0.64 mutation scope for code that judges correctness evidence.
+examine_globs = [
+  "crates/hydracache-sim/src/linearizability.rs",
+  "crates/hydracache-cluster-testkit/src/invariants.rs",
+]
+
+minimum_test_timeout = 60.0
+output = "target/hydracache-mutants-proof-oracles"
+test_package = ["hydracache-sim", "hydracache-cluster-testkit"]
+timeout_multiplier = 2.0
+
+# Required commands, validated by `cargo xtask mutants --scope proof-oracles`:
+# cargo test -p hydracache-sim --test linearizability_oracle --locked
+# cargo test -p hydracache-cluster-testkit --test invariants --locked

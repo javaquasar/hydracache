@@ -4,6 +4,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use xtask::mutants::check_mutation_baseline;
+use xtask::mutants::check_proof_oracle_mutation_baseline;
 
 static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -12,6 +13,31 @@ fn mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths(
     let root = workspace_root();
 
     check_mutation_baseline(&root).unwrap();
+}
+
+#[test]
+fn proof_oracle_mutants_have_no_untriaged_linearizability_or_invariant_survivors() {
+    let root = workspace_root();
+    check_proof_oracle_mutation_baseline(&root).unwrap();
+}
+
+#[test]
+fn proof_oracle_config_rejects_integration_test_glue_as_the_only_scope() {
+    let root = scratch_root();
+    write_required_proof_files(&root);
+    fs::write(
+        root.join(".cargo/mutants-proof-oracles.toml"),
+        r#"
+examine_globs = ["crates/hydracache-sim/tests/linearizability_oracle.rs"]
+output = "target/hydracache-mutants-proof-oracles"
+# cargo test -p hydracache-sim --test linearizability_oracle --locked
+# cargo test -p hydracache-cluster-testkit --test invariants --locked
+"#,
+    )
+    .unwrap();
+    let error = check_proof_oracle_mutation_baseline(&root).unwrap_err();
+    cleanup(&root);
+    assert!(error.contains("integration-test glue"), "{error}");
 }
 
 #[test]
@@ -126,6 +152,29 @@ test_package = ["hydracache-cluster-raft"]
     fs::write(
         root.join("docs/testing/mutation-baseline.md"),
         "# Raft Mutation Baseline\n\n## Scope\n\n- crates/hydracache-cluster-raft/src/lib.rs\n- crates/hydracache-cluster-raft/src/log_store.rs\n\n## Allowed Survivors\n\nNo allowed survivors.\n",
+    )
+    .unwrap();
+}
+
+fn write_required_proof_files(root: &Path) {
+    fs::create_dir_all(root.join(".cargo")).unwrap();
+    fs::create_dir_all(root.join("docs/testing")).unwrap();
+    fs::write(
+        root.join(".cargo/mutants-proof-oracles.toml"),
+        r#"
+examine_globs = [
+  "crates/hydracache-sim/src/linearizability.rs",
+  "crates/hydracache-cluster-testkit/src/invariants.rs",
+]
+output = "target/hydracache-mutants-proof-oracles"
+# cargo test -p hydracache-sim --test linearizability_oracle --locked
+# cargo test -p hydracache-cluster-testkit --test invariants --locked
+"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/testing/mutation-proof-oracle-baseline.md"),
+        "# Baseline\n\n## Scope\n\n- crates/hydracache-sim/src/linearizability.rs\n- crates/hydracache-cluster-testkit/src/invariants.rs\n\n## Allowed Survivors\n\nNo allowed survivors.\n",
     )
     .unwrap();
 }

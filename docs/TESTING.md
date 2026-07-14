@@ -635,6 +635,7 @@ baseline:
 ```powershell
 cargo test -p xtask --test mutants --locked
 cargo xtask mutants
+cargo xtask mutants --scope proof-oracles
 ```
 
 If `target/hydracache-mutants/report.txt` is present, `cargo xtask mutants`
@@ -643,7 +644,13 @@ diffs every `SURVIVED ...` line against
 untriaged survivors. Without that cached report it skips loud. The scheduled
 GitHub `Raft Mutation Testing` lane sets `HYDRACACHE_RUN_RAFT_MUTANTS=1`,
 installs `cargo-mutants`, and executes the slow mutation run over the scoped
-Raft paths in `.cargo/mutants.toml`.
+Raft paths in `.cargo/mutants.toml`. A separate proof-oracle campaign uses
+`.cargo/mutants-proof-oracles.toml` and
+[`docs/testing/mutation-proof-oracle-baseline.md`](testing/mutation-proof-oracle-baseline.md)
+to mutate the reusable linearizability checker and invariant catalog. Product
+and proof-oracle runs have separate outputs and receipts, pin cargo-mutants
+`27.1.0`, and are both required before release; integration-test glue is not a
+substitute for mutating the decision modules themselves.
 
 The W16 Miri lane hardens the same snapshot immutability thesis against actual
 aliasing/UB. It is intentionally gated because it needs nightly Rust and the

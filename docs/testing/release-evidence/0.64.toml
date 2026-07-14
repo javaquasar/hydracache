@@ -220,15 +220,33 @@ function = "clock_skew_does_not_produce_two_leaders"
 
 [[work_item]]
 id = "W15"
-required_sources = ["crates/xtask/tests/mutants.rs"]
+required_sources = [
+    ".cargo/mutants.toml",
+    ".cargo/mutants-proof-oracles.toml",
+    "crates/xtask/src/mutants.rs",
+    "crates/xtask/tests/mutants.rs",
+    "docs/testing/mutation-baseline.md",
+    "docs/testing/mutation-proof-oracle-baseline.md",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = [
+    "env.hydracache-run-raft-mutants",
+    "env.hydracache-run-proof-oracle-mutants",
+]
 ship_required = true
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/mutants.rs"
 function = "mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/mutants.rs"
+function = "proof_oracle_mutants_have_no_untriaged_linearizability_or_invariant_survivors"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/mutants.rs"
+function = "proof_oracle_config_rejects_integration_test_glue_as_the_only_scope"
 
 [[work_item]]
 id = "W16"
