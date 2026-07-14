@@ -31,6 +31,10 @@
 >   model. `0.64` owns the deterministic in-process, corpus, spec, and governance proof. `0.66` remains
 >   the continuation for the rows that require old binaries, real daemons, OS resource accounting, or
 >   production snapshot streaming; those process claims are not implied by the `0.64` fast tier.
+>   A final release-proof mechanics extension strengthens existing W6/W15-W18/W26/W33 rather than
+>   adding more scenario categories: a commit-bound evidence ledger, real dynamic canary execution,
+>   mutation testing of proof oracles, a Linux ThreadSanitizer lane, fast-tier budgets, executable
+>   quarantine expiry, digest-based determinism sweeps, and a post-implementation coverage ratchet.
 > - **Why:** `0.62.0` and `0.62.1` proved the raft/gossip/failpoint harness layer, but they mainly
 >   cover message faults and crash windows. The Hazelcast case shows another dangerous class:
 >   snapshots that appear valid but secretly share mutable state with the live state machine and later
@@ -125,6 +129,7 @@ an existing W-item is missing; W29-W38 remain planned until they move out of the
 | W12 exhaustive grid | `crates/hydracache-cluster-raft/tests/snapshot_exhaustive_grid.rs` | `cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked` | Wide scope uses `HYDRACACHE_GRID_SCOPE=wide`; the grid also guards `applied_index >= commands.len()` after replay. |
 | W13 proposal idempotency | `crates/hydracache-cluster-raft/tests/proposal_idempotency.rs`; restartable harness in `crates/hydracache-cluster-testkit/src/lib.rs` | `cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked` | Covers ConfChange retry after persisted raft snapshot + restart, plus metadata command-id retry after `from_snapshot`. |
 | W14 clock skew/backward jump | `crates/hydracache-sim/tests/clock_skew_safety.rs`; dev-dep on `hydracache-cluster-testkit` in `crates/hydracache-sim/Cargo.toml` | `cargo test -p hydracache-sim --test clock_skew_safety --locked` | Intentional location in `hydracache-sim`, not `hydracache-cluster-raft`, to avoid a dependency cycle. |
+| W17 canary registry (partial) | `docs/testing/canary-registry.json`; `crates/xtask/src/canary_check.rs`; `crates/xtask/tests/canary_check.rs` | `cargo test -p xtask --test canary_check --locked`; `cargo xtask canary-check` | Implemented check is structural only: it validates function references and the declared `makes_guard_fail` boolean. It does **not** execute the paired guard with the defect enabled. Dynamic red-proof remains a release-blocking W17 extension below. |
 | W22 trace-driven cache efficiency | `crates/hydracache-cache-sim/src/lib.rs`; committed traces in `crates/hydracache-cache-sim/traces/`; tests in `crates/hydracache-cache-sim/tests/cache_efficiency.rs` | `cargo test -p hydracache-cache-sim --locked -j 2` | Dev-only simulator crate (`publish = false`) with small committed traces, offline Belady optimum, LRU/LFU baselines, HydraCache policy model with TTL, and a random-eviction canary. Large external traces remain nightly/download-gated and are not claimed by the fast gate. |
 | W23 bounded model checking | `crates/hydracache-cluster-raft/tests/model_check.rs`; `stateright` dev-dependency only | `cargo test -p hydracache-cluster-raft --test model_check --locked` | Spec-level membership/commit model, not a wrapper over `raft-rs`; N=4 with bounded steps. The canary flips snapshot-install into dropping a committed entry and requires a counterexample. |
 | W24 multi-surface fuzzing | `fuzz/Cargo.toml`; targets in `fuzz/fuzz_targets/`; shared replay functions in `fuzz/src/lib.rs`; committed seeds in `fuzz/corpus/*`; regression test in `fuzz/tests/fuzz_corpus_regression.rs`; fast CI step plus scheduled/manual `Fuzz Nightly` lane | `cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked -j 2`; nightly optional: `cargo +nightly fuzz run fuzz_resp_command --manifest-path fuzz/Cargo.toml -- -max_total_time=60` | `hydracache-fuzz` is `publish = false` and centralizes corpus replay, so the fast gate targets this package instead of linking every workspace test binary. The release claim is the deterministic corpus replay in ordinary cargo test; coverage-guided fuzzing remains skip-loud when nightly/cargo-fuzz is unavailable and is not claimed unless that lane actually runs. |
@@ -148,7 +153,7 @@ for the explicitly named `0.66` real-process continuation.
 | W30 snapshot delivery/backpressure | `crates/hydracache-cluster-raft/tests/snapshot_delivery_chaos.rs`; `crates/hydracache/tests/invalidation_backpressure.rs` | Deterministic delay/duplicate/reorder/abort, multi-follower fan-out, and handoff-during-delivery schedules over existing message/stream seams; bounded queues and consensus/invalidation progress. No production streaming snapshot feature is added. | Slow TCP receivers, receiver process kill, and OS buffers remain 0.66 W1/W5. |
 | W31 durable corruption/recovery corpus | `crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs`; checked-in fixtures under `crates/hydracache-cluster-raft/tests/corpus/` | Corrupt/truncated/swapped/stale artifacts and crash-at-phase replay against existing durable formats; no backup/PITR product feature claim. | Live backup/PITR and disk fault injection remain 0.66 W4/W5. |
 | W32 cross-version compatibility | `crates/hydracache-cluster-raft/tests/compat_matrix.rs`; `crates/xtask/src/compat_check.rs` | Reproducible `v0.63.0` vectors plus public API diff for published crates; 0.64 also emits the frozen bundle consumed by 0.65. No old daemon is claimed unless CI actually downloads/builds it. | Mixed old/new daemon rolling upgrade remains 0.66 W6. |
-| W33 gated-proof registry | `docs/testing/gated-test-registry.toml`; `crates/xtask/src/gated_test_check.rs`; `release-governance-check` | Mechanical coverage of every `#[ignore]`, env gate, test-only feature, and release meta-gate with command, CI tier, owner/release, and reason. Heavy commands remain separate registered lanes. | None; this is fully owned by 0.64. |
+| W33 release evidence and gated-proof governance | `docs/testing/gated-test-registry.toml`; `docs/testing/release-evidence/0.64.toml`; `docs/testing/test-quarantine.toml`; `release-governance-check`; `release-evidence` | Mechanical coverage of every `#[ignore]`, env gate, test-only feature, and release meta-gate plus a derived per-W evidence matrix. Exact-HEAD hash-verified receipts are required; any required quarantine blocks ship. Heavy commands remain separate registered lanes. | None; this is fully owned by 0.64. |
 | W34 cache-core race matrix | `crates/hydracache/tests/cache_core_concurrency_matrix.rs` | Seeded in-process get/load/refresh/invalidate/expiry/capacity combinations using existing APIs, including a same-tick expiry storm. | Long process soak is optional and not a 0.64 ship claim. |
 | W35 adapter behavior corpus | `crates/hydracache-sandbox/tests/adapter_behavior_corpus.rs`; scenarios under `crates/hydracache-sandbox/tests/corpus/` | SQLite/available in-process adapter rows plus skip-loud registration for Docker-only rows. Unsupported adapters remain fail-loud. | Postgres/Diesel/SeaORM Docker rows may run in 0.66 or a dedicated DB nightly. |
 | W36 config/security property matrix | `crates/hydracache-server/tests/config_properties.rs`; operator manifest checks where the operator crate exposes a pure renderer | Generated config combinations prove precedence, validation, redaction, and secure defaults without launching daemons. | Cluster rollout behavior under generated manifests remains 0.66 W11. |
@@ -656,6 +661,8 @@ Add or update gate documentation:
   `SIGSTOP`/`SIGCONT` safety recovery;
 - nightly tier: randomized snapshot timing over membership changes, seeded and replayable, with
   contradiction-ledger artifacts for any unexplained transport or state-machine failure;
+- suite-health tier: every fast suite has a declared timeout/budget, every deterministic suite emits a
+  normalized digest, and quarantine entries are machine-checked rather than silently ignored;
 - docs: `GATES.md`, `TESTING.md`, release notes, and `COMPAT.md` if snapshot bytes/format claims change.
 
 Fast release gate:
@@ -668,6 +675,43 @@ cargo test -p hydracache-cluster-raft --test golden_vectors --locked
 cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
 cargo xtask verify-no-test-features
 cargo xtask doc-check
+```
+
+### Fast-Tier Budget, Quarantine, And Coverage Closeout
+
+W6 reuses the W33 evidence manifest as the source of truth for fast commands. Every fast row records
+`timeout_seconds`, `budget_seconds`, whether it is deterministic, and its expected artifact/digest. A
+pinned `cargo-nextest` configuration supplies per-test slow/termination timeouts for ordinary unit and
+integration tests; `cargo test` remains the authoritative fallback for doctests, MSRV, Miri, loom,
+failpoint, and any target whose semantics nextest cannot preserve.
+
+Measure the fast tier after merging the `v0.63.0` `main` history and again after all 0.64 suites land.
+The committed budget is the measured Linux CI median plus an explicit noise allowance, with an absolute
+25-minute PR-job ceiling. Any increase requires a reviewed manifest change naming the responsible suite;
+a timeout or budget miss is red evidence, not an automatic move to nightly.
+
+The existing one-day quarantine policy becomes executable via `docs/testing/test-quarantine.toml` and
+`xtask quarantine-check --release 0.64`. Each entry requires test/gate id, issue, owner, seed/replay
+command, creation/expiry timestamps, and reason. PR CI may report an unexpired entry as a visible yellow
+exception for at most 24 hours. `release-evidence --require-ship` fails on **any** quarantined required
+gate, including an unexpired one; an overdue entry also fails normal governance CI.
+
+After implementation is complete, rerun clean workspace coverage and set the scheduled line floor to
+`max(88, floor(measured_line_percent))`. Record the command, commit, toolchain, and summary artifact.
+Coverage remains a non-regression ratchet rather than a correctness score and cannot substitute for a
+missing W-item proof.
+
+**Required checks:**
+
+- `fast_suite_registry_rejects_missing_timeout_budget_or_command`;
+- `fast_suite_budget_rejects_an_unreviewed_runtime_regression`;
+- `quarantine_registry_rejects_missing_issue_owner_replay_or_expiry`;
+- `release_ship_gate_rejects_every_active_quarantine`;
+- `coverage_floor_matches_post_064_measured_baseline_without_decreasing_88`.
+
+```powershell
+cargo run --manifest-path crates\xtask\Cargo.toml -- fast-suite-check --release 0.64
+cargo run --manifest-path crates\xtask\Cargo.toml -- quarantine-check --release 0.64
 ```
 
 Nightly/replay gate:
@@ -802,10 +846,12 @@ re-added here: CI already runs the `sled-log-store`/`test-failpoints`/`clock_ske
 ContradictionLedger is an executable validated manifest (`snapshot_replay_manifest.rs`), and the
 message-filter/gossip harnesses have same-seed replay tests.
 
-### W15. Mutation Testing Of Snapshot / Apply / Membership Paths (blueprint: `cargo-mutants`; the `0.64` falsification thesis)
+### W15. Mutation Testing Of Product Paths And Proof Oracles (blueprint: `cargo-mutants`; the `0.64` falsification thesis)
 
-**Goal.** Prove the W1-W14 tests actually **kill injected faults**, not only the hand-picked canaries. A
-surviving mutant in the snapshot/apply/ConfChange/log-store paths is an untested behavior.
+**Goal.** Prove the W1-W14 tests actually **kill injected faults**, not only the hand-picked canaries,
+and prove the checkers themselves do not accept invalid histories/states when their decision logic is
+mutated. A surviving product mutant is untested behavior; a surviving proof-oracle mutant is a checker
+that may lie green.
 
 **Files to change.** Add native `cargo-mutants` config `.cargo/mutants.toml` scoped with
 `examine_globs` to `crates/hydracache-cluster-raft/src/log_store.rs`, snapshot export/restore,
@@ -815,14 +861,28 @@ survivors with a reason. The config must stay in cargo-mutants' own schema becau
 reads `.cargo/mutants.toml` by default and the scheduled CI lane passes it directly through
 `cargo mutants --config`; HydraCache-only tables such as `[hydracache]` are intentionally rejected.
 
+Add a second native config `.cargo/mutants-proof-oracles.toml` plus
+`docs/testing/mutation-proof-oracle-baseline.md`. Its initial scope is
+`crates/hydracache-sim/src/linearizability.rs` and
+`crates/hydracache-cluster-testkit/src/invariants.rs`. W31 must place reusable durable-corpus validation
+semantics in a dev-only library module and add that module to this config when it lands. W28 differential
+comparison/reducer semantics join the scope only when they are extracted into a reusable module; do not
+mutation-test integration-test glue merely to inflate the mutant count.
+
 **Design.**
 - Run `cargo mutants` over the scoped modules; every survivor must be either killed by adding/tightening
   a test in the same release or explicitly triaged in the baseline with a written justification (`R-11`).
 - The gate fails on any **new** survivor not in the baseline, so future edits cannot silently reduce
   test power.
+- Run product-path and proof-oracle campaigns as separate CI invocations/packages so each mutant executes
+  only the tests capable of killing it and a large combined workspace timeout cannot hide a weak oracle.
+- Proof-oracle survivors require a new rejecting fixture or a written, reviewed impossibility argument;
+  the initial 0.64 ship target is no allowed survivor in decision branches.
 
 **Required tests / checks:**
 - `mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths`.
+- `proof_oracle_mutants_have_no_untriaged_linearizability_or_invariant_survivors`.
+- `proof_oracle_config_rejects_integration_test_glue_as_the_only_scope`.
 - `canary_mutants_config_uses_hydracache_table_rejected`.
 - Baseline file present and referenced from `GATES.md`.
 
@@ -834,11 +894,13 @@ starts with `unknown field hydracache`.
 **DoD.**
 ```powershell
 cargo xtask mutants   # or: cargo mutants --in-place --file crates/hydracache-cluster-raft/src/log_store.rs ...
+cargo xtask mutants --scope proof-oracles
 ```
 
-**Run in CI.** Scheduled/`workflow_dispatch` lane `Raft Mutation Testing` (mutation runs are slow); the
-baseline-no-untriaged-survivors check runs fast in the `rust` job when a cached mutants report exists,
-else skips loud.
+**Run in CI.** Scheduled/`workflow_dispatch` lanes `Raft Mutation Testing` and `Proof Oracle Mutation
+Testing` (mutation runs are slow); their baseline-no-untriaged-survivors checks run fast in the `rust`
+job when cached reports exist, else skip loud. Both exact-commit reports are required by the evidence
+ledger before ship.
 
 ### W16. Miri Aliasing/UB Run For The Immutability Proofs (blueprint: the W1 aliasing thesis; `cargo miri`)
 
@@ -871,6 +933,37 @@ cargo +nightly miri test -p hydracache-cluster-raft snapshot_immutability
 **Run in CI.** Lane `Raft Miri` (nightly toolchain, skip-loud when unavailable), fast enough for the
 scoped suites to run on PR when the toolchain is cached.
 
+#### ThreadSanitizer Complement Shared With W26/W34
+
+Miri interprets selected code and loom explores modeled synchronization, but neither executes the rest
+of the real multi-threaded runtime under a race detector. Add a Linux x86_64 scheduled/manual
+`ThreadSanitizer` lane using a pinned dated nightly, `rust-src`, `-Zbuild-std`, and
+`RUSTFLAGS="-Zsanitizer=thread"`. The checked-in reference blueprints are Redis
+`redis/src/Makefile:121` plus `redis/tests/test_helper.tcl:560`, and BlazingMQ
+`blazingmq/docker/sanitizers/README.md`; do not attribute this lane to TiKV/ScyllaDB without a matching
+checked-in job.
+
+Scope the lane to real threaded tests rather than loom models: the W34 cache concurrency matrix, selected
+`hydracache-cluster-raft` runtime contention/handoff/snapshot-delivery tests, and other suites explicitly
+registered as `tsan=true`. Keep suppressions minimal, reviewed, and committed with owner/reason. A tiny
+test-only `UnsafeCell` race fixture must produce a TSan report, proving the runner is instrumented; it is
+never linked into product/release graphs.
+
+**Required checks / evidence:**
+
+- `canary_tsan_detects_test_fixture_data_race` exits non-zero with a normalized TSan race signature;
+- every scoped ordinary concurrent suite passes under the pinned TSan toolchain;
+- skip-loud is allowed on unsupported local hosts, but one exact-release-candidate green Linux receipt
+  and the red canary receipt are mandatory for ship.
+
+```bash
+RUSTFLAGS="-Zsanitizer=thread" cargo +nightly-YYYY-MM-DD test -Zbuild-std \
+  --target x86_64-unknown-linux-gnu -p hydracache --test cache_core_concurrency_matrix --locked
+RUSTFLAGS="-Zsanitizer=thread" cargo +nightly-YYYY-MM-DD test -Zbuild-std \
+  --target x86_64-unknown-linux-gnu -p hydracache-cluster-raft \
+  --test leadership_handoff --test snapshot_delivery_chaos --locked
+```
+
 ### W17. Enforced Canary-Completeness Meta-Gate (blueprint: extends the `0.62.1` canary map from a doc list to an invariant)
 
 **Goal.** Make "every proof has a canary that goes red without the guard" a **mechanical** invariant, not
@@ -879,27 +972,49 @@ a prose promise - so no future W-item lands without falsification evidence.
 **Files to change.** New `crates/xtask/src/canary_check.rs` (wired into `doc-check` or a new `xtask
 canary-check`); a machine-readable canary registry (extend the plan's Implementation Map or a
 `docs/testing/canary-registry.json`) mapping each guard test to its canary and its enabling
-feature/fixture.
+feature/fixture. Upgrade the current structural registry to schema v2 with `guard_command`,
+`canary_command`, `expected_failure`, `timeout_seconds`, `tier`, and artifact fields. Add an `xtask
+canary-sweep --release 0.64` subprocess runner.
+
+**Current accuracy note.** The implemented checker currently proves only that function names exist and
+that an entry declares `makes_guard_fail=true`; its test named
+`each_canary_makes_its_paired_guard_fail_red` does not execute the guard under the defect. Boolean
+fixtures whose forbidden conditions are hard-coded false are not dynamic evidence. Keep the static
+check, but do not mark W17 complete until schema-v2 commands prove the actual red transition.
 
 **Design.**
 - Static check: every W-item in the plan names >=1 canary, and every registry canary references a real
-  `fn ...` and a real guard `fn ...`.
-- Dynamic check (a harness test): for each registry entry, building/running with the canary fixture
-  enabled makes the paired guard test **fail**; if the guard still passes, the canary is fake -> fail.
+  `fn ...` and a real guard `fn ...`. Derive required ids from the 0.64 `releases.toml work_items`
+  list rather than a hard-coded W1-W28 constant, including W5a, W6, W6b, and W29-W38. Non-behavioral
+  governance items use a malformed registry/evidence fixture that makes their real meta-gate fail.
+- Dynamic check: execute the same guard command with its test-only defect/failpoint/model mutation
+  enabled and require a bounded non-zero exit plus the registered invariant failure signature. A green
+  guard, timeout, compile failure, unrelated panic, or mismatched error signature is not red evidence.
+- Fast dynamic entries run on every PR. Tool/feature/process-heavy entries run in a complete nightly
+  sweep, but their exact-commit receipts remain mandatory before ship.
+- Never encode dynamic proof as a handwritten boolean. The evidence receipt records command, defect id,
+  exit status, normalized failure signature, duration, source commit, and artifact SHA.
 
 **Required tests / checks:**
 - `every_w_item_has_a_registered_canary_that_references_real_functions`.
 - `each_canary_makes_its_paired_guard_fail_red`.
+- `dynamic_canary_runner_rejects_a_guard_that_stays_green`.
+- `dynamic_canary_runner_rejects_timeout_compile_failure_or_unrelated_panic_as_red_evidence`.
+- `dynamic_canary_receipt_is_bound_to_command_defect_and_source_commit`.
 
 **Canary.** `canary_registry_lists_a_canary_that_does_not_fail_its_guard` - a deliberately inert canary
 entry must fail the dynamic check.
 
 **DoD.**
 ```powershell
-cargo run -p xtask --locked -- canary-check
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- canary-check
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- canary-sweep --release 0.64 --tier fast
+cargo run --manifest-path crates\xtask\Cargo.toml --locked -- canary-sweep --release 0.64 --tier all
 ```
 
-**Run in CI.** Fast `rust` job step "Canary completeness".
+**Run in CI.** Static and fast dynamic checks in the `rust` job; complete dynamic sweep in a
+scheduled/dispatch lane with artifacts uploaded even on failure. W17 is ship-green only when every
+required registry row has a current exact-commit red receipt.
 
 ### W18. Nemesis Determinism + Shrinking (blueprint: `0.44` shrinking; `0.53.1` 1000-seed determinism gate)
 
@@ -908,17 +1023,26 @@ cargo run -p xtask --locked -- canary-check
 the nemesis itself has no explicit determinism gate or shrinker.
 
 **Files to change.** Extend `crates/hydracache-cluster-raft/tests/nemesis_membership.rs`; reuse the
-`0.44` shrinking machinery (`crates/hydracache-sim`) for schedule minimization.
+`0.44` shrinking machinery (`crates/hydracache-sim`) for schedule minimization. Add normalized digest
+output to every fast suite marked `deterministic=true` in the W33 evidence manifest and add `xtask
+determinism-sweep --release 0.64`.
 
 **Design.**
 - Determinism gate: the same seed produces a byte-identical fault schedule and identical committed
   outcome across two runs (mirror `message_filter_replays_identically_for_same_seed`).
 - Shrinker: on a failing seed, minimize the schedule to the fewest steps that still violate the
   invariant, and print/emit the minimal schedule into the contradiction ledger artifact.
+- Suite-wide sweep: run registered deterministic suites twice and compare a canonical SHA-256 over
+  seed, logical schedule, ordered operations, invariant verdicts, and final logical state. Exclude wall
+  time, absolute paths, ephemeral ports, thread ids, and unordered map/debug formatting.
+- Exercise both serial (`--test-threads=1`) and normal runner modes where the suite supports parallel
+  execution. Two merely green exits without matching digests do not prove determinism.
 
 **Required tests:**
 - `nemesis_replays_identically_for_same_seed`.
 - `nemesis_failure_shrinks_to_minimal_reproducing_schedule` (uses a fixture-injected failure).
+- `determinism_sweep_matches_normalized_digests_across_repeated_and_serial_parallel_runs`.
+- `determinism_digest_ignores_ephemeral_metadata_but_detects_logical_schedule_drift`.
 
 **Canary.** `canary_nemesis_shrinker_returns_a_nonreproducing_schedule` - a broken shrinker that returns
 a schedule which no longer reproduces must fail.
@@ -926,9 +1050,11 @@ a schedule which no longer reproduces must fail.
 **DoD.**
 ```powershell
 cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_replays_identically_for_same_seed --locked
+cargo run --manifest-path crates\xtask\Cargo.toml -- determinism-sweep --release 0.64
 ```
 
-**Run in CI.** Fast `rust` job; shrinking exercised in the nightly soak lane.
+**Run in CI.** Targeted nemesis determinism in fast `rust`; suite-wide double-run/digest comparison and
+shrinking in nightly. The resulting digest manifest is consumed by W33 release evidence.
 
 ### W19. Frozen Bad-Seed Regression Corpus (blueprint: `0.44`/`0.62` golden-vector discipline)
 
@@ -1226,6 +1352,11 @@ Remove-Item Env:\RUSTFLAGS -ErrorAction SilentlyContinue
 
 **Run in CI.** Dedicated `loom` lane (loom builds are slow; scoped modules keep it bounded).
 
+**Independent detector boundary.** A green loom model proves only the synchronization model wired under
+`cfg(hydracache_loom)`. The W16 ThreadSanitizer complement runs ordinary concurrent code and may find
+races outside modeled modules. The evidence ledger requires both receipts and never treats one as a
+substitute for the other.
+
 ### W27. Connection & Resource Chaos For The Client / RESP Surface (blueprint: pgcat, Pingora, HikariCP; principle: adversarial connection lifecycle + pool exhaustion + leak detection)
 
 **Principle.** A server can be protocol-correct and still fall over on *connection* pathology: slow
@@ -1339,6 +1470,11 @@ manifest, `INDEX.md`, and the public claim. A skipped or merely documented row n
 | Core deterministic safety and governance | W29-W31, W33 | Fast deterministic suites and structural meta-gates run on every PR; all canaries are proven red against their seeded defect before ship. |
 | Specialized release evidence | W32, W34-W38 | Each named fast/gated command exists and passes; W37 records one Linux resource-budget run and W38 records one pinned TLC run. These rows may use dedicated CI lanes but remain release-blocking. |
 | Explicit operational continuation | Only the boundaries named by each W-item | Mixed-version daemons, real slow-TCP/receiver-kill behavior, Kubernetes chaos, and long OS-pressure soak remain 0.66 work. Their absence narrows the 0.64 claim; it does not permit substitution with a weaker current-version or in-process result. |
+
+The release-proof mechanics are folded into existing owners: W6 owns suite budgets, quarantine policy,
+and the final coverage re-ratchet; W15 owns product-path and proof-oracle mutation campaigns; W16/W26
+own the independent TSan lane; W17 owns dynamic falsification; W18 owns normalized determinism digests;
+and W33 owns the evidence ledger plus governance commands. These are ship mechanics, not new W-items.
 
 ### W29. Leadership Handoff And Committed-Read Safety Matrix
 
@@ -1590,18 +1726,22 @@ artifacts cannot be reproduced, 0.64 must keep W32 and the compatibility claim o
 provenance attempt, and still emit the 0.64 bundle for the next release. It must never silently replace
 the required previous-release row with current-version vectors.
 
-### W33. Mechanical Registry For Ignored, Env-Gated, And Feature-Gated Proofs
+### W33. Mechanical Registry, Release Evidence, And Quarantine Governance
 
 **Principle.** A test that never runs is documentation, not evidence. Every skipped proof needs a
-machine-checkable reason, invocation, CI tier, release owner, timeout, and required environment.
+machine-checkable reason, invocation, CI tier, release owner, timeout, and required environment. A
+40-row Final Decision also cannot depend on a human grep audit: ship readiness must be computed from
+commit-bound receipts, and a quarantined required proof is not green.
 
 **Reference blueprint.** Hazelcast enforces test-runner and annotation conventions in
 `hazelcast/hazelcast-spring/src/test/java/com/hazelcast/TestsHaveRunnersTest.java:25` and
 `NoMixedJUnitAnnotationsInOurTestSourcesTest.java:25`. HydraCache already uses this principle for
 canaries, but not for all ignored/gated tests.
 
-**Files to change.** Add `docs/testing/gated-test-registry.toml`, schema/loader code in `xtask`, and a
-`gated-test-check` command. Parse Rust test attributes with `syn` and Cargo manifests with structured
+**Files to change.** Add `docs/testing/gated-test-registry.toml`,
+`docs/testing/release-evidence/0.64.toml`, `docs/testing/test-quarantine.toml`, schema/loader code in
+`xtask`, and `gated-test-check`, `release-governance-check`, `release-evidence`, `fast-suite-check`, and
+`quarantine-check` commands. Parse Rust test attributes with `syn` and Cargo manifests with structured
 APIs; do not rely on a regex-only source scan.
 
 Add `xtask release-governance-check --release 0.64` as the lightweight umbrella for structural
@@ -1610,20 +1750,46 @@ release meta-gates. It validates and invokes the fast `doc-check`, `verify-no-te
 their CI registration. It does not run Miri, mutation campaigns, TLC exploration, Docker, or soak; those
 remain separately recorded heavy lanes whose required green artifacts are validated by the registry.
 
+`release-governance-check` proves that commands, registries, CI jobs, and schemas are wired.
+`release-evidence --release 0.64` is separate: it joins the release `work_items`, implementation map,
+suite/gated registries, dynamic-canary receipts, and CI artifacts into a generated JSON/Markdown matrix:
+`planned -> implemented -> fast-green -> gated-green -> ship-ready`. Status is always derived; a manifest
+may not contain a handwritten `green=true` or final status override.
+
 **Required registry fields:** stable id; test target/name or cfg path; reason; local command; CI job;
 `fast|nightly|manual|external` tier; required feature/env/tool; timeout; owning release; and whether a
 green run is mandatory for ship. Detect `#[ignore]`, `#[cfg(...)]` test modules/files, named environment
 gates, and documented Docker/nightly rows. Allow explicit exclusions only for compile-fail fixtures
 with a reason.
 
+**Evidence model.** Every W-item declares required artifacts, fast commands, gated registry ids, and
+ship requirement. Every run receipt records source commit, command, toolchain/container digest,
+registry/input digest, start/end/duration, exit code, normalized result, and artifact SHA-256. During
+development an older receipt is reported `stale`; `--require-ship` accepts only receipts produced for
+the exact release-candidate `HEAD`. Missing, skipped, stale, timed-out, quarantined, or mismatched-input
+rows remain visibly non-green. The command prints counts for all states and writes
+`target/release-evidence/0.64.{json,md}` for CI upload and release-note review.
+
+**Fast-suite and quarantine integration.** Fast rows carry W6 timeout/budget/determinism fields. The
+quarantine registry carries gate id, issue, owner, seed/replay command, creation/expiry timestamps, and
+reason. An overdue entry fails ordinary governance; any active quarantine on a required row fails
+`release-evidence --require-ship`. Silent retry never creates a receipt.
+
 **Required tests:**
 
 - `gated_test_registry_covers_every_ignored_cfg_and_env_gated_test`;
 - `registry_rejects_missing_command_ci_tier_owner_or_timeout`;
 - `registry_rejects_stale_entries_that_no_longer_resolve_to_a_test`;
-- `release_governance_check_rejects_an_unwired_or_missing_meta_gate`.
+- `release_governance_check_rejects_an_unwired_or_missing_meta_gate`;
+- `release_evidence_reports_every_manifest_work_item_exactly_once`;
+- `release_evidence_marks_missing_skipped_stale_or_wrong_commit_receipts_non_green`;
+- `release_evidence_rejects_handwritten_green_status_and_tampered_artifact_hash`;
+- `require_ship_rejects_any_required_row_without_exact_head_evidence`;
+- `quarantine_check_rejects_overdue_or_incomplete_entries_and_ship_rejects_all_active_entries`.
 
-**Canary.** An unregistered ignored fixture under `xtask` test data must make `gated-test-check` fail.
+**Canary.** An unregistered ignored fixture must make `gated-test-check` fail. A fixture containing a
+forged `green=true` receipt, wrong commit, or changed artifact with the old SHA must make
+`release-evidence --require-ship` fail.
 
 **DoD.**
 
@@ -1631,9 +1797,13 @@ with a reason.
 cargo test --manifest-path crates\xtask\Cargo.toml gated_test_registry --locked -j 2
 cargo run --manifest-path crates\xtask\Cargo.toml -- gated-test-check
 cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.64
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.64
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-evidence --release 0.64 --require-ship
 ```
 
-**CI.** Required on every PR and included in `canary-check`; no 0.66 continuation.
+**CI.** Structural governance plus current fast-state evidence runs on every PR. Nightly/manual jobs
+upload hash-verified receipts even on failure. The final release workflow runs `--require-ship` on the
+candidate commit and uploads the JSON/Markdown matrix; no 0.66 continuation.
 
 ### W34. Cache-Core Concurrency, Expiry, And Capacity Matrix
 
@@ -1855,9 +2025,12 @@ Ship `0.64.0` only when:
   never produce two leaders or break fence safety (W14);
 - each new proof has a falsifiability canary that goes red without the guard;
 - the pre-release strengthening pass holds: mutation testing leaves no untriaged survivor in the
-  snapshot/apply/membership paths (W15), the immutability proofs pass under Miri (W16), the
-  canary-completeness meta-gate proves every guard has a canary that actually fails it (W17), the
-  nemesis is same-seed deterministic and shrinks failures to a minimal schedule (W18), every historical
+  snapshot/apply/membership paths or proof-oracle decision logic (W15), the immutability proofs pass
+  under Miri and the pinned TSan lane records both a green scoped run and red race canary (W16/W26), the
+  canary-completeness meta-gate dynamically executes every guard under its registered defect and matches
+  the expected failure rather than trusting a boolean (W17), the nemesis is same-seed deterministic,
+  shrinks failures to a minimal schedule, and every registered deterministic suite emits matching
+  normalized digests across repeated/serial-parallel runs (W18), every historical
   bad seed replays green in the fast tier (W19), the raft corpus covers every required etcd edge category
   (W20), and the unified invariant catalog flags each seeded violation (W21);
 - the cross-domain coverage expansion holds, each citing its third-party blueprint and principle:
@@ -1867,7 +2040,8 @@ Ship `0.64.0` only when:
   and each crash input is a permanent regression (W24, TiKV/DataFusion `fuzz`); the linearizability
   oracle library accepts valid and rejects non-linearizable histories (W25, Jepsen/Knossos - the checker
   `0.66` W7 drives externally); loom finds no interleaving that breaks the conditional-store/ring
-  invariants (W26, `moka`); connection/pool chaos frees resources and bounds exhaustion without leaks
+  invariants and remains independently corroborated by TSan over ordinary code (W26, `moka`);
+  connection/pool chaos frees resources and bounds exhaustion without leaks
   (W27, pgcat/Pingora/HikariCP); differential across modes plus Redis/Hazelcast-mined corpora agree with
   the oracle and lose no committed write (W28, DataFusion/Redis/Hazelcast);
 - the Raft-focused second pass holds: leadership handoff preserves the committed prefix and rejects
@@ -1878,14 +2052,22 @@ Ship `0.64.0` only when:
   last good state (W31); previous-version wire/snapshot fixtures and published API baselines pass without
   silent golden regeneration and 0.64 emits the frozen next-release bundle (W32); every ignored/env/
   cfg-gated proof is mechanically registered, mapped to a real CI command, and covered by the umbrella
-  governance check (W33); the cache-core concurrency matrix preserves invalidation,
-  single-flight, expiry, and capacity invariants (W34); the adapter corpus agrees across every claimed
-  backend and unsupported rows fail loud (W35); generated config/security/operator combinations keep
+  governance check; the evidence ledger reports every W-item exactly once and accepts only exact-HEAD,
+  hash-verified receipts with no required gate quarantined (W33); the cache-core concurrency matrix
+  preserves invalidation, single-flight, expiry, and capacity invariants (W34); the adapter corpus agrees
+  across every claimed backend and unsupported rows fail loud (W35); generated
+  config/security/operator combinations keep
   precedence, redaction, and secure-default invariants (W36); daemon churn returns logical and available
   OS resources within the recorded budget while the cluster remains live (W37); and the pinned TLA+/TLC
   election/recovery model plus its negative canary both execute as intended (W38);
 - rare/flaky failures produce deterministic replay evidence (printed seed + uploaded artifacts) and a
   contradiction ledger;
+- fast suites stay within their reviewed per-suite and aggregate wall-clock budgets, overdue quarantine
+  entries fail governance, and any active quarantine blocks the release ship gate;
+- the post-implementation coverage baseline is measured on the release candidate and the scheduled
+  floor is raised to `max(88, floor(measured_line_percent))` without treating coverage as correctness;
+- `release-evidence --release 0.64 --require-ship` produces a complete JSON/Markdown matrix with no
+  `planned`, `missing`, `skipped`, `stale`, `timed-out`, `quarantined`, or hash-mismatched required row;
 - every new test runs both locally and in GitHub CI - deterministic tests in the fast `rust` job,
   real-process/soak/wide-scope tests in the gated `raft-corner-case-nightly` job, skip-loud when
   unset - and `GATES.md`/`TESTING.md` document both invocations;

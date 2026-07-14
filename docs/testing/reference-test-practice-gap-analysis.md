@@ -18,6 +18,9 @@ Scope:
 
 | Technique | Principle | Reference blueprint | HydraCache evidence | Maturity | Severity | HydraCache applicability |
 | --- | --- | --- | --- | --- | --- | --- |
+| Commit-bound release evidence ledger and dynamic canary proof | A large release is only as complete as its weakest unexecuted gate; wiring checks and handwritten status cannot prove that every required command ran against the candidate commit. A canary proves falsifiability only when the real guard fails under the injected defect for the expected reason. | Hazelcast test-governance checks: `hazelcast/hazelcast-spring/src/test/java/com/hazelcast/TestsHaveRunnersTest.java:25` and `NoMixedJUnitAnnotationsInOurTestSourcesTest.java:25`; TigerBeetle artifact/replay principle in `tigerbeetle/docs/ARCHITECTURE.md:315`. | `releases.toml` now lists work items and `xtask doc-check` verifies plan headings, but `crates/xtask/src/canary_check.rs` currently validates references plus `makes_guard_fail=true` without executing the guard. No exact-commit per-W evidence matrix exists. | Structural only; dynamic/evidence layer planned in W17/W33. | Critical | Final ship decision, gated proof freshness, canary honesty, audit automation. |
+| ThreadSanitizer over ordinary concurrent execution | Loom explores modeled interleavings and Miri interprets selected code; TSan observes races in real threaded code outside those models. Independent detectors reduce shared blind spots. | Redis enables `-fsanitize=thread` in `redis/src/Makefile:121` and adapts its harness in `redis/tests/test_helper.tcl:560`; BlazingMQ provides a containerized TSan toolchain in `blazingmq/docker/sanitizers/README.md`. | Miri W16 and loom W26 exist for selected paths; no `-Zsanitizer=thread` Rust lane or TSan canary exists in HydraCache CI. Local TiKV/ScyllaDB trees did not provide the claimed TSan blueprint. | New planned gated lane under W16/W26. | High | Cache concurrency matrix, Raft runtime contention, lock/invalidation paths not represented in loom. |
+| Mutation testing of proof oracles | A checker that accepts an invalid history creates false green evidence; systematically mutating decision logic tests the tests more broadly than one hand-picked canary. | `cargo-mutants` is already the 0.64 W15 mechanism; the independent-model principle comes from Jepsen/Knossos-style checking and TigerBeetle shared invariant/VOPR discipline. | `.cargo/mutants.toml` currently scopes only `hydracache-cluster-raft/src/lib.rs` and `log_store.rs`. Reusable decision logic exists in `crates/hydracache-sim/src/linearizability.rs` and `crates/hydracache-cluster-testkit/src/invariants.rs`; future W31 validation is not implemented yet. | Product mutation implemented; proof-oracle mutation planned. | High | Linearizability verdicts, invariant catalog, durable recovery corpus, differential reducers. |
 | Trace-driven cache efficiency and Belady upper bounds | Real production-like access traces reveal admission and eviction regressions that synthetic unit tests miss; Belady/optimal bounds keep the target honest. | Caffeine simulator: `caffeine/simulator/build.gradle.kts:1`, `caffeine/simulator/src/main/java/com/github/benmanes/caffeine/cache/simulator/Simulator.java:43`, `Simulator.java:46`, `Simulator.java:55`, `caffeine/simulator/src/main/resources/reference.conf:37`, `reference.conf:483`, `reference.conf:495`. | Planned in `docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md:1029` as W22 with `crates/hydracache-cache-sim/src/lib.rs`, Belady, LRU/LFU, random canary. Existing runtime cache tests cover hot-path behavior in `crates/hydracache/tests/performance_smoke.rs:136` and single-flight joins in `performance_smoke.rs:226`. | Planned, partial runtime coverage. | High | Cache admission, TTL refresh, hit-rate regression budget, release performance claims. |
 | Cache-core concurrent get/put/invalidate/expiry stress | Cache races often live in callback timing, stale in-flight values, expiry revalidation, and size/weight interactions; concurrency harnesses catch interleavings not covered by single examples. | Caffeine concurrency fixture: `caffeine/caffeine/src/testFixtures/java/com/github/benmanes/caffeine/testing/ConcurrentTestHarness.java:53`, `ConcurrentTestHarness.java:80`. JCache expiry and weight tests: `caffeine/jcache/src/test/java/com/github/benmanes/caffeine/jcache/expiry/JCacheAccessExpiryTest.java:48`, `JCacheAccessExpiryTest.java:80`, `caffeine/jcache/src/test/java/com/github/benmanes/caffeine/jcache/expiry/JCacheExpiryAndMaximumSizeTest.java:48`, `JCacheExpiryAndMaximumSizeTest.java:73`, `caffeine/jcache/src/test/java/com/github/benmanes/caffeine/jcache/size/JCacheMaximumWeightTest.java:40`. Moka race regressions: `moka/tests/and_compute_with_race.rs:3`, `moka/tests/timer_wheel_panic_test.rs:1`, `timer_wheel_panic_test.rs:60`, `timer_wheel_panic_test.rs:200`. | Implemented partially: single-flight and refresh races in `crates/hydracache/tests/refresh_correctness.rs:103`, `refresh_correctness.rs:170`; invalidation loom model in `crates/hydracache/tests/loom_invalidation_model.rs:105`, `loom_invalidation_model.rs:165`; overload bound in `crates/hydracache/tests/sustained_overload.rs:89`. No Caffeine/Moka-style broad matrix for expiry variants, capacity/weight policy, stale in-flight plus invalidation, and panic regressions. | Partial. | High | Core in-memory cache correctness, stale-read prevention, loader de-duplication, expiry/refresh behavior. |
 | Redis mined corpus and oracle compatibility | A facade must prove behavior against the real protocol and mined edge corpus, not only hand-written happy paths. | Redis TCL suites: `redis/tests/unit/auth.tcl:15`, `auth.tcl:27`, `auth.tcl:47`, `auth.tcl:63`, `redis/tests/unit/acl.tcl:447`, plus command families under `redis/tests/unit/expire.tcl`, `redis/tests/unit/type/string.tcl`, `redis/tests/unit/protocol.tcl`, `redis/tests/unit/scan.tcl`, `redis/tests/unit/scripting.tcl`. | Implemented/planned for release 0.63 and carried by CI: `.github/workflows/ci.yml:229`, `.github/workflows/ci.yml:238`, `.github/workflows/ci.yml:243`; planned W28 mined corpus in `docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md:1266`; Redis edge docs in `docs/integrations/redis_edge_corpus.md`. | Strong for selected supported surface; intentionally incomplete for unsupported Redis families. | High | RESP facade, AUTH, TTL, lock subset, fail-loud unsupported behavior. |
@@ -504,6 +507,43 @@ These rows remain plans until their named artifacts, tests, canaries, and CI
 commands exist and pass. Adding them to 0.64 does not convert a planned row into
 evidence.
 
+### Release-Proof Mechanics Extension
+
+The final review found no additional missing scenario category. The remaining
+risk is that a release with W1-W38 can be only partially implemented or can keep
+stale/never-executed evidence while its prose still looks complete. The accepted
+extension therefore strengthens existing owners rather than adding W39+:
+
+- W33 adds `release-evidence --release 0.64`: a generated per-W matrix with
+  `planned`, `implemented`, `fast-green`, `gated-green`, and `ship-ready` states.
+  Receipts include exact source commit, command, toolchain/container, duration,
+  result, input digest, and artifact SHA; `--require-ship` rejects missing,
+  skipped, stale, quarantined, or tampered rows and never trusts `green=true`.
+- W17 upgrades the current structural canary registry to dynamic execution. The
+  existing checker verifies names and a boolean but does not run the guard under
+  the defect; schema v2 requires a bounded canary command and expected invariant
+  failure. Fast rows run on PR, the complete sweep nightly and before ship.
+- W15 adds a separate proof-oracle mutation campaign over the reusable
+  linearizability checker, invariant catalog, and future W31 corpus validator.
+  Integration-test glue is not counted as useful mutation scope.
+- W16/W26 add a pinned Linux ThreadSanitizer lane over ordinary concurrent code,
+  independent of Miri and loom. The verified local blueprints are Redis
+  `src/Makefile:121`/`tests/test_helper.tcl:560` and BlazingMQ
+  `docker/sanitizers/README.md`; TiKV/ScyllaDB are not cited for TSan without a
+  matching checked-in job.
+- W6/W33 add fast-suite timeout/budget accounting and an executable quarantine
+  registry. An entry may remain a visible PR exception for at most 24 hours, but
+  any quarantine on a required row blocks ship.
+- W18 compares normalized logical digests across repeated and serial/parallel
+  runs; two plain green exits are insufficient determinism evidence.
+- W6 remeasures coverage only after the full implementation and raises the floor
+  to `max(88, floor(measured_line_percent))`. Coverage stays a non-regression
+  ratchet, never a substitute for correctness evidence.
+
+These mechanics are themselves release-blocking. Governance validates that the
+commands and CI lanes are wired; the evidence command independently proves that
+they ran for the release-candidate commit.
+
 ### Explicit 0.66 Continuations
 
 - W29 continuation: client-visible reads during real-process leadership churn
@@ -523,12 +563,16 @@ evidence.
 
 ### Recommended Implementation Order
 
-1. W33 first, so every subsequent gated row is mechanically visible.
-2. W29 and W30 next, because the Raft second pass identified them as the most
+1. Merge the published `v0.63.0` history, then implement W33 evidence/governance
+   and the W17 dynamic canary runner so every later result is mechanically visible
+   and falsifiable.
+2. Extend W15 proof-oracle mutation plus the W16/W26 TSan lane before relying on
+   the new checkers and concurrent suites as release evidence.
+3. W29 and W30 next, because the Raft second pass identified them as the most
    direct missing cluster-safety proofs and the existing testkit already provides
    most required message controls.
-3. W31, W32, and W38, which freeze recovery, compatibility, and protocol
+4. W31, W32, and W38, which freeze recovery, compatibility, and protocol
    invariants before the corpus or model can drift.
-4. W34-W36, which close the first-pass cross-domain correctness gaps.
-5. W37 last, after the new suites exist, so the process budget measures the
-   final release workload rather than an incomplete subset.
+5. W34-W36, which close the first-pass cross-domain correctness gaps.
+6. W37 last, then run W6 budget, determinism, quarantine, evidence, and coverage
+   closeout against the final release candidate rather than an incomplete subset.
