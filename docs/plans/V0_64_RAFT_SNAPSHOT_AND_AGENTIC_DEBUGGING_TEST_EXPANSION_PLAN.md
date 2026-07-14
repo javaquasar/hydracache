@@ -144,16 +144,16 @@ for the explicitly named `0.66` real-process continuation.
 
 | Item | Planned artifact | 0.64 proof boundary | Required continuation |
 | --- | --- | --- | --- |
-| W29 leadership handoff/read safety | `crates/hydracache-cluster-raft/tests/leadership_handoff.rs` | Real `raft-rs` messages in `RuntimeRaftCluster`; committed metadata views stay monotonic across handoff, stale-term work fails loud, lagging/non-voter targets never become authoritative. This is not a lease-read API claim. | Wire-level client reads during rolling process leadership changes remain 0.66 W2/W7. |
-| W30 snapshot delivery/backpressure | `crates/hydracache-cluster-raft/tests/snapshot_delivery_chaos.rs`; `crates/hydracache/tests/invalidation_backpressure.rs` | Deterministic delay/duplicate/reorder/abort schedules over existing message/stream seams; bounded queues and consensus/invalidation progress. No production streaming snapshot feature is added. | Slow TCP receivers, receiver process kill, and OS buffers remain 0.66 W1/W5. |
+| W29 leadership handoff/read safety | `crates/hydracache-cluster-raft/tests/leadership_handoff.rs` | Real `raft-rs` messages in `RuntimeRaftCluster`; committed metadata and existing session guarantees stay monotonic across handoff, stale-term work fails loud, lagging/non-voter targets never become authoritative. This is not a lease-read API claim. | Wire-level client reads during rolling process leadership changes remain 0.66 W2/W7. |
+| W30 snapshot delivery/backpressure | `crates/hydracache-cluster-raft/tests/snapshot_delivery_chaos.rs`; `crates/hydracache/tests/invalidation_backpressure.rs` | Deterministic delay/duplicate/reorder/abort, multi-follower fan-out, and handoff-during-delivery schedules over existing message/stream seams; bounded queues and consensus/invalidation progress. No production streaming snapshot feature is added. | Slow TCP receivers, receiver process kill, and OS buffers remain 0.66 W1/W5. |
 | W31 durable corruption/recovery corpus | `crates/hydracache-cluster-raft/tests/durable_recovery_corpus.rs`; checked-in fixtures under `crates/hydracache-cluster-raft/tests/corpus/` | Corrupt/truncated/swapped/stale artifacts and crash-at-phase replay against existing durable formats; no backup/PITR product feature claim. | Live backup/PITR and disk fault injection remain 0.66 W4/W5. |
-| W32 cross-version compatibility | `crates/hydracache-cluster-raft/tests/compat_matrix.rs`; `crates/xtask/src/compat_check.rs` | Checked-in previous-version vectors plus public API diff for published crates; no old daemon is claimed unless CI actually downloads/builds it. | Mixed old/new daemon rolling upgrade remains 0.66 W6. |
-| W33 gated-proof registry | `docs/testing/gated-test-registry.toml`; `crates/xtask/src/gated_test_check.rs` | Mechanical coverage of every `#[ignore]`, env gate, and test-only feature with command, CI tier, owner/release, and reason. | None; this is fully owned by 0.64. |
-| W34 cache-core race matrix | `crates/hydracache/tests/cache_core_concurrency_matrix.rs` | Seeded in-process get/load/refresh/invalidate/expiry/capacity combinations using existing APIs. | Long process soak is optional and not a 0.64 ship claim. |
+| W32 cross-version compatibility | `crates/hydracache-cluster-raft/tests/compat_matrix.rs`; `crates/xtask/src/compat_check.rs` | Reproducible `v0.63.0` vectors plus public API diff for published crates; 0.64 also emits the frozen bundle consumed by 0.65. No old daemon is claimed unless CI actually downloads/builds it. | Mixed old/new daemon rolling upgrade remains 0.66 W6. |
+| W33 gated-proof registry | `docs/testing/gated-test-registry.toml`; `crates/xtask/src/gated_test_check.rs`; `release-governance-check` | Mechanical coverage of every `#[ignore]`, env gate, test-only feature, and release meta-gate with command, CI tier, owner/release, and reason. Heavy commands remain separate registered lanes. | None; this is fully owned by 0.64. |
+| W34 cache-core race matrix | `crates/hydracache/tests/cache_core_concurrency_matrix.rs` | Seeded in-process get/load/refresh/invalidate/expiry/capacity combinations using existing APIs, including a same-tick expiry storm. | Long process soak is optional and not a 0.64 ship claim. |
 | W35 adapter behavior corpus | `crates/hydracache-sandbox/tests/adapter_behavior_corpus.rs`; scenarios under `crates/hydracache-sandbox/tests/corpus/` | SQLite/available in-process adapter rows plus skip-loud registration for Docker-only rows. Unsupported adapters remain fail-loud. | Postgres/Diesel/SeaORM Docker rows may run in 0.66 or a dedicated DB nightly. |
 | W36 config/security property matrix | `crates/hydracache-server/tests/config_properties.rs`; operator manifest checks where the operator crate exposes a pure renderer | Generated config combinations prove precedence, validation, redaction, and secure defaults without launching daemons. | Cluster rollout behavior under generated manifests remains 0.66 W11. |
 | W37 process-resource budget | `crates/hydracache-server/tests/daemon_resource_budget.rs`; machine-readable budget artifact | Cross-platform daemon churn where stable counters are available; Linux FD/RSS assertions are gated and skip loud elsewhere. | Long soak and OS-pressure attribution remain 0.66 W5/W13. |
-| W38 executable safety specification | `docs/specs/raft-election.tla`, TLC config, and a deterministic spec-check wrapper | Bounded election/restart/unavailability model with single-leader-per-term, committed-prefix, and monotonic-term invariants. Stateright W23 remains the executable Rust model. | No continuation is required; wider TLC bounds may run nightly. |
+| W38 executable safety specification | `docs/specs/raft-election.tla`, TLC config, and a deterministic spec-check wrapper | Structural mapping runs on every PR without Java; a dedicated pinned TLC lane proves the bounded election/restart/unavailability model and negative canary. Stateright W23 remains independent. | No continuation is required; wider TLC bounds may run nightly. |
 
 ## W1. Snapshot Immutability And Aliasing Proof
 
@@ -1328,6 +1328,18 @@ Scope rule for W29-W38:
 - Every new suite gets a falsifiability canary, deterministic seed/fixture, bounded wall-clock budget,
   and a registry entry naming local, PR, nightly, and release-proof commands.
 
+### W29-W38 Release-Gate Tiers
+
+The tiers below organize execution cost and review ownership; they do **not** make any W-item optional.
+Moving an item out of `0.64` requires an explicit scope-change commit that updates this plan, the release
+manifest, `INDEX.md`, and the public claim. A skipped or merely documented row never counts as evidence.
+
+| Tier | Work items | Required 0.64 evidence |
+|---|---|---|
+| Core deterministic safety and governance | W29-W31, W33 | Fast deterministic suites and structural meta-gates run on every PR; all canaries are proven red against their seeded defect before ship. |
+| Specialized release evidence | W32, W34-W38 | Each named fast/gated command exists and passes; W37 records one Linux resource-budget run and W38 records one pinned TLC run. These rows may use dedicated CI lanes but remain release-blocking. |
+| Explicit operational continuation | Only the boundaries named by each W-item | Mixed-version daemons, real slow-TCP/receiver-kill behavior, Kubernetes chaos, and long OS-pressure soak remain 0.66 work. Their absence narrows the 0.64 claim; it does not permit substitution with a weaker current-version or in-process result. |
+
 ### W29. Leadership Handoff And Committed-Read Safety Matrix
 
 **Principle.** Leadership change is a correctness boundary, not merely a liveness event. A slow or
@@ -1351,7 +1363,10 @@ filtering, commit snapshots, and membership proposals in
 traffic, asymmetric partitions, and minority commits in
 `crates/hydracache-cluster-raft/tests/raft_message_filter.rs:22`. There is no focused
 `MsgTransferLeader`/term-handoff test and HydraCache exposes no lease-read API. Therefore the 0.64
-claim is **committed metadata read safety**, not TiKV-style lease-read compatibility.
+claim is **committed metadata and existing session-guarantee safety**, not TiKV-style lease-read
+compatibility. Existing monotonic-read and read-your-writes contracts live in
+`crates/hydracache/tests/session_monotonic.rs` and
+`crates/hydracache/tests/read_your_writes_live.rs`; they have not been composed with leadership handoff.
 
 **Files to change.** Add `crates/hydracache-cluster-raft/tests/leadership_handoff.rs`. Extend only the
 testkit if it needs helpers to inject `MsgTransferLeader`, hold append/apply messages, and record a
@@ -1369,6 +1384,9 @@ per-term leader/commit history.
   not regress term, leader, membership epoch, commit index, or materialized metadata;
 - reject handoff to an unknown, removed, or otherwise ineligible node. Learner behavior is not claimed
   until HydraCache implements learners;
+- carry an existing session watermark across handoff and prove monotonic reads/read-your-writes never
+  serve below the pre-handoff committed stamp; this exercises the shipped session surface and does not
+  introduce or claim a lease-read API;
 - run the invariant catalog after every schedule and require one leader per term, monotonic term,
   monotonic committed prefix, and no lost committed command.
 
@@ -1376,7 +1394,8 @@ per-term leader/commit history.
 
 - `lagging_or_ineligible_transferee_never_becomes_authoritative`;
 - `leadership_handoff_preserves_committed_prefix_and_exactly_once_proposal_outcome`;
-- `old_term_traffic_after_handoff_cannot_regress_committed_metadata`.
+- `old_term_traffic_after_handoff_cannot_regress_committed_metadata`;
+- `session_guarantees_survive_leadership_handoff`.
 
 **Canary.** `canary_handoff_allows_lagging_transferee_to_serve_a_regressed_view` must make the guard red
 when the committed-prefix eligibility check is bypassed in the model fixture.
@@ -1425,6 +1444,11 @@ do not expose this on production transports.
 - drop/abort the first snapshot attempt, release all associated test resources, retry, and converge;
 - hold one receiver while the majority continues proposals: bounded progress is required and the
   delayed-message queue must remain within a stated test budget;
+- hold snapshot delivery to at least two lagging followers concurrently and assert aggregate retained
+  messages/bytes remain within a fixed fan-out budget while the leader and majority continue to commit;
+- transfer leadership while `InstallSnapshot` is in flight to a third node; the old leader must abort or
+  complete without double-apply, and the new leader must retry/continue delivery until every node
+  converges to the same committed prefix;
 - stall an invalidation subscriber while publishing beyond its ring window: publishers stay bounded,
   lag is visible, and the subscriber receives an explicit conservative resync/error signal rather than
   a silently incomplete stream;
@@ -1436,10 +1460,14 @@ do not expose this on production transports.
 - `newer_snapshot_then_delayed_older_snapshot_never_rolls_state_back`;
 - `duplicated_snapshot_is_idempotent_and_abort_releases_for_retry`;
 - `held_snapshot_receiver_does_not_freeze_majority_progress`;
+- `snapshot_fanout_to_multiple_lagging_followers_stays_within_budget`;
+- `handoff_during_inflight_snapshot_delivery_converges_without_regression`;
 - `lagged_invalidation_subscriber_fails_conservatively_without_unbounded_queue_growth`.
 
 **Canary.** `canary_snapshot_delivery_applies_a_stale_snapshot_after_a_newer_one` must violate the
 monotonic index/committed-prefix invariant.
+`canary_handoff_during_snapshot_loses_or_reapplies_committed_tail` must make the composed W29 x W30
+guard red when ownership transfer abandons the delivery without a safe retry.
 
 **DoD.**
 
@@ -1517,6 +1545,12 @@ producer version/tag/commit, artifact kind, format version, SHA-256, expected re
 write-back is supported. Use `cargo-semver-checks` (pinned) or an equivalently reviewable Rust API diff
 for published crates.
 
+**Baseline decision.** The repository already has the shipped `v0.63.0` tag, so 0.64 consumes fixtures
+generated reproducibly from that tag and records the exact source commit and toolchain. It must not use
+a current-vs-current substitute. The 0.64 release process also emits and freezes the corresponding
+0.64 fixture bundle for 0.65, establishing a one-release rolling chain without postponing the first
+enforced compatibility gate.
+
 **Required matrix:** previous supported Raft wire message -> current decoder; previous ConfState and
 snapshot -> current restore; current writer -> current reader roundtrip; unsupported future version ->
 fail loud; public API diff against the latest published baseline. Fixture regeneration must be a
@@ -1526,6 +1560,7 @@ reviewed compatibility change, never an automatic overwrite in the test.
 
 - `previous_release_raft_wire_and_snapshot_fixtures_decode_to_frozen_semantics`;
 - `unsupported_future_format_fails_loud_without_mutation`;
+- `current_release_emits_next_compat_fixture_manifest_without_overwriting_previous`;
 - `xtask compat-check` validates manifest hashes, coverage, and the API baseline.
 
 **Canary.** `canary_compat_gate_silently_regenerates_a_changed_golden` must fail when a fixture hash or
@@ -1538,9 +1573,10 @@ cargo test -p hydracache-cluster-raft --test compat_matrix --locked -j 2
 cargo run --manifest-path crates\xtask\Cargo.toml -- compat-check
 ```
 
-**Boundary.** Old daemon/new daemon and rolling-upgrade-under-writes remain 0.66 W6. If the baseline
-artifact cannot be obtained reproducibly, 0.64 must keep the compatibility claim open, not substitute
-current-version vectors.
+**Boundary.** Old daemon/new daemon and rolling-upgrade-under-writes remain 0.66 W6. If `v0.63.0`
+artifacts cannot be reproduced, 0.64 must keep W32 and the compatibility claim open, record the failed
+provenance attempt, and still emit the 0.64 bundle for the next release. It must never silently replace
+the required previous-release row with current-version vectors.
 
 ### W33. Mechanical Registry For Ignored, Env-Gated, And Feature-Gated Proofs
 
@@ -1556,6 +1592,12 @@ canaries, but not for all ignored/gated tests.
 `gated-test-check` command. Parse Rust test attributes with `syn` and Cargo manifests with structured
 APIs; do not rely on a regex-only source scan.
 
+Add `xtask release-governance-check --release 0.64` as the lightweight umbrella for structural
+release meta-gates. It validates and invokes the fast `doc-check`, `verify-no-test-features`,
+`canary-check`, `gated-test-check`, `compat-check`, and structural `raft-spec-check` entries, and proves
+their CI registration. It does not run Miri, mutation campaigns, TLC exploration, Docker, or soak; those
+remain separately recorded heavy lanes whose required green artifacts are validated by the registry.
+
 **Required registry fields:** stable id; test target/name or cfg path; reason; local command; CI job;
 `fast|nightly|manual|external` tier; required feature/env/tool; timeout; owning release; and whether a
 green run is mandatory for ship. Detect `#[ignore]`, `#[cfg(...)]` test modules/files, named environment
@@ -1566,7 +1608,8 @@ with a reason.
 
 - `gated_test_registry_covers_every_ignored_cfg_and_env_gated_test`;
 - `registry_rejects_missing_command_ci_tier_owner_or_timeout`;
-- `registry_rejects_stale_entries_that_no_longer_resolve_to_a_test`.
+- `registry_rejects_stale_entries_that_no_longer_resolve_to_a_test`;
+- `release_governance_check_rejects_an_unwired_or_missing_meta_gate`.
 
 **Canary.** An unregistered ignored fixture under `xtask` test data must make `gated-test-check` fail.
 
@@ -1575,6 +1618,7 @@ with a reason.
 ```powershell
 cargo test --manifest-path crates\xtask\Cargo.toml gated_test_registry --locked -j 2
 cargo run --manifest-path crates\xtask\Cargo.toml -- gated-test-check
+cargo run --manifest-path crates\xtask\Cargo.toml -- release-governance-check --release 0.64
 ```
 
 **CI.** Required on every PR and included in `canary-check`; no 0.66 continuation.
@@ -1602,13 +1646,15 @@ schedule DSL and deterministic seeds. Reuse the existing cache API and clock/tes
 **Required invariants:** no stale resurrection after explicit/tag invalidation; bounded loader calls;
 cancelled/failed loader does not poison future load; expiry and refresh do not return a value older
 than the last committed invalidation fence; capacity pressure does not leak in-flight work or panic;
-same seed yields the same trace and failing seeds shrink/freeze into W19.
+same seed yields the same trace and failing seeds shrink/freeze into W19; a mass same-tick expiry storm
+does not panic, starve unrelated operations, or leave timer-wheel/capacity accounting inconsistent.
 
 **Required tests:**
 
 - `cache_core_matrix_preserves_invalidation_and_singleflight_invariants`;
 - `loader_failure_cancellation_expiry_and_capacity_pressure_recover`;
-- `cache_core_matrix_is_seed_deterministic_and_shrinkable`.
+- `cache_core_matrix_is_seed_deterministic_and_shrinkable`;
+- `mass_same_tick_expiry_does_not_panic_or_starve`.
 
 **Canary.** `canary_cache_matrix_allows_loader_completion_to_resurrect_invalidated_value`.
 
@@ -1755,11 +1801,12 @@ committed prefix never shrinks or conflicts, applied index never exceeds commit,
 identity matches node/cluster, and a removed node cannot regain authority from stale traffic. A bounded
 liveness property requires eventual leader/convergence only after faults stop and quorum exists.
 
-**Required checks:** fast TLC scope (3 nodes, one restart, bounded messages) on PR/manual infrastructure
-where Java/TLC is available; wider 4-node bounds nightly; structural `xtask` validation always runs and
-verifies that every spec invariant maps to an invariant-catalog id and at least one implementation test.
-Pin the TLC distribution and checksum. Skip loud when TLC is absent locally, but a release cannot claim
-W38 until one green pinned TLC run is recorded.
+**Required checks:** structural `xtask` validation runs on every local/PR governance pass without Java
+and verifies that every spec invariant maps to an invariant-catalog id and at least one implementation
+test. A dedicated CI lane runs fast TLC scope (3 nodes, one restart, bounded messages) and the negative
+canary with a pinned distribution/checksum; wider 4-node bounds run nightly. Local TLC may skip loud when
+Java is absent, but a release cannot claim W38 until one green pinned fast TLC run and canary artifact are
+recorded. Structural validation is not a substitute for TLC execution.
 
 **Canary.** A separate canary config/model mutation that permits two leaders in one term must produce a
 TLC counterexample; the main model must never import the canary mutation.
@@ -1767,6 +1814,7 @@ TLC counterexample; the main model must never import the canary mutation.
 **DoD.**
 
 ```powershell
+cargo run --manifest-path crates\xtask\Cargo.toml -- raft-spec-check --structural
 cargo run --manifest-path crates\xtask\Cargo.toml -- raft-spec-check --scope fast
 cargo run --manifest-path crates\xtask\Cargo.toml -- raft-spec-check --scope canary
 ```
@@ -1777,6 +1825,9 @@ protocol artifact and traceability gate; neither green result may be used to cla
 ## Final Release Decision
 
 Ship `0.64.0` only when:
+
+- both W29-W38 gate tiers are complete: the split organizes fast versus specialized CI evidence and
+  does not permit any listed W-item to be deferred without an explicit release-scope change;
 
 - snapshot exports are proven immutable under later live mutations;
 - mid-membership snapshot restore plus committed-tail replay converges to the authoritative member set;
@@ -1808,12 +1859,14 @@ Ship `0.64.0` only when:
   (W27, pgcat/Pingora/HikariCP); differential across modes plus Redis/Hazelcast-mined corpora agree with
   the oracle and lose no committed write (W28, DataFusion/Redis/Hazelcast);
 - the Raft-focused second pass holds: leadership handoff preserves the committed prefix and rejects
-  lagging/ineligible authority (W29); delayed, duplicated, stale, and aborted snapshot delivery cannot
-  roll state back, double-apply, freeze consensus, or grow queues without bound (W30); every durable
+  lagging/ineligible authority while existing session guarantees remain monotonic (W29); delayed,
+  duplicated, stale, aborted, multi-follower, and handoff-during-delivery snapshot schedules cannot roll
+  state back, double-apply, freeze consensus, or grow queues without bound (W30); every durable
   corruption/recovery corpus row has an explicit conservative outcome and failed recovery preserves the
   last good state (W31); previous-version wire/snapshot fixtures and published API baselines pass without
-  silent golden regeneration (W32); every ignored/env/cfg-gated proof is mechanically registered and
-  mapped to a real CI command (W33); the cache-core concurrency matrix preserves invalidation,
+  silent golden regeneration and 0.64 emits the frozen next-release bundle (W32); every ignored/env/
+  cfg-gated proof is mechanically registered, mapped to a real CI command, and covered by the umbrella
+  governance check (W33); the cache-core concurrency matrix preserves invalidation,
   single-flight, expiry, and capacity invariants (W34); the adapter corpus agrees across every claimed
   backend and unsupported rows fail loud (W35); generated config/security/operator combinations keep
   precedence, redaction, and secure-default invariants (W36); daemon churn returns logical and available

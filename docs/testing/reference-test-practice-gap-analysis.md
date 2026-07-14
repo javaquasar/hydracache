@@ -470,24 +470,33 @@ product feature; 0.66 owns the stronger process and infrastructure continuation.
 
 ### Required in 0.64
 
-- W29: leadership handoff and committed-read monotonicity, explicitly without a
-  lease-read API claim.
+The release gates are split by execution cost, not optionality. W29-W31 and W33
+form the core deterministic/structural tier; W32 and W34-W38 form specialized
+release-evidence lanes. Every row remains release-blocking until its named
+minimum proof is green. Deferral requires an explicit plan/manifest/INDEX claim
+change rather than a silent `0.64.x` exception.
+
+- W29: leadership handoff plus committed-read and existing session-guarantee
+  monotonicity, explicitly without a lease-read API claim.
 - W30: delayed/duplicated/stale/aborted Raft snapshot delivery and in-process
-  invalidation backpressure.
+  invalidation backpressure, including multi-follower fan-out and leadership
+  handoff while snapshot delivery is in flight.
 - W31: checked-in durable corruption and interrupted-recovery corpus for formats
   that exist in 0.64.
-- W32: previous-release wire/snapshot fixture consumption and public Rust API
-  compatibility diff.
+- W32: reproducible `v0.63.0` wire/snapshot fixture consumption, public Rust API
+  compatibility diff, and generation of the frozen 0.64 bundle for 0.65.
 - W33: machine-checkable registry for every ignored, env-gated, and cfg-gated
-  proof.
-- W34: cache-core get/load/refresh/invalidate/expiry/capacity race matrix.
+  proof plus a lightweight umbrella that validates all release meta-gates and
+  their CI wiring without pretending to execute heavy lanes.
+- W34: cache-core get/load/refresh/invalidate/expiry/capacity race matrix,
+  including mass same-tick expiry stress.
 - W35: declarative adapter behavior corpus, with SQLite fast and optional rows
   registered skip-loud.
 - W36: generated config/security/operator serialization properties where pure
   seams exist.
 - W37: portable daemon resource recovery and one gated Linux FD/RSS proof.
-- W38: executable bounded election/recovery specification with a negative
-  counterexample canary and traceability to W21/W23.
+- W38: always-on structural spec traceability plus a dedicated pinned TLC CI
+  lane with a negative counterexample canary; neither substitutes for W21/W23.
 
 These rows remain plans until their named artifacts, tests, canaries, and CI
 commands exist and pass. Adding them to 0.64 does not convert a planned row into

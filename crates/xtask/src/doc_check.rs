@@ -17,6 +17,9 @@
 //!   header agree with its manifest `status` (TD-0006). A header that drifts
 //!   (e.g. a shipped plan still saying "planned") fails the gate instead of
 //!   passing silently. Plans that use a prose status (drafts) are skipped.
+//! - when a release declares `work_items`, the manifest list exactly matches
+//!   the plan's W-item headings and `INDEX.md` carries the generated coverage
+//!   marker, so a plan expansion cannot disappear from the release registry.
 //! - every shipped non-legacy release in `releases.toml` has a matching
 //!   `docs/releases/<version>.md` note so GitHub release publishing cannot pass
 //!   with missing public notes.
@@ -71,6 +74,8 @@ struct Release {
     depends_on: Vec<String>,
     #[serde(default)]
     networked_control_plane: Option<bool>,
+    #[serde(default)]
+    work_items: Vec<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -245,6 +250,7 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     }
 
     problems.extend(check_plan_header_status(root, &manifest.release)?);
+    problems.extend(check_release_work_items(root, &manifest.release)?);
     problems.extend(check_release_notes_for_shipped_releases(
         root,
         &manifest.release,
@@ -256,6 +262,122 @@ pub fn check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     problems.extend(check_redis_compat_docs_examples(root)?);
 
     Ok(problems)
+}
+
+fn check_release_work_items(
+    root: &Path,
+    releases: &[Release],
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let mut problems = Vec::new();
+    let index_path = root.join("docs/plans/INDEX.md");
+    let index = if releases
+        .iter()
+        .any(|release| !release.work_items.is_empty())
+    {
+        match fs::read_to_string(&index_path) {
+            Ok(text) => Some(text),
+            Err(err) => {
+                problems.push(format!(
+                    "docs/plans/INDEX.md: required by release work_items but could not be read: {err}"
+                ));
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    for release in releases {
+        if release.work_items.is_empty() {
+            continue;
+        }
+
+        let mut declared = BTreeSet::new();
+        for item in &release.work_items {
+            if !is_work_item_id(item) {
+                problems.push(format!(
+                    "{}: invalid work item '{}' (expected W<number> with an optional lowercase suffix)",
+                    release.file, item
+                ));
+            }
+            if !declared.insert(item.as_str()) {
+                problems.push(format!(
+                    "{}: duplicate work item '{}' in releases.toml",
+                    release.file, item
+                ));
+            }
+        }
+
+        let plan_path = root.join(&release.file);
+        if plan_path.is_file() {
+            let plan = fs::read_to_string(&plan_path)
+                .map_err(|err| format!("reading {}: {err}", plan_path.display()))?;
+            let headings = extract_work_item_headings(&plan);
+
+            for item in &declared {
+                if !headings.contains(*item) {
+                    problems.push(format!(
+                        "{}: manifest work item '{}' has no matching plan heading",
+                        release.file, item
+                    ));
+                }
+            }
+            for item in headings {
+                if !declared.contains(item.as_str()) {
+                    problems.push(format!(
+                        "{}: plan work item '{}' is missing from releases.toml work_items",
+                        release.file, item
+                    ));
+                }
+            }
+        }
+
+        if let Some(index) = &index {
+            let marker = release_work_item_marker(release);
+            if !index.contains(&marker) {
+                problems.push(format!(
+                    "docs/plans/INDEX.md: missing release work-item marker '{marker}'"
+                ));
+            }
+        }
+    }
+
+    Ok(problems)
+}
+
+fn extract_work_item_headings(text: &str) -> BTreeSet<String> {
+    text.lines()
+        .filter_map(|line| {
+            let line = line.trim_start();
+            let hash_count = line.chars().take_while(|ch| *ch == '#').count();
+            if !(2..=4).contains(&hash_count) {
+                return None;
+            }
+            let heading = line[hash_count..].trim_start();
+            let item = heading.split_once('.')?.0;
+            is_work_item_id(item).then(|| item.to_owned())
+        })
+        .collect()
+}
+
+fn is_work_item_id(item: &str) -> bool {
+    let Some(rest) = item.strip_prefix('W') else {
+        return false;
+    };
+    let digit_count = rest.chars().take_while(|ch| ch.is_ascii_digit()).count();
+    if digit_count == 0 {
+        return false;
+    }
+    let suffix = &rest[digit_count..];
+    suffix.is_empty() || (suffix.len() == 1 && suffix.as_bytes()[0].is_ascii_lowercase())
+}
+
+fn release_work_item_marker(release: &Release) -> String {
+    format!(
+        "<!-- release-work-items:{}={} -->",
+        release.version,
+        release.work_items.join(",")
+    )
 }
 
 fn check_release_notes_for_shipped_releases(
