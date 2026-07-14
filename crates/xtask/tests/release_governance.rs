@@ -60,4 +60,15 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("env.hydracache-grid-scope")));
+
+    let broken = workflow.replacen(
+        "cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_config_parse --manifest-path fuzz/Cargo.toml -- -max_total_time=60",
+        1,
+    );
+    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    assert!(problems.iter().any(|problem| {
+        problem.contains("--manifest-path after the target")
+            || problem.contains("fuzz_config_parse -- -max_total_time=60")
+    }));
 }

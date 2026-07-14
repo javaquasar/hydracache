@@ -202,7 +202,35 @@ pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
             problems.push(format!("release execution matrix is missing `{required}`"));
         }
     }
+    problems.extend(fuzz_nightly_wiring_problems(text));
     Ok(problems)
+}
+
+fn fuzz_nightly_wiring_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "cargo install cargo-fuzz --version 0.13.2 --locked",
+        "working-directory: fuzz",
+        "cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60",
+        "cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!("fuzz nightly wiring is missing `{required}`"));
+        }
+    }
+    if text.contains("fuzz run fuzz_config_parse --manifest-path")
+        || text.contains("fuzz run fuzz_kv_codec --manifest-path")
+        || text.contains("fuzz run fuzz_resp_command --manifest-path")
+        || text.contains("fuzz run fuzz_snapshot_decode --manifest-path")
+    {
+        problems.push(
+            "fuzz nightly passes --manifest-path after the target; cargo-fuzz parses that position as corpus/libFuzzer arguments"
+                .to_owned(),
+        );
+    }
+    problems
 }
 
 pub fn ci_wiring_problems(root: &Path, gates: &[GateEntry]) -> Result<Vec<String>, Box<dyn Error>> {

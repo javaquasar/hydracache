@@ -447,7 +447,7 @@ jobs:
             echo "available=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          cargo install cargo-fuzz --locked
+          cargo install cargo-fuzz --version 0.13.2 --locked
           if [ "$?" -ne 0 ]; then
             echo "::warning::cargo-fuzz unavailable; skipping fuzz-nightly"
             echo "available=false" >> "$GITHUB_OUTPUT"
@@ -457,11 +457,12 @@ jobs:
 
       - name: Run time-boxed fuzz targets
         if: steps.fuzz-runtime.outputs.available == 'true'
+        working-directory: fuzz
         run: |
-          cargo +nightly fuzz run fuzz_config_parse --manifest-path fuzz/Cargo.toml -- -max_total_time=60
-          cargo +nightly fuzz run fuzz_kv_codec --manifest-path fuzz/Cargo.toml -- -max_total_time=60
-          cargo +nightly fuzz run fuzz_resp_command --manifest-path fuzz/Cargo.toml -- -max_total_time=60
-          cargo +nightly fuzz run fuzz_snapshot_decode --manifest-path fuzz/Cargo.toml -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
 
   raft-mutation-testing:
     name: Raft Mutation Testing
