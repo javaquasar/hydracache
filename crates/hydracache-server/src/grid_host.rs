@@ -19,8 +19,8 @@ use hydracache::{
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
-    DurableRaftLogDirectory, DurableRaftLogStore, RaftMessageSink, RaftMetadataRuntime,
-    RaftMetadataRuntimeConfig, RaftWireMessage,
+    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftWireMessage,
+    SledRaftLogStore,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
@@ -43,7 +43,7 @@ const NODE_IDENTITY_FILE: &str = "node-identity.json";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
-type NetworkedRaftRuntime = RaftMetadataRuntime<DurableRaftLogStore>;
+type NetworkedRaftRuntime = RaftMetadataRuntime<SledRaftLogStore>;
 type SharedRaftPeers = Arc<RwLock<BTreeMap<u64, RaftPeer>>>;
 type SharedRaftVoterSet = Arc<RwLock<BTreeSet<u64>>>;
 
@@ -145,9 +145,9 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         )?
         .ticks(topology.joiner_election_tick(), 1),
     };
-    let raft = Arc::new(RaftMetadataRuntime::durable_with_config(
+    let raft = Arc::new(RaftMetadataRuntime::sled_with_config(
         raft_config,
-        DurableRaftLogDirectory::new(),
+        &raft_log_dir,
     )?);
     let discovery = Arc::new(
         ChitchatDiscovery::spawn_udp(

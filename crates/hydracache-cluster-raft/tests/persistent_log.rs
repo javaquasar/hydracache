@@ -4,6 +4,17 @@ use raft::eraftpb::{ConfState, Entry, Snapshot};
 use raft::storage::{GetEntriesContext, Storage};
 use raft::{Error as RaftError, StorageError};
 
+#[cfg(feature = "sled-log-store")]
+fn temp_sled_path(name: &str) -> std::path::PathBuf {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    std::env::temp_dir().join(format!("hydracache-{name}-{unique}"))
+}
+
 fn entry(index: u64, term: u64, data: &'static [u8]) -> Entry {
     Entry {
         index,
@@ -140,4 +151,32 @@ fn persistent_log_sled_log_store_feature_example_compiles_and_behaves() {
     store.append(&[entry(1, 1, b"feature")]).unwrap();
 
     assert_eq!(store.last_index().unwrap(), 1);
+}
+
+#[cfg(feature = "sled-log-store")]
+#[tokio::test]
+async fn sled_runtime_reopens_committed_log_before_raw_node_initialization() {
+    use hydracache_cluster_raft::RaftMetadataRuntimeConfig;
+
+    let path = temp_sled_path("runtime-reopen");
+    let config = RaftMetadataRuntimeConfig::single_node("restart", 1);
+    let runtime = RaftMetadataRuntime::sled_with_config(config.clone(), &path).unwrap();
+    runtime
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+        .await
+        .unwrap();
+    let before = runtime.snapshot();
+    assert!(before.commit_index > 0);
+    drop(runtime);
+
+    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let after = reopened.snapshot();
+    assert!(after.commit_index >= before.commit_index);
+    assert_eq!(after.commands_committed, before.commands_committed);
+    assert!(reopened
+        .members()
+        .iter()
+        .any(|member| member.node_id.as_str() == "member-a"));
+    drop(reopened);
+    let _ = std::fs::remove_dir_all(path);
 }

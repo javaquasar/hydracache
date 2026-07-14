@@ -783,6 +783,14 @@ impl SledRaftLogStore {
         }
     }
 
+    /// Initialize raft configuration state when creating a fresh store.
+    pub fn initialize_with_conf_state<T>(&self, conf_state: T)
+    where
+        ConfState: From<T>,
+    {
+        self.inner.initialize_with_conf_state(conf_state);
+    }
+
     fn replay_from_sled(&self) -> RaftStoreResult<()> {
         if let Some(bytes) = self.db.get(SLED_HARD_STATE_KEY).map_err(sled_error)? {
             self.inner.save_hard_state(&decode_hard_state(&bytes)?)?;

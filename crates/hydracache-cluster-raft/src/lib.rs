@@ -5,9 +5,10 @@
 //! `raft-rs` [`raft::RawNode`] behind that trait while keeping the local cache
 //! crate free from Raft dependencies.
 //!
-//! The current runtime is intentionally single-node and in-memory. It still
-//! drives the real raft-rs lifecycle: campaign, propose, `Ready`, stable-log
-//! append, and committed-entry application.
+//! The embedded default can run single-node and in-memory, while the standalone
+//! server opens the feature-gated sled store for process-restart durability.
+//! Both paths drive the real raft-rs lifecycle: campaign, propose, `Ready`,
+//! stable-log append, and committed-entry application.
 //!
 //! Applied commands are stored as [`RaftMetadataCommandEnvelope`] values with a
 //! stable command id. Duplicate command ids are reported as
@@ -87,6 +88,8 @@
 
 use std::collections::BTreeSet;
 use std::fmt;
+#[cfg(feature = "sled-log-store")]
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use hydracache::{
@@ -748,6 +751,30 @@ impl RaftMetadataRuntime<DurableRaftLogStore> {
             .is_empty()
         {
             storage.initialize_with_conf_state((config.voter_ids().to_vec(), vec![]));
+        }
+        Self::build_with_storage(config, storage, None)
+    }
+}
+
+#[cfg(feature = "sled-log-store")]
+impl RaftMetadataRuntime<SledRaftLogStore> {
+    /// Open or create a process-restart durable runtime at `path`.
+    pub fn sled_with_config(
+        config: RaftMetadataRuntimeConfig,
+        path: impl AsRef<Path>,
+    ) -> CacheResult<Self> {
+        let storage = SledRaftLogStore::open(path).map_err(to_cache_error)?;
+        if storage
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .voters
+            .is_empty()
+        {
+            storage.initialize_with_conf_state((config.voter_ids().to_vec(), vec![]));
+            storage
+                .save_conf_state(&storage.initial_state().map_err(to_cache_error)?.conf_state)
+                .map_err(to_cache_error)?;
         }
         Self::build_with_storage(config, storage, None)
     }
