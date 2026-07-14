@@ -70,12 +70,33 @@ function = "snapshot_replay_manifest_contains_contradiction_ledger_fields"
 
 [[work_item]]
 id = "W5a"
-required_sources = []
-required_tests = []
+required_sources = [
+    "crates/hydracache-server/src/grid_host.rs",
+    "crates/hydracache-server/tests/daemon_process_cluster.rs",
+    "crates/hydracache-server/tests/support/daemon_cluster.rs",
+    "docs/GATES.md",
+    "docs/TESTING.md",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+gated_gate_ids = ["env.hydracache-run-daemon-process-e2e"]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/src/grid_host.rs"
+function = "http_raft_sink_times_out_when_peer_accepts_without_reply"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/src/grid_host.rs"
+function = "raft_drive_continues_after_bounded_peer_send_timeout"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/daemon_process_cluster.rs"
+function = "suspended_leader_resumes_as_follower_without_split_brain"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/daemon_process_cluster.rs"
+function = "frozen_peer_send_failure_is_replayable"
 
 [[work_item]]
 id = "W6"
