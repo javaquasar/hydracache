@@ -1970,8 +1970,10 @@ test process; an explicit runtime value remains a supported override.
 RESP connections, cancelled admin requests, and a held/released snapshot-message schedule; quiesce;
 sample multiple times. Assert no monotonic handle/FD growth, active logical counters return to baseline,
 RSS stays within a documented noise budget, and the cluster still commits after churn. Before selecting
-or restarting a follower, use the bounded `DaemonCluster::wait_for_shape` contract so instrumented and
-MSRV builds must observe one converged leader rather than racing a transient election. Emit samples,
+or restarting a follower, require all three daemons through the bounded
+`DaemonCluster::wait_for_responsive_shape` contract. Select the sole leader from the union of daemon
+observations rather than assuming the first observer has already learned it; a follower may briefly
+report `leader=None` while the other converged statuses identify the same leader. Emit samples,
 platform, seed, and budget to JSON.
 
 **Required tests:**

@@ -10,7 +10,9 @@ use std::time::{Duration, Instant};
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
 use raft::eraftpb::MessageType;
 use serde::{Deserialize, Serialize};
-use support::daemon_cluster::{resolve_server_binary, DaemonCluster, TestResult};
+use support::daemon_cluster::{
+    leaders, resolve_server_binary, DaemonCluster, DaemonStatus, TestResult,
+};
 
 const SEED: u64 = 0x0D64_0037;
 const PORTABLE_ARTIFACT: &str = "daemon-resource-budget-portable.json";
@@ -166,6 +168,17 @@ fn cancel_admin_request(addr: SocketAddr) -> TestResult {
     Ok(())
 }
 
+fn sole_observed_leader(statuses: &[DaemonStatus]) -> TestResult<String> {
+    let leaders = leaders(statuses);
+    if leaders.len() != 1 {
+        return Err(format!(
+            "stable cluster shape must expose exactly one leader; statuses={statuses:?}"
+        )
+        .into());
+    }
+    Ok(leaders.into_iter().next().expect("leader set is non-empty"))
+}
+
 fn churn_daemon_cluster(
     cluster: &mut DaemonCluster,
     rounds: usize,
@@ -185,11 +198,8 @@ fn churn_daemon_cluster(
         let _ = cluster.admin_status(round % 3)?;
 
         samples.push(portable_sample(cluster, 0, 0));
-        let statuses = cluster.wait_for_shape(3, 3)?;
-        let leader = statuses[0]
-            .leader
-            .clone()
-            .ok_or("stable cluster shape has no leader before follower restart")?;
+        let statuses = cluster.wait_for_responsive_shape(3, 3, 3)?;
+        let leader = sole_observed_leader(&statuses)?;
         let node_ids = cluster.node_ids();
         let followers = node_ids
             .iter()
@@ -200,7 +210,7 @@ fn churn_daemon_cluster(
         cluster.kill(follower)?;
         samples.push(portable_sample(cluster, 0, 0));
         cluster.restart(follower)?;
-        cluster.wait_for_shape(3, 3)?;
+        cluster.wait_for_responsive_shape(3, 3, 3)?;
         cluster.wait_for_running_children(3)?;
         samples.push(portable_sample(cluster, 0, 0));
     }
@@ -239,7 +249,7 @@ async fn exercise_held_snapshot_schedule() -> usize {
 #[tokio::test]
 async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestResult {
     let mut cluster = DaemonCluster::start_bootstrap_with_redis(3, "w37-portable")?;
-    cluster.wait_for_shape(3, 3)?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     let mut samples = vec![portable_sample(&mut cluster, 0, 0)];
 
     churn_daemon_cluster(&mut cluster, 3, &mut samples)?;
@@ -371,6 +381,21 @@ fn daemon_harness_falls_back_to_the_compile_time_binary_for_msrv_cargo() {
         "unexpected server binary path: {}",
         binary.display()
     );
+}
+
+#[test]
+fn leader_selection_accepts_a_lagging_first_observer() {
+    let status = |leader: Option<&str>| DaemonStatus {
+        leader: leader.map(ToOwned::to_owned),
+        term: 7,
+        members: 3,
+        voters: 3,
+        quorum_ok: true,
+        draining: false,
+    };
+    let statuses = [status(None), status(Some("node-2")), status(Some("node-2"))];
+
+    assert_eq!(sole_observed_leader(&statuses).unwrap(), "node-2");
 }
 
 #[test]
