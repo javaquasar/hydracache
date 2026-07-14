@@ -690,13 +690,19 @@ The W17 canary registry is the machine-readable map from proof item to falsifier
 ```powershell
 cargo test -p xtask --test canary_check --locked
 cargo xtask canary-check
+cargo xtask canary-sweep --release 0.64 --tier fast
 ```
 
 `docs/testing/canary-registry.json` must point every implemented W-item at a real
-guard function and a real canary function. Each entry also records `red_evidence`
-and `makes_guard_fail=true`; an inert canary entry is rejected by
-`canary_registry_lists_a_canary_that_does_not_fail_its_guard`. W18-W21 must add
-their own registry entries in the same commit that introduces their tests.
+guard function and a real canary function. Schema v2 also stores separate normal
+and defect-enabled commands, defect id, exact failure signature, timeout, tier,
+and evidence artifact. The dynamic runner first requires the normal guard to
+execute at least one test and pass, then requires the canary to exit non-zero
+with the registered invariant signature. A green canary, timeout, compile error,
+unrelated panic, platform skip, or zero-test command is not red evidence.
+Receipts under `target/release-evidence/canaries/` bind the command, defect,
+registry, output, and source commit. Scheduled/dispatch CI runs `--tier all` for
+the Loom, TSan, and TLC rows; fast CI runs `--tier fast` on every change.
 
 The W18 nemesis determinism checks are part of the existing fast nemesis test:
 

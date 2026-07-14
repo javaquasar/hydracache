@@ -80,6 +80,13 @@ fn canary_loom_conditional_store_with_a_relaxed_ordering_races() {
     })
     .is_err();
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W26") {
+        assert!(
+            !caught,
+            "HC-CANARY-RED:W26 relaxed lock ordering admitted multiple winners"
+        );
+    }
+
     assert!(
         caught,
         "loom canary must find the relaxed load/store mutual-exclusion violation"

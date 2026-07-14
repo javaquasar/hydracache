@@ -168,6 +168,12 @@ fn backward_clock_jump_preserves_fence_monotonicity_and_no_zombie_holder() {
 fn canary_clock_skew_allows_two_leaders() {
     let mut leaders = BTreeMap::new();
     leaders.insert(7, BTreeSet::from([1, 2]));
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W14") {
+        assert!(
+            leaders.values().all(|term_leaders| term_leaders.len() <= 1),
+            "HC-CANARY-RED:W14 two leaders observed in one term"
+        );
+    }
     assert!(
         leaders.values().any(|term_leaders| term_leaders.len() > 1),
         "canary fixture must model the forbidden same-term two-leader outcome"

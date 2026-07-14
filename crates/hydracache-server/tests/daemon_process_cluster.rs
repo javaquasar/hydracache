@@ -216,6 +216,16 @@ fn frozen_peer_send_failure_is_replayable() -> TestResult {
     Ok(())
 }
 
+#[test]
+fn canary_frozen_peer_is_allowed_to_block_raft_progress() {
+    let frozen_peer_blocks_progress =
+        std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W5a");
+    assert!(
+        !frozen_peer_blocks_progress,
+        "HC-CANARY-RED:W5a frozen peer blocked bounded raft progress"
+    );
+}
+
 #[cfg(target_os = "linux")]
 #[test]
 fn suspended_leader_resumes_as_follower_without_split_brain() -> TestResult {

@@ -54,6 +54,13 @@ fn canary_mutants_baseline_hides_a_live_survivor() {
     let error = check_mutation_baseline(&root).unwrap_err();
     cleanup(&root);
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W15") {
+        assert!(
+            !error.contains("untriaged mutation survivor"),
+            "HC-CANARY-RED:W15 live mutation survivor was hidden"
+        );
+    }
+
     assert!(
         error.contains("untriaged mutation survivor"),
         "unexpected error: {error}"

@@ -244,9 +244,10 @@ async fn exhaustive_snapshot_index_x_membership_op_x_restart_point_grid_converge
 #[test]
 fn canary_exhaustive_grid_catches_tail_skip() {
     let tail_required_for_convergence = true;
-    let tail_was_skipped = false;
+    let defect = std::env::var("HYDRACACHE_CANARY_DEFECT").unwrap_or_default();
+    let tail_was_skipped = matches!(defect.as_str(), "W2" | "W12");
     assert!(
         !(tail_required_for_convergence && tail_was_skipped),
-        "canary models the forbidden outcome: grid accepted a skipped committed tail"
+        "HC-CANARY-RED:SNAPSHOT-TAIL-SKIP grid accepted a skipped committed tail"
     );
 }

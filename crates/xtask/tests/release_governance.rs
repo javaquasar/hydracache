@@ -20,6 +20,12 @@ fn release_governance_check_rejects_an_unwired_or_missing_meta_gate() {
     let mut gate = registry.gate[0].clone();
     gate.ci.job = "missing-job".to_owned();
     let problems = xtask::release_governance::ci_wiring_problems(&root, &[gate]).unwrap();
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W6b") {
+        assert!(
+            problems.is_empty(),
+            "HC-CANARY-RED:W6b release meta-gate was not wired into CI"
+        );
+    }
     assert!(problems
         .iter()
         .any(|problem| problem.contains("missing job")));
@@ -27,6 +33,12 @@ fn release_governance_check_rejects_an_unwired_or_missing_meta_gate() {
     let mut gate = registry.gate[0].clone();
     gate.ci.step = "Missing step".to_owned();
     let problems = xtask::release_governance::ci_wiring_problems(&root, &[gate]).unwrap();
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W6b") {
+        assert!(
+            problems.is_empty(),
+            "HC-CANARY-RED:W6b release meta-gate step was not wired into CI"
+        );
+    }
     assert!(problems
         .iter()
         .any(|problem| problem.contains("missing step")));

@@ -105,6 +105,20 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         raft_spec_check::structural_check(root)?,
     ));
     report.completed_checks += 1;
+
+    let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
+    for required in [
+        "canary-sweep --release 0.64 --tier fast",
+        "dynamic-canary-sweep:",
+        "canary-sweep --release 0.64 --tier all",
+    ] {
+        if !workflow.contains(required) {
+            report
+                .problems
+                .push(format!("canary-sweep CI wiring is missing `{required}`"));
+        }
+    }
+    report.completed_checks += 1;
     Ok(report)
 }
 

@@ -158,7 +158,14 @@ fn canary_handoff_allows_lagging_transferee_to_serve_a_regressed_view() {
             ),
         ]),
     };
-    assert!(cluster_invariant_violations(&view)
+    let violations = cluster_invariant_violations(&view);
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W29") {
+        assert!(
+            violations.is_empty(),
+            "HC-CANARY-RED:W29 leadership handoff served a regressed committed view"
+        );
+    }
+    assert!(violations
         .iter()
         .any(|violation| violation.contains("lost committed")));
 }

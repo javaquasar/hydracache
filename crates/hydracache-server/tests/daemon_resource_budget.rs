@@ -368,6 +368,13 @@ fn canary_resource_tracker_leaks_one_connection_or_child_handle() {
         tracked_connections: 1,
         ..ResourceSample::default()
     };
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W37") {
+        assert!(
+            leaked.running_children <= baseline.running_children
+                && leaked.tracked_connections <= baseline.tracked_connections,
+            "HC-CANARY-RED:W37 daemon resource leak exceeded baseline"
+        );
+    }
     assert!(
         leaked.running_children > baseline.running_children
             || leaked.tracked_connections > baseline.tracked_connections,

@@ -75,6 +75,12 @@ fn canary_checker_accepts_a_known_nonlinearizable_history() {
         "canary fixture must model an oracle that accepts the bad history"
     );
     let report = LinearizabilityChecker.check(&history);
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W25") {
+        assert!(
+            report.is_ok(),
+            "HC-CANARY-RED:W25 oracle accepted a non-linearizable history"
+        );
+    }
     assert!(
         !report.is_ok(),
         "the real W25 checker must reject the same non-linearizable history"

@@ -152,6 +152,9 @@ async fn postgres_docker_executes_adapter_behavior_corpus_when_claimed() {
 #[test]
 fn canary_adapter_runner_treats_rolled_back_write_as_committed() {
     let transaction_rolled_back = true;
-    let invalidation_emitted = false;
-    assert!(!(transaction_rolled_back && invalidation_emitted));
+    let invalidation_emitted = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W35");
+    assert!(
+        !(transaction_rolled_back && invalidation_emitted),
+        "HC-CANARY-RED:W35 rolled-back adapter write emitted invalidation"
+    );
 }

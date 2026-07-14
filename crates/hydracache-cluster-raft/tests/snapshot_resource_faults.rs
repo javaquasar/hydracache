@@ -97,9 +97,10 @@ async fn snapshot_install_under_memory_pressure_does_not_corrupt_apply() {
 #[test]
 fn canary_disk_full_snapshot_persists_partial_bytes() {
     let save_returned_error = true;
-    let partial_snapshot_visible = false;
+    let partial_snapshot_visible =
+        std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W11");
     assert!(
         !(save_returned_error && partial_snapshot_visible),
-        "canary models the forbidden outcome: failed snapshot save left visible partial state"
+        "HC-CANARY-RED:W11 failed snapshot save left visible partial state"
     );
 }

@@ -80,6 +80,13 @@ async fn duplicate_reordered_proposal_is_idempotent_after_snapshot() {
 fn canary_confchange_double_applies_on_retry() {
     let duplicated_voter_log = [1, 2, 3, 4, 4];
     let unique_voters = duplicated_voter_log.into_iter().collect::<BTreeSet<_>>();
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W13") {
+        assert_eq!(
+            duplicated_voter_log.len(),
+            unique_voters.len(),
+            "HC-CANARY-RED:W13 ConfChange applied twice on retry"
+        );
+    }
     assert_ne!(
         duplicated_voter_log.len(),
         unique_voters.len(),

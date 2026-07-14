@@ -198,6 +198,9 @@ fn failed_recovery_leaves_last_good_snapshot_reopenable() {
 fn canary_recovery_accepts_valid_checksum_for_the_wrong_node() {
     let checksum_valid = true;
     let identity_matches = false;
-    let activated = false;
-    assert!(!(checksum_valid && !identity_matches && activated));
+    let activated = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W31");
+    assert!(
+        !(checksum_valid && !identity_matches && activated),
+        "HC-CANARY-RED:W31 snapshot for the wrong node was activated"
+    );
 }

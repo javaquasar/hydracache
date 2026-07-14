@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     match args.next().as_deref() {
         Some("bench-budget") => xtask::bench_budget::run(args.collect())?,
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
+        Some("canary-sweep") => xtask::canary_sweep::run(args.collect())?,
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
         Some("doc-check") => xtask::doc_check::run(args.collect())?,
         Some("durable-inspect") => xtask::durable_inspect::run(args.collect())?,
@@ -37,6 +38,7 @@ fn print_usage() {
          cargo xtask verify        # run the fast release gates (see docs/GATES.md)\n  \
          cargo xtask verify-no-test-features  # ensure test-only features/deps are absent from release graphs\n  \
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
+         cargo xtask canary-sweep --release 0.64 --tier <fast|all>  # execute expected-red canary proofs\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
          cargo xtask doc-check     # validate docs/plans/releases.toml (RULES R-11)\n  \
          cargo xtask durable-inspect <store-dir>  # dump verified durable value records as JSON\n  \

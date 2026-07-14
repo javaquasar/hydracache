@@ -34,6 +34,13 @@ fn fuzz_corpus_regression_replays_every_committed_seed_without_panic_or_unbounde
 #[test]
 fn canary_fuzz_corpus_regression_is_not_actually_executed() {
     let executed_by_broken_runner = 0usize;
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W24") {
+        assert_eq!(
+            executed_by_broken_runner,
+            committed_seed_count(),
+            "HC-CANARY-RED:W24 committed fuzz corpus was not replayed"
+        );
+    }
     assert_ne!(
         executed_by_broken_runner,
         committed_seed_count(),

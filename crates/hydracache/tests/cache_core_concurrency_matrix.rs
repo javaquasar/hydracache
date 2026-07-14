@@ -252,6 +252,9 @@ async fn mass_same_tick_expiry_does_not_panic_or_starve() {
 #[test]
 fn canary_cache_matrix_allows_loader_completion_to_resurrect_invalidated_value() {
     let invalidated_before_completion = true;
-    let stale_value_stored = false;
-    assert!(!(invalidated_before_completion && stale_value_stored));
+    let stale_value_stored = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W34");
+    assert!(
+        !(invalidated_before_completion && stale_value_stored),
+        "HC-CANARY-RED:W34 loader resurrected an invalidated value"
+    );
 }

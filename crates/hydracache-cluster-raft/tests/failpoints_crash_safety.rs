@@ -263,6 +263,12 @@ async fn snapshot_falsifiability_canaries_turn_their_guard_tests_red() {
     fail::remove("canary_raft_snapshot_aliases_live_state");
 
     let recovered = RaftMetadataRuntime::from_snapshot(aliased).unwrap();
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W4") {
+        assert!(
+            !member_ids(recovered.members()).contains(&"member-b".to_owned()),
+            "HC-CANARY-RED:W4 exported snapshot aliased live membership"
+        );
+    }
     assert!(
         member_ids(recovered.members()).contains(&"member-b".to_owned()),
         "alias canary should make a point-in-time snapshot guard observe later live state"
@@ -299,6 +305,12 @@ async fn snapshot_falsifiability_canaries_turn_their_guard_tests_red() {
     let downgraded = restore_with_downgrade_canary(malformed);
     fail::remove("canary_raft_snapshot_downgrades_apply_error");
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W3") {
+        assert!(
+            downgraded.is_err(),
+            "HC-CANARY-RED:W3 snapshot apply contradiction was downgraded"
+        );
+    }
     assert!(
         downgraded.is_ok(),
         "downgrade canary should suppress the fail-loud snapshot apply error"

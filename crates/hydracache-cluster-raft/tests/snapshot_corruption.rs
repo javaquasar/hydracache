@@ -133,10 +133,11 @@ fn legacy_raw_protobuf_snapshot_still_reopens_for_backward_compatibility() {
 
 #[test]
 fn canary_snapshot_skips_checksum_and_applies_corrupt_bytes() {
-    let checksum_reported_ok = false;
-    let corrupt_snapshot_applied = false;
+    let defect = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W9");
+    let checksum_reported_ok = defect;
+    let corrupt_snapshot_applied = defect;
     assert!(
         !(checksum_reported_ok || corrupt_snapshot_applied),
-        "canary models the forbidden outcome: corrupt bytes accepted as a valid snapshot"
+        "HC-CANARY-RED:W9 corrupt bytes accepted as a valid snapshot"
     );
 }

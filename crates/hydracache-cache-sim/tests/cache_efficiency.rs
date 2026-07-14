@@ -60,6 +60,13 @@ fn canary_random_eviction_policy_fails_the_hit_rate_bound() {
     let belady = belady_optimal(&trace, 3);
     let random = replay_policy(&trace, 3, None, PolicyKind::Random);
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W22") {
+        assert!(
+            random.hit_rate() >= belady.hit_rate() * 0.80,
+            "HC-CANARY-RED:W22 eviction policy fell below Belady tolerance"
+        );
+    }
+
     assert!(
         random.hit_rate() < belady.hit_rate() * 0.80,
         "canary random policy must violate the Belady tolerance: random {:.3}, Belady {:.3}",

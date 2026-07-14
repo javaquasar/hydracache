@@ -63,6 +63,13 @@ fn canary_differential_passes_when_two_modes_disagree() {
         commands_committed: 0,
     };
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W28") {
+        assert!(
+            find_disagreement(&[authoritative.clone(), stale.clone()]).is_none(),
+            "HC-CANARY-RED:W28 consistency modes disagreed"
+        );
+    }
+
     assert!(
         find_disagreement(&[authoritative, stale]).is_some(),
         "canary fixture must make a differential checker observe stale-mode disagreement"

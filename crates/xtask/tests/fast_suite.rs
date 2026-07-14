@@ -20,6 +20,12 @@ fn fast_suite_check_rejects_invented_baseline_and_aggregate_budget_overrun() {
     registry.suite[0].baseline.commit = "f".repeat(40);
     registry.suite[0].budget_seconds = registry.aggregate_budget_seconds + 1;
     let problems = xtask::fast_suite::validate_registry(&root, &registry, "0.64", None).unwrap();
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W6") {
+        assert!(
+            problems.is_empty(),
+            "HC-CANARY-RED:W6 unreviewed fast-suite budget regression was accepted"
+        );
+    }
     assert!(problems
         .iter()
         .any(|problem| problem.contains("invented measurements")));

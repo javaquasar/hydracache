@@ -277,7 +277,14 @@ function = "tsan_red_canary_evidence_requires_nonzero_and_normalized_race_signat
 
 [[work_item]]
 id = "W17"
-required_sources = ["crates/xtask/tests/canary_check.rs"]
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/canary_check.rs",
+    "crates/xtask/src/canary_sweep.rs",
+    "crates/xtask/src/release_evidence.rs",
+    "crates/xtask/tests/canary_check.rs",
+    "docs/testing/canary-registry.json",
+]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
@@ -286,6 +293,22 @@ ship_required = true
 [[work_item.required_tests]]
 source = "crates/xtask/tests/canary_check.rs"
 function = "every_w_item_has_a_registered_canary_that_references_real_functions"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "each_canary_makes_its_paired_guard_fail_red"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "dynamic_canary_runner_rejects_a_guard_that_stays_green"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "dynamic_canary_runner_rejects_timeout_compile_failure_or_unrelated_panic_as_red_evidence"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "dynamic_canary_receipt_is_bound_to_command_defect_and_source_commit"
 
 [[work_item]]
 id = "W18"

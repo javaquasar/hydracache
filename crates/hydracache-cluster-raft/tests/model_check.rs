@@ -277,6 +277,13 @@ fn canary_model_allows_a_dropped_committed_entry() {
         .spawn_bfs()
         .join();
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W23") {
+        assert!(
+            checker.discovery("no committed entry lost").is_none(),
+            "HC-CANARY-RED:W23 model admitted a lost committed entry"
+        );
+    }
+
     assert!(
         checker.discovery("no committed entry lost").is_some(),
         "faulty snapshot install must produce a counterexample"

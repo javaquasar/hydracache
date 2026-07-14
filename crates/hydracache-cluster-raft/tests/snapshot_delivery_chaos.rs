@@ -220,12 +220,19 @@ async fn handoff_during_inflight_snapshot_delivery_converges_without_regression(
 fn canary_snapshot_delivery_applies_a_stale_snapshot_after_a_newer_one() {
     let newer_applied_index = 12_u64;
     let stale_snapshot_index = 7_u64;
-    let accepted_stale_snapshot = false;
-    assert!(!(accepted_stale_snapshot && stale_snapshot_index < newer_applied_index));
+    let accepted_stale_snapshot = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W30");
+    assert!(
+        !(accepted_stale_snapshot && stale_snapshot_index < newer_applied_index),
+        "HC-CANARY-RED:W30 stale snapshot applied after a newer snapshot"
+    );
 }
 
 #[test]
 fn canary_handoff_during_snapshot_loses_or_reapplies_committed_tail() {
-    let committed_tail_occurrences = 1_usize;
-    assert_eq!(committed_tail_occurrences, 1);
+    let defect = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W30");
+    let committed_tail_occurrences = if defect { 2 } else { 1 };
+    assert_eq!(
+        committed_tail_occurrences, 1,
+        "HC-CANARY-RED:W30 committed tail was lost or applied twice"
+    );
 }

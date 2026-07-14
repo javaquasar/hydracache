@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use syn::visit::Visit;
 
+use crate::canary_check;
+use crate::canary_sweep;
 use crate::doc_check;
 use crate::evidence_run::{self, EvidenceOutcome, EvidenceReceipt};
 use crate::fast_suite::{self, FastSuiteEntry};
@@ -144,6 +146,8 @@ pub fn build_report(
     let manifest = load_manifest(root, release)?;
     let gates = gated_tests::load_registry(root)?;
     let fast_suites = fast_suite::load_registry(root)?;
+    let canary_registry = canary_check::load_registry(root)?;
+    let canary_receipts = canary_sweep::load_receipts(root)?;
     validate_manifest(root, &definition, &manifest, &gates, &fast_suites)?;
 
     let (source_commit, current_worktree_dirty) = git_identity(root)?;
@@ -179,6 +183,15 @@ pub fn build_report(
             .iter()
             .map(|suite| (suite.id.as_str(), ReceiptGate::Fast(suite))),
     );
+    let canaries_by_id: BTreeMap<_, _> = canary_registry
+        .entries
+        .iter()
+        .map(|entry| (entry.w_item.as_str(), entry))
+        .collect();
+    let canary_receipts_by_id: BTreeMap<_, _> = canary_receipts
+        .iter()
+        .map(|receipt| (receipt.w_item.as_str(), receipt))
+        .collect();
 
     let mut work_items = Vec::new();
     for item in &manifest.work_item {
@@ -205,7 +218,35 @@ pub fn build_report(
             reasons.push(format!("active quarantine: {}", quarantined.join(", ")));
         }
 
-        if implemented {
+        let canary_green = if let Some(entry) = canaries_by_id.get(item.id.as_str()) {
+            if let Some(receipt) = canary_receipts_by_id.get(item.id.as_str()) {
+                let problems = canary_sweep::receipt_problems(
+                    root,
+                    &canary_registry,
+                    entry,
+                    receipt,
+                    &source_commit,
+                );
+                if problems.is_empty() {
+                    true
+                } else {
+                    reasons.extend(
+                        problems
+                            .into_iter()
+                            .map(|problem| format!("dynamic canary: {problem}")),
+                    );
+                    false
+                }
+            } else {
+                reasons.push("missing exact-commit dynamic canary receipt".to_owned());
+                false
+            }
+        } else {
+            reasons.push("missing dynamic canary registry row".to_owned());
+            false
+        };
+
+        if implemented && canary_green {
             if item.fast_gate_ids.is_empty() {
                 reasons.push("no fast gate receipt contract is registered".to_owned());
             } else if all_gates_green(

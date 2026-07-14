@@ -413,6 +413,12 @@ async fn nemesis_soak_over_seed_range_converges() {
 fn canary_nemesis_accepts_stale_member_set_after_restore() {
     let authoritative = BTreeSet::from(["member-a".to_owned(), "member-b".to_owned()]);
     let stale = BTreeSet::from(["member-a".to_owned()]);
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W7") {
+        assert_eq!(
+            stale, authoritative,
+            "HC-CANARY-RED:W7 stale membership accepted after restore"
+        );
+    }
     assert_ne!(
         stale, authoritative,
         "canary fixture must model the stale-member bug before it can prove the guard"
@@ -422,6 +428,12 @@ fn canary_nemesis_accepts_stale_member_set_after_restore() {
 #[test]
 fn canary_nemesis_shrinker_returns_a_nonreproducing_schedule() {
     let broken_minimal = vec!["skip-membership-tail".to_owned()];
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W18") {
+        assert!(
+            fixture_schedule_reproduces_failure(&broken_minimal),
+            "HC-CANARY-RED:W18 shrinker returned a non-reproducing schedule"
+        );
+    }
     assert!(
         !fixture_schedule_reproduces_failure(&broken_minimal),
         "canary models a broken shrinker returning a schedule that no longer reproduces"
@@ -432,6 +444,13 @@ fn canary_nemesis_shrinker_returns_a_nonreproducing_schedule() {
 fn canary_bad_seed_corpus_is_not_actually_executed() {
     let corpus = bad_seed_corpus();
     let replayed_by_stubbed_loop = 0usize;
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W19") {
+        assert_eq!(
+            replayed_by_stubbed_loop,
+            corpus.seeds.len(),
+            "HC-CANARY-RED:W19 bad-seed corpus was not replayed"
+        );
+    }
     assert_ne!(
         replayed_by_stubbed_loop,
         corpus.seeds.len(),

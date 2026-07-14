@@ -82,6 +82,9 @@ fn current_release_emits_next_compat_fixture_manifest_without_overwriting_previo
 fn canary_compat_gate_silently_regenerates_a_changed_golden() {
     let fixture_changed = true;
     let manifest_hash_changed = false;
-    let gate_accepted = false;
-    assert!(!(fixture_changed && !manifest_hash_changed && gate_accepted));
+    let gate_accepted = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W32");
+    assert!(
+        !(fixture_changed && !manifest_hash_changed && gate_accepted),
+        "HC-CANARY-RED:W32 changed compatibility golden was silently accepted"
+    );
 }

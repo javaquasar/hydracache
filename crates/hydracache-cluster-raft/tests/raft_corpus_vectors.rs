@@ -213,6 +213,12 @@ async fn raft_corpus_log_matching_and_commit_index_safety() {
 fn canary_raft_corpus_accepts_stale_term_snapshot() {
     let before_term = 3;
     let after_term = 2;
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W8") {
+        assert!(
+            after_term >= before_term,
+            "HC-CANARY-RED:W8 stale-term snapshot was accepted"
+        );
+    }
     assert!(
         after_term < before_term,
         "canary fixture must model an impossible stale-term downgrade"
@@ -228,6 +234,12 @@ fn canary_corpus_coverage_passes_with_a_missing_category() {
     let present = corpus_categories(&incomplete_vectors);
     let required = REQUIRED_CATEGORIES.iter().copied().collect::<BTreeSet<_>>();
     let missing = required.difference(&present).collect::<Vec<_>>();
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W20") {
+        assert!(
+            missing.is_empty(),
+            "HC-CANARY-RED:W20 required raft corpus category is missing"
+        );
+    }
     assert!(
         !missing.is_empty(),
         "canary models a fake-green corpus coverage gate that missed categories"

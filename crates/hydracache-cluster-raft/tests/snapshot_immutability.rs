@@ -180,11 +180,12 @@ mod snapshot_immutability {
 
     #[test]
     fn canary_snapshot_shares_a_mutable_arc_across_export() {
-        let exported_snapshot_holds_live_mutable_arc = false;
-        let live_membership_mutation_changed_export = false;
+        let defect = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W1");
+        let exported_snapshot_holds_live_mutable_arc = defect;
+        let live_membership_mutation_changed_export = defect;
         assert!(
             !(exported_snapshot_holds_live_mutable_arc && live_membership_mutation_changed_export),
-            "canary models the forbidden outcome: exported snapshot aliases live mutable state"
+            "HC-CANARY-RED:W1 exported snapshot aliases live mutable state"
         );
     }
 }

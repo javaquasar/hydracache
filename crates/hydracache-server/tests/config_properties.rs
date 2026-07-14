@@ -267,6 +267,12 @@ async fn generated_config_errors_and_debug_output_never_expose_secret_bytes() {
 fn canary_config_debug_output_contains_a_generated_secret() {
     let secret = "HC-W36-canary-secret";
     let faulty_debug = format!("RedisAuthConfig {{ password: {secret} }}");
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W36") {
+        assert!(
+            output_is_redacted(&faulty_debug, secret).is_ok(),
+            "HC-CANARY-RED:W36 generated credential leaked through diagnostics"
+        );
+    }
     assert!(
         output_is_redacted(&faulty_debug, secret).is_err(),
         "the redaction guard must reject a diagnostic surface containing credential bytes"

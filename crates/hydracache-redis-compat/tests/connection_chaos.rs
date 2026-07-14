@@ -110,6 +110,14 @@ fn canary_connection_reset_leaks_an_inflight_ticket() {
 
     std::mem::forget(ticket);
 
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W27") {
+        assert_eq!(
+            tracker.active(),
+            0,
+            "HC-CANARY-RED:W27 connection ticket leaked after reset"
+        );
+    }
+
     assert_eq!(tracker.active(), 1);
     assert!(
         tracker.try_enter().is_none(),

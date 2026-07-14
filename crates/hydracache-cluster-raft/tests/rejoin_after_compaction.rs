@@ -86,9 +86,10 @@ async fn rejoin_after_compaction_survives_tail_commit_midway() {
 #[test]
 fn canary_rejoin_serves_stale_local_membership_after_snapshot() {
     let snapshot_installed = true;
-    let stale_local_membership_served = false;
+    let stale_local_membership_served =
+        std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W10");
     assert!(
         !(snapshot_installed && stale_local_membership_served),
-        "canary models serving stale membership after a snapshot catch-up"
+        "HC-CANARY-RED:W10 stale membership served after snapshot catch-up"
     );
 }

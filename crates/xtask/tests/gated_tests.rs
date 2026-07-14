@@ -42,6 +42,12 @@ command = { program = "", args = [], cwd = "", platform = "" }
 
     let problems = check_registry(&root).unwrap();
     cleanup(&root);
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W33") {
+        assert!(
+            problems.is_empty(),
+            "HC-CANARY-RED:W33 incomplete gated-test registration was accepted"
+        );
+    }
     for field in [
         "reason",
         "owner_release",

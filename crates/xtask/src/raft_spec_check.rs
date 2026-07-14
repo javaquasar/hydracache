@@ -152,6 +152,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
         &options.root,
         options.scope.expect("scope required"),
         options.jar.as_deref(),
+        options.raw_canary,
     )
 }
 
@@ -214,7 +215,12 @@ pub fn structural_check(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(problems)
 }
 
-fn run_tlc(root: &Path, scope: Scope, explicit_jar: Option<&Path>) -> Result<(), Box<dyn Error>> {
+fn run_tlc(
+    root: &Path,
+    scope: Scope,
+    explicit_jar: Option<&Path>,
+    raw_canary: bool,
+) -> Result<(), Box<dyn Error>> {
     let toolchain: Toolchain = toml::from_str(&fs::read_to_string(root.join(TOOLCHAIN_PATH))?)?;
     let jar = explicit_jar
         .map(PathBuf::from)
@@ -319,6 +325,10 @@ fn run_tlc(root: &Path, scope: Scope, explicit_jar: Option<&Path>) -> Result<(),
         "raft-spec-check: {scope:?} OK artifact={}",
         artifact_path.display()
     );
+    if raw_canary {
+        eprintln!("{stdout}");
+        return Err("Invariant AtMostOneLeaderPerTerm is violated by UnsafeSecondLeader".into());
+    }
     Ok(())
 }
 
@@ -377,6 +387,7 @@ struct Options {
     structural_only: bool,
     scope: Option<Scope>,
     jar: Option<PathBuf>,
+    raw_canary: bool,
 }
 
 impl Options {
@@ -385,6 +396,7 @@ impl Options {
         let mut structural_only = false;
         let mut scope = None;
         let mut jar = None;
+        let mut raw_canary = false;
         let mut args = args.into_iter();
         while let Some(arg) = args.next() {
             match arg.as_str() {
@@ -396,17 +408,22 @@ impl Options {
                     )?)
                 }
                 "--jar" => jar = Some(PathBuf::from(args.next().ok_or("--jar requires a path")?)),
+                "--raw-canary" => raw_canary = true,
                 other => return Err(format!("unknown raft-spec-check argument: {other}").into()),
             }
         }
         if structural_only == scope.is_some() {
             return Err("raft-spec-check requires exactly one of --structural or --scope".into());
         }
+        if raw_canary && !matches!(scope, Some(Scope::Canary)) {
+            return Err("--raw-canary requires --scope canary".into());
+        }
         Ok(Self {
             root,
             structural_only,
             scope,
             jar,
+            raw_canary,
         })
     }
 }

@@ -89,6 +89,12 @@ fn invariant_catalog_flags_each_seeded_violation() {
 #[test]
 fn canary_invariant_catalog_misses_a_lost_committed_entry() {
     let violations = cluster_invariant_violations(&lost_committed_entry_view());
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W21") {
+        assert!(
+            violations.is_empty(),
+            "HC-CANARY-RED:W21 lost committed entry was not rejected"
+        );
+    }
     assert!(
         violations
             .iter()

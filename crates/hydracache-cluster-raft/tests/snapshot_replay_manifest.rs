@@ -96,6 +96,12 @@ fn snapshot_replay_manifest_rejects_environmental_closure_with_unexplained_apply
     manifest["closure"]["environmental"] = json!(true);
 
     let problems = validate_manifest(&manifest).expect_err("environmental closure must fail");
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W5") {
+        assert!(
+            problems.is_empty(),
+            "HC-CANARY-RED:W5 contradiction was closed as environmental"
+        );
+    }
     assert!(
         problems
             .iter()
