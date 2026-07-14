@@ -121,6 +121,7 @@ use tokio::time::{sleep, Duration};
 
 const FORWARDED_APPLY_WAIT_ATTEMPTS: usize = 500;
 const FORWARDED_APPLY_WAIT_INTERVAL: Duration = Duration::from_millis(10);
+const DEFAULT_MAX_SIZE_PER_MSG: u64 = 1024 * 1024;
 
 /// Configuration for an embedded raft-rs metadata runtime.
 #[derive(Debug, Clone)]
@@ -146,7 +147,7 @@ impl RaftMetadataRuntimeConfig {
             auto_campaign: true,
             election_tick: 10,
             heartbeat_tick: 3,
-            max_size_per_msg: 1024 * 1024,
+            max_size_per_msg: DEFAULT_MAX_SIZE_PER_MSG,
             max_inflight_msgs: 256,
             pre_vote: true,
         }
@@ -165,7 +166,7 @@ impl RaftMetadataRuntimeConfig {
             auto_campaign: false,
             election_tick: 10,
             heartbeat_tick: 3,
-            max_size_per_msg: 1024 * 1024,
+            max_size_per_msg: DEFAULT_MAX_SIZE_PER_MSG,
             max_inflight_msgs: 256,
             pre_vote: true,
         }
@@ -202,7 +203,7 @@ impl RaftMetadataRuntimeConfig {
             auto_campaign: false,
             election_tick: 10,
             heartbeat_tick: 3,
-            max_size_per_msg: 1024 * 1024,
+            max_size_per_msg: DEFAULT_MAX_SIZE_PER_MSG,
             max_inflight_msgs: 256,
             pre_vote: true,
         })
@@ -256,7 +257,6 @@ impl RaftMetadataRuntimeConfig {
                 max_size_per_msg: self.max_size_per_msg,
                 max_inflight_msgs: self.max_inflight_msgs,
                 pre_vote: false,
-                applied: 0,
                 ..Default::default()
             }
         });
@@ -268,7 +268,6 @@ impl RaftMetadataRuntimeConfig {
             max_size_per_msg: self.max_size_per_msg,
             max_inflight_msgs: self.max_inflight_msgs,
             pre_vote: self.pre_vote,
-            applied: 0,
             ..Default::default()
         }
     }
@@ -2419,6 +2418,49 @@ mod tests {
         assert_eq!(config.heartbeat_tick, 1);
         assert_eq!(config.max_size_per_msg, 1);
         assert_eq!(config.max_inflight_msgs, 1);
+    }
+
+    #[test]
+    fn runtime_config_constructors_keep_reviewed_transport_defaults() {
+        let configs = [
+            RaftMetadataRuntimeConfig::single_node("single", 1),
+            RaftMetadataRuntimeConfig::multi_voter("multi", 1, [1, 2, 3]),
+            RaftMetadataRuntimeConfig::try_joining("joining", 4, [1, 2, 3]).unwrap(),
+        ];
+
+        for config in configs {
+            assert_eq!(config.max_size_per_msg, 1_048_576);
+            assert_eq!(config.max_inflight_msgs, 256);
+        }
+    }
+
+    #[test]
+    fn raft_config_preserves_runtime_limits_and_fresh_applied_index() {
+        let config = RaftMetadataRuntimeConfig::single_node("orders", 7)
+            .ticks(17, 5)
+            .max_size_per_msg(8_192)
+            .max_inflight_msgs(19)
+            .pre_vote(false)
+            .raft_config();
+
+        assert_eq!(config.id, 7);
+        assert_eq!(config.election_tick, 17);
+        assert_eq!(config.heartbeat_tick, 5);
+        assert_eq!(config.max_size_per_msg, 8_192);
+        assert_eq!(config.max_inflight_msgs, 19);
+        assert!(!config.pre_vote);
+        assert_eq!(config.applied, 0);
+    }
+
+    #[test]
+    fn raft_runtime_state_debug_keeps_progress_context() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let state = runtime.raft.lock().unwrap();
+        let debug = format!("{state:?}");
+
+        assert!(debug.contains("RaftRuntimeState"));
+        assert!(debug.contains("commands"));
+        assert!(debug.contains("applied_index"));
     }
 
     #[test]

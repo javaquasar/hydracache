@@ -895,6 +895,15 @@ mutation-test integration-test glue merely to inflate the mutant count.
 - `canary_mutants_config_uses_hydracache_table_rejected`.
 - Baseline file present and referenced from `GATES.md`.
 
+The first exact-candidate product shard exposed a concrete configuration-proof gap: mutations of the
+reviewed one-MiB message default in all three runtime constructors, deletion of
+`max_size_per_msg`/`max_inflight_msgs` while building `raft::Config`, and replacement of the internal
+runtime-state `Debug` formatter survived. Keep unit contracts for every constructor default, custom
+runtime-to-`raft::Config` field propagation, the fresh `applied == 0` invariant, and diagnostic progress
+fields. Do not baseline these survivors. The explicit `applied: 0` struct entry is intentionally omitted
+because `raft::Config::default()` already defines zero; retaining a redundant entry creates an
+equivalent delete-field mutant that no behavioral test can distinguish.
+
 **Canary.** `canary_mutants_baseline_hides_a_live_survivor` - a fixture that adds a real survivor without
 a baseline entry must fail the gate. `canary_mutants_config_uses_hydracache_table_rejected` keeps the
 config in the native cargo-mutants schema, so the slow GitHub lane cannot fail before mutation testing
