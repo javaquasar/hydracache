@@ -15,7 +15,8 @@ use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
     CacheError, CacheResult, ClusterAdmissionBridge, ClusterCandidate, ClusterDiscovery,
     ClusterDiscoveryLiveness, ClusterEndpoints, ClusterGeneration, ClusterMember, ClusterNodeId,
-    ClusterRole, HydraCache, RaftMetadataSnapshot, RaftStyleMetadataControlPlane,
+    ClusterRole, HydraCache, RaftMetadataCommand, RaftMetadataSnapshot,
+    RaftStyleMetadataControlPlane,
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
@@ -37,6 +38,7 @@ const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
+const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
 const RAFT_HTTP_CONNECT_TIMEOUT: Duration = Duration::from_millis(500);
 const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const NODE_IDENTITY_FILE: &str = "node-identity.json";
@@ -118,7 +120,6 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     })?;
     let identity = resolve_member_identity(config, storage_dir)?;
     let node_id = identity.node_id;
-    let generation = ClusterGeneration::new(1);
     let raft_node_id = identity.raft_node_id;
     let topology = raft_topology(config, node_id.clone(), raft_node_id)?;
     let raft_log_dir = storage_dir.join("raft-log");
@@ -149,6 +150,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         raft_config,
         &raft_log_dir,
     )?);
+    let generation = next_member_generation(&raft, &node_id);
     let discovery = Arc::new(
         ChitchatDiscovery::spawn_udp(
             ChitchatDiscoveryConfig::new(
@@ -248,6 +250,25 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         drain_remove_proposed: Arc::new(AtomicBool::new(false)),
         shutdown,
     })
+}
+
+fn next_member_generation(
+    raft: &NetworkedRaftRuntime,
+    node_id: &ClusterNodeId,
+) -> ClusterGeneration {
+    raft.commands()
+        .into_iter()
+        .filter_map(|command| match command {
+            RaftMetadataCommand::MemberUpsert {
+                node_id: command_node_id,
+                generation,
+                ..
+            } if command_node_id == *node_id => Some(generation),
+            _ => None,
+        })
+        .max()
+        .map(ClusterGeneration::next)
+        .unwrap_or_else(|| ClusterGeneration::new(1))
 }
 
 async fn networked_member_cache(
@@ -1549,7 +1570,14 @@ impl Drop for DedicatedGridRuntime {
             .expect("grid runtime holder poisoned")
             .take()
         {
-            runtime.shutdown_background();
+            if tokio::runtime::Handle::try_current().is_ok() {
+                let _ = std::thread::spawn(move || {
+                    runtime.shutdown_timeout(GRID_RUNTIME_SHUTDOWN_TIMEOUT);
+                })
+                .join();
+            } else {
+                runtime.shutdown_timeout(GRID_RUNTIME_SHUTDOWN_TIMEOUT);
+            }
         }
     }
 }
