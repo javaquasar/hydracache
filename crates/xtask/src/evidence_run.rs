@@ -19,6 +19,7 @@ use crate::fast_suite;
 use crate::gated_tests::{self, CommandSpec, GateEntry};
 
 pub const DEFAULT_RECEIPTS_DIR: &str = "target/release-evidence/receipts";
+const MAX_DIAGNOSTIC_CHARS_PER_STREAM: usize = 32_000;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -99,7 +100,40 @@ pub fn run(args: Vec<String>) -> Result<i32, Box<dyn Error>> {
         result.receipt.gate_id,
         result.receipt_path.display()
     );
+    if let Some(diagnostics) = failure_diagnostics(&result.receipt) {
+        eprintln!("{diagnostics}");
+    }
     Ok(exit_code_for(&result.receipt))
+}
+
+pub fn failure_diagnostics(receipt: &EvidenceReceipt) -> Option<String> {
+    if receipt.outcome == EvidenceOutcome::Pass {
+        return None;
+    }
+    let mut output = format!(
+        "evidence-run: captured output for {:?} gate={}",
+        receipt.outcome, receipt.gate_id
+    );
+    append_diagnostic_stream(&mut output, "stdout", &receipt.stdout);
+    append_diagnostic_stream(&mut output, "stderr", &receipt.stderr);
+    Some(output)
+}
+
+fn append_diagnostic_stream(output: &mut String, name: &str, value: &str) {
+    if value.trim().is_empty() {
+        return;
+    }
+    let chars = value.chars().count();
+    let visible = if chars > MAX_DIAGNOSTIC_CHARS_PER_STREAM {
+        let tail = value
+            .chars()
+            .skip(chars - MAX_DIAGNOSTIC_CHARS_PER_STREAM)
+            .collect::<String>();
+        format!("[truncated to last {MAX_DIAGNOSTIC_CHARS_PER_STREAM} characters]\n{tail}")
+    } else {
+        value.to_owned()
+    };
+    let _ = write!(output, "\n--- {name} ---\n{}", visible.trim_end());
 }
 
 pub fn execute_gate(

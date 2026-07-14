@@ -282,8 +282,16 @@ required_sources = [
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = [
-    "env.hydracache-run-raft-mutants",
-    "env.hydracache-run-proof-oracle-mutants",
+    "env.hydracache-run-raft-mutants-shard-0-of-8",
+    "env.hydracache-run-raft-mutants-shard-1-of-8",
+    "env.hydracache-run-raft-mutants-shard-2-of-8",
+    "env.hydracache-run-raft-mutants-shard-3-of-8",
+    "env.hydracache-run-raft-mutants-shard-4-of-8",
+    "env.hydracache-run-raft-mutants-shard-5-of-8",
+    "env.hydracache-run-raft-mutants-shard-6-of-8",
+    "env.hydracache-run-raft-mutants-shard-7-of-8",
+    "env.hydracache-run-proof-oracle-mutants-shard-0-of-2",
+    "env.hydracache-run-proof-oracle-mutants-shard-1-of-2",
 ]
 ship_required = true
 

@@ -4633,35 +4633,32 @@ platform = "linux"
 HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX = "1"
 
 [[gate]]
-id = "env.hydracache-run-raft-mutants"
+id = "env.hydracache-run-raft-mutants-shard-0-of-8"
 kind = "env_gate"
-source = "crates/xtask/src/gated_tests.rs"
+source = "crates/xtask/src/mutants.rs"
 package = "xtask"
 target = "mutants"
-test = ""
+test = "0/8"
 cfg = ""
 env = "HYDRACACHE_RUN_RAFT_MUTANTS"
-reason = "Execution is explicitly gated by HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 0/8 of the pinned product-path cargo-mutants campaign"
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
 required_tools = ["cargo-mutants=27.1.0"]
-timeout_seconds = 1800
+timeout_seconds = 5400
 owner_release = "0.64.0"
 ship_mandatory = true
 artifacts = ["target/hydracache-mutants/report.txt"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
 
 [gate.command]
 program = "cargo"
-args = [
-    "xtask",
-    "mutants",
-]
+args = ["xtask", "mutants", "--shard", "0/8"]
 cwd = "."
 platform = "any"
 
@@ -4669,38 +4666,301 @@ platform = "any"
 HYDRACACHE_RUN_RAFT_MUTANTS = "1"
 
 [[gate]]
-id = "env.hydracache-run-proof-oracle-mutants"
+id = "env.hydracache-run-raft-mutants-shard-1-of-8"
 kind = "env_gate"
 source = "crates/xtask/src/mutants.rs"
 package = "xtask"
 target = "mutants"
-test = "proof-oracles"
+test = "1/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 1/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "1/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants-shard-2-of-8"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "2/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 2/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "2/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants-shard-3-of-8"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "3/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 3/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "3/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants-shard-4-of-8"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "4/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 4/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "4/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants-shard-5-of-8"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "5/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 5/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "5/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants-shard-6-of-8"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "6/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 6/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "6/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-raft-mutants-shard-7-of-8"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "7/8"
+cfg = ""
+env = "HYDRACACHE_RUN_RAFT_MUTANTS"
+reason = "Shard 7/8 of the pinned product-path cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_RAFT_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--shard", "7/8"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_RAFT_MUTANTS = "1"
+
+[[gate]]
+id = "env.hydracache-run-proof-oracle-mutants-shard-0-of-2"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "proof-oracles-0/2"
 cfg = ""
 env = "HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS"
-reason = "Pinned cargo-mutants campaign must kill decision-branch mutants in correctness oracles"
+reason = "Shard 0/2 of the pinned proof-oracle cargo-mutants campaign"
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS"]
 required_tools = ["cargo-mutants=27.1.0"]
-timeout_seconds = 1800
+timeout_seconds = 5400
 owner_release = "0.64.0"
 ship_mandatory = true
 artifacts = ["target/hydracache-mutants-proof-oracles/report.txt"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
-job = "gated-proof-registry"
-step = "Run registered gated proofs"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
 
 [gate.command]
 program = "cargo"
-args = ["xtask", "mutants", "--scope", "proof-oracles"]
+args = ["xtask", "mutants", "--scope", "proof-oracles", "--shard", "0/2"]
 cwd = "."
 platform = "any"
 
 [gate.command.env]
 HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS = "1"
 
+[[gate]]
+id = "env.hydracache-run-proof-oracle-mutants-shard-1-of-2"
+kind = "env_gate"
+source = "crates/xtask/src/mutants.rs"
+package = "xtask"
+target = "mutants"
+test = "proof-oracles-1/2"
+cfg = ""
+env = "HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS"
+reason = "Shard 1/2 of the pinned proof-oracle cargo-mutants campaign"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS"]
+required_tools = ["cargo-mutants=27.1.0"]
+timeout_seconds = 5400
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/hydracache-mutants-proof-oracles/report.txt"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-mutation-testing"
+step = "Run registered mutation shard"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "mutants", "--scope", "proof-oracles", "--shard", "1/2"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PROOF_ORACLE_MUTANTS = "1"
 [[gate]]
 id = "tool.tla-tlc.raft-election-fast"
 kind = "external_tool"

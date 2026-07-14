@@ -465,9 +465,45 @@ jobs:
           cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
 
   raft-mutation-testing:
-    name: Raft Mutation Testing
+    name: Raft Mutation Testing (${{ matrix.label }})
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - label: product-0-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-0-of-8
+          - label: product-1-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-1-of-8
+          - label: product-2-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-2-of-8
+          - label: product-3-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-3-of-8
+          - label: product-4-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-4-of-8
+          - label: product-5-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-5-of-8
+          - label: product-6-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-6-of-8
+          - label: product-7-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-7-of-8
+          - label: proof-oracles-0-of-2
+            campaign: proof-oracles
+            gate: env.hydracache-run-proof-oracle-mutants-shard-0-of-2
+          - label: proof-oracles-1-of-2
+            campaign: proof-oracles
+            gate: env.hydracache-run-proof-oracle-mutants-shard-1-of-2
 
     steps:
       - name: Checkout
@@ -481,22 +517,21 @@ jobs:
         with:
           prefix-key: v1-rust-no-target
           cache-targets: false
-          shared-key: raft-mutation-testing
+          shared-key: raft-mutation-testing-${{ matrix.campaign }}
 
       - name: Install cargo-mutants
         run: cargo install cargo-mutants --version 27.1.0 --locked
 
-      - name: Run product and proof-oracle mutation campaigns
+      - name: Run registered mutation shard
         run: |
           cargo test -p xtask --test mutants --locked
-          cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-raft-mutants
-          cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-proof-oracle-mutants
+          cargo run -p xtask --locked -- evidence-run --release 0.64 --gate ${{ matrix.gate }}
 
       - name: Upload mutation artifacts
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: "raft-mutation-testing-${{ github.sha }}"
+          name: "raft-mutation-testing-${{ matrix.label }}-${{ github.sha }}"
           path: |
             target/hydracache-mutants/**
             target/hydracache-mutants-proof-oracles/**

@@ -20,6 +20,16 @@ durable log behavior.
 - `cargo test -p hydracache-cluster-raft --test rejoin_after_compaction --features test-failpoints --locked -- --test-threads=1`
 - `cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked`
 
+## Execution Model
+
+The release campaign is split into eight registered `cargo-mutants` shards.
+Every shard runs through `cargo xtask mutants --shard INDEX/8`, and all eight
+commit-bound evidence receipts are mandatory. `xtask` passes `--in-place`
+because the compatibility tests require the checked-out `.git` metadata and a
+copied mutation workspace excludes it; this also avoids a second multi-gigabyte
+Cargo target tree on the CI runner. Each shard has its own ephemeral checkout,
+so no two in-place mutation processes share a source tree.
+
 ## Allowed Survivors
 
 No allowed survivors.
@@ -33,5 +43,6 @@ release blocker.
 
 The fast gate reads `target/hydracache-mutants/report.txt` when present. It
 fails on every line beginning with `SURVIVED ` unless that exact line appears in
-this baseline. If the report is absent, the fast gate skips loud and the
-scheduled `Raft Mutation Testing` job remains the full proof lane.
+this baseline. If the report is absent, the fast gate skips loud. A single shard
+report is not full evidence: the scheduled `Raft Mutation Testing` matrix and
+release ledger require all eight registered product receipts.

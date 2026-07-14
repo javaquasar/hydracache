@@ -813,20 +813,57 @@ fn validate_registry(
             .gate
             .iter()
             .filter(|entry| entry_matches(entry, item))
-            .count();
-        if matches == 0 {
+            .collect::<Vec<_>>();
+        if matches.is_empty() {
             problems.push(format!(
                 "{REGISTRY_PATH}: unregistered {}",
                 describe_discovered(item)
             ));
-        } else if matches > 1 {
+        } else if matches.len() > 1 && !entries_form_complete_shard_set(item, &matches) {
             problems.push(format!(
-                "{REGISTRY_PATH}: {} is covered by {matches} entries",
-                describe_discovered(item)
+                "{REGISTRY_PATH}: {} is covered by {} entries that do not form a complete --shard set",
+                describe_discovered(item),
+                matches.len()
             ));
         }
     }
     problems
+}
+
+fn entries_form_complete_shard_set(discovered: &DiscoveredGate, entries: &[&GateEntry]) -> bool {
+    if !matches!(discovered, DiscoveredGate::EnvGate { .. }) {
+        return false;
+    }
+    let shards = entries
+        .iter()
+        .filter_map(|entry| command_shard(&entry.command.args))
+        .collect::<Vec<_>>();
+    let Some(total) = shards.first().map(|(_, total)| *total) else {
+        return false;
+    };
+    total == entries.len()
+        && shards.len() == entries.len()
+        && shards.iter().all(|(_, candidate)| *candidate == total)
+        && shards
+            .iter()
+            .map(|(index, _)| *index)
+            .collect::<BTreeSet<_>>()
+            == (0..total).collect()
+}
+
+fn command_shard(args: &[String]) -> Option<(usize, usize)> {
+    let values = args
+        .windows(2)
+        .filter(|pair| pair[0] == "--shard")
+        .map(|pair| pair[1].as_str())
+        .collect::<Vec<_>>();
+    let [value] = values.as_slice() else {
+        return None;
+    };
+    let (index, total) = value.split_once('/')?;
+    let index = index.parse::<usize>().ok()?;
+    let total = total.parse::<usize>().ok()?;
+    (total > 0 && index < total).then_some((index, total))
 }
 
 fn validate_entry_shape(gate: &GateEntry, problems: &mut Vec<String>) {

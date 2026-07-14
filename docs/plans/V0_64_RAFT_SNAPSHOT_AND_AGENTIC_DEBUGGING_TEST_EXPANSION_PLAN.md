@@ -879,6 +879,12 @@ mutation-test integration-test glue merely to inflate the mutant count.
   test power.
 - Run product-path and proof-oracle campaigns as separate CI invocations/packages so each mutant executes
   only the tests capable of killing it and a large combined workspace timeout cannot hide a weak oracle.
+- Partition the discovered campaign into eight product shards and two proof-oracle shards. Every shard is
+  a separate registered evidence gate with its explicit `INDEX/TOTAL` in the command digest; W15 is green
+  only when all ten exact-candidate receipts pass. Each matrix entry owns an ephemeral checkout and runs
+  `cargo-mutants --in-place`: copied workspaces omit `.git`, which breaks the W32 compatibility test that
+  binds generated fixture metadata to `git rev-parse HEAD`, and they duplicate the large Cargo target tree.
+  Running concurrent in-place shards in one checkout is forbidden.
 - Proof-oracle survivors require a new rejecting fixture or a written, reviewed impossibility argument;
   the initial 0.64 ship target is no allowed survivor in decision branches.
 
@@ -896,14 +902,14 @@ starts with `unknown field hydracache`.
 
 **DoD.**
 ```powershell
-cargo xtask mutants   # or: cargo mutants --in-place --file crates/hydracache-cluster-raft/src/log_store.rs ...
-cargo xtask mutants --scope proof-oracles
+cargo xtask mutants --shard 0/8
+cargo xtask mutants --scope proof-oracles --shard 0/2
 ```
 
-**Run in CI.** Scheduled/`workflow_dispatch` lanes `Raft Mutation Testing` and `Proof Oracle Mutation
-Testing` (mutation runs are slow); their baseline-no-untriaged-survivors checks run fast in the `rust`
-job when cached reports exist, else skip loud. Both exact-commit reports are required by the evidence
-ledger before ship.
+**Run in CI.** The scheduled/`workflow_dispatch` `Raft Mutation Testing` matrix runs all eight product
+and two proof-oracle shards (mutation runs are slow); baseline-no-untriaged-survivors checks run fast
+in the `rust` job when cached reports exist, else skip loud. All ten exact-commit receipts are required
+by the evidence ledger before ship.
 
 ### W16. Miri Aliasing/UB Run For The Immutability Proofs (blueprint: the W1 aliasing thesis; `cargo miri`)
 

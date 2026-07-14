@@ -148,11 +148,15 @@ fn evidence_executor_propagates_child_exit_and_captures_output() {
     let (pass_root, pass) = execute("pass", 5);
     assert_eq!(xtask::evidence_run::exit_code_for(&pass.receipt), 0);
     assert!(pass.receipt.stdout.contains("logical pass"));
+    assert!(xtask::evidence_run::failure_diagnostics(&pass.receipt).is_none());
     fs::remove_dir_all(pass_root).unwrap();
 
     let (fail_root, fail) = execute("fail", 5);
     assert_ne!(xtask::evidence_run::exit_code_for(&fail.receipt), 0);
     assert!(fail.receipt.stderr.contains("intentional evidence failure"));
+    let diagnostics = xtask::evidence_run::failure_diagnostics(&fail.receipt).unwrap();
+    assert!(diagnostics.contains("--- stderr ---"));
+    assert!(diagnostics.contains("intentional evidence failure"));
     fs::remove_dir_all(fail_root).unwrap();
 
     let (timeout_root, timeout) = execute("timeout", 1);

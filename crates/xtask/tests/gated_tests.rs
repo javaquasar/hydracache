@@ -84,6 +84,25 @@ fn registry_rejects_stale_entries_that_no_longer_resolve_to_a_test() {
 }
 
 #[test]
+fn registry_accepts_only_a_complete_set_of_environment_gate_shards() {
+    let root = scratch_root();
+    write_workspace(&root);
+    write_registry(&root, &sharded_registry(2));
+    let problems = check_registry(&root).unwrap();
+    assert!(problems.is_empty(), "complete shards: {problems:#?}");
+
+    write_registry(&root, &sharded_registry(3));
+    let problems = check_registry(&root).unwrap();
+    cleanup(&root);
+    assert!(
+        problems
+            .iter()
+            .any(|problem| problem.contains("do not form a complete --shard set")),
+        "incomplete shards must fail: {problems:#?}"
+    );
+}
+
+#[test]
 fn wildcard_registration_does_not_hide_a_new_ignored_test() {
     let root = scratch_root();
     write_workspace(&root);
@@ -152,6 +171,50 @@ ci = { workflow = ".github/workflows/ci.yml", job = "gated", step = "Run" }
 command = { program = "cargo", args = ["test"], cwd = ".", platform = "any" }
 "#
     .to_owned()
+}
+
+fn sharded_registry(total: usize) -> String {
+    let original = r#"[[gate]]
+id = "env-demo"
+kind = "env_gate"
+source = "demo/tests/gated.rs"
+package = "demo"
+target = "gated"
+env = "HYDRACACHE_RUN_DEMO"
+reason = "environment-gated fixture"
+tier = "nightly"
+required_env = ["HYDRACACHE_RUN_DEMO"]
+timeout_seconds = 60
+owner_release = "0.64.0"
+ship_mandatory = true
+ci = { workflow = ".github/workflows/ci.yml", job = "gated", step = "Run" }
+command = { program = "cargo", args = ["test"], cwd = ".", platform = "any" }
+"#;
+    let entries = [0, 1]
+        .into_iter()
+        .map(|index| {
+            format!(
+                r#"[[gate]]
+id = "env-demo-{index}"
+kind = "env_gate"
+source = "demo/tests/gated.rs"
+package = "demo"
+target = "gated"
+env = "HYDRACACHE_RUN_DEMO"
+reason = "environment-gated fixture shard"
+tier = "nightly"
+required_env = ["HYDRACACHE_RUN_DEMO"]
+timeout_seconds = 60
+owner_release = "0.64.0"
+ship_mandatory = true
+ci = {{ workflow = ".github/workflows/ci.yml", job = "gated", step = "Run" }}
+command = {{ program = "cargo", args = ["test", "--shard", "{index}/{total}"], cwd = ".", platform = "any" }}
+"#
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    valid_registry().replace(original, &entries)
 }
 
 fn write_workspace(root: &Path) {

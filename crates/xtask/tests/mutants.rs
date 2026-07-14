@@ -3,10 +3,33 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use xtask::mutants::check_mutation_baseline;
-use xtask::mutants::check_proof_oracle_mutation_baseline;
+use xtask::mutants::{
+    cargo_mutants_args, check_mutation_baseline, check_proof_oracle_mutation_baseline,
+};
 
 static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+#[test]
+fn cargo_mutants_runs_in_place_and_binds_an_optional_shard() {
+    assert_eq!(
+        cargo_mutants_args(".cargo/mutants.toml", None).unwrap(),
+        ["mutants", "--config", ".cargo/mutants.toml", "--in-place",]
+    );
+    assert_eq!(
+        cargo_mutants_args(".cargo/mutants.toml", Some("3/8")).unwrap(),
+        [
+            "mutants",
+            "--config",
+            ".cargo/mutants.toml",
+            "--in-place",
+            "--shard",
+            "3/8",
+        ]
+    );
+    assert!(cargo_mutants_args(".cargo/mutants.toml", Some("8/8")).is_err());
+    assert!(cargo_mutants_args(".cargo/mutants.toml", Some("0/0")).is_err());
+    assert!(cargo_mutants_args(".cargo/mutants.toml", Some("not-a-shard")).is_err());
+}
 
 #[test]
 fn mutants_baseline_has_no_untriaged_survivors_in_snapshot_and_membership_paths() {

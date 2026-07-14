@@ -42,8 +42,8 @@ const PROOF_REQUIRED_TESTS: &[&str] = &[
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let root = doc_check::find_repo_root()?;
-    let scope = parse_scope(args)?;
-    let (config, run_env) = match scope {
+    let options = parse_options(args)?;
+    let (config, run_env) = match options.scope {
         MutationScope::Product => {
             check_mutation_baseline(&root)?;
             (CONFIG_PATH, RUN_ENV)
@@ -55,7 +55,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     };
 
     if env::var_os(run_env).is_some() {
-        run_cargo_mutants(&root, config)?;
+        run_cargo_mutants(&root, config, options.shard.as_deref())?;
     } else {
         println!("mutants: cargo-mutants execution skipped; set {run_env}=1 for the slow lane");
     }
@@ -69,15 +69,54 @@ enum MutationScope {
     ProofOracles,
 }
 
-fn parse_scope(args: Vec<String>) -> Result<MutationScope, Box<dyn Error>> {
-    match args.as_slice() {
-        [] => Ok(MutationScope::Product),
-        [flag, value] if flag == "--scope" && value == "product" => Ok(MutationScope::Product),
-        [flag, value] if flag == "--scope" && value == "proof-oracles" => {
-            Ok(MutationScope::ProofOracles)
+struct MutationOptions {
+    scope: MutationScope,
+    shard: Option<String>,
+}
+
+fn parse_options(args: Vec<String>) -> Result<MutationOptions, Box<dyn Error>> {
+    let mut scope = MutationScope::Product;
+    let mut shard = None;
+    let mut args = args.into_iter();
+    while let Some(flag) = args.next() {
+        match flag.as_str() {
+            "--scope" => {
+                scope = match args.next().as_deref() {
+                    Some("product") => MutationScope::Product,
+                    Some("proof-oracles") => MutationScope::ProofOracles,
+                    _ => return Err(usage().into()),
+                };
+            }
+            "--shard" => {
+                if shard.is_some() {
+                    return Err("mutants accepts --shard only once".into());
+                }
+                let value = args.next().ok_or_else(usage)?;
+                validate_shard(&value)?;
+                shard = Some(value);
+            }
+            _ => return Err(usage().into()),
         }
-        _ => Err("usage: cargo xtask mutants [--scope product|proof-oracles]".into()),
     }
+    Ok(MutationOptions { scope, shard })
+}
+
+fn usage() -> String {
+    "usage: cargo xtask mutants [--scope product|proof-oracles] [--shard INDEX/TOTAL]".to_owned()
+}
+
+fn validate_shard(value: &str) -> Result<(), Box<dyn Error>> {
+    let (index, total) = value
+        .split_once('/')
+        .ok_or("mutation shard must use INDEX/TOTAL syntax")?;
+    let index = index.parse::<usize>()?;
+    let total = total.parse::<usize>()?;
+    if total == 0 || index >= total {
+        return Err(
+            format!("invalid mutation shard {value}: require TOTAL > 0 and INDEX < TOTAL").into(),
+        );
+    }
+    Ok(())
 }
 
 pub fn check_mutation_baseline(root: &Path) -> Result<(), String> {
@@ -238,7 +277,7 @@ fn check_baseline_and_report(
     Ok(())
 }
 
-fn run_cargo_mutants(root: &Path, config: &str) -> Result<(), Box<dyn Error>> {
+fn run_cargo_mutants(root: &Path, config: &str, shard: Option<&str>) -> Result<(), Box<dyn Error>> {
     let version = Command::new("cargo")
         .args(["mutants", "--version"])
         .current_dir(root)
@@ -262,8 +301,9 @@ fn run_cargo_mutants(root: &Path, config: &str) -> Result<(), Box<dyn Error>> {
             )
             .into());
         }
+        let args = cargo_mutants_args(config, shard)?;
         let status = Command::new("cargo")
-            .args(["mutants", "--config", config])
+            .args(&args)
             .current_dir(root)
             .status()?;
         if status.success() {
@@ -275,11 +315,17 @@ fn run_cargo_mutants(root: &Path, config: &str) -> Result<(), Box<dyn Error>> {
             fs::create_dir_all(root.join(output))?;
             fs::write(
                 root.join(output).join("report.txt"),
-                format!("cargo-mutants {CARGO_MUTANTS_VERSION}\nCOMPLETED no survived mutants\n"),
+                format!(
+                    "cargo-mutants {CARGO_MUTANTS_VERSION}\nSHARD {}\nCOMPLETED no survived mutants\n",
+                    shard.unwrap_or("all")
+                ),
             )?;
             Ok(())
         } else {
-            Err(format!("cargo mutants exited with {status}").into())
+            Err(format!(
+                "cargo mutants exited with {status}; inspect the configured mutants.out/log directory"
+            )
+            .into())
         }
     } else {
         Err(
@@ -287,6 +333,25 @@ fn run_cargo_mutants(root: &Path, config: &str) -> Result<(), Box<dyn Error>> {
                 .into(),
         )
     }
+}
+
+pub fn cargo_mutants_args(
+    config: &str,
+    shard: Option<&str>,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    if let Some(shard) = shard {
+        validate_shard(shard)?;
+    }
+    let mut args = vec![
+        "mutants".to_owned(),
+        "--config".to_owned(),
+        config.to_owned(),
+        "--in-place".to_owned(),
+    ];
+    if let Some(shard) = shard {
+        args.extend(["--shard".to_owned(), shard.to_owned()]);
+    }
+    Ok(args)
 }
 
 fn read_required(path: &Path) -> Result<String, String> {

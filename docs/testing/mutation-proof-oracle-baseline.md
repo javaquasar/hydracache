@@ -19,6 +19,15 @@ reviewed proof-surface change.
 - `cargo test -p hydracache-sim --test linearizability_oracle --locked`
 - `cargo test -p hydracache-cluster-testkit --test invariants --locked`
 
+## Execution Model
+
+The proof-oracle campaign is split into two registered shards and runs as
+`cargo xtask mutants --scope proof-oracles --shard INDEX/2`. Both candidate-
+commit receipts are required. As with the product campaign, each shard uses
+`cargo-mutants --in-place` only inside its own ephemeral CI checkout so tests
+that bind compatibility evidence to `git rev-parse HEAD` retain real VCS
+metadata without duplicating the workspace target tree.
+
 ## Allowed Survivors
 
 No allowed survivors.
