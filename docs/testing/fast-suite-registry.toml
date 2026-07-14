@@ -52,6 +52,31 @@ platform = "any"
 [suite.command.env]
 
 [[suite]]
+id = "fast.raft-nemesis-determinism"
+work_items = ["W18"]
+timeout_seconds = 300
+budget_seconds = 60
+deterministic = true
+artifacts = ["target/test-evidence/0.64/nemesis-determinism.json"]
+logical_digest_artifact = "target/test-evidence/0.64/nemesis-determinism.json"
+
+[suite.baseline]
+status = "unmeasured"
+commit = ""
+toolchain = ""
+linux_ci_median_seconds = 0
+noise_allowance_seconds = 0
+
+[suite.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-cluster-raft", "--test", "nemesis_membership", "--locked", "-j", "2", "nemesis_replays_identically_for_same_seed"]
+cwd = "."
+platform = "any"
+
+[suite.command.env]
+HYDRACACHE_DETERMINISM_EVIDENCE = "target/test-evidence/0.64/nemesis-determinism.json"
+
+[[suite]]
 id = "fast.raft-sled-snapshot"
 work_items = ["W9", "W31"]
 timeout_seconds = 180
@@ -79,7 +104,7 @@ platform = "any"
 id = "fast.workspace-nextest"
 work_items = ["W1", "W2", "W3", "W4", "W5", "W5a", "W6", "W6b", "W7", "W8", "W10", "W11", "W12", "W13", "W14", "W15", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W25", "W27", "W28", "W29", "W30", "W32", "W33", "W34", "W35", "W36", "W37"]
 timeout_seconds = 1260
-budget_seconds = 1200
+budget_seconds = 1140
 deterministic = false
 artifacts = ["target/nextest/ci/junit.xml"]
 logical_digest_artifact = ""

@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some("canary-check") => xtask::canary_check::run(args.collect())?,
         Some("canary-sweep") => xtask::canary_sweep::run(args.collect())?,
         Some("compat-check") => xtask::compat_check::run(args.collect())?,
+        Some("determinism-sweep") => xtask::determinism_sweep::run(args.collect())?,
         Some("doc-check") => xtask::doc_check::run(args.collect())?,
         Some("durable-inspect") => xtask::durable_inspect::run(args.collect())?,
         Some("evidence-run") => {
@@ -40,6 +41,7 @@ fn print_usage() {
          cargo xtask canary-check  # validate the 0.64 Raft canary registry\n  \
          cargo xtask canary-sweep --release 0.64 --tier <fast|all>  # execute expected-red canary proofs\n  \
          cargo xtask compat-check [--preflight-only|--manifest-only]  # validate previous-release compatibility\n  \
+         cargo xtask determinism-sweep --release 0.64  # compare canonical logical evidence across repeated/serial runs\n  \
          cargo xtask doc-check     # validate docs/plans/releases.toml (RULES R-11)\n  \
          cargo xtask durable-inspect <store-dir>  # dump verified durable value records as JSON\n  \
          cargo xtask evidence-run --release 0.64 --gate <id>  # execute a registered gate and write a receipt\n  \

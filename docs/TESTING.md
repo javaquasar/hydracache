@@ -716,6 +716,22 @@ membership/voter outcome. The shrinker test uses a fixture failure so the fast
 suite can prove the shrink algorithm returns a one-step-minimal reproducing
 schedule without waiting for a naturally failing randomized seed.
 
+The suite-wide proof is executable and produces a registered exact-commit
+artifact:
+
+```powershell
+cargo test -p xtask --test determinism_sweep --locked
+cargo xtask determinism-sweep --release 0.64
+```
+
+Suites opt in with `deterministic=true` and a `logical_digest_artifact` in
+`docs/testing/fast-suite-registry.toml`. The artifact is logical JSON, not test
+stdout: it contains the seed, ordered schedule and operations, invariant
+verdicts, and final state. The canonicalizer removes wall-clock timestamps,
+durations, absolute/temp paths, ports, process ids, and thread ids, sorts object
+keys, and deliberately preserves array order. Repeated and serial-run digests
+must all match; two merely green exits are insufficient.
+
 The W19 frozen bad-seed corpus lives at
 `crates/hydracache-cluster-raft/tests/vectors/bad_seeds.json` and is replayed by
 the same fast nemesis test file:

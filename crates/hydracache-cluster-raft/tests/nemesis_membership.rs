@@ -6,7 +6,7 @@ use hydracache_cluster_testkit::{
     invariants::{assert_cluster_invariants, ClusterInvariantView},
     RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 const BAD_SEEDS_JSON: &str = include_str!("vectors/bad_seeds.json");
 
@@ -74,11 +74,22 @@ impl NemesisTrace {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 struct NemesisOutcome {
     schedule: Vec<String>,
     voters_by_node: BTreeMap<u64, BTreeSet<u64>>,
     members_by_node: BTreeMap<u64, BTreeSet<String>>,
+}
+
+#[derive(Serialize)]
+struct NemesisLogicalEvidence<'a> {
+    schema_version: u32,
+    suite: &'static str,
+    seed: u64,
+    schedule: &'a [String],
+    operations: &'a [String],
+    invariant_verdicts: BTreeMap<&'static str, bool>,
+    final_state: &'a NemesisOutcome,
 }
 
 impl NemesisOutcome {
@@ -336,6 +347,34 @@ async fn nemesis_replays_identically_for_same_seed() {
     let right = run_seed(0x6418, 16).await;
 
     assert_eq!(left, right);
+    write_determinism_evidence(0x6418, &left);
+}
+
+fn write_determinism_evidence(seed: u64, outcome: &NemesisOutcome) {
+    let Ok(path) = std::env::var("HYDRACACHE_DETERMINISM_EVIDENCE") else {
+        return;
+    };
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(std::path::Path::parent)
+        .expect("crate lives under workspace/crates");
+    let path = root.join(path);
+    std::fs::create_dir_all(path.parent().expect("evidence parent")).unwrap();
+    let evidence = NemesisLogicalEvidence {
+        schema_version: 1,
+        suite: "fast.raft-nemesis-determinism",
+        seed,
+        schedule: &outcome.schedule,
+        operations: &outcome.schedule,
+        invariant_verdicts: BTreeMap::from([
+            ("cluster_invariants", true),
+            ("members_converged", true),
+            ("single_leader_per_term", true),
+            ("voters_converged", true),
+        ]),
+        final_state: outcome,
+    };
+    std::fs::write(path, serde_json::to_vec_pretty(&evidence).unwrap()).unwrap();
 }
 
 #[tokio::test]

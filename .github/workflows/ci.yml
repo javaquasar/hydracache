@@ -619,6 +619,9 @@ jobs:
       - name: Execute complete dynamic expected-red sweep
         run: cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
 
+      - name: Run deterministic suite sweep
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
+
       - name: Upload complete canary evidence
         if: always()
         uses: actions/upload-artifact@v6
@@ -626,6 +629,8 @@ jobs:
           name: "canary-all-${{ github.sha }}"
           path: |
             target/release-evidence/canaries/*.json
+            target/release-evidence/receipts/**
+            target/test-evidence/0.64/determinism-sweep.json
             target/test-evidence/0.64/raft-spec-canary.json
           if-no-files-found: error
 

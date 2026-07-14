@@ -312,15 +312,36 @@ function = "dynamic_canary_receipt_is_bound_to_command_defect_and_source_commit"
 
 [[work_item]]
 id = "W18"
-required_sources = ["crates/hydracache-cluster-raft/tests/nemesis_membership.rs"]
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/hydracache-cluster-raft/tests/nemesis_membership.rs",
+    "crates/xtask/src/determinism_sweep.rs",
+    "crates/xtask/tests/determinism_sweep.rs",
+    "docs/testing/fast-suite-registry.toml",
+]
 required_artifacts = []
-fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = []
+fast_gate_ids = [
+    "fast.raft-nemesis-determinism",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = ["tool.determinism-sweep"]
 ship_required = true
 
 [[work_item.required_tests]]
 source = "crates/hydracache-cluster-raft/tests/nemesis_membership.rs"
 function = "nemesis_replays_identically_for_same_seed"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/nemesis_membership.rs"
+function = "nemesis_failure_shrinks_to_minimal_reproducing_schedule"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/determinism_sweep.rs"
+function = "determinism_sweep_matches_normalized_digests_across_repeated_and_serial_parallel_runs"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/determinism_sweep.rs"
+function = "determinism_digest_ignores_ephemeral_metadata_but_detects_logical_schedule_drift"
 
 [[work_item]]
 id = "W19"

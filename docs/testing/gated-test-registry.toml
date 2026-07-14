@@ -4702,6 +4702,38 @@ platform = "any"
 HYDRACACHE_REQUIRE_TLC = "1"
 
 [[gate]]
+id = "tool.determinism-sweep"
+kind = "external_tool"
+source = "crates/xtask/src/determinism_sweep.rs"
+package = "xtask"
+target = "determinism-sweep"
+test = "fast.raft-nemesis-determinism"
+cfg = ""
+env = ""
+reason = "Repeated and serial executions must produce the same canonical logical evidence digest"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["cargo=workspace-toolchain"]
+timeout_seconds = 1200
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.64/determinism-sweep.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "dynamic-canary-sweep"
+step = "Run deterministic suite sweep"
+
+[gate.command]
+program = "cargo"
+args = ["xtask", "determinism-sweep", "--release", "0.64"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "tool.tsan.concurrent-suites"
 kind = "external_tool"
 source = "crates/xtask/src/tsan_check.rs"
