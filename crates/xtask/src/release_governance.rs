@@ -142,6 +142,7 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
 pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let workflow = parse_workflow(text)?;
     let mut problems = Vec::new();
+    problems.extend(release_history_checkout_problems(text)?);
     for (job, required_steps) in [
         (
             "rust",
@@ -203,6 +204,49 @@ pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         }
     }
     problems.extend(fuzz_nightly_wiring_problems(text));
+    Ok(problems)
+}
+
+pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    let root: Value = serde_yaml::from_str(text)?;
+    let jobs = mapping_value(root.as_mapping(), "jobs")
+        .and_then(Value::as_mapping)
+        .ok_or("workflow has no jobs mapping")?;
+    let mut problems = Vec::new();
+
+    for job_id in ["rust", "dynamic-canary-sweep"] {
+        let Some(job) = jobs.get(Value::String(job_id.to_owned())) else {
+            problems.push(format!(
+                "release compatibility proof is missing required job {job_id}"
+            ));
+            continue;
+        };
+        let checkout = mapping_value(job.as_mapping(), "steps")
+            .and_then(Value::as_sequence)
+            .and_then(|steps| {
+                steps.iter().find(|step| {
+                    mapping_value(step.as_mapping(), "uses")
+                        .and_then(Value::as_str)
+                        .is_some_and(|uses| uses.starts_with("actions/checkout@"))
+                })
+            });
+        let full_history = checkout
+            .and_then(|step| mapping_value(step.as_mapping(), "with"))
+            .and_then(Value::as_mapping)
+            .and_then(|with| mapping_value(Some(with), "fetch-depth"))
+            .is_some_and(|depth| match depth {
+                Value::Number(number) => number.as_u64() == Some(0),
+                Value::String(value) => value == "0",
+                _ => false,
+            });
+
+        if !full_history {
+            problems.push(format!(
+                "job {job_id} checkout must set with.fetch-depth: 0 so compatibility tag v0.63.0 and its ancestry are available"
+            ));
+        }
+    }
+
     Ok(problems)
 }
 

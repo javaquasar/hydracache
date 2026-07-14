@@ -72,3 +72,29 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
             || problem.contains("fuzz_config_parse -- -max_total_time=60")
     }));
 }
+
+#[test]
+fn release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let problems = xtask::release_governance::release_history_checkout_problems(&workflow).unwrap();
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    let shallow = r#"
+jobs:
+  rust:
+    steps:
+      - uses: actions/checkout@v5
+  dynamic-canary-sweep:
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+"#;
+    let problems = xtask::release_governance::release_history_checkout_problems(shallow).unwrap();
+    assert_eq!(problems.len(), 2, "{problems:#?}");
+    assert!(problems.iter().any(|problem| problem.contains("job rust")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("job dynamic-canary-sweep")));
+}
