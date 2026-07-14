@@ -153,6 +153,9 @@ cargo publish -p hydracache-cluster
 cargo package -p hydracache-actuator-axum
 cargo publish -p hydracache-actuator-axum
 
+cargo package -p hydracache-redis-compat
+cargo publish -p hydracache-redis-compat
+
 cargo package -p hydracache-server
 cargo publish -p hydracache-server
 
@@ -341,6 +344,9 @@ cargo publish -p hydracache-cluster
 
 cargo package -p hydracache-actuator-axum
 cargo publish -p hydracache-actuator-axum
+
+cargo package -p hydracache-redis-compat
+cargo publish -p hydracache-redis-compat
 
 cargo package -p hydracache-server
 cargo publish -p hydracache-server

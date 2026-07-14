@@ -9,7 +9,6 @@ homepage.workspace = true
 readme = "README.md"
 keywords.workspace = true
 categories.workspace = true
-publish = false
 description = "Off-by-default Redis RESP edge facade for HydraCache cache-subset compatibility."
 
 [dependencies]
