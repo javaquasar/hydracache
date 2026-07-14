@@ -449,12 +449,15 @@ function = "release_evidence_reports_every_manifest_work_item_exactly_once"
 
 [[work_item]]
 id = "W34"
-required_sources = []
-required_tests = []
+required_sources = ["crates/hydracache/tests/cache_core_concurrency_matrix.rs"]
 required_artifacts = []
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache/tests/cache_core_concurrency_matrix.rs"
+function = "cache_core_matrix_preserves_invalidation_and_singleflight_invariants"
 
 [[work_item]]
 id = "W35"

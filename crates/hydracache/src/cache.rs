@@ -25,7 +25,7 @@ use crate::cluster::{
 use crate::entry::CacheEntry;
 use crate::events::{CacheEventListenerHandle, CacheEventSubscriber, EventBus};
 use crate::grid::{ClusterGridCounters, ReplicatedValueSecurityPosture, ReplicationConfig};
-use crate::inflight::{InFlightMap, SharedLoadFuture};
+use crate::inflight::{InFlightMap, SharedLoadHandle};
 use crate::invalidation_bus::{
     CacheInvalidation, CacheInvalidationBus, CacheInvalidationMessage, CacheInvalidationReceive,
 };
@@ -78,7 +78,7 @@ where
 {
     pub(crate) store: Cache<String, CacheEntry>,
     pub(crate) tag_index: TagIndex,
-    pub(crate) in_flight: InFlightMap,
+    pub(crate) in_flight: Arc<InFlightMap>,
     pub(crate) codec: C,
     pub(crate) default_ttl: std::time::Duration,
     pub(crate) max_entry_bytes: usize,
@@ -1755,12 +1755,16 @@ where
         key: &str,
         options: CacheOptions,
         loader: F,
-    ) -> SharedLoadFuture
+    ) -> SharedLoadHandle
     where
         F: FnOnce(Self) -> Fut + Send + 'static,
         Fut: Future<Output = Result<Bytes>> + Send + 'static,
     {
-        let generation = self.inner.tag_index.snapshot(options.tags_value()).await;
+        let generation = self
+            .inner
+            .tag_index
+            .snapshot(key, options.tags_value())
+            .await;
 
         if let Some(shared) = self.inner.in_flight.get_current(key, &generation).await {
             self.inner
@@ -1785,7 +1789,7 @@ where
             == LoadBreakerDecision::Reject
         {
             let error = Arc::new(load_breaker_open_error(&key_owned));
-            return async move { Err(error) }.boxed().shared();
+            return SharedLoadHandle::detached(async move { Err(error) }.boxed().shared());
         }
 
         // Coverage builds get one cooperative scheduling point here so tests can
@@ -1925,6 +1929,7 @@ where
         kind: CacheEventKind,
         origin: CacheEventOrigin,
     ) -> Result<bool> {
+        self.inner.tag_index.advance_key(key).await;
         let Some(entry) = self.inner.store.get(key).await else {
             return Ok(false);
         };

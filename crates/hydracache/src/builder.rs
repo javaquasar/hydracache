@@ -360,7 +360,7 @@ where
             inner: Arc::new(HydraCacheInner {
                 store,
                 tag_index: TagIndex::default(),
-                in_flight: InFlightMap::default(),
+                in_flight: Arc::new(InFlightMap::default()),
                 codec: self.codec,
                 default_ttl: self.default_ttl,
                 max_entry_bytes,

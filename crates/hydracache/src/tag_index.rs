@@ -5,6 +5,8 @@ use tokio::sync::RwLock;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LoadGenerationSnapshot {
     pub(crate) global: u64,
+    pub(crate) key: String,
+    pub(crate) key_generation: u64,
     pub(crate) tags: Vec<(String, u64)>,
 }
 
@@ -17,6 +19,7 @@ pub(crate) struct TagIndex {
 struct TagIndexState {
     keys_by_tag: HashMap<String, HashSet<String>>,
     generations: HashMap<String, u64>,
+    key_generations: HashMap<String, u64>,
     global_generation: u64,
 }
 
@@ -64,10 +67,12 @@ impl TagIndex {
             .unwrap_or_default()
     }
 
-    pub(crate) async fn snapshot(&self, tags: &[String]) -> LoadGenerationSnapshot {
+    pub(crate) async fn snapshot(&self, key: &str, tags: &[String]) -> LoadGenerationSnapshot {
         let guard = self.state.read().await;
         LoadGenerationSnapshot {
             global: guard.global_generation,
+            key: key.to_owned(),
+            key_generation: guard.key_generations.get(key).copied().unwrap_or(0),
             tags: tags
                 .iter()
                 .map(|tag| {
@@ -83,14 +88,27 @@ impl TagIndex {
     pub(crate) async fn is_current(&self, snapshot: &LoadGenerationSnapshot) -> bool {
         let guard = self.state.read().await;
         guard.global_generation == snapshot.global
+            && guard
+                .key_generations
+                .get(&snapshot.key)
+                .copied()
+                .unwrap_or(0)
+                == snapshot.key_generation
             && snapshot.tags.iter().all(|(tag, generation)| {
                 guard.generations.get(tag).copied().unwrap_or(0) == *generation
             })
     }
 
+    pub(crate) async fn advance_key(&self, key: &str) {
+        let mut guard = self.state.write().await;
+        let generation = guard.key_generations.entry(key.to_owned()).or_default();
+        *generation = generation.wrapping_add(1);
+    }
+
     pub(crate) async fn clear(&self) {
         let mut guard = self.state.write().await;
         guard.keys_by_tag.clear();
+        guard.key_generations.clear();
         guard.global_generation = guard.global_generation.wrapping_add(1);
     }
 }
