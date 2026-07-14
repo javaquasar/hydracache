@@ -272,9 +272,7 @@ impl Storage for InMemoryRaftLogStore {
             ));
         }
         let mut snapshot = state.snapshot.clone();
-        if snapshot.get_metadata().index < request_index {
-            snapshot.mut_metadata().index = request_index;
-        }
+        snapshot.mut_metadata().index = snapshot.get_metadata().index.max(request_index);
         Ok(snapshot)
     }
 }
@@ -368,10 +366,8 @@ impl RaftLogStore for InMemoryRaftLogStore {
             .max(snapshot.get_metadata().term);
         state.raft_state.hard_state.commit = state.raft_state.hard_state.commit.max(snapshot_index);
         state.entries.retain(|entry| entry.index > snapshot_index);
-        if preserve_log_entries < state.entries.len() {
-            let keep_from = state.entries.len() - preserve_log_entries;
-            state.entries.drain(..keep_from);
-        }
+        let drop_count = state.entries.len().saturating_sub(preserve_log_entries);
+        state.entries.drain(..drop_count);
         Ok(())
     }
 
@@ -1174,4 +1170,235 @@ fn snapshot_payload_checksum(bytes: &[u8]) -> u64 {
         hash = hash.wrapping_mul(FNV_PRIME);
     }
     hash
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn entry(index: u64, term: u64, data: &[u8]) -> Entry {
+        Entry {
+            index,
+            term,
+            data: data.to_vec().into(),
+            ..Entry::default()
+        }
+    }
+
+    fn indexes(entries: &[Entry]) -> Vec<u64> {
+        entries.iter().map(|entry| entry.index).collect()
+    }
+
+    #[test]
+    fn in_memory_store_debug_and_trait_defaults_are_observable() {
+        let store = InMemoryRaftLogStore::new();
+        let debug = format!("{store:?}");
+
+        assert!(debug.contains("InMemoryRaftLogStore"));
+        assert!(debug.contains("first_index"));
+        assert!(debug.contains("last_index"));
+        assert!(!<InMemoryRaftLogStore as RaftLogStore>::must_sync(&store));
+    }
+
+    #[test]
+    fn in_memory_entries_accept_exact_bounds_and_append_overwrite_boundary() {
+        let store = InMemoryRaftLogStore::new();
+        store
+            .append(&[entry(1, 1, b"a"), entry(2, 1, b"b"), entry(3, 1, b"c")])
+            .unwrap();
+
+        let loaded = store
+            .entries(1, 4, None, GetEntriesContext::empty(false))
+            .unwrap();
+        assert_eq!(indexes(&loaded), vec![1, 2, 3]);
+
+        store.append(&[entry(1, 2, b"replacement")]).unwrap();
+        let retained = store.all_entries();
+        assert_eq!(indexes(&retained), vec![1]);
+        assert_eq!(retained[0].term, 2);
+    }
+
+    #[test]
+    fn in_memory_progress_updates_through_the_trait_contract() {
+        let store = InMemoryRaftLogStore::new();
+        <InMemoryRaftLogStore as RaftLogStore>::mark_applied(&store, 7);
+        <InMemoryRaftLogStore as RaftLogStore>::set_commit(&store, 6).unwrap();
+
+        assert_eq!(store.applied_index(), 7);
+        assert_eq!(store.initial_state().unwrap().hard_state.commit, 6);
+    }
+
+    #[test]
+    fn snapshot_removes_boundary_entry_and_preserves_requested_tail() {
+        let store = InMemoryRaftLogStore::new();
+        store
+            .append(&[
+                entry(1, 1, b"a"),
+                entry(2, 1, b"b"),
+                entry(3, 1, b"c"),
+                entry(4, 1, b"d"),
+            ])
+            .unwrap();
+        store.set_commit(4);
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = 2;
+        snapshot.mut_metadata().term = 3;
+
+        store.save_snapshot(&snapshot, usize::MAX).unwrap();
+        assert_eq!(indexes(&store.all_entries()), vec![3, 4]);
+        let state = store.initial_state().unwrap();
+        assert_eq!(state.hard_state.commit, 4);
+        assert_eq!(state.hard_state.term, 3);
+
+        let tail_store = InMemoryRaftLogStore::new();
+        tail_store
+            .append(&[
+                entry(1, 1, b"a"),
+                entry(2, 1, b"b"),
+                entry(3, 1, b"c"),
+                entry(4, 1, b"d"),
+            ])
+            .unwrap();
+        let mut prefix = Snapshot::default();
+        prefix.mut_metadata().index = 1;
+        tail_store.save_snapshot(&prefix, 2).unwrap();
+        assert_eq!(indexes(&tail_store.all_entries()), vec![3, 4]);
+    }
+
+    #[test]
+    fn snapshot_request_index_is_monotonic_at_the_exact_boundary() {
+        let store = InMemoryRaftLogStore::new();
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = 5;
+        store.save_snapshot(&snapshot, 0).unwrap();
+
+        assert_eq!(store.snapshot(5, 0).unwrap().get_metadata().index, 5);
+        assert_eq!(store.snapshot(7, 0).unwrap().get_metadata().index, 7);
+    }
+
+    #[test]
+    fn entry_size_limit_keeps_one_entry_and_respects_exact_budget() {
+        let make = || {
+            vec![
+                entry(1, 1, b"aaaa"),
+                entry(2, 1, b"bbbb"),
+                entry(3, 1, b"cccc"),
+            ]
+        };
+
+        let mut exact = make();
+        limit_entries_size(&mut exact, 8);
+        assert_eq!(indexes(&exact), vec![1, 2]);
+
+        let mut below = make();
+        limit_entries_size(&mut below, 7);
+        assert_eq!(indexes(&below), vec![1]);
+
+        let mut zero = make();
+        limit_entries_size(&mut zero, 0);
+        assert_eq!(indexes(&zero), vec![1]);
+
+        let mut unlimited = make();
+        limit_entries_size(&mut unlimited, u64::MAX);
+        assert_eq!(indexes(&unlimited), vec![1, 2, 3]);
+
+        let mut empty = Vec::new();
+        limit_entries_size(&mut empty, 0);
+        assert!(empty.is_empty());
+    }
+
+    #[cfg(feature = "durable-log")]
+    #[test]
+    fn durable_store_records_sync_progress_and_exact_raft_metadata() {
+        let directory = DurableRaftLogDirectory::new();
+        let store = directory.open().unwrap();
+        assert_eq!(directory.fsync_count(), 0);
+        assert!(<DurableRaftLogStore as RaftLogStore>::must_sync(&store));
+
+        store.append(&[entry(1, 7, b"command")]).unwrap();
+        store
+            .save_hard_state(&HardState {
+                term: 7,
+                commit: 1,
+                ..HardState::default()
+            })
+            .unwrap();
+        store
+            .save_conf_state(&ConfState::from((vec![1, 2, 3], vec![])))
+            .unwrap();
+        <DurableRaftLogStore as RaftLogStore>::mark_applied(&store, 1);
+
+        assert_eq!(directory.fsync_count(), 2);
+        assert_eq!(store.inner.applied_index(), 1);
+        assert_eq!(store.retained_entries()[0].term, 7);
+        let hard_state = store.initial_state().unwrap().hard_state;
+        assert_eq!(hard_state.term, 7);
+        assert_eq!(hard_state.commit, 1);
+    }
+
+    #[cfg(feature = "durable-log")]
+    #[test]
+    fn durable_cluster_reports_new_leader_and_even_quorum_boundary() {
+        let mut replicated = DurableControlPlaneCluster::new(3);
+        assert_eq!(replicated.propose(b"term-contract".to_vec()).unwrap(), 1);
+        let store = replicated.members.get(&1).unwrap().open().unwrap();
+        assert_eq!(store.retained_entries()[0].term, 1);
+        let hard_state = store.initial_state().unwrap().hard_state;
+        assert_eq!(hard_state.term, 1);
+        assert_eq!(hard_state.commit, 1);
+
+        let mut cluster = DurableControlPlaneCluster::new(4);
+        assert_eq!(cluster.leader(), Some(1));
+        assert_eq!(cluster.kill_leader_and_elect(), Some(2));
+        assert_eq!(cluster.leader(), Some(2));
+        assert_eq!(cluster.kill_leader_and_elect(), None);
+        assert_eq!(cluster.leader(), None);
+        assert!(cluster.propose(b"no-quorum".to_vec()).is_err());
+    }
+
+    #[cfg(feature = "sled-log-store")]
+    fn sled_temp_path(label: &str) -> std::path::PathBuf {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!("hydracache-{label}-{unique}"))
+    }
+
+    #[cfg(feature = "sled-log-store")]
+    #[test]
+    fn sled_store_persists_applied_index_and_exact_compaction_boundary() {
+        let path = sled_temp_path("mutant-boundaries");
+        let store = SledRaftLogStore::open(&path).unwrap();
+        assert!(<SledRaftLogStore as RaftLogStore>::must_sync(&store));
+        store
+            .append(&[entry(1, 1, b"a"), entry(2, 1, b"b"), entry(3, 1, b"c")])
+            .unwrap();
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = 1;
+        snapshot.mut_metadata().term = 1;
+        store.save_snapshot(&snapshot, usize::MAX).unwrap();
+        <SledRaftLogStore as RaftLogStore>::mark_applied(&store, 3);
+        store.compact_to(2).unwrap();
+        drop(store);
+
+        let reopened = SledRaftLogStore::open(&path).unwrap();
+        assert_eq!(reopened.inner.applied_index(), 3);
+        assert_eq!(indexes(&reopened.retained_entries().unwrap()), vec![2, 3]);
+        drop(reopened);
+        let _ = std::fs::remove_dir_all(path);
+    }
+
+    #[cfg(feature = "sled-log-store")]
+    #[test]
+    fn sled_integer_and_empty_snapshot_codecs_have_known_answers() {
+        let value = 0x0102_0304_0506_0708_u64;
+        assert_eq!(encode_u64(value), [1, 2, 3, 4, 5, 6, 7, 8]);
+        assert_eq!(decode_u64(&encode_u64(value)).unwrap(), value);
+
+        let snapshot = Snapshot::default();
+        let encoded = encode_snapshot(&snapshot).unwrap();
+        assert_eq!(encoded.len(), SLED_SNAPSHOT_ENVELOPE_HEADER_LEN);
+        assert_eq!(decode_snapshot_envelope(&encoded).unwrap(), snapshot);
+    }
 }
