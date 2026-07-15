@@ -763,6 +763,15 @@ and shutdown both inside and outside a Tokio runtime. Refactor only narrow clock
 to make these branches deterministic. Daemon-process tests must propagate the coverage environment to
 instrumented child binaries before child execution is counted.
 
+Implementation evidence: the aggregate profile now has a mandatory `server-networked-daemon` step that
+sets `HYDRACACHE_RUN_NETWORKED_DAEMON_E2E=1` and executes four single-process multi-node election, late
+join, unreachable-join, and drain scenarios. Fast unit rows add explicit auth rotation/read failures,
+missing CA, persisted-identity corruption, paused-time leader timeout, send-task panic diagnostics, and
+runtime shutdown inside/outside Tokio. The clean local crate profile moved from
+`3,160 / 3,756 = 84.13%` to `3,683 / 4,027 = 91.46%`. Because inline unit tests are reported as lines in
+the same Rust source file, the non-test `grid_host.rs` prefix was measured separately on its stable
+denominator: `1,091 / 1,414 = 77.16%` became `1,321 / 1,414 = 93.42%` (+230 covered product lines).
+
 **C5. Core Grid And Consistency Paths.** Raise the main `hydracache` crate from 88.84% toward at least
 92%, prioritizing `grid/elasticity`, `grid/checkpoint`, `grid/residency`, `consistency`, cluster runtime,
 and invalidation transport. Use table/property/state-machine tests for restart points, stale epochs,

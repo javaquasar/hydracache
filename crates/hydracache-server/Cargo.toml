@@ -40,6 +40,7 @@ proptest.workspace = true
 raft.workspace = true
 rcgen.workspace = true
 tower.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
 
 [lints]
 workspace = true

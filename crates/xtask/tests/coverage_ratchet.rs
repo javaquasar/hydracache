@@ -66,6 +66,7 @@ fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
             "raft-sled-log-store",
             "raft-test-failpoints",
             "db-postgres-outbox",
+            "server-networked-daemon",
             "report"
         ]
     );
@@ -93,6 +94,14 @@ fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
     assert_eq!(ignore[1], config.ignored_source_regex);
     assert_eq!(config.ignored_source_regex, "(^|/)crates/xtask/");
     assert!(!report.args.iter().any(|arg| arg == "--fail-under-lines"));
+    let networked = plan
+        .iter()
+        .find(|step| step.id == "server-networked-daemon")
+        .unwrap();
+    assert_eq!(
+        networked.environment,
+        [("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")]
+    );
     for step in plan.iter().filter(|step| {
         matches!(
             step.kind,
@@ -126,8 +135,7 @@ fn coverage_plan_rejects_a_required_tier_skip_or_second_clean() {
 
     let mut incompatible_flags = xtask::coverage_ratchet::measurement_plan(&config);
     incompatible_flags[1].args.push("--no-clean".to_owned());
-    let problems =
-        xtask::coverage_ratchet::validate_measurement_plan(&incompatible_flags, &config);
+    let problems = xtask::coverage_ratchet::validate_measurement_plan(&incompatible_flags, &config);
     assert!(problems
         .iter()
         .any(|problem| problem.contains("incompatible --no-clean and --no-report")));

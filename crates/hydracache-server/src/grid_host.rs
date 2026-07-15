@@ -2550,6 +2550,319 @@ mod tests {
     }
 
     #[test]
+    fn cluster_auth_rotation_and_token_failures_are_explicit() {
+        let dir = unique_test_dir("cluster-auth");
+        fs::create_dir_all(&dir).unwrap();
+        let current = dir.join("current.token");
+        let previous = dir.join("previous.token");
+        let node_id = ClusterNodeId::from("member-auth");
+        let mut config = test_member_config("127.0.0.1:7000");
+        config.cluster_auth.key_id = Some("current".to_owned());
+        config.cluster_auth.token_file = Some(current.clone());
+
+        let error = cluster_auth_provider(&config, &node_id).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("failed to read cluster_auth.token_file"));
+
+        fs::write(&current, "\r\n").unwrap();
+        let error = cluster_auth_provider(&config, &node_id).unwrap_err();
+        assert!(error.to_string().contains("cluster_auth.token_file"));
+        assert!(error.to_string().contains("is empty"));
+
+        fs::write(&current, "current-secret\r\n").unwrap();
+        config.cluster_auth.previous_key_id = Some("previous".to_owned());
+        let error = cluster_auth_provider(&config, &node_id).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("cluster_auth.previous requires key_id and readable token_file"));
+
+        config.cluster_auth.previous_token_file = Some(previous.clone());
+        fs::write(&previous, "previous-secret\n").unwrap();
+        assert!(cluster_auth_provider(&config, &node_id).unwrap().is_some());
+
+        let mut tls_without_auth = test_member_config("127.0.0.1:7000");
+        tls_without_auth.tls.enabled = true;
+        let error = cluster_route_auth(&tls_without_auth, &node_id).unwrap_err();
+        assert!(error.to_string().contains("requires [cluster_auth]"));
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn raft_tls_client_rejects_missing_and_unreadable_ca() {
+        let dir = unique_test_dir("raft-client-ca");
+        fs::create_dir_all(&dir).unwrap();
+        let mut config = test_member_config("127.0.0.1:7000");
+        config.tls.enabled = true;
+
+        let error = raft_http_client(&config).unwrap_err();
+        assert!(error.to_string().contains("tls.enabled requires ca_path"));
+
+        let missing = dir.join("missing-ca.pem");
+        config.tls.ca_path = Some(missing);
+        let error = raft_http_client(&config).unwrap_err();
+        assert!(error.to_string().contains("failed to read cluster TLS CA"));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn persisted_identity_rejects_wrong_cluster_hash_and_malformed_files() {
+        let node_id = ClusterNodeId::from("member-identity");
+        let raft_id = raft_node_id(&node_id);
+        let error = PersistedNodeIdentity {
+            format_version: NODE_IDENTITY_FORMAT_VERSION,
+            cluster: "other-cluster".to_owned(),
+            node_id: node_id.to_string(),
+            raft_node_id: raft_id,
+        }
+        .into_member_identity()
+        .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("belongs to cluster other-cluster"));
+
+        let error = PersistedNodeIdentity {
+            format_version: NODE_IDENTITY_FORMAT_VERSION,
+            cluster: DEFAULT_CLUSTER_NAME.to_owned(),
+            node_id: node_id.to_string(),
+            raft_node_id: raft_id.saturating_add(1),
+        }
+        .into_member_identity()
+        .unwrap_err();
+        assert!(error.to_string().contains("does not match node_id"));
+
+        let dir = unique_test_dir("identity-errors");
+        fs::create_dir_all(&dir).unwrap();
+        let missing = dir.join("missing.json");
+        let error = read_persisted_node_identity(&missing).unwrap_err();
+        assert!(error.to_string().contains("failed to read node identity"));
+
+        let malformed = dir.join("malformed.json");
+        fs::write(&malformed, "{").unwrap();
+        let error = read_persisted_node_identity(&malformed).unwrap_err();
+        assert!(error.to_string().contains("failed to parse node identity"));
+
+        let storage_file = dir.join("storage-is-a-file");
+        fs::write(&storage_file, "occupied").unwrap();
+        let error = resolve_member_identity(&test_member_config("127.0.0.1:7000"), &storage_file)
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("failed to create member storage directory"));
+
+        let missing_parent = dir.join("missing-parent").join(NODE_IDENTITY_FILE);
+        let error = write_node_identity_create_once(&missing_parent, "{}").unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("failed to write temporary node identity"));
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn leader_wait_timeout_is_bounded_and_contextual() {
+        let dir = unique_test_dir("leader-timeout");
+        let raft = Arc::new(
+            RaftMetadataRuntime::sled_with_config(
+                RaftMetadataRuntimeConfig::try_joining(DEFAULT_CLUSTER_NAME, 2, [1]).unwrap(),
+                &dir,
+            )
+            .unwrap(),
+        );
+
+        let error = wait_for_raft_leader(&raft).await.unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("timed out waiting for networked raft leader"));
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn immediate_poll_and_dedicated_runtime_lifecycle_cover_both_outcomes() {
+        assert_eq!(poll_immediate(std::future::ready(7)).unwrap(), 7);
+        let error = poll_immediate(std::future::pending::<()>()).unwrap_err();
+        assert!(error.to_string().contains("unexpectedly yielded"));
+
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let runtime = DedicatedGridRuntime::new(runtime);
+        assert_eq!(runtime.block_on(async { 11 }), 11);
+        let (tx, rx) = std::sync::mpsc::channel();
+        runtime.spawn(async move {
+            tx.send(13).unwrap();
+        });
+        runtime.block_on(async { tokio::task::yield_now().await });
+        assert_eq!(rx.recv_timeout(Duration::from_secs(1)).unwrap(), 13);
+        drop(runtime);
+    }
+
+    #[tokio::test]
+    async fn dedicated_runtime_can_be_dropped_inside_tokio() {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        drop(DedicatedGridRuntime::new(runtime));
+    }
+
+    #[test]
+    fn lightweight_handles_and_diagnostics_expose_failure_state() {
+        let control_plane = Arc::new(RaftStyleMetadataControlPlane::new(DEFAULT_CLUSTER_NAME));
+        let handle = InProcessGridHandle::new(control_plane, None);
+        handle.begin_drain();
+        assert_eq!(
+            handle.reachability(&ClusterNodeId::from("unknown")),
+            Reachability::Unreachable
+        );
+        assert!(format!("{handle:?}").contains("InProcessGridHandle"));
+
+        let diagnostics = GridDriveDiagnostics::default();
+        diagnostics.record_drive_error("drive failed".to_owned());
+        let snapshot = diagnostics.snapshot();
+        assert_eq!(snapshot.drive_errors, 1);
+        assert_eq!(snapshot.last_error.as_deref(), Some("drive failed"));
+
+        let handler = test_raft_handler(BTreeMap::new());
+        assert_eq!(
+            handler.resolve_wire_sender("local").unwrap(),
+            handler.raft_node_id
+        );
+        assert!(format!("{handler:?}").contains("RaftClusterMessageHandler"));
+    }
+
+    #[tokio::test]
+    async fn http_raft_sink_fails_loud_for_missing_peer_and_bad_headers() {
+        let local = ClusterNodeId::from("local");
+        let local_raft_id = raft_node_id(&local);
+        let config = test_member_config("127.0.0.1:7000");
+        let sink = HttpRaftMessageSink::new(
+            local.clone(),
+            local_raft_id,
+            Arc::new(RwLock::new(BTreeMap::new())),
+            ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true),
+            &config,
+        )
+        .unwrap();
+        let local_message = RaftWireMessage {
+            from: local_raft_id,
+            to: local_raft_id,
+            term: 1,
+            payload: Vec::new(),
+        };
+        sink.send(local_message).await.unwrap();
+        assert_eq!(sink.node_id_for(local_raft_id), "local");
+        assert_eq!(sink.node_id_for(99), "99");
+
+        let error = sink
+            .send(RaftWireMessage {
+                from: local_raft_id,
+                to: 99,
+                term: 1,
+                payload: Vec::new(),
+            })
+            .await
+            .unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("no HTTP raft peer endpoint for raft node 99"));
+
+        let bad_auth = ClusterRouteAuth::secure(
+            Arc::new(StaticNodeIdentityProvider::new(local, "key", "bad\nvalue")),
+            Arc::new(AllowAllAuthorizer),
+        );
+        let bad_sink = HttpRaftMessageSink::new(
+            ClusterNodeId::from("local"),
+            local_raft_id,
+            Arc::new(RwLock::new(BTreeMap::new())),
+            bad_auth,
+            &config,
+        )
+        .unwrap();
+        let error = bad_sink.authenticated_headers().unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("failed to apply cluster auth headers"));
+    }
+
+    #[test]
+    fn topology_log_and_identity_paths_fail_loud_on_invalid_inputs() {
+        let dir = unique_test_dir("topology-errors");
+        assert!(!raft_log_dir_has_state(&dir).unwrap());
+        fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("not-a-directory");
+        fs::write(&file, "occupied").unwrap();
+        let error = raft_log_dir_has_state(&file).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("failed to inspect raft log directory"));
+
+        assert_eq!(valid_raft_endpoint("  "), None);
+        assert_eq!(valid_raft_endpoint("0.0.0.0:7000"), None);
+        assert_eq!(valid_raft_endpoint("127.0.0.1:0"), None);
+
+        let mut peers = BTreeMap::new();
+        insert_raft_peer(
+            &mut peers,
+            7,
+            ClusterNodeId::from("member-a"),
+            "127.0.0.1:7000".to_owned(),
+        )
+        .unwrap();
+        insert_raft_peer(
+            &mut peers,
+            7,
+            ClusterNodeId::from("member-a"),
+            "127.0.0.1:7000".to_owned(),
+        )
+        .unwrap();
+        assert_eq!(peers.len(), 1);
+
+        let root = Path::new(std::path::MAIN_SEPARATOR_STR);
+        assert!(root.parent().is_none());
+        let error = write_node_identity_create_once(root, "{}").unwrap_err();
+        assert!(error.to_string().contains("has no parent directory"));
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    struct PanicRaftMessageSink;
+
+    #[async_trait::async_trait]
+    impl RaftMessageSink for PanicRaftMessageSink {
+        async fn send(&self, _message: RaftWireMessage) -> CacheResult<()> {
+            panic!("intentional send-task panic")
+        }
+    }
+
+    #[tokio::test]
+    async fn send_task_panic_is_reported_in_diagnostics() {
+        let sink: Arc<dyn RaftMessageSink> = Arc::new(PanicRaftMessageSink);
+        let diagnostics = GridDriveDiagnostics::default();
+        let error = send_raft_messages_with_diagnostics(
+            &sink,
+            vec![RaftWireMessage {
+                from: 1,
+                to: 2,
+                term: 1,
+                payload: Vec::new(),
+            }],
+            Some(&diagnostics),
+        )
+        .await
+        .unwrap_err();
+
+        assert!(error.to_string().contains("raft send task failed"));
+        let snapshot = diagnostics.snapshot();
+        assert_eq!(snapshot.send_failures, 1);
+        assert!(snapshot
+            .last_error
+            .as_deref()
+            .is_some_and(|error| error.contains("intentional send-task panic")));
+    }
+
+    #[test]
     fn seed_hash_collision_fails_loud_at_topology_build() {
         let mut peers = BTreeMap::new();
         insert_raft_peer(
@@ -2797,6 +3110,14 @@ mod tests {
             key_path,
             ca_path,
         }
+    }
+
+    fn unique_test_dir(name: &str) -> PathBuf {
+        let sequence = NODE_IDENTITY_TEMP_SEQ.fetch_add(1, Ordering::Relaxed);
+        PathBuf::from(format!(
+            "target/test-hydracache-grid-host/unit/{name}-{}-{sequence}",
+            std::process::id()
+        ))
     }
 
     fn test_member_config(cluster_addr: &str) -> ServerConfig {

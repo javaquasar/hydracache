@@ -65,6 +65,7 @@ pub struct CoverageStep {
     pub id: &'static str,
     pub kind: CoverageStepKind,
     pub args: Vec<String>,
+    pub environment: Vec<(&'static str, &'static str)>,
 }
 
 #[derive(Debug, Serialize)]
@@ -72,6 +73,7 @@ struct CoverageStepEvidence {
     id: &'static str,
     kind: CoverageStepKind,
     command: Vec<String>,
+    environment: Vec<(&'static str, &'static str)>,
     status: &'static str,
 }
 
@@ -204,6 +206,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
             id: "clean",
             kind: CoverageStepKind::Clean,
             args: strings(&["llvm-cov", "clean", "--workspace"]),
+            environment: Vec::new(),
         },
         CoverageStep {
             id: "default-workspace",
@@ -215,6 +218,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--locked",
                 "--no-report",
             ]),
+            environment: Vec::new(),
         },
         CoverageStep {
             id: "raft-sled-log-store",
@@ -234,6 +238,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--locked",
                 "--no-report",
             ]),
+            environment: Vec::new(),
         },
         CoverageStep {
             id: "raft-test-failpoints",
@@ -255,6 +260,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--",
                 "--test-threads=1",
             ]),
+            environment: Vec::new(),
         },
         CoverageStep {
             id: "db-postgres-outbox",
@@ -273,6 +279,25 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--ignored",
                 "--test-threads=1",
             ]),
+            environment: Vec::new(),
+        },
+        CoverageStep {
+            id: "server-networked-daemon",
+            kind: CoverageStepKind::AdditiveTests,
+            args: strings(&[
+                "llvm-cov",
+                "-p",
+                "hydracache-server",
+                "--test",
+                "grid_host",
+                "--locked",
+                "--no-report",
+                "--",
+                "multi_node",
+                "--nocapture",
+                "--test-threads=1",
+            ]),
+            environment: vec![("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")],
         },
         CoverageStep {
             id: "report",
@@ -286,6 +311,7 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
                 "--output-path".to_owned(),
                 config.raw_report_artifact.clone(),
             ],
+            environment: Vec::new(),
         },
     ]
 }
@@ -298,6 +324,7 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
         "raft-sled-log-store",
         "raft-test-failpoints",
         "db-postgres-outbox",
+        "server-networked-daemon",
         "report",
     ];
     let actual_ids = plan.iter().map(|step| step.id).collect::<Vec<_>>();
@@ -327,6 +354,10 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
     for step in plan {
         match step.kind {
             CoverageStepKind::Clean => {
+                if !step.environment.is_empty() {
+                    problems
+                        .push("coverage clean step may not set environment variables".to_owned());
+                }
                 if step.args != strings(&["llvm-cov", "clean", "--workspace"]) {
                     problems.push(
                         "coverage clean step must clean the workspace exactly once".to_owned(),
@@ -354,8 +385,20 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
                         step.id
                     ));
                 }
+                if step.id == "server-networked-daemon"
+                    && step.environment != vec![("HYDRACACHE_RUN_NETWORKED_DAEMON_E2E", "1")]
+                {
+                    problems.push(
+                        "server networked coverage tier must enable its reviewed E2E gate"
+                            .to_owned(),
+                    );
+                }
             }
             CoverageStepKind::Report => {
+                if !step.environment.is_empty() {
+                    problems
+                        .push("coverage report step may not set environment variables".to_owned());
+                }
                 for required in ["report", "--json", "--output-path"] {
                     if !has_arg(&step.args, required) {
                         problems.push(format!(
@@ -403,6 +446,7 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
         }
         let status = Command::new("cargo")
             .args(&step.args)
+            .envs(step.environment.iter().copied())
             .env("CARGO_BUILD_JOBS", "2")
             .current_dir(root)
             .status()?;
@@ -436,6 +480,7 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
                 command: std::iter::once("cargo".to_owned())
                     .chain(step.args)
                     .collect(),
+                environment: step.environment,
                 status: "passed",
             })
             .collect(),
