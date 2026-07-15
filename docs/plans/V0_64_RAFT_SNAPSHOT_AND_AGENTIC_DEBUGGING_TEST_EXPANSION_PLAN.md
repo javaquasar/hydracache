@@ -921,6 +921,12 @@ distinguish the mutation; document that equivalence in the fixing commit. None o
 added to either baseline. The repair is complete only when all eight product shards and both proof-oracle
 shards report zero missed mutants on the same commit.
 
+Targeted repair reruns are part of the same falsification loop, not a substitute for the ten canonical
+shards. They must include half-open log-range assertions and symmetric member/client generation replay;
+when a candidate exposes a provably redundant condition whose removal cannot change an observable result
+(for example, a first-entry size-limit guard followed by an unconditional keep-at-least-one truncation),
+remove that condition and record the equivalence instead of adding an impossible test or baseline entry.
+
 **Canary.** `canary_mutants_baseline_hides_a_live_survivor` - a fixture that adds a real survivor without
 a baseline entry must fail the gate. `canary_mutants_config_uses_hydracache_table_rejected` keeps the
 config in the native cargo-mutants schema, so the slow GitHub lane cannot fail before mutation testing

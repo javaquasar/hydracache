@@ -736,7 +736,7 @@ fn limit_entries_size(entries: &mut Vec<Entry>, max_size: u64) {
     let mut keep = entries.len();
     for (index, entry) in entries.iter().enumerate() {
         total = total.saturating_add(entry.data.len() as u64);
-        if index > 0 && total > max_size {
+        if total > max_size {
             keep = index;
             break;
         }
@@ -1211,6 +1211,10 @@ mod tests {
             .entries(1, 4, None, GetEntriesContext::empty(false))
             .unwrap();
         assert_eq!(indexes(&loaded), vec![1, 2, 3]);
+        let half_open = store
+            .entries(1, 3, None, GetEntriesContext::empty(false))
+            .unwrap();
+        assert_eq!(indexes(&half_open), vec![1, 2]);
 
         store.append(&[entry(1, 2, b"replacement")]).unwrap();
         let retained = store.all_entries();
