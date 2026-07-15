@@ -245,7 +245,7 @@ depends_on = ["0.62.1"]
 [[release]]
 version = "0.64.0"
 file = "docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md"
-status = "planned"
+status = "shipped"
 networked_control_plane = true
 work_items = [
   "W1", "W2", "W3", "W4", "W5", "W5a", "W6", "W6b", "W7", "W8", "W9", "W10",

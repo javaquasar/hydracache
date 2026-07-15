@@ -192,56 +192,9 @@ jobs:
           path: target/release-publish
           if-no-files-found: error
 
-  package:
-    name: Package crates
-    needs: resolve
-    if: needs.resolve.outputs.eligible == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout candidate commit
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.resolve.outputs.source_sha }}
-          fetch-depth: 0
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: v1-rust-no-target
-          cache-targets: false
-          shared-key: crates-package
-
-      - name: Download release metadata
-        uses: actions/download-artifact@v5
-        with:
-          name: ${{ needs.resolve.outputs.metadata_artifact }}
-          path: target/release-publish
-
-      - name: Package every publishable crate
-        shell: bash
-        run: |
-          set -euo pipefail
-          while IFS= read -r package; do
-            [[ -z "$package" ]] && continue
-            echo "::group::Validate $package"
-            cargo package --package "$package" --locked
-            echo "::endgroup::"
-          done < target/release-publish/packages.txt
-
-      - name: Upload package archives
-        uses: actions/upload-artifact@v6
-        with:
-          name: crates-package-${{ needs.resolve.outputs.version }}
-          path: target/package/*.crate
-          if-no-files-found: error
-
   publish:
     name: Publish crates.io packages
-    needs: [resolve, package]
+    needs: resolve
     if: needs.resolve.outputs.eligible == 'true'
     runs-on: ubuntu-latest
     environment: release
@@ -277,12 +230,29 @@ jobs:
           # retry; every other registry response is treated as a release failure.
           : > target/release-publish/publication-results.tsv
           version="${{ needs.resolve.outputs.version }}"
+
+          wait_for_registry_package() {
+            local package="$1"
+            for attempt in $(seq 1 30); do
+              if cargo info "$package@$version" >/dev/null 2>&1; then
+                return 0
+              fi
+              echo "Waiting for $package@$version in the crates.io index ($attempt/30)..."
+              sleep 10
+            done
+            return 1
+          }
+
           while IFS= read -r package; do
             [[ -z "$package" ]] && continue
             url="https://crates.io/api/v1/crates/$package/$version"
             status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
             case "$status" in
               200)
+                if ! wait_for_registry_package "$package"; then
+                  echo "$package@$version exists in the API but not in the Cargo index." >&2
+                  exit 1
+                fi
                 printf '%s\t%s\n' "$package" "already-published" | tee -a target/release-publish/publication-results.tsv
                 continue
                 ;;
@@ -296,17 +266,8 @@ jobs:
                 ;;
             esac
 
-            published=false
-            for attempt in $(seq 1 30); do
-              status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
-              if [[ "$status" == "200" ]]; then
-                published=true
-                break
-              fi
-              sleep 10
-            done
-            if [[ "$published" != true ]]; then
-              echo "Timed out waiting for $package@$version to appear in crates.io." >&2
+            if ! wait_for_registry_package "$package"; then
+              echo "Timed out waiting for $package@$version to appear in the Cargo index." >&2
               exit 1
             fi
             printf '%s\t%s\n' "$package" "published" | tee -a target/release-publish/publication-results.tsv

@@ -1953,6 +1953,7 @@ lines should be investigated before release.
 Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
+- [docs/releases/0.64.0.md](docs/releases/0.64.0.md) - Raft snapshot and test-evidence hardening release.
 - [docs/releases/0.63.0.md](docs/releases/0.63.0.md) - Redis RESP edge facade release.
 - [docs/releases/0.62.1.md](docs/releases/0.62.1.md) - cluster proof cleanup patch notes.
 - [docs/releases/0.62.0.md](docs/releases/0.62.0.md) - cluster correctness test hardening release.

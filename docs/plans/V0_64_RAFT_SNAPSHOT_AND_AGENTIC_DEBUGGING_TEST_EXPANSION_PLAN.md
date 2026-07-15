@@ -47,7 +47,7 @@
 >   `hydracache-cluster-testkit` / `test-failpoints` gates.
 > - **Unblocks:** stronger `1.0` correctness evidence and safer future ownership-routing or
 >   Hazelcast-compatible edge work.
-> - **Status:** planned.
+> - **Status:** shipped.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - source article:
 > [`002-raft-snapshot-agent-bug.md`](../articles/002-raft-snapshot-agent-bug.md) - gates:
