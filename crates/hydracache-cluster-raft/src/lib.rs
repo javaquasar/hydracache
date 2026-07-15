@@ -2507,6 +2507,22 @@ mod tests {
     }
 
     #[test]
+    fn committed_replay_accepts_an_already_newer_materialized_client() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_client(ClusterCandidate::client("client-a").generation(ClusterGeneration::new(5)))
+            .unwrap();
+        let replay = RaftMetadataCommand::ClientUpsert {
+            node_id: ClusterNodeId::from("client-a"),
+            generation: ClusterGeneration::new(3),
+            epoch: cluster.epoch(),
+        };
+
+        materialize_committed_command(&cluster, &replay).unwrap();
+        assert_eq!(cluster.clients()[0].generation, ClusterGeneration::new(5));
+    }
+
+    #[test]
     fn voter_change_without_a_known_leader_fails_loud() {
         let config = RaftMetadataRuntimeConfig::multi_voter("orders", 2, [1, 2, 3]);
         let runtime = RaftMetadataRuntime::with_config(config).unwrap();
