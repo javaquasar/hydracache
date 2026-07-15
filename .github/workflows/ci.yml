@@ -595,6 +595,7 @@ jobs:
   thread-sanitizer:
     name: ThreadSanitizer
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -610,6 +611,13 @@ jobs:
           prefix-key: v1-rust-no-target
           cache-targets: false
           shared-key: thread-sanitizer-nightly-2026-07-01
+
+      - name: Prebuild TSan proof targets
+        timeout-minutes: 120
+        env:
+          RUSTFLAGS: -Zsanitizer=thread
+          RUSTDOCFLAGS: -Zsanitizer=thread
+        run: cargo +nightly-2026-07-01 test -Zbuild-std --target x86_64-unknown-linux-gnu --locked --no-run -p hydracache -p hydracache-cluster-raft --test cache_core_concurrency_matrix --test leadership_handoff --test snapshot_delivery_chaos --test tsan_canary
 
       - name: Run ordinary threaded suites under TSan
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.concurrent-suites

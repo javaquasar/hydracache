@@ -1007,6 +1007,13 @@ digest; a Moka version bump or wider rule requires explicit review. A tiny
 test-only `UnsafeCell` race fixture must produce a TSan report, proving the runner is instrumented; it is
 never linked into product/release graphs.
 
+The dedicated CI lane must prebuild the cache matrix, both Raft suites, and the race canary with the
+same pinned toolchain, target, `-Zbuild-std`, and sanitizer flags before opening the evidence receipt.
+Compilation remains visible in the Actions log, while `tsan-check` flushes a start/pass marker and elapsed
+time for each suite so a timeout identifies the active test instead of producing an opaque one-hour gap.
+Registered TSan gates retain a bounded two-hour timeout for generic cold runners, and the complete job has
+a three-hour outer bound; increasing the budget does not turn a timeout into release evidence.
+
 **Required checks / evidence:**
 
 - `canary_tsan_detects_test_fixture_data_race` exits non-zero with a normalized TSan race signature;

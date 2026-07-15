@@ -1,7 +1,9 @@
 use std::error::Error;
 use std::fs;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+use std::time::Instant;
 
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -10,6 +12,7 @@ pub const PINNED_NIGHTLY: &str = "nightly-2026-07-01";
 const TARGET: &str = "x86_64-unknown-linux-gnu";
 const REQUIRE_ENV: &str = "HYDRACACHE_REQUIRE_TSAN";
 const SUPPRESSIONS_PATH: &str = "docs/testing/tsan-suppressions.txt";
+const CI_PREBUILD_COMMAND: &str = "cargo +nightly-2026-07-01 test -Zbuild-std --target x86_64-unknown-linux-gnu --locked --no-run -p hydracache -p hydracache-cluster-raft --test cache_core_concurrency_matrix --test leadership_handoff --test snapshot_delivery_chaos --test tsan_canary";
 
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -61,6 +64,11 @@ pub fn structural_check(root: &Path) -> Result<(), Box<dyn Error>> {
     let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
     if !workflow.contains(PINNED_NIGHTLY) || !workflow.contains("thread-sanitizer") {
         return Err("CI is not wired to the pinned ThreadSanitizer lane".into());
+    }
+    for required in ["Prebuild TSan proof targets", CI_PREBUILD_COMMAND] {
+        if !workflow.contains(required) {
+            return Err(format!("TSan CI prebuild is missing `{required}`").into());
+        }
     }
     let suppressions = fs::read_to_string(root.join(SUPPRESSIONS_PATH))?;
     if !suppressions.contains("Owner: release 0.64 W16/W26")
@@ -119,10 +127,18 @@ fn run_suites(root: &Path) -> Result<(), Box<dyn Error>> {
             ],
         ),
     ] {
+        println!("tsan-check: START suite={name}");
+        io::stdout().flush()?;
+        let started = Instant::now();
         let output = cargo_tsan(root, &args, &[("TSAN_OPTIONS", tsan_options.as_str())])?;
         if !output.status.success() {
             return unexpected(name, &output);
         }
+        println!(
+            "tsan-check: PASS suite={name} elapsed_seconds={:.3}",
+            started.elapsed().as_secs_f64()
+        );
+        io::stdout().flush()?;
     }
     write_artifact(
         root,
@@ -137,6 +153,9 @@ fn run_suites(root: &Path) -> Result<(), Box<dyn Error>> {
 
 fn run_canary(root: &Path) -> Result<(), Box<dyn Error>> {
     let tsan_options = tsan_options(root)?;
+    println!("tsan-check: START canary=isolated_data_race");
+    io::stdout().flush()?;
+    let started = Instant::now();
     let output = cargo_tsan(
         root,
         &[
@@ -156,6 +175,11 @@ fn run_canary(root: &Path) -> Result<(), Box<dyn Error>> {
     if !canary_output_is_expected_red(output.status.success(), &text) {
         return unexpected("canary", &output);
     }
+    println!(
+        "tsan-check: PASS canary=isolated_data_race elapsed_seconds={:.3}",
+        started.elapsed().as_secs_f64()
+    );
+    io::stdout().flush()?;
     write_artifact(
         root,
         Scope::Canary,

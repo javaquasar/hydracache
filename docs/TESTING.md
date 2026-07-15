@@ -721,8 +721,13 @@ release/fence false positive: TSan cannot model memory fences, while Rust's own
 `Arc` substitutes an acquire load under the sanitizer. The runner keeps
 parallel `libtest`, Tokio, cache, and Raft execution enabled, validates that no
 broader suppression was added, and binds the suppression digest into evidence.
-Its ignored `UnsafeCell` fixture is
-test-only and must produce a bounded `ThreadSanitizer: data race` report; a
+The dedicated CI job first prebuilds all four instrumented proof targets in a
+visible step, so dependency and `build-std` compilation cannot consume the
+execution receipt's entire timeout without diagnostics. The runner flushes a
+start/pass marker and elapsed time for every suite; the generic registered gate
+retains a bounded two-hour cold-build budget for runs without that prebuild.
+Its ignored `UnsafeCell` fixture is test-only and must produce a bounded
+`ThreadSanitizer: data race` report; a
 green canary, unrelated panic, timeout, unsupported-host skip, or unpinned
 toolchain is not release evidence.
 
