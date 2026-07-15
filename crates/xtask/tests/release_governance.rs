@@ -90,15 +90,27 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
+  coverage-ratchet:
+    steps:
+      - uses: actions/checkout@v5
   msrv:
+    steps:
+      - uses: actions/checkout@v5
+  gated-proof-registry:
     steps:
       - uses: actions/checkout@v5
 "#;
     let problems = xtask::release_governance::release_history_checkout_problems(shallow).unwrap();
-    assert_eq!(problems.len(), 3, "{problems:#?}");
+    assert_eq!(problems.len(), 5, "{problems:#?}");
     assert!(problems.iter().any(|problem| problem.contains("job rust")));
     assert!(problems
         .iter()
         .any(|problem| problem.contains("job dynamic-canary-sweep")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("job coverage-ratchet")));
     assert!(problems.iter().any(|problem| problem.contains("job msrv")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("job gated-proof-registry")));
 }

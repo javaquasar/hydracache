@@ -560,13 +560,15 @@ while all other workspace tests retain normal parallel execution and the stricte
 global timeout. `fast-suite-check` rejects a missing test, parallel group, or
 unbounded/changed override.
 
-The `rust`, complete dynamic-canary, and MSRV jobs check out full Git history.
-This is required because the W32 compatibility gate resolves `v0.63.0` and
-proves that it is an ancestor of the candidate. The MSRV job reaches the same
-gate through `cargo test --workspace`; a shallow checkout or missing baseline
-tag is an infrastructure failure, not a compatibility skip. The release
-governance test parses the workflow and rejects any of these three jobs without
-`fetch-depth: 0`.
+The `rust`, complete dynamic-canary, coverage-ratchet, MSRV, and registered
+gated-proof jobs check out full Git history. This is required because the W32
+compatibility gate resolves `v0.63.0` and proves that it is an ancestor of the
+candidate. MSRV reaches the gate through `cargo test --workspace`; coverage
+reaches it through `cargo llvm-cov --workspace --all-targets`; and the generic
+proof runner can execute coverage or the v0.63 compatibility gate. A shallow
+checkout or missing baseline tag is an infrastructure failure, not a
+compatibility skip. The release-governance test parses the workflow and rejects
+any of these five jobs without `fetch-depth: 0`.
 
 The nightly daemon-process tier runs with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`
 and uploads `target/test-hydracache-daemon-process/**` as replay evidence. Those
