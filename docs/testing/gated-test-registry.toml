@@ -3785,6 +3785,47 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "cfg.hydracache-db.outbox-claims"
+kind = "cfg_test_target"
+source = "crates/hydracache-db/tests/outbox_claims.rs"
+package = "hydracache-db"
+target = "outbox_claims"
+test = ""
+cfg = 'feature = "sqlx-outbox"'
+env = ""
+reason = 'Cargo test target is compiled only under cfg(feature = "sqlx-outbox")'
+tier = "nightly"
+required_features = ["sqlx-outbox"]
+required_env = []
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-db",
+    "--test",
+    "outbox_claims",
+    "--locked",
+    "--features",
+    "sqlx-outbox",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "cfg.hydracache-db.outbox-schema-migration"
 kind = "cfg_test_target"
 source = "crates/hydracache-db/tests/outbox_schema_migration.rs"
