@@ -14,6 +14,34 @@ fn fast_suite_registry_has_pinned_nextest_and_bounded_unmeasured_baselines() {
 }
 
 #[test]
+fn nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let config = fs::read_to_string(root.join(".config/nextest.toml")).unwrap();
+    let config: toml::Value = toml::from_str(&config).unwrap();
+    assert_eq!(
+        config["test-groups"]["trybuild"]["max-threads"].as_integer(),
+        Some(1)
+    );
+    let compile_override = config["profile"]["ci"]["overrides"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["test-group"].as_str() == Some("trybuild"))
+        .unwrap();
+    let filter = compile_override["filter"].as_str().unwrap();
+    assert!(filter.contains("cacheable_macro_compile_tests"));
+    assert!(filter.contains("proc_macro_compile_tests"));
+    assert_eq!(
+        compile_override["slow-timeout"]["period"].as_str(),
+        Some("120s")
+    );
+    assert_eq!(
+        compile_override["slow-timeout"]["terminate-after"].as_integer(),
+        Some(3)
+    );
+}
+
+#[test]
 fn fast_suite_check_rejects_invented_baseline_and_aggregate_budget_overrun() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let mut registry = xtask::fast_suite::load_registry(&root).unwrap();

@@ -688,6 +688,13 @@ pinned `cargo-nextest` configuration supplies per-test slow/termination timeouts
 integration tests; `cargo test` remains the authoritative fallback for doctests, MSRV, Miri, loom,
 failpoint, and any target whose semantics nextest cannot preserve.
 
+The two `trybuild` compile-test harnesses (`cacheable_macro_compile_tests` and
+`proc_macro_compile_tests`) share Cargo's `target/tests/trybuild` build directory. The CI profile assigns
+only those tests to a `max-threads = 1` nextest group so they cannot spend their timeout waiting on each
+other's build-directory lock. Their cold compile receives a separate bounded `120s x 3` slow timeout;
+ordinary tests keep the stricter global timeout and workspace parallelism. `xtask` validates the group,
+both filter members, and the finite timeout as part of W6 fast-tier governance.
+
 Measure the fast tier after merging the `v0.63.0` `main` history and again after all 0.64 suites land.
 The committed budget is the measured Linux CI median plus an explicit noise allowance, with an absolute
 25-minute PR-job ceiling. Any increase requires a reviewed manifest change naming the responsible suite;
@@ -708,6 +715,7 @@ missing W-item proof.
 
 - `fast_suite_registry_rejects_missing_timeout_budget_or_command`;
 - `fast_suite_budget_rejects_an_unreviewed_runtime_regression`;
+- `nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout`;
 - `quarantine_registry_rejects_missing_issue_owner_replay_or_expiry`;
 - `release_ship_gate_rejects_every_active_quarantine`;
 - `coverage_floor_matches_post_064_measured_baseline_without_decreasing_88`.

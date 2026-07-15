@@ -551,6 +551,15 @@ cargo xtask verify-no-test-features
 cargo xtask doc-check
 ```
 
+The CI nextest profile runs `cacheable_macro_compile_tests` and
+`proc_macro_compile_tests` in one serial `trybuild` group. Both harnesses compile
+fixtures under Cargo's shared `target/tests/trybuild` directory, so running them
+in parallel can consume the timeout while one waits for the other's build lock.
+Only this group is serialized; it has a bounded `120s x 3` cold-compile timeout,
+while all other workspace tests retain normal parallel execution and the stricter
+global timeout. `fast-suite-check` rejects a missing test, parallel group, or
+unbounded/changed override.
+
 The nightly daemon-process tier runs with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`
 and uploads `target/test-hydracache-daemon-process/**` as replay evidence. Those
 artifacts contain child stdout/stderr logs, the preserved storage roots, and the

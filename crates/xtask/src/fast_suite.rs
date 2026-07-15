@@ -120,10 +120,60 @@ pub fn validate_registry(
         ));
     }
     let config = fs::read_to_string(root.join(NEXTTEST_CONFIG_PATH))?;
-    for required in ["[profile.ci]", "slow-timeout", "terminate-after"] {
-        if !config.contains(required) {
-            problems.push(format!("{NEXTTEST_CONFIG_PATH} is missing {required}"));
-        }
+    let config: toml::Value = toml::from_str(&config)
+        .map_err(|error| format!("parsing {NEXTTEST_CONFIG_PATH}: {error}"))?;
+    let ci_profile = config.get("profile").and_then(|profile| profile.get("ci"));
+    if ci_profile
+        .and_then(|profile| profile.get("slow-timeout"))
+        .is_none()
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} profile.ci is missing slow-timeout"
+        ));
+    }
+    if config
+        .get("test-groups")
+        .and_then(|groups| groups.get("trybuild"))
+        .and_then(|group| group.get("max-threads"))
+        .and_then(toml::Value::as_integer)
+        != Some(1)
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} must serialize the trybuild group with max-threads = 1"
+        ));
+    }
+    let trybuild_override = ci_profile
+        .and_then(|profile| profile.get("overrides"))
+        .and_then(toml::Value::as_array)
+        .and_then(|overrides| {
+            overrides.iter().find(|entry| {
+                entry.get("test-group").and_then(toml::Value::as_str) == Some("trybuild")
+            })
+        });
+    let filter = trybuild_override
+        .and_then(|entry| entry.get("filter"))
+        .and_then(toml::Value::as_str)
+        .unwrap_or_default();
+    if !filter.contains("cacheable_macro_compile_tests")
+        || !filter.contains("proc_macro_compile_tests")
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} trybuild override must select both compile-test harnesses"
+        ));
+    }
+    let trybuild_timeout = trybuild_override.and_then(|entry| entry.get("slow-timeout"));
+    if trybuild_timeout
+        .and_then(|timeout| timeout.get("period"))
+        .and_then(toml::Value::as_str)
+        != Some("120s")
+        || trybuild_timeout
+            .and_then(|timeout| timeout.get("terminate-after"))
+            .and_then(toml::Value::as_integer)
+            != Some(3)
+    {
+        problems.push(format!(
+            "{NEXTTEST_CONFIG_PATH} trybuild override must use bounded slow-timeout 120s x 3"
+        ));
     }
 
     let mut ids = BTreeSet::new();

@@ -101,6 +101,7 @@ function = "frozen_peer_send_failure_is_replayable"
 [[work_item]]
 id = "W6"
 required_sources = [
+    ".config/nextest.toml",
     "crates/xtask/src/coverage_ratchet.rs",
     "crates/xtask/src/fast_suite.rs",
     "crates/xtask/src/quarantine.rs",
@@ -120,6 +121,10 @@ function = "fast_suite_registry_rejects_missing_timeout_budget_or_command"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/fast_suite.rs"
 function = "fast_suite_budget_rejects_an_unreviewed_runtime_regression"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/fast_suite.rs"
+function = "nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout"
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/quarantine.rs"
