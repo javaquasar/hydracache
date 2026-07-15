@@ -742,6 +742,11 @@ Kind remains a behavior/chaos gate; an operator running only inside an uninstrum
 not contribute local Rust coverage. Tests assert emitted Patch/Delete requests and resulting `Action` or
 status conditions rather than only testing resource builders.
 
+Implementation evidence: the in-process scripted Kubernetes API now exercises reconcile/apply/status,
+lease create/conflict/error, blocked persistence/TLS, admin-endpoint failure, and PVC cleanup paths while
+observation tests validate StatefulSet/Pod/Secret-to-decision mapping. The exact local crate profile moved
+from `1,378 / 2,232 = 61.74%` to `1,915 / 2,232 = 85.80%`; candidate CI must reproduce or improve it.
+
 **C3. DB And Outbox Backends.** Raise `hydracache-db` from 82.32% toward at least 90% (about 238 lines)
 by executing the existing SQLite corpus in the aggregate profile and adding pinned Docker Postgres/MySQL
 rows for transaction rollback, concurrent `skip locked` claims, claim expiry, lost-notify polling,

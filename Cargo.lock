@@ -2173,6 +2173,7 @@ name = "hydracache-operator"
 version = "0.63.0"
 dependencies = [
  "futures-util",
+ "http",
  "k8s-openapi",
  "kube",
  "proptest",
@@ -2183,6 +2184,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "tokio",
+ "tower",
 ]
 
 [[package]]

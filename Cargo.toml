@@ -59,6 +59,7 @@ chitchat = "0.11.0"
 criterion = { version = "0.8", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
 futures-util = "0.3.32"
+http = "1"
 hydracache-core = { path = "crates/hydracache-core", version = "0.63.0" }
 hydracache = { path = "crates/hydracache", version = "0.63.0" }
 hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.63.0" }
