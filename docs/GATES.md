@@ -82,7 +82,7 @@ artifacts and locked test binaries from earlier verify runs cannot block the run
 | Tests | `cargo test --workspace --locked` (Windows verify: split workspace excluding `xtask` + xtask lib/integration tests, serialized with `-j 1`) | CI + verify | unit + integration (RULES R-8) |
 | Docs | `RUSTDOCFLAGS=-D warnings cargo doc --workspace --no-deps` | CI + verify | rustdoc warnings |
 | Clippy | `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings` | CI + verify | lints |
-| MSRV | `cargo check` + `cargo test` on Rust 1.88.0 | CI (separate job) | minimum supported Rust |
+| MSRV | `cargo check` + `cargo test` on Rust 1.88.0 | CI (separate job, full-history checkout) | minimum supported Rust; workspace governance tests can resolve the pinned `v0.63.0` compatibility baseline and ancestry |
 
 ## Chaos / soak / Docker (nightly / pre-release)
 

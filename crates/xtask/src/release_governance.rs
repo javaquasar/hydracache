@@ -214,7 +214,7 @@ pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<
         .ok_or("workflow has no jobs mapping")?;
     let mut problems = Vec::new();
 
-    for job_id in ["rust", "dynamic-canary-sweep"] {
+    for job_id in ["rust", "dynamic-canary-sweep", "msrv"] {
         let Some(job) = jobs.get(Value::String(job_id.to_owned())) else {
             problems.push(format!(
                 "release compatibility proof is missing required job {job_id}"

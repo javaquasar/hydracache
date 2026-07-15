@@ -1750,8 +1750,10 @@ enforced compatibility gate.
 Every CI job that invokes `compat-check`, `release-governance-check`, or a canary whose guard invokes
 either command must use `actions/checkout` with `fetch-depth: 0`. The `v0.63.0` tag and its ancestry are
 part of the compatibility evidence, not optional repository metadata. `release-governance-check`
-validates this workflow invariant for the `rust` and complete dynamic-canary jobs so a shallow checkout
-cannot silently turn W32 or W6b into an infrastructure-only failure.
+validates this workflow invariant for the `rust`, complete dynamic-canary, and MSRV jobs. MSRV runs
+`cargo test --workspace`, which includes the W32 governance test and therefore needs the same baseline
+tag and ancestry even though it does not invoke `compat-check` as a named workflow step. A shallow
+checkout cannot silently turn W32 or W6b into an infrastructure-only failure.
 
 **Branch/version preflight (must precede W32 implementation).** The 0.64 feature branch was created
 before the final 0.63 version/publish commits. Before generating or reviewing any W32 fixture, integrate
