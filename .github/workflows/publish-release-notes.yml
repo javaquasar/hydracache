@@ -1,9 +1,6 @@
-name: Publish Release Notes
+name: Publish Release Notes (manual fallback)
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
     inputs:
       version:

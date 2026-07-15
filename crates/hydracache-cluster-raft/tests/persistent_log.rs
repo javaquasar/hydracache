@@ -1,8 +1,25 @@
-use hydracache::{ClusterCandidate, ClusterControlPlane, ClusterGeneration};
+use hydracache::{
+    ClusterCandidate, ClusterControlPlane, ClusterGeneration, ClusterNodeId, RaftMetadataCommand,
+};
 use hydracache_cluster_raft::{InMemoryRaftLogStore, RaftLogStore, RaftMetadataRuntime};
-use raft::eraftpb::{ConfState, Entry, Snapshot};
+#[cfg(feature = "sled-log-store")]
+use hydracache_cluster_raft::{
+    RaftMetadataCommandEnvelope, RaftMetadataRuntimeConfig, SledRaftLogStore,
+};
+use raft::eraftpb::{ConfState, Entry, HardState, Snapshot};
 use raft::storage::{GetEntriesContext, Storage};
 use raft::{Error as RaftError, StorageError};
+
+#[cfg(feature = "sled-log-store")]
+fn temp_sled_path(name: &str) -> std::path::PathBuf {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    std::env::temp_dir().join(format!("hydracache-{name}-{unique}"))
+}
 
 fn entry(index: u64, term: u64, data: &'static [u8]) -> Entry {
     Entry {
@@ -140,4 +157,87 @@ fn persistent_log_sled_log_store_feature_example_compiles_and_behaves() {
     store.append(&[entry(1, 1, b"feature")]).unwrap();
 
     assert_eq!(store.last_index().unwrap(), 1);
+}
+
+#[cfg(feature = "sled-log-store")]
+#[tokio::test]
+async fn sled_runtime_reopens_committed_log_before_raw_node_initialization() {
+    let path = temp_sled_path("runtime-reopen");
+    let config = RaftMetadataRuntimeConfig::single_node("restart", 1);
+    let runtime = RaftMetadataRuntime::sled_with_config(config.clone(), &path).unwrap();
+    runtime
+        .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(1)))
+        .await
+        .unwrap();
+    let before = runtime.snapshot();
+    assert!(before.commit_index > 0);
+    drop(runtime);
+
+    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let after = reopened.snapshot();
+    assert!(after.commit_index >= before.commit_index);
+    assert_eq!(after.commands_committed, before.commands_committed);
+    assert!(reopened
+        .members()
+        .iter()
+        .any(|member| member.node_id.as_str() == "member-a"));
+    drop(reopened);
+    let _ = std::fs::remove_dir_all(path);
+}
+
+#[cfg(feature = "sled-log-store")]
+#[test]
+fn sled_runtime_replay_matches_live_apply_for_stale_committed_generation() {
+    let path = temp_sled_path("runtime-stale-generation-replay");
+    let store = SledRaftLogStore::open(&path).unwrap();
+    let conf_state = ConfState::from((vec![1], vec![]));
+    store.initialize_with_conf_state((vec![1], vec![]));
+    store.save_conf_state(&conf_state).unwrap();
+
+    let envelope = |generation| RaftMetadataCommandEnvelope {
+        command_id: format!("member-upsert:member-a:{generation}"),
+        command: RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from("member-a"),
+            generation: ClusterGeneration::new(generation),
+            epoch: hydracache::ClusterEpoch::new(generation),
+        },
+    };
+    let entries = [
+        Entry {
+            index: 1,
+            term: 1,
+            data: envelope(2).encode().into(),
+            ..Entry::default()
+        },
+        Entry {
+            index: 2,
+            term: 1,
+            data: envelope(1).encode().into(),
+            ..Entry::default()
+        },
+    ];
+    store.append(&entries).unwrap();
+    let hard_state = HardState {
+        term: 1,
+        vote: 1,
+        commit: 2,
+        ..Default::default()
+    };
+    store.save_hard_state(&hard_state).unwrap();
+    drop(store);
+
+    let runtime = RaftMetadataRuntime::sled_with_config(
+        RaftMetadataRuntimeConfig::single_node("restart", 1),
+        &path,
+    )
+    .unwrap();
+    let member = runtime
+        .members()
+        .into_iter()
+        .find(|member| member.node_id.as_str() == "member-a")
+        .unwrap();
+    assert_eq!(member.generation, ClusterGeneration::new(2));
+    assert_eq!(runtime.command_envelopes().len(), 2);
+    drop(runtime);
+    let _ = std::fs::remove_dir_all(path);
 }

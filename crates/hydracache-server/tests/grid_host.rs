@@ -2,6 +2,7 @@ use std::collections::BTreeSet;
 use std::io::{ErrorKind, Read, Write};
 use std::net::{SocketAddr, TcpListener, UdpSocket};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -13,7 +14,10 @@ use hydracache_server::{
 };
 use serde_json::json;
 
+static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
 fn member_config(name: &str) -> ServerConfig {
+    let sequence = STORAGE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
@@ -21,7 +25,8 @@ fn member_config(name: &str) -> ServerConfig {
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
         storage_dir: Some(PathBuf::from(format!(
-            "target/test-hydracache-grid-host/{name}"
+            "target/test-hydracache-grid-host/{name}-{}-{sequence}",
+            std::process::id()
         ))),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
@@ -322,7 +327,10 @@ fn member_identity_persists_across_address_change() {
         runtime.admin_status().leader.as_deref(),
         Some(first_node_id.as_str())
     );
+    let first_overview = serde_json::to_value(runtime.cluster_overview()).unwrap();
+    assert_eq!(first_overview["members"][0]["generation"], 1);
     let _ = runtime.shutdown();
+    drop(runtime);
 
     config.cluster_addr = addrs[1];
     config.seeds = vec![addrs[1].to_string()];
@@ -338,6 +346,8 @@ fn member_identity_persists_across_address_change() {
         restarted.admin_status().leader.as_deref(),
         Some(first_node_id.as_str())
     );
+    let restarted_overview = serde_json::to_value(restarted.cluster_overview()).unwrap();
+    assert_eq!(restarted_overview["members"][0]["generation"], 2);
     let _ = restarted.shutdown();
 }
 
@@ -354,6 +364,7 @@ fn configured_node_id_conflicting_with_persisted_identity_fails_loud() {
     let identity = read_node_identity(&storage_dir);
     assert_eq!(identity["node_id"], "member-pinned");
     let _ = runtime.shutdown();
+    drop(runtime);
 
     config.node_id = Some("member-other".to_owned());
     let error = ServerRuntime::new(config).unwrap_err();

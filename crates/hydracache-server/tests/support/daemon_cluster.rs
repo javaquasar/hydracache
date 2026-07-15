@@ -2,6 +2,7 @@
 
 use std::collections::BTreeSet;
 use std::error::Error;
+use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
@@ -80,6 +81,16 @@ pub struct DaemonCluster {
     binary: PathBuf,
     root: PathBuf,
     nodes: Vec<DaemonNode>,
+}
+
+#[derive(Debug, Clone)]
+pub struct DaemonReplayEvidence {
+    pub root: PathBuf,
+    pub node_ids: Vec<String>,
+    pub stdout_logs: Vec<PathBuf>,
+    pub stderr_logs: Vec<PathBuf>,
+    pub last_statuses: Vec<DaemonStatus>,
+    pub bounded_send_error: Option<String>,
 }
 
 impl DaemonCluster {
@@ -207,6 +218,27 @@ impl DaemonCluster {
         })
     }
 
+    pub fn wait_for_responsive_shape(
+        &mut self,
+        expected_statuses: usize,
+        members: u32,
+        voters: u32,
+    ) -> TestResult<Vec<DaemonStatus>> {
+        self.wait_for(
+            format!("responsive={expected_statuses} members={members} voters={voters}"),
+            |cluster| {
+                let statuses = cluster.statuses();
+                let leaders = leaders(&statuses);
+                (statuses.len() == expected_statuses
+                    && leaders.len() == 1
+                    && statuses.iter().all(|status| {
+                        status.members == members && status.voters == voters && status.quorum_ok
+                    }))
+                .then_some(statuses)
+            },
+        )
+    }
+
     pub fn wait_for_non_draining_shape(
         &mut self,
         label: &str,
@@ -296,6 +328,49 @@ impl DaemonCluster {
             client_in_flight: 0,
             subscriber_pending: 0,
         })
+    }
+
+    pub fn running_child_count(&mut self) -> usize {
+        self.running_indices().len()
+    }
+
+    pub fn wait_for_running_children(&mut self, expected: usize) -> TestResult {
+        self.wait_for(format!("running children={expected}"), |cluster| {
+            (cluster.running_child_count() == expected).then_some(())
+        })
+    }
+
+    pub fn os_resource_totals(&mut self) -> Option<(u64, u64)> {
+        let running = self.running_indices();
+        let samples = running
+            .iter()
+            .filter_map(|index| self.nodes[*index].resource_sample())
+            .collect::<Vec<_>>();
+        (samples.len() == running.len() && !samples.is_empty()).then(|| {
+            (
+                samples.iter().map(|sample| sample.rss_kib).sum(),
+                samples.iter().map(|sample| sample.open_fds).sum(),
+            )
+        })
+    }
+
+    pub fn replay_evidence(&mut self, bounded_send_error: Option<String>) -> DaemonReplayEvidence {
+        DaemonReplayEvidence {
+            root: self.root.clone(),
+            node_ids: self.node_ids(),
+            stdout_logs: self
+                .nodes
+                .iter()
+                .map(|node| node.stdout_path.clone())
+                .collect(),
+            stderr_logs: self
+                .nodes
+                .iter()
+                .map(|node| node.stderr_path.clone())
+                .collect(),
+            last_statuses: self.statuses(),
+            bounded_send_error,
+        }
     }
 
     #[cfg(target_os = "linux")]
@@ -487,9 +562,25 @@ pub fn leaders(statuses: &[DaemonStatus]) -> BTreeSet<String> {
 }
 
 fn server_binary() -> TestResult<PathBuf> {
-    std::env::var_os(SERVER_BIN_ENV)
+    resolve_server_binary(
+        std::env::var_os(SERVER_BIN_ENV),
+        option_env!("CARGO_BIN_EXE_hydracache-server"),
+    )
+}
+
+pub fn resolve_server_binary(
+    runtime_binary: Option<OsString>,
+    compile_time_binary: Option<&str>,
+) -> TestResult<PathBuf> {
+    runtime_binary
         .map(PathBuf::from)
-        .ok_or_else(|| format!("{SERVER_BIN_ENV} is not set; run through cargo test").into())
+        .or_else(|| compile_time_binary.map(PathBuf::from))
+        .ok_or_else(|| {
+            format!(
+                "{SERVER_BIN_ENV} is unavailable at runtime and compile time; run through cargo test"
+            )
+            .into()
+        })
 }
 
 fn unique_root(name: &str) -> TestResult<PathBuf> {

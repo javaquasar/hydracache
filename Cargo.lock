@@ -129,6 +129,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d902e3d592a523def97af8f317b08ce16b7ab854c1985a0c671e6f15cebc236"
 
 [[package]]
+name = "ascii"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d92bec98840b8f03a5ff5413de5293bfcd8bf96467cf5452609f939ec6f5de16"
+
+[[package]]
 name = "asn1-rs"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -642,6 +648,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "choice"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3b71fc821deaf602a933ada5c845d088156d0cdf2ebf43ede390afe93466553"
+
+[[package]]
 name = "chrono"
 version = "0.4.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -652,6 +664,12 @@ dependencies = [
  "serde",
  "windows-link",
 ]
+
+[[package]]
+name = "chunked_transfer"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e4de3bc4ea267985becf712dc6d9eed8b04c953b3fcfb339ebc87acd9804901"
 
 [[package]]
 name = "ciborium"
@@ -999,6 +1017,20 @@ dependencies = [
  "darling_core 0.23.0",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "dashmap"
+version = "6.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6361d5c062261c78a176addb82d4c821ae42bed6089de0e12603cd25de2059c"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core 0.9.12",
 ]
 
 [[package]]
@@ -1717,6 +1749,12 @@ checksum = "8a9ee70c43aaf417c914396645a0fa852624801b24ebb7ae78fe8272889ac888"
 
 [[package]]
 name = "hashbrown"
+version = "0.14.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+
+[[package]]
+name = "hashbrown"
 version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
@@ -1883,7 +1921,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1904,7 +1942,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-actuator-axum"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "axum",
  "hydracache",
@@ -1916,8 +1954,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-cache-sim"
+version = "0.64.0"
+
+[[package]]
 name = "hydracache-cdc-postgres"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "hydracache-db",
  "thiserror 2.0.18",
@@ -1926,7 +1968,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -1945,7 +1987,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-protocol"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "bytes",
  "postcard",
@@ -1955,10 +1997,11 @@ dependencies = [
 
 [[package]]
 name = "hydracache-client-transport-axum"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "axum",
  "bytes",
+ "futures-util",
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-observability",
@@ -1971,7 +2014,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "hydracache",
  "hydracache-cluster-chitchat",
@@ -1981,7 +2024,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-chitchat"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "chitchat",
@@ -1992,7 +2035,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-cluster-raft"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2002,19 +2045,22 @@ dependencies = [
  "hydracache-cluster-chitchat",
  "hydracache-cluster-testkit",
  "hydracache-cluster-transport-axum",
+ "loom",
  "proptest",
  "protobuf",
  "raft",
+ "serde",
  "serde_json",
  "sled",
  "slog",
+ "stateright",
  "tokio",
  "tower",
 ]
 
 [[package]]
 name = "hydracache-cluster-testkit"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2022,12 +2068,13 @@ dependencies = [
  "hydracache",
  "hydracache-cluster-raft",
  "raft",
+ "serde_json",
  "tokio",
 ]
 
 [[package]]
 name = "hydracache-cluster-transport-axum"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2046,7 +2093,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-core"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2057,7 +2104,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-db"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "criterion",
@@ -2075,7 +2122,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-diesel"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "diesel",
@@ -2089,8 +2136,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-fuzz"
+version = "0.0.0"
+dependencies = [
+ "hydracache-client-protocol",
+ "hydracache-redis-compat",
+ "hydracache-server",
+ "libfuzzer-sys",
+ "protobuf",
+ "raft",
+]
+
+[[package]]
 name = "hydracache-macros"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -2100,7 +2159,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-observability"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2112,11 +2171,13 @@ dependencies = [
 
 [[package]]
 name = "hydracache-operator"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "futures-util",
+ "http",
  "k8s-openapi",
  "kube",
+ "proptest",
  "reqwest",
  "rustls",
  "schemars 1.2.1",
@@ -2124,11 +2185,12 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.18",
  "tokio",
+ "tower",
 ]
 
 [[package]]
 name = "hydracache-redis-compat"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "bytes",
  "hydracache-client-protocol",
@@ -2146,7 +2208,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sandbox"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "axum",
  "chitchat",
@@ -2173,7 +2235,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-seaorm"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2187,7 +2249,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-server"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -2204,6 +2266,7 @@ dependencies = [
  "hydracache-redis-compat",
  "hydracache-sim",
  "proptest",
+ "raft",
  "rcgen",
  "reqwest",
  "rustls",
@@ -2218,10 +2281,11 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "hydracache",
  "hydracache-cluster-raft",
+ "hydracache-cluster-testkit",
  "protobuf",
  "raft",
  "rand_chacha 0.9.0",
@@ -2233,7 +2297,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sim-wasm"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "hydracache-sim",
  "serde_json",
@@ -2243,7 +2307,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sql-lint"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "proptest",
  "serde",
@@ -2255,7 +2319,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-sqlx"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "hydracache",
@@ -2270,7 +2334,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-transport-nats"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-nats",
  "async-trait",
@@ -2283,7 +2347,7 @@ dependencies = [
 
 [[package]]
 name = "hydracache-transport-redis"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2504,6 +2568,12 @@ dependencies = [
  "zerotrie",
  "zerovec",
 ]
+
+[[package]]
+name = "id-set"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9633fadf6346456cf8531119ba4838bc6d82ac4ce84d9852126dd2aa34d49264"
 
 [[package]]
 name = "ident_case"
@@ -2867,6 +2937,16 @@ name = "libc"
 version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
+
+[[package]]
+name = "libfuzzer-sys"
+version = "0.4.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9fd2f41a1cba099f79a0b6b6c35656cf7c03351a7bae8ff0f28f25270f929d2"
+dependencies = [
+ "arbitrary",
+ "cc",
+]
 
 [[package]]
 name = "libm"
@@ -4610,6 +4690,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_yaml"
+version = "0.9.34+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
+dependencies = [
+ "indexmap 2.14.0",
+ "itoa",
+ "ryu",
+ "serde",
+ "unsafe-libyaml",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4928,6 +5021,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "stateright"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd1157f21b11916f90fe1f2ac9a8d0e09a8813b28701584141060f414eedf6ba"
+dependencies = [
+ "ahash",
+ "choice",
+ "crossbeam-utils",
+ "dashmap",
+ "id-set",
+ "log",
+ "nohash-hasher",
+ "parking_lot 0.12.5",
+ "rand 0.9.4",
+ "serde",
+ "serde_json",
+ "tiny_http",
+]
+
+[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5167,6 +5280,18 @@ checksum = "c431b87111666e491a90baa837f914fb45cd5dc3c268591b0220ff5057f2085f"
 dependencies = [
  "num-conv",
  "time-core",
+]
+
+[[package]]
+name = "tiny_http"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "389915df6413a2e74fb181895f933386023c71110878cd0825588928e64cdc82"
+dependencies = [
+ "ascii",
+ "chunked_transfer",
+ "httpdate",
+ "log",
 ]
 
 [[package]]
@@ -5576,6 +5701,12 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "673aac59facbab8a9007c7f6108d11f63b603f7cabff99fabf650fea5c32b861"
 
 [[package]]
 name = "untrusted"
@@ -6203,11 +6334,15 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.63.0"
+version = "0.64.0"
 dependencies = [
  "hydracache",
  "serde",
  "serde_json",
+ "serde_yaml",
+ "sha2 0.11.0",
+ "syn",
+ "time",
  "toml",
 ]
 

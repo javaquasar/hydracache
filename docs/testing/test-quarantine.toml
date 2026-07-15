@@ -1,0 +1,5 @@
+schema_version = 1
+release = "0.64.0"
+
+# Temporary exceptions belong in [[quarantine]] entries. Every entry must name
+# an exact gate_id from gated-test-registry.toml and expires within 24 hours.

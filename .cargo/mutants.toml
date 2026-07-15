@@ -1,0 +1,27 @@
+# HydraCache 0.64 Raft mutation-testing scope.
+#
+# This file is intentionally a native cargo-mutants config: cargo-mutants reads
+# `.cargo/mutants.toml` by default and rejects unknown tables. The `cargo xtask
+# mutants` command also validates that the release-critical paths and required
+# test commands remain mentioned here before the slow CI lane runs.
+
+examine_globs = [
+  "crates/hydracache-cluster-raft/src/lib.rs",
+  "crates/hydracache-cluster-raft/src/log_store.rs",
+]
+
+features = ["test-failpoints", "sled-log-store"]
+minimum_test_timeout = 60.0
+output = "target/hydracache-mutants"
+test_package = ["hydracache-cluster-raft"]
+timeout_multiplier = 2.0
+
+# Required W15 release-proof commands, validated by `cargo xtask mutants`:
+# cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+# cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+# cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+# cargo test -p hydracache-cluster-raft --test rejoin_after_compaction --features test-failpoints --locked -- --test-threads=1
+# cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
+#
+# Baseline policy:
+# docs/testing/mutation-baseline.md

@@ -14,6 +14,8 @@ they are persisted or transmitted across processes.
 | `RaftLogStore` in-memory format | `1` | `hydracache-cluster-raft` metadata runtime | 0.41 tests cover append/replay, snapshot recovery, suffix truncation, and compaction guard semantics. Future durable engines must register their own format before rollout. | Runtime fails loud on store errors; unknown future durable formats must refuse startup. |
 | HTTP replication/peer encoded-value transport | `1` | `hydracache-cluster-transport-axum` clients | Strict routes require `x-hydracache-wire-version: 1`; mismatches are rejected before payload apply. | Route returns upgrade-required style safe rejection; counters can record wire-version failures. |
 | `DurableRaftLogStore` format | `1` | `hydracache-cluster-raft` durable-log feature | Readers accept format `1` and refuse unknown future versions before opening a store. | Store open fails loud; no committed command is acknowledged from an unknown format. |
+| `SledRaftLogStore` snapshot envelope | `1` | `hydracache-cluster-raft` `sled-log-store` feature; enabled by `hydracache-server` for `storage_dir/raft-log` | New snapshot writes use a magic/version/length/checksum envelope around the raft protobuf payload. Readers still accept legacy raw protobuf snapshots for backward compatibility, but enveloped snapshots verify length and checksum before install. Standalone members reopen the same log before constructing `RawNode`, so persisted `HardState.commit` is never paired with an empty replacement log after process restart. | Bit-flipped or truncated snapshot bytes fail loud during store open; valid snapshots restored into the wrong metadata identity are rejected by the runtime identity contract before apply. A missing/inconsistent retained log refuses startup instead of accepting a leader commit over empty storage. |
+| Raft metadata snapshot payload | `1` | `hydracache-cluster-raft` metadata runtime | Raft `Snapshot.data` may carry an internal `HCMETA01` JSON payload with the applied metadata command list and applied index. Snapshot install restores that state-machine payload before applying the committed tail. Empty legacy snapshot payloads remain log-level only and do not claim metadata recovery. | Unsupported versions, malformed payloads, cluster mismatches, duplicate command ids, or inconsistent applied indexes fail loud before serving restored membership. |
 | Raft metadata golden-vector corpus | `1` | `hydracache-cluster-raft` tests/vectors | `0.62.0` records command envelopes, wire-message payloads, `ConfState`, and snapshot `ConfState` byte vectors. Readers must keep decoding the corpus with the checked expectations; intentional codec changes must regenerate the corpus in the same change and document the compatibility decision. | Golden-vector tests fail before a rolling-upgrade compatibility claim is made. |
 | `node-identity.json` member identity file | `1` | `hydracache-server` member startup | Readers accept format `1` only. The file records `cluster`, stable `node_id`, and derived `raft_node_id` so a member keeps the same raft identity across address changes. A configured `node_id` must match the persisted identity once the file exists. | Unknown future identity formats, cluster mismatches, configured-id conflicts, and node-id/raft-id mismatches refuse member startup before opening the networked grid. |
 | `ReplicatedValueRecord` durable format | `1` | `hydracache` durable-values feature | Readers accept format `1`; records carry partition, version, epoch, and value/tombstone state. | Unknown future formats must refuse startup before serving replicated values. |
@@ -58,6 +60,20 @@ they are persisted or transmitted across processes.
 - Unknown wire versions are treated as decode errors, not panics.
 - Forward-only migrations must be idempotent: applying the same migration twice
   leaves the artifact at the same version.
+
+## Server Configuration Reader Policy
+
+`ServerConfig` TOML is an additive, human-authored startup document rather than a
+versioned durable or wire artifact. Readers ignore unknown fields so a newer
+configuration can be inspected or rolled back by an older binary, but every
+recognized field and every TLS, authentication, listener, and role combination
+is validated before any listener is materialized. Environment loading starts
+from secure defaults, applies StatefulSet-derived identity, and gives an
+explicit `HYDRACACHE_CLUSTER_START` value precedence over ordinal inference.
+HydraCache does not merge a TOML file and environment variables implicitly;
+callers select one source. Credential files are read only for validation/runtime
+construction, and credential bytes must never appear in config serialization,
+`Debug`, startup errors, or metric labels.
 
 ## 0.37 Baseline
 

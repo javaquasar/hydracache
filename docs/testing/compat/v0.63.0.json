@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "producer_release": "0.63.0",
+  "producer_tag": "v0.63.0",
+  "producer_commit": "e599bca35d2fb582b92d3a7717d0d651f6cc911b",
+  "artifacts": [
+    {
+      "kind": "raft-wire-message",
+      "path": "crates/hydracache-cluster-raft/tests/vectors/raft_wire_message_payload.bin",
+      "format_version": 1,
+      "sha256": "bcf5d3f5d94c68771d81c1be1d96470e36f7fd290d61eaee65a7f653f18bb630",
+      "expected": "MsgAppend from=1 to=2 term=3",
+      "write_back_supported": false
+    },
+    {
+      "kind": "raft-conf-state",
+      "path": "crates/hydracache-cluster-raft/tests/vectors/conf_state.bin",
+      "format_version": 1,
+      "sha256": "943d8073c5da354a9496b2839d7fdbaaea5bfb8afa76d3c75c86108f78c0aed8",
+      "expected": "voters=[1,2,3]",
+      "write_back_supported": true
+    },
+    {
+      "kind": "raft-snapshot",
+      "path": "crates/hydracache-cluster-raft/tests/vectors/snapshot_conf_state.bin",
+      "format_version": 1,
+      "sha256": "c5c306268b7513c64a06748d3e130e7740a0185496a8cb03bb0671758a2bbd99",
+      "expected": "index=7 term=4 voters=[1,2,3]",
+      "write_back_supported": true
+    }
+  ],
+  "api_baseline": {
+    "tool": "cargo-semver-checks",
+    "tool_version": "0.48.0",
+    "baseline_release": "0.63.0",
+    "packages": [
+      "hydracache",
+      "hydracache-client",
+      "hydracache-client-protocol",
+      "hydracache-cluster-raft"
+    ]
+  }
+}

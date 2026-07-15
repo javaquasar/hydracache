@@ -3,7 +3,10 @@ use std::{
     ffi::OsString,
     fs,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex, MutexGuard},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, Mutex, MutexGuard,
+    },
 };
 
 use hydracache_redis_compat::{RedisCommand, RespValue};
@@ -20,14 +23,20 @@ use tokio::sync::watch;
 use tokio::task::JoinHandle;
 use tokio_rustls::TlsConnector;
 
+static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
 fn member_config() -> ServerConfig {
+    let sequence = STORAGE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
-        storage_dir: Some(PathBuf::from("target/test-hydracache-server")),
+        storage_dir: Some(
+            PathBuf::from("target/test-hydracache-server")
+                .join(format!("runtime-{}-{sequence}", std::process::id())),
+        ),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
         cluster_auth: ClusterAuthConfig::default(),

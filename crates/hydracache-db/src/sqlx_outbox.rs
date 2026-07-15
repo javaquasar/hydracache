@@ -520,7 +520,14 @@ async fn claim_sqlite(
     }
 
     tx.commit().await.map_err(sqlx_error)?;
-    Ok(claimed)
+    Ok(claimed
+        .into_iter()
+        .map(|mut row| {
+            row.claimed_at_ms = Some(i64_to_u64(now));
+            row.claim_owner = Some(owner.to_owned());
+            row
+        })
+        .collect())
 }
 
 async fn claim_postgres(
@@ -573,7 +580,14 @@ async fn claim_postgres(
     }
 
     tx.commit().await.map_err(sqlx_error)?;
-    Ok(claimed)
+    Ok(claimed
+        .into_iter()
+        .map(|mut row| {
+            row.claimed_at_ms = Some(i64_to_u64(now));
+            row.claim_owner = Some(owner.to_owned());
+            row
+        })
+        .collect())
 }
 
 async fn status_sqlite(pool: &SqlitePool, namespace: &str) -> Result<OutboxStatus> {

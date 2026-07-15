@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
@@ -13,16 +14,20 @@ use hydracache_server::{
 };
 use tower::ServiceExt;
 
-fn member_config_with_client_surface() -> ServerConfig {
+static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+fn member_config_with_client_surface(test_name: &str) -> ServerConfig {
+    let sequence = STORAGE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     ServerConfig {
         role: ServerRole::Member,
         listen_addr: "127.0.0.1:18080".parse().unwrap(),
         cluster_addr: "127.0.0.1:0".parse().unwrap(),
         node_id: None,
         seeds: vec!["127.0.0.1:0".to_owned()],
-        storage_dir: Some(PathBuf::from(
-            "target/test-hydracache-server-client-surface",
-        )),
+        storage_dir: Some(
+            PathBuf::from("target/test-hydracache-server-client-surface")
+                .join(format!("{test_name}-{}-{sequence}", std::process::id())),
+        ),
         drain_timeout_ms: 1_000,
         tls: TlsConfig::default(),
         cluster_auth: ClusterAuthConfig::default(),
@@ -38,7 +43,7 @@ fn member_config_with_client_surface() -> ServerConfig {
 
 #[test]
 fn client_surface_lifecycle_server_keeps_client_surface_running_until_shutdown() {
-    let mut runtime = ServerRuntime::new(member_config_with_client_surface())
+    let mut runtime = ServerRuntime::new(member_config_with_client_surface("server-lifecycle"))
         .unwrap()
         .start();
 
@@ -129,7 +134,7 @@ async fn client_surface_lifecycle_oversized_frame_is_rejected_without_state_muta
 
 #[test]
 fn client_surface_lifecycle_subscription_stream_drains_on_shutdown() {
-    let mut runtime = ServerRuntime::new(member_config_with_client_surface())
+    let mut runtime = ServerRuntime::new(member_config_with_client_surface("subscription-drain"))
         .unwrap()
         .start();
 

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "fast_backend": "sqlite-memory",
+  "optional_backends": [
+    {"id":"postgres-docker","gate_env":"HYDRACACHE_RUN_ADAPTER_CORPUS_DOCKER"}
+  ],
+  "scenarios": [
+    {
+      "id": "put-get-overwrite",
+      "steps": [
+        {"path":"/demo/cache/put","body":{"key":"adapter:overwrite","value":"alpha"},"expect":{"/value":"alpha"}},
+        {"path":"/demo/cache/get","body":{"key":"adapter:overwrite"},"expect":{"/value":"alpha"}},
+        {"path":"/demo/cache/put","body":{"key":"adapter:overwrite","value":"beta"},"expect":{"/value":"beta"}},
+        {"path":"/demo/cache/get","body":{"key":"adapter:overwrite"},"expect":{"/value":"beta"}}
+      ]
+    },
+    {
+      "id": "ttl-expiry",
+      "steps": [
+        {"path":"/demo/scenarios/ttl","body":{"key":"adapter:ttl","value":"short","ttl_ms":5,"wait_ms":20},"expect":{"/expired":true,"/value_after_wait":null}}
+      ]
+    },
+    {
+      "id": "tag-invalidation",
+      "steps": [
+        {"path":"/demo/cache/put","body":{"key":"adapter:tagged","value":"tagged","tags":["adapter-tag"]},"expect":{"/value":"tagged"}},
+        {"path":"/demo/cache/invalidate-tag","body":{"tag":"adapter-tag"},"expect":{"/removed":1}},
+        {"path":"/demo/cache/get","body":{"key":"adapter:tagged"},"expect":{"/value":null}}
+      ]
+    },
+    {
+      "id": "namespace-isolation",
+      "steps": [
+        {"path":"/demo/cache/put","body":{"key":"tenant-a:item","value":"a"},"expect":{"/value":"a"}},
+        {"path":"/demo/cache/put","body":{"key":"tenant-b:item","value":"b"},"expect":{"/value":"b"}},
+        {"path":"/demo/cache/remove","body":{"key":"tenant-a:item"},"expect":{"/removed":true}},
+        {"path":"/demo/cache/get","body":{"key":"tenant-b:item"},"expect":{"/value":"b"}}
+      ]
+    },
+    {
+      "id": "transaction-commit-rollback",
+      "steps": [
+        {"path":"/demo/db/soak/run","body":{"iterations":4,"concurrency":2,"ttl_ms":5000,"loader_delay_ms":1,"flow_id":"adapter-corpus"},"expect":{"/passed":true,"/summary/rollbacks":1,"/summary/writes":1}}
+      ]
+    }
+  ]
+}

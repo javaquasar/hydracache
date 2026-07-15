@@ -1,0 +1,27 @@
+{
+  "schema": "hydracache.raft.snapshot_replay_manifest.v1",
+  "current_hypothesis": "A restored metadata runtime converges when it starts from a mid-membership snapshot and applies the committed tail in order.",
+  "supporting_evidence": [
+    "snapshot command ids are preserved before replay",
+    "tail command ids are replayed in authoritative order",
+    "restored members and clients match the authoritative runtime after tail replay"
+  ],
+  "contradicting_evidence": [],
+  "unexplained_state_machine_errors": [],
+  "replay_seed": "w2-mid-membership",
+  "schedule": [
+    "join member-a generation 1",
+    "export snapshot at boundary after member-a",
+    "join member-b generation 1",
+    "leave member-a generation 1",
+    "join member-c generation 1",
+    "join client-a generation 1",
+    "restore from snapshot and replay committed tail"
+  ],
+  "trace_artifact": "crates/hydracache-cluster-raft/tests/raft_snapshot_membership.rs::mid_membership_snapshot_then_tail_replay_converges_to_authoritative_membership",
+  "decision": "explained",
+  "closure": {
+    "environmental": false,
+    "fix_strategy": "none"
+  }
+}

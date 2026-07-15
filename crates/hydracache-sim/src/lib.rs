@@ -48,7 +48,9 @@ pub use invariants::{
     ResourceSample, SubscriberDeliveryObservation, ValueObservation, ValueState,
 };
 pub use linearizability::{
-    LinearizabilityChecker, LinearizabilityReport, LinearizabilityViolation,
+    LinearizabilityChecker, LinearizabilityGenerator, LinearizabilityGeneratorConfig,
+    LinearizabilityHistory, LinearizabilityHistoryRecorder, LinearizabilityReport,
+    LinearizabilityViolation,
 };
 #[cfg(not(target_arch = "wasm32"))]
 pub use lock_safety::{run_lock_safety, LockSafetyReport, LockSafetyScenario};

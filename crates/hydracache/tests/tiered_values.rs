@@ -1,6 +1,6 @@
 use hydracache::{
-    ClusterEpoch, InMemoryReplicatedValueStore, PartitionId, ReplicatedValueRecord,
-    ReplicatedValueStore, TieredValueStore,
+    ClusterEpoch, EffectiveReplicationMap, InMemoryReplicatedValueStore, PartitionId, Replicas,
+    ReplicatedValueRecord, ReplicatedValueStore, TieredValueStore,
 };
 
 #[test]
@@ -96,4 +96,41 @@ fn tiered_values_tiering_off_matches_042_behavior() {
 
     assert_eq!(single_tier.get("key").unwrap().expect("record").version, 7);
     assert_eq!(single_tier.rejected_total(), 0);
+}
+
+#[test]
+fn tiered_values_trait_surface_keeps_hot_and_cold_views_consistent() {
+    let partition = PartitionId::new(1);
+    let epoch = ClusterEpoch::new(1);
+    let mut tiered = TieredValueStore::new(InMemoryReplicatedValueStore::default(), 32);
+    assert_eq!(tiered.hot_ratio(), 0.0);
+    tiered
+        .upsert(
+            "value",
+            ReplicatedValueRecord::value(partition, 1, epoch, b"value"),
+        )
+        .unwrap();
+    assert!(tiered.hot_ratio() > 0.0);
+    tiered.tombstone("dead", partition, 2, epoch).unwrap();
+    assert!(tiered.get("dead").unwrap().unwrap().is_tombstone());
+
+    let map = EffectiveReplicationMap::new(Replicas::new("node-a", Vec::new()));
+    assert!(!tiered.scan_all().unwrap().is_empty());
+    let _ = tiered.scan_owned(&map).unwrap();
+    assert!(tiered.total_bytes().unwrap() > 0);
+    assert_eq!(tiered.rejected_total(), 0);
+    assert_eq!(tiered.compact().unwrap(), 0);
+    tiered.remove("value").unwrap();
+    assert!(tiered.get("value").unwrap().is_none());
+    assert!(tiered.cold().get("dead").unwrap().is_some());
+
+    let mut oversized = TieredValueStore::new(InMemoryReplicatedValueStore::default(), 1);
+    oversized
+        .upsert(
+            "oversized",
+            ReplicatedValueRecord::value(partition, 1, epoch, b"too-large"),
+        )
+        .unwrap();
+    assert!(!oversized.hot_contains("oversized"));
+    assert!(oversized.get("missing").unwrap().is_none());
 }

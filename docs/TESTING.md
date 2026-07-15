@@ -528,6 +528,115 @@ cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoin
 cargo xtask verify-no-test-features
 ```
 
+For the 0.64 Raft snapshot and agentic-debugging proof layer, run the focused
+snapshot/replay/transport gates:
+
+```powershell
+cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
+cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
+cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
+cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
+cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
+cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
+cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
+cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
+cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
+cargo test -p hydracache-sim --test clock_skew_safety --locked
+cargo xtask verify-no-test-features
+cargo xtask doc-check
+```
+
+The CI nextest profile runs `cacheable_macro_compile_tests` and
+`proc_macro_compile_tests` in one serial `trybuild` group. Both harnesses compile
+fixtures under Cargo's shared `target/tests/trybuild` directory, so running them
+in parallel can consume the timeout while one waits for the other's build lock.
+Only this group is serialized; it has a bounded `120s x 3` cold-compile timeout,
+while all other workspace tests retain normal parallel execution and the stricter
+global timeout. `fast-suite-check` rejects a missing test, parallel group, or
+unbounded/changed override.
+
+### W39 cancellation-safety contracts
+
+W39 is one mandatory `0.64` release item with three contract rows. W39a covers
+local cache and single-flight ownership, W39b covers the Axum client surface
+and token-safe lock paths, and W39c covers Raft proposal cancellation plus
+runtime shutdown/restart. The tests use named deterministic cancellation
+checkpoints. They do not claim that a generic poll counter enumerates every
+`.await` in the program.
+
+Run the two fast contracts locally with:
+
+```powershell
+cargo test -p hydracache --test cancellation_safety --locked -j 2
+cargo test -p hydracache-client-transport-axum --test cancellation_safety --locked -j 2
+```
+
+Run the specialized Raft/runtime contract in its release lane with:
+
+```powershell
+$env:HYDRACACHE_RUN_CANCELLATION_RAFT='1'
+cargo test -p hydracache-cluster-raft --test cancellation_safety --locked -j 2 -- --ignored --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_CANCELLATION_RAFT -ErrorAction SilentlyContinue
+```
+
+For W39a and W39b, a dropped future must leave the named pre/post state,
+permit, subscription, budget, token, and TTL invariants intact. For W39c, a
+dropped caller may have a committed, not-committed, or unknown outcome; the
+test must classify that state and prove command-id retry idempotency and
+consistent metadata after restart. A green aggregate workspace run is not
+evidence for W39c unless its specialized receipt is also present. Wire-level
+disconnect during an HTTP request remains the W27/`0.63` boundary.
+
+The `rust`, complete dynamic-canary, coverage-ratchet, MSRV, and registered
+gated-proof jobs check out full Git history. This is required because the W32
+compatibility gate resolves `v0.63.0` and proves that it is an ancestor of the
+candidate. MSRV reaches the gate through `cargo test --workspace`; coverage
+reaches it through `cargo llvm-cov --workspace --all-targets` while excluding
+only `crates/xtask` source from the numeric product metric; and the generic
+proof runner can execute coverage or the v0.63 compatibility gate. A shallow
+checkout or missing baseline tag is an infrastructure failure, not a
+compatibility skip. The release-governance test parses the workflow and rejects
+any of these five jobs without `fetch-depth: 0`.
+
+The nightly daemon-process tier runs with `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`
+and uploads `target/test-hydracache-daemon-process/**` as replay evidence. Those
+artifacts contain child stdout/stderr logs, the preserved storage roots, and the
+status snapshots needed by the contradiction ledger.
+
+For the W7 seed-range nemesis soak, run:
+
+```powershell
+$env:HYDRACACHE_RUN_RAFT_NEMESIS_SOAK='1'
+$env:HYDRACACHE_NEMESIS_BUDGET_SECS='60'
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS -ErrorAction SilentlyContinue
+```
+
+The GitHub `Raft Corner-Case Nightly` job is the offloaded heavy/wide tier for
+W7-W14. To reproduce it locally with a shorter budget:
+
+```powershell
+$env:HYDRACACHE_RUN_RAFT_NEMESIS_SOAK='1'
+$env:HYDRACACHE_NEMESIS_BUDGET_SECS='60'
+$env:HYDRACACHE_GRID_SCOPE='wide'
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked -- --nocapture
+cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1 --nocapture
+cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS, Env:\HYDRACACHE_GRID_SCOPE -ErrorAction SilentlyContinue
+```
+
+Real-process daemon compaction remains outside the shipped W10 claim until the
+server exposes a disk-backed compaction seam; the nightly job uploads any
+available contradiction-ledger or daemon artifacts but does not pretend that
+missing future seam is already covered.
+
 These tests are deterministic: message-filter cases use seeded/tick-counted
 delivery rather than wall-clock sleeps, and golden vectors are byte fixtures
 checked into `crates/hydracache-cluster-raft/tests/vectors/`. Do not retry a
@@ -536,11 +645,224 @@ The real-process daemon kill/restart and randomized topology tiers remain
 nightly/pre-release gates because they open loopback listeners and manage child
 processes.
 
+The W8 corpus-vector tier is intentionally smaller than the external Raft test
+suites it borrows from: it translates the relevant safety ideas into HydraCache
+runtime surfaces instead of importing another implementation's private harness.
+The vectors must stay readable and reviewable; if a future Raft change needs a
+new external-inspired scenario, add it here with a short blueprint comment and a
+canary that would fail if the check became non-falsifiable.
+
+The W10 fast proof is an in-process `raft-rs` proof, not a daemon on-disk
+compaction claim. It forces a metadata snapshot payload into the raft snapshot
+path, isolates a lagging runtime past compaction, then proves `MsgSnapshot` plus
+tail replay restores membership. Real-process daemon compaction remains a
+nightly/pre-release claim only when the server exposes a disk-backed compaction
+seam and uploads daemon replay artifacts.
+
+The W12 exhaustive grid is finite rather than sampled: it enumerates membership
+operation, real snapshot prefix, and restart point. It also protects the
+snapshot apply contract that a restored runtime must never export a snapshot
+with fewer applied indexes than applied command envelopes after replaying a
+committed tail.
+
+The W13 proposal-idempotency gate uses the cluster testkit's restartable
+in-memory Raft log seam. It persists a Raft snapshot with the current
+`ConfState`, restarts the node on the same store, retries the ConfChange, and
+also covers metadata command-id retry after `export_snapshot`/`from_snapshot`.
+
+The W14 clock-skew gate lives in `hydracache-sim/tests` instead of
+`hydracache-cluster-raft/tests` to avoid a dependency cycle. It uses skewed
+per-node Raft tick rates through `RuntimeRaftCluster`, `SimClock` backward-jump
+coverage for the fenced lock store, and the existing lock-safety report to keep
+fence monotonicity and zombie rejection tied to the release proof.
+
+W6b keeps the local and GitHub command matrices mechanically identical. The
+ordinary W7-W14 rows are explicit steps in the `rust` job; nemesis soak, the
+wide snapshot grid, feature-gated rejoin/resource-fault proofs, and the daemon
+process tier run through their entries in `gated-test-registry.toml`. The heavy
+jobs invoke those entries via `evidence-run`, so a direct ad hoc command cannot
+silently stand in for an exact-commit release receipt. Validate the wiring with:
+
+```powershell
+cargo test -p xtask --test release_governance --locked
+cargo xtask release-governance-check --release 0.64
+```
+
+The W15 mutation baseline is a test-the-tests gate for the snapshot/apply/
+membership paths. `.cargo/mutants.toml` must stay a native cargo-mutants config
+(`examine_globs`, `test_package`, `features`, and related cargo-mutants keys),
+because the slow CI lane passes that file directly to `cargo mutants --config`.
+HydraCache-only tables such as `[hydracache]` are rejected by the xtask canary
+before the slow lane starts. Fast CI always validates the reviewed scope and
+baseline:
+
+```powershell
+cargo test -p xtask --test mutants --locked
+cargo xtask mutants
+cargo xtask mutants --scope proof-oracles
+cargo xtask mutants --shard 0/8
+cargo xtask mutants --scope proof-oracles --shard 0/2
+```
+
+If `target/hydracache-mutants/report.txt` is present, `cargo xtask mutants`
+diffs every `SURVIVED ...` line against
+[`docs/testing/mutation-baseline.md`](testing/mutation-baseline.md) and fails on
+untriaged survivors. Without that cached report it skips loud. The scheduled
+GitHub `Raft Mutation Testing` matrix sets `HYDRACACHE_RUN_RAFT_MUTANTS=1`,
+installs `cargo-mutants`, and executes eight registered shards over the scoped
+Raft paths in `.cargo/mutants.toml`. A separate two-shard proof-oracle campaign uses
+`.cargo/mutants-proof-oracles.toml` and
+[`docs/testing/mutation-proof-oracle-baseline.md`](testing/mutation-proof-oracle-baseline.md)
+to mutate the reusable linearizability checker and invariant catalog. Product
+and proof-oracle shards have separate commit-bound receipts, pin cargo-mutants
+`27.1.0`, and are all required before release; integration-test glue is not a
+substitute for mutating the decision modules themselves. `xtask` invokes each
+shard with `--in-place` inside its isolated runner checkout. This is required
+because `compat_matrix` reads the candidate commit through `git rev-parse HEAD`,
+while cargo-mutants scratch copies omit `.git`; it also avoids duplicating the
+large Cargo target directory. Never run two in-place shards in the same checkout.
+
+The W16 Miri lane hardens the same snapshot immutability thesis against actual
+aliasing/UB. It is intentionally gated because it needs nightly Rust and the
+`miri` component:
+
+```powershell
+rustup toolchain install nightly-2026-07-01 --component miri
+cargo +nightly-2026-07-01 miri setup
+cargo xtask miri-check
+# exact Linux release evidence:
+cargo xtask evidence-run --release 0.64 --gate tool.miri.snapshot-safety
+```
+
+The GitHub `Raft Miri` job pins `nightly-2026-07-01` and skips loud if that
+toolchain or Miri cannot be installed on the runner. Such a skip creates no ship
+receipt. A real Miri UB report or a failing scoped test is red evidence. The
+successful wrapper writes `miri-snapshot-safety.json`, and `evidence-run` binds
+it to the exact commit and registry digest. The Miri commands intentionally target sync snapshot data
+paths: the full async `tokio::test` membership suites are still ordinary fast
+gates because Miri cannot model every platform runtime primitive (for example
+Windows IOCP). The canary
+`canary_snapshot_shares_a_mutable_arc_across_export` preserves the forbidden W1
+shape: an exported snapshot must not alias live mutable membership state.
+
+ThreadSanitizer complements Miri and loom by executing ordinary threaded cache
+and Raft suites on Linux. The lane pins `nightly-2026-07-01`, `rust-src`,
+`-Zbuild-std`, and `-Zsanitizer=thread`. The sole reviewed suppression in
+`docs/testing/tsan-suppressions.txt` covers `moka 0.12.15`'s `MiniArc`
+release/fence false positive: TSan cannot model memory fences, while Rust's own
+`Arc` substitutes an acquire load under the sanitizer. The runner keeps
+parallel `libtest`, Tokio, cache, and Raft execution enabled, validates that no
+broader suppression was added, and binds the suppression digest into evidence.
+The dedicated CI job first prebuilds all four instrumented proof targets in a
+visible step, so dependency and `build-std` compilation cannot consume the
+execution receipt's entire timeout without diagnostics. The runner flushes a
+start/pass marker and elapsed time for every suite; the generic registered gate
+retains a bounded two-hour cold-build budget for runs without that prebuild.
+Its ignored `UnsafeCell` fixture is test-only and must produce a bounded
+`ThreadSanitizer: data race` report; a
+green canary, unrelated panic, timeout, unsupported-host skip, or unpinned
+toolchain is not release evidence.
+
+```powershell
+cargo xtask tsan-check --scope suites
+cargo xtask tsan-check --scope canary
+```
+
+The W17 canary registry is the machine-readable map from proof item to falsifier:
+
+```powershell
+cargo test -p xtask --test canary_check --locked
+cargo xtask canary-check
+cargo xtask canary-sweep --release 0.64 --tier fast
+```
+
+`docs/testing/canary-registry.json` must point every implemented W-item at a real
+guard function and a real canary function. Schema v2 also stores separate normal
+and defect-enabled commands, defect id, exact failure signature, timeout, tier,
+and evidence artifact. The dynamic runner first requires the normal guard to
+execute at least one test and pass, then requires the canary to exit non-zero
+with the registered invariant signature. A green canary, timeout, compile error,
+unrelated panic, platform skip, or zero-test command is not red evidence.
+Receipts under `target/release-evidence/canaries/` bind the command, defect,
+registry, output, and source commit. Scheduled/dispatch CI runs `--tier all` for
+the Loom, TSan, and TLC rows; fast CI runs `--tier fast` on every change.
+
+The W18 nemesis determinism checks are part of the existing fast nemesis test:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_replays_identically_for_same_seed --locked
+cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_failure_shrinks_to_minimal_reproducing_schedule --locked
+```
+
+The same-seed check compares the generated schedule and final committed
+membership/voter outcome. The shrinker test uses a fixture failure so the fast
+suite can prove the shrink algorithm returns a one-step-minimal reproducing
+schedule without waiting for a naturally failing randomized seed.
+
+The suite-wide proof is executable and produces a registered exact-commit
+artifact:
+
+```powershell
+cargo test -p xtask --test determinism_sweep --locked
+cargo xtask determinism-sweep --release 0.64
+```
+
+Suites opt in with `deterministic=true` and a `logical_digest_artifact` in
+`docs/testing/fast-suite-registry.toml`. The artifact is logical JSON, not test
+stdout: it contains the seed, ordered schedule and operations, invariant
+verdicts, and final state. The canonicalizer removes wall-clock timestamps,
+durations, absolute/temp paths, ports, process ids, and thread ids, sorts object
+keys, and deliberately preserves array order. Repeated and serial-run digests
+must all match; two merely green exits are insufficient.
+
+The W19 frozen bad-seed corpus lives at
+`crates/hydracache-cluster-raft/tests/vectors/bad_seeds.json` and is replayed by
+the same fast nemesis test file:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test nemesis_membership known_bad_seeds_replay_green_in_fast_tier --locked
+```
+
+Every corpus entry must include a suite, seed, step count, and reason. The guard
+counts executed entries so a fake-green loader cannot parse the JSON and skip
+the replay loop.
+
+The W20 corpus category gate is in `raft_corpus_vectors.rs`:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test raft_corpus_vectors raft_corpus_covers_every_required_etcd_edge_category --locked
+```
+
+The file keeps a `REQUIRED_CATEGORIES` table beside the vector tests. A vector
+may cover more than one category, but removing the last representative for any
+required etcd/raft edge category must make the category guard fail.
+
+The W21 invariant catalog lives in `hydracache-cluster-testkit` and is shared by
+the nemesis/corpus convergence tests:
+
+```powershell
+cargo test -p hydracache-cluster-testkit --test invariants --locked
+```
+
+`ClusterInvariantView::from_runtime_raft_cluster` captures leaders by term,
+voter sets, materialized member sets, and applied command ids. The shared
+`assert_cluster_invariants` catalog checks no two leaders share a term, settled
+voters/members agree, and committed commands are not lost on any node.
+
 Cluster-correctness flake policy is intentionally strict. A failed nightly must
 open an issue that includes the seed, replay manifest path, captured child logs,
 and the exact env-gated command. Quarantine is allowed for at most one day and
 must link to that issue. Silent retries, missing replay artifacts, or "could not
 reproduce" without the preserved seed do not count as green evidence.
+
+Raft snapshot and membership failures also use the agentic-debugging
+contradiction ledger in
+[`docs/testing/agentic-debugging.md`](testing/agentic-debugging.md). The ledger
+must list the current hypothesis, supporting and contradicting evidence,
+unexplained state-machine errors, replay seed, schedule, trace artifact, and a
+decision. A failure cannot be closed as environmental while Raft apply, snapshot
+restore, membership divergence, or invariant errors remain unexplained, and a
+log-level downgrade cannot be the fix for a correctness contradiction.
 
 ## Cache Event Tests
 
@@ -825,16 +1147,16 @@ under `crates/hydracache/tests/cacheable/`,
 
 ## Coverage Summary
 
-Run workspace coverage:
+Run product-source coverage while still executing the full workspace test suite:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --summary-only
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --summary-only
 ```
 
-The scheduled CI ratchet enforces the current workspace line floor:
+The scheduled CI ratchet enforces the current product-source line floor:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --summary-only --fail-under-lines 88
 ```
 
 That ratchet is a mechanical regression gate. It is not a numeric self-score or
@@ -843,14 +1165,14 @@ release-quality claim under `docs/RULES.md` R-7.
 Show uncovered source lines:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --show-missing-lines --summary-only
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --show-missing-lines --summary-only
 ```
 
 Generate HTML and LCOV reports:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --html --output-dir target\llvm-cov-html
-cargo llvm-cov report --lcov --output-path target\llvm-cov.lcov
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --html --output-dir target\llvm-cov-html
+cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --lcov --output-path target\llvm-cov.lcov
 ```
 
 Open the HTML report at:
@@ -864,9 +1186,25 @@ target\llvm-cov-html\html\index.html
 The current practical target is split by surface area:
 
 - Reusable library crates should stay above `95%` line coverage.
-- Workspace coverage, including the non-published sandbox, should trend toward
+- Product-source coverage, including the non-published sandbox, should trend toward
   `95%+` line coverage.
 - Visible uncovered source lines should be investigated before release.
+
+The 0.64 ratchet contract lives in `docs/testing/coverage-ratchet.toml`. The reviewed
+`(^|/)crates/xtask/` exclusion changes only the reported product-source denominator:
+the full workspace suite still executes, and `xtask` proof code remains checked by its
+own canary, mutation, and governance gates. Validate the floor, exact exclusion,
+provenance state, pinned `cargo-llvm-cov` version, artifact paths, and CI wiring without
+running the workspace suite:
+
+```powershell
+cargo xtask coverage-ratchet-check --structural
+```
+
+The scheduled/manual release lane executes the registered `tool.coverage-ratchet` gate.
+It writes the raw LLVM JSON plus `coverage-ratchet.json`, and `evidence-run` binds both
+artifacts to the exact candidate commit. Until that clean candidate measurement is
+reviewed, the baseline remains `unmeasured` and the existing 88% floor is retained.
 
 The initial `0.24.0` baseline measured on 2026-06-11 was:
 

@@ -75,6 +75,83 @@ depends_on = ["0.38.0"]
 }
 
 #[test]
+fn release_work_items_match_plan_headings_and_index_marker() {
+    let manifest = r#"
+[[release]]
+version = "0.64.0"
+file = "docs/plans/V0_64.md"
+status = "planned"
+work_items = ["W1", "W5a", "W6"]
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_64.md"]);
+    fs::write(
+        root.join("docs/plans/V0_64.md"),
+        "# plan\n\n## W1. First\n\n### W5a. Transport\n\n## W6. Gates\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/plans/INDEX.md"),
+        "<!-- release-work-items:0.64.0=W1,W5a,W6 -->\n",
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert!(
+        problems.is_empty(),
+        "expected no problems, got: {problems:?}"
+    );
+}
+
+#[test]
+fn detects_release_work_item_drift_across_manifest_plan_and_index() {
+    let manifest = r#"
+[[release]]
+version = "0.64.0"
+file = "docs/plans/V0_64.md"
+status = "planned"
+work_items = ["W1", "W2", "W2", "Wbad"]
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_64.md"]);
+    fs::write(
+        root.join("docs/plans/V0_64.md"),
+        "# plan\n\n## W1. First\n\n## W3. Undeclared\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/plans/INDEX.md"),
+        "<!-- release-work-items:0.64.0=W1 -->\n",
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("manifest work item 'W2' has no matching plan heading"),
+        "missing declared-heading drift: {joined}"
+    );
+    assert!(
+        joined.contains("plan work item 'W3' is missing from releases.toml work_items"),
+        "missing undeclared-heading drift: {joined}"
+    );
+    assert!(
+        joined.contains("missing release work-item marker"),
+        "missing index-marker drift: {joined}"
+    );
+    assert!(
+        joined.contains("duplicate work item 'W2'"),
+        "missing duplicate work-item validation: {joined}"
+    );
+    assert!(
+        joined.contains("invalid work item 'Wbad'"),
+        "missing invalid work-item validation: {joined}"
+    );
+}
+
+#[test]
 fn detects_shipped_release_without_release_notes() {
     let manifest = r#"
 [[release]]

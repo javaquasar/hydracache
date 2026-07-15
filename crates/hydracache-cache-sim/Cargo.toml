@@ -1,0 +1,16 @@
+[package]
+name = "hydracache-cache-sim"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Trace-driven cache policy simulator for HydraCache release gates."
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
+
+[dependencies]
+
+[lints]
+workspace = true

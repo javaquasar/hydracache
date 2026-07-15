@@ -4,6 +4,8 @@
 //! dev-dependencies. It owns the fault-injection vocabulary so production crates
 //! do not grow test-only transport types.
 
+pub mod invariants;
+
 use std::collections::{BTreeMap, VecDeque};
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -12,14 +14,15 @@ use std::sync::{Arc, Mutex, RwLock};
 use chitchat::transport::{ChannelTransport, Socket, Transport};
 use chitchat::{ChitchatMessage, Deserializable, Serializable};
 use hydracache::{
-    CacheResult, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryLiveness,
+    CacheError, CacheResult, ClusterControlPlane, ClusterDiscovery, ClusterDiscoveryLiveness,
     ClusterGeneration, ClusterNodeId,
 };
 use hydracache_cluster_raft::{
-    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftRuntimeRole,
-    RaftWireMessage,
+    InMemoryRaftLogStore, RaftLogStore, RaftMessageSink, RaftMetadataRuntime,
+    RaftMetadataRuntimeConfig, RaftRuntimeRole, RaftWireMessage,
 };
-use raft::eraftpb::MessageType;
+use raft::eraftpb::{Message as RaftMessage, MessageType, Snapshot};
+use raft::Storage;
 
 /// Delivery direction used by packet filters.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,6 +46,8 @@ pub enum RaftFilterAction {
     Delay(u64),
     /// Deliver the original plus `extra` duplicates.
     Duplicate(usize),
+    /// Retain the message until the test explicitly releases it.
+    Hold,
 }
 
 /// Deterministic trace event emitted by the filter harness.
@@ -197,6 +202,7 @@ pub struct RaftFilterSet {
     filters: Arc<RwLock<Vec<Arc<dyn RaftMessageFilter>>>>,
     delayed: Arc<Mutex<BTreeMap<u64, Vec<RaftWireMessage>>>>,
     dropped: Arc<Mutex<Vec<RaftWireMessage>>>,
+    held: Arc<Mutex<Vec<RaftWireMessage>>>,
     trace: Arc<Mutex<Vec<RaftMessageTraceEvent>>>,
     tick: Arc<AtomicU64>,
 }
@@ -243,6 +249,16 @@ impl RaftFilterSet {
             .lock()
             .expect("raft dropped queue poisoned")
             .clone()
+    }
+
+    /// Return held messages without releasing them.
+    pub fn held(&self) -> Vec<RaftWireMessage> {
+        self.held.lock().expect("raft held queue poisoned").clone()
+    }
+
+    /// Release every explicitly held message in insertion order.
+    pub fn release_held(&self) -> Vec<RaftWireMessage> {
+        std::mem::take(&mut *self.held.lock().expect("raft held queue poisoned"))
     }
 
     /// Return the deterministic trace.
@@ -329,6 +345,14 @@ impl RaftFilterSet {
                     messages.push(message.clone());
                 }
                 messages
+            }
+            RaftFilterAction::Hold => {
+                self.record(tick, &message, "held");
+                self.held
+                    .lock()
+                    .expect("raft held queue poisoned")
+                    .push(message);
+                Vec::new()
             }
         }
     }
@@ -1006,6 +1030,8 @@ impl GossipLivenessScript {
 /// Deterministic in-process raft runtime cluster used by PR-tier tests.
 pub struct RuntimeRaftCluster {
     nodes: BTreeMap<u64, Arc<RaftMetadataRuntime>>,
+    configs: BTreeMap<u64, RaftMetadataRuntimeConfig>,
+    stores: BTreeMap<u64, InMemoryRaftLogStore>,
     filters: RaftFilterSet,
     delivered: Vec<RaftWireMessage>,
 }
@@ -1022,23 +1048,7 @@ impl RuntimeRaftCluster {
         I: IntoIterator<Item = u64>,
     {
         let voters = voters.into_iter().collect::<Vec<_>>();
-        let nodes = voters
-            .iter()
-            .copied()
-            .map(|id| {
-                let config = RaftMetadataRuntimeConfig::multi_voter("orders", id, voters.clone())
-                    .ticks(5, 1);
-                (
-                    id,
-                    Arc::new(RaftMetadataRuntime::with_config(config).unwrap()),
-                )
-            })
-            .collect();
-        Self {
-            nodes,
-            filters: RaftFilterSet::default(),
-            delivered: Vec::new(),
-        }
+        Self::with_voters_and_prevote(voters, BTreeMap::new())
     }
 
     /// Create a cluster where selected nodes override the default pre-vote setting.
@@ -1047,25 +1057,118 @@ impl RuntimeRaftCluster {
         I: IntoIterator<Item = u64>,
     {
         let voters = voters.into_iter().collect::<Vec<_>>();
-        let nodes = voters
-            .iter()
-            .copied()
-            .map(|id| {
-                let pre_vote = overrides.get(&id).copied().unwrap_or(true);
-                let config = RaftMetadataRuntimeConfig::multi_voter("orders", id, voters.clone())
-                    .pre_vote(pre_vote)
-                    .ticks(5, 1);
-                (
-                    id,
-                    Arc::new(RaftMetadataRuntime::with_config(config).unwrap()),
-                )
-            })
-            .collect();
+        Self::with_voters_and_prevote(voters, overrides)
+    }
+
+    fn with_voters_and_prevote(voters: Vec<u64>, overrides: BTreeMap<u64, bool>) -> Self {
+        let mut nodes = BTreeMap::new();
+        let mut configs = BTreeMap::new();
+        let mut stores = BTreeMap::new();
+        for id in voters.iter().copied() {
+            let pre_vote = overrides.get(&id).copied().unwrap_or(true);
+            let config = RaftMetadataRuntimeConfig::multi_voter("orders", id, voters.clone())
+                .pre_vote(pre_vote)
+                .ticks(5, 1);
+            let store = InMemoryRaftLogStore::new_with_conf_state((voters.clone(), vec![]));
+            let runtime = RaftMetadataRuntime::with_storage(config.clone(), store.clone()).unwrap();
+            nodes.insert(id, Arc::new(runtime));
+            configs.insert(id, config);
+            stores.insert(id, store);
+        }
         Self {
             nodes,
+            configs,
+            stores,
             filters: RaftFilterSet::default(),
             delivered: Vec::new(),
         }
+    }
+
+    /// Restart one runtime over its existing in-memory raft log store.
+    pub fn restart_node(&mut self, node_id: u64) -> CacheResult<()> {
+        let config = self
+            .configs
+            .get(&node_id)
+            .cloned()
+            .ok_or_else(|| CacheError::Backend(format!("unknown raft node {node_id}")))?;
+        let store =
+            self.stores.get(&node_id).cloned().ok_or_else(|| {
+                CacheError::Backend(format!("missing raft store for node {node_id}"))
+            })?;
+        let runtime = RaftMetadataRuntime::with_storage(config, store)?;
+        self.nodes.insert(node_id, Arc::new(runtime));
+        Ok(())
+    }
+
+    /// Persist a raft snapshot for one node using its current applied index and conf state.
+    pub fn save_snapshot_for_node(&self, node_id: u64) -> CacheResult<u64> {
+        let runtime = self.node(node_id);
+        let runtime_snapshot = runtime.snapshot();
+        let store = self
+            .stores
+            .get(&node_id)
+            .ok_or_else(|| CacheError::Backend(format!("missing raft store for node {node_id}")))?;
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = runtime_snapshot.applied_index;
+        snapshot.mut_metadata().term = runtime_snapshot.term;
+        snapshot
+            .mut_metadata()
+            .mut_conf_state()
+            .set_voters(runtime.voter_ids()?);
+        store
+            .save_snapshot(&snapshot, usize::MAX)
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
+        Ok(runtime_snapshot.applied_index)
+    }
+
+    /// Persist a metadata-bearing snapshot and compact one node's applied log.
+    ///
+    /// This mirrors the runtime snapshot payload contract from a dev-only crate,
+    /// allowing default-feature integration tests to exercise real raft-rs
+    /// `MsgSnapshot` delivery without exposing a production compaction hook.
+    pub fn compact_applied_log_to_snapshot(&self, node_id: u64) -> CacheResult<u64> {
+        const PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
+        const PAYLOAD_VERSION: u32 = 1;
+
+        let runtime = self.node(node_id);
+        let export = runtime.export_snapshot();
+        if export.applied_index == 0 {
+            return Err(CacheError::Backend(
+                "cannot compact raft metadata log before any entry is applied".to_owned(),
+            ));
+        }
+        let store = self
+            .stores
+            .get(&node_id)
+            .ok_or_else(|| CacheError::Backend(format!("missing raft store for node {node_id}")))?;
+        let term = store
+            .term(export.applied_index)
+            .unwrap_or(runtime.snapshot().term);
+        let conf_state = store
+            .initial_state()
+            .map_err(|error| CacheError::Backend(error.to_string()))?
+            .conf_state;
+        let payload = serde_json::json!({
+            "format_version": PAYLOAD_VERSION,
+            "cluster_name": export.cluster_name,
+            "source_raft_node_id": export.raft_node_id,
+            "applied_index": export.applied_index,
+            "commands": export.commands,
+        });
+        let mut data = PAYLOAD_MAGIC.to_vec();
+        data.extend(
+            serde_json::to_vec(&payload).map_err(|error| CacheError::Backend(error.to_string()))?,
+        );
+
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = export.applied_index;
+        snapshot.mut_metadata().term = term;
+        snapshot.mut_metadata().set_conf_state(conf_state);
+        snapshot.data = data.into();
+        store
+            .save_snapshot(&snapshot, usize::MAX)
+            .map_err(|error| CacheError::Backend(error.to_string()))?;
+        Ok(export.applied_index)
     }
 
     /// Return the shared filter set.
@@ -1099,6 +1202,46 @@ impl RuntimeRaftCluster {
     pub fn campaign(&mut self, node_id: u64) {
         let messages = self.node(node_id).campaign().unwrap();
         self.drain_until_idle(messages);
+    }
+
+    /// Request a real raft-rs leadership transfer through the deterministic network.
+    pub fn request_leadership_transfer(
+        &mut self,
+        leader_id: u64,
+        transferee_id: u64,
+    ) -> CacheResult<()> {
+        if !self.nodes.contains_key(&transferee_id) {
+            return Err(CacheError::Backend(format!(
+                "unknown leadership transferee {transferee_id}"
+            )));
+        }
+        if !self.node(leader_id).voter_ids()?.contains(&transferee_id) {
+            return Err(CacheError::Backend(format!(
+                "ineligible non-voter leadership transferee {transferee_id}"
+            )));
+        }
+        let mut message = RaftMessage {
+            from: transferee_id,
+            to: leader_id,
+            ..Default::default()
+        };
+        message.set_msg_type(MessageType::MsgTransferLeader);
+        self.drain_until_idle([RaftWireMessage::encode(&message)?]);
+        Ok(())
+    }
+
+    /// Report a snapshot transport outcome and drain any immediate retry.
+    pub fn report_snapshot_delivery(
+        &mut self,
+        leader_id: u64,
+        follower_id: u64,
+        delivered: bool,
+    ) -> CacheResult<()> {
+        let messages = self
+            .node(leader_id)
+            .report_snapshot_delivery(follower_id, delivered)?;
+        self.drain_until_idle(messages);
+        Ok(())
     }
 
     /// Tick one node and drain the resulting network.

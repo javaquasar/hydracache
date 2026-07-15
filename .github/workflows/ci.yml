@@ -5,8 +5,15 @@ on:
     branches:
       - main
       - master
+    tags:
+      - "v*.*.*"
   pull_request:
   workflow_dispatch:
+    inputs:
+      gated_gate_id:
+        description: "Exact gate id from docs/testing/gated-test-registry.toml"
+        required: false
+        type: string
   schedule:
     - cron: "0 3 * * 1"
 
@@ -27,6 +34,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -49,6 +58,11 @@ jobs:
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
 
+      - name: Install pinned cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.137
+
       - name: Format
         run: cargo fmt --all -- --check
 
@@ -68,8 +82,33 @@ jobs:
           cargo test -p xtask --test doc_check --locked
           cargo run -p xtask --locked -- doc-check
 
+      - name: Raft mutation baseline
+        run: |
+          cargo test -p xtask --test mutants --locked
+          cargo run -p xtask --locked -- mutants
+
+      - name: Canary completeness
+        run: |
+          cargo test -p xtask --test canary_check --locked
+          cargo run -p xtask --locked -- canary-check
+          cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier fast
+
+      - name: Upload fast canary evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "canary-fast-${{ github.sha }}"
+          path: target/release-evidence/canaries/*.json
+          if-no-files-found: error
+
+      - name: Fuzz corpus regression
+        run: cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked
+
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
+
+      - name: Release governance
+        run: cargo run -p xtask --locked -- release-governance-check --release 0.64
 
       - name: SQL lint baseline drift
         run: |
@@ -90,6 +129,40 @@ jobs:
       - name: Raft failpoint crash-safety
         run: cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
 
+      - name: Raft snapshot and transport proof
+        run: |
+          cargo test -p hydracache-cluster-raft snapshot_immutability --locked
+          cargo test -p hydracache-cluster-raft --test raft_snapshot_membership --locked
+          cargo test -p hydracache-cluster-raft --features test-failpoints snapshot_apply --locked -- --test-threads=1
+          cargo test -p hydracache-cluster-raft snapshot_replay_manifest --locked
+          cargo test -p hydracache-server grid_host::tests::http_raft_sink_times_out_when_peer_accepts_without_reply --locked
+          cargo test -p hydracache-server grid_host::tests::drive_loop_counts_and_reports_send_failures --locked
+          cargo test -p hydracache-server grid_host::tests::raft_drive_continues_after_bounded_peer_send_timeout --locked
+
+      - name: Raft nemesis membership fast
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership --locked
+
+      - name: Raft corpus vectors
+        run: cargo test -p hydracache-cluster-raft --test raft_corpus_vectors --locked
+
+      - name: Snapshot corruption
+        run: cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked
+
+      - name: Raft rejoin after compaction
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1
+
+      - name: Raft snapshot resource faults
+        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test snapshot_resource_faults --locked -- --test-threads=1
+
+      - name: Snapshot exhaustive grid
+        run: cargo test -p hydracache-cluster-raft --test snapshot_exhaustive_grid --locked
+
+      - name: Proposal idempotency
+        run: cargo test -p hydracache-cluster-raft --test proposal_idempotency --locked
+
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked
+
       - name: Management console
         run: |
           npm --prefix console ci
@@ -98,7 +171,10 @@ jobs:
           npm --prefix console test
 
       - name: Test
-        run: cargo test --workspace --locked
+        run: cargo nextest run --workspace --profile ci --locked
+
+      - name: Doctests
+        run: cargo test --workspace --doc --locked
 
       - name: Documentation
         env:
@@ -115,7 +191,7 @@ jobs:
   performance-budget:
     name: Performance Budget
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -142,7 +218,7 @@ jobs:
   redis-compat-release-proof:
     name: Redis Compatibility Release Proof
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -198,7 +274,7 @@ jobs:
   dst-nightly-soak:
     name: DST and Soak Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -235,9 +311,23 @@ jobs:
         run: cargo test -p hydracache-server --test grid_host multi_node --locked -- --nocapture
 
       - name: Run daemon-process cluster tier
-        env:
-          HYDRACACHE_RUN_DAEMON_PROCESS_E2E: "1"
-        run: cargo test -p hydracache-server --test daemon_process_cluster --locked -- --test-threads=1 --nocapture
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e
+
+      - name: Upload daemon-process replay artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: daemon-process-replay-artifacts
+          path: target/test-hydracache-daemon-process/**
+          if-no-files-found: ignore
+
+      - name: Upload daemon-process evidence receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "daemon-process-evidence-${{ github.sha }}"
+          path: target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Run membership-history tier
         env:
@@ -249,20 +339,384 @@ jobs:
           HYDRACACHE_RUN_PREVOTE_NIGHTLY_SOAK: "1"
         run: cargo test -p hydracache-cluster-raft --test prevote_nightly_soak --locked -- --nocapture
 
+      - name: Run raft nemesis nightly soak
+        env:
+          HYDRACACHE_RUN_RAFT_NEMESIS_SOAK: "1"
+          HYDRACACHE_NEMESIS_BUDGET_SECS: "60"
+        run: cargo test -p hydracache-cluster-raft --test nemesis_membership nemesis_soak_over_seed_range_converges --locked -- --nocapture
+
       - name: Upload SOAK_REPORT
         uses: actions/upload-artifact@v6
         with:
           name: SOAK_REPORT
           path: SOAK_REPORT.json
 
-  coverage-ratchet:
-    name: Coverage Ratchet
+  raft-corner-case-nightly:
+    name: Raft Corner-Case Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-corner-case-nightly
+
+      - name: Raft nemesis soak
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-raft-nemesis-soak
+
+      - name: Snapshot exhaustive grid wide
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-grid-scope
+
+      - name: Rejoin after compaction proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.rejoin-after-compaction
+
+      - name: Snapshot resource faults
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults
+
+      - name: W39c Raft cancellation safety
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-cancellation-raft
+
+      - name: Clock skew safety
+        run: cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
+
+      - name: Upload raft corner-case artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: raft-corner-case-artifacts
+          path: |
+            target/hydracache-contradiction-ledger/**
+            target/hydracache-daemon-logs/**
+            target/test-hydracache-daemon-process/**
+            target/release-evidence/receipts/**
+          if-no-files-found: ignore
+
+  raft-loom:
+    name: Raft Loom
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-loom
+
+      - name: Run loom concurrency checks
+        env:
+          RUSTFLAGS: --cfg hydracache_loom
+        run: cargo test -p hydracache-cluster-raft --test loom_concurrency --locked -- --nocapture
+
+  fuzz-nightly:
+    name: Fuzz Nightly
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: fuzz-nightly
+
+      - name: Install nightly and cargo-fuzz
+        id: fuzz-runtime
+        shell: bash
+        run: |
+          set +e
+          rustup toolchain install nightly
+          if [ "$?" -ne 0 ]; then
+            echo "::warning::nightly toolchain unavailable; skipping fuzz-nightly"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cargo install cargo-fuzz --version 0.13.2 --locked
+          if [ "$?" -ne 0 ]; then
+            echo "::warning::cargo-fuzz unavailable; skipping fuzz-nightly"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run time-boxed fuzz targets
+        if: steps.fuzz-runtime.outputs.available == 'true'
+        working-directory: fuzz
+        run: |
+          cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60
+          cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
+
+  raft-mutation-testing:
+    name: Raft Mutation Testing (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - label: product-0-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-0-of-8
+          - label: product-1-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-1-of-8
+          - label: product-2-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-2-of-8
+          - label: product-3-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-3-of-8
+          - label: product-4-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-4-of-8
+          - label: product-5-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-5-of-8
+          - label: product-6-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-6-of-8
+          - label: product-7-of-8
+            campaign: product
+            gate: env.hydracache-run-raft-mutants-shard-7-of-8
+          - label: proof-oracles-0-of-2
+            campaign: proof-oracles
+            gate: env.hydracache-run-proof-oracle-mutants-shard-0-of-2
+          - label: proof-oracles-1-of-2
+            campaign: proof-oracles
+            gate: env.hydracache-run-proof-oracle-mutants-shard-1-of-2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-mutation-testing-${{ matrix.campaign }}
+
+      - name: Install cargo-mutants
+        run: cargo install cargo-mutants --version 27.1.0 --locked
+
+      - name: Run registered mutation shard
+        run: |
+          cargo test -p xtask --test mutants --locked
+          cargo run -p xtask --locked -- evidence-run --release 0.64 --gate ${{ matrix.gate }}
+
+      - name: Upload mutation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-mutation-testing-${{ matrix.label }}-${{ github.sha }}"
+          path: |
+            target/hydracache-mutants/**
+            target/hydracache-mutants-proof-oracles/**
+            target/release-evidence/receipts/**
+          if-no-files-found: ignore
+
+  raft-miri:
+    name: Raft Miri
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install nightly Miri
+        id: miri
+        shell: bash
+        run: |
+          set +e
+          rustup toolchain install nightly-2026-07-01 --component miri
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::nightly+miri toolchain unavailable; skipping Raft Miri lane"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cargo +nightly-2026-07-01 miri setup
+          setup_status=$?
+          if [ "$setup_status" -ne 0 ]; then
+            echo "::warning::cargo miri setup failed; skipping Raft Miri lane"
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Rust dependencies
+        if: steps.miri.outputs.available == 'true'
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: raft-miri
+
+      - name: Run commit-bound Miri snapshot proofs
+        if: steps.miri.outputs.available == 'true'
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.miri.snapshot-safety
+
+      - name: Upload Miri evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-miri-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.64/miri-snapshot-safety.json
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+
+  thread-sanitizer:
+    name: ThreadSanitizer
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install pinned nightly with rust-src
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: thread-sanitizer-nightly-2026-07-01
+
+      - name: Prebuild TSan proof targets
+        timeout-minutes: 120
+        env:
+          RUSTFLAGS: -Zsanitizer=thread
+          RUSTDOCFLAGS: -Zsanitizer=thread
+        run: cargo +nightly-2026-07-01 test -Zbuild-std --target x86_64-unknown-linux-gnu --locked --no-run -p hydracache -p hydracache-cluster-raft --test cache_core_concurrency_matrix --test leadership_handoff --test snapshot_delivery_chaos --test tsan_canary
+
+      - name: Run ordinary threaded suites under TSan
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.concurrent-suites
+
+      - name: Prove TSan detects the isolated race canary
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.tsan.race-canary
+
+      - name: Upload TSan evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "thread-sanitizer-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.64/tsan-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  dynamic-canary-sweep:
+    name: Dynamic Canary Sweep
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install pinned TSan nightly
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: dynamic-canary-sweep
+
+      - name: Download and verify pinned TLC
+        shell: bash
+        run: |
+          mkdir -p target/tools/tla2tools/1.7.4
+          curl --fail --location --silent --show-error \
+            https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar \
+            --output target/tools/tla2tools/1.7.4/tla2tools.jar
+          echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  target/tools/tla2tools/1.7.4/tla2tools.jar" | sha256sum --check
+
+      - name: Execute complete dynamic expected-red sweep
+        run: cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
+
+      - name: Run deterministic suite sweep
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
+
+      - name: Upload complete canary evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "canary-all-${{ github.sha }}"
+          path: |
+            target/release-evidence/canaries/*.json
+            target/release-evidence/receipts/**
+            target/test-evidence/0.64/determinism-sweep.json
+            target/test-evidence/0.64/raft-spec-canary.json
+          if-no-files-found: error
+
+  coverage-ratchet:
+    name: Coverage Ratchet
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    env:
+      HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_DB: hydracache
+          POSTGRES_PASSWORD: hydracache
+          POSTGRES_USER: hydracache
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hydracache -d hydracache"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -277,29 +731,34 @@ jobs:
           shared-key: coverage-ratchet
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov@0.8.7
 
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
 
-      - name: Enforce coverage floor
-        run: cargo llvm-cov --workspace --all-targets --locked --summary-only --fail-under-lines 88
+      - name: Run commit-bound coverage ratchet
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.coverage-ratchet
 
       - name: Generate coverage artifacts on failure
         if: failure()
         continue-on-error: true
         run: |
-          cargo llvm-cov report --html --output-dir target/llvm-cov-html
-          cargo llvm-cov report --lcov --output-path target/llvm-cov.lcov
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --html --output-dir target/llvm-cov-html
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --lcov --output-path target/llvm-cov.lcov
 
-      - name: Upload coverage artifacts on failure
-        if: failure()
+      - name: Upload coverage evidence
+        if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: coverage-ratchet
+          name: "coverage-ratchet-${{ github.sha }}"
           path: |
             target/llvm-cov-html
             target/llvm-cov.lcov
+            target/test-evidence/0.64/coverage-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Clean Rust test scratch links
         if: always()
@@ -312,6 +771,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Install Rust 1.88.0
         uses: dtolnay/rust-toolchain@1.88.0
@@ -335,3 +796,60 @@ jobs:
       - name: Clean Rust test scratch links
         if: always()
         run: rm -rf target/tests
+
+  gated-proof-registry:
+    name: Registered Gated Proof
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.gated_gate_id != ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: registered-gated-proof
+
+      - name: Install Java for pinned TLA+ proof
+        if: startsWith(inputs.gated_gate_id, 'tool.tla-tlc.')
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare pinned TLA+ tools
+        if: startsWith(inputs.gated_gate_id, 'tool.tla-tlc.')
+        shell: bash
+        run: |
+          mkdir -p target/tools/tla2tools/1.7.4
+          curl --fail --location --retry 3 \
+            --output target/tools/tla2tools/1.7.4/tla2tools.jar \
+            https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar
+          echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  target/tools/tla2tools/1.7.4/tla2tools.jar" | sha256sum --check
+
+      - name: Install pinned cargo-mutants
+        if: contains(inputs.gated_gate_id, 'mutants')
+        run: cargo install cargo-mutants --version 27.1.0 --locked
+
+      - name: Install pinned ThreadSanitizer toolchain
+        if: startsWith(inputs.gated_gate_id, 'tool.tsan.')
+        run: rustup toolchain install nightly-2026-07-01 --component rust-src
+
+      - name: Run registered gated proofs
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate "${{ inputs.gated_gate_id }}"
+
+      - name: Upload registered gated proof receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-evidence-${{ github.sha }}-${{ inputs.gated_gate_id }}"
+          path: target/release-evidence/receipts
+          if-no-files-found: error

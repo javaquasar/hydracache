@@ -5,9 +5,10 @@
 //! `raft-rs` [`raft::RawNode`] behind that trait while keeping the local cache
 //! crate free from Raft dependencies.
 //!
-//! The current runtime is intentionally single-node and in-memory. It still
-//! drives the real raft-rs lifecycle: campaign, propose, `Ready`, stable-log
-//! append, and committed-entry application.
+//! The embedded default can run single-node and in-memory, while the standalone
+//! server opens the feature-gated sled store for process-restart durability.
+//! Both paths drive the real raft-rs lifecycle: campaign, propose, `Ready`,
+//! stable-log append, and committed-entry application.
 //!
 //! Applied commands are stored as [`RaftMetadataCommandEnvelope`] values with a
 //! stable command id. Duplicate command ids are reported as
@@ -87,6 +88,8 @@
 
 use std::collections::BTreeSet;
 use std::fmt;
+#[cfg(feature = "sled-log-store")]
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use hydracache::{
@@ -108,15 +111,17 @@ pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStor
 
 use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
-    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
+    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage, Snapshot,
 };
 use raft::storage::Storage;
-use raft::{Config, RawNode, StateRole};
+use raft::{Config, RawNode, SnapshotStatus, StateRole};
+use serde::{Deserialize, Serialize};
 use slog::{o, Logger};
 use tokio::time::{sleep, Duration};
 
 const FORWARDED_APPLY_WAIT_ATTEMPTS: usize = 500;
 const FORWARDED_APPLY_WAIT_INTERVAL: Duration = Duration::from_millis(10);
+const DEFAULT_MAX_SIZE_PER_MSG: u64 = 1024 * 1024;
 
 /// Configuration for an embedded raft-rs metadata runtime.
 #[derive(Debug, Clone)]
@@ -142,7 +147,7 @@ impl RaftMetadataRuntimeConfig {
             auto_campaign: true,
             election_tick: 10,
             heartbeat_tick: 3,
-            max_size_per_msg: 1024 * 1024,
+            max_size_per_msg: DEFAULT_MAX_SIZE_PER_MSG,
             max_inflight_msgs: 256,
             pre_vote: true,
         }
@@ -161,7 +166,7 @@ impl RaftMetadataRuntimeConfig {
             auto_campaign: false,
             election_tick: 10,
             heartbeat_tick: 3,
-            max_size_per_msg: 1024 * 1024,
+            max_size_per_msg: DEFAULT_MAX_SIZE_PER_MSG,
             max_inflight_msgs: 256,
             pre_vote: true,
         }
@@ -198,7 +203,7 @@ impl RaftMetadataRuntimeConfig {
             auto_campaign: false,
             election_tick: 10,
             heartbeat_tick: 3,
-            max_size_per_msg: 1024 * 1024,
+            max_size_per_msg: DEFAULT_MAX_SIZE_PER_MSG,
             max_inflight_msgs: 256,
             pre_vote: true,
         })
@@ -252,7 +257,6 @@ impl RaftMetadataRuntimeConfig {
                 max_size_per_msg: self.max_size_per_msg,
                 max_inflight_msgs: self.max_inflight_msgs,
                 pre_vote: false,
-                applied: 0,
                 ..Default::default()
             }
         });
@@ -264,7 +268,6 @@ impl RaftMetadataRuntimeConfig {
             max_size_per_msg: self.max_size_per_msg,
             max_inflight_msgs: self.max_inflight_msgs,
             pre_vote: self.pre_vote,
-            applied: 0,
             ..Default::default()
         }
     }
@@ -312,6 +315,8 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub role: RaftRuntimeRole,
     /// Number of metadata commands applied from committed Raft entries.
     pub commands_committed: usize,
+    /// Number of raft snapshots installed into the metadata state machine.
+    pub snapshot_installs: u64,
     /// Last applied metadata command, if any.
     pub last_command: Option<RaftMetadataCommand>,
     /// Number of duplicate command ids skipped by the metadata state machine.
@@ -321,7 +326,7 @@ pub struct RaftMetadataRuntimeSnapshot {
 }
 
 /// Metadata command plus a stable idempotency key.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataCommandEnvelope {
     /// Stable command id used to deduplicate retries.
     pub command_id: String,
@@ -435,7 +440,7 @@ impl RaftMessageSink for InMemoryRaftMessageSink {
 /// This is not a durable multi-node Raft log format yet. It captures the
 /// materialized metadata commands that have already been applied so a new
 /// runtime can rebuild the same membership view.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataRuntimeExport {
     /// Logical cluster name.
     pub cluster_name: String,
@@ -445,6 +450,58 @@ pub struct RaftMetadataRuntimeExport {
     pub applied_index: u64,
     /// Applied command envelopes in order.
     pub commands: Vec<RaftMetadataCommandEnvelope>,
+}
+
+const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
+const RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION: u32 = 1;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct RaftMetadataSnapshotPayload {
+    format_version: u32,
+    cluster_name: String,
+    source_raft_node_id: u64,
+    applied_index: u64,
+    commands: Vec<RaftMetadataCommandEnvelope>,
+}
+
+#[cfg(feature = "test-failpoints")]
+fn encode_metadata_snapshot_payload(snapshot: &RaftMetadataRuntimeExport) -> CacheResult<Vec<u8>> {
+    let payload = RaftMetadataSnapshotPayload {
+        format_version: RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION,
+        cluster_name: snapshot.cluster_name.clone(),
+        source_raft_node_id: snapshot.raft_node_id,
+        applied_index: snapshot.applied_index,
+        commands: snapshot.commands.clone(),
+    };
+    let mut bytes = Vec::from(RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC.as_slice());
+    bytes.extend(serde_json::to_vec(&payload).map_err(|error| {
+        CacheError::Backend(format!("failed to encode raft metadata snapshot: {error}"))
+    })?);
+    Ok(bytes)
+}
+
+fn decode_metadata_snapshot_payload(bytes: &[u8]) -> CacheResult<RaftMetadataRuntimeExport> {
+    let payload = bytes
+        .strip_prefix(RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC)
+        .ok_or_else(|| {
+            CacheError::Backend("unsupported raft metadata snapshot payload".to_owned())
+        })?;
+    let payload: RaftMetadataSnapshotPayload =
+        serde_json::from_slice(payload).map_err(|error| {
+            CacheError::Backend(format!("failed to decode raft metadata snapshot: {error}"))
+        })?;
+    if payload.format_version != RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION {
+        return Err(CacheError::Backend(format!(
+            "unsupported raft metadata snapshot payload version {}",
+            payload.format_version
+        )));
+    }
+    Ok(RaftMetadataRuntimeExport {
+        cluster_name: payload.cluster_name,
+        raft_node_id: payload.source_raft_node_id,
+        applied_index: payload.applied_index,
+        commands: payload.commands,
+    })
 }
 
 /// Storage seam for exported raft metadata snapshots.
@@ -564,6 +621,7 @@ where
     results: Vec<RaftCommandResult>,
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
+    snapshot_installs: u64,
     #[cfg(test)]
     fail_next_proposal: bool,
 }
@@ -697,6 +755,30 @@ impl RaftMetadataRuntime<DurableRaftLogStore> {
     }
 }
 
+#[cfg(feature = "sled-log-store")]
+impl RaftMetadataRuntime<SledRaftLogStore> {
+    /// Open or create a process-restart durable runtime at `path`.
+    pub fn sled_with_config(
+        config: RaftMetadataRuntimeConfig,
+        path: impl AsRef<Path>,
+    ) -> CacheResult<Self> {
+        let storage = SledRaftLogStore::open(path).map_err(to_cache_error)?;
+        if storage
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .voters
+            .is_empty()
+        {
+            storage.initialize_with_conf_state((config.voter_ids().to_vec(), vec![]));
+            storage
+                .save_conf_state(&storage.initial_state().map_err(to_cache_error)?.conf_state)
+                .map_err(to_cache_error)?;
+        }
+        Self::build_with_storage(config, storage, None)
+    }
+}
+
 impl<S> RaftMetadataRuntime<S>
 where
     S: RaftLogStore,
@@ -731,6 +813,7 @@ where
             results: Vec::new(),
             outbound_messages: Vec::new(),
             applied_index: 0,
+            snapshot_installs: 0,
             #[cfg(test)]
             fail_next_proposal: false,
         };
@@ -742,9 +825,7 @@ where
             raft: Mutex::new(state),
             metadata_store,
         };
-        if initial_state.hard_state.commit > 0 {
-            runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
-        }
+        runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
         Ok(runtime)
     }
 
@@ -836,6 +917,35 @@ where
             .drain_ready()
     }
 
+    /// Report completion or failure of a snapshot transport attempt.
+    ///
+    /// Raft keeps a follower in snapshot progress until the transport reports
+    /// an outcome. Reporting failure releases that progress for a bounded retry.
+    pub fn report_snapshot_delivery(
+        &self,
+        peer_id: u64,
+        delivered: bool,
+    ) -> CacheResult<Vec<RaftWireMessage>> {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        let status = if delivered {
+            SnapshotStatus::Finish
+        } else {
+            SnapshotStatus::Failure
+        };
+        state.raw_node.report_snapshot(peer_id, status);
+        state.drain_ready()
+    }
+
+    /// Force a metadata snapshot at the current applied index for compaction
+    /// proof tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn compact_applied_log_to_snapshot_for_tests(&self) -> CacheResult<u64> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .compact_applied_log_to_snapshot_for_tests(self.raft_node_id)
+    }
+
     /// Return outbound messages captured while committing metadata commands.
     pub fn take_outbound_messages(&self) -> Vec<RaftWireMessage> {
         std::mem::take(
@@ -905,6 +1015,7 @@ where
             applied_index: state.applied_index,
             role: state.raw_node.raft.state.into(),
             commands_committed: state.commands.len(),
+            snapshot_installs: state.snapshot_installs,
             last_command: state
                 .commands
                 .last()
@@ -953,6 +1064,8 @@ where
     }
 
     fn restore_export(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
+        validate_snapshot_apply_contract(&snapshot)?;
+        let snapshot_index = snapshot.applied_index;
         {
             let mut state = self.raft.lock().expect("raft metadata state poisoned");
             state.commands.clear();
@@ -960,8 +1073,12 @@ where
             state.results.clear();
             state.applied_index = snapshot.applied_index;
         }
-        for envelope in snapshot.commands {
-            self.apply_recovered_envelope(envelope)?;
+        for (offset, envelope) in snapshot.commands.into_iter().enumerate() {
+            let tail_index = offset + 1;
+            let command_id = envelope.command_id.clone();
+            self.apply_snapshot_envelope(envelope).map_err(|error| {
+                snapshot_apply_error(snapshot_index, tail_index, &command_id, error)
+            })?;
         }
         Ok(())
     }
@@ -1027,8 +1144,20 @@ where
         state.propose_voter_change(raft_node_id, change_type)
     }
 
-    fn apply_recovered_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
-        self.apply_recovered_envelope_at(envelope, 0)
+    fn apply_snapshot_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
+        materialize_snapshot_command(&self.cluster, &envelope.command)?;
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        if !state
+            .applied_command_ids
+            .insert(envelope.command_id.clone())
+        {
+            return Err(CacheError::Backend(format!(
+                "duplicate raft snapshot command id '{}'",
+                envelope.command_id
+            )));
+        }
+        state.commands.push(envelope);
+        Ok(())
     }
 
     fn apply_recovered_envelope_at(
@@ -1036,7 +1165,7 @@ where
         envelope: RaftMetadataCommandEnvelope,
         index: u64,
     ) -> CacheResult<()> {
-        materialize_command(&self.cluster, &envelope.command)?;
+        materialize_committed_command(&self.cluster, &envelope.command)?;
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
         if state
             .applied_command_ids
@@ -1114,6 +1243,50 @@ fn validate_snapshot_identity(
             "raft metadata store snapshot node {} does not match configured node {}",
             snapshot.raft_node_id, config.raft_node_id
         )));
+    }
+    Ok(())
+}
+
+fn validate_snapshot_apply_contract(snapshot: &RaftMetadataRuntimeExport) -> CacheResult<()> {
+    if snapshot.applied_index < snapshot.commands.len() as u64 {
+        let tail_index = snapshot.applied_index.saturating_add(1).max(1) as usize;
+        let command_id = snapshot
+            .commands
+            .get(tail_index.saturating_sub(1))
+            .or_else(|| snapshot.commands.last())
+            .map(|envelope| envelope.command_id.as_str())
+            .unwrap_or("<none>");
+        return Err(CacheError::Backend(format!(
+            "raft snapshot apply error: inconsistent snapshot membership indexes: snapshot_index={}, command_count={}, tail_index={}, command_id={}",
+            snapshot.applied_index,
+            snapshot.commands.len(),
+            tail_index,
+            command_id
+        )));
+    }
+
+    let mut seen = BTreeSet::new();
+    for (offset, envelope) in snapshot.commands.iter().enumerate() {
+        let tail_index = offset + 1;
+        if envelope.command_id.is_empty() {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot apply error: empty command id: snapshot_index={}, tail_index={}",
+                snapshot.applied_index, tail_index
+            )));
+        }
+        let expected = command_id_for(&envelope.command);
+        if envelope.command_id != expected {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot apply error: command id does not match command: snapshot_index={}, tail_index={}, command_id={}, expected_command_id={}",
+                snapshot.applied_index, tail_index, envelope.command_id, expected
+            )));
+        }
+        if !seen.insert(envelope.command_id.as_str()) {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot apply error: duplicate command id: snapshot_index={}, tail_index={}, command_id={}",
+                snapshot.applied_index, tail_index, envelope.command_id
+            )));
+        }
     }
     Ok(())
 }
@@ -1235,6 +1408,34 @@ fn materialize_command(
         }
         RaftMetadataCommand::CommitTopology { .. } => Ok(None),
     }
+}
+
+fn materialize_snapshot_command(
+    cluster: &InMemoryCluster,
+    command: &RaftMetadataCommand,
+) -> CacheResult<Option<ClusterMembershipEvent>> {
+    if let RaftMetadataCommand::NodeLeft { node_id, role, .. } = command {
+        let present = find_materialized(cluster, node_id, *role).is_some();
+        if !present {
+            return Err(CacheError::Backend(format!(
+                "node-left references absent {:?} '{}'",
+                role, node_id
+            )));
+        }
+    }
+    materialize_command(cluster, command)
+}
+
+fn snapshot_apply_error(
+    snapshot_index: u64,
+    tail_index: usize,
+    command_id: &str,
+    error: CacheError,
+) -> CacheError {
+    CacheError::Backend(format!(
+        "raft snapshot apply error: snapshot_index={}, tail_index={}, command_id={}: {}",
+        snapshot_index, tail_index, command_id, error
+    ))
 }
 
 fn materialize_committed_command(
@@ -1371,6 +1572,39 @@ where
         Ok(result)
     }
 
+    #[cfg(feature = "test-failpoints")]
+    fn compact_applied_log_to_snapshot_for_tests(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+        if self.applied_index == 0 {
+            return Err(CacheError::Backend(
+                "cannot compact raft metadata log before any entry is applied".to_owned(),
+            ));
+        }
+        let store = self.raw_node.raft.raft_log.store.clone();
+        let term = store
+            .term(self.applied_index)
+            .unwrap_or(self.raw_node.raft.term);
+        let conf_state = store
+            .initial_state()
+            .map_err(to_cache_error)?
+            .conf_state
+            .clone();
+        let export = RaftMetadataRuntimeExport {
+            cluster_name: self.cluster.name().to_owned(),
+            raft_node_id,
+            applied_index: self.applied_index,
+            commands: self.commands.clone(),
+        };
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = self.applied_index;
+        snapshot.mut_metadata().term = term;
+        snapshot.mut_metadata().set_conf_state(conf_state);
+        snapshot.data = encode_metadata_snapshot_payload(&export)?.into();
+        store
+            .save_snapshot(&snapshot, usize::MAX)
+            .map_err(to_cache_error)?;
+        Ok(self.applied_index)
+    }
+
     fn drain_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
         let mut outbound = Vec::new();
         while self.raw_node.has_ready() {
@@ -1393,6 +1627,7 @@ where
                         "injected crash after raft snapshot install before apply".to_owned(),
                     ))
                 });
+                self.install_metadata_snapshot(ready.snapshot())?;
             }
 
             let committed_entries = ready.take_committed_entries();
@@ -1432,7 +1667,7 @@ where
 
     fn apply_committed_entries(&mut self, entries: Vec<Entry>) -> CacheResult<()> {
         for entry in entries {
-            self.applied_index = entry.index;
+            self.applied_index = self.applied_index.max(entry.index);
             if entry.data.is_empty() {
                 continue;
             }
@@ -1442,6 +1677,7 @@ where
                     if self.applied_command_ids.insert(envelope.command_id.clone()) {
                         materialize_committed_command(&self.cluster, &envelope.command)?;
                         self.commands.push(envelope);
+                        self.applied_index = self.applied_index.max(self.commands.len() as u64);
                     }
                 }
                 EntryType::EntryConfChange => {
@@ -1498,6 +1734,43 @@ where
                 }
             }
         }
+        Ok(())
+    }
+
+    fn install_metadata_snapshot(&mut self, snapshot: &Snapshot) -> CacheResult<()> {
+        if snapshot.data.is_empty() {
+            return Ok(());
+        }
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_install_snapshot_oom", |_| {
+            Err(CacheError::Backend(
+                "injected OOM during raft snapshot install".to_owned(),
+            ))
+        });
+        let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
+        if export.cluster_name != self.cluster.name() {
+            return Err(CacheError::Backend(format!(
+                "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
+                export.cluster_name,
+                self.cluster.name()
+            )));
+        }
+        validate_snapshot_apply_contract(&export)?;
+        self.commands.clear();
+        self.applied_command_ids.clear();
+        self.results.clear();
+        self.applied_index = export.applied_index;
+        for envelope in export.commands {
+            materialize_snapshot_command(&self.cluster, &envelope.command)?;
+            if !self.applied_command_ids.insert(envelope.command_id.clone()) {
+                return Err(CacheError::Backend(format!(
+                    "duplicate raft snapshot command id '{}'",
+                    envelope.command_id
+                )));
+            }
+            self.commands.push(envelope);
+        }
+        self.snapshot_installs = self.snapshot_installs.saturating_add(1);
         Ok(())
     }
 }
@@ -1780,6 +2053,9 @@ mod tests {
         assert_eq!(snapshot.role, RaftRuntimeRole::Leader);
         assert_eq!(runtime.leader_id(), Some(1));
         assert_eq!(snapshot.commands_committed, 0);
+
+        let non_default_id = RaftMetadataRuntime::single_node("billing", 7).unwrap();
+        assert_eq!(non_default_id.leader_id(), Some(7));
     }
 
     #[test]
@@ -2092,6 +2368,7 @@ mod tests {
                 if node_id.as_str() == "client-a"
         ));
         assert_eq!(parse_role("local").unwrap(), ClusterRole::Local);
+        assert_eq!(parse_role("client").unwrap(), ClusterRole::Client);
     }
 
     #[test]
@@ -2143,6 +2420,115 @@ mod tests {
         assert_eq!(config.heartbeat_tick, 1);
         assert_eq!(config.max_size_per_msg, 1);
         assert_eq!(config.max_inflight_msgs, 1);
+    }
+
+    #[test]
+    fn runtime_config_constructors_keep_reviewed_transport_defaults() {
+        let configs = [
+            RaftMetadataRuntimeConfig::single_node("single", 1),
+            RaftMetadataRuntimeConfig::multi_voter("multi", 1, [1, 2, 3]),
+            RaftMetadataRuntimeConfig::try_joining("joining", 4, [1, 2, 3]).unwrap(),
+        ];
+
+        for config in configs {
+            assert_eq!(config.max_size_per_msg, 1_048_576);
+            assert_eq!(config.max_inflight_msgs, 256);
+        }
+    }
+
+    #[test]
+    fn raft_config_preserves_runtime_limits_and_fresh_applied_index() {
+        let config = RaftMetadataRuntimeConfig::single_node("orders", 7)
+            .ticks(17, 5)
+            .max_size_per_msg(8_192)
+            .max_inflight_msgs(19)
+            .pre_vote(false)
+            .raft_config();
+
+        assert_eq!(config.id, 7);
+        assert_eq!(config.election_tick, 17);
+        assert_eq!(config.heartbeat_tick, 5);
+        assert_eq!(config.max_size_per_msg, 8_192);
+        assert_eq!(config.max_inflight_msgs, 19);
+        assert!(!config.pre_vote);
+        assert_eq!(config.applied, 0);
+    }
+
+    #[test]
+    fn raft_runtime_state_debug_keeps_progress_context() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let state = runtime.raft.lock().unwrap();
+        let debug = format!("{state:?}");
+
+        assert!(debug.contains("RaftRuntimeState"));
+        assert!(debug.contains("commands"));
+        assert!(debug.contains("applied_index"));
+    }
+
+    #[test]
+    fn predicted_member_epoch_advances_only_for_newer_membership() {
+        let cluster = InMemoryCluster::new("orders");
+        let first = ClusterCandidate::member("member-a").generation(ClusterGeneration::new(3));
+        assert_eq!(predicted_member_epoch(&cluster, &first).value(), 1);
+        cluster.join_member(first).unwrap();
+        let current_epoch = cluster.epoch();
+
+        for generation in [2, 3] {
+            let candidate =
+                ClusterCandidate::member("member-a").generation(ClusterGeneration::new(generation));
+            assert_eq!(predicted_member_epoch(&cluster, &candidate), current_epoch);
+        }
+        let newer = ClusterCandidate::member("member-a").generation(ClusterGeneration::new(4));
+        assert_eq!(
+            predicted_member_epoch(&cluster, &newer).value(),
+            current_epoch.value() + 1
+        );
+        let different = ClusterCandidate::member("member-b").generation(ClusterGeneration::new(1));
+        assert_eq!(
+            predicted_member_epoch(&cluster, &different).value(),
+            current_epoch.value() + 1
+        );
+    }
+
+    #[test]
+    fn committed_replay_accepts_an_already_newer_materialized_member() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_member(ClusterCandidate::member("member-a").generation(ClusterGeneration::new(5)))
+            .unwrap();
+        let replay = RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from("member-a"),
+            generation: ClusterGeneration::new(3),
+            epoch: cluster.epoch(),
+        };
+
+        materialize_committed_command(&cluster, &replay).unwrap();
+        assert_eq!(cluster.members()[0].generation, ClusterGeneration::new(5));
+    }
+
+    #[test]
+    fn committed_replay_accepts_an_already_newer_materialized_client() {
+        let cluster = InMemoryCluster::new("orders");
+        cluster
+            .join_client(ClusterCandidate::client("client-a").generation(ClusterGeneration::new(5)))
+            .unwrap();
+        let replay = RaftMetadataCommand::ClientUpsert {
+            node_id: ClusterNodeId::from("client-a"),
+            generation: ClusterGeneration::new(3),
+            epoch: cluster.epoch(),
+        };
+
+        materialize_committed_command(&cluster, &replay).unwrap();
+        assert_eq!(cluster.clients()[0].generation, ClusterGeneration::new(5));
+    }
+
+    #[test]
+    fn voter_change_without_a_known_leader_fails_loud() {
+        let config = RaftMetadataRuntimeConfig::multi_voter("orders", 2, [1, 2, 3]);
+        let runtime = RaftMetadataRuntime::with_config(config).unwrap();
+
+        let error = runtime.request_remove_voter(2).unwrap_err();
+        assert!(error.to_string().contains("require a known leader"));
     }
 
     #[test]

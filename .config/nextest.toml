@@ -1,0 +1,16 @@
+[profile.ci]
+fail-fast = false
+status-level = "fail"
+final-status-level = "slow"
+slow-timeout = { period = "60s", terminate-after = 2 }
+
+[profile.ci.junit]
+path = "target/nextest/ci/junit.xml"
+
+[test-groups]
+trybuild = { max-threads = 1 }
+
+[[profile.ci.overrides]]
+filter = "test(cacheable_macro_compile_tests) | test(proc_macro_compile_tests)"
+test-group = "trybuild"
+slow-timeout = { period = "120s", terminate-after = 3 }

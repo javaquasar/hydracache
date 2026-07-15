@@ -1,0 +1,25 @@
+# Repeated recent keys stay within a modest TTL despite small scans.
+0 a
+1 b
+2 a
+3 b
+4 c
+5 a
+6 b
+7 a
+8 b
+9 d
+10 a
+11 b
+12 a
+13 b
+14 c
+15 a
+16 b
+17 a
+18 b
+19 d
+20 a
+21 b
+22 a
+23 b
