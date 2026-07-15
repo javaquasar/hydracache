@@ -727,8 +727,9 @@ tiers, then one `cargo llvm-cov report`. The first portable additive profile con
 `sled-log-store` and Raft `test-failpoints`; C2-C4 append daemon-process recovery, operator
 in-process/envtest reconciliation, and DB Postgres/MySQL outbox rows only after their coverage-aware
 harnesses and declared services land. Each tier has a stable id, command, required environment, and
-skip/fail policy in the evidence artifact. Subsequent invocations use `--no-clean`; the final report is
-the only floor decision. Miri, loom, TSan, TLC, external container
+skip/fail policy in the evidence artifact. The explicit clean runs once; every test invocation uses
+`--no-report` (which preserves the shared profile and is intentionally not combined with the mutually
+exclusive `--no-clean` flag); the final report is the only floor decision. Miri, loom, TSan, TLC, external container
 binaries, and uninstrumented child processes are independent proofs and must not be merged into the line
 profile. Tests: command-plan unit tests prove clean/default/additive/report ordering, exact source
 exclusion, no duplicate cleanup, and fail-loud handling for required tiers; CI runs the combined plan on

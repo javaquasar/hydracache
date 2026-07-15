@@ -210,7 +210,6 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
             kind: CoverageStepKind::DefaultTests,
             args: strings(&[
                 "llvm-cov",
-                "--no-clean",
                 "--workspace",
                 "--all-targets",
                 "--locked",
@@ -222,7 +221,6 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
             kind: CoverageStepKind::AdditiveTests,
             args: strings(&[
                 "llvm-cov",
-                "--no-clean",
                 "-p",
                 "hydracache-cluster-raft",
                 "--features",
@@ -242,7 +240,6 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
             kind: CoverageStepKind::AdditiveTests,
             args: strings(&[
                 "llvm-cov",
-                "--no-clean",
                 "-p",
                 "hydracache-cluster-raft",
                 "--features",
@@ -264,7 +261,6 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
             kind: CoverageStepKind::AdditiveTests,
             args: strings(&[
                 "llvm-cov",
-                "--no-clean",
                 "-p",
                 "hydracache-db",
                 "--features",
@@ -338,13 +334,19 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
                 }
             }
             CoverageStepKind::DefaultTests | CoverageStepKind::AdditiveTests => {
-                for required in ["--no-clean", "--no-report", "--locked"] {
+                for required in ["--no-report", "--locked"] {
                     if !has_arg(&step.args, required) {
                         problems.push(format!(
                             "coverage test step {} is missing {required}",
                             step.id
                         ));
                     }
+                }
+                if has_arg(&step.args, "--no-clean") {
+                    problems.push(format!(
+                        "coverage test step {} combines incompatible --no-clean and --no-report flags",
+                        step.id
+                    ));
                 }
                 if has_arg(&step.args, "clean") || has_arg(&step.args, "report") {
                     problems.push(format!(

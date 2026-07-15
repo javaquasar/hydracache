@@ -93,6 +93,16 @@ fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
     assert_eq!(ignore[1], config.ignored_source_regex);
     assert_eq!(config.ignored_source_regex, "(^|/)crates/xtask/");
     assert!(!report.args.iter().any(|arg| arg == "--fail-under-lines"));
+    for step in plan.iter().filter(|step| {
+        matches!(
+            step.kind,
+            xtask::coverage_ratchet::CoverageStepKind::DefaultTests
+                | xtask::coverage_ratchet::CoverageStepKind::AdditiveTests
+        )
+    }) {
+        assert!(step.args.iter().any(|arg| arg == "--no-report"));
+        assert!(!step.args.iter().any(|arg| arg == "--no-clean"));
+    }
 }
 
 #[test]
@@ -113,4 +123,12 @@ fn coverage_plan_rejects_a_required_tier_skip_or_second_clean() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("exactly one clean step")));
+
+    let mut incompatible_flags = xtask::coverage_ratchet::measurement_plan(&config);
+    incompatible_flags[1].args.push("--no-clean".to_owned());
+    let problems =
+        xtask::coverage_ratchet::validate_measurement_plan(&incompatible_flags, &config);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("incompatible --no-clean and --no-report")));
 }
