@@ -518,5 +518,41 @@ mod tests {
             observed: Some(b"stale".to_vec()),
         };
         assert!(apply_operation(&written, &stale).is_none());
+
+        let accepted_match = OperationKind::Cas {
+            key: "k".to_owned(),
+            expected: Some(b"v".to_vec()),
+            value: b"next".to_vec(),
+            accepted: true,
+        };
+        let accepted_state = apply_operation(&written, &accepted_match).unwrap();
+        assert_eq!(accepted_state.get("k"), Some(b"next".to_vec()));
+
+        let accepted_mismatch = OperationKind::Cas {
+            key: "k".to_owned(),
+            expected: Some(b"other".to_vec()),
+            value: b"next".to_vec(),
+            accepted: true,
+        };
+        assert!(apply_operation(&written, &accepted_mismatch).is_none());
+
+        let rejected_mismatch = OperationKind::Cas {
+            key: "k".to_owned(),
+            expected: Some(b"other".to_vec()),
+            value: b"next".to_vec(),
+            accepted: false,
+        };
+        assert_eq!(
+            apply_operation(&written, &rejected_mismatch),
+            Some(written.clone())
+        );
+
+        let rejected_match = OperationKind::Cas {
+            key: "k".to_owned(),
+            expected: Some(b"v".to_vec()),
+            value: b"next".to_vec(),
+            accepted: false,
+        };
+        assert!(apply_operation(&written, &rejected_match).is_none());
     }
 }
