@@ -194,7 +194,7 @@ fn cache_core_matrix_is_seed_deterministic_and_shrinkable() {
     for seed in [0, 1, 7, 42, u64::MAX] {
         assert_eq!(schedule(seed, 64), schedule(seed, 64));
     }
-    let failing = vec![
+    let failing = [
         Op::Load,
         Op::Get,
         Op::InvalidateTag,

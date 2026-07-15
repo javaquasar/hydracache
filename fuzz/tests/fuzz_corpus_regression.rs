@@ -1,6 +1,8 @@
 use std::fs;
 use std::path::Path;
 
+type FuzzTarget = (&'static str, fn(&[u8]));
+
 #[test]
 fn fuzz_corpus_regression_replays_every_committed_seed_without_panic_or_unbounded_alloc() {
     let corpus = committed_corpus();
@@ -65,7 +67,7 @@ fn committed_seed_count() -> usize {
         .sum()
 }
 
-fn fuzz_targets() -> [(&'static str, fn(&[u8])); 4] {
+fn fuzz_targets() -> [FuzzTarget; 4] {
     [
         ("fuzz_config_parse", hydracache_fuzz::fuzz_config_parse),
         ("fuzz_kv_codec", hydracache_fuzz::fuzz_kv_codec),

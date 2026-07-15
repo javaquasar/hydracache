@@ -253,12 +253,14 @@ impl LinearizabilityChecker {
     /// appear before B. Overlapping operations may be ordered either way.
     pub fn check(&self, history: &History) -> LinearizabilityReport {
         let operations = completed_operations(history);
-        let mut report = LinearizabilityReport::default();
-        report.checked_operations = operations.len();
-        report.checked_reads = operations
-            .iter()
-            .filter(|op| matches!(op.kind, OperationKind::Read { .. }))
-            .count();
+        let mut report = LinearizabilityReport {
+            checked_operations: operations.len(),
+            checked_reads: operations
+                .iter()
+                .filter(|op| matches!(op.kind, OperationKind::Read { .. }))
+                .count(),
+            ..Default::default()
+        };
 
         if let Some(witness) = find_linearization(&operations) {
             report.witness = witness;

@@ -18,7 +18,7 @@ fn linearizability_checker_accepts_a_valid_history_and_rejects_a_stale_read_hist
     assert_eq!(valid_report.witness, vec![0, 1]);
 
     let mut generated = LinearizabilityGenerator::new(LinearizabilityGeneratorConfig {
-        seed: 0x25_64,
+        seed: 0x2564,
         workload: WorkloadConfig {
             clients: 3,
             key_count: 2,

@@ -217,10 +217,12 @@ fn sled_runtime_replay_matches_live_apply_for_stale_committed_generation() {
         },
     ];
     store.append(&entries).unwrap();
-    let mut hard_state = HardState::default();
-    hard_state.term = 1;
-    hard_state.vote = 1;
-    hard_state.commit = 2;
+    let hard_state = HardState {
+        term: 1,
+        vote: 1,
+        commit: 2,
+        ..Default::default()
+    };
     store.save_hard_state(&hard_state).unwrap();
     drop(store);
 

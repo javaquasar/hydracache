@@ -208,8 +208,10 @@ fn generated_server_configs_preserve_precedence_validation_and_secure_defaults()
     assert_eq!(env_config.node_id.as_deref(), Some("matrix-4"));
     assert!(!env_config.admin_api.enabled);
 
-    let mut insecure = ServerConfig::default();
-    insecure.listen_addr = "192.0.2.20:8080".parse().unwrap();
+    let insecure = ServerConfig {
+        listen_addr: "192.0.2.20:8080".parse().unwrap(),
+        ..Default::default()
+    };
     assert!(matches!(
         insecure.validate(),
         Err(ServerConfigError::NonLoopbackWithoutTls)
@@ -221,14 +223,16 @@ async fn generated_config_errors_and_debug_output_never_expose_secret_bytes() {
     for index in 0..16 {
         let secret = format!("HC-W36-{index:02}-opaque-credential-9f4c2a");
         let token_path = write_token(&format!("token-{index}"), &secret);
-        let mut config = ServerConfig::default();
-        config.redis_api = RedisApiConfig {
-            enabled: true,
-            listen_addr: "127.0.0.1:6380".parse().unwrap(),
-            auth_required: true,
-            auth_username: Some("matrix-user".to_owned()),
-            auth_token_file: Some(token_path),
-            rediss_enabled: false,
+        let config = ServerConfig {
+            redis_api: RedisApiConfig {
+                enabled: true,
+                listen_addr: "127.0.0.1:6380".parse().unwrap(),
+                auth_required: true,
+                auth_username: Some("matrix-user".to_owned()),
+                auth_token_file: Some(token_path),
+                rediss_enabled: false,
+            },
+            ..Default::default()
         };
 
         config.validate().unwrap();
@@ -249,14 +253,16 @@ async fn generated_config_errors_and_debug_output_never_expose_secret_bytes() {
     }
 
     let missing = Path::new("target/test-hydracache-server/config-properties/missing-token");
-    let mut invalid = ServerConfig::default();
-    invalid.redis_api = RedisApiConfig {
-        enabled: true,
-        listen_addr: "127.0.0.1:6380".parse().unwrap(),
-        auth_required: true,
-        auth_username: None,
-        auth_token_file: Some(missing.to_path_buf()),
-        rediss_enabled: false,
+    let invalid = ServerConfig {
+        redis_api: RedisApiConfig {
+            enabled: true,
+            listen_addr: "127.0.0.1:6380".parse().unwrap(),
+            auth_required: true,
+            auth_username: None,
+            auth_token_file: Some(missing.to_path_buf()),
+            rediss_enabled: false,
+        },
+        ..Default::default()
     };
     let error = invalid.validate().unwrap_err().to_string();
     assert!(error.contains("missing-token"));

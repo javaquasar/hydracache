@@ -88,11 +88,13 @@ async fn old_term_traffic_after_handoff_cannot_regress_committed_metadata() {
     let new_leader = cluster.leader_id().unwrap();
     let before = cluster.node(new_leader).snapshot();
 
-    let mut stale = Message::default();
-    stale.from = 1;
-    stale.to = new_leader;
-    stale.term = old_term;
-    stale.commit = before.commit_index.saturating_sub(1);
+    let mut stale = Message {
+        from: 1,
+        to: new_leader,
+        term: old_term,
+        commit: before.commit_index.saturating_sub(1),
+        ..Default::default()
+    };
     stale.set_msg_type(MessageType::MsgHeartbeat);
     cluster.drain_until_idle([RaftWireMessage::encode(&stale).unwrap()]);
 

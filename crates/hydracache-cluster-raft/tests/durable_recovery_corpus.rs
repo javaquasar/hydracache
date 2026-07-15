@@ -144,10 +144,12 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 store
                     .save_snapshot(&snapshot(4, 2, b"stale-prefix"), 0)
                     .unwrap();
-                let mut tail = Entry::default();
-                tail.index = 5;
-                tail.term = 3;
-                tail.data = b"newer-tail".to_vec().into();
+                let tail = Entry {
+                    index: 5,
+                    term: 3,
+                    data: b"newer-tail".to_vec().into(),
+                    ..Default::default()
+                };
                 store.append(&[tail]).unwrap();
                 drop(store);
                 let reopened = SledRaftLogStore::open(&path).unwrap();

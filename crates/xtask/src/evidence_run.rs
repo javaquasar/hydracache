@@ -148,7 +148,7 @@ pub fn execute_gate(
     validate_command(&gate.command)?;
     let artifact_paths = validate_artifact_paths(root, &gate.artifacts)?;
 
-    let expected = expected_digests_for(root, &gate.registry_path, &gate.id, &gate.command)?;
+    let expected = expected_digests_for(root, gate.registry_path, &gate.id, &gate.command)?;
     let (source_commit, dirty_worktree) = git_identity(root)?;
     let started = OffsetDateTime::now_utc();
     let timer = Instant::now();

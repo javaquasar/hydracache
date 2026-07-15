@@ -269,9 +269,11 @@ pub fn build_report(
                     &mut reasons,
                 ) {
                     stage = EvidenceStage::GatedGreen;
+                    let compatibility_baseline_available =
+                        item.id != "W32" || git_is_ancestor(root, "v0.63.0", "HEAD");
                     if quarantined.is_empty()
                         && !current_worktree_dirty
-                        && !(item.id == "W32" && !git_is_ancestor(root, "v0.63.0", "HEAD"))
+                        && compatibility_baseline_available
                     {
                         stage = EvidenceStage::ShipReady;
                     }

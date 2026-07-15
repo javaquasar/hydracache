@@ -1220,9 +1220,11 @@ impl RuntimeRaftCluster {
                 "ineligible non-voter leadership transferee {transferee_id}"
             )));
         }
-        let mut message = RaftMessage::default();
-        message.from = transferee_id;
-        message.to = leader_id;
+        let mut message = RaftMessage {
+            from: transferee_id,
+            to: leader_id,
+            ..Default::default()
+        };
         message.set_msg_type(MessageType::MsgTransferLeader);
         self.drain_until_idle([RaftWireMessage::encode(&message)?]);
         Ok(())
