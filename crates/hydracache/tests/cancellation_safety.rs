@@ -1,6 +1,7 @@
 use std::fs;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
 
 use hydracache::{CacheOptions, HydraCache};
 use serde::{Deserialize, Serialize};
@@ -156,16 +157,19 @@ async fn dropped_singleflight_loader_does_not_poison_the_slot() {
         .expect_err("loader task must be cancelled")
         .is_cancelled());
 
-    let retry = cache
-        .get_or_load("retryable", CacheOptions::new(), {
+    let retry = tokio::time::timeout(
+        Duration::from_secs(2),
+        cache.get_or_load("retryable", CacheOptions::new(), {
             let calls = calls.clone();
             || async move {
                 calls.fetch_add(1, Ordering::SeqCst);
                 Ok::<Value, LoaderError>(Value(7))
             }
-        })
-        .await
-        .unwrap();
+        }),
+    )
+    .await
+    .expect("retry after cancellation must not join an orphaned load")
+    .unwrap();
 
     assert_eq!(retry, Value(7));
     assert_eq!(calls.load(Ordering::SeqCst), 2);

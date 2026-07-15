@@ -82,6 +82,18 @@ struct InFlightEntry {
     waiters: Arc<AtomicUsize>,
 }
 
+fn try_add_waiter(waiters: &AtomicUsize) -> bool {
+    waiters
+        .fetch_update(Ordering::AcqRel, Ordering::Acquire, |count| {
+            if count == 0 || count == usize::MAX {
+                None
+            } else {
+                Some(count + 1)
+            }
+        })
+        .is_ok()
+}
+
 impl InFlightMap {
     pub(crate) async fn get_current(
         self: &Arc<Self>,
@@ -92,7 +104,9 @@ impl InFlightMap {
         let entry = guard
             .get(key)
             .filter(|entry| &entry.generation == generation)?;
-        entry.waiters.fetch_add(1, Ordering::AcqRel);
+        if !try_add_waiter(&entry.waiters) {
+            return None;
+        }
         Some(SharedLoadHandle {
             load: entry.load.clone(),
             map: Some(Arc::downgrade(self)),
@@ -110,8 +124,7 @@ impl InFlightMap {
     ) -> (SharedLoadHandle, bool) {
         let mut guard = self.loads.write().await;
         if let Some(existing) = guard.get(&key) {
-            if existing.generation == generation {
-                existing.waiters.fetch_add(1, Ordering::AcqRel);
+            if existing.generation == generation && try_add_waiter(&existing.waiters) {
                 return (
                     SharedLoadHandle {
                         load: existing.load.clone(),
@@ -200,7 +213,7 @@ mod tests {
         let first = shared_bytes(b"first");
         let second = shared_bytes(b"second");
 
-        let (_, inserted) = map
+        let (first_handle, inserted) = map
             .insert_or_get_current("key".to_owned(), first.clone(), generation.clone())
             .await;
         let (existing, inserted_again) = map
@@ -210,5 +223,35 @@ mod tests {
         assert!(inserted);
         assert!(!inserted_again);
         assert_eq!(existing.await.unwrap(), Bytes::from_static(b"first"));
+        assert_eq!(first_handle.await.unwrap(), Bytes::from_static(b"first"));
+    }
+
+    #[tokio::test]
+    async fn zero_waiter_load_is_replaced_instead_of_resurrected() {
+        let map = Arc::new(InFlightMap::default());
+        let generation = snapshot(1);
+        let (abandoned, inserted) = map
+            .insert_or_get_current(
+                "key".to_owned(),
+                shared_bytes(b"abandoned"),
+                generation.clone(),
+            )
+            .await;
+        assert!(inserted);
+
+        let waiters = abandoned.waiters.as_ref().unwrap().clone();
+        waiters.store(0, Ordering::Release);
+        std::mem::forget(abandoned);
+
+        assert!(map.get_current("key", &generation).await.is_none());
+        let (replacement, replacement_inserted) = map
+            .insert_or_get_current("key".to_owned(), shared_bytes(b"replacement"), generation)
+            .await;
+
+        assert!(replacement_inserted);
+        assert_eq!(
+            replacement.await.unwrap(),
+            Bytes::from_static(b"replacement")
+        );
     }
 }
