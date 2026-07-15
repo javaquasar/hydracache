@@ -26,6 +26,7 @@ demo/node_modules/
 console/node_modules/
 playwright-report/
 test-results/
+.playwright/
 
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
