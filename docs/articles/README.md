@@ -27,11 +27,14 @@ npx --prefix console playwright install chromium
 ## Drafts
 
 - [001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map](001-why-rust-needs-cache-semantics.md)
+  - Cover: [001-why-rust-needs-cache-semantics-cover.png](001-why-rust-needs-cache-semantics-cover.png)
+  - Prompt: [001-why-rust-needs-cache-semantics-cover.prompt.md](001-why-rust-needs-cache-semantics-cover.prompt.md)
 - [002 - Raft Snapshot Bugs, AI Agents, and the Cost of Ignoring Contradictions](002-raft-snapshot-agent-bug.md)
+  - Cover: [002-raft-snapshot-agent-bug-cover.jpg](002-raft-snapshot-agent-bug-cover.jpg)
 
 ## Planned Articles
 
-- 002 - Single-flight is not an optimization.
-- 003 - TTL is not enough.
-- 004 - Local-first distributed invalidation.
-- 005 - Typed query caching in Rust.
+- 003 - Single-flight is not an optimization.
+- 004 - TTL is not enough.
+- 005 - Local-first distributed invalidation.
+- 006 - Typed query caching in Rust.

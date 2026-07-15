@@ -1,5 +1,7 @@
 # 001 - Why Rust Needs Cache Semantics, Not Just Another Cache Map
 
+![Medium article cover image](001-why-rust-needs-cache-semantics-cover.png)
+
 Most caching in application code starts innocently.
 
 You add a `HashMap`. Then you add a TTL. Then you realize that one code path needs explicit invalidation. Another one needs to invalidate several related keys at once. A hot endpoint starts stampeding the database whenever the cache expires. Someone wraps Redis. Someone else adds a local in-process cache in front of that wrapper. Eventually, "the cache" is no longer one thing. It is a set of small, disconnected decisions spread across the codebase.

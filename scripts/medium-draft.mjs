@@ -101,13 +101,14 @@ async function readArticle(articlePath) {
   const absolutePath = path.resolve(repoRoot, articlePath);
   const markdown = await readFile(absolutePath, "utf8");
   const { title, bodyMarkdown } = splitMarkdownArticle(markdown);
+  const baseDir = path.dirname(absolutePath);
 
   return {
     absolutePath,
     title,
     bodyMarkdown,
     bodyText: bodyMarkdown.trim(),
-    bodyHtml: markdownToHtml(bodyMarkdown)
+    bodyHtml: await markdownToHtml(bodyMarkdown, baseDir)
   };
 }
 
@@ -133,7 +134,7 @@ function splitMarkdownArticle(markdown) {
   return { title, bodyMarkdown };
 }
 
-function markdownToHtml(markdown) {
+async function markdownToHtml(markdown, baseDir) {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const html = [];
   let paragraph = [];
@@ -198,6 +199,14 @@ function markdownToHtml(markdown) {
       continue;
     }
 
+    const image = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)\s*$/);
+    if (image) {
+      flushParagraph();
+      flushList();
+      html.push(await imageToHtml(image[2], image[1], baseDir));
+      continue;
+    }
+
     const unorderedItem = line.match(/^\s*-\s+(.+)$/);
     if (unorderedItem) {
       flushParagraph();
@@ -232,6 +241,41 @@ function markdownToHtml(markdown) {
   flushList();
 
   return html.join("\n");
+}
+
+async function imageToHtml(reference, alt, baseDir) {
+  const src = await imageSource(reference, baseDir);
+  const altText = escapeAttribute(alt);
+  return `<figure><img src="${src}" alt="${altText}"></figure>`;
+}
+
+async function imageSource(reference, baseDir) {
+  if (/^https?:\/\//.test(reference)) {
+    return escapeAttribute(reference);
+  }
+
+  const imagePath = path.resolve(baseDir, reference);
+  const bytes = await readFile(imagePath);
+  const mimeType = imageMimeType(imagePath);
+  return `data:${mimeType};base64,${bytes.toString("base64")}`;
+}
+
+function imageMimeType(imagePath) {
+  const extension = path.extname(imagePath).toLowerCase();
+  if (extension === ".jpg" || extension === ".jpeg") {
+    return "image/jpeg";
+  }
+  if (extension === ".png") {
+    return "image/png";
+  }
+  if (extension === ".webp") {
+    return "image/webp";
+  }
+  if (extension === ".gif") {
+    return "image/gif";
+  }
+
+  throw new Error(`Unsupported article image type: ${imagePath}`);
 }
 
 function formatInline(value) {
