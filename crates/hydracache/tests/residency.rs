@@ -240,4 +240,83 @@ mod residency {
 
         assert!(error.to_string().contains("newer than supported"));
     }
+
+    #[test]
+    fn policy_commit_and_allow_paths_cover_override_epoch_and_failover_rules() {
+        assert!(ResidencyPolicy::new(Vec::<RegionId>::new(), 1, ClusterEpoch::new(1)).is_err());
+        let eu = ResidencyPolicy::new(["eu"], 0, ClusterEpoch::new(2)).unwrap();
+        assert_eq!(eu.min_replicas_in_policy(), 1);
+        assert!(eu.allowed_regions().contains(&RegionId::from("eu")));
+
+        let mut policies = ResidencyPolicySet::new();
+        assert!(policies.commit_namespace_policy("  ", eu.clone()).is_err());
+        policies
+            .commit_namespace_policy("users", eu.clone())
+            .unwrap();
+        assert!(policies
+            .commit_namespace_policy(
+                "orders",
+                ResidencyPolicy::new(["eu"], 1, ClusterEpoch::new(1)).unwrap(),
+            )
+            .is_err());
+        assert!(policies
+            .commit_key_override("users", "  ", eu.clone())
+            .is_err());
+        let override_policy = ResidencyPolicy::new(["us"], 1, ClusterEpoch::new(3)).unwrap();
+        policies
+            .commit_key_override("users", "user:us", override_policy)
+            .unwrap();
+        assert_eq!(policies.epoch(), ClusterEpoch::new(3));
+        assert!(policies
+            .policy_for("users", "user:us")
+            .unwrap()
+            .allows_region(&RegionId::from("us")));
+        assert_eq!(
+            policies.effective_epoch("users", "unknown"),
+            ClusterEpoch::new(2)
+        );
+
+        let mut enforcer = ResidencyPolicyEnforcer::new(policies);
+        assert_eq!(enforcer.policies().epoch(), ClusterEpoch::new(3));
+        assert!(enforcer
+            .guard_cross_boundary(
+                "unmanaged",
+                "key",
+                &RegionId::from("eu"),
+                &RegionId::from("us"),
+            )
+            .is_ok());
+        assert!(enforcer
+            .guard_cross_boundary("users", "key", &RegionId::from("eu"), &RegionId::from("eu"),)
+            .is_ok());
+        assert!(enforcer
+            .guard_read(
+                "unmanaged",
+                "key",
+                &RegionId::from("us"),
+                ClusterEpoch::default(),
+            )
+            .is_ok());
+        assert!(enforcer
+            .guard_read("users", "key", &RegionId::from("eu"), ClusterEpoch::new(3),)
+            .is_ok());
+        assert!(enforcer
+            .place_key(&strategy(1), "unmanaged", "key", &[])
+            .is_err());
+
+        let narrowing =
+            enforcer.plan_policy_narrowing([ResidencyValueLocation::new("unmanaged", "key", "us")]);
+        assert!(matches!(
+            narrowing.actions.as_slice(),
+            [ResidencyRemediationAction::Keep { .. }]
+        ));
+        assert!(matches!(
+            enforcer.choose_failover_home("unmanaged", "key", [RegionId::from("us")]),
+            ResidencyFailoverDecision::Promote { .. }
+        ));
+        assert!(matches!(
+            enforcer.choose_failover_home("users", "key", [RegionId::from("us")]),
+            ResidencyFailoverDecision::Degraded { .. }
+        ));
+    }
 }

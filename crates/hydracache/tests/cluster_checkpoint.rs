@@ -253,6 +253,119 @@ fn unknown_future_checkpoint_format_refuses_to_restore() {
         .contains("unsupported cluster checkpoint format"));
 }
 
+#[test]
+fn checkpoint_constructor_and_verifier_reject_every_partial_or_corrupt_cut() {
+    let epoch = ClusterEpoch::new(9);
+    let partition = PartitionId::new(1);
+    let barrier = WriteWatermark::new(partition, 5, epoch);
+    assert_eq!(
+        ClusterCheckpointManifest::new(
+            "empty",
+            epoch,
+            [],
+            [NodeCheckpointManifest::new("node-a", vec![])],
+            Duration::ZERO,
+        )
+        .unwrap_err()
+        .kind(),
+        ClusterCheckpointErrorKind::EmptyBarrier
+    );
+    assert_eq!(
+        ClusterCheckpointManifest::new("no-nodes", epoch, [barrier], [], Duration::ZERO,)
+            .unwrap_err()
+            .kind(),
+        ClusterCheckpointErrorKind::PartialCut
+    );
+    assert_eq!(
+        ClusterCheckpointManifest::new(
+            "stale",
+            epoch,
+            [WriteWatermark::new(partition, 5, ClusterEpoch::new(8))],
+            [NodeCheckpointManifest::new("node-a", vec![])],
+            Duration::ZERO,
+        )
+        .unwrap_err()
+        .kind(),
+        ClusterCheckpointErrorKind::StaleWatermark
+    );
+    assert_eq!(
+        ClusterCheckpointManifest::new(
+            "conflicting",
+            epoch,
+            [barrier, WriteWatermark::new(partition, 6, epoch)],
+            [NodeCheckpointManifest::new(
+                "node-a",
+                vec![snapshot("default", barrier)],
+            )],
+            Duration::ZERO,
+        )
+        .unwrap_err()
+        .kind(),
+        ClusterCheckpointErrorKind::StaleWatermark
+    );
+    assert_eq!(
+        ClusterCheckpointManifest::new(
+            "duplicate-node",
+            epoch,
+            [barrier],
+            [
+                NodeCheckpointManifest::new("node-a", vec![snapshot("a", barrier)]),
+                NodeCheckpointManifest::new("node-a", vec![snapshot("b", barrier)]),
+            ],
+            Duration::ZERO,
+        )
+        .unwrap_err()
+        .kind(),
+        ClusterCheckpointErrorKind::Manifest
+    );
+
+    let valid = make_checkpoint("valid", epoch, [barrier], [("node-a", barrier)]);
+    let mut empty_barrier = valid.clone();
+    empty_barrier.partition_watermarks.clear();
+    assert_eq!(
+        empty_barrier.verify().unwrap_err().kind(),
+        ClusterCheckpointErrorKind::EmptyBarrier
+    );
+    let mut wrong_key = valid.clone();
+    wrong_key.partition_watermarks = [(
+        PartitionId::new(2),
+        WriteWatermark::new(partition, 5, epoch),
+    )]
+    .into_iter()
+    .collect();
+    assert_eq!(
+        wrong_key.verify().unwrap_err().kind(),
+        ClusterCheckpointErrorKind::Manifest
+    );
+    let mut wrong_epoch = valid.clone();
+    wrong_epoch.partition_watermarks.insert(
+        partition,
+        WriteWatermark::new(partition, 5, ClusterEpoch::new(8)),
+    );
+    assert_eq!(
+        wrong_epoch.verify().unwrap_err().kind(),
+        ClusterCheckpointErrorKind::StaleWatermark
+    );
+    let mut no_nodes = valid.clone();
+    no_nodes.node_manifests.clear();
+    assert_eq!(
+        no_nodes.verify().unwrap_err().kind(),
+        ClusterCheckpointErrorKind::PartialCut
+    );
+    let mut bad_snapshot = valid.clone();
+    bad_snapshot.node_manifests.values_mut().next().unwrap()[0].checksum ^= 1;
+    assert_eq!(
+        bad_snapshot.verify().unwrap_err().kind(),
+        ClusterCheckpointErrorKind::Manifest
+    );
+    let mut bad_checksum = valid;
+    bad_checksum.checksum ^= 1;
+    assert_eq!(
+        bad_checksum.verify().unwrap_err().kind(),
+        ClusterCheckpointErrorKind::Checksum
+    );
+}
+
 fn make_checkpoint(
     id: &str,
     epoch: ClusterEpoch,

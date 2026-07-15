@@ -221,3 +221,34 @@ fn multitenancy_unknown_tenant_never_creates_metric_label() {
     assert!(metrics.tenant_entries.is_empty());
     assert!(metrics.tenant_admission_rejected_total.is_empty());
 }
+
+#[test]
+fn multitenancy_metrics_snapshot_reports_every_roster_limit_and_usage() {
+    let mut isolation = isolation();
+    isolation
+        .admit_put("client-a", "users", "user:1", 4)
+        .unwrap();
+    isolation.admit_request("client-a").unwrap();
+    isolation.begin_subscription("client-a").unwrap();
+    let _ = isolation.admit_put("client-a", "users", "user:2", 8);
+    isolation.admit_request("client-b").unwrap();
+
+    let metrics = isolation.metrics_snapshot();
+    assert_eq!(metrics.tenant_bytes["tenant-a"], 4);
+    assert_eq!(metrics.tenant_entries["tenant-a"], 1);
+    assert_eq!(metrics.tenant_namespace_bytes["tenant-a"]["users"], 4);
+    assert_eq!(metrics.tenant_namespace_entries["tenant-a"]["users"], 1);
+    assert_eq!(metrics.tenant_namespace_quota_bytes["tenant-a"]["users"], 8);
+    assert_eq!(
+        metrics.tenant_namespace_quota_entries["tenant-a"]["users"],
+        2
+    );
+    assert!(metrics.tenant_request_count["tenant-a"] >= 1);
+    assert_eq!(metrics.tenant_rate_limit_per_window["tenant-a"], 100);
+    assert!(metrics.tenant_fair_share_count["tenant-a"] >= 1);
+    assert_eq!(metrics.tenant_fair_share_per_window["tenant-a"], 100);
+    assert_eq!(metrics.tenant_subscriptions["tenant-a"], 1);
+    assert_eq!(metrics.tenant_max_subscriptions["tenant-a"], 1);
+    assert!(metrics.tenant_admission_rejected_total["tenant-a"] >= 1);
+    assert_eq!(metrics.tenant_bytes["tenant-b"], 0);
+}
