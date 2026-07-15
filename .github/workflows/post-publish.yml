@@ -1,12 +1,28 @@
 name: Post Publish Verification
 
 on:
+  workflow_call:
+    inputs:
+      version:
+        description: Published HydraCache version to verify
+        required: true
+        type: string
+      metadata_artifact:
+        description: Release metadata artifact produced by Publish Crates
+        required: false
+        default: ""
+        type: string
   workflow_dispatch:
     inputs:
       version:
         description: Published HydraCache version to verify
         required: true
         default: 0.24.0
+      metadata_artifact:
+        description: Optional release metadata artifact produced by Publish Crates
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -20,6 +36,13 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Download publication manifest
+        if: inputs.metadata_artifact != ''
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ inputs.metadata_artifact }}
+          path: target/release-publish
+
       - name: Create consumer project
         run: cargo new hydracache-consumer --lib
 
@@ -29,48 +52,53 @@ jobs:
       - name: Add published dependencies in package order
         working-directory: hydracache-order-smoke
         run: |
-          cargo add hydracache-core@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-macros@${{ inputs.version }}
-          cargo check
-          cargo add hydracache@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-cluster-chitchat@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-cluster-raft@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-cluster@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-cluster-transport-axum@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-observability@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-actuator-axum@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-db@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-diesel@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-seaorm@${{ inputs.version }}
-          cargo check
-          cargo add hydracache-sqlx@${{ inputs.version }}
-          cargo check
+          set -euo pipefail
+          manifest="$GITHUB_WORKSPACE/target/release-publish/packages.txt"
+          if [[ -f "$manifest" ]]; then
+            mapfile -t packages < "$manifest"
+          else
+            packages=(
+              hydracache-client-protocol hydracache-core hydracache-macros
+              hydracache-sql-lint hydracache hydracache-client
+              hydracache-cluster-chitchat hydracache-cluster-raft
+              hydracache-cluster-transport-axum hydracache-db
+              hydracache-observability hydracache-transport-nats
+              hydracache-transport-redis hydracache-actuator-axum
+              hydracache-cdc-postgres hydracache-client-transport-axum
+              hydracache-cluster hydracache-diesel hydracache-seaorm
+              hydracache-sqlx hydracache-redis-compat hydracache-server
+            )
+          fi
+          for package in "${packages[@]}"; do
+            [[ -z "$package" ]] && continue
+            cargo add "$package@${{ inputs.version }}"
+            cargo check
+          done
 
       - name: Add published dependencies
         working-directory: hydracache-consumer
         run: |
-          cargo add hydracache@${{ inputs.version }}
-          cargo add hydracache-core@${{ inputs.version }}
-          cargo add hydracache-cluster@${{ inputs.version }}
-          cargo add hydracache-cluster-chitchat@${{ inputs.version }}
-          cargo add hydracache-cluster-raft@${{ inputs.version }}
-          cargo add hydracache-cluster-transport-axum@${{ inputs.version }}
-          cargo add hydracache-observability@${{ inputs.version }}
-          cargo add hydracache-actuator-axum@${{ inputs.version }}
-          cargo add hydracache-db@${{ inputs.version }}
-          cargo add hydracache-diesel@${{ inputs.version }}
-          cargo add hydracache-seaorm@${{ inputs.version }}
-          cargo add hydracache-sqlx@${{ inputs.version }}
+          set -euo pipefail
+          manifest="$GITHUB_WORKSPACE/target/release-publish/packages.txt"
+          if [[ -f "$manifest" ]]; then
+            mapfile -t packages < "$manifest"
+          else
+            packages=(
+              hydracache-client-protocol hydracache-core hydracache-macros
+              hydracache-sql-lint hydracache hydracache-client
+              hydracache-cluster-chitchat hydracache-cluster-raft
+              hydracache-cluster-transport-axum hydracache-db
+              hydracache-observability hydracache-transport-nats
+              hydracache-transport-redis hydracache-actuator-axum
+              hydracache-cdc-postgres hydracache-client-transport-axum
+              hydracache-cluster hydracache-diesel hydracache-seaorm
+              hydracache-sqlx hydracache-redis-compat hydracache-server
+            )
+          fi
+          for package in "${packages[@]}"; do
+            [[ -z "$package" ]] && continue
+            cargo add "$package@${{ inputs.version }}"
+          done
           cargo add serde --features derive
           cargo add tokio --features macros,rt-multi-thread
 

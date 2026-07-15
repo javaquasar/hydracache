@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master
+    tags:
+      - "v*.*.*"
   pull_request:
   workflow_dispatch:
     inputs:
@@ -189,7 +191,7 @@ jobs:
   performance-budget:
     name: Performance Budget
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -216,7 +218,7 @@ jobs:
   redis-compat-release-proof:
     name: Redis Compatibility Release Proof
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -272,7 +274,7 @@ jobs:
   dst-nightly-soak:
     name: DST and Soak Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -352,7 +354,7 @@ jobs:
   raft-corner-case-nightly:
     name: Raft Corner-Case Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -401,7 +403,7 @@ jobs:
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -425,7 +427,7 @@ jobs:
   fuzz-nightly:
     name: Fuzz Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -472,7 +474,7 @@ jobs:
   raft-mutation-testing:
     name: Raft Mutation Testing (${{ matrix.label }})
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     timeout-minutes: 110
     strategy:
       fail-fast: false
@@ -546,7 +548,7 @@ jobs:
   raft-miri:
     name: Raft Miri
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -599,7 +601,7 @@ jobs:
     name: ThreadSanitizer
     runs-on: ubuntu-latest
     timeout-minutes: 180
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -641,7 +643,7 @@ jobs:
   dynamic-canary-sweep:
     name: Dynamic Canary Sweep
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout
@@ -692,7 +694,7 @@ jobs:
   coverage-ratchet:
     name: Coverage Ratchet
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     env:
       HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
     services:

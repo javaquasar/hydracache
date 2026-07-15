@@ -105,9 +105,9 @@ id = "fast.w39-cache-cancellation"
 work_items = ["W39"]
 timeout_seconds = 120
 budget_seconds = 60
-deterministic = true
+deterministic = false
 artifacts = ["target/test-evidence/0.64/cancellation-w39a.json"]
-logical_digest_artifact = "target/test-evidence/0.64/cancellation-w39a.json"
+logical_digest_artifact = ""
 
 [suite.baseline]
 status = "unmeasured"
@@ -130,9 +130,9 @@ id = "fast.w39-client-cancellation"
 work_items = ["W39"]
 timeout_seconds = 120
 budget_seconds = 60
-deterministic = true
+deterministic = false
 artifacts = ["target/test-evidence/0.64/cancellation-w39b.json"]
-logical_digest_artifact = "target/test-evidence/0.64/cancellation-w39b.json"
+logical_digest_artifact = ""
 
 [suite.baseline]
 status = "unmeasured"

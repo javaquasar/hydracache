@@ -1,0 +1,376 @@
+name: Publish Crates
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to re-qualify and publish
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: crates-release-${{ github.event.workflow_run.head_sha || inputs.tag || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve and validate release candidate
+    runs-on: ubuntu-latest
+    outputs:
+      eligible: ${{ steps.resolve.outputs.eligible }}
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      source_sha: ${{ steps.resolve.outputs.source_sha }}
+      metadata_artifact: ${{ steps.resolve.outputs.metadata_artifact }}
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Resolve tag, CI result, versions, and publish order
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion || '' }}
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha || '' }}
+          INPUT_TAG: ${{ inputs.tag || '' }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            if [[ "$WORKFLOW_RUN_CONCLUSION" != "success" ]]; then
+              echo "CI conclusion is $WORKFLOW_RUN_CONCLUSION; publication is not eligible."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            source_sha="$WORKFLOW_RUN_SHA"
+            git fetch --force --tags origin
+            mapfile -t tags < <(git tag --points-at "$source_sha" --list 'v*.*.*')
+            if [[ "${#tags[@]}" -eq 0 ]]; then
+              echo "Successful CI run $source_sha has no release tag; nothing to publish."
+              echo "eligible=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if [[ "${#tags[@]}" -ne 1 ]]; then
+              printf 'Expected one release tag at %s, found: %s\n' "$source_sha" "${tags[*]}" >&2
+              exit 1
+            fi
+            release_tag="${tags[0]}"
+          else
+            release_tag="$INPUT_TAG"
+            if [[ ! "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+              echo "Input tag must be a SemVer tag such as v0.64.0, got: $release_tag" >&2
+              exit 1
+            fi
+            git fetch --force --tags origin
+            if ! git rev-parse -q --verify "refs/tags/$release_tag" >/dev/null; then
+              echo "Tag $release_tag does not exist." >&2
+              exit 1
+            fi
+            source_sha="$(git rev-list -n1 "$release_tag")"
+            ci_runs="$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$source_sha&per_page=100")"
+            if ! printf '%s' "$ci_runs" | jq -e --arg sha "$source_sha" '[.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success")] | length > 0' >/dev/null; then
+              echo "No successful CI run exists for $release_tag at $source_sha." >&2
+              exit 1
+            fi
+          fi
+
+          version="${release_tag#v}"
+          git fetch --force origin main
+          if ! git merge-base --is-ancestor "$source_sha" origin/main; then
+            echo "$release_tag does not point to a commit reachable from origin/main." >&2
+            exit 1
+          fi
+
+          python - "$version" "$release_tag" "$source_sha" <<'PY'
+          import json
+          import pathlib
+          import re
+          import subprocess
+          import sys
+
+          version, release_tag, source_sha = sys.argv[1:]
+          metadata = json.loads(
+              subprocess.check_output(
+                  ["cargo", "metadata", "--locked", "--format-version", "1"],
+                  text=True,
+              )
+          )
+          packages = metadata["packages"]
+          publishable = [
+              package
+              for package in packages
+              if package.get("source") is None and package.get("publish") is None
+          ]
+          versions = {package["version"] for package in publishable}
+          if versions != {version}:
+              raise SystemExit(
+                  f"publishable package versions {sorted(versions)} do not match tag {version}"
+              )
+
+          manifest = pathlib.Path("docs/plans/releases.toml").read_text(encoding="utf-8")
+          blocks = re.split(r"(?m)^\[\[release\]\]\s*$", manifest)
+          matching = None
+          for block in blocks:
+              if re.search(rf'(?m)^\s*version\s*=\s*"{re.escape(version)}"\s*$', block):
+                  matching = block
+                  break
+          if matching is None:
+              raise SystemExit(f"release {version} is missing from docs/plans/releases.toml")
+          status = re.search(r'(?m)^\s*status\s*=\s*"([^"]+)"\s*$', matching)
+          if status is None or status.group(1) != "shipped":
+              actual = status.group(1) if status else "missing"
+              raise SystemExit(f"release {version} has status {actual!r}, expected shipped")
+
+          release_notes = pathlib.Path(f"docs/releases/{version}.md")
+          if not release_notes.is_file():
+              raise SystemExit(f"missing release notes: {release_notes}")
+
+          by_id = {package["id"]: package["name"] for package in packages}
+          publishable_ids = {package["id"] for package in publishable}
+          dependencies = {package["name"]: set() for package in publishable}
+          for node in metadata["resolve"]["nodes"]:
+              if node["id"] not in publishable_ids:
+                  continue
+              name = by_id[node["id"]]
+              for dependency in node["deps"]:
+                  dependency_id = dependency["pkg"]
+                  if (
+                      dependency_id in publishable_ids
+                      and any(kind.get("kind") is None for kind in dependency.get("dep_kinds", []))
+                  ):
+                      dependencies[name].add(by_id[dependency_id])
+
+          order = []
+          while dependencies:
+              ready = sorted(name for name, deps in dependencies.items() if not deps)
+              if not ready:
+                  raise SystemExit("publishable workspace dependency graph contains a cycle")
+              for name in ready:
+                  order.append(name)
+                  del dependencies[name]
+              for deps in dependencies.values():
+                  deps.difference_update(ready)
+
+          output = pathlib.Path("target/release-publish")
+          output.mkdir(parents=True, exist_ok=True)
+          (output / "release.env").write_text(
+              f"VERSION={version}\nTAG={release_tag}\nSOURCE_SHA={source_sha}\n",
+              encoding="utf-8",
+          )
+          (output / "packages.txt").write_text("\n".join(order) + "\n", encoding="utf-8")
+          print(f"release candidate: {release_tag} at {source_sha}")
+          print(f"publishable packages: {len(order)}")
+          print("dependency order:")
+          print("\n".join(f"  {index}: {name}" for index, name in enumerate(order, 1)))
+          PY
+
+          echo "eligible=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+          echo "metadata_artifact=release-publish-metadata-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release metadata
+        if: steps.resolve.outputs.eligible == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+          if-no-files-found: error
+
+  package:
+    name: Package crates
+    needs: resolve
+    if: needs.resolve.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.resolve.outputs.source_sha }}
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust-no-target
+          cache-targets: false
+          shared-key: crates-package
+
+      - name: Download release metadata
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ needs.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+
+      - name: Package every publishable crate
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r package; do
+            [[ -z "$package" ]] && continue
+            echo "::group::Validate $package"
+            cargo package --package "$package" --locked
+            echo "::endgroup::"
+          done < target/release-publish/packages.txt
+
+      - name: Upload package archives
+        uses: actions/upload-artifact@v6
+        with:
+          name: crates-package-${{ needs.resolve.outputs.version }}
+          path: target/package/*.crate
+          if-no-files-found: error
+
+  publish:
+    name: Publish crates.io packages
+    needs: [resolve, package]
+    if: needs.resolve.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+    environment: release
+    env:
+      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.resolve.outputs.source_sha }}
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Download release metadata
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ needs.resolve.outputs.metadata_artifact }}
+          path: target/release-publish
+
+      - name: Publish dependency-aware and idempotently
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${CARGO_REGISTRY_TOKEN:-}" ]]; then
+            echo "CARGO_REGISTRY_TOKEN is missing from the release environment." >&2
+            exit 1
+          fi
+
+          # crates.io versions are immutable. An exact existing version is a safe
+          # retry; every other registry response is treated as a release failure.
+          : > target/release-publish/publication-results.tsv
+          version="${{ needs.resolve.outputs.version }}"
+          while IFS= read -r package; do
+            [[ -z "$package" ]] && continue
+            url="https://crates.io/api/v1/crates/$package/$version"
+            status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
+            case "$status" in
+              200)
+                printf '%s\t%s\n' "$package" "already-published" | tee -a target/release-publish/publication-results.tsv
+                continue
+                ;;
+              404)
+                cargo publish --package "$package" --locked --dry-run
+                cargo publish --package "$package" --locked
+                ;;
+              *)
+                echo "Unexpected crates.io response $status for $package@$version." >&2
+                exit 1
+                ;;
+            esac
+
+            published=false
+            for attempt in $(seq 1 30); do
+              status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
+              if [[ "$status" == "200" ]]; then
+                published=true
+                break
+              fi
+              sleep 10
+            done
+            if [[ "$published" != true ]]; then
+              echo "Timed out waiting for $package@$version to appear in crates.io." >&2
+              exit 1
+            fi
+            printf '%s\t%s\n' "$package" "published" | tee -a target/release-publish/publication-results.tsv
+          done < target/release-publish/packages.txt
+
+      - name: Upload publication evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: crates-publication-${{ needs.resolve.outputs.version }}
+          path: target/release-publish/publication-results.tsv
+          if-no-files-found: error
+
+  consumer-verification:
+    name: Verify published crates from crates.io
+    needs: [resolve, publish]
+    if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success'
+    uses: ./.github/workflows/post-publish.yml
+    with:
+      version: ${{ needs.resolve.outputs.version }}
+      metadata_artifact: ${{ needs.resolve.outputs.metadata_artifact }}
+    permissions:
+      contents: read
+
+  github-release:
+    name: Create GitHub Release after publication
+    needs: [resolve, publish, consumer-verification]
+    if: needs.resolve.outputs.eligible == 'true' && needs.publish.result == 'success' && needs.consumer-verification.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout candidate commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.resolve.outputs.source_sha }}
+          fetch-depth: 0
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
+          RELEASE_NOTES: docs/releases/${{ needs.resolve.outputs.version }}.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="HydraCache $RELEASE_VERSION"
+          prerelease_flag=()
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            prerelease_flag=(--prerelease)
+          fi
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "$title" \
+              --notes-file "$RELEASE_NOTES" \
+              "${prerelease_flag[@]}"
+          else
+            gh release create "$RELEASE_TAG" \
+              --title "$title" \
+              --notes-file "$RELEASE_NOTES" \
+              --verify-tag \
+              "${prerelease_flag[@]}"
+          fi
