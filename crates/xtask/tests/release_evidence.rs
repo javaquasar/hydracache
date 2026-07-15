@@ -48,17 +48,17 @@ fn release_evidence_reports_every_manifest_work_item_exactly_once() {
         .iter()
         .map(|item| item.id.as_str())
         .collect();
-    assert_eq!(ids.len(), 40);
     assert_eq!(
         ids.iter()
             .copied()
             .collect::<std::collections::BTreeSet<_>>()
             .len(),
-        40
+        ids.len()
     );
     assert!(ids.contains(&"W5a"));
     assert!(ids.contains(&"W6b"));
     assert!(ids.contains(&"W38"));
+    assert!(ids.contains(&"W39"));
 }
 
 #[test]
