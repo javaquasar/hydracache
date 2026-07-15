@@ -214,12 +214,15 @@ impl Storage for InMemoryRaftLogStore {
         if low == high {
             return Ok(Vec::new());
         }
+        let start = usize::try_from(low - first_index)
+            .map_err(|_| RaftError::Store(StorageError::Unavailable))?;
+        let end = usize::try_from(high - first_index)
+            .map_err(|_| RaftError::Store(StorageError::Unavailable))?;
         let mut entries = state
             .entries
-            .iter()
-            .filter(|entry| entry.index >= low && entry.index < high)
-            .cloned()
-            .collect::<Vec<_>>();
+            .get(start..end)
+            .ok_or(RaftError::Store(StorageError::Unavailable))?
+            .to_vec();
         if let Some(max_size) = max_size.into() {
             limit_entries_size(&mut entries, max_size);
         }
@@ -1215,6 +1218,18 @@ mod tests {
             .entries(1, 3, None, GetEntriesContext::empty(false))
             .unwrap();
         assert_eq!(indexes(&half_open), vec![1, 2]);
+
+        let compacted = InMemoryRaftLogStore::new();
+        compacted
+            .append(&[entry(1, 1, b"a"), entry(2, 1, b"b"), entry(3, 1, b"c")])
+            .unwrap();
+        let mut prefix = Snapshot::default();
+        prefix.mut_metadata().index = 1;
+        compacted.save_snapshot(&prefix, usize::MAX).unwrap();
+        let after_compaction = compacted
+            .entries(2, 4, None, GetEntriesContext::empty(false))
+            .unwrap();
+        assert_eq!(indexes(&after_compaction), vec![2, 3]);
 
         store.append(&[entry(1, 2, b"replacement")]).unwrap();
         let retained = store.all_entries();
