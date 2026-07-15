@@ -2,6 +2,7 @@
 
 ![Medium article cover image](001-why-rust-needs-cache-semantics-cover.png)
 
+<!-- article-series:start hydracache-runtime -->
 ## HydraCache Runtime Series
 
 This article is part of a practical series about building a Rust-native local-first cache runtime.
@@ -21,6 +22,7 @@ https://github.com/javaquasar/hydracache
 crates.io:
 
 https://crates.io/crates/hydracache
+<!-- article-series:end -->
 
 Most caching in application code starts innocently.
 

@@ -19,6 +19,20 @@ The script opens Medium in a persistent local browser profile, waits while you l
 
 Article drafts should include a short series/resources block near the top with the current part number, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
 
+Refresh the generated series block after changing the series manifest at [hydracache-runtime-series.json](hydracache-runtime-series.json):
+
+```powershell
+node scripts/update-article-series.mjs --article docs/articles/001-why-rust-needs-cache-semantics.md
+```
+
+After publishing an article, save its public URL in the series manifest and refresh the block:
+
+```powershell
+node scripts/update-article-series.mjs --article docs/articles/001-why-rust-needs-cache-semantics.md --set-url https://medium.com/your-published-url
+```
+
+Future article drafts use that URL to link back to previous parts.
+
 If Playwright is not installed locally yet:
 
 ```powershell

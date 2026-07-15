@@ -1,0 +1,51 @@
+{
+  "id": "hydracache-runtime",
+  "title": "HydraCache Runtime Series",
+  "description": "This article is part of a practical series about building a Rust-native local-first cache runtime.",
+  "resources": [
+    {
+      "label": "GitHub",
+      "url": "https://github.com/javaquasar/hydracache"
+    },
+    {
+      "label": "crates.io",
+      "url": "https://crates.io/crates/hydracache"
+    }
+  ],
+  "articles": [
+    {
+      "part": 1,
+      "title": "Why Rust Needs Cache Semantics, Not Just Another Cache Map",
+      "file": "001-why-rust-needs-cache-semantics.md",
+      "url": ""
+    },
+    {
+      "part": 2,
+      "title": "Single-flight is not an optimization.",
+      "file": "003-single-flight-is-not-an-optimization.md",
+      "status": "planned",
+      "url": ""
+    },
+    {
+      "part": 3,
+      "title": "TTL is not enough.",
+      "file": "004-ttl-is-not-enough.md",
+      "status": "planned",
+      "url": ""
+    },
+    {
+      "part": 4,
+      "title": "Local-first distributed invalidation.",
+      "file": "005-local-first-distributed-invalidation.md",
+      "status": "planned",
+      "url": ""
+    },
+    {
+      "part": 5,
+      "title": "Typed query caching in Rust.",
+      "file": "006-typed-query-caching-in-rust.md",
+      "status": "planned",
+      "url": ""
+    }
+  ]
+}

@@ -107,9 +107,15 @@ async function readArticle(articlePath) {
     absolutePath,
     title,
     bodyMarkdown,
-    bodyText: bodyMarkdown.trim(),
+    bodyText: stripMarkdownComments(bodyMarkdown).trim(),
     bodyHtml: await markdownToHtml(bodyMarkdown, baseDir)
   };
+}
+
+function stripMarkdownComments(markdown) {
+  return markdown
+    .replace(/^\s*<!--.*-->\s*$/gm, "")
+    .replace(/\n{3,}/g, "\n\n");
 }
 
 function splitMarkdownArticle(markdown) {
@@ -185,6 +191,12 @@ async function markdownToHtml(markdown, baseDir) {
     }
 
     if (/^\s*$/.test(line)) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    if (/^<!--.*-->$/.test(line.trim())) {
       flushParagraph();
       flushList();
       continue;
