@@ -1442,6 +1442,30 @@ mod tests {
 
     #[cfg(feature = "sled-log-store")]
     #[test]
+    fn sled_store_truncate_suffix_persists_exact_conflict_boundary() {
+        let path = sled_temp_path("truncate-suffix-boundary");
+        let store = SledRaftLogStore::open(&path).unwrap();
+        store
+            .append(&[
+                entry(1, 1, b"a"),
+                entry(2, 1, b"b"),
+                entry(3, 1, b"conflict-c"),
+                entry(4, 1, b"conflict-d"),
+            ])
+            .unwrap();
+
+        store.truncate_suffix(3).unwrap();
+        assert_eq!(indexes(&store.retained_entries().unwrap()), vec![1, 2]);
+        drop(store);
+
+        let reopened = SledRaftLogStore::open(&path).unwrap();
+        assert_eq!(indexes(&reopened.retained_entries().unwrap()), vec![1, 2]);
+        drop(reopened);
+        let _ = std::fs::remove_dir_all(path);
+    }
+
+    #[cfg(feature = "sled-log-store")]
+    #[test]
     fn sled_integer_and_empty_snapshot_codecs_have_known_answers() {
         let value = 0x0102_0304_0506_0708_u64;
         assert_eq!(encode_u64(value), [1, 2, 3, 4, 5, 6, 7, 8]);
