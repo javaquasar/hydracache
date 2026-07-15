@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use hydracache::{CacheError, CacheOptions, HydraCache};
 use serde::{Deserialize, Serialize};
-use tokio::sync::{oneshot, Notify};
+use tokio::sync::oneshot;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 struct Value(u64);
@@ -68,11 +68,10 @@ async fn cache_core_matrix_preserves_invalidation_and_singleflight_invariants() 
     for seed in 0..12_u64 {
         let cache = HydraCache::local().max_capacity(16).build();
         let calls = Arc::new(AtomicUsize::new(0));
-        let release = Arc::new(Notify::new());
         let (started_tx, started_rx) = oneshot::channel();
+        let (release_tx, release_rx) = oneshot::channel();
         let first_cache = cache.clone();
         let first_calls = calls.clone();
-        let first_release = release.clone();
         let first = tokio::spawn(async move {
             first_cache
                 .get_or_load(
@@ -81,7 +80,7 @@ async fn cache_core_matrix_preserves_invalidation_and_singleflight_invariants() 
                     move || async move {
                         first_calls.fetch_add(1, Ordering::SeqCst);
                         started_tx.send(()).unwrap();
-                        first_release.notified().await;
+                        release_rx.await.unwrap();
                         Ok::<_, LoaderError>(Value(seed))
                     },
                 )
@@ -118,10 +117,22 @@ async fn cache_core_matrix_preserves_invalidation_and_singleflight_invariants() 
             }
             Op::Flush | Op::CapacityPressure => cache.flush().await.unwrap(),
         }
-        release.notify_waiters();
-        assert_eq!(first.await.unwrap(), Value(seed));
+        release_tx.send(()).unwrap();
+        assert_eq!(
+            tokio::time::timeout(Duration::from_secs(1), first)
+                .await
+                .expect("single-flight leader must complete after release")
+                .unwrap(),
+            Value(seed)
+        );
         for follower in followers {
-            assert_eq!(follower.await.unwrap(), Value(seed));
+            assert_eq!(
+                tokio::time::timeout(Duration::from_secs(1), follower)
+                    .await
+                    .expect("single-flight follower must observe the released leader")
+                    .unwrap(),
+                Value(seed)
+            );
         }
 
         assert_eq!(calls.load(Ordering::SeqCst), 1);
