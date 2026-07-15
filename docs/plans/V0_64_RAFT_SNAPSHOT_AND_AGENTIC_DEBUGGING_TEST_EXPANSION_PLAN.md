@@ -748,11 +748,12 @@ observation tests validate StatefulSet/Pod/Secret-to-decision mapping. The exact
 from `1,378 / 2,232 = 61.74%` to `1,915 / 2,232 = 85.80%`; candidate CI must reproduce or improve it.
 
 **C3. DB And Outbox Backends.** Raise `hydracache-db` from 82.32% toward at least 90% (about 238 lines)
-by executing the existing SQLite corpus in the aggregate profile and adding pinned Docker Postgres/MySQL
-rows for transaction rollback, concurrent `skip locked` claims, claim expiry, lost-notify polling,
-retry/dead-letter, wrong-backend calls, and schema migration. The database is external but the Rust
+by executing the existing SQLite corpus in the aggregate profile and adding a pinned Docker Postgres row
+for transaction rollback, concurrent `FOR UPDATE SKIP LOCKED` claims, claim expiry, lost-notify polling,
+retry/dead-letter/reset, wrong-backend calls, and schema migration. The database is external but the Rust
 adapter stays instrumented in the test process. Required service rows fail loud; optional local runs skip
-loud and cannot satisfy release evidence.
+loud and cannot satisfy release evidence. The current MySQL hook row validates only configuration and is
+not executable outbox proof; it stays outside the coverage claim until a real MySQL adapter/harness lands.
 
 **C4. Server And Grid Host.** Raise `hydracache-server` from 84.13% toward at least 90% (about 221 lines)
 through bounded tests for cluster-auth token errors and rotation, TLS client construction, join/leader

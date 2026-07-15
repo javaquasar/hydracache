@@ -690,6 +690,22 @@ jobs:
     name: Coverage Ratchet
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    env:
+      HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
+    services:
+      postgres:
+        image: postgres:16.4-alpine
+        env:
+          POSTGRES_DB: hydracache
+          POSTGRES_PASSWORD: hydracache
+          POSTGRES_USER: hydracache
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hydracache -d hydracache"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
 
     steps:
       - name: Checkout

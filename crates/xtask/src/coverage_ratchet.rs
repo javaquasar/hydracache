@@ -168,6 +168,8 @@ pub fn validate_contract(
         "evidence-run --release 0.64 --gate tool.coverage-ratchet",
         "--ignore-filename-regex '(^|/)crates/xtask/'",
         "target/test-evidence/0.64/coverage-*.json",
+        "postgres:16.4-alpine",
+        "HYDRACACHE_TEST_POSTGRES_URL",
     ] {
         if !workflow.contains(required) {
             problems.push(format!("coverage CI wiring is missing `{required}`"));
@@ -258,6 +260,25 @@ pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
             ]),
         },
         CoverageStep {
+            id: "db-postgres-outbox",
+            kind: CoverageStepKind::AdditiveTests,
+            args: strings(&[
+                "llvm-cov",
+                "--no-clean",
+                "-p",
+                "hydracache-db",
+                "--features",
+                "sqlx-outbox",
+                "--test",
+                "outbox_postgres",
+                "--locked",
+                "--no-report",
+                "--",
+                "--ignored",
+                "--test-threads=1",
+            ]),
+        },
+        CoverageStep {
             id: "report",
             kind: CoverageStepKind::Report,
             args: vec![
@@ -280,6 +301,7 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
         "default-workspace",
         "raft-sled-log-store",
         "raft-test-failpoints",
+        "db-postgres-outbox",
         "report",
     ];
     let actual_ids = plan.iter().map(|step| step.id).collect::<Vec<_>>();

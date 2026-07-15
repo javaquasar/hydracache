@@ -65,6 +65,7 @@ fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
             "default-workspace",
             "raft-sled-log-store",
             "raft-test-failpoints",
+            "db-postgres-outbox",
             "report"
         ]
     );
