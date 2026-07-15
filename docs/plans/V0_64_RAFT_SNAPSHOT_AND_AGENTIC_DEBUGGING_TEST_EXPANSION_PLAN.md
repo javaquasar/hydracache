@@ -22,7 +22,7 @@
 >   reusable Jepsen-style linearizability oracle library (Knossos), loom interleaving checks on the
 >   lock/ring fast paths (`moka`), connection/pool chaos (pgcat/Pingora/HikariCP), and differential +
 >   Redis/Hazelcast-mined behavioral corpora (DataFusion/Redis/Hazelcast). A second Raft-focused
->   reference pass (W29-W38) then incorporates the remaining high-value practices found in TiKV,
+>   reference pass (W29-W39) then incorporates the remaining high-value practices found in TiKV,
 >   Qdrant, ScyllaDB, TigerBeetle, and BlazingMQ: committed-read safety across leadership handoff;
 >   delayed/duplicated/stale/aborted snapshot delivery with consensus-progress bounds; interrupted
 >   recovery and durable corruption corpora; previous-version wire/snapshot/API compatibility;
@@ -144,7 +144,7 @@ authority for implementation and exact-candidate proof state:
 Most W7-W14 tests also have explicit fast CI steps in `.github/workflows/ci.yml`; heavier/wide replay
 coverage is wired through the scheduled/manual `Raft Corner-Case Nightly` job.
 
-### W29-W38 Extension Implementation Map
+### W29-W39 Extension Implementation Map
 
 The extension artifacts below have landed. This table describes their proof boundary; it is not a
 claim that every exact-candidate heavy receipt is already green. A fast-tier pass never substitutes
@@ -162,6 +162,7 @@ for a registered heavy receipt or the explicitly named `0.66` real-process conti
 | W36 config/security property matrix | `crates/hydracache-server/tests/config_properties.rs`; operator manifest checks where the operator crate exposes a pure renderer | Generated config combinations prove precedence, validation, redaction, and secure defaults without launching daemons. | Cluster rollout behavior under generated manifests remains 0.66 W11. |
 | W37 process-resource budget | `crates/hydracache-server/tests/daemon_resource_budget.rs`; machine-readable budget artifact | Cross-platform daemon churn where stable counters are available; Linux FD/RSS assertions are gated and skip loud elsewhere. | Long soak and OS-pressure attribution remain 0.66 W5/W13. |
 | W38 executable safety specification | `docs/specs/raft-election.tla`, TLC config, and a deterministic spec-check wrapper | Structural mapping runs on every PR without Java; a dedicated pinned TLC lane proves the bounded election/restart/unavailability model and negative canary. Stateright W23 remains independent. | No continuation is required; wider TLC bounds may run nightly. |
+| W39a/W39b/W39c async cancellation-safety contracts | Registered cancellation checkpoints plus contract-specific tests in `hydracache`, `hydracache-client-transport-axum`, and `hydracache-cluster-raft`; shared test support lives in `hydracache-cluster-testkit` where the dependency graph permits it | W39a/W39b fast commands plus the W39c specialized Raft/runtime command; every command emits named evidence and runs its paired canary | One release-blocking W39 item with three explicit proof surfaces. It proves the registered in-process boundaries only; wire-level disconnect mid-request remains W27/`0.63` scope, while W39c is not deferred to `0.66`. |
 
 ## W1. Snapshot Immutability And Aliasing Proof
 
@@ -1134,7 +1135,7 @@ check, but do not mark W17 complete until schema-v2 commands prove the actual re
 **Design.**
 - Static check: every W-item in the plan names >=1 canary, and every registry canary references a real
   `fn ...` and a real guard `fn ...`. Derive required ids from the 0.64 `releases.toml work_items`
-  list rather than a hard-coded W1-W28 constant, including W5a, W6, W6b, and W29-W38. Non-behavioral
+  list rather than a hard-coded W1-W28 constant, including W5a, W6, W6b, and W29-W39. Non-behavioral
   governance items use a malformed registry/evidence fixture that makes their real meta-gate fail.
 - Dynamic check: execute the same guard command with its test-only defect/failpoint/model mutation
   enabled and require a bounded non-zero exit plus the registered invariant failure signature. A green
@@ -1585,7 +1586,7 @@ cargo test -p hydracache-redis-compat redis_mined_edge_corpus --locked
 **Run in CI.** Fast `rust` job; corpus-mined RESP rows join the existing Docker-gated oracle lane where
 they need a live Redis.
 
-## Raft-Focused Reference Gap Closure (W29-W38)
+## Raft-Focused Reference Gap Closure (W29-W39)
 
 The first cross-domain pass found broad testing techniques. A second pass inspected the Raft and
 Raft-inspired cluster suites in TiKV, ScyllaDB, Qdrant, TigerBeetle, and BlazingMQ and compared them
@@ -1594,7 +1595,7 @@ handoff and the full snapshot-delivery lifecycle) plus eight adjacent proof gaps
 analysis. All ten are now in `0.64` at the strongest test-only tier the current product surface can
 honestly support.
 
-Scope rule for W29-W38:
+Scope rule for W29-W39:
 
 - `0.64` must land deterministic in-process tests, checked-in corpora/specs, mechanical governance,
   and CI wiring. A gated command counts only when its output is recorded green; an ignored test is not
@@ -1608,7 +1609,7 @@ Scope rule for W29-W38:
 - Every new suite gets a falsifiability canary, deterministic seed/fixture, bounded wall-clock budget,
   and a registry entry naming local, PR, nightly, and release-proof commands.
 
-### W29-W38 Release-Gate Tiers
+### W29-W39 Release-Gate Tiers
 
 The tiers below organize execution cost and review ownership; they do **not** make any W-item optional.
 Moving an item out of `0.64` requires an explicit scope-change commit that updates this plan, the release
@@ -1616,8 +1617,8 @@ manifest, `INDEX.md`, and the public claim. A skipped or merely documented row n
 
 | Tier | Work items | Required 0.64 evidence |
 |---|---|---|
-| Core deterministic safety and governance | W29-W31, W33 | Fast deterministic suites and structural meta-gates run on every PR; all canaries are proven red against their seeded defect before ship. |
-| Specialized release evidence | W32, W34-W38 | Each named fast/gated command exists and passes; W37 records one Linux resource-budget run and W38 records one pinned TLC run. These rows may use dedicated CI lanes but remain release-blocking. |
+| Core deterministic safety and governance | W29-W31, W33, W39a, W39b | Fast deterministic suites and structural meta-gates run on every PR; all canaries are proven red against their seeded defect before ship. W39a/W39b use explicit cancellation checkpoints rather than claiming enumeration of arbitrary `.await` instructions. |
+| Specialized release evidence | W32, W34-W38, W39c | Each named fast/gated command exists and passes; W37 records one Linux resource-budget run, W38 records one pinned TLC run, and W39c records one Raft/runtime cancellation receipt. These rows may use dedicated CI lanes but remain release-blocking in 0.64. |
 | Explicit operational continuation | Only the boundaries named by each W-item | Mixed-version daemons, real slow-TCP/receiver-kill behavior, Kubernetes chaos, and long OS-pressure soak remain 0.66 work. Their absence narrows the 0.64 claim; it does not permit substitution with a weaker current-version or in-process result. |
 
 The release-proof mechanics are folded into existing owners: W6 owns suite budgets, quarantine policy,
@@ -2172,11 +2173,84 @@ cargo run --manifest-path crates\xtask\Cargo.toml -- raft-spec-check --scope can
 **Relationship to W23.** W23 remains the executable Rust membership/commit model. W38 is an independent
 protocol artifact and traceability gate; neither green result may be used to claim that the other ran.
 
+## W39. Async Cancellation-Safety Contracts (W39a/W39b/W39c)
+
+W39 remains one release item in `0.64`; all three subparts are mandatory and none is deferred to
+`0.66`. The subparts separate ownership and evidence without weakening the release claim:
+
+| Subpart | Surface | Contract under cancellation | Tier |
+| --- | --- | --- | --- |
+| W39a | Local cache and single-flight loader | A dropped local mutation leaves either the pre-operation state or a complete committed state; permits, tickets, and in-flight counters return to baseline; a dropped loader never poisons the next load. | Fast deterministic |
+| W39b | Axum client surface and token-safe lock paths | A dropped request does not leak subscriptions or request budget. Conditional put, compare-and-invalidate, and compare-and-expire preserve token/TTL atomicity. No claim is made about a remote wire disconnect here. | Fast deterministic |
+| W39c | Raft proposal and runtime shutdown/restart | A dropped caller may have `committed`, `not_committed`, or `outcome_unknown`; the test must classify that result instead of requiring rollback. Command identity makes retry idempotent, no duplicate materialization occurs, and restart recovers a consistent committed metadata view. | Specialized release evidence |
+
+**Principle.** Async cancellation is a distinct correctness boundary: `select!`, timeout, task abort,
+or runtime shutdown can drop a future while it owns a permit, single-flight slot, lock operation, or
+Raft proposal. Completion-path tests do not exercise these drops. Loom, Miri, and TSan remain useful
+independent detectors, but none of them automatically proves cancellation safety unless the test
+explicitly drives and drops the future.
+
+**Why the original generic poll proposal is rejected.** A poll count is not an await-point index. A
+future may return `Pending` repeatedly at one external wait, and recreating the future for every poll
+count does not reproduce the same ownership or side-effect state. Therefore W39 does not claim to
+enumerate every arbitrary `.await` in the program.
+
+**Harness contract.** Add a test-only `CancellationCheckpoint`/barrier helper in
+`hydracache-cluster-testkit` for shared cluster surfaces and crate-local adapters where adding that
+dependency would create a cycle. Each test registers named checkpoints at a transaction boundary,
+holds the future at that checkpoint, drops it, then verifies the subpart's contract. The helper must
+report the checkpoint name, operation id, and baseline counters in a deterministic receipt. No wall
+clock sleeps or probabilistic poll counting are allowed in W39.
+
+**Files to change.** Add the checkpoint helper and support assertions, then add:
+`crates/hydracache/tests/cancellation_safety.rs` (W39a cache operations and loader single-flight),
+`crates/hydracache-client-transport-axum/tests/cancellation_safety.rs` (W39b request, conditional,
+lock, subscription, and budget paths), and `crates/hydracache-cluster-raft/tests/cancellation_safety.rs`
+(W39c proposal outcome, command-id retry, snapshot/apply driver, and runtime shutdown/restart).
+Production changes are allowed only when a test exposes a real defect; such a fix gets a narrow
+separate commit and a regression in the same contract row.
+
+**Required tests and invariants:**
+
+- `cache_drop_at_registered_boundaries_preserves_state_and_permit_baseline`;
+- `dropped_singleflight_loader_does_not_poison_the_slot`;
+- `client_drop_at_registered_boundaries_preserves_lock_token_and_ttl`;
+- `client_drop_does_not_leak_subscription_or_inflight_budget`;
+- `raft_dropped_proposal_has_explicit_unknown_outcome_and_retry_is_idempotent`;
+- `runtime_shutdown_with_inflight_ops_recovers_consistent_metadata`;
+- every W39c retry assertion checks command identity and materialized command count, not merely a
+  successful response;
+- every dropped future records a named checkpoint and verifies the relevant pre/post baseline.
+
+**Canary.** `canary_noncancelsafe_fixture_leaks_a_permit_on_drop` is the registered cross-surface
+negative fixture: it acquires a permit before a registered checkpoint and loses it on drop. The
+dynamic canary must fail with the reviewed invariant signature and emit a W39 receipt. W39b and W39c
+have their own contract-specific positive assertions for leaked request budget and duplicate Raft
+materialization; the shared permit canary is governance coverage for the cancellation contract, not
+a claim that one fixture exhaustively models all three runtimes.
+
+**DoD and evidence.**
+
+```powershell
+cargo test -p hydracache --test cancellation_safety --locked -j 2
+cargo test -p hydracache-client-transport-axum --test cancellation_safety --locked -j 2
+$env:HYDRACACHE_RUN_CANCELLATION_RAFT='1'
+cargo test -p hydracache-cluster-raft --test cancellation_safety --locked -j 2 -- --ignored --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_CANCELLATION_RAFT -ErrorAction SilentlyContinue
+```
+
+W39a and W39b are registered as separate fast suites with per-suite budgets. W39c runs in the
+`raft-corner-case-nightly` specialized lane, but remains `ship_mandatory = true` for `0.64`. The
+release evidence manifest must show all three commands and their contract rows; a green aggregate
+workspace run that omits one subpart is insufficient. The scope boundary remains explicit: W39 proves
+registered in-process cancellation boundaries only; wire-level disconnect mid-request is still
+W27/`0.63` scope, and W39c is not replaced by a weaker in-process cache test.
+
 ## Final Release Decision
 
 Ship `0.64.0` only when:
 
-- both W29-W38 gate tiers are complete: the split organizes fast versus specialized CI evidence and
+- all W29-W39 gate tiers are complete: the split organizes fast versus specialized CI evidence and
   does not permit any listed W-item to be deferred without an explicit release-scope change;
 
 - snapshot exports are proven immutable under later live mutations;
@@ -2228,6 +2302,12 @@ Ship `0.64.0` only when:
   precedence, redaction, and secure-default invariants (W36); daemon churn returns logical and available
   OS resources within the recorded budget while the cluster remains live (W37); and the pinned TLA+/TLC
   election/recovery model plus its negative canary both execute as intended (W38);
+- W39a, W39b, and W39c each have a green contract-specific receipt. The shared W39 dynamic negative
+  canary proves that the cancellation governance guard can detect a leaked permit, while the W39b
+  and W39c contract tests independently prove request-budget and duplicate-materialization safety:
+  cache cancellation leaves no half-state or leaked permit, client cancellation preserves lock, TTL,
+  subscription, and budget invariants, and Raft cancellation classifies unknown outcomes while
+  preserving command-id retry idempotency and restart consistency;
 - rare/flaky failures produce deterministic replay evidence (printed seed + uploaded artifacts) and a
   contradiction ledger;
 - fast suites stay within their reviewed per-suite and aggregate wall-clock budgets, overdue quarantine
@@ -2245,7 +2325,7 @@ Ship `0.64.0` only when:
 If a production bug is found, fix it narrowly in the same release. Do not broaden the release into
 log compaction, new membership algorithms, or a feature track. The win condition is sharper proof.
 
-The `0.64` ship claim stops at the boundaries recorded in the W29-W38 extension map. In particular, a
+The `0.64` ship claim stops at the boundaries recorded in the W29-W39 extension map. In particular, a
 green in-process snapshot/backpressure test does not claim slow-TCP or receiver-process-kill behavior;
 checked-in previous-version vectors do not claim mixed-version daemons; portable resource counters do
 not claim Linux FD/RSS unless that gated row ran; and committed metadata handoff tests do not claim a

@@ -733,3 +733,43 @@ function = "raft_spec_structural_contract_maps_every_invariant_to_rust_evidence"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/raft_spec_check.rs"
 function = "main_model_cannot_import_the_negative_canary"
+
+[[work_item]]
+id = "W39"
+required_sources = [
+    "crates/hydracache/tests/cancellation_safety.rs",
+    "crates/hydracache-client-transport-axum/tests/cancellation_safety.rs",
+    "crates/hydracache-cluster-raft/tests/cancellation_safety.rs",
+]
+required_artifacts = [
+    "target/test-evidence/0.64/cancellation-w39a.json",
+    "target/test-evidence/0.64/cancellation-w39b.json",
+    "target/release-evidence/receipts/W39c.json",
+]
+fast_gate_ids = ["fast.w39-cache-cancellation", "fast.w39-client-cancellation", "fast.workspace-nextest"]
+gated_gate_ids = ["env.hydracache-run-cancellation-raft"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache/tests/cancellation_safety.rs"
+function = "cache_drop_at_registered_boundaries_preserves_state_and_permit_baseline"
+
+[[work_item.required_tests]]
+source = "crates/hydracache/tests/cancellation_safety.rs"
+function = "dropped_singleflight_loader_does_not_poison_the_slot"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/cancellation_safety.rs"
+function = "client_drop_at_registered_boundaries_preserves_lock_token_and_ttl"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/cancellation_safety.rs"
+function = "client_drop_does_not_leak_subscription_or_inflight_budget"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/cancellation_safety.rs"
+function = "raft_dropped_proposal_has_explicit_unknown_outcome_and_retry_is_idempotent"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/cancellation_safety.rs"
+function = "runtime_shutdown_with_inflight_ops_recovers_consistent_metadata"

@@ -5084,6 +5084,138 @@ platform = "any"
 HYDRACACHE_REQUIRE_TLC = "1"
 
 [[gate]]
+id = "env.hydracache-run-cancellation-raft"
+kind = "env_gate"
+source = "crates/hydracache-cluster-raft/tests/cancellation_safety.rs"
+package = "hydracache-cluster-raft"
+target = "cancellation_safety"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_CANCELLATION_RAFT"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_CANCELLATION_RAFT; runs W39c ignored cancellation proofs"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_CANCELLATION_RAFT"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-corner-case-nightly"
+step = "W39c Raft cancellation safety"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "cancellation_safety",
+    "--locked",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_CANCELLATION_RAFT = "1"
+HYDRACACHE_W39C_EVIDENCE = "../../target/release-evidence/receipts/W39c.json"
+
+[[gate]]
+id = "ignored.hydracache-cluster-raft.cancellation-safety.raft-dropped-proposal-has-explicit-unknown-outcome-and-retry-is-idempotent"
+kind = "ignored_test"
+source = "crates/hydracache-cluster-raft/tests/cancellation_safety.rs"
+package = "hydracache-cluster-raft"
+target = "cancellation_safety"
+test = "raft_dropped_proposal_has_explicit_unknown_outcome_and_retry_is_idempotent"
+cfg = ""
+env = ""
+reason = "W39c gated runtime cancellation proof; execute through HYDRACACHE_RUN_CANCELLATION_RAFT"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_CANCELLATION_RAFT"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-corner-case-nightly"
+step = "W39c Raft cancellation safety"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "cancellation_safety",
+    "--locked",
+    "raft_dropped_proposal_has_explicit_unknown_outcome_and_retry_is_idempotent",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_CANCELLATION_RAFT = "1"
+
+[[gate]]
+id = "ignored.hydracache-cluster-raft.cancellation-safety.runtime-shutdown-with-inflight-ops-recovers-consistent-metadata"
+kind = "ignored_test"
+source = "crates/hydracache-cluster-raft/tests/cancellation_safety.rs"
+package = "hydracache-cluster-raft"
+target = "cancellation_safety"
+test = "runtime_shutdown_with_inflight_ops_recovers_consistent_metadata"
+cfg = ""
+env = ""
+reason = "W39c gated runtime cancellation proof; execute through HYDRACACHE_RUN_CANCELLATION_RAFT"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_CANCELLATION_RAFT"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.64.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "raft-corner-case-nightly"
+step = "W39c Raft cancellation safety"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--test",
+    "cancellation_safety",
+    "--locked",
+    "runtime_shutdown_with_inflight_ops_recovers_consistent_metadata",
+    "--",
+    "--ignored",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_CANCELLATION_RAFT = "1"
+
+[[gate]]
 id = "tool.miri.snapshot-safety"
 kind = "external_tool"
 source = "crates/xtask/src/miri_check.rs"

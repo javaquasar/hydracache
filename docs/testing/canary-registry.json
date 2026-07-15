@@ -2237,6 +2237,61 @@
         "target/release-evidence/canaries/W38.json"
       ],
       "red_evidence": "The independent TLC model must produce its reviewed invariant counterexample under UnsafeSecondLeader."
+    },
+    {
+      "w_item": "W39",
+      "guard": {
+        "file": "crates/xtask/tests/cancellation_safety.rs",
+        "function": "w39_contract_registry_requires_all_three_cancellation_surfaces"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/cancellation_safety.rs",
+        "function": "canary_noncancelsafe_fixture_leaks_a_permit_on_drop"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "cancellation_safety",
+          "--locked",
+          "w39_contract_registry_requires_all_three_cancellation_surfaces",
+          "--",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "xtask",
+          "--test",
+          "cancellation_safety",
+          "--locked",
+          "canary_noncancelsafe_fixture_leaks_a_permit_on_drop",
+          "--",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W39"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.64-W39",
+      "expected_failure": "HC-CANARY-RED:W39",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/W39.json"
+      ],
+      "red_evidence": "The cancellation-safety guard must fail when the deliberately non-cancel-safe fixture leaks a permit at a registered checkpoint."
     }
   ]
 }

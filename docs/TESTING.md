@@ -560,6 +560,38 @@ while all other workspace tests retain normal parallel execution and the stricte
 global timeout. `fast-suite-check` rejects a missing test, parallel group, or
 unbounded/changed override.
 
+### W39 cancellation-safety contracts
+
+W39 is one mandatory `0.64` release item with three contract rows. W39a covers
+local cache and single-flight ownership, W39b covers the Axum client surface
+and token-safe lock paths, and W39c covers Raft proposal cancellation plus
+runtime shutdown/restart. The tests use named deterministic cancellation
+checkpoints. They do not claim that a generic poll counter enumerates every
+`.await` in the program.
+
+Run the two fast contracts locally with:
+
+```powershell
+cargo test -p hydracache --test cancellation_safety --locked -j 2
+cargo test -p hydracache-client-transport-axum --test cancellation_safety --locked -j 2
+```
+
+Run the specialized Raft/runtime contract in its release lane with:
+
+```powershell
+$env:HYDRACACHE_RUN_CANCELLATION_RAFT='1'
+cargo test -p hydracache-cluster-raft --test cancellation_safety --locked -j 2 -- --ignored --nocapture
+Remove-Item Env:\HYDRACACHE_RUN_CANCELLATION_RAFT -ErrorAction SilentlyContinue
+```
+
+For W39a and W39b, a dropped future must leave the named pre/post state,
+permit, subscription, budget, token, and TTL invariants intact. For W39c, a
+dropped caller may have a committed, not-committed, or unknown outcome; the
+test must classify that state and prove command-id retry idempotency and
+consistent metadata after restart. A green aggregate workspace run is not
+evidence for W39c unless its specialized receipt is also present. Wire-level
+disconnect during an HTTP request remains the W27/`0.63` boundary.
+
 The `rust`, complete dynamic-canary, coverage-ratchet, MSRV, and registered
 gated-proof jobs check out full Git history. This is required because the W32
 compatibility gate resolves `v0.63.0` and proves that it is an ancestor of the

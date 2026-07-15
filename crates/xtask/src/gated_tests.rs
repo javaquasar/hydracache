@@ -545,6 +545,7 @@ fn template_entry(discovered: &DiscoveredGate) -> GateEntry {
                 ship_mandatory: matches!(
                     env.as_str(),
                     "HYDRACACHE_RUN_RAFT_NEMESIS_SOAK"
+                        | "HYDRACACHE_RUN_CANCELLATION_RAFT"
                         | "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"
                         | "HYDRACACHE_REQUIRE_REDIS_ORACLE"
                 ),
@@ -641,6 +642,22 @@ fn env_gate_command(env: &str) -> (String, String, CommandSpec, Vec<String>, Gat
                 Vec::new(),
                 GateTier::Nightly,
             ),
+            "HYDRACACHE_RUN_CANCELLATION_RAFT" => {
+                let mut command =
+                    cargo_test_command("hydracache-cluster-raft", "cancellation_safety", None);
+                command.args.extend([
+                    "--".to_owned(),
+                    "--ignored".to_owned(),
+                    "--nocapture".to_owned(),
+                ]);
+                (
+                    "hydracache-cluster-raft",
+                    "cancellation_safety",
+                    command,
+                    Vec::new(),
+                    GateTier::Nightly,
+                )
+            }
             "HYDRACACHE_RUN_RAFT_MUTANTS" => (
                 "xtask",
                 "mutants",

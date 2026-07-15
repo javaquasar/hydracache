@@ -380,6 +380,9 @@ jobs:
       - name: Snapshot resource faults
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults
 
+      - name: W39c Raft cancellation safety
+        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-cancellation-raft
+
       - name: Clock skew safety
         run: cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
 

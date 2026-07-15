@@ -2001,6 +2001,7 @@ version = "0.63.0"
 dependencies = [
  "axum",
  "bytes",
+ "futures-util",
  "hydracache",
  "hydracache-client-protocol",
  "hydracache-observability",
