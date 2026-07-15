@@ -211,13 +211,8 @@ impl Storage for InMemoryRaftLogStore {
                 high
             );
         }
-        if low == high {
-            return Ok(Vec::new());
-        }
-        let start = usize::try_from(low - first_index)
-            .map_err(|_| RaftError::Store(StorageError::Unavailable))?;
-        let end = usize::try_from(high - first_index)
-            .map_err(|_| RaftError::Store(StorageError::Unavailable))?;
+        let start = entry_offset(low, first_index)?;
+        let end = entry_offset(high, first_index)?;
         let mut entries = state
             .entries
             .get(start..end)
@@ -731,6 +726,13 @@ fn last_index(state: &InMemoryRaftLogState) -> u64 {
         .unwrap_or_else(|| state.snapshot.get_metadata().index)
 }
 
+fn entry_offset(index: u64, first_index: u64) -> RaftResult<usize> {
+    let offset = index
+        .checked_sub(first_index)
+        .ok_or(RaftError::Store(StorageError::Unavailable))?;
+    usize::try_from(offset).map_err(|_| RaftError::Store(StorageError::Unavailable))
+}
+
 fn limit_entries_size(entries: &mut Vec<Entry>, max_size: u64) {
     if entries.len() <= 1 {
         return;
@@ -1240,6 +1242,31 @@ mod tests {
         let retained = store.all_entries();
         assert_eq!(indexes(&retained), vec![1]);
         assert_eq!(retained[0].term, 2);
+    }
+
+    #[test]
+    fn in_memory_entries_empty_range_at_compacted_boundary_is_exact() {
+        let store = InMemoryRaftLogStore::new();
+        store
+            .append(&[
+                entry(1, 1, b"a"),
+                entry(2, 1, b"b"),
+                entry(3, 2, b"c"),
+                entry(4, 2, b"d"),
+            ])
+            .unwrap();
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = 2;
+        store.save_snapshot(&snapshot, usize::MAX).unwrap();
+
+        let empty = store
+            .entries(3, 3, None, GetEntriesContext::empty(false))
+            .unwrap();
+        assert!(empty.is_empty());
+        let first_retained = store
+            .entries(3, 4, None, GetEntriesContext::empty(false))
+            .unwrap();
+        assert_eq!(indexes(&first_retained), vec![3]);
     }
 
     #[test]
