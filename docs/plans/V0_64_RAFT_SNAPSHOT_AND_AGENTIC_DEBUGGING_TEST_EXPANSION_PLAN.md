@@ -712,6 +712,65 @@ but applying the reviewed `crates/xtask` source exclusion) and set the scheduled
 Coverage remains a non-regression ratchet rather than a correctness score and cannot substitute for a
 missing W-item proof.
 
+#### Coverage Closure Addendum C1-C5
+
+The first exact Linux artifact after excluding only `crates/xtask` records `55,692 / 62,504 = 89.10%`
+product-source line coverage. That makes the next thresholds concrete: 90% requires approximately 562
+additional covered lines, 91% approximately 1,188, and 92% approximately 1,812, before accounting for
+new product lines. The addendum improves executable behavior coverage; broadening the source exclusion,
+lowering the 88% floor, counting generated evidence as product code, or accepting a zero-test/skip row
+does not satisfy any item.
+
+**C1. Aggregate Existing Coverage Tiers.** Replace the single default-workspace measurement with one
+clean profile followed by `--no-report` executions of the default workspace and reviewed feature/gated
+tiers, then one `cargo llvm-cov report`. The first portable additive profile contains Raft
+`sled-log-store` and Raft `test-failpoints`; C2-C4 append daemon-process recovery, operator
+in-process/envtest reconciliation, and DB Postgres/MySQL outbox rows only after their coverage-aware
+harnesses and declared services land. Each tier has a stable id, command, required environment, and
+skip/fail policy in the evidence artifact. Subsequent invocations use `--no-clean`; the final report is
+the only floor decision. Miri, loom, TSan, TLC, external container
+binaries, and uninstrumented child processes are independent proofs and must not be merged into the line
+profile. Tests: command-plan unit tests prove clean/default/additive/report ordering, exact source
+exclusion, no duplicate cleanup, and fail-loud handling for required tiers; CI runs the combined plan on
+the exact candidate.
+
+**C2. Kubernetes Operator Reconciliation.** Raise `hydracache-operator` from the measured 61.74% toward
+at least 85% (about 519 additional lines) with in-process mock Kubernetes API/envtest coverage of the
+real `reconcile`, apply, cleanup, finalizer, status-patch, lease-loss, 404, and API-error paths. Extend
+scale/TLS/upgrade transition matrices for deferred, blocked, retry, and pod-delete failure outcomes.
+Kind remains a behavior/chaos gate; an operator running only inside an uninstrumented cluster image does
+not contribute local Rust coverage. Tests assert emitted Patch/Delete requests and resulting `Action` or
+status conditions rather than only testing resource builders.
+
+**C3. DB And Outbox Backends.** Raise `hydracache-db` from 82.32% toward at least 90% (about 238 lines)
+by executing the existing SQLite corpus in the aggregate profile and adding pinned Docker Postgres/MySQL
+rows for transaction rollback, concurrent `skip locked` claims, claim expiry, lost-notify polling,
+retry/dead-letter, wrong-backend calls, and schema migration. The database is external but the Rust
+adapter stays instrumented in the test process. Required service rows fail loud; optional local runs skip
+loud and cannot satisfy release evidence.
+
+**C4. Server And Grid Host.** Raise `hydracache-server` from 84.13% toward at least 90% (about 221 lines)
+through bounded tests for cluster-auth token errors and rotation, TLS client construction, join/leader
+timeouts with paused time, voter removal during drain, persisted node identity, message-send failure,
+and shutdown both inside and outside a Tokio runtime. Refactor only narrow clock/IO/network seams needed
+to make these branches deterministic. Daemon-process tests must propagate the coverage environment to
+instrumented child binaries before child execution is counted.
+
+**C5. Core Grid And Consistency Paths.** Raise the main `hydracache` crate from 88.84% toward at least
+92%, prioritizing `grid/elasticity`, `grid/checkpoint`, `grid/residency`, `consistency`, cluster runtime,
+and invalidation transport. Use table/property/state-machine tests for restart points, stale epochs,
+partial checkpoints, placement changes, cancellation, timeout, and rollback. Every new assertion must
+protect a semantic invariant; tests added solely to execute getters or unreachable defensive branches do
+not satisfy this item.
+
+**Addendum DoD.** C1-C5 are reported separately in the release evidence ledger. The exact-candidate JSON
+records total and per-crate lines before/after, every executed additive tier, and every unavailable tier.
+The ship decision requires C1 ordering/governance green, all newly added fast tests green, required
+Docker/envtest rows green, no broadened exclusion, and a newly measured floor of
+`max(88, floor(measured_line_percent))`. The target is evidence-led improvement; 92% is a planning
+direction, not permission to weaken a correctness gate or keep the release open through fabricated
+coverage.
+
 **Required checks:**
 
 - `fast_suite_registry_rejects_missing_timeout_budget_or_command`;
@@ -720,6 +779,12 @@ missing W-item proof.
 - `quarantine_registry_rejects_missing_issue_owner_replay_or_expiry`;
 - `release_ship_gate_rejects_every_active_quarantine`;
 - `coverage_floor_matches_post_064_measured_baseline_without_decreasing_88`.
+- `coverage_plan_runs_default_before_additive_tiers_and_reports_once`;
+- `coverage_plan_rejects_a_required_tier_skip_or_second_clean`;
+- operator reconcile mock/envtest apply, cleanup, lease-loss, and API-error rows;
+- DB outbox rollback, concurrent claim, expiry, notification-loss, and dead-letter rows;
+- server auth/TLS/join/drain/identity/shutdown rows;
+- core grid checkpoint/residency/consistency state-machine and property rows.
 
 ```powershell
 cargo run --manifest-path crates\xtask\Cargo.toml -- fast-suite-check --release 0.64

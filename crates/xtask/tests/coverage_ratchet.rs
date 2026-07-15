@@ -52,18 +52,64 @@ fn measured_coverage_is_checked_by_the_ratchet_with_an_actionable_error() {
 }
 
 #[test]
-fn coverage_command_leaves_floor_enforcement_to_the_actionable_ratchet() {
+fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let config = xtask::coverage_ratchet::load_config(&root).unwrap();
-    let args = xtask::coverage_ratchet::measurement_args(&config);
+    let plan = xtask::coverage_ratchet::measurement_plan(&config);
 
-    assert!(args.iter().any(|arg| arg == "--json"));
-    assert!(args.iter().any(|arg| arg == &config.raw_report_artifact));
-    let ignore = args
+    assert!(xtask::coverage_ratchet::validate_measurement_plan(&plan, &config).is_empty());
+    assert_eq!(
+        plan.iter().map(|step| step.id).collect::<Vec<_>>(),
+        [
+            "clean",
+            "default-workspace",
+            "raft-sled-log-store",
+            "raft-test-failpoints",
+            "report"
+        ]
+    );
+    assert_eq!(
+        plan.iter()
+            .filter(|step| step.kind == xtask::coverage_ratchet::CoverageStepKind::Clean)
+            .count(),
+        1
+    );
+    let report = plan.last().unwrap();
+    assert_eq!(
+        report.kind,
+        xtask::coverage_ratchet::CoverageStepKind::Report
+    );
+    assert!(report.args.iter().any(|arg| arg == "--json"));
+    assert!(report
+        .args
+        .iter()
+        .any(|arg| arg == &config.raw_report_artifact));
+    let ignore = report
+        .args
         .windows(2)
         .find(|window| window[0] == "--ignore-filename-regex")
-        .expect("coverage command must declare its reviewed source exclusion");
+        .expect("coverage report must declare its reviewed source exclusion");
     assert_eq!(ignore[1], config.ignored_source_regex);
     assert_eq!(config.ignored_source_regex, "(^|/)crates/xtask/");
-    assert!(!args.iter().any(|arg| arg == "--fail-under-lines"));
+    assert!(!report.args.iter().any(|arg| arg == "--fail-under-lines"));
+}
+
+#[test]
+fn coverage_plan_rejects_a_required_tier_skip_or_second_clean() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let config = xtask::coverage_ratchet::load_config(&root).unwrap();
+
+    let mut missing_tier = xtask::coverage_ratchet::measurement_plan(&config);
+    missing_tier.retain(|step| step.id != "raft-test-failpoints");
+    let problems = xtask::coverage_ratchet::validate_measurement_plan(&missing_tier, &config);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("required steps in order")));
+
+    let mut second_clean = xtask::coverage_ratchet::measurement_plan(&config);
+    second_clean.insert(1, second_clean[0].clone());
+    let problems = xtask::coverage_ratchet::validate_measurement_plan(&second_clean, &config);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exactly one clean step")));
 }

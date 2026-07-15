@@ -48,6 +48,31 @@ struct CoverageEvidence {
     measured_lines_percent: f64,
     ignored_source_regex: String,
     raw_report_artifact: String,
+    profile_steps: Vec<CoverageStepEvidence>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CoverageStepKind {
+    Clean,
+    DefaultTests,
+    AdditiveTests,
+    Report,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CoverageStep {
+    pub id: &'static str,
+    pub kind: CoverageStepKind,
+    pub args: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct CoverageStepEvidence {
+    id: &'static str,
+    kind: CoverageStepKind,
+    command: Vec<String>,
+    status: &'static str,
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -135,6 +160,8 @@ pub fn validate_contract(
         }
     }
 
+    problems.extend(validate_measurement_plan(&measurement_plan(config), config));
+
     let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
     for required in [
         "tool: cargo-llvm-cov@0.8.7",
@@ -169,18 +196,164 @@ pub fn enforce_floor(measured: f64, configured_floor: f64) -> Result<(), String>
     Ok(())
 }
 
-pub fn measurement_args(config: &CoverageRatchet) -> Vec<String> {
+pub fn measurement_plan(config: &CoverageRatchet) -> Vec<CoverageStep> {
     vec![
-        "llvm-cov".to_owned(),
-        "--workspace".to_owned(),
-        "--all-targets".to_owned(),
-        "--locked".to_owned(),
-        "--ignore-filename-regex".to_owned(),
-        config.ignored_source_regex.clone(),
-        "--json".to_owned(),
-        "--output-path".to_owned(),
-        config.raw_report_artifact.clone(),
+        CoverageStep {
+            id: "clean",
+            kind: CoverageStepKind::Clean,
+            args: strings(&["llvm-cov", "clean", "--workspace"]),
+        },
+        CoverageStep {
+            id: "default-workspace",
+            kind: CoverageStepKind::DefaultTests,
+            args: strings(&[
+                "llvm-cov",
+                "--no-clean",
+                "--workspace",
+                "--all-targets",
+                "--locked",
+                "--no-report",
+            ]),
+        },
+        CoverageStep {
+            id: "raft-sled-log-store",
+            kind: CoverageStepKind::AdditiveTests,
+            args: strings(&[
+                "llvm-cov",
+                "--no-clean",
+                "-p",
+                "hydracache-cluster-raft",
+                "--features",
+                "sled-log-store",
+                "--test",
+                "snapshot_corruption",
+                "--test",
+                "sled_log_store",
+                "--test",
+                "durable_recovery_corpus",
+                "--locked",
+                "--no-report",
+            ]),
+        },
+        CoverageStep {
+            id: "raft-test-failpoints",
+            kind: CoverageStepKind::AdditiveTests,
+            args: strings(&[
+                "llvm-cov",
+                "--no-clean",
+                "-p",
+                "hydracache-cluster-raft",
+                "--features",
+                "test-failpoints",
+                "--test",
+                "failpoints_crash_safety",
+                "--test",
+                "rejoin_after_compaction",
+                "--test",
+                "snapshot_resource_faults",
+                "--locked",
+                "--no-report",
+                "--",
+                "--test-threads=1",
+            ]),
+        },
+        CoverageStep {
+            id: "report",
+            kind: CoverageStepKind::Report,
+            args: vec![
+                "llvm-cov".to_owned(),
+                "report".to_owned(),
+                "--ignore-filename-regex".to_owned(),
+                config.ignored_source_regex.clone(),
+                "--json".to_owned(),
+                "--output-path".to_owned(),
+                config.raw_report_artifact.clone(),
+            ],
+        },
     ]
+}
+
+pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet) -> Vec<String> {
+    let mut problems = Vec::new();
+    let required_ids = [
+        "clean",
+        "default-workspace",
+        "raft-sled-log-store",
+        "raft-test-failpoints",
+        "report",
+    ];
+    let actual_ids = plan.iter().map(|step| step.id).collect::<Vec<_>>();
+    if actual_ids != required_ids {
+        problems.push(format!(
+            "coverage profile must run required steps in order {required_ids:?}, got {actual_ids:?}"
+        ));
+    }
+
+    let clean_count = plan
+        .iter()
+        .filter(|step| step.kind == CoverageStepKind::Clean)
+        .count();
+    if clean_count != 1 {
+        problems.push(format!(
+            "coverage profile must contain exactly one clean step, got {clean_count}"
+        ));
+    }
+    let report_count = plan
+        .iter()
+        .filter(|step| step.kind == CoverageStepKind::Report)
+        .count();
+    if report_count != 1 || plan.last().map(|step| step.kind) != Some(CoverageStepKind::Report) {
+        problems.push("coverage profile must contain exactly one final report step".to_owned());
+    }
+
+    for step in plan {
+        match step.kind {
+            CoverageStepKind::Clean => {
+                if step.args != strings(&["llvm-cov", "clean", "--workspace"]) {
+                    problems.push(
+                        "coverage clean step must clean the workspace exactly once".to_owned(),
+                    );
+                }
+            }
+            CoverageStepKind::DefaultTests | CoverageStepKind::AdditiveTests => {
+                for required in ["--no-clean", "--no-report", "--locked"] {
+                    if !has_arg(&step.args, required) {
+                        problems.push(format!(
+                            "coverage test step {} is missing {required}",
+                            step.id
+                        ));
+                    }
+                }
+                if has_arg(&step.args, "clean") || has_arg(&step.args, "report") {
+                    problems.push(format!(
+                        "coverage test step {} may not clean or report the shared profile",
+                        step.id
+                    ));
+                }
+            }
+            CoverageStepKind::Report => {
+                for required in ["report", "--json", "--output-path"] {
+                    if !has_arg(&step.args, required) {
+                        problems.push(format!(
+                            "coverage report step is missing required argument {required}"
+                        ));
+                    }
+                }
+                let exclusion = step
+                    .args
+                    .windows(2)
+                    .find(|window| window[0] == "--ignore-filename-regex")
+                    .map(|window| window[1].as_str());
+                if exclusion != Some(config.ignored_source_regex.as_str()) {
+                    problems.push(
+                        "coverage report must use the reviewed xtask-only source exclusion"
+                            .to_owned(),
+                    );
+                }
+            }
+        }
+    }
+    problems
 }
 
 fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<dyn Error>> {
@@ -192,25 +365,37 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
         )
         .into());
     }
-    let raw_path = root.join(&config.raw_report_artifact);
-    if let Some(parent) = raw_path.parent() {
-        fs::create_dir_all(parent)?;
+    let plan = measurement_plan(config);
+    let plan_problems = validate_measurement_plan(&plan, config);
+    if !plan_problems.is_empty() {
+        return Err(format!("invalid coverage measurement plan: {plan_problems:?}").into());
     }
-    // The ratchet parses the report itself so a failed floor stays actionable.
-    let status = Command::new("cargo")
-        .args(measurement_args(config))
-        .env("CARGO_BUILD_JOBS", "2")
-        .current_dir(root)
-        .status()?;
-    if !status.success() {
-        return Err(format!("cargo llvm-cov failed with status {status}").into());
+    let raw_path = root.join(&config.raw_report_artifact);
+    for step in &plan {
+        if step.kind == CoverageStepKind::Report {
+            if let Some(parent) = raw_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+        }
+        let status = Command::new("cargo")
+            .args(&step.args)
+            .env("CARGO_BUILD_JOBS", "2")
+            .current_dir(root)
+            .status()?;
+        if !status.success() {
+            return Err(format!(
+                "coverage profile step {} failed with status {status}",
+                step.id
+            )
+            .into());
+        }
     }
     let document: Value = serde_json::from_slice(&fs::read(&raw_path)?)?;
     let measured = measured_line_percent(&document)
         .ok_or("coverage JSON is missing data[0].totals.lines.percent")?;
     enforce_floor(measured, config.configured_floor_percent)?;
     let evidence = CoverageEvidence {
-        schema_version: 1,
+        schema_version: 2,
         release: config.release.clone(),
         source_commit: command_text(root, "git", &["rev-parse", "HEAD"])?,
         tool_version,
@@ -219,14 +404,36 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
         measured_lines_percent: measured,
         ignored_source_regex: config.ignored_source_regex.clone(),
         raw_report_artifact: config.raw_report_artifact.clone(),
+        profile_steps: plan
+            .into_iter()
+            .map(|step| CoverageStepEvidence {
+                id: step.id,
+                kind: step.kind,
+                command: std::iter::once("cargo".to_owned())
+                    .chain(step.args)
+                    .collect(),
+                status: "passed",
+            })
+            .collect(),
     };
     let evidence_path = root.join(&config.evidence_artifact);
+    if let Some(parent) = evidence_path.parent() {
+        fs::create_dir_all(parent)?;
+    }
     fs::write(evidence_path, serde_json::to_vec_pretty(&evidence)?)?;
     println!(
         "coverage-ratchet-check: OK ({measured:.2}% >= {:.2}%)",
         config.configured_floor_percent
     );
     Ok(())
+}
+
+fn strings(values: &[&str]) -> Vec<String> {
+    values.iter().map(|value| (*value).to_owned()).collect()
+}
+
+fn has_arg(args: &[String], expected: &str) -> bool {
+    args.iter().any(|arg| arg == expected)
 }
 
 fn command_text(root: &Path, program: &str, args: &[&str]) -> Result<String, Box<dyn Error>> {
