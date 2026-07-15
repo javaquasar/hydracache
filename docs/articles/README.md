@@ -17,6 +17,8 @@ node scripts/medium-draft.mjs --article docs/articles/001-why-rust-needs-cache-s
 
 The script opens Medium in a persistent local browser profile, waits while you log in if needed, fills the draft, and stops before publishing.
 
+Article drafts should include a short series/resources block near the top with the current part number, planned series entries, GitHub, and crates.io links. Bare `https://` links are converted to clickable links by the Medium draft script.
+
 If Playwright is not installed locally yet:
 
 ```powershell

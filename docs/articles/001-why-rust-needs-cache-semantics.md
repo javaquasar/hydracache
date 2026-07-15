@@ -2,6 +2,26 @@
 
 ![Medium article cover image](001-why-rust-needs-cache-semantics-cover.png)
 
+## HydraCache Runtime Series
+
+This article is part of a practical series about building a Rust-native local-first cache runtime.
+
+You are reading: Part 1.
+
+- Part 1: Why Rust Needs Cache Semantics, Not Just Another Cache Map
+- Part 2: Single-flight is not an optimization. (planned)
+- Part 3: TTL is not enough. (planned)
+- Part 4: Local-first distributed invalidation. (planned)
+- Part 5: Typed query caching in Rust. (planned)
+
+GitHub:
+
+https://github.com/javaquasar/hydracache
+
+crates.io:
+
+https://crates.io/crates/hydracache
+
 Most caching in application code starts innocently.
 
 You add a `HashMap`. Then you add a TTL. Then you realize that one code path needs explicit invalidation. Another one needs to invalidate several related keys at once. A hot endpoint starts stampeding the database whenever the cache expires. Someone wraps Redis. Someone else adds a local in-process cache in front of that wrapper. Eventually, "the cache" is no longer one thing. It is a set of small, disconnected decisions spread across the codebase.
@@ -163,10 +183,5 @@ Rust does not only need another cache map.
 It needs a cache runtime with explicit semantics, a local-first fast path, and a credible path toward distributed invalidation.
 
 That is what I am building with HydraCache.
-
-Project links:
-
-- GitHub: https://github.com/javaquasar/hydracache
-- crates.io: https://crates.io/crates/hydracache
 
 I would love to hear from Rust backend developers: when you cache database or API results today, where does your code become hardest to reason about?

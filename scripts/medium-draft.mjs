@@ -288,12 +288,22 @@ function formatInline(value) {
     return token;
   });
 
-  escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>');
+  escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_match, label, url) => {
+    const token = `@@LINK_${placeholders.length}@@`;
+    placeholders.push(`<a href="${url}">${label}</a>`);
+    return token;
+  });
+  escaped = escaped.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_match, prefix, url) => {
+    const trailing = url.match(/[.,;:!?]+$/)?.[0] ?? "";
+    const cleanUrl = trailing ? url.slice(0, -trailing.length) : url;
+    return `${prefix}<a href="${cleanUrl}">${cleanUrl}</a>${trailing}`;
+  });
   escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   escaped = escaped.replace(/\*([^*]+)\*/g, "<em>$1</em>");
 
   for (const [index, replacement] of placeholders.entries()) {
     escaped = escaped.replace(`@@CODE_${index}@@`, replacement);
+    escaped = escaped.replace(`@@LINK_${index}@@`, replacement);
   }
 
   return escaped;
