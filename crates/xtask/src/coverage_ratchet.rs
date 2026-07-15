@@ -10,6 +10,7 @@ use crate::doc_check;
 
 pub const CONFIG_PATH: &str = "docs/testing/coverage-ratchet.toml";
 pub const MINIMUM_FLOOR_PERCENT: f64 = 88.0;
+const REVIEWED_IGNORED_SOURCE_REGEX: &str = "(^|/)crates/xtask/";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -24,6 +25,7 @@ pub struct CoverageRatchet {
     pub baseline_commit: String,
     pub baseline_toolchain: String,
     pub baseline_lines_percent: f64,
+    pub ignored_source_regex: String,
     pub raw_report_artifact: String,
     pub evidence_artifact: String,
 }
@@ -44,6 +46,7 @@ struct CoverageEvidence {
     rustc_version: String,
     configured_floor_percent: f64,
     measured_lines_percent: f64,
+    ignored_source_regex: String,
     raw_report_artifact: String,
 }
 
@@ -94,6 +97,11 @@ pub fn validate_contract(
     {
         problems.push("coverage floor may not decrease below 88%".to_owned());
     }
+    if config.ignored_source_regex != REVIEWED_IGNORED_SOURCE_REGEX {
+        problems.push(format!(
+            "coverage exclusion must remain exactly {REVIEWED_IGNORED_SOURCE_REGEX:?}"
+        ));
+    }
     match config.baseline_status {
         BaselineStatus::Unmeasured => {
             if !config.baseline_commit.is_empty()
@@ -131,6 +139,7 @@ pub fn validate_contract(
     for required in [
         "tool: cargo-llvm-cov@0.8.7",
         "evidence-run --release 0.64 --gate tool.coverage-ratchet",
+        "--ignore-filename-regex '(^|/)crates/xtask/'",
         "target/test-evidence/0.64/coverage-*.json",
     ] {
         if !workflow.contains(required) {
@@ -166,6 +175,8 @@ pub fn measurement_args(config: &CoverageRatchet) -> Vec<String> {
         "--workspace".to_owned(),
         "--all-targets".to_owned(),
         "--locked".to_owned(),
+        "--ignore-filename-regex".to_owned(),
+        config.ignored_source_regex.clone(),
         "--json".to_owned(),
         "--output-path".to_owned(),
         config.raw_report_artifact.clone(),
@@ -206,6 +217,7 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
         rustc_version: command_text(root, "rustc", &["--version"])?,
         configured_floor_percent: config.configured_floor_percent,
         measured_lines_percent: measured,
+        ignored_source_regex: config.ignored_source_regex.clone(),
         raw_report_artifact: config.raw_report_artifact.clone(),
     };
     let evidence_path = root.join(&config.evidence_artifact);

@@ -125,7 +125,7 @@ authority for implementation and exact-candidate proof state:
 
 | Item | Implemented where | Required command | Important boundary |
 | --- | --- | --- | --- |
-| W6 suite health and coverage | `docs/testing/fast-suite-registry.toml`; `docs/testing/test-quarantine.toml`; `docs/testing/coverage-ratchet.toml`; xtask `fast-suite-check`, `quarantine-check`, and `coverage-ratchet-check` | `cargo xtask release-governance-check --release 0.64`; exact candidate: `cargo xtask evidence-run --release 0.64 --gate tool.coverage-ratchet` | Coverage stays an 88% non-regression floor until a clean exact-candidate measurement records reviewed provenance; no invented baseline is accepted. |
+| W6 suite health and coverage | `docs/testing/fast-suite-registry.toml`; `docs/testing/test-quarantine.toml`; `docs/testing/coverage-ratchet.toml`; xtask `fast-suite-check`, `quarantine-check`, and `coverage-ratchet-check` | `cargo xtask release-governance-check --release 0.64`; exact candidate: `cargo xtask evidence-run --release 0.64 --gate tool.coverage-ratchet` | Product-source coverage stays an 88% non-regression floor until a clean exact-candidate measurement records reviewed provenance. The full workspace suite executes, but only the exact `crates/xtask` proof-harness source regex is excluded from the numeric denominator because that code has independent canary/mutation/governance proofs; no invented baseline or broader exclusion is accepted. |
 | W6b local/CI execution parity | `.github/workflows/ci.yml`; `crates/xtask/src/release_governance.rs`; registered W7-W14 gates | `cargo test -p xtask --test release_governance --locked`; `cargo xtask release-governance-check --release 0.64` | Fast commands are explicit PR steps; heavy nemesis/grid/rejoin/resource/daemon rows run through `evidence-run` and require exact-commit receipts. |
 | W9 snapshot corruption | `crates/hydracache-cluster-raft/tests/snapshot_corruption.rs`; checksum envelope in `crates/hydracache-cluster-raft/src/log_store.rs` | `cargo test -p hydracache-cluster-raft --features sled-log-store --test snapshot_corruption --locked` | Intentional `sled-log-store` gate; default and `test-failpoints` runs show `0 tests` by design. |
 | W10 rejoin after compaction | `crates/hydracache-cluster-raft/tests/rejoin_after_compaction.rs`; metadata snapshot payload in `crates/hydracache-cluster-raft/src/lib.rs` | `cargo test -p hydracache-cluster-raft --features test-failpoints --test rejoin_after_compaction --locked -- --test-threads=1` | Current 0.64 claim is in-process real `raft-rs MsgSnapshot`; daemon-process disk compaction is not claimed until server exposes a compaction seam. |
@@ -706,7 +706,8 @@ command, creation/expiry timestamps, and reason. PR CI may report an unexpired e
 exception for at most 24 hours. `release-evidence --require-ship` fails on **any** quarantined required
 gate, including an unexpired one; an overdue entry also fails normal governance CI.
 
-After implementation is complete, rerun clean workspace coverage and set the scheduled line floor to
+After implementation is complete, rerun clean product-source coverage (executing all workspace tests,
+but applying the reviewed `crates/xtask` source exclusion) and set the scheduled line floor to
 `max(88, floor(measured_line_percent))`. Record the command, commit, toolchain, and summary artifact.
 Coverage remains a non-regression ratchet rather than a correctness score and cannot substitute for a
 missing W-item proof.
@@ -1752,7 +1753,8 @@ either command must use `actions/checkout` with `fetch-depth: 0`. The `v0.63.0` 
 part of the compatibility evidence, not optional repository metadata. `release-governance-check`
 validates this workflow invariant for the `rust`, complete dynamic-canary, coverage-ratchet, MSRV, and
 registered gated-proof jobs. MSRV runs `cargo test --workspace` and coverage runs
-`cargo llvm-cov --workspace --all-targets`; both include the W32 governance test and therefore need the
+`cargo llvm-cov --workspace --all-targets --ignore-filename-regex '(^|/)crates/xtask/'`; the source
+exclusion does not skip `xtask` tests, so both include the W32 governance test and therefore need the
 same baseline tag and ancestry even though neither invokes `compat-check` as a named workflow step. The
 generic registered-proof runner may execute the coverage or v0.63 compatibility gate and has the same
 requirement. A shallow checkout cannot silently turn W32 or W6b into an infrastructure-only failure.

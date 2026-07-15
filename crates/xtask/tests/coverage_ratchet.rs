@@ -30,6 +30,16 @@ fn coverage_contract_rejects_floor_below_88_or_mismatched_measured_baseline() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("floor=max(88,floor(lines))")));
+
+    config.baseline_status = xtask::coverage_ratchet::BaselineStatus::Unmeasured;
+    config.baseline_lines_percent = 0.0;
+    config.baseline_commit.clear();
+    config.baseline_toolchain.clear();
+    config.ignored_source_regex = "crates/".to_owned();
+    let problems = xtask::coverage_ratchet::validate_contract(&root, &config).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("coverage exclusion must remain exactly")));
 }
 
 #[test]
@@ -49,5 +59,11 @@ fn coverage_command_leaves_floor_enforcement_to_the_actionable_ratchet() {
 
     assert!(args.iter().any(|arg| arg == "--json"));
     assert!(args.iter().any(|arg| arg == &config.raw_report_artifact));
+    let ignore = args
+        .windows(2)
+        .find(|window| window[0] == "--ignore-filename-regex")
+        .expect("coverage command must declare its reviewed source exclusion");
+    assert_eq!(ignore[1], config.ignored_source_regex);
+    assert_eq!(config.ignored_source_regex, "(^|/)crates/xtask/");
     assert!(!args.iter().any(|arg| arg == "--fail-under-lines"));
 }

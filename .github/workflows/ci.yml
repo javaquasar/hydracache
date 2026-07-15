@@ -716,8 +716,8 @@ jobs:
         if: failure()
         continue-on-error: true
         run: |
-          cargo llvm-cov report --html --output-dir target/llvm-cov-html
-          cargo llvm-cov report --lcov --output-path target/llvm-cov.lcov
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --html --output-dir target/llvm-cov-html
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --lcov --output-path target/llvm-cov.lcov
 
       - name: Upload coverage evidence
         if: always()
