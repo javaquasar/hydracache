@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -17,6 +18,7 @@ const ACTIVE_SNAPSHOT_KEY: &[u8] = b"meta:snapshot";
 const STAGED_SNAPSHOT_KEY: &[u8] = b"meta:snapshot:staged";
 const ACTIVATION_MARKER_KEY: &[u8] = b"meta:snapshot:activation";
 const ENVELOPE_HEADER_LEN: usize = 28;
+static NEXT_TEMP_PATH_ID: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Deserialize)]
 struct CorpusCase {
@@ -34,7 +36,11 @@ fn temp_path(label: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    std::env::temp_dir().join(format!("hydracache-{label}-{unique}"))
+    let sequence = NEXT_TEMP_PATH_ID.fetch_add(1, Ordering::Relaxed);
+    std::env::temp_dir().join(format!(
+        "hydracache-{label}-{}-{unique}-{sequence}",
+        std::process::id()
+    ))
 }
 
 fn snapshot(index: u64, term: u64, data: &[u8]) -> Snapshot {
@@ -136,6 +142,7 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 drop(db);
                 let reopened = SledRaftLogStore::open(&path).unwrap();
                 assert_eq!(reopened.snapshot(7, 1).unwrap().get_metadata().index, 7);
+                drop(reopened);
                 let _ = fs::remove_dir_all(path);
             }
             "stale_snapshot_newer_tail" => {
@@ -155,6 +162,7 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 let reopened = SledRaftLogStore::open(&path).unwrap();
                 assert_eq!(reopened.snapshot(4, 1).unwrap().get_metadata().index, 4);
                 assert_eq!(reopened.last_index().unwrap(), 5);
+                drop(reopened);
                 let _ = fs::remove_dir_all(path);
             }
             other => panic!("unhandled corpus mutation {other}"),
@@ -183,15 +191,9 @@ fn failed_recovery_leaves_last_good_snapshot_reopenable() {
             active
         );
         drop(db);
-        assert_eq!(
-            SledRaftLogStore::open(&path)
-                .unwrap()
-                .snapshot(7, 1)
-                .unwrap()
-                .get_metadata()
-                .index,
-            7
-        );
+        let reopened = SledRaftLogStore::open(&path).unwrap();
+        assert_eq!(reopened.snapshot(7, 1).unwrap().get_metadata().index, 7);
+        drop(reopened);
         let _ = fs::remove_dir_all(path);
     }
 }
