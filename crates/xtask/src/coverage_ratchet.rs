@@ -151,6 +151,27 @@ pub fn measured_line_percent(document: &Value) -> Option<f64> {
         .as_f64()
 }
 
+pub fn enforce_floor(measured: f64, configured_floor: f64) -> Result<(), String> {
+    if measured < configured_floor {
+        return Err(format!(
+            "measured line coverage {measured:.2}% is below {configured_floor:.2}%"
+        ));
+    }
+    Ok(())
+}
+
+pub fn measurement_args(config: &CoverageRatchet) -> Vec<String> {
+    vec![
+        "llvm-cov".to_owned(),
+        "--workspace".to_owned(),
+        "--all-targets".to_owned(),
+        "--locked".to_owned(),
+        "--json".to_owned(),
+        "--output-path".to_owned(),
+        config.raw_report_artifact.clone(),
+    ]
+}
+
 fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<dyn Error>> {
     let tool_version = command_text(root, "cargo", &["llvm-cov", "--version"])?;
     if !tool_version.contains(&config.tool_version) {
@@ -164,36 +185,19 @@ fn execute_measurement(root: &Path, config: &CoverageRatchet) -> Result<(), Box<
     if let Some(parent) = raw_path.parent() {
         fs::create_dir_all(parent)?;
     }
-    let output = Command::new("cargo")
-        .args([
-            "llvm-cov",
-            "--workspace",
-            "--all-targets",
-            "--locked",
-            "--json",
-            "--output-path",
-            &config.raw_report_artifact,
-            "--fail-under-lines",
-            &config.configured_floor_percent.to_string(),
-        ])
+    // The ratchet parses the report itself so a failed floor stays actionable.
+    let status = Command::new("cargo")
+        .args(measurement_args(config))
         .env("CARGO_BUILD_JOBS", "2")
         .current_dir(root)
-        .output()?;
-    if !output.status.success() {
-        eprint!("{}", String::from_utf8_lossy(&output.stdout));
-        eprint!("{}", String::from_utf8_lossy(&output.stderr));
-        return Err("cargo llvm-cov failed".into());
+        .status()?;
+    if !status.success() {
+        return Err(format!("cargo llvm-cov failed with status {status}").into());
     }
     let document: Value = serde_json::from_slice(&fs::read(&raw_path)?)?;
     let measured = measured_line_percent(&document)
         .ok_or("coverage JSON is missing data[0].totals.lines.percent")?;
-    if measured < config.configured_floor_percent {
-        return Err(format!(
-            "measured line coverage {measured:.2}% is below {:.2}%",
-            config.configured_floor_percent
-        )
-        .into());
-    }
+    enforce_floor(measured, config.configured_floor_percent)?;
     let evidence = CoverageEvidence {
         schema_version: 1,
         release: config.release.clone(),

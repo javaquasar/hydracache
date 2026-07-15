@@ -31,3 +31,23 @@ fn coverage_contract_rejects_floor_below_88_or_mismatched_measured_baseline() {
         .iter()
         .any(|problem| problem.contains("floor=max(88,floor(lines))")));
 }
+
+#[test]
+fn measured_coverage_is_checked_by_the_ratchet_with_an_actionable_error() {
+    assert!(xtask::coverage_ratchet::enforce_floor(88.0, 88.0).is_ok());
+    assert!(xtask::coverage_ratchet::enforce_floor(91.25, 88.0).is_ok());
+
+    let error = xtask::coverage_ratchet::enforce_floor(87.495, 88.0).unwrap_err();
+    assert_eq!(error, "measured line coverage 87.50% is below 88.00%");
+}
+
+#[test]
+fn coverage_command_leaves_floor_enforcement_to_the_actionable_ratchet() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let config = xtask::coverage_ratchet::load_config(&root).unwrap();
+    let args = xtask::coverage_ratchet::measurement_args(&config);
+
+    assert!(args.iter().any(|arg| arg == "--json"));
+    assert!(args.iter().any(|arg| arg == &config.raw_report_artifact));
+    assert!(!args.iter().any(|arg| arg == "--fail-under-lines"));
+}
