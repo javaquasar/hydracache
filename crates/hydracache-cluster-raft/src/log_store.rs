@@ -1221,15 +1221,20 @@ mod tests {
 
         let compacted = InMemoryRaftLogStore::new();
         compacted
-            .append(&[entry(1, 1, b"a"), entry(2, 1, b"b"), entry(3, 1, b"c")])
+            .append(&[
+                entry(1, 1, b"a"),
+                entry(2, 1, b"b"),
+                entry(3, 1, b"c"),
+                entry(4, 1, b"d"),
+            ])
             .unwrap();
         let mut prefix = Snapshot::default();
-        prefix.mut_metadata().index = 1;
+        prefix.mut_metadata().index = 2;
         compacted.save_snapshot(&prefix, usize::MAX).unwrap();
         let after_compaction = compacted
-            .entries(2, 4, None, GetEntriesContext::empty(false))
+            .entries(3, 5, None, GetEntriesContext::empty(false))
             .unwrap();
-        assert_eq!(indexes(&after_compaction), vec![2, 3]);
+        assert_eq!(indexes(&after_compaction), vec![3, 4]);
 
         store.append(&[entry(1, 2, b"replacement")]).unwrap();
         let retained = store.all_entries();
