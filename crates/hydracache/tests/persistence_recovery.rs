@@ -25,7 +25,7 @@ fn persistence_recovery_persistent_namespace_survives_full_restart() {
     store.flush().unwrap();
     drop(store);
 
-    let reopened = open_durable_value_store_for_recovery(&path, 1024).unwrap();
+    let reopened = reopen_after_store_drop(&path);
     let policy = PersistencePolicy::try_new([
         NamespacePersistenceRule::persistent("cache.jwt.pem").unwrap(),
         NamespacePersistenceRule::new("cache.ephemeral", NamespacePersistenceSettings::ram_only())
@@ -217,4 +217,25 @@ fn temp_store_path(name: &str) -> PathBuf {
         "hydracache-persistence-recovery-{name}-{}-{nanos}",
         std::process::id()
     ))
+}
+
+fn reopen_after_store_drop(path: &std::path::Path) -> DurableValueStore {
+    const MAX_ATTEMPTS: usize = 20;
+
+    for attempt in 0..MAX_ATTEMPTS {
+        match open_durable_value_store_for_recovery(path, 1024) {
+            Ok(store) => return store,
+            Err(error) if error.to_string().contains("WouldBlock") => {
+                if attempt + 1 < MAX_ATTEMPTS {
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+            }
+            Err(error) => panic!("durable store reopen failed unexpectedly: {error}"),
+        }
+    }
+
+    panic!(
+        "durable store lock was not released after {MAX_ATTEMPTS} reopen attempts: {}",
+        path.display()
+    );
 }
