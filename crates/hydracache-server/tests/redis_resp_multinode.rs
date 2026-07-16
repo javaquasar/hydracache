@@ -39,6 +39,11 @@ fn multinode_resp_facade_roundtrip_survives_node_restart_or_drain() -> TestResul
     );
 
     let _ = cluster.drain(drain_index)?;
+    cluster.wait_for_non_draining_shape(
+        "drain removal committed before Redis facade follower kill",
+        2,
+        2,
+    )?;
     cluster.kill(drain_index)?;
     cluster.wait_for_shape(2, 2)?;
 
