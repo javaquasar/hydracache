@@ -2193,6 +2193,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "hydracache-post-publish-consumer"
+version = "0.64.0"
+dependencies = [
+ "hydracache",
+ "hydracache-actuator-axum",
+ "hydracache-cluster",
+ "hydracache-cluster-chitchat",
+ "hydracache-cluster-raft",
+ "hydracache-cluster-transport-axum",
+ "hydracache-db",
+ "hydracache-diesel",
+ "hydracache-observability",
+ "hydracache-seaorm",
+ "hydracache-sqlx",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "hydracache-redis-compat"
 version = "0.64.0"
 dependencies = [

@@ -148,10 +148,10 @@ jobs:
               name = by_id[node["id"]]
               for dependency in node["deps"]:
                   dependency_id = dependency["pkg"]
-                  if (
-                      dependency_id in publishable_ids
-                      and any(kind.get("kind") is None for kind in dependency.get("dep_kinds", []))
-                  ):
+                  # Cargo resolves every packaged dependency kind during
+                  # `cargo publish`, including dev, build, and target-specific
+                  # dependencies. They must all precede the dependent crate.
+                  if dependency_id in publishable_ids:
                       dependencies[name].add(by_id[dependency_id])
 
           order = []

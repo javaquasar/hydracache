@@ -30,6 +30,7 @@ members = [
     "crates/hydracache-transport-redis",
     "crates/xtask",
     "fuzz",
+    "tests/post-publish-consumer",
 ]
 resolver = "2"
 
