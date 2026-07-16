@@ -4,11 +4,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hydracache_cluster_raft::{
     InMemoryRaftMetadataStore, RaftLogStore, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
-    SledRaftLogStore,
+    RaftStoreResult, SledRaftLogStore,
 };
 use raft::eraftpb::{Entry, Snapshot};
 use raft::storage::Storage;
@@ -19,6 +21,8 @@ const STAGED_SNAPSHOT_KEY: &[u8] = b"meta:snapshot:staged";
 const ACTIVATION_MARKER_KEY: &[u8] = b"meta:snapshot:activation";
 const ENVELOPE_HEADER_LEN: usize = 28;
 static NEXT_TEMP_PATH_ID: AtomicU64 = AtomicU64::new(0);
+const LOCK_RETRY_ATTEMPTS: usize = 50;
+const LOCK_RETRY_DELAY: Duration = Duration::from_millis(10);
 
 #[derive(Debug, Deserialize)]
 struct CorpusCase {
@@ -52,20 +56,51 @@ fn snapshot(index: u64, term: u64, data: &[u8]) -> Snapshot {
     snapshot
 }
 
+fn is_lock_contention(error: &impl std::fmt::Display) -> bool {
+    let message = error.to_string();
+    message.contains("could not acquire lock")
+        || message.contains("Resource temporarily unavailable")
+}
+
+fn open_db(path: &Path) -> sled::Db {
+    for attempt in 0..LOCK_RETRY_ATTEMPTS {
+        match sled::open(path) {
+            Ok(db) => return db,
+            Err(error) if is_lock_contention(&error) && attempt + 1 < LOCK_RETRY_ATTEMPTS => {
+                thread::sleep(LOCK_RETRY_DELAY);
+            }
+            Err(error) => panic!("open sled fixture at {}: {error}", path.display()),
+        }
+    }
+    unreachable!("bounded sled open loop always returns or panics")
+}
+
+fn open_store(path: &Path) -> RaftStoreResult<SledRaftLogStore> {
+    for attempt in 0..LOCK_RETRY_ATTEMPTS {
+        match SledRaftLogStore::open(path) {
+            Err(error) if is_lock_contention(&error) && attempt + 1 < LOCK_RETRY_ATTEMPTS => {
+                thread::sleep(LOCK_RETRY_DELAY);
+            }
+            result => return result,
+        }
+    }
+    unreachable!("bounded raft store open loop always returns")
+}
+
 fn write_good_snapshot(path: &Path) -> Vec<u8> {
-    let store = SledRaftLogStore::open(path).unwrap();
+    let store = open_store(path).unwrap();
     store
         .save_snapshot(&snapshot(7, 3, b"last-good-metadata"), 0)
         .unwrap();
     drop(store);
-    let db = sled::open(path).unwrap();
+    let db = open_db(path);
     let bytes = db.get(ACTIVE_SNAPSHOT_KEY).unwrap().unwrap().to_vec();
     drop(db);
     bytes
 }
 
 fn mutate_active(path: &Path, mutation: &str) {
-    let db = sled::open(path).unwrap();
+    let db = open_db(path);
     let mut bytes = db.get(ACTIVE_SNAPSHOT_KEY).unwrap().unwrap().to_vec();
     match mutation {
         "payload_bitflip" => *bytes.last_mut().unwrap() ^= 0x40,
@@ -104,11 +139,7 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 let path = temp_path(&case.id);
                 write_good_snapshot(&path);
                 mutate_active(&path, &case.mutation);
-                assert!(
-                    SledRaftLogStore::open(&path).is_err(),
-                    "{} was accepted",
-                    case.id
-                );
+                assert!(open_store(&path).is_err(), "{} was accepted", case.id);
                 let _ = fs::remove_dir_all(path);
             }
             "wrong_cluster_identity" | "wrong_node_identity" => {
@@ -130,7 +161,7 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
             "staged_without_activation" | "activation_without_payload" => {
                 let path = temp_path(&case.id);
                 write_good_snapshot(&path);
-                let db = sled::open(&path).unwrap();
+                let db = open_db(&path);
                 if case.mutation == "staged_without_activation" {
                     db.insert(STAGED_SNAPSHOT_KEY, b"partial".as_slice())
                         .unwrap();
@@ -140,14 +171,14 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 }
                 db.flush().unwrap();
                 drop(db);
-                let reopened = SledRaftLogStore::open(&path).unwrap();
+                let reopened = open_store(&path).unwrap();
                 assert_eq!(reopened.snapshot(7, 1).unwrap().get_metadata().index, 7);
                 drop(reopened);
                 let _ = fs::remove_dir_all(path);
             }
             "stale_snapshot_newer_tail" => {
                 let path = temp_path(&case.id);
-                let store = SledRaftLogStore::open(&path).unwrap();
+                let store = open_store(&path).unwrap();
                 store
                     .save_snapshot(&snapshot(4, 2, b"stale-prefix"), 0)
                     .unwrap();
@@ -159,7 +190,7 @@ fn interrupted_recovery_never_activates_partial_or_misdirected_state() {
                 };
                 store.append(&[tail]).unwrap();
                 drop(store);
-                let reopened = SledRaftLogStore::open(&path).unwrap();
+                let reopened = open_store(&path).unwrap();
                 assert_eq!(reopened.snapshot(4, 1).unwrap().get_metadata().index, 4);
                 assert_eq!(reopened.last_index().unwrap(), 5);
                 drop(reopened);
@@ -175,7 +206,7 @@ fn failed_recovery_leaves_last_good_snapshot_reopenable() {
     for mutation in ["staged_without_activation", "activation_without_payload"] {
         let path = temp_path(mutation);
         let active = write_good_snapshot(&path);
-        let db = sled::open(&path).unwrap();
+        let db = open_db(&path);
         db.insert(
             if mutation == "staged_without_activation" {
                 STAGED_SNAPSHOT_KEY
@@ -191,7 +222,7 @@ fn failed_recovery_leaves_last_good_snapshot_reopenable() {
             active
         );
         drop(db);
-        let reopened = SledRaftLogStore::open(&path).unwrap();
+        let reopened = open_store(&path).unwrap();
         assert_eq!(reopened.snapshot(7, 1).unwrap().get_metadata().index, 7);
         drop(reopened);
         let _ = fs::remove_dir_all(path);
