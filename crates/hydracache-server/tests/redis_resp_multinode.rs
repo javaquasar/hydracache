@@ -12,6 +12,15 @@ const LOCK_EXTEND_SCRIPT: &str =
     "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
 
 #[test]
+fn canary_multinode_sentinel_cannot_be_marked_green_without_execution() {
+    let sentinel_executed = std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() != Ok("W3");
+    assert!(
+        sentinel_executed,
+        "HC-CANARY-RED:W3 deployment sentinel was marked green without execution"
+    );
+}
+
+#[test]
 fn multinode_resp_facade_roundtrip_survives_node_restart_or_drain() -> TestResult {
     if !skip_unless_redis_resp_multinode_e2e(
         "multinode_resp_facade_roundtrip_survives_node_restart_or_drain",
@@ -274,6 +283,91 @@ fn cross_node_mset_is_node_local() -> TestResult {
         b"*2\r\n$7\r\nvalue-a\r\n$7\r\nvalue-b\r\n+OK\r\n",
         "both MSET values must remain present on node A"
     );
+    Ok(())
+}
+
+#[test]
+fn cross_node_ttl_visibility_is_node_local() -> TestResult {
+    if !skip_unless_redis_resp_multinode_e2e("cross_node_ttl_visibility_is_node_local") {
+        return Ok(());
+    }
+
+    let mut cluster = DaemonCluster::start_bootstrap_with_redis(2, "redis-resp-ttl-node-local")?;
+    cluster.wait_for_shape(2, 2)?;
+    let first_addr = cluster.redis_addr(0).expect("Redis address for node A");
+    let second_addr = cluster.redis_addr(1).expect("Redis address for node B");
+    let key = "node-local:ttl";
+
+    assert_eq!(
+        resp_pipeline(
+            first_addr,
+            &[vec!["SET", key, "value", "PX", "30000"], vec!["QUIT"]],
+        )?,
+        b"+OK\r\n+OK\r\n"
+    );
+    assert_eq!(resp_pttl(second_addr, key)?, -2);
+    assert!((1..=30_000).contains(&resp_pttl(first_addr, key)?));
+    Ok(())
+}
+
+#[test]
+fn cross_node_script_cache_is_node_local() -> TestResult {
+    if !skip_unless_redis_resp_multinode_e2e("cross_node_script_cache_is_node_local") {
+        return Ok(());
+    }
+
+    let mut cluster =
+        DaemonCluster::start_bootstrap_with_redis(2, "redis-resp-script-cache-node-local")?;
+    cluster.wait_for_shape(2, 2)?;
+    let first_addr = cluster.redis_addr(0).expect("Redis address for node A");
+    let second_addr = cluster.redis_addr(1).expect("Redis address for node B");
+    let loaded = resp_pipeline(
+        first_addr,
+        &[vec!["SCRIPT", "LOAD", LOCK_RELEASE_SCRIPT], vec!["QUIT"]],
+    )?;
+    let loaded_text = std::str::from_utf8(&loaded)?;
+    let sha = loaded_text
+        .split("\r\n")
+        .nth(1)
+        .ok_or("SCRIPT LOAD did not return a SHA")?;
+    let on_b = resp_pipeline(second_addr, &[vec!["SCRIPT", "EXISTS", sha], vec!["QUIT"]])?;
+    let on_a = resp_pipeline(first_addr, &[vec!["SCRIPT", "EXISTS", sha], vec!["QUIT"]])?;
+    assert!(
+        on_b.starts_with(b"*1\r\n:0\r\n"),
+        "SCRIPT cache on node B unexpectedly saw node A's script: {on_b:?}"
+    );
+    assert!(
+        on_a.starts_with(b"*1\r\n:1\r\n"),
+        "SCRIPT cache on node A did not retain loaded script: {on_a:?}"
+    );
+    Ok(())
+}
+
+#[test]
+fn cross_node_tag_index_is_node_local() -> TestResult {
+    if !skip_unless_redis_resp_multinode_e2e("cross_node_tag_index_is_node_local") {
+        return Ok(());
+    }
+
+    let mut cluster = DaemonCluster::start_bootstrap_with_redis(2, "redis-resp-tag-node-local")?;
+    cluster.wait_for_shape(2, 2)?;
+    let first_addr = cluster.redis_addr(0).expect("Redis address for node A");
+    let second_addr = cluster.redis_addr(1).expect("Redis address for node B");
+    let key = "node-local:tagged";
+
+    assert_eq!(resp_set(first_addr, key, "value")?, b"+OK\r\n+OK\r\n");
+    assert_eq!(
+        resp_pipeline(first_addr, &[vec!["HC.TAG", key, "model"], vec!["QUIT"]],)?,
+        b":1\r\n+OK\r\n"
+    );
+    assert_eq!(
+        resp_pipeline(
+            second_addr,
+            &[vec!["HC.INVALIDATE_TAG", "model"], vec!["QUIT"]]
+        )?,
+        b":0\r\n+OK\r\n"
+    );
+    assert_eq!(resp_get(first_addr, key)?, b"$5\r\nvalue\r\n+OK\r\n");
     Ok(())
 }
 
