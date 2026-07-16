@@ -140,13 +140,13 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     let publish_workflow = fs::read_to_string(root.join(".github/workflows/publish-crates.yml"))?;
     report.problems.extend(prefix(
         "publish-workflow-check",
-        publish_workflow_probe_problems(&publish_workflow),
+        publish_workflow_problems(&publish_workflow),
     ));
     report.completed_checks += 1;
     Ok(report)
 }
 
-pub fn publish_workflow_probe_problems(text: &str) -> Vec<String> {
+pub fn publish_workflow_problems(text: &str) -> Vec<String> {
     let mut problems = Vec::new();
     for required in [
         "crates_io_status()",
@@ -154,12 +154,19 @@ pub fn publish_workflow_probe_problems(text: &str) -> Vec<String> {
         "GITHUB_REPOSITORY",
         "status=\"$(crates_io_status \"$package\")\"",
         "429|5??)",
+        "if dependency_id in publishable_ids:",
     ] {
         if !text.contains(required) {
             problems.push(format!(
                 "crates.io publication probe is missing `{required}`"
             ));
         }
+    }
+    if text.contains("kind.get(\"kind\") is None") {
+        problems.push(
+            "publish order filters out packaged dev/build dependencies; cargo publish must see every workspace dependency in the registry first"
+                .to_owned(),
+        );
     }
     problems
 }
