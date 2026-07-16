@@ -299,13 +299,16 @@ Remove-Item Env:\HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E -ErrorAction SilentlyCo
 ```
 
 This dedicated gate starts real `hydracache-server` processes with RESP enabled.
-It keeps the selected-endpoint lifecycle roundtrip and executes six flip-sentinels:
+It keeps the selected-endpoint lifecycle roundtrip and executes nine flip-sentinels:
 `multinode_resp_facade_documents_node_local_state`,
 `cross_node_mget_del_exists_are_node_local`,
 `cross_node_mset_is_node_local`,
 `multinode_resp_lock_subset_is_single_endpoint_only`,
 `cross_node_lock_release_is_node_local`, and
-`cross_node_lock_extend_is_node_local`. Together they prove the current
+`cross_node_lock_extend_is_node_local`,
+`cross_node_ttl_visibility_is_node_local`,
+`cross_node_script_cache_is_node_local`, and
+`cross_node_tag_index_is_node_local`. Together they prove the current
 node-local behavior without promoting it to a distributed consistency claim.
 The generic `HYDRACACHE_RUN_DAEMON_PROCESS_E2E` gate is deliberately insufficient
 for this target, so a wrong CI mapping cannot silently skip the Redis debts.
@@ -787,9 +790,11 @@ The W17 canary registry is the machine-readable map from proof item to falsifier
 cargo test -p xtask --test canary_check --locked
 cargo xtask canary-check
 cargo xtask canary-sweep --release 0.64 --tier fast
+cargo xtask canary-check --release 0.65
+cargo xtask canary-sweep --release 0.65 --tier fast
 ```
 
-`docs/testing/canary-registry.json` must point every implemented W-item at a real
+`docs/testing/canary-registry.json` must point every implemented 0.64 W-item at a real
 guard function and a real canary function. Schema v2 also stores separate normal
 and defect-enabled commands, defect id, exact failure signature, timeout, tier,
 and evidence artifact. The dynamic runner first requires the normal guard to
@@ -799,6 +804,12 @@ unrelated panic, platform skip, or zero-test command is not red evidence.
 Receipts under `target/release-evidence/canaries/` bind the command, defect,
 registry, output, and source commit. Scheduled/dispatch CI runs `--tier all` for
 the Loom, TSan, and TLC rows; fast CI runs `--tier fast` on every change.
+
+Release `0.65` uses the release-scoped registry
+`docs/testing/canary-registry-0.65.json`. Its dynamic falsifiers cover W1-W4;
+W5-W7 use the dedicated flip-sentinel policy. The release evidence manifest
+selects those dynamic items explicitly, so an unrelated registry entry cannot
+hold the release green or block it accidentally.
 
 The W18 nemesis determinism checks are part of the existing fast nemesis test:
 

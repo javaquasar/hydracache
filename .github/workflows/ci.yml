@@ -94,6 +94,8 @@ jobs:
           cargo test -p xtask --test canary_check --locked
           cargo run -p xtask --locked -- canary-check
           cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.65
+          cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -175,7 +177,15 @@ jobs:
           npm --prefix console test
 
       - name: Test
-        run: cargo nextest run --workspace --profile ci --locked
+        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate fast.workspace-nextest
+
+      - name: Upload fast release evidence receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-evidence-fast-${{ github.sha }}"
+          path: target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Doctests
         run: cargo test --workspace --doc --locked
