@@ -1,7 +1,8 @@
 #![cfg(feature = "durable-value-store")]
 
 use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::thread;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use hydracache::{
     ClusterEpoch, DurableValueStore, PartitionId, ReplicatedValueRecord, ReplicatedValueStore,
@@ -25,7 +26,19 @@ fn durable_value_store_reopen_recovers_records_and_tombstones() {
     store.flush().unwrap();
     drop(store);
 
-    let reopened = DurableValueStore::open_with_budget(&path, 1024).unwrap();
+    // sled releases its process-level lock from a background worker. On a
+    // heavily loaded CI runner that release can lag the drop above by a few
+    // milliseconds, so tolerate only that transient WouldBlock condition.
+    let reopened = (0..100)
+        .find_map(|_| match DurableValueStore::open_with_budget(&path, 1024) {
+            Ok(store) => Some(store),
+            Err(error) if error.to_string().contains("could not acquire lock") => {
+                thread::sleep(Duration::from_millis(10));
+                None
+            }
+            Err(error) => panic!("reopening durable value store failed: {error}"),
+        })
+        .expect("durable value store lock was not released within one second");
 
     assert_eq!(reopened.get("user:42").unwrap(), Some(record));
     assert!(reopened
