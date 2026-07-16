@@ -2,7 +2,7 @@ mod support;
 
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use support::daemon_cluster::{skip_unless_redis_resp_multinode_e2e, DaemonCluster, TestResult};
 
@@ -447,7 +447,19 @@ fn resp_pipeline(addr: SocketAddr, commands: &[Vec<&str>]) -> TestResult<Vec<u8>
 }
 
 fn resp_exchange(addr: SocketAddr, request: &[u8]) -> TestResult<Vec<u8>> {
-    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(5))?;
+    let deadline = Instant::now() + Duration::from_secs(5);
+    let mut stream = loop {
+        match TcpStream::connect_timeout(&addr, Duration::from_millis(250)) {
+            Ok(stream) => break stream,
+            Err(error)
+                if error.kind() == std::io::ErrorKind::ConnectionRefused
+                    && Instant::now() < deadline =>
+            {
+                std::thread::sleep(Duration::from_millis(50));
+            }
+            Err(error) => return Err(error.into()),
+        }
+    };
     stream.set_read_timeout(Some(Duration::from_secs(5)))?;
     stream.set_write_timeout(Some(Duration::from_secs(5)))?;
     stream.write_all(request)?;
