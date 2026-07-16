@@ -231,6 +231,48 @@ jobs:
           : > target/release-publish/publication-results.tsv
           version="${{ needs.resolve.outputs.version }}"
 
+          crates_io_status() {
+            local package="$1"
+            local url="https://crates.io/api/v1/crates/$package/$version"
+            local status=""
+
+            for attempt in $(seq 1 5); do
+              if status="$(curl \
+                --silent \
+                --show-error \
+                --connect-timeout 15 \
+                --max-time 30 \
+                --user-agent "hydracache-release-workflow/$version (+https://github.com/$GITHUB_REPOSITORY)" \
+                --output /dev/null \
+                --write-out '%{http_code}' \
+                "$url")"; then
+                case "$status" in
+                  200|404)
+                    printf '%s' "$status"
+                    return 0
+                    ;;
+                  429|5??)
+                    ;;
+                  *)
+                    printf '%s' "$status"
+                    return 0
+                    ;;
+                esac
+              fi
+
+              if [[ "$attempt" -lt 5 ]]; then
+                echo "Transient crates.io probe failure for $package@$version (status ${status:-transport-error}, attempt $attempt/5)." >&2
+                sleep "$((attempt * 2))"
+              fi
+            done
+
+            if [[ -n "$status" && "$status" != "000" ]]; then
+              printf '%s' "$status"
+              return 0
+            fi
+            return 1
+          }
+
           wait_for_registry_package() {
             local package="$1"
             for attempt in $(seq 1 30); do
@@ -245,8 +287,10 @@ jobs:
 
           while IFS= read -r package; do
             [[ -z "$package" ]] && continue
-            url="https://crates.io/api/v1/crates/$package/$version"
-            status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$url")"
+            if ! status="$(crates_io_status "$package")"; then
+              echo "Could not query crates.io for $package@$version after 5 attempts." >&2
+              exit 1
+            fi
             case "$status" in
               200)
                 if ! wait_for_registry_package "$package"; then
