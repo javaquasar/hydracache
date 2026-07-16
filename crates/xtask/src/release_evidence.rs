@@ -26,7 +26,17 @@ pub struct EvidenceManifest {
     pub release: String,
     pub plan: String,
     #[serde(default)]
+    pub canary_policy: CanaryPolicy,
+    #[serde(default)]
     pub work_item: Vec<EvidenceWorkItem>,
+}
+
+#[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum CanaryPolicy {
+    #[default]
+    DynamicRegistry,
+    DedicatedFlipSentinels,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -148,6 +158,11 @@ pub fn build_report(
     let fast_suites = fast_suite::load_registry(root)?;
     let canary_registry = canary_check::load_registry(root)?;
     let canary_receipts = canary_sweep::load_receipts(root)?;
+    let canary_release_problem = dynamic_canary_release_problem(
+        manifest.canary_policy,
+        &canary_registry.release,
+        &definition.version,
+    );
     validate_manifest(root, &definition, &manifest, &gates, &fast_suites)?;
 
     let (source_commit, current_worktree_dirty) = git_identity(root)?;
@@ -218,7 +233,12 @@ pub fn build_report(
             reasons.push(format!("active quarantine: {}", quarantined.join(", ")));
         }
 
-        let canary_green = if let Some(entry) = canaries_by_id.get(item.id.as_str()) {
+        let canary_green = if manifest.canary_policy == CanaryPolicy::DedicatedFlipSentinels {
+            true
+        } else if let Some(problem) = &canary_release_problem {
+            reasons.push(problem.clone());
+            false
+        } else if let Some(entry) = canaries_by_id.get(item.id.as_str()) {
             if let Some(receipt) = canary_receipts_by_id.get(item.id.as_str()) {
                 let problems = canary_sweep::receipt_problems(
                     root,
@@ -612,6 +632,32 @@ fn validate_manifest(
             }
         }
     }
+    if manifest.canary_policy == CanaryPolicy::DedicatedFlipSentinels {
+        const REQUIRED_GATE: &str = "env.hydracache-run-redis-resp-multinode-e2e";
+        const REQUIRED_SOURCE: &str = "crates/hydracache-server/tests/redis_resp_multinode.rs";
+        const REQUIRED_SENTINELS: [&str; 6] = [
+            "multinode_resp_facade_documents_node_local_state",
+            "cross_node_mget_del_exists_are_node_local",
+            "cross_node_mset_is_node_local",
+            "multinode_resp_lock_subset_is_single_endpoint_only",
+            "cross_node_lock_release_is_node_local",
+            "cross_node_lock_extend_is_node_local",
+        ];
+        let w3 = manifest.work_item.iter().find(|item| item.id == "W3");
+        if w3.is_none_or(|item| {
+            !item.gated_gate_ids.iter().any(|gate| gate == REQUIRED_GATE)
+                || REQUIRED_SENTINELS.iter().any(|required| {
+                    !item
+                        .required_tests
+                        .iter()
+                        .any(|test| test.source == REQUIRED_SOURCE && test.function == *required)
+                })
+        }) {
+            problems.push(format!(
+                "dedicated_flip_sentinels policy requires W3 gate {REQUIRED_GATE} and all six exact Redis deployment sentinels"
+            ));
+        }
+    }
     if problems.is_empty() {
         Ok(())
     } else {
@@ -730,8 +776,12 @@ fn template_manifest(
         .into_iter()
         .map(|entry| (entry.w_item, entry.guard))
         .collect();
-    let existing: BTreeMap<_, _> = load_manifest(root, &definition.version)
-        .ok()
+    let existing_manifest = load_manifest(root, &definition.version).ok();
+    let canary_policy = existing_manifest
+        .as_ref()
+        .map(|manifest| manifest.canary_policy)
+        .unwrap_or_default();
+    let existing: BTreeMap<_, _> = existing_manifest
         .map(|manifest| {
             manifest
                 .work_item
@@ -783,7 +833,23 @@ fn template_manifest(
         schema_version: 1,
         release: definition.version.clone(),
         plan: definition.plan.clone(),
+        canary_policy,
         work_item,
+    })
+}
+
+pub fn dynamic_canary_release_problem(
+    policy: CanaryPolicy,
+    registry_release: &str,
+    candidate_release: &str,
+) -> Option<String> {
+    (policy == CanaryPolicy::DynamicRegistry
+        && normalize_release(registry_release) != normalize_release(candidate_release))
+    .then(|| {
+        format!(
+            "dynamic canary registry release {registry_release} does not match candidate release {}; equal work-item ids are not cross-release evidence",
+            normalize_release(candidate_release)
+        )
     })
 }
 
@@ -794,10 +860,32 @@ fn function_exists(root: &Path, test: &RequiredTest) -> Result<bool, Box<dyn Err
     }
     impl<'ast> Visit<'ast> for Functions<'_> {
         fn visit_item_fn(&mut self, function: &'ast syn::ItemFn) {
-            if function.sig.ident == self.wanted {
+            if function.sig.ident == self.wanted
+                && function.attrs.iter().any(|attribute| {
+                    attribute
+                        .path()
+                        .segments
+                        .last()
+                        .is_some_and(|segment| segment.ident == "test")
+                })
+            {
                 self.found = true;
             }
             syn::visit::visit_item_fn(self, function);
+        }
+
+        fn visit_item_macro(&mut self, item: &'ast syn::ItemMacro) {
+            if item
+                .mac
+                .path
+                .segments
+                .last()
+                .is_some_and(|segment| segment.ident == "proptest")
+                && doc_check::proptest_test_names(item.mac.tokens.clone()).contains(self.wanted)
+            {
+                self.found = true;
+            }
+            syn::visit::visit_item_macro(self, item);
         }
     }
     let path = safe_repo_path(root, &test.source)?;

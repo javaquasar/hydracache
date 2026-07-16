@@ -108,7 +108,9 @@ jobs:
         run: cargo run -p xtask --locked -- verify-no-test-features
 
       - name: Release governance
-        run: cargo run -p xtask --locked -- release-governance-check --release 0.64
+        run: |
+          cargo run -p xtask --locked -- release-governance-check --release 0.64
+          cargo run -p xtask --locked -- release-governance-check --release 0.65
 
       - name: SQL lint baseline drift
         run: |
@@ -312,6 +314,9 @@ jobs:
 
       - name: Run daemon-process cluster tier
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e
+
+      - name: Redis RESP multinode debt sentinels
+        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e
 
       - name: Upload daemon-process replay artifacts
         if: always()

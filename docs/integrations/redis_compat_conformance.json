@@ -6,11 +6,72 @@
     "images": ["redis:6.2.14", "redis:7.2.5"],
     "normalization": "Supported Redis-subset commands compare exact RESP shape/count/order and atomic MSET outcome. Error text may normalize by class. TTL uses bounded tolerance because remaining wall-clock time is time-sensitive. Auth scenarios compare Redis-shaped NOAUTH/WRONGPASS/OK classes and must never expose credential material."
   },
+  "test_layers": [
+    {
+      "id": "client-surface-contract",
+      "kind": "contract_suite",
+      "description": "Protocol-only assertions that every current or future RESP execution backend must pass unchanged.",
+      "source": "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs",
+      "tests": [
+        "conformance_conditional_put_if_absent_is_atomic_under_n_concurrent_acquirers",
+        "conformance_conditional_put_treats_expired_key_as_absent",
+        "conformance_compare_value_invalidate_is_token_safe_and_returns_applied_count",
+        "conformance_compare_value_expire_add_to_remaining_and_replace_if_expiring_and_persistent_guard",
+        "conformance_batch_put_is_all_or_nothing_under_prevalidation_failure",
+        "conformance_ttl_states_missing_persistent_expiring_round_trip",
+        "conformance_expired_key_absent_for_get_and_batch_get",
+        "conformance_enforces_value_bytes_batch_and_tenant_quota_limits",
+        "conformance_rejected_conditionals_and_batches_do_not_reserve_quota",
+        "conformance_delete_and_expiry_release_tenant_quota",
+        "conformance_duplicate_batch_keys_account_last_write_only",
+        "conformance_tenant_binding_and_same_namespace_keys_are_isolated",
+        "conformance_batch_entry_and_byte_limits_reject_at_boundary_plus_one_without_mutation"
+      ]
+    },
+    {
+      "id": "resp-characterization",
+      "kind": "characterization",
+      "description": "Translation and RESP2/RESP3 wire goldens that remain stable for a selected endpoint after a backend replacement.",
+      "source": "crates/hydracache-redis-compat/src/lib.rs",
+      "tests": [
+        "routing_table_covers_every_supported_caveated_and_extension_manifest_row",
+        "every_translator_owned_case_maps_to_frozen_complete_execution_plan",
+        "wire_aliases_decode_to_the_canonical_translation_case",
+        "del_translation_freezes_lookup_followups_deduplication_and_reducer",
+        "lock_eval_and_evalsha_cases_freeze_all_allowlisted_script_shapes",
+        "translation_catalog_has_no_missing_or_extra_case_ids",
+        "resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one",
+        "resp3_scalar_array_binary_bulk_and_error_frames_match_golden_bytes",
+        "resp3_hello_map_matches_normalized_semantics_without_order_assumption",
+        "resp3_top_level_nested_and_attributed_aggregates_fail_before_dispatch",
+        "resp3_partial_pipeline_consumed_and_limit_boundaries_match_resp2",
+        "resp3_decoder_never_panics_on_arbitrary_bytes",
+        "all_canonical_wire_cases_decode_equivalently_under_resp2_and_resp3",
+        "resp3_script_load_exists_eval_evalsha_release_extend_and_reacquire_roundtrip"
+      ]
+    },
+    {
+      "id": "deployment-flip-sentinels",
+      "kind": "flip_sentinel",
+      "description": "Executable current-divergence assertions that must be inverted with their stable debt rows when the distributed RESP backend lands.",
+      "source": "crates/hydracache-server/tests/redis_resp_multinode.rs",
+      "tests": [
+        "multinode_resp_facade_documents_node_local_state",
+        "cross_node_mget_del_exists_are_node_local",
+        "cross_node_mset_is_node_local",
+        "multinode_resp_lock_subset_is_single_endpoint_only",
+        "cross_node_lock_release_is_node_local",
+        "cross_node_lock_extend_is_node_local"
+      ]
+    }
+  ],
   "commands": [
     {
       "name": "PING",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["ping"],
       "oracle": "exact",
       "tests": ["redis_oracle_supported_subset_matches_real_redis", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
@@ -18,6 +79,8 @@
       "name": "ECHO",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["echo"],
       "oracle": "exact",
       "tests": ["redis_oracle_supported_subset_matches_real_redis"]
     },
@@ -25,6 +88,8 @@
       "name": "QUIT",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "connection_state",
+      "case_ids": ["quit"],
       "oracle": "exact",
       "tests": ["nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
@@ -32,6 +97,8 @@
       "name": "HELLO 2",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "connection_state",
+      "case_ids": ["hello-2"],
       "oracle": "exact",
       "tests": ["hello2_and_hello3_are_supported_and_switch_dialect"]
     },
@@ -39,6 +106,8 @@
       "name": "HELLO 3",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "connection_state",
+      "case_ids": ["hello-3"],
       "oracle": "exact",
       "tests": ["hello2_and_hello3_are_supported_and_switch_dialect", "resp3_commands_roundtrip_supported_cache_subset", "resp3_unsupported_aggregate_inputs_fail_before_mutation", "client_matrix_runs_resp3_negotiation_scenario"]
     },
@@ -46,6 +115,8 @@
       "name": "AUTH/HELLO 2 AUTH",
       "status": "supported_with_caveat",
       "kind": "redis_subset",
+      "route": "connection_state",
+      "case_ids": ["auth", "hello-2-auth"],
       "oracle": "normalized_error",
       "tests": ["auth_hello_auth_and_noauth_errors_match_contract", "redis_auth_uses_hardened_credential_comparison_contract", "redis_auth_required_listener_rejects_data_commands_before_auth", "redis_auth_success_binds_connection_local_client_identity", "redis_auth_redacts_credentials_from_errors_logs_and_metrics", "client_matrix_runs_auth_required_connection_scenario"]
     },
@@ -53,6 +124,8 @@
       "name": "rediss:// listener TLS",
       "status": "supported_with_caveat",
       "kind": "transport_security",
+      "route": "transport",
+      "case_ids": ["rediss-listener-tls"],
       "oracle": "normalized_error",
       "tests": ["redis_api_rediss_env_reuses_server_tls_material", "redis_resp_listener_accepts_rediss_auth_and_cache_commands", "redis_resp_tls_listener_rejects_plaintext_before_mutation", "redis_resp_tls_client_rejects_wrong_ca", "redis_resp_tls_keeps_wrong_auth_as_wrongpass", "client_matrix_runs_rediss_required_connection_scenario"]
     },
@@ -60,6 +133,8 @@
       "name": "CLIENT SETNAME",
       "status": "supported_with_caveat",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["client-setname"],
       "oracle": "normalized_error",
       "tests": ["nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
@@ -67,6 +142,8 @@
       "name": "CLIENT SETINFO",
       "status": "supported_with_caveat",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["client-setinfo"],
       "oracle": "normalized_error",
       "tests": ["nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
@@ -74,6 +151,8 @@
       "name": "COMMAND",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["command"],
       "oracle": "normalized_error",
       "tests": ["command_reply_advertises_only_supported_subset"]
     },
@@ -81,6 +160,8 @@
       "name": "GET",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["get"],
       "oracle": "exact",
       "tests": ["get_set_del_mget_mset_roundtrip_through_client_surface", "redis_oracle_supported_subset_matches_real_redis"]
     },
@@ -88,6 +169,8 @@
       "name": "SET (bare, no conditional/retention options)",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["set-bare"],
       "oracle": "exact",
       "tests": ["get_set_del_mget_mset_roundtrip_through_client_surface", "set_write_conditional_options_follow_conformance_contract", "redis_oracle_supported_subset_matches_real_redis"]
     },
@@ -95,6 +178,8 @@
       "name": "MGET",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["mget"],
       "oracle": "exact",
       "tests": ["mget_preserves_order_and_represents_misses_as_nil_bulk", "redis_oracle_mget_nil_and_order_match_real_redis"]
     },
@@ -102,13 +187,29 @@
       "name": "DEL",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["del"],
       "oracle": "exact",
       "tests": ["del_and_exists_return_redis_integer_counts", "redis_oracle_del_exists_counts_match_real_redis"]
+    },
+    {
+      "name": "Concurrent DEL versus write atomicity",
+      "status": "unsupported",
+      "kind": "semantic_scope",
+      "route": "translator",
+      "case_ids": ["del-concurrent-write-atomicity"],
+      "oracle": "documented_divergence",
+      "debt_id": "resp-del-concurrent-write-atomicity",
+      "current_claim": "DEL is a lookup-plus-follow-up invalidation sequence and does not claim Redis atomicity against a concurrent write.",
+      "target_claim": "A future backend may claim Redis-compatible concurrent DEL atomicity only after replacing this debt row with a passing conformance assertion.",
+      "tests": ["del_concurrent_write_atomicity_is_documented_debt_not_a_frozen_guarantee"]
     },
     {
       "name": "EXISTS",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["exists"],
       "oracle": "exact",
       "tests": ["del_and_exists_return_redis_integer_counts", "redis_oracle_del_exists_counts_match_real_redis"]
     },
@@ -116,13 +217,17 @@
       "name": "MSET",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["mset"],
       "oracle": "exact",
-      "tests": ["mset_is_atomic_and_duplicate_keys_use_last_value", "mset_oversized_value_rejects_without_partial_mutation", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_mset_atomicity_matches_real_redis"]
+      "tests": ["get_set_del_mget_mset_roundtrip_through_client_surface", "mset_oversized_value_rejects_without_partial_mutation", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_mset_atomicity_matches_real_redis"]
     },
     {
       "name": "SET EX/PX, SETEX/PSETEX",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["set-ex", "set-px", "setex", "psetex"],
       "oracle": "ttl_tolerance",
       "tests": ["client_protocol_v3_registers_ttl_metadata_without_breaking_v2", "set_ex_and_px_apply_expiry_through_client_surface", "setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "rejected_set_and_expire_shapes_use_redis_error_class_or_documented_normalization", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
@@ -130,6 +235,8 @@
       "name": "SET NX PX/EX",
       "status": "supported_with_caveat",
       "kind": "redis_lock_subset",
+      "route": "translator",
+      "case_ids": ["set-nx-px", "set-nx-ex"],
       "oracle": "ttl_tolerance",
       "tests": ["set_nx_px_acquires_missing_key_and_contention_returns_null", "set_nx_ex_ttl_uses_seconds_and_expires", "client_matrix_set_nx_px_lock_idiom_acquires_contends_and_releases", "redis_oracle_set_nx_px_lock_acquire_matches_real_redis"]
     },
@@ -137,6 +244,8 @@
       "name": "EVAL/EVALSHA lock release and extend scripts",
       "status": "supported_with_caveat",
       "kind": "redis_lock_subset",
+      "route": "translator",
+      "case_ids": ["eval-lock-release", "evalsha-lock-release", "eval-lock-extend", "evalsha-lock-extend", "eval-lock-reacquire", "evalsha-lock-reacquire"],
       "oracle": "ttl_tolerance",
       "reviewed_clients": ["redis-py==5.2.1", "redis@4.7.0", "redlock@5.0.0-beta.2"],
       "tests": ["sha1_hex_matches_known_answer_vectors", "lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions", "eval_known_unlock_script_deletes_only_matching_token", "eval_redis_py_release_and_reacquire_scripts_are_exact_allowlisted", "eval_redlock_single_resource_scripts_acquire_extend_and_release", "eval_extend_script_maps_keys1_token_and_ttl_without_mutating_on_bad_args", "eval_redis_py_extend_adds_to_remaining_ttl_and_rejects_persistent_keys", "compare_value_expire_adds_to_remaining_ttl_for_redis_py_extend", "compare_value_expire_expiring_only_rejects_persistent_or_missing_keys", "redis_oracle_lock_unlock_script_matches_real_redis", "redis_oracle_lock_extend_script_matches_real_redis_with_ttl_tolerance"]
@@ -145,6 +254,8 @@
       "name": "SCRIPT LOAD/EXISTS lock script allowlist",
       "status": "supported_with_caveat",
       "kind": "redis_lock_subset",
+      "route": "listener_cache",
+      "case_ids": ["script-load-lock-allowlist", "script-exists-lock-allowlist"],
       "oracle": "normalized_metadata",
       "reviewed_clients": ["redis-py==5.2.1", "redis@4.7.0", "redlock@5.0.0-beta.2"],
       "tests": ["sha1_hex_matches_known_answer_vectors", "lock_script_sha_fingerprints_are_frozen_for_reviewed_client_versions", "script_load_exists_and_evalsha_are_allowlist_scoped"]
@@ -153,6 +264,8 @@
       "name": "SET NX without TTL, SET XX/GET/KEEPTTL",
       "status": "unsupported",
       "kind": "redis_option_non_subset",
+      "route": "translator",
+      "case_ids": ["set-nx-without-ttl", "set-xx", "set-get", "set-keepttl"],
       "oracle": "documented_divergence",
       "tests": ["set_write_conditional_options_follow_conformance_contract", "redis_oracle_set_options_are_documented_divergence"]
     },
@@ -160,6 +273,8 @@
       "name": "SET EXAT/PXAT",
       "status": "unsupported",
       "kind": "redis_absolute_expiry_candidate",
+      "route": "translator",
+      "case_ids": ["set-exat", "set-pxat"],
       "oracle": "documented_divergence",
       "tests": ["set_write_conditional_options_follow_conformance_contract"]
     },
@@ -167,27 +282,35 @@
       "name": "EXPIRE/PEXPIRE",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["expire", "pexpire"],
       "oracle": "ttl_tolerance",
-      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_zero_or_negative_deletes_key_and_returns_one", "expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl", "expired_keys_are_absent_for_get_mget_exists_and_del", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance", "redis_oracle_ttl_edge_cases_match_real_redis"]
+      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_zero_or_negative_deletes_key_and_returns_one", "expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance", "redis_oracle_ttl_edge_cases_match_real_redis"]
     },
     {
       "name": "TTL/PTTL",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["ttl", "pttl"],
       "oracle": "ttl_tolerance",
-      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "ttl_pttl_use_bounded_tolerance_against_real_redis", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
+      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "client_matrix_runs_mset_and_ttl_commands", "redis_oracle_ttl_matches_real_redis_with_bounded_tolerance"]
     },
     {
       "name": "PERSIST",
       "status": "supported",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["persist"],
       "oracle": "ttl_tolerance",
-      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_pexpire_and_persist_on_missing_key_return_zero", "expired_keys_are_absent_for_get_mget_exists_and_del", "redis_oracle_ttl_edge_cases_match_real_redis"]
+      "tests": ["setex_psetex_expire_pexpire_persist_and_ttl_pttl_match_redis_semantics", "expire_pexpire_and_persist_on_missing_key_return_zero", "expired_by_nonpositive_expire_is_absent_for_get_mget_exists_ttl", "redis_oracle_ttl_edge_cases_match_real_redis"]
     },
     {
       "name": "SELECT",
       "status": "supported_with_caveat",
       "kind": "redis_subset",
+      "route": "translator",
+      "case_ids": ["select"],
       "oracle": "normalized_error",
       "tests": ["select_zero_is_supported_as_noop_for_single_database_contract", "select_nonzero_and_invalid_db_fail_loud", "resp_listener_select_zero_ok_and_nonzero_keeps_default_database"]
     },
@@ -195,6 +318,8 @@
       "name": "INFO",
       "status": "supported_with_caveat",
       "kind": "health_probe",
+      "route": "listener_metrics",
+      "case_ids": ["info"],
       "oracle": "normalized_metadata",
       "tests": ["info_returns_minimal_honest_facade_state", "info_section_argument_does_not_fabricate_redis_keyspace_state", "resp_listener_info_probe_does_not_fabricate_keyspace_or_cluster_state", "info_role_dbsize_type_scan_and_config_follow_contract_classification", "mainstream_redis_client_can_talk_to_the_facade", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
@@ -202,6 +327,8 @@
       "name": "ROLE",
       "status": "unsupported",
       "kind": "health_probe",
+      "route": "translator",
+      "case_ids": ["role"],
       "oracle": "documented_divergence",
       "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
     },
@@ -209,6 +336,8 @@
       "name": "DBSIZE",
       "status": "unsupported",
       "kind": "health_probe",
+      "route": "translator",
+      "case_ids": ["dbsize"],
       "oracle": "documented_divergence",
       "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
     },
@@ -216,6 +345,8 @@
       "name": "TYPE",
       "status": "supported_with_caveat",
       "kind": "health_probe",
+      "route": "translator",
+      "case_ids": ["type"],
       "oracle": "exact",
       "tests": ["type_reports_string_or_none_through_client_surface", "resp_listener_type_reports_string_and_none", "info_role_dbsize_type_scan_and_config_follow_contract_classification", "mainstream_redis_client_can_talk_to_the_facade", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset", "redis_oracle_supported_subset_matches_real_redis"]
     },
@@ -223,6 +354,8 @@
       "name": "SCAN",
       "status": "unsupported",
       "kind": "health_probe",
+      "route": "translator",
+      "case_ids": ["scan"],
       "oracle": "documented_divergence",
       "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification"]
     },
@@ -230,6 +363,8 @@
       "name": "CONFIG",
       "status": "admin_disabled",
       "kind": "admin",
+      "route": "translator",
+      "case_ids": ["config"],
       "oracle": "documented_divergence",
       "tests": ["info_role_dbsize_type_scan_and_config_follow_contract_classification", "admin_commands_are_disabled_by_default_without_config_or_flush_mutation", "resp_listener_admin_commands_are_disabled_before_mutation"]
     },
@@ -237,6 +372,8 @@
       "name": "FLUSHDB/FLUSHALL",
       "status": "admin_disabled",
       "kind": "admin",
+      "route": "translator",
+      "case_ids": ["flushdb", "flushall"],
       "oracle": "documented_divergence",
       "tests": ["admin_commands_are_disabled_by_default_without_config_or_flush_mutation", "resp_listener_admin_commands_are_disabled_before_mutation"]
     },
@@ -244,6 +381,8 @@
       "name": "HSET/ZADD/LISTS/STREAMS/general EVAL/MULTI/MODULE",
       "status": "unsupported",
       "kind": "redis_non_subset",
+      "route": "translator",
+      "case_ids": ["hset", "zadd", "lists", "streams", "general-eval", "multi", "module"],
       "oracle": "documented_divergence",
       "tests": ["unsupported_commands_fail_loud_with_stable_error", "unknown_eval_script_fails_loud_before_mutation", "redis_oracle_unsupported_divergence_is_documented"]
     },
@@ -251,6 +390,8 @@
       "name": "CLUSTER SLOTS/NODES/INFO",
       "status": "unsupported",
       "kind": "redis_cluster",
+      "route": "translator",
+      "case_ids": ["cluster-slots", "cluster-nodes", "cluster-info"],
       "oracle": "documented_divergence",
       "tests": ["cluster_commands_decode_as_unsupported_standalone_contract", "cluster_and_moved_ask_are_never_emitted", "cluster_mode_commands_fail_loud_over_resp_without_topology_or_redirects"]
     },
@@ -258,34 +399,50 @@
       "name": "Cross-endpoint RESP key visibility",
       "status": "unsupported",
       "kind": "deployment_scope",
+      "route": "deployment_scope",
+      "case_ids": ["cross-endpoint-get", "cross-endpoint-mget", "cross-endpoint-exists", "cross-endpoint-del", "cross-endpoint-mset"],
       "oracle": "documented_divergence",
-      "tests": ["multinode_resp_facade_documents_node_local_state"]
+      "debt_id": "resp-cross-endpoint-key-visibility",
+      "current_claim": "RESP values and batch operations are node-local: writes on endpoint A are invisible to reads and mutations on endpoint B.",
+      "target_claim": "The distributed RESP backend provides cross-endpoint GET/MGET/EXISTS/DEL/MSET semantics and passes inverted positive conformance tests.",
+      "tests": ["multinode_resp_facade_documents_node_local_state", "cross_node_mget_del_exists_are_node_local", "cross_node_mset_is_node_local"]
     },
     {
       "name": "Multi-endpoint Redis lock mutual exclusion",
       "status": "unsupported",
       "kind": "deployment_scope",
+      "route": "deployment_scope",
+      "case_ids": ["cross-endpoint-set-nx", "cross-endpoint-lock-release", "cross-endpoint-lock-extend"],
       "oracle": "documented_divergence",
-      "tests": ["multinode_resp_lock_subset_is_single_endpoint_only"]
+      "debt_id": "resp-cross-endpoint-lock-safety",
+      "current_claim": "Redis lock acquisition, token-safe release, and extension are scoped to one selected endpoint.",
+      "target_claim": "The distributed RESP backend provides cross-endpoint lock mutual exclusion and token-safe release/extension with inverted positive conformance tests.",
+      "tests": ["multinode_resp_lock_subset_is_single_endpoint_only", "cross_node_lock_release_is_node_local", "cross_node_lock_extend_is_node_local"]
     },
     {
       "name": "HC.STATS",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",
+      "route": "translator",
+      "case_ids": ["hc-stats"],
       "oracle": "hydracache_only",
-      "tests": ["hc_stats_and_diagnostics_are_tenant_scoped_and_redacted", "redis_oracle_hc_extensions_are_hydracache_only"]
+      "tests": ["hc_stats_and_diagnostics_are_tenant_scoped_extension_requests", "hc_stats_and_diagnostics_over_resp_are_bounded_and_redacted", "redis_oracle_hc_extensions_are_hydracache_only"]
     },
     {
       "name": "HC.DIAGNOSTICS",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",
+      "route": "translator",
+      "case_ids": ["hc-diagnostics"],
       "oracle": "hydracache_only",
-      "tests": ["hc_stats_and_diagnostics_are_tenant_scoped_and_redacted", "hc_diagnostics_are_read_only_during_drain"]
+      "tests": ["hc_stats_and_diagnostics_are_tenant_scoped_extension_requests", "hc_stats_and_diagnostics_over_resp_are_bounded_and_redacted"]
     },
     {
       "name": "HC.INVALIDATE",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",
+      "route": "translator",
+      "case_ids": ["hc-invalidate"],
       "oracle": "hydracache_only",
       "tests": ["hc_invalidate_key_goes_through_client_surface_limits_and_audit"]
     },
@@ -293,6 +450,8 @@
       "name": "HC.NAMESPACE",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",
+      "route": "translator",
+      "case_ids": ["hc-namespace"],
       "oracle": "hydracache_only",
       "tests": ["hc_namespace_is_listener_scoped_not_redis_multidb", "client_matrix_runs_hydracache_tag_extension_scenario", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset"]
     },
@@ -300,6 +459,8 @@
       "name": "HC.TAG/HC.SETTAGS",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",
+      "route": "translator",
+      "case_ids": ["hc-tag", "hc-settags"],
       "oracle": "hydracache_only",
       "tests": ["hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface", "hc_tag_missing_key_does_not_create_metadata_or_mutate", "client_matrix_runs_hydracache_tag_extension_scenario", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset", "redis_oracle_hc_extensions_are_hydracache_only"]
     },
@@ -307,6 +468,8 @@
       "name": "HC.INVALIDATE_TAG",
       "status": "hydracache_extension",
       "kind": "hydracache_extension",
+      "route": "translator",
+      "case_ids": ["hc-invalidate-tag"],
       "oracle": "hydracache_only",
       "tests": ["hc_tag_settags_and_invalidate_tag_use_edge_local_index_and_client_surface", "hc_invalidate_tag_prunes_expired_keys_without_counting_them", "client_matrix_runs_hydracache_tag_extension_scenario", "nightly_python_node_go_jvm_clients_bootstrap_and_run_supported_subset", "redis_oracle_hc_extensions_are_hydracache_only"]
     }

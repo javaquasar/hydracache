@@ -4,10 +4,10 @@ use hydracache::{
     ConsumerIsolation, ConsumerIsolationConfig, NamespaceQuota, Tenant, TenantRoster,
 };
 use hydracache_client_protocol::{
-    BatchPutEntry, ClientErrorCode, ClientFrame, ClientRequest, ClientRequestEnvelope,
-    ClientResponse, ClientResponseEnvelope, ClientWireMessage, CompareValueExpireMode,
-    ConditionalPutCondition, EntryEventProjection, Namespace, StructuredKey, TtlState, Watermark,
-    PROTOCOL_VERSION,
+    BatchPutEntry, ClientErrorCode, ClientFrame, ClientProtocolError, ClientRequest,
+    ClientRequestEnvelope, ClientResponse, ClientResponseEnvelope, ClientWireMessage,
+    CompareValueExpireMode, ConditionalPutCondition, EntryEventProjection, Namespace,
+    StructuredKey, TtlState, Watermark, PROTOCOL_VERSION,
 };
 use hydracache_client_transport_axum::{
     AxumClientSurface, ClientSurfaceLimits, CLIENT_DATA_PATH, CLIENT_STATUS_PATH,
@@ -287,9 +287,8 @@ async fn expire_pexpire_persist_and_ttl_pttl_match_redis_semantics() {
     );
 }
 
-#[tokio::test]
-async fn protocol_v2_clients_do_not_receive_v3_ttl_shapes() {
-    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+#[test]
+fn protocol_v2_codec_does_not_emit_v3_ttl_shapes() {
     let mut request = ClientRequestEnvelope::new(
         "ttl-v2",
         ClientRequest::GetTtl {
@@ -299,19 +298,17 @@ async fn protocol_v2_clients_do_not_receive_v3_ttl_shapes() {
     );
     request.protocol_version = 2;
 
-    let (frame_version, response) = send_with_frame_version(&surface, request, 2).await;
-
-    assert_eq!(frame_version, 2);
-    assert_eq!(response.protocol_version, 2);
     assert_eq!(
-        response.result.unwrap_err().code,
-        ClientErrorCode::IncompatibleVersion
+        ClientFrame::from_message_with_version(2, &ClientWireMessage::Request(request)),
+        Err(ClientProtocolError::UnsupportedMessageForVersion {
+            operation: "get_ttl",
+            version: 2,
+        })
     );
 }
 
-#[tokio::test]
-async fn protocol_v2_v3_clients_do_not_receive_lock_conditional_shapes() {
-    let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
+#[test]
+fn protocol_v2_v3_codec_does_not_emit_lock_conditional_shapes() {
     let mut request = ClientRequestEnvelope::new(
         "lock-v3",
         ClientRequest::ConditionalPut {
@@ -324,15 +321,13 @@ async fn protocol_v2_v3_clients_do_not_receive_lock_conditional_shapes() {
     );
     request.protocol_version = 3;
 
-    let (frame_version, response) = send_with_frame_version(&surface, request, 3).await;
-
-    assert_eq!(frame_version, 3);
-    assert_eq!(response.protocol_version, 3);
     assert_eq!(
-        response.result.unwrap_err().code,
-        ClientErrorCode::IncompatibleVersion
+        ClientFrame::from_message_with_version(3, &ClientWireMessage::Request(request)),
+        Err(ClientProtocolError::UnsupportedMessageForVersion {
+            operation: "conditional_put",
+            version: 3,
+        })
     );
-    assert_eq!(surface.state().state_mutations(), 0);
 }
 
 #[tokio::test]
@@ -781,19 +776,37 @@ async fn client_surface_deadline_and_idempotency_are_honored() {
 }
 
 #[tokio::test]
-async fn client_surface_remote_request_respects_authority_and_fence() {
+async fn client_surface_rejects_frame_envelope_version_mismatch_before_mutation() {
     let surface = AxumClientSurface::new(ClientSurfaceLimits::default()).unwrap();
-    let mut request = ClientRequestEnvelope::new(
+    let request = ClientRequestEnvelope::new(
         "get-fenced",
         ClientRequest::Get {
             ns: ns(),
             key: key("42"),
         },
     );
-    request.protocol_version = 999;
+    let mut frame = ClientFrame::from_message(&ClientWireMessage::Request(request))
+        .unwrap()
+        .encode()
+        .unwrap()
+        .to_vec();
+    frame[4..6].copy_from_slice(&3_u16.to_be_bytes());
 
-    let error = send(&surface, request).await.result.unwrap_err();
-    assert_eq!(error.code, ClientErrorCode::IncompatibleVersion);
+    let response = surface
+        .routes()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri(CLIENT_DATA_PATH)
+                .header(HYDRACACHE_CLIENT_ID_HEADER, "client-a")
+                .header(HYDRACACHE_TENANT_HEADER, "tenant-a")
+                .body(Body::from(frame))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
     assert_eq!(surface.state().state_mutations(), 0);
 }
 

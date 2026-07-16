@@ -4631,6 +4631,46 @@ platform = "any"
 HYDRACACHE_RUN_DAEMON_PROCESS_E2E = "1"
 
 [[gate]]
+id = "env.hydracache-run-redis-resp-multinode-e2e"
+kind = "env_gate"
+source = "crates/hydracache-server/tests/support/daemon_cluster.rs"
+package = "hydracache-server"
+target = "redis_resp_multinode"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E"
+reason = "Execution is explicitly gated by HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E"]
+required_tools = []
+timeout_seconds = 1800
+owner_release = "0.65.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "dst-nightly-soak"
+step = "Redis RESP multinode debt sentinels"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "redis_resp_multinode",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E = "1"
+
+[[gate]]
 id = "ignored.hydracache-server.daemon-resource-budget.linux-fd-and-rss-budget-is-bounded-after-quiescence"
 kind = "ignored_test"
 source = "crates/hydracache-server/tests/daemon_resource_budget.rs"

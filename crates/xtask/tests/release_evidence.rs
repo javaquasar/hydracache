@@ -62,6 +62,43 @@ fn release_evidence_reports_every_manifest_work_item_exactly_once() {
 }
 
 #[test]
+fn release_evidence_never_reuses_canaries_with_equal_ids_from_an_older_release() {
+    let root = root();
+    let current = xtask::release_evidence::build_report(&root, "0.64", None).unwrap();
+    assert!(current.work_items.iter().all(|item| !item
+        .reasons
+        .iter()
+        .any(|reason| reason.contains("not cross-release evidence"))));
+
+    assert!(xtask::release_evidence::dynamic_canary_release_problem(
+        xtask::release_evidence::CanaryPolicy::DynamicRegistry,
+        "0.64.0",
+        "0.65.0"
+    )
+    .is_some());
+}
+
+#[test]
+fn explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_registry() {
+    assert!(xtask::release_evidence::dynamic_canary_release_problem(
+        xtask::release_evidence::CanaryPolicy::DedicatedFlipSentinels,
+        "0.64.0",
+        "0.65.0"
+    )
+    .is_none());
+
+    let report = xtask::release_evidence::build_report(&root(), "0.65", None).unwrap();
+    assert!(!report.work_items.is_empty());
+    assert!(report.work_items.iter().all(|item| {
+        item.stage >= xtask::release_evidence::EvidenceStage::Implemented
+            && !item
+                .reasons
+                .iter()
+                .any(|reason| reason.contains("dynamic canary"))
+    }));
+}
+
+#[test]
 fn release_evidence_marks_missing_skipped_stale_or_wrong_commit_receipts_non_green() {
     let root = root();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();

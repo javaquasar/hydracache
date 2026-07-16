@@ -14,6 +14,7 @@ use hydracache_sim::ResourceSample;
 use serde_json::Value;
 
 pub const DAEMON_PROCESS_E2E_ENV: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
+pub const REDIS_RESP_MULTINODE_E2E_ENV: &str = "HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E";
 const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
 const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
@@ -550,6 +551,22 @@ pub fn skip_unless_daemon_process_e2e(test_name: &str) -> bool {
     }
     eprintln!(
         "skipping {test_name}: set {DAEMON_PROCESS_E2E_ENV}=1 to run real-process daemon E2E"
+    );
+    false
+}
+
+pub fn redis_resp_multinode_e2e_enabled() -> bool {
+    std::env::var(REDIS_RESP_MULTINODE_E2E_ENV)
+        .map(|value| matches!(value.trim(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
+}
+
+pub fn skip_unless_redis_resp_multinode_e2e(test_name: &str) -> bool {
+    if redis_resp_multinode_e2e_enabled() {
+        return true;
+    }
+    eprintln!(
+        "skipping {test_name}: set {REDIS_RESP_MULTINODE_E2E_ENV}=1 to run real-process Redis RESP multinode E2E"
     );
     false
 }

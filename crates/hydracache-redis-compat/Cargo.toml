@@ -21,10 +21,12 @@ thiserror.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
+hydracache.workspace = true
 proptest.workspace = true
 rcgen.workspace = true
 redis = { workspace = true, features = ["tokio-rustls-comp", "tls-rustls-insecure"] }
 rustls.workspace = true
+serde_json.workspace = true
 tokio-rustls.workspace = true
 
 [lints]

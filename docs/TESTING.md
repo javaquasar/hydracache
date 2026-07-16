@@ -293,21 +293,34 @@ failure, slowloris idle timeout, and zero-mutation behavior for hostile input.
 Run the multi-node daemon RESP E2E before closing the release:
 
 ```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E = '1'
+$env:HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E = '1'
 cargo test -p hydracache-server --test redis_resp_multinode --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+Remove-Item Env:\HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E -ErrorAction SilentlyContinue
 ```
 
-That gate starts real `hydracache-server` processes with the RESP listener enabled
-and verifies a supported-subset RESP roundtrip before and after a daemon
-drain/restart boundary for one selected RESP endpoint. It is a lifecycle and
-edge-wiring gate, not a distributed Redis consistency proof. The 0.63 Plan B
-scope also requires node-local sentinels: write through RESP endpoint A and read
-through endpoint B must document the expected miss, and lock acquire through
-endpoint A and endpoint B must document that multi-endpoint Redis lock mutual
-exclusion is not claimed. The sentinel names are
-`multinode_resp_facade_documents_node_local_state` and
-`multinode_resp_lock_subset_is_single_endpoint_only`.
+This dedicated gate starts real `hydracache-server` processes with RESP enabled.
+It keeps the selected-endpoint lifecycle roundtrip and executes six flip-sentinels:
+`multinode_resp_facade_documents_node_local_state`,
+`cross_node_mget_del_exists_are_node_local`,
+`cross_node_mset_is_node_local`,
+`multinode_resp_lock_subset_is_single_endpoint_only`,
+`cross_node_lock_release_is_node_local`, and
+`cross_node_lock_extend_is_node_local`. Together they prove the current
+node-local behavior without promoting it to a distributed consistency claim.
+The generic `HYDRACACHE_RUN_DAEMON_PROCESS_E2E` gate is deliberately insufficient
+for this target, so a wrong CI mapping cannot silently skip the Redis debts.
+
+The conformance manifest splits `0.65` evidence into three machine-checked
+layers: reusable client-surface contracts, RESP characterization, and deployment
+flip-sentinels. Every manifest test reference must resolve to a real Rust test;
+deployment sentinels must live in `redis_resp_multinode.rs` and call the dedicated
+gate helper. To pay either stable debt (`resp-cross-endpoint-key-visibility` or
+`resp-cross-endpoint-lock-safety`), implement the distributed behavior, invert
+all sentinels attached to that debt, replace its `current_claim` with the new
+`target_claim`, update the public compatibility/deployment text in the same
+change, and keep the manifest/test/CI evidence green. Deleting or renaming a
+sentinel, weakening it into a comment, or dropping the debt id is rejected by
+`cargo xtask doc-check`.
 
 Commands without executable manifest coverage stay `candidate` or `unsupported`.
 

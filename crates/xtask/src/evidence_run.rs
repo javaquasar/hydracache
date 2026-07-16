@@ -470,7 +470,7 @@ fn resolve_registered_gate(
     gate_id: &str,
 ) -> Result<RegisteredGate, Box<dyn Error>> {
     let gated = gated_tests::load_registry(root)?;
-    if !release_matches(&gated.release, release) {
+    if !registry_covers_release(&gated.release, release) {
         return Err(format!(
             "gated registry release {} does not match requested release {release}",
             gated.release
@@ -488,7 +488,7 @@ fn resolve_registered_gate(
     }
 
     let fast = fast_suite::load_registry(root)?;
-    if !release_matches(&fast.release, release) {
+    if !registry_covers_release(&fast.release, release) {
         return Err(format!(
             "fast-suite registry release {} does not match requested release {release}",
             fast.release
@@ -611,8 +611,21 @@ fn platform_matches(required: &str) -> bool {
     required == "any" || required.eq_ignore_ascii_case(std::env::consts::OS)
 }
 
-fn release_matches(document_release: &str, requested: &str) -> bool {
-    normalize_release(document_release) == normalize_release(requested)
+fn registry_covers_release(registry_release: &str, requested: &str) -> bool {
+    let parse = |release: &str| -> Option<(u64, u64, u64)> {
+        let normalized = normalize_release(release);
+        let mut parts = normalized.split('.').map(str::parse::<u64>);
+        let version = (
+            parts.next()?.ok()?,
+            parts.next()?.ok()?,
+            parts.next()?.ok()?,
+        );
+        parts.next().is_none().then_some(version)
+    };
+    matches!(
+        (parse(registry_release), parse(requested)),
+        (Some(registry), Some(candidate)) if registry.0 == candidate.0 && registry <= candidate
+    )
 }
 
 fn normalize_release(release: &str) -> String {

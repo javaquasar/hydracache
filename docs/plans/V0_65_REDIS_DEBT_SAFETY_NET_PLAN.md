@@ -18,7 +18,7 @@
 >   test-expansion discipline (canary/flip-sentinel + `doc-check` enforcement patterns).
 > - **Unblocks:** a safe future distributed-RESP-backend release (`0.63` Plan A) and stronger `1.0`
 >   correctness evidence for the outward Redis surface.
-> - **Status:** planned.
+> - **Status:** in-progress.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
@@ -55,8 +55,10 @@ distributed-consistency assertion.
 - **No new Redis commands or option families.** `EXAT`/`PXAT`, `SET XX/GET/KEEPTTL`, transactions,
   general Lua, and new data structures stay out of scope; they may be added as **documented-divergence
   manifest rows with a flip-sentinel**, never as new supported behavior.
-- **No core, raft, consensus, or native fenced-lock change.** The `SingleKeyConditionalStore` /
-  `FencedLock` engine is only *observed* for non-interference, never modified.
+- **No raft, consensus, or native fenced-lock change.** The `SingleKeyConditionalStore` /
+  `FencedLock` engine is only *observed* for non-interference, never modified. Narrow test-driven
+  fixes at the client-surface/codec boundary are allowed only for the concrete correctness defects
+  listed in the critical-audit section below; they may not widen the Redis command surface.
 - **No weakening or muting of existing behavior** to make a test green; no lowering of loud errors.
 - **No product API, ownership routing, or Hazelcast protocol work.**
 
@@ -96,6 +98,62 @@ on the concrete in-memory store, so a distributed backend can be validated again
 
 Where the answer is "no", that command is a hole this release must close.
 
+## Critical audit corrections (blocking, 2026-07-16)
+
+The implementation audit found several places where the original plan could pass while proving the
+wrong thing. These corrections are release-blocking and take precedence over the older wording in the
+individual work items:
+
+1. **Supported surface is not the translator surface.** `AUTH`/`HELLO AUTH` are connection-state
+   routes, `SCRIPT LOAD/EXISTS` are listener-cache routes, `INFO` is listener-metrics owned, and
+   `rediss://` is transport-owned. W2 therefore uses an exhaustive **surface-routing table** plus a
+   separate translator-owned table. HydraCache extensions and decoder aliases are included.
+2. **The reusable backend seam must carry test capabilities, not implementation types.** It is an
+   async protocol-only testkit interface with deterministic clock control and a factory for limits and
+   tenant isolation. The current backend uses deterministic prevalidation failure for batch atomicity;
+   no fake mid-commit failpoint is claimed unless a real test-only failpoint is implemented.
+3. **Client-surface and Redis assertions stay in their owning layers.** W1 asserts `Get`/`BatchGet` /
+   atomic mutation contracts. Redis `MGET` shape and `EXISTS`/`DEL` counts belong to W2/W5. `DEL`'s
+   current lookup-plus-follow-up invalidation is frozen as a characterization only and its concurrent
+   write TOCTOU limitation is a documented-divergence debt row, not a Redis-atomicity claim.
+4. **Tenancy/limits/audit must be truthful before being frozen.** The current alternate-edge dispatch
+   does not validate the configured client/tenant binding; the modeled store key omits tenant; failed
+   conditional/batch writes can mutate quota accounting; delete/expiry can leave stale quota; and
+   `max_batch_entries`/`max_batch_bytes` are not enforced by the surface. W1/W5 may make the narrow
+   production fixes required by tests: tenant-keyed storage and binding validation, transactional
+   quota accounting (including duplicate-key last-write-wins), batch boundary enforcement, and the
+   existing redacted rejection-audit policy. Successful ordinary writes do not invent audit events.
+5. **Compatibility means old bytes, not a current enum with an old version number.** W6 freezes real
+   v2 bytes from `v0.62.0` and v3 bytes from commit `667b2e6`, records provenance/digests, and decodes /
+   responds through a version-aware codec. Outer frame and inner envelope versions must match before
+   dispatch. Running historical client binaries remains 0.68 W3 scope.
+6. **RESP3 attributes are input, not ignorable decoration.** Top-level or nested attributes and all
+   unsupported aggregate argument forms are rejected before dispatch and counted by resource limits.
+   The `HELLO 3` map is checked as normalized unordered metadata, not a byte-order golden.
+7. **No zero-test or prose-only gate.** Commands use exact test targets/modules; every manifest
+   `tests[]` reference is resolved to a real Rust test; required debt rows have stable ids and cannot
+   disappear silently; and the multinode sentinels have a dedicated env gate, CI step, registry row,
+   release-evidence receipt, and `--require-ship` enforcement.
+8. **Tenant scope includes native conditional/CAS state and retries.** Native lock/CAS keys must be
+   tenant-qualified, compare-value operations must not cross tenant boundaries, and retry/idempotency
+   behavior must remain stable. This is an acceptance refinement of W1/W5 isolation, not a new native
+   lock feature.
+9. **Isolation-to-store quota transitions are one atomic decision.** Admission, store mutation, and
+   quota accounting must commit or roll back together for ordinary writes, conditional success,
+   conditional mismatch, duplicate batch keys, delete/expiry, and racing requests. A CAS loser or
+   rejected batch must reserve nothing, and a successful transition must be charged exactly once.
+10. **HTTP identity binding and rejection audit are exact-once.** The real HTTP/client-surface binding
+    path must reject an unbound or cross-tenant identity before mutation and emit exactly one existing-
+    schema redacted rejection event; adapters must not double-audit a single rejection.
+11. **The published minimum protocol surface is explicit.** W6 must cover the v1/minimum-version
+    acceptance boundary in addition to v2/v3 compatibility, and independently frozen request/response
+    fixture digests must bind each historical byte artifact to its provenance. Regenerating fixtures
+    from the current enum is not compatibility evidence.
+12. **Listener parity traverses the product listener.** The exact Redis parity gate must use the real
+    TCP RESP listener and server-owned enable/disable wiring, not only an in-memory
+    `RedisRespServer::execute_command` call. This strengthens acceptance evidence without widening the
+    Redis surface or deployment claim.
+
 ## W1. Backend-agnostic ClientSurface conformance suite
 
 Goal: extract the execution-contract assertions from the concrete `ClientSurfaceState` into a suite that
@@ -103,11 +161,11 @@ runs against **any** backend, so the future distributed backend is validated by 
 
 Design:
 
-- Define a minimal backend seam (a trait or an enum of constructors) that yields "a thing that answers
-  `ClientRequest` envelopes with `ClientResponse` envelopes". The current node-local
-  `ClientSurfaceState` is one implementation; the seam exists so a second implementation can be dropped
-  in later without editing the suite. If a trait would touch shipped types, keep it a **test-only**
-  seam in `hydracache-cluster-testkit` or a `#[cfg(test)]` harness module - no product API change.
+- Define an async, protocol-only testkit seam that answers `ClientRequestEnvelope` with
+  `ClientResponseEnvelope`, exposes deterministic freeze/advance clock controls, and is constructed by
+  a factory carrying surface limits and tenant/quota configuration. The current node-local
+  `ClientSurfaceState` is one adapter; a future backend registers another adapter without editing the
+  assertions. Keep the seam in `hydracache-cluster-testkit` and consume it only as a dev-dependency.
 - Move/duplicate the behavioral asserts into a parameterized module that takes the backend under test.
 
 Required tests (each runs against the node-local backend now; reusable later):
@@ -117,43 +175,60 @@ Required tests (each runs against the node-local backend now; reusable later):
 - `conformance_conditional_put_treats_expired_key_as_absent`.
 - `conformance_compare_value_invalidate_is_token_safe_and_returns_applied_count`.
 - `conformance_compare_value_expire_add_to_remaining_and_replace_if_expiring_and_persistent_guard`.
-- `conformance_batch_put_is_all_or_nothing_under_injected_item_failure`.
+- `conformance_batch_put_is_all_or_nothing_under_prevalidation_failure`.
 - `conformance_ttl_states_missing_persistent_expiring_round_trip`.
-- `conformance_expired_key_absent_for_get_mget_exists_del`.
+- `conformance_expired_key_absent_for_get_and_batch_get`.
 - `conformance_enforces_value_bytes_batch_and_tenant_quota_limits`.
+- `conformance_rejected_conditionals_and_batches_do_not_reserve_quota`.
+- `conformance_delete_and_expiry_release_tenant_quota`.
+- `conformance_duplicate_batch_keys_account_last_write_only`.
+- `conformance_tenant_binding_and_same_namespace_keys_are_isolated`.
+- `conformance_batch_entry_and_byte_limits_reject_at_boundary_plus_one_without_mutation`.
+- `client_surface_native_lock_cas_and_idempotency_are_tenant_scoped`.
+- `client_surface_cas_mismatch_does_not_reserve_quota`.
+- `client_surface_concurrent_put_overwrite_keeps_store_and_quota_consistent` and
+  `client_surface_concurrent_put_delete_keeps_store_and_quota_consistent`.
+- `client_surface_concurrent_expiry_and_overwrite_keeps_store_and_quota_consistent`.
+- `http_tenant_binding_rejection_records_exactly_one_auth_failure`.
 
 Definition of Done:
 
 ```powershell
-cargo test -p hydracache-client-transport-axum client_surface_conformance --locked
+cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked
 cargo test -p hydracache-redis-compat --locked
 ```
 
-## W2. Exhaustive translation contract table (manifest-linked)
+## W2. Exhaustive surface-routing and translation contract tables (manifest-linked)
 
-Goal: freeze the pure translation mapping - every supported command -> `(ClientRequest` shape,
-`RedisResponseReducer)` - so a backend refactor cannot silently alter what a command means, and no new
-command can be added outside the table.
+Goal: freeze both (a) which subsystem owns every supported/caveated/extension manifest capability and
+(b) the complete pure translation plan for translator-owned canonical cases, so a backend refactor
+cannot silently alter what a command means and a new command cannot appear outside the catalogs.
 
 Design:
 
-- One table-driven test enumerating every `status=supported` (and `supported_with_caveat`) row in
-  `redis_compat_conformance.json` and asserting the exact translated `RedisTranslatedCommand`
-  (`Execute` plan initial requests + reducer, `Immediate` value, or `Extension` kind).
-- Assert the table is **complete**: every supported manifest command has a row, and every row maps to a
-  real translator arm (fail loud on drift in either direction).
+- `supported_surface_routing` enumerates every `supported`, `supported_with_caveat`, and
+  `hydracache_extension` manifest row and assigns `translator`, `connection_state`, `listener_cache`,
+  `listener_metrics`, or `transport` ownership.
+- `translation_contract` covers translator-owned canonical cases and asserts the complete
+  `RedisTranslatedCommand`: initial requests, conditional follow-ups, reducer, immediate value, or
+  extension kind. Decoder aliases such as `SETEX`/`PSETEX` first prove normalization to the canonical
+  case. Keep the module inside `lib.rs` so private reducer/follow-up state need not become product API.
+- A test-only exhaustive `RedisCommand` route match and semantic case catalogs for `SET` options and
+  allowlisted lock scripts fail loud on missing or extra variants/cases.
 
 Required tests:
 
-- `every_supported_command_maps_to_frozen_client_request_and_reducer`.
-- `translation_table_has_no_supported_manifest_command_missing_and_no_extra_row`.
-- `lock_script_kinds_map_to_frozen_conditional_or_compare_value_shapes` (simple/redlock/redis-py
-  release, extend, reacquire -> exact `ConditionalPut`/`CompareValueAndExpire{mode}`).
+- `routing_table_covers_every_supported_caveated_and_extension_manifest_row`.
+- `every_translator_owned_case_maps_to_frozen_complete_execution_plan`.
+- `wire_aliases_decode_to_the_canonical_translation_case`.
+- `del_translation_freezes_lookup_followups_deduplication_and_reducer`.
+- `lock_eval_and_evalsha_cases_freeze_all_allowlisted_script_shapes`.
+- `translation_catalog_has_no_missing_or_extra_case_ids`.
 
 Definition of Done:
 
 ```powershell
-cargo test -p hydracache-redis-compat translation_contract --locked
+cargo test -p hydracache-redis-compat --lib translation_contract --locked
 cargo run -p xtask --locked -- doc-check
 ```
 
@@ -164,9 +239,10 @@ when the debt is paid**, extending the two `0.63` node-local sentinels into a fu
 
 Design:
 
-- Add `kind=deployment_scope`, `oracle=documented_divergence` manifest rows, each naming a network-gated
-  sentinel in `crates/hydracache-server/tests/redis_resp_multinode.rs` (already `doc-check`-enforced to
-  exist).
+- Keep a required set of stable `debt_id` rows with `kind=deployment_scope`,
+  `oracle=documented_divergence`, explicit current/target claims, and network-gated sentinels in
+  `crates/hydracache-server/tests/redis_resp_multinode.rs`. `doc-check` verifies real `#[test]`
+  functions, their dedicated gate helper, and rejects missing/duplicate required debt ids.
 - Each sentinel asserts today's node-local reality and carries a comment: "flip when the distributed
   RESP backend lands."
 
@@ -179,6 +255,11 @@ Required tests (network-gated, `skip_unless_daemon_process_e2e`):
 - `cross_node_lock_extend_is_node_local` (extend on B does not affect A's TTL).
 - `cross_node_mset_is_node_local` (`MSET` on A invisible on B).
 
+Each check also re-reads A after the operation on B: B's `DEL`/release/extend cannot mutate A, lock
+contention on A stays null with owner A intact, A's PTTL cannot jump to B's requested extension, and
+both MSET keys remain present on A. Existing general key-visibility and lock-exclusion sentinels stay
+linked from the same stable debt rows.
+
 Acceptance standard: no sentinel may pass by asserting a distributed guarantee; each is explicitly a
 documented-divergence proof that must be rewritten (not deleted) when Plan A ships.
 
@@ -186,9 +267,9 @@ Definition of Done:
 
 ```powershell
 cargo run -p xtask --locked -- doc-check
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+$env:HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E='1'
 cargo test -p hydracache-server --test redis_resp_multinode --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
+Remove-Item Env:\HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E -ErrorAction SilentlyContinue
 ```
 
 ## W4. RESP3 response-encoding re-certification
@@ -201,11 +282,14 @@ Required tests:
 
 - `resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one` (contention `SET NX`, `GET` miss,
   `MGET` miss element under both dialects).
-- `resp3_integer_array_bulk_and_error_frames_match_golden_bytes`.
-- `resp3_unsupported_aggregate_inputs_fail_loud_before_mutation` (Map/Set/Push/attributes/nested
-  non-string args).
-- `resp3_lock_and_ttl_subset_round_trips_after_hello3` (PING/SET/GET/MSET/MGET/TTL/PTTL/QUIT +
-  `SET NX PX` contention null).
+- `resp3_scalar_array_binary_bulk_and_error_frames_match_golden_bytes`.
+- `resp3_hello_map_matches_normalized_semantics_without_order_assumption`.
+- `resp3_top_level_nested_and_attributed_aggregates_fail_before_dispatch` (a fresh connection for each
+  Map/Set/Push/attribute/nested non-string case; stable error, zero dispatch/mutation, key absent).
+- `resp3_partial_pipeline_consumed_and_limit_boundaries_match_resp2`.
+- `resp3_decoder_never_panics_on_arbitrary_bytes`.
+- `all_canonical_wire_cases_decode_equivalently_under_resp2_and_resp3`.
+- `resp3_script_load_exists_eval_evalsha_release_extend_and_reacquire_roundtrip`.
 
 Definition of Done:
 
@@ -222,19 +306,22 @@ must hold regardless of backend.
 
 Required tests:
 
-- `resp_lock_ops_go_through_admit_and_emit_audit` (`ConditionalPut`/`CompareValue*` call `admit_*`,
-  respect limits, and record audit events like ordinary writes).
+- `resp_lock_ops_match_ordinary_admission_and_rejection_audit_policy` (`ConditionalPut` /
+  `CompareValue*` respect the same admission path; successful data writes emit no new audit event;
+  quota/auth rejection emits exactly one redacted existing-schema event).
 - `oversized_lock_token_or_value_is_rejected_loud_not_truncated`.
-- `resp_lock_and_extension_bytes_never_appear_in_logs_metrics_stats_or_diagnostics` (keys, tokens,
-  script bodies, script args).
+- `resp_lock_and_extension_bytes_never_appear_in_debug_errors_metrics_stats_or_diagnostics` (keys,
+  tokens, script bodies, script args; malformed backend response and arbitrary backend error text are
+  normalized/redacted rather than formatted with value-bearing `Debug`).
 - `translate_redis_command_is_total_and_never_panics_on_arbitrary_commands` (proptest: always
   `Execute`/`Immediate`/`Extension` or a loud error).
 - `mget_len_equals_keys_len_and_exists_count_is_bounded_for_arbitrary_inputs` (proptest).
+- `del_concurrent_write_atomicity_is_documented_debt_not_a_frozen_guarantee`.
 
 Definition of Done:
 
 ```powershell
-cargo test -p hydracache-redis-compat core_invariants --locked
+cargo test -p hydracache-redis-compat --lib core_invariants --locked
 cargo test -p hydracache-redis-compat --test resp_resource_smoke --locked
 ```
 
@@ -249,8 +336,15 @@ Required tests:
   `SingleKeyConditionalStore`/`FencedLock` on the same logical name do not read or mutate each other).
 - `enabling_redis_listener_does_not_change_core_cache_or_client_surface_behavior` (identical core
   behavior with the RESP listener enabled vs disabled; the fast path is untouched, R-10).
-- `protocol_v2_and_v3_clients_are_still_accepted_after_v4_lock_shapes`.
-- `protocol_v2_v3_clients_never_receive_v4_conditional_shapes` (version-gated request/response).
+- `golden_client_v1_fixtures_round_trip`,
+  `v1_historical_request_and_response_catalog_roundtrips`, and
+  `v1_rejects_every_post_v1_request_and_response_on_encode_and_decode` freeze the published minimum
+  surface and reject every post-v1 request/response shape at the codec boundary.
+- `published_v2_frames_roundtrip_against_current_server` (raw fixtures from `v0.62.0`).
+- `frozen_v3_frames_roundtrip_against_current_server` (raw fixtures from `667b2e6`).
+- `frame_and_envelope_protocol_versions_must_match_before_mutation`.
+- `protocol_v2_v3_clients_never_receive_v4_conditional_shapes` (version-aware request/response codec,
+  not current enums relabeled with an old version).
 - `redis_facade_does_not_register_in_release_dependency_graph_beyond_declared_crates` (reuse the
   `verify-no-test-features` discipline so the safety-net seam stays test-only).
 
@@ -259,6 +353,8 @@ Definition of Done:
 ```powershell
 cargo test -p hydracache-redis-compat non_interference --locked
 cargo test -p hydracache-client-protocol --locked
+cargo test -p hydracache-client-transport-axum --test protocol_compat --locked
+cargo test -p hydracache-server --test server_lifecycle redis_listener_core_parity --locked
 cargo run -p xtask --locked -- verify-no-test-features
 ```
 
@@ -268,27 +364,34 @@ Goal: record the safety net as the contract for the future debt payment, and enf
 
 Design:
 
-- `docs/integrations/redis_compat_conformance.json`: add the new `deployment_scope` sentinel rows (W3)
-  and a short `test_layers` note distinguishing contract-suite / characterization / flip-sentinel rows.
+- `docs/integrations/redis_compat_conformance.json`: add structured `test_layers`, surface route/case
+  ids, and the stable required `deployment_scope` debt rows from W3. Repair every pre-existing dangling
+  `tests[]` name.
 - `docs/TESTING.md`: add a "Redis debt safety net" section describing the three layers and, critically,
   the **payment protocol**: paying the debt = (1) implement the distributed backend against the W1
   suite, (2) keep W2/W4 goldens green for the single-endpoint case, (3) **flip** each W3 sentinel and
   rewrite its manifest row + public claim in the same change.
 - `docs/GATES.md`: fast-tier rows for W1/W2/W4/W5/W6; network-gated row for the W3 sentinels; wire the
   `doc-check` extension.
-- Extend `check_redis_compat_conformance` (`crates/xtask/src/doc_check.rs`) if any new manifest field
-  (`test_layers`) is added, so a documented layer without its named test fails `doc-check` - the same
-  anti-dangling rule that already guards `deployment_scope` rows.
+- Extend `check_redis_compat_conformance` (`crates/xtask/src/doc_check.rs`) so every manifest
+  `tests[]` resolves to a real Rust test, each structured layer's source/tests exist, and required debt
+  rows cannot be removed, duplicated, replaced by comments, or left ungated.
 - `docs/releases/0.65.0.md`: state this is a test-expansion release that builds the net for the deferred
   distributed RESP backend and changes no product surface.
-- Reconcile `releases.toml`, `INDEX.md`, plan header, `docs/COMPAT.md` (only if any wire/byte golden is
-  newly declared), `docs/GATES.md`, `docs/TESTING.md`, and `docs/releases/0.65.0.md`.
+- Reconcile `releases.toml` (`work_items = ["W1".."W7"]`), generated/order-correct `INDEX.md` marker,
+  plan header, `docs/COMPAT.md`, `docs/GATES.md`, `docs/TESTING.md`, and
+  `docs/releases/0.65.0.md`.
+- Register the dedicated Redis multinode gate in CI and
+  `docs/testing/gated-test-registry.toml`; add `docs/testing/release-evidence/0.65.toml`, exact-command
+  receipts, and governance tests proving the CI command/gate cannot drift. All W1-W7 rows are
+  ship-required; W3 cannot be satisfied by a skip-only run.
 
 Definition of Done:
 
 ```powershell
 cargo run -p xtask --locked -- doc-check
 cargo test -p xtask --locked
+cargo run -p xtask --locked -- release-evidence --release 0.65 --receipts-dir target/release-evidence/0.65 --require-ship
 ```
 
 ## Gates (Definition of Done for the release)
@@ -305,8 +408,10 @@ cargo test -p xtask --locked
 - The RESP path (including `v4` lock-conditional ops) is proven to go through tenancy/limits/audit and
   to leak no keys/tokens/script bytes; the translator is total and never panics (W5).
 - RESP lock state is proven independent of the native fenced-lock engine; enabling the listener does not
-  change core behavior; `v2`/`v3` clients remain accepted and never receive `v4` shapes; no test-only
-  seam leaks into a release dependency graph (W6).
+  change core behavior; the frozen published `v1` minimum surface and `v2`/`v3` bytes round-trip through
+  the version-aware codec, post-version shapes are rejected, and older clients never receive `v4`
+  shapes; outer/inner version mismatch is rejected; no test-only seam leaks into a release dependency
+  graph (W6).
 - `TESTING.md` documents the three layers and the **debt-payment protocol**; `GATES.md`/`COMPAT.md`/
   release notes/`releases.toml`/`INDEX.md`/plan header are reconciled; `doc-check` green.
 - No product/backend/consensus/native-lock change; any production fix is narrow, test-driven, and named.

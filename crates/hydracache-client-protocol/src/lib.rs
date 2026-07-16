@@ -5,6 +5,7 @@
 //! schema; W0 keeps the compatibility substrate intentionally narrow.
 
 use bytes::Bytes;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -62,9 +63,7 @@ impl ClientFrame {
 
     /// Encode a typed wire message as this frame payload.
     pub fn from_message(message: &ClientWireMessage) -> Result<Self, ClientProtocolError> {
-        let payload = postcard::to_allocvec(message)
-            .map_err(|error| ClientProtocolError::Codec(error.to_string()))?;
-        Ok(Self::new(payload))
+        Self::from_message_with_version(message.protocol_version(), message)
     }
 
     /// Encode a typed wire message as this frame payload at an explicit version.
@@ -72,8 +71,10 @@ impl ClientFrame {
         protocol_version: u16,
         message: &ClientWireMessage,
     ) -> Result<Self, ClientProtocolError> {
-        let payload = postcard::to_allocvec(message)
-            .map_err(|error| ClientProtocolError::Codec(error.to_string()))?;
+        ensure_frame_version_supported(protocol_version)?;
+        ensure_message_version_matches_frame(protocol_version, message)?;
+        ensure_message_supported_by_frame_version(protocol_version, message)?;
+        let payload = encode_wire_message_for_version(protocol_version, message)?;
         Ok(Self::with_version(protocol_version, payload))
     }
 
@@ -119,8 +120,11 @@ impl ClientFrame {
 
     /// Decode the frame payload as a typed wire message.
     pub fn decode_message(&self) -> Result<ClientWireMessage, ClientProtocolError> {
-        postcard::from_bytes(self.payload.as_ref())
-            .map_err(|error| ClientProtocolError::Codec(error.to_string()))
+        let message =
+            decode_wire_message_for_version(self.protocol_version, self.payload.as_ref())?;
+        ensure_message_version_matches_frame(self.protocol_version, &message)?;
+        ensure_message_supported_by_frame_version(self.protocol_version, &message)?;
+        Ok(message)
     }
 
     /// Decode and validate a frame.
@@ -916,6 +920,52 @@ pub enum ClientResponse {
     CasMismatch { current: Option<Vec<u8>> },
 }
 
+impl ClientResponse {
+    fn minimum_protocol_version(&self) -> u16 {
+        match self {
+            Self::Value { .. }
+            | Self::Stored
+            | Self::Invalidated
+            | Self::Batch { .. }
+            | Self::Evicted
+            | Self::Subscribed { .. } => MIN_PROTOCOL_VERSION,
+            Self::LockAcquired { .. }
+            | Self::LockBusy
+            | Self::LockReleased
+            | Self::LockLeaseRenewed
+            | Self::LockOwnership { .. }
+            | Self::CasApplied { .. }
+            | Self::CasMismatch { .. } => LOCK_PROTOCOL_VERSION,
+            Self::Expiry { .. } | Self::Ttl { .. } => TTL_PROTOCOL_VERSION,
+            Self::ConditionalStored { .. } | Self::CompareValueApplied { .. } => {
+                REDIS_LOCK_PROTOCOL_VERSION
+            }
+        }
+    }
+
+    fn response_name(&self) -> &'static str {
+        match self {
+            Self::Value { .. } => "value",
+            Self::Stored => "stored",
+            Self::Invalidated => "invalidated",
+            Self::Batch { .. } => "batch",
+            Self::Expiry { .. } => "expiry",
+            Self::Ttl { .. } => "ttl",
+            Self::ConditionalStored { .. } => "conditional_stored",
+            Self::CompareValueApplied { .. } => "compare_value_applied",
+            Self::Evicted => "evicted",
+            Self::Subscribed { .. } => "subscribed",
+            Self::LockAcquired { .. } => "lock_acquired",
+            Self::LockBusy => "lock_busy",
+            Self::LockReleased => "lock_released",
+            Self::LockLeaseRenewed => "lock_lease_renewed",
+            Self::LockOwnership { .. } => "lock_ownership",
+            Self::CasApplied { .. } => "cas_applied",
+            Self::CasMismatch { .. } => "cas_mismatch",
+        }
+    }
+}
+
 /// Redis-compatible remaining TTL state.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -1136,6 +1186,1437 @@ impl ClientWireMessage {
     }
 }
 
+fn ensure_frame_version_supported(protocol_version: u16) -> Result<(), ClientProtocolError> {
+    if (MIN_PROTOCOL_VERSION..=PROTOCOL_VERSION).contains(&protocol_version) {
+        Ok(())
+    } else {
+        Err(ClientProtocolError::UnsupportedVersion {
+            version: protocol_version,
+            supported_max: PROTOCOL_VERSION,
+        })
+    }
+}
+
+fn ensure_message_version_matches_frame(
+    frame_version: u16,
+    message: &ClientWireMessage,
+) -> Result<(), ClientProtocolError> {
+    let declared_version = match message {
+        ClientWireMessage::Handshake(handshake) => Some(handshake.max),
+        ClientWireMessage::Request(envelope) => Some(envelope.protocol_version),
+        ClientWireMessage::Response(envelope) => Some(envelope.protocol_version),
+        ClientWireMessage::Invalidation(_) | ClientWireMessage::Heartbeat(_) => None,
+    };
+    if declared_version.is_none_or(|version| version == frame_version) {
+        Ok(())
+    } else {
+        Err(ClientProtocolError::VersionMismatch {
+            frame_version,
+            message_version: declared_version.expect("checked as some"),
+        })
+    }
+}
+
+fn ensure_message_supported_by_frame_version(
+    frame_version: u16,
+    message: &ClientWireMessage,
+) -> Result<(), ClientProtocolError> {
+    match message {
+        ClientWireMessage::Request(envelope)
+            if envelope.request.minimum_protocol_version() > frame_version =>
+        {
+            Err(unsupported_for_version(
+                envelope.request.operation_name(),
+                frame_version,
+            ))
+        }
+        ClientWireMessage::Response(envelope) => match &envelope.result {
+            Ok(response) if response.minimum_protocol_version() > frame_version => Err(
+                unsupported_for_version(response.response_name(), frame_version),
+            ),
+            _ => Ok(()),
+        },
+        _ => Ok(()),
+    }
+}
+
+fn encode_wire_message_for_version(
+    protocol_version: u16,
+    message: &ClientWireMessage,
+) -> Result<Vec<u8>, ClientProtocolError> {
+    let encoded = match protocol_version {
+        MIN_PROTOCOL_VERSION => postcard::to_allocvec(&WireMessageV1::try_from(message)?),
+        LOCK_PROTOCOL_VERSION => postcard::to_allocvec(&WireMessageV2::try_from(message)?),
+        TTL_PROTOCOL_VERSION => postcard::to_allocvec(&WireMessageV3::try_from(message)?),
+        PROTOCOL_VERSION => postcard::to_allocvec(message),
+        _ => unreachable!("supported protocol versions are checked before encoding"),
+    };
+    encoded.map_err(|error| ClientProtocolError::Codec(error.to_string()))
+}
+
+fn decode_wire_message_for_version(
+    protocol_version: u16,
+    payload: &[u8],
+) -> Result<ClientWireMessage, ClientProtocolError> {
+    ensure_frame_version_supported(protocol_version)?;
+    match protocol_version {
+        MIN_PROTOCOL_VERSION => decode_postcard_exact::<WireMessageV1>(payload).map(Into::into),
+        LOCK_PROTOCOL_VERSION => decode_postcard_exact::<WireMessageV2>(payload).map(Into::into),
+        TTL_PROTOCOL_VERSION => decode_postcard_exact::<WireMessageV3>(payload).map(Into::into),
+        PROTOCOL_VERSION => decode_postcard_exact(payload),
+        _ => unreachable!("supported protocol versions are checked before decoding"),
+    }
+}
+
+fn decode_postcard_exact<T: DeserializeOwned>(payload: &[u8]) -> Result<T, ClientProtocolError> {
+    let (message, remainder) = postcard::take_from_bytes(payload)
+        .map_err(|error| ClientProtocolError::Codec(error.to_string()))?;
+    if !remainder.is_empty() {
+        return Err(ClientProtocolError::Codec(
+            "trailing bytes after client wire message".to_owned(),
+        ));
+    }
+    Ok(message)
+}
+
+// This is the exact v1 schema published by c396437. Keep it separate from
+// later schemas: sharing the wider v2 enum would let lock/CAS discriminants be
+// smuggled through a frame labeled as v1.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum WireMessageV1 {
+    Handshake(VersionHandshake),
+    Request(RequestEnvelopeV1),
+    Response(ResponseEnvelopeV1),
+    Invalidation(InvalidationEvent),
+    Heartbeat(Watermark),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct RequestEnvelopeV1 {
+    request_id: String,
+    protocol_version: u16,
+    context: ClientContext,
+    deadline_ms: Option<u64>,
+    idempotency_key: Option<String>,
+    request: RequestV1,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum RequestV1 {
+    Get {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    Put {
+        ns: Namespace,
+        key: StructuredKey,
+        value: Vec<u8>,
+        ttl_ms: Option<u64>,
+        dimensions: Vec<String>,
+    },
+    Invalidate {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    BatchGet {
+        ns: Namespace,
+        keys: Vec<StructuredKey>,
+    },
+    BatchPut {
+        ns: Namespace,
+        entries: Vec<BatchPutEntry>,
+    },
+    EvictRegion {
+        ns: Namespace,
+    },
+    SubscribeInvalidations {
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ResponseEnvelopeV1 {
+    request_id: String,
+    protocol_version: u16,
+    result: Result<ResponseV1, ClientErrorEnvelope>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum ResponseV1 {
+    Value { value: Option<Vec<u8>> },
+    Stored,
+    Invalidated,
+    Batch { items: Vec<BatchItemStatus> },
+    Evicted,
+    Subscribed { from: Option<Watermark> },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum WireMessageV2 {
+    Handshake(VersionHandshake),
+    Request(RequestEnvelopeV2),
+    Response(ResponseEnvelopeV2),
+    Invalidation(InvalidationEvent),
+    Heartbeat(Watermark),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct RequestEnvelopeV2 {
+    request_id: String,
+    protocol_version: u16,
+    context: ClientContext,
+    deadline_ms: Option<u64>,
+    idempotency_key: Option<String>,
+    request: RequestV2,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum RequestV2 {
+    Get {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    Put {
+        ns: Namespace,
+        key: StructuredKey,
+        value: Vec<u8>,
+        ttl_ms: Option<u64>,
+        dimensions: Vec<String>,
+    },
+    Invalidate {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    BatchGet {
+        ns: Namespace,
+        keys: Vec<StructuredKey>,
+    },
+    BatchPut {
+        ns: Namespace,
+        entries: Vec<BatchPutEntry>,
+    },
+    EvictRegion {
+        ns: Namespace,
+    },
+    SubscribeInvalidations {
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+    },
+    SubscribeEntryEvents {
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+        projection: EntryEventProjection,
+    },
+    TryLock {
+        ns: Namespace,
+        key: StructuredKey,
+        lease_ms: u64,
+        wait_ms: u64,
+        level: LockConsistency,
+    },
+    Unlock {
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+    },
+    RenewLockLease {
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+        lease_ms: u64,
+    },
+    ForceUnlock {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    GetLockOwnership {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    CompareAndSet {
+        ns: Namespace,
+        key: StructuredKey,
+        expected: CasExpectation,
+        new_value: Vec<u8>,
+        level: LockConsistency,
+    },
+    RemoveIfValue {
+        ns: Namespace,
+        key: StructuredKey,
+        expected: Vec<u8>,
+        level: LockConsistency,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ResponseEnvelopeV2 {
+    request_id: String,
+    protocol_version: u16,
+    result: Result<ResponseV2, ClientErrorEnvelope>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum ResponseV2 {
+    Value { value: Option<Vec<u8>> },
+    Stored,
+    Invalidated,
+    Batch { items: Vec<BatchItemStatus> },
+    Evicted,
+    Subscribed { from: Option<Watermark> },
+    LockAcquired { fence: u64 },
+    LockBusy,
+    LockReleased,
+    LockLeaseRenewed,
+    LockOwnership { fence: Option<u64>, locked: bool },
+    CasApplied { new_version: u64 },
+    CasMismatch { current: Option<Vec<u8>> },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum WireMessageV3 {
+    Handshake(VersionHandshake),
+    Request(RequestEnvelopeV3),
+    Response(ResponseEnvelopeV3),
+    Invalidation(InvalidationEvent),
+    Heartbeat(Watermark),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct RequestEnvelopeV3 {
+    request_id: String,
+    protocol_version: u16,
+    context: ClientContext,
+    deadline_ms: Option<u64>,
+    idempotency_key: Option<String>,
+    request: RequestV3,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum RequestV3 {
+    Get {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    Put {
+        ns: Namespace,
+        key: StructuredKey,
+        value: Vec<u8>,
+        ttl_ms: Option<u64>,
+        dimensions: Vec<String>,
+    },
+    Invalidate {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    BatchGet {
+        ns: Namespace,
+        keys: Vec<StructuredKey>,
+    },
+    BatchPut {
+        ns: Namespace,
+        entries: Vec<BatchPutEntry>,
+    },
+    Expire {
+        ns: Namespace,
+        key: StructuredKey,
+        ttl_ms: u64,
+    },
+    Persist {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    GetTtl {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    EvictRegion {
+        ns: Namespace,
+    },
+    SubscribeInvalidations {
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+    },
+    SubscribeEntryEvents {
+        ns: Namespace,
+        region: Option<RegionId>,
+        from: Option<Watermark>,
+        include_value: bool,
+        projection: EntryEventProjection,
+    },
+    TryLock {
+        ns: Namespace,
+        key: StructuredKey,
+        lease_ms: u64,
+        wait_ms: u64,
+        level: LockConsistency,
+    },
+    Unlock {
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+    },
+    RenewLockLease {
+        ns: Namespace,
+        key: StructuredKey,
+        fence: u64,
+        lease_ms: u64,
+    },
+    ForceUnlock {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    GetLockOwnership {
+        ns: Namespace,
+        key: StructuredKey,
+    },
+    CompareAndSet {
+        ns: Namespace,
+        key: StructuredKey,
+        expected: CasExpectation,
+        new_value: Vec<u8>,
+        level: LockConsistency,
+    },
+    RemoveIfValue {
+        ns: Namespace,
+        key: StructuredKey,
+        expected: Vec<u8>,
+        level: LockConsistency,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ResponseEnvelopeV3 {
+    request_id: String,
+    protocol_version: u16,
+    result: Result<ResponseV3, ClientErrorEnvelope>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum ResponseV3 {
+    Value { value: Option<Vec<u8>> },
+    Stored,
+    Invalidated,
+    Batch { items: Vec<BatchItemStatus> },
+    Expiry { applied: bool },
+    Ttl { state: TtlState },
+    Evicted,
+    Subscribed { from: Option<Watermark> },
+    LockAcquired { fence: u64 },
+    LockBusy,
+    LockReleased,
+    LockLeaseRenewed,
+    LockOwnership { fence: Option<u64>, locked: bool },
+    CasApplied { new_version: u64 },
+    CasMismatch { current: Option<Vec<u8>> },
+}
+
+impl TryFrom<&ClientWireMessage> for WireMessageV1 {
+    type Error = ClientProtocolError;
+
+    fn try_from(message: &ClientWireMessage) -> Result<Self, Self::Error> {
+        Ok(match message {
+            ClientWireMessage::Handshake(handshake) => Self::Handshake(*handshake),
+            ClientWireMessage::Request(envelope) => {
+                Self::Request(RequestEnvelopeV1::try_from(envelope)?)
+            }
+            ClientWireMessage::Response(envelope) => {
+                Self::Response(ResponseEnvelopeV1::try_from(envelope)?)
+            }
+            ClientWireMessage::Invalidation(event) => Self::Invalidation(event.clone()),
+            ClientWireMessage::Heartbeat(watermark) => Self::Heartbeat(*watermark),
+        })
+    }
+}
+
+impl From<WireMessageV1> for ClientWireMessage {
+    fn from(message: WireMessageV1) -> Self {
+        match message {
+            WireMessageV1::Handshake(handshake) => Self::Handshake(handshake),
+            WireMessageV1::Request(envelope) => Self::Request(envelope.into()),
+            WireMessageV1::Response(envelope) => Self::Response(envelope.into()),
+            WireMessageV1::Invalidation(event) => Self::Invalidation(event),
+            WireMessageV1::Heartbeat(watermark) => Self::Heartbeat(watermark),
+        }
+    }
+}
+
+impl TryFrom<&ClientRequestEnvelope> for RequestEnvelopeV1 {
+    type Error = ClientProtocolError;
+
+    fn try_from(envelope: &ClientRequestEnvelope) -> Result<Self, Self::Error> {
+        Ok(Self {
+            request_id: envelope.request_id.clone(),
+            protocol_version: envelope.protocol_version,
+            context: envelope.context.clone(),
+            deadline_ms: envelope.deadline_ms,
+            idempotency_key: envelope.idempotency_key.clone(),
+            request: RequestV1::try_from(&envelope.request)?,
+        })
+    }
+}
+
+impl From<RequestEnvelopeV1> for ClientRequestEnvelope {
+    fn from(envelope: RequestEnvelopeV1) -> Self {
+        Self {
+            request_id: envelope.request_id,
+            protocol_version: envelope.protocol_version,
+            context: envelope.context,
+            deadline_ms: envelope.deadline_ms,
+            idempotency_key: envelope.idempotency_key,
+            request: envelope.request.into(),
+        }
+    }
+}
+
+impl TryFrom<&ClientResponseEnvelope> for ResponseEnvelopeV1 {
+    type Error = ClientProtocolError;
+
+    fn try_from(envelope: &ClientResponseEnvelope) -> Result<Self, Self::Error> {
+        let result = match &envelope.result {
+            Ok(response) => Ok(ResponseV1::try_from(response)?),
+            Err(error) => Err(error.clone()),
+        };
+        Ok(Self {
+            request_id: envelope.request_id.clone(),
+            protocol_version: envelope.protocol_version,
+            result,
+        })
+    }
+}
+
+impl From<ResponseEnvelopeV1> for ClientResponseEnvelope {
+    fn from(envelope: ResponseEnvelopeV1) -> Self {
+        Self {
+            request_id: envelope.request_id,
+            protocol_version: envelope.protocol_version,
+            result: envelope.result.map(Into::into),
+        }
+    }
+}
+
+impl TryFrom<&ClientRequest> for RequestV1 {
+    type Error = ClientProtocolError;
+
+    fn try_from(request: &ClientRequest) -> Result<Self, Self::Error> {
+        Ok(match request {
+            ClientRequest::Get { ns, key } => Self::Get {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            } => Self::Put {
+                ns: ns.clone(),
+                key: key.clone(),
+                value: value.clone(),
+                ttl_ms: *ttl_ms,
+                dimensions: dimensions.clone(),
+            },
+            ClientRequest::Invalidate { ns, key } => Self::Invalidate {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::BatchGet { ns, keys } => Self::BatchGet {
+                ns: ns.clone(),
+                keys: keys.clone(),
+            },
+            ClientRequest::BatchPut { ns, entries } => Self::BatchPut {
+                ns: ns.clone(),
+                entries: entries.clone(),
+            },
+            ClientRequest::EvictRegion { ns } => Self::EvictRegion { ns: ns.clone() },
+            ClientRequest::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            } => Self::SubscribeInvalidations {
+                ns: ns.clone(),
+                region: region.clone(),
+                from: *from,
+                include_value: *include_value,
+            },
+            unsupported => {
+                return Err(unsupported_for_version(unsupported.operation_name(), 1));
+            }
+        })
+    }
+}
+
+impl From<RequestV1> for ClientRequest {
+    fn from(request: RequestV1) -> Self {
+        match request {
+            RequestV1::Get { ns, key } => Self::Get { ns, key },
+            RequestV1::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            } => Self::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            },
+            RequestV1::Invalidate { ns, key } => Self::Invalidate { ns, key },
+            RequestV1::BatchGet { ns, keys } => Self::BatchGet { ns, keys },
+            RequestV1::BatchPut { ns, entries } => Self::BatchPut { ns, entries },
+            RequestV1::EvictRegion { ns } => Self::EvictRegion { ns },
+            RequestV1::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            } => Self::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            },
+        }
+    }
+}
+
+impl TryFrom<&ClientResponse> for ResponseV1 {
+    type Error = ClientProtocolError;
+
+    fn try_from(response: &ClientResponse) -> Result<Self, Self::Error> {
+        Ok(match response {
+            ClientResponse::Value { value } => Self::Value {
+                value: value.clone(),
+            },
+            ClientResponse::Stored => Self::Stored,
+            ClientResponse::Invalidated => Self::Invalidated,
+            ClientResponse::Batch { items } => Self::Batch {
+                items: items.clone(),
+            },
+            ClientResponse::Evicted => Self::Evicted,
+            ClientResponse::Subscribed { from } => Self::Subscribed { from: *from },
+            unsupported => {
+                return Err(unsupported_for_version(unsupported.response_name(), 1));
+            }
+        })
+    }
+}
+
+impl From<ResponseV1> for ClientResponse {
+    fn from(response: ResponseV1) -> Self {
+        match response {
+            ResponseV1::Value { value } => Self::Value { value },
+            ResponseV1::Stored => Self::Stored,
+            ResponseV1::Invalidated => Self::Invalidated,
+            ResponseV1::Batch { items } => Self::Batch { items },
+            ResponseV1::Evicted => Self::Evicted,
+            ResponseV1::Subscribed { from } => Self::Subscribed { from },
+        }
+    }
+}
+
+impl TryFrom<&ClientWireMessage> for WireMessageV2 {
+    type Error = ClientProtocolError;
+
+    fn try_from(message: &ClientWireMessage) -> Result<Self, Self::Error> {
+        Ok(match message {
+            ClientWireMessage::Handshake(handshake) => Self::Handshake(*handshake),
+            ClientWireMessage::Request(envelope) => {
+                Self::Request(RequestEnvelopeV2::try_from(envelope)?)
+            }
+            ClientWireMessage::Response(envelope) => {
+                Self::Response(ResponseEnvelopeV2::try_from(envelope)?)
+            }
+            ClientWireMessage::Invalidation(event) => Self::Invalidation(event.clone()),
+            ClientWireMessage::Heartbeat(watermark) => Self::Heartbeat(*watermark),
+        })
+    }
+}
+
+impl TryFrom<&ClientWireMessage> for WireMessageV3 {
+    type Error = ClientProtocolError;
+
+    fn try_from(message: &ClientWireMessage) -> Result<Self, Self::Error> {
+        Ok(match message {
+            ClientWireMessage::Handshake(handshake) => Self::Handshake(*handshake),
+            ClientWireMessage::Request(envelope) => {
+                Self::Request(RequestEnvelopeV3::try_from(envelope)?)
+            }
+            ClientWireMessage::Response(envelope) => {
+                Self::Response(ResponseEnvelopeV3::try_from(envelope)?)
+            }
+            ClientWireMessage::Invalidation(event) => Self::Invalidation(event.clone()),
+            ClientWireMessage::Heartbeat(watermark) => Self::Heartbeat(*watermark),
+        })
+    }
+}
+
+impl From<WireMessageV2> for ClientWireMessage {
+    fn from(message: WireMessageV2) -> Self {
+        match message {
+            WireMessageV2::Handshake(handshake) => Self::Handshake(handshake),
+            WireMessageV2::Request(envelope) => Self::Request(envelope.into()),
+            WireMessageV2::Response(envelope) => Self::Response(envelope.into()),
+            WireMessageV2::Invalidation(event) => Self::Invalidation(event),
+            WireMessageV2::Heartbeat(watermark) => Self::Heartbeat(watermark),
+        }
+    }
+}
+
+impl From<WireMessageV3> for ClientWireMessage {
+    fn from(message: WireMessageV3) -> Self {
+        match message {
+            WireMessageV3::Handshake(handshake) => Self::Handshake(handshake),
+            WireMessageV3::Request(envelope) => Self::Request(envelope.into()),
+            WireMessageV3::Response(envelope) => Self::Response(envelope.into()),
+            WireMessageV3::Invalidation(event) => Self::Invalidation(event),
+            WireMessageV3::Heartbeat(watermark) => Self::Heartbeat(watermark),
+        }
+    }
+}
+
+impl TryFrom<&ClientRequestEnvelope> for RequestEnvelopeV2 {
+    type Error = ClientProtocolError;
+
+    fn try_from(envelope: &ClientRequestEnvelope) -> Result<Self, Self::Error> {
+        Ok(Self {
+            request_id: envelope.request_id.clone(),
+            protocol_version: envelope.protocol_version,
+            context: envelope.context.clone(),
+            deadline_ms: envelope.deadline_ms,
+            idempotency_key: envelope.idempotency_key.clone(),
+            request: RequestV2::try_from(&envelope.request)?,
+        })
+    }
+}
+
+impl TryFrom<&ClientRequestEnvelope> for RequestEnvelopeV3 {
+    type Error = ClientProtocolError;
+
+    fn try_from(envelope: &ClientRequestEnvelope) -> Result<Self, Self::Error> {
+        Ok(Self {
+            request_id: envelope.request_id.clone(),
+            protocol_version: envelope.protocol_version,
+            context: envelope.context.clone(),
+            deadline_ms: envelope.deadline_ms,
+            idempotency_key: envelope.idempotency_key.clone(),
+            request: RequestV3::try_from(&envelope.request)?,
+        })
+    }
+}
+
+impl From<RequestEnvelopeV2> for ClientRequestEnvelope {
+    fn from(envelope: RequestEnvelopeV2) -> Self {
+        Self {
+            request_id: envelope.request_id,
+            protocol_version: envelope.protocol_version,
+            context: envelope.context,
+            deadline_ms: envelope.deadline_ms,
+            idempotency_key: envelope.idempotency_key,
+            request: envelope.request.into(),
+        }
+    }
+}
+
+impl From<RequestEnvelopeV3> for ClientRequestEnvelope {
+    fn from(envelope: RequestEnvelopeV3) -> Self {
+        Self {
+            request_id: envelope.request_id,
+            protocol_version: envelope.protocol_version,
+            context: envelope.context,
+            deadline_ms: envelope.deadline_ms,
+            idempotency_key: envelope.idempotency_key,
+            request: envelope.request.into(),
+        }
+    }
+}
+
+impl TryFrom<&ClientResponseEnvelope> for ResponseEnvelopeV2 {
+    type Error = ClientProtocolError;
+
+    fn try_from(envelope: &ClientResponseEnvelope) -> Result<Self, Self::Error> {
+        let result = match &envelope.result {
+            Ok(response) => Ok(ResponseV2::try_from(response)?),
+            Err(error) => Err(error.clone()),
+        };
+        Ok(Self {
+            request_id: envelope.request_id.clone(),
+            protocol_version: envelope.protocol_version,
+            result,
+        })
+    }
+}
+
+impl TryFrom<&ClientResponseEnvelope> for ResponseEnvelopeV3 {
+    type Error = ClientProtocolError;
+
+    fn try_from(envelope: &ClientResponseEnvelope) -> Result<Self, Self::Error> {
+        let result = match &envelope.result {
+            Ok(response) => Ok(ResponseV3::try_from(response)?),
+            Err(error) => Err(error.clone()),
+        };
+        Ok(Self {
+            request_id: envelope.request_id.clone(),
+            protocol_version: envelope.protocol_version,
+            result,
+        })
+    }
+}
+
+impl From<ResponseEnvelopeV2> for ClientResponseEnvelope {
+    fn from(envelope: ResponseEnvelopeV2) -> Self {
+        Self {
+            request_id: envelope.request_id,
+            protocol_version: envelope.protocol_version,
+            result: envelope.result.map(Into::into),
+        }
+    }
+}
+
+impl From<ResponseEnvelopeV3> for ClientResponseEnvelope {
+    fn from(envelope: ResponseEnvelopeV3) -> Self {
+        Self {
+            request_id: envelope.request_id,
+            protocol_version: envelope.protocol_version,
+            result: envelope.result.map(Into::into),
+        }
+    }
+}
+
+fn unsupported_for_version(operation: &'static str, version: u16) -> ClientProtocolError {
+    ClientProtocolError::UnsupportedMessageForVersion { operation, version }
+}
+
+impl TryFrom<&ClientRequest> for RequestV2 {
+    type Error = ClientProtocolError;
+
+    fn try_from(request: &ClientRequest) -> Result<Self, Self::Error> {
+        Ok(match request {
+            ClientRequest::Get { ns, key } => Self::Get {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            } => Self::Put {
+                ns: ns.clone(),
+                key: key.clone(),
+                value: value.clone(),
+                ttl_ms: *ttl_ms,
+                dimensions: dimensions.clone(),
+            },
+            ClientRequest::Invalidate { ns, key } => Self::Invalidate {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::BatchGet { ns, keys } => Self::BatchGet {
+                ns: ns.clone(),
+                keys: keys.clone(),
+            },
+            ClientRequest::BatchPut { ns, entries } => Self::BatchPut {
+                ns: ns.clone(),
+                entries: entries.clone(),
+            },
+            ClientRequest::EvictRegion { ns } => Self::EvictRegion { ns: ns.clone() },
+            ClientRequest::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            } => Self::SubscribeInvalidations {
+                ns: ns.clone(),
+                region: region.clone(),
+                from: *from,
+                include_value: *include_value,
+            },
+            ClientRequest::SubscribeEntryEvents {
+                ns,
+                region,
+                from,
+                include_value,
+                projection,
+            } => Self::SubscribeEntryEvents {
+                ns: ns.clone(),
+                region: region.clone(),
+                from: *from,
+                include_value: *include_value,
+                projection: *projection,
+            },
+            ClientRequest::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms,
+                level,
+            } => Self::TryLock {
+                ns: ns.clone(),
+                key: key.clone(),
+                lease_ms: *lease_ms,
+                wait_ms: *wait_ms,
+                level: *level,
+            },
+            ClientRequest::Unlock { ns, key, fence } => Self::Unlock {
+                ns: ns.clone(),
+                key: key.clone(),
+                fence: *fence,
+            },
+            ClientRequest::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            } => Self::RenewLockLease {
+                ns: ns.clone(),
+                key: key.clone(),
+                fence: *fence,
+                lease_ms: *lease_ms,
+            },
+            ClientRequest::ForceUnlock { ns, key } => Self::ForceUnlock {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::GetLockOwnership { ns, key } => Self::GetLockOwnership {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            } => Self::CompareAndSet {
+                ns: ns.clone(),
+                key: key.clone(),
+                expected: expected.clone(),
+                new_value: new_value.clone(),
+                level: *level,
+            },
+            ClientRequest::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            } => Self::RemoveIfValue {
+                ns: ns.clone(),
+                key: key.clone(),
+                expected: expected.clone(),
+                level: *level,
+            },
+            ClientRequest::Expire { .. } => return Err(unsupported_for_version("expire", 2)),
+            ClientRequest::Persist { .. } => return Err(unsupported_for_version("persist", 2)),
+            ClientRequest::GetTtl { .. } => return Err(unsupported_for_version("get_ttl", 2)),
+            ClientRequest::ConditionalPut { .. } => {
+                return Err(unsupported_for_version("conditional_put", 2));
+            }
+            ClientRequest::CompareValueAndInvalidate { .. } => {
+                return Err(unsupported_for_version("compare_value_and_invalidate", 2));
+            }
+            ClientRequest::CompareValueAndExpire { .. } => {
+                return Err(unsupported_for_version("compare_value_and_expire", 2));
+            }
+        })
+    }
+}
+
+impl TryFrom<&ClientRequest> for RequestV3 {
+    type Error = ClientProtocolError;
+
+    fn try_from(request: &ClientRequest) -> Result<Self, Self::Error> {
+        Ok(match request {
+            ClientRequest::Get { ns, key } => Self::Get {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            } => Self::Put {
+                ns: ns.clone(),
+                key: key.clone(),
+                value: value.clone(),
+                ttl_ms: *ttl_ms,
+                dimensions: dimensions.clone(),
+            },
+            ClientRequest::Invalidate { ns, key } => Self::Invalidate {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::BatchGet { ns, keys } => Self::BatchGet {
+                ns: ns.clone(),
+                keys: keys.clone(),
+            },
+            ClientRequest::BatchPut { ns, entries } => Self::BatchPut {
+                ns: ns.clone(),
+                entries: entries.clone(),
+            },
+            ClientRequest::Expire { ns, key, ttl_ms } => Self::Expire {
+                ns: ns.clone(),
+                key: key.clone(),
+                ttl_ms: *ttl_ms,
+            },
+            ClientRequest::Persist { ns, key } => Self::Persist {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::GetTtl { ns, key } => Self::GetTtl {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::EvictRegion { ns } => Self::EvictRegion { ns: ns.clone() },
+            ClientRequest::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            } => Self::SubscribeInvalidations {
+                ns: ns.clone(),
+                region: region.clone(),
+                from: *from,
+                include_value: *include_value,
+            },
+            ClientRequest::SubscribeEntryEvents {
+                ns,
+                region,
+                from,
+                include_value,
+                projection,
+            } => Self::SubscribeEntryEvents {
+                ns: ns.clone(),
+                region: region.clone(),
+                from: *from,
+                include_value: *include_value,
+                projection: *projection,
+            },
+            ClientRequest::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms,
+                level,
+            } => Self::TryLock {
+                ns: ns.clone(),
+                key: key.clone(),
+                lease_ms: *lease_ms,
+                wait_ms: *wait_ms,
+                level: *level,
+            },
+            ClientRequest::Unlock { ns, key, fence } => Self::Unlock {
+                ns: ns.clone(),
+                key: key.clone(),
+                fence: *fence,
+            },
+            ClientRequest::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            } => Self::RenewLockLease {
+                ns: ns.clone(),
+                key: key.clone(),
+                fence: *fence,
+                lease_ms: *lease_ms,
+            },
+            ClientRequest::ForceUnlock { ns, key } => Self::ForceUnlock {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::GetLockOwnership { ns, key } => Self::GetLockOwnership {
+                ns: ns.clone(),
+                key: key.clone(),
+            },
+            ClientRequest::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            } => Self::CompareAndSet {
+                ns: ns.clone(),
+                key: key.clone(),
+                expected: expected.clone(),
+                new_value: new_value.clone(),
+                level: *level,
+            },
+            ClientRequest::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            } => Self::RemoveIfValue {
+                ns: ns.clone(),
+                key: key.clone(),
+                expected: expected.clone(),
+                level: *level,
+            },
+            ClientRequest::ConditionalPut { .. } => {
+                return Err(unsupported_for_version("conditional_put", 3));
+            }
+            ClientRequest::CompareValueAndInvalidate { .. } => {
+                return Err(unsupported_for_version("compare_value_and_invalidate", 3));
+            }
+            ClientRequest::CompareValueAndExpire { .. } => {
+                return Err(unsupported_for_version("compare_value_and_expire", 3));
+            }
+        })
+    }
+}
+
+impl From<RequestV2> for ClientRequest {
+    fn from(request: RequestV2) -> Self {
+        match request {
+            RequestV2::Get { ns, key } => Self::Get { ns, key },
+            RequestV2::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            } => Self::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            },
+            RequestV2::Invalidate { ns, key } => Self::Invalidate { ns, key },
+            RequestV2::BatchGet { ns, keys } => Self::BatchGet { ns, keys },
+            RequestV2::BatchPut { ns, entries } => Self::BatchPut { ns, entries },
+            RequestV2::EvictRegion { ns } => Self::EvictRegion { ns },
+            RequestV2::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            } => Self::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            },
+            RequestV2::SubscribeEntryEvents {
+                ns,
+                region,
+                from,
+                include_value,
+                projection,
+            } => Self::SubscribeEntryEvents {
+                ns,
+                region,
+                from,
+                include_value,
+                projection,
+            },
+            RequestV2::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms,
+                level,
+            } => Self::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms,
+                level,
+            },
+            RequestV2::Unlock { ns, key, fence } => Self::Unlock { ns, key, fence },
+            RequestV2::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            } => Self::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            },
+            RequestV2::ForceUnlock { ns, key } => Self::ForceUnlock { ns, key },
+            RequestV2::GetLockOwnership { ns, key } => Self::GetLockOwnership { ns, key },
+            RequestV2::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            } => Self::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            },
+            RequestV2::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            } => Self::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            },
+        }
+    }
+}
+
+impl From<RequestV3> for ClientRequest {
+    fn from(request: RequestV3) -> Self {
+        match request {
+            RequestV3::Get { ns, key } => Self::Get { ns, key },
+            RequestV3::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            } => Self::Put {
+                ns,
+                key,
+                value,
+                ttl_ms,
+                dimensions,
+            },
+            RequestV3::Invalidate { ns, key } => Self::Invalidate { ns, key },
+            RequestV3::BatchGet { ns, keys } => Self::BatchGet { ns, keys },
+            RequestV3::BatchPut { ns, entries } => Self::BatchPut { ns, entries },
+            RequestV3::Expire { ns, key, ttl_ms } => Self::Expire { ns, key, ttl_ms },
+            RequestV3::Persist { ns, key } => Self::Persist { ns, key },
+            RequestV3::GetTtl { ns, key } => Self::GetTtl { ns, key },
+            RequestV3::EvictRegion { ns } => Self::EvictRegion { ns },
+            RequestV3::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            } => Self::SubscribeInvalidations {
+                ns,
+                region,
+                from,
+                include_value,
+            },
+            RequestV3::SubscribeEntryEvents {
+                ns,
+                region,
+                from,
+                include_value,
+                projection,
+            } => Self::SubscribeEntryEvents {
+                ns,
+                region,
+                from,
+                include_value,
+                projection,
+            },
+            RequestV3::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms,
+                level,
+            } => Self::TryLock {
+                ns,
+                key,
+                lease_ms,
+                wait_ms,
+                level,
+            },
+            RequestV3::Unlock { ns, key, fence } => Self::Unlock { ns, key, fence },
+            RequestV3::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            } => Self::RenewLockLease {
+                ns,
+                key,
+                fence,
+                lease_ms,
+            },
+            RequestV3::ForceUnlock { ns, key } => Self::ForceUnlock { ns, key },
+            RequestV3::GetLockOwnership { ns, key } => Self::GetLockOwnership { ns, key },
+            RequestV3::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            } => Self::CompareAndSet {
+                ns,
+                key,
+                expected,
+                new_value,
+                level,
+            },
+            RequestV3::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            } => Self::RemoveIfValue {
+                ns,
+                key,
+                expected,
+                level,
+            },
+        }
+    }
+}
+
+impl TryFrom<&ClientResponse> for ResponseV2 {
+    type Error = ClientProtocolError;
+
+    fn try_from(response: &ClientResponse) -> Result<Self, Self::Error> {
+        Ok(match response {
+            ClientResponse::Value { value } => Self::Value {
+                value: value.clone(),
+            },
+            ClientResponse::Stored => Self::Stored,
+            ClientResponse::Invalidated => Self::Invalidated,
+            ClientResponse::Batch { items } => Self::Batch {
+                items: items.clone(),
+            },
+            ClientResponse::Evicted => Self::Evicted,
+            ClientResponse::Subscribed { from } => Self::Subscribed { from: *from },
+            ClientResponse::LockAcquired { fence } => Self::LockAcquired { fence: *fence },
+            ClientResponse::LockBusy => Self::LockBusy,
+            ClientResponse::LockReleased => Self::LockReleased,
+            ClientResponse::LockLeaseRenewed => Self::LockLeaseRenewed,
+            ClientResponse::LockOwnership { fence, locked } => Self::LockOwnership {
+                fence: *fence,
+                locked: *locked,
+            },
+            ClientResponse::CasApplied { new_version } => Self::CasApplied {
+                new_version: *new_version,
+            },
+            ClientResponse::CasMismatch { current } => Self::CasMismatch {
+                current: current.clone(),
+            },
+            ClientResponse::Expiry { .. } => return Err(unsupported_for_version("expiry", 2)),
+            ClientResponse::Ttl { .. } => return Err(unsupported_for_version("ttl", 2)),
+            ClientResponse::ConditionalStored { .. } => {
+                return Err(unsupported_for_version("conditional_stored", 2));
+            }
+            ClientResponse::CompareValueApplied { .. } => {
+                return Err(unsupported_for_version("compare_value_applied", 2));
+            }
+        })
+    }
+}
+
+impl TryFrom<&ClientResponse> for ResponseV3 {
+    type Error = ClientProtocolError;
+
+    fn try_from(response: &ClientResponse) -> Result<Self, Self::Error> {
+        Ok(match response {
+            ClientResponse::Value { value } => Self::Value {
+                value: value.clone(),
+            },
+            ClientResponse::Stored => Self::Stored,
+            ClientResponse::Invalidated => Self::Invalidated,
+            ClientResponse::Batch { items } => Self::Batch {
+                items: items.clone(),
+            },
+            ClientResponse::Expiry { applied } => Self::Expiry { applied: *applied },
+            ClientResponse::Ttl { state } => Self::Ttl { state: *state },
+            ClientResponse::Evicted => Self::Evicted,
+            ClientResponse::Subscribed { from } => Self::Subscribed { from: *from },
+            ClientResponse::LockAcquired { fence } => Self::LockAcquired { fence: *fence },
+            ClientResponse::LockBusy => Self::LockBusy,
+            ClientResponse::LockReleased => Self::LockReleased,
+            ClientResponse::LockLeaseRenewed => Self::LockLeaseRenewed,
+            ClientResponse::LockOwnership { fence, locked } => Self::LockOwnership {
+                fence: *fence,
+                locked: *locked,
+            },
+            ClientResponse::CasApplied { new_version } => Self::CasApplied {
+                new_version: *new_version,
+            },
+            ClientResponse::CasMismatch { current } => Self::CasMismatch {
+                current: current.clone(),
+            },
+            ClientResponse::ConditionalStored { .. } => {
+                return Err(unsupported_for_version("conditional_stored", 3));
+            }
+            ClientResponse::CompareValueApplied { .. } => {
+                return Err(unsupported_for_version("compare_value_applied", 3));
+            }
+        })
+    }
+}
+
+impl From<ResponseV2> for ClientResponse {
+    fn from(response: ResponseV2) -> Self {
+        match response {
+            ResponseV2::Value { value } => Self::Value { value },
+            ResponseV2::Stored => Self::Stored,
+            ResponseV2::Invalidated => Self::Invalidated,
+            ResponseV2::Batch { items } => Self::Batch { items },
+            ResponseV2::Evicted => Self::Evicted,
+            ResponseV2::Subscribed { from } => Self::Subscribed { from },
+            ResponseV2::LockAcquired { fence } => Self::LockAcquired { fence },
+            ResponseV2::LockBusy => Self::LockBusy,
+            ResponseV2::LockReleased => Self::LockReleased,
+            ResponseV2::LockLeaseRenewed => Self::LockLeaseRenewed,
+            ResponseV2::LockOwnership { fence, locked } => Self::LockOwnership { fence, locked },
+            ResponseV2::CasApplied { new_version } => Self::CasApplied { new_version },
+            ResponseV2::CasMismatch { current } => Self::CasMismatch { current },
+        }
+    }
+}
+
+impl From<ResponseV3> for ClientResponse {
+    fn from(response: ResponseV3) -> Self {
+        match response {
+            ResponseV3::Value { value } => Self::Value { value },
+            ResponseV3::Stored => Self::Stored,
+            ResponseV3::Invalidated => Self::Invalidated,
+            ResponseV3::Batch { items } => Self::Batch { items },
+            ResponseV3::Expiry { applied } => Self::Expiry { applied },
+            ResponseV3::Ttl { state } => Self::Ttl { state },
+            ResponseV3::Evicted => Self::Evicted,
+            ResponseV3::Subscribed { from } => Self::Subscribed { from },
+            ResponseV3::LockAcquired { fence } => Self::LockAcquired { fence },
+            ResponseV3::LockBusy => Self::LockBusy,
+            ResponseV3::LockReleased => Self::LockReleased,
+            ResponseV3::LockLeaseRenewed => Self::LockLeaseRenewed,
+            ResponseV3::LockOwnership { fence, locked } => Self::LockOwnership { fence, locked },
+            ResponseV3::CasApplied { new_version } => Self::CasApplied { new_version },
+            ResponseV3::CasMismatch { current } => Self::CasMismatch { current },
+        }
+    }
+}
+
 fn redact_message(message: String) -> String {
     let mut redacted = message;
     for marker in ["value=", "secret=", "token="] {
@@ -1183,6 +2664,24 @@ pub enum ClientProtocolError {
         version: u16,
         /// Highest version this reader supports.
         supported_max: u16,
+    },
+    /// The frame header and the version carried by its message envelope disagree.
+    #[error(
+        "client protocol version mismatch: frame uses v{frame_version}, message uses v{message_version}"
+    )]
+    VersionMismatch {
+        /// Version encoded in the outer frame header.
+        frame_version: u16,
+        /// Version encoded in the inner handshake or request/response envelope.
+        message_version: u16,
+    },
+    /// A message variant did not exist in the requested historical wire version.
+    #[error("client protocol operation {operation} is unavailable in wire version {version}")]
+    UnsupportedMessageForVersion {
+        /// Stable operation name used for diagnostics without serializing payload data.
+        operation: &'static str,
+        /// Historical wire version requested by the caller.
+        version: u16,
     },
     /// Payload codec failed.
     #[error("client protocol codec error: {0}")]

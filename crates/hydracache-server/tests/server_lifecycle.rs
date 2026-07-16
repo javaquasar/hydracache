@@ -9,6 +9,7 @@ use std::{
     },
 };
 
+use hydracache::CacheOptions;
 use hydracache_redis_compat::{RedisCommand, RespValue};
 use hydracache_server::{
     serve_redis_listener, AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig,
@@ -660,6 +661,79 @@ fn daemon_serves_redis_resp_listener_only_when_enabled_and_drains_gracefully() {
     assert_eq!(runtime.redis_active_connections(), 0);
     assert_eq!(runtime.redis_surface_drain().unwrap().started_with, 1);
     assert_eq!(runtime.redis_surface_drain().unwrap().remaining, 0);
+}
+
+#[tokio::test]
+async fn redis_listener_core_parity() {
+    let disabled = ServerRuntime::new(ServerConfig::default()).unwrap().start();
+    let mut enabled_config = ServerConfig::default();
+    enabled_config.redis_api.enabled = true;
+    enabled_config.redis_api.listen_addr = "127.0.0.1:0".parse().unwrap();
+    let (enabled_runtime, redis_addr, shutdown_tx, serving) =
+        start_redis_listener(enabled_config).await;
+
+    let disabled_ready = disabled.ready();
+    let (enabled_ready, enabled_cache) = {
+        let enabled = enabled_runtime.lock().expect("server runtime mutex");
+        (enabled.ready(), enabled.cache().clone())
+    };
+    let disabled_cache = disabled.cache().clone();
+    assert_eq!(disabled_ready.ready, enabled_ready.ready);
+    assert_eq!(disabled_ready.storage_open, enabled_ready.storage_open);
+    assert_eq!(disabled_ready.cluster_ready, enabled_ready.cluster_ready);
+    assert_eq!(disabled_ready.accepting, enabled_ready.accepting);
+    assert_eq!(
+        disabled_ready.client_surface_ready,
+        enabled_ready.client_surface_ready
+    );
+    assert!(!disabled_ready.redis_surface_ready);
+    assert!(enabled_ready.redis_surface_ready);
+
+    for cache in [&disabled_cache, &enabled_cache] {
+        let loaded = cache
+            .get_or_load("core:parity", CacheOptions::new().tag("parity"), || async {
+                Ok::<_, std::io::Error>("value".to_owned())
+            })
+            .await
+            .unwrap();
+        assert_eq!(loaded, "value");
+        assert_eq!(
+            cache.get::<String>("core:parity").await.unwrap(),
+            Some("value".to_owned())
+        );
+        assert!(cache.invalidate_key("core:parity").await.unwrap());
+        assert_eq!(cache.get::<String>("core:parity").await.unwrap(), None);
+    }
+    assert_eq!(disabled_cache.stats(), enabled_cache.stats());
+
+    let core_before_redis = enabled_cache.stats();
+    let mut socket = TcpStream::connect(redis_addr).await.unwrap();
+    socket
+        .write_all(
+            b"*3\r\n$3\r\nSET\r\n$11\r\ncore:parity\r\n$10\r\nredis-only\r\n\
+              *2\r\n$3\r\nGET\r\n$11\r\ncore:parity\r\n\
+              *1\r\n$4\r\nQUIT\r\n",
+        )
+        .await
+        .unwrap();
+    let mut output = Vec::new();
+    socket.read_to_end(&mut output).await.unwrap();
+    assert_eq!(output, b"+OK\r\n$10\r\nredis-only\r\n+OK\r\n");
+
+    assert_eq!(enabled_cache.stats(), core_before_redis);
+    assert_eq!(
+        enabled_cache.get::<String>("core:parity").await.unwrap(),
+        None,
+        "the real optional RESP TCP listener must not share or mutate the core cache fast path"
+    );
+    assert_eq!(
+        disabled_cache.get::<String>("core:parity").await.unwrap(),
+        None
+    );
+    assert_eq!(disabled_cache.stats(), enabled_cache.stats());
+
+    drop(shutdown_tx);
+    serving.await.unwrap().unwrap();
 }
 
 #[test]

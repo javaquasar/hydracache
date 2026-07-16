@@ -11,9 +11,9 @@ use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
 use hydracache_client_protocol::{
-    BatchPutEntry, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope, ClientResponse,
-    ClientResponseEnvelope, CompareValueExpireMode, ConditionalPutCondition, Namespace,
-    StructuredKey, TtlState,
+    BatchPutEntry, ClientErrorCode, ClientErrorEnvelope, ClientRequest, ClientRequestEnvelope,
+    ClientResponse, ClientResponseEnvelope, CompareValueExpireMode, ConditionalPutCondition,
+    Namespace, StructuredKey, TtlState,
 };
 use hydracache_client_transport_axum::{ClientIdentity, ClientSurfaceState};
 use redis_protocol::resp2::{
@@ -23,7 +23,7 @@ use redis_protocol::resp2::{
 use redis_protocol::resp3::{
     decode::complete::decode_bytes as decode_resp3_bytes,
     encode::complete::extend_encode as extend_encode_resp3,
-    types::{BytesFrame as Resp3BytesFrame, FrameMap as Resp3FrameMap},
+    types::{BytesFrame as Resp3BytesFrame, FrameMap as Resp3FrameMap, Resp3Frame},
 };
 use subtle::ConstantTimeEq;
 use thiserror::Error;
@@ -521,6 +521,9 @@ pub enum RedisCompatError {
     /// The underlying RESP encoder rejected the response.
     #[error("RESP encode error: {0}")]
     Encode(String),
+    /// RESP3 attributes are deliberately outside the command subset.
+    #[error("RESP3 attributes are not supported on command frames")]
+    UnsupportedResp3Attributes,
     /// Buffered RESP frame is too large.
     #[error("RESP frame too large: {actual} bytes exceeds {max} bytes")]
     FrameTooLarge {
@@ -1480,6 +1483,27 @@ fn enforce_resp3_frame_limits(
     frame: &Resp3BytesFrame,
     limits: RespDecodeLimits,
 ) -> Result<(), RedisCompatError> {
+    // Attributes are metadata, not Redis command arguments. They still consume
+    // the same aggregate/string budgets as the command frame, then fail loud
+    // rather than being ignored before dispatch.
+    let has_attributes = if let Some(attributes) = frame.attributes() {
+        let actual = attributes.len().saturating_mul(2);
+        if actual > limits.max_array_elements {
+            return Err(RedisCompatError::ArrayTooLarge {
+                actual,
+                max: limits.max_array_elements,
+            });
+        }
+        for (key, value) in attributes {
+            enforce_resp3_frame_limits(key, limits)?;
+            enforce_resp3_frame_limits(value, limits)?;
+        }
+        true
+    } else {
+        false
+    };
+    // Validate the attached frame below as well, so attributes cannot mask a
+    // stricter size error in the command itself.
     match frame {
         Resp3BytesFrame::Array { data, .. } | Resp3BytesFrame::Push { data, .. } => {
             if data.len() > limits.max_array_elements {
@@ -1543,7 +1567,11 @@ fn enforce_resp3_frame_limits(
         | Resp3BytesFrame::Null
         | Resp3BytesFrame::Hello { .. } => {}
     }
-    Ok(())
+    if has_attributes {
+        Err(RedisCompatError::UnsupportedResp3Attributes)
+    } else {
+        Ok(())
+    }
 }
 
 /// Per-command translation context for the RESP edge.
@@ -2709,17 +2737,64 @@ fn hc_label_error(command: &'static str) -> &'static str {
 
 fn unexpected_response<T>(response: &ClientResponse) -> Result<T, RedisTranslationError> {
     Err(RedisTranslationError::UnexpectedClientResponse {
-        detail: format!("{response:?}"),
+        detail: format!(
+            "unexpected response kind: {}",
+            client_response_kind(response)
+        ),
     })
 }
 
+fn client_response_kind(response: &ClientResponse) -> &'static str {
+    match response {
+        ClientResponse::Value { .. } => "value",
+        ClientResponse::Stored => "stored",
+        ClientResponse::Invalidated => "invalidated",
+        ClientResponse::Batch { .. } => "batch",
+        ClientResponse::Expiry { .. } => "expiry",
+        ClientResponse::Ttl { .. } => "ttl",
+        ClientResponse::ConditionalStored { .. } => "conditional_stored",
+        ClientResponse::CompareValueApplied { .. } => "compare_value_applied",
+        ClientResponse::Evicted => "evicted",
+        ClientResponse::Subscribed { .. } => "subscribed",
+        ClientResponse::LockAcquired { .. } => "lock_acquired",
+        ClientResponse::LockBusy => "lock_busy",
+        ClientResponse::LockReleased => "lock_released",
+        ClientResponse::LockLeaseRenewed => "lock_lease_renewed",
+        ClientResponse::LockOwnership { .. } => "lock_ownership",
+        ClientResponse::CasApplied { .. } => "cas_applied",
+        ClientResponse::CasMismatch { .. } => "cas_mismatch",
+    }
+}
+
 fn client_error_to_resp(error: &ClientErrorEnvelope) -> RespValue {
-    RespValue::Error(format!("ERR HydraCache client error: {}", error.message))
+    RespValue::Error(format!(
+        "ERR HydraCache client error: {}",
+        normalized_client_error(error.code)
+    ))
 }
 
 fn client_error_to_unexpected(error: &ClientErrorEnvelope) -> RedisTranslationError {
     RedisTranslationError::UnexpectedClientResponse {
-        detail: format!("client error in batch response: {}", error.message),
+        detail: format!(
+            "client error in batch response: {}",
+            normalized_client_error(error.code)
+        ),
+    }
+}
+
+fn normalized_client_error(code: ClientErrorCode) -> &'static str {
+    match code {
+        ClientErrorCode::IncompatibleVersion => "incompatible protocol version",
+        ClientErrorCode::Unauthenticated => "authentication required",
+        ClientErrorCode::Unauthorized => "not authorized",
+        ClientErrorCode::TenantQuota => "tenant quota exceeded",
+        ClientErrorCode::RateLimited => "rate limited",
+        ClientErrorCode::ResidencyDenied => "residency policy denied",
+        ClientErrorCode::TooLarge => "request too large",
+        ClientErrorCode::DeadlineExceeded => "deadline exceeded",
+        ClientErrorCode::Conflict => "conflict",
+        ClientErrorCode::BackendUnavailable => "backend unavailable",
+        ClientErrorCode::MalformedFrame => "malformed request",
     }
 }
 
@@ -5980,5 +6055,1835 @@ mod tests {
         };
         let (_, output) = tokio::join!(serve, client);
         output
+    }
+}
+
+#[cfg(test)]
+mod translation_contract {
+    use super::*;
+    use hydracache_client_protocol::BatchItemStatus;
+    use serde_json::Value;
+    use std::collections::BTreeSet;
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+    enum RouteOwner {
+        Translator,
+        ConnectionState,
+        ListenerCache,
+        ListenerMetrics,
+        Transport,
+        DeploymentScope,
+    }
+
+    impl RouteOwner {
+        const fn manifest_name(self) -> &'static str {
+            match self {
+                Self::Translator => "translator",
+                Self::ConnectionState => "connection_state",
+                Self::ListenerCache => "listener_cache",
+                Self::ListenerMetrics => "listener_metrics",
+                Self::Transport => "transport",
+                Self::DeploymentScope => "deployment_scope",
+            }
+        }
+    }
+
+    // Stable IDs are shared with redis_compat_conformance.json. Keeping the
+    // owner here makes a newly documented route fail until executable routing
+    // evidence is added, while route_for_command below makes a new enum variant
+    // a compile-time exhaustiveness failure.
+    const ROUTING_CASES: &[(&str, RouteOwner)] = &[
+        ("ping", RouteOwner::Translator),
+        ("echo", RouteOwner::Translator),
+        ("quit", RouteOwner::ConnectionState),
+        ("hello-2", RouteOwner::ConnectionState),
+        ("hello-3", RouteOwner::ConnectionState),
+        ("auth", RouteOwner::ConnectionState),
+        ("hello-2-auth", RouteOwner::ConnectionState),
+        ("rediss-listener-tls", RouteOwner::Transport),
+        ("client-setname", RouteOwner::Translator),
+        ("client-setinfo", RouteOwner::Translator),
+        ("command", RouteOwner::Translator),
+        ("get", RouteOwner::Translator),
+        ("set-bare", RouteOwner::Translator),
+        ("mget", RouteOwner::Translator),
+        ("del", RouteOwner::Translator),
+        ("exists", RouteOwner::Translator),
+        ("mset", RouteOwner::Translator),
+        ("set-ex", RouteOwner::Translator),
+        ("set-px", RouteOwner::Translator),
+        ("setex", RouteOwner::Translator),
+        ("psetex", RouteOwner::Translator),
+        ("set-nx-px", RouteOwner::Translator),
+        ("set-nx-ex", RouteOwner::Translator),
+        ("eval-lock-release", RouteOwner::Translator),
+        ("evalsha-lock-release", RouteOwner::Translator),
+        ("eval-lock-extend", RouteOwner::Translator),
+        ("evalsha-lock-extend", RouteOwner::Translator),
+        ("eval-lock-reacquire", RouteOwner::Translator),
+        ("evalsha-lock-reacquire", RouteOwner::Translator),
+        ("script-load-lock-allowlist", RouteOwner::ListenerCache),
+        ("script-exists-lock-allowlist", RouteOwner::ListenerCache),
+        ("set-nx-without-ttl", RouteOwner::Translator),
+        ("set-xx", RouteOwner::Translator),
+        ("set-get", RouteOwner::Translator),
+        ("set-keepttl", RouteOwner::Translator),
+        ("set-exat", RouteOwner::Translator),
+        ("set-pxat", RouteOwner::Translator),
+        ("expire", RouteOwner::Translator),
+        ("pexpire", RouteOwner::Translator),
+        ("ttl", RouteOwner::Translator),
+        ("pttl", RouteOwner::Translator),
+        ("persist", RouteOwner::Translator),
+        ("select", RouteOwner::Translator),
+        ("info", RouteOwner::ListenerMetrics),
+        ("role", RouteOwner::Translator),
+        ("dbsize", RouteOwner::Translator),
+        ("type", RouteOwner::Translator),
+        ("scan", RouteOwner::Translator),
+        ("config", RouteOwner::Translator),
+        ("flushdb", RouteOwner::Translator),
+        ("flushall", RouteOwner::Translator),
+        ("hset", RouteOwner::Translator),
+        ("zadd", RouteOwner::Translator),
+        ("lists", RouteOwner::Translator),
+        ("streams", RouteOwner::Translator),
+        ("general-eval", RouteOwner::Translator),
+        ("multi", RouteOwner::Translator),
+        ("module", RouteOwner::Translator),
+        ("cluster-slots", RouteOwner::Translator),
+        ("cluster-nodes", RouteOwner::Translator),
+        ("cluster-info", RouteOwner::Translator),
+        ("cross-endpoint-get", RouteOwner::DeploymentScope),
+        ("cross-endpoint-mget", RouteOwner::DeploymentScope),
+        ("cross-endpoint-exists", RouteOwner::DeploymentScope),
+        ("cross-endpoint-del", RouteOwner::DeploymentScope),
+        ("cross-endpoint-mset", RouteOwner::DeploymentScope),
+        ("cross-endpoint-set-nx", RouteOwner::DeploymentScope),
+        ("cross-endpoint-lock-release", RouteOwner::DeploymentScope),
+        ("cross-endpoint-lock-extend", RouteOwner::DeploymentScope),
+        ("hc-stats", RouteOwner::Translator),
+        ("hc-diagnostics", RouteOwner::Translator),
+        ("hc-invalidate", RouteOwner::Translator),
+        ("hc-namespace", RouteOwner::Translator),
+        ("hc-tag", RouteOwner::Translator),
+        ("hc-settags", RouteOwner::Translator),
+        ("hc-invalidate-tag", RouteOwner::Translator),
+        ("del-concurrent-write-atomicity", RouteOwner::Translator),
+    ];
+
+    #[test]
+    fn translation_catalog_has_no_missing_or_extra_case_ids() {
+        let manifest: Value = serde_json::from_str(include_str!(
+            "../../../docs/integrations/redis_compat_conformance.json"
+        ))
+        .unwrap();
+        let rows = manifest["commands"].as_array().unwrap();
+        let expected = ROUTING_CASES.iter().copied().collect::<BTreeSet<_>>();
+        assert_eq!(
+            expected.len(),
+            ROUTING_CASES.len(),
+            "duplicate routing case id"
+        );
+
+        let mut actual = BTreeSet::new();
+        for row in rows {
+            let route = row["route"]
+                .as_str()
+                .unwrap_or_else(|| panic!("manifest row {:?} has no route", row["name"]));
+            let ids = row["case_ids"]
+                .as_array()
+                .unwrap_or_else(|| panic!("manifest row {:?} has no case_ids", row["name"]));
+            for id in ids {
+                let id = id.as_str().expect("case id must be a string");
+                let Some((_, owner)) = ROUTING_CASES.iter().find(|(known, _)| *known == id) else {
+                    panic!("manifest case id `{id}` is missing from the routing catalog");
+                };
+                assert_eq!(route, owner.manifest_name(), "route drift for case `{id}`");
+                assert!(
+                    actual.insert((id, *owner)),
+                    "duplicate manifest case id `{id}`"
+                );
+            }
+        }
+        assert_eq!(
+            actual, expected,
+            "manifest and executable routing cases drifted"
+        );
+    }
+
+    #[test]
+    fn routing_table_covers_every_supported_caveated_and_extension_manifest_row() {
+        let manifest: Value = serde_json::from_str(include_str!(
+            "../../../docs/integrations/redis_compat_conformance.json"
+        ))
+        .unwrap();
+        let catalog = ROUTING_CASES.iter().copied().collect::<BTreeSet<_>>();
+        let rows = manifest["commands"].as_array().unwrap();
+
+        for row in rows {
+            let status = row["status"].as_str().expect("manifest status");
+            if !matches!(
+                status,
+                "supported" | "supported_with_caveat" | "hydracache_extension"
+            ) {
+                continue;
+            }
+            let route = row["route"].as_str().expect("executable row route");
+            let case_ids = row["case_ids"].as_array().expect("executable row case_ids");
+            assert!(
+                !case_ids.is_empty(),
+                "executable manifest row {:?} has no characterized case",
+                row["name"]
+            );
+            for case_id in case_ids {
+                let case_id = case_id.as_str().expect("case id string");
+                let owner = ROUTING_CASES
+                    .iter()
+                    .find_map(|(known, owner)| (*known == case_id).then_some(*owner))
+                    .unwrap_or_else(|| panic!("unrouted executable case `{case_id}`"));
+                assert_eq!(route, owner.manifest_name(), "route drift for `{case_id}`");
+                assert!(catalog.contains(&(case_id, owner)));
+            }
+        }
+    }
+
+    fn route_for_command(command: &RedisCommand) -> RouteOwner {
+        match command {
+            RedisCommand::Quit | RedisCommand::Hello { .. } | RedisCommand::Auth { .. } => {
+                RouteOwner::ConnectionState
+            }
+            RedisCommand::ScriptLoad { .. } | RedisCommand::ScriptExists { .. } => {
+                RouteOwner::ListenerCache
+            }
+            RedisCommand::Info { .. } => RouteOwner::ListenerMetrics,
+            RedisCommand::Ping { .. }
+            | RedisCommand::Echo { .. }
+            | RedisCommand::ClientSetName { .. }
+            | RedisCommand::ClientSetInfo { .. }
+            | RedisCommand::Command
+            | RedisCommand::Select { .. }
+            | RedisCommand::Type { .. }
+            | RedisCommand::Get { .. }
+            | RedisCommand::Set { .. }
+            | RedisCommand::Mset { .. }
+            | RedisCommand::Mget { .. }
+            | RedisCommand::Del { .. }
+            | RedisCommand::Exists { .. }
+            | RedisCommand::Expire { .. }
+            | RedisCommand::Persist { .. }
+            | RedisCommand::Ttl { .. }
+            | RedisCommand::Eval { .. }
+            | RedisCommand::EvalSha { .. }
+            | RedisCommand::HcStats
+            | RedisCommand::HcDiagnostics
+            | RedisCommand::HcInvalidate { .. }
+            | RedisCommand::HcNamespace { .. }
+            | RedisCommand::HcTag { .. }
+            | RedisCommand::HcSetTags { .. }
+            | RedisCommand::HcInvalidateTag { .. }
+            | RedisCommand::HcCandidate { .. }
+            | RedisCommand::HealthProbeCandidate { .. }
+            | RedisCommand::AdminDisabled { .. }
+            | RedisCommand::WrongArity { .. }
+            | RedisCommand::Unsupported { .. } => RouteOwner::Translator,
+        }
+    }
+
+    #[test]
+    fn supported_surface_routes_freeze_connection_listener_and_translator_owners() {
+        assert_eq!(
+            route_for_command(&RedisCommand::Hello {
+                version: 3,
+                auth: None,
+            }),
+            RouteOwner::ConnectionState
+        );
+        assert_eq!(
+            route_for_command(&RedisCommand::ScriptExists { shas: vec![] }),
+            RouteOwner::ListenerCache
+        );
+        assert_eq!(
+            route_for_command(&RedisCommand::Info { section: None }),
+            RouteOwner::ListenerMetrics
+        );
+        assert_eq!(
+            route_for_command(&RedisCommand::Get { key: b"k".to_vec() }),
+            RouteOwner::Translator
+        );
+        assert!(ROUTING_CASES
+            .iter()
+            .any(|(_, owner)| *owner == RouteOwner::Transport));
+    }
+
+    fn namespace() -> Namespace {
+        Namespace::new(DEFAULT_REDIS_NAMESPACE).unwrap()
+    }
+
+    fn key(hex: &str) -> StructuredKey {
+        StructuredKey::new(vec![format!("redis-binary-v1-{hex}")]).unwrap()
+    }
+
+    fn one_request_plan(
+        suffix: &str,
+        request: ClientRequest,
+        reducer: RedisResponseReducer,
+    ) -> RedisTranslatedCommand {
+        RedisTranslatedCommand::Execute(RedisExecutionPlan {
+            initial_requests: vec![ClientRequestEnvelope::new(
+                format!("redis-resp-{suffix}"),
+                request,
+            )],
+            followup: RedisFollowup::None,
+            reducer,
+        })
+    }
+
+    #[test]
+    fn every_translator_owned_case_maps_to_frozen_complete_execution_plan() {
+        let ns = namespace();
+        let cases = vec![
+            (
+                "ping",
+                RedisCommand::Ping { message: None },
+                RedisTranslatedCommand::Immediate(RespValue::SimpleString("PONG")),
+            ),
+            (
+                "echo",
+                RedisCommand::Echo {
+                    message: b"binary\0echo".to_vec(),
+                },
+                RedisTranslatedCommand::Immediate(RespValue::BulkString(b"binary\0echo".to_vec())),
+            ),
+            (
+                "client-setname",
+                RedisCommand::ClientSetName {
+                    name: b"driver".to_vec(),
+                },
+                RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK")),
+            ),
+            (
+                "client-setinfo",
+                RedisCommand::ClientSetInfo {
+                    args: vec![b"LIB-NAME".to_vec(), b"driver".to_vec()],
+                },
+                RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK")),
+            ),
+            (
+                "command",
+                RedisCommand::Command,
+                RedisTranslatedCommand::Immediate(command_metadata_response()),
+            ),
+            (
+                "select",
+                RedisCommand::Select { db: b"0".to_vec() },
+                RedisTranslatedCommand::Immediate(RespValue::SimpleString("OK")),
+            ),
+            (
+                "type",
+                RedisCommand::Type { key: b"k".to_vec() },
+                one_request_plan(
+                    "type",
+                    ClientRequest::Get {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                    },
+                    RedisResponseReducer::Type,
+                ),
+            ),
+            (
+                "get",
+                RedisCommand::Get { key: b"k".to_vec() },
+                one_request_plan(
+                    "get",
+                    ClientRequest::Get {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                    },
+                    RedisResponseReducer::Get,
+                ),
+            ),
+            (
+                "set-bare",
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"v".to_vec(),
+                    options: vec![],
+                },
+                one_request_plan(
+                    "set",
+                    ClientRequest::Put {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        value: b"v".to_vec(),
+                        ttl_ms: None,
+                        dimensions: vec![],
+                    },
+                    RedisResponseReducer::Set,
+                ),
+            ),
+            (
+                "set-ex",
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"v".to_vec(),
+                    options: vec![b"EX".to_vec(), b"2".to_vec()],
+                },
+                one_request_plan(
+                    "set",
+                    ClientRequest::Put {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        value: b"v".to_vec(),
+                        ttl_ms: Some(2_000),
+                        dimensions: vec![],
+                    },
+                    RedisResponseReducer::Set,
+                ),
+            ),
+            (
+                "set-px",
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"v".to_vec(),
+                    options: vec![b"PX".to_vec(), b"250".to_vec()],
+                },
+                one_request_plan(
+                    "set",
+                    ClientRequest::Put {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        value: b"v".to_vec(),
+                        ttl_ms: Some(250),
+                        dimensions: vec![],
+                    },
+                    RedisResponseReducer::Set,
+                ),
+            ),
+            (
+                "set-nx-px",
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"owner".to_vec(),
+                    options: vec![b"NX".to_vec(), b"PX".to_vec(), b"250".to_vec()],
+                },
+                one_request_plan(
+                    "set",
+                    ClientRequest::ConditionalPut {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        value: b"owner".to_vec(),
+                        ttl_ms: Some(250),
+                        condition: ConditionalPutCondition::IfAbsent,
+                    },
+                    RedisResponseReducer::Set,
+                ),
+            ),
+            (
+                "set-nx-ex",
+                RedisCommand::Set {
+                    key: b"k".to_vec(),
+                    value: b"owner".to_vec(),
+                    options: vec![b"NX".to_vec(), b"EX".to_vec(), b"2".to_vec()],
+                },
+                one_request_plan(
+                    "set",
+                    ClientRequest::ConditionalPut {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        value: b"owner".to_vec(),
+                        ttl_ms: Some(2_000),
+                        condition: ConditionalPutCondition::IfAbsent,
+                    },
+                    RedisResponseReducer::Set,
+                ),
+            ),
+            (
+                "mset",
+                RedisCommand::Mset {
+                    entries: vec![
+                        (b"a".to_vec(), b"1".to_vec()),
+                        (b"b".to_vec(), b"2".to_vec()),
+                    ],
+                },
+                one_request_plan(
+                    "mset",
+                    ClientRequest::BatchPut {
+                        ns: ns.clone(),
+                        entries: vec![
+                            BatchPutEntry {
+                                key: key("61"),
+                                value: b"1".to_vec(),
+                            },
+                            BatchPutEntry {
+                                key: key("62"),
+                                value: b"2".to_vec(),
+                            },
+                        ],
+                    },
+                    RedisResponseReducer::Mset,
+                ),
+            ),
+            (
+                "mget",
+                RedisCommand::Mget {
+                    keys: vec![b"a".to_vec(), b"b".to_vec()],
+                },
+                one_request_plan(
+                    "mget",
+                    ClientRequest::BatchGet {
+                        ns: ns.clone(),
+                        keys: vec![key("61"), key("62")],
+                    },
+                    RedisResponseReducer::Mget { expected_items: 2 },
+                ),
+            ),
+            (
+                "exists",
+                RedisCommand::Exists {
+                    keys: vec![b"a".to_vec(), b"a".to_vec()],
+                },
+                one_request_plan(
+                    "exists",
+                    ClientRequest::BatchGet {
+                        ns: ns.clone(),
+                        keys: vec![key("61"), key("61")],
+                    },
+                    RedisResponseReducer::Exists { expected_items: 2 },
+                ),
+            ),
+            (
+                "expire",
+                RedisCommand::Expire {
+                    key: b"k".to_vec(),
+                    ttl: b"2".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+                one_request_plan(
+                    "expire",
+                    ClientRequest::Expire {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        ttl_ms: 2_000,
+                    },
+                    RedisResponseReducer::Expiry,
+                ),
+            ),
+            (
+                "pexpire",
+                RedisCommand::Expire {
+                    key: b"k".to_vec(),
+                    ttl: b"250".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+                one_request_plan(
+                    "expire",
+                    ClientRequest::Expire {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                        ttl_ms: 250,
+                    },
+                    RedisResponseReducer::Expiry,
+                ),
+            ),
+            (
+                "persist",
+                RedisCommand::Persist { key: b"k".to_vec() },
+                one_request_plan(
+                    "persist",
+                    ClientRequest::Persist {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                    },
+                    RedisResponseReducer::Expiry,
+                ),
+            ),
+            (
+                "ttl",
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Seconds,
+                },
+                one_request_plan(
+                    "ttl",
+                    ClientRequest::GetTtl {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                    },
+                    RedisResponseReducer::Ttl {
+                        unit: RedisTtlUnit::Seconds,
+                    },
+                ),
+            ),
+            (
+                "pttl",
+                RedisCommand::Ttl {
+                    key: b"k".to_vec(),
+                    unit: RedisTtlUnit::Milliseconds,
+                },
+                one_request_plan(
+                    "ttl",
+                    ClientRequest::GetTtl {
+                        ns: ns.clone(),
+                        key: key("6b"),
+                    },
+                    RedisResponseReducer::Ttl {
+                        unit: RedisTtlUnit::Milliseconds,
+                    },
+                ),
+            ),
+            (
+                "hc-invalidate",
+                RedisCommand::HcInvalidate { key: b"k".to_vec() },
+                one_request_plan(
+                    "hc-invalidate",
+                    ClientRequest::Invalidate { ns, key: key("6b") },
+                    RedisResponseReducer::Invalidate,
+                ),
+            ),
+            (
+                "hc-stats",
+                RedisCommand::HcStats,
+                RedisTranslatedCommand::Extension(RedisExtensionRequest::Stats),
+            ),
+            (
+                "hc-diagnostics",
+                RedisCommand::HcDiagnostics,
+                RedisTranslatedCommand::Extension(RedisExtensionRequest::Diagnostics),
+            ),
+            (
+                "hc-namespace",
+                RedisCommand::HcNamespace {
+                    namespace: Some(b"redis".to_vec()),
+                },
+                RedisTranslatedCommand::Extension(RedisExtensionRequest::Namespace {
+                    requested: Some("redis".to_owned()),
+                }),
+            ),
+            (
+                "hc-tag",
+                RedisCommand::HcTag {
+                    key: b"k".to_vec(),
+                    tags: vec![b"alpha".to_vec(), b"beta".to_vec()],
+                },
+                RedisTranslatedCommand::Extension(RedisExtensionRequest::Tag {
+                    key: b"k".to_vec(),
+                    tags: vec!["alpha".to_owned(), "beta".to_owned()],
+                }),
+            ),
+            (
+                "hc-settags",
+                RedisCommand::HcSetTags {
+                    key: b"k".to_vec(),
+                    tags: vec![b"alpha".to_vec(), b"beta".to_vec()],
+                },
+                RedisTranslatedCommand::Extension(RedisExtensionRequest::SetTags {
+                    key: b"k".to_vec(),
+                    tags: vec!["alpha".to_owned(), "beta".to_owned()],
+                }),
+            ),
+            (
+                "hc-invalidate-tag",
+                RedisCommand::HcInvalidateTag {
+                    tag: b"alpha".to_vec(),
+                },
+                RedisTranslatedCommand::Extension(RedisExtensionRequest::InvalidateTag {
+                    tag: "alpha".to_owned(),
+                }),
+            ),
+        ];
+
+        let context = RedisTranslationContext::default();
+        let mut ids = BTreeSet::new();
+        for (id, command, expected) in cases {
+            assert!(ids.insert(id), "duplicate canonical translation id `{id}`");
+            assert_eq!(
+                translate_redis_command(command, &context).unwrap(),
+                expected,
+                "{id}"
+            );
+        }
+
+        // These cases have richer dedicated tables below: aliases prove wire
+        // normalization, DEL freezes its two-phase follow-up, and lock scripts
+        // enumerate every reviewed EVAL/EVALSHA shape. Their stable case ids
+        // still participate in this exhaustive manifest coverage assertion.
+        for specialized_id in [
+            "setex",
+            "psetex",
+            "del",
+            "eval-lock-release",
+            "evalsha-lock-release",
+            "eval-lock-extend",
+            "evalsha-lock-extend",
+            "eval-lock-reacquire",
+            "evalsha-lock-reacquire",
+        ] {
+            assert!(
+                ids.insert(specialized_id),
+                "duplicate specialized translation id `{specialized_id}`"
+            );
+        }
+
+        let manifest: Value = serde_json::from_str(include_str!(
+            "../../../docs/integrations/redis_compat_conformance.json"
+        ))
+        .unwrap();
+        let expected = manifest["commands"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|row| {
+                row["route"] == "translator"
+                    && matches!(
+                        row["status"].as_str(),
+                        Some("supported" | "supported_with_caveat" | "hydracache_extension")
+                    )
+            })
+            .flat_map(|row| row["case_ids"].as_array().unwrap())
+            .map(|id| id.as_str().unwrap())
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            ids, expected,
+            "translator-owned executable manifest cases drifted from their frozen tables"
+        );
+    }
+
+    #[test]
+    fn wire_aliases_decode_to_the_canonical_translation_case() {
+        let context = RedisTranslationContext::default();
+        let pairs: &[(&[u8], &[u8])] = &[
+            (
+                b"*5\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n$2\r\nEX\r\n$1\r\n2\r\n",
+                b"*4\r\n$5\r\nSETEX\r\n$1\r\nk\r\n$1\r\n2\r\n$1\r\nv\r\n",
+            ),
+            (
+                b"*5\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n$2\r\nPX\r\n$3\r\n250\r\n",
+                b"*4\r\n$6\r\nPSETEX\r\n$1\r\nk\r\n$3\r\n250\r\n$1\r\nv\r\n",
+            ),
+            (
+                b"*3\r\n$6\r\nEXPIRE\r\n$1\r\nk\r\n$1\r\n1\r\n",
+                b"*3\r\n$7\r\nPEXPIRE\r\n$1\r\nk\r\n$4\r\n1000\r\n",
+            ),
+        ];
+        for (canonical, alias) in pairs {
+            let (canonical, _) = decode_resp2_command(canonical).unwrap().unwrap();
+            let (alias, _) = decode_resp2_command(alias).unwrap().unwrap();
+            assert_eq!(
+                translate_redis_command(canonical, &context).unwrap(),
+                translate_redis_command(alias, &context).unwrap()
+            );
+        }
+    }
+
+    #[test]
+    fn del_translation_freezes_lookup_followups_deduplication_and_reducer() {
+        let context = RedisTranslationContext::default();
+        let RedisTranslatedCommand::Execute(plan) = translate_redis_command(
+            RedisCommand::Del {
+                keys: vec![b"a".to_vec(), b"a".to_vec(), b"b".to_vec()],
+            },
+            &context,
+        )
+        .unwrap() else {
+            panic!("DEL must execute through the client surface");
+        };
+        assert_eq!(
+            plan,
+            RedisExecutionPlan {
+                initial_requests: vec![ClientRequestEnvelope::new(
+                    "redis-resp-del-lookup",
+                    ClientRequest::BatchGet {
+                        ns: namespace(),
+                        keys: vec![key("61"), key("62")],
+                    },
+                )],
+                followup: RedisFollowup::InvalidateExisting {
+                    namespace: namespace(),
+                    keys: vec![key("61"), key("62")],
+                    request_id: "redis-resp-del".to_owned(),
+                },
+                reducer: RedisResponseReducer::Del { expected_items: 2 },
+            }
+        );
+
+        let lookup = ClientResponseEnvelope::ok(
+            "redis-resp-del-lookup",
+            ClientResponse::Batch {
+                items: vec![
+                    BatchItemStatus {
+                        index: 0,
+                        result: Ok(Some(b"1".to_vec())),
+                    },
+                    BatchItemStatus {
+                        index: 1,
+                        result: Ok(None),
+                    },
+                ],
+            },
+        );
+        let followups = plan.followup_requests(&[lookup]).unwrap();
+        assert_eq!(followups.len(), 1);
+        assert_eq!(
+            followups[0].request,
+            ClientRequest::Invalidate {
+                ns: namespace(),
+                key: key("61")
+            }
+        );
+    }
+
+    #[test]
+    fn lock_eval_and_evalsha_cases_freeze_all_allowlisted_script_shapes() {
+        struct Case {
+            label: &'static str,
+            script: &'static str,
+            args: Vec<Vec<u8>>,
+            suffix: &'static str,
+            request: ClientRequest,
+            reducer: RedisResponseReducer,
+        }
+        let ns = namespace();
+        let lock_key = key("6c6f636b");
+        let release = |script, label| Case {
+            label,
+            script,
+            args: vec![b"lock".to_vec(), b"owner".to_vec()],
+            suffix: "eval-release",
+            request: ClientRequest::CompareValueAndInvalidate {
+                ns: ns.clone(),
+                key: lock_key.clone(),
+                expected_value: b"owner".to_vec(),
+            },
+            reducer: RedisResponseReducer::CompareValueApplied,
+        };
+        let replace = |script, label| Case {
+            label,
+            script,
+            args: vec![b"lock".to_vec(), b"owner".to_vec(), b"500".to_vec()],
+            suffix: "eval-extend",
+            request: ClientRequest::CompareValueAndExpire {
+                ns: ns.clone(),
+                key: lock_key.clone(),
+                expected_value: b"owner".to_vec(),
+                ttl_ms: 500,
+                mode: CompareValueExpireMode::Replace,
+            },
+            reducer: RedisResponseReducer::CompareValueApplied,
+        };
+        let cases = vec![
+            release(LOCK_RELEASE_SCRIPT_SIMPLE, "simple release"),
+            release(LOCK_RELEASE_SCRIPT_REDIS_PY, "redis-py release"),
+            release(LOCK_RELEASE_SCRIPT_REDLOCK, "redlock release"),
+            replace(LOCK_EXTEND_SCRIPT_SIMPLE, "simple extend"),
+            replace(LOCK_REACQUIRE_SCRIPT_REDIS_PY, "redis-py reacquire"),
+            replace(LOCK_EXTEND_SCRIPT_REDLOCK, "redlock extend"),
+            Case {
+                label: "redlock acquire",
+                script: LOCK_ACQUIRE_SCRIPT_REDLOCK,
+                args: vec![b"lock".to_vec(), b"owner".to_vec(), b"500".to_vec()],
+                suffix: "eval-acquire",
+                request: ClientRequest::ConditionalPut {
+                    ns: ns.clone(),
+                    key: lock_key.clone(),
+                    value: b"owner".to_vec(),
+                    ttl_ms: Some(500),
+                    condition: ConditionalPutCondition::IfAbsent,
+                },
+                reducer: RedisResponseReducer::ConditionalStoredInteger,
+            },
+            Case {
+                label: "redis-py extend add",
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY,
+                args: vec![
+                    b"lock".to_vec(),
+                    b"owner".to_vec(),
+                    b"500".to_vec(),
+                    b"0".to_vec(),
+                ],
+                suffix: "eval-extend",
+                request: ClientRequest::CompareValueAndExpire {
+                    ns: ns.clone(),
+                    key: lock_key.clone(),
+                    expected_value: b"owner".to_vec(),
+                    ttl_ms: 500,
+                    mode: CompareValueExpireMode::AddToRemaining,
+                },
+                reducer: RedisResponseReducer::CompareValueApplied,
+            },
+            Case {
+                label: "redis-py extend replace-if-expiring",
+                script: LOCK_EXTEND_SCRIPT_REDIS_PY,
+                args: vec![
+                    b"lock".to_vec(),
+                    b"owner".to_vec(),
+                    b"500".to_vec(),
+                    b"1".to_vec(),
+                ],
+                suffix: "eval-extend",
+                request: ClientRequest::CompareValueAndExpire {
+                    ns,
+                    key: lock_key,
+                    expected_value: b"owner".to_vec(),
+                    ttl_ms: 500,
+                    mode: CompareValueExpireMode::ReplaceIfExpiring,
+                },
+                reducer: RedisResponseReducer::CompareValueApplied,
+            },
+        ];
+        let context = RedisTranslationContext::default();
+        for case in cases {
+            let expected = one_request_plan(case.suffix, case.request, case.reducer);
+            let eval = RedisCommand::Eval {
+                script: case.script.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: case.args.clone(),
+            };
+            assert_eq!(
+                translate_redis_command(eval, &context).unwrap(),
+                expected,
+                "{} EVAL",
+                case.label
+            );
+            let evalsha = RedisCommand::EvalSha {
+                sha: sha1_hex(case.script.as_bytes()).into_bytes(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: case.args,
+            };
+            assert_eq!(
+                translate_redis_command(evalsha, &context).unwrap(),
+                expected,
+                "{} EVALSHA",
+                case.label
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod resp3_contract {
+    use super::*;
+    use hydracache_client_transport_axum::ClientSurfaceLimits;
+    use proptest::prelude::*;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    fn server() -> RedisRespServer {
+        RedisRespServer::new(
+            Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap()),
+            RedisListenerConfig::default(),
+        )
+        .unwrap()
+    }
+
+    fn wire_command(args: &[&[u8]]) -> Vec<u8> {
+        let mut output = format!("*{}\r\n", args.len()).into_bytes();
+        for arg in args {
+            output.extend_from_slice(format!("${}\r\n", arg.len()).as_bytes());
+            output.extend_from_slice(arg);
+            output.extend_from_slice(b"\r\n");
+        }
+        output
+    }
+
+    async fn exchange(server: &RedisRespServer, input: Vec<u8>) -> Vec<u8> {
+        let capacity = input.len().max(4096) * 2;
+        let (mut client, server_io) = tokio::io::duplex(capacity);
+        let serve = async { server.serve_connection(server_io).await.unwrap() };
+        let client = async {
+            client.write_all(&input).await.unwrap();
+            let mut output = Vec::new();
+            client.read_to_end(&mut output).await.unwrap();
+            output
+        };
+        let (_, output) = tokio::join!(serve, client);
+        output
+    }
+
+    #[test]
+    fn resp3_null_encoder_uses_underscore_and_resp2_encoder_uses_dash_one() {
+        assert_eq!(encode_resp2_value(RespValue::Null).unwrap(), b"$-1\r\n");
+        assert_eq!(encode_resp3_value(RespValue::Null).unwrap(), b"_\r\n");
+    }
+
+    #[test]
+    fn resp3_scalar_array_binary_bulk_and_error_frames_match_golden_bytes() {
+        assert_eq!(
+            encode_resp3_value(RespValue::SimpleString("OK")).unwrap(),
+            b"+OK\r\n"
+        );
+        assert_eq!(
+            encode_resp3_value(RespValue::Integer(-2)).unwrap(),
+            b":-2\r\n"
+        );
+        assert_eq!(
+            encode_resp3_value(RespValue::BulkString(vec![0, b'\r', b'\n', 0xff])).unwrap(),
+            b"$4\r\n\0\r\n\xff\r\n"
+        );
+        assert_eq!(
+            encode_resp3_value(RespValue::Array(vec![
+                RespValue::BulkString(b"v".to_vec()),
+                RespValue::Null,
+                RespValue::Integer(1),
+            ]))
+            .unwrap(),
+            b"*3\r\n$1\r\nv\r\n_\r\n:1\r\n"
+        );
+        assert_eq!(
+            encode_resp3_value(RespValue::Error("ERR syntax error".to_owned())).unwrap(),
+            b"-ERR syntax error\r\n"
+        );
+    }
+
+    #[test]
+    fn resp3_partial_pipeline_consumed_and_limit_boundaries_match_resp2() {
+        let first = b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n";
+        let second = b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n";
+        assert!(decode_resp3_command(&first[..first.len() - 1])
+            .unwrap()
+            .is_none());
+
+        let mut pipeline = first.to_vec();
+        pipeline.extend_from_slice(second);
+        let (resp2_set, resp2_consumed) = decode_resp2_command(&pipeline).unwrap().unwrap();
+        let (resp3_set, resp3_consumed) = decode_resp3_command(&pipeline).unwrap().unwrap();
+        assert_eq!(resp3_set, resp2_set);
+        assert_eq!(resp3_consumed, resp2_consumed);
+        assert_eq!(resp3_consumed, first.len());
+        let (resp3_get, consumed) = decode_resp3_command(&pipeline[resp3_consumed..])
+            .unwrap()
+            .unwrap();
+        assert!(matches!(resp3_get, RedisCommand::Get { .. }));
+        assert_eq!(consumed, second.len());
+
+        let array_limits = RespDecodeLimits {
+            max_frame_bytes: 1024,
+            max_array_elements: 2,
+            max_bulk_string_bytes: 128,
+        };
+        for decode in [
+            decode_resp2_command_with_limits(first, array_limits),
+            decode_resp3_command_with_limits(first, array_limits),
+        ] {
+            assert!(matches!(
+                decode,
+                Err(RedisCompatError::ArrayTooLarge { actual: 3, max: 2 })
+            ));
+        }
+        let bulk_limits = RespDecodeLimits {
+            max_frame_bytes: 1024,
+            max_array_elements: 8,
+            max_bulk_string_bytes: 2,
+        };
+        for decode in [
+            decode_resp2_command_with_limits(second, bulk_limits),
+            decode_resp3_command_with_limits(second, bulk_limits),
+        ] {
+            assert!(matches!(
+                decode,
+                Err(RedisCompatError::BulkStringTooLarge { actual: 3, max: 2 })
+            ));
+        }
+
+        let attributed = b"|1\r\n$3\r\nkey\r\n$5\r\nvalue\r\n*2\r\n$3\r\nGET\r\n$1\r\nk\r\n";
+        assert!(matches!(
+            decode_resp3_command_with_limits(
+                attributed,
+                RespDecodeLimits {
+                    max_frame_bytes: 1024,
+                    max_array_elements: 8,
+                    max_bulk_string_bytes: 4,
+                }
+            ),
+            Err(RedisCompatError::BulkStringTooLarge { actual: 5, max: 4 })
+        ));
+        assert!(matches!(
+            decode_resp3_command_with_limits(
+                attributed,
+                RespDecodeLimits {
+                    max_frame_bytes: 1024,
+                    max_array_elements: 1,
+                    max_bulk_string_bytes: 128,
+                }
+            ),
+            Err(RedisCompatError::ArrayTooLarge { actual: 2, max: 1 })
+        ));
+    }
+
+    #[test]
+    fn resp3_hello_map_matches_normalized_semantics_without_order_assumption() {
+        let encoded = encode_resp3_value(hello_response(RespDialect::Resp3)).unwrap();
+        assert!(encoded.starts_with(b"%7\r\n"));
+        let bytes = Bytes::from(encoded.clone());
+        let (frame, consumed) = decode_resp3_bytes(&bytes).unwrap().unwrap();
+        assert_eq!(consumed, encoded.len());
+        let Resp3BytesFrame::Map { data, attributes } = frame else {
+            panic!("HELLO 3 must encode as a RESP3 map");
+        };
+        assert!(attributes.is_none());
+        assert_eq!(data.len(), 7);
+        assert!(data.iter().any(|(key, value)| {
+            matches!(
+                (key, value),
+                (
+                    Resp3BytesFrame::SimpleString { data, .. },
+                    Resp3BytesFrame::Number { data: 3, .. }
+                ) if data.as_ref() == b"proto"
+            )
+        }));
+    }
+
+    #[test]
+    fn all_canonical_wire_cases_decode_equivalently_under_resp2_and_resp3() {
+        let cases = vec![
+            wire_command(&[b"PING"]),
+            wire_command(&[b"ECHO", b"hello"]),
+            wire_command(&[b"QUIT"]),
+            wire_command(&[b"HELLO", b"3"]),
+            wire_command(&[b"AUTH", b"secret"]),
+            wire_command(&[b"CLIENT", b"SETNAME", b"client"]),
+            wire_command(&[b"CLIENT", b"SETINFO", b"LIB-NAME", b"driver"]),
+            wire_command(&[b"COMMAND"]),
+            wire_command(&[b"GET", b"k"]),
+            wire_command(&[b"SET", b"k", b"v"]),
+            wire_command(&[b"SET", b"k", b"v", b"NX", b"PX", b"500"]),
+            wire_command(&[b"SETEX", b"k", b"2", b"v"]),
+            wire_command(&[b"PSETEX", b"k", b"250", b"v"]),
+            wire_command(&[b"MGET", b"a", b"b"]),
+            wire_command(&[b"DEL", b"a", b"b"]),
+            wire_command(&[b"EXISTS", b"a", b"b"]),
+            wire_command(&[b"MSET", b"a", b"1", b"b", b"2"]),
+            wire_command(&[b"EXPIRE", b"k", b"2"]),
+            wire_command(&[b"PEXPIRE", b"k", b"250"]),
+            wire_command(&[b"TTL", b"k"]),
+            wire_command(&[b"PTTL", b"k"]),
+            wire_command(&[b"PERSIST", b"k"]),
+            wire_command(&[b"SELECT", b"0"]),
+            wire_command(&[b"INFO"]),
+            wire_command(&[b"TYPE", b"k"]),
+            wire_command(&[b"SCRIPT", b"LOAD", LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes()]),
+            wire_command(&[
+                b"SCRIPT",
+                b"EXISTS",
+                b"e9f69f2beb755be68b5e456ee2ce9aadfbc4ebf4",
+            ]),
+            wire_command(&[
+                b"EVAL",
+                LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes(),
+                b"1",
+                b"k",
+                b"owner",
+            ]),
+            wire_command(&[
+                b"EVALSHA",
+                b"e9f69f2beb755be68b5e456ee2ce9aadfbc4ebf4",
+                b"1",
+                b"k",
+                b"owner",
+            ]),
+            wire_command(&[b"HC.STATS"]),
+            wire_command(&[b"HC.DIAGNOSTICS"]),
+            wire_command(&[b"HC.INVALIDATE", b"k"]),
+            wire_command(&[b"HC.NAMESPACE"]),
+            wire_command(&[b"HC.TAG", b"k", b"tag"]),
+            wire_command(&[b"HC.SETTAGS", b"k", b"tag"]),
+            wire_command(&[b"HC.INVALIDATE_TAG", b"tag"]),
+            wire_command(&[b"CONFIG", b"GET", b"*"]),
+            wire_command(&[b"HSET", b"k", b"f", b"v"]),
+            wire_command(&[b"CLUSTER", b"SLOTS"]),
+        ];
+        for wire in cases {
+            let (resp2, resp2_consumed) = decode_resp2_command(&wire).unwrap().unwrap();
+            let (resp3, resp3_consumed) = decode_resp3_command(&wire).unwrap().unwrap();
+            assert_eq!(resp3, resp2, "dialect-neutral decode drift for {wire:?}");
+            assert_eq!(resp2_consumed, wire.len());
+            assert_eq!(resp3_consumed, wire.len());
+        }
+    }
+
+    #[tokio::test]
+    async fn resp3_top_level_nested_and_attributed_aggregates_fail_before_dispatch() {
+        let malformed: &[(&[u8], &[u8])] = &[
+            (
+                b"%1\r\n+GET\r\n+k\r\n",
+                b"-ERR Redis command must be a RESP array\r\n",
+            ),
+            (
+                b"~2\r\n+GET\r\n+k\r\n",
+                b"-ERR Redis command must be a RESP array\r\n",
+            ),
+            (
+                b">2\r\n+GET\r\n+k\r\n",
+                b"-ERR Redis command must be a RESP array\r\n",
+            ),
+            (
+                b"*2\r\n+GET\r\n%1\r\n+a\r\n+b\r\n",
+                b"-ERR Redis command argument must be a bulk or simple string\r\n",
+            ),
+            (
+                b"*2\r\n+GET\r\n~1\r\n+k\r\n",
+                b"-ERR Redis command argument must be a bulk or simple string\r\n",
+            ),
+            (
+                b"*2\r\n+GET\r\n>1\r\n+k\r\n",
+                b"-ERR Redis command argument must be a bulk or simple string\r\n",
+            ),
+            (
+                b"*2\r\n+GET\r\n*1\r\n+k\r\n",
+                b"-ERR Redis command argument must be a bulk or simple string\r\n",
+            ),
+            (
+                b"|1\r\n+trace\r\n+x\r\n*2\r\n+GET\r\n+k\r\n",
+                b"-ERR RESP3 attributes are not supported on command frames\r\n",
+            ),
+            (
+                b"*2\r\n+GET\r\n|1\r\n+trace\r\n+x\r\n+k\r\n",
+                b"-ERR RESP3 attributes are not supported on command frames\r\n",
+            ),
+        ];
+        for (invalid, expected_error) in malformed {
+            let server = server();
+            let mut input = wire_command(&[b"HELLO", b"3"]);
+            input.extend_from_slice(invalid);
+            let output = exchange(&server, input).await;
+            assert!(
+                output.ends_with(expected_error),
+                "aggregate error drifted: {invalid:?}; output={output:?}"
+            );
+            assert_eq!(server.state().dispatch_attempts(), 0, "{invalid:?}");
+            assert_eq!(server.state().state_mutations(), 0, "{invalid:?}");
+            assert_eq!(server.metrics().errors, 1, "{invalid:?}");
+            assert_eq!(
+                server.execute_command(RedisCommand::Get {
+                    key: b"victim".to_vec(),
+                }),
+                RespValue::Null,
+                "invalid aggregate must not leave state behind: {invalid:?}"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one() {
+        let mut scenario = Vec::new();
+        scenario.extend(wire_command(&[
+            b"SET", b"lock", b"owner", b"NX", b"PX", b"500",
+        ]));
+        scenario.extend(wire_command(&[
+            b"SET", b"lock", b"other", b"NX", b"PX", b"500",
+        ]));
+        scenario.extend(wire_command(&[b"GET", b"missing"]));
+        scenario.extend(wire_command(&[b"MGET", b"missing"]));
+        scenario.extend(wire_command(&[b"QUIT"]));
+
+        let resp2 = exchange(&server(), scenario.clone()).await;
+        assert_eq!(resp2, b"+OK\r\n$-1\r\n$-1\r\n*1\r\n$-1\r\n+OK\r\n");
+
+        let mut resp3_input = wire_command(&[b"HELLO", b"3"]);
+        resp3_input.extend(scenario);
+        let resp3 = exchange(&server(), resp3_input).await;
+        assert!(resp3.ends_with(b"+OK\r\n_\r\n_\r\n*1\r\n_\r\n+OK\r\n"));
+    }
+
+    #[tokio::test]
+    async fn resp3_script_load_exists_eval_evalsha_release_extend_and_reacquire_roundtrip() {
+        let server = server();
+        server.state().set_cache_time_for_tests(Some(1_000));
+        let release_sha = sha1_hex(LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes());
+        let mut input = wire_command(&[b"HELLO", b"3"]);
+        input.extend(wire_command(&[b"PING"]));
+        input.extend(wire_command(&[
+            b"SET", b"lock", b"owner", b"NX", b"PX", b"5000",
+        ]));
+        input.extend(wire_command(&[
+            b"SET", b"lock", b"other", b"NX", b"PX", b"5000",
+        ]));
+        input.extend(wire_command(&[b"PTTL", b"lock"]));
+        input.extend(wire_command(&[
+            b"SCRIPT",
+            b"LOAD",
+            LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes(),
+        ]));
+        input.extend(wire_command(&[
+            b"SCRIPT",
+            b"EXISTS",
+            release_sha.as_bytes(),
+        ]));
+        input.extend(wire_command(&[
+            b"EVALSHA",
+            release_sha.as_bytes(),
+            b"1",
+            b"lock",
+            b"owner",
+        ]));
+        input.extend(wire_command(&[b"GET", b"lock"]));
+        input.extend(wire_command(&[
+            b"SET", b"lock", b"owner", b"NX", b"PX", b"5000",
+        ]));
+        input.extend(wire_command(&[
+            b"EVAL",
+            LOCK_EXTEND_SCRIPT_REDIS_PY.as_bytes(),
+            b"1",
+            b"lock",
+            b"owner",
+            b"500",
+            b"0",
+        ]));
+        input.extend(wire_command(&[b"PTTL", b"lock"]));
+        input.extend(wire_command(&[
+            b"EVAL",
+            LOCK_REACQUIRE_SCRIPT_REDIS_PY.as_bytes(),
+            b"1",
+            b"lock",
+            b"owner",
+            b"750",
+        ]));
+        input.extend(wire_command(&[b"PTTL", b"lock"]));
+        input.extend(wire_command(&[b"QUIT"]));
+
+        let output = exchange(&server, input).await;
+        let expected_tail = format!(
+            "+PONG\r\n+OK\r\n_\r\n:5000\r\n$40\r\n{release_sha}\r\n*1\r\n:1\r\n:1\r\n_\r\n+OK\r\n:1\r\n:5500\r\n:1\r\n:750\r\n+OK\r\n"
+        );
+        assert!(
+            output.ends_with(expected_tail.as_bytes()),
+            "unexpected RESP3 lock/TTL output: {:?}",
+            String::from_utf8_lossy(&output)
+        );
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(128))]
+
+        #[test]
+        fn resp3_decoder_never_panics_on_arbitrary_bytes(
+            input in proptest::collection::vec(any::<u8>(), 0..512)
+        ) {
+            let _ = decode_resp3_command(&input);
+        }
+    }
+}
+
+#[cfg(test)]
+mod core_invariants {
+    use super::*;
+    use hydracache::{
+        ConsumerIsolation, ConsumerIsolationConfig, NamespaceQuota, Tenant, TenantRoster,
+    };
+    use hydracache_client_transport_axum::ClientSurfaceLimits;
+    use proptest::prelude::*;
+
+    fn listener_with_limits(limits: ClientSurfaceLimits) -> RedisRespServer {
+        RedisRespServer::new(
+            Arc::new(ClientSurfaceState::new(limits).unwrap()),
+            RedisListenerConfig::default(),
+        )
+        .unwrap()
+    }
+
+    fn isolated_listener(max_bytes: u64) -> RedisRespServer {
+        let roster = TenantRoster::new(vec![Tenant::new(DEFAULT_REDIS_NAMESPACE)
+            .unwrap()
+            .allow_client("redis-resp")
+            .namespace(DEFAULT_REDIS_NAMESPACE, NamespaceQuota::new(max_bytes, 8))])
+        .unwrap();
+        let isolation = ConsumerIsolation::new(roster, ConsumerIsolationConfig::default());
+        let state =
+            ClientSurfaceState::with_isolation(ClientSurfaceLimits::default(), isolation).unwrap();
+        RedisRespServer::new(Arc::new(state), RedisListenerConfig::default()).unwrap()
+    }
+
+    #[test]
+    fn del_concurrent_write_atomicity_is_documented_debt_not_a_frozen_guarantee() {
+        let context = RedisTranslationContext::default();
+        let RedisTranslatedCommand::Execute(plan) = translate_redis_command(
+            RedisCommand::Del {
+                keys: vec![b"k".to_vec()],
+            },
+            &context,
+        )
+        .unwrap() else {
+            panic!("DEL must execute through the client surface");
+        };
+        assert!(matches!(
+            plan.initial_requests()[0].request,
+            ClientRequest::BatchGet { .. }
+        ));
+        assert!(matches!(
+            plan.followup,
+            RedisFollowup::InvalidateExisting { .. }
+        ));
+        // The lookup and invalidation are two dispatch phases. This is an
+        // executable characterization of the current race window, not an
+        // assertion that DEL is atomic with a concurrent writer.
+    }
+
+    #[test]
+    fn resp_lock_ops_match_ordinary_admission_and_rejection_audit_policy() {
+        let server = isolated_listener(5);
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock".to_vec(),
+                value: b"owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert!(
+            server.state().audit_events_for_tests().is_empty(),
+            "successful data writes must not create governance audit noise"
+        );
+
+        let rejected = server.execute_command(RedisCommand::Set {
+            key: b"other-lock".to_vec(),
+            value: b"x".to_vec(),
+            options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+        });
+        let RespValue::Error(error) = rejected else {
+            panic!("tenant quota must reject the second lock");
+        };
+        assert!(error.contains("tenant quota exceeded"));
+        assert!(!error.contains("other-lock"));
+        assert!(!error.contains("owner"));
+
+        let events = server.state().audit_events_for_tests();
+        assert_eq!(events.len(), 1, "one rejected request must emit one event");
+        let audit = format!("{:?}", events[0]);
+        assert!(audit.contains("QuotaRejected"));
+        assert!(!audit.contains("other-lock"));
+        assert!(!audit.contains("owner"));
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_EXTEND_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"lock".to_vec(), b"owner".to_vec(), b"750".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.state().audit_events_for_tests().len(),
+            1,
+            "successful compare-value writes must not add audit events"
+        );
+
+        let mismatched_roster = TenantRoster::new(vec![Tenant::new("tenant-a")
+            .unwrap()
+            .allow_client("redis-resp")
+            .namespace("tenant-a", NamespaceQuota::new(64, 8))])
+        .unwrap();
+        let mismatched_state = ClientSurfaceState::with_isolation(
+            ClientSurfaceLimits::default(),
+            ConsumerIsolation::new(mismatched_roster, ConsumerIsolationConfig::default()),
+        )
+        .unwrap();
+        let mismatched =
+            RedisRespServer::new(Arc::new(mismatched_state), RedisListenerConfig::default())
+                .unwrap();
+        let rejected = mismatched.execute_command(RedisCommand::Set {
+            key: b"forged-secret-lock".to_vec(),
+            value: b"forged-secret-owner".to_vec(),
+            options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+        });
+        let RespValue::Error(error) = rejected else {
+            panic!("tenant-binding mismatch must reject the RESP lock");
+        };
+        assert!(error.contains("not authorized"));
+        assert!(!error.contains("forged-secret-lock"));
+        assert!(!error.contains("forged-secret-owner"));
+        let auth_events = mismatched.state().audit_events_for_tests();
+        assert_eq!(auth_events.len(), 1);
+        let auth_audit = format!("{:?}", auth_events[0]);
+        assert!(auth_audit.contains("AuthFailure"));
+        assert!(!auth_audit.contains("forged-secret-lock"));
+        assert!(!auth_audit.contains("forged-secret-owner"));
+    }
+
+    #[test]
+    fn oversized_lock_token_or_value_is_rejected_loud_not_truncated() {
+        let server = listener_with_limits(ClientSurfaceLimits {
+            max_value_bytes: 4,
+            ..ClientSurfaceLimits::default()
+        });
+        let secret = b"oversized-owner-token".to_vec();
+        let rejected = server.execute_command(RedisCommand::Set {
+            key: b"lock".to_vec(),
+            value: secret.clone(),
+            options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+        });
+        let RespValue::Error(error) = rejected else {
+            panic!("oversized lock value must fail");
+        };
+        assert!(error.contains("request too large"));
+        assert!(!error.contains("oversized-owner-token"));
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock".to_vec()
+            }),
+            RespValue::Null
+        );
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"lock".to_vec(),
+                value: b"ownr".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        for script in [LOCK_RELEASE_SCRIPT_SIMPLE, LOCK_EXTEND_SCRIPT_SIMPLE] {
+            let mut args = vec![b"lock".to_vec(), secret.clone()];
+            if script == LOCK_EXTEND_SCRIPT_SIMPLE {
+                args.push(b"750".to_vec());
+            }
+            let response = server.execute_command(RedisCommand::Eval {
+                script: script.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: args,
+            });
+            let RespValue::Error(error) = response else {
+                panic!("oversized expected token must fail");
+            };
+            assert!(error.contains("request too large"));
+            assert!(!error.contains("oversized-owner-token"));
+        }
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"lock".to_vec()
+            }),
+            RespValue::BulkString(b"ownr".to_vec())
+        );
+    }
+
+    #[test]
+    fn resp_lock_and_extension_bytes_never_appear_in_debug_errors_metrics_stats_or_diagnostics() {
+        let server = listener_with_limits(ClientSurfaceLimits::default());
+        let secret_key = b"secret-lock-key".to_vec();
+        let secret_token = b"secret-owner-token".to_vec();
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: secret_key.clone(),
+                value: secret_token.clone(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        let observability = format!(
+            "{:?}{:?}{:?}",
+            server.metrics(),
+            server.execute_command(RedisCommand::HcStats),
+            server.execute_command(RedisCommand::HcDiagnostics)
+        );
+        for secret in [
+            "secret-lock-key",
+            "secret-owner-token",
+            LOCK_RELEASE_SCRIPT_SIMPLE,
+        ] {
+            assert!(!observability.contains(secret));
+        }
+
+        let backend_error = ClientErrorEnvelope::new(
+            ClientErrorCode::BackendUnavailable,
+            false,
+            "secret-lock-key secret-owner-token",
+        );
+        let normalized = format!(
+            "{:?} {:?}",
+            client_error_to_resp(&backend_error),
+            client_error_to_unexpected(&backend_error)
+        );
+        assert!(normalized.contains("backend unavailable"));
+        assert!(!normalized.contains("secret-lock-key"));
+        assert!(!normalized.contains("secret-owner-token"));
+
+        let malformed = unexpected_response::<RespValue>(&ClientResponse::Value {
+            value: Some(secret_token),
+        })
+        .unwrap_err();
+        let malformed = format!("{malformed:?}");
+        assert!(malformed.contains("unexpected response kind: value"));
+        assert!(!malformed.contains("secret-owner-token"));
+    }
+
+    fn arbitrary_bytes() -> impl Strategy<Value = Vec<u8>> {
+        proptest::collection::vec(any::<u8>(), 0..16)
+    }
+
+    fn arbitrary_byte_vectors() -> impl Strategy<Value = Vec<Vec<u8>>> {
+        proptest::collection::vec(arbitrary_bytes(), 0..6)
+    }
+
+    fn arbitrary_command_label() -> impl Strategy<Value = String> {
+        proptest::string::string_regex("[A-Z. ]{0,12}").unwrap()
+    }
+
+    fn arbitrary_command() -> BoxedStrategy<RedisCommand> {
+        let basic = prop_oneof![
+            proptest::option::of(arbitrary_bytes())
+                .prop_map(|message| RedisCommand::Ping { message }),
+            arbitrary_bytes().prop_map(|message| RedisCommand::Echo { message }),
+            Just(RedisCommand::Quit),
+            (
+                any::<u8>(),
+                proptest::option::of((arbitrary_bytes(), arbitrary_bytes()))
+            )
+                .prop_map(|(version, auth)| RedisCommand::Hello {
+                    version,
+                    auth: auth.map(|(username, password)| RedisAuthAttempt {
+                        username: Some(username),
+                        password,
+                    }),
+                }),
+            (proptest::option::of(arbitrary_bytes()), arbitrary_bytes())
+                .prop_map(|(username, password)| RedisCommand::Auth { username, password }),
+            arbitrary_bytes().prop_map(|name| RedisCommand::ClientSetName { name }),
+            arbitrary_byte_vectors().prop_map(|args| RedisCommand::ClientSetInfo { args }),
+            Just(RedisCommand::Command),
+            proptest::option::of(arbitrary_bytes())
+                .prop_map(|section| RedisCommand::Info { section }),
+            arbitrary_bytes().prop_map(|db| RedisCommand::Select { db }),
+            arbitrary_bytes().prop_map(|key| RedisCommand::Type { key }),
+            arbitrary_bytes().prop_map(|key| RedisCommand::Get { key }),
+            (
+                arbitrary_bytes(),
+                arbitrary_bytes(),
+                arbitrary_byte_vectors()
+            )
+                .prop_map(|(key, value, options)| RedisCommand::Set {
+                    key,
+                    value,
+                    options
+                }),
+            proptest::collection::vec((arbitrary_bytes(), arbitrary_bytes()), 0..6)
+                .prop_map(|entries| RedisCommand::Mset { entries }),
+            arbitrary_byte_vectors().prop_map(|keys| RedisCommand::Mget { keys }),
+            arbitrary_byte_vectors().prop_map(|keys| RedisCommand::Del { keys }),
+            arbitrary_byte_vectors().prop_map(|keys| RedisCommand::Exists { keys }),
+        ];
+        let stateful = prop_oneof![
+            (arbitrary_bytes(), arbitrary_bytes(), any::<bool>()).prop_map(|(key, ttl, ms)| {
+                RedisCommand::Expire {
+                    key,
+                    ttl,
+                    unit: if ms {
+                        RedisTtlUnit::Milliseconds
+                    } else {
+                        RedisTtlUnit::Seconds
+                    },
+                }
+            }),
+            arbitrary_bytes().prop_map(|key| RedisCommand::Persist { key }),
+            (arbitrary_bytes(), any::<bool>()).prop_map(|(key, ms)| RedisCommand::Ttl {
+                key,
+                unit: if ms {
+                    RedisTtlUnit::Milliseconds
+                } else {
+                    RedisTtlUnit::Seconds
+                },
+            }),
+            (
+                arbitrary_bytes(),
+                arbitrary_bytes(),
+                arbitrary_byte_vectors()
+            )
+                .prop_map(|(script, numkeys, keys_and_args)| RedisCommand::Eval {
+                    script,
+                    numkeys,
+                    keys_and_args,
+                }),
+            (
+                arbitrary_bytes(),
+                arbitrary_bytes(),
+                arbitrary_byte_vectors()
+            )
+                .prop_map(|(sha, numkeys, keys_and_args)| RedisCommand::EvalSha {
+                    sha,
+                    numkeys,
+                    keys_and_args,
+                }),
+            arbitrary_bytes().prop_map(|script| RedisCommand::ScriptLoad { script }),
+            arbitrary_byte_vectors().prop_map(|shas| RedisCommand::ScriptExists { shas }),
+            Just(RedisCommand::HcStats),
+            Just(RedisCommand::HcDiagnostics),
+            arbitrary_bytes().prop_map(|key| RedisCommand::HcInvalidate { key }),
+            proptest::option::of(arbitrary_bytes())
+                .prop_map(|namespace| RedisCommand::HcNamespace { namespace }),
+            (arbitrary_bytes(), arbitrary_byte_vectors())
+                .prop_map(|(key, tags)| RedisCommand::HcTag { key, tags }),
+            (arbitrary_bytes(), arbitrary_byte_vectors())
+                .prop_map(|(key, tags)| RedisCommand::HcSetTags { key, tags }),
+            arbitrary_bytes().prop_map(|tag| RedisCommand::HcInvalidateTag { tag }),
+        ];
+        let classified = prop_oneof![
+            (arbitrary_command_label(), arbitrary_byte_vectors())
+                .prop_map(|(command, args)| RedisCommand::HcCandidate { command, args }),
+            (arbitrary_command_label(), arbitrary_byte_vectors()).prop_map(|(command, args)| {
+                RedisCommand::HealthProbeCandidate { command, args }
+            }),
+            (arbitrary_command_label(), arbitrary_byte_vectors())
+                .prop_map(|(command, args)| RedisCommand::AdminDisabled { command, args }),
+            (arbitrary_command_label(), arbitrary_byte_vectors())
+                .prop_map(|(command, args)| RedisCommand::WrongArity { command, args }),
+            (arbitrary_command_label(), arbitrary_byte_vectors())
+                .prop_map(|(verb, args)| RedisCommand::Unsupported { verb, args }),
+        ];
+        prop_oneof![basic, stateful, classified].boxed()
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig::with_cases(128))]
+
+        #[test]
+        fn translate_redis_command_is_total_and_never_panics_on_arbitrary_commands(
+            command in arbitrary_command()
+        ) {
+            let context = RedisTranslationContext::default();
+            let _ = translate_redis_command(command, &context);
+        }
+
+        #[test]
+        fn mget_len_equals_keys_len_and_exists_count_is_bounded_for_arbitrary_inputs(
+            keys in proptest::collection::vec(arbitrary_bytes(), 0..16)
+        ) {
+            let server = listener_with_limits(ClientSurfaceLimits::default());
+            for key in keys.iter().step_by(2) {
+                let response = server.execute_command(RedisCommand::Set {
+                    key: key.clone(),
+                    value: b"v".to_vec(),
+                    options: vec![],
+                });
+                prop_assert_eq!(response, RespValue::SimpleString("OK"));
+            }
+            let RespValue::Array(values) = server.execute_command(RedisCommand::Mget {
+                keys: keys.clone(),
+            }) else {
+                return Err(TestCaseError::fail("MGET must return an array"));
+            };
+            prop_assert_eq!(values.len(), keys.len());
+
+            let RespValue::Integer(count) = server.execute_command(RedisCommand::Exists {
+                keys: keys.clone(),
+            }) else {
+                return Err(TestCaseError::fail("EXISTS must return an integer"));
+            };
+            prop_assert!(count >= 0);
+            prop_assert!((count as usize) <= keys.len());
+        }
+    }
+}
+
+#[cfg(test)]
+mod non_interference {
+    use super::*;
+    use hydracache::{
+        ClusterEpoch, ConsistencyLevel, LockOwner, LogicalDuration, LogicalTime,
+        SingleKeyConditionalStore,
+    };
+    use hydracache_client_transport_axum::ClientSurfaceLimits;
+
+    fn state() -> Arc<ClientSurfaceState> {
+        Arc::new(ClientSurfaceState::new(ClientSurfaceLimits::default()).unwrap())
+    }
+
+    #[test]
+    fn resp_lock_state_is_independent_of_native_fenced_lock_engine() {
+        let mut native = SingleKeyConditionalStore::new(ClusterEpoch::new(1), 16);
+        let native_owner = LockOwner::new("native-session", 7);
+        let fence = native
+            .try_acquire_lock(
+                "shared-lock-name",
+                ConsistencyLevel::Quorum,
+                native_owner.clone(),
+                LogicalDuration::from_millis(5_000),
+                LogicalTime::from_millis(1),
+            )
+            .unwrap()
+            .expect("native lock acquisition");
+
+        let server = RedisRespServer::new(state(), RedisListenerConfig::default()).unwrap();
+        assert_eq!(
+            server.execute_command(RedisCommand::Set {
+                key: b"shared-lock-name".to_vec(),
+                value: b"resp-owner".to_vec(),
+                options: vec![b"NX".to_vec(), b"PX".to_vec(), b"5000".to_vec()],
+            }),
+            RespValue::SimpleString("OK")
+        );
+        assert_eq!(native.current_fence("shared-lock-name"), Some(fence));
+        assert!(native.is_locked_by("shared-lock-name", &native_owner));
+
+        assert_eq!(
+            server.execute_command(RedisCommand::Eval {
+                script: LOCK_RELEASE_SCRIPT_SIMPLE.as_bytes().to_vec(),
+                numkeys: b"1".to_vec(),
+                keys_and_args: vec![b"shared-lock-name".to_vec(), b"resp-owner".to_vec()],
+            }),
+            RespValue::Integer(1)
+        );
+        assert_eq!(
+            server.execute_command(RedisCommand::Get {
+                key: b"shared-lock-name".to_vec(),
+            }),
+            RespValue::Null
+        );
+        assert_eq!(native.current_fence("shared-lock-name"), Some(fence));
+        assert!(native.is_locked_by("shared-lock-name", &native_owner));
+    }
+
+    #[test]
+    fn enabling_redis_listener_does_not_change_core_cache_or_client_surface_behavior() {
+        let baseline = state();
+        let listener_backing_state = state();
+        let _enabled_listener = RedisRespServer::new(
+            Arc::clone(&listener_backing_state),
+            RedisListenerConfig::default(),
+        )
+        .unwrap();
+        assert_eq!(baseline.dispatch_attempts(), 0);
+        assert_eq!(listener_backing_state.dispatch_attempts(), 0);
+        assert_eq!(baseline.state_mutations(), 0);
+        assert_eq!(listener_backing_state.state_mutations(), 0);
+
+        let identity = ClientIdentity::new("native-client", DEFAULT_REDIS_NAMESPACE).unwrap();
+        let ns = Namespace::new(DEFAULT_REDIS_NAMESPACE).unwrap();
+        let key = StructuredKey::new(vec!["ordinary-key".to_owned()]).unwrap();
+        let commands = vec![
+            ClientRequestEnvelope::new(
+                "put",
+                ClientRequest::Put {
+                    ns: ns.clone(),
+                    key: key.clone(),
+                    value: b"ordinary-value".to_vec(),
+                    ttl_ms: None,
+                    dimensions: vec![],
+                },
+            ),
+            ClientRequestEnvelope::new(
+                "get",
+                ClientRequest::Get {
+                    ns: ns.clone(),
+                    key: key.clone(),
+                },
+            ),
+            ClientRequestEnvelope::new("invalidate", ClientRequest::Invalidate { ns, key }),
+        ];
+
+        for command in commands {
+            let baseline_response = baseline.dispatch_verified_request(&identity, command.clone());
+            let listener_response =
+                listener_backing_state.dispatch_verified_request(&identity, command);
+            assert_eq!(listener_response, baseline_response);
+        }
+        assert_eq!(
+            listener_backing_state.dispatch_attempts(),
+            baseline.dispatch_attempts()
+        );
+        assert_eq!(
+            listener_backing_state.state_mutations(),
+            baseline.state_mutations()
+        );
+        assert_eq!(
+            listener_backing_state.audit_events_for_tests(),
+            baseline.audit_events_for_tests()
+        );
     }
 }

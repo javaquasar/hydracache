@@ -526,6 +526,18 @@ fn template_entry(discovered: &DiscoveredGate) -> GateEntry {
         }
         DiscoveredGate::EnvGate { source, env } => {
             let (package, target, command, tools, tier) = env_gate_command(env);
+            let (ci, owner_release) = if env == "HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E" {
+                (
+                    CiRegistration {
+                        workflow: ".github/workflows/ci.yml".to_owned(),
+                        job: "dst-nightly-soak".to_owned(),
+                        step: "Redis RESP multinode debt sentinels".to_owned(),
+                    },
+                    "0.65.0",
+                )
+            } else {
+                (ci, RELEASE)
+            };
             GateEntry {
                 id: format!("env.{}", sanitize_id(env)),
                 kind: GateKind::EnvGate,
@@ -541,12 +553,13 @@ fn template_entry(discovered: &DiscoveredGate) -> GateEntry {
                 required_env: vec![env.clone()],
                 required_tools: tools,
                 timeout_seconds: timeout_for_tier(tier),
-                owner_release: RELEASE.to_owned(),
+                owner_release: owner_release.to_owned(),
                 ship_mandatory: matches!(
                     env.as_str(),
                     "HYDRACACHE_RUN_RAFT_NEMESIS_SOAK"
                         | "HYDRACACHE_RUN_CANCELLATION_RAFT"
                         | "HYDRACACHE_RUN_REDIS_COMPAT_CLIENTS"
+                        | "HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E"
                         | "HYDRACACHE_REQUIRE_REDIS_ORACLE"
                 ),
                 artifacts: Vec::new(),
@@ -611,6 +624,13 @@ fn env_gate_command(env: &str) -> (String, String, CommandSpec, Vec<String>, Gat
                 "hydracache-redis-compat",
                 "resp_resource_smoke",
                 cargo_test_command("hydracache-redis-compat", "resp_resource_smoke", None),
+                Vec::new(),
+                GateTier::Nightly,
+            ),
+            "HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E" => (
+                "hydracache-server",
+                "redis_resp_multinode",
+                cargo_test_command("hydracache-server", "redis_resp_multinode", None),
                 Vec::new(),
                 GateTier::Nightly,
             ),
@@ -930,6 +950,53 @@ fn validate_entry_shape(gate: &GateEntry, problems: &mut Vec<String>) {
         )),
         _ => {}
     }
+    problems.extend(redis_multinode_gate_contract_problems(gate));
+}
+
+pub fn redis_multinode_gate_contract_problems(gate: &GateEntry) -> Vec<String> {
+    const ID: &str = "env.hydracache-run-redis-resp-multinode-e2e";
+    const ENV: &str = "HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E";
+    if gate.id != ID && gate.env != ENV {
+        return Vec::new();
+    }
+
+    let expected_args = [
+        "test",
+        "-p",
+        "hydracache-server",
+        "--test",
+        "redis_resp_multinode",
+        "--locked",
+    ]
+    .map(str::to_owned)
+    .to_vec();
+    let exact = gate.id == ID
+        && gate.kind == GateKind::EnvGate
+        && gate.source == "crates/hydracache-server/tests/support/daemon_cluster.rs"
+        && gate.package == "hydracache-server"
+        && gate.target == "redis_resp_multinode"
+        && gate.env == ENV
+        && gate.tier == GateTier::Nightly
+        && gate.required_env == [ENV]
+        && gate.owner_release == "0.65.0"
+        && gate.ship_mandatory
+        && gate.ci.workflow == ".github/workflows/ci.yml"
+        && gate.ci.job == "dst-nightly-soak"
+        && gate.ci.step == "Redis RESP multinode debt sentinels"
+        && gate.command.program == "cargo"
+        && gate.command.args == expected_args
+        && gate.command.env.len() == 1
+        && gate.command.env.get(ENV).is_some_and(|value| value == "1")
+        && gate.command.cwd == "."
+        && gate.command.platform == "any";
+    (!exact)
+        .then(|| {
+            format!(
+                "{REGISTRY_PATH}: Redis multinode gate must retain the exact dedicated target, env, CI step, owner release, and command"
+            )
+        })
+        .into_iter()
+        .collect()
 }
 
 fn entry_matches(entry: &GateEntry, discovered: &DiscoveredGate) -> bool {

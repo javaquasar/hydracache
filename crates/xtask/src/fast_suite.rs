@@ -96,7 +96,7 @@ pub fn validate_registry(
     if registry.schema_version != 1 {
         problems.push("schema_version must be 1".to_owned());
     }
-    if normalize_release(&registry.release) != normalize_release(release) {
+    if !registry_covers_release(&registry.release, release) {
         problems.push("release mismatch".to_owned());
     }
     if registry.nextest_version != "0.9.137" {
@@ -306,6 +306,23 @@ fn normalize_release(release: &str) -> String {
     } else {
         release.to_owned()
     }
+}
+
+fn registry_covers_release(registry_release: &str, requested: &str) -> bool {
+    let parse = |release: &str| -> Option<(u64, u64, u64)> {
+        let normalized = normalize_release(release);
+        let mut parts = normalized.split('.').map(str::parse::<u64>);
+        let version = (
+            parts.next()?.ok()?,
+            parts.next()?.ok()?,
+            parts.next()?.ok()?,
+        );
+        parts.next().is_none().then_some(version)
+    };
+    matches!(
+        (parse(registry_release), parse(requested)),
+        (Some(registry), Some(candidate)) if registry.0 == candidate.0 && registry <= candidate
+    )
 }
 
 fn parse_args(args: Vec<String>) -> Result<(PathBuf, String, Option<PathBuf>), Box<dyn Error>> {

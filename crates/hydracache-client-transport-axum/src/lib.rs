@@ -21,7 +21,7 @@ use hydracache::{
     SingleKeyConditionalStore, TenantId, TenantMetricsSnapshot,
 };
 use hydracache_client_protocol::{
-    protocol_version_supported, BatchItemStatus, BatchPutEntry, CasExpectation, ClientErrorCode,
+    protocol_version_supported, BatchItemStatus, CasExpectation, ClientErrorCode,
     ClientErrorEnvelope, ClientFrame, ClientRequest, ClientRequestEnvelope, ClientResponse,
     ClientResponseEnvelope, ClientWireMessage, CompareValueExpireMode, ConditionalPutCondition,
     InvalidationEvent, LockConsistency, Namespace, StructuredKey, TtlState, VersionHandshake,
@@ -288,7 +288,8 @@ impl ClientLockService {
     }
 }
 
-type StoreKey = (String, String);
+type StoreKey = (String, String, String);
+type IdempotencyKey = (String, String);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct StoredValue {
@@ -358,7 +359,7 @@ pub struct ClientSurfaceState {
     store: Mutex<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
     events: Mutex<Vec<InvalidationEvent>>,
-    idempotency_keys: Mutex<BTreeSet<String>>,
+    idempotency_keys: Mutex<BTreeSet<IdempotencyKey>>,
     lock_service: Mutex<ClientLockService>,
     audit_sink: Arc<InMemoryAuditSink>,
     audit: Mutex<AuditRecorder<Arc<InMemoryAuditSink>>>,
@@ -489,7 +490,7 @@ impl ClientSurfaceState {
         &self,
         identity: &ClientIdentity,
     ) -> Result<TenantStatus, ClientSurfaceError> {
-        self.validate_tenant_identity(identity)?;
+        self.validate_tenant_identity(identity, CLIENT_STATUS_PATH, None)?;
         let metrics = if let Some(isolation) = &self.isolation {
             let tenant_id =
                 TenantId::new(identity.tenant()).map_err(|_| ClientSurfaceError::Unauthorized)?;
@@ -520,6 +521,30 @@ impl ClientSurfaceState {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
+        if self
+            .validate_tenant_identity(
+                identity,
+                CLIENT_DATA_PATH,
+                Some(envelope.request_id.as_str()),
+            )
+            .is_err()
+        {
+            let response_protocol_version = if protocol_version_supported(envelope.protocol_version)
+            {
+                envelope.protocol_version
+            } else {
+                PROTOCOL_VERSION
+            };
+            return ClientResponseEnvelope::error(
+                envelope.request_id,
+                ClientErrorEnvelope::new(
+                    ClientErrorCode::Unauthorized,
+                    false,
+                    "client identity is not authorized for this tenant",
+                ),
+            )
+            .with_protocol_version(response_protocol_version);
+        }
         self.record_dispatch();
         self.handle_request(identity, envelope)
     }
@@ -527,14 +552,24 @@ impl ClientSurfaceState {
     fn validate_tenant_identity(
         &self,
         identity: &ClientIdentity,
+        route: &str,
+        request_id: Option<&str>,
     ) -> Result<(), ClientSurfaceError> {
         if let Some(isolation) = &self.isolation {
             let tenant = isolation
                 .lock()
                 .expect("isolation mutex")
                 .resolve_tenant(identity.client_id())
-                .map_err(|_| ClientSurfaceError::Unauthorized)?;
-            if tenant.as_str() != identity.tenant() {
+                .map_err(|_| ClientSurfaceError::Unauthorized);
+            let authorized = tenant
+                .as_ref()
+                .is_ok_and(|tenant| tenant.as_str() == identity.tenant());
+            if !authorized {
+                self.record_audit(AuditEvent::AuthFailure {
+                    tenant: Some(identity.tenant().to_owned()),
+                    route: route.to_owned(),
+                    request_id: request_id.map(ToOwned::to_owned),
+                });
                 return Err(ClientSurfaceError::Unauthorized);
             }
         }
@@ -599,6 +634,9 @@ impl ClientSurfaceState {
         identity: &ClientIdentity,
         envelope: ClientRequestEnvelope,
     ) -> ClientResponseEnvelope {
+        let audit_request_id = envelope.request_id.clone();
+        let audit_namespace = request_namespace(&envelope.request).as_str().to_owned();
+        let audit_auth_failure = !matches!(&envelope.request, ClientRequest::ForceUnlock { .. });
         let request_protocol_version = envelope.protocol_version;
         let response_protocol_version = if protocol_version_supported(request_protocol_version) {
             request_protocol_version
@@ -624,16 +662,26 @@ impl ClientSurfaceState {
 
         let response = match envelope.request {
             ClientRequest::Get { ns, key } => {
-                if let Err(error) = self.admit_request(identity) {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
-                } else {
-                    let now_ms = self.now_ms();
-                    let value = live_value(
-                        &mut self.store.lock().expect("store mutex"),
-                        &store_key(&ns, &key),
-                        now_ms,
-                    );
-                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Value { value })
+                let now_ms = self.now_ms();
+                match self.with_admitted_store(identity, |store, isolation| {
+                    let (value, expired) =
+                        live_value(store, &store_key(identity, &ns, &key), now_ms);
+                    if expired {
+                        if let Some(isolation) = isolation {
+                            let _ = isolation.remove_entry(
+                                identity.client_id(),
+                                ns.as_str(),
+                                &key.stable_key(),
+                            );
+                        }
+                    }
+                    value
+                }) {
+                    Ok(value) => ClientResponseEnvelope::ok(
+                        envelope.request_id,
+                        ClientResponse::Value { value },
+                    ),
+                    Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
                 }
             }
             ClientRequest::Put {
@@ -654,73 +702,165 @@ impl ClientSurfaceState {
                 },
             ),
             ClientRequest::Invalidate { ns, key } => {
-                if let Err(error) = self.admit_request(identity) {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
-                } else {
-                    self.store
-                        .lock()
-                        .expect("store mutex")
-                        .remove(&store_key(&ns, &key));
-                    self.state_mutations.fetch_add(1, Ordering::SeqCst);
-                    self.record_invalidation(ns, key);
-                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
+                match self.with_admitted_store(identity, |store, isolation| {
+                    let removed = store.remove(&store_key(identity, &ns, &key)).is_some();
+                    if removed {
+                        if let Some(isolation) = isolation {
+                            let _ = isolation.remove_entry(
+                                identity.client_id(),
+                                ns.as_str(),
+                                &key.stable_key(),
+                            );
+                        }
+                    }
+                }) {
+                    Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
+                    Ok(()) => {
+                        self.state_mutations.fetch_add(1, Ordering::SeqCst);
+                        self.record_invalidation(ns, key);
+                        ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Invalidated)
+                    }
                 }
             }
             ClientRequest::BatchGet { ns, keys } => {
-                if let Err(error) = self.admit_request(identity) {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
+                let batch_bytes = keys.iter().fold(0usize, |total, key| {
+                    total.saturating_add(key.stable_key().len())
+                });
+                if keys.len() > self.limits.max_batch_entries {
+                    ClientResponseEnvelope::error(
+                        envelope.request_id,
+                        ClientErrorEnvelope::new(
+                            ClientErrorCode::TooLarge,
+                            false,
+                            "batch contains too many entries",
+                        ),
+                    )
+                } else if batch_bytes > self.limits.max_batch_bytes {
+                    ClientResponseEnvelope::error(
+                        envelope.request_id,
+                        ClientErrorEnvelope::new(
+                            ClientErrorCode::TooLarge,
+                            false,
+                            "batch exceeds max_batch_bytes",
+                        ),
+                    )
                 } else {
                     let now_ms = self.now_ms();
-                    let mut store = self.store.lock().expect("store mutex");
-                    let items = keys
-                        .iter()
-                        .enumerate()
-                        .map(|(index, key)| BatchItemStatus {
-                            index,
-                            result: Ok(live_value(&mut store, &store_key(&ns, key), now_ms)),
-                        })
-                        .collect();
-                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
+                    match self.with_admitted_store(identity, |store, isolation| {
+                        let mut expired_keys = Vec::new();
+                        let mut items = Vec::with_capacity(keys.len());
+                        for (index, key) in keys.iter().enumerate() {
+                            let (value, expired) =
+                                live_value(store, &store_key(identity, &ns, key), now_ms);
+                            if expired {
+                                expired_keys.push(key);
+                            }
+                            items.push(BatchItemStatus {
+                                index,
+                                result: Ok(value),
+                            });
+                        }
+                        if let Some(isolation) = isolation {
+                            for key in expired_keys {
+                                let _ = isolation.remove_entry(
+                                    identity.client_id(),
+                                    ns.as_str(),
+                                    &key.stable_key(),
+                                );
+                            }
+                        }
+                        items
+                    }) {
+                        Ok(items) => ClientResponseEnvelope::ok(
+                            envelope.request_id,
+                            ClientResponse::Batch { items },
+                        ),
+                        Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
+                    }
                 }
             }
             ClientRequest::BatchPut { ns, entries } => {
-                if let Err(error) = self.admit_batch_put(identity, &ns, &entries) {
-                    ClientResponseEnvelope::error(envelope.request_id, error)
-                } else if let Some((_, entry)) = entries
+                let batch_bytes = entries.iter().fold(0usize, |total, entry| {
+                    total
+                        .saturating_add(entry.key.stable_key().len())
+                        .saturating_add(entry.value.len())
+                });
+                if entries.len() > self.limits.max_batch_entries {
+                    ClientResponseEnvelope::error(
+                        envelope.request_id,
+                        ClientErrorEnvelope::new(
+                            ClientErrorCode::TooLarge,
+                            false,
+                            "batch contains too many entries",
+                        ),
+                    )
+                } else if batch_bytes > self.limits.max_batch_bytes {
+                    ClientResponseEnvelope::error(
+                        envelope.request_id,
+                        ClientErrorEnvelope::new(
+                            ClientErrorCode::TooLarge,
+                            false,
+                            "batch exceeds max_batch_bytes",
+                        ),
+                    )
+                } else if entries
                     .iter()
-                    .enumerate()
-                    .find(|(_, entry)| entry.value.len() > self.limits.max_value_bytes)
+                    .any(|entry| entry.value.len() > self.limits.max_value_bytes)
                 {
                     ClientResponseEnvelope::error(
                         envelope.request_id,
                         ClientErrorEnvelope::new(
                             ClientErrorCode::TooLarge,
                             false,
-                            format!(
-                                "batch item value too large: {} bytes exceeds {}",
-                                entry.value.len(),
-                                self.limits.max_value_bytes
-                            ),
+                            "batch item value too large",
                         ),
                     )
                 } else {
-                    let mut store = self.store.lock().expect("store mutex");
-                    let items = entries
-                        .into_iter()
-                        .enumerate()
-                        .map(|(index, entry)| {
+                    let quota_entries = entries
+                        .iter()
+                        .map(|entry| (entry.key.stable_key(), entry.value.len() as u64))
+                        .collect::<Vec<_>>();
+                    let commit = || {
+                        let mut store = self.store.lock().expect("store mutex");
+                        for entry in &entries {
                             store.insert(
-                                store_key(&ns, &entry.key),
-                                StoredValue::persistent(entry.value),
+                                store_key(identity, &ns, &entry.key),
+                                StoredValue::persistent(entry.value.clone()),
                             );
-                            self.state_mutations.fetch_add(1, Ordering::SeqCst);
-                            BatchItemStatus {
-                                index,
-                                result: Ok(None),
-                            }
-                        })
-                        .collect();
-                    ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Batch { items })
+                        }
+                        true
+                    };
+                    let admitted = if let Some(isolation) = &self.isolation {
+                        isolation
+                            .lock()
+                            .expect("isolation mutex")
+                            .admit_batch_put_if_committed(
+                                identity.client_id(),
+                                ns.as_str(),
+                                &quota_entries,
+                                commit,
+                            )
+                            .map_err(admission_error)
+                    } else {
+                        Ok(commit())
+                    };
+                    match admitted {
+                        Err(error) => ClientResponseEnvelope::error(envelope.request_id, error),
+                        Ok(_) => {
+                            self.state_mutations
+                                .fetch_add(entries.len() as u64, Ordering::SeqCst);
+                            let items = (0..entries.len())
+                                .map(|index| BatchItemStatus {
+                                    index,
+                                    result: Ok(None),
+                                })
+                                .collect();
+                            ClientResponseEnvelope::ok(
+                                envelope.request_id,
+                                ClientResponse::Batch { items },
+                            )
+                        }
+                    }
                 }
             }
             ClientRequest::Expire { ns, key, ttl_ms } => {
@@ -778,13 +918,28 @@ impl ClientSurfaceState {
                 },
             ),
             ClientRequest::EvictRegion { ns } => {
-                if let Err(error) = self.admit_request(identity) {
+                let evict_store = |store: &mut BTreeMap<StoreKey, StoredValue>| {
+                    store.retain(|(tenant, stored_ns, _), _| {
+                        tenant != identity.tenant() || stored_ns != ns.as_str()
+                    });
+                };
+                let admitted = if let Some(isolation) = &self.isolation {
+                    let mut isolation = isolation.lock().expect("isolation mutex");
+                    isolation
+                        .evict_namespace(identity.client_id(), ns.as_str())
+                        .map_err(admission_error)
+                        .map(|_| {
+                            let mut store = self.store.lock().expect("store mutex");
+                            evict_store(&mut store);
+                        })
+                } else {
+                    let mut store = self.store.lock().expect("store mutex");
+                    evict_store(&mut store);
+                    Ok(())
+                };
+                if let Err(error) = admitted {
                     ClientResponseEnvelope::error(envelope.request_id, error)
                 } else {
-                    self.store
-                        .lock()
-                        .expect("store mutex")
-                        .retain(|(stored_ns, _), _| stored_ns != ns.as_str());
                     self.state_mutations.fetch_add(1, Ordering::SeqCst);
                     ClientResponseEnvelope::ok(envelope.request_id, ClientResponse::Evicted)
                 }
@@ -840,7 +995,7 @@ impl ClientSurfaceState {
                 self.handle_force_unlock(identity, envelope.request_id, ns, key)
             }
             ClientRequest::GetLockOwnership { ns, key } => {
-                self.handle_lock_ownership(envelope.request_id, ns, key)
+                self.handle_lock_ownership(identity, envelope.request_id, ns, key)
             }
             ClientRequest::CompareAndSet {
                 ns,
@@ -868,6 +1023,13 @@ impl ClientSurfaceState {
                 self.handle_remove_if_value(identity, envelope.request_id, ns, key, expected, level)
             }
         };
+        self.record_rejection_audit(
+            identity,
+            &audit_namespace,
+            &audit_request_id,
+            &response,
+            audit_auth_failure,
+        );
         response.with_protocol_version(response_protocol_version)
     }
 
@@ -880,7 +1042,7 @@ impl ClientSurfaceState {
         lease_ms: u64,
         level: LockConsistency,
     ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(&ns, &key);
+        let lock_key = lock_key(identity, &ns, &key);
         let owner = lock_owner(identity);
         let lease = LogicalDuration::from_millis(lease_ms.max(1));
         let level = lock_consistency(level);
@@ -908,7 +1070,7 @@ impl ClientSurfaceState {
         key: StructuredKey,
         fence: u64,
     ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(&ns, &key);
+        let lock_key = lock_key(identity, &ns, &key);
         let owner = lock_owner(identity);
         let result = self
             .lock_service
@@ -930,7 +1092,7 @@ impl ClientSurfaceState {
         fence: u64,
         lease_ms: u64,
     ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(&ns, &key);
+        let lock_key = lock_key(identity, &ns, &key);
         let owner = lock_owner(identity);
         let lease = LogicalDuration::from_millis(lease_ms.max(1));
         let result = self
@@ -976,7 +1138,7 @@ impl ClientSurfaceState {
             policy_epoch: ClusterEpoch::new(1),
             summary: "force_unlock".to_owned(),
         });
-        let lock_key = lock_key(&ns, &key);
+        let lock_key = lock_key(identity, &ns, &key);
         let result = self
             .lock_service
             .lock()
@@ -990,11 +1152,12 @@ impl ClientSurfaceState {
 
     fn handle_lock_ownership(
         &self,
+        identity: &ClientIdentity,
         request_id: String,
         ns: Namespace,
         key: StructuredKey,
     ) -> ClientResponseEnvelope {
-        let lock_key = lock_key(&ns, &key);
+        let lock_key = lock_key(identity, &ns, &key);
         let mut service = self.lock_service.lock().expect("lock service mutex");
         if !service.is_leader() {
             return ClientResponseEnvelope::error(
@@ -1032,41 +1195,106 @@ impl ClientSurfaceState {
                 ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
             );
         }
-        if let Err(error) = self.admit_put(identity, &ns, &key, new_value.len() as u64) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
-        let map_key = store_key(&ns, &key);
-        let live_value = live_value(
-            &mut self.store.lock().expect("store mutex"),
-            &map_key,
-            self.now_ms(),
-        );
-        let cas_key = lock_key(&ns, &key);
-        let value_for_response = new_value.clone();
+        let value_bytes = new_value.len() as u64;
+        let map_key = store_key(identity, &ns, &key);
+        let cas_key = lock_key(identity, &ns, &key);
+        let stable_key = key.stable_key();
+        let now_ms = self.now_ms();
         let level = lock_consistency(level);
-        let result = self
-            .lock_service
-            .lock()
-            .expect("lock service mutex")
-            .apply_lock_command(|store, _now| {
-                sync_conditional_record(store, &cas_key, live_value.as_deref())?;
-                let result = match expected {
-                    CasExpectation::Exact(expected) => {
-                        store.compare_and_set(&cas_key, Some(&expected), new_value, level)?
-                    }
-                    CasExpectation::Present => {
-                        store.replace_if_present(&cas_key, new_value, level)?
-                    }
-                };
-                Ok(cas_response(result))
-            });
+        let result = if let Some(isolation) = &self.isolation {
+            let mut isolation = isolation.lock().expect("isolation mutex");
+            let mut store = self.store.lock().expect("store mutex");
+            let (live_value, expired) = live_value(&mut store, &map_key, now_ms);
+            let condition_holds = match &expected {
+                CasExpectation::Exact(expected) => {
+                    live_value.as_deref() == Some(expected.as_slice())
+                }
+                CasExpectation::Present => live_value.is_some(),
+            };
 
-        if matches!(&result, Ok(ClientResponse::CasApplied { .. })) {
-            self.store
-                .lock()
-                .expect("store mutex")
-                .insert(map_key, StoredValue::persistent(value_for_response));
+            if condition_holds {
+                let value_for_store = new_value.clone();
+                let mut command_result = None;
+                let admitted = isolation
+                    .admit_put_if_committed(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &stable_key,
+                        value_bytes,
+                        true,
+                        || {
+                            let result = apply_compare_and_set(
+                                &mut self.lock_service.lock().expect("lock service mutex"),
+                                &cas_key,
+                                live_value.as_deref(),
+                                &expected,
+                                new_value,
+                                level,
+                            );
+                            let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
+                            if applied {
+                                store.insert(map_key, StoredValue::persistent(value_for_store));
+                            }
+                            command_result = Some(result);
+                            applied
+                        },
+                    )
+                    .map_err(admission_error);
+                let committed = matches!(admitted, Ok(true));
+                if expired && !committed {
+                    let _ = isolation.remove_entry(identity.client_id(), ns.as_str(), &stable_key);
+                }
+                match admitted {
+                    Err(error) => Err(error),
+                    Ok(_) => command_result.expect("true CAS condition executes command"),
+                }
+            } else {
+                let admitted = isolation
+                    .admit_put_if_committed(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &stable_key,
+                        value_bytes,
+                        false,
+                        || unreachable!("false CAS condition skips commit callback"),
+                    )
+                    .map_err(admission_error);
+                if expired {
+                    let _ = isolation.remove_entry(identity.client_id(), ns.as_str(), &stable_key);
+                }
+                match admitted {
+                    Err(error) => Err(error),
+                    Ok(false) => apply_compare_and_set(
+                        &mut self.lock_service.lock().expect("lock service mutex"),
+                        &cas_key,
+                        live_value.as_deref(),
+                        &expected,
+                        new_value,
+                        level,
+                    ),
+                    Ok(true) => unreachable!("false CAS condition cannot commit"),
+                }
+            }
+        } else {
+            let mut store = self.store.lock().expect("store mutex");
+            let (live_value, _) = live_value(&mut store, &map_key, now_ms);
+            let value_for_store = new_value.clone();
+            let result = apply_compare_and_set(
+                &mut self.lock_service.lock().expect("lock service mutex"),
+                &cas_key,
+                live_value.as_deref(),
+                &expected,
+                new_value,
+                level,
+            );
+            if matches!(&result, Ok(ClientResponse::CasApplied { .. })) {
+                store.insert(map_key, StoredValue::persistent(value_for_store));
+            }
+            result
+        };
+
+        let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
+        if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
         }
@@ -1082,30 +1310,42 @@ impl ClientSurfaceState {
         expected: Vec<u8>,
         level: LockConsistency,
     ) -> ClientResponseEnvelope {
-        if let Err(error) = self.admit_request(identity) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
-        let map_key = store_key(&ns, &key);
-        let live_value = live_value(
-            &mut self.store.lock().expect("store mutex"),
-            &map_key,
-            self.now_ms(),
-        );
-        let cas_key = lock_key(&ns, &key);
+        let map_key = store_key(identity, &ns, &key);
+        let cas_key = lock_key(identity, &ns, &key);
         let level = lock_consistency(level);
-        let result = self
-            .lock_service
-            .lock()
-            .expect("lock service mutex")
-            .apply_lock_command(|store, _now| {
-                sync_conditional_record(store, &cas_key, live_value.as_deref())?;
-                let result = store.remove_if_value(&cas_key, &expected, level)?;
-                Ok(cas_response(result))
-            });
+        let now_ms = self.now_ms();
+        let result = match self.with_admitted_store(identity, |value_store, isolation| {
+            let (live_value, expired) = live_value(value_store, &map_key, now_ms);
+            let result = self
+                .lock_service
+                .lock()
+                .expect("lock service mutex")
+                .apply_lock_command(|store, _now| {
+                    sync_conditional_record(store, &cas_key, live_value.as_deref())?;
+                    let result = store.remove_if_value(&cas_key, &expected, level)?;
+                    Ok(cas_response(result))
+                });
+            let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
+            if applied {
+                value_store.remove(&map_key);
+            }
+            if applied || expired {
+                if let Some(isolation) = isolation {
+                    let _ = isolation.remove_entry(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &key.stable_key(),
+                    );
+                }
+            }
+            result
+        }) {
+            Ok(result) => result,
+            Err(error) => Err(error),
+        };
 
-        if matches!(&result, Ok(ClientResponse::CasApplied { .. })) {
-            self.store.lock().expect("store mutex").remove(&map_key);
+        let applied = matches!(&result, Ok(ClientResponse::CasApplied { .. }));
+        if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
         }
@@ -1114,6 +1354,36 @@ impl ClientSurfaceState {
 
     fn record_audit(&self, event: AuditEvent) {
         let _ = self.audit.lock().expect("audit mutex").record(&event);
+    }
+
+    fn record_rejection_audit(
+        &self,
+        identity: &ClientIdentity,
+        namespace: &str,
+        request_id: &str,
+        response: &ClientResponseEnvelope,
+        audit_auth_failure: bool,
+    ) {
+        let Err(error) = &response.result else {
+            return;
+        };
+        match error.code {
+            ClientErrorCode::TenantQuota | ClientErrorCode::RateLimited => {
+                self.record_audit(AuditEvent::QuotaRejected {
+                    tenant: identity.tenant().to_owned(),
+                    namespace: namespace.to_owned(),
+                    request_id: Some(request_id.to_owned()),
+                });
+            }
+            ClientErrorCode::Unauthorized if audit_auth_failure => {
+                self.record_audit(AuditEvent::AuthFailure {
+                    tenant: Some(identity.tenant().to_owned()),
+                    route: CLIENT_DATA_PATH.to_owned(),
+                    request_id: Some(request_id.to_owned()),
+                });
+            }
+            _ => {}
+        }
     }
 
     fn handle_put(&self, identity: &ClientIdentity, command: PutCommand) -> ClientResponseEnvelope {
@@ -1131,29 +1401,56 @@ impl ClientSurfaceState {
                 ClientErrorEnvelope::new(ClientErrorCode::TooLarge, false, "value too large"),
             );
         }
-        if let Some(idempotency_key) = idempotency_key.as_ref() {
-            let keys = self.idempotency_keys.lock().expect("idempotency mutex");
+        let scoped_idempotency_key =
+            idempotency_key.map(|idempotency_key| (identity.tenant().to_owned(), idempotency_key));
+        let mut idempotency_keys = scoped_idempotency_key
+            .as_ref()
+            .map(|_| self.idempotency_keys.lock().expect("idempotency mutex"));
+        if let (Some(idempotency_key), Some(keys)) =
+            (scoped_idempotency_key.as_ref(), idempotency_keys.as_ref())
+        {
             if keys.contains(idempotency_key) {
                 return ClientResponseEnvelope::ok(request_id, ClientResponse::Stored);
             }
         }
-        if let Err(error) = self.admit_put(identity, &ns, &key, value.len() as u64) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-        if let Some(idempotency_key) = idempotency_key {
-            self.idempotency_keys
-                .lock()
-                .expect("idempotency mutex")
-                .insert(idempotency_key);
-        }
+        let value_bytes = value.len() as u64;
         let stored = match ttl_ms {
             Some(ttl_ms) => StoredValue::with_ttl(value, self.now_ms(), ttl_ms),
             None => StoredValue::persistent(value),
         };
-        self.store
-            .lock()
-            .expect("store mutex")
-            .insert(store_key(&ns, &key), stored);
+        let map_key = store_key(identity, &ns, &key);
+        let admitted = if let Some(isolation) = &self.isolation {
+            let mut isolation = isolation.lock().expect("isolation mutex");
+            let mut store = self.store.lock().expect("store mutex");
+            isolation
+                .admit_put_if_committed(
+                    identity.client_id(),
+                    ns.as_str(),
+                    &key.stable_key(),
+                    value_bytes,
+                    true,
+                    || {
+                        store.insert(map_key, stored);
+                        true
+                    },
+                )
+                .map_err(admission_error)
+        } else {
+            self.store
+                .lock()
+                .expect("store mutex")
+                .insert(map_key, stored);
+            Ok(true)
+        };
+        if let Err(error) = admitted {
+            return ClientResponseEnvelope::error(request_id, error);
+        }
+        if let (Some(idempotency_key), Some(keys)) =
+            (scoped_idempotency_key, idempotency_keys.as_mut())
+        {
+            keys.insert(idempotency_key);
+        }
+        drop(idempotency_keys);
         self.state_mutations.fetch_add(1, Ordering::SeqCst);
         self.record_invalidation(ns, key);
         ClientResponseEnvelope::ok(request_id, ClientResponse::Stored)
@@ -1167,19 +1464,29 @@ impl ClientSurfaceState {
         key: StructuredKey,
         ttl_ms: u64,
     ) -> ClientResponseEnvelope {
-        if let Err(error) = self.admit_request(identity) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
         let now_ms = self.now_ms();
-        let mut store = self.store.lock().expect("store mutex");
-        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
-            .map(|entry| {
-                entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
-                true
-            })
-            .unwrap_or(false);
-        drop(store);
+        let applied = match self.with_admitted_store(identity, |store, isolation| {
+            let (entry, expired) = live_entry_mut(store, &store_key(identity, &ns, &key), now_ms);
+            let applied = entry
+                .map(|entry| {
+                    entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                    true
+                })
+                .unwrap_or(false);
+            if expired {
+                if let Some(isolation) = isolation {
+                    let _ = isolation.remove_entry(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &key.stable_key(),
+                    );
+                }
+            }
+            applied
+        }) {
+            Ok(applied) => applied,
+            Err(error) => return ClientResponseEnvelope::error(request_id, error),
+        };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
@@ -1194,16 +1501,26 @@ impl ClientSurfaceState {
         ns: Namespace,
         key: StructuredKey,
     ) -> ClientResponseEnvelope {
-        if let Err(error) = self.admit_request(identity) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
         let now_ms = self.now_ms();
-        let mut store = self.store.lock().expect("store mutex");
-        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
-            .map(|entry| entry.expires_at_ms.take().is_some())
-            .unwrap_or(false);
-        drop(store);
+        let applied = match self.with_admitted_store(identity, |store, isolation| {
+            let (entry, expired) = live_entry_mut(store, &store_key(identity, &ns, &key), now_ms);
+            let applied = entry
+                .map(|entry| entry.expires_at_ms.take().is_some())
+                .unwrap_or(false);
+            if expired {
+                if let Some(isolation) = isolation {
+                    let _ = isolation.remove_entry(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &key.stable_key(),
+                    );
+                }
+            }
+            applied
+        }) {
+            Ok(applied) => applied,
+            Err(error) => return ClientResponseEnvelope::error(request_id, error),
+        };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
@@ -1218,16 +1535,23 @@ impl ClientSurfaceState {
         ns: Namespace,
         key: StructuredKey,
     ) -> ClientResponseEnvelope {
-        if let Err(error) = self.admit_request(identity) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
         let now_ms = self.now_ms();
-        let state = ttl_state(
-            &mut self.store.lock().expect("store mutex"),
-            &store_key(&ns, &key),
-            now_ms,
-        );
+        let state = match self.with_admitted_store(identity, |store, isolation| {
+            let (state, expired) = ttl_state(store, &store_key(identity, &ns, &key), now_ms);
+            if expired {
+                if let Some(isolation) = isolation {
+                    let _ = isolation.remove_entry(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &key.stable_key(),
+                    );
+                }
+            }
+            state
+        }) {
+            Ok(state) => state,
+            Err(error) => return ClientResponseEnvelope::error(request_id, error),
+        };
         ClientResponseEnvelope::ok(request_id, ClientResponse::Ttl { state })
     }
 
@@ -1262,34 +1586,55 @@ impl ClientSurfaceState {
                 );
             }
         }
-        if let Err(error) = self.admit_put(identity, &ns, &key, value.len() as u64) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
         let now_ms = self.now_ms();
-        let map_key = store_key(&ns, &key);
-        let mut store = self.store.lock().expect("store mutex");
-        let stored = match condition {
-            ConditionalPutCondition::IfAbsent => {
-                if live_entry_mut(&mut store, &map_key, now_ms).is_some() {
-                    false
-                } else {
-                    store.insert(map_key, stored_value(value, now_ms, ttl_ms));
-                    true
+        let map_key = store_key(identity, &ns, &key);
+        let stable_key = key.stable_key();
+        let value_bytes = value.len() as u64;
+        let stored = if let Some(isolation) = &self.isolation {
+            let mut isolation = isolation.lock().expect("isolation mutex");
+            let mut store = self.store.lock().expect("store mutex");
+            let (entry, expired) = live_entry_mut(&mut store, &map_key, now_ms);
+            let condition_holds = match &condition {
+                ConditionalPutCondition::IfAbsent => entry.is_none(),
+                ConditionalPutCondition::IfPresentValue(expected) => {
+                    entry.is_some_and(|entry| entry.value == *expected)
                 }
+            };
+            let admitted = isolation
+                .admit_put_if_committed(
+                    identity.client_id(),
+                    ns.as_str(),
+                    &stable_key,
+                    value_bytes,
+                    condition_holds,
+                    || {
+                        store.insert(map_key, stored_value(value, now_ms, ttl_ms));
+                        true
+                    },
+                )
+                .map_err(admission_error);
+            let stored = matches!(admitted, Ok(true));
+            if expired && !stored {
+                let _ = isolation.remove_entry(identity.client_id(), ns.as_str(), &stable_key);
             }
-            ConditionalPutCondition::IfPresentValue(expected) => {
-                let should_store = live_entry_mut(&mut store, &map_key, now_ms)
-                    .is_some_and(|entry| entry.value == expected);
-                if should_store {
-                    store.insert(map_key, stored_value(value, now_ms, ttl_ms));
-                    true
-                } else {
-                    false
+            if let Err(error) = admitted {
+                return ClientResponseEnvelope::error(request_id, error);
+            }
+            stored
+        } else {
+            let mut store = self.store.lock().expect("store mutex");
+            let (entry, _) = live_entry_mut(&mut store, &map_key, now_ms);
+            let condition_holds = match &condition {
+                ConditionalPutCondition::IfAbsent => entry.is_none(),
+                ConditionalPutCondition::IfPresentValue(expected) => {
+                    entry.is_some_and(|entry| entry.value == *expected)
                 }
+            };
+            if condition_holds {
+                store.insert(map_key, stored_value(value, now_ms, ttl_ms));
             }
+            condition_holds
         };
-        drop(store);
         if stored {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
@@ -1315,19 +1660,28 @@ impl ClientSurfaceState {
                 ),
             );
         }
-        if let Err(error) = self.admit_request(identity) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
         let now_ms = self.now_ms();
-        let map_key = store_key(&ns, &key);
-        let mut store = self.store.lock().expect("store mutex");
-        let applied = live_entry_mut(&mut store, &map_key, now_ms)
-            .is_some_and(|entry| entry.value == expected_value);
-        if applied {
-            store.remove(&map_key);
-        }
-        drop(store);
+        let map_key = store_key(identity, &ns, &key);
+        let applied = match self.with_admitted_store(identity, |store, isolation| {
+            let (entry, expired) = live_entry_mut(store, &map_key, now_ms);
+            let applied = entry.is_some_and(|entry| entry.value == expected_value);
+            if applied {
+                store.remove(&map_key);
+            }
+            if expired || applied {
+                if let Some(isolation) = isolation {
+                    let _ = isolation.remove_entry(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &key.stable_key(),
+                    );
+                }
+            }
+            applied
+        }) {
+            Ok(applied) => applied,
+            Err(error) => return ClientResponseEnvelope::error(request_id, error),
+        };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
@@ -1358,43 +1712,54 @@ impl ClientSurfaceState {
                 ),
             );
         }
-        if let Err(error) = self.admit_request(identity) {
-            return ClientResponseEnvelope::error(request_id, error);
-        }
-
         let now_ms = self.now_ms();
-        let mut store = self.store.lock().expect("store mutex");
-        let applied = live_entry_mut(&mut store, &store_key(&ns, &key), now_ms)
-            .map(|entry| {
-                if entry.value == expected_value {
-                    match mode {
-                        CompareValueExpireMode::Replace => {
-                            entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
-                            true
-                        }
-                        CompareValueExpireMode::ReplaceIfExpiring => {
-                            if entry.expires_at_ms.is_some() {
+        let applied = match self.with_admitted_store(identity, |store, isolation| {
+            let (entry, expired) = live_entry_mut(store, &store_key(identity, &ns, &key), now_ms);
+            let applied = entry
+                .map(|entry| {
+                    if entry.value == expected_value {
+                        match mode {
+                            CompareValueExpireMode::Replace => {
                                 entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
                                 true
-                            } else {
-                                false
+                            }
+                            CompareValueExpireMode::ReplaceIfExpiring => {
+                                if entry.expires_at_ms.is_some() {
+                                    entry.expires_at_ms = Some(now_ms.saturating_add(ttl_ms));
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            CompareValueExpireMode::AddToRemaining => {
+                                if let Some(expires_at_ms) = entry.expires_at_ms {
+                                    entry.expires_at_ms =
+                                        Some(expires_at_ms.saturating_add(ttl_ms));
+                                    true
+                                } else {
+                                    false
+                                }
                             }
                         }
-                        CompareValueExpireMode::AddToRemaining => {
-                            if let Some(expires_at_ms) = entry.expires_at_ms {
-                                entry.expires_at_ms = Some(expires_at_ms.saturating_add(ttl_ms));
-                                true
-                            } else {
-                                false
-                            }
-                        }
+                    } else {
+                        false
                     }
-                } else {
-                    false
+                })
+                .unwrap_or(false);
+            if expired {
+                if let Some(isolation) = isolation {
+                    let _ = isolation.remove_entry(
+                        identity.client_id(),
+                        ns.as_str(),
+                        &key.stable_key(),
+                    );
                 }
-            })
-            .unwrap_or(false);
-        drop(store);
+            }
+            applied
+        }) {
+            Ok(applied) => applied,
+            Err(error) => return ClientResponseEnvelope::error(request_id, error),
+        };
         if applied {
             self.state_mutations.fetch_add(1, Ordering::SeqCst);
             self.record_invalidation(ns, key);
@@ -1402,60 +1767,21 @@ impl ClientSurfaceState {
         ClientResponseEnvelope::ok(request_id, ClientResponse::CompareValueApplied { applied })
     }
 
-    fn admit_request(&self, identity: &ClientIdentity) -> Result<(), ClientErrorEnvelope> {
+    fn with_admitted_store<T>(
+        &self,
+        identity: &ClientIdentity,
+        apply: impl FnOnce(&mut BTreeMap<StoreKey, StoredValue>, Option<&mut ConsumerIsolation>) -> T,
+    ) -> Result<T, ClientErrorEnvelope> {
         if let Some(isolation) = &self.isolation {
+            let mut isolation = isolation.lock().expect("isolation mutex");
             isolation
-                .lock()
-                .expect("isolation mutex")
                 .admit_request(identity.client_id())
-                .map(|_| ())
-                .map_err(admission_error)
+                .map_err(admission_error)?;
+            let mut store = self.store.lock().expect("store mutex");
+            Ok(apply(&mut store, Some(&mut isolation)))
         } else {
-            Ok(())
-        }
-    }
-
-    fn admit_put(
-        &self,
-        identity: &ClientIdentity,
-        ns: &Namespace,
-        key: &StructuredKey,
-        value_bytes: u64,
-    ) -> Result<(), ClientErrorEnvelope> {
-        if let Some(isolation) = &self.isolation {
-            isolation
-                .lock()
-                .expect("isolation mutex")
-                .admit_put(
-                    identity.client_id(),
-                    ns.as_str(),
-                    &key.stable_key(),
-                    value_bytes,
-                )
-                .map_err(admission_error)
-        } else {
-            Ok(())
-        }
-    }
-
-    fn admit_batch_put(
-        &self,
-        identity: &ClientIdentity,
-        ns: &Namespace,
-        entries: &[BatchPutEntry],
-    ) -> Result<(), ClientErrorEnvelope> {
-        if let Some(isolation) = &self.isolation {
-            let entries = entries
-                .iter()
-                .map(|entry| (entry.key.stable_key(), entry.value.len() as u64))
-                .collect::<Vec<_>>();
-            isolation
-                .lock()
-                .expect("isolation mutex")
-                .admit_batch_put(identity.client_id(), ns.as_str(), &entries)
-                .map_err(admission_error)
-        } else {
-            Ok(())
+            let mut store = self.store.lock().expect("store mutex");
+            Ok(apply(&mut store, None))
         }
     }
 
@@ -1532,7 +1858,7 @@ async fn client_data(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    match validate_before_dispatch(&state, &headers, body.len()) {
+    match validate_before_dispatch(&state, &headers, body.len(), CLIENT_DATA_PATH) {
         Ok(identity) => {
             state.record_dispatch();
             match ClientFrame::decode(&body, state.limits().max_frame_bytes)
@@ -1575,7 +1901,7 @@ async fn client_subscription(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    match validate_before_dispatch(&state, &headers, body.len()) {
+    match validate_before_dispatch(&state, &headers, body.len(), CLIENT_SUBSCRIPTIONS_PATH) {
         Ok(_identity) => {
             if state.active_subscriptions() as usize >= state.limits().max_streams_per_connection {
                 return ClientSurfaceError::TooManyStreams.into_response();
@@ -1596,6 +1922,7 @@ fn validate_before_dispatch(
     state: &ClientSurfaceState,
     headers: &HeaderMap,
     body_len: usize,
+    route: &str,
 ) -> Result<ClientIdentity, ClientSurfaceError> {
     let identity = match ClientIdentity::from_headers(headers) {
         Ok(identity) => identity,
@@ -1611,7 +1938,7 @@ fn validate_before_dispatch(
             max: state.limits().max_frame_bytes,
         });
     }
-    state.validate_tenant_identity(&identity)?;
+    state.validate_tenant_identity(&identity, route, None)?;
     Ok(identity)
 }
 
@@ -1677,6 +2004,32 @@ fn duration_millis_saturating(duration: Duration) -> u64 {
     duration.as_millis().min(u128::from(u64::MAX)) as u64
 }
 
+fn request_namespace(request: &ClientRequest) -> &Namespace {
+    match request {
+        ClientRequest::Get { ns, .. }
+        | ClientRequest::Put { ns, .. }
+        | ClientRequest::Invalidate { ns, .. }
+        | ClientRequest::BatchGet { ns, .. }
+        | ClientRequest::BatchPut { ns, .. }
+        | ClientRequest::Expire { ns, .. }
+        | ClientRequest::Persist { ns, .. }
+        | ClientRequest::GetTtl { ns, .. }
+        | ClientRequest::ConditionalPut { ns, .. }
+        | ClientRequest::CompareValueAndInvalidate { ns, .. }
+        | ClientRequest::CompareValueAndExpire { ns, .. }
+        | ClientRequest::EvictRegion { ns }
+        | ClientRequest::SubscribeInvalidations { ns, .. }
+        | ClientRequest::SubscribeEntryEvents { ns, .. }
+        | ClientRequest::TryLock { ns, .. }
+        | ClientRequest::Unlock { ns, .. }
+        | ClientRequest::RenewLockLease { ns, .. }
+        | ClientRequest::ForceUnlock { ns, .. }
+        | ClientRequest::GetLockOwnership { ns, .. }
+        | ClientRequest::CompareAndSet { ns, .. }
+        | ClientRequest::RemoveIfValue { ns, .. } => ns,
+    }
+}
+
 fn lock_response(
     request_id: String,
     result: Result<ClientResponse, ClientErrorEnvelope>,
@@ -1687,8 +2040,19 @@ fn lock_response(
     }
 }
 
-fn lock_key(ns: &Namespace, key: &StructuredKey) -> String {
-    format!("{}:{}", ns.as_str(), key.stable_key())
+fn lock_key(identity: &ClientIdentity, ns: &Namespace, key: &StructuredKey) -> String {
+    let tenant = identity.tenant();
+    let namespace = ns.as_str();
+    let stable_key = key.stable_key();
+    format!(
+        "{}:{}|{}:{}|{}:{}",
+        tenant.len(),
+        tenant,
+        namespace.len(),
+        namespace,
+        stable_key.len(),
+        stable_key,
+    )
 }
 
 fn lock_owner(identity: &ClientIdentity) -> LockOwner {
@@ -1731,6 +2095,26 @@ fn sync_conditional_record(
     Ok(())
 }
 
+fn apply_compare_and_set(
+    service: &mut ClientLockService,
+    key: &str,
+    live_value: Option<&[u8]>,
+    expected: &CasExpectation,
+    new_value: Vec<u8>,
+    level: ConsistencyLevel,
+) -> Result<ClientResponse, ClientErrorEnvelope> {
+    service.apply_lock_command(|store, _now| {
+        sync_conditional_record(store, key, live_value)?;
+        let result = match expected {
+            CasExpectation::Exact(expected) => {
+                store.compare_and_set(key, Some(expected), new_value, level)?
+            }
+            CasExpectation::Present => store.replace_if_present(key, new_value, level)?,
+        };
+        Ok(cas_response(result))
+    })
+}
+
 fn cas_response(result: CasResult) -> ClientResponse {
     match result {
         CasResult::Applied { new_version } => ClientResponse::CasApplied { new_version },
@@ -1755,12 +2139,12 @@ fn live_value(
     store: &mut BTreeMap<StoreKey, StoredValue>,
     key: &StoreKey,
     now_ms: u64,
-) -> Option<Vec<u8>> {
+) -> (Option<Vec<u8>>, bool) {
     if store.get(key).is_some_and(|entry| entry.is_expired(now_ms)) {
         store.remove(key);
-        return None;
+        return (None, true);
     }
-    store.get(key).map(|entry| entry.value.clone())
+    (store.get(key).map(|entry| entry.value.clone()), false)
 }
 
 fn stored_value(value: Vec<u8>, now_ms: u64, ttl_ms: Option<u64>) -> StoredValue {
@@ -1774,23 +2158,28 @@ fn live_entry_mut<'a>(
     store: &'a mut BTreeMap<StoreKey, StoredValue>,
     key: &StoreKey,
     now_ms: u64,
-) -> Option<&'a mut StoredValue> {
+) -> (Option<&'a mut StoredValue>, bool) {
     if store.get(key).is_some_and(|entry| entry.is_expired(now_ms)) {
         store.remove(key);
-        return None;
+        return (None, true);
     }
-    store.get_mut(key)
+    (store.get_mut(key), false)
 }
 
-fn ttl_state(store: &mut BTreeMap<StoreKey, StoredValue>, key: &StoreKey, now_ms: u64) -> TtlState {
+fn ttl_state(
+    store: &mut BTreeMap<StoreKey, StoredValue>,
+    key: &StoreKey,
+    now_ms: u64,
+) -> (TtlState, bool) {
     let Some(entry) = store.get(key) else {
-        return TtlState::Missing;
+        return (TtlState::Missing, false);
     };
     let state = entry.ttl_state(now_ms);
     if matches!(state, TtlState::Missing) {
         store.remove(key);
+        return (state, true);
     }
-    state
+    (state, false)
 }
 
 fn system_time_millis() -> u64 {
@@ -1801,8 +2190,12 @@ fn system_time_millis() -> u64 {
         .min(u128::from(u64::MAX)) as u64
 }
 
-fn store_key(ns: &Namespace, key: &StructuredKey) -> StoreKey {
-    (ns.as_str().to_owned(), key.stable_key())
+fn store_key(identity: &ClientIdentity, ns: &Namespace, key: &StructuredKey) -> StoreKey {
+    (
+        identity.tenant().to_owned(),
+        ns.as_str().to_owned(),
+        key.stable_key(),
+    )
 }
 
 /// Deterministic lifecycle model for long-lived client subscriptions.

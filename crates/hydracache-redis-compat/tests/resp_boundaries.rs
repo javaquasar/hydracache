@@ -1,6 +1,7 @@
 use hydracache_redis_compat::{
-    decode_resp2_command, decode_resp2_command_with_limits, RedisCommand, RedisCompatError,
-    RespDecodeLimits,
+    decode_resp2_command, decode_resp2_command_with_limits, decode_resp3_command,
+    decode_resp3_command_with_limits, encode_resp2_value, encode_resp3_value, RedisCommand,
+    RedisCompatError, RespDecodeLimits, RespValue,
 };
 use proptest::prelude::*;
 
@@ -127,9 +128,121 @@ fn oversized_bulk_and_array_frames_are_rejected_before_allocation_spike() {
     ));
 }
 
+#[test]
+fn resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one() {
+    assert_eq!(encode_resp2_value(RespValue::Null).unwrap(), b"$-1\r\n");
+    assert_eq!(encode_resp3_value(RespValue::Null).unwrap(), b"_\r\n");
+}
+
+#[test]
+fn resp3_integer_array_binary_bulk_and_error_frames_match_golden_bytes() {
+    assert_eq!(
+        encode_resp3_value(RespValue::Integer(-2)).unwrap(),
+        b":-2\r\n"
+    );
+    assert_eq!(
+        encode_resp3_value(RespValue::BulkString(vec![0, b'\r', b'\n', 0xff])).unwrap(),
+        b"$4\r\n\0\r\n\xff\r\n"
+    );
+    assert_eq!(
+        encode_resp3_value(RespValue::Array(vec![
+            RespValue::BulkString(b"v".to_vec()),
+            RespValue::Null,
+            RespValue::Integer(1),
+        ]))
+        .unwrap(),
+        b"*3\r\n$1\r\nv\r\n_\r\n:1\r\n"
+    );
+    assert_eq!(
+        encode_resp3_value(RespValue::Error("ERR syntax error".to_owned())).unwrap(),
+        b"-ERR syntax error\r\n"
+    );
+}
+
+#[test]
+fn resp3_partial_pipeline_consumed_and_limit_boundaries_match_resp2() {
+    let first = b"*3\r\n$3\r\nSET\r\n$1\r\nk\r\n$1\r\nv\r\n";
+    let second = b"*2\r\n$3\r\nGET\r\n$1\r\nk\r\n";
+    assert!(decode_resp3_command(&first[..first.len() - 1])
+        .unwrap()
+        .is_none());
+
+    let mut pipeline = first.to_vec();
+    pipeline.extend_from_slice(second);
+    let (set, consumed) = decode_resp3_command(&pipeline).unwrap().unwrap();
+    assert!(matches!(set, RedisCommand::Set { .. }));
+    assert_eq!(consumed, first.len());
+    let (get, consumed) = decode_resp3_command(&pipeline[consumed..])
+        .unwrap()
+        .unwrap();
+    assert!(matches!(get, RedisCommand::Get { .. }));
+    assert_eq!(consumed, second.len());
+
+    let limits = RespDecodeLimits {
+        max_frame_bytes: 1024,
+        max_array_elements: 2,
+        max_bulk_string_bytes: 128,
+    };
+    assert!(matches!(
+        decode_resp3_command_with_limits(first, limits),
+        Err(RedisCompatError::ArrayTooLarge { actual: 3, max: 2 })
+    ));
+    let limits = RespDecodeLimits {
+        max_frame_bytes: 1024,
+        max_array_elements: 8,
+        max_bulk_string_bytes: 2,
+    };
+    assert!(matches!(
+        decode_resp3_command_with_limits(second, limits),
+        Err(RedisCompatError::BulkStringTooLarge { actual: 3, max: 2 })
+    ));
+}
+
+#[test]
+fn resp3_top_level_nested_and_attributed_aggregates_fail_loud() {
+    let attributed = [
+        b"|1\r\n+trace\r\n+x\r\n*2\r\n+GET\r\n+k\r\n".as_slice(),
+        b"*2\r\n+GET\r\n|1\r\n+trace\r\n+x\r\n+k\r\n".as_slice(),
+    ];
+    for input in attributed {
+        assert!(matches!(
+            decode_resp3_command(input),
+            Err(RedisCompatError::UnsupportedResp3Attributes)
+        ));
+    }
+
+    for input in [
+        b"%1\r\n+GET\r\n+k\r\n".as_slice(),
+        b"~2\r\n+GET\r\n+k\r\n".as_slice(),
+        b">2\r\n+GET\r\n+k\r\n".as_slice(),
+    ] {
+        assert!(matches!(
+            decode_resp3_command(input),
+            Err(RedisCompatError::NonArrayCommand)
+        ));
+    }
+
+    for input in [
+        b"*2\r\n+GET\r\n%1\r\n+a\r\n+b\r\n".as_slice(),
+        b"*2\r\n+GET\r\n~1\r\n+k\r\n".as_slice(),
+        b"*2\r\n+GET\r\n>1\r\n+k\r\n".as_slice(),
+        b"*2\r\n+GET\r\n*1\r\n+k\r\n".as_slice(),
+    ] {
+        assert!(matches!(
+            decode_resp3_command(input),
+            Err(RedisCompatError::NonStringArgument)
+        ));
+    }
+}
+
 proptest! {
     #[test]
     fn resp_decoder_never_panics_on_arbitrary_bytes(input in proptest::collection::vec(any::<u8>(), 0..512)) {
         let _ = decode_resp2_command(&input);
+    }
+
+    #[test]
+    fn resp3_decoder_never_panics_on_arbitrary_bytes(input in proptest::collection::vec(any::<u8>(), 0..512)) {
+        let _ = decode_resp3_command(&input);
     }
 }

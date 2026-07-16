@@ -14,6 +14,20 @@ fn fast_suite_registry_has_pinned_nextest_and_bounded_unmeasured_baselines() {
 }
 
 #[test]
+fn fast_suite_registry_baseline_covers_the_next_release_but_not_an_older_one() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::fast_suite::load_registry(&root).unwrap();
+    let next = xtask::fast_suite::validate_registry(&root, &registry, "0.65", None).unwrap();
+    assert!(
+        !next.iter().any(|problem| problem == "release mismatch"),
+        "{next:#?}"
+    );
+
+    let older = xtask::fast_suite::validate_registry(&root, &registry, "0.63", None).unwrap();
+    assert!(older.iter().any(|problem| problem == "release mismatch"));
+}
+
+#[test]
 fn nextest_serializes_trybuild_harnesses_with_a_bounded_compile_timeout() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let config = fs::read_to_string(root.join(".config/nextest.toml")).unwrap();

@@ -237,6 +237,31 @@ impl ConsumerIsolation {
         key: &str,
         value_bytes: u64,
     ) -> Result<(), AdmissionRejection> {
+        self.admit_put_if_committed(client_id, namespace, key, value_bytes, true, || true)
+            .map(|_| ())
+    }
+
+    /// Admit one put, but commit its quota accounting only when the caller's
+    /// mutation actually commits.
+    ///
+    /// A `false` condition still consumes the request admission budget and
+    /// validates namespace ownership, but deliberately skips projected quota:
+    /// a lost `SET NX` is an admitted no-op even when its hypothetical value
+    /// would not fit. A `true` condition checks projected quota, invokes the
+    /// mutation callback, and commits accounting only when that callback
+    /// reports a committed store transition.
+    pub fn admit_put_if_committed<F>(
+        &mut self,
+        client_id: &str,
+        namespace: &str,
+        key: &str,
+        value_bytes: u64,
+        condition_holds: bool,
+        commit: F,
+    ) -> Result<bool, AdmissionRejection>
+    where
+        F: FnOnce() -> bool,
+    {
         if value_bytes > self.config.max_value_bytes {
             return Err(AdmissionRejection::GlobalLimit {
                 reason: "max_value_bytes",
@@ -254,6 +279,9 @@ impl ConsumerIsolation {
                     tenant: tenant_id.clone(),
                     namespace: namespace.to_owned(),
                 })?;
+        if !condition_holds {
+            return Ok(false);
+        }
         let entry_key = (tenant_id.clone(), namespace.to_owned(), key.to_owned());
         let old_bytes = self.entries.get(&entry_key).copied();
         let usage_key = (tenant_id.clone(), namespace.to_owned());
@@ -269,9 +297,12 @@ impl ConsumerIsolation {
             });
         }
 
+        if !commit() {
+            return Ok(false);
+        }
         self.entries.insert(entry_key, value_bytes);
         self.usage.insert(usage_key, projected);
-        Ok(())
+        Ok(true)
     }
 
     /// Atomically admit a batch of puts.
@@ -281,17 +312,49 @@ impl ConsumerIsolation {
         namespace: &str,
         entries: &[(String, u64)],
     ) -> Result<(), AdmissionRejection> {
+        self.admit_batch_put_if_committed(client_id, namespace, entries, || true)
+            .map(|_| ())
+    }
+
+    /// Atomically admit a batch and commit quota accounting only when the
+    /// caller's batch mutation commits.
+    ///
+    /// Duplicate keys use last-write-wins accounting, matching `BatchPut` and
+    /// Redis `MSET`: raw duplicates still consume request-size budget, while
+    /// stored bytes and entries describe only the final value per key.
+    pub fn admit_batch_put_if_committed<F>(
+        &mut self,
+        client_id: &str,
+        namespace: &str,
+        entries: &[(String, u64)],
+        commit: F,
+    ) -> Result<bool, AdmissionRejection>
+    where
+        F: FnOnce() -> bool,
+    {
         if entries.len() > self.config.max_batch_items {
             return Err(AdmissionRejection::GlobalLimit {
                 reason: "max_batch_items",
             });
         }
-        let request_bytes = entries.iter().map(|(_, bytes)| *bytes).sum::<u64>();
+        let request_bytes = entries
+            .iter()
+            .fold(0u64, |total, (_, bytes)| total.saturating_add(*bytes));
         if request_bytes > self.config.max_request_bytes {
             return Err(AdmissionRejection::GlobalLimit {
                 reason: "max_request_bytes",
             });
         }
+        if entries
+            .iter()
+            .any(|(_, value_bytes)| *value_bytes > self.config.max_value_bytes)
+        {
+            return Err(AdmissionRejection::GlobalLimit {
+                reason: "max_value_bytes",
+            });
+        }
+
+        let final_entries = entries.iter().cloned().collect::<BTreeMap<String, u64>>();
 
         let tenant_id = self.admit_request(client_id)?;
         let tenant = self
@@ -308,12 +371,7 @@ impl ConsumerIsolation {
 
         let usage_key = (tenant_id.clone(), namespace.to_owned());
         let mut projected = self.usage.get(&usage_key).copied().unwrap_or_default();
-        for (key, value_bytes) in entries {
-            if *value_bytes > self.config.max_value_bytes {
-                return Err(AdmissionRejection::GlobalLimit {
-                    reason: "max_value_bytes",
-                });
-            }
+        for (key, value_bytes) in &final_entries {
             let entry_key = (tenant_id.clone(), namespace.to_owned(), key.clone());
             projected = projected.project(self.entries.get(&entry_key).copied(), *value_bytes);
         }
@@ -326,14 +384,54 @@ impl ConsumerIsolation {
             });
         }
 
-        for (key, value_bytes) in entries {
-            self.entries.insert(
-                (tenant_id.clone(), namespace.to_owned(), key.clone()),
-                *value_bytes,
-            );
+        if !commit() {
+            return Ok(false);
+        }
+        for (key, value_bytes) in final_entries {
+            self.entries
+                .insert((tenant_id.clone(), namespace.to_owned(), key), value_bytes);
         }
         self.usage.insert(usage_key, projected);
-        Ok(())
+        Ok(true)
+    }
+
+    /// Remove one already-admitted entry from quota accounting.
+    ///
+    /// This bookkeeping operation deliberately does not consume another rate
+    /// token; callers use it after a delete or lazy expiry that was admitted by
+    /// the surrounding client request.
+    pub fn remove_entry(
+        &mut self,
+        client_id: &str,
+        namespace: &str,
+        key: &str,
+    ) -> Result<bool, AdmissionRejection> {
+        let tenant_id = self.resolve_tenant(client_id)?;
+        let tenant = self
+            .roster
+            .tenant(&tenant_id)
+            .expect("tenant id came from roster");
+        if tenant.quota(namespace).is_none() {
+            return Err(AdmissionRejection::UnknownNamespace {
+                tenant: tenant_id,
+                namespace: namespace.to_owned(),
+            });
+        }
+
+        let entry_key = (tenant_id.clone(), namespace.to_owned(), key.to_owned());
+        let Some(old_bytes) = self.entries.remove(&entry_key) else {
+            return Ok(false);
+        };
+        let usage_key = (tenant_id, namespace.to_owned());
+        let current = self.usage.get(&usage_key).copied().unwrap_or_default();
+        self.usage.insert(
+            usage_key,
+            NamespaceUsage {
+                bytes: current.bytes.saturating_sub(old_bytes),
+                entries: current.entries.saturating_sub(1),
+            },
+        );
+        Ok(true)
     }
 
     /// Begin a tenant-scoped subscription.

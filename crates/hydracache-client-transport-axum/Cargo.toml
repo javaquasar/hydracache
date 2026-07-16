@@ -21,8 +21,11 @@ serde.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
+async-trait.workspace = true
 futures-util.workspace = true
+hydracache-cluster-testkit.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
 tokio.workspace = true
 tower.workspace = true
 
