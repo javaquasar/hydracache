@@ -729,7 +729,12 @@ installs `cargo-mutants`, and executes eight registered shards over the scoped
 Raft paths in `.cargo/mutants.toml`. A separate two-shard proof-oracle campaign uses
 `.cargo/mutants-proof-oracles.toml` and
 [`docs/testing/mutation-proof-oracle-baseline.md`](testing/mutation-proof-oracle-baseline.md)
-to mutate the reusable linearizability checker and invariant catalog. Product
+to mutate the reusable linearizability checker, invariant catalog, and
+protocol-only client-surface conformance oracle
+(`crates/hydracache-cluster-testkit/src/client_surface_conformance.rs`). The
+Axum conformance runner is part of the required proof-oracle test packages, so
+weakening W1's decision logic is mutation-tested rather than trusted by the
+integration harness alone. Product
 and proof-oracle shards have separate commit-bound receipts, pin cargo-mutants
 `27.1.0`, and are all required before release; integration-test glue is not a
 substitute for mutating the decision modules themselves. `xtask` invokes each

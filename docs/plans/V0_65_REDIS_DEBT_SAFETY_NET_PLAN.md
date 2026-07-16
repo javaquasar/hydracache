@@ -45,6 +45,13 @@ claiming a distributed RESP backend:
    release evidence must be produced from a clean candidate tree; unrelated
    local notes must not be included in release receipts.
 
+The protocol-only W1 oracle is also included in the existing proof-oracle
+mutation campaign (`.cargo/mutants-proof-oracles.toml`). Its reusable
+`client_surface_conformance` decision logic is mutated alongside the existing
+history/invariant oracles, and the Axum conformance runner is a required test
+package. This prevents a future change from making the suite silently green by
+weakening the oracle itself.
+
 The release remains `in-progress` until all five streams have either passed
 their receipt-bound checks or have an explicit scope-change decision recorded
 in this plan.
