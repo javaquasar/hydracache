@@ -28,6 +28,8 @@ pub struct EvidenceManifest {
     #[serde(default)]
     pub canary_policy: CanaryPolicy,
     #[serde(default)]
+    pub dynamic_canary_work_items: Vec<String>,
+    #[serde(default)]
     pub work_item: Vec<EvidenceWorkItem>,
 }
 
@@ -37,6 +39,7 @@ pub enum CanaryPolicy {
     #[default]
     DynamicRegistry,
     DedicatedFlipSentinels,
+    DedicatedFlipSentinelsWithDynamicRegistry,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -156,7 +159,7 @@ pub fn build_report(
     let manifest = load_manifest(root, release)?;
     let gates = gated_tests::load_registry(root)?;
     let fast_suites = fast_suite::load_registry(root)?;
-    let canary_registry = canary_check::load_registry(root)?;
+    let canary_registry = canary_check::load_registry_for_release(root, release)?;
     let canary_receipts = canary_sweep::load_receipts(root)?;
     let canary_release_problem = dynamic_canary_release_problem(
         manifest.canary_policy,
@@ -233,7 +236,46 @@ pub fn build_report(
             reasons.push(format!("active quarantine: {}", quarantined.join(", ")));
         }
 
-        let canary_green = if manifest.canary_policy == CanaryPolicy::DedicatedFlipSentinels {
+        let dynamic_canary_required = manifest
+            .dynamic_canary_work_items
+            .iter()
+            .any(|work_item| work_item == &item.id);
+        let canary_green = if dynamic_canary_required {
+            if let Some(problem) = &canary_release_problem {
+                reasons.push(problem.clone());
+                false
+            } else if let Some(entry) = canaries_by_id.get(item.id.as_str()) {
+                if let Some(receipt) = canary_receipts_by_id.get(item.id.as_str()) {
+                    let problems = canary_sweep::receipt_problems(
+                        root,
+                        &canary_registry,
+                        entry,
+                        receipt,
+                        &source_commit,
+                    );
+                    if problems.is_empty() {
+                        true
+                    } else {
+                        reasons.extend(
+                            problems
+                                .into_iter()
+                                .map(|problem| format!("dynamic canary: {problem}")),
+                        );
+                        false
+                    }
+                } else {
+                    reasons.push("missing exact-commit dynamic canary receipt".to_owned());
+                    false
+                }
+            } else {
+                reasons.push("missing dynamic canary registry row".to_owned());
+                false
+            }
+        } else if matches!(
+            manifest.canary_policy,
+            CanaryPolicy::DedicatedFlipSentinels
+                | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+        ) {
             true
         } else if let Some(problem) = &canary_release_problem {
             reasons.push(problem.clone());
@@ -632,16 +674,23 @@ fn validate_manifest(
             }
         }
     }
-    if manifest.canary_policy == CanaryPolicy::DedicatedFlipSentinels {
+    if matches!(
+        manifest.canary_policy,
+        CanaryPolicy::DedicatedFlipSentinels
+            | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+    ) {
         const REQUIRED_GATE: &str = "env.hydracache-run-redis-resp-multinode-e2e";
         const REQUIRED_SOURCE: &str = "crates/hydracache-server/tests/redis_resp_multinode.rs";
-        const REQUIRED_SENTINELS: [&str; 6] = [
+        const REQUIRED_SENTINELS: [&str; 9] = [
             "multinode_resp_facade_documents_node_local_state",
             "cross_node_mget_del_exists_are_node_local",
             "cross_node_mset_is_node_local",
             "multinode_resp_lock_subset_is_single_endpoint_only",
             "cross_node_lock_release_is_node_local",
             "cross_node_lock_extend_is_node_local",
+            "cross_node_ttl_visibility_is_node_local",
+            "cross_node_script_cache_is_node_local",
+            "cross_node_tag_index_is_node_local",
         ];
         let w3 = manifest.work_item.iter().find(|item| item.id == "W3");
         if w3.is_none_or(|item| {
@@ -654,7 +703,18 @@ fn validate_manifest(
                 })
         }) {
             problems.push(format!(
-                "dedicated_flip_sentinels policy requires W3 gate {REQUIRED_GATE} and all six exact Redis deployment sentinels"
+                "dedicated_flip_sentinels policy requires W3 gate {REQUIRED_GATE} and all nine exact Redis deployment sentinels"
+            ));
+        }
+    }
+    let dynamic_ids: BTreeSet<_> = manifest.dynamic_canary_work_items.iter().collect();
+    if dynamic_ids.len() != manifest.dynamic_canary_work_items.len() {
+        problems.push("duplicate dynamic canary work item id".to_owned());
+    }
+    for item in &manifest.dynamic_canary_work_items {
+        if !ids.iter().any(|id| id == item) {
+            problems.push(format!(
+                "dynamic canary references unknown work item {item}"
             ));
         }
     }
@@ -834,6 +894,7 @@ fn template_manifest(
         release: definition.version.clone(),
         plan: definition.plan.clone(),
         canary_policy,
+        dynamic_canary_work_items: Vec::new(),
         work_item,
     })
 }
@@ -843,7 +904,11 @@ pub fn dynamic_canary_release_problem(
     registry_release: &str,
     candidate_release: &str,
 ) -> Option<String> {
-    (policy == CanaryPolicy::DynamicRegistry
+    (matches!(
+        policy,
+        CanaryPolicy::DynamicRegistry
+            | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+    )
         && normalize_release(registry_release) != normalize_release(candidate_release))
     .then(|| {
         format!(

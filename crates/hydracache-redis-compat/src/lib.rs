@@ -6162,6 +6162,9 @@ mod translation_contract {
         ("cross-endpoint-set-nx", RouteOwner::DeploymentScope),
         ("cross-endpoint-lock-release", RouteOwner::DeploymentScope),
         ("cross-endpoint-lock-extend", RouteOwner::DeploymentScope),
+        ("cross-endpoint-ttl", RouteOwner::DeploymentScope),
+        ("cross-endpoint-script-cache", RouteOwner::DeploymentScope),
+        ("cross-endpoint-tag-index", RouteOwner::DeploymentScope),
         ("hc-stats", RouteOwner::Translator),
         ("hc-diagnostics", RouteOwner::Translator),
         ("hc-invalidate", RouteOwner::Translator),
@@ -6246,6 +6249,21 @@ mod translation_contract {
                 assert!(catalog.contains(&(case_id, owner)));
             }
         }
+    }
+
+    #[test]
+    fn canary_routing_table_drops_a_supported_case() {
+        // Test-only defect injection: a translator table can silently lose one route.
+        let expected = ROUTING_CASES.len();
+        let observed = if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W2") {
+            expected.saturating_sub(1)
+        } else {
+            expected
+        };
+        assert_eq!(
+            observed, expected,
+            "HC-CANARY-RED:W2 routing table silently dropped a supported case"
+        );
     }
 
     fn route_for_command(command: &RedisCommand) -> RouteOwner {

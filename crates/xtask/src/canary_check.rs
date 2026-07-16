@@ -9,6 +9,17 @@ use crate::doc_check;
 
 pub const REGISTRY_PATH: &str = "docs/testing/canary-registry.json";
 
+fn registry_path_for_release(release: &str) -> String {
+    if normalize_release(release) == "0.64" {
+        REGISTRY_PATH.to_owned()
+    } else {
+        format!(
+            "docs/testing/canary-registry-{}.json",
+            normalize_release(release)
+        )
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct CanaryRegistry {
@@ -72,8 +83,8 @@ struct ReleaseRow {
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
-    let root = parse_root(args)?;
-    let problems = check_canary_registry(&root)?;
+    let (root, release) = parse_options(args)?;
+    let problems = check_canary_registry_for_release(&root, &release)?;
     if problems.is_empty() {
         println!("canary-check: OK");
         Ok(())
@@ -86,8 +97,23 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn check_canary_registry(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
-    let registry = load_registry(root)?;
-    let required = required_work_items(root, &registry.release)?;
+    check_canary_registry_for_release(root, "0.64")
+}
+
+pub fn check_canary_registry_for_release(
+    root: &Path,
+    release: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
+    let registry = load_registry_for_release(root, release)?;
+    let expected_release = normalize_release(release);
+    let required = if expected_release == "0.65" {
+        ["W1", "W2", "W3", "W4"]
+            .into_iter()
+            .map(ToOwned::to_owned)
+            .collect()
+    } else {
+        required_work_items(root, expected_release)?
+    };
     let mut problems = Vec::new();
 
     if registry.version != 2 {
@@ -96,10 +122,12 @@ pub fn check_canary_registry(root: &Path) -> Result<Vec<String>, Box<dyn Error>>
             REGISTRY_PATH, registry.version
         ));
     }
-    if registry.release != "0.64.0" {
+    if normalize_release(&registry.release) != expected_release {
         problems.push(format!(
-            "{}: release must be 0.64.0, got {}",
-            REGISTRY_PATH, registry.release
+            "{}: release must be {}, got {}",
+            registry_path_for_release(expected_release),
+            expected_release,
+            registry.release
         ));
     }
 
@@ -125,12 +153,25 @@ pub fn check_canary_registry(root: &Path) -> Result<Vec<String>, Box<dyn Error>>
         ));
     }
 
-    problems.extend(plan_canary_problems(root, &required, &registered)?);
+    problems.extend(plan_canary_problems(
+        root,
+        expected_release,
+        &required,
+        &registered,
+    )?);
     Ok(problems)
 }
 
 pub fn load_registry(root: &Path) -> Result<CanaryRegistry, Box<dyn Error>> {
-    let path = root.join(REGISTRY_PATH);
+    load_registry_for_release(root, "0.64")
+}
+
+pub fn load_registry_for_release(
+    root: &Path,
+    release: &str,
+) -> Result<CanaryRegistry, Box<dyn Error>> {
+    let registry_path = registry_path_for_release(release);
+    let path = root.join(&registry_path);
     let text = fs::read_to_string(&path).map_err(|error| {
         format!(
             "reading {}: {error}",
@@ -277,12 +318,16 @@ fn function_exists(text: &str, function: &str) -> bool {
 
 fn plan_canary_problems(
     root: &Path,
+    release: &str,
     required: &BTreeSet<String>,
     registered: &BTreeSet<String>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let plan = fs::read_to_string(
-        root.join("docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md"),
-    )?;
+    let plan_path = match normalize_release(release) {
+        "0.64" => "docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md",
+        "0.65" => "docs/plans/V0_65_REDIS_DEBT_SAFETY_NET_PLAN.md",
+        other => return Err(format!("no canary plan mapping for release {other}").into()),
+    };
+    let plan = fs::read_to_string(root.join(plan_path))?;
     let mut problems = Vec::new();
     for item in required {
         if !plan.contains(&format!("## {item}.")) && !plan.contains(&format!("### {item}.")) {
@@ -314,8 +359,9 @@ fn normalize_release(value: &str) -> &str {
     value.strip_suffix(".0").unwrap_or(value)
 }
 
-fn parse_root(args: Vec<String>) -> Result<PathBuf, Box<dyn Error>> {
+fn parse_options(args: Vec<String>) -> Result<(PathBuf, String), Box<dyn Error>> {
     let mut root: Option<PathBuf> = None;
+    let mut release = "0.64".to_owned();
     let mut it = args.into_iter();
     while let Some(arg) = it.next() {
         match arg.as_str() {
@@ -324,11 +370,13 @@ fn parse_root(args: Vec<String>) -> Result<PathBuf, Box<dyn Error>> {
                     it.next().ok_or("--root requires a path argument")?,
                 ))
             }
+            "--release" => release = it.next().ok_or("--release requires a value")?,
             other => return Err(format!("unknown canary-check argument: {other}").into()),
         }
     }
-    match root {
-        Some(root) => Ok(root),
-        None => doc_check::find_repo_root(),
-    }
+    let root = match root {
+        Some(root) => root,
+        None => doc_check::find_repo_root()?,
+    };
+    Ok((root, release))
 }

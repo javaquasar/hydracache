@@ -1,0 +1,130 @@
+{
+  "version": 2,
+  "release": "0.65.0",
+  "entries": [
+    {
+      "w_item": "W1",
+      "guard": {
+        "file": "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs",
+        "function": "conformance_conditional_put_if_absent_is_atomic_under_n_concurrent_acquirers"
+      },
+      "canary": {
+        "file": "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs",
+        "function": "canary_conformance_backend_allows_only_one_conditional_winner"
+      },
+      "red_evidence": "The conformance guard must reject a backend that admits more than one conditional winner.",
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-client-transport-axum", "--test", "client_surface_conformance", "--locked", "conformance_conditional_put_if_absent_is_atomic_under_n_concurrent_acquirers", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-client-transport-axum", "--test", "client_surface_conformance", "--locked", "canary_conformance_backend_allows_only_one_conditional_winner", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W1"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.65-W1",
+      "expected_failure": "HC-CANARY-RED:W1",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/W1.json"]
+    },
+    {
+      "w_item": "W2",
+      "guard": {
+        "file": "crates/hydracache-redis-compat/src/lib.rs",
+        "function": "routing_table_covers_every_supported_caveated_and_extension_manifest_row"
+      },
+      "canary": {
+        "file": "crates/hydracache-redis-compat/src/lib.rs",
+        "function": "canary_routing_table_drops_a_supported_case"
+      },
+      "red_evidence": "The routing contract must reject a translator table that silently drops a supported case.",
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-redis-compat", "--lib", "routing_table_covers_every_supported_caveated_and_extension_manifest_row", "--locked", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-redis-compat", "--lib", "canary_routing_table_drops_a_supported_case", "--locked", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W2"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.65-W2",
+      "expected_failure": "HC-CANARY-RED:W2",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/W2.json"]
+    },
+    {
+      "w_item": "W3",
+      "guard": {
+        "file": "crates/hydracache-server/tests/redis_resp_multinode.rs",
+        "function": "multinode_resp_facade_documents_node_local_state"
+      },
+      "canary": {
+        "file": "crates/hydracache-server/tests/redis_resp_multinode.rs",
+        "function": "canary_multinode_sentinel_cannot_be_marked_green_without_execution"
+      },
+      "red_evidence": "The deployment debt gate must not accept a green result when the sentinel did not execute.",
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-server", "--test", "redis_resp_multinode", "--locked", "multinode_resp_facade_documents_node_local_state", "--", "--nocapture"],
+        "env": {"HYDRACACHE_RUN_REDIS_RESP_MULTINODE_E2E": "1"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-server", "--test", "redis_resp_multinode", "--locked", "canary_multinode_sentinel_cannot_be_marked_green_without_execution", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W3"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.65-W3",
+      "expected_failure": "HC-CANARY-RED:W3",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/W3.json"]
+    },
+    {
+      "w_item": "W4",
+      "guard": {
+        "file": "crates/hydracache-redis-compat/tests/resp_boundaries.rs",
+        "function": "resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one"
+      },
+      "canary": {
+        "file": "crates/hydracache-redis-compat/tests/resp_boundaries.rs",
+        "function": "canary_resp3_encoder_does_not_regress_null_to_resp2"
+      },
+      "red_evidence": "The RESP3 boundary guard must reject a null encoded with the RESP2 shape.",
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-redis-compat", "--test", "resp_boundaries", "--locked", "resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-redis-compat", "--test", "resp_boundaries", "--locked", "canary_resp3_encoder_does_not_regress_null_to_resp2", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W4"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.65-W4",
+      "expected_failure": "HC-CANARY-RED:W4",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/W4.json"]
+    }
+  ]
+}

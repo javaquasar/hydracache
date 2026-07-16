@@ -91,10 +91,16 @@ fn explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_regist
     assert!(!report.work_items.is_empty());
     assert!(report.work_items.iter().all(|item| {
         item.stage >= xtask::release_evidence::EvidenceStage::Implemented
-            && !item
-                .reasons
-                .iter()
-                .any(|reason| reason.contains("dynamic canary"))
+            && if matches!(item.id.as_str(), "W1" | "W2" | "W3" | "W4") {
+                item.reasons
+                    .iter()
+                    .any(|reason| reason.contains("dynamic canary"))
+            } else {
+                !item
+                    .reasons
+                    .iter()
+                    .any(|reason| reason.contains("dynamic canary"))
+            }
     }));
 }
 

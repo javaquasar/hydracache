@@ -1,7 +1,8 @@
 schema_version = 1
 release = "0.65.0"
 plan = "docs/plans/V0_65_REDIS_DEBT_SAFETY_NET_PLAN.md"
-canary_policy = "dedicated_flip_sentinels"
+canary_policy = "dedicated_flip_sentinels_with_dynamic_registry"
+dynamic_canary_work_items = ["W1", "W2", "W3", "W4"]
 
 [[work_item]]
 id = "W1"
@@ -104,6 +105,18 @@ function = "cross_node_lock_release_is_node_local"
 [[work_item.required_tests]]
 source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
 function = "cross_node_lock_extend_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_ttl_visibility_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_script_cache_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_tag_index_is_node_local"
 
 [[work_item]]
 id = "W4"

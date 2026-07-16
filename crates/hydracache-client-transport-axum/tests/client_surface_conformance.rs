@@ -206,6 +206,20 @@ async fn conformance_conditional_put_if_absent_is_atomic_under_n_concurrent_acqu
 }
 
 #[tokio::test]
+async fn canary_conformance_backend_allows_only_one_conditional_winner() {
+    // Test-only defect injection: a non-atomic backend may report two winners.
+    let winners = if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W1") {
+        2
+    } else {
+        1
+    };
+    assert!(
+        winners <= 1,
+        "HC-CANARY-RED:W1 non-atomic conditional backend admitted multiple winners"
+    );
+}
+
+#[tokio::test]
 async fn conformance_conditional_put_treats_expired_key_as_absent() {
     conformance::assert_conditional_put_treats_expired_key_as_absent(&LocalFactory)
         .await

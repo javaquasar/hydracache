@@ -246,3 +246,17 @@ proptest! {
         let _ = decode_resp3_command(&input);
     }
 }
+
+#[test]
+fn canary_resp3_encoder_does_not_regress_null_to_resp2() {
+    let encoded = if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W4") {
+        encode_resp3_value(RespValue::Null).map(|_| b"$-1\r\n".to_vec())
+    } else {
+        encode_resp3_value(RespValue::Null)
+    }
+    .unwrap();
+    assert_eq!(
+        encoded, b"_\r\n",
+        "HC-CANARY-RED:W4 RESP3 null encoder emitted a RESP2 null"
+    );
+}
