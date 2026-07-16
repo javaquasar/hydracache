@@ -16,6 +16,7 @@ Each item should explain:
 - [TD-0004: Deferred home-region placement and autoscaling controllers](TD-0004-deferred-placement-and-autoscaling.md)
 - [TD-0005: Release-claim evidence gap (Hibernate L2 / JVM artifact)](TD-0005-release-claim-evidence-gap.md)
 - [TD-0008: Networked daemon grid hosting is deferred after W6a](TD-0008-networked-daemon-grid-hosting.md)
+- [TD-0012: crates.io publication automation](TD-0012-crates-publication-automation.md)
 
 ## Resolved Items
 
