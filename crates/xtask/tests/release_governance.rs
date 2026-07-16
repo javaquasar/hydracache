@@ -134,3 +134,22 @@ jobs:
         .iter()
         .any(|problem| problem.contains("job gated-proof-registry")));
 }
+
+#[test]
+fn crates_io_probe_identifies_itself_and_retries_transient_responses() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow =
+        std::fs::read_to_string(root.join(".github/workflows/publish-crates.yml")).unwrap();
+    let problems = xtask::release_governance::publish_workflow_probe_problems(&workflow);
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    let anonymous = workflow.replacen("--user-agent", "--anonymous-probe", 1);
+    let problems = xtask::release_governance::publish_workflow_probe_problems(&anonymous);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("--user-agent")));
+
+    let no_retry = workflow.replacen("429|5??)", "429)", 1);
+    let problems = xtask::release_governance::publish_workflow_probe_problems(&no_retry);
+    assert!(problems.iter().any(|problem| problem.contains("429|5??)")));
+}

@@ -136,7 +136,32 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         }
     }
     report.completed_checks += 1;
+
+    let publish_workflow = fs::read_to_string(root.join(".github/workflows/publish-crates.yml"))?;
+    report.problems.extend(prefix(
+        "publish-workflow-check",
+        publish_workflow_probe_problems(&publish_workflow),
+    ));
+    report.completed_checks += 1;
     Ok(report)
+}
+
+pub fn publish_workflow_probe_problems(text: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "crates_io_status()",
+        "--user-agent",
+        "GITHUB_REPOSITORY",
+        "status=\"$(crates_io_status \"$package\")\"",
+        "429|5??)",
+    ] {
+        if !text.contains(required) {
+            problems.push(format!(
+                "crates.io publication probe is missing `{required}`"
+            ));
+        }
+    }
+    problems
 }
 
 pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
