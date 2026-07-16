@@ -1,0 +1,26 @@
+[package]
+name = "hydracache-post-publish-consumer"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+description = "Pre-publish compilation guard for the external HydraCache consumer smoke test."
+
+[dev-dependencies]
+hydracache.workspace = true
+hydracache-actuator-axum.workspace = true
+hydracache-cluster.workspace = true
+hydracache-cluster-chitchat.workspace = true
+hydracache-cluster-raft.workspace = true
+hydracache-cluster-transport-axum.workspace = true
+hydracache-db.workspace = true
+hydracache-diesel.workspace = true
+hydracache-observability.workspace = true
+hydracache-seaorm.workspace = true
+hydracache-sqlx.workspace = true
+serde.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

@@ -155,3 +155,43 @@ fn publish_order_keeps_workspace_dev_and_build_dependencies() {
     assert!(client_manifest.contains("[dev-dependencies]"));
     assert!(client_manifest.contains("hydracache-client-transport-axum.workspace = true"));
 }
+
+#[test]
+fn post_publish_consumer_tracks_the_current_public_api() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow =
+        std::fs::read_to_string(root.join(".github/workflows/post-publish.yml")).unwrap();
+    let fixture =
+        std::fs::read_to_string(root.join("tests/post-publish-consumer/src/lib.rs")).unwrap();
+    let problems = xtask::release_governance::post_publish_contract_problems(&workflow, &fixture);
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    let stale = fixture
+        .replacen(".diesel_one(", ".diesel_first(", 1)
+        .replacen(".sea_one(", ".sea_value(", 1)
+        .replacen(
+            "ownership_diagnostics.resolutions",
+            "cluster_diagnostics.ownership_resolutions",
+            1,
+        );
+    let problems = xtask::release_governance::post_publish_contract_problems(&workflow, &stale);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains(".diesel_first(")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains(".sea_value(")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("ownership_resolutions")));
+
+    let unwired = workflow.replacen(
+        "tests/post-publish-consumer/src/lib.rs",
+        "missing-consumer-fixture.rs",
+        1,
+    );
+    let problems = xtask::release_governance::post_publish_contract_problems(&unwired, &fixture);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("fixture wiring")));
+}

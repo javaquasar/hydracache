@@ -143,6 +143,16 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         publish_workflow_problems(&publish_workflow),
     ));
     report.completed_checks += 1;
+
+    let post_publish_workflow =
+        fs::read_to_string(root.join(".github/workflows/post-publish.yml"))?;
+    let post_publish_fixture =
+        fs::read_to_string(root.join("tests/post-publish-consumer/src/lib.rs"))?;
+    report.problems.extend(prefix(
+        "post-publish-workflow-check",
+        post_publish_contract_problems(&post_publish_workflow, &post_publish_fixture),
+    ));
+    report.completed_checks += 1;
     Ok(report)
 }
 
@@ -167,6 +177,47 @@ pub fn publish_workflow_problems(text: &str) -> Vec<String> {
             "publish order filters out packaged dev/build dependencies; cargo publish must see every workspace dependency in the registry first"
                 .to_owned(),
         );
+    }
+    problems
+}
+
+pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for required in [
+        "actions/checkout@v5",
+        "tests/post-publish-consumer/src/lib.rs",
+    ] {
+        if !workflow.contains(required) {
+            problems.push(format!(
+                "post-publish workflow is missing checked consumer fixture wiring `{required}`"
+            ));
+        }
+    }
+    for required in [
+        "cluster.ownership_diagnostics()",
+        "ownership_diagnostics.resolutions",
+        "ownership_diagnostics.no_owner",
+        "Vec::from(\"encoded-user\").into()",
+        ".diesel_one(||",
+        ".sea_one(|| async",
+    ] {
+        if !fixture.contains(required) {
+            problems.push(format!(
+                "published consumer smoke is missing current API `{required}`"
+            ));
+        }
+    }
+    for obsolete in [
+        "cluster_diagnostics.ownership_resolutions",
+        "cluster_diagnostics.ownership_no_owner",
+        ".diesel_first(",
+        ".sea_value(",
+    ] {
+        if fixture.contains(obsolete) {
+            problems.push(format!(
+                "published consumer smoke still references obsolete API `{obsolete}`"
+            ));
+        }
     }
     problems
 }
