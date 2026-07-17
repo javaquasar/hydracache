@@ -6,7 +6,7 @@ use hydracache_cluster_raft::{
 #[test]
 fn compaction_seam_rejects_an_index_past_applied_progress() {
     let store = InMemoryRaftLogStore::new();
-    RaftLogStore::mark_applied(&store, 3);
+    RaftLogStore::mark_applied(&store, 3).unwrap();
 
     let error = store.compact_to(4).unwrap_err();
 

@@ -56,6 +56,8 @@ pub enum RaftStorageFaultOperation {
     SaveSnapshot,
     /// Persisting the commit index exposed by raft-rs `LightReady`.
     DurableCommit,
+    /// Persisting the applied index after state-machine materialization.
+    MarkApplied,
 }
 
 #[cfg(feature = "test-failpoints")]
@@ -64,6 +66,7 @@ impl fmt::Display for RaftStorageFaultOperation {
         formatter.write_str(match self {
             Self::SaveSnapshot => "snapshot save",
             Self::DurableCommit => "durable commit",
+            Self::MarkApplied => "applied-index save",
         })
     }
 }
@@ -146,7 +149,7 @@ impl RaftStorageFaultController {
     pub fn wait_until_blocked(&self) -> RaftStorageFaultObservation {
         let (state, changed) = &*self.inner;
         let mut state = state.lock().expect("raft storage fault state poisoned");
-        while state.observation.in_flight == 0 {
+        while state.observation.blocked_calls == 0 {
             state = changed
                 .wait(state)
                 .expect("raft storage fault state poisoned while waiting");
@@ -228,6 +231,93 @@ impl RaftStorageFaultController {
             Ok(())
         }
     }
+
+    fn begin_sled_io(
+        &self,
+        operation: RaftStorageFaultOperation,
+    ) -> RaftStoreResult<Option<RaftStorageFaultMode>> {
+        let (state, _) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        if state.tracked_operation != Some(operation) {
+            return Ok(None);
+        }
+        state.observation.calls = state.observation.calls.saturating_add(1);
+        let Some(mode) = state.mode else {
+            return Ok(None);
+        };
+        if state.active {
+            state.observation.backpressure_rejections =
+                state.observation.backpressure_rejections.saturating_add(1);
+            return Err(RaftStoreError::new(format!(
+                "storage backpressure: one {operation} is already in flight"
+            )));
+        }
+        state.active = true;
+        state.observation.in_flight = 1;
+        state.observation.max_in_flight = state.observation.max_in_flight.max(1);
+        Ok(Some(mode))
+    }
+
+    fn finish_sled_io(
+        &self,
+        operation: RaftStorageFaultOperation,
+        mode: Option<RaftStorageFaultMode>,
+    ) -> RaftStoreResult<()> {
+        let Some(mode) = mode else {
+            return Ok(());
+        };
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        if matches!(
+            mode,
+            RaftStorageFaultMode::BlockThenContinue | RaftStorageFaultMode::BlockThenFail
+        ) {
+            state.observation.blocked_calls = state.observation.blocked_calls.saturating_add(1);
+            changed.notify_all();
+            while !state.released {
+                state = changed
+                    .wait(state)
+                    .expect("raft storage fault state poisoned while blocked after sled I/O");
+            }
+        }
+        let fail = matches!(
+            mode,
+            RaftStorageFaultMode::FailImmediately | RaftStorageFaultMode::BlockThenFail
+        );
+        if fail {
+            state.active = false;
+            state.released = false;
+            state.mode = None;
+            state.observation.in_flight = 0;
+            state.observation.injected_failures =
+                state.observation.injected_failures.saturating_add(1);
+            changed.notify_all();
+        }
+        drop(state);
+        if fail {
+            return Err(RaftStoreError::new(format!(
+                "injected storage fault during {operation} after sled batch"
+            )));
+        }
+        Ok(())
+    }
+
+    fn complete_sled_io(&self, mode: Option<RaftStorageFaultMode>) {
+        self.abort_sled_io(mode);
+    }
+
+    fn abort_sled_io(&self, mode: Option<RaftStorageFaultMode>) {
+        if mode.is_none() {
+            return;
+        }
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        state.active = false;
+        state.released = false;
+        state.mode = None;
+        state.observation.in_flight = 0;
+        changed.notify_all();
+    }
 }
 
 /// Durable-control-plane storage contract used by the 0.41 raft runtime.
@@ -263,7 +353,7 @@ pub trait RaftLogStore: Storage + Clone + Send + Sync + 'static {
     fn retained_entries(&self) -> RaftStoreResult<Vec<Entry>>;
 
     /// Mark entries through `index` as applied.
-    fn mark_applied(&self, index: u64);
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()>;
 
     /// Return the last durably applied index used for restart recovery.
     fn applied_index(&self) -> RaftStoreResult<u64>;
@@ -375,6 +465,32 @@ impl InMemoryRaftLogStore {
     pub fn set_commit(&self, commit: u64) {
         let mut state = self.state.write().expect("raft log store poisoned");
         state.raft_state.hard_state.commit = commit;
+    }
+
+    fn retained_entries_after_snapshot(
+        &self,
+        snapshot_index: u64,
+        preserve_log_entries: usize,
+    ) -> Vec<Entry> {
+        let mut entries = self.all_entries();
+        entries.retain(|entry| entry.index > snapshot_index);
+        let drop_count = entries.len().saturating_sub(preserve_log_entries);
+        entries.drain(..drop_count);
+        entries
+    }
+
+    fn install_snapshot_after_persist(&self, snapshot: &Snapshot, retained_entries: Vec<Entry>) {
+        let mut state = self.state.write().expect("raft log store poisoned");
+        let snapshot_index = snapshot.get_metadata().index;
+        state.snapshot = snapshot.clone();
+        state.raft_state.conf_state = snapshot.get_metadata().get_conf_state().clone();
+        state.raft_state.hard_state.term = state
+            .raft_state
+            .hard_state
+            .term
+            .max(snapshot.get_metadata().term);
+        state.raft_state.hard_state.commit = state.raft_state.hard_state.commit.max(snapshot_index);
+        state.entries = retained_entries;
     }
 }
 
@@ -566,19 +682,10 @@ impl RaftLogStore for InMemoryRaftLogStore {
                 "injected disk full during raft snapshot save",
             ))
         });
-        let mut state = self.state.write().expect("raft log store poisoned");
         let snapshot_index = snapshot.get_metadata().index;
-        state.snapshot = snapshot.clone();
-        state.raft_state.conf_state = snapshot.get_metadata().get_conf_state().clone();
-        state.raft_state.hard_state.term = state
-            .raft_state
-            .hard_state
-            .term
-            .max(snapshot.get_metadata().term);
-        state.raft_state.hard_state.commit = state.raft_state.hard_state.commit.max(snapshot_index);
-        state.entries.retain(|entry| entry.index > snapshot_index);
-        let drop_count = state.entries.len().saturating_sub(preserve_log_entries);
-        state.entries.drain(..drop_count);
+        let retained_entries =
+            self.retained_entries_after_snapshot(snapshot_index, preserve_log_entries);
+        self.install_snapshot_after_persist(snapshot, retained_entries);
         Ok(())
     }
 
@@ -598,8 +705,9 @@ impl RaftLogStore for InMemoryRaftLogStore {
         Ok(self.all_entries())
     }
 
-    fn mark_applied(&self, index: u64) {
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
         Self::mark_applied(self, index);
+        Ok(())
     }
 
     fn applied_index(&self) -> RaftStoreResult<u64> {
@@ -697,8 +805,9 @@ impl DurableRaftLogStore {
     }
 
     /// Mark entries through `index` as applied.
-    pub fn mark_applied(&self, index: u64) {
+    pub fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
         self.inner.mark_applied(index);
+        Ok(())
     }
 
     /// Return retained entries in index order.
@@ -818,8 +927,8 @@ impl RaftLogStore for DurableRaftLogStore {
         Ok(self.retained_entries())
     }
 
-    fn mark_applied(&self, index: u64) {
-        Self::mark_applied(self, index);
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
+        Self::mark_applied(self, index)
     }
 
     fn applied_index(&self) -> RaftStoreResult<u64> {
@@ -915,7 +1024,7 @@ impl DurableControlPlaneCluster {
                 .open()?;
             store.append(std::slice::from_ref(&entry))?;
             store.save_hard_state(&hard_state)?;
-            store.mark_applied(index);
+            store.mark_applied(index)?;
         }
         self.committed.push(payload);
         Ok(index)
@@ -1032,6 +1141,39 @@ impl SledRaftLogStore {
         self.inner.storage_faults()
     }
 
+    /// Return the snapshot index staged in Sled before the in-memory view is
+    /// published. Exposed only to deterministic storage-fault tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn staged_sled_snapshot_index(&self) -> RaftStoreResult<Option<u64>> {
+        self.db
+            .get(SLED_SNAPSHOT_KEY)
+            .map_err(sled_error)?
+            .map(|bytes| decode_snapshot(&bytes).map(|snapshot| snapshot.get_metadata().index))
+            .transpose()
+    }
+
+    /// Return the applied index staged in Sled before the in-memory view is
+    /// published. Exposed only to deterministic storage-fault tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn staged_sled_applied_index(&self) -> RaftStoreResult<Option<u64>> {
+        self.db
+            .get(SLED_APPLIED_KEY)
+            .map_err(sled_error)?
+            .map(|bytes| decode_u64(&bytes))
+            .transpose()
+    }
+
+    /// Return the commit index staged in Sled before the in-memory view is
+    /// published. Exposed only to deterministic storage-fault tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn staged_sled_commit_index(&self) -> RaftStoreResult<Option<u64>> {
+        self.db
+            .get(SLED_HARD_STATE_KEY)
+            .map_err(sled_error)?
+            .map(|bytes| decode_hard_state(&bytes).map(|state| state.commit))
+            .transpose()
+    }
+
     fn replay_from_sled(&self) -> RaftStoreResult<()> {
         if let Some(bytes) = self.db.get(SLED_HARD_STATE_KEY).map_err(sled_error)? {
             self.inner.save_hard_state(&decode_hard_state(&bytes)?)?;
@@ -1065,6 +1207,40 @@ impl SledRaftLogStore {
             .flush()
             .map(|_| ())
             .map_err(|error| RaftStoreError::new(format!("failed to flush sled raft log: {error}")))
+    }
+
+    fn apply_snapshot_batch(
+        &self,
+        snapshot: &Snapshot,
+        retained_entries: &[Entry],
+    ) -> RaftStoreResult<()> {
+        let mut batch = sled::Batch::default();
+        batch.insert(SLED_SNAPSHOT_KEY, encode_snapshot(snapshot)?);
+        batch.insert(
+            SLED_CONF_STATE_KEY,
+            encode_conf_state(snapshot.get_metadata().get_conf_state())?,
+        );
+        let mut hard_state = self
+            .inner
+            .initial_state()
+            .map_err(RaftStoreError::from)?
+            .hard_state;
+        hard_state.term = hard_state.term.max(snapshot.get_metadata().term);
+        hard_state.commit = hard_state.commit.max(snapshot.get_metadata().index);
+        batch.insert(SLED_HARD_STATE_KEY, encode_hard_state(&hard_state)?);
+        let keys = self
+            .db
+            .scan_prefix(SLED_ENTRY_PREFIX)
+            .keys()
+            .map(|key| key.map_err(sled_error))
+            .collect::<RaftStoreResult<Vec<_>>>()?;
+        for key in keys {
+            batch.remove(key);
+        }
+        for entry in retained_entries {
+            batch.insert(entry_key(entry.index), encode_entry(entry)?);
+        }
+        self.db.apply_batch(batch).map_err(sled_error)
     }
 }
 
@@ -1181,12 +1357,39 @@ impl RaftLogStore for SledRaftLogStore {
         snapshot: &Snapshot,
         preserve_log_entries: usize,
     ) -> RaftStoreResult<()> {
-        self.inner.save_snapshot(snapshot, preserve_log_entries)?;
-        self.db
-            .insert(SLED_SNAPSHOT_KEY, encode_snapshot(snapshot)?)
-            .map_err(sled_error)?;
-        self.rewrite_entries_from_inner()?;
-        self.sync()
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_save_snapshot_disk_full", |_| {
+            Err(RaftStoreError::new(
+                "injected disk full during raft snapshot save",
+            ))
+        });
+        let retained_entries = self
+            .inner
+            .retained_entries_after_snapshot(snapshot.get_metadata().index, preserve_log_entries);
+        #[cfg(feature = "test-failpoints")]
+        let fault_mode = self
+            .inner
+            .storage_faults
+            .begin_sled_io(RaftStorageFaultOperation::SaveSnapshot)?;
+        if let Err(error) = self.apply_snapshot_batch(snapshot, &retained_entries) {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+            return Err(error);
+        }
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .finish_sled_io(RaftStorageFaultOperation::SaveSnapshot, fault_mode)?;
+        if let Err(error) = self.sync() {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+            return Err(error);
+        }
+        self.inner
+            .install_snapshot_after_persist(snapshot, retained_entries);
+        #[cfg(feature = "test-failpoints")]
+        self.inner.storage_faults.complete_sled_io(fault_mode);
+        Ok(())
     }
 
     fn compact_to(&self, index: u64) -> RaftStoreResult<()> {
@@ -1213,10 +1416,34 @@ impl RaftLogStore for SledRaftLogStore {
         Ok(self.inner.all_entries())
     }
 
-    fn mark_applied(&self, index: u64) {
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        let fault_mode = self
+            .inner
+            .storage_faults
+            .begin_sled_io(RaftStorageFaultOperation::MarkApplied)?;
+        if let Err(error) = self
+            .db
+            .insert(SLED_APPLIED_KEY, encode_u64(index).to_vec())
+            .map_err(sled_error)
+        {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+            return Err(error);
+        }
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .finish_sled_io(RaftStorageFaultOperation::MarkApplied, fault_mode)?;
+        if let Err(error) = self.sync() {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+            return Err(error);
+        }
         self.inner.mark_applied(index);
-        let _ = self.db.insert(SLED_APPLIED_KEY, encode_u64(index).to_vec());
-        let _ = self.db.flush();
+        #[cfg(feature = "test-failpoints")]
+        self.inner.storage_faults.complete_sled_io(fault_mode);
+        Ok(())
     }
 
     fn applied_index(&self) -> RaftStoreResult<u64> {
@@ -1224,37 +1451,35 @@ impl RaftLogStore for SledRaftLogStore {
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        let mut state = self.initial_state().map_err(RaftStoreError::from)?;
+        state.hard_state.commit = commit;
+        let encoded_hard_state = encode_hard_state(&state.hard_state)?;
+        #[cfg(feature = "test-failpoints")]
+        let fault_mode = self
+            .inner
+            .storage_faults
+            .begin_sled_io(RaftStorageFaultOperation::DurableCommit)?;
+        if let Err(error) = self
+            .db
+            .insert(SLED_HARD_STATE_KEY, encoded_hard_state)
+            .map_err(sled_error)
+        {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+            return Err(error);
+        }
         #[cfg(feature = "test-failpoints")]
         self.inner
             .storage_faults
-            .before(RaftStorageFaultOperation::DurableCommit)?;
+            .finish_sled_io(RaftStorageFaultOperation::DurableCommit, fault_mode)?;
+        if let Err(error) = self.sync() {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+            return Err(error);
+        }
         self.inner.set_commit(commit);
-        let mut state = self.initial_state().map_err(RaftStoreError::from)?;
-        state.hard_state.commit = commit;
-        self.db
-            .insert(SLED_HARD_STATE_KEY, encode_hard_state(&state.hard_state)?)
-            .map_err(sled_error)?;
-        self.sync()
-    }
-}
-
-#[cfg(feature = "sled-log-store")]
-impl SledRaftLogStore {
-    fn rewrite_entries_from_inner(&self) -> RaftStoreResult<()> {
-        let keys = self
-            .db
-            .scan_prefix(SLED_ENTRY_PREFIX)
-            .keys()
-            .map(|key| key.map_err(sled_error))
-            .collect::<RaftStoreResult<Vec<_>>>()?;
-        for key in keys {
-            self.db.remove(key).map_err(sled_error)?;
-        }
-        for entry in self.inner.all_entries() {
-            self.db
-                .insert(entry_key(entry.index), encode_entry(&entry)?)
-                .map_err(sled_error)?;
-        }
+        #[cfg(feature = "test-failpoints")]
+        self.inner.storage_faults.complete_sled_io(fault_mode);
         Ok(())
     }
 }
@@ -1520,7 +1745,7 @@ mod tests {
     #[test]
     fn in_memory_progress_updates_through_the_trait_contract() {
         let store = InMemoryRaftLogStore::new();
-        <InMemoryRaftLogStore as RaftLogStore>::mark_applied(&store, 7);
+        <InMemoryRaftLogStore as RaftLogStore>::mark_applied(&store, 7).unwrap();
         <InMemoryRaftLogStore as RaftLogStore>::set_commit(&store, 6).unwrap();
 
         assert_eq!(store.applied_index(), 7);
@@ -1625,7 +1850,7 @@ mod tests {
         store
             .save_conf_state(&ConfState::from((vec![1, 2, 3], vec![])))
             .unwrap();
-        <DurableRaftLogStore as RaftLogStore>::mark_applied(&store, 1);
+        <DurableRaftLogStore as RaftLogStore>::mark_applied(&store, 1).unwrap();
 
         assert_eq!(directory.fsync_count(), 2);
         assert_eq!(store.inner.applied_index(), 1);
@@ -1677,7 +1902,7 @@ mod tests {
         snapshot.mut_metadata().index = 1;
         snapshot.mut_metadata().term = 1;
         store.save_snapshot(&snapshot, usize::MAX).unwrap();
-        <SledRaftLogStore as RaftLogStore>::mark_applied(&store, 3);
+        <SledRaftLogStore as RaftLogStore>::mark_applied(&store, 3).unwrap();
         store.compact_to(2).unwrap();
         drop(store);
 

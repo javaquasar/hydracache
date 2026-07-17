@@ -1243,7 +1243,8 @@ where
             .raft
             .raft_log
             .store
-            .mark_applied(state.applied_index);
+            .mark_applied(state.applied_index)
+            .map_err(to_cache_error)?;
         Ok(())
     }
 
@@ -1855,7 +1856,9 @@ where
             self.apply_committed_entries(committed_entries)?;
             self.apply_committed_entries(light_ready.take_committed_entries())?;
             outbound.extend(light_ready.take_messages());
-            store.mark_applied(self.applied_index);
+            store
+                .mark_applied(self.applied_index)
+                .map_err(to_cache_error)?;
             self.raw_node.advance_apply();
         }
         outbound

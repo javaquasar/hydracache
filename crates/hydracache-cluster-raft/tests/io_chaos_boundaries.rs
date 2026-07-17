@@ -118,6 +118,11 @@ async fn slow_disk_during_snapshot_save_has_bounded_backpressure() -> TestResult
     assert_eq!(blocked.calls, 1);
     assert_eq!(blocked.in_flight, 1);
     assert_eq!(blocked.max_in_flight, 1);
+    assert_eq!(
+        store.staged_sled_snapshot_index()?,
+        Some(applied_index),
+        "fault must block after the atomic Sled batch is visible"
+    );
 
     let mut competing = Snapshot::default();
     competing.mut_metadata().index = applied_index;
@@ -130,6 +135,7 @@ async fn slow_disk_during_snapshot_save_has_bounded_backpressure() -> TestResult
         durable_before,
         "blocked and rejected snapshot saves must not expose partial state"
     );
+    assert_eq!(store.staged_sled_snapshot_index()?, Some(applied_index));
 
     faults.release_blocked();
     let compacted = compact
@@ -172,6 +178,11 @@ fn slow_disk_during_snapshot_install_retries_without_partial_apply() -> TestResu
     assert_eq!(blocked.in_flight, 1);
     assert!(runtime.members().is_empty());
     assert_eq!(store.snapshot(0, 3)?.get_metadata().index, 0);
+    assert_eq!(
+        store.staged_sled_snapshot_index()?,
+        Some(50),
+        "install fault must run after the atomic Sled batch"
+    );
 
     faults.release_blocked();
     let error = install
@@ -184,6 +195,7 @@ fn slow_disk_during_snapshot_install_retries_without_partial_apply() -> TestResu
     assert!(runtime.members().is_empty());
     assert_eq!(runtime.snapshot().snapshot_installs, 0);
     assert_eq!(store.snapshot(0, 3)?.get_metadata().index, 0);
+    assert_eq!(store.staged_sled_snapshot_index()?, Some(50));
 
     runtime.drain_ready()?;
     let installed = runtime.snapshot();
@@ -200,6 +212,40 @@ fn slow_disk_during_snapshot_install_retries_without_partial_apply() -> TestResu
 
     drop(runtime);
     drop(store);
+    drop(directory);
+    Ok(())
+}
+
+#[test]
+fn applied_index_io_failure_is_returned_and_retry_publishes_after_flush() -> TestResult {
+    let directory = SledTestDirectory::new("applied-index-failure")?;
+    let store = open_store(directory.path(), vec![1])?;
+    let faults = store.storage_faults();
+    faults.arm(
+        RaftStorageFaultOperation::MarkApplied,
+        RaftStorageFaultMode::FailImmediately,
+    );
+
+    let error = RaftLogStore::mark_applied(&store, 7)
+        .expect_err("applied-index Sled fault must be returned to the caller");
+
+    assert!(error
+        .to_string()
+        .contains("injected storage fault during applied-index save after sled batch"));
+    assert_eq!(store.applied_index()?, 0);
+    assert_eq!(store.staged_sled_applied_index()?, Some(7));
+    let failed = faults.observation();
+    assert_eq!(failed.calls, 1);
+    assert_eq!(failed.injected_failures, 1);
+    assert_eq!(failed.in_flight, 0);
+
+    RaftLogStore::mark_applied(&store, 7)?;
+    assert_eq!(store.applied_index()?, 7);
+    drop(store);
+
+    let reopened = SledRaftLogStore::open(directory.path())?;
+    assert_eq!(reopened.applied_index()?, 7);
+    drop(reopened);
     drop(directory);
     Ok(())
 }
@@ -244,7 +290,19 @@ async fn durable_commit_failure_fails_loud_and_recovers_consistent() -> TestResu
                     .is_ok_and(|envelope| envelope.command_id == "member-upsert:member-durable:1")
         })
         .ok_or("failed command was not retained for deterministic recovery")?;
-    let durably_committed = durable_state.hard_state.commit >= command_entry.index;
+    assert!(
+        store
+            .staged_sled_commit_index()?
+            .is_some_and(|commit| commit >= command_entry.index),
+        "fault must be injected after the real Sled commit write"
+    );
+    let durably_committed = store
+        .staged_sled_commit_index()?
+        .is_some_and(|commit| commit >= command_entry.index);
+    assert!(
+        durable_state.hard_state.commit < command_entry.index,
+        "failed set_commit must not publish the staged Sled commit in memory"
+    );
 
     drop(runtime);
     drop(store);
@@ -276,6 +334,36 @@ async fn durable_commit_failure_fails_loud_and_recovers_consistent() -> TestResu
     assert!(recovered_progress.applied_index <= recovered_progress.commit_index);
 
     drop(recovered);
+    drop(reopened);
+    drop(directory);
+    Ok(())
+}
+
+#[test]
+fn durable_commit_io_failure_stages_sled_before_publishing_store_state() -> TestResult {
+    let directory = SledTestDirectory::new("durable-commit-publish")?;
+    let store = open_store(directory.path(), vec![1])?;
+    let faults = store.storage_faults();
+    faults.arm(
+        RaftStorageFaultOperation::DurableCommit,
+        RaftStorageFaultMode::FailImmediately,
+    );
+
+    let error = RaftLogStore::set_commit(&store, 7)
+        .expect_err("durable commit fault must be returned after the Sled write");
+
+    assert!(error
+        .to_string()
+        .contains("injected storage fault during durable commit after sled batch"));
+    assert_eq!(store.initial_state()?.hard_state.commit, 0);
+    assert_eq!(store.staged_sled_commit_index()?, Some(7));
+
+    RaftLogStore::set_commit(&store, 7)?;
+    assert_eq!(store.initial_state()?.hard_state.commit, 7);
+    drop(store);
+
+    let reopened = SledRaftLogStore::open(directory.path())?;
+    assert_eq!(reopened.initial_state()?.hard_state.commit, 7);
     drop(reopened);
     drop(directory);
     Ok(())

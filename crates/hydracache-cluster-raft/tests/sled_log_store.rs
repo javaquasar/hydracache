@@ -37,7 +37,7 @@ fn sled_log_store_persists_across_reopen() {
         ..HardState::default()
     };
     store.save_hard_state(&hard_state).unwrap();
-    store.mark_applied(2);
+    store.mark_applied(2).unwrap();
     drop(store);
 
     let reopened = SledRaftLogStore::open(&path).unwrap();
