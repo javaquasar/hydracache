@@ -12,7 +12,8 @@ write endpoints:
 
 - `POST /admin/drain`
 - `POST /admin/reshard`
-- `POST /admin/backup`
+- `POST /admin/backup` (request acceptance only; it does not create a durable
+  backup artifact or restore point)
 
 ## Trust Boundary
 
@@ -60,12 +61,20 @@ fallback.
 - `leader` with node id, term, and epoch, or `null` while electing/unknown
 - `partitions` with `under_replicated` and effective `count`
 - `consistency` with `configured_default` plus `op_counts_by_level`
-- `backup_age_seconds`, `null` when no snapshot exists
+- `backup_age_seconds`, supplied only by an attached observability source and
+  `null` when no authoritative backup-age observation exists. An accepted
+  `/admin/backup` response does not populate this field.
 - `lifecycle` with reshard and upgrade phases
 
 It is a view, not a linearizable read. Consumers should poll it and replace the
 whole view. They should not infer hidden members, a current consistency level, or
 backup freshness from absent fields.
+
+`POST /admin/backup` currently validates authorization, readiness, and backup
+configuration, then returns an explicit request-only response. In 0.66,
+`outcome: "accepted"` is paired with `durable_artifact_created: false` and
+`restore_point_available: false`; the console and operators must not translate
+that response into backup completion.
 
 For the networked member grid, `quorum_ok` is live voter-majority state. The
 `lifecycle.reshard_phase` field remains an honest lifecycle label; it is `idle`

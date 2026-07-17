@@ -62,6 +62,11 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
     for required in [
         "canary-check --release 0.66",
         "canary-sweep --release 0.66 --tier fast",
+        "canary-sweep --release 0.66 --tier all",
+        "evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.fuzz-corpus-regression",
+        "evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e",
+        "evidence-run --release 0.66 --gate env.hydracache-operator-kind-066",
+        "evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066",
     ] {
         let broken = workflow.replacen(required, "candidate-release-command-was-removed", 1);
         let problems =
@@ -155,6 +160,109 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
         problem.contains("--manifest-path after the target")
             || problem.contains("fuzz_config_parse -- -max_total_time=60")
     }));
+
+    for required in [
+        "cargo test -p hydracache-server --test scheduler_tick_process --locked",
+        "git merge-base --is-ancestor refs/tags/v0.65.0 HEAD",
+        "disableDefaultCNI: true",
+        "kubectl get crd iochaos.chaos-mesh.org",
+    ] {
+        let broken = workflow.replacen(required, "release-066-proof-was-silently-removed", 1);
+        assert_ne!(
+            broken, workflow,
+            "fixture command was not found: {required}"
+        );
+        let problems =
+            xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing 0.66 proof marker was accepted: {required}: {problems:#?}"
+        );
+    }
+
+    let skip_green = workflow.replacen(
+        "rustup toolchain install nightly",
+        "set +e\n          rustup toolchain install nightly\n          echo available=false",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&skip_green, "0.66").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("fail loud") || problem.contains("skip-green")));
+}
+
+#[test]
+fn release_066_registered_heavy_gates_are_mandatory_and_fail_closed() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let problems = xtask::release_governance::release_066_gate_contract_problems(&registry.gate);
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    let mut missing_daemon_target = registry.gate.clone();
+    let daemon = missing_daemon_target
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-run-066-daemon-process-e2e")
+        .unwrap();
+    daemon
+        .command
+        .args
+        .retain(|arg| arg != "scheduler_tick_process");
+    let problems =
+        xtask::release_governance::release_066_gate_contract_problems(&missing_daemon_target);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("scheduler_tick_process")));
+
+    let mut optional_iochaos = registry.gate.clone();
+    let operator = optional_iochaos
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-operator-kind-066")
+        .unwrap();
+    operator
+        .command
+        .env
+        .remove("HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS");
+    let problems = xtask::release_governance::release_066_gate_contract_problems(&optional_iochaos);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS")));
+
+    let mut unbounded_fuzz = registry.gate.clone();
+    let fuzz = unbounded_fuzz
+        .iter_mut()
+        .find(|gate| gate.id == "tool.cargo-fuzz.raft-wire-frame-066")
+        .unwrap();
+    fuzz.command.args.pop();
+    let problems = xtask::release_governance::release_066_gate_contract_problems(&unbounded_fuzz);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact bounded")));
+}
+
+#[test]
+fn canary_release_governance_accepts_a_missing_mandatory_gate() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut missing_daemon_gate = registry.gate.clone();
+    missing_daemon_gate.retain(|gate| gate.id != "env.hydracache-run-066-daemon-process-e2e");
+
+    let problems =
+        xtask::release_governance::release_066_gate_contract_problems(&missing_daemon_gate);
+    let rejected = problems.iter().any(|problem| {
+        problem.contains("missing mandatory gate env.hydracache-run-066-daemon-process-e2e")
+    });
+
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W13") {
+        assert!(
+            !rejected,
+            "HC-CANARY-RED:W13 release governance accepted a missing mandatory gate"
+        );
+    }
+    assert!(
+        rejected,
+        "release 0.66 governance did not reject a missing mandatory daemon gate: {problems:#?}"
+    );
 }
 
 #[test]
@@ -183,9 +291,12 @@ jobs:
   gated-proof-registry:
     steps:
       - uses: actions/checkout@v5
+  release-066-daemon-process:
+    steps:
+      - uses: actions/checkout@v5
 "#;
     let problems = xtask::release_governance::release_history_checkout_problems(shallow).unwrap();
-    assert_eq!(problems.len(), 5, "{problems:#?}");
+    assert_eq!(problems.len(), 6, "{problems:#?}");
     assert!(problems.iter().any(|problem| problem.contains("job rust")));
     assert!(problems
         .iter()
@@ -197,6 +308,9 @@ jobs:
     assert!(problems
         .iter()
         .any(|problem| problem.contains("job gated-proof-registry")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("job release-066-daemon-process")));
 }
 
 #[test]

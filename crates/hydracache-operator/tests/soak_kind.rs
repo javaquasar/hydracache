@@ -31,6 +31,7 @@ const NAMESPACE_ENV: &str = "HYDRACACHE_OPERATOR_NAMESPACE";
 const CLUSTER_ENV: &str = "HYDRACACHE_OPERATOR_CLUSTER";
 const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
 const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
+const REQUIRE_IOCHAOS_ENV: &str = "HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS";
 const NETWORK_PROBE_IMAGE_ENV: &str = "HYDRACACHE_NETWORK_PROBE_IMAGE";
 const KIND_WAIT_ATTEMPTS: usize = 90;
 static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -54,6 +55,10 @@ fn cluster_name() -> String {
 
 fn network_probe_image() -> String {
     std::env::var(NETWORK_PROBE_IMAGE_ENV).unwrap_or_else(|_| "busybox:1.36".to_owned())
+}
+
+fn iochaos_required() -> bool {
+    std::env::var(REQUIRE_IOCHAOS_ENV).as_deref() == Ok("1")
 }
 
 fn soak_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
@@ -372,12 +377,24 @@ fn iochaos_manifest(cluster: &str, namespace: &str, ordinal: u32) -> Value {
     })
 }
 
-fn slow_disk_plan_for_crd_present(crd_present: bool) -> ChaosInjection {
+fn slow_disk_plan_for_capability(
+    crd_present: bool,
+    required: bool,
+) -> Result<ChaosInjection, String> {
     if crd_present {
-        ChaosInjection::Applied("chaos-mesh IOChaos")
+        Ok(ChaosInjection::Applied("chaos-mesh IOChaos"))
+    } else if required {
+        Err(format!(
+            "{REQUIRE_IOCHAOS_ENV}=1 requires the iochaos.chaos-mesh.org CRD; {IOCHAOS_SKIP}"
+        ))
     } else {
-        ChaosInjection::Skipped(IOCHAOS_SKIP.to_owned())
+        Ok(ChaosInjection::Skipped(IOCHAOS_SKIP.to_owned()))
     }
+}
+
+fn slow_disk_plan_for_crd_present(crd_present: bool) -> ChaosInjection {
+    slow_disk_plan_for_capability(crd_present, iochaos_required())
+        .unwrap_or_else(|error| panic!("{error}"))
 }
 
 #[derive(Clone)]
@@ -1194,11 +1211,11 @@ fn deny_all_partition_policy_selects_single_statefulset_pod() {
 #[test]
 fn slow_disk_uses_iochaos_only_when_crd_present() {
     assert_eq!(
-        slow_disk_plan_for_crd_present(false),
+        slow_disk_plan_for_capability(false, false).unwrap(),
         ChaosInjection::Skipped(IOCHAOS_SKIP.to_owned())
     );
     assert_eq!(
-        slow_disk_plan_for_crd_present(true),
+        slow_disk_plan_for_capability(true, false).unwrap(),
         ChaosInjection::Applied("chaos-mesh IOChaos")
     );
 
@@ -1210,4 +1227,16 @@ fn slow_disk_uses_iochaos_only_when_crd_present() {
         "chaos-1"
     );
     assert_eq!(manifest["spec"]["volumePath"], "/var/lib/hydracache");
+}
+
+#[test]
+fn slow_disk_release_capability_is_fail_closed_when_required() {
+    let error = slow_disk_plan_for_capability(false, true)
+        .expect_err("the release-kind lane must reject a missing IOChaos CRD");
+    assert!(error.contains(REQUIRE_IOCHAOS_ENV));
+    assert!(error.contains("iochaos.chaos-mesh.org"));
+    assert_eq!(
+        slow_disk_plan_for_capability(true, true).unwrap(),
+        ChaosInjection::Applied("chaos-mesh IOChaos")
+    );
 }

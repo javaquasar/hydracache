@@ -11,7 +11,7 @@
 >   routing, or a native client listener. Client-value linearizability across daemons is therefore not
 >   a valid `0.66` claim.
 > - **Scope:** W0 existing-Sled compaction control; W1 real snapshot catch-up and interrupted delivery;
->   W2-W3 real-process control-plane nemesis and membership load; W4 an executable backup/restore
+>   W2 real-process control-plane nemesis; W3 runtime membership load; W4 an executable backup/restore
 >   claim boundary; W5 IO chaos; W6 mixed-daemon upgrade harness; W7 external control-plane history;
 >   W8 differential metadata model; W9 fuzz/socket corpus; W10 scheduler/tick perturbation; W11 kind
 >   scale chaos; W12 snapshot-transfer resource budget; W13 release governance and CI.
@@ -76,8 +76,8 @@ Final gate IDs are recorded in the evidence manifest as implementation lands.
 
 | Proof | Lane | Registry tier | Required evidence |
 | --- | --- | --- | --- |
-| W0 typed compaction control; W4 boundary guards; W7 checker canary; W8 fast model; W9 corpus; W10 local clock contract | core | fast | workspace receipt + dynamic canary receipts |
-| W1-W3, W5 process half, W6, W7, W8 process half, W10 process half, W12 | daemon-process | nightly | exact-command receipt, daemon logs, replay/resource artifacts |
+| W0 typed compaction control; W3 membership load; W4 boundary guards; W5 deterministic storage faults; W7 checker canary; W8 fast model; W9 corpus; W10 local clock contract | core | fast | workspace receipt + dynamic canary receipts |
+| W1, W2, W6, W7, W8 process half, W10 process half, W12 | daemon-process | nightly | exact-command receipt, daemon logs, replay/resource artifacts |
 | W5 operator half, W11 | kind/operator | nightly | exact-command receipt, CNI/Chaos capability record, pod/operator logs |
 | W9 libFuzzer campaign | fuzz | nightly | exact-command receipt, seed corpus, crash/reproducer artifacts |
 
@@ -92,19 +92,19 @@ are recorded.
 | Item | Implemented where | Required command | Boundary/evidence |
 | --- | --- | --- | --- |
 | W0 | `hydracache-cluster-raft` compaction/runtime restore; server admin/config/status seams; `compaction_seam` and admin tests | `cargo test -p hydracache-cluster-raft --features sled-log-store --test compaction_seam --locked` + `cargo test -p hydracache-server compaction --locked` | typed existing-Sled path; authenticated and off by default; exact applied boundary survives restart |
-| W1 | planned | planned | real HTTP `MsgSnapshot`, sender and receiver failure |
-| W2 | planned | planned | control-plane metadata only |
-| W3 | planned | planned | committed metadata proposals only |
-| W4 | planned | planned | boundary guard, not live restore proof |
-| W5 | planned | planned | separate daemon and kind receipts |
-| W6 | planned | planned | old/new daemon binaries; W32 bytes reused |
-| W7 | planned | planned | external admin/control-plane history only |
-| W8 | planned | planned | fast in-process plus server process adapter |
-| W9 | planned | planned | existing fuzz workspace plus real-socket corpus |
-| W10 | planned | planned | scheduler/tick plus local clock; no lease reads |
-| W11 | planned | planned | existing operator kind harness |
-| W12 | planned | planned | sender FD/RSS/task/resource return to baseline |
-| W13 | release-scoped canary/evidence/governance code plus 0.66 plan, manifest, registry, gates and testing docs | commands in W13 Required checks | governance skeleton is live; ship aggregation intentionally stays red until W1-W12 and exact-candidate receipts land |
+| W1 | server snapshot-delivery counters, bounded loopback-only decoded-snapshot delay seam, plus `rejoin_after_compaction_process.rs` | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test rejoin_after_compaction_process --locked -- --nocapture` | real HTTP `MsgSnapshot` remains in flight after body decode; sender/receiver kill records failure, releases the reservation, and retries |
+| W2 | reusable external nemesis vocabulary, process adapter, frozen bad-seed corpus | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test process_control_plane_nemesis --locked -- --nocapture` | stable invoke/complete IDs and public committed epochs; control-plane metadata only |
+| W3 | `hydracache-cluster-raft/tests/membership_load.rs` | `cargo test -p hydracache-cluster-raft --test membership_load --locked` | sustained committed metadata proposals only; no node-local client writes |
+| W4 | honest admin acceptance response plus `backup_authority_boundary.rs` and boundary docs | `cargo test -p hydracache-server --test backup_authority_boundary --locked` | request acceptance is neither a durable artifact nor a restore point |
+| W5 | test-gated Sled storage-fault controller, `io_chaos_boundaries.rs`, existing kind IOChaos adapter | `cargo test -p hydracache-cluster-raft --features test-failpoints,sled-log-store --test io_chaos_boundaries --locked` + registered operator-kind gate | deterministic save/install/commit fault proof plus a separately capability-gated live operator receipt |
+| W6 | per-node daemon binaries, provenance resolver/builder, `rolling_upgrade_process.rs` | registered `env.hydracache-run-066-daemon-process-e2e` gate in ship mode | real old/new daemon binaries; W32 bytes reused; dev fallback is pinned, ship requires full-history `v0.65.0` |
+| W7 | external recorder/checker/shrinker plus real-process adapter and frozen corpus | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test external_control_plane_history --locked -- --nocapture` | external admin/control-plane history only |
+| W8 | independent reference model, runtime differential tests, server process adapter | `cargo test -p hydracache-cluster-raft --test differential_model --locked` + process gate | fast in-process plus real server-process comparison |
+| W9 | fifth cargo-fuzz target/shared replay/corpus plus `raft_wire_socket_corpus.rs` | `cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked` + registered bounded cargo-fuzz gate | pure decoder and real HTTP-listener layers remain separate |
+| W10 | deterministic tick model, real daemon suspend/resume adapter, current-term metadata-authority fence, monotonic local test clock | `cargo test -p hydracache-cluster-raft --test scheduler_tick --locked` + process gate + exact client conformance test | stale resumed processes cannot advertise authoritative membership; no lease-read claim |
+| W11 | scale-chaos model and CNI-enforced ignored kind lane in `soak_kind.rs` | `cargo test -p hydracache-operator --test soak_kind --locked` + registered operator-kind gate | committed voter/epoch observations; unsupported CNI/Chaos capability fails or skips loud according to lane |
+| W12 | generalized resource artifact, sender/peer snapshot single-flight and stale-term cancellation, plus Linux snapshot-transfer budget target | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test snapshot_resource_budget --locked -- --nocapture` | one request per sender/peer; cross-term handoff is bounded to old+replacement senders; both counters and task/FD/RSS return to budget; portable evidence cannot impersonate Linux `/proc` proof |
+| W13 | release-scoped W0-W13 canary/evidence manifests, registered fast/process/operator/fuzz gates, CI and docs | commands in W13 Required checks | implementation wiring is complete on the development branch; exact clean-candidate receipts and the shipped `v0.65.0` tag remain release-time inputs |
 
 ## W0. Existing-Sled Server Compaction Control
 
@@ -236,8 +236,9 @@ and durable commit.
 
 **Design.**
 
-- The local process proof uses a narrowly scoped storage fault seam and
-  `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`.
+- The local deterministic proof uses a narrowly scoped, test-feature-gated Sled storage fault seam.
+  It blocks or fails actual save/install/commit boundaries without wall-clock sleeps; it does not
+  claim that an OS daemon was paused.
 - The operator proof extends the existing `soak_kind`/Chaos harness and uses the established
   `HYDRACACHE_OPERATOR_KIND=1` capability gate; no `HYDRACACHE_RUN_KIND_CHAOS` alias is introduced.
 - W0 x W5 explicitly injects delay/failure during snapshot install, not only snapshot save.
@@ -354,6 +355,9 @@ API or committed lease claim is introduced.
 
 - Use existing pause/resume and OS scheduling controls for process-level Raft perturbation where
   possible; do not pretend `libfaketime` changes Tokio's monotonic `Instant`.
+- Fence the public authoritative projection until the local runtime is fully applied and has received
+  recent current-term Raft traffic; a process resumed with an internally consistent but obsolete
+  term/membership view must report `quorum_ok=false` and hide its leader projection.
 - If a new tick-control seam is unavoidable, it is off by default, independently justified, and added
   to the production-change ledger and `verify-no-test-features`/inert-default proof.
 - Reuse the 0.65 conformance test clock for local TTL/lock rollback assertions; do not generalize a
@@ -394,8 +398,18 @@ delivery must release sender work and return bounded task/FD/RSS counters to bas
   `crates/hydracache-server/tests/daemon_resource_budget.rs`; remove its hard-coded release and output
   path rather than inventing an unrelated schema.
 - Measure before fault, during blocked/failed delivery, and after retry/quiescence.
+- Hold only a decoded real `MsgSnapshot` response in the loopback process-test lane, after Axum has
+  received the request body and before `raft.step`/ack, so the sender's actual HTTP request remains
+  in flight. The bounded seam requires both the process-E2E opt-in and a loopback cluster address.
 - Assert bounded outstanding sender tasks/requests, file descriptors, and RSS with platform-specific
   residual disclosure. Missing Linux metrics cannot satisfy the Linux-required gate.
+- Share a non-blocking sender/peer snapshot reservation across HTTP sink clones. A duplicate is
+  rejected without opening another request or reporting false success; completion/cancellation
+  releases the reservation with the real Raft delivery outcome before a retry can proceed.
+- Cancel an outstanding request after the sender actually loses its leader role or moves to another
+  term, so an obsolete leader cannot retain the resource through the full HTTP timeout while its
+  replacement sends the current-term snapshot. Cross-term handoff is sampled and disclosed rather
+  than treated as a distributed lock guarantee.
 
 **Required tests.**
 
@@ -407,7 +421,7 @@ delivery must release sender work and return bounded task/FD/RSS counters to bas
 
 ## W13. Release Evidence, Local Reproduction, And CI
 
-**Goal.** Make every W0-W12 proof locally reproducible and ship-blocking through the release-scoped
+**Goal.** Make every W0-W13 proof locally reproducible and ship-blocking through the release-scoped
 governance established by 0.65.
 
 **Required implementation.**
@@ -417,8 +431,9 @@ governance established by 0.65.
 - Remove 0.64/0.65 hardcodings from requested-release canary selection, evidence template generation,
   fast receipt release, manual gated receipt release, and exact CI command validation.
 - Fast PR lane runs/receipts all deterministic tests and compiles every process/operator target.
-- Daemon-process nightly includes W1-W3, W5-W8 process components, W10, and W12. Nothing is silently
-  omitted.
+- Daemon-process nightly includes the real-process halves of W1, W2, W6, W7, W8, W10, and W12.
+  W3 and the deterministic half of W5 stay in the fast Raft lane; the live W5 leg shares the strict
+  operator-kind lane with W11. Nothing is silently omitted.
 - Kind lane includes W5 operator proof and W11. Fuzz lane includes W9. W6 receives full Git history and
   the previous-daemon artifact.
 - Upload exact receipts, child logs, minimized/frozen schedules, compatibility provenance, resource
@@ -432,7 +447,7 @@ cargo run -p xtask --locked -- doc-check
 cargo run -p xtask --locked -- canary-check --release 0.66
 cargo run -p xtask --locked -- release-governance-check --release 0.66
 cargo run -p xtask --locked -- verify-no-test-features
-cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir target/release-evidence/0.66 --require-ship
+cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir target/release-evidence/receipts --require-ship
 ```
 
 ## Release Gates
@@ -448,7 +463,7 @@ cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir ta
 - W5 proves save, install, and commit IO faults; W6 proves simultaneous old/new daemons with provenance.
 - W8 agrees with an independent metadata model; W9 covers both pure fuzz and the real HTTP listener.
 - W10 makes no lease-read claim; W11 proves operator voter correctness; W12 proves resource release.
-- Every W-item has a dynamic canary, deterministic replay where applicable, exact registered command,
+- Every W0-W13 proof has a dynamic canary, deterministic replay where applicable, exact registered command,
   artifact contract, and exact-candidate receipt.
 - `release-evidence --require-ship` is green on a clean tree for W0-W13. Skip-only execution, a receipt
   from another release/commit, or a missing shard is red.

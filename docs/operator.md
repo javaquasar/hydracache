@@ -10,7 +10,7 @@ The operator orchestrates existing HydraCache primitives:
 - W0 admin HTTP surface on `hydracache-server`: `/healthz`, `/readyz`,
   `/admin/status`, `/admin/drain`, `/admin/reshard`, `/admin/backup`.
 - 0.43 online resharding for scale.
-- 0.48 graceful drain, mTLS lifecycle, backup, and PITR surfaces.
+- 0.48 graceful drain, mTLS lifecycle, and backup/PITR planning surfaces.
 - 0.51 persistence policy mapped to Kubernetes PVCs.
 
 It does not add a new consistency model, storage engine, or application API.
@@ -27,7 +27,7 @@ must be coordinated with cluster correctness:
   re-election;
 - mTLS Secret rotation projected through the pod template;
 - persistence preflight and PVC retention;
-- scheduled backup/PITR orchestration;
+- scheduled backup/PITR request planning (not a live value-plane backup engine);
 - status conditions that fail loud instead of silently continuing.
 
 The operator is not a general PaaS, not a cloud abstraction, and not a Helm
@@ -112,11 +112,18 @@ Backup:
 kubectl patch hydracachecluster demo --type merge -p '{"spec":{"backupSchedule":{"schedule":"0 * * * *","location":"s3://bucket/hydracache/demo","retention":"168h"}}}'
 ```
 
-Backups run only when the cluster is healthy and all replicas are ready. Missing
-locations and failed admin backup calls set loud conditions and degrade health.
+The operator currently plans and submits backup requests only when the cluster
+is healthy and all replicas are ready. Missing locations and rejected admin
+requests set loud conditions and degrade health. Acceptance by `/admin/backup`
+does **not** mean that a durable object, manifest, or restore point was created,
+and must not advance a successful-backup condition by itself.
 
-PITR restore is planned only into a fresh cluster. The restore plan carries the
-target authority epoch so restored state cannot move epoch authority backwards.
+PITR restore remains a plan-only surface and is rejected for a cluster with
+running replicas. A future live implementation needs all of: an authoritative
+production value-plane backup source, a durable object-store adapter, a restore
+sink, an authority/fencing protocol, and a key provider. Only then may a fresh
+cluster restore plan carrying the target authority epoch become an executable
+restore claim.
 
 Delete:
 

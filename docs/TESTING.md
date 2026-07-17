@@ -819,22 +819,148 @@ selects those dynamic items explicitly, so an unrelated registry entry cannot
 hold the release green or block it accidentally.
 
 Release `0.66` continues the release-scoped policy in
-`docs/testing/canary-registry-0.66.json`. During implementation,
-`dynamic_canary_work_items` grows only as each W-item's real guard/canary pair
-lands; the initial W0 pair protects the off-by-default Raft compaction control.
-The requested release must never borrow `0.64` or `0.65` canary evidence.
+`docs/testing/canary-registry-0.66.json`. Its dynamic registry covers W0-W13;
+each entry names the ordinary guard, defect-enabled canary, exact command,
+expected `HC-CANARY-RED:W*` marker, tier, and release-scoped receipt. The
+requested release must never borrow `0.64` or `0.65` canary evidence.
 
 ```powershell
 cargo run -p xtask --locked -- canary-check --release 0.66
 cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
 cargo run -p xtask --locked -- release-governance-check --release 0.66
-cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir target/release-evidence/0.66 --require-ship
+cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir target/release-evidence/receipts --require-ship
 ```
 
-The last command is expected to remain red while W1-W13 sources, registered
-heavy gates, and exact-candidate receipts are still missing. A green governance
-aggregator with a missing release registry or missing `work_items` is itself a
-regression.
+The last command remains red until every registered fast, daemon-process,
+operator-kind, and fuzz receipt was produced from the exact clean candidate.
+A green governance aggregator with a missing release registry, work item, test,
+or heavy lane is itself a regression.
+
+### 0.66 exact local reproduction
+
+The fast proofs are platform-portable. `evidence-run` writes commit- and
+registry-bound receipts; running a raw `cargo test` is useful diagnosis but does
+not replace the receipt.
+
+PowerShell:
+
+```powershell
+cargo test -p hydracache-cluster-raft --test compaction_seam --locked
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.raft-sled-snapshot
+cargo test -p hydracache-server compaction --locked
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.raft-failpoints
+cargo test -p hydracache-cluster-raft --test membership_load --locked
+cargo test -p hydracache-cluster-raft --test differential_model --locked
+cargo test -p hydracache-cluster-raft --test scheduler_tick --locked
+cargo test -p hydracache-server --test backup_authority_boundary --locked
+cargo test -p hydracache-server --test raft_wire_socket_corpus --locked
+cargo test -p hydracache-server --test rejoin_after_compaction_process --locked
+cargo test -p hydracache-server --test process_control_plane_nemesis --locked
+cargo test -p hydracache-server --test rolling_upgrade_process --locked
+cargo test -p hydracache-server --test external_control_plane_history --locked
+cargo test -p hydracache-server --test differential_model_process --locked
+cargo test -p hydracache-server --test scheduler_tick_process --locked
+cargo test -p hydracache-server --test snapshot_resource_budget --locked
+cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked local_ttl_and_lock_contracts_survive_backward_wall_clock_step
+cargo test -p hydracache-operator --test soak_kind --locked
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.fuzz-corpus-regression
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.workspace-nextest
+cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
+```
+
+Bash:
+
+```bash
+cargo test -p hydracache-cluster-raft --test compaction_seam --locked
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.raft-sled-snapshot
+cargo test -p hydracache-server compaction --locked
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.raft-failpoints
+cargo test -p hydracache-cluster-raft --test membership_load --locked
+cargo test -p hydracache-cluster-raft --test differential_model --locked
+cargo test -p hydracache-cluster-raft --test scheduler_tick --locked
+cargo test -p hydracache-server --test backup_authority_boundary --locked
+cargo test -p hydracache-server --test raft_wire_socket_corpus --locked
+cargo test -p hydracache-server --test rejoin_after_compaction_process --locked
+cargo test -p hydracache-server --test process_control_plane_nemesis --locked
+cargo test -p hydracache-server --test rolling_upgrade_process --locked
+cargo test -p hydracache-server --test external_control_plane_history --locked
+cargo test -p hydracache-server --test differential_model_process --locked
+cargo test -p hydracache-server --test scheduler_tick_process --locked
+cargo test -p hydracache-server --test snapshot_resource_budget --locked
+cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked local_ttl_and_lock_contracts_survive_backward_wall_clock_step
+cargo test -p hydracache-operator --test soak_kind --locked
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.fuzz-corpus-regression
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.workspace-nextest
+cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
+```
+
+The daemon receipt is a Linux release lane because W10 uses real
+`SIGSTOP`/`SIGCONT`, W1/W12 exercise real snapshot HTTP delivery, and W12
+requires `/proc` RSS/FD samples. Ship mode also requires full Git history and
+the real `v0.65.0` tag; it never silently uses the pinned development fallback.
+
+For W12, `tracked_connections` is the maximum outstanding snapshot request for
+any one sender/peer pair and must stay at or below `1`.
+`held_snapshot_messages` is the cluster-wide sum and may reach `2` only during
+an old-term/new-term leader handoff. Both fields must return to `0` after
+quiescence; the artifact also records the measured RSS and FD residuals.
+
+PowerShell (from a Linux-capable runner or WSL checkout):
+
+```powershell
+$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
+$env:HYDRACACHE_BUILD_PREVIOUS_DAEMON='1'
+$env:HYDRACACHE_MIXED_DAEMON_SHIP_MODE='1'
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e
+Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E,Env:\HYDRACACHE_BUILD_PREVIOUS_DAEMON,Env:\HYDRACACHE_MIXED_DAEMON_SHIP_MODE -ErrorAction SilentlyContinue
+```
+
+Bash:
+
+```bash
+HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 \
+HYDRACACHE_BUILD_PREVIOUS_DAEMON=1 \
+HYDRACACHE_MIXED_DAEMON_SHIP_MODE=1 \
+cargo run -p xtask --locked -- evidence-run --release 0.66 \
+  --gate env.hydracache-run-066-daemon-process-e2e
+```
+
+The operator gate expects a prepared kind cluster, the CRD/controller/current
+server image, a NetworkPolicy-enforcing CNI for W11, and Chaos Mesh `IOChaos`
+for the W5 slow-disk claim. Missing required capability is not a ship receipt.
+
+```powershell
+$env:HYDRACACHE_OPERATOR_KIND='1'
+$env:HYDRACACHE_OPERATOR_IMAGE='hydracache-server:0.66-candidate'
+$env:HYDRACACHE_OPERATOR_VERSION='0.66.0'
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066
+```
+
+```bash
+HYDRACACHE_OPERATOR_KIND=1 \
+HYDRACACHE_OPERATOR_IMAGE=hydracache-server:0.66-candidate \
+HYDRACACHE_OPERATOR_VERSION=0.66.0 \
+cargo run -p xtask --locked -- evidence-run --release 0.66 \
+  --gate env.hydracache-operator-kind-066
+```
+
+The bounded fuzz receipt uses the pinned nightly/cargo-fuzz toolchain registered
+for W9:
+
+```powershell
+cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066
+```
+
+```bash
+cargo run -p xtask --locked -- evidence-run --release 0.66 \
+  --gate tool.cargo-fuzz.raft-wire-frame-066
+```
+
+Preserve `target/release-evidence/receipts/`,
+`target/release-evidence/canaries/`, daemon child logs and schedules under
+`target/test-hydracache-daemon-process/`, and W12 JSON under
+`target/test-evidence/0.66/`. A raw pass without these exact-candidate artifacts
+does not satisfy `--require-ship`.
 
 The W18 nemesis determinism checks are part of the existing fast nemesis test:
 

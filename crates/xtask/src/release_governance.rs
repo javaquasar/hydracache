@@ -106,6 +106,11 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     report
         .problems
         .extend(ci_wiring_problems(root, &gates.gate)?);
+    if normalize_release(release) == "0.66" {
+        report
+            .problems
+            .extend(release_066_gate_contract_problems(&gates.gate));
+    }
     report.completed_checks += 1;
 
     report.problems.extend(prefix(
@@ -128,6 +133,8 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
         "canary-sweep --release 0.64 --tier fast",
         "dynamic-canary-sweep:",
         "canary-sweep --release 0.64 --tier all",
+        "canary-sweep --release 0.65 --tier all",
+        "canary-sweep --release 0.66 --tier all",
     ] {
         if !workflow.contains(required) {
             report
@@ -259,6 +266,33 @@ pub fn release_execution_wiring_problems(
             ][..],
         ),
         ("dst-nightly-soak", &["Run daemon-process cluster tier"][..]),
+        (
+            "release-066-daemon-process",
+            &[
+                "Verify shipped 0.65 provenance",
+                "Run 0.66 daemon-process release proof",
+                "Upload 0.66 daemon-process evidence",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            &[
+                "Create kind cluster with enforcing CNI",
+                "Install required Chaos Mesh IOChaos runtime",
+                "Build and load current server image",
+                "Start current operator controller",
+                "Run 0.66 operator-kind release proof",
+                "Upload 0.66 operator-kind evidence",
+            ][..],
+        ),
+        (
+            "fuzz-nightly",
+            &[
+                "Install nightly and cargo-fuzz",
+                "Run 0.66 Raft wire fuzz release proof",
+                "Upload 0.66 fuzz evidence",
+            ][..],
+        ),
     ] {
         let Some(steps) = workflow.jobs.get(job) else {
             problems.push(format!("release execution matrix is missing job {job}"));
@@ -270,7 +304,13 @@ pub fn release_execution_wiring_problems(
             }
         }
     }
-    for job in ["raft-corner-case-nightly", "dst-nightly-soak"] {
+    for job in [
+        "raft-corner-case-nightly",
+        "dst-nightly-soak",
+        "release-066-daemon-process",
+        "release-066-operator-kind",
+        "fuzz-nightly",
+    ] {
         let condition = workflow
             .conditions
             .get(job)
@@ -281,6 +321,9 @@ pub fn release_execution_wiring_problems(
                 "heavy job {job} must be gated by schedule or workflow_dispatch"
             ));
         }
+    }
+    if normalize_release(requested_release) == "0.66" {
+        problems.extend(release_066_execution_wiring_problems(&workflow));
     }
     const REDIS_MULTINODE_EVIDENCE: &str = "cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e";
     match workflow
@@ -359,6 +402,258 @@ fn release_scoped_fast_wiring_problems(
     problems
 }
 
+fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String> {
+    const FAST_W5: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.raft-failpoints";
+    const FAST_W9: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.fuzz-corpus-regression";
+    const DAEMON: &str = "cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e";
+    const OPERATOR: &str = "cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066";
+    const FUZZ: &str = "cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066";
+    const FAST_COMMANDS: &[&str] = &[
+        "cargo test -p hydracache-cluster-raft --test membership_load --locked",
+        "cargo test -p hydracache-cluster-raft --test differential_model --locked",
+        "cargo test -p hydracache-cluster-raft --test scheduler_tick --locked",
+        "cargo test -p hydracache-server --test backup_authority_boundary --locked",
+        "cargo test -p hydracache-server --test raft_wire_socket_corpus --locked",
+        "cargo test -p hydracache-server --test rejoin_after_compaction_process --locked",
+        "cargo test -p hydracache-server --test process_control_plane_nemesis --locked",
+        "cargo test -p hydracache-server --test rolling_upgrade_process --locked",
+        "cargo test -p hydracache-server --test external_control_plane_history --locked",
+        "cargo test -p hydracache-server --test differential_model_process --locked",
+        "cargo test -p hydracache-server --test scheduler_tick_process --locked",
+        "cargo test -p hydracache-server --test snapshot_resource_budget --locked",
+        "cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked local_ttl_and_lock_contracts_survive_backward_wall_clock_step",
+        "cargo test -p hydracache-operator --test soak_kind --locked",
+    ];
+    let mut problems = Vec::new();
+
+    for (job, step, expected, proof) in [
+        (
+            "rust",
+            "Raft failpoint crash-safety",
+            FAST_W5,
+            "W5 fast failpoint receipt",
+        ),
+        (
+            "rust",
+            "Fuzz corpus regression",
+            FAST_W9,
+            "W9 fast fuzz-corpus receipt",
+        ),
+        (
+            "release-066-daemon-process",
+            "Run 0.66 daemon-process release proof",
+            DAEMON,
+            "W1/W2/W6/W7/W8/W10/W12 daemon-process receipt",
+        ),
+        (
+            "release-066-operator-kind",
+            "Run 0.66 operator-kind release proof",
+            OPERATOR,
+            "W5/W11 operator-kind receipt",
+        ),
+        (
+            "fuzz-nightly",
+            "Run 0.66 Raft wire fuzz release proof",
+            FUZZ,
+            "W9 bounded cargo-fuzz receipt",
+        ),
+    ] {
+        let exact = workflow
+            .step_runs
+            .get(job)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == expected);
+        if !exact {
+            problems.push(format!(
+                "release 0.66 {proof} must use exact command `{expected}`"
+            ));
+        }
+    }
+
+    let fast = workflow
+        .step_runs
+        .get("rust")
+        .and_then(|steps| steps.get("0.66 operational proofs"));
+    for command in FAST_COMMANDS {
+        let wired = fast.is_some_and(|run| run.lines().any(|line| line.trim() == *command));
+        if !wired {
+            problems.push(format!(
+                "release 0.66 fast operational proofs are missing exact command `{command}`"
+            ));
+        }
+    }
+
+    for (job, step, required) in [
+        (
+            "release-066-daemon-process",
+            "Verify shipped 0.65 provenance",
+            &[
+                "git rev-parse --verify refs/tags/v0.65.0",
+                "git merge-base --is-ancestor refs/tags/v0.65.0 HEAD",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Create kind cluster with enforcing CNI",
+            &[
+                "disableDefaultCNI: true",
+                "projectcalico/calico/v3.29.2/manifests/calico.yaml",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Install required Chaos Mesh IOChaos runtime",
+            &["--version 2.7.2", "kubectl get crd iochaos.chaos-mesh.org"][..],
+        ),
+        (
+            "fuzz-nightly",
+            "Install nightly and cargo-fuzz",
+            &[
+                "rustup toolchain install nightly",
+                "cargo install cargo-fuzz --version 0.13.2 --locked",
+            ][..],
+        ),
+        (
+            "dynamic-canary-sweep",
+            "Execute complete dynamic expected-red sweep",
+            &["canary-sweep --release 0.66 --tier all"][..],
+        ),
+    ] {
+        let run = workflow
+            .step_runs
+            .get(job)
+            .and_then(|steps| steps.get(step));
+        for marker in required {
+            if !run.is_some_and(|run| run.contains(marker)) {
+                problems.push(format!(
+                    "release 0.66 job {job} step {step:?} is missing `{marker}`"
+                ));
+            }
+        }
+    }
+
+    let fuzz_install = workflow
+        .step_runs
+        .get("fuzz-nightly")
+        .and_then(|steps| steps.get("Install nightly and cargo-fuzz"))
+        .map(String::as_str)
+        .unwrap_or_default();
+    if fuzz_install.contains("available=false") || fuzz_install.contains("set +e") {
+        problems.push(
+            "release 0.66 cargo-fuzz installation must fail loud instead of producing a skip-green lane"
+                .to_owned(),
+        );
+    }
+    problems
+}
+
+pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
+    const DAEMON_ID: &str = "env.hydracache-run-066-daemon-process-e2e";
+    const OPERATOR_ID: &str = "env.hydracache-operator-kind-066";
+    const FUZZ_ID: &str = "tool.cargo-fuzz.raft-wire-frame-066";
+    let mut problems = Vec::new();
+
+    for (id, job, step, platform) in [
+        (
+            DAEMON_ID,
+            "release-066-daemon-process",
+            "Run 0.66 daemon-process release proof",
+            "linux",
+        ),
+        (
+            OPERATOR_ID,
+            "release-066-operator-kind",
+            "Run 0.66 operator-kind release proof",
+            "linux",
+        ),
+        (
+            FUZZ_ID,
+            "fuzz-nightly",
+            "Run 0.66 Raft wire fuzz release proof",
+            "linux",
+        ),
+    ] {
+        let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
+            problems.push(format!("release 0.66 is missing mandatory gate {id}"));
+            continue;
+        };
+        let common = gate.kind == gated_tests::GateKind::ExternalTool
+            && gate.tier == gated_tests::GateTier::Nightly
+            && gate.owner_release == "0.66.0"
+            && gate.ship_mandatory
+            && gate.ci.workflow == ".github/workflows/ci.yml"
+            && gate.ci.job == job
+            && gate.ci.step == step
+            && gate.command.program == "cargo"
+            && gate.command.platform == platform;
+        if !common {
+            problems.push(format!(
+                "release 0.66 gate {id} must retain its mandatory nightly owner, Linux command, and exact CI lane"
+            ));
+        }
+    }
+
+    if let Some(gate) = gates.iter().find(|gate| gate.id == DAEMON_ID) {
+        for target in [
+            "rejoin_after_compaction_process",
+            "process_control_plane_nemesis",
+            "rolling_upgrade_process",
+            "external_control_plane_history",
+            "differential_model_process",
+            "scheduler_tick_process",
+            "snapshot_resource_budget",
+        ] {
+            if !gate.command.args.iter().any(|arg| arg == target) {
+                problems.push(format!(
+                    "release 0.66 daemon gate is missing process target {target}"
+                ));
+            }
+        }
+        for (env, value) in [
+            ("HYDRACACHE_RUN_DAEMON_PROCESS_E2E", "1"),
+            ("HYDRACACHE_BUILD_PREVIOUS_DAEMON", "1"),
+            ("HYDRACACHE_MIXED_DAEMON_SHIP_MODE", "1"),
+        ] {
+            if gate.command.env.get(env).map(String::as_str) != Some(value) {
+                problems.push(format!("release 0.66 daemon gate must set {env}={value}"));
+            }
+        }
+    }
+    if let Some(gate) = gates.iter().find(|gate| gate.id == OPERATOR_ID) {
+        for (env, value) in [
+            ("HYDRACACHE_OPERATOR_KIND", "1"),
+            ("HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS", "1"),
+            ("HYDRACACHE_OPERATOR_VERSION", "0.66.0"),
+        ] {
+            if gate.command.env.get(env).map(String::as_str) != Some(value) {
+                problems.push(format!("release 0.66 operator gate must set {env}={value}"));
+            }
+        }
+        if !gate.command.args.iter().any(|arg| arg == "--ignored") {
+            problems.push(
+                "release 0.66 operator gate must execute the ignored live-kind tests".to_owned(),
+            );
+        }
+    }
+    if let Some(gate) = gates.iter().find(|gate| gate.id == FUZZ_ID) {
+        let expected = [
+            "+nightly",
+            "fuzz",
+            "run",
+            "raft_wire_frame",
+            "--",
+            "-max_total_time=60",
+        ];
+        if gate.command.args != expected || gate.command.cwd != "fuzz" {
+            problems.push(
+                "release 0.66 fuzz gate must retain the exact bounded raft_wire_frame command from fuzz/"
+                    .to_owned(),
+            );
+        }
+    }
+    problems
+}
+
 fn candidate_receipt_wiring_problems(
     workflow: &WorkflowShape,
     requested_release: &str,
@@ -427,6 +722,7 @@ pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<
         "coverage-ratchet",
         "msrv",
         "gated-proof-registry",
+        "release-066-daemon-process",
     ] {
         let Some(job) = jobs.get(Value::String(job_id.to_owned())) else {
             problems.push(format!(
@@ -455,7 +751,7 @@ pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<
 
         if !full_history {
             problems.push(format!(
-                "job {job_id} checkout must set with.fetch-depth: 0 so compatibility tag v0.63.0 and its ancestry are available"
+                "job {job_id} checkout must set with.fetch-depth: 0 so compatibility tags v0.63.0/v0.65.0 and their ancestry are available"
             ));
         }
     }
@@ -472,6 +768,7 @@ fn fuzz_nightly_wiring_problems(text: &str) -> Vec<String> {
         "cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60",
         "cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60",
         "cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60",
+        "evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066",
     ] {
         if !text.contains(required) {
             problems.push(format!("fuzz nightly wiring is missing `{required}`"));
@@ -481,9 +778,19 @@ fn fuzz_nightly_wiring_problems(text: &str) -> Vec<String> {
         || text.contains("fuzz run fuzz_kv_codec --manifest-path")
         || text.contains("fuzz run fuzz_resp_command --manifest-path")
         || text.contains("fuzz run fuzz_snapshot_decode --manifest-path")
+        || text.contains("fuzz run raft_wire_frame --manifest-path")
     {
         problems.push(
             "fuzz nightly passes --manifest-path after the target; cargo-fuzz parses that position as corpus/libFuzzer arguments"
+                .to_owned(),
+        );
+    }
+    if text.contains("nightly toolchain unavailable; skipping fuzz-nightly")
+        || text.contains("cargo-fuzz unavailable; skipping fuzz-nightly")
+        || text.contains("steps.fuzz-runtime.outputs.available")
+    {
+        problems.push(
+            "fuzz nightly must fail loud when the pinned nightly or cargo-fuzz runtime is unavailable"
                 .to_owned(),
         );
     }

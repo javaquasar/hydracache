@@ -5124,6 +5124,292 @@ platform = "any"
 HYDRACACHE_REQUIRE_TLC = "1"
 
 [[gate]]
+id = "env.hydracache-run-066-daemon-process-e2e"
+kind = "external_tool"
+source = "crates/hydracache-server/tests/rolling_upgrade_process.rs"
+package = "hydracache-server"
+target = "release-066-daemon-process"
+test = ""
+cfg = ""
+env = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E"
+reason = "The 0.66 Linux ship lane executes every real-process W1/W2/W6/W7/W8/W10/W12 target with full-history v0.65.0 provenance"
+tier = "nightly"
+required_features = []
+required_env = [
+    "HYDRACACHE_RUN_DAEMON_PROCESS_E2E",
+    "HYDRACACHE_BUILD_PREVIOUS_DAEMON",
+    "HYDRACACHE_MIXED_DAEMON_SHIP_MODE",
+]
+required_tools = ["git"]
+timeout_seconds = 7200
+owner_release = "0.66.0"
+ship_mandatory = true
+artifacts = [
+    "target/test-evidence/0.66/snapshot-resource-budget-portable.json",
+    "target/test-evidence/0.66/snapshot-resource-budget-receiver-kill-linux.json",
+    "target/test-evidence/0.66/snapshot-resource-budget-slow-receiver-linux.json",
+]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "release-066-daemon-process"
+step = "Run 0.66 daemon-process release proof"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--test",
+    "rejoin_after_compaction_process",
+    "--test",
+    "process_control_plane_nemesis",
+    "--test",
+    "rolling_upgrade_process",
+    "--test",
+    "external_control_plane_history",
+    "--test",
+    "differential_model_process",
+    "--test",
+    "scheduler_tick_process",
+    "--test",
+    "snapshot_resource_budget",
+    "--locked",
+    "--",
+    "--nocapture",
+    "--test-threads=1",
+]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_BUILD_PREVIOUS_DAEMON = "1"
+HYDRACACHE_MIXED_DAEMON_SHIP_MODE = "1"
+HYDRACACHE_RUN_DAEMON_PROCESS_E2E = "1"
+
+[[gate]]
+id = "env.hydracache-operator-kind-066"
+kind = "external_tool"
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = "multi_node_chaos_soak_loses_no_committed_write + operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch"
+cfg = ""
+env = "HYDRACACHE_OPERATOR_KIND"
+reason = "The 0.66 prepared-kind lane runs W5 IOChaos and W11 scale churn with strict capability requirements"
+tier = "nightly"
+required_features = []
+required_env = [
+    "HYDRACACHE_OPERATOR_KIND",
+    "HYDRACACHE_OPERATOR_IMAGE",
+    "HYDRACACHE_OPERATOR_VERSION",
+    "HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS",
+]
+required_tools = ["docker", "kind", "kubectl", "helm"]
+timeout_seconds = 7200
+owner_release = "0.66.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "release-066-operator-kind"
+step = "Run 0.66 operator-kind release proof"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+    "--",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1",
+]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_CLUSTER = "hydracache-066"
+HYDRACACHE_OPERATOR_IMAGE = "hydracache-server:0.66-candidate"
+HYDRACACHE_OPERATOR_KIND = "1"
+HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS = "1"
+HYDRACACHE_OPERATOR_VERSION = "0.66.0"
+
+[[gate]]
+id = "tool.cargo-fuzz.raft-wire-frame-066"
+kind = "external_tool"
+source = "fuzz/fuzz_targets/raft_wire_frame.rs"
+package = "hydracache-fuzz"
+target = "raft_wire_frame"
+test = ""
+cfg = ""
+env = ""
+reason = "Pinned nightly cargo-fuzz mutates the 0.66 Raft wire frame boundary for a bounded campaign"
+tier = "nightly"
+required_features = []
+required_env = []
+required_tools = ["nightly", "cargo-fuzz=0.13.2"]
+timeout_seconds = 300
+owner_release = "0.66.0"
+ship_mandatory = true
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "fuzz-nightly"
+step = "Run 0.66 Raft wire fuzz release proof"
+
+[gate.command]
+program = "cargo"
+args = [
+    "+nightly",
+    "fuzz",
+    "run",
+    "raft_wire_frame",
+    "--",
+    "-max_total_time=60",
+]
+cwd = "fuzz"
+platform = "linux"
+
+[gate.command.env]
+
+[[gate]]
+id = "ignored.hydracache-operator.soak-kind.operator-scale-chaos-kind-lane-records-voters-and-metadata-epoch"
+kind = "ignored_test"
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = "operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch"
+cfg = ""
+env = ""
+reason = "kind/CNI-gated W11 lane: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_OPERATOR_KIND"]
+required_tools = ["docker", "kind", "kubectl"]
+timeout_seconds = 3600
+owner_release = "0.66.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "release-066-operator-kind"
+step = "Run 0.66 operator-kind release proof"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+    "operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_IMAGE = "hydracache-server:0.66-candidate"
+HYDRACACHE_OPERATOR_KIND = "1"
+HYDRACACHE_OPERATOR_VERSION = "0.66.0"
+
+[[gate]]
+id = "cfg.hydracache-cluster-raft.io-chaos-boundaries"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/io_chaos_boundaries.rs"
+package = "hydracache-cluster-raft"
+target = "io_chaos_boundaries"
+test = ""
+cfg = 'all (feature = "test-failpoints" , feature = "sled-log-store")'
+env = ""
+reason = "The W5 Sled save/install/commit fault target requires both reviewed test features"
+tier = "fast"
+required_features = ["test-failpoints", "sled-log-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.66.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Raft failpoint crash-safety"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--features",
+    "test-failpoints,sled-log-store",
+    "--test",
+    "io_chaos_boundaries",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
+id = "env.hydracache-test-raft-snapshot-handler-delay-ms"
+kind = "env_gate"
+source = "crates/hydracache-server/src/grid_host.rs"
+package = "hydracache-server"
+target = "grid_host"
+test = "snapshot_http_timeout_reports_failure_and_releases_inflight_feedback"
+cfg = ""
+env = "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS"
+reason = "The W1 real-snapshot test seam is inert unless an explicit bounded handler delay is requested"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS"]
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.66.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "0.66 operational proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-server",
+    "--locked",
+    "grid_host::tests::snapshot_http_timeout_reports_failure_and_releases_inflight_feedback",
+    "--",
+    "--nocapture",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS = "100"
+
+[[gate]]
 id = "env.hydracache-run-cancellation-raft"
 kind = "env_gate"
 source = "crates/hydracache-cluster-raft/tests/cancellation_safety.rs"

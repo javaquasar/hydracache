@@ -4,58 +4,185 @@
   "entries": [
     {
       "w_item": "W0",
-      "guard": {
-        "file": "crates/hydracache-cluster-raft/tests/compaction_seam.rs",
-        "function": "compaction_seam_snapshots_exactly_current_applied_progress"
-      },
-      "canary": {
-        "file": "crates/hydracache-cluster-raft/tests/compaction_seam.rs",
-        "function": "canary_compaction_seam_leaks_into_default_release_path"
-      },
-      "guard_command": {
-        "program": "cargo",
-        "args": [
-          "test",
-          "-p",
-          "hydracache-cluster-raft",
-          "--test",
-          "compaction_seam",
-          "--locked",
-          "compaction_seam_snapshots_exactly_current_applied_progress",
-          "--",
-          "--nocapture"
-        ],
-        "env": {},
-        "cwd": ".",
-        "platform": "any"
-      },
-      "canary_command": {
-        "program": "cargo",
-        "args": [
-          "test",
-          "-p",
-          "hydracache-cluster-raft",
-          "--test",
-          "compaction_seam",
-          "--locked",
-          "canary_compaction_seam_leaks_into_default_release_path",
-          "--",
-          "--nocapture"
-        ],
-        "env": {
-          "HYDRACACHE_CANARY_DEFECT": "W0"
-        },
-        "cwd": ".",
-        "platform": "any"
-      },
+      "guard": { "file": "crates/hydracache-cluster-raft/tests/compaction_seam.rs", "function": "compaction_seam_snapshots_exactly_current_applied_progress" },
+      "canary": { "file": "crates/hydracache-cluster-raft/tests/compaction_seam.rs", "function": "canary_compaction_seam_leaks_into_default_release_path" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "compaction_seam", "--locked", "compaction_seam_snapshots_exactly_current_applied_progress", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "compaction_seam", "--locked", "canary_compaction_seam_leaks_into_default_release_path", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W0" }, "cwd": ".", "platform": "any" },
       "defect_id": "hydracache-0.66-W0",
       "expected_failure": "HC-CANARY-RED:W0",
       "timeout_seconds": 300,
       "tier": "fast",
-      "artifacts": [
-        "target/release-evidence/canaries/0.66-W0.json"
-      ],
-      "red_evidence": "The W0 dynamic canary must prove that the off-by-default Raft compaction control cannot silently become active in the default release path."
+      "artifacts": ["target/release-evidence/canaries/0.66-W0.json"],
+      "red_evidence": "The W0 canary proves that the off-by-default Raft compaction seam cannot silently leak into the default release path."
+    },
+    {
+      "w_item": "W1",
+      "guard": { "file": "crates/hydracache-server/src/grid_host.rs", "function": "snapshot_http_timeout_reports_failure_and_releases_inflight_feedback" },
+      "canary": { "file": "crates/hydracache-server/tests/rejoin_after_compaction_process.rs", "function": "canary_snapshot_send_failure_leaves_peer_progress_stuck" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--lib", "--locked", "grid_host::tests::snapshot_http_timeout_reports_failure_and_releases_inflight_feedback", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "rejoin_after_compaction_process", "--locked", "canary_snapshot_send_failure_leaves_peer_progress_stuck", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W1" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W1",
+      "expected_failure": "HC-CANARY-RED:W1",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W1.json"],
+      "red_evidence": "The W1 canary proves that a failed real snapshot send cannot leave peer progress and the bounded sender reservation permanently stuck."
+    },
+    {
+      "w_item": "W2",
+      "guard": { "file": "crates/hydracache-server/tests/process_control_plane_nemesis.rs", "function": "process_nemesis_committed_control_plane_history_is_consistent" },
+      "canary": { "file": "crates/hydracache-server/tests/process_control_plane_nemesis.rs", "function": "canary_process_nemesis_accepts_a_lost_committed_metadata_command" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "process_control_plane_nemesis", "--locked", "process_nemesis_committed_control_plane_history_is_consistent", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "process_control_plane_nemesis", "--locked", "canary_process_nemesis_accepts_a_lost_committed_metadata_command", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W2" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W2",
+      "expected_failure": "HC-CANARY-RED:W2",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W2.json"],
+      "red_evidence": "The W2 canary proves that the composed-fault checker rejects a lost committed control-plane command."
+    },
+    {
+      "w_item": "W3",
+      "guard": { "file": "crates/hydracache-cluster-raft/tests/membership_load.rs", "function": "membership_change_under_partition_loses_no_committed_metadata_command" },
+      "canary": { "file": "crates/hydracache-cluster-raft/tests/membership_load.rs", "function": "canary_membership_load_double_applies_a_stable_command_id" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "membership_load", "--locked", "membership_change_under_partition_loses_no_committed_metadata_command", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "membership_load", "--locked", "canary_membership_load_double_applies_a_stable_command_id", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W3" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W3",
+      "expected_failure": "HC-CANARY-RED:W3",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W3.json"],
+      "red_evidence": "The W3 canary proves that stable command identifiers cannot be applied twice across membership churn."
+    },
+    {
+      "w_item": "W4",
+      "guard": { "file": "crates/hydracache-server/tests/backup_authority_boundary.rs", "function": "accepted_backup_request_is_not_a_durable_artifact_or_restore_point" },
+      "canary": { "file": "crates/hydracache-server/tests/backup_authority_boundary.rs", "function": "canary_backup_request_acceptance_is_treated_as_completed_backup" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "backup_authority_boundary", "--locked", "accepted_backup_request_is_not_a_durable_artifact_or_restore_point", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "backup_authority_boundary", "--locked", "canary_backup_request_acceptance_is_treated_as_completed_backup", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W4" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W4",
+      "expected_failure": "HC-CANARY-RED:W4",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W4.json"],
+      "red_evidence": "The W4 canary proves that admin request acceptance cannot be mislabeled as a completed durable backup."
+    },
+    {
+      "w_item": "W5",
+      "guard": { "file": "crates/hydracache-cluster-raft/tests/io_chaos_boundaries.rs", "function": "durable_commit_failure_fails_loud_and_recovers_consistent" },
+      "canary": { "file": "crates/hydracache-cluster-raft/tests/io_chaos_boundaries.rs", "function": "canary_io_chaos_accepts_a_torn_commit" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--features", "test-failpoints,sled-log-store", "--test", "io_chaos_boundaries", "--locked", "durable_commit_failure_fails_loud_and_recovers_consistent", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--features", "test-failpoints,sled-log-store", "--test", "io_chaos_boundaries", "--locked", "canary_io_chaos_accepts_a_torn_commit", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W5" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W5",
+      "expected_failure": "HC-CANARY-RED:W5",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W5.json"],
+      "red_evidence": "The W5 canary proves that save, install, and durable-commit IO faults cannot leave an accepted torn commit."
+    },
+    {
+      "w_item": "W6",
+      "guard": { "file": "crates/hydracache-server/tests/rolling_upgrade_process.rs", "function": "daemon_cluster_supports_explicit_binary_per_node" },
+      "canary": { "file": "crates/hydracache-server/tests/rolling_upgrade_process.rs", "function": "canary_mixed_daemon_harness_silently_substitutes_current_binary" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "rolling_upgrade_process", "--locked", "daemon_cluster_supports_explicit_binary_per_node", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "rolling_upgrade_process", "--locked", "canary_mixed_daemon_harness_silently_substitutes_current_binary", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W6" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W6",
+      "expected_failure": "HC-CANARY-RED:W6",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W6.json"],
+      "red_evidence": "The W6 canary proves that an explicit previous-daemon binary cannot be silently replaced with the current candidate."
+    },
+    {
+      "w_item": "W7",
+      "guard": { "file": "crates/hydracache-server/tests/external_control_plane_history.rs", "function": "external_control_plane_history_is_consistent_under_process_faults" },
+      "canary": { "file": "crates/hydracache-server/tests/external_control_plane_history.rs", "function": "canary_external_checker_accepts_a_known_invalid_membership_history" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "external_control_plane_history", "--locked", "external_control_plane_history_is_consistent_under_process_faults", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "external_control_plane_history", "--locked", "canary_external_checker_accepts_a_known_invalid_membership_history", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W7" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W7",
+      "expected_failure": "HC-CANARY-RED:W7",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W7.json"],
+      "red_evidence": "The W7 canary proves that the independent external checker rejects a known-invalid same-term membership history."
+    },
+    {
+      "w_item": "W8",
+      "guard": { "file": "crates/hydracache-cluster-raft/tests/differential_model.rs", "function": "runtime_committed_metadata_matches_reference_model" },
+      "canary": { "file": "crates/hydracache-cluster-raft/tests/differential_model.rs", "function": "canary_reference_model_misses_a_committed_metadata_command" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "differential_model", "--locked", "runtime_committed_metadata_matches_reference_model", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "differential_model", "--locked", "canary_reference_model_misses_a_committed_metadata_command", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W8" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W8",
+      "expected_failure": "HC-CANARY-RED:W8",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W8.json"],
+      "red_evidence": "The W8 canary proves that a reference model which omits a committed metadata command diverges visibly from the runtime."
+    },
+    {
+      "w_item": "W9",
+      "guard": { "file": "crates/hydracache-server/tests/raft_wire_socket_corpus.rs", "function": "raft_http_socket_corpus_rejects_before_unbounded_allocation" },
+      "canary": { "file": "crates/hydracache-server/tests/raft_wire_socket_corpus.rs", "function": "canary_raft_socket_accepts_an_oversized_body_without_bound" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "raft_wire_socket_corpus", "--locked", "raft_http_socket_corpus_rejects_before_unbounded_allocation", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "raft_wire_socket_corpus", "--locked", "canary_raft_socket_accepts_an_oversized_body_without_bound", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W9" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W9",
+      "expected_failure": "HC-CANARY-RED:W9",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W9.json"],
+      "red_evidence": "The W9 canary proves that the real Raft HTTP listener rejects oversized bodies before unbounded allocation or durable mutation."
+    },
+    {
+      "w_item": "W10",
+      "guard": { "file": "crates/hydracache-cluster-raft/tests/scheduler_tick.rs", "function": "process_pause_and_uneven_ticks_never_create_two_leaders_per_term" },
+      "canary": { "file": "crates/hydracache-cluster-raft/tests/scheduler_tick.rs", "function": "canary_resumed_demoted_process_is_accepted_as_authoritative" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "scheduler_tick", "--locked", "process_pause_and_uneven_ticks_never_create_two_leaders_per_term", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-cluster-raft", "--test", "scheduler_tick", "--locked", "canary_resumed_demoted_process_is_accepted_as_authoritative", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W10" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W10",
+      "expected_failure": "HC-CANARY-RED:W10",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W10.json"],
+      "red_evidence": "The W10 canary proves that a resumed demoted process cannot make its stale leader view authoritative."
+    },
+    {
+      "w_item": "W11",
+      "guard": { "file": "crates/hydracache-operator/tests/soak_kind.rs", "function": "replica_churn_under_partition_keeps_voters_and_committed_metadata" },
+      "canary": { "file": "crates/hydracache-operator/tests/soak_kind.rs", "function": "canary_scale_chaos_accepts_a_ghost_voter" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-operator", "--test", "soak_kind", "--locked", "replica_churn_under_partition_keeps_voters_and_committed_metadata", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-operator", "--test", "soak_kind", "--locked", "canary_scale_chaos_accepts_a_ghost_voter", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W11" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W11",
+      "expected_failure": "HC-CANARY-RED:W11",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W11.json"],
+      "red_evidence": "The W11 canary proves that scale churn cannot leave a removed pod in the authoritative voter set as a ghost voter."
+    },
+    {
+      "w_item": "W12",
+      "guard": { "file": "crates/hydracache-server/tests/snapshot_resource_budget.rs", "function": "snapshot_resource_artifact_validates_for_release_066" },
+      "canary": { "file": "crates/hydracache-server/tests/snapshot_resource_budget.rs", "function": "canary_snapshot_sender_resource_reservation_never_releases" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "snapshot_resource_budget", "--locked", "snapshot_resource_artifact_validates_for_release_066", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "hydracache-server", "--test", "snapshot_resource_budget", "--locked", "canary_snapshot_sender_resource_reservation_never_releases", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W12" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W12",
+      "expected_failure": "HC-CANARY-RED:W12",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W12.json"],
+      "red_evidence": "The W12 canary proves that a leaked snapshot sender reservation violates the declared post-quiescence resource budget."
+    },
+    {
+      "w_item": "W13",
+      "guard": { "file": "crates/xtask/tests/release_governance.rs", "function": "release_066_registered_heavy_gates_are_mandatory_and_fail_closed" },
+      "canary": { "file": "crates/xtask/tests/release_governance.rs", "function": "canary_release_governance_accepts_a_missing_mandatory_gate" },
+      "guard_command": { "program": "cargo", "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_066_registered_heavy_gates_are_mandatory_and_fail_closed", "--", "--nocapture"], "env": {}, "cwd": ".", "platform": "any" },
+      "canary_command": { "program": "cargo", "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_governance_accepts_a_missing_mandatory_gate", "--", "--nocapture"], "env": { "HYDRACACHE_CANARY_DEFECT": "W13" }, "cwd": ".", "platform": "any" },
+      "defect_id": "hydracache-0.66-W13",
+      "expected_failure": "HC-CANARY-RED:W13",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.66-W13.json"],
+      "red_evidence": "The W13 canary proves that release governance rejects removal of a mandatory 0.66 ship gate."
     }
   ]
 }

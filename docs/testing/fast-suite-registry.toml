@@ -29,7 +29,7 @@ platform = "any"
 
 [[suite]]
 id = "fast.raft-failpoints"
-work_items = ["W3", "W4", "W10", "W11"]
+work_items = ["W3", "W4", "W5", "W10", "W11"]
 timeout_seconds = 180
 budget_seconds = 120
 deterministic = false
@@ -45,7 +45,7 @@ noise_allowance_seconds = 0
 
 [suite.command]
 program = "cargo"
-args = ["test", "-p", "hydracache-cluster-raft", "--features", "test-failpoints", "--locked", "-j", "2", "--", "--test-threads=1"]
+args = ["test", "-p", "hydracache-cluster-raft", "--features", "test-failpoints,sled-log-store", "--locked", "-j", "2", "--", "--test-threads=1"]
 cwd = "."
 platform = "any"
 
