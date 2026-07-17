@@ -1,7 +1,68 @@
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
-use hydracache_cluster_raft::RaftWireMessage;
+use hydracache_cluster_raft::{RaftMetadataRuntime, RaftWireMessage};
 use proptest::prelude::*;
+use raft::eraftpb::{Message, MessageType};
+
+#[test]
+fn raft_wire_envelope_must_match_protobuf_header() {
+    let mut message = Message {
+        from: 1,
+        to: 2,
+        term: 3,
+        ..Message::default()
+    };
+    message.set_msg_type(MessageType::MsgHeartbeat);
+    let valid = RaftWireMessage::encode(&message).unwrap();
+
+    for (field, forged) in [
+        (
+            "from",
+            RaftWireMessage {
+                from: 9,
+                ..valid.clone()
+            },
+        ),
+        (
+            "to",
+            RaftWireMessage {
+                to: 9,
+                ..valid.clone()
+            },
+        ),
+        (
+            "term",
+            RaftWireMessage {
+                term: 9,
+                ..valid.clone()
+            },
+        ),
+    ] {
+        let error = forged.decode().unwrap_err();
+        assert!(error.to_string().contains(&format!("{field} mismatch")));
+    }
+    assert_eq!(valid.decode().unwrap(), message);
+}
+
+#[test]
+fn runtime_rejects_a_valid_frame_addressed_to_another_node_without_mutation() {
+    let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+    let before = runtime.snapshot();
+    let mut message = Message {
+        from: 2,
+        to: 3,
+        term: before.term,
+        ..Message::default()
+    };
+    message.set_msg_type(MessageType::MsgHeartbeat);
+
+    let error = runtime
+        .step(RaftWireMessage::encode(&message).unwrap())
+        .unwrap_err();
+
+    assert!(error.to_string().contains("does not match runtime node 1"));
+    assert_eq!(runtime.snapshot(), before);
+}
 
 proptest! {
     #[test]

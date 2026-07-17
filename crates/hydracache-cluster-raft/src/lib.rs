@@ -417,10 +417,15 @@ impl RaftWireMessage {
         })
     }
 
-    /// Decode the protobuf payload back into a raft-rs message.
+    /// Decode the protobuf payload and verify its duplicated transport header.
     pub fn decode(&self) -> CacheResult<RaftMessage> {
-        RaftMessage::parse_from_bytes(&self.payload)
-            .map_err(|error| CacheError::Decode(format!("failed to decode raft message: {error}")))
+        let message = RaftMessage::parse_from_bytes(&self.payload).map_err(|error| {
+            CacheError::Decode(format!("failed to decode raft message: {error}"))
+        })?;
+        validate_wire_header("from", self.from, message.from)?;
+        validate_wire_header("to", self.to, message.to)?;
+        validate_wire_header("term", self.term, message.term)?;
+        Ok(message)
     }
 
     /// Return whether this envelope carries a raft snapshot.
@@ -431,6 +436,15 @@ impl RaftWireMessage {
     pub fn is_snapshot(&self) -> CacheResult<bool> {
         Ok(self.decode()?.get_msg_type() == MessageType::MsgSnapshot)
     }
+}
+
+fn validate_wire_header(field: &str, envelope: u64, protobuf: u64) -> CacheResult<()> {
+    if envelope == protobuf {
+        return Ok(());
+    }
+    Err(CacheError::Decode(format!(
+        "raft wire {field} mismatch: envelope={envelope}, protobuf={protobuf}"
+    )))
 }
 
 impl RaftMetadataCommandEnvelope {
@@ -999,11 +1013,16 @@ where
 
     /// Step one inbound raft message and return outbound peer messages.
     pub fn step(&self, message: RaftWireMessage) -> CacheResult<Vec<RaftWireMessage>> {
+        let message = message.decode()?;
+        if message.to != self.raft_node_id {
+            return Err(CacheError::Decode(format!(
+                "raft message destination {} does not match runtime node {}",
+                message.to, self.raft_node_id
+            )));
+        }
+        validate_inbound_metadata_snapshot(self.cluster.name(), &message)?;
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        state
-            .raw_node
-            .step(message.decode()?)
-            .map_err(to_cache_error)?;
+        state.raw_node.step(message).map_err(to_cache_error)?;
         state.drain_ready()
     }
 
@@ -1445,6 +1464,48 @@ fn stage_metadata_snapshot(
         commands: snapshot.commands,
         applied_command_ids,
     })
+}
+
+fn validate_inbound_metadata_snapshot(
+    cluster_name: &str,
+    message: &RaftMessage,
+) -> CacheResult<()> {
+    if message.get_msg_type() != MessageType::MsgSnapshot {
+        return Ok(());
+    }
+    if !message.has_snapshot() {
+        return Err(CacheError::Decode(
+            "raft MsgSnapshot is missing its snapshot field".to_owned(),
+        ));
+    }
+    let snapshot = message.get_snapshot();
+    // Empty snapshot data is the existing raft-only compatibility path. It
+    // carries log/configuration progress but no HydraCache metadata image.
+    if snapshot.data.is_empty() {
+        return Ok(());
+    }
+
+    let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
+    if export.applied_index != snapshot.get_metadata().index {
+        return Err(CacheError::Decode(format!(
+            "raft metadata snapshot payload index {} does not match raft snapshot index {}",
+            export.applied_index,
+            snapshot.get_metadata().index
+        )));
+    }
+    if export.cluster_name != cluster_name {
+        return Err(CacheError::Decode(format!(
+            "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
+            export.cluster_name, cluster_name
+        )));
+    }
+    if export.raft_node_id != message.from {
+        return Err(CacheError::Decode(format!(
+            "raft metadata snapshot source {} does not match protobuf sender {}",
+            export.raft_node_id, message.from
+        )));
+    }
+    stage_metadata_snapshot(export).map(|_| ())
 }
 
 fn command_id_node(node_id: &ClusterNodeId) -> String {
