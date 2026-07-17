@@ -119,7 +119,11 @@ fn snapshot_resource_artifact_validates_for_release_066() -> TestResult {
             .as_array()
             .expect("samples must serialize as an array")
             .iter()
-            .all(|sample| sample.get("rss_kib").is_none() && sample.get("open_fds").is_none()),
+            .all(|sample| {
+                sample.get("rss_kib").is_none()
+                    && sample.get("rss_hwm_kib").is_none()
+                    && sample.get("open_fds").is_none()
+            }),
         "portable/model evidence must omit unavailable Linux metrics"
     );
     let schema = include_str!("../../../docs/testing/schemas/daemon-resource-budget.schema.json");
@@ -570,15 +574,16 @@ fn linux_snapshot_sample(
     cluster: &mut DaemonCluster,
     snapshot: SnapshotSenderSetObservation,
 ) -> TestResult<ResourceSample> {
-    let (rss_kib, open_fds) = cluster
-        .os_resource_totals()
-        .ok_or("W12 Linux resource gate was claimed but /proc RSS/FD sampling is unavailable")?;
+    let totals = cluster.os_resource_totals().ok_or(
+        "W12 Linux resource gate was claimed but /proc RSS/VmHWM/FD sampling is unavailable",
+    )?;
     Ok(ResourceSample {
         running_children: cluster.running_child_count() as u64,
         tracked_connections: snapshot.max_in_flight_per_sender,
         held_snapshot_messages: snapshot.total.snapshot_sends_in_flight,
-        rss_kib: Some(rss_kib),
-        open_fds: Some(open_fds),
+        rss_kib: Some(totals.rss_kib),
+        rss_hwm_kib: Some(totals.rss_hwm_kib),
+        open_fds: Some(totals.open_fds),
     })
 }
 

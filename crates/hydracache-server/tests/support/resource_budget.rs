@@ -16,6 +16,8 @@ pub struct ResourceSample {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rss_kib: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub rss_hwm_kib: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub open_fds: Option<u64>,
 }
 
@@ -38,6 +40,7 @@ impl ResourceSample {
                 .max()
                 .unwrap_or(0),
             rss_kib: samples.iter().filter_map(|sample| sample.rss_kib).max(),
+            rss_hwm_kib: samples.iter().filter_map(|sample| sample.rss_hwm_kib).max(),
             open_fds: samples.iter().filter_map(|sample| sample.open_fds).max(),
         }
     }
@@ -132,13 +135,12 @@ impl ResourceBudgetArtifact {
             )
             .into());
         }
-        if self
-            .samples
-            .iter()
-            .any(|sample| sample.rss_kib.is_none() || sample.open_fds.is_none())
-        {
+        if self.samples.iter().any(|sample| {
+            sample.rss_kib.is_none() || sample.rss_hwm_kib.is_none() || sample.open_fds.is_none()
+        }) {
             return Err(
-                "Linux resource proof requires rss_kib and open_fds in every sample".into(),
+                "Linux resource proof requires rss_kib, rss_hwm_kib, and open_fds in every sample"
+                    .into(),
             );
         }
         Ok(())
@@ -167,6 +169,11 @@ impl ResourceBudgetArtifact {
         if let (Some(baseline), Some(peak)) = (self.baseline.rss_kib, self.peak.rss_kib) {
             if peak > baseline.saturating_add(self.budget.max_rss_growth_kib) {
                 return Err("peak RSS exceeded the declared growth budget".into());
+            }
+        }
+        if let (Some(baseline), Some(peak)) = (self.baseline.rss_hwm_kib, self.peak.rss_hwm_kib) {
+            if peak > baseline.saturating_add(self.budget.max_rss_growth_kib) {
+                return Err("peak RSS high-water exceeded the declared growth budget".into());
             }
         }
         if let (Some(baseline), Some(peak)) = (self.baseline.open_fds, self.peak.open_fds) {

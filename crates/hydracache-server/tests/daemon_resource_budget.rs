@@ -31,21 +31,23 @@ fn portable_sample(
         tracked_connections,
         held_snapshot_messages,
         rss_kib: None,
+        rss_hwm_kib: None,
         open_fds: None,
     }
 }
 
 #[cfg(target_os = "linux")]
 fn linux_sample(cluster: &mut DaemonCluster) -> TestResult<ResourceSample> {
-    let (rss_kib, open_fds) = cluster
+    let totals = cluster
         .os_resource_totals()
         .ok_or("Linux /proc resource sampling is unavailable")?;
     Ok(ResourceSample {
         running_children: cluster.running_child_count() as u64,
         tracked_connections: 0,
         held_snapshot_messages: 0,
-        rss_kib: Some(rss_kib),
-        open_fds: Some(open_fds),
+        rss_kib: Some(totals.rss_kib),
+        rss_hwm_kib: Some(totals.rss_hwm_kib),
+        open_fds: Some(totals.open_fds),
     })
 }
 
@@ -196,7 +198,7 @@ async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestRe
 
 #[cfg(target_os = "linux")]
 #[test]
-#[ignore = "manual/nightly Linux /proc FD and RSS budget"]
+#[ignore = "manual/nightly Linux /proc FD, RSS, and VmHWM budget"]
 fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
     if std::env::var(LINUX_GATE_ENV).as_deref() != Ok("1") {
         return Err(format!("set {LINUX_GATE_ENV}=1 to claim the Linux resource proof").into());
@@ -252,6 +254,7 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
         tracked_connections: 0,
         held_snapshot_messages: 0,
         rss_kib: Some(1024),
+        rss_hwm_kib: Some(2048),
         open_fds: Some(12),
     };
     let artifact = ResourceBudgetArtifact::new(
@@ -278,7 +281,14 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
         assert!(value.get(field).is_some(), "artifact is missing {field}");
     }
     let schema = include_str!("../../../docs/testing/schemas/daemon-resource-budget.schema.json");
-    for field in ["baseline", "peak", "final_sample", "platform", "samples"] {
+    for field in [
+        "baseline",
+        "peak",
+        "final_sample",
+        "platform",
+        "samples",
+        "rss_hwm_kib",
+    ] {
         assert!(schema.contains(&format!("\"{field}\"")));
     }
     assert!(
@@ -290,6 +300,83 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
     assert!(
         !schema.contains("\"release\": { \"const\": \"0.64.0\" }"),
         "the shared resource schema must not be pinned to the W37 release"
+    );
+}
+
+#[test]
+fn rss_high_water_budget_catches_transient_growth_without_requiring_a_drop() {
+    let baseline = ResourceSample {
+        running_children: 3,
+        rss_kib: Some(1_000),
+        rss_hwm_kib: Some(1_200),
+        open_fds: Some(12),
+        ..ResourceSample::default()
+    };
+    let final_sample = ResourceSample {
+        rss_kib: Some(1_010),
+        rss_hwm_kib: Some(1_250),
+        ..baseline
+    };
+    let budget = ResourceBudget {
+        max_child_delta: 0,
+        max_connection_delta: 0,
+        max_held_snapshot_messages: 0,
+        max_rss_growth_kib: 64,
+        max_fd_growth: 0,
+    };
+    let artifact =
+        ResourceBudgetArtifact::new("0.64.0", SEED, vec![baseline, final_sample], budget.clone());
+
+    artifact
+        .validate_budget()
+        .expect("VmHWM may remain elevated after quiescence when growth stays within budget");
+    assert_eq!(artifact.peak.rss_hwm_kib, Some(1_250));
+    assert_eq!(artifact.final_sample.rss_hwm_kib, Some(1_250));
+
+    let excessive_high_water = ResourceSample {
+        rss_hwm_kib: Some(1_265),
+        ..final_sample
+    };
+    let artifact =
+        ResourceBudgetArtifact::new("0.64.0", SEED, vec![baseline, excessive_high_water], budget);
+    let error = artifact
+        .validate_budget()
+        .expect_err("VmHWM growth above the declared budget must fail closed");
+    assert!(
+        error.to_string().contains("high-water"),
+        "unexpected VmHWM budget error: {error}"
+    );
+}
+
+#[test]
+fn linux_resource_proof_requires_rss_high_water_in_every_sample() {
+    let sample = ResourceSample {
+        running_children: 3,
+        rss_kib: Some(1_024),
+        rss_hwm_kib: None,
+        open_fds: Some(12),
+        ..ResourceSample::default()
+    };
+    let mut artifact = ResourceBudgetArtifact::new(
+        "0.64.0",
+        SEED,
+        vec![sample],
+        ResourceBudget {
+            max_child_delta: 0,
+            max_connection_delta: 0,
+            max_held_snapshot_messages: 0,
+            max_rss_growth_kib: 0,
+            max_fd_growth: 0,
+        },
+    );
+    artifact.platform = "linux".to_owned();
+
+    let error = artifact
+        .validate_linux_proof()
+        .expect_err("a Linux proof without VmHWM must fail closed");
+    assert!(
+        error.to_string().contains("rss_hwm_kib"),
+        "unexpected Linux proof error: {error}"
     );
 }
 

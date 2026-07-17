@@ -158,6 +158,15 @@ pub struct DaemonReplayEvidence {
     pub binary_paths: Vec<PathBuf>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OsResourceTotals {
+    pub rss_kib: u64,
+    /// Sum of each live daemon's process-lifetime `VmHWM`. This is a
+    /// conservative bound, not a simultaneous cluster-RSS observation.
+    pub rss_hwm_kib: u64,
+    pub open_fds: u64,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PreviousDaemonBinary {
     pub path: PathBuf,
@@ -765,17 +774,16 @@ impl DaemonCluster {
         })
     }
 
-    pub fn os_resource_totals(&mut self) -> Option<(u64, u64)> {
+    pub fn os_resource_totals(&mut self) -> Option<OsResourceTotals> {
         let running = self.running_indices();
         let samples = running
             .iter()
             .filter_map(|index| self.nodes[*index].resource_sample())
             .collect::<Vec<_>>();
-        (samples.len() == running.len() && !samples.is_empty()).then(|| {
-            (
-                samples.iter().map(|sample| sample.rss_kib).sum(),
-                samples.iter().map(|sample| sample.open_fds).sum(),
-            )
+        (samples.len() == running.len() && !samples.is_empty()).then(|| OsResourceTotals {
+            rss_kib: samples.iter().map(|sample| sample.rss_kib).sum(),
+            rss_hwm_kib: samples.iter().map(|sample| sample.rss_hwm_kib).sum(),
+            open_fds: samples.iter().map(|sample| sample.open_fds).sum(),
         })
     }
 
@@ -965,6 +973,7 @@ impl DaemonNode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct ProcessResourceSample {
     rss_kib: u64,
+    rss_hwm_kib: u64,
     open_fds: u64,
 }
 
@@ -972,18 +981,32 @@ impl ProcessResourceSample {
     #[cfg(target_os = "linux")]
     fn for_pid(pid: u32) -> Option<Self> {
         let status = fs::read_to_string(format!("/proc/{pid}/status")).ok()?;
-        let rss_kib = status.lines().find_map(|line| {
-            let value = line.strip_prefix("VmRSS:")?;
-            value.split_whitespace().next()?.parse().ok()
-        })?;
         let open_fds = fs::read_dir(format!("/proc/{pid}/fd")).ok()?.count() as u64;
-        Some(Self { rss_kib, open_fds })
+        Self::from_linux_status(&status, open_fds)
+    }
+
+    fn from_linux_status(status: &str, open_fds: u64) -> Option<Self> {
+        let rss_kib = linux_status_kib(status, "VmRSS:")?;
+        let rss_hwm_kib = linux_status_kib(status, "VmHWM:")?;
+        Some(Self {
+            rss_kib,
+            rss_hwm_kib,
+            open_fds,
+        })
     }
 
     #[cfg(not(target_os = "linux"))]
     fn for_pid(_pid: u32) -> Option<Self> {
         None
     }
+}
+
+fn linux_status_kib(status: &str, field: &str) -> Option<u64> {
+    status.lines().find_map(|line| {
+        let mut parts = line.strip_prefix(field)?.split_whitespace();
+        let value = parts.next()?.parse().ok()?;
+        (parts.next()? == "kB").then_some(value)
+    })
 }
 
 pub fn daemon_process_e2e_enabled() -> bool {
@@ -1568,7 +1591,20 @@ mod tests {
     use super::{
         complete_dual_protocol_reservation, ensure_distinct_daemon_binaries, reserve_node_addrs,
         truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms,
+        ProcessResourceSample,
     };
+
+    #[test]
+    fn process_resource_sample_parses_rss_and_process_lifetime_high_water() {
+        let status = "Name:\thydracache\nVmHWM:\t2048 kB\nVmRSS:\t1024 kB\n";
+        let sample = ProcessResourceSample::from_linux_status(status, 17)
+            .expect("well-formed Linux RSS fields must parse");
+
+        assert_eq!(sample.rss_kib, 1024);
+        assert_eq!(sample.rss_hwm_kib, 2048);
+        assert_eq!(sample.open_fds, 17);
+        assert!(ProcessResourceSample::from_linux_status("VmRSS:\t1024 kB\n", 17).is_none());
+    }
 
     #[test]
     fn snapshot_handler_test_delay_is_inert_by_default_and_bounded() {

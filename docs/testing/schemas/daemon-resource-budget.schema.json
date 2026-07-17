@@ -65,6 +65,11 @@
         "tracked_connections": { "type": "integer", "minimum": 0 },
         "held_snapshot_messages": { "type": "integer", "minimum": 0 },
         "rss_kib": { "type": "integer", "minimum": 0 },
+        "rss_hwm_kib": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Conservative sum of the live daemons' process-lifetime VmHWM values"
+        },
         "open_fds": { "type": "integer", "minimum": 0 }
       }
     }
