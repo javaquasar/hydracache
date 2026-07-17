@@ -26,7 +26,7 @@ use hydracache_cluster_raft::{
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
     ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
-    StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH,
+    StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH, MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
 };
 use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
@@ -1338,6 +1338,15 @@ impl HttpRaftMessageSink {
             message.term,
             message.payload,
         );
+        let body = request.encode_json()?;
+        if body.len() > MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES {
+            return Err(CacheError::Backend(format!(
+                "raft HTTP message for peer {} is {} bytes, exceeding transport body limit {} bytes",
+                peer.node_id,
+                body.len(),
+                MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES
+            )));
+        }
         let headers = self.authenticated_headers()?;
         let response = self
             .client
@@ -1346,7 +1355,8 @@ impl HttpRaftMessageSink {
                 self.scheme, peer.endpoint, DEFAULT_RAFT_APPEND_PATH
             ))
             .headers(headers)
-            .json(&request)
+            .header(reqwest::header::CONTENT_TYPE, "application/json")
+            .body(body)
             .send()
             .await
             .map_err(|error| {
@@ -3334,6 +3344,40 @@ mod tests {
         assert!(error
             .to_string()
             .contains("failed to apply cluster auth headers"));
+    }
+
+    #[tokio::test]
+    async fn http_raft_sink_rejects_oversized_json_before_connecting() {
+        let local = ClusterNodeId::from("local");
+        let local_raft_id = raft_node_id(&local);
+        let peers = BTreeMap::from([(
+            2,
+            RaftPeer {
+                node_id: ClusterNodeId::from("unreachable-peer"),
+                endpoint: "127.0.0.1:9".to_owned(),
+            },
+        )]);
+        let sink = HttpRaftMessageSink::new(
+            local,
+            local_raft_id,
+            Arc::new(RwLock::new(peers)),
+            ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true),
+            &test_member_config("127.0.0.1:7000"),
+        )
+        .unwrap();
+
+        let error = sink
+            .send(RaftWireMessage {
+                from: local_raft_id,
+                to: 2,
+                term: 1,
+                payload: vec![0_u8; MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES],
+            })
+            .await
+            .unwrap_err();
+
+        assert!(error.to_string().contains("exceeding transport body limit"));
+        assert!(!error.to_string().contains("failed to send raft message"));
     }
 
     #[test]

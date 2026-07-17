@@ -58,7 +58,7 @@ use std::future::Future;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use axum::extract::State;
+use axum::extract::{DefaultBodyLimit, State};
 use axum::http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
@@ -95,6 +95,13 @@ pub const DEFAULT_RAFT_SNAPSHOT_PATH: &str = "/cluster/raft/snapshot";
 
 /// Default HTTP path used for replicated-value and anti-entropy messages.
 pub const DEFAULT_REPLICATION_PATH: &str = "/cluster/replicate";
+
+/// Maximum JSON body accepted by cluster-message HTTP routes.
+///
+/// This pins Axum's current finite default as a wire contract instead of
+/// relying on framework defaults. Senders use the same value for exact JSON
+/// preflight before opening a request.
+pub const MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES: usize = 2 * 1024 * 1024;
 
 /// Current HydraCache HTTP transport wire version.
 pub const HYDRACACHE_HTTP_WIRE_VERSION: u16 = 1;
@@ -568,6 +575,13 @@ impl ClusterOpaqueMessage {
             .decode(self.payload_base64.as_bytes())
             .map(Bytes::from)
             .map_err(|error| CacheError::Decode(format!("invalid cluster payload: {error}")))
+    }
+
+    /// Serialize the exact JSON request body used by the HTTP sender.
+    pub fn encode_json(&self) -> CacheResult<Vec<u8>> {
+        serde_json::to_vec(self).map_err(|error| {
+            CacheError::Encode(format!("failed to encode cluster message JSON: {error}"))
+        })
     }
 }
 
@@ -2120,6 +2134,7 @@ impl AxumClusterMessageService {
             .route(DEFAULT_RAFT_VOTE_PATH, post(handle_raft_vote))
             .route(DEFAULT_RAFT_SNAPSHOT_PATH, post(handle_raft_snapshot))
             .route(DEFAULT_REPLICATION_PATH, post(handle_replication_message))
+            .layer(DefaultBodyLimit::max(MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES))
             .with_state(self.state.clone())
     }
 }
@@ -4265,6 +4280,16 @@ mod tests {
     use serde::de::DeserializeOwned;
     use tokio::sync::oneshot;
     use tower::ServiceExt;
+
+    #[test]
+    fn default_raft_message_budget_fits_the_pinned_http_body_limit() {
+        let message =
+            ClusterOpaqueMessage::new("member-a", "member-b", u64::MAX, vec![0_u8; 1024 * 1024]);
+        let body = message.encode_json().unwrap();
+
+        assert!(body.len() < MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES);
+        assert_eq!(message.decode_payload().unwrap().len(), 1024 * 1024);
+    }
 
     #[test]
     fn owner_load_args_descriptor_and_request_roundtrip() {

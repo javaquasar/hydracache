@@ -59,6 +59,52 @@ async fn compaction_seam_snapshots_exactly_current_applied_progress() {
         .any(|member| member.node_id.as_str() == "member-a"));
 }
 
+#[tokio::test]
+async fn oversized_candidate_is_rejected_before_snapshot_or_log_prefix_changes() {
+    let config =
+        RaftMetadataRuntimeConfig::single_node("compaction-size-guard", 1).max_size_per_msg(1_024);
+    let store = InMemoryRaftLogStore::new_with_conf_state((vec![1], vec![]));
+    let runtime = RaftMetadataRuntime::with_storage(config, store).unwrap();
+    runtime
+        .join_member(
+            ClusterCandidate::member("snapshot-prefix").generation(ClusterGeneration::new(1)),
+        )
+        .await
+        .unwrap();
+    let initial_size = runtime.snapshot_size_observation().unwrap();
+    assert!(initial_size.transportable, "{initial_size:?}");
+    let previous_snapshot_index = runtime.compact_applied_log_to_snapshot().unwrap();
+
+    let mut oversized = None;
+    for index in 0..64 {
+        runtime
+            .join_member(
+                ClusterCandidate::member(format!("retained-tail-member-{index:02}"))
+                    .generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let observation = runtime.snapshot_size_observation().unwrap();
+        if !observation.transportable {
+            oversized = Some(observation);
+            break;
+        }
+    }
+    let oversized = oversized.expect("test history must exceed the reduced wire budget");
+    assert!(oversized.encoded_wire_bytes > oversized.max_wire_bytes);
+    let before = runtime.log_compaction_observation().unwrap();
+    assert_eq!(before.snapshot_index, previous_snapshot_index);
+    assert!(before.last_log_index >= before.first_log_index);
+
+    let error = runtime.compact_applied_log_to_snapshot().unwrap_err();
+
+    assert!(error.to_string().contains("snapshot compaction rejected"));
+    assert!(error
+        .to_string()
+        .contains("previous snapshot and retained log are unchanged"));
+    assert_eq!(runtime.log_compaction_observation().unwrap(), before);
+}
+
 #[cfg(feature = "sled-log-store")]
 #[tokio::test]
 async fn compaction_seam_sled_restart_restores_snapshot_before_retained_tail() {
@@ -89,6 +135,70 @@ async fn compaction_seam_sled_restart_restores_snapshot_before_retained_tail() {
         .members()
         .iter()
         .any(|member| member.node_id.as_str() == "member-before-restart"));
+
+    drop(reopened);
+    let _ = std::fs::remove_dir_all(path);
+}
+
+#[cfg(feature = "sled-log-store")]
+#[tokio::test]
+async fn sled_restart_replays_last_snapshot_plus_tail_after_oversized_rejection() {
+    let unique = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!(
+        "hydracache-compaction-size-guard-{}-{unique}",
+        std::process::id()
+    ));
+    let config = RaftMetadataRuntimeConfig::single_node("compaction-size-recovery", 1)
+        .max_size_per_msg(1_024);
+    let runtime = RaftMetadataRuntime::sled_with_config(config.clone(), &path).unwrap();
+    runtime
+        .join_member(
+            ClusterCandidate::member("snapshot-prefix").generation(ClusterGeneration::new(1)),
+        )
+        .await
+        .unwrap();
+    let previous_snapshot_index = runtime.compact_applied_log_to_snapshot().unwrap();
+
+    let mut tail_members = Vec::new();
+    for index in 0..64 {
+        let member = format!("retained-tail-member-{index:02}");
+        runtime
+            .join_member(
+                ClusterCandidate::member(member.clone()).generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        tail_members.push(member);
+        if !runtime.snapshot_size_observation().unwrap().transportable {
+            break;
+        }
+    }
+    assert!(!runtime.snapshot_size_observation().unwrap().transportable);
+    let before = runtime.log_compaction_observation().unwrap();
+    let error = runtime.compact_applied_log_to_snapshot().unwrap_err();
+    assert!(error.to_string().contains("snapshot compaction rejected"));
+    assert_eq!(runtime.log_compaction_observation().unwrap(), before);
+    drop(runtime);
+
+    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let recovered = reopened
+        .members()
+        .into_iter()
+        .map(|member| member.node_id.to_string())
+        .collect::<std::collections::BTreeSet<_>>();
+    assert!(recovered.contains("snapshot-prefix"));
+    for member in &tail_members {
+        assert!(
+            recovered.contains(member),
+            "restart lost retained tail member {member}"
+        );
+    }
+    let after_restart = reopened.log_compaction_observation().unwrap();
+    assert_eq!(after_restart.snapshot_index, previous_snapshot_index);
+    assert!(after_restart.applied_index > previous_snapshot_index);
 
     drop(reopened);
     let _ = std::fs::remove_dir_all(path);

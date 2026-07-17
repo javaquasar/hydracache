@@ -5,13 +5,13 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
+use hydracache_cluster_transport_axum::MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES;
 use hydracache_server::{ServerConfig, ServerRole, ServerRuntime};
 use reqwest::{Client, StatusCode};
 
 const NODE_ID: &str = "raft-wire-corpus-member";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(3);
 const ERROR_BODY_LIMIT: usize = 8 * 1024;
-const AXUM_DEFAULT_BODY_LIMIT: usize = 2 * 1024 * 1024;
 
 static STORAGE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
@@ -157,7 +157,7 @@ fn oversized_raft_body(term: u64) -> Vec<u8> {
         "from": NODE_ID,
         "to": NODE_ID,
         "term": term,
-        "payload_base64": "A".repeat(AXUM_DEFAULT_BODY_LIMIT),
+        "payload_base64": "A".repeat(MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES),
     }))
     .unwrap()
 }

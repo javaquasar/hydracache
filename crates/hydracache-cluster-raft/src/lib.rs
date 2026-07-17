@@ -348,6 +348,18 @@ pub struct RaftLogCompactionObservation {
     pub last_log_index: u64,
 }
 
+/// Exact encoded-size check for the snapshot candidate at applied progress.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RaftSnapshotSizeObservation {
+    /// Worst-case protobuf `MsgSnapshot` bytes for the current candidate.
+    pub encoded_wire_bytes: u64,
+    /// Configured Raft message budget applied to snapshot candidates.
+    pub max_wire_bytes: u64,
+    /// Whether compaction can publish this candidate without exceeding the
+    /// transport-compatible Raft message budget.
+    pub transportable: bool,
+}
+
 /// Metadata command plus a stable idempotency key.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataCommandEnvelope {
@@ -535,6 +547,24 @@ fn decode_metadata_snapshot_payload(bytes: &[u8]) -> CacheResult<RaftMetadataRun
     })
 }
 
+fn encoded_snapshot_wire_bytes(snapshot: &Snapshot) -> CacheResult<u64> {
+    let mut message = RaftMessage {
+        from: u64::MAX,
+        to: u64::MAX,
+        term: u64::MAX,
+        ..RaftMessage::default()
+    };
+    message.set_msg_type(MessageType::MsgSnapshot);
+    message.set_snapshot(snapshot.clone());
+    let encoded = message.write_to_bytes().map_err(|error| {
+        CacheError::Encode(format!(
+            "failed to encode raft snapshot size candidate: {error}"
+        ))
+    })?;
+    u64::try_from(encoded.len())
+        .map_err(|_| CacheError::Backend("encoded raft snapshot size does not fit u64".to_owned()))
+}
+
 /// Storage seam for exported raft metadata snapshots.
 ///
 /// This trait stores the materialized metadata snapshot returned by
@@ -653,6 +683,7 @@ where
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
     snapshot_installs: u64,
+    max_wire_bytes: u64,
     #[cfg(test)]
     fail_next_proposal: bool,
 }
@@ -826,6 +857,7 @@ where
     ) -> CacheResult<Self> {
         let cluster_name = config.cluster_name.clone();
         let raft_node_id = config.raft_node_id;
+        let max_wire_bytes = config.max_size_per_msg;
         let initial_state = storage.initial_state().map_err(to_cache_error)?;
         let persisted_applied_index = storage.applied_index().map_err(to_cache_error)?;
         let retained_entries = storage.retained_entries().map_err(to_cache_error)?;
@@ -858,6 +890,7 @@ where
             outbound_messages: Vec::new(),
             applied_index: 0,
             snapshot_installs: 0,
+            max_wire_bytes,
             #[cfg(test)]
             fail_next_proposal: false,
         };
@@ -1018,6 +1051,18 @@ where
             .lock()
             .expect("raft metadata state poisoned")
             .log_compaction_observation(self.raft_node_id)
+    }
+
+    /// Measure the exact protobuf `MsgSnapshot` candidate before compaction.
+    ///
+    /// The observation is read-only. A false `transportable` result means the
+    /// current snapshot must not replace the last deliverable snapshot or
+    /// truncate its retained Raft tail.
+    pub fn snapshot_size_observation(&self) -> CacheResult<RaftSnapshotSizeObservation> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .snapshot_size_observation(self.raft_node_id)
     }
 
     /// Backward-compatible failpoint-test alias for the production-neutral
@@ -1669,7 +1714,7 @@ where
         Ok(result)
     }
 
-    fn compact_applied_log_to_snapshot(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+    fn build_applied_snapshot(&self, raft_node_id: u64) -> CacheResult<Snapshot> {
         if self.applied_index == 0 {
             return Err(CacheError::Backend(
                 "cannot compact raft metadata log before any entry is applied".to_owned(),
@@ -1700,6 +1745,32 @@ where
         snapshot.mut_metadata().term = term;
         snapshot.mut_metadata().set_conf_state(conf_state);
         snapshot.data = encode_metadata_snapshot_payload(&export)?.into();
+        Ok(snapshot)
+    }
+
+    fn snapshot_size_observation(
+        &self,
+        raft_node_id: u64,
+    ) -> CacheResult<RaftSnapshotSizeObservation> {
+        let snapshot = self.build_applied_snapshot(raft_node_id)?;
+        let encoded_wire_bytes = encoded_snapshot_wire_bytes(&snapshot)?;
+        Ok(RaftSnapshotSizeObservation {
+            encoded_wire_bytes,
+            max_wire_bytes: self.max_wire_bytes,
+            transportable: encoded_wire_bytes <= self.max_wire_bytes,
+        })
+    }
+
+    fn compact_applied_log_to_snapshot(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+        let snapshot = self.build_applied_snapshot(raft_node_id)?;
+        let encoded_wire_bytes = encoded_snapshot_wire_bytes(&snapshot)?;
+        if encoded_wire_bytes > self.max_wire_bytes {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot compaction rejected: encoded MsgSnapshot is {} bytes, exceeding configured transport limit {} bytes; previous snapshot and retained log are unchanged",
+                encoded_wire_bytes, self.max_wire_bytes
+            )));
+        }
+        let store = self.raw_node.raft.raft_log.store.clone();
         store
             .save_snapshot(&snapshot, usize::MAX)
             .map_err(to_cache_error)?;
