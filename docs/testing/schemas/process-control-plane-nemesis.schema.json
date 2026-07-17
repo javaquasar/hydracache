@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/testing/process-control-plane-nemesis-v1.json",
+  "title": "HydraCache process control-plane nemesis evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release",
+    "gate_id",
+    "test_name",
+    "platform",
+    "seed",
+    "outcome",
+    "original_schedule",
+    "minimized_schedule",
+    "minimized_reproduced",
+    "invoke_complete_accounting",
+    "fault_proofs",
+    "checker",
+    "execution_error",
+    "cleanup_errors",
+    "cleanup_ok",
+    "events",
+    "response_counts",
+    "observed_history",
+    "daemon_logs",
+    "original_daemon_logs"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.66.0" },
+    "gate_id": { "const": "env.hydracache-run-066-daemon-process-e2e" },
+    "test_name": { "const": "process_nemesis_committed_control_plane_history_is_consistent" },
+    "platform": { "type": "string", "minLength": 1 },
+    "seed": { "type": "integer", "minimum": 0 },
+    "outcome": { "enum": ["pass", "fail"] },
+    "original_schedule": { "$ref": "#/$defs/schedule" },
+    "minimized_schedule": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/schedule" }
+      ]
+    },
+    "minimized_reproduced": { "type": "boolean" },
+    "invoke_complete_accounting": { "$ref": "#/$defs/accounting" },
+    "fault_proofs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fault_proof" }
+    },
+    "checker": { "$ref": "#/$defs/checker" },
+    "execution_error": { "type": ["string", "null"] },
+    "cleanup_errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cleanup_ok": { "type": "boolean" },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "response_counts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/response_count" }
+    },
+    "observed_history": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/history_step" }
+    },
+    "daemon_logs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "original_daemon_logs": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "observe",
+            "compact_follower",
+            "kill_leader",
+            "restart_last_killed",
+            "drain_follower",
+            "pause_leader",
+            "resume_last_paused",
+            "partition_follower",
+            "heal_last_partition",
+            "delay_transport",
+            "clear_transport_delay"
+          ]
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "command_id",
+        "invoke_observation_id",
+        "complete_observation_id",
+        "actions"
+      ],
+      "properties": {
+        "operation_id": { "type": "string", "minLength": 1 },
+        "command_id": { "type": "string", "minLength": 1 },
+        "invoke_observation_id": { "type": "string", "minLength": 1 },
+        "complete_observation_id": { "type": "string", "minLength": 1 },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/action" }
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed", "operations"],
+      "properties": {
+        "seed": { "type": "integer", "minimum": 0 },
+        "operations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/operation" }
+        }
+      }
+    },
+    "accounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_events",
+        "observed_events",
+        "expected_action_observations",
+        "observed_action_observations",
+        "expected_admin_responses",
+        "observed_admin_responses",
+        "expected_overview_responses",
+        "observed_overview_responses"
+      ],
+      "properties": {
+        "expected_events": { "type": "integer", "minimum": 0 },
+        "observed_events": { "type": "integer", "minimum": 0 },
+        "expected_action_observations": { "type": "integer", "minimum": 0 },
+        "observed_action_observations": { "type": "integer", "minimum": 0 },
+        "expected_admin_responses": { "type": "integer", "minimum": 0 },
+        "observed_admin_responses": { "type": "integer", "minimum": 0 },
+        "expected_overview_responses": { "type": "integer", "minimum": 0 },
+        "observed_overview_responses": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "fault_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generation",
+        "action",
+        "target_node_id",
+        "configured_rules",
+        "observed_hit",
+        "healed",
+        "cleared_generation"
+      ],
+      "properties": {
+        "generation": { "type": "integer", "minimum": 1 },
+        "action": { "enum": ["partition", "delay"] },
+        "target_node_id": { "type": ["string", "null"] },
+        "configured_rules": { "type": "integer", "minimum": 1 },
+        "observed_hit": { "type": "boolean" },
+        "healed": { "type": "boolean" },
+        "cleared_generation": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "checker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checked", "violations"],
+      "properties": {
+        "checked": { "type": "integer", "minimum": 0 },
+        "violations": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "admin_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["leader", "term", "members", "voters", "quorum_ok", "draining"],
+      "properties": {
+        "leader": { "type": ["string", "null"] },
+        "term": { "type": "integer", "minimum": 0 },
+        "members": { "type": "integer", "minimum": 0 },
+        "voters": { "type": "integer", "minimum": 0 },
+        "quorum_ok": { "type": "boolean" },
+        "draining": { "type": "boolean" }
+      }
+    },
+    "membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["epoch", "term", "leader", "members"],
+      "properties": {
+        "epoch": { "type": "integer", "minimum": 0 },
+        "term": { "type": "integer", "minimum": 0 },
+        "leader": { "type": ["string", "null"] },
+        "members": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "history_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "admin_statuses", "membership_observations"],
+      "properties": {
+        "action": { "$ref": "#/$defs/action" },
+        "admin_statuses": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/admin_status" }
+        },
+        "membership_observations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/membership" }
+        }
+      }
+    },
+    "response_fields": {
+      "type": "object",
+      "required": [
+        "expected_admin_responses",
+        "observed_admin_responses",
+        "expected_overview_responses",
+        "observed_overview_responses"
+      ],
+      "properties": {
+        "expected_admin_responses": { "type": "integer", "minimum": 0 },
+        "observed_admin_responses": { "type": "integer", "minimum": 0 },
+        "expected_overview_responses": { "type": "integer", "minimum": 0 },
+        "observed_overview_responses": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "response_count": {
+      "allOf": [
+        { "$ref": "#/$defs/response_fields" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action"],
+          "properties": {
+            "action": { "$ref": "#/$defs/action" },
+            "expected_admin_responses": {},
+            "observed_admin_responses": {},
+            "expected_overview_responses": {},
+            "observed_overview_responses": {}
+          }
+        }
+      ]
+    },
+    "event": {
+      "allOf": [
+        { "$ref": "#/$defs/response_fields" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operation_id",
+            "command_id",
+            "observation_id",
+            "phase",
+            "actions",
+            "committed_epoch",
+            "public_membership"
+          ],
+          "properties": {
+            "operation_id": { "type": "string", "minLength": 1 },
+            "command_id": { "type": "string", "minLength": 1 },
+            "observation_id": { "type": "string", "minLength": 1 },
+            "phase": { "enum": ["invoke", "complete"] },
+            "actions": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/action" }
+            },
+            "committed_epoch": { "type": ["integer", "null"], "minimum": 0 },
+            "public_membership": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": { "type": "string" }
+                }
+              ]
+            },
+            "expected_admin_responses": {},
+            "observed_admin_responses": {},
+            "expected_overview_responses": {},
+            "observed_overview_responses": {}
+          }
+        }
+      ]
+    }
+  }
+}

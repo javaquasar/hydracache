@@ -77,6 +77,14 @@ impl FastControlPlaneModel {
                 assert!(self.members.remove(&follower));
                 self.epoch = self.epoch.saturating_add(1);
             }
+            ExternalHistoryAction::PauseLeader
+            | ExternalHistoryAction::ResumeLastPaused
+            | ExternalHistoryAction::PartitionFollower
+            | ExternalHistoryAction::HealLastPartition
+            | ExternalHistoryAction::DelayTransport
+            | ExternalHistoryAction::ClearTransportDelay => {
+                panic!("W7 generator emitted a W2-only composed fault")
+            }
         }
     }
 
@@ -283,6 +291,14 @@ fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHist
                     members,
                     members,
                 )?;
+            }
+            ExternalHistoryAction::PauseLeader
+            | ExternalHistoryAction::ResumeLastPaused
+            | ExternalHistoryAction::PartitionFollower
+            | ExternalHistoryAction::HealLastPartition
+            | ExternalHistoryAction::DelayTransport
+            | ExternalHistoryAction::ClearTransportDelay => {
+                return Err("W7 generator emitted a W2-only composed fault".into());
             }
         }
         record_process_surfaces(action, &mut cluster, &mut recorder);

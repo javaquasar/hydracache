@@ -96,8 +96,12 @@ required_sources = [
     "crates/hydracache-server/tests/process_control_plane_nemesis.rs",
     "crates/hydracache-server/tests/support/external_control_plane_history.rs",
     "crates/hydracache-server/tests/vectors/process_nemesis_bad_seeds.json",
+    "docs/testing/schemas/process-control-plane-nemesis.schema.json",
 ]
-required_artifacts = ["crates/hydracache-server/tests/vectors/process_nemesis_bad_seeds.json"]
+required_artifacts = [
+    "crates/hydracache-server/tests/vectors/process_nemesis_bad_seeds.json",
+    "docs/testing/schemas/process-control-plane-nemesis.schema.json",
+]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = ["env.hydracache-run-066-daemon-process-e2e"]
 ship_required = true

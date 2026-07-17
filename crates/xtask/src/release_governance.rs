@@ -549,6 +549,8 @@ fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
 
 pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
     const DAEMON_ID: &str = "env.hydracache-run-066-daemon-process-e2e";
+    const PROCESS_NEMESIS_ARTIFACT: &str =
+        "target/test-evidence/0.66/process-control-plane-nemesis.json";
     const OPERATOR_ID: &str = "env.hydracache-operator-kind-066";
     const FUZZ_ID: &str = "tool.cargo-fuzz.raft-wire-frame-066";
     let mut problems = Vec::new();
@@ -617,6 +619,15 @@ pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             if gate.command.env.get(env).map(String::as_str) != Some(value) {
                 problems.push(format!("release 0.66 daemon gate must set {env}={value}"));
             }
+        }
+        if !gate
+            .artifacts
+            .iter()
+            .any(|artifact| artifact == PROCESS_NEMESIS_ARTIFACT)
+        {
+            problems.push(format!(
+                "release 0.66 daemon gate must retain W2 artifact {PROCESS_NEMESIS_ARTIFACT}"
+            ));
         }
     }
     if let Some(gate) = gates.iter().find(|gate| gate.id == OPERATOR_ID) {

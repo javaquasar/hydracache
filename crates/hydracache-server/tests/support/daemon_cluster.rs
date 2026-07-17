@@ -8,10 +8,12 @@ use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::AtomicU64;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache_sim::ResourceSample;
+use serde::Serialize;
 use serde_json::Value;
 
 pub const DAEMON_PROCESS_E2E_ENV: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
@@ -23,12 +25,16 @@ pub const PREVIOUS_DAEMON_SOURCE_COMMIT_ENV: &str = "HYDRACACHE_PREVIOUS_DAEMON_
 pub const MIXED_DAEMON_SHIP_MODE_ENV: &str = "HYDRACACHE_MIXED_DAEMON_SHIP_MODE";
 pub const TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV: &str =
     "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS";
+pub const TEST_RAFT_OUTBOUND_FAULT_FILE_ENV: &str = "HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE";
 pub const PREVIOUS_DAEMON_TAG: &str = "v0.65.0";
 pub const PREVIOUS_DAEMON_DEV_COMMIT: &str = "292655168fffda4d217c3dafff6831c602e144ec";
 const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
 const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
 const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
+const TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION: u32 = 1;
+const MAX_TEST_RAFT_OUTBOUND_DELAY_MS: u64 = 1_000;
+static TEST_RAFT_OUTBOUND_FAULT_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
 
 static PREVIOUS_DAEMON_CACHE: OnceLock<Result<Option<PreviousDaemonBinary>, String>> =
     OnceLock::new();
@@ -75,6 +81,38 @@ impl DaemonStatus {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct TestRaftOutboundFaultDocument {
+    schema_version: u32,
+    generation: u64,
+    rules: Vec<TestRaftOutboundFaultRule>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct TestRaftOutboundFaultRule {
+    from: String,
+    to: String,
+    action: TestRaftOutboundFaultAction,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum TestRaftOutboundFaultAction {
+    Drop,
+    Delay { millis: u64 },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct DaemonRaftFaultProof {
+    pub generation: u64,
+    pub action: String,
+    pub target_node_id: Option<String>,
+    pub configured_rules: usize,
+    pub observed_hit: bool,
+    pub healed: bool,
+    pub cleared_generation: Option<u64>,
+}
+
 #[derive(Debug, Clone)]
 pub struct DaemonNodeSpec {
     pub name: String,
@@ -87,6 +125,7 @@ pub struct DaemonNodeSpec {
     pub storage_dir: PathBuf,
     pub cluster_start: &'static str,
     test_raft_snapshot_handler_delay_ms: Option<u64>,
+    test_raft_outbound_fault_file: Option<PathBuf>,
 }
 
 #[derive(Debug)]
@@ -104,6 +143,7 @@ pub struct DaemonCluster {
     root: PathBuf,
     nodes: Vec<DaemonNode>,
     raft_compaction_enabled: bool,
+    raft_fault_generation: u64,
     _process_lock: MutexGuard<'static, ()>,
 }
 
@@ -147,26 +187,33 @@ impl PreviousDaemonBinary {
 
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, false)
+        Self::start_bootstrap_inner(count, name, false, false, false)
     }
 
     pub fn start_bootstrap_with_redis(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, true, false)
+        Self::start_bootstrap_inner(count, name, true, false, false)
     }
 
     pub fn start_bootstrap_with_raft_compaction(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false, true)
+        Self::start_bootstrap_inner(count, name, false, true, false)
+    }
+
+    pub fn start_bootstrap_with_raft_compaction_and_outbound_faults(
+        count: usize,
+        name: &str,
+    ) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, false, true, true)
     }
 
     pub fn start_bootstrap_with_binaries(binaries: Vec<PathBuf>, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_with_explicit_binaries(binaries, name, false, false)
+        Self::start_bootstrap_with_explicit_binaries(binaries, name, false, false, false)
     }
 
     pub fn start_bootstrap_with_binaries_and_raft_compaction(
         binaries: Vec<PathBuf>,
         name: &str,
     ) -> TestResult<Self> {
-        Self::start_bootstrap_with_explicit_binaries(binaries, name, false, true)
+        Self::start_bootstrap_with_explicit_binaries(binaries, name, false, true, false)
     }
 
     fn start_bootstrap_inner(
@@ -174,6 +221,7 @@ impl DaemonCluster {
         name: &str,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
+        raft_faults_enabled: bool,
     ) -> TestResult<Self> {
         let current_binary = server_binary()?;
         let binaries = vec![current_binary.clone(); count];
@@ -183,6 +231,7 @@ impl DaemonCluster {
             name,
             redis_enabled,
             raft_compaction_enabled,
+            raft_faults_enabled,
         )
     }
 
@@ -191,6 +240,7 @@ impl DaemonCluster {
         name: &str,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
+        raft_faults_enabled: bool,
     ) -> TestResult<Self> {
         let current_binary = server_binary()?;
         let binaries =
@@ -201,6 +251,7 @@ impl DaemonCluster {
             name,
             redis_enabled,
             raft_compaction_enabled,
+            raft_faults_enabled,
         )
     }
 
@@ -210,6 +261,7 @@ impl DaemonCluster {
         name: &str,
         redis_enabled: bool,
         raft_compaction_enabled: bool,
+        raft_faults_enabled: bool,
     ) -> TestResult<Self> {
         let count = binaries.len();
         if count == 0 {
@@ -230,6 +282,22 @@ impl DaemonCluster {
         let mut nodes = Vec::new();
         for (index, binary) in binaries.into_iter().enumerate() {
             let (listen_addr, cluster_addr, admin_addr, redis_addr) = addrs.remove(0);
+            let storage_dir = root.join(format!("node-{index}"));
+            let test_raft_outbound_fault_file = if raft_faults_enabled {
+                fs::create_dir_all(&storage_dir)?;
+                let path = storage_dir.join("raft-outbound-faults.json");
+                fs::write(
+                    &path,
+                    serde_json::to_vec_pretty(&TestRaftOutboundFaultDocument {
+                        schema_version: TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION,
+                        generation: 0,
+                        rules: Vec::new(),
+                    })?,
+                )?;
+                Some(path)
+            } else {
+                None
+            };
             let spec = DaemonNodeSpec {
                 name: format!("{name}-{index}"),
                 node_id: member_node_id_for_addr(cluster_addr),
@@ -238,9 +306,10 @@ impl DaemonCluster {
                 cluster_addr,
                 admin_addr,
                 redis_addr,
-                storage_dir: root.join(format!("node-{index}")),
+                storage_dir,
                 cluster_start: "bootstrap",
                 test_raft_snapshot_handler_delay_ms: None,
+                test_raft_outbound_fault_file,
             };
             nodes.push(DaemonNode::new(spec, &root));
         }
@@ -250,6 +319,7 @@ impl DaemonCluster {
             root,
             nodes,
             raft_compaction_enabled,
+            raft_fault_generation: 0,
             _process_lock: process_lock,
         };
         for index in 0..cluster.nodes.len() {
@@ -410,6 +480,31 @@ impl DaemonCluster {
         })
     }
 
+    pub fn wait_for_non_draining_responsive_shape(
+        &mut self,
+        label: &str,
+        expected_statuses: usize,
+        members: u32,
+        voters: u32,
+    ) -> TestResult<Vec<DaemonStatus>> {
+        self.wait_for(label.to_owned(), |cluster| {
+            let statuses = cluster.statuses();
+            let active = statuses
+                .iter()
+                .filter(|status| !status.draining)
+                .cloned()
+                .collect::<Vec<_>>();
+            let leaders = leaders(&active);
+            (statuses.len() == expected_statuses
+                && !active.is_empty()
+                && leaders.len() == 1
+                && active.iter().all(|status| {
+                    status.members == members && status.voters == voters && status.quorum_ok
+                }))
+            .then_some(statuses)
+        })
+    }
+
     pub fn wait_for_leader_not(
         &mut self,
         old_leader: &str,
@@ -508,6 +603,144 @@ impl DaemonCluster {
         )
     }
 
+    pub fn install_symmetric_raft_partition(
+        &mut self,
+        target_index: usize,
+    ) -> TestResult<DaemonRaftFaultProof> {
+        self.install_symmetric_raft_fault(
+            target_index,
+            TestRaftOutboundFaultAction::Drop,
+            "partition",
+        )
+    }
+
+    pub fn install_symmetric_raft_delay(
+        &mut self,
+        target_index: usize,
+        millis: u64,
+    ) -> TestResult<DaemonRaftFaultProof> {
+        if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
+            return Err(format!(
+                "raft outbound delay must be in 1..={MAX_TEST_RAFT_OUTBOUND_DELAY_MS}ms"
+            )
+            .into());
+        }
+        self.install_symmetric_raft_fault(
+            target_index,
+            TestRaftOutboundFaultAction::Delay { millis },
+            "delay",
+        )
+    }
+
+    fn install_symmetric_raft_fault(
+        &mut self,
+        target_index: usize,
+        action: TestRaftOutboundFaultAction,
+        action_name: &str,
+    ) -> TestResult<DaemonRaftFaultProof> {
+        let target_node_id = self
+            .nodes
+            .get(target_index)
+            .ok_or("raft fault target is out of bounds")?
+            .spec
+            .node_id
+            .clone();
+        self.raft_fault_generation = self
+            .raft_fault_generation
+            .checked_add(1)
+            .ok_or("raft fault generation overflow")?;
+        let generation = self.raft_fault_generation;
+        let node_ids = self.node_ids();
+        let mut configured_rules = 0;
+        for (from_index, node) in self.nodes.iter().enumerate() {
+            let from = &node_ids[from_index];
+            let rules = node_ids
+                .iter()
+                .enumerate()
+                .filter(|(to_index, _)| {
+                    *to_index != from_index
+                        && (from_index == target_index || *to_index == target_index)
+                })
+                .map(|(_, to)| TestRaftOutboundFaultRule {
+                    from: from.clone(),
+                    to: to.clone(),
+                    action,
+                })
+                .collect::<Vec<_>>();
+            configured_rules += rules.len();
+            let path = node
+                .spec
+                .test_raft_outbound_fault_file
+                .as_deref()
+                .ok_or("daemon cluster was not started with raft outbound faults")?;
+            atomic_write_raft_fault_document(
+                path,
+                &TestRaftOutboundFaultDocument {
+                    schema_version: TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION,
+                    generation,
+                    rules,
+                },
+            )?;
+        }
+        Ok(DaemonRaftFaultProof {
+            generation,
+            action: action_name.to_owned(),
+            target_node_id: Some(target_node_id),
+            configured_rules,
+            observed_hit: false,
+            healed: false,
+            cleared_generation: None,
+        })
+    }
+
+    pub fn wait_for_raft_fault_hit(&self, proof: &mut DaemonRaftFaultProof) -> TestResult {
+        let marker = format!(
+            "HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_HIT generation={}",
+            proof.generation
+        );
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while Instant::now() < deadline {
+            if self.nodes.iter().any(|node| {
+                fs::read_to_string(&node.stderr_path)
+                    .map(|log| log.contains(&marker))
+                    .unwrap_or(false)
+            }) {
+                proof.observed_hit = true;
+                return Ok(());
+            }
+            std::thread::sleep(Duration::from_millis(25));
+        }
+        Err(format!(
+            "raft {} generation {} was configured but no exact sink hit marker was observed",
+            proof.action, proof.generation
+        )
+        .into())
+    }
+
+    pub fn clear_raft_outbound_faults(&mut self) -> TestResult<u64> {
+        self.raft_fault_generation = self
+            .raft_fault_generation
+            .checked_add(1)
+            .ok_or("raft fault generation overflow")?;
+        let generation = self.raft_fault_generation;
+        for node in &self.nodes {
+            let path = node
+                .spec
+                .test_raft_outbound_fault_file
+                .as_deref()
+                .ok_or("daemon cluster was not started with raft outbound faults")?;
+            atomic_write_raft_fault_document(
+                path,
+                &TestRaftOutboundFaultDocument {
+                    schema_version: TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION,
+                    generation,
+                    rules: Vec::new(),
+                },
+            )?;
+        }
+        Ok(generation)
+    }
+
     pub fn resource_sample(&mut self) -> Option<ResourceSample> {
         let samples = self
             .running_indices()
@@ -590,6 +823,13 @@ impl DaemonCluster {
 
 impl Drop for DaemonCluster {
     fn drop(&mut self) {
+        if self
+            .nodes
+            .iter()
+            .any(|node| node.spec.test_raft_outbound_fault_file.is_some())
+        {
+            let _ = self.clear_raft_outbound_faults();
+        }
         for node in &mut self.nodes {
             let _ = node.kill();
         }
@@ -621,6 +861,7 @@ impl DaemonNode {
             .env_remove("HYDRACACHE_GRID_INPROC")
             .env_remove("HYDRACACHE_RAFT_COMPACTION")
             .env_remove(TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV)
+            .env_remove(TEST_RAFT_OUTBOUND_FAULT_FILE_ENV)
             .env("HYDRACACHE_ROLE", "member")
             .env("HYDRACACHE_NODE_ID", &self.spec.node_id)
             .env("HYDRACACHE_LISTEN_ADDR", self.spec.listen_addr.to_string())
@@ -644,6 +885,9 @@ impl DaemonNode {
                 TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV,
                 delay_ms.to_string(),
             );
+        }
+        if let Some(path) = &self.spec.test_raft_outbound_fault_file {
+            command.env(TEST_RAFT_OUTBOUND_FAULT_FILE_ENV, path);
         }
         if raft_compaction_enabled {
             command.env("HYDRACACHE_RAFT_COMPACTION", "true");
@@ -1179,6 +1423,42 @@ fn validate_test_snapshot_handler_delay_ms(delay_ms: Option<u64>) -> TestResult<
         .into());
     }
     Ok(delay_ms)
+}
+
+fn atomic_write_raft_fault_document(
+    path: &Path,
+    document: &TestRaftOutboundFaultDocument,
+) -> TestResult {
+    #[cfg(windows)]
+    {
+        let _ = (path, document);
+        Err(
+            "real raft partition/delay control-file replacement is supported only by the Linux daemon-process gate"
+                .into(),
+        )
+    }
+    #[cfg(not(windows))]
+    {
+        let sequence =
+            TEST_RAFT_OUTBOUND_FAULT_TEMP_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let file_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or("raft fault control path must have a UTF-8 file name")?;
+        let temporary = path.with_file_name(format!(
+            ".{file_name}.{}.{}.tmp",
+            std::process::id(),
+            sequence
+        ));
+        let mut file = File::create(&temporary)?;
+        file.write_all(&serde_json::to_vec_pretty(document)?)?;
+        file.sync_all()?;
+        if let Err(error) = fs::rename(&temporary, path) {
+            let _ = fs::remove_file(&temporary);
+            return Err(error.into());
+        }
+        Ok(())
+    }
 }
 
 fn reserve_node_addrs(

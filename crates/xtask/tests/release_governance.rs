@@ -214,6 +214,21 @@ fn release_066_registered_heavy_gates_are_mandatory_and_fail_closed() {
         .iter()
         .any(|problem| problem.contains("scheduler_tick_process")));
 
+    let mut missing_process_nemesis_artifact = registry.gate.clone();
+    let daemon = missing_process_nemesis_artifact
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-run-066-daemon-process-e2e")
+        .unwrap();
+    daemon
+        .artifacts
+        .retain(|artifact| !artifact.contains("process-control-plane-nemesis.json"));
+    let problems = xtask::release_governance::release_066_gate_contract_problems(
+        &missing_process_nemesis_artifact,
+    );
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("process-control-plane-nemesis.json")));
+
     let mut optional_iochaos = registry.gate.clone();
     let operator = optional_iochaos
         .iter_mut()

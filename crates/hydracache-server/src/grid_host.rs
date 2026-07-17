@@ -4,7 +4,7 @@ use std::fmt;
 use std::fs;
 use std::future::Future;
 use std::net::{SocketAddr, TcpListener as StdTcpListener};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, Once, RwLock};
@@ -50,8 +50,11 @@ const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const SNAPSHOT_AUTHORITY_POLL_INTERVAL: Duration = Duration::from_millis(10);
 const TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV: &str =
     "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS";
+const TEST_RAFT_OUTBOUND_FAULT_FILE_ENV: &str = "HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_FILE";
 const DAEMON_PROCESS_E2E_ENV: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
 const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
+const TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION: u32 = 1;
+const MAX_TEST_RAFT_OUTBOUND_DELAY_MS: u64 = 1_000;
 const NODE_IDENTITY_FILE: &str = "node-identity.json";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -1146,6 +1149,161 @@ impl RaftTopology {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct TestRaftOutboundFaultDocument {
+    schema_version: u32,
+    generation: u64,
+    #[serde(default)]
+    rules: Vec<TestRaftOutboundFaultRule>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct TestRaftOutboundFaultRule {
+    from: String,
+    to: String,
+    action: TestRaftOutboundFaultAction,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+enum TestRaftOutboundFaultAction {
+    Drop,
+    Delay { millis: u64 },
+}
+
+#[derive(Debug, Clone)]
+struct TestRaftOutboundFaultController {
+    path: PathBuf,
+    local_node_id: String,
+    last_document: Arc<Mutex<Option<TestRaftOutboundFaultDocument>>>,
+    logged_hits: Arc<Mutex<BTreeSet<(u64, String)>>>,
+}
+
+impl TestRaftOutboundFaultController {
+    fn new(path: PathBuf, local_node_id: &ClusterNodeId) -> CacheResult<Self> {
+        let controller = Self {
+            path,
+            local_node_id: local_node_id.to_string(),
+            last_document: Arc::new(Mutex::new(None)),
+            logged_hits: Arc::new(Mutex::new(BTreeSet::new())),
+        };
+        controller.load_document()?;
+        Ok(controller)
+    }
+
+    fn load_document(&self) -> CacheResult<TestRaftOutboundFaultDocument> {
+        let bytes = fs::read(&self.path).map_err(|error| {
+            CacheError::Backend(format!(
+                "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} {} could not be read: {error}",
+                self.path.display()
+            ))
+        })?;
+        let document =
+            serde_json::from_slice::<TestRaftOutboundFaultDocument>(&bytes).map_err(|error| {
+                CacheError::Backend(format!(
+                    "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} {} is invalid JSON: {error}",
+                    self.path.display()
+                ))
+            })?;
+        validate_test_raft_outbound_fault_document(&document, &self.local_node_id)?;
+        let mut previous = self
+            .last_document
+            .lock()
+            .expect("test raft outbound fault document poisoned");
+        if let Some(previous) = previous.as_ref() {
+            if document.generation < previous.generation {
+                return Err(CacheError::Backend(format!(
+                    "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} generation regressed from {} to {}",
+                    previous.generation, document.generation
+                )));
+            }
+            if document.generation == previous.generation && document != *previous {
+                return Err(CacheError::Backend(format!(
+                    "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} changed rules without advancing generation {}",
+                    document.generation
+                )));
+            }
+        }
+        *previous = Some(document.clone());
+        Ok(document)
+    }
+
+    async fn apply(&self, to: &ClusterNodeId) -> CacheResult<()> {
+        let document = self.load_document()?;
+        let Some(rule) = document.rules.iter().find(|rule| rule.to == to.as_str()) else {
+            return Ok(());
+        };
+        let hit = (document.generation, rule.to.clone());
+        if self
+            .logged_hits
+            .lock()
+            .expect("test raft outbound fault hit set poisoned")
+            .insert(hit)
+        {
+            eprintln!(
+                "HYDRACACHE_TEST_RAFT_OUTBOUND_FAULT_HIT generation={} from={} to={} action={:?}",
+                document.generation, rule.from, rule.to, rule.action
+            );
+        }
+        match rule.action {
+            TestRaftOutboundFaultAction::Drop => Err(CacheError::Backend(format!(
+                "test raft outbound fault generation {} dropped message {} -> {}",
+                document.generation, rule.from, rule.to
+            ))),
+            TestRaftOutboundFaultAction::Delay { millis } => {
+                let expected_generation = document.generation;
+                let expected_rule = rule.clone();
+                tokio::time::sleep(Duration::from_millis(millis)).await;
+                let refreshed = self.load_document()?;
+                if refreshed.generation != expected_generation
+                    || !refreshed.rules.contains(&expected_rule)
+                {
+                    return Err(CacheError::Backend(format!(
+                        "test raft outbound delay generation {expected_generation} was cleared or replaced before delivery; stale message {} -> {} was cancelled",
+                        expected_rule.from, expected_rule.to
+                    )));
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
+fn validate_test_raft_outbound_fault_document(
+    document: &TestRaftOutboundFaultDocument,
+    local_node_id: &str,
+) -> CacheResult<()> {
+    if document.schema_version != TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION {
+        return Err(CacheError::Backend(format!(
+            "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} schema_version must be {TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION}, got {}",
+            document.schema_version
+        )));
+    }
+    let mut destinations = BTreeSet::new();
+    for rule in &document.rules {
+        if rule.from != local_node_id || rule.to.trim().is_empty() || rule.to == local_node_id {
+            return Err(CacheError::Backend(format!(
+                "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} rule must match exact local from={local_node_id:?} and a distinct non-empty peer, got from={:?} to={:?}",
+                rule.from, rule.to
+            )));
+        }
+        if !destinations.insert(rule.to.as_str()) {
+            return Err(CacheError::Backend(format!(
+                "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} has duplicate rule for {} -> {}",
+                rule.from, rule.to
+            )));
+        }
+        if let TestRaftOutboundFaultAction::Delay { millis } = rule.action {
+            if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
+                return Err(CacheError::Backend(format!(
+                    "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} delay must be in 1..={MAX_TEST_RAFT_OUTBOUND_DELAY_MS}ms, got {millis}"
+                )));
+            }
+        }
+    }
+    Ok(())
+}
+
 #[derive(Debug, Clone)]
 struct HttpRaftMessageSink {
     local_node_id: ClusterNodeId,
@@ -1155,6 +1313,7 @@ struct HttpRaftMessageSink {
     scheme: &'static str,
     client: reqwest::Client,
     snapshot_feedback: Option<SnapshotDeliveryFeedback>,
+    test_outbound_faults: Option<TestRaftOutboundFaultController>,
 }
 
 #[derive(Debug, Clone)]
@@ -1276,6 +1435,8 @@ impl HttpRaftMessageSink {
         config: &ServerConfig,
     ) -> CacheResult<Self> {
         let (scheme, client) = raft_http_client(config)?;
+        let test_outbound_faults =
+            test_raft_outbound_fault_controller_from_env(config, &local_node_id)?;
         Ok(Self {
             local_node_id,
             local_raft_node_id,
@@ -1284,6 +1445,7 @@ impl HttpRaftMessageSink {
             scheme,
             client,
             snapshot_feedback: None,
+            test_outbound_faults,
         })
     }
 
@@ -1332,6 +1494,9 @@ impl HttpRaftMessageSink {
                     message.to
                 ))
             })?;
+        if let Some(faults) = &self.test_outbound_faults {
+            faults.apply(&peer.node_id).await?;
+        }
         let request = ClusterOpaqueMessage::new(
             self.node_id_for(message.from),
             peer.node_id.to_string(),
@@ -1700,6 +1865,67 @@ fn truthy_env_value(value: &str) -> bool {
         value.trim().to_ascii_lowercase().as_str(),
         "1" | "true" | "yes"
     )
+}
+
+fn test_raft_outbound_fault_controller_from_env(
+    config: &ServerConfig,
+    local_node_id: &ClusterNodeId,
+) -> CacheResult<Option<TestRaftOutboundFaultController>> {
+    let Some(value) = env::var_os(TEST_RAFT_OUTBOUND_FAULT_FILE_ENV) else {
+        return Ok(None);
+    };
+    if value.is_empty() {
+        return Err(CacheError::Backend(format!(
+            "{TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} must name a control file"
+        )));
+    }
+    let path = validate_test_raft_outbound_fault_scope(
+        Path::new(&value),
+        env::var(DAEMON_PROCESS_E2E_ENV)
+            .map(|value| value == "1")
+            .unwrap_or(false),
+        config.cluster_addr,
+        config.storage_dir.as_deref(),
+    )?;
+    TestRaftOutboundFaultController::new(path, local_node_id).map(Some)
+}
+
+fn validate_test_raft_outbound_fault_scope(
+    path: &Path,
+    daemon_process_e2e_claimed: bool,
+    cluster_addr: SocketAddr,
+    storage_dir: Option<&Path>,
+) -> CacheResult<PathBuf> {
+    if !daemon_process_e2e_claimed || !cluster_addr.ip().is_loopback() {
+        return Err(CacheError::Backend(format!(
+            "{TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} is a loopback process-test seam and requires {DAEMON_PROCESS_E2E_ENV}=1 plus a loopback cluster_addr; got process_e2e={daemon_process_e2e_claimed} cluster_addr={cluster_addr}"
+        )));
+    }
+    let storage_dir = storage_dir.ok_or_else(|| {
+        CacheError::Backend(format!(
+            "{TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} requires a node storage_dir"
+        ))
+    })?;
+    let canonical_storage = fs::canonicalize(storage_dir).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to canonicalize storage_dir {} for {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV}: {error}",
+            storage_dir.display()
+        ))
+    })?;
+    let canonical_path = fs::canonicalize(path).map_err(|error| {
+        CacheError::Backend(format!(
+            "failed to canonicalize {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} {}: {error}",
+            path.display()
+        ))
+    })?;
+    if !canonical_path.is_file() || !canonical_path.starts_with(&canonical_storage) {
+        return Err(CacheError::Backend(format!(
+            "{TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} must be a file beneath node storage_dir {}; got {}",
+            canonical_storage.display(),
+            canonical_path.display()
+        )));
+    }
+    Ok(canonical_path)
 }
 
 fn test_snapshot_handler_delay_from_env(config: &ServerConfig) -> CacheResult<Option<Duration>> {
@@ -2306,6 +2532,196 @@ mod tests {
     use proptest::prelude::*;
     use std::collections::BTreeSet;
     use std::path::PathBuf;
+
+    struct FaultTestDir(PathBuf);
+
+    impl FaultTestDir {
+        fn new(name: &str) -> Self {
+            let sequence = NODE_IDENTITY_TEMP_SEQ.fetch_add(1, Ordering::Relaxed);
+            let path = PathBuf::from(format!(
+                "target/test-hydracache-grid-host/outbound-fault-{name}-{}-{sequence}",
+                std::process::id()
+            ));
+            let _ = fs::remove_dir_all(&path);
+            fs::create_dir_all(&path).unwrap();
+            Self(path)
+        }
+
+        fn control_file(&self) -> PathBuf {
+            self.0.join("raft-outbound-fault.json")
+        }
+    }
+
+    impl Drop for FaultTestDir {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn write_outbound_fault_document(
+        path: &Path,
+        generation: u64,
+        rules: Vec<TestRaftOutboundFaultRule>,
+    ) {
+        let document = TestRaftOutboundFaultDocument {
+            schema_version: TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION,
+            generation,
+            rules,
+        };
+        fs::write(path, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+    }
+
+    fn outbound_fault_rule(
+        to: &str,
+        action: TestRaftOutboundFaultAction,
+    ) -> TestRaftOutboundFaultRule {
+        TestRaftOutboundFaultRule {
+            from: "node-a".to_owned(),
+            to: to.to_owned(),
+            action,
+        }
+    }
+
+    #[test]
+    fn outbound_fault_scope_is_limited_to_loopback_process_e2e_storage() {
+        let storage = FaultTestDir::new("scope-storage");
+        let control_file = storage.control_file();
+        write_outbound_fault_document(&control_file, 0, Vec::new());
+        let outside = FaultTestDir::new("scope-outside");
+        let outside_control_file = outside.control_file();
+        write_outbound_fault_document(&outside_control_file, 0, Vec::new());
+
+        let accepted = validate_test_raft_outbound_fault_scope(
+            &control_file,
+            true,
+            "127.0.0.1:7000".parse().unwrap(),
+            Some(&storage.0),
+        )
+        .unwrap();
+        assert_eq!(accepted, fs::canonicalize(&control_file).unwrap());
+
+        assert!(validate_test_raft_outbound_fault_scope(
+            &control_file,
+            false,
+            "127.0.0.1:7000".parse().unwrap(),
+            Some(&storage.0),
+        )
+        .is_err());
+        assert!(validate_test_raft_outbound_fault_scope(
+            &control_file,
+            true,
+            "192.0.2.1:7000".parse().unwrap(),
+            Some(&storage.0),
+        )
+        .is_err());
+        assert!(validate_test_raft_outbound_fault_scope(
+            &outside_control_file,
+            true,
+            "127.0.0.1:7000".parse().unwrap(),
+            Some(&storage.0),
+        )
+        .is_err());
+    }
+
+    #[tokio::test]
+    async fn configured_outbound_fault_file_fails_closed_when_missing_or_malformed() {
+        let missing_storage = FaultTestDir::new("missing");
+        let missing_control_file = missing_storage.control_file();
+        write_outbound_fault_document(&missing_control_file, 0, Vec::new());
+        let missing = TestRaftOutboundFaultController::new(
+            missing_control_file.clone(),
+            &ClusterNodeId::from("node-a"),
+        )
+        .unwrap();
+        fs::remove_file(missing_control_file).unwrap();
+        assert!(missing.apply(&ClusterNodeId::from("node-b")).await.is_err());
+
+        let malformed_storage = FaultTestDir::new("malformed");
+        let malformed_control_file = malformed_storage.control_file();
+        write_outbound_fault_document(&malformed_control_file, 0, Vec::new());
+        let malformed = TestRaftOutboundFaultController::new(
+            malformed_control_file.clone(),
+            &ClusterNodeId::from("node-a"),
+        )
+        .unwrap();
+        fs::write(malformed_control_file, b"{not-json").unwrap();
+        assert!(malformed
+            .apply(&ClusterNodeId::from("node-b"))
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn outbound_fault_rules_match_exact_destination_for_drop_and_delay() {
+        let storage = FaultTestDir::new("exact-match");
+        let control_file = storage.control_file();
+        write_outbound_fault_document(
+            &control_file,
+            1,
+            vec![outbound_fault_rule(
+                "node-b",
+                TestRaftOutboundFaultAction::Drop,
+            )],
+        );
+        let controller = TestRaftOutboundFaultController::new(
+            control_file.clone(),
+            &ClusterNodeId::from("node-a"),
+        )
+        .unwrap();
+        assert!(controller
+            .apply(&ClusterNodeId::from("node-b-suffix"))
+            .await
+            .is_ok());
+        assert!(controller
+            .apply(&ClusterNodeId::from("node-b"))
+            .await
+            .is_err());
+
+        write_outbound_fault_document(
+            &control_file,
+            2,
+            vec![outbound_fault_rule(
+                "node-c",
+                TestRaftOutboundFaultAction::Delay { millis: 1 },
+            )],
+        );
+        assert!(controller
+            .apply(&ClusterNodeId::from("node-c"))
+            .await
+            .is_ok());
+        assert!(controller
+            .apply(&ClusterNodeId::from("node-c-suffix"))
+            .await
+            .is_ok());
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn clearing_delay_generation_cancels_stale_outbound_message() {
+        let storage = FaultTestDir::new("clear-delay");
+        let control_file = storage.control_file();
+        write_outbound_fault_document(
+            &control_file,
+            7,
+            vec![outbound_fault_rule(
+                "node-b",
+                TestRaftOutboundFaultAction::Delay { millis: 100 },
+            )],
+        );
+        let controller = TestRaftOutboundFaultController::new(
+            control_file.clone(),
+            &ClusterNodeId::from("node-a"),
+        )
+        .unwrap();
+
+        let delayed =
+            tokio::spawn(async move { controller.apply(&ClusterNodeId::from("node-b")).await });
+        tokio::task::yield_now().await;
+        write_outbound_fault_document(&control_file, 8, Vec::new());
+        tokio::time::advance(Duration::from_millis(100)).await;
+
+        let error = delayed.await.unwrap().unwrap_err().to_string();
+        assert!(error.contains("stale message"), "unexpected error: {error}");
+    }
 
     fn test_raft_runtime() -> Arc<NetworkedRaftRuntime> {
         let sequence = NODE_IDENTITY_TEMP_SEQ.fetch_add(1, Ordering::Relaxed);

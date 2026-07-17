@@ -22,6 +22,18 @@ pub enum ExternalHistoryAction {
     RestartLastKilled,
     /// Drain one non-leader through `/admin/drain`.
     DrainFollower,
+    /// Suspend the currently observed leader with SIGSTOP.
+    PauseLeader,
+    /// Resume the process most recently suspended by the schedule.
+    ResumeLastPaused,
+    /// Isolate one follower at the loopback transport boundary.
+    PartitionFollower,
+    /// Remove the loopback transport isolation installed by the schedule.
+    HealLastPartition,
+    /// Add a bounded delay to the loopback transport.
+    DelayTransport,
+    /// Remove the bounded loopback transport delay installed by the schedule.
+    ClearTransportDelay,
 }
 
 /// Deterministic generated action schedule.
@@ -128,6 +140,75 @@ pub struct ExternalNemesisSchedule {
     pub operations: Vec<ExternalNemesisOperation>,
 }
 
+impl ExternalNemesisSchedule {
+    /// Reject schedules whose cleanup depends on a different operation. Whole-
+    /// operation shrinking can therefore never strand an external fault.
+    pub fn validate_dependency_groups(&self) -> Result<(), String> {
+        let mut saw_drain = false;
+        for operation in &self.operations {
+            if saw_drain {
+                return Err(format!(
+                    "operation {} appears after the terminal drain group",
+                    operation.operation_id
+                ));
+            }
+            let mut killed = false;
+            let mut paused = false;
+            let mut partitioned = false;
+            let mut delayed = false;
+            for action in &operation.actions {
+                match action {
+                    ExternalHistoryAction::KillLeader
+                        if !killed && !paused && !partitioned && !delayed =>
+                    {
+                        killed = true;
+                    }
+                    ExternalHistoryAction::RestartLastKilled if killed => killed = false,
+                    ExternalHistoryAction::PauseLeader
+                        if !killed && !paused && !partitioned && !delayed =>
+                    {
+                        paused = true;
+                    }
+                    ExternalHistoryAction::ResumeLastPaused if paused => paused = false,
+                    ExternalHistoryAction::PartitionFollower
+                        if !killed && !paused && !partitioned && !delayed =>
+                    {
+                        partitioned = true;
+                    }
+                    ExternalHistoryAction::HealLastPartition if partitioned => {
+                        partitioned = false;
+                    }
+                    ExternalHistoryAction::DelayTransport
+                        if !killed && !paused && !partitioned && !delayed =>
+                    {
+                        delayed = true;
+                    }
+                    ExternalHistoryAction::ClearTransportDelay if delayed => delayed = false,
+                    ExternalHistoryAction::DrainFollower
+                        if !killed && !paused && !partitioned && !delayed =>
+                    {
+                        saw_drain = true;
+                    }
+                    ExternalHistoryAction::Observe | ExternalHistoryAction::CompactFollower => {}
+                    action => {
+                        return Err(format!(
+                            "operation {} has an invalid dependency transition at {action:?}",
+                            operation.operation_id
+                        ));
+                    }
+                }
+            }
+            if killed || paused || partitioned || delayed {
+                return Err(format!(
+                    "operation {} leaves an external fault active",
+                    operation.operation_id
+                ));
+            }
+        }
+        Ok(())
+    }
+}
+
 /// W2 generator layered on the W7 seeded action generator.
 #[derive(Debug, Clone, Copy)]
 pub struct ExternalNemesisGenerator {
@@ -140,44 +221,47 @@ impl ExternalNemesisGenerator {
     }
 
     pub fn generate(self) -> ExternalNemesisSchedule {
-        let history_schedule = ExternalHistoryGenerator::new(self.seed).generate();
-        let mut pending = VecDeque::from(history_schedule.actions);
-        let mut groups = Vec::<Vec<ExternalHistoryAction>>::new();
-        while let Some(action) = pending.pop_front() {
-            match action {
-                ExternalHistoryAction::Observe => {}
-                ExternalHistoryAction::CompactFollower => {
-                    let mut group = vec![action];
-                    if pending.front() == Some(&ExternalHistoryAction::Observe) {
-                        group.push(pending.pop_front().expect("front was present"));
-                    }
-                    groups.push(group);
-                }
-                ExternalHistoryAction::KillLeader => {
-                    let mut group = vec![action];
-                    while let Some(next) = pending.pop_front() {
-                        group.push(next);
-                        if next == ExternalHistoryAction::RestartLastKilled {
-                            if pending.front() == Some(&ExternalHistoryAction::Observe) {
-                                group.push(pending.pop_front().expect("front was present"));
-                            }
-                            break;
-                        }
-                    }
-                    groups.push(group);
-                }
-                ExternalHistoryAction::RestartLastKilled => {
-                    panic!("W7 generator emitted restart outside a composed kill/restart group")
-                }
-                ExternalHistoryAction::DrainFollower => {
-                    let mut group = vec![action];
-                    if pending.front() == Some(&ExternalHistoryAction::Observe) {
-                        group.push(pending.pop_front().expect("front was present"));
-                    }
-                    groups.push(group);
-                }
-            }
+        let mut groups = vec![
+            vec![
+                ExternalHistoryAction::CompactFollower,
+                ExternalHistoryAction::Observe,
+            ],
+            vec![
+                ExternalHistoryAction::KillLeader,
+                ExternalHistoryAction::Observe,
+                ExternalHistoryAction::RestartLastKilled,
+                ExternalHistoryAction::Observe,
+            ],
+            vec![
+                ExternalHistoryAction::PauseLeader,
+                ExternalHistoryAction::Observe,
+                ExternalHistoryAction::ResumeLastPaused,
+                ExternalHistoryAction::Observe,
+            ],
+            vec![
+                ExternalHistoryAction::PartitionFollower,
+                ExternalHistoryAction::Observe,
+                ExternalHistoryAction::HealLastPartition,
+                ExternalHistoryAction::Observe,
+            ],
+            vec![
+                ExternalHistoryAction::DelayTransport,
+                ExternalHistoryAction::Observe,
+                ExternalHistoryAction::ClearTransportDelay,
+                ExternalHistoryAction::Observe,
+            ],
+        ];
+        let mut state = self.seed;
+        for index in (1..groups.len()).rev() {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            groups.swap(index, (state as usize) % (index + 1));
         }
+        groups.push(vec![
+            ExternalHistoryAction::DrainFollower,
+            ExternalHistoryAction::Observe,
+        ]);
         let operations = groups
             .into_iter()
             .enumerate()
@@ -192,10 +276,14 @@ impl ExternalNemesisGenerator {
                 }
             })
             .collect();
-        ExternalNemesisSchedule {
+        let schedule = ExternalNemesisSchedule {
             seed: self.seed,
             operations,
-        }
+        };
+        schedule
+            .validate_dependency_groups()
+            .expect("built-in W2 schedule must be dependency-safe");
+        schedule
     }
 }
 
@@ -275,12 +363,23 @@ impl ExternalHistoryRecorder {
 
     fn membership_history(&self) -> MembershipHistoryRecorder {
         let mut membership = MembershipHistoryRecorder::default();
-        for observation in self
-            .steps
-            .iter()
-            .flat_map(|step| step.membership_observations.iter())
-        {
-            membership.record(observation.clone());
+        for step in &self.steps {
+            if !step.admin_statuses.is_empty()
+                && step.admin_statuses.len() == step.membership_observations.len()
+            {
+                for (_, observation) in step
+                    .admin_statuses
+                    .iter()
+                    .zip(step.membership_observations.iter())
+                    .filter(|(status, _)| status.quorum_ok && !status.draining)
+                {
+                    membership.record(observation.clone());
+                }
+            } else {
+                for observation in &step.membership_observations {
+                    membership.record(observation.clone());
+                }
+            }
         }
         membership
     }
@@ -303,6 +402,19 @@ pub struct ExternalNemesisEvent {
     pub actions: Vec<ExternalHistoryAction>,
     pub committed_epoch: Option<u64>,
     pub public_membership: Option<BTreeSet<String>>,
+    pub expected_admin_responses: usize,
+    pub observed_admin_responses: usize,
+    pub expected_overview_responses: usize,
+    pub observed_overview_responses: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ExternalPublicResponseCount {
+    pub action: ExternalHistoryAction,
+    pub expected_admin_responses: usize,
+    pub observed_admin_responses: usize,
+    pub expected_overview_responses: usize,
+    pub observed_overview_responses: usize,
 }
 
 /// W2 recorder that retains W7 black-box history plus operation boundaries.
@@ -310,6 +422,7 @@ pub struct ExternalNemesisEvent {
 pub struct ExternalNemesisRecorder {
     events: Vec<ExternalNemesisEvent>,
     history: ExternalHistoryRecorder,
+    response_counts: Vec<ExternalPublicResponseCount>,
 }
 
 impl ExternalNemesisRecorder {
@@ -318,16 +431,29 @@ impl ExternalNemesisRecorder {
         operation: &ExternalNemesisOperation,
         phase: ExternalNemesisPhase,
         step: ExternalHistoryStep,
+        expected_responses: usize,
     ) {
-        let committed_epoch = unique_value(
-            step.membership_observations
-                .iter()
-                .map(|observation| observation.epoch),
-        );
+        self.response_counts.push(ExternalPublicResponseCount {
+            action: step.action,
+            expected_admin_responses: expected_responses,
+            observed_admin_responses: step.admin_statuses.len(),
+            expected_overview_responses: expected_responses,
+            observed_overview_responses: step.membership_observations.len(),
+        });
+        let authoritative = step
+            .admin_statuses
+            .iter()
+            .zip(step.membership_observations.iter())
+            .filter(|(status, observation)| {
+                status.quorum_ok && !status.draining && !observation.members.is_empty()
+            })
+            .map(|(_, observation)| observation)
+            .collect::<Vec<_>>();
+        let committed_epoch =
+            unique_value(authoritative.iter().map(|observation| observation.epoch));
         let public_membership = unique_value(
-            step.membership_observations
+            authoritative
                 .iter()
-                .filter(|observation| !observation.members.is_empty())
                 .map(|observation| observation.members.clone()),
         );
         let observation_id = match phase {
@@ -342,11 +468,22 @@ impl ExternalNemesisRecorder {
             actions: operation.actions.clone(),
             committed_epoch,
             public_membership,
+            expected_admin_responses: expected_responses,
+            observed_admin_responses: step.admin_statuses.len(),
+            expected_overview_responses: expected_responses,
+            observed_overview_responses: step.membership_observations.len(),
         });
         self.history.record_step(step);
     }
 
-    pub fn record_intermediate(&mut self, step: ExternalHistoryStep) {
+    pub fn record_intermediate(&mut self, step: ExternalHistoryStep, expected_responses: usize) {
+        self.response_counts.push(ExternalPublicResponseCount {
+            action: step.action,
+            expected_admin_responses: expected_responses,
+            observed_admin_responses: step.admin_statuses.len(),
+            expected_overview_responses: expected_responses,
+            observed_overview_responses: step.membership_observations.len(),
+        });
         self.history.record_step(step);
     }
 
@@ -356,6 +493,10 @@ impl ExternalNemesisRecorder {
 
     pub fn history(&self) -> &ExternalHistoryRecorder {
         &self.history
+    }
+
+    pub fn response_counts(&self) -> &[ExternalPublicResponseCount] {
+        &self.response_counts
     }
 }
 
@@ -545,6 +686,60 @@ impl ExternalNemesisChecker {
         let mut previous_epoch = None;
         let mut previous_membership: Option<BTreeSet<String>> = None;
 
+        let invokes = trace
+            .events
+            .iter()
+            .filter(|event| event.phase == ExternalNemesisPhase::Invoke)
+            .collect::<Vec<_>>();
+        let expected_history_actions = invokes
+            .iter()
+            .flat_map(|event| {
+                let complete_action = event
+                    .actions
+                    .last()
+                    .copied()
+                    .unwrap_or(ExternalHistoryAction::Observe);
+                std::iter::once(ExternalHistoryAction::Observe)
+                    .chain(event.actions.iter().copied())
+                    .chain(std::iter::once(complete_action))
+            })
+            .collect::<Vec<_>>();
+        let observed_history_actions = trace
+            .history
+            .steps
+            .iter()
+            .map(|step| step.action)
+            .collect::<Vec<_>>();
+        report.record_check();
+        if observed_history_actions != expected_history_actions {
+            report.record_violation(
+                "nemesis_exact_action_response_count",
+                format!(
+                    "expected action observations {expected_history_actions:?}, observed {observed_history_actions:?}"
+                ),
+            );
+        }
+        report.record_check();
+        let counted_actions = trace
+            .response_counts
+            .iter()
+            .map(|count| count.action)
+            .collect::<Vec<_>>();
+        if counted_actions != expected_history_actions
+            || trace.response_counts.iter().any(|count| {
+                count.observed_admin_responses != count.expected_admin_responses
+                    || count.observed_overview_responses != count.expected_overview_responses
+            })
+        {
+            report.record_violation(
+                "nemesis_exact_public_response_count",
+                format!(
+                    "expected response actions {expected_history_actions:?}, observed counts {:?}",
+                    trace.response_counts
+                ),
+            );
+        }
+
         for (index, event) in trace.events.iter().enumerate() {
             report.record_check();
             by_operation
@@ -557,6 +752,20 @@ impl ExternalNemesisChecker {
                 report.record_violation(
                     "nemesis_stable_observation_id_unique",
                     format!("duplicate observation id {}", event.observation_id),
+                );
+            }
+            if event.observed_admin_responses != event.expected_admin_responses
+                || event.observed_overview_responses != event.expected_overview_responses
+            {
+                report.record_violation(
+                    "nemesis_exact_public_response_count",
+                    format!(
+                        "{} expected {} admin/overview responses but observed admin={} overview={}",
+                        event.observation_id,
+                        event.expected_admin_responses,
+                        event.observed_admin_responses,
+                        event.observed_overview_responses
+                    ),
                 );
             }
             let Some(epoch) = event.committed_epoch else {
@@ -729,6 +938,9 @@ impl ExternalHistoryShrinker {
     where
         F: Fn(&ExternalNemesisSchedule) -> bool,
     {
+        schedule
+            .validate_dependency_groups()
+            .expect("nemesis shrink input must have dependency-safe atomic groups");
         let mut current = schedule.clone();
         loop {
             let mut reduced = None;
@@ -736,6 +948,9 @@ impl ExternalHistoryShrinker {
                 let mut candidate = current.clone();
                 candidate.operations.remove(index);
                 if candidate.operations.is_empty() {
+                    continue;
+                }
+                if candidate.validate_dependency_groups().is_err() {
                     continue;
                 }
                 if failure_persists(&candidate) {
