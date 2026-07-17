@@ -1371,20 +1371,19 @@ impl RaftLogStore for SledRaftLogStore {
             .inner
             .storage_faults
             .begin_sled_io(RaftStorageFaultOperation::SaveSnapshot)?;
-        if let Err(error) = self.apply_snapshot_batch(snapshot, &retained_entries) {
-            #[cfg(feature = "test-failpoints")]
-            self.inner.storage_faults.abort_sled_io(fault_mode);
-            return Err(error);
-        }
+        self.apply_snapshot_batch(snapshot, &retained_entries)
+            .inspect_err(|_| {
+                #[cfg(feature = "test-failpoints")]
+                self.inner.storage_faults.abort_sled_io(fault_mode);
+            })?;
         #[cfg(feature = "test-failpoints")]
         self.inner
             .storage_faults
             .finish_sled_io(RaftStorageFaultOperation::SaveSnapshot, fault_mode)?;
-        if let Err(error) = self.sync() {
+        self.sync().inspect_err(|_| {
             #[cfg(feature = "test-failpoints")]
             self.inner.storage_faults.abort_sled_io(fault_mode);
-            return Err(error);
-        }
+        })?;
         self.inner
             .install_snapshot_after_persist(snapshot, retained_entries);
         #[cfg(feature = "test-failpoints")]
@@ -1422,24 +1421,21 @@ impl RaftLogStore for SledRaftLogStore {
             .inner
             .storage_faults
             .begin_sled_io(RaftStorageFaultOperation::MarkApplied)?;
-        if let Err(error) = self
-            .db
+        self.db
             .insert(SLED_APPLIED_KEY, encode_u64(index).to_vec())
             .map_err(sled_error)
-        {
-            #[cfg(feature = "test-failpoints")]
-            self.inner.storage_faults.abort_sled_io(fault_mode);
-            return Err(error);
-        }
+            .inspect_err(|_| {
+                #[cfg(feature = "test-failpoints")]
+                self.inner.storage_faults.abort_sled_io(fault_mode);
+            })?;
         #[cfg(feature = "test-failpoints")]
         self.inner
             .storage_faults
             .finish_sled_io(RaftStorageFaultOperation::MarkApplied, fault_mode)?;
-        if let Err(error) = self.sync() {
+        self.sync().inspect_err(|_| {
             #[cfg(feature = "test-failpoints")]
             self.inner.storage_faults.abort_sled_io(fault_mode);
-            return Err(error);
-        }
+        })?;
         self.inner.mark_applied(index);
         #[cfg(feature = "test-failpoints")]
         self.inner.storage_faults.complete_sled_io(fault_mode);
@@ -1459,24 +1455,21 @@ impl RaftLogStore for SledRaftLogStore {
             .inner
             .storage_faults
             .begin_sled_io(RaftStorageFaultOperation::DurableCommit)?;
-        if let Err(error) = self
-            .db
+        self.db
             .insert(SLED_HARD_STATE_KEY, encoded_hard_state)
             .map_err(sled_error)
-        {
-            #[cfg(feature = "test-failpoints")]
-            self.inner.storage_faults.abort_sled_io(fault_mode);
-            return Err(error);
-        }
+            .inspect_err(|_| {
+                #[cfg(feature = "test-failpoints")]
+                self.inner.storage_faults.abort_sled_io(fault_mode);
+            })?;
         #[cfg(feature = "test-failpoints")]
         self.inner
             .storage_faults
             .finish_sled_io(RaftStorageFaultOperation::DurableCommit, fault_mode)?;
-        if let Err(error) = self.sync() {
+        self.sync().inspect_err(|_| {
             #[cfg(feature = "test-failpoints")]
             self.inner.storage_faults.abort_sled_io(fault_mode);
-            return Err(error);
-        }
+        })?;
         self.inner.set_commit(commit);
         #[cfg(feature = "test-failpoints")]
         self.inner.storage_faults.complete_sled_io(fault_mode);
