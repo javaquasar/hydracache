@@ -376,6 +376,7 @@ function = "operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch"
 [[work_item]]
 id = "W12"
 required_sources = [
+    "crates/hydracache-server/src/cluster_status.rs",
     "crates/hydracache-server/src/grid_host.rs",
     "crates/hydracache-server/tests/daemon_resource_budget.rs",
     "crates/hydracache-server/tests/snapshot_resource_budget.rs",
@@ -415,6 +416,18 @@ function = "snapshot_send_authority_requires_same_term_leader_role"
 [[work_item.required_tests]]
 source = "crates/hydracache-server/src/grid_host.rs"
 function = "term_mismatch_cancels_snapshot_send_and_releases_without_http_success"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/src/grid_host.rs"
+function = "snapshot_sender_task_metrics_track_blocked_valid_snapshot_until_release"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/src/grid_host.rs"
+function = "canceling_snapshot_send_releases_actual_sender_task_metric"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/src/grid_host.rs"
+function = "send_task_panic_is_reported_in_diagnostics"
 
 [[work_item]]
 id = "W13"

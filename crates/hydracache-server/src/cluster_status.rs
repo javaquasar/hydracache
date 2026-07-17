@@ -154,6 +154,10 @@ pub struct RaftCompactionStatus {
     pub snapshot_send_failures: Option<u64>,
     /// Real HTTP snapshot requests currently awaiting an outcome.
     pub snapshot_sends_in_flight: Option<u64>,
+    /// Actual per-peer sender tasks currently carrying a valid Raft snapshot.
+    pub snapshot_sender_tasks_current: Option<u64>,
+    /// Per-daemon high-water mark of concurrent snapshot sender tasks.
+    pub snapshot_sender_tasks_high_water: Option<u64>,
     /// Snapshots installed into the local Raft state machine this process run.
     pub snapshot_installs: Option<u64>,
 }
@@ -171,6 +175,8 @@ impl RaftCompactionStatus {
             snapshot_send_successes: None,
             snapshot_send_failures: None,
             snapshot_sends_in_flight: None,
+            snapshot_sender_tasks_current: None,
+            snapshot_sender_tasks_high_water: None,
             snapshot_installs: None,
         }
     }

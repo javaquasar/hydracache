@@ -426,6 +426,8 @@ mod admin_http {
         assert_eq!(before["enabled"], false);
         assert_eq!(before["snapshot_index"], 0);
         assert!(before["applied_index"].as_u64().unwrap() > 0);
+        assert_eq!(before["snapshot_sender_tasks_current"], 0);
+        assert_eq!(before["snapshot_sender_tasks_high_water"], 0);
 
         let rejected = surface
             .routes()

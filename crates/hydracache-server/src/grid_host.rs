@@ -239,7 +239,12 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     match start_mode {
         ResolvedClusterStartMode::Bootstrap if use_network_sink => {
             if raft_node_id == topology.bootstrap_raft_node_id {
-                let _ = send_raft_messages(&message_sink, raft.campaign()?).await;
+                let _ = send_raft_messages_with_diagnostics(
+                    &message_sink,
+                    raft.campaign()?,
+                    Some(drive_diagnostics.as_ref()),
+                )
+                .await;
             }
             wait_for_raft_leader(&raft).await?;
         }
@@ -791,13 +796,6 @@ async fn sync_raft_voters(
     Ok(())
 }
 
-async fn send_raft_messages(
-    message_sink: &Arc<dyn RaftMessageSink>,
-    messages: Vec<RaftWireMessage>,
-) -> CacheResult<()> {
-    send_raft_messages_with_diagnostics(message_sink, messages, None).await
-}
-
 async fn send_raft_messages_with_diagnostics(
     message_sink: &Arc<dyn RaftMessageSink>,
     messages: Vec<RaftWireMessage>,
@@ -814,7 +812,11 @@ async fn send_raft_messages_with_diagnostics(
     let mut sends = tokio::task::JoinSet::new();
     for (_peer, peer_messages) in messages_by_peer {
         let message_sink = Arc::clone(message_sink);
+        let snapshot_sender_metrics = diagnostics
+            .filter(|_| raft_batch_contains_valid_snapshot(&peer_messages))
+            .map(GridDriveDiagnostics::snapshot_sender_task_metrics);
         sends.spawn(async move {
+            let _snapshot_sender_task = snapshot_sender_metrics.map(SnapshotSenderTaskGuard::start);
             let mut errors = Vec::new();
             for message in peer_messages {
                 if let Err(error) = message_sink.send(message).await {
@@ -854,6 +856,12 @@ async fn send_raft_messages_with_diagnostics(
     Ok(())
 }
 
+fn raft_batch_contains_valid_snapshot(messages: &[RaftWireMessage]) -> bool {
+    messages
+        .iter()
+        .any(|message| message.is_snapshot().unwrap_or(false))
+}
+
 #[derive(Debug, Default)]
 struct NoopRaftMessageSink;
 
@@ -873,7 +881,38 @@ struct GridDriveDiagnosticsSnapshot {
     snapshot_send_successes: u64,
     snapshot_send_failures: u64,
     snapshot_sends_in_flight: u64,
+    snapshot_sender_tasks_current: u64,
+    snapshot_sender_tasks_high_water: u64,
     last_error: Option<String>,
+}
+
+#[derive(Debug, Clone, Default)]
+struct SnapshotSenderTaskMetrics {
+    current: Arc<AtomicU64>,
+    high_water: Arc<AtomicU64>,
+}
+
+#[derive(Debug)]
+struct SnapshotSenderTaskGuard {
+    metrics: SnapshotSenderTaskMetrics,
+}
+
+impl SnapshotSenderTaskGuard {
+    fn start(metrics: SnapshotSenderTaskMetrics) -> Self {
+        let current = metrics.current.fetch_add(1, Ordering::SeqCst) + 1;
+        metrics.high_water.fetch_max(current, Ordering::SeqCst);
+        Self { metrics }
+    }
+}
+
+impl Drop for SnapshotSenderTaskGuard {
+    fn drop(&mut self) {
+        let previous = self.metrics.current.fetch_sub(1, Ordering::SeqCst);
+        debug_assert!(
+            previous > 0,
+            "snapshot sender task finished without a start"
+        );
+    }
 }
 
 #[derive(Debug, Default)]
@@ -885,6 +924,7 @@ struct GridDriveDiagnostics {
     snapshot_send_successes: AtomicU64,
     snapshot_send_failures: AtomicU64,
     snapshot_sends_in_flight: AtomicU64,
+    snapshot_sender_tasks: SnapshotSenderTaskMetrics,
     last_raft_inbound: Mutex<Option<(Instant, u64)>>,
     last_error: Mutex<Option<String>>,
 }
@@ -937,6 +977,10 @@ impl GridDriveDiagnostics {
         debug_assert!(previous > 0, "snapshot send completion without a start");
     }
 
+    fn snapshot_sender_task_metrics(&self) -> SnapshotSenderTaskMetrics {
+        self.snapshot_sender_tasks.clone()
+    }
+
     fn snapshot(&self) -> GridDriveDiagnosticsSnapshot {
         GridDriveDiagnosticsSnapshot {
             ticks: self.ticks.load(Ordering::Relaxed),
@@ -946,6 +990,14 @@ impl GridDriveDiagnostics {
             snapshot_send_successes: self.snapshot_send_successes.load(Ordering::Relaxed),
             snapshot_send_failures: self.snapshot_send_failures.load(Ordering::Relaxed),
             snapshot_sends_in_flight: self.snapshot_sends_in_flight.load(Ordering::Relaxed),
+            snapshot_sender_tasks_current: self
+                .snapshot_sender_tasks
+                .current
+                .load(Ordering::SeqCst),
+            snapshot_sender_tasks_high_water: self
+                .snapshot_sender_tasks
+                .high_water
+                .load(Ordering::SeqCst),
             last_error: self
                 .last_error
                 .lock()
@@ -2277,6 +2329,8 @@ fn raft_compaction_status(
         snapshot_send_successes: Some(delivery.snapshot_send_successes),
         snapshot_send_failures: Some(delivery.snapshot_send_failures),
         snapshot_sends_in_flight: Some(delivery.snapshot_sends_in_flight),
+        snapshot_sender_tasks_current: Some(delivery.snapshot_sender_tasks_current),
+        snapshot_sender_tasks_high_water: Some(delivery.snapshot_sender_tasks_high_water),
         snapshot_installs: Some(runtime.snapshot_installs),
     })
 }
@@ -2318,11 +2372,21 @@ impl NetworkedGridHandle {
         if let Some(runtime) = &self._runtime {
             if tokio::runtime::Handle::try_current().is_ok() {
                 let message_sink = Arc::clone(&self._message_sink);
+                let diagnostics = Arc::clone(&self.drive_diagnostics);
                 runtime.spawn(async move {
-                    let _ = send_raft_messages(&message_sink, messages).await;
+                    let _ = send_raft_messages_with_diagnostics(
+                        &message_sink,
+                        messages,
+                        Some(diagnostics.as_ref()),
+                    )
+                    .await;
                 });
             } else {
-                let _ = runtime.block_on(send_raft_messages(&self._message_sink, messages));
+                let _ = runtime.block_on(send_raft_messages_with_diagnostics(
+                    &self._message_sink,
+                    messages,
+                    Some(self.drive_diagnostics.as_ref()),
+                ));
             }
         }
     }
@@ -2484,7 +2548,12 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
         let inbound_term = wire_message.term;
         let outbound = self.raft.step(wire_message)?;
         self.drive_diagnostics.record_raft_inbound(inbound_term);
-        send_raft_messages(&self.message_sink, outbound).await?;
+        send_raft_messages_with_diagnostics(
+            &self.message_sink,
+            outbound,
+            Some(self.drive_diagnostics.as_ref()),
+        )
+        .await?;
         Ok(ClusterMessageAck::new(
             route,
             self.node_id.to_string(),
@@ -3135,10 +3204,89 @@ mod tests {
 
         assert!(error.to_string().contains("forced raft send failure"));
         assert_eq!(snapshot.send_failures, 1);
+        assert_eq!(snapshot.snapshot_sender_tasks_current, 0);
+        assert_eq!(snapshot.snapshot_sender_tasks_high_water, 0);
         assert!(snapshot
             .last_error
             .as_deref()
             .is_some_and(|error| error.contains("forced raft send failure")));
+    }
+
+    #[tokio::test]
+    async fn snapshot_sender_task_metrics_track_blocked_valid_snapshot_until_release() {
+        let started = Arc::new(tokio::sync::Notify::new());
+        let release = Arc::new(tokio::sync::Notify::new());
+        let sink: Arc<dyn RaftMessageSink> = Arc::new(BlockingRaftMessageSink {
+            started: Arc::clone(&started),
+            release: Arc::clone(&release),
+        });
+        let diagnostics = Arc::new(GridDriveDiagnostics::default());
+        let send = tokio::spawn({
+            let sink = Arc::clone(&sink);
+            let diagnostics = Arc::clone(&diagnostics);
+            async move {
+                send_raft_messages_with_diagnostics(
+                    &sink,
+                    vec![test_snapshot_wire_message(2)],
+                    Some(diagnostics.as_ref()),
+                )
+                .await
+            }
+        });
+
+        tokio::time::timeout(Duration::from_millis(100), started.notified())
+            .await
+            .expect("valid snapshot sender task should reach the blocked sink");
+        let active = diagnostics.snapshot();
+        assert_eq!(active.snapshot_sender_tasks_current, 1);
+        assert_eq!(active.snapshot_sender_tasks_high_water, 1);
+
+        release.notify_one();
+        send.await
+            .expect("sender task should not panic")
+            .expect("released snapshot send should succeed");
+        let finished = diagnostics.snapshot();
+        assert_eq!(finished.snapshot_sender_tasks_current, 0);
+        assert_eq!(finished.snapshot_sender_tasks_high_water, 1);
+    }
+
+    #[tokio::test]
+    async fn canceling_snapshot_send_releases_actual_sender_task_metric() {
+        let started = Arc::new(tokio::sync::Notify::new());
+        let sink: Arc<dyn RaftMessageSink> = Arc::new(BlockingRaftMessageSink {
+            started: Arc::clone(&started),
+            release: Arc::new(tokio::sync::Notify::new()),
+        });
+        let diagnostics = Arc::new(GridDriveDiagnostics::default());
+        let send = tokio::spawn({
+            let sink = Arc::clone(&sink);
+            let diagnostics = Arc::clone(&diagnostics);
+            async move {
+                send_raft_messages_with_diagnostics(
+                    &sink,
+                    vec![test_snapshot_wire_message(2)],
+                    Some(diagnostics.as_ref()),
+                )
+                .await
+            }
+        });
+
+        tokio::time::timeout(Duration::from_millis(100), started.notified())
+            .await
+            .expect("valid snapshot sender task should reach the blocked sink");
+        assert_eq!(diagnostics.snapshot().snapshot_sender_tasks_current, 1);
+        send.abort();
+        assert!(send.await.unwrap_err().is_cancelled());
+        tokio::time::timeout(Duration::from_millis(100), async {
+            while diagnostics.snapshot().snapshot_sender_tasks_current != 0 {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .expect("cancelled per-peer sender future should drop its metrics guard");
+        let cancelled = diagnostics.snapshot();
+        assert_eq!(cancelled.snapshot_sender_tasks_current, 0);
+        assert_eq!(cancelled.snapshot_sender_tasks_high_water, 1);
     }
 
     #[tokio::test]
@@ -3344,6 +3492,32 @@ mod tests {
             }
             Ok(())
         }
+    }
+
+    #[derive(Debug)]
+    struct BlockingRaftMessageSink {
+        started: Arc<tokio::sync::Notify>,
+        release: Arc<tokio::sync::Notify>,
+    }
+
+    #[async_trait::async_trait]
+    impl RaftMessageSink for BlockingRaftMessageSink {
+        async fn send(&self, _message: RaftWireMessage) -> CacheResult<()> {
+            self.started.notify_one();
+            self.release.notified().await;
+            Ok(())
+        }
+    }
+
+    fn test_snapshot_wire_message(to: u64) -> RaftWireMessage {
+        let mut snapshot = raft::eraftpb::Message {
+            from: 1,
+            to,
+            term: 1,
+            ..Default::default()
+        };
+        snapshot.set_msg_type(raft::eraftpb::MessageType::MsgSnapshot);
+        RaftWireMessage::encode(&snapshot).unwrap()
     }
 
     fn test_raft_handler(peers: BTreeMap<u64, RaftPeer>) -> RaftClusterMessageHandler {
@@ -3868,12 +4042,7 @@ mod tests {
         let diagnostics = GridDriveDiagnostics::default();
         let error = send_raft_messages_with_diagnostics(
             &sink,
-            vec![RaftWireMessage {
-                from: 1,
-                to: 2,
-                term: 1,
-                payload: Vec::new(),
-            }],
+            vec![test_snapshot_wire_message(2)],
             Some(&diagnostics),
         )
         .await
@@ -3882,6 +4051,8 @@ mod tests {
         assert!(error.to_string().contains("raft send task failed"));
         let snapshot = diagnostics.snapshot();
         assert_eq!(snapshot.send_failures, 1);
+        assert_eq!(snapshot.snapshot_sender_tasks_current, 0);
+        assert_eq!(snapshot.snapshot_sender_tasks_high_water, 1);
         assert!(snapshot
             .last_error
             .as_deref()
