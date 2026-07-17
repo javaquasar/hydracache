@@ -12,6 +12,62 @@ use hydracache::{
 };
 use hydracache_cluster_raft::RaftMetadataCommandEnvelope;
 
+/// External metadata intent consumed independently by the reference model and
+/// by a runtime adapter in differential tests.
+///
+/// The model derives the expected epoch, command, and stable command id from
+/// this intent. It never needs to inspect a runtime-produced command envelope.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ReferenceMetadataIntent {
+    /// Admit or refresh a member process.
+    JoinMember {
+        /// Stable node id.
+        node_id: ClusterNodeId,
+        /// Process generation supplied by the caller.
+        generation: ClusterGeneration,
+    },
+    /// Admit or refresh a client process.
+    JoinClient {
+        /// Stable node id.
+        node_id: ClusterNodeId,
+        /// Process generation supplied by the caller.
+        generation: ClusterGeneration,
+    },
+    /// Remove an admitted node at the supplied generation.
+    Leave {
+        /// Stable node id.
+        node_id: ClusterNodeId,
+        /// Generation used to fence the leave.
+        generation: ClusterGeneration,
+    },
+}
+
+impl ReferenceMetadataIntent {
+    /// Build a generation-1 member admission.
+    pub fn member(node_id: impl Into<ClusterNodeId>) -> Self {
+        Self::JoinMember {
+            node_id: node_id.into(),
+            generation: ClusterGeneration::new(1),
+        }
+    }
+
+    /// Build a generation-1 client admission.
+    pub fn client(node_id: impl Into<ClusterNodeId>) -> Self {
+        Self::JoinClient {
+            node_id: node_id.into(),
+            generation: ClusterGeneration::new(1),
+        }
+    }
+
+    /// Build a generation-1 leave.
+    pub fn leave(node_id: impl Into<ClusterNodeId>) -> Self {
+        Self::Leave {
+            node_id: node_id.into(),
+            generation: ClusterGeneration::new(1),
+        }
+    }
+}
+
 /// Materialized view produced by [`ReferenceMetadataModel`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReferenceMetadataView {
@@ -42,6 +98,22 @@ impl ReferenceMetadataModel {
     /// Create an empty reference state machine.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Apply one external intent and return the independently predicted
+    /// committed envelope.
+    pub fn apply_intent(
+        &mut self,
+        intent: &ReferenceMetadataIntent,
+    ) -> Result<RaftMetadataCommandEnvelope, String> {
+        let envelope = self.envelope_for_intent(intent)?;
+        if !self.apply(&envelope)? {
+            return Err(format!(
+                "reference intent unexpectedly derived duplicate command id {}",
+                envelope.command_id
+            ));
+        }
+        Ok(envelope)
     }
 
     /// Apply one committed envelope, returning `false` for an idempotent retry.
@@ -130,6 +202,123 @@ impl ReferenceMetadataModel {
             }
         }
         Ok(())
+    }
+
+    fn envelope_for_intent(
+        &self,
+        intent: &ReferenceMetadataIntent,
+    ) -> Result<RaftMetadataCommandEnvelope, String> {
+        let command = match intent {
+            ReferenceMetadataIntent::JoinMember {
+                node_id,
+                generation,
+            } => {
+                reject_candidate_generation(self, node_id, *generation)?;
+                let advances_epoch = self
+                    .members
+                    .get(node_id)
+                    .map(|current| *current < *generation)
+                    .unwrap_or(true);
+                let epoch = if advances_epoch {
+                    ClusterEpoch::new(self.epoch.value().saturating_add(1))
+                } else {
+                    self.epoch
+                };
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: node_id.clone(),
+                    generation: *generation,
+                    epoch,
+                }
+            }
+            ReferenceMetadataIntent::JoinClient {
+                node_id,
+                generation,
+            } => {
+                reject_candidate_generation(self, node_id, *generation)?;
+                RaftMetadataCommand::ClientUpsert {
+                    node_id: node_id.clone(),
+                    generation: *generation,
+                    epoch: self.epoch,
+                }
+            }
+            ReferenceMetadataIntent::Leave {
+                node_id,
+                generation,
+            } => {
+                let (role, current_generation, epoch) =
+                    if let Some(current) = self.members.get(node_id) {
+                        (
+                            ClusterRole::Member,
+                            *current,
+                            ClusterEpoch::new(self.epoch.value().saturating_add(1)),
+                        )
+                    } else if let Some(current) = self.clients.get(node_id) {
+                        (ClusterRole::Client, *current, self.epoch)
+                    } else {
+                        return Err(format!("leave references absent node {node_id}"));
+                    };
+                if current_generation != *generation {
+                    return Err(format!(
+                        "leave generation for {node_id} was {}, expected {}",
+                        generation.value(),
+                        current_generation.value()
+                    ));
+                }
+                RaftMetadataCommand::NodeLeft {
+                    node_id: node_id.clone(),
+                    role,
+                    epoch,
+                }
+            }
+        };
+        Ok(RaftMetadataCommandEnvelope {
+            command_id: expected_command_id(&command),
+            command,
+        })
+    }
+}
+
+fn reject_candidate_generation(
+    model: &ReferenceMetadataModel,
+    node_id: &ClusterNodeId,
+    generation: ClusterGeneration,
+) -> Result<(), String> {
+    let current = model
+        .members
+        .get(node_id)
+        .or_else(|| model.clients.get(node_id));
+    if current.is_some_and(|current| *current > generation) {
+        Err(format!(
+            "generation for {node_id} regressed to {}",
+            generation.value()
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn expected_command_id(command: &RaftMetadataCommand) -> String {
+    let escaped =
+        |node_id: &ClusterNodeId| node_id.as_str().replace('|', "%7C").replace(':', "%3A");
+    match command {
+        RaftMetadataCommand::MemberUpsert {
+            node_id,
+            generation,
+            ..
+        } => format!("member-upsert:{}:{}", escaped(node_id), generation.value()),
+        RaftMetadataCommand::ClientUpsert {
+            node_id,
+            generation,
+            ..
+        } => format!("client-upsert:{}:{}", escaped(node_id), generation.value()),
+        RaftMetadataCommand::NodeLeft { node_id, epoch, .. } => {
+            format!("node-left:{}:{}", escaped(node_id), epoch.value())
+        }
+        RaftMetadataCommand::CommitTopology { epoch, members } => format!(
+            "commit-topology:{}:{}",
+            epoch.value(),
+            members.iter().map(escaped).collect::<Vec<_>>().join(",")
+        ),
     }
 }
 
