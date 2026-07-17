@@ -332,10 +332,13 @@ mod admin_http {
             .oneshot(admin_request("POST", ADMIN_BACKUP_PATH))
             .await
             .unwrap();
-        assert_eq!(backup.status(), StatusCode::OK);
+        assert_eq!(backup.status(), StatusCode::ACCEPTED);
         let backup_body = json_response(backup).await;
         assert_eq!(backup_body["action"], "backup");
         assert_eq!(backup_body["outcome"], "accepted");
+        assert_eq!(backup_body["authority"], "request_only");
+        assert_eq!(backup_body["durable_artifact_created"], false);
+        assert_eq!(backup_body["restore_point_available"], false);
 
         let first_drain = surface
             .routes()

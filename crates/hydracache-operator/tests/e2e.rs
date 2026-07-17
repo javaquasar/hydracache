@@ -4,8 +4,7 @@ use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
 use hydracache_operator::backup::{
-    backup_completed_condition, plan_backup, plan_pitr_restore_into_fresh_cluster,
-    BackupObservation, PitrRestoreRequest, BACKUP_COMPLETED_CONDITION,
+    plan_backup, plan_pitr_restore_into_fresh_cluster, BackupObservation, PitrRestoreRequest,
     BACKUP_PROGRESSING_CONDITION, RESTORE_PLANNED_CONDITION,
 };
 use hydracache_operator::controller::{HEALTHY_HEALTH, READY_PHASE};
@@ -478,9 +477,10 @@ fn drive_planner_lifecycle(cluster_name: &str) -> LifecycleEvidence {
         backup_plan.admin_actions,
         vec![AdminAction::Backup { ordinal: 0 }]
     );
-    assert!(backup_plan.record_last_backup_on_success);
-    let backup_done = backup_completed_condition("2026-07-04T00:00:00Z", Some(57));
-    assert_eq!(backup_done.type_, BACKUP_COMPLETED_CONDITION);
+    assert!(
+        !backup_plan.record_last_backup_on_success,
+        "request-only admin acceptance must not be recorded as a durable backup"
+    );
     stages.push(StageObservation {
         name: "backup",
         desired_replicas: 5,

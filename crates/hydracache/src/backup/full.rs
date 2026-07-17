@@ -5,12 +5,16 @@ use super::{checksum, decode_hex, encode_hex, validate_name, BackupError, Object
 /// Current full-backup manifest format.
 pub const BACKUP_MANIFEST_FORMAT_VERSION: u16 = 1;
 
-/// Source/restore dataset used by the backup seam.
+/// Caller-assembled source/restore dataset used by the backup helper seam.
+///
+/// This type is not connected to `ClientSurfaceState` or a live cluster value
+/// plane. `write_full_backup` persists exactly the bytes supplied by its caller;
+/// constructing a dataset does not capture runtime state.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct BackupDataset {
     /// Serialized control-plane snapshot bytes.
     pub control_plane: Vec<u8>,
-    /// Durable value records keyed by logical cache key.
+    /// Caller-supplied durable value records keyed by logical cache key.
     pub values: BTreeMap<String, Vec<u8>>,
 }
 

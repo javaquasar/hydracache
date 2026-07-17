@@ -1,7 +1,6 @@
 use hydracache_operator::backup::{
-    backup_completed_condition, backup_failed_condition, plan_backup,
-    plan_pitr_restore_into_fresh_cluster, BackupObservation, PitrRestoreRequest,
-    BACKUP_BLOCKED_CONDITION, BACKUP_COMPLETED_CONDITION, BACKUP_FAILED_CONDITION,
+    backup_failed_condition, plan_backup, plan_pitr_restore_into_fresh_cluster, BackupObservation,
+    PitrRestoreRequest, BACKUP_BLOCKED_CONDITION, BACKUP_FAILED_CONDITION,
     BACKUP_PROGRESSING_CONDITION, RESTORE_BLOCKED_CONDITION, RESTORE_PLANNED_CONDITION,
 };
 use hydracache_operator::controller::{HEALTHY_HEALTH, READY_PHASE};
@@ -31,18 +30,17 @@ fn ready_backup_observation(last_backup: Option<&str>) -> BackupObservation {
 }
 
 #[test]
-fn scheduled_backup_runs_and_records_last_backup() {
+fn scheduled_backup_request_does_not_record_a_durable_artifact() {
     let cluster = cluster("backup-run");
     let plan = plan_backup(&cluster, &ready_backup_observation(None));
 
     assert_eq!(plan.conditions[0].type_, BACKUP_PROGRESSING_CONDITION);
     assert_eq!(plan.conditions[0].reason, "ScheduledBackupRequested");
     assert_eq!(plan.admin_actions, vec![AdminAction::Backup { ordinal: 0 }]);
-    assert!(plan.record_last_backup_on_success);
-
-    let completed = backup_completed_condition("2026-07-02T11:00:00Z", cluster.metadata.generation);
-    assert_eq!(completed.type_, BACKUP_COMPLETED_CONDITION);
-    assert_eq!(completed.reason, "BackupSucceeded");
+    assert!(
+        !plan.record_last_backup_on_success,
+        "request acceptance is not durable backup completion"
+    );
 
     let steady = plan_backup(
         &cluster,
@@ -66,8 +64,11 @@ fn pitr_restore_into_fresh_cluster_reconciles_with_authority() {
     assert!(plan.restore_allowed);
     assert_eq!(plan.authority_epoch, 12);
     assert_eq!(plan.conditions[0].type_, RESTORE_PLANNED_CONDITION);
-    assert_eq!(plan.conditions[0].reason, "PitrRestorePrepared");
+    assert_eq!(plan.conditions[0].reason, "PitrRestorePreflightPassed");
     assert!(plan.conditions[0].message.contains("authority epoch 12"));
+    assert!(plan.conditions[0]
+        .message
+        .contains("no live restore sink is wired"));
 
     let blocked = plan_pitr_restore_into_fresh_cluster(&cluster, &request, 1);
     assert!(!blocked.restore_allowed);

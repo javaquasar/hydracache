@@ -204,7 +204,20 @@ async fn admin_backup(State(runtime): State<SharedServerRuntime>, headers: Heade
         .lock()
         .expect("server runtime mutex")
         .request_backup()
-        .map(|action| (StatusCode::OK, Json(action)).into_response())
+        .map(|action| {
+            (
+                StatusCode::ACCEPTED,
+                Json(AdminBackupRequestAcceptance {
+                    action: action.action,
+                    outcome: action.outcome,
+                    detail: action.detail,
+                    authority: "request_only",
+                    durable_artifact_created: false,
+                    restore_point_available: false,
+                }),
+            )
+                .into_response()
+        })
         .unwrap_or_else(|error| AdminHttpError::from(error).into_response())
 }
 
@@ -238,6 +251,22 @@ async fn admin_raft_compaction(
         .request_raft_compaction()
         .map(|status| (StatusCode::OK, Json(status)).into_response())
         .unwrap_or_else(|error| AdminHttpError::from(error).into_response())
+}
+
+/// Honest response boundary for the currently request-only backup admin seam.
+///
+/// A successful HTTP response confirms only that configuration and runtime
+/// preconditions accepted the request. The daemon does not yet own a live
+/// value-plane backup source, a durable object-store writer, or restore-point
+/// authority, so neither boolean may be inferred from `outcome = "accepted"`.
+#[derive(Debug, Serialize)]
+struct AdminBackupRequestAcceptance {
+    action: &'static str,
+    outcome: &'static str,
+    detail: String,
+    authority: &'static str,
+    durable_artifact_created: bool,
+    restore_point_available: bool,
 }
 
 fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {

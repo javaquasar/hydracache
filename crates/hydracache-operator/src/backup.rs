@@ -53,7 +53,11 @@ impl BackupPlan {
     }
 }
 
-/// Request a backup through the W0 admin surface when a configured schedule has not recorded one.
+/// Plan a request through the admin surface when a configured schedule has no durable artifact.
+///
+/// The current admin endpoint acknowledges only request acceptance. It does not
+/// return a durable manifest or restore-point proof, so a successful HTTP call
+/// must not be recorded as `last_backup`.
 pub fn plan_backup(cluster: &HydraCacheCluster, observed: &BackupObservation) -> BackupPlan {
     let Some(schedule) = cluster.spec.backup_schedule.as_ref() else {
         return BackupPlan::steady();
@@ -95,7 +99,7 @@ pub fn plan_backup(cluster: &HydraCacheCluster, observed: &BackupObservation) ->
             generation,
         )],
         admin_actions: vec![AdminAction::Backup { ordinal: 0 }],
-        record_last_backup_on_success: true,
+        record_last_backup_on_success: false,
     }
 }
 
@@ -108,6 +112,9 @@ pub struct PitrRestoreRequest {
 }
 
 /// Deterministic restore preflight for a fresh `HydraCacheCluster`.
+///
+/// `restore_allowed` means only that the fresh-cluster authority precondition
+/// passed. No live restore sink is wired by this plan.
 #[derive(Clone, Debug, PartialEq)]
 pub struct PitrRestorePlan {
     pub conditions: Vec<Condition>,
@@ -136,9 +143,9 @@ pub fn plan_pitr_restore_into_fresh_cluster(
     PitrRestorePlan {
         conditions: vec![condition(
             RESTORE_PLANNED_CONDITION,
-            "PitrRestorePrepared",
+            "PitrRestorePreflightPassed",
             &format!(
-                "restore manifest {}{} at authority epoch {}",
+                "restore preflight accepted for manifest {}{} at authority epoch {}; no live restore sink is wired",
                 request.manifest_key,
                 request
                     .pitr_key
