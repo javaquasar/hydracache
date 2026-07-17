@@ -5329,6 +5329,59 @@ HYDRACACHE_OPERATOR_KIND = "1"
 HYDRACACHE_OPERATOR_VERSION = "0.66.0"
 
 [[gate]]
+id = "ignored.hydracache-operator.soak-kind.iochaos-fault-blocks-real-raft-persistence-then-recovers"
+kind = "ignored_test"
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+package = "hydracache-operator"
+target = "soak_kind"
+test = "iochaos_fault_blocks_real_raft_persistence_then_recovers"
+cfg = ""
+env = ""
+reason = "kind/Chaos-Mesh-gated W5 lane: set HYDRACACHE_OPERATOR_KIND=1 with IOChaos installed"
+tier = "nightly"
+required_features = []
+required_env = [
+    "HYDRACACHE_OPERATOR_KIND",
+    "HYDRACACHE_OPERATOR_IMAGE",
+    "HYDRACACHE_OPERATOR_VERSION",
+    "HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS",
+]
+required_tools = ["docker", "kind", "kubectl", "helm"]
+timeout_seconds = 3600
+owner_release = "0.66.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "release-066-operator-kind"
+step = "Run 0.66 operator-kind release proof"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-operator",
+    "--test",
+    "soak_kind",
+    "--locked",
+    "iochaos_fault_blocks_real_raft_persistence_then_recovers",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+]
+cwd = "."
+platform = "linux"
+
+[gate.command.env]
+HYDRACACHE_OPERATOR_IMAGE = "hydracache-server:0.66-candidate"
+HYDRACACHE_OPERATOR_KIND = "1"
+HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS = "1"
+HYDRACACHE_OPERATOR_VERSION = "0.66.0"
+
+[[gate]]
 id = "cfg.hydracache-cluster-raft.io-chaos-boundaries"
 kind = "cfg_test_target"
 source = "crates/hydracache-cluster-raft/tests/io_chaos_boundaries.rs"
