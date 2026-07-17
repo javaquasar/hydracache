@@ -154,7 +154,7 @@ For every publishable crate, the release gate must verify:
 - package builds from the packaged tarball, not only from the workspace;
 - package documentation builds with warnings denied where applicable.
 
-The workspace version, `Cargo.lock`, release manifest and tag must describe one release. The current branch reports workspace version `0.63.0`; before publishing 0.64 the version bump must be present in the tagged commit.
+The workspace version, `Cargo.lock`, release manifest and tag must describe one release. The current branch reports workspace version `0.64.0`; before publishing 0.65 the version bump must be present in the tagged commit.
 
 ## Post-publish verification
 

@@ -8,7 +8,7 @@ use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
-use std::sync::OnceLock;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache_sim::ResourceSample;
@@ -32,6 +32,11 @@ const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
 
 static PREVIOUS_DAEMON_CACHE: OnceLock<Result<Option<PreviousDaemonBinary>, String>> =
     OnceLock::new();
+
+// Port reservations are released before child processes bind their listeners.
+// Keep one cluster alive at a time so parallel integration tests cannot reuse
+// an address during that hand-off and accidentally join each other's clusters.
+static DAEMON_CLUSTER_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 
@@ -99,6 +104,7 @@ pub struct DaemonCluster {
     root: PathBuf,
     nodes: Vec<DaemonNode>,
     raft_compaction_enabled: bool,
+    _process_lock: MutexGuard<'static, ()>,
 }
 
 #[derive(Debug, Clone)]
@@ -209,6 +215,10 @@ impl DaemonCluster {
         if count == 0 {
             return Err("daemon cluster requires at least one explicit node binary".into());
         }
+        let process_lock = DAEMON_CLUSTER_PROCESS_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .map_err(|_| "daemon process cluster lock poisoned")?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
 
@@ -240,6 +250,7 @@ impl DaemonCluster {
             root,
             nodes,
             raft_compaction_enabled,
+            _process_lock: process_lock,
         };
         for index in 0..cluster.nodes.len() {
             cluster.spawn_node(index, &seed_addrs)?;
