@@ -177,6 +177,30 @@ fn evidence_executor_propagates_child_exit_and_captures_output() {
 }
 
 #[test]
+fn evidence_executor_rejects_a_stale_declared_artifact() {
+    let root = temp_root("stale-artifact");
+    let declared = "target/test-evidence/stale.json";
+    fs::write(root.join(".gitignore"), "target/\n").unwrap();
+    write_registry(&root, "pass", 5, vec![declared.to_owned()]);
+
+    let artifact_path = root.join(declared);
+    fs::create_dir_all(artifact_path.parent().unwrap()).unwrap();
+    fs::write(&artifact_path, br#"{"stale":true}"#).unwrap();
+
+    let result =
+        xtask::evidence_run::execute_gate(&root, "0.64", "test.pass", Path::new("target/receipts"))
+            .unwrap();
+
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Fail);
+    assert!(result.receipt.artifacts.is_empty());
+    assert_eq!(result.receipt.missing_artifacts, vec![declared]);
+    assert!(!artifact_path.exists());
+    assert!(result.receipt.stderr.contains("missing declared artifact"));
+    assert!(!result.receipt.dirty_worktree);
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn evidence_executor_rejects_shells_path_traversal_and_artifacts_outside_target() {
     let root = temp_root("unsafe");
     write_registry(&root, "unsafe", 1, vec!["../secret".to_owned()]);

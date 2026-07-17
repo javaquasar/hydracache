@@ -150,6 +150,7 @@ pub fn execute_gate(
 
     let expected = expected_digests_for(root, gate.registry_path, &gate.id, &gate.command)?;
     let (source_commit, dirty_worktree) = git_identity(root)?;
+    remove_stale_declared_artifacts(&artifact_paths)?;
     let started = OffsetDateTime::now_utc();
     let timer = Instant::now();
 
@@ -454,6 +455,24 @@ fn validate_artifact_paths(
             Ok((declared.replace('\\', "/"), root.join(relative)))
         })
         .collect()
+}
+
+fn remove_stale_declared_artifacts(
+    artifact_paths: &[(String, PathBuf)],
+) -> Result<(), Box<dyn Error>> {
+    for (declared, path) in artifact_paths {
+        match fs::remove_file(path) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(format!(
+                    "unable to remove stale declared artifact {declared}: {error}"
+                )
+                .into());
+            }
+        }
+    }
+    Ok(())
 }
 
 struct RegisteredGate {
