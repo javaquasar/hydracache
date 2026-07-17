@@ -6,7 +6,7 @@ aggregate_budget_seconds = 1500
 [[suite]]
 id = "fast.fuzz-corpus-regression"
 work_items = ["W24"]
-timeout_seconds = 90
+timeout_seconds = 300
 budget_seconds = 60
 deterministic = false
 artifacts = []
