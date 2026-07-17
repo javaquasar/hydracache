@@ -72,7 +72,7 @@ jobs:
           else
             release_tag="$INPUT_TAG"
             if [[ ! "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
-              echo "Input tag must be a SemVer tag such as v0.64.0, got: $release_tag" >&2
+              echo "Input tag must be a SemVer tag such as v0.65.0, got: $release_tag" >&2
               exit 1
             fi
             git fetch --force --tags origin
