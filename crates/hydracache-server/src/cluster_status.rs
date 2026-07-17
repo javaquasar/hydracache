@@ -144,6 +144,16 @@ pub struct RaftCompactionStatus {
     pub first_log_index: Option<u64>,
     /// Last durable log index, when available.
     pub last_log_index: Option<u64>,
+    /// Real HTTP snapshot send attempts since this daemon started.
+    pub snapshot_send_attempts: Option<u64>,
+    /// Successful real HTTP snapshot sends since this daemon started.
+    pub snapshot_send_successes: Option<u64>,
+    /// Failed or timed-out real HTTP snapshot sends since this daemon started.
+    pub snapshot_send_failures: Option<u64>,
+    /// Real HTTP snapshot requests currently awaiting an outcome.
+    pub snapshot_sends_in_flight: Option<u64>,
+    /// Snapshots installed into the local Raft state machine this process run.
+    pub snapshot_installs: Option<u64>,
 }
 
 impl RaftCompactionStatus {
@@ -155,6 +165,11 @@ impl RaftCompactionStatus {
             snapshot_index: None,
             first_log_index: None,
             last_log_index: None,
+            snapshot_send_attempts: None,
+            snapshot_send_successes: None,
+            snapshot_send_failures: None,
+            snapshot_sends_in_flight: None,
+            snapshot_installs: None,
         }
     }
 }

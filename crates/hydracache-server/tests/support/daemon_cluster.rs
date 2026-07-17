@@ -82,6 +82,7 @@ pub struct DaemonCluster {
     binary: PathBuf,
     root: PathBuf,
     nodes: Vec<DaemonNode>,
+    raft_compaction_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -96,14 +97,23 @@ pub struct DaemonReplayEvidence {
 
 impl DaemonCluster {
     pub fn start_bootstrap(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, false)
+        Self::start_bootstrap_inner(count, name, false, false)
     }
 
     pub fn start_bootstrap_with_redis(count: usize, name: &str) -> TestResult<Self> {
-        Self::start_bootstrap_inner(count, name, true)
+        Self::start_bootstrap_inner(count, name, true, false)
     }
 
-    fn start_bootstrap_inner(count: usize, name: &str, redis_enabled: bool) -> TestResult<Self> {
+    pub fn start_bootstrap_with_raft_compaction(count: usize, name: &str) -> TestResult<Self> {
+        Self::start_bootstrap_inner(count, name, false, true)
+    }
+
+    fn start_bootstrap_inner(
+        count: usize,
+        name: &str,
+        redis_enabled: bool,
+        raft_compaction_enabled: bool,
+    ) -> TestResult<Self> {
         let binary = server_binary()?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
@@ -133,6 +143,7 @@ impl DaemonCluster {
             binary,
             root,
             nodes,
+            raft_compaction_enabled,
         };
         for index in 0..cluster.nodes.len() {
             cluster.spawn_node(index, &seed_addrs)?;
@@ -203,6 +214,24 @@ impl DaemonCluster {
             "GET",
             "/cluster/overview",
             false,
+        )
+    }
+
+    pub fn raft_compaction_status(&self, index: usize) -> TestResult<Value> {
+        http_json(
+            self.nodes[index].spec.admin_addr,
+            "GET",
+            "/admin/raft/compaction",
+            true,
+        )
+    }
+
+    pub fn compact_raft_log(&self, index: usize) -> TestResult<Value> {
+        http_json(
+            self.nodes[index].spec.admin_addr,
+            "POST",
+            "/admin/raft/compaction",
+            true,
         )
     }
 
@@ -392,7 +421,7 @@ impl DaemonCluster {
     }
 
     fn spawn_node(&mut self, index: usize, seed_addrs: &[String]) -> TestResult {
-        self.nodes[index].spawn(&self.binary, seed_addrs)
+        self.nodes[index].spawn(&self.binary, seed_addrs, self.raft_compaction_enabled)
     }
 }
 
@@ -417,7 +446,12 @@ impl DaemonNode {
         }
     }
 
-    fn spawn(&mut self, binary: &Path, seed_addrs: &[String]) -> TestResult {
+    fn spawn(
+        &mut self,
+        binary: &Path,
+        seed_addrs: &[String],
+        raft_compaction_enabled: bool,
+    ) -> TestResult {
         if self.is_running() {
             return Err(format!("{} is already running", self.spec.name).into());
         }
@@ -427,6 +461,7 @@ impl DaemonNode {
         let mut command = Command::new(binary);
         command
             .env_remove("HYDRACACHE_GRID_INPROC")
+            .env_remove("HYDRACACHE_RAFT_COMPACTION")
             .env("HYDRACACHE_ROLE", "member")
             .env("HYDRACACHE_NODE_ID", &self.spec.node_id)
             .env("HYDRACACHE_LISTEN_ADDR", self.spec.listen_addr.to_string())
@@ -445,6 +480,9 @@ impl DaemonNode {
             .env("HYDRACACHE_JOIN_TIMEOUT_MS", "10000")
             .stdout(Stdio::from(stdout))
             .stderr(Stdio::from(stderr));
+        if raft_compaction_enabled {
+            command.env("HYDRACACHE_RAFT_COMPACTION", "true");
+        }
         if let Some(redis_addr) = self.spec.redis_addr {
             command
                 .env("HYDRACACHE_REDIS_API_ENABLED", "true")

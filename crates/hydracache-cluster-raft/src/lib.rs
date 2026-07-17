@@ -111,7 +111,8 @@ pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStor
 
 use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
-    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage, Snapshot,
+    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
+    MessageType, Snapshot,
 };
 use raft::storage::Storage;
 use raft::{Config, RawNode, SnapshotStatus, StateRole};
@@ -403,6 +404,15 @@ impl RaftWireMessage {
     pub fn decode(&self) -> CacheResult<RaftMessage> {
         RaftMessage::parse_from_bytes(&self.payload)
             .map_err(|error| CacheError::Decode(format!("failed to decode raft message: {error}")))
+    }
+
+    /// Return whether this envelope carries a raft snapshot.
+    ///
+    /// Transports use this narrow query to report the real delivery outcome
+    /// back to raft-rs without taking a direct dependency on its protobuf
+    /// message enum.
+    pub fn is_snapshot(&self) -> CacheResult<bool> {
+        Ok(self.decode()?.get_msg_type() == MessageType::MsgSnapshot)
     }
 }
 
@@ -969,13 +979,18 @@ where
         delivered: bool,
     ) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        let status = if delivered {
-            SnapshotStatus::Finish
-        } else {
-            SnapshotStatus::Failure
-        };
-        state.raw_node.report_snapshot(peer_id, status);
+        report_snapshot_delivery_outcome(&mut state, peer_id, delivered);
         state.drain_ready()
+    }
+
+    /// Report a snapshot transport outcome without draining new ready state.
+    ///
+    /// The server HTTP sender uses this form from inside its outbound task.
+    /// Any work made ready by the report remains owned by the normal bounded
+    /// drive loop instead of being drained and accidentally discarded.
+    pub fn report_snapshot_delivery_deferred(&self, peer_id: u64, delivered: bool) {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        report_snapshot_delivery_outcome(&mut state, peer_id, delivered);
     }
 
     /// Persist a metadata snapshot and compact the durable log at the current
@@ -2145,6 +2160,21 @@ fn known_leader_id(leader_id: u64) -> Option<u64> {
     }
 }
 
+fn report_snapshot_delivery_outcome<S>(
+    state: &mut RaftRuntimeState<S>,
+    peer_id: u64,
+    delivered: bool,
+) where
+    S: RaftLogStore,
+{
+    let status = if delivered {
+        SnapshotStatus::Finish
+    } else {
+        SnapshotStatus::Failure
+    };
+    state.raw_node.report_snapshot(peer_id, status);
+}
+
 fn to_cache_error(error: impl fmt::Display) -> CacheError {
     CacheError::Backend(format!("raft metadata runtime failed: {error}"))
 }
@@ -2156,6 +2186,29 @@ mod tests {
     use hydracache::{ClusterControlPlane, HydraCache, InMemoryCluster};
 
     use super::*;
+
+    #[test]
+    fn wire_envelope_identifies_snapshot_without_transport_raft_dependency() {
+        let mut snapshot = RaftMessage::default();
+        snapshot.set_msg_type(MessageType::MsgSnapshot);
+        snapshot.from = 1;
+        snapshot.to = 2;
+        let snapshot = RaftWireMessage::encode(&snapshot).unwrap();
+        assert!(snapshot.is_snapshot().unwrap());
+
+        let mut heartbeat = RaftMessage::default();
+        heartbeat.set_msg_type(MessageType::MsgHeartbeat);
+        let heartbeat = RaftWireMessage::encode(&heartbeat).unwrap();
+        assert!(!heartbeat.is_snapshot().unwrap());
+
+        let malformed = RaftWireMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            payload: vec![0xff],
+        };
+        assert!(malformed.is_snapshot().is_err());
+    }
 
     #[test]
     fn runtime_campaigns_single_node_to_leader() {

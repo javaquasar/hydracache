@@ -177,18 +177,21 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     let suppressed_raft_promotions = Arc::new(RwLock::new(BTreeSet::new()));
     let use_network_sink =
         topology.multi_voter || matches!(start_mode, ResolvedClusterStartMode::Join);
+    let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
     let message_sink: Arc<dyn RaftMessageSink> = if use_network_sink {
-        Arc::new(HttpRaftMessageSink::new(
-            node_id.clone(),
-            raft_node_id,
-            raft_peers.clone(),
-            route_auth.clone(),
-            config,
-        )?)
+        Arc::new(
+            HttpRaftMessageSink::new(
+                node_id.clone(),
+                raft_node_id,
+                raft_peers.clone(),
+                route_auth.clone(),
+                config,
+            )?
+            .with_snapshot_feedback(raft.clone(), drive_diagnostics.clone()),
+        )
     } else {
         Arc::new(NoopRaftMessageSink)
     };
-    let drive_diagnostics = Arc::new(GridDriveDiagnostics::default());
     let (shutdown, _) = watch::channel(false);
     spawn_grid_drive(
         GridDriveHandles {
@@ -841,6 +844,10 @@ struct GridDriveDiagnosticsSnapshot {
     ticks: u64,
     drive_errors: u64,
     send_failures: u64,
+    snapshot_send_attempts: u64,
+    snapshot_send_successes: u64,
+    snapshot_send_failures: u64,
+    snapshot_sends_in_flight: u64,
     last_error: Option<String>,
 }
 
@@ -849,6 +856,10 @@ struct GridDriveDiagnostics {
     ticks: AtomicU64,
     drive_errors: AtomicU64,
     send_failures: AtomicU64,
+    snapshot_send_attempts: AtomicU64,
+    snapshot_send_successes: AtomicU64,
+    snapshot_send_failures: AtomicU64,
+    snapshot_sends_in_flight: AtomicU64,
     last_error: Mutex<Option<String>>,
 }
 
@@ -867,11 +878,33 @@ impl GridDriveDiagnostics {
         self.set_last_error(error);
     }
 
+    fn record_snapshot_send_started(&self) {
+        self.snapshot_send_attempts.fetch_add(1, Ordering::Relaxed);
+        self.snapshot_sends_in_flight
+            .fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn record_snapshot_send_finished(&self, delivered: bool) {
+        if delivered {
+            self.snapshot_send_successes.fetch_add(1, Ordering::Relaxed);
+        } else {
+            self.snapshot_send_failures.fetch_add(1, Ordering::Relaxed);
+        }
+        let previous = self
+            .snapshot_sends_in_flight
+            .fetch_sub(1, Ordering::Relaxed);
+        debug_assert!(previous > 0, "snapshot send completion without a start");
+    }
+
     fn snapshot(&self) -> GridDriveDiagnosticsSnapshot {
         GridDriveDiagnosticsSnapshot {
             ticks: self.ticks.load(Ordering::Relaxed),
             drive_errors: self.drive_errors.load(Ordering::Relaxed),
             send_failures: self.send_failures.load(Ordering::Relaxed),
+            snapshot_send_attempts: self.snapshot_send_attempts.load(Ordering::Relaxed),
+            snapshot_send_successes: self.snapshot_send_successes.load(Ordering::Relaxed),
+            snapshot_send_failures: self.snapshot_send_failures.load(Ordering::Relaxed),
+            snapshot_sends_in_flight: self.snapshot_sends_in_flight.load(Ordering::Relaxed),
             last_error: self
                 .last_error
                 .lock()
@@ -1072,6 +1105,13 @@ struct HttpRaftMessageSink {
     auth: ClusterRouteAuth,
     scheme: &'static str,
     client: reqwest::Client,
+    snapshot_feedback: Option<SnapshotDeliveryFeedback>,
+}
+
+#[derive(Debug, Clone)]
+struct SnapshotDeliveryFeedback {
+    raft: Arc<NetworkedRaftRuntime>,
+    diagnostics: Arc<GridDriveDiagnostics>,
 }
 
 impl HttpRaftMessageSink {
@@ -1090,7 +1130,17 @@ impl HttpRaftMessageSink {
             auth,
             scheme,
             client,
+            snapshot_feedback: None,
         })
+    }
+
+    fn with_snapshot_feedback(
+        mut self,
+        raft: Arc<NetworkedRaftRuntime>,
+        diagnostics: Arc<GridDriveDiagnostics>,
+    ) -> Self {
+        self.snapshot_feedback = Some(SnapshotDeliveryFeedback { raft, diagnostics });
+        self
     }
 
     fn node_id_for(&self, raft_node_id: u64) -> String {
@@ -1115,14 +1165,8 @@ impl HttpRaftMessageSink {
             })?;
         Ok(headers)
     }
-}
 
-#[async_trait::async_trait]
-impl RaftMessageSink for HttpRaftMessageSink {
-    async fn send(&self, message: RaftWireMessage) -> CacheResult<()> {
-        if message.to == self.local_raft_node_id {
-            return Ok(());
-        }
+    async fn send_http(&self, message: RaftWireMessage) -> CacheResult<()> {
         let peer = self
             .peers
             .read()
@@ -1166,6 +1210,33 @@ impl RaftMessageSink for HttpRaftMessageSink {
             )));
         }
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl RaftMessageSink for HttpRaftMessageSink {
+    async fn send(&self, message: RaftWireMessage) -> CacheResult<()> {
+        if message.to == self.local_raft_node_id {
+            return Ok(());
+        }
+        let snapshot_peer = if self.snapshot_feedback.is_some() && message.is_snapshot()? {
+            Some(message.to)
+        } else {
+            None
+        };
+        if let (Some(peer_id), Some(feedback)) = (snapshot_peer, &self.snapshot_feedback) {
+            feedback.diagnostics.record_snapshot_send_started();
+            let result = self.send_http(message).await;
+            let delivered = result.is_ok();
+            feedback
+                .diagnostics
+                .record_snapshot_send_finished(delivered);
+            feedback
+                .raft
+                .report_snapshot_delivery_deferred(peer_id, delivered);
+            return result;
+        }
+        self.send_http(message).await
     }
 }
 
@@ -1704,7 +1775,11 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     }
 
     fn raft_compaction_status(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
-        raft_compaction_status(&self.raft, self.raft_compaction_enabled)
+        raft_compaction_status(
+            &self.raft,
+            self.raft_compaction_enabled,
+            &self.drive_diagnostics,
+        )
     }
 
     fn compact_raft_log_at_applied(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
@@ -1714,17 +1789,20 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         self.raft
             .compact_applied_log_to_snapshot()
             .map_err(|error| RaftCompactionError::Runtime(error.to_string()))?;
-        raft_compaction_status(&self.raft, true)
+        raft_compaction_status(&self.raft, true, &self.drive_diagnostics)
     }
 }
 
 fn raft_compaction_status(
     raft: &NetworkedRaftRuntime,
     enabled: bool,
+    diagnostics: &GridDriveDiagnostics,
 ) -> Result<RaftCompactionStatus, RaftCompactionError> {
     let observation = raft
         .log_compaction_observation()
         .map_err(|error| RaftCompactionError::Runtime(error.to_string()))?;
+    let runtime = raft.snapshot();
+    let delivery = diagnostics.snapshot();
     Ok(RaftCompactionStatus {
         available: true,
         enabled,
@@ -1732,6 +1810,11 @@ fn raft_compaction_status(
         snapshot_index: Some(observation.snapshot_index),
         first_log_index: Some(observation.first_log_index),
         last_log_index: Some(observation.last_log_index),
+        snapshot_send_attempts: Some(delivery.snapshot_send_attempts),
+        snapshot_send_successes: Some(delivery.snapshot_send_successes),
+        snapshot_send_failures: Some(delivery.snapshot_send_failures),
+        snapshot_sends_in_flight: Some(delivery.snapshot_sends_in_flight),
+        snapshot_installs: Some(runtime.snapshot_installs),
     })
 }
 
@@ -3031,6 +3114,66 @@ mod tests {
             error.to_string().contains("failed to send raft message"),
             "timeout should be reported as a raft send failure: {error}"
         );
+    }
+
+    #[tokio::test]
+    async fn snapshot_http_timeout_reports_failure_and_releases_inflight_feedback() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let peer_addr = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            let (_stream, _addr) = listener.accept().await.unwrap();
+            tokio::time::sleep(RAFT_HTTP_REQUEST_TIMEOUT + Duration::from_secs(2)).await;
+        });
+        let peers = BTreeMap::from([(
+            2,
+            RaftPeer {
+                node_id: ClusterNodeId::from("peer"),
+                endpoint: peer_addr.to_string(),
+            },
+        )]);
+        let diagnostics = Arc::new(GridDriveDiagnostics::default());
+        let raft = test_raft_runtime();
+        let sink = HttpRaftMessageSink::new(
+            ClusterNodeId::from("local"),
+            1,
+            Arc::new(RwLock::new(peers)),
+            ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true),
+            &test_member_config("127.0.0.1:7000"),
+        )
+        .unwrap()
+        .with_snapshot_feedback(raft, Arc::clone(&diagnostics));
+        let mut snapshot = raft::eraftpb::Message {
+            from: 1,
+            to: 2,
+            term: 1,
+            ..Default::default()
+        };
+        snapshot.set_msg_type(raft::eraftpb::MessageType::MsgSnapshot);
+        let message = RaftWireMessage::encode(&snapshot).unwrap();
+
+        let send = tokio::spawn(async move { sink.send(message).await });
+        tokio::time::timeout(Duration::from_secs(1), async {
+            loop {
+                if diagnostics.snapshot().snapshot_sends_in_flight == 1 {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .expect("snapshot request should become observable while awaiting its HTTP outcome");
+
+        let error = send
+            .await
+            .expect("snapshot send task should not panic")
+            .expect_err("silent snapshot receiver should time out");
+        server.abort();
+        assert!(error.to_string().contains("failed to send raft message"));
+        let snapshot = diagnostics.snapshot();
+        assert_eq!(snapshot.snapshot_send_attempts, 1);
+        assert_eq!(snapshot.snapshot_send_successes, 0);
+        assert_eq!(snapshot.snapshot_send_failures, 1);
+        assert_eq!(snapshot.snapshot_sends_in_flight, 0);
     }
 
     #[tokio::test]
