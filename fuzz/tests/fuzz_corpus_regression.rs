@@ -1,4 +1,5 @@
 use std::fs;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 
 type FuzzTarget = (&'static str, fn(&[u8]));
@@ -67,7 +68,7 @@ fn committed_seed_count() -> usize {
         .sum()
 }
 
-fn fuzz_targets() -> [FuzzTarget; 4] {
+fn fuzz_targets() -> [FuzzTarget; 5] {
     [
         ("fuzz_config_parse", hydracache_fuzz::fuzz_config_parse),
         ("fuzz_kv_codec", hydracache_fuzz::fuzz_kv_codec),
@@ -76,5 +77,36 @@ fn fuzz_targets() -> [FuzzTarget; 4] {
             "fuzz_snapshot_decode",
             hydracache_fuzz::fuzz_snapshot_decode,
         ),
+        ("raft_wire_frame", hydracache_fuzz::fuzz_raft_wire_frame),
     ]
+}
+
+#[test]
+fn raft_wire_frame_corpus_never_panics_or_mutates_on_reject() {
+    let target_dir = committed_corpus().join("raft_wire_frame");
+    let mut executed = 0usize;
+
+    for entry in fs::read_dir(&target_dir).expect("raft wire corpus should be readable") {
+        let entry = entry.expect("raft wire corpus entry should be readable");
+        if !entry.file_type().unwrap().is_file() {
+            continue;
+        }
+        let path = entry.path();
+        let bytes = fs::read(&path).expect("raft wire corpus seed should be readable");
+        assert!(
+            bytes.len() <= 16 * 1024,
+            "raft wire seed {} exceeds the pure replay budget",
+            path.display()
+        );
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            hydracache_fuzz::fuzz_raft_wire_frame(&bytes)
+        }));
+        assert!(result.is_ok(), "raft wire seed {} panicked", path.display());
+        executed += 1;
+    }
+
+    assert!(
+        executed > 0,
+        "raft wire corpus must contain committed seeds"
+    );
 }

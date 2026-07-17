@@ -10,11 +10,14 @@ cargo-fuzz = true
 
 [dependencies]
 hydracache-client-protocol.workspace = true
+hydracache-cluster-raft.workspace = true
+hydracache-cluster-transport-axum.workspace = true
 hydracache-redis-compat.workspace = true
 hydracache-server.workspace = true
 libfuzzer-sys = "0.4"
 protobuf.workspace = true
 raft.workspace = true
+serde_json.workspace = true
 
 [[bin]]
 name = "fuzz_config_parse"
@@ -40,6 +43,13 @@ bench = false
 [[bin]]
 name = "fuzz_snapshot_decode"
 path = "fuzz_targets/fuzz_snapshot_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "raft_wire_frame"
+path = "fuzz_targets/raft_wire_frame.rs"
 test = false
 doc = false
 bench = false

@@ -1,4 +1,6 @@
 use hydracache_client_protocol::{ClientFrame, ClientWireMessage, VersionHandshake};
+use hydracache_cluster_raft::{RaftMetadataRuntime, RaftWireMessage};
+use hydracache_cluster_transport_axum::ClusterOpaqueMessage;
 use hydracache_redis_compat::{
     decode_resp2_command_with_limits, decode_resp3_command_with_limits, RespDecodeLimits,
 };
@@ -69,4 +71,50 @@ pub fn fuzz_snapshot_decode(data: &[u8]) {
         return;
     }
     let _ = Snapshot::parse_from_bytes(data);
+}
+
+pub fn fuzz_raft_wire_frame(data: &[u8]) {
+    if data.len() > MAX_FUZZ_INPUT_BYTES {
+        return;
+    }
+    let runtime = RaftMetadataRuntime::single_node("raft-wire-fuzz", 1)
+        .expect("the isolated fuzz raft runtime must start");
+    let before = runtime.snapshot();
+    let Ok(envelope) = serde_json::from_slice::<ClusterOpaqueMessage>(data) else {
+        assert_eq!(runtime.snapshot(), before);
+        return;
+    };
+    let Ok(payload) = envelope.decode_payload() else {
+        assert_eq!(runtime.snapshot(), before);
+        return;
+    };
+    assert!(payload.len() <= MAX_FUZZ_INPUT_BYTES);
+
+    let wire = RaftWireMessage {
+        from: 0,
+        to: 0,
+        term: envelope.term,
+        payload: payload.to_vec(),
+    };
+    let message = match wire.decode() {
+        Ok(message) => message,
+        Err(_) => {
+            assert_eq!(runtime.snapshot(), before);
+            return;
+        }
+    };
+    let reencoded =
+        RaftWireMessage::encode(&message).expect("a decoded raft protobuf message must re-encode");
+    let roundtrip = reencoded
+        .decode()
+        .expect("a re-encoded raft protobuf message must decode");
+    assert_eq!(roundtrip, message);
+
+    if runtime.step(wire).is_err() {
+        assert_eq!(
+            runtime.snapshot(),
+            before,
+            "a rejected raft protobuf frame mutated the isolated runtime"
+        );
+    }
 }
