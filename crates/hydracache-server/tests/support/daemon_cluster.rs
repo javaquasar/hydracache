@@ -8,6 +8,7 @@ use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache_sim::ResourceSample;
@@ -18,6 +19,11 @@ pub const REDIS_RESP_MULTINODE_E2E_ENV: &str = "HYDRACACHE_RUN_REDIS_RESP_MULTIN
 const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
 const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
+
+// Port reservations are released before child processes bind their listeners.
+// Keep one cluster alive at a time so parallel integration tests cannot reuse
+// an address during that hand-off and accidentally join each other's clusters.
+static DAEMON_CLUSTER_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 pub type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 
@@ -82,6 +88,7 @@ pub struct DaemonCluster {
     binary: PathBuf,
     root: PathBuf,
     nodes: Vec<DaemonNode>,
+    _process_lock: MutexGuard<'static, ()>,
 }
 
 #[derive(Debug, Clone)]
@@ -104,6 +111,10 @@ impl DaemonCluster {
     }
 
     fn start_bootstrap_inner(count: usize, name: &str, redis_enabled: bool) -> TestResult<Self> {
+        let process_lock = DAEMON_CLUSTER_PROCESS_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .map_err(|_| "daemon process cluster lock poisoned")?;
         let binary = server_binary()?;
         let root = unique_root(name)?;
         fs::create_dir_all(&root)?;
@@ -133,6 +144,7 @@ impl DaemonCluster {
             binary,
             root,
             nodes,
+            _process_lock: process_lock,
         };
         for index in 0..cluster.nodes.len() {
             cluster.spawn_node(index, &seed_addrs)?;
