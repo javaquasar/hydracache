@@ -184,7 +184,7 @@ function = "durable_commit_failure_fails_loud_and_recovers_consistent"
 
 [[work_item.required_tests]]
 source = "crates/hydracache-operator/tests/soak_kind.rs"
-function = "multi_node_chaos_soak_loses_no_committed_write"
+function = "iochaos_fault_blocks_real_raft_persistence_then_recovers"
 
 [[work_item]]
 id = "W6"

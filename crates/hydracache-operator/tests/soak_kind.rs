@@ -1,13 +1,15 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::panic::{resume_unwind, AssertUnwindSafe};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
+use futures_util::FutureExt;
 use hydracache_operator::controller::READY_PHASE;
 use hydracache_operator::crd::{sample_spec, HydraCacheCluster, HydraCacheClusterSpec};
 use hydracache_operator::resources::{
     headless_service_name, APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL,
-    MANAGED_BY_LABEL,
+    MANAGED_BY_LABEL, SERVER_CONTAINER,
 };
 use hydracache_operator::scale::{
     plan_scale, pod_name, quorum_for, AdminAction, AdminStatus, ScaleObservation,
@@ -23,6 +25,7 @@ use kube::{
     api::{ApiResource, DynamicObject, GroupVersionKind},
     discovery, Api,
 };
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
@@ -39,7 +42,7 @@ const NETWORK_POLICY_SKIP: &str =
     "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
 const IOCHAOS_SKIP: &str =
     "chaos-mesh IOChaos CRD is not installed; slow-disk remains an external dependency";
-const SCOPE_DISCLOSURE: &str = "0.61 kind chaos: NetworkPartition uses Kubernetes NetworkPolicy only when a CNI enforcement probe proves policy is active; SlowDisk uses chaos-mesh IOChaos only when the iochaos.chaos-mesh.org CRD is installed. Each unsupported leg skips loud, never wrong-but-green.";
+const SCOPE_DISCLOSURE: &str = "0.66 kind chaos: NetworkPartition uses Kubernetes NetworkPolicy only when a CNI enforcement probe proves policy is active; SlowDisk targets the exact Raft-log path with chaos-mesh IOChaos and is accepted only after Selected=True/AllInjected=True for the current pod UID. Each unsupported leg skips loud, never wrong-but-green.";
 
 fn kind_enabled() -> bool {
     std::env::var(KIND_ENV).as_deref() == Ok("1")
@@ -122,7 +125,6 @@ struct SoakObservation {
     ready_replicas: u32,
     unavailable_replicas: u32,
     leader: Option<String>,
-    committed_writes: u64,
 }
 
 impl SoakObservation {
@@ -143,31 +145,6 @@ impl SoakObservation {
             self.leader.is_some(),
             "{} did not report a leader; {SCOPE_DISCLOSURE}",
             self.stage
-        );
-    }
-}
-
-#[derive(Debug, Default)]
-struct CommittedWriteProbe {
-    committed: u64,
-}
-
-impl CommittedWriteProbe {
-    fn record_committed_write(&mut self) {
-        self.committed = self.committed.saturating_add(1);
-    }
-
-    fn committed(&self) -> u64 {
-        self.committed
-    }
-
-    fn assert_no_lost_committed_write(&self, observed: &SoakObservation) {
-        assert!(
-            observed.committed_writes >= self.committed,
-            "{} lost committed writes: observed={} expected_at_least={}",
-            observed.stage,
-            observed.committed_writes,
-            self.committed
         );
     }
 }
@@ -313,11 +290,47 @@ fn scale_observation(
 
 #[derive(Debug, Clone, Deserialize)]
 struct ScaleChaosAdminStatus {
+    source: String,
     leader: Option<String>,
     epoch: u64,
     quorum_ok: bool,
     members: u32,
     voters: u32,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct RaftCompactionObservation {
+    available: bool,
+    applied_index: Option<u64>,
+}
+
+#[derive(Debug, Clone)]
+struct RaftNodeObservation {
+    ordinal: u32,
+    status: ScaleChaosAdminStatus,
+    compaction: RaftCompactionObservation,
+}
+
+impl RaftNodeObservation {
+    fn applied_index(&self) -> u64 {
+        self.compaction
+            .applied_index
+            .expect("live Sled-backed kind daemon must expose applied_index")
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct IoChaosTarget {
+    namespace: String,
+    pod: String,
+    pod_uid: String,
+    ordinal: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct IoChaosReceipt {
+    chaos_uid: String,
+    target: IoChaosTarget,
 }
 
 fn partition_policy_name(cluster: &str, ordinal: u32) -> String {
@@ -360,7 +373,7 @@ fn iochaos_manifest(cluster: &str, namespace: &str, ordinal: u32) -> Value {
             "namespace": namespace,
         },
         "spec": {
-            "action": "latency",
+            "action": "fault",
             "mode": "one",
             "selector": {
                 "namespaces": [namespace],
@@ -368,12 +381,112 @@ fn iochaos_manifest(cluster: &str, namespace: &str, ordinal: u32) -> Value {
                     namespace: [pod],
                 },
             },
+            "containerNames": [SERVER_CONTAINER],
             "volumePath": "/var/lib/hydracache",
-            "path": "/var/lib/hydracache/**/*",
-            "delay": "100ms",
+            "path": "/var/lib/hydracache/raft-log/**/*",
+            "methods": ["WRITE", "FLUSH", "FSYNC"],
+            "errno": 5,
             "percent": 100,
-            "duration": "30s",
+            "duration": "10m",
         },
+    })
+}
+
+fn iochaos_condition_is_true(object: &Value, condition_type: &str) -> bool {
+    object
+        .pointer("/status/conditions")
+        .and_then(Value::as_array)
+        .is_some_and(|conditions| {
+            conditions.iter().any(|condition| {
+                condition.get("type").and_then(Value::as_str) == Some(condition_type)
+                    && condition.get("status").and_then(Value::as_str) == Some("True")
+            })
+        })
+}
+
+fn iochaos_injection_receipt(
+    object: &Value,
+    target: &IoChaosTarget,
+    current_pod_uid: &str,
+) -> Result<IoChaosReceipt, String> {
+    if current_pod_uid != target.pod_uid {
+        return Err(format!(
+            "target pod {} was replaced during injection: expected uid={} current uid={current_pod_uid}",
+            target.pod, target.pod_uid
+        ));
+    }
+
+    let chaos_uid = object
+        .pointer("/metadata/uid")
+        .and_then(Value::as_str)
+        .filter(|uid| !uid.is_empty())
+        .ok_or("IOChaos has no Kubernetes UID")?;
+    if object
+        .pointer("/metadata/namespace")
+        .and_then(Value::as_str)
+        != Some(target.namespace.as_str())
+    {
+        return Err("IOChaos namespace does not match the target namespace".to_owned());
+    }
+
+    let expected_pods = json!({ target.namespace.clone(): [target.pod.clone()] });
+    let exact_selector = object.pointer("/spec/selector/namespaces")
+        == Some(&json!([target.namespace.clone()]))
+        && object.pointer("/spec/selector/pods") == Some(&expected_pods);
+    if !exact_selector {
+        return Err(format!(
+            "IOChaos selector is not the exact target {}/{}",
+            target.namespace, target.pod
+        ));
+    }
+
+    let exact_fault = object.pointer("/spec/containerNames") == Some(&json!([SERVER_CONTAINER]))
+        && object.pointer("/spec/action") == Some(&json!("fault"))
+        && object.pointer("/spec/volumePath") == Some(&json!("/var/lib/hydracache"))
+        && object.pointer("/spec/path") == Some(&json!("/var/lib/hydracache/raft-log/**/*"))
+        && object.pointer("/spec/methods") == Some(&json!(["WRITE", "FLUSH", "FSYNC"]))
+        && object.pointer("/spec/errno") == Some(&json!(5))
+        && object.pointer("/spec/percent") == Some(&json!(100));
+    if !exact_fault {
+        return Err("IOChaos did not preserve the exact Raft-log fault boundary".to_owned());
+    }
+
+    if !iochaos_condition_is_true(object, "Selected")
+        || !iochaos_condition_is_true(object, "AllInjected")
+    {
+        return Err(
+            "IOChaos controller has not reported Selected=True and AllInjected=True".to_owned(),
+        );
+    }
+
+    let instance_id = format!("{}/{}", target.namespace, target.pod);
+    let instances = object
+        .pointer("/status/instances")
+        .and_then(Value::as_object)
+        .ok_or("IOChaos status has no selected instances")?;
+    if instances.len() != 1 || !instances.contains_key(&instance_id) {
+        return Err(format!(
+            "IOChaos selected instances are not exactly {instance_id}: {:?}",
+            instances.keys().collect::<Vec<_>>()
+        ));
+    }
+
+    let records = object
+        .pointer("/status/experiment/containerRecords")
+        .and_then(Value::as_array)
+        .ok_or("IOChaos status has no container records")?;
+    if records.len() != 1
+        || records[0].get("id").and_then(Value::as_str) != Some(instance_id.as_str())
+        || records[0].get("phase").and_then(Value::as_str) != Some("Injected")
+    {
+        return Err(format!(
+            "IOChaos container record is not one injected {instance_id}: {records:?}"
+        ));
+    }
+
+    Ok(IoChaosReceipt {
+        chaos_uid: chaos_uid.to_owned(),
+        target: target.clone(),
     })
 }
 
@@ -607,9 +720,28 @@ impl KindHarness {
         probe: &str,
         target_ordinal: u32,
     ) -> Result<ScaleChaosAdminStatus, String> {
+        self.admin_json_from_probe(probe, target_ordinal, "/admin/status")
+            .await
+    }
+
+    async fn raft_compaction_from_probe(
+        &self,
+        probe: &str,
+        target_ordinal: u32,
+    ) -> Result<RaftCompactionObservation, String> {
+        self.admin_json_from_probe(probe, target_ordinal, "/admin/raft/compaction")
+            .await
+    }
+
+    async fn admin_json_from_probe<T: DeserializeOwned>(
+        &self,
+        probe: &str,
+        target_ordinal: u32,
+        path: &str,
+    ) -> Result<T, String> {
         let target = pod_name(&self.cluster, target_ordinal);
         let url = format!(
-            "http://{}.{}:9091/admin/status",
+            "http://{}.{}:9091{path}",
             target,
             headless_service_name(&self.cluster)
         );
@@ -636,13 +768,174 @@ impl KindHarness {
             })?;
         if !output.status.success() {
             return Err(format!(
-                "admin status probe for {target} failed: {}",
+                "admin probe {path} for {target} failed: {}",
                 String::from_utf8_lossy(&output.stderr).trim()
             ));
         }
         serde_json::from_slice(&output.stdout).map_err(|error| {
-            format!("admin status probe for {target} returned invalid JSON: {error}")
+            format!("admin probe {path} for {target} returned invalid JSON: {error}")
         })
+    }
+
+    async fn raft_node_observation_from_probe(
+        &self,
+        probe: &str,
+        ordinal: u32,
+    ) -> Result<RaftNodeObservation, String> {
+        let status = self.scale_admin_status_from_probe(probe, ordinal).await?;
+        let compaction = self.raft_compaction_from_probe(probe, ordinal).await?;
+        Ok(RaftNodeObservation {
+            ordinal,
+            status,
+            compaction,
+        })
+    }
+
+    async fn wait_raft_nodes(
+        &self,
+        replicas: u32,
+        expected_voters: u32,
+        minimum_epoch: u64,
+        minimum_applied: u64,
+        excluded_ordinal: Option<u32>,
+        stage: &'static str,
+    ) -> Vec<RaftNodeObservation> {
+        let sequence = SCALE_ADMIN_PROBE_SEQUENCE.fetch_add(1, Ordering::SeqCst);
+        let probe = self
+            .ensure_network_probe_pod(2_000_u32.saturating_add(sequence as u32))
+            .await
+            .unwrap_or_else(|error| panic!("{stage} admin probe could not start: {error}"));
+        let expected_count = replicas - u32::from(excluded_ordinal.is_some());
+        let mut latest = Vec::new();
+
+        for _ in 0..30 {
+            let mut observations = Vec::new();
+            let mut errors = Vec::new();
+            for ordinal in 0..replicas {
+                if excluded_ordinal == Some(ordinal) {
+                    continue;
+                }
+                match self.raft_node_observation_from_probe(&probe, ordinal).await {
+                    Ok(observation) => observations.push(observation),
+                    Err(error) => errors.push(error),
+                }
+            }
+
+            let authority = observations
+                .first()
+                .map(|observation| (observation.status.epoch, observation.status.leader.clone()));
+            let all_converged = observations.len() == expected_count as usize
+                && observations.iter().all(|observation| {
+                    observation.status.source == "live"
+                        && observation.status.voters == expected_voters
+                        && observation.status.members == expected_voters
+                        && observation.status.quorum_ok
+                        && observation.status.leader.is_some()
+                        && observation.status.epoch >= minimum_epoch
+                        && observation.compaction.available
+                        && observation
+                            .compaction
+                            .applied_index
+                            .is_some_and(|index| index >= minimum_applied)
+                })
+                && authority.is_some_and(|authority| {
+                    observations.iter().all(|observation| {
+                        (observation.status.epoch, observation.status.leader.clone()) == authority
+                    })
+                });
+            if all_converged {
+                self.delete_network_probe_pod(&probe).await;
+                return observations;
+            }
+
+            latest = observations
+                .iter()
+                .map(|observation| format!("{observation:?}"))
+                .chain(errors)
+                .collect();
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+
+        self.delete_network_probe_pod(&probe).await;
+        panic!(
+            "timed out waiting for {stage}: expected {expected_count} live nodes with members/voters={expected_voters}, epoch>={minimum_epoch}, applied>={minimum_applied}; latest={latest:?}"
+        );
+    }
+
+    async fn pod_uid(&self, ordinal: u32) -> Result<String, String> {
+        let pod = pod_name(&self.cluster, ordinal);
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        pods.get(&pod)
+            .await
+            .map_err(|error| format!("could not read target pod {pod}: {error}"))?
+            .metadata
+            .uid
+            .filter(|uid| !uid.is_empty())
+            .ok_or_else(|| format!("target pod {pod} has no Kubernetes UID"))
+    }
+
+    async fn assert_faulted_node_lags_or_is_unavailable(
+        &self,
+        ordinal: u32,
+        expected_pod_uid: &str,
+        baseline_epoch: u64,
+        baseline_applied: u64,
+    ) {
+        assert_eq!(
+            self.pod_uid(ordinal)
+                .await
+                .unwrap_or_else(|error| panic!("W5 target identity disappeared: {error}")),
+            expected_pod_uid,
+            "IOChaos target pod was replaced before the mutation observation"
+        );
+        let sequence = SCALE_ADMIN_PROBE_SEQUENCE.fetch_add(1, Ordering::SeqCst);
+        let probe = self
+            .ensure_network_probe_pod(3_000_u32.saturating_add(sequence as u32))
+            .await
+            .unwrap_or_else(|error| panic!("W5 faulted-node probe could not start: {error}"));
+        let status = self.scale_admin_status_from_probe(&probe, ordinal).await;
+        let compaction = if status.is_ok() {
+            Some(self.raft_compaction_from_probe(&probe, ordinal).await)
+        } else {
+            None
+        };
+        self.delete_network_probe_pod(&probe).await;
+
+        assert_eq!(
+            self.pod_uid(ordinal)
+                .await
+                .unwrap_or_else(|error| panic!("W5 target identity disappeared: {error}")),
+            expected_pod_uid,
+            "IOChaos target pod was replaced during the mutation observation"
+        );
+        let Ok(status) = status else {
+            eprintln!(
+                "HC-W5-IOCHAOS target={} uid={expected_pod_uid} admin status unavailable while Raft-log writes are faulted",
+                pod_name(&self.cluster, ordinal),
+            );
+            return;
+        };
+        assert_eq!(
+            status.source, "live",
+            "faulted node returned a modeled status"
+        );
+        assert_eq!(
+            (status.epoch, status.members, status.voters),
+            (baseline_epoch, 3, 3),
+            "faulted node partially exposed the 3->4 membership mutation: {status:?}"
+        );
+        match compaction.expect("status success always triggers compaction observation") {
+            Ok(compaction) => assert!(
+                compaction
+                    .applied_index
+                    .is_some_and(|index| index <= baseline_applied),
+                "faulted node advanced durable applied_index through the IOChaos boundary: {compaction:?}"
+            ),
+            Err(error) => eprintln!(
+                "HC-W5-IOCHAOS target={} retained baseline admin authority; durable progress endpoint unavailable under fault: {error}",
+                pod_name(&self.cluster, ordinal)
+            ),
+        }
     }
 
     async fn ensure_network_probe_pod(&self, isolated_ordinal: u32) -> Result<String, String> {
@@ -707,12 +1000,41 @@ impl KindHarness {
     }
 
     async fn inject_slow_disk(&self, ordinal: u32) -> ChaosInjection {
+        match self.inject_slow_disk_receipt(ordinal).await {
+            Some(receipt) => {
+                eprintln!(
+                    "HC-W5-IOCHAOS injected uid={} target={}/{} pod_uid={} container={SERVER_CONTAINER}",
+                    receipt.chaos_uid,
+                    receipt.target.namespace,
+                    receipt.target.pod,
+                    receipt.target.pod_uid
+                );
+                ChaosInjection::Applied("chaos-mesh IOChaos")
+            }
+            None => slow_disk_plan_for_crd_present(false),
+        }
+    }
+
+    async fn inject_slow_disk_receipt(&self, ordinal: u32) -> Option<IoChaosReceipt> {
         let Some(api_resource) = self.iochaos_api_resource().await else {
-            return slow_disk_plan_for_crd_present(false);
+            let _ = slow_disk_plan_for_crd_present(false);
+            return None;
         };
         let iochaos: Api<DynamicObject> =
             Api::namespaced_with(self.client.clone(), &self.namespace, &api_resource);
         let name = slow_disk_chaos_name(&self.cluster, ordinal);
+        self.delete_dynamic_object_and_wait(&iochaos, &name, "stale IOChaos cleanup")
+            .await;
+
+        let target = IoChaosTarget {
+            namespace: self.namespace.clone(),
+            pod: pod_name(&self.cluster, ordinal),
+            pod_uid: self
+                .pod_uid(ordinal)
+                .await
+                .unwrap_or_else(|error| panic!("kind slow-disk target is invalid: {error}")),
+            ordinal,
+        };
         let manifest = iochaos_manifest(&self.cluster, &self.namespace, ordinal);
         iochaos
             .patch(
@@ -722,7 +1044,38 @@ impl KindHarness {
             )
             .await
             .expect("kind slow-disk injector should apply chaos-mesh IOChaos");
-        slow_disk_plan_for_crd_present(true)
+        Some(self.wait_iochaos_injected(&iochaos, &name, &target).await)
+    }
+
+    async fn wait_iochaos_injected(
+        &self,
+        iochaos: &Api<DynamicObject>,
+        name: &str,
+        target: &IoChaosTarget,
+    ) -> IoChaosReceipt {
+        let mut latest = None;
+        for _ in 0..30 {
+            match iochaos.get(name).await {
+                Ok(object) => {
+                    let value = serde_json::to_value(&object)
+                        .expect("DynamicObject should serialize as Kubernetes JSON");
+                    let current_pod_uid = self
+                        .pod_uid(target.ordinal)
+                        .await
+                        .unwrap_or_else(|error| panic!("IOChaos target disappeared: {error}"));
+                    match iochaos_injection_receipt(&value, target, &current_pod_uid) {
+                        Ok(receipt) => return receipt,
+                        Err(error) => latest = Some(error),
+                    }
+                }
+                Err(kube::Error::Api(error)) if error.code == 404 => {
+                    latest = Some("IOChaos object is not visible yet".to_owned());
+                }
+                Err(error) => panic!("could not observe IOChaos {name}: {error}"),
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!("IOChaos {name} never reached exact AllInjected state: latest={latest:?}");
     }
 
     async fn delete_slow_disk(&self, ordinal: u32) {
@@ -731,12 +1084,47 @@ impl KindHarness {
         };
         let iochaos: Api<DynamicObject> =
             Api::namespaced_with(self.client.clone(), &self.namespace, &api_resource);
-        let _ = iochaos
-            .delete(
-                &slow_disk_chaos_name(&self.cluster, ordinal),
-                &DeleteParams::default(),
-            )
-            .await;
+        let name = slow_disk_chaos_name(&self.cluster, ordinal);
+        let _ = iochaos.delete(&name, &DeleteParams::default()).await;
+        let mut latest = None;
+        for _ in 0..30 {
+            match iochaos.get(&name).await {
+                Ok(object) => {
+                    let value = serde_json::to_value(&object)
+                        .expect("DynamicObject should serialize as Kubernetes JSON");
+                    latest = Some(if iochaos_condition_is_true(&value, "AllRecovered") {
+                        "AllRecovered=True; waiting for deletion".to_owned()
+                    } else {
+                        "waiting for AllRecovered/deletion".to_owned()
+                    });
+                }
+                Err(kube::Error::Api(error)) if error.code == 404 => return,
+                Err(error) => panic!("could not observe IOChaos recovery for {name}: {error}"),
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!("IOChaos {name} did not recover/delete: latest={latest:?}");
+    }
+
+    async fn delete_dynamic_object_and_wait(
+        &self,
+        api: &Api<DynamicObject>,
+        name: &str,
+        stage: &str,
+    ) {
+        match api.delete(name, &DeleteParams::default()).await {
+            Ok(_) => {}
+            Err(kube::Error::Api(error)) if error.code == 404 => return,
+            Err(error) => panic!("{stage} could not delete {name}: {error}"),
+        }
+        for _ in 0..30 {
+            match api.get(name).await {
+                Err(kube::Error::Api(error)) if error.code == 404 => return,
+                Ok(_) => tokio::time::sleep(Duration::from_secs(1)).await,
+                Err(error) => panic!("{stage} could not observe {name}: {error}"),
+            }
+        }
+        panic!("{stage} timed out waiting for {name} deletion");
     }
 
     async fn iochaos_api_resource(&self) -> Option<ApiResource> {
@@ -747,15 +1135,10 @@ impl KindHarness {
             .map(|(resource, _)| resource)
     }
 
-    async fn wait_ready(
-        &self,
-        desired: u32,
-        stage: &'static str,
-        committed_writes: u64,
-    ) -> SoakObservation {
+    async fn wait_ready(&self, desired: u32, stage: &'static str) -> SoakObservation {
         let mut latest = None;
         for _ in 0..KIND_WAIT_ATTEMPTS {
-            let observation = match self.observe(stage, committed_writes).await {
+            let observation = match self.observe(stage).await {
                 Ok(observation) => observation,
                 Err(kube::Error::Api(error)) if error.code == 404 => {
                     latest = Some(format!("waiting for owned resources: {}", error.message));
@@ -764,7 +1147,10 @@ impl KindHarness {
                 }
                 Err(error) => panic!("kind soak should observe cluster resources: {error}"),
             };
-            if observation.ready_replicas >= desired && observation.leader.is_some() {
+            if observation.desired_replicas == desired
+                && observation.ready_replicas >= desired
+                && observation.leader.is_some()
+            {
                 observation.assert_quorum();
                 return observation;
             }
@@ -774,11 +1160,7 @@ impl KindHarness {
         panic!("timed out waiting for {stage} readiness; latest={latest:?}");
     }
 
-    async fn observe(
-        &self,
-        stage: &'static str,
-        committed_writes: u64,
-    ) -> kube::Result<SoakObservation> {
+    async fn observe(&self, stage: &'static str) -> kube::Result<SoakObservation> {
         let stateful_sets: Api<StatefulSet> = Api::namespaced(self.client.clone(), &self.namespace);
         let stateful_set = stateful_sets.get(&self.cluster).await?;
         let desired = stateful_set
@@ -818,7 +1200,6 @@ impl KindHarness {
             ready_replicas: ready,
             unavailable_replicas: unavailable,
             leader,
-            committed_writes,
         })
     }
 }
@@ -959,6 +1340,162 @@ fn scale_chaos_capability_rejects_a_non_enforcing_cni() {
 }
 
 #[tokio::test]
+#[ignore = "kind/Chaos-Mesh-gated W5 lane: set HYDRACACHE_OPERATOR_KIND=1 with IOChaos installed"]
+async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
+    let Some(kind) =
+        KindHarness::try_start("iochaos_fault_blocks_real_raft_persistence_then_recovers").await
+    else {
+        return;
+    };
+
+    let installed = kind.apply_cluster(soak_kind_spec(3)).await;
+    kind.wait_ready(installed.spec.replicas, "w5-install").await;
+    let initial = kind.wait_raft_nodes(3, 3, 1, 1, None, "w5-install").await;
+    let initial_epoch = initial[0].status.epoch;
+    let initial_applied = initial
+        .iter()
+        .map(RaftNodeObservation::applied_index)
+        .max()
+        .expect("three-node cluster must expose applied progress");
+    let leader = initial[0]
+        .status
+        .leader
+        .as_deref()
+        .expect("converged initial cluster must report a leader");
+    let target = initial
+        .iter()
+        .find(|observation| {
+            observation.ordinal != 0 && pod_name(&kind.cluster, observation.ordinal) != leader
+        })
+        .expect("one of ordinals 1 or 2 must be a non-leader");
+    let target_ordinal = target.ordinal;
+    let target_baseline_applied = target.applied_index();
+
+    let Some(receipt) = kind.inject_slow_disk_receipt(target_ordinal).await else {
+        eprintln!("skipping W5 live IOChaos proof: {IOCHAOS_SKIP}");
+        return;
+    };
+    eprintln!(
+        "HC-W5-CAPABILITY runtime=kubernetes iochaos=AllInjected uid={} target={}/{} pod_uid={} container={SERVER_CONTAINER}",
+        receipt.chaos_uid,
+        receipt.target.namespace,
+        receipt.target.pod,
+        receipt.target.pod_uid
+    );
+    let proof = AssertUnwindSafe(async {
+        let injected_majority = kind
+            .wait_raft_nodes(
+                3,
+                3,
+                initial_epoch,
+                1,
+                Some(target_ordinal),
+                "w5-injected-non-leader",
+            )
+            .await;
+        assert_ne!(
+            injected_majority[0].status.leader.as_deref(),
+            Some(receipt.target.pod.as_str()),
+            "IOChaos target must still be a non-leader before the real mutation starts"
+        );
+
+        kind.apply_cluster(soak_kind_spec(4)).await;
+        let committed_majority = kind
+            .wait_raft_nodes(
+                4,
+                4,
+                initial_epoch.saturating_add(1),
+                initial_applied.saturating_add(1),
+                Some(target_ordinal),
+                "w5-faulted-scale-up-majority",
+            )
+            .await;
+        let committed_epoch = committed_majority[0].status.epoch;
+        let committed_applied = committed_majority
+            .iter()
+            .map(RaftNodeObservation::applied_index)
+            .max()
+            .expect("healthy majority must expose applied progress");
+        kind.assert_faulted_node_lags_or_is_unavailable(
+            target_ordinal,
+            &receipt.target.pod_uid,
+            initial_epoch,
+            target_baseline_applied,
+        )
+        .await;
+
+        kind.delete_slow_disk(target_ordinal).await;
+        kind.wait_ready(4, "w5-iochaos-recovered").await;
+        assert_eq!(
+            kind.pod_uid(target_ordinal)
+                .await
+                .expect("healed IOChaos target must remain observable"),
+            receipt.target.pod_uid,
+            "IOChaos target pod was replaced instead of recovering in place"
+        );
+        let recovered = kind
+            .wait_raft_nodes(
+                4,
+                4,
+                committed_epoch,
+                committed_applied,
+                None,
+                "w5-iochaos-recovered",
+            )
+            .await;
+        assert_eq!(
+            recovered[0].status.epoch, committed_epoch,
+            "healing IOChaos must catch up to the committed membership, not create another epoch"
+        );
+        let recovered_target = recovered
+            .iter()
+            .find(|observation| observation.ordinal == target_ordinal)
+            .expect("the healed target must be part of the exact four-pod observation");
+        assert!(recovered_target.applied_index() >= committed_applied);
+
+        kind.apply_cluster(soak_kind_spec(3)).await;
+        kind.wait_ready(3, "w5-scale-down-restored").await;
+        let restored = kind
+            .wait_raft_nodes(
+                3,
+                3,
+                committed_epoch.saturating_add(1),
+                committed_applied.saturating_add(1),
+                None,
+                "w5-scale-down-restored",
+            )
+            .await;
+        assert_eq!(restored.len(), 3);
+    })
+    .catch_unwind()
+    .await;
+
+    let heal_cleanup = AssertUnwindSafe(kind.delete_slow_disk(target_ordinal))
+        .catch_unwind()
+        .await;
+    let scale_cleanup = AssertUnwindSafe(async {
+        kind.apply_cluster(soak_kind_spec(3)).await;
+        kind.wait_ready(3, "w5-final-cleanup").await;
+    })
+    .catch_unwind()
+    .await;
+    let mut failure = proof.err();
+    for cleanup_failure in [heal_cleanup.err(), scale_cleanup.err()]
+        .into_iter()
+        .flatten()
+    {
+        if failure.is_none() {
+            failure = Some(cleanup_failure);
+        } else {
+            eprintln!("W5 cleanup also panicked after the primary failure");
+        }
+    }
+    if let Some(failure) = failure {
+        resume_unwind(failure);
+    }
+}
+
+#[tokio::test]
 #[ignore = "kind/CNI-gated W11 lane: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
 async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     let Some(kind) =
@@ -969,7 +1506,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     };
 
     let installed = kind.apply_cluster(soak_kind_spec(3)).await;
-    kind.wait_ready(installed.spec.replicas, "w11-install", 0)
+    kind.wait_ready(installed.spec.replicas, "w11-install")
         .await;
     let initial = kind.wait_scale_admin_status(3, 3, "w11-install").await;
     assert_eq!(initial.members, 3);
@@ -986,7 +1523,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     );
 
     let scaled_up = kind.apply_cluster(soak_kind_spec(4)).await;
-    kind.wait_ready(scaled_up.spec.replicas, "w11-scale-up-partitioned", 1)
+    kind.wait_ready(scaled_up.spec.replicas, "w11-scale-up-partitioned")
         .await;
     let after_scale_up = kind
         .wait_scale_admin_status(4, 4, "w11-scale-up-partitioned")
@@ -997,7 +1534,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     assert!(after_scale_up.epoch > initial.epoch);
 
     let scaled_down = kind.apply_cluster(soak_kind_spec(3)).await;
-    kind.wait_ready(scaled_down.spec.replicas, "w11-scale-down-partitioned", 2)
+    kind.wait_ready(scaled_down.spec.replicas, "w11-scale-down-partitioned")
         .await;
     let after_scale_down = kind
         .wait_scale_admin_status(3, 3, "w11-scale-down-partitioned")
@@ -1011,7 +1548,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     );
 
     kind.heal(fault, &injection).await;
-    kind.wait_ready(3, "w11-partition-healed", 2).await;
+    kind.wait_ready(3, "w11-partition-healed").await;
     let healed = kind
         .wait_scale_admin_status(3, 3, "w11-partition-healed")
         .await;
@@ -1019,7 +1556,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     assert!(healed.epoch >= after_scale_down.epoch);
 
     let crash = kind.inject(ChaosFault::PodCrash { ordinal: 2 }).await;
-    let recovered = kind.wait_ready(3, "w11-crash-recovered", 2).await;
+    let recovered = kind.wait_ready(3, "w11-crash-recovered").await;
     recovered.assert_quorum();
     let after_crash = kind
         .wait_scale_admin_status(3, 3, "w11-crash-recovered")
@@ -1033,40 +1570,31 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
 
 #[tokio::test]
 #[ignore = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"]
-async fn multi_node_chaos_soak_loses_no_committed_write() {
-    let Some(kind) = KindHarness::try_start("multi_node_chaos_soak_loses_no_committed_write").await
+async fn multi_node_chaos_soak_preserves_quorum_and_leadership() {
+    let Some(kind) =
+        KindHarness::try_start("multi_node_chaos_soak_preserves_quorum_and_leadership").await
     else {
         return;
     };
     eprintln!("{SCOPE_DISCLOSURE}");
 
     let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
-    let mut probe = CommittedWriteProbe::default();
-    let install = kind
-        .wait_ready(cluster.spec.replicas, "install", probe.committed())
-        .await;
+    let install = kind.wait_ready(cluster.spec.replicas, "install").await;
     install.assert_quorum();
     install.assert_leader();
 
     for fault in rolling_chaos_schedule() {
-        probe.record_committed_write();
         let injection = kind.inject(fault).await;
         if let ChaosInjection::Skipped(reason) = &injection {
             eprintln!("skipping {fault:?}: {reason}");
         }
-        let observed = kind
-            .wait_ready(cluster.spec.replicas, "fault-window", probe.committed())
-            .await;
+        let observed = kind.wait_ready(cluster.spec.replicas, "fault-window").await;
         observed.assert_quorum();
         observed.assert_leader();
-        probe.assert_no_lost_committed_write(&observed);
         kind.heal(fault, &injection).await;
-        let recovered = kind
-            .wait_ready(cluster.spec.replicas, "recovered", probe.committed())
-            .await;
+        let recovered = kind.wait_ready(cluster.spec.replicas, "recovered").await;
         recovered.assert_quorum();
         recovered.assert_leader();
-        probe.assert_no_lost_committed_write(&recovered);
     }
 }
 
@@ -1080,24 +1608,15 @@ async fn leader_is_always_reestablished_after_pod_crash() {
     eprintln!("{SCOPE_DISCLOSURE}");
 
     let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
-    let mut probe = CommittedWriteProbe::default();
-    let ready = kind
-        .wait_ready(cluster.spec.replicas, READY_PHASE, probe.committed())
-        .await;
+    let ready = kind.wait_ready(cluster.spec.replicas, READY_PHASE).await;
     ready.assert_leader();
 
-    probe.record_committed_write();
     let injection = kind.inject(ChaosFault::PodCrash { ordinal: 0 }).await;
     let recovered = kind
-        .wait_ready(
-            cluster.spec.replicas,
-            "pod-crash-recovered",
-            probe.committed(),
-        )
+        .wait_ready(cluster.spec.replicas, "pod-crash-recovered")
         .await;
     recovered.assert_quorum();
     recovered.assert_leader();
-    probe.assert_no_lost_committed_write(&recovered);
     kind.heal(ChaosFault::PodCrash { ordinal: 0 }, &injection)
         .await;
 }
@@ -1112,7 +1631,7 @@ async fn kind_partition_injection_isolates_and_heals() {
     eprintln!("{SCOPE_DISCLOSURE}");
 
     let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
-    let ready = kind.wait_ready(cluster.spec.replicas, READY_PHASE, 0).await;
+    let ready = kind.wait_ready(cluster.spec.replicas, READY_PHASE).await;
     ready.assert_quorum();
     ready.assert_leader();
 
@@ -1124,14 +1643,14 @@ async fn kind_partition_injection_isolates_and_heals() {
     }
 
     let observed = kind
-        .wait_ready(cluster.spec.replicas, "partition-window", 1)
+        .wait_ready(cluster.spec.replicas, "partition-window")
         .await;
     observed.assert_quorum();
     observed.assert_leader();
     kind.heal(fault, &injection).await;
 
     let recovered = kind
-        .wait_ready(cluster.spec.replicas, "partition-healed", 1)
+        .wait_ready(cluster.spec.replicas, "partition-healed")
         .await;
     recovered.assert_quorum();
     recovered.assert_leader();
@@ -1146,7 +1665,7 @@ async fn partition_probe_skips_loud_on_non_enforcing_cni() {
     };
 
     let cluster = kind.apply_cluster(soak_kind_spec(3)).await;
-    kind.wait_ready(cluster.spec.replicas, READY_PHASE, 0).await;
+    kind.wait_ready(cluster.spec.replicas, READY_PHASE).await;
     let fault = ChaosFault::NetworkPartition { ordinal: 1 };
     let injection = kind.inject(fault).await;
     match &injection {
@@ -1226,7 +1745,80 @@ fn slow_disk_uses_iochaos_only_when_crd_present() {
         manifest["spec"]["selector"]["pods"]["testing"][0],
         "chaos-1"
     );
+    assert_eq!(manifest["spec"]["action"], "fault");
+    assert_eq!(manifest["spec"]["errno"], 5);
+    assert_eq!(manifest["spec"]["percent"], 100);
+    assert_eq!(manifest["spec"]["containerNames"][0], SERVER_CONTAINER);
+    assert_eq!(
+        manifest["spec"]["methods"],
+        json!(["WRITE", "FLUSH", "FSYNC"])
+    );
     assert_eq!(manifest["spec"]["volumePath"], "/var/lib/hydracache");
+    assert_eq!(
+        manifest["spec"]["path"],
+        "/var/lib/hydracache/raft-log/**/*"
+    );
+    assert_eq!(manifest["spec"]["duration"], "10m");
+}
+
+#[test]
+fn iochaos_receipt_requires_controller_injection_and_exact_target() {
+    let target = IoChaosTarget {
+        namespace: "testing".to_owned(),
+        pod: "chaos-1".to_owned(),
+        pod_uid: "pod-uid-1".to_owned(),
+        ordinal: 1,
+    };
+    let mut object = iochaos_manifest("chaos", "testing", 1);
+    object["metadata"]["uid"] = json!("iochaos-uid-1");
+    object["status"] = json!({
+        "conditions": [
+            { "type": "Selected", "status": "True" },
+            { "type": "AllInjected", "status": "True" }
+        ],
+        "experiment": {
+            "containerRecords": [{
+                "id": "testing/chaos-1",
+                "selectorKey": ".",
+                "phase": "Injected"
+            }]
+        },
+        "instances": { "testing/chaos-1": 1 }
+    });
+
+    let receipt = iochaos_injection_receipt(&object, &target, "pod-uid-1")
+        .expect("exact controller-confirmed target should produce a receipt");
+    assert_eq!(receipt.chaos_uid, "iochaos-uid-1");
+
+    let mut not_injected = object.clone();
+    not_injected["status"]["conditions"][1]["status"] = json!("False");
+    assert!(
+        iochaos_injection_receipt(&not_injected, &target, "pod-uid-1")
+            .unwrap_err()
+            .contains("AllInjected")
+    );
+
+    let mut wrong_target = object.clone();
+    wrong_target["spec"]["selector"]["pods"] = json!({ "testing": ["chaos-2"] });
+    assert!(
+        iochaos_injection_receipt(&wrong_target, &target, "pod-uid-1")
+            .unwrap_err()
+            .contains("exact target")
+    );
+
+    let mut read_only_fault = object.clone();
+    read_only_fault["spec"]["methods"] = json!(["READ"]);
+    assert!(
+        iochaos_injection_receipt(&read_only_fault, &target, "pod-uid-1")
+            .unwrap_err()
+            .contains("Raft-log fault boundary")
+    );
+
+    assert!(
+        iochaos_injection_receipt(&object, &target, "replacement-pod-uid")
+            .unwrap_err()
+            .contains("replaced during injection")
+    );
 }
 
 #[test]

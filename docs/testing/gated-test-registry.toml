@@ -1771,7 +1771,7 @@ kind = "ignored_test"
 source = "crates/hydracache-operator/tests/soak_kind.rs"
 package = "hydracache-operator"
 target = "soak_kind"
-test = "multi_node_chaos_soak_loses_no_committed_write"
+test = "multi_node_chaos_soak_preserves_quorum_and_leadership"
 cfg = ""
 env = ""
 reason = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"
@@ -1798,7 +1798,7 @@ args = [
     "--test",
     "soak_kind",
     "--locked",
-    "multi_node_chaos_soak_loses_no_committed_write",
+    "multi_node_chaos_soak_preserves_quorum_and_leadership",
     "--",
     "--ignored",
     "--nocapture",
@@ -5194,7 +5194,7 @@ kind = "external_tool"
 source = "crates/hydracache-operator/tests/soak_kind.rs"
 package = "hydracache-operator"
 target = "soak_kind"
-test = "multi_node_chaos_soak_loses_no_committed_write + operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch"
+test = "iochaos_fault_blocks_real_raft_persistence_then_recovers + multi_node_chaos_soak_preserves_quorum_and_leadership + operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch"
 cfg = ""
 env = "HYDRACACHE_OPERATOR_KIND"
 reason = "The 0.66 prepared-kind lane runs W5 IOChaos and W11 scale churn with strict capability requirements"
