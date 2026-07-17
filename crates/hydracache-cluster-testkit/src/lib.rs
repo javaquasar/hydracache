@@ -6,6 +6,7 @@
 
 pub mod client_surface_conformance;
 pub mod invariants;
+pub mod reference_model;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::net::SocketAddr;
