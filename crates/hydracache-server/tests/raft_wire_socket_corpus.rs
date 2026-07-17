@@ -5,8 +5,12 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
-use hydracache_cluster_transport_axum::MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES;
+use hydracache_cluster_raft::RaftWireMessage;
+use hydracache_cluster_transport_axum::{
+    ClusterOpaqueMessage, MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
+};
 use hydracache_server::{ServerConfig, ServerRole, ServerRuntime};
+use raft::eraftpb::{Message, MessageType, Snapshot};
 use reqwest::{Client, StatusCode};
 
 const NODE_ID: &str = "raft-wire-corpus-member";
@@ -56,6 +60,30 @@ async fn raft_http_socket_corpus_rejects_before_unbounded_allocation() {
             fs::read(&identity_path).unwrap(),
             identity_before,
             "malformed seed {seed} changed durable member identity"
+        );
+    }
+
+    for (case, body) in forged_raft_frames(before.term) {
+        let status = post_raft_frame(&client, address, body).await;
+        assert_eq!(
+            status,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "unexpected rejection for forged case {case}"
+        );
+        assert_eq!(
+            runtime.admin_status(),
+            before,
+            "forged case {case} mutated the live Sled-backed raft state"
+        );
+        assert_eq!(
+            runtime.raft_compaction_status().unwrap(),
+            raft_before,
+            "forged case {case} changed durable raft log progress"
+        );
+        assert_eq!(
+            fs::read(&identity_path).unwrap(),
+            identity_before,
+            "forged case {case} changed durable member identity"
         );
     }
 
@@ -160,6 +188,75 @@ fn oversized_raft_body(term: u64) -> Vec<u8> {
         "payload_base64": "A".repeat(MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES),
     }))
     .unwrap()
+}
+
+fn forged_raft_frames(term: u64) -> Vec<(&'static str, Vec<u8>)> {
+    let local_raft_id = stable_nonzero_hash(NODE_ID);
+    let heartbeat = |from, to, inner_term| {
+        let mut message = Message {
+            from,
+            to,
+            term: inner_term,
+            ..Message::default()
+        };
+        message.set_msg_type(MessageType::MsgHeartbeat);
+        message
+    };
+
+    let mut malformed_snapshot = Snapshot::default();
+    malformed_snapshot.mut_metadata().index = 50;
+    malformed_snapshot.mut_metadata().term = term;
+    malformed_snapshot.mut_metadata().mut_conf_state().voters = vec![local_raft_id];
+    malformed_snapshot.data = b"not-hydracache-metadata".to_vec().into();
+    let mut snapshot_message = heartbeat(local_raft_id, local_raft_id, term);
+    snapshot_message.set_msg_type(MessageType::MsgSnapshot);
+    snapshot_message.set_snapshot(malformed_snapshot);
+
+    vec![
+        (
+            "outer-inner-sender-mismatch",
+            encoded_raft_http_body(
+                &heartbeat(local_raft_id.saturating_add(1), local_raft_id, term),
+                term,
+            ),
+        ),
+        (
+            "outer-inner-destination-mismatch",
+            encoded_raft_http_body(
+                &heartbeat(local_raft_id, local_raft_id.saturating_add(1), term),
+                term,
+            ),
+        ),
+        (
+            "outer-inner-term-mismatch",
+            encoded_raft_http_body(&heartbeat(local_raft_id, local_raft_id, term), term + 1),
+        ),
+        (
+            "malformed-metadata-snapshot",
+            encoded_raft_http_body(&snapshot_message, term),
+        ),
+    ]
+}
+
+fn encoded_raft_http_body(message: &Message, outer_term: u64) -> Vec<u8> {
+    let payload = RaftWireMessage::encode(message)
+        .expect("raft corpus protobuf must encode")
+        .payload;
+    ClusterOpaqueMessage::new(NODE_ID, NODE_ID, outer_term, payload)
+        .encode_json()
+        .expect("raft corpus HTTP body must encode")
+}
+
+fn stable_nonzero_hash(value: &str) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+    const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in value.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash.max(1)
 }
 
 async fn wait_for_listener_and_leader(runtime: &ServerRuntime, address: SocketAddr) {

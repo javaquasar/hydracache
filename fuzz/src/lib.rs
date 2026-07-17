@@ -73,26 +73,37 @@ pub fn fuzz_snapshot_decode(data: &[u8]) {
     let _ = Snapshot::parse_from_bytes(data);
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftWireFuzzOutcome {
+    Rejected,
+    Accepted,
+}
+
 pub fn fuzz_raft_wire_frame(data: &[u8]) {
+    let _ = replay_raft_wire_frame(data);
+}
+
+pub fn replay_raft_wire_frame(data: &[u8]) -> RaftWireFuzzOutcome {
     if data.len() > MAX_FUZZ_INPUT_BYTES {
-        return;
+        return RaftWireFuzzOutcome::Rejected;
     }
-    let runtime = RaftMetadataRuntime::single_node("raft-wire-fuzz", 1)
-        .expect("the isolated fuzz raft runtime must start");
-    let before = runtime.snapshot();
     let Ok(envelope) = serde_json::from_slice::<ClusterOpaqueMessage>(data) else {
-        assert_eq!(runtime.snapshot(), before);
-        return;
+        return RaftWireFuzzOutcome::Rejected;
     };
     let Ok(payload) = envelope.decode_payload() else {
-        assert_eq!(runtime.snapshot(), before);
-        return;
+        return RaftWireFuzzOutcome::Rejected;
     };
     assert!(payload.len() <= MAX_FUZZ_INPUT_BYTES);
 
+    let from = stable_nonzero_hash(&envelope.from);
+    let to = stable_nonzero_hash(&envelope.to);
+    let runtime = RaftMetadataRuntime::single_node("raft-wire-fuzz", to)
+        .expect("the isolated fuzz raft runtime must start");
+    let before = runtime.snapshot();
+
     let wire = RaftWireMessage {
-        from: 0,
-        to: 0,
+        from,
+        to,
         term: envelope.term,
         payload: payload.to_vec(),
     };
@@ -100,7 +111,7 @@ pub fn fuzz_raft_wire_frame(data: &[u8]) {
         Ok(message) => message,
         Err(_) => {
             assert_eq!(runtime.snapshot(), before);
-            return;
+            return RaftWireFuzzOutcome::Rejected;
         }
     };
     let reencoded =
@@ -110,11 +121,27 @@ pub fn fuzz_raft_wire_frame(data: &[u8]) {
         .expect("a re-encoded raft protobuf message must decode");
     assert_eq!(roundtrip, message);
 
-    if runtime.step(wire).is_err() {
-        assert_eq!(
-            runtime.snapshot(),
-            before,
-            "a rejected raft protobuf frame mutated the isolated runtime"
-        );
+    match runtime.step(wire) {
+        Ok(_) => RaftWireFuzzOutcome::Accepted,
+        Err(_) => {
+            assert_eq!(
+                runtime.snapshot(),
+                before,
+                "a rejected raft protobuf frame mutated the isolated runtime"
+            );
+            RaftWireFuzzOutcome::Rejected
+        }
     }
+}
+
+fn stable_nonzero_hash(value: &str) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+    const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in value.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash.max(1)
 }
