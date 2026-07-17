@@ -18,7 +18,7 @@
 >   test-expansion discipline (canary/flip-sentinel + `doc-check` enforcement patterns).
 > - **Unblocks:** a safe future distributed-RESP-backend release (`0.63` Plan A) and stronger `1.0`
 >   correctness evidence for the outward Redis surface.
-> - **Status:** in-progress.
+> - **Status:** shipped.
 
 ## Post-audit remediation (0.65.1 evidence hardening)
 
@@ -52,9 +52,10 @@ history/invariant oracles, and the Axum conformance runner is a required test
 package. This prevents a future change from making the suite silently green by
 weakening the oracle itself.
 
-The release remains `in-progress` until all five streams have either passed
-their receipt-bound checks or have an explicit scope-change decision recorded
-in this plan.
+The five remediation streams have passed their receipt-bound checks and are
+recorded as shipped in the release manifest. Future changes that pay down a
+named Redis debt must update the corresponding sentinel and compatibility claim
+in the same release.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
