@@ -21,11 +21,14 @@ pub const PREVIOUS_DAEMON_BINARY_ENV: &str = "HYDRACACHE_PREVIOUS_DAEMON_BINARY"
 pub const PREVIOUS_DAEMON_SOURCE_REF_ENV: &str = "HYDRACACHE_PREVIOUS_DAEMON_SOURCE_REF";
 pub const PREVIOUS_DAEMON_SOURCE_COMMIT_ENV: &str = "HYDRACACHE_PREVIOUS_DAEMON_SOURCE_COMMIT";
 pub const MIXED_DAEMON_SHIP_MODE_ENV: &str = "HYDRACACHE_MIXED_DAEMON_SHIP_MODE";
+pub const TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV: &str =
+    "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS";
 pub const PREVIOUS_DAEMON_TAG: &str = "v0.65.0";
 pub const PREVIOUS_DAEMON_DEV_COMMIT: &str = "292655168fffda4d217c3dafff6831c602e144ec";
 const SERVER_BIN_ENV: &str = "CARGO_BIN_EXE_hydracache-server";
 const WAIT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(200);
+const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
 
 static PREVIOUS_DAEMON_CACHE: OnceLock<Result<Option<PreviousDaemonBinary>, String>> =
     OnceLock::new();
@@ -78,6 +81,7 @@ pub struct DaemonNodeSpec {
     pub redis_addr: Option<SocketAddr>,
     pub storage_dir: PathBuf,
     pub cluster_start: &'static str,
+    test_raft_snapshot_handler_delay_ms: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -226,6 +230,7 @@ impl DaemonCluster {
                 redis_addr,
                 storage_dir: root.join(format!("node-{index}")),
                 cluster_start: "bootstrap",
+                test_raft_snapshot_handler_delay_ms: None,
             };
             nodes.push(DaemonNode::new(spec, &root));
         }
@@ -459,6 +464,30 @@ impl DaemonCluster {
         self.spawn_node(index, &seed_addrs)
     }
 
+    pub fn restart_with_snapshot_handler_delay(
+        &mut self,
+        index: usize,
+        delay_ms: Option<u64>,
+    ) -> TestResult {
+        let delay_ms = validate_test_snapshot_handler_delay_ms(delay_ms)?;
+        {
+            let node = self
+                .nodes
+                .get_mut(index)
+                .ok_or_else(|| format!("daemon node index {index} is out of bounds"))?;
+            if node.is_running() {
+                return Err(format!(
+                    "{} must be stopped before changing its snapshot handler test delay",
+                    node.spec.name
+                )
+                .into());
+            }
+            node.spec.test_raft_snapshot_handler_delay_ms = delay_ms;
+        }
+        let seed_addrs = self.seed_addrs();
+        self.spawn_node(index, &seed_addrs)
+    }
+
     pub fn drain(&self, index: usize) -> TestResult<Value> {
         http_json(
             self.nodes[index].spec.admin_addr,
@@ -580,6 +609,7 @@ impl DaemonNode {
         command
             .env_remove("HYDRACACHE_GRID_INPROC")
             .env_remove("HYDRACACHE_RAFT_COMPACTION")
+            .env_remove(TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV)
             .env("HYDRACACHE_ROLE", "member")
             .env("HYDRACACHE_NODE_ID", &self.spec.node_id)
             .env("HYDRACACHE_LISTEN_ADDR", self.spec.listen_addr.to_string())
@@ -598,6 +628,12 @@ impl DaemonNode {
             .env("HYDRACACHE_JOIN_TIMEOUT_MS", "10000")
             .stdout(Stdio::from(stdout))
             .stderr(Stdio::from(stderr));
+        if let Some(delay_ms) = self.spec.test_raft_snapshot_handler_delay_ms {
+            command.env(
+                TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV,
+                delay_ms.to_string(),
+            );
+        }
         if raft_compaction_enabled {
             command.env("HYDRACACHE_RAFT_COMPACTION", "true");
         }
@@ -697,8 +733,15 @@ impl ProcessResourceSample {
 
 pub fn daemon_process_e2e_enabled() -> bool {
     std::env::var(DAEMON_PROCESS_E2E_ENV)
-        .map(|value| matches!(value.trim(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .map(|value| truthy_env_value(&value))
         .unwrap_or(false)
+}
+
+fn truthy_env_value(value: &str) -> bool {
+    matches!(
+        value.trim().to_ascii_lowercase().as_str(),
+        "1" | "true" | "yes"
+    )
 }
 
 pub fn skip_unless_daemon_process_e2e(test_name: &str) -> bool {
@@ -1116,6 +1159,17 @@ fn unique_root(name: &str) -> TestResult<PathBuf> {
     )))
 }
 
+fn validate_test_snapshot_handler_delay_ms(delay_ms: Option<u64>) -> TestResult<Option<u64>> {
+    if delay_ms.is_some_and(|delay| !(1..=MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS).contains(&delay))
+    {
+        return Err(format!(
+            "snapshot handler test delay must be in 1..={MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS}ms"
+        )
+        .into());
+    }
+    Ok(delay_ms)
+}
+
 fn reserve_node_addrs(
     count: usize,
     redis_enabled: bool,
@@ -1222,8 +1276,27 @@ mod tests {
 
     use super::{
         complete_dual_protocol_reservation, ensure_distinct_daemon_binaries, reserve_node_addrs,
-        unique_root,
+        truthy_env_value, unique_root, validate_test_snapshot_handler_delay_ms,
     };
+
+    #[test]
+    fn snapshot_handler_test_delay_is_inert_by_default_and_bounded() {
+        assert_eq!(validate_test_snapshot_handler_delay_ms(None).unwrap(), None);
+        assert_eq!(
+            validate_test_snapshot_handler_delay_ms(Some(60_000)).unwrap(),
+            Some(60_000)
+        );
+        for invalid in [0, 60_001] {
+            assert!(validate_test_snapshot_handler_delay_ms(Some(invalid)).is_err());
+        }
+
+        for enabled in ["1", "true", "TRUE", "yes", "YeS", "  true  "] {
+            assert!(truthy_env_value(enabled));
+        }
+        for disabled in ["", "0", "false", "no", "enabled"] {
+            assert!(!truthy_env_value(disabled));
+        }
+    }
 
     #[test]
     fn reserve_node_addrs_skips_redis_surface_when_disabled() {
@@ -1252,7 +1325,21 @@ mod tests {
     fn dual_protocol_reservation_rejects_udp_occupied_tcp_candidate() {
         let udp = UdpSocket::bind("127.0.0.1:0").expect("reserve UDP blocker");
         let address = udp.local_addr().unwrap();
-        let tcp = TcpListener::bind(address).expect("TCP namespace may share the UDP port");
+        let tcp = match TcpListener::bind(address) {
+            Ok(tcp) => tcp,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    std::io::ErrorKind::AddrInUse | std::io::ErrorKind::PermissionDenied
+                ) =>
+            {
+                // Some Windows socket policies reject the cross-protocol
+                // candidate at the TCP bind itself. That is already the safe
+                // outcome this reservation helper requires.
+                return;
+            }
+            Err(error) => panic!("unexpected TCP bind failure for {address}: {error}"),
+        };
 
         let error = complete_dual_protocol_reservation(tcp).unwrap_err();
         assert!(matches!(

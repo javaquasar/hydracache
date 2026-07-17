@@ -230,6 +230,16 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     fn raft_leader_id(&self) -> Option<String>;
     /// Return whether the live grid currently has quorum.
     fn has_quorum(&self) -> bool;
+    /// Return whether `observed` is still the fully applied local metadata view.
+    ///
+    /// Networked followers must fence authority while their committed index is
+    /// ahead of the locally applied metadata state. The observed-snapshot
+    /// argument also prevents a projection assembled across an apply boundary
+    /// from being published as authoritative.
+    fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
+        let _ = observed;
+        true
+    }
     /// Return current raft voter count.
     fn voter_count(&self) -> u32;
     /// Return reachability for one known node.
@@ -282,13 +292,19 @@ impl ClusterStatusProvider for LiveClusterStatus {
                 generation: member.generation.value(),
             })
             .collect();
+        let metadata_authoritative = self.grid.metadata_authority_matches(&snapshot);
 
         ClusterStatus {
             source: StatusSource::Live,
-            leader: self.grid.raft_leader_id(),
+            leader: metadata_authoritative
+                .then(|| self.grid.raft_leader_id())
+                .flatten(),
             term: snapshot.term,
             epoch: snapshot.epoch.value(),
-            quorum_ok: runtime.ready && self.grid.has_quorum() && !draining,
+            quorum_ok: runtime.ready
+                && metadata_authoritative
+                && self.grid.has_quorum()
+                && !draining,
             members,
             voters: self.grid.voter_count(),
             reshard_phase: self.grid.reshard_phase(),

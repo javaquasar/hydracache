@@ -192,6 +192,22 @@ mod cluster_overview {
     }
 
     #[tokio::test]
+    async fn non_authoritative_live_membership_hides_leader_epoch() {
+        let mut status = live_status();
+        status.quorum_ok = false;
+        let surface = surface_with(status, ServerObservabilityModel::default());
+
+        let body = get_overview(&surface).await;
+
+        assert_eq!(body["source"], "live");
+        assert_eq!(body["members"].as_array().unwrap().len(), 3);
+        assert!(
+            body["leader"].is_null(),
+            "a non-authoritative member view must not pair a leader with stale term/epoch"
+        );
+    }
+
+    #[tokio::test]
     async fn consistency_is_distribution_not_single_current() {
         let mut counters = ClusterGridCounters::default();
         counters.consistency_level_operations_total = 11;

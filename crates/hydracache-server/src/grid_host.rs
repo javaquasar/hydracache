@@ -9,7 +9,7 @@ use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, Once, RwLock};
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use axum_server::tls_rustls::RustlsConfig;
 use hydracache::{
@@ -20,8 +20,8 @@ use hydracache::{
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
-    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftWireMessage,
-    SledRaftLogStore,
+    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftMetadataRuntimeSnapshot,
+    RaftRuntimeRole, RaftWireMessage, SledRaftLogStore,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
@@ -39,10 +39,19 @@ use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
+// Strictly shorter than the minimum five-tick election timeout. A node that
+// misses this window must hear current-term Raft traffic again before its
+// local metadata projection can be advertised as authoritative.
+const GRID_RAFT_AUTHORITY_FRESHNESS: Duration = Duration::from_millis(200);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
 const RAFT_HTTP_CONNECT_TIMEOUT: Duration = Duration::from_millis(500);
 const RAFT_HTTP_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
+const SNAPSHOT_AUTHORITY_POLL_INTERVAL: Duration = Duration::from_millis(10);
+const TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV: &str =
+    "HYDRACACHE_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS";
+const DAEMON_PROCESS_E2E_ENV: &str = "HYDRACACHE_RUN_DAEMON_PROCESS_E2E";
+const MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS: u64 = 60_000;
 const NODE_IDENTITY_FILE: &str = "node-identity.json";
 const NODE_IDENTITY_FORMAT_VERSION: u32 = 1;
 static NODE_IDENTITY_TEMP_SEQ: AtomicU64 = AtomicU64::new(0);
@@ -117,6 +126,7 @@ fn start_networked_member_stack_without_current(
 }
 
 async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedMemberStack> {
+    let test_snapshot_handler_delay = test_snapshot_handler_delay_from_env(config)?;
     let storage_dir = config.storage_dir.as_ref().ok_or_else(|| {
         CacheError::Backend("member role requires storage_dir before grid host startup".to_owned())
     })?;
@@ -212,10 +222,14 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
     spawn_cluster_transport(
         config,
         node_id.clone(),
-        raft.clone(),
-        message_sink.clone(),
-        raft_peers.clone(),
+        ClusterTransportHandles {
+            raft: raft.clone(),
+            message_sink: message_sink.clone(),
+            raft_peers: raft_peers.clone(),
+            drive_diagnostics: drive_diagnostics.clone(),
+        },
         route_auth,
+        test_snapshot_handler_delay,
         shutdown.subscribe(),
     )
     .await?;
@@ -351,13 +365,19 @@ fn start_inprocess_member_cache(
     Ok((cache, Some(runtime)))
 }
 
-async fn spawn_cluster_transport(
-    config: &ServerConfig,
-    node_id: ClusterNodeId,
+struct ClusterTransportHandles {
     raft: Arc<NetworkedRaftRuntime>,
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
+    drive_diagnostics: Arc<GridDriveDiagnostics>,
+}
+
+async fn spawn_cluster_transport(
+    config: &ServerConfig,
+    node_id: ClusterNodeId,
+    handles: ClusterTransportHandles,
     auth: ClusterRouteAuth,
+    test_snapshot_handler_delay: Option<Duration>,
     mut shutdown: watch::Receiver<bool>,
 ) -> CacheResult<()> {
     TlsStartupPolicy::new(config.cluster_addr, config.tls.enabled)
@@ -377,9 +397,11 @@ async fn spawn_cluster_transport(
         Arc::new(RaftClusterMessageHandler {
             node_id: node_id.clone(),
             raft_node_id: raft_node_id(&node_id),
-            raft,
-            message_sink,
-            raft_peers,
+            raft: handles.raft,
+            message_sink: handles.message_sink,
+            raft_peers: handles.raft_peers,
+            drive_diagnostics: handles.drive_diagnostics,
+            test_snapshot_handler_delay,
         }),
         auth,
     )
@@ -860,6 +882,7 @@ struct GridDriveDiagnostics {
     snapshot_send_successes: AtomicU64,
     snapshot_send_failures: AtomicU64,
     snapshot_sends_in_flight: AtomicU64,
+    last_raft_inbound: Mutex<Option<(Instant, u64)>>,
     last_error: Mutex<Option<String>>,
 }
 
@@ -876,6 +899,21 @@ impl GridDriveDiagnostics {
     fn record_send_failure(&self, error: String) {
         self.send_failures.fetch_add(1, Ordering::Relaxed);
         self.set_last_error(error);
+    }
+
+    fn record_raft_inbound(&self, term: u64) {
+        *self
+            .last_raft_inbound
+            .lock()
+            .expect("raft authority observation poisoned") = Some((Instant::now(), term));
+    }
+
+    fn raft_authority_fresh(&self, term: u64) -> bool {
+        let observation = *self
+            .last_raft_inbound
+            .lock()
+            .expect("raft authority observation poisoned");
+        raft_authority_observation_is_fresh(observation, Instant::now(), term)
     }
 
     fn record_snapshot_send_started(&self) {
@@ -919,6 +957,17 @@ impl GridDriveDiagnostics {
             .lock()
             .expect("grid drive diagnostics poisoned") = Some(error);
     }
+}
+
+fn raft_authority_observation_is_fresh(
+    observation: Option<(Instant, u64)>,
+    now: Instant,
+    current_term: u64,
+) -> bool {
+    observation.is_some_and(|(observed_at, observed_term)| {
+        observed_term >= current_term
+            && now.saturating_duration_since(observed_at) <= GRID_RAFT_AUTHORITY_FRESHNESS
+    })
 }
 
 #[derive(Debug, Clone)]
@@ -1112,6 +1161,110 @@ struct HttpRaftMessageSink {
 struct SnapshotDeliveryFeedback {
     raft: Arc<NetworkedRaftRuntime>,
     diagnostics: Arc<GridDriveDiagnostics>,
+    in_flight_peers: Arc<Mutex<BTreeSet<u64>>>,
+}
+
+impl SnapshotDeliveryFeedback {
+    fn new(raft: Arc<NetworkedRaftRuntime>, diagnostics: Arc<GridDriveDiagnostics>) -> Self {
+        Self {
+            raft,
+            diagnostics,
+            in_flight_peers: Arc::new(Mutex::new(BTreeSet::new())),
+        }
+    }
+
+    fn try_reserve(&self, peer_id: u64) -> CacheResult<SnapshotSendReservation> {
+        let inserted = self
+            .in_flight_peers
+            .lock()
+            .expect("snapshot delivery reservations poisoned")
+            .insert(peer_id);
+        if !inserted {
+            return Err(CacheError::Backend(format!(
+                "snapshot delivery to raft peer {peer_id} is already in flight; duplicate send was coalesced without a second HTTP request"
+            )));
+        }
+        self.diagnostics.record_snapshot_send_started();
+        Ok(SnapshotSendReservation {
+            peer_id,
+            feedback: self.clone(),
+            completed: false,
+        })
+    }
+}
+
+#[derive(Debug)]
+struct SnapshotSendReservation {
+    peer_id: u64,
+    feedback: SnapshotDeliveryFeedback,
+    completed: bool,
+}
+
+impl SnapshotSendReservation {
+    fn finish(mut self, delivered: bool) {
+        self.release(delivered);
+    }
+
+    fn release(&mut self, delivered: bool) {
+        self.release_with_report(delivered, |feedback, peer_id, outcome| {
+            feedback
+                .raft
+                .report_snapshot_delivery_deferred(peer_id, outcome);
+        });
+    }
+
+    fn release_with_report<F>(&mut self, delivered: bool, report: F)
+    where
+        F: FnOnce(&SnapshotDeliveryFeedback, u64, bool),
+    {
+        if self.completed {
+            return;
+        }
+        self.completed = true;
+        self.feedback
+            .diagnostics
+            .record_snapshot_send_finished(delivered);
+        let removed = self
+            .feedback
+            .in_flight_peers
+            .lock()
+            .expect("snapshot delivery reservations poisoned")
+            .remove(&self.peer_id);
+        debug_assert!(removed, "snapshot reservation released more than once");
+        report(&self.feedback, self.peer_id, delivered);
+    }
+}
+
+impl Drop for SnapshotSendReservation {
+    fn drop(&mut self) {
+        // Dropping the outbound future (for example on task cancellation) is
+        // a failed delivery. Release both the per-peer reservation and Raft's
+        // snapshot progress so the bounded drive loop can retry.
+        self.release(false);
+    }
+}
+
+fn snapshot_send_authority_is_valid(
+    state: &RaftMetadataRuntimeSnapshot,
+    expected_term: u64,
+) -> bool {
+    state.term == expected_term && state.role == RaftRuntimeRole::Leader
+}
+
+async fn wait_for_snapshot_authority_loss(
+    feedback: SnapshotDeliveryFeedback,
+    expected_term: u64,
+) -> String {
+    loop {
+        let state = feedback.raft.snapshot();
+        if !snapshot_send_authority_is_valid(&state, expected_term) {
+            return format!(
+                "snapshot sender lost authority: expected_term={expected_term} current_term={} role={:?}",
+                state.term, state.role
+            );
+        }
+        tokio::time::sleep(SNAPSHOT_AUTHORITY_POLL_INTERVAL).await;
+    }
 }
 
 impl HttpRaftMessageSink {
@@ -1139,7 +1292,7 @@ impl HttpRaftMessageSink {
         raft: Arc<NetworkedRaftRuntime>,
         diagnostics: Arc<GridDriveDiagnostics>,
     ) -> Self {
-        self.snapshot_feedback = Some(SnapshotDeliveryFeedback { raft, diagnostics });
+        self.snapshot_feedback = Some(SnapshotDeliveryFeedback::new(raft, diagnostics));
         self
     }
 
@@ -1225,15 +1378,17 @@ impl RaftMessageSink for HttpRaftMessageSink {
             None
         };
         if let (Some(peer_id), Some(feedback)) = (snapshot_peer, &self.snapshot_feedback) {
-            feedback.diagnostics.record_snapshot_send_started();
-            let result = self.send_http(message).await;
+            let expected_term = message.term;
+            let reservation = feedback.try_reserve(peer_id)?;
+            let result = tokio::select! {
+                biased;
+                reason = wait_for_snapshot_authority_loss(feedback.clone(), expected_term) => {
+                    Err(CacheError::Backend(reason))
+                }
+                result = self.send_http(message) => result,
+            };
             let delivered = result.is_ok();
-            feedback
-                .diagnostics
-                .record_snapshot_send_finished(delivered);
-            feedback
-                .raft
-                .report_snapshot_delivery_deferred(peer_id, delivered);
+            reservation.finish(delivered);
             return result;
         }
         self.send_http(message).await
@@ -1525,12 +1680,66 @@ fn stable_nonzero_hash(value: &str) -> u64 {
 
 fn use_inprocess_grid() -> bool {
     match env::var(GRID_INPROC_ENV) {
-        Ok(value) => matches!(
-            value.trim().to_ascii_lowercase().as_str(),
-            "1" | "true" | "yes"
-        ),
+        Ok(value) => truthy_env_value(&value),
         Err(_) => false,
     }
+}
+
+fn truthy_env_value(value: &str) -> bool {
+    matches!(
+        value.trim().to_ascii_lowercase().as_str(),
+        "1" | "true" | "yes"
+    )
+}
+
+fn test_snapshot_handler_delay_from_env(config: &ServerConfig) -> CacheResult<Option<Duration>> {
+    let delay = match env::var(TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV) {
+        Ok(value) => parse_test_snapshot_handler_delay(Some(&value)),
+        Err(env::VarError::NotPresent) => parse_test_snapshot_handler_delay(None),
+        Err(env::VarError::NotUnicode(_)) => Err(CacheError::Backend(format!(
+            "{TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV} must be a UTF-8 integer number of milliseconds"
+        ))),
+    }?;
+    validate_test_snapshot_handler_delay_scope(
+        delay,
+        env::var(DAEMON_PROCESS_E2E_ENV)
+            .map(|value| truthy_env_value(&value))
+            .unwrap_or(false),
+        config.cluster_addr,
+    )
+}
+
+fn parse_test_snapshot_handler_delay(value: Option<&str>) -> CacheResult<Option<Duration>> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+    let milliseconds = value.parse::<u64>().map_err(|_| {
+        CacheError::Backend(format!(
+            "{TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV} must be an integer in 1..={MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS}, got {value:?}"
+        ))
+    })?;
+    if !(1..=MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS).contains(&milliseconds) {
+        return Err(CacheError::Backend(format!(
+            "{TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV} must be in 1..={MAX_TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS}, got {milliseconds}"
+        )));
+    }
+    Ok(Some(Duration::from_millis(milliseconds)))
+}
+
+fn validate_test_snapshot_handler_delay_scope(
+    delay: Option<Duration>,
+    daemon_process_e2e_claimed: bool,
+    cluster_addr: SocketAddr,
+) -> CacheResult<Option<Duration>> {
+    let Some(delay) = delay else {
+        return Ok(None);
+    };
+    if !daemon_process_e2e_claimed || !cluster_addr.ip().is_loopback() {
+        return Err(CacheError::Backend(format!(
+            "{TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV} is a loopback process-test seam and requires {DAEMON_PROCESS_E2E_ENV}=1 plus a loopback cluster_addr; got process_e2e={daemon_process_e2e_claimed} cluster_addr={cluster_addr}"
+        )));
+    }
+    Ok(Some(delay))
 }
 
 fn poll_immediate<F>(future: F) -> Result<F::Output, ServerConfigError>
@@ -1734,6 +1943,18 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             .filter(|raft_id| self.raft_voter_reachability(**raft_id) == Reachability::Reachable)
             .count();
         raft_voter_majority_reachable(voters.len(), reachable)
+    }
+
+    fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
+        let progress = self.raft.snapshot();
+        let Ok(voters) = self.raft.voter_ids() else {
+            return false;
+        };
+        let raft_authority_fresh =
+            voters.len() <= 1 || self.drive_diagnostics.raft_authority_fresh(progress.term);
+        raft_authority_fresh
+            && progress.applied_index == progress.commit_index
+            && self.raft.metadata_snapshot() == *observed
     }
 
     fn voter_count(&self) -> u32 {
@@ -1959,6 +2180,8 @@ struct RaftClusterMessageHandler {
     raft: Arc<NetworkedRaftRuntime>,
     message_sink: Arc<dyn RaftMessageSink>,
     raft_peers: SharedRaftPeers,
+    drive_diagnostics: Arc<GridDriveDiagnostics>,
+    test_snapshot_handler_delay: Option<Duration>,
 }
 
 impl fmt::Debug for RaftClusterMessageHandler {
@@ -1967,6 +2190,10 @@ impl fmt::Debug for RaftClusterMessageHandler {
             .debug_struct("RaftClusterMessageHandler")
             .field("node_id", &self.node_id)
             .field("raft_node_id", &self.raft_node_id)
+            .field(
+                "test_snapshot_handler_delay",
+                &self.test_snapshot_handler_delay,
+            )
             .finish()
     }
 }
@@ -1987,12 +2214,23 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             ));
         }
 
-        let outbound = self.raft.step(RaftWireMessage {
+        let wire_message = RaftWireMessage {
             from: self.resolve_wire_sender(&message.from)?,
             to: self.raft_node_id,
             term: message.term,
             payload: payload.to_vec(),
-        })?;
+        };
+        if wire_message.is_snapshot()? {
+            if let Some(delay) = self.test_snapshot_handler_delay {
+                // This opt-in process-test seam runs only after Axum received
+                // and decoded the real HTTP body. Holding before raft.step/ack
+                // keeps the sender's real request and feedback reservation live.
+                tokio::time::sleep(delay).await;
+            }
+        }
+        let inbound_term = wire_message.term;
+        let outbound = self.raft.step(wire_message)?;
+        self.drive_diagnostics.record_raft_inbound(inbound_term);
         send_raft_messages(&self.message_sink, outbound).await?;
         Ok(ClusterMessageAck::new(
             route,
@@ -2610,6 +2848,30 @@ mod tests {
         assert!(raft_voter_majority_reachable(4, 3));
     }
 
+    #[test]
+    fn raft_authority_requires_recent_current_term_inbound_activity() {
+        let now = Instant::now();
+        let within_lease = now - (GRID_RAFT_AUTHORITY_FRESHNESS / 2);
+        let expired = now - GRID_RAFT_AUTHORITY_FRESHNESS - Duration::from_millis(1);
+
+        assert!(!raft_authority_observation_is_fresh(None, now, 7));
+        assert!(!raft_authority_observation_is_fresh(
+            Some((within_lease, 6)),
+            now,
+            7
+        ));
+        assert!(!raft_authority_observation_is_fresh(
+            Some((expired, 7)),
+            now,
+            7
+        ));
+        assert!(raft_authority_observation_is_fresh(
+            Some((within_lease, 7)),
+            now,
+            7
+        ));
+    }
+
     #[derive(Debug)]
     struct FailingRaftMessageSink;
 
@@ -2649,7 +2911,174 @@ mod tests {
             raft: test_raft_runtime(),
             message_sink: Arc::new(InMemoryRaftMessageSink::default()),
             raft_peers: Arc::new(RwLock::new(peers)),
+            drive_diagnostics: Arc::new(GridDriveDiagnostics::default()),
+            test_snapshot_handler_delay: None,
         }
+    }
+
+    #[test]
+    fn test_snapshot_handler_delay_is_inert_by_default_and_bounded() {
+        assert_eq!(parse_test_snapshot_handler_delay(None).unwrap(), None);
+        assert_eq!(
+            parse_test_snapshot_handler_delay(Some("1")).unwrap(),
+            Some(Duration::from_millis(1))
+        );
+        assert_eq!(
+            parse_test_snapshot_handler_delay(Some("60000")).unwrap(),
+            Some(Duration::from_secs(60))
+        );
+        for invalid in ["", "0", "60001", "not-a-number"] {
+            let error = parse_test_snapshot_handler_delay(Some(invalid)).unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains(TEST_RAFT_SNAPSHOT_HANDLER_DELAY_MS_ENV),
+                "invalid delay must name the explicit test seam: {error}"
+            );
+        }
+
+        let loopback = "127.0.0.1:7000".parse().unwrap();
+        let non_loopback = "10.0.0.1:7000".parse().unwrap();
+        let delay = Some(Duration::from_secs(30));
+        assert_eq!(
+            validate_test_snapshot_handler_delay_scope(None, false, non_loopback).unwrap(),
+            None,
+            "the absent seam must remain inert in ordinary deployments"
+        );
+        assert_eq!(
+            validate_test_snapshot_handler_delay_scope(delay, true, loopback).unwrap(),
+            delay
+        );
+        for (claimed, address) in [(false, loopback), (true, non_loopback)] {
+            let error =
+                validate_test_snapshot_handler_delay_scope(delay, claimed, address).unwrap_err();
+            assert!(error.to_string().contains(DAEMON_PROCESS_E2E_ENV));
+            assert!(error.to_string().contains("loopback"));
+        }
+
+        for enabled in ["1", "true", "TRUE", "yes", "YeS", "  true  "] {
+            assert!(
+                truthy_env_value(enabled),
+                "process-E2E alias {enabled:?} must enable the guarded seam"
+            );
+        }
+        for disabled in ["", "0", "false", "no", "enabled"] {
+            assert!(
+                !truthy_env_value(disabled),
+                "unexpected process-E2E value {disabled:?} must stay inert"
+            );
+        }
+    }
+
+    #[test]
+    fn snapshot_single_flight_reservation_is_clone_shared_and_releases_on_error_or_cancel() {
+        let diagnostics = Arc::new(GridDriveDiagnostics::default());
+        let feedback = SnapshotDeliveryFeedback::new(test_raft_runtime(), Arc::clone(&diagnostics));
+        let clone = feedback.clone();
+
+        let canceled = feedback.try_reserve(2).unwrap();
+        let duplicate = clone.try_reserve(2).unwrap_err();
+        assert!(duplicate.to_string().contains("already in flight"));
+        assert!(duplicate.to_string().contains("coalesced"));
+        let active = diagnostics.snapshot();
+        assert_eq!(active.snapshot_send_attempts, 1);
+        assert_eq!(active.snapshot_sends_in_flight, 1);
+        assert_eq!(active.snapshot_send_failures, 0);
+
+        drop(canceled);
+        let after_cancel = diagnostics.snapshot();
+        assert_eq!(after_cancel.snapshot_sends_in_flight, 0);
+        assert_eq!(after_cancel.snapshot_send_failures, 1);
+
+        let failed = clone.try_reserve(2).unwrap();
+        failed.finish(false);
+        let after_error = diagnostics.snapshot();
+        assert_eq!(after_error.snapshot_send_attempts, 2);
+        assert_eq!(after_error.snapshot_sends_in_flight, 0);
+        assert_eq!(after_error.snapshot_send_failures, 2);
+    }
+
+    #[test]
+    fn snapshot_release_frees_peer_before_report_can_trigger_reentrant_retry() {
+        let diagnostics = Arc::new(GridDriveDiagnostics::default());
+        let feedback = SnapshotDeliveryFeedback::new(test_raft_runtime(), Arc::clone(&diagnostics));
+        let mut first = feedback.try_reserve(2).unwrap();
+        let mut retry = None;
+
+        first.release_with_report(false, |feedback, peer_id, delivered| {
+            assert_eq!(diagnostics.snapshot().snapshot_sends_in_flight, 0);
+            retry = Some(
+                feedback
+                    .try_reserve(peer_id)
+                    .expect("report-triggered retry must see the released peer reservation"),
+            );
+            feedback
+                .raft
+                .report_snapshot_delivery_deferred(peer_id, delivered);
+        });
+
+        assert_eq!(diagnostics.snapshot().snapshot_sends_in_flight, 1);
+        retry
+            .expect("report hook must create one bounded retry")
+            .finish(false);
+        assert_eq!(diagnostics.snapshot().snapshot_sends_in_flight, 0);
+    }
+
+    #[test]
+    fn snapshot_send_authority_requires_same_term_leader_role() {
+        let mut state = test_raft_runtime().snapshot();
+        state.term = 7;
+        state.role = RaftRuntimeRole::Leader;
+        assert!(snapshot_send_authority_is_valid(&state, 7));
+
+        state.term = 8;
+        assert!(!snapshot_send_authority_is_valid(&state, 7));
+        state.term = 7;
+        for role in [RaftRuntimeRole::Follower, RaftRuntimeRole::Candidate] {
+            state.role = role;
+            assert!(!snapshot_send_authority_is_valid(&state, 7));
+        }
+    }
+
+    #[tokio::test]
+    async fn term_mismatch_cancels_snapshot_send_and_releases_without_http_success() {
+        let raft = test_raft_runtime();
+        let local_term = raft.snapshot().term;
+        let peers = BTreeMap::from([(
+            2,
+            RaftPeer {
+                node_id: ClusterNodeId::from("peer"),
+                endpoint: "127.0.0.1:9".to_owned(),
+            },
+        )]);
+        let diagnostics = Arc::new(GridDriveDiagnostics::default());
+        let sink = HttpRaftMessageSink::new(
+            ClusterNodeId::from("local"),
+            1,
+            Arc::new(RwLock::new(peers)),
+            ClusterRouteAuth::missing_provider().acknowledge_insecure_trust_boundary(true),
+            &test_member_config("127.0.0.1:7000"),
+        )
+        .unwrap()
+        .with_snapshot_feedback(Arc::clone(&raft), Arc::clone(&diagnostics));
+        let mut snapshot = raft::eraftpb::Message {
+            from: 1,
+            to: 2,
+            term: local_term.saturating_add(1),
+            ..Default::default()
+        };
+        snapshot.set_msg_type(raft::eraftpb::MessageType::MsgSnapshot);
+
+        let error = sink
+            .send(RaftWireMessage::encode(&snapshot).unwrap())
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("lost authority"));
+        let observation = diagnostics.snapshot();
+        assert_eq!(observation.snapshot_send_attempts, 1);
+        assert_eq!(observation.snapshot_send_successes, 0);
+        assert_eq!(observation.snapshot_send_failures, 1);
+        assert_eq!(observation.snapshot_sends_in_flight, 0);
     }
 
     #[test]

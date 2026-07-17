@@ -152,6 +152,25 @@ mod cluster_status {
         assert!(!status.quorum_ok);
     }
 
+    #[test]
+    fn committed_but_unapplied_metadata_fences_live_authority() {
+        let provider = live_provider(FakeGrid {
+            authority_matches: false,
+            ..FakeGrid::three_members()
+        });
+
+        let status = provider.cluster_status(ClusterStatusRuntime::new(true, false));
+
+        assert_eq!(status.source, StatusSource::Live);
+        assert_eq!(status.epoch, 42);
+        assert_eq!(status.members.len(), 3);
+        assert_eq!(status.leader, None);
+        assert!(
+            !status.quorum_ok,
+            "a locally stale metadata projection must not be published as authoritative"
+        );
+    }
+
     #[tokio::test]
     async fn admin_status_json_includes_source_field() {
         let surface = AdminHttpSurface::new(ServerRuntime::new(local_config()).unwrap().start());
@@ -180,6 +199,7 @@ struct FakeGrid {
     leader: Option<String>,
     unreachable: BTreeSet<ClusterNodeId>,
     quorum: bool,
+    authority_matches: bool,
     phase: ReshardPhase,
     draining: bool,
 }
@@ -203,6 +223,7 @@ impl FakeGrid {
             leader: Some("node-2".to_owned()),
             unreachable: BTreeSet::new(),
             quorum: true,
+            authority_matches: true,
             phase: ReshardPhase::Moving,
             draining: false,
         }
@@ -226,6 +247,10 @@ impl GridControlPlaneHandle for FakeGrid {
 
     fn has_quorum(&self) -> bool {
         self.quorum
+    }
+
+    fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
+        self.authority_matches && observed == &self.snapshot
     }
 
     fn voter_count(&self) -> u32 {

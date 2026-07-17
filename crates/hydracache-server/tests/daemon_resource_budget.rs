@@ -1,15 +1,15 @@
+#[path = "support/resource_budget.rs"]
+mod resource_budget;
 mod support;
 
-use std::fs;
 use std::io::{Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpStream};
-use std::path::Path;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
 use raft::eraftpb::MessageType;
-use serde::{Deserialize, Serialize};
+use resource_budget::{ResourceBudget, ResourceBudgetArtifact, ResourceSample};
 use support::daemon_cluster::{
     leaders, resolve_server_binary, DaemonCluster, DaemonStatus, TestResult,
 };
@@ -20,93 +20,6 @@ const PORTABLE_ARTIFACT: &str = "daemon-resource-budget-portable.json";
 const LINUX_ARTIFACT: &str = "daemon-resource-budget-linux.json";
 #[cfg(target_os = "linux")]
 const LINUX_GATE_ENV: &str = "HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX";
-
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-struct ResourceSample {
-    running_children: u64,
-    tracked_connections: u64,
-    held_snapshot_messages: u64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    rss_kib: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    open_fds: Option<u64>,
-}
-
-impl ResourceSample {
-    fn peak(samples: &[Self]) -> Self {
-        Self {
-            running_children: samples
-                .iter()
-                .map(|sample| sample.running_children)
-                .max()
-                .unwrap_or(0),
-            tracked_connections: samples
-                .iter()
-                .map(|sample| sample.tracked_connections)
-                .max()
-                .unwrap_or(0),
-            held_snapshot_messages: samples
-                .iter()
-                .map(|sample| sample.held_snapshot_messages)
-                .max()
-                .unwrap_or(0),
-            rss_kib: samples.iter().filter_map(|sample| sample.rss_kib).max(),
-            open_fds: samples.iter().filter_map(|sample| sample.open_fds).max(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct ResourceBudget {
-    max_child_delta: u64,
-    max_connection_delta: u64,
-    max_held_snapshot_messages: u64,
-    max_rss_growth_kib: u64,
-    max_fd_growth: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct ResourceBudgetArtifact {
-    schema_version: u32,
-    release: String,
-    seed: u64,
-    platform: String,
-    budget: ResourceBudget,
-    baseline: ResourceSample,
-    peak: ResourceSample,
-    final_sample: ResourceSample,
-    samples: Vec<ResourceSample>,
-}
-
-impl ResourceBudgetArtifact {
-    fn new(samples: Vec<ResourceSample>, budget: ResourceBudget) -> Self {
-        let baseline = samples.first().copied().unwrap_or_default();
-        let final_sample = samples.last().copied().unwrap_or_default();
-        Self {
-            schema_version: 1,
-            release: "0.64.0".to_owned(),
-            seed: SEED,
-            platform: std::env::consts::OS.to_owned(),
-            budget,
-            baseline,
-            peak: ResourceSample::peak(&samples),
-            final_sample,
-            samples,
-        }
-    }
-
-    fn write(&self, path: impl AsRef<Path>) -> TestResult {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join("target/test-evidence/0.64")
-            .join(path);
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::write(path, serde_json::to_vec_pretty(self)?)?;
-        Ok(())
-    }
-}
 
 fn portable_sample(
     cluster: &mut DaemonCluster,
@@ -266,7 +179,7 @@ async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestRe
         max_rss_growth_kib: 64 * 1024,
         max_fd_growth: 24,
     };
-    let artifact = ResourceBudgetArtifact::new(samples, budget);
+    let artifact = ResourceBudgetArtifact::new("0.64.0", SEED, samples, budget);
     assert_eq!(artifact.baseline.running_children, 3);
     assert_eq!(artifact.final_sample.running_children, 3);
     assert_eq!(artifact.final_sample.tracked_connections, 0);
@@ -277,7 +190,7 @@ async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestRe
         artifact.peak.held_snapshot_messages <= artifact.budget.max_held_snapshot_messages,
         "held snapshot queue exceeded the portable budget: {artifact:?}"
     );
-    artifact.write(PORTABLE_ARTIFACT)?;
+    artifact.write_workspace_evidence("0.64", PORTABLE_ARTIFACT)?;
     Ok(())
 }
 
@@ -304,7 +217,7 @@ fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
         max_rss_growth_kib: 64 * 1024,
         max_fd_growth: 24,
     };
-    let artifact = ResourceBudgetArtifact::new(samples, budget);
+    let artifact = ResourceBudgetArtifact::new("0.64.0", SEED, samples, budget);
     let baseline_rss = artifact.baseline.rss_kib.unwrap();
     let final_rss = artifact.final_sample.rss_kib.unwrap();
     let baseline_fds = artifact.baseline.open_fds.unwrap();
@@ -328,7 +241,7 @@ fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
         "every post-quiescence sample still grew monotonically: {artifact:?}"
     );
     cluster.wait_for_responsive_shape(3, 3, 3)?;
-    artifact.write(LINUX_ARTIFACT)?;
+    artifact.write_workspace_evidence("0.64", LINUX_ARTIFACT)?;
     Ok(())
 }
 
@@ -342,6 +255,8 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
         open_fds: Some(12),
     };
     let artifact = ResourceBudgetArtifact::new(
+        "0.64.0",
+        SEED,
         vec![sample],
         ResourceBudget {
             max_child_delta: 0,
@@ -366,6 +281,16 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
     for field in ["baseline", "peak", "final_sample", "platform", "samples"] {
         assert!(schema.contains(&format!("\"{field}\"")));
     }
+    assert!(
+        schema.contains("\"release\"")
+            && schema.contains("\"type\": \"string\"")
+            && schema.contains("\"pattern\""),
+        "the shared resource schema must require a semver-shaped release"
+    );
+    assert!(
+        !schema.contains("\"release\": { \"const\": \"0.64.0\" }"),
+        "the shared resource schema must not be pinned to the W37 release"
+    );
 }
 
 #[test]

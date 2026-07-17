@@ -784,7 +784,7 @@ fn topology_reshard_phase(phase: ReshardPhase) -> TopologyReshardPhase {
 }
 
 fn cluster_overview_leader(status: &ClusterStatus) -> Option<LeaderView> {
-    if status.source != StatusSource::Live {
+    if status.source != StatusSource::Live || !status.quorum_ok {
         return None;
     }
     status

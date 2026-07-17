@@ -5,6 +5,8 @@ use support::daemon_cluster::{
     skip_unless_daemon_process_e2e, DaemonCluster, DaemonStatus, TestResult,
 };
 
+const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 30_000;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct RaftProcessObservation {
     applied_index: u64,
@@ -14,13 +16,6 @@ struct RaftProcessObservation {
     snapshot_send_failures: u64,
     snapshot_sends_in_flight: u64,
     snapshot_installs: u64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum LaggerIsolation {
-    Kill,
-    #[cfg(target_os = "linux")]
-    Suspend,
 }
 
 #[derive(Debug)]
@@ -43,7 +38,7 @@ fn lagging_daemon_rejoins_via_snapshot_after_real_sled_compaction() -> TestResul
         3,
         "rejoin-after-real-sled-compaction",
     )?;
-    let prepared = prepare_compacted_lagger(&mut cluster, LaggerIsolation::Kill)?;
+    let prepared = prepare_compacted_lagger(&mut cluster)?;
 
     cluster.restart(prepared.lagger_index)?;
     wait_for_snapshot_install_and_convergence(
@@ -67,53 +62,44 @@ fn leader_killed_mid_snapshot_delivery_still_converges() -> TestResult {
         return Ok(());
     }
 
-    #[cfg(not(target_os = "linux"))]
-    {
-        eprintln!(
-            "skipping leader_killed_mid_snapshot_delivery_still_converges: \
-             the real in-flight proof requires Linux SIGSTOP/SIGCONT"
-        );
-        Ok(())
-    }
+    let mut cluster =
+        DaemonCluster::start_bootstrap_with_raft_compaction(3, "leader-killed-mid-snapshot")?;
+    let prepared = prepare_compacted_lagger(&mut cluster)?;
+    cluster.restart_with_snapshot_handler_delay(
+        prepared.lagger_index,
+        Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
+    )?;
+    let (old_leader_index, old_leader_status) = wait_for_snapshot_request_in_flight(&mut cluster)?;
+    let old_leader = cluster.node_ids()[old_leader_index].clone();
 
-    #[cfg(target_os = "linux")]
-    {
-        let mut cluster =
-            DaemonCluster::start_bootstrap_with_raft_compaction(3, "leader-killed-mid-snapshot")?;
-        let prepared = prepare_compacted_lagger(&mut cluster, LaggerIsolation::Suspend)?;
-        let (old_leader_index, old_leader_status) =
-            wait_for_snapshot_request_in_flight(&mut cluster)?;
-        let old_leader = cluster.node_ids()[old_leader_index].clone();
+    cluster.kill(old_leader_index)?;
+    // Closing the delayed receiver clears the dead leader's accepted socket,
+    // so the replacement leader must own the successful retry.
+    cluster.kill(prepared.lagger_index)?;
+    cluster.restart_with_snapshot_handler_delay(prepared.lagger_index, None)?;
+    cluster.wait_for_leader_not(&old_leader, 3, 3)?;
+    wait_for_snapshot_install_and_convergence(
+        &mut cluster,
+        prepared.lagger_index,
+        prepared.compacted_index,
+        2,
+    )?;
 
-        cluster.kill(old_leader_index)?;
-        // Closing the stopped receiver clears the dead leader's accepted socket,
-        // so the replacement leader must own the successful retry.
-        cluster.kill(prepared.lagger_index)?;
-        cluster.restart(prepared.lagger_index)?;
-        cluster.wait_for_leader_not(&old_leader, 3, 3)?;
-        wait_for_snapshot_install_and_convergence(
-            &mut cluster,
-            prepared.lagger_index,
-            prepared.compacted_index,
-            2,
-        )?;
+    let replacement_indices = prepared
+        .active_indices
+        .iter()
+        .copied()
+        .filter(|index| *index != old_leader_index)
+        .collect::<Vec<_>>();
+    assert!(
+        snapshot_success_sum(&cluster, &replacement_indices)? > 0,
+        "replacement leader must complete the snapshot retry; old leader observation={old_leader_status:?}"
+    );
 
-        let replacement_indices = prepared
-            .active_indices
-            .iter()
-            .copied()
-            .filter(|index| *index != old_leader_index)
-            .collect::<Vec<_>>();
-        assert!(
-            snapshot_success_sum(&cluster, &replacement_indices)? > 0,
-            "replacement leader must complete the snapshot retry; old leader observation={old_leader_status:?}"
-        );
-
-        cluster.restart(old_leader_index)?;
-        cluster.wait_for_shape(3, 3)?;
-        wait_for_equal_applied_progress(&mut cluster, 3, prepared.compacted_index)?;
-        Ok(())
-    }
+    cluster.restart(old_leader_index)?;
+    cluster.wait_for_shape(3, 3)?;
+    wait_for_equal_applied_progress(&mut cluster, 3, prepared.compacted_index)?;
+    Ok(())
 }
 
 #[test]
@@ -124,47 +110,39 @@ fn receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges() ->
         return Ok(());
     }
 
-    #[cfg(not(target_os = "linux"))]
-    {
-        eprintln!(
-            "skipping receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges: \
-             the real in-flight proof requires Linux SIGSTOP/SIGCONT"
-        );
-        Ok(())
-    }
+    let mut cluster =
+        DaemonCluster::start_bootstrap_with_raft_compaction(3, "receiver-killed-mid-snapshot")?;
+    let prepared = prepare_compacted_lagger(&mut cluster)?;
+    cluster.restart_with_snapshot_handler_delay(
+        prepared.lagger_index,
+        Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
+    )?;
+    let (leader_index, in_flight) = wait_for_snapshot_request_in_flight(&mut cluster)?;
 
-    #[cfg(target_os = "linux")]
-    {
-        let mut cluster =
-            DaemonCluster::start_bootstrap_with_raft_compaction(3, "receiver-killed-mid-snapshot")?;
-        let prepared = prepare_compacted_lagger(&mut cluster, LaggerIsolation::Suspend)?;
-        let (leader_index, in_flight) = wait_for_snapshot_request_in_flight(&mut cluster)?;
+    cluster.kill(prepared.lagger_index)?;
+    cluster.wait_for(
+        "snapshot sender releases failed receiver request".to_owned(),
+        |cluster| {
+            let observation = observation(cluster, leader_index).ok()?;
+            (observation.snapshot_send_failures > in_flight.snapshot_send_failures
+                && observation.snapshot_sends_in_flight == 0)
+                .then_some(observation)
+        },
+    )?;
 
-        cluster.kill(prepared.lagger_index)?;
-        cluster.wait_for(
-            "snapshot sender releases failed receiver request".to_owned(),
-            |cluster| {
-                let observation = observation(cluster, leader_index).ok()?;
-                (observation.snapshot_send_failures > in_flight.snapshot_send_failures
-                    && observation.snapshot_sends_in_flight == 0)
-                    .then_some(observation)
-            },
-        )?;
-
-        cluster.restart(prepared.lagger_index)?;
-        wait_for_snapshot_install_and_convergence(
-            &mut cluster,
-            prepared.lagger_index,
-            prepared.compacted_index,
-            3,
-        )?;
-        let after = observation(&cluster, leader_index)?;
-        assert!(
-            after.snapshot_send_successes > in_flight.snapshot_send_successes,
-            "sender must retry successfully after receiver restart: before={in_flight:?} after={after:?}"
-        );
-        Ok(())
-    }
+    cluster.restart_with_snapshot_handler_delay(prepared.lagger_index, None)?;
+    wait_for_snapshot_install_and_convergence(
+        &mut cluster,
+        prepared.lagger_index,
+        prepared.compacted_index,
+        3,
+    )?;
+    let after = observation(&cluster, leader_index)?;
+    assert!(
+        after.snapshot_send_successes > in_flight.snapshot_send_successes,
+        "sender must retry successfully after receiver restart: before={in_flight:?} after={after:?}"
+    );
+    Ok(())
 }
 
 #[test]
@@ -176,10 +154,7 @@ fn canary_snapshot_send_failure_leaves_peer_progress_stuck() {
     );
 }
 
-fn prepare_compacted_lagger(
-    cluster: &mut DaemonCluster,
-    isolation: LaggerIsolation,
-) -> TestResult<PreparedSnapshotCatchup> {
+fn prepare_compacted_lagger(cluster: &mut DaemonCluster) -> TestResult<PreparedSnapshotCatchup> {
     let statuses = cluster.wait_for_shape(3, 3)?;
     let initial_leader_index = leader_index(cluster, &statuses)?;
     let lagger_index = (0..cluster.node_ids().len())
@@ -187,11 +162,7 @@ fn prepare_compacted_lagger(
         .ok_or("three-node cluster did not expose a follower")?;
     let lagger_before = observation(cluster, lagger_index)?;
 
-    match isolation {
-        LaggerIsolation::Kill => cluster.kill(lagger_index)?,
-        #[cfg(target_os = "linux")]
-        LaggerIsolation::Suspend => cluster.suspend(lagger_index)?,
-    }
+    cluster.kill(lagger_index)?;
     cluster.wait_for_responsive_shape(2, 3, 3)?;
 
     let mut previous_applied = lagger_before.applied_index;
@@ -271,7 +242,6 @@ fn wait_for_snapshot_install_and_convergence(
     Ok(())
 }
 
-#[cfg(target_os = "linux")]
 fn wait_for_snapshot_request_in_flight(
     cluster: &mut DaemonCluster,
 ) -> TestResult<(usize, RaftProcessObservation)> {

@@ -17,7 +17,10 @@
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "release": { "const": "0.64.0" },
+    "release": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
     "seed": { "type": "integer", "minimum": 0 },
     "platform": { "type": "string", "minLength": 1 },
     "budget": { "$ref": "#/$defs/budget" },
