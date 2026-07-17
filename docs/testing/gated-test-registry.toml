@@ -5423,6 +5423,47 @@ platform = "any"
 [gate.command.env]
 
 [[gate]]
+id = "cfg.hydracache-cluster-raft.inbound-wire-validation"
+kind = "cfg_test_target"
+source = "crates/hydracache-cluster-raft/tests/inbound_wire_validation.rs"
+package = "hydracache-cluster-raft"
+target = "inbound_wire_validation"
+test = ""
+cfg = 'feature = "sled-log-store"'
+env = ""
+reason = "The W9 inbound Raft validation proof reopens Sled state to show malformed frames are rejected before durable mutation"
+tier = "fast"
+required_features = ["sled-log-store"]
+required_env = []
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.66.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "rust"
+step = "Raft compaction control 0.66"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-cluster-raft",
+    "--features",
+    "sled-log-store",
+    "--test",
+    "inbound_wire_validation",
+    "--locked",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+
+[[gate]]
 id = "env.hydracache-test-raft-snapshot-handler-delay-ms"
 kind = "env_gate"
 source = "crates/hydracache-server/src/grid_host.rs"

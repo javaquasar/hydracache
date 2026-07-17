@@ -271,6 +271,7 @@ required_sources = [
     "fuzz/fuzz_targets/raft_wire_frame.rs",
     "fuzz/src/lib.rs",
     "fuzz/tests/fuzz_corpus_regression.rs",
+    "crates/hydracache-cluster-raft/tests/inbound_wire_validation.rs",
     "crates/hydracache-server/tests/raft_wire_socket_corpus.rs",
 ]
 required_artifacts = [
@@ -279,9 +280,17 @@ required_artifacts = [
     "fuzz/corpus/raft_wire_frame/truncated-json.seed",
     "fuzz/corpus/raft_wire_frame/valid-empty-protobuf.json",
 ]
-fast_gate_ids = ["fast.fuzz-corpus-regression", "fast.workspace-nextest"]
+fast_gate_ids = [
+    "fast.fuzz-corpus-regression",
+    "fast.raft-sled-snapshot",
+    "fast.workspace-nextest",
+]
 gated_gate_ids = ["tool.cargo-fuzz.raft-wire-frame-066"]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/inbound_wire_validation.rs"
+function = "malformed_metadata_snapshot_is_rejected_before_sled_mutation_and_reopen"
 
 [[work_item.required_tests]]
 source = "fuzz/tests/fuzz_corpus_regression.rs"
