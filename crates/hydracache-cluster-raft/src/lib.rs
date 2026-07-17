@@ -496,6 +496,14 @@ pub struct RaftMetadataRuntimeExport {
     pub commands: Vec<RaftMetadataCommandEnvelope>,
 }
 
+#[derive(Debug)]
+struct StagedMetadataSnapshot {
+    cluster: InMemoryCluster,
+    applied_index: u64,
+    commands: Vec<RaftMetadataCommandEnvelope>,
+    applied_command_ids: BTreeSet<String>,
+}
+
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION: u32 = 1;
 
@@ -1190,23 +1198,11 @@ where
     }
 
     fn restore_export(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
-        validate_snapshot_apply_contract(&snapshot)?;
-        let snapshot_index = snapshot.applied_index;
-        {
-            let mut state = self.raft.lock().expect("raft metadata state poisoned");
-            state.commands.clear();
-            state.applied_command_ids.clear();
-            state.results.clear();
-            state.applied_index = snapshot.applied_index;
-        }
-        for (offset, envelope) in snapshot.commands.into_iter().enumerate() {
-            let tail_index = offset + 1;
-            let command_id = envelope.command_id.clone();
-            self.apply_snapshot_envelope(envelope).map_err(|error| {
-                snapshot_apply_error(snapshot_index, tail_index, &command_id, error)
-            })?;
-        }
-        Ok(())
+        let staged = stage_metadata_snapshot(snapshot)?;
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .publish_staged_metadata_snapshot(staged, false)
     }
 
     fn restore_committed_state(
@@ -1285,22 +1281,6 @@ where
     ) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
         state.propose_voter_change(raft_node_id, change_type)
-    }
-
-    fn apply_snapshot_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
-        materialize_snapshot_command(&self.cluster, &envelope.command)?;
-        let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        if !state
-            .applied_command_ids
-            .insert(envelope.command_id.clone())
-        {
-            return Err(CacheError::Backend(format!(
-                "duplicate raft snapshot command id '{}'",
-                envelope.command_id
-            )));
-        }
-        state.commands.push(envelope);
-        Ok(())
     }
 
     fn apply_recovered_envelope_at(
@@ -1432,6 +1412,39 @@ fn validate_snapshot_apply_contract(snapshot: &RaftMetadataRuntimeExport) -> Cac
         }
     }
     Ok(())
+}
+
+fn stage_metadata_snapshot(
+    snapshot: RaftMetadataRuntimeExport,
+) -> CacheResult<StagedMetadataSnapshot> {
+    validate_snapshot_apply_contract(&snapshot)?;
+    let staged_cluster = InMemoryCluster::new(snapshot.cluster_name.clone());
+    let mut applied_command_ids = BTreeSet::new();
+    for (offset, envelope) in snapshot.commands.iter().enumerate() {
+        let tail_index = offset + 1;
+        materialize_snapshot_command(&staged_cluster, &envelope.command).map_err(|error| {
+            snapshot_apply_error(
+                snapshot.applied_index,
+                tail_index,
+                &envelope.command_id,
+                error,
+            )
+        })?;
+        if !applied_command_ids.insert(envelope.command_id.clone()) {
+            return Err(snapshot_apply_error(
+                snapshot.applied_index,
+                tail_index,
+                &envelope.command_id,
+                CacheError::Backend("duplicate raft snapshot command id".to_owned()),
+            ));
+        }
+    }
+    Ok(StagedMetadataSnapshot {
+        cluster: staged_cluster,
+        applied_index: snapshot.applied_index,
+        commands: snapshot.commands,
+        applied_command_ids,
+    })
 }
 
 fn command_id_node(node_id: &ClusterNodeId) -> String {
@@ -1624,6 +1637,32 @@ impl<S> RaftRuntimeState<S>
 where
     S: RaftLogStore,
 {
+    fn publish_staged_metadata_snapshot(
+        &mut self,
+        staged: StagedMetadataSnapshot,
+        count_install: bool,
+    ) -> CacheResult<()> {
+        if staged.cluster.name() != self.cluster.name() {
+            return Err(CacheError::Backend(format!(
+                "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
+                staged.cluster.name(),
+                self.cluster.name()
+            )));
+        }
+
+        self.commands = staged.commands;
+        self.applied_command_ids = staged.applied_command_ids;
+        self.results.clear();
+        self.applied_index = staged.applied_index;
+        // The cluster names were checked above, so replacement has no
+        // recoverable failure after the runtime metadata has been staged.
+        self.cluster.replace_membership_from(staged.cluster)?;
+        if count_install {
+            self.snapshot_installs = self.snapshot_installs.saturating_add(1);
+        }
+        Ok(())
+    }
+
     fn propose_voter_change(
         &mut self,
         raft_node_id: u64,
@@ -1964,23 +2003,8 @@ where
                 self.cluster.name()
             )));
         }
-        validate_snapshot_apply_contract(&export)?;
-        self.commands.clear();
-        self.applied_command_ids.clear();
-        self.results.clear();
-        self.applied_index = export.applied_index;
-        for envelope in export.commands {
-            materialize_snapshot_command(&self.cluster, &envelope.command)?;
-            if !self.applied_command_ids.insert(envelope.command_id.clone()) {
-                return Err(CacheError::Backend(format!(
-                    "duplicate raft snapshot command id '{}'",
-                    envelope.command_id
-                )));
-            }
-            self.commands.push(envelope);
-        }
-        self.snapshot_installs = self.snapshot_installs.saturating_add(1);
-        Ok(())
+        let staged = stage_metadata_snapshot(export)?;
+        self.publish_staged_metadata_snapshot(staged, true)
     }
 }
 
@@ -2268,6 +2292,33 @@ mod tests {
 
     use super::*;
 
+    fn metadata_export_from_commands(
+        cluster_name: &str,
+        source_raft_node_id: u64,
+        applied_index: u64,
+        commands: Vec<RaftMetadataCommand>,
+    ) -> RaftMetadataRuntimeExport {
+        RaftMetadataRuntimeExport {
+            cluster_name: cluster_name.to_owned(),
+            raft_node_id: source_raft_node_id,
+            applied_index,
+            commands: commands
+                .into_iter()
+                .map(|command| RaftMetadataCommandEnvelope {
+                    command_id: command_id_for(&command),
+                    command,
+                })
+                .collect(),
+        }
+    }
+
+    fn protobuf_snapshot_from_export(export: &RaftMetadataRuntimeExport) -> Snapshot {
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = export.applied_index;
+        snapshot.data = encode_metadata_snapshot_payload(export).unwrap().into();
+        snapshot
+    }
+
     #[test]
     fn wire_envelope_identifies_snapshot_without_transport_raft_dependency() {
         let mut snapshot = RaftMessage::default();
@@ -2401,6 +2452,158 @@ mod tests {
         assert_eq!(
             recovered.snapshot().applied_index,
             runtime.snapshot().applied_index
+        );
+    }
+
+    #[tokio::test]
+    async fn restore_export_rejects_late_error_without_partial_membership_publish() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("stable-member").generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let export_before = runtime.export_snapshot();
+        let members_before = runtime.members();
+        let events_before = runtime.cluster.events();
+        let results_before = runtime.command_results();
+        let snapshot_before = runtime.snapshot();
+        let malformed = metadata_export_from_commands(
+            "orders",
+            2,
+            2,
+            vec![
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: ClusterNodeId::from("partial-prefix"),
+                    generation: ClusterGeneration::new(1),
+                    epoch: ClusterEpoch::new(1),
+                },
+                RaftMetadataCommand::NodeLeft {
+                    node_id: ClusterNodeId::from("missing-member"),
+                    role: ClusterRole::Member,
+                    epoch: ClusterEpoch::new(2),
+                },
+            ],
+        );
+
+        let error = runtime.restore_export(malformed).unwrap_err();
+
+        assert!(error.to_string().contains("tail_index=2"));
+        assert!(error.to_string().contains("missing-member"));
+        assert_eq!(runtime.export_snapshot(), export_before);
+        assert_eq!(runtime.members(), members_before);
+        assert_eq!(runtime.cluster.events(), events_before);
+        assert_eq!(runtime.command_results(), results_before);
+        assert_eq!(runtime.snapshot(), snapshot_before);
+    }
+
+    #[tokio::test]
+    async fn raft_snapshot_install_rejects_late_error_without_partial_publish() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("stable-member").generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let export_before = runtime.export_snapshot();
+        let members_before = runtime.members();
+        let events_before = runtime.cluster.events();
+        let snapshot_before = runtime.snapshot();
+        let malformed = metadata_export_from_commands(
+            "orders",
+            2,
+            2,
+            vec![
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: ClusterNodeId::from("partial-prefix"),
+                    generation: ClusterGeneration::new(1),
+                    epoch: ClusterEpoch::new(1),
+                },
+                RaftMetadataCommand::NodeLeft {
+                    node_id: ClusterNodeId::from("missing-member"),
+                    role: ClusterRole::Member,
+                    epoch: ClusterEpoch::new(2),
+                },
+            ],
+        );
+        let snapshot = protobuf_snapshot_from_export(&malformed);
+
+        let error = runtime
+            .raft
+            .lock()
+            .unwrap()
+            .install_metadata_snapshot(&snapshot)
+            .unwrap_err();
+
+        assert!(error.to_string().contains("tail_index=2"));
+        assert_eq!(runtime.export_snapshot(), export_before);
+        assert_eq!(runtime.members(), members_before);
+        assert_eq!(runtime.cluster.events(), events_before);
+        assert_eq!(runtime.snapshot(), snapshot_before);
+    }
+
+    #[tokio::test]
+    async fn raft_snapshot_install_replaces_membership_instead_of_layering_it() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("stale-local-member")
+                    .generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let snapshot_before = runtime.snapshot();
+        let replacement = metadata_export_from_commands(
+            "orders",
+            2,
+            2,
+            vec![
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: ClusterNodeId::from("authoritative-member"),
+                    generation: ClusterGeneration::new(2),
+                    epoch: ClusterEpoch::new(1),
+                },
+                RaftMetadataCommand::ClientUpsert {
+                    node_id: ClusterNodeId::from("authoritative-client"),
+                    generation: ClusterGeneration::new(3),
+                    epoch: ClusterEpoch::new(1),
+                },
+            ],
+        );
+        let snapshot = protobuf_snapshot_from_export(&replacement);
+
+        runtime
+            .raft
+            .lock()
+            .unwrap()
+            .install_metadata_snapshot(&snapshot)
+            .unwrap();
+
+        assert_eq!(
+            runtime
+                .members()
+                .into_iter()
+                .map(|member| member.node_id.as_str().to_owned())
+                .collect::<Vec<_>>(),
+            vec!["authoritative-member".to_owned()]
+        );
+        assert_eq!(
+            runtime
+                .clients()
+                .into_iter()
+                .map(|client| client.node_id.as_str().to_owned())
+                .collect::<Vec<_>>(),
+            vec!["authoritative-client".to_owned()]
+        );
+        let installed = runtime.export_snapshot();
+        assert_eq!(installed.applied_index, replacement.applied_index);
+        assert_eq!(installed.commands, replacement.commands);
+        assert!(runtime.command_results().is_empty());
+        assert_eq!(
+            runtime.snapshot().snapshot_installs,
+            snapshot_before.snapshot_installs + 1
         );
     }
 

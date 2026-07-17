@@ -250,6 +250,112 @@ async fn cache_runtime_can_subscribe_to_cluster_membership_events() {
 }
 
 #[tokio::test]
+async fn staged_membership_replacement_is_atomic_and_preserves_live_channels() {
+    let cluster = InMemoryCluster::new("orders");
+    cluster
+        .join_member(ClusterCandidate::member("old-member").generation(ClusterGeneration::new(1)))
+        .unwrap();
+    cluster
+        .join_client(ClusterCandidate::client("old-client").generation(ClusterGeneration::new(1)))
+        .unwrap();
+    let _ = cluster.owner_for_key("before-replacement");
+    let ownership_before = cluster.ownership_diagnostics();
+    let _invalidation_subscriber = cluster.invalidation_bus().subscribe();
+    let mut membership_subscriber = cluster.subscribe_membership();
+
+    let staged = InMemoryCluster::new("orders");
+    staged
+        .join_member(ClusterCandidate::member("new-member").generation(ClusterGeneration::new(2)))
+        .unwrap();
+    staged
+        .join_client(ClusterCandidate::client("new-client").generation(ClusterGeneration::new(3)))
+        .unwrap();
+
+    cluster.replace_membership_from(staged).unwrap();
+
+    assert_eq!(
+        cluster
+            .members()
+            .into_iter()
+            .map(|member| member.node_id.as_str().to_owned())
+            .collect::<Vec<_>>(),
+        vec!["new-member".to_owned()]
+    );
+    assert_eq!(
+        cluster
+            .clients()
+            .into_iter()
+            .map(|client| client.node_id.as_str().to_owned())
+            .collect::<Vec<_>>(),
+        vec!["new-client".to_owned()]
+    );
+    let ownership_after = cluster.ownership_diagnostics();
+    assert_eq!(ownership_after.resolutions, ownership_before.resolutions);
+    assert_eq!(ownership_after.no_owner, ownership_before.no_owner);
+    assert!(ownership_after.stamp > ownership_before.stamp);
+    let diagnostics = ClusterControlPlane::diagnostics_for(
+        &cluster,
+        ClusterRole::Member,
+        ClusterNodeId::from("observer"),
+        ClusterGeneration::new(1),
+        Vec::new(),
+    );
+    assert_eq!(diagnostics.invalidation_subscribers, 1);
+    assert_eq!(diagnostics.membership_subscribers, 1);
+
+    let first = timeout(Duration::from_secs(1), membership_subscriber.recv())
+        .await
+        .expect("replacement event must be published")
+        .unwrap();
+    assert!(matches!(
+        first,
+        ClusterMembershipEvent::NodeLeft { ref node_id, role: ClusterRole::Member, .. }
+            if node_id.as_str() == "old-member"
+    ));
+    assert_eq!(cluster.members()[0].node_id.as_str(), "new-member");
+    let remaining = [
+        membership_subscriber.recv().await.unwrap(),
+        membership_subscriber.recv().await.unwrap(),
+        membership_subscriber.recv().await.unwrap(),
+    ];
+    assert!(matches!(
+        &remaining[0],
+        ClusterMembershipEvent::NodeLeft { node_id, role: ClusterRole::Client, .. }
+            if node_id.as_str() == "old-client"
+    ));
+    assert!(matches!(
+        &remaining[1],
+        ClusterMembershipEvent::MemberJoined(member) if member.node_id.as_str() == "new-member"
+    ));
+    assert!(matches!(
+        &remaining[2],
+        ClusterMembershipEvent::ClientConnected(client) if client.node_id.as_str() == "new-client"
+    ));
+}
+
+#[test]
+fn staged_membership_replacement_rejects_wrong_cluster_without_mutation() {
+    let cluster = InMemoryCluster::new("orders");
+    cluster
+        .join_member(ClusterCandidate::member("stable-member"))
+        .unwrap();
+    let members_before = cluster.members();
+    let events_before = cluster.events();
+    let ownership_before = cluster.ownership_diagnostics();
+    let staged = InMemoryCluster::new("billing");
+    staged
+        .join_member(ClusterCandidate::member("wrong-member"))
+        .unwrap();
+
+    let error = cluster.replace_membership_from(staged).unwrap_err();
+
+    assert!(error.to_string().contains("does not match live cluster"));
+    assert_eq!(cluster.members(), members_before);
+    assert_eq!(cluster.events(), events_before);
+    assert_eq!(cluster.ownership_diagnostics(), ownership_before);
+}
+
+#[tokio::test]
 async fn member_invalidation_reaches_client_near_cache() {
     let cluster = Arc::new(InMemoryCluster::new("orders"));
 
