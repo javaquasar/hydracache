@@ -4,6 +4,8 @@ use std::fmt;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
+#[cfg(feature = "test-failpoints")]
+use std::sync::{Condvar, Mutex};
 
 #[cfg(feature = "sled-log-store")]
 use protobuf::Message as ProtobufMessage;
@@ -43,6 +45,188 @@ impl std::error::Error for RaftStoreError {}
 impl From<RaftError> for RaftStoreError {
     fn from(error: RaftError) -> Self {
         Self::new(error.to_string())
+    }
+}
+
+/// Storage boundary controlled by the deterministic W5 fault seam.
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftStorageFaultOperation {
+    /// Persisting either a locally generated or incoming Raft snapshot.
+    SaveSnapshot,
+    /// Persisting the commit index exposed by raft-rs `LightReady`.
+    DurableCommit,
+}
+
+#[cfg(feature = "test-failpoints")]
+impl fmt::Display for RaftStorageFaultOperation {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::SaveSnapshot => "snapshot save",
+            Self::DurableCommit => "durable commit",
+        })
+    }
+}
+
+/// Deterministic behavior armed for exactly one storage operation.
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftStorageFaultMode {
+    /// Hold one operation until explicitly released, then let it continue.
+    BlockThenContinue,
+    /// Hold one operation until explicitly released, then fail it.
+    BlockThenFail,
+    /// Fail one operation immediately without blocking a thread.
+    FailImmediately,
+}
+
+/// Logical counters from the W5 storage fault seam.
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RaftStorageFaultObservation {
+    /// Calls observed for the currently tracked operation.
+    pub calls: u64,
+    /// Calls that entered the explicit blocked state.
+    pub blocked_calls: u64,
+    /// Calls rejected while the single allowed operation was blocked.
+    pub backpressure_rejections: u64,
+    /// Injected failures returned by the seam.
+    pub injected_failures: u64,
+    /// Operations currently held by the seam.
+    pub in_flight: u64,
+    /// Maximum concurrently held operations observed since arming.
+    pub max_in_flight: u64,
+}
+
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Default)]
+struct RaftStorageFaultState {
+    tracked_operation: Option<RaftStorageFaultOperation>,
+    mode: Option<RaftStorageFaultMode>,
+    active: bool,
+    released: bool,
+    observation: RaftStorageFaultObservation,
+}
+
+/// Cloneable deterministic controller for the narrow W5 storage fault seam.
+///
+/// The controller is compiled only with `test-failpoints`. It uses explicit
+/// release signals and logical counters, so tests never infer backpressure from
+/// elapsed wall-clock time.
+#[cfg(feature = "test-failpoints")]
+#[derive(Clone, Default)]
+pub struct RaftStorageFaultController {
+    inner: Arc<(Mutex<RaftStorageFaultState>, Condvar)>,
+}
+
+#[cfg(feature = "test-failpoints")]
+impl fmt::Debug for RaftStorageFaultController {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RaftStorageFaultController")
+            .field("observation", &self.observation())
+            .finish_non_exhaustive()
+    }
+}
+
+#[cfg(feature = "test-failpoints")]
+impl RaftStorageFaultController {
+    /// Arm exactly one operation and reset its logical counters.
+    pub fn arm(&self, operation: RaftStorageFaultOperation, mode: RaftStorageFaultMode) {
+        let (state, _) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        assert!(!state.active, "cannot re-arm an active storage fault");
+        state.tracked_operation = Some(operation);
+        state.mode = Some(mode);
+        state.released = false;
+        state.observation = RaftStorageFaultObservation::default();
+    }
+
+    /// Wait until the armed operation is logically blocked.
+    pub fn wait_until_blocked(&self) -> RaftStorageFaultObservation {
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        while state.observation.in_flight == 0 {
+            state = changed
+                .wait(state)
+                .expect("raft storage fault state poisoned while waiting");
+        }
+        state.observation
+    }
+
+    /// Release the currently blocked operation.
+    pub fn release_blocked(&self) {
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        assert!(state.active, "no blocked storage operation to release");
+        state.released = true;
+        changed.notify_all();
+    }
+
+    /// Return current logical seam counters.
+    pub fn observation(&self) -> RaftStorageFaultObservation {
+        self.inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .observation
+    }
+
+    fn before(&self, operation: RaftStorageFaultOperation) -> RaftStoreResult<()> {
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        if state.tracked_operation != Some(operation) {
+            return Ok(());
+        }
+        state.observation.calls = state.observation.calls.saturating_add(1);
+
+        let Some(mode) = state.mode else {
+            return Ok(());
+        };
+        if mode == RaftStorageFaultMode::FailImmediately {
+            state.mode = None;
+            state.observation.injected_failures =
+                state.observation.injected_failures.saturating_add(1);
+            return Err(RaftStoreError::new(format!(
+                "injected storage fault during {operation}"
+            )));
+        }
+        if state.active {
+            state.observation.backpressure_rejections =
+                state.observation.backpressure_rejections.saturating_add(1);
+            return Err(RaftStoreError::new(format!(
+                "storage backpressure: one {operation} is already in flight"
+            )));
+        }
+
+        state.active = true;
+        state.observation.blocked_calls = state.observation.blocked_calls.saturating_add(1);
+        state.observation.in_flight = 1;
+        state.observation.max_in_flight = state.observation.max_in_flight.max(1);
+        changed.notify_all();
+        while !state.released {
+            state = changed
+                .wait(state)
+                .expect("raft storage fault state poisoned while blocked");
+        }
+
+        state.active = false;
+        state.released = false;
+        state.mode = None;
+        state.observation.in_flight = 0;
+        let fail = mode == RaftStorageFaultMode::BlockThenFail;
+        if fail {
+            state.observation.injected_failures =
+                state.observation.injected_failures.saturating_add(1);
+        }
+        changed.notify_all();
+        if fail {
+            Err(RaftStoreError::new(format!(
+                "injected storage fault during {operation}"
+            )))
+        } else {
+            Ok(())
+        }
     }
 }
 
@@ -106,15 +290,19 @@ struct InMemoryRaftLogState {
 #[derive(Clone, Default)]
 pub struct InMemoryRaftLogStore {
     state: Arc<RwLock<InMemoryRaftLogState>>,
+    #[cfg(feature = "test-failpoints")]
+    storage_faults: RaftStorageFaultController,
 }
 
 impl fmt::Debug for InMemoryRaftLogStore {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("InMemoryRaftLogStore")
+        let mut debug = formatter.debug_struct("InMemoryRaftLogStore");
+        debug
             .field("first_index", &self.first_index().ok())
-            .field("last_index", &self.last_index().ok())
-            .finish_non_exhaustive()
+            .field("last_index", &self.last_index().ok());
+        #[cfg(feature = "test-failpoints")]
+        debug.field("storage_faults", &self.storage_faults);
+        debug.finish_non_exhaustive()
     }
 }
 
@@ -175,6 +363,12 @@ impl InMemoryRaftLogStore {
             .write()
             .expect("raft log store poisoned")
             .snapshot_unavailable_once = true;
+    }
+
+    /// Return the feature-gated deterministic storage fault controller.
+    #[cfg(feature = "test-failpoints")]
+    pub fn storage_faults(&self) -> RaftStorageFaultController {
+        self.storage_faults.clone()
     }
 
     /// Update the hard-state commit index after raft light-ready advance.
@@ -281,6 +475,19 @@ impl Storage for InMemoryRaftLogStore {
 impl RaftLogStore for InMemoryRaftLogStore {
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
         #[cfg(feature = "test-failpoints")]
+        if hard_state.commit
+            > self
+                .state
+                .read()
+                .expect("raft log store poisoned")
+                .raft_state
+                .hard_state
+                .commit
+        {
+            self.storage_faults
+                .before(RaftStorageFaultOperation::DurableCommit)?;
+        }
+        #[cfg(feature = "test-failpoints")]
         fail::fail_point!("raft_before_save_hard_state", |_| {
             Err(RaftStoreError::new(
                 "injected crash before raft hard state save",
@@ -351,6 +558,9 @@ impl RaftLogStore for InMemoryRaftLogStore {
         preserve_log_entries: usize,
     ) -> RaftStoreResult<()> {
         #[cfg(feature = "test-failpoints")]
+        self.storage_faults
+            .before(RaftStorageFaultOperation::SaveSnapshot)?;
+        #[cfg(feature = "test-failpoints")]
         fail::fail_point!("raft_save_snapshot_disk_full", |_| {
             Err(RaftStoreError::new(
                 "injected disk full during raft snapshot save",
@@ -397,6 +607,9 @@ impl RaftLogStore for InMemoryRaftLogStore {
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        self.storage_faults
+            .before(RaftStorageFaultOperation::DurableCommit)?;
         Self::set_commit(self, commit);
         Ok(())
     }
@@ -499,6 +712,12 @@ impl DurableRaftLogStore {
         ConfState: From<T>,
     {
         self.inner.initialize_with_conf_state(conf_state);
+    }
+
+    /// Return the feature-gated deterministic storage fault controller.
+    #[cfg(feature = "test-failpoints")]
+    pub fn storage_faults(&self) -> RaftStorageFaultController {
+        self.inner.storage_faults()
     }
 
     fn record_sync(&self) {
@@ -608,6 +827,10 @@ impl RaftLogStore for DurableRaftLogStore {
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .before(RaftStorageFaultOperation::DurableCommit)?;
         self.inner.set_commit(commit);
         Ok(())
     }
@@ -803,6 +1026,12 @@ impl SledRaftLogStore {
         self.inner.initialize_with_conf_state(conf_state);
     }
 
+    /// Return the feature-gated deterministic storage fault controller.
+    #[cfg(feature = "test-failpoints")]
+    pub fn storage_faults(&self) -> RaftStorageFaultController {
+        self.inner.storage_faults()
+    }
+
     fn replay_from_sled(&self) -> RaftStoreResult<()> {
         if let Some(bytes) = self.db.get(SLED_HARD_STATE_KEY).map_err(sled_error)? {
             self.inner.save_hard_state(&decode_hard_state(&bytes)?)?;
@@ -995,6 +1224,10 @@ impl RaftLogStore for SledRaftLogStore {
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .before(RaftStorageFaultOperation::DurableCommit)?;
         self.inner.set_commit(commit);
         let mut state = self.initial_state().map_err(RaftStoreError::from)?;
         state.hard_state.commit = commit;

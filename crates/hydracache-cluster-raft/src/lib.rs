@@ -108,6 +108,11 @@ pub use log_store::{
     RAFT_LOG_FORMAT_VERSION,
 };
 pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult};
+#[cfg(feature = "test-failpoints")]
+pub use log_store::{
+    RaftStorageFaultController, RaftStorageFaultMode, RaftStorageFaultObservation,
+    RaftStorageFaultOperation,
+};
 
 use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
@@ -1769,12 +1774,14 @@ where
                 });
             }
 
-            self.apply_committed_entries(committed_entries)?;
-
             let mut light_ready = self.raw_node.advance(ready);
             if let Some(commit) = light_ready.commit_index() {
                 store.set_commit(commit).map_err(to_cache_error)?;
             }
+            // Materialization follows durable commit. A commit persistence
+            // failure must fail loud before externally visible membership is
+            // changed; restart recovery then follows the durable boundary.
+            self.apply_committed_entries(committed_entries)?;
             self.apply_committed_entries(light_ready.take_committed_entries())?;
             outbound.extend(light_ready.take_messages());
             store.mark_applied(self.applied_index);
