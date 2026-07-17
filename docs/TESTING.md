@@ -896,14 +896,26 @@ cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
 
 The daemon receipt is a Linux release lane because W10 uses real
 `SIGSTOP`/`SIGCONT`, W1/W12 exercise real snapshot HTTP delivery, and W12
-requires `/proc` RSS/FD samples. Ship mode also requires full Git history and
+requires `/proc` RSS/VmHWM/FD samples. Ship mode also requires full Git history and
 the real `v0.65.0` tag; it never silently uses the pinned development fallback.
 
-For W12, `tracked_connections` is the maximum outstanding snapshot request for
-any one sender/peer pair and must stay at or below `1`.
-`held_snapshot_messages` is the cluster-wide sum and may reach `2` only during
-an old-term/new-term leader handoff. Both fields must return to `0` after
-quiescence; the artifact also records the measured RSS and FD residuals.
+For W12, `tracked_connections` remains the 0.64-compatible maximum per-daemon
+request gauge at retained event checkpoints; it is not a sender/peer identity or
+a continuous maximum. `held_snapshot_messages` remains the cluster sum observed
+at those checkpoints. The artifact declares `/admin/raft/compaction`,
+`event-checkpoint`, and the 200 ms poll interval. Sampled cluster request/task
+current stays at or below `2`, while the daemon-local monotonic sender-task HWM
+stays at or below `1` for the one-lagger scenario and catches peaks between
+polls. Request/task current must finish at `0`; the exact sender/peer reservation
+is proven separately by the sink unit tests. The task HWM is process-local and
+resets when a daemon restarts, so W12 retains the in-flight checkpoint before it
+kills the receiver; it is not an all-process-lifetimes cluster maximum.
+
+Linux samples also contain current RSS, open FDs, and a conservative sum of the
+currently live daemons' process-lifetime `VmHWM`. The HWM sum is bounded from
+baseline to peak, is not simultaneous cluster RSS, may change across process
+restart, and is not required to fall after quiescence. Current RSS/FD residuals
+remain independently bounded.
 
 PowerShell (from a Linux-capable runner or WSL checkout):
 

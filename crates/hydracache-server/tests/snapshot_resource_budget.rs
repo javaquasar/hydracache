@@ -4,12 +4,17 @@
 mod resource_budget;
 mod support;
 
-use resource_budget::{ResourceBudget, ResourceBudgetArtifact, ResourceSample};
+use hydracache_server::ADMIN_RAFT_COMPACTION_PATH;
+use resource_budget::{
+    ResourceBudget, ResourceBudgetArtifact, ResourceSample, ResourceSamplingDisclosure,
+};
 #[cfg(target_os = "linux")]
 use support::daemon_cluster::DaemonCluster;
 #[cfg(not(target_os = "linux"))]
 use support::daemon_cluster::DAEMON_PROCESS_E2E_ENV;
-use support::daemon_cluster::{skip_unless_daemon_process_e2e, TestResult};
+use support::daemon_cluster::{
+    skip_unless_daemon_process_e2e, TestResult, DAEMON_POLL_INTERVAL_MS,
+};
 
 const RELEASE: &str = "0.66.0";
 const RELEASE_DIRECTORY: &str = "0.66";
@@ -23,13 +28,29 @@ fn snapshot_budget() -> ResourceBudget {
     ResourceBudget {
         max_child_delta: 0,
         max_connection_delta: 1,
-        // `tracked_connections` is the maximum per-sender reservation. During
-        // an actual term handoff, the obsolete and replacement leaders may
-        // each briefly own one request, disclosed separately as the cluster
-        // total in `held_snapshot_messages`.
+        // Compatibility fields retain the 0.64 artifact shape. They are
+        // event-checkpoint observations, not continuous maxima: the first is
+        // the maximum per-daemon request gauge at a retained checkpoint and
+        // the second is the observed cluster sum at that checkpoint.
         max_held_snapshot_messages: 2,
+        max_snapshot_sender_tasks_current: Some(2),
+        max_snapshot_sender_tasks_high_water_per_daemon: Some(1),
         max_rss_growth_kib: 96 * 1024,
         max_fd_growth: 32,
+    }
+}
+
+fn snapshot_sampling_disclosure() -> ResourceSamplingDisclosure {
+    ResourceSamplingDisclosure {
+        admin_endpoint: ADMIN_RAFT_COMPACTION_PATH.to_owned(),
+        observation_mode: "event-checkpoint".to_owned(),
+        poll_interval_ms: DAEMON_POLL_INTERVAL_MS,
+        sampled_current_fields: vec![
+            "tracked_connections".to_owned(),
+            "held_snapshot_messages".to_owned(),
+            "snapshot_sender_tasks_current".to_owned(),
+        ],
+        monotonic_high_water_fields: vec!["snapshot_sender_tasks_high_water_per_daemon".to_owned()],
     }
 }
 
@@ -84,16 +105,22 @@ fn snapshot_resource_artifact_validates_for_release_066() -> TestResult {
     let samples = vec![
         ResourceSample {
             running_children: 3,
+            snapshot_sender_tasks_current: Some(0),
+            snapshot_sender_tasks_high_water_per_daemon: Some(0),
             ..ResourceSample::default()
         },
         ResourceSample {
             running_children: 3,
             tracked_connections: 1,
             held_snapshot_messages: 1,
+            snapshot_sender_tasks_current: Some(1),
+            snapshot_sender_tasks_high_water_per_daemon: Some(1),
             ..ResourceSample::default()
         },
         ResourceSample {
             running_children: 3,
+            snapshot_sender_tasks_current: Some(0),
+            snapshot_sender_tasks_high_water_per_daemon: Some(1),
             ..ResourceSample::default()
         },
     ];
@@ -137,8 +164,115 @@ fn snapshot_resource_artifact_validates_for_release_066() -> TestResult {
         !schema.contains("\"release\": { \"const\": \"0.64.0\" }"),
         "the 0.66 artifact must not rely on a schema pinned to 0.64"
     );
+    let disclosed = artifact
+        .clone()
+        .with_sampling(snapshot_sampling_disclosure());
+    let disclosed = serde_json::to_value(disclosed)?;
+    let sampling = &disclosed["sampling"];
+    assert_eq!(sampling["admin_endpoint"], ADMIN_RAFT_COMPACTION_PATH);
+    assert_eq!(sampling["observation_mode"], "event-checkpoint");
+    assert_eq!(sampling["poll_interval_ms"], DAEMON_POLL_INTERVAL_MS);
+    assert_eq!(
+        sampling["monotonic_high_water_fields"],
+        serde_json::json!(["snapshot_sender_tasks_high_water_per_daemon"])
+    );
+    assert!(schema.contains("\"sampling\""));
     artifact.write_workspace_evidence(RELEASE_DIRECTORY, PORTABLE_ARTIFACT)?;
     Ok(())
+}
+
+#[test]
+fn snapshot_task_observation_uses_cluster_current_and_max_daemon_high_water() -> TestResult {
+    let status = |current: u64, high_water: u64, in_flight: u64| {
+        serde_json::json!({
+            "applied_index": 10,
+            "snapshot_send_attempts": 2,
+            "snapshot_send_successes": 1,
+            "snapshot_send_failures": 0,
+            "snapshot_sends_in_flight": in_flight,
+            "snapshot_sender_tasks_current": current,
+            "snapshot_sender_tasks_high_water": high_water,
+            "snapshot_installs": 0
+        })
+    };
+    let first = snapshot_observation_from_value(&status(1, 1, 1))?;
+    let second = snapshot_observation_from_value(&status(1, 1, 0))?;
+    let aggregate = aggregate_snapshot_observations(&[first, second]);
+
+    assert_eq!(aggregate.total.snapshot_sender_tasks_current, 2);
+    assert_eq!(aggregate.total.snapshot_sender_tasks_high_water, 1);
+    assert_eq!(aggregate.max_in_flight_per_daemon, 1);
+
+    let mut missing_high_water = status(1, 1, 1);
+    missing_high_water
+        .as_object_mut()
+        .expect("status fixture is an object")
+        .remove("snapshot_sender_tasks_high_water");
+    let error = snapshot_observation_from_value(&missing_high_water)
+        .expect_err("missing task HWM must fail loud");
+    assert!(error
+        .to_string()
+        .contains("snapshot_sender_tasks_high_water"));
+    Ok(())
+}
+
+#[test]
+fn snapshot_task_budget_rejects_overshoot_and_missing_metrics() {
+    let sample = |current: Option<u64>, high_water: Option<u64>| ResourceSample {
+        running_children: 3,
+        snapshot_sender_tasks_current: current,
+        snapshot_sender_tasks_high_water_per_daemon: high_water,
+        ..ResourceSample::default()
+    };
+    let baseline = sample(Some(0), Some(0));
+
+    let current_overshoot = ResourceBudgetArtifact::new(
+        RELEASE,
+        SEED,
+        vec![baseline, sample(Some(3), Some(1))],
+        snapshot_budget(),
+    );
+    assert!(current_overshoot
+        .validate_budget()
+        .expect_err("sampled cluster task current above two must fail")
+        .to_string()
+        .contains("task peak"));
+
+    let high_water_overshoot = ResourceBudgetArtifact::new(
+        RELEASE,
+        SEED,
+        vec![baseline, sample(Some(1), Some(2))],
+        snapshot_budget(),
+    );
+    assert!(high_water_overshoot
+        .validate_budget()
+        .expect_err("daemon task HWM above one must fail")
+        .to_string()
+        .contains("high-water"));
+
+    let missing = ResourceBudgetArtifact::new(
+        RELEASE,
+        SEED,
+        vec![sample(None, Some(0)), sample(Some(1), Some(1))],
+        snapshot_budget(),
+    );
+    assert!(missing
+        .validate_budget()
+        .expect_err("declared task budget without task-current samples must fail")
+        .to_string()
+        .contains("requires current-task samples"));
+
+    let missing_high_water = ResourceBudgetArtifact::new(
+        RELEASE,
+        SEED,
+        vec![sample(Some(0), None), sample(Some(1), Some(1))],
+        snapshot_budget(),
+    );
+    assert!(missing_high_water
+        .validate_budget()
+        .expect_err("declared task HWM budget without every daemon HWM sample must fail")
+        .to_string()
+        .contains("requires per-daemon samples"));
 }
 
 #[test]
@@ -156,7 +290,6 @@ fn canary_snapshot_sender_resource_reservation_never_releases() {
     );
 }
 
-#[cfg(target_os = "linux")]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 struct SnapshotObservation {
     applied_index: u64,
@@ -164,17 +297,17 @@ struct SnapshotObservation {
     snapshot_send_successes: u64,
     snapshot_send_failures: u64,
     snapshot_sends_in_flight: u64,
+    snapshot_sender_tasks_current: u64,
+    snapshot_sender_tasks_high_water: u64,
     snapshot_installs: u64,
 }
 
-#[cfg(target_os = "linux")]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 struct SnapshotSenderSetObservation {
     total: SnapshotObservation,
-    max_in_flight_per_sender: u64,
+    max_in_flight_per_daemon: u64,
 }
 
-#[cfg(target_os = "linux")]
 impl SnapshotObservation {
     fn add(self, other: Self) -> Self {
         Self {
@@ -191,6 +324,14 @@ impl SnapshotObservation {
             snapshot_sends_in_flight: self
                 .snapshot_sends_in_flight
                 .saturating_add(other.snapshot_sends_in_flight),
+            snapshot_sender_tasks_current: self
+                .snapshot_sender_tasks_current
+                .saturating_add(other.snapshot_sender_tasks_current),
+            // Each daemon publishes a monotonic local HWM. Across daemons the
+            // meaningful concurrency bound is their maximum, never their sum.
+            snapshot_sender_tasks_high_water: self
+                .snapshot_sender_tasks_high_water
+                .max(other.snapshot_sender_tasks_high_water),
             snapshot_installs: self
                 .snapshot_installs
                 .saturating_add(other.snapshot_installs),
@@ -220,11 +361,7 @@ fn run_receiver_kill_resource_proof() -> TestResult {
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let in_flight = wait_for_snapshot_in_flight(
-        &mut cluster,
-        &prepared.active_indices,
-        prepared.before_snapshot,
-    )?;
+    let in_flight = wait_for_snapshot_in_flight(&mut cluster, prepared.before_snapshot)?;
     assert_eq!(
         in_flight.total.snapshot_sends_in_flight, 1,
         "one lagging peer must reserve exactly one bounded snapshot sender: {in_flight:?}"
@@ -237,7 +374,8 @@ fn run_receiver_kill_resource_proof() -> TestResult {
         |cluster| {
             let totals = snapshot_totals(cluster, &prepared.active_indices).ok()?;
             (totals.total.snapshot_send_failures > in_flight.total.snapshot_send_failures
-                && totals.total.snapshot_sends_in_flight == 0)
+                && totals.total.snapshot_sends_in_flight == 0
+                && totals.total.snapshot_sender_tasks_current == 0)
                 .then_some(totals)
         },
     )?;
@@ -254,13 +392,15 @@ fn run_receiver_kill_resource_proof() -> TestResult {
         |cluster| {
             let totals = snapshot_totals(cluster, &all_indices).ok()?;
             (totals.total.snapshot_send_successes > in_flight.total.snapshot_send_successes
-                && totals.total.snapshot_sends_in_flight == 0)
+                && totals.total.snapshot_sends_in_flight == 0
+                && totals.total.snapshot_sender_tasks_current == 0)
                 .then_some(totals)
         },
     )?;
     samples.push(linux_snapshot_sample(&mut cluster, quiescent)?);
 
-    let artifact = ResourceBudgetArtifact::new(RELEASE, SEED, samples, snapshot_budget());
+    let artifact = ResourceBudgetArtifact::new(RELEASE, SEED, samples, snapshot_budget())
+        .with_sampling(snapshot_sampling_disclosure());
     artifact.validate_for_release(RELEASE)?;
     artifact.validate_linux_proof()?;
     artifact.validate_budget()?;
@@ -282,11 +422,7 @@ fn run_slow_receiver_resource_proof() -> TestResult {
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let first_in_flight = wait_for_snapshot_in_flight(
-        &mut cluster,
-        &prepared.active_indices,
-        prepared.before_snapshot,
-    )?;
+    let first_in_flight = wait_for_snapshot_in_flight(&mut cluster, prepared.before_snapshot)?;
     assert_eq!(first_in_flight.total.snapshot_sends_in_flight, 1);
     samples.push(linux_snapshot_sample(&mut cluster, first_in_flight)?);
 
@@ -294,7 +430,6 @@ fn run_slow_receiver_resource_proof() -> TestResult {
     for failure_delta in 1..=3 {
         let observed = wait_for_failure_with_sender_bound(
             &mut cluster,
-            &prepared.active_indices,
             failures_before.saturating_add(failure_delta),
         )?;
         samples.push(linux_snapshot_sample(&mut cluster, observed)?);
@@ -305,7 +440,9 @@ fn run_slow_receiver_resource_proof() -> TestResult {
         "slow receiver teardown releases the active sender request".to_owned(),
         |cluster| {
             let totals = snapshot_totals(cluster, &prepared.active_indices).ok()?;
-            (totals.total.snapshot_sends_in_flight == 0).then_some(totals)
+            (totals.total.snapshot_sends_in_flight == 0
+                && totals.total.snapshot_sender_tasks_current == 0)
+                .then_some(totals)
         },
     )?;
     samples.push(linux_snapshot_sample(&mut cluster, released)?);
@@ -320,13 +457,15 @@ fn run_slow_receiver_resource_proof() -> TestResult {
         |cluster| {
             let totals = snapshot_totals(cluster, &all_indices).ok()?;
             (totals.total.snapshot_send_successes > first_in_flight.total.snapshot_send_successes
-                && totals.total.snapshot_sends_in_flight == 0)
+                && totals.total.snapshot_sends_in_flight == 0
+                && totals.total.snapshot_sender_tasks_current == 0)
                 .then_some(totals)
         },
     )?;
     samples.push(linux_snapshot_sample(&mut cluster, quiescent)?);
 
-    let artifact = ResourceBudgetArtifact::new(RELEASE, SEED, samples, snapshot_budget());
+    let artifact = ResourceBudgetArtifact::new(RELEASE, SEED, samples, snapshot_budget())
+        .with_sampling(snapshot_sampling_disclosure());
     artifact.validate_for_release(RELEASE)?;
     artifact.validate_linux_proof()?;
     artifact.validate_budget()?;
@@ -336,14 +475,14 @@ fn run_slow_receiver_resource_proof() -> TestResult {
             .samples
             .iter()
             .all(|sample| sample.tracked_connections <= 1),
-        "a sender exceeded the one-request-per-peer bound: {artifact:?}"
+        "a retained checkpoint observed more than one request on a daemon: {artifact:?}"
     );
     assert!(
         artifact
             .samples
             .iter()
             .all(|sample| sample.held_snapshot_messages <= 2),
-        "cross-term snapshot handoff exceeded one old plus one replacement sender: {artifact:?}"
+        "a retained checkpoint observed more than two cluster snapshot requests: {artifact:?}"
     );
     artifact.write_workspace_evidence(RELEASE_DIRECTORY, SLOW_RECEIVER_ARTIFACT)?;
     Ok(())
@@ -358,11 +497,39 @@ fn assert_snapshot_resources_quiescent(artifact: &ResourceBudgetArtifact) -> Tes
     }
     if artifact.final_sample.tracked_connections != 0
         || artifact.final_sample.held_snapshot_messages != 0
+        || artifact.final_sample.snapshot_sender_tasks_current != Some(0)
     {
         return Err(format!(
             "snapshot sender work remained reserved after quiescence: {artifact:?}"
         )
         .into());
+    }
+    if artifact.sampling.as_ref() != Some(&snapshot_sampling_disclosure()) {
+        return Err("snapshot Linux proof is missing the exact sampling disclosure".into());
+    }
+    let current_limit = artifact
+        .budget
+        .max_snapshot_sender_tasks_current
+        .ok_or("snapshot Linux proof is missing its sampled task-current budget")?;
+    let high_water_limit = artifact
+        .budget
+        .max_snapshot_sender_tasks_high_water_per_daemon
+        .ok_or("snapshot Linux proof is missing its per-daemon task high-water budget")?;
+    for (index, sample) in artifact.samples.iter().enumerate() {
+        let current = sample.snapshot_sender_tasks_current.ok_or_else(|| {
+            format!("snapshot Linux sample {index} is missing task-current evidence")
+        })?;
+        let high_water = sample
+            .snapshot_sender_tasks_high_water_per_daemon
+            .ok_or_else(|| {
+                format!("snapshot Linux sample {index} is missing task high-water evidence")
+            })?;
+        if current > current_limit || high_water > high_water_limit {
+            return Err(format!(
+                "snapshot sender task bound failed at sample {index}: current={current}/{current_limit} per_daemon_hwm={high_water}/{high_water_limit}"
+            )
+            .into());
+        }
     }
     let baseline_rss = artifact
         .baseline
@@ -467,17 +634,18 @@ fn prepare_delayed_snapshot_receiver(
 #[cfg(target_os = "linux")]
 fn wait_for_snapshot_in_flight(
     cluster: &mut DaemonCluster,
-    active_indices: &[usize],
     before: SnapshotSenderSetObservation,
 ) -> TestResult<SnapshotSenderSetObservation> {
     let mut last_observation = before;
     let result = cluster.wait_for(
         "real snapshot sender reservation becomes in-flight".to_owned(),
         |cluster| {
-            let totals = snapshot_totals(cluster, active_indices).ok()?;
+            let indices = cluster.running_indices();
+            let totals = snapshot_totals(cluster, &indices).ok()?;
             last_observation = totals;
             (totals.total.snapshot_send_attempts > before.total.snapshot_send_attempts
-                && totals.total.snapshot_sends_in_flight > 0)
+                && totals.total.snapshot_sends_in_flight > 0
+                && totals.total.snapshot_sender_tasks_current > 0)
                 .then_some(totals)
         },
     );
@@ -492,15 +660,19 @@ fn wait_for_snapshot_in_flight(
 #[cfg(target_os = "linux")]
 fn wait_for_failure_with_sender_bound(
     cluster: &mut DaemonCluster,
-    active_indices: &[usize],
     minimum_failures: u64,
 ) -> TestResult<SnapshotSenderSetObservation> {
     let mut bound_violation = None;
     let observed = cluster.wait_for(
         format!("snapshot sender records failure {minimum_failures} under backpressure"),
         |cluster| {
-            let totals = snapshot_totals(cluster, active_indices).ok()?;
-            if totals.max_in_flight_per_sender > 1 || totals.total.snapshot_sends_in_flight > 2 {
+            let indices = cluster.running_indices();
+            let totals = snapshot_totals(cluster, &indices).ok()?;
+            if totals.max_in_flight_per_daemon > 1
+                || totals.total.snapshot_sends_in_flight > 2
+                || totals.total.snapshot_sender_tasks_current > 2
+                || totals.total.snapshot_sender_tasks_high_water > 1
+            {
                 bound_violation = Some(totals);
                 return Some(totals);
             }
@@ -508,13 +680,14 @@ fn wait_for_failure_with_sender_bound(
         },
     )?;
     if let Some(violation) = bound_violation {
-        let per_sender = active_indices
+        let per_daemon = cluster
+            .running_indices()
             .iter()
             .map(|index| (*index, snapshot_observation(cluster, *index)))
             .collect::<Vec<_>>();
         let statuses = cluster.statuses();
         return Err(format!(
-            "slow receiver exceeded the per-sender or cross-term handoff bound: observation={violation:?}; per_sender={per_sender:?}; statuses={statuses:?}"
+            "slow receiver exceeded a retained request/task observation or daemon-local task HWM: observation={violation:?}; per_daemon={per_daemon:?}; statuses={statuses:?}"
         )
         .into());
     }
@@ -579,8 +752,12 @@ fn linux_snapshot_sample(
     )?;
     Ok(ResourceSample {
         running_children: cluster.running_child_count() as u64,
-        tracked_connections: snapshot.max_in_flight_per_sender,
+        tracked_connections: snapshot.max_in_flight_per_daemon,
         held_snapshot_messages: snapshot.total.snapshot_sends_in_flight,
+        snapshot_sender_tasks_current: Some(snapshot.total.snapshot_sender_tasks_current),
+        snapshot_sender_tasks_high_water_per_daemon: Some(
+            snapshot.total.snapshot_sender_tasks_high_water,
+        ),
         rss_kib: Some(totals.rss_kib),
         rss_hwm_kib: Some(totals.rss_hwm_kib),
         open_fds: Some(totals.open_fds),
@@ -592,29 +769,45 @@ fn snapshot_totals(
     cluster: &DaemonCluster,
     indices: &[usize],
 ) -> TestResult<SnapshotSenderSetObservation> {
-    indices
+    let observations = indices
         .iter()
-        .try_fold(SnapshotSenderSetObservation::default(), |mut set, index| {
-            let sender = snapshot_observation(cluster, *index)?;
-            set.total = set.total.add(sender);
-            set.max_in_flight_per_sender = set
-                .max_in_flight_per_sender
-                .max(sender.snapshot_sends_in_flight);
-            Ok(set)
-        })
+        .map(|index| snapshot_observation(cluster, *index))
+        .collect::<TestResult<Vec<_>>>()?;
+    Ok(aggregate_snapshot_observations(&observations))
 }
 
 #[cfg(target_os = "linux")]
 fn snapshot_observation(cluster: &DaemonCluster, index: usize) -> TestResult<SnapshotObservation> {
     let value = cluster.raft_compaction_status(index)?;
+    snapshot_observation_from_value(&value)
+}
+
+fn snapshot_observation_from_value(value: &serde_json::Value) -> TestResult<SnapshotObservation> {
     Ok(SnapshotObservation {
-        applied_index: u64_field(&value, "applied_index")?,
-        snapshot_send_attempts: u64_field(&value, "snapshot_send_attempts")?,
-        snapshot_send_successes: u64_field(&value, "snapshot_send_successes")?,
-        snapshot_send_failures: u64_field(&value, "snapshot_send_failures")?,
-        snapshot_sends_in_flight: u64_field(&value, "snapshot_sends_in_flight")?,
-        snapshot_installs: u64_field(&value, "snapshot_installs")?,
+        applied_index: u64_field(value, "applied_index")?,
+        snapshot_send_attempts: u64_field(value, "snapshot_send_attempts")?,
+        snapshot_send_successes: u64_field(value, "snapshot_send_successes")?,
+        snapshot_send_failures: u64_field(value, "snapshot_send_failures")?,
+        snapshot_sends_in_flight: u64_field(value, "snapshot_sends_in_flight")?,
+        snapshot_sender_tasks_current: u64_field(value, "snapshot_sender_tasks_current")?,
+        snapshot_sender_tasks_high_water: u64_field(value, "snapshot_sender_tasks_high_water")?,
+        snapshot_installs: u64_field(value, "snapshot_installs")?,
     })
+}
+
+fn aggregate_snapshot_observations(
+    observations: &[SnapshotObservation],
+) -> SnapshotSenderSetObservation {
+    observations.iter().copied().fold(
+        SnapshotSenderSetObservation::default(),
+        |mut set, sender| {
+            set.total = set.total.add(sender);
+            set.max_in_flight_per_daemon = set
+                .max_in_flight_per_daemon
+                .max(sender.snapshot_sends_in_flight);
+            set
+        },
+    )
 }
 
 #[cfg(target_os = "linux")]
@@ -633,7 +826,6 @@ fn leader_index(
         .ok_or_else(|| format!("leader {leader} is not a spawned daemon").into())
 }
 
-#[cfg(target_os = "linux")]
 fn u64_field(value: &serde_json::Value, field: &'static str) -> TestResult<u64> {
     value
         .get(field)

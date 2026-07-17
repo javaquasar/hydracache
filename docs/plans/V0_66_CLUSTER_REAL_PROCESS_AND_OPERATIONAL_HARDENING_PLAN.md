@@ -103,7 +103,7 @@ are recorded.
 | W9 | fifth cargo-fuzz target/shared replay/corpus plus `raft_wire_socket_corpus.rs` | `cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked` + registered bounded cargo-fuzz gate | pure decoder and real HTTP-listener layers remain separate |
 | W10 | deterministic tick model, real daemon suspend/resume adapter, current-term metadata-authority fence, monotonic local test clock | `cargo test -p hydracache-cluster-raft --test scheduler_tick --locked` + process gate + exact client conformance test | stale resumed processes cannot advertise authoritative membership; no lease-read claim |
 | W11 | scale-chaos model and CNI-enforced ignored kind lane in `soak_kind.rs` | `cargo test -p hydracache-operator --test soak_kind --locked` + registered operator-kind gate | committed voter/epoch observations; unsupported CNI/Chaos capability fails or skips loud according to lane |
-| W12 | generalized resource artifact, sender/peer snapshot single-flight and stale-term cancellation, plus Linux snapshot-transfer budget target | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test snapshot_resource_budget --locked -- --nocapture` | one request per sender/peer; cross-term handoff is bounded to old+replacement senders; both counters and task/FD/RSS return to budget; portable evidence cannot impersonate Linux `/proc` proof |
+| W12 | generalized resource artifact, sender/peer snapshot single-flight and stale-term cancellation, plus Linux snapshot-transfer budget target | `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1 cargo test -p hydracache-server --test snapshot_resource_budget --locked -- --nocapture` | exact sender/peer reservation and daemon-local task HWM; 200 ms event-checkpoints disclose observed cluster current during handoff; current work reaches zero, RSS/FD stay within residual budgets, and portable evidence cannot impersonate Linux `/proc` proof |
 | W13 | release-scoped W0-W13 canary/evidence manifests, registered fast/process/operator/fuzz gates, CI and docs | commands in W13 Required checks | implementation wiring is complete on the development branch; the shipped `v0.65.0` tag is available at `edf0fd1`, while exact clean-candidate receipts remain release-time inputs |
 
 ## W0. Existing-Sled Server Compaction Control
@@ -390,19 +390,27 @@ execution without the required runtime.
 ## W12. Snapshot Transfer Resource And Backpressure Budget
 
 **Goal.** Close the resource half of receiver-kill/slow-receiver testing: interrupted snapshot
-delivery must release sender work and return bounded task/FD/RSS counters to baseline after quiescence.
+delivery must release sender work, return current task gauges to zero, and keep FD/RSS residuals within
+budget after quiescence. Process-lifetime high-water marks are bounded, not expected to fall.
 
 **Design.**
 
 - Reuse and generalize the `ResourceBudgetArtifact` schema in
   `crates/hydracache-server/tests/daemon_resource_budget.rs`; remove its hard-coded release and output
   path rather than inventing an unrelated schema.
-- Measure before fault, during blocked/failed delivery, and after retry/quiescence.
+- Measure before fault, during blocked/failed delivery, and after retry/quiescence. The artifact records
+  event checkpoints discovered by 200 ms polling: current request/task gauges are sampled, while the
+  daemon-local sender-task HWM is monotonic and therefore survives a missed poll.
 - Hold only a decoded real `MsgSnapshot` response in the loopback process-test lane, after Axum has
   received the request body and before `raft.step`/ack, so the sender's actual HTTP request remains
   in flight. The bounded seam requires both the process-E2E opt-in and a loopback cluster address.
-- Assert bounded outstanding sender tasks/requests, file descriptors, and RSS with platform-specific
-  residual disclosure. Missing Linux metrics cannot satisfy the Linux-required gate.
+- Assert the exact sender/peer reservation and a daemon-local sender-task HWM of at most one for this
+  one-lagger scenario. The observed cluster request/task current may reach two at retained handoff
+  checkpoints, but is not claimed as a continuous distributed maximum. Missing Linux metrics cannot
+  satisfy the Linux-required gate.
+- Linux evidence records current `VmRSS`, open FDs, and the conservative sum of each live daemon's
+  process-lifetime `VmHWM`. `VmHWM` is checked baseline-to-peak and is neither simultaneous cluster RSS
+  nor required to fall after quiescence; current RSS/FD residuals remain bounded separately.
 - Share a non-blocking sender/peer snapshot reservation across HTTP sink clones. A duplicate is
   rejected without opening another request or reporting false success; completion/cancellation
   releases the reservation with the real Raft delivery outcome before a retry can proceed.
@@ -416,6 +424,11 @@ delivery must release sender work and return bounded task/FD/RSS counters to bas
 - `receiver_kill_releases_snapshot_sender_resources_after_quiescence`.
 - `slow_receiver_applies_bounded_backpressure_without_unbounded_tasks_or_rss`.
 - `snapshot_resource_artifact_validates_for_release_066`.
+- `snapshot_task_observation_uses_cluster_current_and_max_daemon_high_water`.
+- `snapshot_task_budget_rejects_overshoot_and_missing_metrics`.
+- `snapshot_sender_task_metrics_track_blocked_valid_snapshot_until_release`.
+- `canceling_snapshot_send_releases_actual_sender_task_metric`.
+- `send_task_panic_is_reported_in_diagnostics`.
 
 **Canary.** `canary_snapshot_sender_resource_reservation_never_releases`.
 

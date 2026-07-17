@@ -156,7 +156,8 @@ pub struct RaftCompactionStatus {
     pub snapshot_sends_in_flight: Option<u64>,
     /// Actual per-peer sender tasks currently carrying a valid Raft snapshot.
     pub snapshot_sender_tasks_current: Option<u64>,
-    /// Per-daemon high-water mark of concurrent snapshot sender tasks.
+    /// Per-daemon high-water mark of concurrent snapshot sender tasks since
+    /// this process started; it resets when the daemon restarts.
     pub snapshot_sender_tasks_high_water: Option<u64>,
     /// Snapshots installed into the local Raft state machine this process run.
     pub snapshot_installs: Option<u64>,

@@ -402,6 +402,14 @@ source = "crates/hydracache-server/tests/snapshot_resource_budget.rs"
 function = "snapshot_resource_artifact_validates_for_release_066"
 
 [[work_item.required_tests]]
+source = "crates/hydracache-server/tests/snapshot_resource_budget.rs"
+function = "snapshot_task_observation_uses_cluster_current_and_max_daemon_high_water"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/snapshot_resource_budget.rs"
+function = "snapshot_task_budget_rejects_overshoot_and_missing_metrics"
+
+[[work_item.required_tests]]
 source = "crates/hydracache-server/src/grid_host.rs"
 function = "snapshot_single_flight_reservation_is_clone_shared_and_releases_on_error_or_cancel"
 
