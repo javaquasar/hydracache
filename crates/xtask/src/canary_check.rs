@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fs;
+use std::io::ErrorKind;
 use std::path::{Component, Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -78,8 +79,15 @@ struct ReleasesManifest {
 #[derive(Debug, Deserialize)]
 struct ReleaseRow {
     version: String,
+    file: String,
     #[serde(default)]
     work_items: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReleaseEvidenceCanarySelection {
+    #[serde(default)]
+    dynamic_canary_work_items: Vec<String>,
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -104,22 +112,19 @@ pub fn check_canary_registry_for_release(
     root: &Path,
     release: &str,
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let registry = load_registry_for_release(root, release)?;
     let expected_release = normalize_release(release);
-    let required = if expected_release == "0.65" {
-        ["W1", "W2", "W3", "W4"]
-            .into_iter()
-            .map(ToOwned::to_owned)
-            .collect()
-    } else {
-        required_work_items(root, expected_release)?
-    };
+    // Resolve the requested release contract before loading its registry. This
+    // prevents a candidate with no declared work items from borrowing an older
+    // release's otherwise-valid canary evidence.
+    let required = required_canary_work_items(root, expected_release)?;
+    let registry_path = registry_path_for_release(expected_release);
+    let registry = load_registry_for_release(root, expected_release)?;
     let mut problems = Vec::new();
 
     if registry.version != 2 {
         problems.push(format!(
             "{}: unsupported version {}; schema v2 is required",
-            REGISTRY_PATH, registry.version
+            registry_path, registry.version
         ));
     }
     if normalize_release(&registry.release) != expected_release {
@@ -136,26 +141,27 @@ pub fn check_canary_registry_for_release(
         if !registered.insert(entry.w_item.clone()) {
             problems.push(format!(
                 "{}: duplicate canary entry for {}",
-                REGISTRY_PATH, entry.w_item
+                registry_path, entry.w_item
             ));
         }
-        validate_entry(root, entry, &mut problems);
+        validate_entry(root, &registry_path, entry, &mut problems);
     }
 
     for item in &required {
         if !registered.contains(item) {
-            problems.push(format!("{REGISTRY_PATH}: missing canary entry for {item}"));
+            problems.push(format!("{registry_path}: missing canary entry for {item}"));
         }
     }
     for item in registered.difference(&required) {
         problems.push(format!(
-            "{REGISTRY_PATH}: stale canary entry {item} is not in releases.toml"
+            "{registry_path}: stale canary entry {item} is not required by release evidence"
         ));
     }
 
     problems.extend(plan_canary_problems(
         root,
         expected_release,
+        &registry_path,
         &required,
         &registered,
     )?);
@@ -188,75 +194,160 @@ pub fn load_registry_for_release(
 }
 
 pub fn required_work_items(root: &Path, release: &str) -> Result<BTreeSet<String>, Box<dyn Error>> {
-    let text = fs::read_to_string(root.join("docs/plans/releases.toml"))?;
-    let releases: ReleasesManifest = toml::from_str(&text)?;
-    let normalized = normalize_release(release);
-    let row = releases
-        .release
-        .into_iter()
-        .find(|row| normalize_release(&row.version) == normalized)
-        .ok_or_else(|| format!("release {release} is not registered in releases.toml"))?;
+    let row = release_row(root, release)?;
     if row.work_items.is_empty() {
         return Err(format!("release {release} has no work_items in releases.toml").into());
     }
     Ok(row.work_items.into_iter().collect())
 }
 
-fn validate_entry(root: &Path, entry: &CanaryEntry, problems: &mut Vec<String>) {
+fn required_canary_work_items(
+    root: &Path,
+    release: &str,
+) -> Result<BTreeSet<String>, Box<dyn Error>> {
+    let work_items = required_work_items(root, release)?;
+    let evidence_path = root.join(format!(
+        "docs/testing/release-evidence/{}.toml",
+        normalize_release(release)
+    ));
+    let text = match fs::read_to_string(&evidence_path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(work_items),
+        Err(error) => {
+            return Err(format!("reading {}: {error}", evidence_path.display()).into());
+        }
+    };
+    let selection: ReleaseEvidenceCanarySelection = toml::from_str(&text).map_err(|error| {
+        format!(
+            "parsing {}: {error}",
+            evidence_path
+                .strip_prefix(root)
+                .unwrap_or(&evidence_path)
+                .display()
+        )
+    })?;
+    if selection.dynamic_canary_work_items.is_empty() {
+        return Ok(work_items);
+    }
+
+    let required: BTreeSet<_> = selection.dynamic_canary_work_items.into_iter().collect();
+    if let Some(unknown) = required.difference(&work_items).next() {
+        return Err(format!(
+            "release {release} dynamic canary {unknown} is not in releases.toml work_items"
+        )
+        .into());
+    }
+    Ok(required)
+}
+
+fn release_row(root: &Path, release: &str) -> Result<ReleaseRow, Box<dyn Error>> {
+    let text = fs::read_to_string(root.join("docs/plans/releases.toml"))?;
+    let releases: ReleasesManifest = toml::from_str(&text)?;
+    let normalized = normalize_release(release);
+    releases
+        .release
+        .into_iter()
+        .find(|row| normalize_release(&row.version) == normalized)
+        .ok_or_else(|| format!("release {release} is not registered in releases.toml").into())
+}
+
+fn validate_entry(
+    root: &Path,
+    registry_path: &str,
+    entry: &CanaryEntry,
+    problems: &mut Vec<String>,
+) {
     if entry.guard.file == entry.canary.file && entry.guard.function == entry.canary.function {
         problems.push(format!(
             "{}: {} guard and canary both reference {}",
-            REGISTRY_PATH, entry.w_item, entry.guard.function
+            registry_path, entry.w_item, entry.guard.function
         ));
     }
     if entry.red_evidence.trim().is_empty() {
         problems.push(format!(
             "{}: {} is missing red_evidence",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
     if entry.defect_id.trim().is_empty() || entry.expected_failure.trim().is_empty() {
         problems.push(format!(
             "{}: {} requires defect_id and expected_failure",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
     if entry.timeout_seconds == 0 || entry.timeout_seconds > 3_600 {
         problems.push(format!(
             "{}: {} timeout_seconds must be in 1..=3600",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
     if entry.artifacts.is_empty() {
         problems.push(format!(
             "{}: {} must declare a dynamic evidence artifact",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
     for artifact in &entry.artifacts {
         if !safe_relative_path(artifact) {
             problems.push(format!(
                 "{}: {} artifact must be a safe relative path: {artifact}",
-                REGISTRY_PATH, entry.w_item
+                registry_path, entry.w_item
             ));
+        } else {
+            let path = Path::new(artifact);
+            if !path.starts_with("target/release-evidence/canaries")
+                || path.extension().and_then(|extension| extension.to_str()) != Some("json")
+            {
+                problems.push(format!(
+                    "{}: {} receipt artifact must be a JSON file under target/release-evidence/canaries: {artifact}",
+                    registry_path, entry.w_item
+                ));
+            }
         }
     }
-    validate_command(&entry.guard_command, "guard_command", entry, problems);
-    validate_command(&entry.canary_command, "canary_command", entry, problems);
+    validate_command(
+        registry_path,
+        &entry.guard_command,
+        "guard_command",
+        entry,
+        problems,
+    );
+    validate_command(
+        registry_path,
+        &entry.canary_command,
+        "canary_command",
+        entry,
+        problems,
+    );
     if entry.guard_command.program == entry.canary_command.program
         && entry.guard_command.args == entry.canary_command.args
         && entry.guard_command.env == entry.canary_command.env
     {
         problems.push(format!(
             "{}: {} guard and canary commands are identical",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
-    validate_function_ref(root, &entry.guard, "guard", &entry.w_item, problems);
-    validate_function_ref(root, &entry.canary, "canary", &entry.w_item, problems);
+    validate_function_ref(
+        root,
+        registry_path,
+        &entry.guard,
+        "guard",
+        &entry.w_item,
+        problems,
+    );
+    validate_function_ref(
+        root,
+        registry_path,
+        &entry.canary,
+        "canary",
+        &entry.w_item,
+        problems,
+    );
 }
 
 fn validate_command(
+    registry_path: &str,
     command: &CanaryCommand,
     role: &str,
     entry: &CanaryEntry,
@@ -265,25 +356,26 @@ fn validate_command(
     if command.program.trim().is_empty() || command.args.is_empty() {
         problems.push(format!(
             "{}: {} {role} requires program and args",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
     if !safe_relative_path(&command.cwd) {
         problems.push(format!(
             "{}: {} {role}.cwd must be a safe relative path",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
     if !matches!(command.platform.as_str(), "any" | "linux" | "windows") {
         problems.push(format!(
             "{}: {} {role}.platform must be any, linux, or windows",
-            REGISTRY_PATH, entry.w_item
+            registry_path, entry.w_item
         ));
     }
 }
 
 fn validate_function_ref(
     root: &Path,
+    registry_path: &str,
     reference: &FunctionRef,
     role: &str,
     w_item: &str,
@@ -295,13 +387,13 @@ fn validate_function_ref(
             if !function_exists(&text, &reference.function) {
                 problems.push(format!(
                     "{}: {w_item} {role} function `{}` not found in {}",
-                    REGISTRY_PATH, reference.function, reference.file
+                    registry_path, reference.function, reference.file
                 ));
             }
         }
         Err(error) => problems.push(format!(
             "{}: {w_item} {role} file {} cannot be read: {error}",
-            REGISTRY_PATH, reference.file
+            registry_path, reference.file
         )),
     }
 }
@@ -319,27 +411,24 @@ fn function_exists(text: &str, function: &str) -> bool {
 fn plan_canary_problems(
     root: &Path,
     release: &str,
+    registry_path: &str,
     required: &BTreeSet<String>,
     registered: &BTreeSet<String>,
 ) -> Result<Vec<String>, Box<dyn Error>> {
-    let plan_path = match normalize_release(release) {
-        "0.64" => "docs/plans/V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md",
-        "0.65" => "docs/plans/V0_65_REDIS_DEBT_SAFETY_NET_PLAN.md",
-        other => return Err(format!("no canary plan mapping for release {other}").into()),
-    };
-    let plan = fs::read_to_string(root.join(plan_path))?;
+    let plan_path = release_row(root, release)?.file;
+    let plan = fs::read_to_string(root.join(&plan_path))?;
     let mut problems = Vec::new();
     for item in required {
         if !plan.contains(&format!("## {item}.")) && !plan.contains(&format!("### {item}.")) {
             problems.push(format!(
                 "{}: {item} is registered but has no release-plan section",
-                REGISTRY_PATH
+                registry_path
             ));
         }
         if !registered.contains(item) {
             problems.push(format!(
                 "{}: {item} has no registered canary for the release-plan section",
-                REGISTRY_PATH
+                registry_path
             ));
         }
     }

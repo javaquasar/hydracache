@@ -15,6 +15,11 @@ on:
         required: false
         default: false
         type: boolean
+      candidate_release:
+        description: "Release that owns candidate fast and manually dispatched gate receipts"
+        required: false
+        default: "0.66"
+        type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
         required: false
@@ -30,6 +35,7 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.66' }}
 
 jobs:
   rust:
@@ -92,10 +98,12 @@ jobs:
       - name: Canary completeness
         run: |
           cargo test -p xtask --test canary_check --locked
-          cargo run -p xtask --locked -- canary-check
+          cargo run -p xtask --locked -- canary-check --release 0.64
           cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.65
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.66
+          cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -112,9 +120,7 @@ jobs:
         run: cargo run -p xtask --locked -- verify-no-test-features
 
       - name: Release governance
-        run: |
-          cargo run -p xtask --locked -- release-governance-check --release 0.64
-          cargo run -p xtask --locked -- release-governance-check --release 0.65
+        run: cargo run -p xtask --locked -- release-governance-check --release "$HYDRACACHE_CANDIDATE_RELEASE"
 
       - name: SQL lint baseline drift
         run: |
@@ -134,6 +140,12 @@ jobs:
 
       - name: Raft failpoint crash-safety
         run: cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
+
+      - name: Raft compaction control 0.66
+        run: |
+          cargo test -p hydracache-cluster-raft --test compaction_seam --locked
+          cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.raft-sled-snapshot
+          cargo test -p hydracache-server compaction --locked
 
       - name: Raft snapshot and transport proof
         run: |
@@ -177,7 +189,7 @@ jobs:
           npm --prefix console test
 
       - name: Test
-        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate fast.workspace-nextest
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
 
       - name: Upload fast release evidence receipt
         if: always()
@@ -861,7 +873,7 @@ jobs:
         run: rustup toolchain install nightly-2026-07-01 --component rust-src
 
       - name: Run registered gated proofs
-        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate "${{ inputs.gated_gate_id }}"
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}"
 
       - name: Upload registered gated proof receipt
         if: always()

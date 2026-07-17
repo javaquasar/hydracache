@@ -31,7 +31,9 @@ use hydracache_cluster_transport_axum::{
 use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
 
-use crate::cluster_status::{GridControlPlaneHandle, Reachability, ReshardPhase};
+use crate::cluster_status::{
+    GridControlPlaneHandle, RaftCompactionError, RaftCompactionStatus, Reachability, ReshardPhase,
+};
 use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
@@ -248,6 +250,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
         drive_diagnostics,
         draining: Arc::new(AtomicBool::new(false)),
         drain_remove_proposed: Arc::new(AtomicBool::new(false)),
+        raft_compaction_enabled: config.raft_compaction_enabled,
         shutdown,
     })
 }
@@ -1502,6 +1505,7 @@ struct NetworkedMemberStack {
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
+    raft_compaction_enabled: bool,
     shutdown: watch::Sender<bool>,
 }
 
@@ -1516,6 +1520,7 @@ struct NetworkedGridHandle {
     drive_diagnostics: Arc<GridDriveDiagnostics>,
     draining: Arc<AtomicBool>,
     drain_remove_proposed: Arc<AtomicBool>,
+    raft_compaction_enabled: bool,
     shutdown: watch::Sender<bool>,
     _runtime: Option<DedicatedGridRuntime>,
 }
@@ -1533,6 +1538,7 @@ impl NetworkedGridHandle {
             drive_diagnostics: stack.drive_diagnostics,
             draining: stack.draining,
             drain_remove_proposed: stack.drain_remove_proposed,
+            raft_compaction_enabled: stack.raft_compaction_enabled,
             shutdown: stack.shutdown,
             _runtime: runtime,
         }
@@ -1696,6 +1702,37 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
     fn is_draining(&self) -> bool {
         self.draining.load(Ordering::SeqCst)
     }
+
+    fn raft_compaction_status(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        raft_compaction_status(&self.raft, self.raft_compaction_enabled)
+    }
+
+    fn compact_raft_log_at_applied(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        if !self.raft_compaction_enabled {
+            return Err(RaftCompactionError::Disabled);
+        }
+        self.raft
+            .compact_applied_log_to_snapshot()
+            .map_err(|error| RaftCompactionError::Runtime(error.to_string()))?;
+        raft_compaction_status(&self.raft, true)
+    }
+}
+
+fn raft_compaction_status(
+    raft: &NetworkedRaftRuntime,
+    enabled: bool,
+) -> Result<RaftCompactionStatus, RaftCompactionError> {
+    let observation = raft
+        .log_compaction_observation()
+        .map_err(|error| RaftCompactionError::Runtime(error.to_string()))?;
+    Ok(RaftCompactionStatus {
+        available: true,
+        enabled,
+        applied_index: Some(observation.applied_index),
+        snapshot_index: Some(observation.snapshot_index),
+        first_log_index: Some(observation.first_log_index),
+        last_log_index: Some(observation.last_log_index),
+    })
 }
 
 impl NetworkedGridHandle {

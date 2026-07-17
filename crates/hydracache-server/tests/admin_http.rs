@@ -12,7 +12,8 @@ use hydracache_client_transport_axum::{
 use hydracache_server::{
     AdminApiConfig, AdminHttpSurface, BackupConfig, ClientApiConfig, ClusterAuthConfig,
     ServerConfig, ServerRole, ServerRuntime, TlsConfig, ADMIN_BACKUP_PATH, ADMIN_CONSOLE_PATH,
-    ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    ADMIN_DRAIN_PATH, ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH,
+    ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
 };
 use serde_json::Value;
 use tower::ServiceExt;
@@ -404,5 +405,67 @@ mod admin_http {
             .as_str()
             .unwrap()
             .contains("backup.enabled"));
+    }
+
+    #[tokio::test]
+    async fn raft_compaction_seam_is_observable_but_inert_by_default() {
+        let surface = AdminHttpSurface::new(ServerRuntime::new(member_config()).unwrap().start());
+
+        let before = surface
+            .routes()
+            .oneshot(admin_request("GET", ADMIN_RAFT_COMPACTION_PATH))
+            .await
+            .unwrap();
+        assert_eq!(before.status(), StatusCode::OK);
+        let before = json_response(before).await;
+        assert_eq!(before["available"], true);
+        assert_eq!(before["enabled"], false);
+        assert_eq!(before["snapshot_index"], 0);
+        assert!(before["applied_index"].as_u64().unwrap() > 0);
+
+        let rejected = surface
+            .routes()
+            .oneshot(admin_request("POST", ADMIN_RAFT_COMPACTION_PATH))
+            .await
+            .unwrap();
+        assert_eq!(rejected.status(), StatusCode::CONFLICT);
+        let rejected = json_response(rejected).await;
+        assert_eq!(rejected["outcome"], "rejected");
+        assert!(rejected["detail"]
+            .as_str()
+            .unwrap()
+            .contains("HYDRACACHE_RAFT_COMPACTION=true"));
+
+        let after = surface
+            .routes()
+            .oneshot(admin_request("GET", ADMIN_RAFT_COMPACTION_PATH))
+            .await
+            .unwrap();
+        let after = json_response(after).await;
+        assert_eq!(after["snapshot_index"], before["snapshot_index"]);
+        assert_eq!(after["first_log_index"], before["first_log_index"]);
+    }
+
+    #[tokio::test]
+    async fn explicitly_enabled_raft_compaction_seam_compacts_at_applied_progress() {
+        let mut config = member_config();
+        config.raft_compaction_enabled = true;
+        let surface = AdminHttpSurface::new(ServerRuntime::new(config).unwrap().start());
+
+        let compacted = surface
+            .routes()
+            .oneshot(admin_request("POST", ADMIN_RAFT_COMPACTION_PATH))
+            .await
+            .unwrap();
+        assert_eq!(compacted.status(), StatusCode::OK);
+        let compacted = json_response(compacted).await;
+        assert_eq!(compacted["available"], true);
+        assert_eq!(compacted["enabled"], true);
+        assert_eq!(compacted["snapshot_index"], compacted["applied_index"]);
+        assert!(compacted["snapshot_index"].as_u64().unwrap() > 0);
+        assert_eq!(
+            compacted["first_log_index"].as_u64().unwrap(),
+            compacted["snapshot_index"].as_u64().unwrap() + 1
+        );
     }
 }

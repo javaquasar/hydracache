@@ -648,10 +648,10 @@ cargo test -p hydracache-sim --test clock_skew_safety --locked -- --nocapture
 Remove-Item Env:\HYDRACACHE_RUN_RAFT_NEMESIS_SOAK, Env:\HYDRACACHE_NEMESIS_BUDGET_SECS, Env:\HYDRACACHE_GRID_SCOPE -ErrorAction SilentlyContinue
 ```
 
-Real-process daemon compaction remains outside the shipped W10 claim until the
-server exposes a disk-backed compaction seam; the nightly job uploads any
-available contradiction-ledger or daemon artifacts but does not pretend that
-missing future seam is already covered.
+The historical 0.64 W10 claim remains an in-process proof. Release 0.66 W0 now
+adds the authenticated, off-by-default disk-backed compaction seam; real-process
+lagging-follower catch-up and interrupted HTTP snapshot delivery remain W1 and
+must not be inferred from the older nightly job.
 
 These tests are deterministic: message-filter cases use seeded/tick-counted
 delivery rather than wall-clock sleeps, and golden vectors are byte fixtures
@@ -668,12 +668,11 @@ The vectors must stay readable and reviewable; if a future Raft change needs a
 new external-inspired scenario, add it here with a short blueprint comment and a
 canary that would fail if the check became non-falsifiable.
 
-The W10 fast proof is an in-process `raft-rs` proof, not a daemon on-disk
-compaction claim. It forces a metadata snapshot payload into the raft snapshot
-path, isolates a lagging runtime past compaction, then proves `MsgSnapshot` plus
-tail replay restores membership. Real-process daemon compaction remains a
-nightly/pre-release claim only when the server exposes a disk-backed compaction
-seam and uploads daemon replay artifacts.
+The historical W10 fast proof is an in-process `raft-rs` proof. It forces a
+metadata snapshot payload into the raft snapshot path, isolates a lagging
+runtime past compaction, then proves `MsgSnapshot` plus tail replay restores
+membership. The 0.66 W0 seam separately proves the real Sled compaction and
+restart boundary; W1 must still supply the real-daemon HTTP replay artifacts.
 
 The W12 exhaustive grid is finite rather than sampled: it enumerates membership
 operation, real snapshot prefix, and restart point. It also protects the
@@ -807,7 +806,10 @@ execute at least one test and pass, then requires the canary to exit non-zero
 with the registered invariant signature. A green canary, timeout, compile error,
 unrelated panic, platform skip, or zero-test command is not red evidence.
 Receipts under `target/release-evidence/canaries/` bind the command, defect,
-registry, output, and source commit. Scheduled/dispatch CI runs `--tier all` for
+registry, output, and source commit. The canonical filename is release-scoped
+(`<release>-<W>.json`) so equal work-item IDs from different releases cannot
+overwrite or shadow one another; the registry-declared receipt artifact is
+written as well. Scheduled/dispatch CI runs `--tier all` for
 the Loom, TSan, and TLC rows; fast CI runs `--tier fast` on every change.
 
 Release `0.65` uses the release-scoped registry
@@ -815,6 +817,24 @@ Release `0.65` uses the release-scoped registry
 W5-W7 use the dedicated flip-sentinel policy. The release evidence manifest
 selects those dynamic items explicitly, so an unrelated registry entry cannot
 hold the release green or block it accidentally.
+
+Release `0.66` continues the release-scoped policy in
+`docs/testing/canary-registry-0.66.json`. During implementation,
+`dynamic_canary_work_items` grows only as each W-item's real guard/canary pair
+lands; the initial W0 pair protects the off-by-default Raft compaction control.
+The requested release must never borrow `0.64` or `0.65` canary evidence.
+
+```powershell
+cargo run -p xtask --locked -- canary-check --release 0.66
+cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
+cargo run -p xtask --locked -- release-governance-check --release 0.66
+cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir target/release-evidence/0.66 --require-ship
+```
+
+The last command is expected to remain red while W1-W13 sources, registered
+heavy gates, and exact-candidate receipts are still missing. A green governance
+aggregator with a missing release registry or missing `work_items` is itself a
+regression.
 
 The W18 nemesis determinism checks are part of the existing fast nemesis test:
 

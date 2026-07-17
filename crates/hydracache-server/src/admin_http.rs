@@ -14,6 +14,7 @@ use serde::Serialize;
 use thiserror::Error;
 
 use crate::bootstrap::{ServerAdminActionError, ServerRuntime};
+use crate::cluster_status::RaftCompactionError;
 use crate::services::DrainOutcome;
 use hydracache_observability::PrometheusExporter;
 
@@ -37,6 +38,8 @@ pub const ADMIN_DRAIN_PATH: &str = "/admin/drain";
 pub const ADMIN_RESHARD_PATH: &str = "/admin/reshard";
 /// Operator backup action path.
 pub const ADMIN_BACKUP_PATH: &str = "/admin/backup";
+/// Explicit, off-by-default disk-backed Raft compaction control and status path.
+pub const ADMIN_RAFT_COMPACTION_PATH: &str = "/admin/raft/compaction";
 
 /// Shared runtime state for the admin HTTP surface.
 pub type SharedServerRuntime = Arc<Mutex<ServerRuntime>>;
@@ -86,6 +89,10 @@ impl AdminHttpSurface {
             .route(ADMIN_DRAIN_PATH, get(admin_drain).post(admin_drain))
             .route(ADMIN_RESHARD_PATH, post(admin_reshard))
             .route(ADMIN_BACKUP_PATH, post(admin_backup))
+            .route(
+                ADMIN_RAFT_COMPACTION_PATH,
+                get(admin_raft_compaction_status).post(admin_raft_compaction),
+            )
             .with_state(Arc::clone(&self.runtime))
             .nest(
                 ADMIN_ACTUATOR_PATH,
@@ -201,6 +208,38 @@ async fn admin_backup(State(runtime): State<SharedServerRuntime>, headers: Heade
         .unwrap_or_else(|error| AdminHttpError::from(error).into_response())
 }
 
+async fn admin_raft_compaction_status(
+    State(runtime): State<SharedServerRuntime>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    runtime
+        .lock()
+        .expect("server runtime mutex")
+        .raft_compaction_status()
+        .map(|status| (StatusCode::OK, Json(status)).into_response())
+        .unwrap_or_else(|error| {
+            AdminHttpError::from(ServerAdminActionError::from(error)).into_response()
+        })
+}
+
+async fn admin_raft_compaction(
+    State(runtime): State<SharedServerRuntime>,
+    headers: HeaderMap,
+) -> Response {
+    if let Err(error) = require_admin(&headers) {
+        return error.into_response();
+    }
+    runtime
+        .lock()
+        .expect("server runtime mutex")
+        .request_raft_compaction()
+        .map(|status| (StatusCode::OK, Json(status)).into_response())
+        .unwrap_or_else(|error| AdminHttpError::from(error).into_response())
+}
+
 fn require_admin(headers: &HeaderMap) -> Result<(), AdminHttpError> {
     let has_identity = header_value(headers, HYDRACACHE_CLIENT_ID_HEADER).is_some()
         && header_value(headers, HYDRACACHE_TENANT_HEADER).is_some();
@@ -277,6 +316,12 @@ impl IntoResponse for AdminHttpError {
             Self::Action(
                 ServerAdminActionError::RequiresMember(_) | ServerAdminActionError::BackupDisabled,
             ) => StatusCode::CONFLICT,
+            Self::Action(ServerAdminActionError::RaftCompaction(
+                RaftCompactionError::Disabled | RaftCompactionError::Unavailable,
+            )) => StatusCode::CONFLICT,
+            Self::Action(ServerAdminActionError::RaftCompaction(RaftCompactionError::Runtime(
+                _,
+            ))) => StatusCode::INTERNAL_SERVER_ERROR,
         };
         (status, Json(AdminErrorReply::rejected(self.to_string()))).into_response()
     }

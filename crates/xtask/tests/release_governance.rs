@@ -14,6 +14,13 @@ fn release_governance_check_accepts_current_structural_meta_gates() {
 }
 
 #[test]
+fn release_governance_check_accepts_the_explicit_0_66_fast_wiring() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let report = xtask::release_governance::check(&root, "0.66").unwrap();
+    assert!(report.problems.is_empty(), "{:#?}", report.problems);
+}
+
+#[test]
 fn release_governance_check_rejects_an_unwired_or_missing_meta_gate() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
@@ -48,15 +55,80 @@ fn release_governance_check_rejects_an_unwired_or_missing_meta_gate() {
 fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
-    let problems = xtask::release_governance::release_execution_wiring_problems(&workflow).unwrap();
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&workflow, "0.66").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
+
+    for required in [
+        "canary-check --release 0.66",
+        "canary-sweep --release 0.66 --tier fast",
+    ] {
+        let broken = workflow.replacen(required, "candidate-release-command-was-removed", 1);
+        let problems =
+            xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing requested-release command was accepted: {required}: {problems:#?}"
+        );
+    }
+
+    for (current, stale, expected_problem) in [
+        (
+            "default: \"0.66\"",
+            "default: \"0.65\"",
+            "workflow_dispatch input candidate_release",
+        ),
+        (
+            "${{ inputs.candidate_release || '0.66' }}",
+            "${{ inputs.candidate_release || '0.65' }}",
+            "global HYDRACACHE_CANDIDATE_RELEASE",
+        ),
+        (
+            r#"evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest"#,
+            "evidence-run --release 0.65 --gate fast.workspace-nextest",
+            "fast workspace receipt",
+        ),
+        (
+            r#"release-governance-check --release "$HYDRACACHE_CANDIDATE_RELEASE""#,
+            "release-governance-check --release 0.65",
+            "candidate governance",
+        ),
+        (
+            r#"evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}""#,
+            r#"evidence-run --release 0.64 --gate "${{ inputs.gated_gate_id }}""#,
+            "manually dispatched gate receipt",
+        ),
+    ] {
+        let broken = workflow.replacen(current, stale, 1);
+        assert_ne!(broken, workflow, "fixture command was not found: {current}");
+        let problems =
+            xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
+        assert!(
+            problems
+                .iter()
+                .any(|problem| problem.contains(expected_problem)),
+            "hardcoded older candidate release was accepted for {expected_problem}: {problems:#?}"
+        );
+    }
+
+    let broken = workflow.replacen(
+        r#"evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.raft-sled-snapshot"#,
+        "sled-compaction-proof-was-replaced",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact \"Raft compaction control 0.66\" commands")));
 
     let broken = workflow.replacen(
         "evidence-run --release 0.64 --gate env.hydracache-grid-scope",
         "coverage-command-was-silently-removed",
         1,
     );
-    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
     assert!(problems
         .iter()
         .any(|problem| problem.contains("env.hydracache-grid-scope")));
@@ -66,27 +138,19 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
         "redis-multinode-evidence-was-silently-removed",
         1,
     );
-    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
     assert!(problems
         .iter()
         .any(|problem| problem.contains("env.hydracache-run-redis-resp-multinode-e2e")));
-
-    let broken = workflow.replacen(
-        "release-governance-check --release 0.65",
-        "next-release-governance-was-silently-removed",
-        1,
-    );
-    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
-    assert!(problems
-        .iter()
-        .any(|problem| problem.contains("release-governance-check --release 0.65")));
 
     let broken = workflow.replacen(
         "cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60",
         "cargo +nightly fuzz run fuzz_config_parse --manifest-path fuzz/Cargo.toml -- -max_total_time=60",
         1,
     );
-    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
     assert!(problems.iter().any(|problem| {
         problem.contains("--manifest-path after the target")
             || problem.contains("fuzz_config_parse -- -max_total_time=60")

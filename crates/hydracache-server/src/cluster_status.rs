@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use hydracache::{ClusterMember, ClusterNodeId, ClusterRole, RaftMetadataSnapshot};
 use serde::Serialize;
+use thiserror::Error;
 
 /// Runtime state supplied by the server around the cluster-status provider.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -128,6 +129,50 @@ pub struct ClusterStatus {
     pub draining: bool,
 }
 
+/// Read-only state of the disk-backed Raft compaction control.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct RaftCompactionStatus {
+    /// Whether the current runtime owns a disk-backed Raft log.
+    pub available: bool,
+    /// Whether explicit compaction requests are enabled by configuration.
+    pub enabled: bool,
+    /// Last locally applied Raft index, when available.
+    pub applied_index: Option<u64>,
+    /// Durable snapshot index, when available.
+    pub snapshot_index: Option<u64>,
+    /// First retained durable log index, when available.
+    pub first_log_index: Option<u64>,
+    /// Last durable log index, when available.
+    pub last_log_index: Option<u64>,
+}
+
+impl RaftCompactionStatus {
+    pub(crate) fn unavailable() -> Self {
+        Self {
+            available: false,
+            enabled: false,
+            applied_index: None,
+            snapshot_index: None,
+            first_log_index: None,
+            last_log_index: None,
+        }
+    }
+}
+
+/// Fail-loud rejection from the narrow Raft compaction control.
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+pub enum RaftCompactionError {
+    /// The current role/runtime has no disk-backed Raft log.
+    #[error("raft compaction control is unavailable for this runtime")]
+    Unavailable,
+    /// The control exists but was not explicitly enabled.
+    #[error("raft compaction control is disabled; set HYDRACACHE_RAFT_COMPACTION=true explicitly")]
+    Disabled,
+    /// The Raft runtime or durable store rejected the operation.
+    #[error("raft compaction failed: {0}")]
+    Runtime(String),
+}
+
 /// Read-only provider of cluster status.
 pub trait ClusterStatusProvider: fmt::Debug + Send + Sync {
     /// Notify the provider that the server has started graceful drain.
@@ -178,6 +223,16 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     fn reshard_phase(&self) -> ReshardPhase;
     /// Return whether the grid itself is draining.
     fn is_draining(&self) -> bool;
+
+    /// Return disk-backed Raft compaction progress and enablement.
+    fn raft_compaction_status(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        Ok(RaftCompactionStatus::unavailable())
+    }
+
+    /// Compact the durable Raft log exactly at current applied progress.
+    fn compact_raft_log_at_applied(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        Err(RaftCompactionError::Unavailable)
+    }
 }
 
 /// Live status backed by a grid/control-plane handle.

@@ -1,588 +1,463 @@
 # HydraCache 0.66.0 Cluster Corner-Case Hardening - Real-Process & Operational Tier - Codex Execution Plan
 
 > **At a glance**
-> - **What:** lift the `0.64` **in-process** raft/snapshot corner-case proofs to the **real
->   multi-daemon process tier**, and close the corner cases that only appear once real
->   `hydracache-server` processes, real disk, real backup/restore, and real operator chaos are in play.
->   The load-bearing piece is a **server-side disk-backed log/snapshot compaction seam** - the exact
->   thing `0.64` said it could not test because "`hydracache-server` does not expose a compaction seam"
->   (see `V0_64` W10, lines 453-454/474/484-490/734-735).
-> - **Why:** `0.64` proved snapshot immutability, mid-membership tail replay, corruption, resource
->   faults, and composed-fault nemesis - all **in-process** against `RaftMetadataRuntime`/`hydracache-sim`.
->   The reference process-cluster harnesses in the workspace (qdrant `consensus_tests`, tikv
->   `test_raftstore`) show that a distinct and dangerous class only surfaces at the **process/operator**
->   boundary: rejoin-after-compaction over real disk, partition-under-load with no lost committed write,
->   backup/PITR during live membership change, slow-disk IO chaos, and rolling upgrade under format
->   drift. This release makes that class mechanically testable end-to-end.
-> - **After (depends on):** `0.65.0` (release chain) and, logically, `0.64.0` (the in-process proofs and
->   the `DaemonCluster` / `test-failpoints` / canary discipline this release extends).
-> - **Unblocks:** a defensible `1.0` "production-ready cluster out of the box" claim backed by
->   process-level corner-case evidence, and removes the last named `0.64` deferral.
-> - **Scope:** W0 the compaction seam (the one production change); W1-W6 real-process lifts of the
->   `0.64` proofs; W7-W12 the widened external/adversarial tier (external wire-only Jepsen
->   linearizability, differential + metamorphic reference-model agreement, wire-boundary fuzzing,
->   process-tier clock skew, operator scale chaos, encrypted-backup key-rotation restore); W13 local +
->   GitHub CI across daemon/kind/fuzz lanes.
-> - **Status:** planned.
+> - **What:** lift the shipped `0.64` raft/snapshot correctness proofs to real
+>   `hydracache-server` processes, real Sled storage, real HTTP raft delivery, and the operator tier.
+> - **Base:** implementation branch `feat/0.66-cluster-real-process-operational-hardening`, forked from
+>   `feat/0.65-redis-debt-safety-net` at `2926551`. Ship evidence must ultimately use the shipped
+>   `v0.65.0` tag, not this development pin.
+> - **Boundary inherited from 0.65:** the native/RESP client value store and lock service are
+>   **per-daemon and node-local**. This release does not add a distributed client backend, ownership
+>   routing, or a native client listener. Client-value linearizability across daemons is therefore not
+>   a valid `0.66` claim.
+> - **Scope:** W0 existing-Sled compaction control; W1 real snapshot catch-up and interrupted delivery;
+>   W2-W3 real-process control-plane nemesis and membership load; W4 an executable backup/restore
+>   claim boundary; W5 IO chaos; W6 mixed-daemon upgrade harness; W7 external control-plane history;
+>   W8 differential metadata model; W9 fuzz/socket corpus; W10 scheduler/tick perturbation; W11 kind
+>   scale chaos; W12 snapshot-transfer resource budget; W13 release governance and CI.
+> - **Status:** in-progress.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
-> after: [`V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md`](V0_64_RAFT_SNAPSHOT_AND_AGENTIC_DEBUGGING_TEST_EXPANSION_PLAN.md)
+> after: [`V0_65_REDIS_DEBT_SAFETY_NET_PLAN.md`](V0_65_REDIS_DEBT_SAFETY_NET_PLAN.md)
 
 Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md), and [`docs/GATES.md`](../GATES.md)
-first. This is a **test-hardening** release. It contains exactly **one** narrow production addition - a
-disk-backed compaction seam on the server raft log store (**W0**), justified because the `0.64`
-real-process proofs are impossible without it - and otherwise adds tests only. No new consensus
-algorithm, no ownership routing, no new consistency level, no Redis/Hazelcast protocol work, and no
-"fix a flaky test by weakening it". The win condition is process-level proof, not new product surface.
+before implementation. This is a control-plane/process hardening release. Narrow off-by-default test/ops
+controls are allowed only when an existing process path cannot otherwise be reached. Any new product
+data plane, live backup engine, distributed client backend, lease-read API, or ownership model requires
+an explicit scope-change commit and a different release claim.
 
-## Source Reflection
+## 0.65 Reconciliation And Claim Corrections
 
-The transferable lessons from the workspace reference process-cluster harnesses:
+The original `0.66` draft predated the implementation and post-audit remediation of `0.65`. The
+following corrections are load-bearing, not editorial:
 
-- **qdrant** `tests/consensus_tests/test_consensus_compaction.py`, `test_cluster_rejoin.py`,
-  `test_cluster_operation_coalescing.py`, `test_collection_recovery.py` - a node that fell behind the
-  compacted log MUST be caught up by snapshot install, and operations must coalesce/recover under load
-  across real processes.
-- **tikv** `tests/failpoints/cases/test_disk_full.rs`, `test_disk_snap_br.rs`, `test_backup.rs`,
-  `test_merge.rs`, `components/test_raftstore/src/transport_simulate.rs` - disk faults during snapshot,
-  backup/restore during live raft, and membership change under partition are first-class corner cases.
-- **ScyllaDB** `test/raft/randomized_nemesis_test.cc` - a randomized nemesis with a linearizability
-  oracle; `0.66` lifts this from `hydracache-sim` (0.64 W7) to the real client surface.
-- **TigerBeetle** `src/testing/storage.zig`, `packet_simulator.zig` - fault-injecting storage and
-  packet faults; `0.66` moves the fault surface from the simulator to real disk/process.
+| Earlier draft claim | Current repository truth | `0.66` decision |
+| --- | --- | --- |
+| Cross-daemon client `put/get/cas/lock` history is linearizable | `ClientSurfaceState` owns a per-process `Mutex<BTreeMap>` and lock service; `0.65` has mandatory node-local flip-sentinels | W2/W3/W7 operate on committed control-plane metadata only |
+| A real daemon exposes the native client protocol | `hydracache-server` binds Redis and admin listeners; `/client/v1/*` is not mounted by the daemon | No native-wire claim in `0.66` |
+| Live backup/PITR can be added as tests only | `/admin/backup` returns request acceptance; the helper `BackupDataset` is caller-supplied; restore is allowed only into a fresh operator cluster | W4 guards the honest boundary; live backup/restore moves to a feature/integration release |
+| Encrypted live restore can reuse shipped wiring | No server backup-source/restore-sink, production object store, or key-provider wiring exists | Removed from the ship claim; W12 becomes the missing snapshot resource proof |
+| A process wall-clock offset proves Raft and lease safety | Raft advances via `tokio::time::interval`/`tick`; client TTL and locks use separate local clocks; no lease-read API exists | W10 separates scheduler/tick perturbation from local clock contracts and makes no lease-read claim |
+| W0 must add `compact_to` and raw `install_snapshot(bytes)` | `RaftLogStore` and `SledRaftLogStore` already implement snapshot persistence and `compact_to`; the server already uses Sled | W0 exposes existing typed runtime compaction only; no duplicate raw snapshot API |
 
-The rule (`R-11`): the release must not claim a process-level guarantee that only its in-process
-sibling proved. Each `0.66` W-item is a real-process test with a falsifiability canary, deterministic
-seed + replay (`R-5`), and fail-loud on any invariant violation (`R-3`).
+Compatibility ownership is also explicit:
 
-## Non-Goals
+- `0.64` W32 owns versioned byte fixtures and provenance.
+- `0.66` W6 consumes those fixtures and owns simultaneous old/new **daemon** execution.
+- `0.68` W3 owns live previous **client** executables against a current server.
 
-- **No new consensus / joint-consensus / learner** semantics; membership stays single-step ConfChange.
-- **No ownership routing or value-partition** movement (that remains a separate future track); this
-  release exercises the metadata/raft/membership + durable value paths that already ship.
-- **No new consistency level** (`R-1`) and **no product API** beyond the W0 compaction seam.
-- **W0 is a seam, not a compaction product.** It exposes a disk-backed compaction/snapshot-install hook
-  on the existing durable log store so tests can force compaction; it is not a new tunable compaction
-  policy, GC subsystem, or performance claim.
-- **No Redis/Hazelcast protocol** work; those are `0.63`/`0.65` and later.
-- **No weakening of loud errors** or lowering of apply/invariant checks to make a process test quiet.
+## Release Governance Integration (must land before feature W-items)
 
-## Preflight
+`0.65` made evidence release-scoped and receipt-bound. `0.66` extends that mechanism rather than
+creating a parallel one:
 
-Re-grep before implementing; do not assume these seams:
+1. `docs/plans/releases.toml` declares `work_items = ["W0", ..., "W13"]`; `INDEX.md` carries the exact
+   generated marker.
+2. `docs/testing/release-evidence/0.66.toml` declares exact sources, required tests/artifacts,
+   `fast_gate_ids`, `gated_gate_ids`, and `ship_required = true` for every W-item.
+3. `docs/testing/canary-registry-0.66.json` uses the release-scoped dynamic registry policy. Each guard
+   has a test-only defect, expected `HC-CANARY-RED:W<n>` signature, timeout, tier, and artifact path.
+4. Shared `fast-suite-registry.toml`, `gated-test-registry.toml`, and quarantine machinery are reused.
+   New heavy rows use `owner_release = "0.66.0"`; no second registry is invented.
+5. Every gate runs through `evidence-run --release 0.66 --gate <id>`, uploads the receipt and declared
+   artifacts, and is consumed by `release-evidence --release 0.66 ... --require-ship` on the exact clean
+   candidate commit.
+6. `release-governance-check --release 0.66` must validate the requested release, not fall back to the
+   `0.64` canary registry. Regression tests must make missing `work_items`, manifest, registry, or exact
+   CI commands red.
+7. A heavy gate is not optional. Moving or removing one requires the same commit to update this plan,
+   `releases.toml`, evidence manifest, INDEX marker, gate registry, and release claim.
 
-- server/daemon: `crates/hydracache-server/tests/daemon_process_cluster.rs`,
-  `crates/hydracache-server/tests/redis_resp_multinode.rs` (harness patterns), `DaemonCluster`,
-  `wait_for_shape`, `drain`, `kill`, `redis_addr`/admin addr, `bootstrap`/`join` start modes.
-- raft/log store: `crates/hydracache-cluster-raft/src/log_store.rs` (checksum envelope added in `0.64`
-  W9), `InMemoryRaftLogStore::save_snapshot`, the sled-backed `ReplicatedValueStore`/log-store
-  `compact`/`scan_all`/`remove` extended in `0.55`, `RaftMetadataRuntime` `export_snapshot`/
-  `from_snapshot`/`restore_export`.
-- existing chaos/soak: `0.58` soak driver (`hydracache-sim/src/bin/vopr.rs`), `0.61` W3 kind chaos
-  injector (`NetworkPolicy` partition + `IOChaos`), `0.62` `DaemonCluster`, `0.48` graceful upgrade +
-  object-storage backup/PITR, `0.56` operator kind E2E.
-- `0.64` in-process siblings this release lifts: `nemesis_membership.rs`, `rejoin_after_compaction.rs`,
-  `snapshot_resource_faults.rs`, `raft_snapshot_membership.rs`, and the `0.64` Implementation Map.
+## Proof Lanes
 
-Audit question:
+Registry `tier` remains one of `fast|nightly|manual|external`; the lane column is a logical grouping.
+Final gate IDs are recorded in the evidence manifest as implementation lands.
 
-```text
-For each 0.64 in-process corner-case proof, does an equivalent proof exist that drives REAL
-hydracache-server processes over real disk (compaction, InstallSnapshot, backup/restore, partition,
-upgrade), and does it fail loud (not silently pass) when the guarantee is violated?
-```
+| Proof | Lane | Registry tier | Required evidence |
+| --- | --- | --- | --- |
+| W0 typed compaction control; W4 boundary guards; W7 checker canary; W8 fast model; W9 corpus; W10 local clock contract | core | fast | workspace receipt + dynamic canary receipts |
+| W1-W3, W5 process half, W6, W7, W8 process half, W10 process half, W12 | daemon-process | nightly | exact-command receipt, daemon logs, replay/resource artifacts |
+| W5 operator half, W11 | kind/operator | nightly | exact-command receipt, CNI/Chaos capability record, pod/operator logs |
+| W9 libFuzzer campaign | fuzz | nightly | exact-command receipt, seed corpus, crash/reproducer artifacts |
+
+Shard count is chosen only after per-gate budgets are measured. If a lane is sharded, all rows must
+form a complete `--shard i/n` set and all shard IDs must appear in the evidence manifest.
 
 ## Implementation Map For Audits
 
-Fill this in as W-items land (mirror the `0.64` map so a later audit does not conclude an item is
-missing). Every row: item -> where implemented -> required command -> important boundary/gate.
+Fill each row as the W-item lands. A row is not complete until its exact command and evidence boundary
+are recorded.
 
-| Item | Implemented where | Required command | Boundary |
+| Item | Implemented where | Required command | Boundary/evidence |
 | --- | --- | --- | --- |
-| _(populate during implementation; W0-W7 below define the targets)_ | | | |
+| W0 | `hydracache-cluster-raft` compaction/runtime restore; server admin/config/status seams; `compaction_seam` and admin tests | `cargo test -p hydracache-cluster-raft --features sled-log-store --test compaction_seam --locked` + `cargo test -p hydracache-server compaction --locked` | typed existing-Sled path; authenticated and off by default; exact applied boundary survives restart |
+| W1 | planned | planned | real HTTP `MsgSnapshot`, sender and receiver failure |
+| W2 | planned | planned | control-plane metadata only |
+| W3 | planned | planned | committed metadata proposals only |
+| W4 | planned | planned | boundary guard, not live restore proof |
+| W5 | planned | planned | separate daemon and kind receipts |
+| W6 | planned | planned | old/new daemon binaries; W32 bytes reused |
+| W7 | planned | planned | external admin/control-plane history only |
+| W8 | planned | planned | fast in-process plus server process adapter |
+| W9 | planned | planned | existing fuzz workspace plus real-socket corpus |
+| W10 | planned | planned | scheduler/tick plus local clock; no lease reads |
+| W11 | planned | planned | existing operator kind harness |
+| W12 | planned | planned | sender FD/RSS/task/resource return to baseline |
+| W13 | release-scoped canary/evidence/governance code plus 0.66 plan, manifest, registry, gates and testing docs | commands in W13 Required checks | governance skeleton is live; ship aggregation intentionally stays red until W1-W12 and exact-candidate receipts land |
 
-## W0. Server Disk-Backed Compaction Seam (load-bearing production addition)
+## W0. Existing-Sled Server Compaction Control
 
-**Goal.** Expose a disk-backed log/snapshot **compaction seam** on the server raft metadata log store so
-a test can force the leader to compact its log past a lagging follower's index, making real
-`InstallSnapshot` reachable end-to-end. This is the one narrow production change; it unblocks W1-W6.
-
-**Files to change.** `crates/hydracache-cluster-raft/src/log_store.rs` (add
-`compact_to(index)`/`install_snapshot(bytes)` on the durable store trait, reusing the `0.55`
-`compact`/`scan_all` seam and the `0.64` checksum envelope); `crates/hydracache-server` bootstrap to
-wire the seam behind an explicit, off-by-default `HYDRACACHE_RAFT_COMPACTION` test/ops config so normal
-runs are unchanged (`R-10`); `docs/COMPAT.md` if snapshot bytes/format is newly declared.
+**Goal.** Make the already-shipped typed Raft compaction path reachable and observable through the
+actual daemon admin surface, so the W1 real-process harness can compact a leader past a lagging
+follower and force `MsgSnapshot` delivery.
 
 **Design.**
-- `compact_to(index)` truncates the durable raft log at/below a committed index and records the
-  compaction point; `install_snapshot(bytes)` applies a received snapshot into the durable store with
-  checksum + identity validation (reuse `0.64` W9 rejection path).
-- Off by default; enabling it does not change quorum, apply, or the fast path. Add a unit test that the
-  seam is inert unless explicitly enabled.
 
-**Required tests (fast):**
-- `compaction_seam_is_inert_unless_explicitly_enabled`.
-- `compact_to_then_install_snapshot_round_trips_with_checksum_and_identity_checks`.
-- `compact_to_below_applied_index_is_rejected_loud`.
+- Reuse `RaftLogStore::save_snapshot`, `RaftLogStore::compact_to`, `SledRaftLogStore`, and
+  `RaftMetadataRuntime` typed snapshot construction.
+- Add one off-by-default server control/observability path. It may compact only through applied
+  progress; `index > applied_index` fails loud. Compaction below or at applied progress is valid.
+- Expose applied/snapshot/retained-log boundaries needed to drive W1. Snapshot delivery/install
+  counters belong to W1, where the real HTTP sender and receiver paths are instrumented.
+- Do not add `install_snapshot(bytes)` to the store trait and do not declare a new snapshot byte format.
+- Default startup, quorum, apply, and the hot path remain unchanged.
 
-**Canary.** `canary_compaction_seam_leaks_into_default_release_path` (a fixture that wires the seam
-unconditionally must fail `verify-no-test-features`/the inert-by-default test).
+**Required tests.**
+
+- `compaction_seam_rejects_an_index_past_applied_progress`.
+- `compaction_seam_rejects_before_any_entry_is_applied`.
+- `compaction_seam_snapshots_exactly_current_applied_progress`.
+- `compaction_seam_sled_restart_restores_snapshot_before_retained_tail`.
+- `compaction_seam_sled_restart_applies_newer_retained_tail_after_snapshot_prefix`.
+- `compaction_seam_recovery_applies_committed_confchange_past_persisted_applied`.
+- `raft_compaction_seam_is_observable_but_inert_by_default`.
+- `explicitly_enabled_raft_compaction_seam_compacts_at_applied_progress`.
+
+**Canary.** `canary_compaction_seam_leaks_into_default_release_path` must fail with
+`HC-CANARY-RED:W0`.
 
 **DoD.**
+
 ```powershell
-cargo test -p hydracache-cluster-raft compaction_seam --locked
+cargo test -p hydracache-cluster-raft --test compaction_seam --locked
+cargo test -p hydracache-cluster-raft --features sled-log-store --test compaction_seam --locked
+cargo test -p hydracache-server compaction --locked
 cargo run -p xtask --locked -- verify-no-test-features
 ```
 
-**Run in CI.** Fast `rust` job step "Raft compaction seam (fast)".
+## W1. Real-Process Rejoin And Interrupted Snapshot Delivery
 
-## W1. Real-Process Rejoin-After-Compaction (closes the 0.64 W10 deferral; blueprint: qdrant `test_consensus_compaction.py`, `test_cluster_rejoin.py`)
-
-**Goal.** Prove that a real daemon that fell behind past the compacted log is caught up via
-**`InstallSnapshot`** (not `AppendEntries`), applies the remaining committed tail, and converges to the
-authoritative membership - over real processes and real disk.
-
-**Files to change.** New `crates/hydracache-server/tests/rejoin_after_compaction_process.rs` using
-`DaemonCluster`; reuse W0 seam.
+**Goal.** Prove that a real daemon behind the compacted log catches up through `MsgSnapshot`, applies
+the committed tail, and converges after sender or receiver process failure.
 
 **Design.**
-- Start a 3-daemon `bootstrap` cluster; isolate node C (`NetworkPolicy`/partition or process pause).
-- Drive committed metadata churn on A/B until the leader compacts its log past C's `match_index` (W0
-  `compact_to`).
-- Reconnect/restart C; assert it receives a raft `MsgSnapshot`/`InstallSnapshot` (observe the frame
-  or a snapshot-install counter), applies the tail, and its local membership equals the authoritative
-  committed view.
-- Variant: kill the leader mid-catch-up; a new leader completes the install; still converges, no lost
-  committed metadata.
 
-**Required tests (network/process-gated):**
-- `rejoined_lagging_daemon_is_caught_up_via_installsnapshot_after_real_compaction`.
-- `leader_restart_midway_through_snapshot_install_still_converges`.
+- Pause/isolate C, commit metadata on A/B, and use W0 to compact beyond C's progress.
+- Rejoin C and observe a snapshot delivery/install counter rather than inferring the path from final
+  equality alone.
+- Kill the leader during delivery; a new leader completes catch-up.
+- Kill the receiving daemon while a large `MsgSnapshot` HTTP request is in flight. The current
+  transport is one HTTP raft message, not chunked production snapshot streaming.
+- On delivery error the server reports snapshot failure to Raft, bounds the request, releases sender
+  work, retries, and converges after the receiver returns.
 
-**Canary.** `canary_process_rejoin_serves_stale_local_membership_after_install`.
+**Required process tests.**
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test rejoin_after_compaction_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+- `lagging_daemon_rejoins_via_snapshot_after_real_sled_compaction`.
+- `leader_killed_mid_snapshot_delivery_still_converges`.
+- `receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges`.
 
-**Run in CI.** Scheduled/manual `Cluster Process Corner-Case Nightly` job (see W7); compiles in the fast
-`rust` job.
+**Canary.** `canary_snapshot_send_failure_leaves_peer_progress_stuck`.
 
-## W2. Real-Process Composed-Fault Nemesis + Client-Surface Linearizability (lift of 0.64 W7; blueprint: ScyllaDB `randomized_nemesis_test.cc`)
+## W2. Real-Process Composed-Fault Control-Plane Nemesis
 
-**Goal.** Run the seeded composed-fault nemesis (`0.64` W7) against **real daemons** and check
-linearizability of committed operations through the **real client surface**, not the in-process model.
-
-**Files to change.** New `crates/hydracache-server/tests/nemesis_process.rs`; reuse the `0.44`
-linearizability checker and the `0.64` nemesis fault vocabulary (partition/delay/drop/duplicate/reorder/
-crash/restart/compact/ConfChange).
+**Goal.** Lift the seeded `0.64` nemesis to real daemons while checking externally observed,
+consensus-backed membership/control-plane history. This W-item makes no client-value claim.
 
 **Design.**
-- Seeded schedule composes faults over a real 3-5 daemon cluster while a client applies a
-  known operation stream; record a history and run the `0.44` linearizability checker over it.
-- First failing seed replays exactly (`R-5`); the history + schedule + seed are emitted as an artifact.
 
-**Required tests:**
-- `nemesis_process_committed_history_is_linearizable_under_composed_faults` (fast, bounded steps, fixed
-  seed).
-- `nemesis_process_soak_over_seed_range_converges` (nightly, wall-clock budget, first failing seed
-  replays).
+- Generate supported admin/control-plane operations with stable command IDs while composing
+  pause/restart/partition/delay/compact and membership changes.
+- Record invoke/complete observations and committed membership epochs from public admin/cluster
+  surfaces; use a membership/control-plane history checker, not the node-local ClientSurface model.
+- Same seed produces the same schedule. A failure emits the original and minimized schedule, daemon
+  logs, and observed history. Every minimized failure is added to a frozen fast bad-seed corpus.
+- Reuse the 0.65 conformance trait only for protocol request construction where applicable; it is not
+  treated as a wire adapter or distributed backend.
 
-**Canary.** `canary_nemesis_process_accepts_a_lost_committed_write`.
+**Required tests.**
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test nemesis_process nemesis_process_committed_history_is_linearizable_under_composed_faults --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+- `process_nemesis_committed_control_plane_history_is_consistent`.
+- `process_nemesis_same_seed_replays_same_schedule`.
+- `process_nemesis_failure_shrinks_and_frozen_seeds_replay`.
 
-## W3. Partition + Membership Change Under Sustained Load (blueprint: tikv `test_merge.rs`/`transport_simulate.rs`, qdrant `test_cluster_operation_coalescing.py`)
+**Canary.** `canary_process_nemesis_accepts_a_lost_committed_metadata_command`.
 
-**Goal.** Prove that a membership change (add/remove/drain a voter) concurrent with an asymmetric
-partition and sustained client load loses **no committed write**, produces **no split-brain**, and
-coalesces retried operations idempotently.
+## W3. Membership Change Under Sustained Metadata Load
 
-**Files to change.** New `crates/hydracache-server/tests/membership_under_load_process.rs`; reuse `0.58`
-soak load generator + `0.62` `DaemonCluster` + `0.60` dynamic membership.
+**Goal.** Prove that voter add/remove/drain concurrent with an asymmetric partition and sustained
+consensus-backed metadata proposals loses no committed command, never creates two authoritative
+membership views, and coalesces stable-ID retries.
 
-**Required tests (nightly-tier, bounded in CI):**
-- `membership_change_under_partition_and_load_loses_no_committed_write`.
-- `retry_storm_operations_coalesce_idempotently_across_membership_change`.
-- `minority_side_never_commits_or_serves_stale_leader_during_the_change`.
+`ClientSurfaceState`/RESP writes are explicitly excluded: in 0.65 they are node-local and have no Raft
+commit index.
 
-**Canary.** `canary_membership_under_load_double_applies_a_retried_op`.
+**Required tests.**
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test membership_under_load_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+- `membership_change_under_partition_loses_no_committed_metadata_command`.
+- `stable_command_id_retry_storm_is_idempotent_across_membership_change`.
+- `minority_side_never_reports_an_authoritative_committed_membership`.
 
-## W4. Backup / Restore / PITR During Live Cluster Ops (blueprint: tikv `test_backup.rs`, `test_disk_snap_br.rs`)
+**Canary.** `canary_membership_load_double_applies_a_stable_command_id`.
 
-**Goal.** Prove the shipped `0.48` object-storage backup + PITR is correct **while the cluster is live**
-and **across a membership change** - restore into a running cluster, and point-in-time restore that
-spans a ConfChange, without resurrecting tombstoned/invalidated data (reuse `0.41` versioned tombstones
-+ `0.46` fencing).
+## W4. Backup And Restore Authority Boundary
 
-**Files to change.** New `crates/hydracache-server/tests/backup_restore_live_process.rs`; reuse `0.48`
-backup/PITR + `0.55` checkpoint.
+**Goal.** Make the absence of a live server backup/restore data plane executable and impossible to
+overclaim while preserving the shipped helper-level backup/PITR tests.
 
-**Required tests (nightly-tier):**
-- `restore_into_live_cluster_converges_and_resurrects_no_fenced_data`.
-- `pitr_across_a_membership_change_recovers_consistent_committed_state`.
-- `backup_taken_during_snapshot_install_is_internally_consistent`.
+**Required boundary tests and docs.**
 
-**Canary.** `canary_restore_resurrects_a_tombstoned_key`.
+- `/admin/backup` acceptance is not reported as a completed artifact or successful restore point.
+- `BackupDataset.values` is documented and tested as caller-supplied helper data, not a snapshot of
+  `ClientSurfaceState` or the live cluster value plane.
+- Operator PITR continues to reject restore into a cluster with running replicas.
+- `COMPAT.md`, release notes, admin response docs, and metrics use request/plan language only.
+- Record a named future prerequisite: production backup source, durable object-store adapter,
+  restore sink, authority/fencing protocol, and key provider. Live restore and encrypted key rotation
+  do not enter the `0.66` release claim.
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test backup_restore_live_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+**Canary.** `canary_backup_request_acceptance_is_treated_as_completed_backup`.
 
-## W5. Slow-Disk / IO Chaos At The Process & Operator Tier (blueprint: tikv `IOChaos`; extends 0.61 W3)
+## W5. Slow Disk And IO Chaos At Snapshot Boundaries
 
-**Goal.** Prove that slow/failing disk during snapshot save/install and durable writes degrades **loud
-and safe** (bounded backpressure, fail-loud on write error, no torn commit accepted), at the real
-process and kind/operator tiers.
+**Goal.** Prove loud, bounded behavior for slow/failing disk during snapshot save, snapshot install,
+and durable commit.
 
-**Files to change.** Extend `0.61` W3 kind chaos injector (`chaos-mesh IOChaos`) with a snapshot-window
-scenario; new `crates/hydracache-server/tests/io_chaos_process.rs` (loopback slow-disk via a fault seam
-where kind is unavailable, skip-graceful with residual disclosure like `0.61`).
+**Design.**
 
-**Required tests (nightly/operator-gated):**
-- `slow_disk_during_snapshot_save_produces_bounded_backpressure_not_data_loss`.
-- `disk_write_failure_during_commit_fails_loud_and_recovers_consistent`.
+- The local process proof uses a narrowly scoped storage fault seam and
+  `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1`.
+- The operator proof extends the existing `soak_kind`/Chaos harness and uses the established
+  `HYDRACACHE_OPERATOR_KIND=1` capability gate; no `HYDRACACHE_RUN_KIND_CHAOS` alias is introduced.
+- W0 x W5 explicitly injects delay/failure during snapshot install, not only snapshot save.
+
+**Required tests.**
+
+- `slow_disk_during_snapshot_save_has_bounded_backpressure`.
+- `slow_disk_during_snapshot_install_retries_without_partial_apply`.
+- `durable_commit_failure_fails_loud_and_recovers_consistent`.
 
 **Canary.** `canary_io_chaos_accepts_a_torn_commit`.
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_KIND_CHAOS='1'
-cargo test -p hydracache-server --test io_chaos_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_KIND_CHAOS -ErrorAction SilentlyContinue
-```
+## W6. Mixed-Version Daemon Harness And Rolling Upgrade
 
-## W6. Rolling Upgrade Under Snapshot/Wire Format Drift (blueprint: tikv upgrade tests; extends 0.62 W6 + 0.48 graceful upgrade)
+**Goal.** Prove simultaneous previous/current daemon operation during a membership change and snapshot
+catch-up. Byte compatibility remains owned by `0.64` W32.
 
-**Goal.** Prove a one-pod-at-a-time rolling upgrade (`0.48`) is safe **during** a membership change and
-**across** snapshot/wire format versions - the golden byte vectors (`0.62` W6) stay decodable by the new
-and old version, and no committed metadata is lost across the mixed-version window.
+**Design.**
 
-**Files to change.** New `crates/hydracache-server/tests/rolling_upgrade_process.rs`; reuse `0.62` golden
-vectors + `0.48` graceful upgrade + `0.56` operator rolling upgrade.
+- Extend/extract the process harness so each node has an explicit binary path; the current
+  `DaemonCluster` single-binary field is insufficient.
+- Build or resolve the previous daemon from the shipped `v0.65.0` tag with full-history checkout and
+  provenance. Development may use the pinned base commit, but ship evidence fails loud without the tag.
+- Consume `compat_matrix.rs`/W32 fixtures; do not duplicate their byte ownership.
+- Rolling replacement preserves committed metadata and snapshot catch-up across the mixed window.
+- Live old client executables remain `0.68` W3.
 
-**Required tests (nightly/operator-gated):**
-- `mixed_version_cluster_decodes_golden_snapshot_and_wire_vectors_both_directions`.
+**Required tests.**
+
+- `daemon_cluster_supports_explicit_binary_per_node`.
+- `mixed_065_066_daemons_converge_during_snapshot_catchup`.
 - `rolling_upgrade_during_membership_change_loses_no_committed_metadata`.
 
-**Canary.** `canary_upgrade_silently_drops_an_unknown_snapshot_field`.
+**Canary.** `canary_mixed_daemon_harness_silently_substitutes_current_binary`.
 
-**DoD.**
-```powershell
-cargo test -p hydracache-cluster-raft --test golden_vectors --locked
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test rolling_upgrade_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+## W7. External Black-Box Control-Plane History Harness
 
-## W7. External Jepsen-Style Linearizability Harness Over The Wire (blueprint: TigerBeetle `src/testing/vortex`, ScyllaDB `randomized_nemesis_test.cc`)
-
-**Goal.** Prove committed history is linearizable using an **external** black-box harness that drives
-real daemons **only over the public wire** (client protocol + admin API) and knows nothing about
-internal state - a stronger, more adversarial oracle than the in-test `0.44` checker used in W2, which
-still runs inside the process.
-
-**Why it is different from W2.** W2 reuses the in-process linearizability checker over a history that the
-test itself records. W7 is a separate harness binary that (a) issues operations over TCP like a real
-client, (b) records a wall-clock history with concurrency, (c) injects faults only through supported
-external levers (kill/drain/partition), and (d) checks linearizability offline. It catches bugs that
-only appear when nothing shares the process address space with the cluster.
-
-**Files to change.** New harness crate `crates/hydracache-jepsen` (bin, `publish = false`) with a
-generator (op stream), a nemesis (external fault schedule), a recorder (history + timestamps), and a
-checker that reuses the shipped `crates/hydracache-sim/src/linearizability.rs` model as a library;
-new `crates/hydracache-jepsen/tests/wire_linearizability.rs` driving `DaemonCluster`.
+**Goal.** Drive real daemons only through supported external admin/cluster surfaces, inject faults
+outside the processes, and validate committed membership/control-plane history offline.
 
 **Design.**
-- Generator emits a seeded, concurrent op stream (`put`/`get`/`cas`/lock ops) across N client
-  connections to different daemons.
-- External nemesis composes `kill`/`restart`/`drain`/`partition` on a seeded schedule; never touches
-  internals.
-- Recorder writes an append-only history (invoke/complete with monotonic timestamps); on failure the
-  seed + history + nemesis schedule are emitted as an artifact for exact replay (`R-5`).
-- Checker runs offline against the `0.44` model; a linearizability violation fails loud (`R-3`).
 
-**Required tests:**
-- `wire_history_is_linearizable_under_external_faults` (fast, bounded ops, fixed seed).
-- `wire_linearizability_soak_over_seed_range` (nightly, wall-clock budget, first failing seed replays).
+- Do not issue cross-daemon client `put/get/cas/lock`; those operations are node-local in 0.65.
+- Process orchestration must live in a reusable publish-false process testkit or a server integration
+  test. A new crate cannot import `crates/hydracache-server/tests/support/daemon_cluster.rs` directly.
+- Reuse `crates/hydracache-server/tests/support/membership_history.rs` as the concrete external
+  membership-history anchor. Reuse `crates/hydracache-sim/src/linearizability.rs` only for history
+  operations its model actually represents; do not relabel its node-local KV oracle as a distributed
+  control-plane proof. Generator, recorder, scheduler, shrinker, and replay corpus are explicit
+  components.
+- An unexpected pass is red only for manifest rows that intentionally declare a degraded/unsupported
+  outcome. Normal correctness rows remain ordinary green proofs with dynamic canaries.
 
-**Canary.** `canary_jepsen_checker_passes_a_known_nonlinearizable_history` - feed the checker a hand-built
-non-linearizable history; it must reject it. Proves the oracle actually discriminates.
+**Required tests.**
 
-**DoD.**
-```powershell
-cargo test -p hydracache-jepsen --test wire_linearizability wire_history_is_linearizable_under_external_faults --locked -- --nocapture
-cargo test -p hydracache-jepsen canary_jepsen_checker_passes_a_known_nonlinearizable_history --locked
-```
+- `external_control_plane_history_is_consistent_under_process_faults`.
+- `external_history_failure_shrinks_to_one_step_minimal_schedule`.
+- `external_frozen_bad_seed_corpus_replays_fast`.
 
-**Run in CI.** Fast canary + bounded wire test in the process nightly job (W13); soak in the scheduled
-lane.
+**Canary.** `canary_external_checker_accepts_a_known_invalid_membership_history`.
 
-## W8. Metamorphic / Differential Testing Against A Reference Model (blueprint: `0.44` `hydracache-sim` as oracle; FoundationDB-style model checking)
+## W8. Differential And Metamorphic Metadata Model
 
-**Goal.** Run the **same seeded fault+op schedule** against (a) the real cluster and (b) a simple
-independent **reference model** of the metadata state machine, and assert the externally observable
-results agree (differential), plus assert **metamorphic relations** that must hold regardless of
-schedule (e.g., replaying a committed prefix twice yields the same committed set; reordering
-independent ops does not change the final committed state).
+**Goal.** Feed one seeded metadata/fault schedule to the real implementation and an independent simple
+membership/log model, then compare committed external results and metamorphic relations.
 
-**Why.** Differential testing turns "is this output correct?" (hard) into "do two independent
-implementations agree?" (mechanical). The reference model is deliberately naive and obviously correct;
-divergence localizes the bug to the real implementation.
+**Placement.**
 
-**Files to change.** New `crates/hydracache-cluster-raft/tests/differential_model.rs`; a small reference
-model in `crates/hydracache-cluster-testkit/src/reference_model.rs` (a plain in-memory membership+log
-oracle, no raft); reuse the `0.64` nemesis schedule vocabulary.
+- Fast in-process differential test: `hydracache-cluster-raft` plus a reference model in
+  `hydracache-cluster-testkit`.
+- Real-process adapter: `hydracache-server` tests or the publish-false process testkit. A raft test may
+  not import server-only `DaemonCluster`.
+- Reconcile with `0.64` W28 differential coverage; extend it rather than creating a second vocabulary.
 
-**Design.**
-- One seeded schedule feeds both the real `RaftMetadataRuntime`/`DaemonCluster` and the reference model.
-- After the schedule, compare the externally committed membership + committed metadata set; they must be
-  equal modulo documented nondeterminism (e.g., which node is leader).
-- Metamorphic relations checked as separate properties: prefix-replay idempotence, independent-op
-  commutativity, snapshot-then-tail equals no-snapshot for the same committed prefix.
+**Required tests.**
 
-**Required tests:**
-- `real_cluster_committed_state_matches_reference_model_under_seeded_schedules` (fast + nightly-wide).
-- `metamorphic_prefix_replay_and_independent_reorder_preserve_committed_set`.
+- `runtime_committed_metadata_matches_reference_model`.
+- `process_committed_metadata_matches_reference_model_wide`.
+- `prefix_replay_reorder_and_snapshot_tail_relations_hold`.
 
-**Canary.** `canary_reference_model_diverges_when_a_committed_op_is_dropped` - inject a dropped commit in
-a fixture; the differential check must flag the divergence.
+**Canary.** `canary_reference_model_misses_a_committed_metadata_command`.
 
-**DoD.**
-```powershell
-cargo test -p hydracache-cluster-raft --test differential_model --locked
-```
+## W9. Raft Wire Fuzzing And Real-Socket Corpus
 
-**Run in CI.** Fast in the `rust` job; wide-scope (`HYDRACACHE_GRID_SCOPE=wide`) in the nightly lane.
-
-## W9. Wire-Boundary Fuzzing Of The Raft HTTP Transport (blueprint: `cargo-fuzz`/libFuzzer; extends `0.62` W6 decode fuzz)
-
-**Goal.** Prove the raft HTTP transport endpoint never panics, never corrupts durable state, and always
-fails loud on **malformed frames delivered at the real socket** - not only the `0.62` in-memory decode
-proptest, but bytes arriving on the actual listener.
-
-**Files to change.** New fuzz target `fuzz/fuzz_targets/raft_wire_frame.rs` (cargo-fuzz, libFuzzer) over
-the transport decode + dispatch path; a deterministic `crates/hydracache-cluster-raft/tests/wire_fuzz_corpus.rs`
-that replays a committed corpus + `arbitrary`-generated frames in normal `cargo test` (so CI without a
-fuzzer still gets coverage); reuse `crates/hydracache-cluster-transport-axum`.
+**Goal.** Harden both the pure decoder/dispatch boundary and bytes arriving at the actual raft HTTP
+listener without conflating the two proof layers.
 
 **Design.**
-- Fuzz target: arbitrary bytes -> transport frame decode -> dispatch into a sandboxed runtime; assert no
-  panic, no unhandled error swallow (`R-3`), and that a rejected frame never mutates the durable log.
-- Committed corpus test: a checked-in set of adversarial frames (truncated, oversized, wrong node id,
-  wrong term, duplicate snapshot chunk) runs deterministically in `cargo test` for regression.
-- Bound allocation before decode (reuse `0.63`/`0.62` frame-size limits) so a hostile length field
-  cannot allocate unboundedly.
 
-**Required tests:**
-- `raft_wire_frame_corpus_never_panics_and_never_mutates_on_reject` (fast, deterministic).
-- fuzz target `raft_wire_frame` (nightly `cargo fuzz run`, time-boxed, seed corpus committed).
+- Extend the existing `hydracache-fuzz` workspace with a fifth `raft_wire_frame` target, shared replay
+  function, seed corpus directory, and updated `fuzz_corpus_regression` enumeration.
+- The libFuzzer target stays pure and deterministic: arbitrary bytes to decode/dispatch in a sandboxed
+  runtime.
+- A separate server/transport test sends committed malformed HTTP bodies to the real
+  `ClusterOpaqueMessage` route and verifies rejection before unbounded body/base64/protobuf allocation.
+- Rejected frames never mutate the durable log. Corpus cases include truncation, oversized body,
+  invalid JSON/base64/protobuf, wrong identity/term, and malformed snapshot payload.
 
-**Canary.** `canary_wire_fuzz_accepts_an_oversized_frame_without_bound` - a fixture that removes the size
-bound must fail the corpus test's allocation-bound assertion.
+**Required tests.**
 
-**DoD.**
-```powershell
-cargo test -p hydracache-cluster-raft --test wire_fuzz_corpus --locked
-# nightly / local deep fuzz (requires nightly toolchain + cargo-fuzz):
-# cargo +nightly fuzz run raft_wire_frame -- -max_total_time=60
-```
+- `raft_wire_frame_corpus_never_panics_or_mutates_on_reject`.
+- `raft_http_socket_corpus_rejects_before_unbounded_allocation`.
+- nightly `cargo +nightly fuzz run raft_wire_frame` with a bounded budget.
 
-**Run in CI.** Corpus test in the fast `rust` job; `cargo fuzz` time-boxed in the nightly lane (skip
-loud if nightly toolchain/cargo-fuzz unavailable, like other gated tiers).
+**Canary.** `canary_raft_socket_accepts_an_oversized_body_without_bound`.
 
-## W10. Process-Tier Clock Skew & Backward Jump (blueprint: TigerBeetle `src/testing/time.zig`; lifts `0.64` W14 from `hydracache-sim` to real daemons)
+## W10. Process Scheduler/Tick Perturbation And Local Clock Contracts
 
-**Goal.** Prove that skewed and backward-jumping **system clocks across real daemons** never produce two
-leaders, never break lease/fence safety, and never expire a committed lease early - lifting the `0.64`
-W14 `clock_skew_safety` proof from the simulator to real processes.
-
-**Files to change.** A **process clock-injection seam** in `hydracache-server` (env-gated
-`HYDRACACHE_CLOCK_OFFSET_MS` / `HYDRACACHE_CLOCK_STEP`, off by default, `R-10`) that offsets the
-server's monotonic/wall clock source for tests; new
-`crates/hydracache-server/tests/clock_skew_process.rs` using `DaemonCluster`. If a raw seam is too
-invasive, drive skew externally via `libfaketime` on the child process and skip-graceful where absent.
+**Goal.** Prove leader/membership safety under real process scheduling pauses and uneven Raft tick
+cadence, while separately preserving local TTL/lock behavior under wall-clock rollback. No lease-read
+API or committed lease claim is introduced.
 
 **Design.**
-- Start a 3-daemon cluster; apply per-node clock offsets and a mid-run backward jump on the leader.
-- Assert: at most one leader per term, no lease-based read served by a demoted leader, fence tokens
-  stay monotonic, no committed lease expires before its logical deadline.
-- Seeded skew schedule, replayable.
 
-**Required tests (process-gated):**
-- `process_clock_skew_never_produces_two_leaders_or_serves_stale_lease`.
-- `leader_backward_clock_jump_does_not_expire_committed_lease_early`.
+- Use existing pause/resume and OS scheduling controls for process-level Raft perturbation where
+  possible; do not pretend `libfaketime` changes Tokio's monotonic `Instant`.
+- If a new tick-control seam is unavoidable, it is off by default, independently justified, and added
+  to the production-change ledger and `verify-no-test-features`/inert-default proof.
+- Reuse the 0.65 conformance test clock for local TTL/lock rollback assertions; do not generalize a
+  per-daemon TTL result into a cluster consistency claim.
 
-**Canary.** `canary_clock_seam_lets_a_demoted_leader_serve_a_lease`.
+**Required tests.**
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test clock_skew_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+- `process_pause_and_uneven_ticks_never_create_two_leaders_per_term`.
+- `resumed_demoted_process_never_reports_authoritative_membership`.
+- `local_ttl_and_lock_contracts_survive_backward_wall_clock_step`.
 
-**Run in CI.** Process nightly job (W13); compiles in fast `rust` job; clock seam covered by a fast
-inert-by-default unit test.
+**Canary.** `canary_resumed_demoted_process_is_accepted_as_authoritative`.
 
-## W11. Operator-Tier Scale Chaos (blueprint: extends `0.61` W2/W3 kind chaos + `0.56` operator; chaos-mesh)
+## W11. Operator-Tier Scale Chaos
 
-**Goal.** Prove that `spec.replicas` churn (grow/shrink) **concurrent with an active partition and load**
-on a real kind cluster keeps raft voters correct, loses no committed metadata, and never leaves an
-orphaned/ghost voter - the operator-tier analogue of W3.
+**Goal.** Prove `spec.replicas` churn under partition and metadata load keeps the Raft voter set
+correct, loses no committed metadata, and leaves no ghost voter.
 
-**Files to change.** Extend `0.61` W3 kind chaos injector and `0.56` operator E2E; new
-`crates/hydracache-operator/tests/scale_chaos_kind.rs` (or the existing operator E2E harness), gated on
-`HYDRACACHE_RUN_KIND_CHAOS=1` with a CNI-enforcement probe (skip loud on kindnet like `0.61`).
+**Design.** Extend the existing operator `soak_kind` harness, use
+`HYDRACACHE_OPERATOR_KIND=1`, record CNI/Chaos capability, and fail loud when the required lane claims
+execution without the required runtime.
 
-**Design.**
-- `spec.replicas` 3->5->3 while a `NetworkPolicy` partition isolates one pod and load runs; assert raft
-  voters track the intended set, drained pods leave the voter set, a crashed pod does not shrink voters
-  (falsifiable contrast, reusing `0.61` W2), and no committed metadata is lost.
-- Chaos-mesh `IOChaos`/pod-kill composed with the scale op; residual disclosure when a CRD is absent.
+**Required tests.**
 
-**Required tests (kind/operator-gated):**
-- `replica_churn_under_partition_and_load_keeps_voters_correct_and_loses_no_committed_metadata`.
-- `drained_pod_leaves_voter_set_but_crashed_pod_does_not_shrink_it`.
+- `replica_churn_under_partition_keeps_voters_and_committed_metadata`.
+- `drained_pod_leaves_voters_but_crashed_pod_does_not_implicitly_shrink`.
 
-**Canary.** `canary_scale_chaos_leaves_a_ghost_voter_after_shrink`.
+**Canary.** `canary_scale_chaos_accepts_a_ghost_voter`.
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_KIND_CHAOS='1'
-cargo test -p hydracache-operator --test scale_chaos_kind --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_KIND_CHAOS -ErrorAction SilentlyContinue
-```
+## W12. Snapshot Transfer Resource And Backpressure Budget
 
-**Run in CI.** kind/operator nightly lane (W13); skip-graceful with residual disclosure where kind is
-unavailable.
-
-## W12. Backup Encryption & Key-Rotation During Live Restore (blueprint: `0.48` encryption-at-rest + cert/key lifecycle)
-
-**Goal.** Prove that `0.48` encryption-at-rest backups restore correctly **while the cluster is live**
-and **across an encryption-key rotation** - a backup taken under key K1 restores after rotation to K2,
-no plaintext key material leaks into logs/metrics, and a wrong/missing key fails loud rather than
-restoring garbage.
-
-**Files to change.** New `crates/hydracache-server/tests/backup_encryption_rotation_process.rs`; reuse
-`0.48` encryption-at-rest + object-storage backup/PITR + cert/key lifecycle; compose with the W4
-live-restore harness.
+**Goal.** Close the resource half of receiver-kill/slow-receiver testing: interrupted snapshot
+delivery must release sender work and return bounded task/FD/RSS counters to baseline after quiescence.
 
 **Design.**
-- Take an encrypted backup under key K1 during live ops; rotate to K2; restore into a running cluster;
-  assert committed state is recovered and consistent.
-- Wrong key / missing key -> loud failure, no partial restore, no plaintext in logs/metrics (reuse the
-  redaction assertions from `0.63`/`0.57` observability).
-- PITR that spans a key rotation recovers a consistent committed state.
 
-**Required tests (process-gated):**
-- `encrypted_backup_restores_after_key_rotation_into_live_cluster`.
-- `wrong_or_missing_backup_key_fails_loud_without_partial_restore_or_plaintext_leak`.
-- `pitr_spanning_a_key_rotation_recovers_consistent_state`.
+- Reuse and generalize the `ResourceBudgetArtifact` schema in
+  `crates/hydracache-server/tests/daemon_resource_budget.rs`; remove its hard-coded release and output
+  path rather than inventing an unrelated schema.
+- Measure before fault, during blocked/failed delivery, and after retry/quiescence.
+- Assert bounded outstanding sender tasks/requests, file descriptors, and RSS with platform-specific
+  residual disclosure. Missing Linux metrics cannot satisfy the Linux-required gate.
 
-**Canary.** `canary_restore_accepts_a_wrong_key_and_produces_garbage`.
+**Required tests.**
 
-**DoD.**
-```powershell
-$env:HYDRACACHE_RUN_DAEMON_PROCESS_E2E='1'
-cargo test -p hydracache-server --test backup_encryption_rotation_process --locked -- --nocapture
-Remove-Item Env:\HYDRACACHE_RUN_DAEMON_PROCESS_E2E -ErrorAction SilentlyContinue
-```
+- `receiver_kill_releases_snapshot_sender_resources_after_quiescence`.
+- `slow_receiver_applies_bounded_backpressure_without_unbounded_tasks_or_rss`.
+- `snapshot_resource_artifact_validates_for_release_066`.
 
-**Run in CI.** Process nightly job (W13).
+**Canary.** `canary_snapshot_sender_resource_reservation_never_releases`.
 
-## W13. Local & GitHub CI Execution For The Full Process Corner-Case Suite (covers W0-W12)
+## W13. Release Evidence, Local Reproduction, And CI
 
-**Goal.** Every W1-W12 test must be runnable **locally** and in **GitHub Actions**, with fast-tier
-compilation on every PR and heavier process/operator/fuzz scenarios on scheduled/manual gated jobs -
-mirroring the `0.64` `Raft Corner-Case Nightly` shape and extending it to the process/operator/fuzz
-tiers.
+**Goal.** Make every W0-W12 proof locally reproducible and ship-blocking through the release-scoped
+governance established by 0.65.
 
-**Design.**
-- Fast `rust` job: W0 seam unit tests, W8 differential fast test, W9 wire-fuzz corpus test, W7 canary,
-  and **compilation** of every W1-W12 process/operator test (no `--run` env) so they never bit-rot.
-- New scheduled/`workflow_dispatch` job **`Cluster Process Corner-Case Nightly`**: sets
-  `HYDRACACHE_RUN_DAEMON_PROCESS_E2E=1` and runs W1-W4, W7 (wire soak), W10, W12; a **kind lane** sets
-  `HYDRACACHE_RUN_KIND_CHAOS=1` for W5/W11; a **fuzz lane** runs `cargo +nightly fuzz run raft_wire_frame`
-  time-boxed (W9). All lanes upload daemon child logs, nemesis/jepsen replay artifacts, and fuzz crash
-  inputs; the daemon-process gate is serialized (one cluster at a time) as existing CI does; missing
-  runtimes (kind, nightly toolchain, cargo-fuzz) skip **loud** unless the lane's require flag is set.
-- Local runbook block in `docs/TESTING.md` with the exact PowerShell **and** bash commands for each
-  W-item (env var set -> `cargo test` -> unset), so any nightly failure reproduces locally verbatim.
+**Required implementation.**
 
-**Files to change.** `.github/workflows/ci.yml` (fast steps + the nightly `Cluster Process Corner-Case
-Nightly` job with daemon/kind/fuzz lanes), `docs/TESTING.md` (per-W runbook, local + CI), `docs/GATES.md`.
+- Add `work_items`, INDEX marker, `release-evidence/0.66.toml`,
+  `canary-registry-0.66.json`, shared gate rows, and governance regression tests.
+- Remove 0.64/0.65 hardcodings from requested-release canary selection, evidence template generation,
+  fast receipt release, manual gated receipt release, and exact CI command validation.
+- Fast PR lane runs/receipts all deterministic tests and compiles every process/operator target.
+- Daemon-process nightly includes W1-W3, W5-W8 process components, W10, and W12. Nothing is silently
+  omitted.
+- Kind lane includes W5 operator proof and W11. Fuzz lane includes W9. W6 receives full Git history and
+  the previous-daemon artifact.
+- Upload exact receipts, child logs, minimized/frozen schedules, compatibility provenance, resource
+  JSON, and fuzz reproducers.
+- `docs/TESTING.md` records exact PowerShell and bash reproduction commands for each gate.
 
-**Required checks:**
-- `doc-check` green; `verify-no-test-features` green; CI fast job compiles all W1-W12 tests and runs the
-  fast W8/W9/W7-canary subset green; the nightly job runs W1-W12 green with artifacts uploaded.
+**Required checks.**
 
-**DoD.**
 ```powershell
 cargo run -p xtask --locked -- doc-check
+cargo run -p xtask --locked -- canary-check --release 0.66
+cargo run -p xtask --locked -- release-governance-check --release 0.66
 cargo run -p xtask --locked -- verify-no-test-features
+cargo run -p xtask --locked -- release-evidence --release 0.66 --receipts-dir target/release-evidence/0.66 --require-ship
 ```
 
-## Gates (Definition of Done for the release)
+## Release Gates
 
-- The W0 compaction seam is off by default, inert unless explicitly enabled, checksum/identity-validated,
-  and does not change quorum/apply/fast-path; `verify-no-test-features` proves no test seam leaks into a
-  release graph.
-- Real-process rejoin-after-compaction converges via `InstallSnapshot` (W1) - the last named `0.64`
-  deferral is closed; `0.64`'s Implementation Map note for W10 is updated to point here.
-- The composed-fault nemesis is linearizable through the real client surface (W2); membership change
-  under partition + load loses no committed write and never splits or double-applies (W3).
-- Backup/restore/PITR is correct during live ops and across a membership change, resurrecting no fenced
-  data (W4); slow-disk/IO chaos degrades loud and safe (W5); rolling upgrade under format drift loses no
-  committed metadata and keeps golden vectors bidirectionally decodable (W6).
-- An **external** wire-only Jepsen-style harness proves committed history linearizable under external
-  faults, with a canary that rejects a known non-linearizable history (W7); a **differential** check
-  agrees with an independent reference model and holds the metamorphic relations (W8); **wire-boundary
-  fuzzing** never panics/mutates on malformed frames and bounds allocation (W9).
-- Process-tier **clock skew / backward jump** never produces two leaders or expires a committed lease
-  early (W10); **operator-tier scale chaos** under partition keeps voters correct and loses no committed
-  metadata (W11); **encrypted backup restores across a key rotation** and fails loud on a wrong key with
-  no plaintext leak (W12).
-- Every W-item has a falsifiability canary that fails its paired guard red; every proof is
-  seeded/replayable (`R-5`) and fail-loud (`R-3`).
-- Every W1-W12 test runs **locally** and in **GitHub CI**: compiled on every PR, with the fast
-  W8/W9/W7-canary subset executed on PR and the full suite executed green in the scheduled `Cluster
-  Process Corner-Case Nightly` job (daemon + kind + fuzz lanes) with artifacts (W13).
-- The Implementation Map is populated; `TESTING.md`/`GATES.md`/`COMPAT.md` (if format claims changed)/
-  `releases.toml`/`INDEX.md`/plan header/`docs/releases/0.66.0.md` are reconciled; `doc-check` green.
-- No new consensus/consistency level/ownership routing; the only production change is the W0 seam.
+- W0 uses the existing typed Sled snapshot/compaction path, is inert by default, and rejects compaction
+  past applied progress.
+- W1 proves real snapshot catch-up after sender and receiver death, including delivery-failure feedback
+  and retry.
+- W2/W3/W7 prove only consensus-backed control-plane metadata; node-local client values are not
+  relabelled as committed cluster writes.
+- W4 keeps live backup/restore and encryption claims out until their named production prerequisites
+  exist.
+- W5 proves save, install, and commit IO faults; W6 proves simultaneous old/new daemons with provenance.
+- W8 agrees with an independent metadata model; W9 covers both pure fuzz and the real HTTP listener.
+- W10 makes no lease-read claim; W11 proves operator voter correctness; W12 proves resource release.
+- Every W-item has a dynamic canary, deterministic replay where applicable, exact registered command,
+  artifact contract, and exact-candidate receipt.
+- `release-evidence --require-ship` is green on a clean tree for W0-W13. Skip-only execution, a receipt
+  from another release/commit, or a missing shard is red.
 
 ## Final Release Decision
 
-Ship `0.66.0` only when the in-process `0.64` corner-case grid has a **real-process equivalent** for
-rejoin-after-compaction, composed-fault linearizability, membership-under-load, backup/PITR-during-ops,
-IO chaos, and rolling-upgrade-under-drift (W1-W6), **plus** the widened external/adversarial tier:
-external wire-only Jepsen linearizability (W7), differential + metamorphic model agreement (W8),
-wire-boundary fuzzing (W9), process-tier clock skew (W10), operator-tier scale chaos (W11), and
-encrypted backup + key-rotation restore (W12) - each seeded, replayable, fail-loud, and paired with a
-canary that proves the guard actually catches the bug. The single production change is the W0 compaction
-seam (off by default, inert unless enabled), added solely so the real `InstallSnapshot` path is testable;
-W10's clock seam and W12's key path reuse shipped `0.48` mechanics. Every proof runs locally and in
-GitHub CI (W13). No proof is claimed on skip-graceful alone; a gated tier is green only when its require
-flag runs it. The core consensus engine, consistency levels, and ownership model stay untouched; the win
-condition is that the cluster's resilience is proven where it actually runs - real processes, real disk,
-real operators, real wire, adversarial faults - not only in the simulator.
+Ship `0.66.0` only when the real-process control-plane proof is complete and honestly bounded by the
+0.65 node-local client contract. The release does not pay the distributed client-backend debt, invent a
+live backup engine, or claim lease reads. Its value is narrower and stronger: existing Raft/Sled/admin
+paths survive compaction, snapshot delivery interruption, process faults, mixed daemon versions,
+operator churn, hostile wire input, uneven scheduling, and resource pressure with replayable,
+receipt-bound evidence from the exact candidate commit.

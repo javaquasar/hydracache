@@ -199,6 +199,11 @@ pub struct ServerConfig {
     pub admin_api: AdminApiConfig,
     /// Optional Redis RESP edge facade policy.
     pub redis_api: RedisApiConfig,
+    /// Whether the narrow admin Raft compaction test/ops seam is enabled.
+    ///
+    /// This remains false in normal production configuration and does not
+    /// enable automatic compaction.
+    pub raft_compaction_enabled: bool,
 }
 
 impl Default for ServerConfig {
@@ -224,6 +229,7 @@ impl Default for ServerConfig {
             client_api: ClientApiConfig::default(),
             admin_api: AdminApiConfig::default(),
             redis_api: RedisApiConfig::default(),
+            raft_compaction_enabled: false,
         }
     }
 }
@@ -356,6 +362,9 @@ impl ServerConfig {
         if env::var("HYDRACACHE_REDIS_REDISS_ENABLED").as_deref() == Ok("true") {
             config.redis_api.rediss_enabled = true;
         }
+        if env::var("HYDRACACHE_RAFT_COMPACTION").as_deref() == Ok("true") {
+            config.raft_compaction_enabled = true;
+        }
         config.validate()?;
         Ok(config)
     }
@@ -378,6 +387,9 @@ impl ServerConfig {
         }
         if matches!(self.role, ServerRole::Member) && self.storage_dir.is_none() {
             return Err(ServerConfigError::MissingStorageDir);
+        }
+        if self.raft_compaction_enabled && !matches!(self.role, ServerRole::Member) {
+            return Err(ServerConfigError::RaftCompactionRequiresMember);
         }
         if matches!(self.role, ServerRole::Member | ServerRole::Client) && self.seeds.is_empty() {
             return Err(ServerConfigError::MissingSeeds);
@@ -538,6 +550,9 @@ pub enum ServerConfigError {
     /// Member mode requires durable state.
     #[error("member role requires storage_dir")]
     MissingStorageDir,
+    /// The disk-backed compaction seam is only valid for durable members.
+    #[error("raft compaction control requires role=member")]
+    RaftCompactionRequiresMember,
     /// Member/client mode requires seeds.
     #[error("member/client role requires at least one seed")]
     MissingSeeds,

@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "release": "0.66.0",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {
+        "file": "crates/hydracache-cluster-raft/tests/compaction_seam.rs",
+        "function": "compaction_seam_snapshots_exactly_current_applied_progress"
+      },
+      "canary": {
+        "file": "crates/hydracache-cluster-raft/tests/compaction_seam.rs",
+        "function": "canary_compaction_seam_leaks_into_default_release_path"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "hydracache-cluster-raft",
+          "--test",
+          "compaction_seam",
+          "--locked",
+          "compaction_seam_snapshots_exactly_current_applied_progress",
+          "--",
+          "--nocapture"
+        ],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": [
+          "test",
+          "-p",
+          "hydracache-cluster-raft",
+          "--test",
+          "compaction_seam",
+          "--locked",
+          "canary_compaction_seam_leaks_into_default_release_path",
+          "--",
+          "--nocapture"
+        ],
+        "env": {
+          "HYDRACACHE_CANARY_DEFECT": "W0"
+        },
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.66-W0",
+      "expected_failure": "HC-CANARY-RED:W0",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": [
+        "target/release-evidence/canaries/0.66-W0.json"
+      ],
+      "red_evidence": "The W0 dynamic canary must prove that the off-by-default Raft compaction control cannot silently become active in the default release path."
+    }
+  ]
+}

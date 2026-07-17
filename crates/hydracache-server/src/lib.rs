@@ -17,7 +17,8 @@ pub mod upgrade;
 pub use admin_http::{
     AdminHttpError, AdminHttpSurface, ADMIN_ACTUATOR_PATH, ADMIN_BACKUP_PATH,
     ADMIN_CLUSTER_OVERVIEW_PATH, ADMIN_CONSOLE_PATH, ADMIN_DRAIN_PATH, ADMIN_HEALTHZ_PATH,
-    ADMIN_METRICS_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH, ADMIN_STATUS_PATH,
+    ADMIN_METRICS_PATH, ADMIN_RAFT_COMPACTION_PATH, ADMIN_READYZ_PATH, ADMIN_RESHARD_PATH,
+    ADMIN_STATUS_PATH,
 };
 pub use bootstrap::{
     RedisSurfaceDrain, ServerAdminAction, ServerAdminActionError, ServerAdminStatus, ServerHealth,
@@ -25,8 +26,8 @@ pub use bootstrap::{
 };
 pub use cluster_status::{
     ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle,
-    LiveClusterStatus, MemberRole, MemberStatus, ModeledClusterStatus, Reachability, ReshardPhase,
-    StatusSource,
+    LiveClusterStatus, MemberRole, MemberStatus, ModeledClusterStatus, RaftCompactionError,
+    RaftCompactionStatus, Reachability, ReshardPhase, StatusSource,
 };
 pub use config::{
     AdminApiConfig, BackupConfig, ClientApiConfig, ClusterAuthConfig, ClusterStartMode,

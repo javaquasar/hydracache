@@ -160,7 +160,7 @@ pub fn build_report(
     let gates = gated_tests::load_registry(root)?;
     let fast_suites = fast_suite::load_registry(root)?;
     let canary_registry = canary_check::load_registry_for_release(root, release)?;
-    let canary_receipts = canary_sweep::load_receipts(root)?;
+    let canary_receipts = canary_sweep::load_receipts_for_release(root, &definition.version)?;
     let canary_release_problem = dynamic_canary_release_problem(
         manifest.canary_policy,
         &canary_registry.release,
@@ -814,23 +814,14 @@ fn template_manifest(
     root: &Path,
     definition: &ReleaseDefinition,
 ) -> Result<EvidenceManifest, Box<dyn Error>> {
-    #[derive(Deserialize)]
-    struct CanaryRegistry {
-        entries: Vec<CanaryEntry>,
+    let canaries = canary_check::load_registry_for_release(root, &definition.version)?;
+    if normalize_release(&canaries.release) != normalize_release(&definition.version) {
+        return Err(format!(
+            "canary registry release {} does not match template release {}",
+            canaries.release, definition.version
+        )
+        .into());
     }
-    #[derive(Deserialize)]
-    struct CanaryEntry {
-        w_item: String,
-        guard: FunctionRef,
-    }
-    #[derive(Deserialize)]
-    struct FunctionRef {
-        file: String,
-        function: String,
-    }
-    let canaries: CanaryRegistry = serde_json::from_str(&fs::read_to_string(
-        root.join("docs/testing/canary-registry.json"),
-    )?)?;
     let by_id: BTreeMap<_, _> = canaries
         .entries
         .into_iter()
@@ -841,6 +832,20 @@ fn template_manifest(
         .as_ref()
         .map(|manifest| manifest.canary_policy)
         .unwrap_or_default();
+    let dynamic_canary_work_items = existing_manifest.as_ref().map_or_else(
+        || {
+            if matches!(
+                canary_policy,
+                CanaryPolicy::DynamicRegistry
+                    | CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+            ) {
+                by_id.keys().cloned().collect()
+            } else {
+                Vec::new()
+            }
+        },
+        |manifest| manifest.dynamic_canary_work_items.clone(),
+    );
     let existing: BTreeMap<_, _> = existing_manifest
         .map(|manifest| {
             manifest
@@ -876,12 +881,16 @@ fn template_manifest(
                 required_artifacts: current
                     .map(|item| item.required_artifacts.clone())
                     .unwrap_or_default(),
-                fast_gate_ids: fast_suites
-                    .suite
-                    .iter()
-                    .filter(|suite| suite.work_items.contains(id))
-                    .map(|suite| suite.id.clone())
-                    .collect(),
+                fast_gate_ids: current
+                    .map(|item| item.fast_gate_ids.clone())
+                    .unwrap_or_else(|| {
+                        fast_suites
+                            .suite
+                            .iter()
+                            .filter(|suite| suite.work_items.contains(id))
+                            .map(|suite| suite.id.clone())
+                            .collect()
+                    }),
                 gated_gate_ids: current
                     .map(|item| item.gated_gate_ids.clone())
                     .unwrap_or_default(),
@@ -894,7 +903,7 @@ fn template_manifest(
         release: definition.version.clone(),
         plan: definition.plan.clone(),
         canary_policy,
-        dynamic_canary_work_items: Vec::new(),
+        dynamic_canary_work_items,
         work_item,
     })
 }

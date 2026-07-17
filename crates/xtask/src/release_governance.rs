@@ -79,7 +79,7 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
 
     report.problems.extend(prefix(
         "canary-check",
-        canary_check::check_canary_registry(root)?,
+        canary_check::check_canary_registry_for_release(root, release)?,
     ));
     report.completed_checks += 1;
 
@@ -122,7 +122,7 @@ pub fn check(root: &Path, release: &str) -> Result<GovernanceReport, Box<dyn Err
     let workflow = fs::read_to_string(root.join(".github/workflows/ci.yml"))?;
     report
         .problems
-        .extend(release_execution_wiring_problems(&workflow)?);
+        .extend(release_execution_wiring_problems(&workflow, release)?);
     report.completed_checks += 1;
     for required in [
         "canary-sweep --release 0.64 --tier fast",
@@ -222,10 +222,17 @@ pub fn post_publish_contract_problems(workflow: &str, fixture: &str) -> Vec<Stri
     problems
 }
 
-pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
+pub fn release_execution_wiring_problems(
+    text: &str,
+    requested_release: &str,
+) -> Result<Vec<String>, Box<dyn Error>> {
     let workflow = parse_workflow(text)?;
     let mut problems = Vec::new();
     problems.extend(release_history_checkout_problems(text)?);
+    problems.extend(release_scoped_fast_wiring_problems(
+        &workflow,
+        requested_release,
+    ));
     for (job, required_steps) in [
         (
             "rust",
@@ -293,7 +300,6 @@ pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.rejoin-after-compaction",
         "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults",
         "evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e",
-        "release-governance-check --release 0.65",
     ] {
         if !text.contains(required) {
             problems.push(format!("release execution matrix is missing `{required}`"));
@@ -301,6 +307,111 @@ pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
     }
     problems.extend(fuzz_nightly_wiring_problems(text));
     Ok(problems)
+}
+
+fn release_scoped_fast_wiring_problems(
+    workflow: &WorkflowShape,
+    requested_release: &str,
+) -> Vec<String> {
+    let release = normalize_release(requested_release);
+    let mut problems = Vec::new();
+    for (step, command) in [
+        (
+            "Canary completeness",
+            format!("cargo run -p xtask --locked -- canary-check --release {release}"),
+        ),
+        (
+            "Canary completeness",
+            format!("cargo run -p xtask --locked -- canary-sweep --release {release} --tier fast"),
+        ),
+    ] {
+        let wired = workflow
+            .step_runs
+            .get("rust")
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.lines().any(|line| line.trim() == command));
+        if !wired {
+            problems.push(format!(
+                "release {release} fast job step {step:?} is missing exact command `{command}`"
+            ));
+        }
+    }
+    problems.extend(candidate_receipt_wiring_problems(workflow, release));
+
+    if release == "0.66" {
+        const W0_STEP: &str = "Raft compaction control 0.66";
+        const W0_COMMANDS: &str = concat!(
+            "cargo test -p hydracache-cluster-raft --test compaction_seam --locked\n",
+            "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.raft-sled-snapshot\n",
+            "cargo test -p hydracache-server compaction --locked"
+        );
+        let exact_w0_step = workflow
+            .step_runs
+            .get("rust")
+            .and_then(|steps| steps.get(W0_STEP))
+            .is_some_and(|run| run.trim() == W0_COMMANDS);
+        if !exact_w0_step {
+            problems.push(format!(
+                "release 0.66 fast job must contain exact {W0_STEP:?} commands for the default, receipt-bound Sled, and server compaction proofs"
+            ));
+        }
+    }
+    problems
+}
+
+fn candidate_receipt_wiring_problems(
+    workflow: &WorkflowShape,
+    requested_release: &str,
+) -> Vec<String> {
+    const DEFAULT_RELEASE: &str = "0.66";
+    const RELEASE_ENV: &str = "HYDRACACHE_CANDIDATE_RELEASE";
+    const RELEASE_ENV_BINDING: &str = "${{ inputs.candidate_release || '0.66' }}";
+    const FAST_RECEIPT: &str = "cargo run -p xtask --locked -- evidence-run --release \"$HYDRACACHE_CANDIDATE_RELEASE\" --gate fast.workspace-nextest";
+    const GOVERNANCE: &str = "cargo run -p xtask --locked -- release-governance-check --release \"$HYDRACACHE_CANDIDATE_RELEASE\"";
+    const MANUAL_RECEIPT: &str = r#"cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}""#;
+
+    let mut problems = Vec::new();
+    if workflow.candidate_release_default.as_deref() != Some(DEFAULT_RELEASE) {
+        problems.push(format!(
+            "release {requested_release} candidate receipt wiring requires workflow_dispatch input candidate_release with default {DEFAULT_RELEASE}"
+        ));
+    }
+    if workflow.candidate_release_env.as_deref() != Some(RELEASE_ENV_BINDING) {
+        problems.push(format!(
+            "release {requested_release} candidate receipt wiring requires global {RELEASE_ENV} to equal `{RELEASE_ENV_BINDING}`"
+        ));
+    }
+    for (job, step, command, proof) in [
+        ("rust", "Test", FAST_RECEIPT, "fast workspace receipt"),
+        (
+            "rust",
+            "Release governance",
+            GOVERNANCE,
+            "candidate governance",
+        ),
+        (
+            "gated-proof-registry",
+            "Run registered gated proofs",
+            MANUAL_RECEIPT,
+            "manually dispatched gate receipt",
+        ),
+    ] {
+        let exact = workflow
+            .step_runs
+            .get(job)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == command);
+        if !exact {
+            problems.push(format!(
+                "release {requested_release} {proof} must use exact candidate binding `{command}`"
+            ));
+        }
+    }
+    problems
+}
+
+fn normalize_release(release: &str) -> &str {
+    release.strip_suffix(".0").unwrap_or(release)
 }
 
 pub fn release_history_checkout_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
@@ -416,14 +527,34 @@ struct WorkflowShape {
     jobs: BTreeMap<String, BTreeSet<String>>,
     conditions: BTreeMap<String, String>,
     step_runs: BTreeMap<String, BTreeMap<String, String>>,
+    candidate_release_default: Option<String>,
+    candidate_release_env: Option<String>,
 }
 
 fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
     let root: Value = serde_yaml::from_str(text)?;
-    let jobs = mapping_value(root.as_mapping(), "jobs")
+    let root_mapping = root.as_mapping().ok_or("workflow root is not a mapping")?;
+    let jobs = mapping_value(Some(root_mapping), "jobs")
         .and_then(Value::as_mapping)
         .ok_or("workflow has no jobs mapping")?;
     let mut shape = WorkflowShape::default();
+    let triggers = mapping_value(Some(root_mapping), "on")
+        .or_else(|| root_mapping.get(Value::Bool(true)))
+        .and_then(Value::as_mapping);
+    shape.candidate_release_default = mapping_value(triggers, "workflow_dispatch")
+        .and_then(Value::as_mapping)
+        .and_then(|dispatch| mapping_value(Some(dispatch), "inputs"))
+        .and_then(Value::as_mapping)
+        .and_then(|inputs| mapping_value(Some(inputs), "candidate_release"))
+        .and_then(Value::as_mapping)
+        .and_then(|candidate| mapping_value(Some(candidate), "default"))
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned);
+    shape.candidate_release_env = mapping_value(Some(root_mapping), "env")
+        .and_then(Value::as_mapping)
+        .and_then(|env| mapping_value(Some(env), "HYDRACACHE_CANDIDATE_RELEASE"))
+        .and_then(Value::as_str)
+        .map(ToOwned::to_owned);
     for (job_id, job) in jobs {
         let Some(job_id) = job_id.as_str() else {
             continue;

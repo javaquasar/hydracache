@@ -12,8 +12,9 @@ use std::sync::Arc;
 use thiserror::Error;
 
 use crate::cluster_status::{
-    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, LiveClusterStatus, MemberRole,
-    ModeledClusterStatus, Reachability, ReshardPhase, StatusSource,
+    ClusterStatus, ClusterStatusProvider, ClusterStatusRuntime, GridControlPlaneHandle,
+    LiveClusterStatus, MemberRole, ModeledClusterStatus, RaftCompactionError, RaftCompactionStatus,
+    Reachability, ReshardPhase, StatusSource,
 };
 use crate::config::{ServerConfig, ServerConfigError, ServerRole};
 use crate::redis_tcp::{RedisTlsAcceptor, RedisTlsError};
@@ -225,6 +226,9 @@ pub enum ServerAdminActionError {
     /// Backup cannot run without configured backup support.
     #[error("backup admin action requires backup.enabled and backup.location")]
     BackupDisabled,
+    /// The live grid rejected a Raft compaction request.
+    #[error(transparent)]
+    RaftCompaction(#[from] RaftCompactionError),
 }
 
 /// Standalone server runtime.
@@ -243,6 +247,7 @@ pub struct ServerRuntime {
     redis_listener_config: Option<RedisListenerConfig>,
     redis_surface: Option<RedisSurfaceRuntime>,
     cluster_status: Arc<dyn ClusterStatusProvider>,
+    grid_control: Option<Arc<dyn GridControlPlaneHandle>>,
     observability: ServerObservabilityModel,
     last_client_surface_drain: Option<ClientSurfaceDrain>,
     last_redis_surface_drain: Option<RedisSurfaceDrain>,
@@ -253,16 +258,25 @@ impl ServerRuntime {
     /// Validate config and construct a runtime.
     pub fn new(config: ServerConfig) -> Result<Self, ServerConfigError> {
         config.validate()?;
-        let (cache, cluster_status): (HydraCache, Arc<dyn ClusterStatusProvider>) =
-            match config.role {
-                ServerRole::Member => {
-                    let (cache, grid) = crate::grid_host::build_member(&config)?;
-                    (cache, Arc::new(LiveClusterStatus::new(grid)))
-                }
-                ServerRole::Local | ServerRole::Client => {
-                    (HydraCache::local().build(), Arc::new(ModeledClusterStatus))
-                }
-            };
+        let (cache, cluster_status, grid_control): (
+            HydraCache,
+            Arc<dyn ClusterStatusProvider>,
+            Option<Arc<dyn GridControlPlaneHandle>>,
+        ) = match config.role {
+            ServerRole::Member => {
+                let (cache, grid) = crate::grid_host::build_member(&config)?;
+                (
+                    cache,
+                    Arc::new(LiveClusterStatus::new(Arc::clone(&grid))),
+                    Some(grid),
+                )
+            }
+            ServerRole::Local | ServerRole::Client => (
+                HydraCache::local().build(),
+                Arc::new(ModeledClusterStatus),
+                None,
+            ),
+        };
         let client_surface = if config.client_api.enabled {
             Some(
                 ClientSurfaceRuntime::new(config.client_api.limits)
@@ -308,6 +322,7 @@ impl ServerRuntime {
             redis_listener_config,
             redis_surface,
             cluster_status,
+            grid_control,
             observability: ServerObservabilityModel::default(),
             last_client_surface_drain: None,
             last_redis_surface_drain: None,
@@ -580,6 +595,29 @@ impl ServerRuntime {
             reshard_phase: status.reshard_phase.to_string(),
             draining: status.draining,
         }
+    }
+
+    /// Return current disk-backed Raft compaction progress without mutating it.
+    pub fn raft_compaction_status(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        self.grid_control.as_ref().map_or_else(
+            || Ok(RaftCompactionStatus::unavailable()),
+            |grid| grid.raft_compaction_status(),
+        )
+    }
+
+    /// Explicitly compact the durable Raft log at current applied progress.
+    pub fn request_raft_compaction(&self) -> Result<RaftCompactionStatus, ServerAdminActionError> {
+        if !self.can_serve() {
+            return Err(ServerAdminActionError::NotReady("raft compaction"));
+        }
+        if !matches!(self.config.role, ServerRole::Member) {
+            return Err(ServerAdminActionError::RequiresMember("raft compaction"));
+        }
+        self.grid_control
+            .as_ref()
+            .ok_or(RaftCompactionError::Unavailable)?
+            .compact_raft_log_at_applied()
+            .map_err(ServerAdminActionError::from)
     }
 
     /// Build a metrics registry snapshot for the admin surface.

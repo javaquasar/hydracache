@@ -78,7 +78,7 @@ HYDRACACHE_DETERMINISM_EVIDENCE = "target/test-evidence/0.64/nemesis-determinism
 
 [[suite]]
 id = "fast.raft-sled-snapshot"
-work_items = ["W9", "W31"]
+work_items = ["W0", "W9", "W31"]
 timeout_seconds = 180
 budget_seconds = 120
 deterministic = false

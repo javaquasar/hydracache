@@ -1,0 +1,207 @@
+schema_version = 1
+release = "0.66.0"
+plan = "docs/plans/V0_66_CLUSTER_REAL_PROCESS_AND_OPERATIONAL_HARDENING_PLAN.md"
+canary_policy = "dynamic_registry"
+dynamic_canary_work_items = ["W0"]
+
+[[work_item]]
+id = "W0"
+required_sources = [
+    "crates/hydracache-cluster-raft/src/lib.rs",
+    "crates/hydracache-cluster-raft/src/log_store.rs",
+    "crates/hydracache-cluster-raft/tests/compaction_seam.rs",
+    "crates/hydracache-server/src/admin_http.rs",
+    "crates/hydracache-server/src/bootstrap.rs",
+    "crates/hydracache-server/src/cluster_status.rs",
+    "crates/hydracache-server/src/config.rs",
+    "crates/hydracache-server/src/grid_host.rs",
+    "crates/hydracache-server/tests/admin_http.rs",
+]
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest", "fast.raft-sled-snapshot"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compaction_seam.rs"
+function = "compaction_seam_rejects_an_index_past_applied_progress"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compaction_seam.rs"
+function = "compaction_seam_rejects_before_any_entry_is_applied"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compaction_seam.rs"
+function = "compaction_seam_snapshots_exactly_current_applied_progress"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compaction_seam.rs"
+function = "compaction_seam_sled_restart_restores_snapshot_before_retained_tail"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compaction_seam.rs"
+function = "compaction_seam_sled_restart_applies_newer_retained_tail_after_snapshot_prefix"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cluster-raft/tests/compaction_seam.rs"
+function = "compaction_seam_recovery_applies_committed_confchange_past_persisted_applied"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/admin_http.rs"
+function = "raft_compaction_seam_is_observable_but_inert_by_default"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/admin_http.rs"
+function = "explicitly_enabled_raft_compaction_seam_compacts_at_applied_progress"
+
+[[work_item]]
+id = "W1"
+required_sources = ["crates/hydracache-server/tests/rejoin_after_compaction_process.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W2"
+required_sources = ["crates/hydracache-server/tests/nemesis_process.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W3"
+required_sources = ["crates/hydracache-server/tests/membership_under_load_process.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W4"
+required_sources = ["crates/hydracache-server/tests/backup_authority_boundary.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W5"
+required_sources = [
+    "crates/hydracache-server/tests/io_chaos_process.rs",
+    "crates/hydracache-operator/tests/soak_kind.rs",
+]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W6"
+required_sources = ["crates/hydracache-server/tests/rolling_upgrade_process.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W7"
+required_sources = ["crates/hydracache-server/tests/external_control_plane_history.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W8"
+required_sources = [
+    "crates/hydracache-cluster-testkit/src/reference_model.rs",
+    "crates/hydracache-cluster-raft/tests/differential_model.rs",
+    "crates/hydracache-server/tests/differential_model_process.rs",
+]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W9"
+required_sources = [
+    "fuzz/fuzz_targets/raft_wire_frame.rs",
+    "crates/hydracache-server/tests/raft_wire_socket_corpus.rs",
+]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W10"
+required_sources = [
+    "crates/hydracache-server/tests/scheduler_tick_process.rs",
+    "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs",
+]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W11"
+required_sources = ["crates/hydracache-operator/tests/scale_chaos_kind.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W12"
+required_sources = ["crates/hydracache-server/tests/snapshot_transfer_resource_budget.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W13"
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/canary_check.rs",
+    "crates/xtask/src/release_evidence.rs",
+    "crates/xtask/src/release_governance.rs",
+    "crates/xtask/tests/canary_check.rs",
+    "docs/GATES.md",
+    "docs/TESTING.md",
+    "docs/plans/INDEX.md",
+    "docs/plans/releases.toml",
+    "docs/releases/0.66.0.md",
+    "docs/testing/canary-registry-0.66.json",
+]
+required_artifacts = [
+    "docs/testing/canary-registry-0.66.json",
+    "docs/testing/release-evidence/0.66.toml",
+]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "requested_release_does_not_borrow_an_older_canary_registry"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/canary_check.rs"
+function = "requested_release_without_work_items_is_rejected_before_canary_evidence"

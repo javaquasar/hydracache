@@ -81,6 +81,9 @@ pub trait RaftLogStore: Storage + Clone + Send + Sync + 'static {
     /// Mark entries through `index` as applied.
     fn mark_applied(&self, index: u64);
 
+    /// Return the last durably applied index used for restart recovery.
+    fn applied_index(&self) -> RaftStoreResult<u64>;
+
     /// Update the persisted commit index after raft light-ready advance.
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
         let mut state = self.initial_state().map_err(RaftStoreError::from)?;
@@ -389,6 +392,10 @@ impl RaftLogStore for InMemoryRaftLogStore {
         Self::mark_applied(self, index);
     }
 
+    fn applied_index(&self) -> RaftStoreResult<u64> {
+        Ok(Self::applied_index(self))
+    }
+
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
         Self::set_commit(self, commit);
         Ok(())
@@ -594,6 +601,10 @@ impl RaftLogStore for DurableRaftLogStore {
 
     fn mark_applied(&self, index: u64) {
         Self::mark_applied(self, index);
+    }
+
+    fn applied_index(&self) -> RaftStoreResult<u64> {
+        Ok(self.inner.applied_index())
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
@@ -977,6 +988,10 @@ impl RaftLogStore for SledRaftLogStore {
         self.inner.mark_applied(index);
         let _ = self.db.insert(SLED_APPLIED_KEY, encode_u64(index).to_vec());
         let _ = self.db.flush();
+    }
+
+    fn applied_index(&self) -> RaftStoreResult<u64> {
+        Ok(self.inner.applied_index())
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {

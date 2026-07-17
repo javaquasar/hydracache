@@ -325,6 +325,23 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub last_result: Option<RaftCommandResult>,
 }
 
+/// Read-only durable-log progress around the server compaction seam.
+///
+/// A valid observation always has `snapshot_index <= applied_index`. The
+/// server uses this boundary to prove that an explicitly requested test/ops
+/// compaction never truncates unapplied Raft entries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RaftLogCompactionObservation {
+    /// Last metadata-log index applied to the local state machine.
+    pub applied_index: u64,
+    /// Index carried by the durable Raft snapshot, or zero before compaction.
+    pub snapshot_index: u64,
+    /// First log index still readable from the durable store.
+    pub first_log_index: u64,
+    /// Last log index known to the durable store.
+    pub last_log_index: u64,
+}
+
 /// Metadata command plus a stable idempotency key.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataCommandEnvelope {
@@ -464,7 +481,6 @@ struct RaftMetadataSnapshotPayload {
     commands: Vec<RaftMetadataCommandEnvelope>,
 }
 
-#[cfg(feature = "test-failpoints")]
 fn encode_metadata_snapshot_payload(snapshot: &RaftMetadataRuntimeExport) -> CacheResult<Vec<u8>> {
     let payload = RaftMetadataSnapshotPayload {
         format_version: RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION,
@@ -796,16 +812,29 @@ where
         let cluster_name = config.cluster_name.clone();
         let raft_node_id = config.raft_node_id;
         let initial_state = storage.initial_state().map_err(to_cache_error)?;
+        let persisted_applied_index = storage.applied_index().map_err(to_cache_error)?;
         let retained_entries = storage.retained_entries().map_err(to_cache_error)?;
-        let logger = Logger::root(slog::Discard, o!());
-        let mut raw_node =
-            RawNode::new(&config.raft_config(), storage, &logger).map_err(to_cache_error)?;
-        if config.auto_campaign {
-            raw_node.campaign().map_err(to_cache_error)?;
+        let durable_snapshot = storage.snapshot(0, raft_node_id).map_err(to_cache_error)?;
+        let snapshot_index = durable_snapshot.get_metadata().index;
+        let recovered_applied_index = persisted_applied_index.max(snapshot_index);
+        if recovered_applied_index > initial_state.hard_state.commit {
+            return Err(CacheError::Backend(format!(
+                "durable raft applied index {recovered_applied_index} is past committed index {}",
+                initial_state.hard_state.commit
+            )));
         }
+        let logger = Logger::root(slog::Discard, o!());
+        let mut raft_config = config.raft_config();
+        // Recovery below materializes the durable snapshot and only the normal
+        // entries known to have been applied before the crash. A committed tail
+        // beyond this persisted boundary must be returned by exactly one Ready
+        // so ConfChange entries are never skipped.
+        raft_config.applied = recovered_applied_index;
+        let raw_node = RawNode::new(&raft_config, storage, &logger).map_err(to_cache_error)?;
+        let auto_campaign = config.auto_campaign;
 
         let cluster = Arc::new(InMemoryCluster::new(cluster_name));
-        let mut state = RaftRuntimeState {
+        let state = RaftRuntimeState {
             cluster: cluster.clone(),
             raw_node,
             commands: Vec::new(),
@@ -817,7 +846,6 @@ where
             #[cfg(test)]
             fail_next_proposal: false,
         };
-        let _ = state.drain_ready()?;
 
         let runtime = Self {
             cluster,
@@ -825,7 +853,21 @@ where
             raft: Mutex::new(state),
             metadata_store,
         };
-        runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
+        runtime.restore_committed_state(
+            durable_snapshot,
+            retained_entries,
+            recovered_applied_index,
+        )?;
+        {
+            let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+            // Apply a committed-but-not-applied recovery tail before a new
+            // election can observe stale persisted configuration state.
+            let _ = state.drain_ready()?;
+            if auto_campaign {
+                state.raw_node.campaign().map_err(to_cache_error)?;
+                let _ = state.drain_ready()?;
+            }
+        }
         Ok(runtime)
     }
 
@@ -936,14 +978,33 @@ where
         state.drain_ready()
     }
 
-    /// Force a metadata snapshot at the current applied index for compaction
-    /// proof tests.
-    #[cfg(feature = "test-failpoints")]
-    pub fn compact_applied_log_to_snapshot_for_tests(&self) -> CacheResult<u64> {
+    /// Persist a metadata snapshot and compact the durable log at the current
+    /// applied index.
+    ///
+    /// This method deliberately does not accept an arbitrary index: the
+    /// runtime only owns a materialized state-machine image for its current
+    /// applied progress. Server callers must additionally guard this narrow
+    /// seam behind an explicit off-by-default operator/test control.
+    pub fn compact_applied_log_to_snapshot(&self) -> CacheResult<u64> {
         self.raft
             .lock()
             .expect("raft metadata state poisoned")
-            .compact_applied_log_to_snapshot_for_tests(self.raft_node_id)
+            .compact_applied_log_to_snapshot(self.raft_node_id)
+    }
+
+    /// Return durable-log progress used to observe compaction boundaries.
+    pub fn log_compaction_observation(&self) -> CacheResult<RaftLogCompactionObservation> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .log_compaction_observation(self.raft_node_id)
+    }
+
+    /// Backward-compatible failpoint-test alias for the production-neutral
+    /// compaction primitive.
+    #[cfg(feature = "test-failpoints")]
+    pub fn compact_applied_log_to_snapshot_for_tests(&self) -> CacheResult<u64> {
+        self.compact_applied_log_to_snapshot()
     }
 
     /// Return outbound messages captured while committing metadata commands.
@@ -1083,16 +1144,26 @@ where
         Ok(())
     }
 
-    fn restore_committed_entries(&self, entries: Vec<Entry>, commit_index: u64) -> CacheResult<()> {
+    fn restore_committed_state(
+        &self,
+        durable_snapshot: Snapshot,
+        entries: Vec<Entry>,
+        recovered_applied_index: u64,
+    ) -> CacheResult<()> {
         {
             let mut state = self.raft.lock().expect("raft metadata state poisoned");
             state.commands.clear();
             state.applied_command_ids.clear();
             state.results.clear();
             state.applied_index = 0;
+            if !durable_snapshot.data.is_empty() {
+                state.install_metadata_snapshot(&durable_snapshot)?;
+            }
         }
+        let snapshot_index = durable_snapshot.get_metadata().index;
         for entry in entries {
-            if entry.index > commit_index
+            if entry.index <= snapshot_index
+                || entry.index > recovered_applied_index
                 || entry.data.is_empty()
                 || entry.get_entry_type() != EntryType::EntryNormal
             {
@@ -1101,7 +1172,13 @@ where
             self.apply_recovered_envelope_at(decode_envelope(entry.data.as_ref())?, entry.index)?;
         }
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        state.applied_index = state.applied_index.max(commit_index);
+        state.applied_index = state.applied_index.max(recovered_applied_index);
+        state
+            .raw_node
+            .raft
+            .raft_log
+            .store
+            .mark_applied(state.applied_index);
         Ok(())
     }
 
@@ -1572,17 +1649,21 @@ where
         Ok(result)
     }
 
-    #[cfg(feature = "test-failpoints")]
-    fn compact_applied_log_to_snapshot_for_tests(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+    fn compact_applied_log_to_snapshot(&mut self, raft_node_id: u64) -> CacheResult<u64> {
         if self.applied_index == 0 {
             return Err(CacheError::Backend(
                 "cannot compact raft metadata log before any entry is applied".to_owned(),
             ));
         }
+        let commit_index = self.raw_node.raft.hard_state().commit;
+        if self.applied_index > commit_index {
+            return Err(CacheError::Backend(format!(
+                "cannot compact raft metadata log at applied index {} past committed index {commit_index}",
+                self.applied_index
+            )));
+        }
         let store = self.raw_node.raft.raft_log.store.clone();
-        let term = store
-            .term(self.applied_index)
-            .unwrap_or(self.raw_node.raft.term);
+        let term = store.term(self.applied_index).map_err(to_cache_error)?;
         let conf_state = store
             .initial_state()
             .map_err(to_cache_error)?
@@ -1603,6 +1684,31 @@ where
             .save_snapshot(&snapshot, usize::MAX)
             .map_err(to_cache_error)?;
         Ok(self.applied_index)
+    }
+
+    fn log_compaction_observation(
+        &self,
+        raft_node_id: u64,
+    ) -> CacheResult<RaftLogCompactionObservation> {
+        let store = self.raw_node.raft.raft_log.store.clone();
+        let snapshot_index = store
+            .snapshot(0, raft_node_id)
+            .map_err(to_cache_error)?
+            .get_metadata()
+            .index;
+        let observation = RaftLogCompactionObservation {
+            applied_index: self.applied_index,
+            snapshot_index,
+            first_log_index: store.first_index().map_err(to_cache_error)?,
+            last_log_index: store.last_index().map_err(to_cache_error)?,
+        };
+        if observation.snapshot_index > observation.applied_index {
+            return Err(CacheError::Backend(format!(
+                "durable raft snapshot index {} is past applied index {}",
+                observation.snapshot_index, observation.applied_index
+            )));
+        }
+        Ok(observation)
     }
 
     fn drain_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
@@ -1748,6 +1854,13 @@ where
             ))
         });
         let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
+        if export.applied_index != snapshot.get_metadata().index {
+            return Err(CacheError::Backend(format!(
+                "raft metadata snapshot payload index {} does not match raft snapshot index {}",
+                export.applied_index,
+                snapshot.get_metadata().index
+            )));
+        }
         if export.cluster_name != self.cluster.name() {
             return Err(CacheError::Backend(format!(
                 "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
