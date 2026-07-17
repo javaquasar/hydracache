@@ -1,5 +1,6 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use hydracache_operator::controller::READY_PHASE;
@@ -8,7 +9,9 @@ use hydracache_operator::resources::{
     headless_service_name, APP_LABEL, COMPONENT_LABEL, FIELD_MANAGER, INSTANCE_LABEL,
     MANAGED_BY_LABEL,
 };
-use hydracache_operator::scale::{pod_name, quorum_for};
+use hydracache_operator::scale::{
+    plan_scale, pod_name, quorum_for, AdminAction, AdminStatus, ScaleObservation,
+};
 use k8s_openapi::api::{
     apps::v1::StatefulSet,
     core::v1::{Container, Pod, PodSpec},
@@ -20,6 +23,7 @@ use kube::{
     api::{ApiResource, DynamicObject, GroupVersionKind},
     discovery, Api,
 };
+use serde::Deserialize;
 use serde_json::{json, Value};
 
 const KIND_ENV: &str = "HYDRACACHE_OPERATOR_KIND";
@@ -29,6 +33,7 @@ const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
 const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
 const NETWORK_PROBE_IMAGE_ENV: &str = "HYDRACACHE_NETWORK_PROBE_IMAGE";
 const KIND_WAIT_ATTEMPTS: usize = 90;
+static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const NETWORK_POLICY_SKIP: &str =
     "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
 const IOCHAOS_SKIP: &str =
@@ -96,6 +101,15 @@ impl ChaosInjection {
     }
 }
 
+fn require_scale_partition_capability(injection: &ChaosInjection) -> Result<&'static str, String> {
+    match injection {
+        ChaosInjection::Applied(injector) => Ok(*injector),
+        ChaosInjection::Skipped(reason) => Err(format!(
+            "{KIND_ENV}=1 W11 scale-chaos lane requires an enforcing CNI: {reason}"
+        )),
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct SoakObservation {
     stage: &'static str,
@@ -151,6 +165,154 @@ impl CommittedWriteProbe {
             self.committed
         );
     }
+}
+
+/// Deterministic authority model paired with the production scale planner.
+///
+/// Kubernetes readiness and the committed Raft voter set deliberately remain
+/// separate: a crashed process stops running but remains a voter, while an
+/// explicit drain removes the voter only after the modeled membership commit.
+#[derive(Debug, Clone)]
+struct ScaleChaosModel {
+    running: BTreeSet<u32>,
+    voters: BTreeSet<u32>,
+    partitioned: BTreeSet<u32>,
+    committed_metadata: BTreeSet<String>,
+    applied_metadata: BTreeMap<u32, BTreeSet<String>>,
+}
+
+impl ScaleChaosModel {
+    fn with_replicas(replicas: u32) -> Self {
+        let voters = (0..replicas).collect::<BTreeSet<_>>();
+        Self {
+            running: voters.clone(),
+            voters,
+            partitioned: BTreeSet::new(),
+            committed_metadata: BTreeSet::new(),
+            applied_metadata: (0..replicas)
+                .map(|ordinal| (ordinal, BTreeSet::new()))
+                .collect(),
+        }
+    }
+
+    fn partition(&mut self, ordinal: u32) {
+        assert!(self.voters.contains(&ordinal));
+        self.partitioned.insert(ordinal);
+    }
+
+    fn heal(&mut self, ordinal: u32) {
+        assert!(self.partitioned.remove(&ordinal));
+        if self.running.contains(&ordinal) && self.voters.contains(&ordinal) {
+            self.applied_metadata
+                .insert(ordinal, self.committed_metadata.clone());
+        }
+    }
+
+    fn crash(&mut self, ordinal: u32) {
+        assert!(self.running.remove(&ordinal));
+    }
+
+    fn restart(&mut self, ordinal: u32) {
+        assert!(self.voters.contains(&ordinal));
+        self.running.insert(ordinal);
+        if !self.partitioned.contains(&ordinal) {
+            self.applied_metadata
+                .insert(ordinal, self.committed_metadata.clone());
+        }
+    }
+
+    fn add_voter(&mut self, ordinal: u32) {
+        assert!(self.voters.insert(ordinal));
+        self.running.insert(ordinal);
+        self.applied_metadata
+            .insert(ordinal, self.committed_metadata.clone());
+    }
+
+    fn drain(&mut self, ordinal: u32) {
+        assert!(self.running.remove(&ordinal));
+        assert!(self.voters.remove(&ordinal));
+        self.partitioned.remove(&ordinal);
+        self.applied_metadata.remove(&ordinal);
+    }
+
+    fn commit_metadata(&mut self, command_id: &str) {
+        let reachable = self
+            .voters
+            .iter()
+            .copied()
+            .filter(|ordinal| self.running.contains(ordinal) && !self.partitioned.contains(ordinal))
+            .collect::<Vec<_>>();
+        let required = quorum_for(self.voters.len() as u32) as usize;
+        assert!(
+            reachable.len() >= required,
+            "metadata command {command_id} had no quorum: reachable={} required={required}",
+            reachable.len()
+        );
+        assert!(
+            self.committed_metadata.insert(command_id.to_owned()),
+            "test schedule reused command id {command_id}"
+        );
+        for ordinal in reachable {
+            self.applied_metadata
+                .entry(ordinal)
+                .or_default()
+                .insert(command_id.to_owned());
+        }
+    }
+
+    fn assert_all_authoritative_voters_caught_up(&self) {
+        for ordinal in &self.voters {
+            if self.running.contains(ordinal) && !self.partitioned.contains(ordinal) {
+                assert_eq!(
+                    self.applied_metadata.get(ordinal),
+                    Some(&self.committed_metadata),
+                    "authoritative voter {ordinal} lost committed metadata"
+                );
+            }
+        }
+    }
+}
+
+fn scale_target(name: &str, replicas: u32) -> HydraCacheCluster {
+    let mut spec = sample_spec();
+    spec.replicas = replicas;
+    let mut cluster = HydraCacheCluster::new(name, spec);
+    cluster.metadata.namespace = Some("default".to_owned());
+    cluster.metadata.uid = Some(format!("{name}-uid"));
+    cluster.metadata.generation = Some(66);
+    cluster
+}
+
+fn scale_observation(
+    current_replicas: u32,
+    ready_replicas: u32,
+    members: u32,
+    voters: u32,
+) -> ScaleObservation {
+    ScaleObservation {
+        current_replicas,
+        ready_replicas,
+        previous_phase: None,
+        drain_requested_for: None,
+        drain_complete_for: None,
+        admin_status: Some(AdminStatus {
+            leader: Some("scale-chaos-0".to_owned()),
+            quorum_ok: true,
+            members,
+            voters,
+            reshard_phase: "idle".to_owned(),
+            draining: false,
+        }),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct ScaleChaosAdminStatus {
+    leader: Option<String>,
+    epoch: u64,
+    quorum_ok: bool,
+    members: u32,
+    voters: u32,
 }
 
 fn partition_policy_name(cluster: &str, ordinal: u32) -> String {
@@ -383,6 +545,89 @@ impl KindHarness {
             .success()
     }
 
+    async fn wait_scale_admin_status(
+        &self,
+        replicas: u32,
+        expected_voters: u32,
+        stage: &'static str,
+    ) -> ScaleChaosAdminStatus {
+        let sequence = SCALE_ADMIN_PROBE_SEQUENCE.fetch_add(1, Ordering::SeqCst);
+        let probe = self
+            .ensure_network_probe_pod(1_000_u32.saturating_add(sequence as u32))
+            .await
+            .unwrap_or_else(|error| panic!("W11 admin observation probe could not start: {error}"));
+        let mut latest = None;
+        for _ in 0..10 {
+            for ordinal in 0..replicas {
+                match self.scale_admin_status_from_probe(&probe, ordinal).await {
+                    Ok(status)
+                        if status.voters == expected_voters
+                            && status.members == expected_voters
+                            && status.quorum_ok
+                            && status.leader.is_some() =>
+                    {
+                        self.delete_network_probe_pod(&probe).await;
+                        return status;
+                    }
+                    Ok(status) => {
+                        latest = Some(format!(
+                            "{stage} has not converged to members/voters={expected_voters}: {status:?}"
+                        ));
+                    }
+                    Err(error) => latest = Some(error),
+                }
+            }
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+        self.delete_network_probe_pod(&probe).await;
+        panic!(
+            "{KIND_ENV}=1 W11 scale-chaos lane could not observe {stage} with members/voters={expected_voters}; latest={latest:?}"
+        );
+    }
+
+    async fn scale_admin_status_from_probe(
+        &self,
+        probe: &str,
+        target_ordinal: u32,
+    ) -> Result<ScaleChaosAdminStatus, String> {
+        let target = pod_name(&self.cluster, target_ordinal);
+        let url = format!(
+            "http://{}.{}:9091/admin/status",
+            target,
+            headless_service_name(&self.cluster)
+        );
+        let output = Command::new("kubectl")
+            .arg("-n")
+            .arg(&self.namespace)
+            .arg("exec")
+            .arg(probe)
+            .arg("--")
+            .arg("wget")
+            .arg("-qO-")
+            .arg("-T")
+            .arg("2")
+            .arg("--header")
+            .arg("x-hydracache-client-id: operator")
+            .arg("--header")
+            .arg("x-hydracache-tenant: system")
+            .arg("--header")
+            .arg("x-hydracache-admin: true")
+            .arg(&url)
+            .output()
+            .map_err(|error| {
+                format!("{KIND_ENV}=1 W11 scale-chaos lane requires kubectl: {error}")
+            })?;
+        if !output.status.success() {
+            return Err(format!(
+                "admin status probe for {target} failed: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            ));
+        }
+        serde_json::from_slice(&output.stdout).map_err(|error| {
+            format!("admin status probe for {target} returned invalid JSON: {error}")
+        })
+    }
+
     async fn ensure_network_probe_pod(&self, isolated_ordinal: u32) -> Result<String, String> {
         let name = format!("{}-netprobe-{}", self.cluster, isolated_ordinal);
         let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
@@ -582,6 +827,191 @@ fn rolling_chaos_schedule() -> Vec<ChaosFault> {
         ChaosFault::NetworkPartition { ordinal: 1 },
         ChaosFault::SlowDisk { ordinal: 2 },
     ]
+}
+
+#[test]
+fn replica_churn_under_partition_keeps_voters_and_committed_metadata() {
+    let mut model = ScaleChaosModel::with_replicas(3);
+    model.commit_metadata("metadata-before-partition");
+    model.partition(2);
+    model.commit_metadata("metadata-under-three-voter-partition");
+
+    let scale_up_target = scale_target("scale-chaos", 4);
+    let scale_up = plan_scale(&scale_up_target, &scale_observation(3, 2, 3, 3));
+    assert_eq!(scale_up.effective_replicas, 4);
+    assert_eq!(scale_up.conditions[0].reason, "ScaleUpCreatingPods");
+    assert!(scale_up.admin_actions.is_empty());
+
+    model.add_voter(3);
+    model.commit_metadata("metadata-after-scale-up");
+    assert_eq!(model.voters, BTreeSet::from([0, 1, 2, 3]));
+
+    let scale_down_target = scale_target("scale-chaos", 3);
+    let scale_down = plan_scale(&scale_down_target, &scale_observation(4, 4, 4, 4));
+    assert_eq!(scale_down.effective_replicas, 4);
+    assert_eq!(scale_down.conditions[0].reason, "DrainBeforeRemove");
+    assert_eq!(
+        scale_down.admin_actions,
+        vec![
+            AdminAction::Reshard { ordinal: 3 },
+            AdminAction::Drain { ordinal: 3 }
+        ]
+    );
+
+    model.drain(3);
+    model.commit_metadata("metadata-after-scale-down");
+    let mut drain_committed = scale_observation(4, 3, 3, 3);
+    drain_committed.drain_requested_for = Some("scale-chaos-3".to_owned());
+    let completed = plan_scale(&scale_down_target, &drain_committed);
+    assert_eq!(completed.effective_replicas, 3);
+    assert_eq!(completed.conditions[0].reason, "DrainComplete");
+
+    model.heal(2);
+    assert_eq!(model.voters, BTreeSet::from([0, 1, 2]));
+    assert_eq!(model.committed_metadata.len(), 4);
+    model.assert_all_authoritative_voters_caught_up();
+}
+
+#[test]
+fn drained_pod_leaves_voters_but_crashed_pod_does_not_implicitly_shrink() {
+    let mut model = ScaleChaosModel::with_replicas(3);
+    model.commit_metadata("metadata-before-crash");
+    model.crash(2);
+
+    let steady_target = scale_target("scale-chaos", 3);
+    let crash_observed = plan_scale(&steady_target, &scale_observation(3, 2, 3, 3));
+    assert_eq!(crash_observed.effective_replicas, 3);
+    assert_eq!(
+        crash_observed.conditions[0].reason,
+        "WaitingForReadyReplicas"
+    );
+    assert!(crash_observed.admin_actions.is_empty());
+    assert_eq!(
+        model.voters,
+        BTreeSet::from([0, 1, 2]),
+        "process crash must not be interpreted as committed voter removal"
+    );
+
+    model.restart(2);
+    model.commit_metadata("metadata-after-restart");
+    let scale_down_target = scale_target("scale-chaos", 2);
+    let drain = plan_scale(&scale_down_target, &scale_observation(3, 3, 3, 3));
+    assert_eq!(drain.conditions[0].reason, "DrainBeforeRemove");
+    assert_eq!(
+        drain.admin_actions,
+        vec![
+            AdminAction::Reshard { ordinal: 2 },
+            AdminAction::Drain { ordinal: 2 }
+        ]
+    );
+
+    model.drain(2);
+    let mut committed = scale_observation(3, 2, 2, 2);
+    committed.drain_requested_for = Some("scale-chaos-2".to_owned());
+    let completed = plan_scale(&scale_down_target, &committed);
+    assert_eq!(completed.effective_replicas, 2);
+    assert_eq!(completed.conditions[0].reason, "DrainComplete");
+    assert_eq!(model.voters, BTreeSet::from([0, 1]));
+    model.assert_all_authoritative_voters_caught_up();
+}
+
+#[test]
+fn canary_scale_chaos_accepts_a_ghost_voter() {
+    let mut model = ScaleChaosModel::with_replicas(3);
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W11") {
+        model.running.remove(&2);
+    } else {
+        model.drain(2);
+    }
+
+    assert!(
+        !model.voters.contains(&2),
+        "HC-CANARY-RED:W11 drained pod remained as a ghost voter"
+    );
+}
+
+#[test]
+fn scale_chaos_capability_rejects_a_non_enforcing_cni() {
+    let error = require_scale_partition_capability(&ChaosInjection::Skipped(
+        NETWORK_POLICY_SKIP.to_owned(),
+    ))
+    .unwrap_err();
+    assert!(error.contains(KIND_ENV));
+    assert!(error.contains("enforcing CNI"));
+    assert!(error.contains("NetworkPolicy"));
+}
+
+#[tokio::test]
+#[ignore = "kind/CNI-gated W11 lane: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
+async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
+    let Some(kind) =
+        KindHarness::try_start("operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch")
+            .await
+    else {
+        return;
+    };
+
+    let installed = kind.apply_cluster(soak_kind_spec(3)).await;
+    kind.wait_ready(installed.spec.replicas, "w11-install", 0)
+        .await;
+    let initial = kind.wait_scale_admin_status(3, 3, "w11-install").await;
+    assert_eq!(initial.members, 3);
+    assert_eq!(initial.voters, 3);
+    assert!(initial.quorum_ok);
+    assert!(initial.leader.is_some());
+
+    let fault = ChaosFault::NetworkPartition { ordinal: 2 };
+    let injection = kind.inject(fault).await;
+    let injector =
+        require_scale_partition_capability(&injection).unwrap_or_else(|error| panic!("{error}"));
+    eprintln!(
+        "HC-W11-CAPABILITY runtime=kubernetes cni_network_policy=enforced injector={injector}"
+    );
+
+    let scaled_up = kind.apply_cluster(soak_kind_spec(4)).await;
+    kind.wait_ready(scaled_up.spec.replicas, "w11-scale-up-partitioned", 1)
+        .await;
+    let after_scale_up = kind
+        .wait_scale_admin_status(4, 4, "w11-scale-up-partitioned")
+        .await;
+    assert_eq!(after_scale_up.members, 4);
+    assert_eq!(after_scale_up.voters, 4);
+    assert!(after_scale_up.quorum_ok);
+    assert!(after_scale_up.epoch > initial.epoch);
+
+    let scaled_down = kind.apply_cluster(soak_kind_spec(3)).await;
+    kind.wait_ready(scaled_down.spec.replicas, "w11-scale-down-partitioned", 2)
+        .await;
+    let after_scale_down = kind
+        .wait_scale_admin_status(3, 3, "w11-scale-down-partitioned")
+        .await;
+    assert_eq!(after_scale_down.members, 3);
+    assert_eq!(after_scale_down.voters, 3);
+    assert!(after_scale_down.quorum_ok);
+    assert!(
+        after_scale_down.epoch >= after_scale_up.epoch,
+        "committed membership metadata epoch regressed during churn"
+    );
+
+    kind.heal(fault, &injection).await;
+    kind.wait_ready(3, "w11-partition-healed", 2).await;
+    let healed = kind
+        .wait_scale_admin_status(3, 3, "w11-partition-healed")
+        .await;
+    assert_eq!(healed.voters, 3);
+    assert!(healed.epoch >= after_scale_down.epoch);
+
+    let crash = kind.inject(ChaosFault::PodCrash { ordinal: 2 }).await;
+    let recovered = kind.wait_ready(3, "w11-crash-recovered", 2).await;
+    recovered.assert_quorum();
+    let after_crash = kind
+        .wait_scale_admin_status(3, 3, "w11-crash-recovered")
+        .await;
+    assert_eq!(
+        after_crash.voters, 3,
+        "pod crash must not implicitly shrink the committed voter set"
+    );
+    kind.heal(ChaosFault::PodCrash { ordinal: 2 }, &crash).await;
 }
 
 #[tokio::test]

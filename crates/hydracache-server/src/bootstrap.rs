@@ -69,6 +69,8 @@ pub struct ServerAdminStatus {
     pub leader: Option<String>,
     /// Current control-plane term if known.
     pub term: u64,
+    /// Current committed membership authority epoch.
+    pub epoch: u64,
     /// Whether the runtime believes quorum is available.
     pub quorum_ok: bool,
     /// Observed member count.
@@ -589,6 +591,7 @@ impl ServerRuntime {
             source: status.source,
             leader: status.leader,
             term: status.term,
+            epoch: status.epoch,
             quorum_ok: status.quorum_ok,
             members: status.members.len() as u32,
             voters: status.voters,

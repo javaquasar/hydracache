@@ -159,6 +159,7 @@ mod admin_http {
         assert_eq!(body["source"], "live");
         assert!(body["leader"].as_str().unwrap().starts_with("member-"));
         assert_eq!(body["term"], 1);
+        assert_eq!(body["epoch"], 1);
         assert_eq!(body["quorum_ok"], true);
         assert_eq!(body["members"], 1);
         assert_eq!(body["reshard_phase"], "idle");

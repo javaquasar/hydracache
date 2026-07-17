@@ -100,6 +100,7 @@ mod cluster_status {
         assert_eq!(status.source, StatusSource::Live);
         assert_eq!(status.leader.as_deref(), Some("node-2"));
         assert_eq!(status.term, 7);
+        assert_eq!(status.epoch, 42);
         assert_eq!(status.members, 3);
         assert_eq!(status.voters, 3);
         assert_eq!(status.reshard_phase, "moving");
