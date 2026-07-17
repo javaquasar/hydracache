@@ -671,6 +671,80 @@ where
     Ok(())
 }
 
+/// Assert that a backwards wall-clock sample neither extends a local TTL nor
+/// admits a second lock token before the original deadline.
+///
+/// This is deliberately a per-backend contract. It does not claim a cluster
+/// lease or cross-daemon clock authority.
+pub async fn assert_local_ttl_and_lock_contracts_survive_backward_wall_clock_step<F>(
+    factory: &F,
+) -> Result<()>
+where
+    F: ClientSurfaceBackendFactory + ?Sized,
+{
+    let config = ClientSurfaceConformanceConfig::default();
+    let initial_now_ms = config.now_ms;
+    let backend = fresh(factory, config).await?;
+    let identity = identity_a();
+
+    ensure!(
+        conditional_put(
+            backend.as_ref(),
+            &identity,
+            "rollback-lock",
+            b"owner-a",
+            Some(100),
+            ConditionalPutCondition::IfAbsent,
+        )
+        .await?
+    );
+    backend.advance_time(40).await?;
+    ensure!(
+        ttl(backend.as_ref(), &identity, "rollback-lock").await?
+            == TtlState::ExpiresIn { ttl_ms: 60 }
+    );
+
+    backend
+        .freeze_time(initial_now_ms.saturating_sub(10_000))
+        .await?;
+    ensure!(get(backend.as_ref(), &identity, "rollback-lock").await? == Some(b"owner-a".to_vec()));
+    ensure!(
+        ttl(backend.as_ref(), &identity, "rollback-lock").await?
+            == TtlState::ExpiresIn { ttl_ms: 60 },
+        "a backwards wall-clock sample must not extend the remaining local TTL"
+    );
+    ensure!(
+        !conditional_put(
+            backend.as_ref(),
+            &identity,
+            "rollback-lock",
+            b"owner-b",
+            Some(100),
+            ConditionalPutCondition::IfAbsent,
+        )
+        .await?,
+        "wall-clock rollback admitted a second local lock owner"
+    );
+
+    backend.advance_time(60).await?;
+    ensure!(get(backend.as_ref(), &identity, "rollback-lock")
+        .await?
+        .is_none());
+    ensure!(
+        conditional_put(
+            backend.as_ref(),
+            &identity,
+            "rollback-lock",
+            b"owner-b",
+            None,
+            ConditionalPutCondition::IfAbsent,
+        )
+        .await?,
+        "the original owner must expire at its monotonic local deadline"
+    );
+    Ok(())
+}
+
 /// Assert that reads never expose expired entries.
 pub async fn assert_expired_key_absent_for_get_and_batch_get<F>(factory: &F) -> Result<()>
 where

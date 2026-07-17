@@ -358,6 +358,7 @@ pub struct ClientSurfaceState {
     next_message_id: AtomicU64,
     store: Mutex<BTreeMap<StoreKey, StoredValue>>,
     cache_now_ms_for_tests: Mutex<Option<u64>>,
+    cache_time_floor_ms: AtomicU64,
     events: Mutex<Vec<InvalidationEvent>>,
     idempotency_keys: Mutex<BTreeSet<IdempotencyKey>>,
     lock_service: Mutex<ClientLockService>,
@@ -381,6 +382,7 @@ impl ClientSurfaceState {
             next_message_id: AtomicU64::new(1),
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
+            cache_time_floor_ms: AtomicU64::new(0),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
             lock_service: Mutex::new(ClientLockService::new()),
@@ -407,6 +409,7 @@ impl ClientSurfaceState {
             next_message_id: AtomicU64::new(1),
             store: Mutex::new(BTreeMap::new()),
             cache_now_ms_for_tests: Mutex::new(None),
+            cache_time_floor_ms: AtomicU64::new(0),
             events: Mutex::new(Vec::new()),
             idempotency_keys: Mutex::new(BTreeSet::new()),
             lock_service: Mutex::new(ClientLockService::new()),
@@ -464,6 +467,8 @@ impl ClientSurfaceState {
 
     /// Override the modeled cache wall clock for deterministic expiry tests.
     pub fn set_cache_time_for_tests(&self, now_ms: Option<u64>) {
+        let now_ms =
+            now_ms.map(|candidate| candidate.max(self.cache_time_floor_ms.load(Ordering::SeqCst)));
         *self
             .cache_now_ms_for_tests
             .lock()
@@ -589,10 +594,15 @@ impl ClientSurfaceState {
     }
 
     fn now_ms(&self) -> u64 {
-        self.cache_now_ms_for_tests
+        let candidate = self
+            .cache_now_ms_for_tests
             .lock()
             .expect("cache clock mutex")
-            .unwrap_or_else(system_time_millis)
+            .unwrap_or_else(system_time_millis);
+        let previous = self
+            .cache_time_floor_ms
+            .fetch_max(candidate, Ordering::SeqCst);
+        candidate.max(previous)
     }
 
     fn begin_subscription(&self) {

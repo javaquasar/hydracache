@@ -260,6 +260,15 @@ async fn conformance_ttl_states_missing_persistent_expiring_round_trip() {
 }
 
 #[tokio::test]
+async fn local_ttl_and_lock_contracts_survive_backward_wall_clock_step() {
+    conformance::assert_local_ttl_and_lock_contracts_survive_backward_wall_clock_step(
+        &LocalFactory,
+    )
+    .await
+    .unwrap();
+}
+
+#[tokio::test]
 async fn conformance_expired_key_absent_for_get_and_batch_get() {
     conformance::assert_expired_key_absent_for_get_and_batch_get(&LocalFactory)
         .await
