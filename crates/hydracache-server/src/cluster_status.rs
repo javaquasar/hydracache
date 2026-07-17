@@ -123,6 +123,8 @@ pub struct ClusterStatus {
     pub members: Vec<MemberStatus>,
     /// Current raft voter count, if known.
     pub voters: u32,
+    /// Sorted current Raft voter ids, when the live runtime exposes them.
+    pub voter_ids: Vec<u64>,
     /// Current reshard phase.
     pub reshard_phase: ReshardPhase,
     /// Whether the runtime is draining.
@@ -211,6 +213,7 @@ impl ClusterStatusProvider for ModeledClusterStatus {
             quorum_ok: runtime.ready && !runtime.draining,
             members: Vec::new(),
             voters: 0,
+            voter_ids: Vec::new(),
             reshard_phase: ReshardPhase::Idle,
             draining: runtime.draining,
         }
@@ -242,6 +245,8 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     }
     /// Return current raft voter count.
     fn voter_count(&self) -> u32;
+    /// Return sorted current Raft voter ids.
+    fn voter_ids(&self) -> Vec<u64>;
     /// Return reachability for one known node.
     fn reachability(&self, node: &ClusterNodeId) -> Reachability;
     /// Return the current reshard phase.
@@ -307,6 +312,7 @@ impl ClusterStatusProvider for LiveClusterStatus {
                 && !draining,
             members,
             voters: self.grid.voter_count(),
+            voter_ids: self.grid.voter_ids(),
             reshard_phase: self.grid.reshard_phase(),
             draining,
         }

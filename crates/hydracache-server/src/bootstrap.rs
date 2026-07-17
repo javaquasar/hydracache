@@ -75,8 +75,12 @@ pub struct ServerAdminStatus {
     pub quorum_ok: bool,
     /// Observed member count.
     pub members: u32,
+    /// Sorted logical member ids in the committed metadata view.
+    pub member_ids: Vec<String>,
     /// Observed raft voter count.
     pub voters: u32,
+    /// Sorted numeric ids in the committed Raft voter set.
+    pub voter_ids: Vec<u64>,
     /// Current reshard phase.
     pub reshard_phase: String,
     /// Whether the runtime is draining.
@@ -587,6 +591,12 @@ impl ServerRuntime {
     /// Return admin/operator status derived from the runtime model.
     pub fn admin_status(&self) -> ServerAdminStatus {
         let status = self.cluster_status_snapshot();
+        let mut member_ids = status
+            .members
+            .iter()
+            .map(|member| member.node_id.clone())
+            .collect::<Vec<_>>();
+        member_ids.sort();
         ServerAdminStatus {
             source: status.source,
             leader: status.leader,
@@ -594,7 +604,9 @@ impl ServerRuntime {
             epoch: status.epoch,
             quorum_ok: status.quorum_ok,
             members: status.members.len() as u32,
+            member_ids,
             voters: status.voters,
+            voter_ids: status.voter_ids,
             reshard_phase: status.reshard_phase.to_string(),
             draining: status.draining,
         }

@@ -16,11 +16,11 @@ use hydracache_operator::scale::{
 };
 use k8s_openapi::api::{
     apps::v1::StatefulSet,
-    core::v1::{Container, Pod, PodSpec},
+    core::v1::{Container, Pod, PodCondition, PodSpec, PodStatus},
     networking::v1::{NetworkPolicy, NetworkPolicySpec},
 };
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{LabelSelector, ObjectMeta};
-use kube::api::{DeleteParams, ListParams, Patch, PatchParams};
+use kube::api::{DeleteParams, ListParams, Patch, PatchParams, Preconditions};
 use kube::{
     api::{ApiResource, DynamicObject, GroupVersionKind},
     discovery, Api,
@@ -36,6 +36,7 @@ const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
 const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
 const REQUIRE_IOCHAOS_ENV: &str = "HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS";
 const NETWORK_PROBE_IMAGE_ENV: &str = "HYDRACACHE_NETWORK_PROBE_IMAGE";
+const STATEFULSET_REVISION_LABEL: &str = "controller-revision-hash";
 const KIND_WAIT_ATTEMPTS: usize = 90;
 static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const NETWORK_POLICY_SKIP: &str =
@@ -295,7 +296,9 @@ struct ScaleChaosAdminStatus {
     epoch: u64,
     quorum_ok: bool,
     members: u32,
+    member_ids: Vec<String>,
     voters: u32,
+    voter_ids: Vec<u64>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -311,12 +314,150 @@ struct RaftNodeObservation {
     compaction: RaftCompactionObservation,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CurrentPodIdentity {
+    ordinal: u32,
+    name: String,
+    uid: String,
+    revision: String,
+}
+
 impl RaftNodeObservation {
     fn applied_index(&self) -> u64 {
         self.compaction
             .applied_index
             .expect("live Sled-backed kind daemon must expose applied_index")
     }
+}
+
+fn exact_current_pod_identities(
+    cluster: &str,
+    replicas: u32,
+    revision: &str,
+    excluded_ordinal: Option<u32>,
+    pods: &[Pod],
+) -> Result<Vec<CurrentPodIdentity>, String> {
+    let expected = (0..replicas)
+        .filter(|ordinal| excluded_ordinal != Some(*ordinal))
+        .map(|ordinal| (pod_name(cluster, ordinal), ordinal))
+        .collect::<BTreeMap<_, _>>();
+    let mut identities = Vec::new();
+    for pod in pods {
+        if pod.metadata.deletion_timestamp.is_some() || !pod_is_ready(pod) {
+            continue;
+        }
+        let Some(name) = pod.metadata.name.as_deref() else {
+            continue;
+        };
+        if excluded_ordinal.is_some_and(|ordinal| name == pod_name(cluster, ordinal)) {
+            continue;
+        }
+        let ordinal = expected
+            .get(name)
+            .copied()
+            .ok_or_else(|| format!("unexpected current Ready pod {name} at revision {revision}"))?;
+        let pod_revision = pod
+            .metadata
+            .labels
+            .as_ref()
+            .and_then(|labels| labels.get(STATEFULSET_REVISION_LABEL));
+        if pod_revision.map(String::as_str) != Some(revision) {
+            return Err(format!(
+                "current Ready pod {name} has revision {pod_revision:?}, expected {revision}"
+            ));
+        }
+        let uid = pod
+            .metadata
+            .uid
+            .clone()
+            .filter(|uid| !uid.is_empty())
+            .ok_or_else(|| format!("current Ready pod {name} has no Kubernetes UID"))?;
+        identities.push(CurrentPodIdentity {
+            ordinal,
+            name: name.to_owned(),
+            uid,
+            revision: revision.to_owned(),
+        });
+    }
+    identities.sort_by_key(|identity| identity.ordinal);
+    let observed = identities
+        .iter()
+        .map(|identity| (identity.name.clone(), identity.ordinal))
+        .collect::<BTreeMap<_, _>>();
+    if observed != expected || identities.len() != expected.len() {
+        return Err(format!(
+            "current Ready pod set mismatch at revision {revision}: observed={:?} expected={:?}",
+            observed.keys().collect::<Vec<_>>(),
+            expected.keys().collect::<Vec<_>>()
+        ));
+    }
+    Ok(identities)
+}
+
+fn raft_observations_converged(
+    observations: &[RaftNodeObservation],
+    expected_ordinals: &BTreeSet<u32>,
+    expected_member_ids: &BTreeSet<String>,
+    expected_voter_ids: &BTreeSet<u64>,
+    expected_voters: u32,
+    minimum_epoch: u64,
+    minimum_applied: u64,
+) -> bool {
+    let observed_ordinals = observations
+        .iter()
+        .map(|observation| observation.ordinal)
+        .collect::<BTreeSet<_>>();
+    let authority = observations
+        .first()
+        .map(|observation| (observation.status.epoch, observation.status.leader.clone()));
+    observations.len() == expected_ordinals.len()
+        && observed_ordinals == *expected_ordinals
+        && observations.iter().all(|observation| {
+            let member_ids = observation
+                .status
+                .member_ids
+                .iter()
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            let voter_ids = observation
+                .status
+                .voter_ids
+                .iter()
+                .copied()
+                .collect::<BTreeSet<_>>();
+            observation.status.source == "live"
+                && observation.status.voters == expected_voters
+                && observation.status.members == expected_voters
+                && observation.status.member_ids.len() == expected_member_ids.len()
+                && &member_ids == expected_member_ids
+                && observation.status.voter_ids.len() == expected_voter_ids.len()
+                && &voter_ids == expected_voter_ids
+                && observation.status.quorum_ok
+                && observation.status.leader.is_some()
+                && observation.status.epoch >= minimum_epoch
+                && observation.compaction.available
+                && observation
+                    .compaction
+                    .applied_index
+                    .is_some_and(|index| index >= minimum_applied)
+        })
+        && authority.is_some_and(|authority| {
+            observations.iter().all(|observation| {
+                (observation.status.epoch, observation.status.leader.clone()) == authority
+            })
+        })
+}
+
+fn stable_raft_node_id(node_id: &str) -> u64 {
+    const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+    const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+    let mut hash = FNV_OFFSET;
+    for byte in node_id.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash.max(1)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -339,6 +480,16 @@ fn partition_policy_name(cluster: &str, ordinal: u32) -> String {
 
 fn slow_disk_chaos_name(cluster: &str, ordinal: u32) -> String {
     format!("{cluster}-slow-disk-{ordinal}")
+}
+
+fn pod_crash_delete_params(uid: &str) -> DeleteParams {
+    DeleteParams {
+        preconditions: Some(Preconditions {
+            uid: Some(uid.to_owned()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
 }
 
 fn deny_all_partition_policy(cluster: &str, namespace: &str, ordinal: u32) -> NetworkPolicy {
@@ -556,10 +707,11 @@ impl KindHarness {
     async fn inject(&self, fault: ChaosFault) -> ChaosInjection {
         match fault {
             ChaosFault::PodCrash { ordinal } => {
-                let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
-                let _ = pods
-                    .delete(&pod_name(&self.cluster, ordinal), &DeleteParams::default())
-                    .await;
+                let uid = self
+                    .pod_uid(ordinal)
+                    .await
+                    .unwrap_or_else(|error| panic!("pod crash target is invalid: {error}"));
+                self.delete_pod_with_uid(ordinal, &uid).await;
                 ChaosInjection::Applied("pod delete")
             }
             ChaosFault::NetworkPartition { ordinal } => {
@@ -675,46 +827,6 @@ impl KindHarness {
             .success()
     }
 
-    async fn wait_scale_admin_status(
-        &self,
-        replicas: u32,
-        expected_voters: u32,
-        stage: &'static str,
-    ) -> ScaleChaosAdminStatus {
-        let sequence = SCALE_ADMIN_PROBE_SEQUENCE.fetch_add(1, Ordering::SeqCst);
-        let probe = self
-            .ensure_network_probe_pod(1_000_u32.saturating_add(sequence as u32))
-            .await
-            .unwrap_or_else(|error| panic!("W11 admin observation probe could not start: {error}"));
-        let mut latest = None;
-        for _ in 0..10 {
-            for ordinal in 0..replicas {
-                match self.scale_admin_status_from_probe(&probe, ordinal).await {
-                    Ok(status)
-                        if status.voters == expected_voters
-                            && status.members == expected_voters
-                            && status.quorum_ok
-                            && status.leader.is_some() =>
-                    {
-                        self.delete_network_probe_pod(&probe).await;
-                        return status;
-                    }
-                    Ok(status) => {
-                        latest = Some(format!(
-                            "{stage} has not converged to members/voters={expected_voters}: {status:?}"
-                        ));
-                    }
-                    Err(error) => latest = Some(error),
-                }
-            }
-            tokio::time::sleep(Duration::from_secs(1)).await;
-        }
-        self.delete_network_probe_pod(&probe).await;
-        panic!(
-            "{KIND_ENV}=1 W11 scale-chaos lane could not observe {stage} with members/voters={expected_voters}; latest={latest:?}"
-        );
-    }
-
     async fn scale_admin_status_from_probe(
         &self,
         probe: &str,
@@ -805,12 +917,31 @@ impl KindHarness {
             .ensure_network_probe_pod(2_000_u32.saturating_add(sequence as u32))
             .await
             .unwrap_or_else(|error| panic!("{stage} admin probe could not start: {error}"));
-        let expected_count = replicas - u32::from(excluded_ordinal.is_some());
+        let expected_ordinals = (0..replicas)
+            .filter(|ordinal| excluded_ordinal != Some(*ordinal))
+            .collect::<BTreeSet<_>>();
+        let expected_member_ids = (0..expected_voters)
+            .map(|ordinal| pod_name(&self.cluster, ordinal))
+            .collect::<BTreeSet<_>>();
+        let expected_voter_ids = expected_member_ids
+            .iter()
+            .map(|node_id| stable_raft_node_id(node_id))
+            .collect::<BTreeSet<_>>();
         let mut latest = Vec::new();
 
         for _ in 0..30 {
             let mut observations = Vec::new();
             let mut errors = Vec::new();
+            let pod_identities = match self
+                .current_ready_pod_identities(replicas, excluded_ordinal)
+                .await
+            {
+                Ok(identities) => Some(identities),
+                Err(error) => {
+                    errors.push(error);
+                    None
+                }
+            };
             for ordinal in 0..replicas {
                 if excluded_ordinal == Some(ordinal) {
                     continue;
@@ -821,31 +952,30 @@ impl KindHarness {
                 }
             }
 
-            let authority = observations
-                .first()
-                .map(|observation| (observation.status.epoch, observation.status.leader.clone()));
-            let all_converged = observations.len() == expected_count as usize
-                && observations.iter().all(|observation| {
-                    observation.status.source == "live"
-                        && observation.status.voters == expected_voters
-                        && observation.status.members == expected_voters
-                        && observation.status.quorum_ok
-                        && observation.status.leader.is_some()
-                        && observation.status.epoch >= minimum_epoch
-                        && observation.compaction.available
-                        && observation
-                            .compaction
-                            .applied_index
-                            .is_some_and(|index| index >= minimum_applied)
-                })
-                && authority.is_some_and(|authority| {
-                    observations.iter().all(|observation| {
-                        (observation.status.epoch, observation.status.leader.clone()) == authority
-                    })
-                });
+            let all_converged = pod_identities.is_some()
+                && raft_observations_converged(
+                    &observations,
+                    &expected_ordinals,
+                    &expected_member_ids,
+                    &expected_voter_ids,
+                    expected_voters,
+                    minimum_epoch,
+                    minimum_applied,
+                );
             if all_converged {
-                self.delete_network_probe_pod(&probe).await;
-                return observations;
+                match self
+                    .current_ready_pod_identities(replicas, excluded_ordinal)
+                    .await
+                {
+                    Ok(after) if Some(&after) == pod_identities.as_ref() => {
+                        self.delete_network_probe_pod(&probe).await;
+                        return observations;
+                    }
+                    Ok(after) => errors.push(format!(
+                        "current pod identities changed during {stage}: before={pod_identities:?} after={after:?}"
+                    )),
+                    Err(error) => errors.push(error),
+                }
             }
 
             latest = observations
@@ -858,8 +988,56 @@ impl KindHarness {
 
         self.delete_network_probe_pod(&probe).await;
         panic!(
-            "timed out waiting for {stage}: expected {expected_count} live nodes with members/voters={expected_voters}, epoch>={minimum_epoch}, applied>={minimum_applied}; latest={latest:?}"
+            "timed out waiting for {stage}: expected {} current live nodes with members/voters={expected_voters}, epoch>={minimum_epoch}, applied>={minimum_applied}; latest={latest:?}",
+            expected_ordinals.len()
         );
+    }
+
+    async fn current_ready_pod_identities(
+        &self,
+        replicas: u32,
+        excluded_ordinal: Option<u32>,
+    ) -> Result<Vec<CurrentPodIdentity>, String> {
+        let stateful_sets: Api<StatefulSet> = Api::namespaced(self.client.clone(), &self.namespace);
+        let stateful_set = stateful_sets
+            .get(&self.cluster)
+            .await
+            .map_err(|error| format!("could not read StatefulSet {}: {error}", self.cluster))?;
+        let desired = stateful_set
+            .spec
+            .as_ref()
+            .and_then(|spec| spec.replicas)
+            .unwrap_or_default()
+            .max(0) as u32;
+        if desired != replicas {
+            return Err(format!(
+                "StatefulSet {} still desires {desired} replicas, expected {replicas}",
+                self.cluster
+            ));
+        }
+        let revision = stateful_set
+            .status
+            .as_ref()
+            .and_then(|status| {
+                status
+                    .update_revision
+                    .as_deref()
+                    .or(status.current_revision.as_deref())
+            })
+            .filter(|revision| !revision.is_empty())
+            .ok_or_else(|| format!("StatefulSet {} has no current revision", self.cluster))?;
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let listed = pods
+            .list(&ListParams::default().labels(&server_pod_selector(&self.cluster)))
+            .await
+            .map_err(|error| format!("could not list current server pods: {error}"))?;
+        exact_current_pod_identities(
+            &self.cluster,
+            replicas,
+            revision,
+            excluded_ordinal,
+            &listed.items,
+        )
     }
 
     async fn pod_uid(&self, ordinal: u32) -> Result<String, String> {
@@ -872,6 +1050,61 @@ impl KindHarness {
             .uid
             .filter(|uid| !uid.is_empty())
             .ok_or_else(|| format!("target pod {pod} has no Kubernetes UID"))
+    }
+
+    async fn delete_pod_with_uid(&self, ordinal: u32, expected_uid: &str) {
+        let name = pod_name(&self.cluster, ordinal);
+        let current_uid = self
+            .pod_uid(ordinal)
+            .await
+            .unwrap_or_else(|error| panic!("pod crash target is invalid: {error}"));
+        assert_eq!(
+            current_uid, expected_uid,
+            "pod {name} changed UID before the crash request"
+        );
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        pods.delete(&name, &pod_crash_delete_params(expected_uid))
+            .await
+            .unwrap_or_else(|error| {
+                panic!("Kubernetes rejected UID-preconditioned pod crash for {name}: {error}")
+            });
+    }
+
+    async fn wait_for_replacement_pod_uid(&self, ordinal: u32, previous_uid: &str) -> String {
+        let name = pod_name(&self.cluster, ordinal);
+        let pods: Api<Pod> = Api::namespaced(self.client.clone(), &self.namespace);
+        let mut latest = None;
+        for _ in 0..KIND_WAIT_ATTEMPTS {
+            match pods.get(&name).await {
+                Ok(pod)
+                    if pod.metadata.deletion_timestamp.is_none()
+                        && pod_is_ready(&pod)
+                        && pod
+                            .metadata
+                            .uid
+                            .as_deref()
+                            .is_some_and(|uid| uid != previous_uid) =>
+                {
+                    return pod.metadata.uid.expect("guarded as a replacement UID");
+                }
+                Ok(pod) => {
+                    latest = Some(format!(
+                        "uid={:?} deleting={} ready={}",
+                        pod.metadata.uid,
+                        pod.metadata.deletion_timestamp.is_some(),
+                        pod_is_ready(&pod)
+                    ));
+                }
+                Err(kube::Error::Api(error)) if error.code == 404 => {
+                    latest = Some("replacement pod not created yet".to_owned());
+                }
+                Err(error) => panic!("could not observe replacement pod {name}: {error}"),
+            }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
+        panic!(
+            "timed out waiting for replacement UID for {name}; previous={previous_uid} latest={latest:?}"
+        );
     }
 
     async fn assert_faulted_node_lags_or_is_unavailable(
@@ -1508,11 +1741,8 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     let installed = kind.apply_cluster(soak_kind_spec(3)).await;
     kind.wait_ready(installed.spec.replicas, "w11-install")
         .await;
-    let initial = kind.wait_scale_admin_status(3, 3, "w11-install").await;
-    assert_eq!(initial.members, 3);
-    assert_eq!(initial.voters, 3);
-    assert!(initial.quorum_ok);
-    assert!(initial.leader.is_some());
+    let initial = kind.wait_raft_nodes(3, 3, 1, 1, None, "w11-install").await;
+    let initial_epoch = initial[0].status.epoch;
 
     let fault = ChaosFault::NetworkPartition { ordinal: 2 };
     let injection = kind.inject(fault).await;
@@ -1522,50 +1752,114 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
         "HC-W11-CAPABILITY runtime=kubernetes cni_network_policy=enforced injector={injector}"
     );
 
-    let scaled_up = kind.apply_cluster(soak_kind_spec(4)).await;
-    kind.wait_ready(scaled_up.spec.replicas, "w11-scale-up-partitioned")
-        .await;
-    let after_scale_up = kind
-        .wait_scale_admin_status(4, 4, "w11-scale-up-partitioned")
-        .await;
-    assert_eq!(after_scale_up.members, 4);
-    assert_eq!(after_scale_up.voters, 4);
-    assert!(after_scale_up.quorum_ok);
-    assert!(after_scale_up.epoch > initial.epoch);
+    let proof = AssertUnwindSafe(async {
+        let scaled_up = kind.apply_cluster(soak_kind_spec(4)).await;
+        kind.wait_ready(scaled_up.spec.replicas, "w11-scale-up-partitioned")
+            .await;
+        let after_scale_up = kind
+            .wait_raft_nodes(
+                4,
+                4,
+                initial_epoch.saturating_add(1),
+                1,
+                Some(2),
+                "w11-scale-up-partitioned",
+            )
+            .await;
+        let after_scale_up_epoch = after_scale_up[0].status.epoch;
 
-    let scaled_down = kind.apply_cluster(soak_kind_spec(3)).await;
-    kind.wait_ready(scaled_down.spec.replicas, "w11-scale-down-partitioned")
-        .await;
-    let after_scale_down = kind
-        .wait_scale_admin_status(3, 3, "w11-scale-down-partitioned")
-        .await;
-    assert_eq!(after_scale_down.members, 3);
-    assert_eq!(after_scale_down.voters, 3);
-    assert!(after_scale_down.quorum_ok);
-    assert!(
-        after_scale_down.epoch >= after_scale_up.epoch,
-        "committed membership metadata epoch regressed during churn"
-    );
+        let scaled_down = kind.apply_cluster(soak_kind_spec(3)).await;
+        kind.wait_ready(scaled_down.spec.replicas, "w11-scale-down-partitioned")
+            .await;
+        let after_scale_down = kind
+            .wait_raft_nodes(
+                3,
+                3,
+                after_scale_up_epoch.saturating_add(1),
+                1,
+                Some(2),
+                "w11-scale-down-partitioned",
+            )
+            .await;
+        let after_scale_down_epoch = after_scale_down[0].status.epoch;
+        let after_scale_down_applied = after_scale_down
+            .iter()
+            .map(RaftNodeObservation::applied_index)
+            .max()
+            .expect("partition majority must expose applied progress");
 
-    kind.heal(fault, &injection).await;
-    kind.wait_ready(3, "w11-partition-healed").await;
-    let healed = kind
-        .wait_scale_admin_status(3, 3, "w11-partition-healed")
-        .await;
-    assert_eq!(healed.voters, 3);
-    assert!(healed.epoch >= after_scale_down.epoch);
+        kind.heal(fault, &injection).await;
+        kind.wait_ready(3, "w11-partition-healed").await;
+        let healed = kind
+            .wait_raft_nodes(
+                3,
+                3,
+                after_scale_down_epoch,
+                after_scale_down_applied,
+                None,
+                "w11-partition-healed",
+            )
+            .await;
+        assert_eq!(
+            healed[0].status.epoch, after_scale_down_epoch,
+            "partition heal must catch up to the committed epoch without inventing membership"
+        );
+        let healed_applied = healed
+            .iter()
+            .map(RaftNodeObservation::applied_index)
+            .max()
+            .expect("healed cluster must expose applied progress");
 
-    let crash = kind.inject(ChaosFault::PodCrash { ordinal: 2 }).await;
-    let recovered = kind.wait_ready(3, "w11-crash-recovered").await;
-    recovered.assert_quorum();
-    let after_crash = kind
-        .wait_scale_admin_status(3, 3, "w11-crash-recovered")
+        let crashed_uid = kind
+            .pod_uid(2)
+            .await
+            .expect("pod-2 must have a UID before crash");
+        kind.delete_pod_with_uid(2, &crashed_uid).await;
+        let replacement_uid = kind.wait_for_replacement_pod_uid(2, &crashed_uid).await;
+        assert_ne!(replacement_uid, crashed_uid);
+        let recovered = kind.wait_ready(3, "w11-crash-recovered").await;
+        recovered.assert_quorum();
+        let after_crash = kind
+            .wait_raft_nodes(
+                3,
+                3,
+                after_scale_down_epoch,
+                healed_applied,
+                None,
+                "w11-crash-recovered",
+            )
+            .await;
+        assert_eq!(
+            after_crash[0].status.epoch, after_scale_down_epoch,
+            "pod crash/replacement must not implicitly change committed membership"
+        );
+    })
+    .catch_unwind()
+    .await;
+
+    let heal_cleanup = AssertUnwindSafe(kind.heal(fault, &injection))
+        .catch_unwind()
         .await;
-    assert_eq!(
-        after_crash.voters, 3,
-        "pod crash must not implicitly shrink the committed voter set"
-    );
-    kind.heal(ChaosFault::PodCrash { ordinal: 2 }, &crash).await;
+    let scale_cleanup = AssertUnwindSafe(async {
+        kind.apply_cluster(soak_kind_spec(3)).await;
+        kind.wait_ready(3, "w11-final-cleanup").await;
+    })
+    .catch_unwind()
+    .await;
+    let mut failure = proof.err();
+    for cleanup_failure in [heal_cleanup.err(), scale_cleanup.err()]
+        .into_iter()
+        .flatten()
+    {
+        if failure.is_none() {
+            failure = Some(cleanup_failure);
+        } else {
+            eprintln!("W11 cleanup also panicked after the primary failure");
+        }
+    }
+    if let Some(failure) = failure {
+        resume_unwind(failure);
+    }
 }
 
 #[tokio::test]
@@ -1725,6 +2019,156 @@ fn deny_all_partition_policy_selects_single_statefulset_pod() {
     );
     assert_eq!(spec.ingress.as_ref().unwrap().len(), 0);
     assert_eq!(spec.egress.as_ref().unwrap().len(), 0);
+}
+
+#[test]
+fn pod_crash_delete_is_uid_preconditioned() {
+    let params = pod_crash_delete_params("pod-uid-2");
+    let preconditions = params
+        .preconditions
+        .expect("pod crash deletion must carry preconditions");
+    assert_eq!(preconditions.uid.as_deref(), Some("pod-uid-2"));
+    assert!(preconditions.resource_version.is_none());
+}
+
+#[test]
+fn raft_observation_requires_every_expected_current_pod() {
+    let observation = |ordinal, epoch, voters| {
+        let member_ids = (0..voters)
+            .map(|member| format!("chaos-{member}"))
+            .collect::<Vec<_>>();
+        let voter_ids = member_ids
+            .iter()
+            .map(|member| stable_raft_node_id(member))
+            .collect();
+        RaftNodeObservation {
+            ordinal,
+            status: ScaleChaosAdminStatus {
+                source: "live".to_owned(),
+                leader: Some("chaos-0".to_owned()),
+                epoch,
+                quorum_ok: true,
+                members: voters,
+                member_ids,
+                voters,
+                voter_ids,
+            },
+            compaction: RaftCompactionObservation {
+                available: true,
+                applied_index: Some(12),
+            },
+        }
+    };
+    let expected = BTreeSet::from([0, 1, 2]);
+    let expected_members = BTreeSet::from([
+        "chaos-0".to_owned(),
+        "chaos-1".to_owned(),
+        "chaos-2".to_owned(),
+    ]);
+    let expected_voters = expected_members
+        .iter()
+        .map(|member| stable_raft_node_id(member))
+        .collect::<BTreeSet<_>>();
+    let mut observations = vec![
+        observation(0, 7, 3),
+        observation(1, 7, 3),
+        observation(2, 7, 3),
+    ];
+    assert!(raft_observations_converged(
+        &observations,
+        &expected,
+        &expected_members,
+        &expected_voters,
+        3,
+        7,
+        12
+    ));
+
+    observations[2].status.epoch = 6;
+    assert!(
+        !raft_observations_converged(
+            &observations,
+            &expected,
+            &expected_members,
+            &expected_voters,
+            3,
+            7,
+            12
+        ),
+        "one good pod must not hide a stale current pod"
+    );
+    observations[2] = observation(2, 7, 3);
+    observations[2].status.member_ids[2] = "chaos-3".to_owned();
+    observations[2].status.voter_ids[2] = stable_raft_node_id("chaos-3");
+    assert!(
+        !raft_observations_converged(
+            &observations,
+            &expected,
+            &expected_members,
+            &expected_voters,
+            3,
+            7,
+            12
+        ),
+        "matching counts must not hide a ghost voter or missing expected member"
+    );
+    observations.pop();
+    assert!(
+        !raft_observations_converged(
+            &observations,
+            &expected,
+            &expected_members,
+            &expected_voters,
+            3,
+            7,
+            12
+        ),
+        "a partial response set must not pass"
+    );
+}
+
+#[test]
+fn current_pod_filter_requires_exact_uid_and_statefulset_revision() {
+    let ready_pod = |ordinal: u32, uid: &str, revision: &str| Pod {
+        metadata: ObjectMeta {
+            name: Some(format!("chaos-{ordinal}")),
+            uid: Some(uid.to_owned()),
+            labels: Some(BTreeMap::from([(
+                STATEFULSET_REVISION_LABEL.to_owned(),
+                revision.to_owned(),
+            )])),
+            ..Default::default()
+        },
+        status: Some(PodStatus {
+            conditions: Some(vec![PodCondition {
+                status: "True".to_owned(),
+                type_: "Ready".to_owned(),
+                ..Default::default()
+            }]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let mut pods = vec![
+        ready_pod(0, "uid-0", "revision-a"),
+        ready_pod(1, "uid-1", "revision-a"),
+        ready_pod(2, "uid-2", "revision-a"),
+    ];
+    let identities = exact_current_pod_identities("chaos", 3, "revision-a", None, &pods)
+        .expect("exact current pod set should be accepted");
+    assert_eq!(identities[2].uid, "uid-2");
+
+    pods[2] = ready_pod(2, "replacement-uid-2", "revision-b");
+    assert!(
+        exact_current_pod_identities("chaos", 3, "revision-a", None, &pods)
+            .unwrap_err()
+            .contains("expected revision-a"),
+        "a Ready pod from a stale/different revision must not count"
+    );
+    pods[2] = ready_pod(2, "replacement-uid-2", "revision-a");
+    let replacement = exact_current_pod_identities("chaos", 3, "revision-a", None, &pods)
+        .expect("replacement at the current revision should be observed");
+    assert_eq!(replacement[2].uid, "replacement-uid-2");
 }
 
 #[test]

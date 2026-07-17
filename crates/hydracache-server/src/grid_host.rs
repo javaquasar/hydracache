@@ -1974,6 +1974,12 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
             .unwrap_or(0)
     }
 
+    fn voter_ids(&self) -> Vec<u64> {
+        let mut voters = self.raft.voter_ids().unwrap_or_default();
+        voters.sort_unstable();
+        voters
+    }
+
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {
         if node == &self.node_id {
             return Reachability::Reachable;
@@ -2144,6 +2150,17 @@ impl GridControlPlaneHandle for InProcessGridHandle {
 
     fn voter_count(&self) -> u32 {
         self.control_plane.members().len() as u32
+    }
+
+    fn voter_ids(&self) -> Vec<u64> {
+        let mut voters = self
+            .control_plane
+            .members()
+            .iter()
+            .map(|member| raft_node_id(&member.node_id))
+            .collect::<Vec<_>>();
+        voters.sort_unstable();
+        voters
     }
 
     fn reachability(&self, node: &ClusterNodeId) -> Reachability {
