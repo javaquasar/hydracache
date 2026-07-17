@@ -21,6 +21,13 @@ fn temp_sled_path(name: &str) -> std::path::PathBuf {
     std::env::temp_dir().join(format!("hydracache-{name}-{unique}"))
 }
 
+#[cfg(feature = "sled-log-store")]
+fn is_sled_lock_contention(error: &impl std::fmt::Display) -> bool {
+    let message = error.to_string();
+    message.contains("could not acquire lock")
+        || message.contains("Resource temporarily unavailable")
+}
+
 fn entry(index: u64, term: u64, data: &'static [u8]) -> Entry {
     Entry {
         index,
@@ -173,7 +180,23 @@ async fn sled_runtime_reopens_committed_log_before_raw_node_initialization() {
     assert!(before.commit_index > 0);
     drop(runtime);
 
-    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    // sled releases its process-level lock from a background worker. On a
+    // heavily loaded CI runner that release can lag the drop above by a few
+    // milliseconds, so tolerate only that bounded, transient contention.
+    let mut reopened = None;
+    for attempt in 0..100 {
+        match RaftMetadataRuntime::sled_with_config(config.clone(), &path) {
+            Ok(runtime) => {
+                reopened = Some(runtime);
+                break;
+            }
+            Err(error) if is_sled_lock_contention(&error) && attempt + 1 < 100 => {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+            Err(error) => panic!("reopening sled runtime failed: {error}"),
+        }
+    }
+    let reopened = reopened.expect("sled runtime lock was not released within one second");
     let after = reopened.snapshot();
     assert!(after.commit_index >= before.commit_index);
     assert_eq!(after.commands_committed, before.commands_committed);

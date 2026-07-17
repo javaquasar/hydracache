@@ -13,6 +13,7 @@ anyhow = "1"
 async-trait.workspace = true
 chitchat.workspace = true
 hydracache.workspace = true
+hydracache-client-protocol.workspace = true
 hydracache-cluster-raft.workspace = true
 raft.workspace = true
 serde_json.workspace = true

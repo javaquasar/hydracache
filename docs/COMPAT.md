@@ -371,3 +371,26 @@ vectors or regenerate them with an explicit compatibility note in the same PR.
 The `test-failpoints` feature and `fail` dependency are test-only. They must not
 appear in the default server/operator/raft release graphs; `cargo xtask
 verify-no-test-features` enforces that boundary.
+
+## 0.65 Redis Debt Safety Net
+
+`0.65.0` does not widen the public Redis command set or distributed deployment
+claim. The RESP listener remains a standalone, node-local facade, and the
+stable debts `resp-cross-endpoint-key-visibility` and
+`resp-cross-endpoint-lock-safety` keep that limitation executable through
+real-process flip-sentinels.
+
+The native client protocol keeps the published v1 minimum surface and accepts published v2 and frozen
+v3 frames. Post-v1 operation families are rejected at the version-aware codec boundary.
+Fixture provenance and digests bind those bytes to their historical source, and
+compatibility tests require v1/v2/v3 requests to complete without receiving v4
+conditional-result shapes. Envelope and inner-frame versions must agree before
+any mutation. Protocol v4 remains the first version that exposes conditional
+put/lock result shapes; the new Redis characterization does not backport them.
+
+The Redis conformance manifest itself is now a compatibility artifact: command
+routes, stable case ids, current/target debt claims, structured test layers, and
+real Rust test references are checked by `cargo xtask doc-check`. A future
+backend refactor may change implementation ownership, but it must preserve the
+client-surface and RESP characterization layers and explicitly invert the
+deployment sentinels when it pays a documented debt.

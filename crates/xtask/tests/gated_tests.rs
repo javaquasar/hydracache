@@ -14,6 +14,34 @@ fn gated_test_registry_covers_every_ignored_cfg_and_env_gated_test() {
 }
 
 #[test]
+fn redis_multinode_gate_cannot_drift_to_the_generic_daemon_target() {
+    let root = workspace_root();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let gate = registry
+        .gate
+        .iter()
+        .find(|gate| gate.id == "env.hydracache-run-redis-resp-multinode-e2e")
+        .unwrap();
+    assert!(xtask::gated_tests::redis_multinode_gate_contract_problems(gate).is_empty());
+
+    let mut drifted = gate.clone();
+    drifted.target = "daemon_process_cluster".to_owned();
+    drifted.command.args = vec![
+        "test".to_owned(),
+        "-p".to_owned(),
+        "hydracache-server".to_owned(),
+        "--test".to_owned(),
+        "daemon_process_cluster".to_owned(),
+        "--locked".to_owned(),
+    ];
+    assert!(
+        xtask::gated_tests::redis_multinode_gate_contract_problems(&drifted)
+            .iter()
+            .any(|problem| problem.contains("exact dedicated target"))
+    );
+}
+
+#[test]
 fn registry_rejects_missing_command_ci_tier_owner_or_timeout() {
     let root = scratch_root();
     write_workspace(&root);

@@ -2,13 +2,20 @@
 examine_globs = [
   "crates/hydracache-sim/src/linearizability.rs",
   "crates/hydracache-cluster-testkit/src/invariants.rs",
+  "crates/hydracache-cluster-testkit/src/client_surface_conformance.rs",
 ]
 
 minimum_test_timeout = 60.0
 output = "target/hydracache-mutants-proof-oracles"
-test_package = ["hydracache-sim", "hydracache-cluster-testkit"]
+test_package = [
+  "hydracache-sim",
+  "hydracache-cluster-testkit",
+  "hydracache-client-transport-axum",
+]
 timeout_multiplier = 2.0
 
 # Required commands, validated by `cargo xtask mutants --scope proof-oracles`:
 # cargo test -p hydracache-sim --test linearizability_oracle --locked
 # cargo test -p hydracache-cluster-testkit --test invariants --locked
+# cargo test -p hydracache-cluster-testkit --test client_surface_conformance_oracle --locked
+# cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked

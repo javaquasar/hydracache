@@ -9,6 +9,7 @@ invalidate every higher-level test that trusts it.
 
 - `crates/hydracache-sim/src/linearizability.rs`
 - `crates/hydracache-cluster-testkit/src/invariants.rs`
+- `crates/hydracache-cluster-testkit/src/client_surface_conformance.rs`
 
 Integration-test glue and corpus runners are excluded until their decision
 logic is extracted into reusable modules. Adding or changing a scoped path is a
@@ -18,6 +19,8 @@ reviewed proof-surface change.
 
 - `cargo test -p hydracache-sim --test linearizability_oracle --locked`
 - `cargo test -p hydracache-cluster-testkit --test invariants --locked`
+- `cargo test -p hydracache-cluster-testkit --test client_surface_conformance_oracle --locked`
+- `cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked`
 
 ## Execution Model
 

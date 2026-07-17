@@ -275,12 +275,25 @@ pub fn release_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
             ));
         }
     }
+    const REDIS_MULTINODE_EVIDENCE: &str = "cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e";
+    match workflow
+        .step_runs
+        .get("dst-nightly-soak")
+        .and_then(|steps| steps.get("Redis RESP multinode debt sentinels"))
+        .map(|run| run.trim())
+    {
+        Some(run) if run == REDIS_MULTINODE_EVIDENCE => {}
+        _ => problems.push(format!(
+            "job dst-nightly-soak step Redis RESP multinode debt sentinels must run exactly `{REDIS_MULTINODE_EVIDENCE}`"
+        )),
+    }
     for required in [
         "evidence-run --release 0.64 --gate env.hydracache-run-raft-nemesis-soak",
         "evidence-run --release 0.64 --gate env.hydracache-grid-scope",
         "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.rejoin-after-compaction",
         "evidence-run --release 0.64 --gate cfg.hydracache-cluster-raft.snapshot-resource-faults",
         "evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e",
+        "release-governance-check --release 0.65",
     ] {
         if !text.contains(required) {
             problems.push(format!("release execution matrix is missing `{required}`"));
@@ -402,6 +415,7 @@ pub fn ci_wiring_problems(root: &Path, gates: &[GateEntry]) -> Result<Vec<String
 struct WorkflowShape {
     jobs: BTreeMap<String, BTreeSet<String>>,
     conditions: BTreeMap<String, String>,
+    step_runs: BTreeMap<String, BTreeMap<String, String>>,
 }
 
 fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
@@ -415,6 +429,7 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
             continue;
         };
         let mut steps = BTreeSet::new();
+        let mut step_runs = BTreeMap::new();
         if let Some(sequence) =
             mapping_value(job.as_mapping(), "steps").and_then(Value::as_sequence)
         {
@@ -422,10 +437,16 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
                 if let Some(name) = mapping_value(step.as_mapping(), "name").and_then(Value::as_str)
                 {
                     steps.insert(name.to_owned());
+                    if let Some(run) =
+                        mapping_value(step.as_mapping(), "run").and_then(Value::as_str)
+                    {
+                        step_runs.insert(name.to_owned(), run.to_owned());
+                    }
                 }
             }
         }
         shape.jobs.insert(job_id.to_owned(), steps);
+        shape.step_runs.insert(job_id.to_owned(), step_runs);
         if let Some(condition) = mapping_value(job.as_mapping(), "if").and_then(Value::as_str) {
             shape
                 .conditions

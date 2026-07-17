@@ -87,6 +87,33 @@ fn empty_quarantine_registry_is_valid() {
 }
 
 #[test]
+fn quarantine_registry_is_a_forward_compatible_release_baseline() {
+    let root = temp_root("release-baseline");
+    write_gate_registry(&root, false);
+    fs::write(
+        root.join(xtask::quarantine::QUARANTINE_PATH),
+        "schema_version = 1\nrelease = \"0.64.0\"\n",
+    )
+    .unwrap();
+
+    let later =
+        xtask::quarantine::check_at(&root, "0.65", timestamp("2026-07-14T12:00:00Z")).unwrap();
+    assert!(later.problems.is_empty(), "{:?}", later.problems);
+
+    let older =
+        xtask::quarantine::check_at(&root, "0.63", timestamp("2026-07-14T12:00:00Z")).unwrap();
+    assert!(
+        older
+            .problems
+            .iter()
+            .any(|problem| problem.contains("does not match requested release")),
+        "{:?}",
+        older.problems
+    );
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn quarantine_check_rejects_overdue_or_incomplete_entries_and_ship_rejects_all_active_entries() {
     let root = temp_root("invalid");
     write_gate_registry(&root, true);

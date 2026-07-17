@@ -172,6 +172,89 @@ fn multitenancy_batch_cannot_bypass_namespace_quota() {
 }
 
 #[test]
+fn multitenancy_conditional_noop_does_not_reserve_quota() {
+    let mut isolation = isolation();
+    isolation
+        .admit_put("client-a", "users", "lock", 4)
+        .expect("initial lock accounting");
+
+    assert!(!isolation
+        .admit_put_if_committed("client-a", "users", "lock", 9, false, || {
+            panic!("lost condition must not invoke the commit callback")
+        })
+        .expect("failed condition remains an admitted no-op"));
+    isolation
+        .admit_put("client-a", "users", "other", 4)
+        .expect("failed condition must not consume the remaining quota");
+
+    let metrics = isolation.metrics_snapshot_for_tenant(
+        &hydracache::TenantId::new("tenant-a").expect("valid tenant id"),
+    );
+    let metrics = metrics.expect("known tenant metrics");
+    assert_eq!(metrics.tenant_bytes["tenant-a"], 8);
+    assert_eq!(metrics.tenant_entries["tenant-a"], 2);
+}
+
+#[test]
+fn multitenancy_rejected_batch_callback_leaves_accounting_unchanged() {
+    let mut isolation = isolation();
+    let entries = vec![("user:1".to_owned(), 4), ("user:2".to_owned(), 4)];
+
+    assert!(!isolation
+        .admit_batch_put_if_committed("client-a", "users", &entries, || false)
+        .expect("prevalidated batch may still abort before commit"));
+    assert!(!isolation.contains_entry("tenant-a", "users", "user:1"));
+    assert!(!isolation.contains_entry("tenant-a", "users", "user:2"));
+    isolation
+        .admit_batch_put("client-a", "users", &entries)
+        .expect("aborted batch must leave the full quota available");
+}
+
+#[test]
+fn multitenancy_duplicate_batch_keys_account_only_the_last_value() {
+    let roster = TenantRoster::new(vec![Tenant::new("tenant-a")
+        .unwrap()
+        .allow_client("client-a")
+        .namespace("users", NamespaceQuota::new(6, 2))])
+    .unwrap();
+    let mut isolation = ConsumerIsolation::new(roster, ConsumerIsolationConfig::default());
+
+    isolation
+        .admit_batch_put(
+            "client-a",
+            "users",
+            &[("same".to_owned(), 4), ("same".to_owned(), 2)],
+        )
+        .expect("duplicate batch uses last-write accounting");
+    isolation
+        .admit_put("client-a", "users", "other", 4)
+        .expect("only the final two-byte value is charged");
+
+    let metrics = isolation
+        .metrics_snapshot_for_tenant(&hydracache::TenantId::new("tenant-a").unwrap())
+        .unwrap();
+    assert_eq!(metrics.tenant_bytes["tenant-a"], 6);
+    assert_eq!(metrics.tenant_entries["tenant-a"], 2);
+}
+
+#[test]
+fn multitenancy_remove_entry_releases_bytes_and_entry_quota() {
+    let mut isolation = isolation();
+    isolation
+        .admit_put("client-a", "users", "user:1", 8)
+        .expect("fill tenant quota");
+    assert!(isolation
+        .remove_entry("client-a", "users", "user:1")
+        .expect("remove existing accounting"));
+    assert!(!isolation
+        .remove_entry("client-a", "users", "user:1")
+        .expect("removal is idempotent"));
+    isolation
+        .admit_put("client-a", "users", "user:2", 8)
+        .expect("released quota can be reused");
+}
+
+#[test]
 fn multitenancy_subscription_flood_is_rate_limited_per_tenant() {
     let mut isolation = isolation();
     isolation

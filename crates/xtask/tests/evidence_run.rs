@@ -115,6 +115,18 @@ fn execute(mode: &str, timeout_seconds: u64) -> (PathBuf, xtask::evidence_run::E
 }
 
 #[test]
+fn evidence_registry_baseline_can_execute_a_later_release() {
+    let root = temp_root("forward-release");
+    write_registry(&root, "pass", 5, vec![]);
+    let result =
+        xtask::evidence_run::execute_gate(&root, "0.65", "test.pass", Path::new("target/receipts"))
+            .unwrap();
+    assert_eq!(result.receipt.release, "0.65.0");
+    assert_eq!(result.receipt.outcome, EvidenceOutcome::Pass);
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn evidence_executor_writes_atomic_receipts_for_success_failure_and_timeout() {
     for (mode, expected) in [
         ("pass", EvidenceOutcome::Pass),

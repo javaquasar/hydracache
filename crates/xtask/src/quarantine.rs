@@ -105,7 +105,7 @@ fn validate_at(
             registry.schema_version
         ));
     }
-    if !release_matches(&registry.release, release) {
+    if !registry_covers_release(&registry.release, release) {
         report.problems.push(format!(
             "registry release {} does not match requested release {release}",
             registry.release
@@ -198,11 +198,25 @@ fn parse_utc(
     }
 }
 
-fn release_matches(document_release: &str, requested: &str) -> bool {
-    document_release == requested
-        || document_release
-            .strip_suffix(".0")
-            .is_some_and(|release| release == requested)
+fn registry_covers_release(registry_release: &str, requested: &str) -> bool {
+    let parse = |release: &str| -> Option<(u64, u64, u64)> {
+        let normalized = if release.matches('.').count() == 1 {
+            format!("{release}.0")
+        } else {
+            release.to_owned()
+        };
+        let mut parts = normalized.split('.').map(str::parse::<u64>);
+        let version = (
+            parts.next()?.ok()?,
+            parts.next()?.ok()?,
+            parts.next()?.ok()?,
+        );
+        parts.next().is_none().then_some(version)
+    };
+    matches!(
+        (parse(registry_release), parse(requested)),
+        (Some(registry), Some(candidate)) if registry.0 == candidate.0 && registry <= candidate
+    )
 }
 
 fn parse_args(args: Vec<String>) -> Result<(PathBuf, String), Box<dyn Error>> {

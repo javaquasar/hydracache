@@ -27,6 +27,26 @@ the source of truth for the docs matrix, translator tests, real Redis oracle
 scenarios, client smoke tests, and release-note command table. Do not add a command
 to this page without adding or updating the manifest row first.
 
+## 0.65 Safety Net And Debt Payment
+
+`0.65.0` adds executable characterization; it does not add a Redis command or a
+distributed RESP backend. The manifest separates reusable client-surface
+contracts, RESP translator/encoder characterization, and real-process
+deployment flip-sentinels. Each command row declares its route and stable case
+ids, and each test reference must resolve to an actual Rust test so prose or a
+comment cannot masquerade as coverage.
+
+Two deployment limitations have stable debt ids:
+`resp-cross-endpoint-key-visibility` and
+`resp-cross-endpoint-lock-safety`. Their current claims remain node-local and
+single-endpoint. A future distributed backend pays a debt only when its target
+claim is implemented, every attached sentinel is inverted to assert that new
+behavior, and this page, the manifest, the dedicated multi-node CI gate, and
+release evidence change together. Removing a debt row or weakening a sentinel
+does not pay it. The separate `resp-del-concurrent-write-atomicity` semantic debt
+records that the characterized `DEL` path does not yet promise Redis-style
+atomic ordering against a concurrent write.
+
 ## Support Levels
 
 | Status | Meaning |
@@ -60,8 +80,8 @@ to this page without adding or updating the manifest row first.
 | `CONFIG`, `FLUSHDB`, `FLUSHALL` | `admin_disabled` | documented divergence | Recognized but disabled by default. `CONFIG` would imply Redis server configuration read/write support; `FLUSHDB` and `FLUSHALL` are destructive keyspace-wide operations. All return stable `NOPERM` before mutation. |
 | `HSET`, `ZADD`, lists, streams, general Lua, transactions, modules | `unsupported` | documented divergence | HydraCache is not a Redis clone; non-subset commands fail loud. The only Lua accepted in 0.63 is the narrow lock-script allowlist above. |
 | `CLUSTER SLOTS`, `CLUSTER NODES`, `CLUSTER INFO` | `unsupported` | documented divergence | Standalone-only facade. No hash slots, topology, `MOVED`, or `ASK` are fabricated. |
-| Cross-endpoint RESP key visibility | `unsupported` | documented divergence | RESP state is node-local in `0.63.0`. A value written through endpoint A is not claimed to be visible through endpoint B. |
-| Multi-endpoint Redis lock mutual exclusion | `unsupported` | documented divergence | Redis lock acquire/release/extend is single-endpoint only in `0.63.0`. A load-balanced Redis VIP across multiple HydraCache daemons must not be used for lock safety. |
+| Cross-endpoint RESP key visibility | `unsupported` | documented divergence | Debt `resp-cross-endpoint-key-visibility`: RESP state remains node-local through `0.65.0`; `GET`, `MGET`, `DEL`, `EXISTS`, and `MSET` sentinels must invert when a distributed backend lands. |
+| Multi-endpoint Redis lock mutual exclusion | `unsupported` | documented divergence | Debt `resp-cross-endpoint-lock-safety`: Redis lock acquire/release/extend remains single-endpoint through `0.65.0`. A load-balanced Redis VIP across multiple HydraCache daemons must not be used for lock safety. |
 | `HC.STATS`, `HC.DIAGNOSTICS`, `HC.INVALIDATE` | `hydracache_extension` | HydraCache-only | Must be tenant-scoped and go through HydraCache surfaces. |
 | `HC.NAMESPACE`, `HC.TAG`, `HC.SETTAGS`, `HC.INVALIDATE_TAG` | `hydracache_extension` | HydraCache-only | `HC.NAMESPACE` is listener-scoped. Tag metadata is RESP-listener-local, attached only to existing keys, and `HC.INVALIDATE_TAG` invalidates tagged live keys through `ClientSurfaceState`; it does not scan the Redis keyspace or claim Redis Cluster/global tag semantics. |
 

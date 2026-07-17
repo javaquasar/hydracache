@@ -38,6 +38,7 @@ const PROOF_REQUIRED_SCOPES: &[&str] = &[
 const PROOF_REQUIRED_TESTS: &[&str] = &[
     "cargo test -p hydracache-sim --test linearizability_oracle --locked",
     "cargo test -p hydracache-cluster-testkit --test invariants --locked",
+    "cargo test -p hydracache-cluster-testkit --test client_surface_conformance_oracle --locked",
 ];
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {

@@ -10,6 +10,11 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
+      run_nightly:
+        description: "Run scheduled/nightly proof lanes during manual dispatch"
+        required: false
+        default: false
+        type: boolean
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
         required: false
@@ -30,6 +35,8 @@ jobs:
   rust:
     name: Rust
     runs-on: ubuntu-latest
+    env:
+      CARGO_BUILD_JOBS: 4
 
     steps:
       - name: Checkout
@@ -52,8 +59,8 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: v1-rust-no-target
-          cache-targets: false
+          prefix-key: v2-rust-with-target
+          cache-targets: true
 
       - name: Install cargo-deny
         uses: taiki-e/install-action@cargo-deny
@@ -68,11 +75,6 @@ jobs:
 
       - name: Check
         run: cargo check --workspace --all-targets --locked
-
-      - name: Check benchmark targets
-        run: |
-          cargo check -p hydracache --benches --locked
-          cargo check -p hydracache-db --benches --locked
 
       - name: Dependency bans
         run: cargo deny check bans
@@ -92,6 +94,8 @@ jobs:
           cargo test -p xtask --test canary_check --locked
           cargo run -p xtask --locked -- canary-check
           cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.65
+          cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -108,7 +112,9 @@ jobs:
         run: cargo run -p xtask --locked -- verify-no-test-features
 
       - name: Release governance
-        run: cargo run -p xtask --locked -- release-governance-check --release 0.64
+        run: |
+          cargo run -p xtask --locked -- release-governance-check --release 0.64
+          cargo run -p xtask --locked -- release-governance-check --release 0.65
 
       - name: SQL lint baseline drift
         run: |
@@ -171,7 +177,15 @@ jobs:
           npm --prefix console test
 
       - name: Test
-        run: cargo nextest run --workspace --profile ci --locked
+        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate fast.workspace-nextest
+
+      - name: Upload fast release evidence receipt
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "release-evidence-fast-${{ github.sha }}"
+          path: target/release-evidence/receipts/**
+          if-no-files-found: error
 
       - name: Doctests
         run: cargo test --workspace --doc --locked
@@ -191,7 +205,7 @@ jobs:
   performance-budget:
     name: Performance Budget
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -218,7 +232,7 @@ jobs:
   redis-compat-release-proof:
     name: Redis Compatibility Release Proof
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -274,7 +288,7 @@ jobs:
   dst-nightly-soak:
     name: DST and Soak Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -312,6 +326,9 @@ jobs:
 
       - name: Run daemon-process cluster tier
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate env.hydracache-run-daemon-process-e2e
+
+      - name: Redis RESP multinode debt sentinels
+        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e
 
       - name: Upload daemon-process replay artifacts
         if: always()
@@ -354,7 +371,7 @@ jobs:
   raft-corner-case-nightly:
     name: Raft Corner-Case Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -403,7 +420,7 @@ jobs:
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -427,7 +444,7 @@ jobs:
   fuzz-nightly:
     name: Fuzz Nightly
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -474,7 +491,7 @@ jobs:
   raft-mutation-testing:
     name: Raft Mutation Testing (${{ matrix.label }})
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
     timeout-minutes: 110
     strategy:
       fail-fast: false
@@ -548,7 +565,7 @@ jobs:
   raft-miri:
     name: Raft Miri
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -601,7 +618,7 @@ jobs:
     name: ThreadSanitizer
     runs-on: ubuntu-latest
     timeout-minutes: 180
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -643,7 +660,7 @@ jobs:
   dynamic-canary-sweep:
     name: Dynamic Canary Sweep
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
 
     steps:
       - name: Checkout
@@ -694,7 +711,7 @@ jobs:
   coverage-ratchet:
     name: Coverage Ratchet
     runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
     env:
       HYDRACACHE_TEST_POSTGRES_URL: postgres://hydracache:hydracache@127.0.0.1:5432/hydracache
     services:

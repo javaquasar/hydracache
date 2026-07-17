@@ -1,0 +1,267 @@
+schema_version = 1
+release = "0.65.0"
+plan = "docs/plans/V0_65_REDIS_DEBT_SAFETY_NET_PLAN.md"
+canary_policy = "dedicated_flip_sentinels_with_dynamic_registry"
+dynamic_canary_work_items = ["W1", "W2", "W3", "W4"]
+
+[[work_item]]
+id = "W1"
+required_sources = [
+    "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs",
+    "crates/hydracache-cluster-testkit/src/client_surface_conformance.rs",
+]
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "conformance_conditional_put_if_absent_is_atomic_under_n_concurrent_acquirers"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "conformance_batch_entry_and_byte_limits_reject_at_boundary_plus_one_without_mutation"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "client_surface_native_lock_cas_and_idempotency_are_tenant_scoped"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "client_surface_cas_mismatch_does_not_reserve_quota"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "client_surface_concurrent_put_overwrite_keeps_store_and_quota_consistent"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "client_surface_concurrent_put_delete_keeps_store_and_quota_consistent"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "client_surface_concurrent_expiry_and_overwrite_keeps_store_and_quota_consistent"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/client_surface_conformance.rs"
+function = "http_tenant_binding_rejection_records_exactly_one_auth_failure"
+
+[[work_item]]
+id = "W2"
+required_sources = [
+    "crates/hydracache-redis-compat/src/lib.rs",
+    "docs/integrations/redis_compat_conformance.json",
+]
+required_artifacts = ["docs/integrations/redis_compat_conformance.json"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "translation_catalog_has_no_missing_or_extra_case_ids"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "every_translator_owned_case_maps_to_frozen_complete_execution_plan"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "del_concurrent_write_atomicity_is_documented_debt_not_a_frozen_guarantee"
+
+[[work_item]]
+id = "W3"
+required_sources = [
+    "crates/hydracache-server/tests/redis_resp_multinode.rs",
+    "crates/hydracache-server/tests/support/daemon_cluster.rs",
+    "docs/integrations/redis_compat_conformance.json",
+]
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["env.hydracache-run-redis-resp-multinode-e2e"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "multinode_resp_facade_documents_node_local_state"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_mget_del_exists_are_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_mset_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "multinode_resp_lock_subset_is_single_endpoint_only"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_lock_release_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_lock_extend_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_ttl_visibility_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_script_cache_is_node_local"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/redis_resp_multinode.rs"
+function = "cross_node_tag_index_is_node_local"
+
+[[work_item]]
+id = "W4"
+required_sources = [
+    "crates/hydracache-redis-compat/src/lib.rs",
+    "crates/hydracache-redis-compat/tests/resp_boundaries.rs",
+]
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "resp3_scalar_array_binary_bulk_and_error_frames_match_golden_bytes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "resp3_top_level_nested_and_attributed_aggregates_fail_before_dispatch"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "resp3_null_uses_underscore_encoding_and_resp2_uses_dash_one"
+
+[[work_item]]
+id = "W5"
+required_sources = ["crates/hydracache-redis-compat/src/lib.rs"]
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "resp_lock_ops_match_ordinary_admission_and_rejection_audit_policy"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "resp_lock_and_extension_bytes_never_appear_in_debug_errors_metrics_stats_or_diagnostics"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "translate_redis_command_is_total_and_never_panics_on_arbitrary_commands"
+
+[[work_item]]
+id = "W6"
+required_sources = [
+    "crates/hydracache-client-protocol/tests/fixtures.rs",
+    "crates/hydracache-client-protocol/tests/versioned_codec.rs",
+    "crates/hydracache-client-transport-axum/tests/protocol_compat.rs",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v2_evict_request.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v2_evict_response.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v3_evict_request.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v3_evict_response.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_compat_provenance.json",
+    "crates/hydracache-redis-compat/src/lib.rs",
+    "crates/hydracache-server/tests/server_lifecycle.rs",
+]
+required_artifacts = [
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v2_evict_request.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v2_evict_response.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v3_evict_request.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_v3_evict_response.hex",
+    "crates/hydracache-client-transport-axum/tests/fixtures/protocol_compat_provenance.json",
+]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-protocol/tests/fixtures.rs"
+function = "golden_client_v1_fixtures_round_trip"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-protocol/tests/versioned_codec.rs"
+function = "v1_historical_request_and_response_catalog_roundtrips"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-protocol/tests/versioned_codec.rs"
+function = "v1_rejects_every_post_v1_request_and_response_on_encode_and_decode"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/protocol_compat.rs"
+function = "published_v2_frames_roundtrip_against_current_server"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/protocol_compat.rs"
+function = "frozen_v3_frames_roundtrip_against_current_server"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/protocol_compat.rs"
+function = "compatibility_fixture_provenance_and_digests_are_frozen"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/protocol_compat.rs"
+function = "frame_and_envelope_protocol_versions_must_match_before_mutation"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-client-transport-axum/tests/protocol_compat.rs"
+function = "protocol_v2_v3_clients_never_receive_v4_conditional_shapes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "resp_lock_state_is_independent_of_native_fenced_lock_engine"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-redis-compat/src/lib.rs"
+function = "enabling_redis_listener_does_not_change_core_cache_or_client_surface_behavior"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-server/tests/server_lifecycle.rs"
+function = "redis_listener_core_parity"
+
+[[work_item]]
+id = "W7"
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/doc_check.rs",
+    "crates/xtask/src/gated_tests.rs",
+    "crates/xtask/src/release_governance.rs",
+    "docs/GATES.md",
+    "docs/TESTING.md",
+    "docs/COMPAT.md",
+    "docs/testing/gated-test-registry.toml",
+]
+required_artifacts = [
+    "docs/testing/gated-test-registry.toml",
+    "docs/integrations/redis_compat_conformance.json",
+]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/doc_check.rs"
+function = "accepts_valid_redis_compat_conformance_manifest"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/doc_check.rs"
+function = "rejects_commented_or_ungated_redis_multinode_sentinels"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/doc_check.rs"
+function = "rejects_dangling_tests_missing_debt_ids_and_duplicate_case_ids"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands"

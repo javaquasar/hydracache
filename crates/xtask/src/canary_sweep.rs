@@ -63,11 +63,12 @@ enum SweepTier {
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     let options = Options::parse(args)?;
-    let static_problems = canary_check::check_canary_registry(&options.root)?;
+    let static_problems =
+        canary_check::check_canary_registry_for_release(&options.root, &options.release)?;
     if !static_problems.is_empty() {
         return Err(format!("canary registry is invalid: {}", static_problems.join("; ")).into());
     }
-    let registry = canary_check::load_registry(&options.root)?;
+    let registry = canary_check::load_registry_for_release(&options.root, &options.release)?;
     if normalize_release(&registry.release) != normalize_release(&options.release) {
         return Err(format!(
             "canary registry release {} does not match {}",

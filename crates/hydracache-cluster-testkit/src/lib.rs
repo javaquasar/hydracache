@@ -4,6 +4,7 @@
 //! dev-dependencies. It owns the fault-injection vocabulary so production crates
 //! do not grow test-only transport types.
 
+pub mod client_surface_conformance;
 pub mod invariants;
 
 use std::collections::{BTreeMap, VecDeque};

@@ -35,6 +35,72 @@ fn cleanup(root: &Path) {
     let _ = fs::remove_dir_all(root);
 }
 
+fn write_redis_test_source(root: &Path, source: &str, tests: &[&str], gated: bool) {
+    let path = root.join(source);
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let mut body = String::new();
+    for test in tests {
+        if gated {
+            body.push_str(&format!(
+                "#[test]\nfn {test}() {{ if !skip_unless_redis_resp_multinode_e2e(\"{test}\") {{ return; }} }}\n"
+            ));
+        } else {
+            body.push_str(&format!("#[test]\nfn {test}() {{}}\n"));
+        }
+    }
+    fs::write(path, body).unwrap();
+}
+
+fn valid_redis_compat_manifest() -> &'static str {
+    r#"{
+  "version": 1,
+  "surface": "hydracache-redis-resp-edge",
+  "supported_resp": "RESP2+RESP3",
+  "redis_oracle": {
+    "images": ["redis:6.2.14", "redis:7.2.5"],
+    "normalization": "exact for supported commands"
+  },
+  "test_layers": [
+    {"id":"contract","kind":"contract_suite","description":"backend contract","source":"crates/redis_tests.rs","tests":["get_matches_real_redis"]},
+    {"id":"goldens","kind":"characterization","description":"wire goldens","source":"crates/redis_tests.rs","tests":["info_returns_minimal_metadata","hc_stats_is_hydracache_only"]},
+    {"id":"flips","kind":"flip_sentinel","description":"deployment flips","source":"crates/hydracache-server/tests/redis_resp_multinode.rs","tests":["multinode_resp_facade_documents_node_local_state","cross_node_mget_del_exists_are_node_local","cross_node_mset_is_node_local","multinode_resp_lock_subset_is_single_endpoint_only","cross_node_lock_release_is_node_local","cross_node_lock_extend_is_node_local"]}
+  ],
+  "commands": [
+    {"name":"GET","status":"supported","kind":"redis_subset","route":"translator","case_ids":["get"],"oracle":"exact","tests":["get_matches_real_redis"]},
+    {"name":"INFO","status":"supported_with_caveat","kind":"health_probe","route":"listener_metrics","case_ids":["info"],"oracle":"normalized_metadata","tests":["info_returns_minimal_metadata"]},
+    {"name":"HC.STATS","status":"hydracache_extension","kind":"hydracache_extension","route":"translator","case_ids":["hc-stats"],"oracle":"hydracache_only","tests":["hc_stats_is_hydracache_only"]},
+    {"name":"Cross-endpoint RESP key visibility","status":"unsupported","kind":"deployment_scope","route":"deployment_scope","case_ids":["cross-endpoint-get"],"oracle":"documented_divergence","debt_id":"resp-cross-endpoint-key-visibility","current_claim":"node local","target_claim":"distributed","tests":["multinode_resp_facade_documents_node_local_state","cross_node_mget_del_exists_are_node_local","cross_node_mset_is_node_local"]},
+    {"name":"Multi-endpoint Redis lock mutual exclusion","status":"unsupported","kind":"deployment_scope","route":"deployment_scope","case_ids":["cross-endpoint-set-nx"],"oracle":"documented_divergence","debt_id":"resp-cross-endpoint-lock-safety","current_claim":"single endpoint","target_claim":"distributed locks","tests":["multinode_resp_lock_subset_is_single_endpoint_only","cross_node_lock_release_is_node_local","cross_node_lock_extend_is_node_local"]}
+  ]
+}"#
+}
+
+fn write_valid_redis_test_catalog(root: &Path) {
+    write_redis_test_source(
+        root,
+        "crates/redis_tests.rs",
+        &[
+            "get_matches_real_redis",
+            "info_returns_minimal_metadata",
+            "hc_stats_is_hydracache_only",
+        ],
+        false,
+    );
+    write_redis_test_source(
+        root,
+        "crates/hydracache-server/tests/redis_resp_multinode.rs",
+        &[
+            "multinode_resp_facade_documents_node_local_state",
+            "cross_node_mget_del_exists_are_node_local",
+            "cross_node_mset_is_node_local",
+            "multinode_resp_lock_subset_is_single_endpoint_only",
+            "cross_node_lock_release_is_node_local",
+            "cross_node_lock_extend_is_node_local",
+        ],
+        true,
+    );
+}
+
 #[test]
 fn consistent_manifest_has_no_problems() {
     let manifest = r#"
@@ -354,38 +420,54 @@ depends_on = []
     .unwrap();
     fs::write(
         integration_dir.join("redis_compat_conformance.json"),
-        r#"{
-  "version": 1,
-  "surface": "hydracache-redis-resp-edge",
-  "supported_resp": "RESP2+RESP3",
-  "redis_oracle": {
-    "images": ["redis:6.2.14", "redis:7.2.5"],
-    "normalization": "exact for supported commands"
-  },
-  "commands": [
-    {
-      "name": "GET",
-      "status": "supported",
-      "kind": "redis_subset",
-      "oracle": "exact",
-      "tests": ["get_matches_real_redis"]
-    },
-    {
-      "name": "INFO",
-      "status": "supported_with_caveat",
-      "kind": "health_probe",
-      "oracle": "normalized_metadata",
-      "tests": ["info_returns_minimal_metadata"]
-    },
-    {
-      "name": "HC.STATS",
-      "status": "hydracache_extension",
-      "kind": "hydracache_extension",
-      "oracle": "hydracache_only",
-      "tests": ["hc_stats_is_hydracache_only"]
-    }
-  ]
-}"#,
+        valid_redis_compat_manifest(),
+    )
+    .unwrap();
+    write_valid_redis_test_catalog(&root);
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    assert!(
+        problems.is_empty(),
+        "expected no problems, got: {problems:?}"
+    );
+}
+
+#[test]
+fn accepts_real_proptest_macro_tests_as_manifest_references() {
+    let manifest = r#"
+[[release]]
+version = "0.63.0"
+file = "docs/plans/V0_63.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_63.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        valid_redis_compat_manifest(),
+    )
+    .unwrap();
+    write_valid_redis_test_catalog(&root);
+    fs::write(
+        root.join("crates/redis_tests.rs"),
+        r#"
+#[test]
+fn get_matches_real_redis() {}
+#[test]
+fn hc_stats_is_hydracache_only() {}
+proptest! {
+    #[test]
+    fn info_returns_minimal_metadata(input in 0_u8..=255) { let _ = input; }
+}
+"#,
     )
     .unwrap();
 
@@ -393,7 +475,7 @@ depends_on = []
     cleanup(&root);
     assert!(
         problems.is_empty(),
-        "expected no problems, got: {problems:?}"
+        "expected a proptest-generated #[test] to resolve, got: {problems:?}"
     );
 }
 
@@ -429,7 +511,12 @@ depends_on = []
       "name": "Cross-endpoint RESP key visibility",
       "status": "unsupported",
       "kind": "deployment_scope",
+      "route": "deployment_scope",
+      "case_ids": ["cross-endpoint-get"],
       "oracle": "documented_divergence",
+      "debt_id": "resp-cross-endpoint-key-visibility",
+      "current_claim": "node local",
+      "target_claim": "distributed",
       "tests": ["missing_multinode_sentinel"]
     }
   ]
@@ -442,12 +529,111 @@ depends_on = []
 
     let joined = problems.join("\n");
     assert!(
-        joined.contains("required for Redis deployment_scope rows but could not be read"),
-        "missing deployment_scope multinode test-file check: {joined}"
+        joined.contains("deployment_scope test 'missing_multinode_sentinel' must be a real #[test] in crates/hydracache-server/tests/redis_resp_multinode.rs"),
+        "missing deployment_scope sentinel implementation check: {joined}"
+    );
+}
+
+#[test]
+fn rejects_commented_or_ungated_redis_multinode_sentinels() {
+    let manifest = r#"
+[[release]]
+version = "0.65.0"
+file = "docs/plans/V0_65.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_65.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        valid_redis_compat_manifest(),
+    )
+    .unwrap();
+    write_valid_redis_test_catalog(&root);
+    fs::write(
+        root.join("crates/hydracache-server/tests/redis_resp_multinode.rs"),
+        r#"
+// #[test]
+// fn multinode_resp_facade_documents_node_local_state() {}
+#[test]
+fn cross_node_mget_del_exists_are_node_local() {}
+#[test]
+fn cross_node_mset_is_node_local() { skip_unless_redis_resp_multinode_e2e("cross_node_mset_is_node_local"); }
+#[test]
+fn multinode_resp_lock_subset_is_single_endpoint_only() { skip_unless_redis_resp_multinode_e2e("multinode_resp_lock_subset_is_single_endpoint_only"); }
+#[test]
+fn cross_node_lock_release_is_node_local() { skip_unless_redis_resp_multinode_e2e("cross_node_lock_release_is_node_local"); }
+#[test]
+fn cross_node_lock_extend_is_node_local() { skip_unless_redis_resp_multinode_e2e("cross_node_lock_extend_is_node_local"); }
+"#,
+    )
+    .unwrap();
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("deployment_scope test 'multinode_resp_facade_documents_node_local_state' must be a real #[test]"),
+        "commented function was accepted as a sentinel: {joined}"
     );
     assert!(
-        joined.contains("deployment_scope test 'missing_multinode_sentinel' must be implemented in crates/hydracache-server/tests/redis_resp_multinode.rs"),
-        "missing deployment_scope sentinel implementation check: {joined}"
+        joined.contains("deployment_scope test 'cross_node_mget_del_exists_are_node_local' must call skip_unless_redis_resp_multinode_e2e"),
+        "ungated function was accepted as a sentinel: {joined}"
+    );
+}
+
+#[test]
+fn rejects_dangling_tests_missing_debt_ids_and_duplicate_case_ids() {
+    let manifest = r#"
+[[release]]
+version = "0.65.0"
+file = "docs/plans/V0_65.md"
+status = "planned"
+depends_on = []
+"#;
+    let root = scratch_root(manifest, &["docs/plans/V0_65.md"]);
+    let integration_dir = root.join("docs/integrations");
+    fs::create_dir_all(&integration_dir).unwrap();
+    fs::write(
+        integration_dir.join("redis-compat.md"),
+        redis_compat_docs_with_examples(),
+    )
+    .unwrap();
+    let broken = valid_redis_compat_manifest()
+        .replacen("\"case_ids\":[\"info\"]", "\"case_ids\":[\"get\"]", 1)
+        .replace(
+            "resp-cross-endpoint-key-visibility",
+            "renamed-cross-endpoint-key-visibility",
+        )
+        .replace("get_matches_real_redis", "dangling_get_test");
+    fs::write(
+        integration_dir.join("redis_compat_conformance.json"),
+        broken,
+    )
+    .unwrap();
+    write_valid_redis_test_catalog(&root);
+
+    let problems = doc_check::check(&root).unwrap();
+    cleanup(&root);
+    let joined = problems.join("\n");
+    assert!(
+        joined.contains("duplicate global case id 'get'"),
+        "{joined}"
+    );
+    assert!(
+        joined.contains("test 'dangling_get_test' does not resolve to a real Rust #[test]"),
+        "{joined}"
+    );
+    assert!(
+        joined.contains("missing required stable debt_id 'resp-cross-endpoint-key-visibility'"),
+        "{joined}"
     );
 }
 

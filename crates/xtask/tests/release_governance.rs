@@ -62,6 +62,26 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
         .any(|problem| problem.contains("env.hydracache-grid-scope")));
 
     let broken = workflow.replacen(
+        "evidence-run --release 0.65 --gate env.hydracache-run-redis-resp-multinode-e2e",
+        "redis-multinode-evidence-was-silently-removed",
+        1,
+    );
+    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("env.hydracache-run-redis-resp-multinode-e2e")));
+
+    let broken = workflow.replacen(
+        "release-governance-check --release 0.65",
+        "next-release-governance-was-silently-removed",
+        1,
+    );
+    let problems = xtask::release_governance::release_execution_wiring_problems(&broken).unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("release-governance-check --release 0.65")));
+
+    let broken = workflow.replacen(
         "cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60",
         "cargo +nightly fuzz run fuzz_config_parse --manifest-path fuzz/Cargo.toml -- -max_total_time=60",
         1,

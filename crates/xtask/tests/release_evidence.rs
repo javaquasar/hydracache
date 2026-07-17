@@ -1,4 +1,5 @@
 use std::fs;
+use std::process::Command;
 
 use xtask::evidence_run::{ArtifactDigest, EvidenceOutcome, EvidenceReceipt, NormalizedResult};
 
@@ -62,6 +63,106 @@ fn release_evidence_reports_every_manifest_work_item_exactly_once() {
 }
 
 #[test]
+fn release_evidence_never_reuses_canaries_with_equal_ids_from_an_older_release() {
+    let root = root();
+    let current = xtask::release_evidence::build_report(&root, "0.64", None).unwrap();
+    assert!(current.work_items.iter().all(|item| !item
+        .reasons
+        .iter()
+        .any(|reason| reason.contains("not cross-release evidence"))));
+
+    assert!(xtask::release_evidence::dynamic_canary_release_problem(
+        xtask::release_evidence::CanaryPolicy::DynamicRegistry,
+        "0.64.0",
+        "0.65.0"
+    )
+    .is_some());
+}
+
+#[test]
+fn explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_registry() {
+    assert!(xtask::release_evidence::dynamic_canary_release_problem(
+        xtask::release_evidence::CanaryPolicy::DedicatedFlipSentinels,
+        "0.64.0",
+        "0.65.0"
+    )
+    .is_none());
+
+    let root = root();
+    let manifest = xtask::release_evidence::parse_manifest_text(
+        &fs::read_to_string(root.join("docs/testing/release-evidence/0.65.toml")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        manifest.dynamic_canary_work_items,
+        vec!["W1", "W2", "W3", "W4"]
+    );
+    assert!(matches!(
+        manifest.canary_policy,
+        xtask::release_evidence::CanaryPolicy::DedicatedFlipSentinelsWithDynamicRegistry
+    ));
+
+    let registry = xtask::canary_check::load_registry_for_release(&root, "0.65").unwrap();
+    let canary_receipts = xtask::canary_sweep::load_receipts(&root).unwrap();
+    let source_commit = String::from_utf8(
+        Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(&root)
+            .output()
+            .unwrap()
+            .stdout,
+    )
+    .unwrap()
+    .trim()
+    .to_owned();
+
+    let report = xtask::release_evidence::build_report(&root, "0.65", None).unwrap();
+    assert!(!report.work_items.is_empty());
+    assert!(report
+        .work_items
+        .iter()
+        .all(|item| item.stage >= xtask::release_evidence::EvidenceStage::Implemented));
+
+    for item in &report.work_items {
+        let has_dynamic_reason = item
+            .reasons
+            .iter()
+            .any(|reason| reason.contains("dynamic canary"));
+        if matches!(item.id.as_str(), "W1" | "W2" | "W3" | "W4") {
+            let entry = registry
+                .entries
+                .iter()
+                .find(|entry| entry.w_item == item.id)
+                .expect("dynamic canary registry entry");
+            let receipt = canary_receipts
+                .iter()
+                .find(|receipt| receipt.w_item == item.id);
+            let receipt_is_invalid = receipt.is_none_or(|receipt| {
+                !xtask::canary_sweep::receipt_problems(
+                    &root,
+                    &registry,
+                    entry,
+                    receipt,
+                    &source_commit,
+                )
+                .is_empty()
+            });
+            assert_eq!(
+                has_dynamic_reason, receipt_is_invalid,
+                "W1-W4 dynamic-canary reason must match the observed receipt state for {}",
+                item.id
+            );
+        } else {
+            assert!(
+                !has_dynamic_reason,
+                "unrelated work item {} must not be blocked by dynamic canary policy",
+                item.id
+            );
+        }
+    }
+}
+
+#[test]
 fn release_evidence_marks_missing_skipped_stale_or_wrong_commit_receipts_non_green() {
     let root = root();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
@@ -111,23 +212,19 @@ status = "green"
     let root = root();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
     let mut gate = registry.gate[0].clone();
-    let relative = "target/release-evidence/receipt-artifact.txt";
-    let artifact = root.join(relative);
-    fs::create_dir_all(artifact.parent().unwrap()).unwrap();
-    fs::write(&artifact, b"actual").unwrap();
+    let relative = "Cargo.toml";
     gate.artifacts = vec![relative.to_owned()];
     let mut receipt = base_receipt(&gate, "candidate");
     receipt.artifacts = vec![ArtifactDigest {
         path: relative.to_owned(),
         sha256: "00".repeat(32),
-        bytes: 6,
+        bytes: 0,
     }];
     let problems =
         xtask::release_evidence::receipt_problems(&root, "0.64", "candidate", &gate, &receipt);
     assert!(problems
         .iter()
         .any(|problem| problem.contains("artifact hash mismatch")));
-    fs::remove_file(artifact).unwrap();
 }
 
 #[test]

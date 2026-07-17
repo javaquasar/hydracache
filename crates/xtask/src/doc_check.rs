@@ -37,6 +37,10 @@ use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use proc_macro2::{Delimiter, TokenStream, TokenTree};
+use syn::visit::{self, Visit};
+use syn::{Attribute, Expr, ItemFn, ItemMacro};
+
 const ALLOWED_STATUS: [&str; 5] = ["shipped", "in-progress", "planned", "draft", "superseded"];
 const ALLOWED_REDIS_COMPAT_STATUS: [&str; 6] = [
     "supported",
@@ -54,6 +58,31 @@ const ALLOWED_REDIS_COMPAT_ORACLE: [&str; 7] = [
     "hydracache_only",
     "ttl_tolerance",
     "candidate",
+];
+const ALLOWED_REDIS_COMPAT_ROUTES: [&str; 6] = [
+    "translator",
+    "connection_state",
+    "listener_cache",
+    "listener_metrics",
+    "transport",
+    "deployment_scope",
+];
+const ALLOWED_REDIS_TEST_LAYER_KINDS: [&str; 3] =
+    ["contract_suite", "characterization", "flip_sentinel"];
+const REQUIRED_REDIS_DEBT_IDS: [&str; 2] = [
+    "resp-cross-endpoint-key-visibility",
+    "resp-cross-endpoint-lock-safety",
+];
+const REDIS_MULTINODE_TEST_SOURCE: &str = "crates/hydracache-server/tests/redis_resp_multinode.rs";
+const REQUIRED_REDIS_KEY_SENTINELS: [&str; 3] = [
+    "multinode_resp_facade_documents_node_local_state",
+    "cross_node_mget_del_exists_are_node_local",
+    "cross_node_mset_is_node_local",
+];
+const REQUIRED_REDIS_LOCK_SENTINELS: [&str; 3] = [
+    "multinode_resp_lock_subset_is_single_endpoint_only",
+    "cross_node_lock_release_is_node_local",
+    "cross_node_lock_extend_is_node_local",
 ];
 
 #[derive(serde::Deserialize)]
@@ -79,16 +108,20 @@ struct Release {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RedisCompatManifest {
     version: u16,
     surface: String,
     supported_resp: String,
     redis_oracle: RedisOracle,
     #[serde(default)]
+    test_layers: Vec<RedisCompatTestLayer>,
+    #[serde(default)]
     commands: Vec<RedisCompatCommand>,
 }
 
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RedisOracle {
     #[serde(default)]
     images: Vec<String>,
@@ -97,14 +130,39 @@ struct RedisOracle {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RedisCompatTestLayer {
+    id: String,
+    kind: String,
+    description: String,
+    source: String,
+    #[serde(default)]
+    tests: Vec<String>,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RedisCompatCommand {
     name: String,
     status: String,
     #[serde(default)]
     kind: String,
+    #[serde(default)]
+    route: String,
+    #[serde(default)]
+    case_ids: Vec<String>,
     oracle: String,
     #[serde(default)]
     tests: Vec<String>,
+    #[serde(default)]
+    debt_id: Option<String>,
+    #[serde(default)]
+    current_claim: Option<String>,
+    #[serde(default)]
+    target_claim: Option<String>,
+    #[serde(default)]
+    #[allow(dead_code)]
+    reviewed_clients: Vec<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -512,6 +570,178 @@ fn extract_quoted_hydracache_packages(text: &str) -> BTreeSet<String> {
         .collect()
 }
 
+#[derive(Default)]
+struct RustTestCatalog {
+    by_name: HashMap<String, BTreeSet<String>>,
+    by_source: HashMap<String, BTreeSet<String>>,
+    redis_multinode_gated: BTreeSet<String>,
+}
+
+impl RustTestCatalog {
+    fn contains(&self, test: &str) -> bool {
+        self.by_name.contains_key(test)
+    }
+
+    fn contains_in_source(&self, source: &str, test: &str) -> bool {
+        self.by_source
+            .get(source)
+            .is_some_and(|tests| tests.contains(test))
+    }
+
+    fn insert(&mut self, source: &str, name: String) {
+        self.by_name
+            .entry(name.clone())
+            .or_default()
+            .insert(source.to_owned());
+        self.by_source
+            .entry(source.to_owned())
+            .or_default()
+            .insert(name);
+    }
+}
+
+struct RustTestVisitor<'a> {
+    source: &'a str,
+    catalog: &'a mut RustTestCatalog,
+}
+
+impl<'ast> Visit<'ast> for RustTestVisitor<'_> {
+    fn visit_item_fn(&mut self, function: &'ast ItemFn) {
+        if is_rust_test(&function.attrs) {
+            let name = function.sig.ident.to_string();
+            self.catalog.insert(self.source, name.clone());
+
+            let mut gate = DedicatedRedisMultinodeGateVisitor::default();
+            gate.visit_block(&function.block);
+            if gate.called {
+                self.catalog.redis_multinode_gated.insert(name);
+            }
+        }
+        visit::visit_item_fn(self, function);
+    }
+
+    fn visit_item_macro(&mut self, item: &'ast ItemMacro) {
+        if item
+            .mac
+            .path
+            .segments
+            .last()
+            .is_some_and(|segment| segment.ident == "proptest")
+        {
+            for name in proptest_test_names(item.mac.tokens.clone()) {
+                self.catalog.insert(self.source, name);
+            }
+        }
+        visit::visit_item_macro(self, item);
+    }
+}
+
+pub(crate) fn proptest_test_names(tokens: TokenStream) -> BTreeSet<String> {
+    let mut names = BTreeSet::new();
+    let mut tokens = tokens.into_iter().peekable();
+    let mut has_test_attribute = false;
+
+    while let Some(token) = tokens.next() {
+        match token {
+            TokenTree::Punct(punct) if punct.as_char() == '#' => {
+                let Some(TokenTree::Group(group)) = tokens.peek() else {
+                    has_test_attribute = false;
+                    continue;
+                };
+                if group.delimiter() == Delimiter::Bracket
+                    && group
+                        .stream()
+                        .into_iter()
+                        .any(|token| matches!(token, TokenTree::Ident(ident) if ident == "test"))
+                {
+                    has_test_attribute = true;
+                    tokens.next();
+                }
+            }
+            TokenTree::Ident(ident) if has_test_attribute && ident == "fn" => {
+                if let Some(TokenTree::Ident(name)) = tokens.next() {
+                    names.insert(name.to_string());
+                }
+                has_test_attribute = false;
+            }
+            TokenTree::Group(_) if has_test_attribute => {
+                has_test_attribute = false;
+            }
+            _ => {}
+        }
+    }
+    names
+}
+
+#[derive(Default)]
+struct DedicatedRedisMultinodeGateVisitor {
+    called: bool,
+}
+
+impl<'ast> Visit<'ast> for DedicatedRedisMultinodeGateVisitor {
+    fn visit_expr_call(&mut self, call: &'ast syn::ExprCall) {
+        if let Expr::Path(path) = call.func.as_ref() {
+            if path
+                .path
+                .segments
+                .last()
+                .is_some_and(|segment| segment.ident == "skip_unless_redis_resp_multinode_e2e")
+            {
+                self.called = true;
+            }
+        }
+        visit::visit_expr_call(self, call);
+    }
+}
+
+fn is_rust_test(attributes: &[Attribute]) -> bool {
+    attributes.iter().any(|attribute| {
+        attribute
+            .path()
+            .segments
+            .last()
+            .is_some_and(|segment| segment.ident == "test")
+    })
+}
+
+fn collect_rust_tests(root: &Path) -> Result<RustTestCatalog, Box<dyn Error>> {
+    fn visit_dir(
+        root: &Path,
+        directory: &Path,
+        catalog: &mut RustTestCatalog,
+    ) -> Result<(), Box<dyn Error>> {
+        if !directory.is_dir() {
+            return Ok(());
+        }
+        for entry in fs::read_dir(directory)? {
+            let path = entry?.path();
+            if path.is_dir() {
+                visit_dir(root, &path, catalog)?;
+            } else if path.extension().and_then(|extension| extension.to_str()) == Some("rs") {
+                let source = path
+                    .strip_prefix(root)?
+                    .to_string_lossy()
+                    .replace('\\', "/");
+                let text = fs::read_to_string(&path)
+                    .map_err(|error| format!("reading {}: {error}", path.display()))?;
+                let syntax = syn::parse_file(&text).map_err(|error| {
+                    format!("parsing Rust tests in {}: {error}", path.display())
+                })?;
+                RustTestVisitor {
+                    source: &source,
+                    catalog,
+                }
+                .visit_file(&syntax);
+            }
+        }
+        Ok(())
+    }
+
+    let mut catalog = RustTestCatalog::default();
+    visit_dir(root, &root.join("crates"), &mut catalog)?;
+    Ok(catalog)
+}
+
 fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Error>> {
     let manifest_path = root.join("docs/integrations/redis_compat_conformance.json");
     if !manifest_path.is_file() {
@@ -578,27 +808,58 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
         );
     }
 
-    let has_deployment_scope = manifest
-        .commands
-        .iter()
-        .any(|command| command.kind == "deployment_scope");
-    let redis_multinode_test_path =
-        root.join("crates/hydracache-server/tests/redis_resp_multinode.rs");
-    let redis_multinode_tests = if has_deployment_scope {
-        match fs::read_to_string(&redis_multinode_test_path) {
-            Ok(text) => text,
-            Err(err) => {
+    let rust_tests = collect_rust_tests(root)?;
+    let mut layer_ids = HashSet::new();
+    let mut layer_kinds = HashSet::new();
+    for layer in &manifest.test_layers {
+        let source = format!(
+            "docs/integrations/redis_compat_conformance.json test layer '{}'",
+            layer.id
+        );
+        if layer.id.trim().is_empty() || !layer_ids.insert(layer.id.as_str()) {
+            problems.push(format!("{source}: id must be non-empty and unique"));
+        }
+        if !ALLOWED_REDIS_TEST_LAYER_KINDS.contains(&layer.kind.as_str()) {
+            problems.push(format!(
+                "{source}: invalid kind '{}' (allowed: {})",
+                layer.kind,
+                ALLOWED_REDIS_TEST_LAYER_KINDS.join(", ")
+            ));
+        } else {
+            layer_kinds.insert(layer.kind.as_str());
+        }
+        if layer.description.trim().is_empty() {
+            problems.push(format!("{source}: description must not be empty"));
+        }
+        if layer.source.trim().is_empty() || !root.join(&layer.source).is_file() {
+            problems.push(format!(
+                "{source}: source '{}' must be an existing repository file",
+                layer.source
+            ));
+        }
+        if layer.tests.is_empty() {
+            problems.push(format!("{source}: tests must not be empty"));
+        }
+        for test in &layer.tests {
+            if !rust_tests.contains_in_source(&layer.source, test) {
                 problems.push(format!(
-                    "crates/hydracache-server/tests/redis_resp_multinode.rs: required for Redis deployment_scope rows but could not be read: {err}"
+                    "{source}: test '{test}' must be a real #[test] in {}",
+                    layer.source
                 ));
-                String::new()
             }
         }
-    } else {
-        String::new()
-    };
+    }
+    for required in ALLOWED_REDIS_TEST_LAYER_KINDS {
+        if !layer_kinds.contains(required) {
+            problems.push(format!(
+                "docs/integrations/redis_compat_conformance.json: missing required test layer kind '{required}'"
+            ));
+        }
+    }
 
     let mut names = HashSet::new();
+    let mut case_ids = HashSet::new();
+    let mut debt_ids = HashSet::new();
     for command in &manifest.commands {
         let source = format!(
             "docs/integrations/redis_compat_conformance.json command '{}'",
@@ -627,6 +888,30 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
         if command.kind.trim().is_empty() {
             problems.push(format!("{source}: kind must not be empty"));
         }
+        if !ALLOWED_REDIS_COMPAT_ROUTES.contains(&command.route.as_str()) {
+            problems.push(format!(
+                "{source}: invalid route '{}' (allowed: {})",
+                command.route,
+                ALLOWED_REDIS_COMPAT_ROUTES.join(", ")
+            ));
+        }
+        if command.case_ids.is_empty() {
+            problems.push(format!("{source}: case_ids must not be empty"));
+        }
+        for case_id in &command.case_ids {
+            let valid = !case_id.is_empty()
+                && case_id.chars().all(|character| {
+                    character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-'
+                });
+            if !valid {
+                problems.push(format!(
+                    "{source}: case id '{case_id}' must use lowercase ASCII letters, digits, and hyphens"
+                ));
+            }
+            if !case_ids.insert(case_id.as_str()) {
+                problems.push(format!("{source}: duplicate global case id '{case_id}'"));
+            }
+        }
 
         let requires_tests = !matches!(command.status.as_str(), "unsupported");
         if requires_tests && command.tests.is_empty() {
@@ -644,6 +929,39 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
                 "{source}: test names must be non-empty identifiers"
             ));
         }
+        for test in &command.tests {
+            if !rust_tests.contains(test) {
+                problems.push(format!(
+                    "{source}: test '{test}' does not resolve to a real Rust #[test]"
+                ));
+            }
+        }
+
+        let has_any_debt_field = command.debt_id.is_some()
+            || command.current_claim.is_some()
+            || command.target_claim.is_some();
+        if has_any_debt_field {
+            let debt_id = command.debt_id.as_deref().unwrap_or_default();
+            if debt_id.trim().is_empty() {
+                problems.push(format!("{source}: debt_id must not be empty"));
+            } else if !debt_ids.insert(debt_id) {
+                problems.push(format!("{source}: duplicate debt_id '{debt_id}'"));
+            }
+            if command
+                .current_claim
+                .as_deref()
+                .is_none_or(|claim| claim.trim().is_empty())
+            {
+                problems.push(format!("{source}: current_claim must not be empty"));
+            }
+            if command
+                .target_claim
+                .as_deref()
+                .is_none_or(|claim| claim.trim().is_empty())
+            {
+                problems.push(format!("{source}: target_claim must not be empty"));
+            }
+        }
 
         if command.kind == "deployment_scope" {
             if command.oracle != "documented_divergence" {
@@ -656,10 +974,37 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
                     "{source}: deployment_scope rows require at least one multinode sentinel test"
                 ));
             }
+            if command.route != "deployment_scope" {
+                problems.push(format!(
+                    "{source}: deployment_scope rows must use route deployment_scope"
+                ));
+            }
+            if command.debt_id.is_none() {
+                problems.push(format!(
+                    "{source}: deployment_scope rows require a stable debt_id"
+                ));
+            }
             for test in &command.tests {
-                if !redis_multinode_tests.contains(&format!("fn {test}(")) {
+                if !rust_tests.contains_in_source(REDIS_MULTINODE_TEST_SOURCE, test) {
                     problems.push(format!(
-                        "{source}: deployment_scope test '{test}' must be implemented in crates/hydracache-server/tests/redis_resp_multinode.rs"
+                        "{source}: deployment_scope test '{test}' must be a real #[test] in {REDIS_MULTINODE_TEST_SOURCE}"
+                    ));
+                } else if !rust_tests.redis_multinode_gated.contains(test) {
+                    problems.push(format!(
+                        "{source}: deployment_scope test '{test}' must call skip_unless_redis_resp_multinode_e2e"
+                    ));
+                }
+            }
+
+            let required_sentinels: &[&str] = match command.debt_id.as_deref() {
+                Some("resp-cross-endpoint-key-visibility") => &REQUIRED_REDIS_KEY_SENTINELS,
+                Some("resp-cross-endpoint-lock-safety") => &REQUIRED_REDIS_LOCK_SENTINELS,
+                _ => &[],
+            };
+            for required in required_sentinels {
+                if !command.tests.iter().any(|test| test == required) {
+                    problems.push(format!(
+                        "{source}: stable debt row is missing required sentinel '{required}'"
                     ));
                 }
             }
@@ -686,6 +1031,14 @@ fn check_redis_compat_conformance(root: &Path) -> Result<Vec<String>, Box<dyn Er
         {
             problems.push(format!(
                 "{source}: HC.* command must use hydracache_only, candidate, or documented_divergence oracle"
+            ));
+        }
+    }
+
+    for required in REQUIRED_REDIS_DEBT_IDS {
+        if !debt_ids.contains(required) {
+            problems.push(format!(
+                "docs/integrations/redis_compat_conformance.json: missing required stable debt_id '{required}'"
             ));
         }
     }
