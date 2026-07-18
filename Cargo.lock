@@ -6548,6 +6548,7 @@ name = "xtask"
 version = "0.65.0"
 dependencies = [
  "hydracache",
+ "hydracache-loadgen",
  "proc-macro2",
  "serde",
  "serde_json",

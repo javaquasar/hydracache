@@ -1,15 +1,27 @@
 use std::path::{Path, PathBuf};
 
+use hydracache_loadgen::budget_receipt::{
+    build_control_plane_brownout_macro_envelope, build_control_plane_macro_envelope,
+    build_grid_model_brownout_macro_envelope, build_grid_model_macro_envelope,
+    build_overload_macro_envelope, build_resp_brownout_macro_envelope, prepare_macro_artifact,
+    publish_macro_batch, PreparedMacroArtifact,
+};
 use hydracache_loadgen::cli;
 use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand, OverloadTarget};
 use hydracache_loadgen::overload::{
-    write_reference_overload_report, EligibleOverloadSurface, ReferencePredecessorRequest,
+    write_reference_overload_report, EligibleOverloadSurface, OverloadReport, OverloadScenario,
+    ReferencePredecessorRequest,
 };
 use hydracache_loadgen::resp_external::{
     ExternalToolProvenanceRegistry, RedisBenchmarkContract,
     REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
 };
-use hydracache_loadgen::targets::control_plane::ControlPlaneScenario;
+use hydracache_loadgen::targets::brownout::{
+    ControlPlaneBrownoutReport, ControlPlaneBrownoutScenario, GridModelBrownoutReport,
+    GridModelBrownoutScenario, RespBrownoutReport, RespBrownoutScenario,
+};
+use hydracache_loadgen::targets::control_plane::{ControlPlaneReport, ControlPlaneScenario};
+use hydracache_loadgen::targets::grid_model::{GridModelReport, GridModelScenario};
 use hydracache_loadgen::tiers::brownout::{
     produce_control_plane_reference as produce_control_plane_brownout,
     produce_grid_model_reference as produce_grid_model_brownout,
@@ -250,6 +262,7 @@ async fn run() -> Result<(), String> {
                 &brownout_path,
             )
             .await?;
+            publish_w7_macro_tail(&repository_root()?).await?;
         }
         LoadgenCommand::Brownout { .. } => {
             let (target, report) = command
@@ -265,6 +278,121 @@ async fn run() -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+async fn publish_w7_macro_tail(repo_root: &Path) -> Result<(), String> {
+    let context = load_reference_context_for_run(repo_root)?;
+    let evidence_root = repo_root.join("target/test-evidence/0.67");
+    let control_scenario = ControlPlaneScenario::load(&repo_root.join(CONTROL_PLANE_SCENARIO))
+        .map_err(|error| error.to_string())?;
+    let grid_scenario = GridModelScenario::load(&repo_root.join(GRID_MODEL_SCENARIO))
+        .map_err(|error| error.to_string())?;
+    let control_brownout_scenario =
+        ControlPlaneBrownoutScenario::load(&repo_root.join(BROWNOUT_CONTROL_PLANE_SCENARIO))
+            .map_err(|error| error.to_string())?;
+    let resp_brownout_scenario =
+        RespBrownoutScenario::load(&repo_root.join(BROWNOUT_RESP_SCENARIO))
+            .map_err(|error| error.to_string())?;
+    let grid_brownout_scenario =
+        GridModelBrownoutScenario::load(&repo_root.join(BROWNOUT_GRID_MODEL_SCENARIO))
+            .map_err(|error| error.to_string())?;
+    let overload_scenario = OverloadScenario::load(&repo_root.join(OVERLOAD_SCENARIO))
+        .map_err(|error| error.to_string())?;
+
+    let mut prepared = Vec::<PreparedMacroArtifact>::new();
+    for nodes in [3_u8, 5, 7] {
+        let path = evidence_root.join(format!("control-plane-{nodes}.json"));
+        let report: ControlPlaneReport = read_typed_report(&path)?;
+        let envelope = build_control_plane_macro_envelope(&context, &control_scenario, report)
+            .map_err(|error| error.to_string())?;
+        prepared.push(
+            prepare_macro_artifact(repo_root, &path, &envelope)
+                .map_err(|error| error.to_string())?,
+        );
+    }
+
+    let grid_path = evidence_root.join("grid-model.json");
+    let grid_report: GridModelReport = read_typed_report(&grid_path)?;
+    let grid_envelope = build_grid_model_macro_envelope(&context, &grid_scenario, grid_report)
+        .map_err(|error| error.to_string())?;
+    prepared.push(
+        prepare_macro_artifact(repo_root, &grid_path, &grid_envelope)
+            .map_err(|error| error.to_string())?,
+    );
+
+    let control_brownout_path = evidence_root.join("brownout-control-plane.json");
+    let control_brownout_report: ControlPlaneBrownoutReport =
+        read_typed_report(&control_brownout_path)?;
+    let control_brownout_envelope = build_control_plane_brownout_macro_envelope(
+        &context,
+        &control_brownout_scenario,
+        control_brownout_report,
+    )
+    .map_err(|error| error.to_string())?;
+    prepared.push(
+        prepare_macro_artifact(
+            repo_root,
+            &control_brownout_path,
+            &control_brownout_envelope,
+        )
+        .map_err(|error| error.to_string())?,
+    );
+
+    let resp_brownout_path = evidence_root.join("brownout-resp-endpoint.json");
+    let resp_brownout_report: RespBrownoutReport = read_typed_report(&resp_brownout_path)?;
+    let resp_brownout_envelope =
+        build_resp_brownout_macro_envelope(&context, &resp_brownout_scenario, resp_brownout_report)
+            .map_err(|error| error.to_string())?;
+    prepared.push(
+        prepare_macro_artifact(repo_root, &resp_brownout_path, &resp_brownout_envelope)
+            .map_err(|error| error.to_string())?,
+    );
+
+    let grid_brownout_path = evidence_root.join("brownout-grid-model.json");
+    let grid_brownout_report: GridModelBrownoutReport = read_typed_report(&grid_brownout_path)?;
+    let grid_brownout_envelope = build_grid_model_brownout_macro_envelope(
+        &context,
+        &grid_brownout_scenario,
+        grid_brownout_report,
+    )
+    .map_err(|error| error.to_string())?;
+    prepared.push(
+        prepare_macro_artifact(repo_root, &grid_brownout_path, &grid_brownout_envelope)
+            .map_err(|error| error.to_string())?,
+    );
+
+    for name in [
+        "overload-local.json",
+        "overload-client-surface.json",
+        "overload-node-resp.json",
+    ] {
+        let path = evidence_root.join(name);
+        let report: OverloadReport = read_typed_report(&path)?;
+        let envelope = build_overload_macro_envelope(&context, &overload_scenario, report)
+            .map_err(|error| error.to_string())?;
+        prepared.push(
+            prepare_macro_artifact(repo_root, &path, &envelope)
+                .map_err(|error| error.to_string())?,
+        );
+    }
+
+    let receipt = publish_macro_batch(repo_root, prepared).map_err(|error| error.to_string())?;
+    eprintln!(
+        "hydracache-loadgen: atomically published {} W4-W6 budget envelopes ({})",
+        receipt.artifacts.len(),
+        receipt.receipt_sha256
+    );
+    Ok(())
+}
+
+fn read_typed_report<T>(path: &Path) -> Result<T, String>
+where
+    T: serde::de::DeserializeOwned,
+{
+    let bytes = std::fs::read(path)
+        .map_err(|error| format!("reading raw report {}: {error}", path.display()))?;
+    serde_json::from_slice(&bytes)
+        .map_err(|error| format!("decoding raw report {}: {error}", path.display()))
 }
 
 async fn write_reference_overload(

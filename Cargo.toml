@@ -79,6 +79,7 @@ hydracache-cluster-testkit = { path = "crates/hydracache-cluster-testkit" }
 hydracache-cluster-transport-axum = { path = "crates/hydracache-cluster-transport-axum", version = "0.65.0" }
 hydracache-db = { path = "crates/hydracache-db", version = "0.65.0" }
 hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.65.0" }
+hydracache-loadgen = { path = "crates/hydracache-loadgen", version = "0.65.0" }
 hydracache-macros = { path = "crates/hydracache-macros", version = "0.65.0" }
 hydracache-observability = { path = "crates/hydracache-observability", version = "0.65.0" }
 hydracache-operator = { path = "crates/hydracache-operator", version = "0.65.0" }

@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -674,12 +674,125 @@ function = "canary_admission_disabled_fixture_shows_goodput_collapse"
 
 [[work_item]]
 id = "W7"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    ".github/workflows/ci.yml",
+    "Cargo.lock",
+    "Cargo.toml",
+    "crates/hydracache-loadgen/src/budget_receipt.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/xtask/Cargo.toml",
+    "crates/xtask/src/lib.rs",
+    "crates/xtask/src/main.rs",
+    "crates/xtask/src/perf_budget.rs",
+    "crates/xtask/tests/perf_budget_067.rs",
+    "docs/testing/gated-test-registry.toml",
+]
+required_artifacts = [
+    "docs/testing/perf-baselines/0.67/ci-shared.toml",
+    "docs/testing/perf-baselines/0.67/reference-v1.toml",
+    "docs/testing/perf-budgets/0.67/ci-shared.toml",
+    "docs/testing/perf-budgets/0.67/reference-v1.toml",
+    "docs/testing/perf-profiles/ci-shared.toml",
+    "docs/testing/perf-profiles/reference-v1.toml",
+    "docs/testing/schemas/perf-rolling-baseline.schema.json",
+]
+fast_gate_ids = [
+    "fast.performance-w7-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "env.hydracache-run-067-perf-resp",
+    "env.hydracache-run-067-perf-control-plane",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/budget_receipt.rs"
+function = "macro_batch_marker_is_last_and_existing_publication_is_not_overwritten"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/budget_receipt.rs"
+function = "interrupted_macro_batch_has_no_green_marker_and_restores_raw_reports"
+
+[[work_item.required_tests]]
+source = "crates/xtask/src/perf_budget.rs"
+function = "perf_knee_metric_is_recomputed_from_raw_repeats"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "rolling_baseline_contract_has_a_versioned_fail_closed_schema"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "exact_w7_profiles_cannot_be_weakened_by_relabeling"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "ci_shared_is_a_rolling_only_non_enforcing_tripwire"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "perf_budget_check_fails_on_floor_breach_and_on_unstable_spread"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "perf_budget_rejects_missing_extra_or_mixed_report_set"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "macro_receipt_revalidates_runner_facts_instead_of_trusting_a_profile_label"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "baseline_eligibility_is_derived_from_receipts_not_caller_booleans"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "baseline_change_requires_payload_bound_independent_approval"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "perf_budget_change_requires_reviewed_budget_file_edit"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "rolling_baseline_uses_only_eligible_same_fingerprint_main_reports"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "rolling_baseline_rejects_mixed_stale_insufficient_or_unstable_window"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "candidate_cannot_baseline_itself"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "release_anchor_prevents_slow_rolling_ratcheting"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "baseline_manifest_and_budget_verdict_are_receipt_digest_bound"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "budget_verdict_is_create_new_atomic_and_rejects_stale_final_or_temp"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "every_capacity_bearing_surface_has_a_reference_v1_anchor"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "canary_perf_budget_accepts_a_silent_rebaseline_or_candidate_self_baseline"
 
 [[work_item]]
 id = "W8"

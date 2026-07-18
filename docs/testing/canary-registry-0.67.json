@@ -220,6 +220,37 @@
       "red_evidence": "The W6 canary proves that bypassing the test-only admission controller causes overload goodput collapse instead of the declared plateau-and-recovery shape."
     },
     {
+      "w_item": "W7",
+      "guard": {
+        "file": "crates/xtask/tests/perf_budget_067.rs",
+        "function": "baseline_change_requires_payload_bound_independent_approval"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/perf_budget_067.rs",
+        "function": "canary_perf_budget_accepts_a_silent_rebaseline_or_candidate_self_baseline"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_budget_067", "--locked", "baseline_change_requires_payload_bound_independent_approval", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_budget_067", "--locked", "canary_perf_budget_accepts_a_silent_rebaseline_or_candidate_self_baseline", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W7"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W7",
+      "expected_failure": "HC-CANARY-RED:W7",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W7.json"],
+      "red_evidence": "The W7 canary proves that candidate self-baselining and an unreviewed baseline or budget rebaseline remain rejected before a performance verdict can pass."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

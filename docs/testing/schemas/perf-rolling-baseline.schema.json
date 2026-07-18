@@ -1,0 +1,360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/testing/perf-rolling-baseline-v1.json",
+  "title": "HydraCache release 0.67 rolling performance baseline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "release", "profile", "bootstrap_status",
+    "profile_sha256", "budget_sha256", "selection_reason", "policy",
+    "anchor", "candidate_member", "member", "rolling_metric", "change_control", "receipt_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.67.0" },
+    "profile": { "enum": ["ci-shared", "reference-v1"] },
+    "bootstrap_status": { "enum": ["unbootstrapped", "bootstrapped"] },
+    "profile_sha256": { "$ref": "#/$defs/sha256" },
+    "budget_sha256": { "$ref": "#/$defs/sha256" },
+    "selection_reason": { "const": "most-recent-eligible-successful-main-medians" },
+    "policy": { "$ref": "#/$defs/policy" },
+    "anchor": { "$ref": "#/$defs/anchor" },
+    "candidate_member": { "type": "array", "items": { "$ref": "#/$defs/member" } },
+    "member": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/member" } },
+    "rolling_metric": { "type": "array", "items": { "$ref": "#/$defs/rollingMetric" } },
+    "change_control": { "$ref": "#/$defs/changeControl" },
+    "receipt_sha256": {
+      "oneOf": [
+        { "$ref": "#/$defs/sha256" },
+        { "const": "unbootstrapped" }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "bootstrap_status": { "const": "unbootstrapped" } } },
+      "then": {
+        "properties": {
+          "member": { "maxItems": 0 },
+          "candidate_member": { "maxItems": 0 },
+          "rolling_metric": { "maxItems": 0 },
+          "change_control": {
+            "properties": { "status": { "const": "pending_bootstrap" } },
+            "required": ["status"]
+          },
+          "receipt_sha256": { "const": "unbootstrapped" },
+          "anchor": {
+            "properties": { "status": { "const": "unbootstrapped" } },
+            "required": ["status"]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "bootstrap_status": { "const": "bootstrapped" } } },
+      "then": {
+        "properties": {
+          "member": { "minItems": 5, "maxItems": 10 },
+          "candidate_member": { "minItems": 5 },
+          "rolling_metric": { "minItems": 1 },
+          "change_control": {
+            "properties": { "status": { "const": "approved" } },
+            "required": ["status", "proposal", "approval"]
+          },
+          "receipt_sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": { "const": "reference-v1" },
+          "bootstrap_status": { "const": "bootstrapped" }
+        },
+        "required": ["profile", "bootstrap_status"]
+      },
+      "then": {
+        "properties": {
+          "anchor": {
+            "properties": { "status": { "const": "bootstrapped" } },
+            "required": ["status"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": { "const": "ci-shared" },
+          "bootstrap_status": { "const": "bootstrapped" }
+        },
+        "required": ["profile", "bootstrap_status"]
+      },
+      "then": {
+        "properties": {
+          "anchor": {
+            "properties": { "status": { "const": "unbootstrapped" } },
+            "required": ["status"]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["branch", "minimum_members", "maximum_members", "maximum_age_days"],
+      "properties": {
+        "branch": { "const": "main" },
+        "minimum_members": { "const": 5 },
+        "maximum_members": { "const": 10 },
+        "maximum_age_days": { "const": 30 }
+      }
+    },
+    "changeProposal": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "proposal_id", "proposed_at", "proposer", "rationale",
+        "previous_manifest_sha256", "proposed_payload_sha256"
+      ],
+      "properties": {
+        "proposal_id": { "$ref": "#/$defs/nonEmpty" },
+        "proposed_at": { "type": "string", "format": "date-time" },
+        "proposer": { "$ref": "#/$defs/nonEmpty" },
+        "rationale": { "$ref": "#/$defs/nonEmpty" },
+        "previous_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "proposed_payload_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "changeApproval": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "proposal_sha256", "approved_payload_sha256", "approved_at",
+        "approver", "review_reference"
+      ],
+      "properties": {
+        "proposal_sha256": { "$ref": "#/$defs/sha256" },
+        "approved_payload_sha256": { "$ref": "#/$defs/sha256" },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "approver": { "$ref": "#/$defs/nonEmpty" },
+        "review_reference": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "changeControl": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["pending_bootstrap", "approved"] },
+        "proposal": { "$ref": "#/$defs/changeProposal" },
+        "approval": { "$ref": "#/$defs/changeApproval" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "pending_bootstrap" } } },
+          "then": { "properties": { "proposal": false, "approval": false } }
+        },
+        {
+          "if": { "properties": { "status": { "const": "approved" } } },
+          "then": { "required": ["proposal", "approval"] }
+        }
+      ]
+    },
+    "anchorMetric": {
+      "type": "object", "additionalProperties": false,
+      "required": ["budget_id", "value", "unit"],
+      "properties": {
+        "budget_id": { "$ref": "#/$defs/nonEmpty" },
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "anchor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "frozen_at", "contract_commit", "source_run_ids", "source_member", "metric"],
+      "properties": {
+        "status": { "enum": ["unbootstrapped", "bootstrapped"] },
+        "frozen_at": { "type": "string" },
+        "contract_commit": { "type": "string" },
+        "source_run_ids": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
+        "source_member": { "type": "array", "items": { "$ref": "#/$defs/member" } },
+        "metric": { "type": "array", "items": { "$ref": "#/$defs/anchorMetric" } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "unbootstrapped" } } },
+          "then": {
+            "properties": {
+              "frozen_at": { "const": "" },
+              "contract_commit": { "const": "" },
+              "source_run_ids": { "maxItems": 0 },
+              "source_member": { "maxItems": 0 },
+              "metric": { "maxItems": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "bootstrapped" } } },
+          "then": {
+            "properties": {
+              "frozen_at": { "type": "string", "format": "date-time" },
+              "contract_commit": { "$ref": "#/$defs/commit" },
+              "source_run_ids": { "minItems": 5, "uniqueItems": true },
+              "source_member": { "minItems": 5 },
+              "metric": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "baselineReport": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "report_id", "report_sha256", "scenario_digest", "workload_digest",
+        "slo_digest", "methodology_digest", "cargo_lock_sha256",
+        "prebuild_manifest_sha256", "binary_sha256", "binary_set_digest",
+        "stable", "maximum_spread_ratio", "metric", "receipt_sha256"
+      ],
+      "properties": {
+        "report_id": { "$ref": "#/$defs/nonEmpty" },
+        "report_sha256": { "$ref": "#/$defs/sha256" },
+        "scenario_digest": { "$ref": "#/$defs/sha256" },
+        "workload_digest": { "$ref": "#/$defs/sha256" },
+        "slo_digest": { "$ref": "#/$defs/sha256" },
+        "methodology_digest": { "$ref": "#/$defs/sha256" },
+        "cargo_lock_sha256": { "$ref": "#/$defs/sha256" },
+        "prebuild_manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "binary_sha256": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/$defs/binaryDigest" }
+        },
+        "binary_set_digest": { "$ref": "#/$defs/sha256" },
+        "stable": { "type": "boolean" },
+        "maximum_spread_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "metric": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/$defs/reportMetric" }
+        },
+        "receipt_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "reportMetric": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "value", "unit"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "binaryDigest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "memberMetric": {
+      "type": "object", "additionalProperties": false,
+      "required": ["budget_id", "value", "unit"],
+      "properties": {
+        "budget_id": { "$ref": "#/$defs/nonEmpty" },
+        "value": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "member": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "run_id", "branch", "source_commit", "observed_at", "successful",
+        "quarantined", "calibration_passed", "spread_stable", "gate_exit_code",
+        "git_status_porcelain_sha256", "quarantine_reason", "runner_contract",
+        "runner_contract_digest", "observed_runner", "runner_fingerprint",
+        "toolchain_identity", "prebuild_contract_digest", "profile_sha256",
+        "budget_sha256", "report", "metric", "receipt_sha256"
+      ],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/nonEmpty" },
+        "branch": { "$ref": "#/$defs/nonEmpty" },
+        "source_commit": { "$ref": "#/$defs/commit" },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "successful": { "type": "boolean" },
+        "quarantined": { "type": "boolean" },
+        "calibration_passed": { "type": "boolean" },
+        "spread_stable": { "type": "boolean" },
+        "gate_exit_code": { "type": "integer" },
+        "git_status_porcelain_sha256": { "$ref": "#/$defs/sha256" },
+        "quarantine_reason": { "type": ["string", "null"] },
+        "runner_contract": { "$ref": "#/$defs/runnerContract" },
+        "runner_contract_digest": { "$ref": "#/$defs/sha256" },
+        "observed_runner": { "$ref": "#/$defs/observedRunner" },
+        "runner_fingerprint": { "$ref": "#/$defs/nonEmpty" },
+        "toolchain_identity": { "$ref": "#/$defs/nonEmpty" },
+        "prebuild_contract_digest": { "$ref": "#/$defs/sha256" },
+        "profile_sha256": { "$ref": "#/$defs/sha256" },
+        "budget_sha256": { "$ref": "#/$defs/sha256" },
+        "report": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/baselineReport" } },
+        "metric": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/memberMetric" } },
+        "receipt_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "rollingMetric": {
+      "type": "object", "additionalProperties": false,
+      "required": ["budget_id", "median", "mad", "tolerance_ratio", "unit"],
+      "properties": {
+        "budget_id": { "$ref": "#/$defs/nonEmpty" },
+        "median": { "type": "number", "exclusiveMinimum": 0 },
+        "mad": { "type": "number", "minimum": 0 },
+        "tolerance_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "unit": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "runnerContract": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "name", "required_runner_class", "allowed_fingerprints", "minimum_logical_cores",
+        "required_cpu_affinity", "required_cgroup_cpu_quota", "require_dedicated",
+        "maximum_calibration_score"
+      ],
+      "properties": {
+        "name": { "$ref": "#/$defs/nonEmpty" },
+        "required_runner_class": { "$ref": "#/$defs/nonEmpty" },
+        "allowed_fingerprints": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmpty" }
+        },
+        "minimum_logical_cores": { "type": "integer", "minimum": 1 },
+        "required_cpu_affinity": { "$ref": "#/$defs/nonEmpty" },
+        "required_cgroup_cpu_quota": { "$ref": "#/$defs/nonEmpty" },
+        "require_dedicated": { "type": "boolean" },
+        "maximum_calibration_score": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "observedRunner": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "runner_class", "fingerprint", "cpu_model", "logical_cores", "ram_bytes", "os",
+        "kernel", "cpu_affinity", "cgroup_cpu_quota", "governor", "turbo",
+        "shared_hardware", "calibration_score"
+      ],
+      "properties": {
+        "runner_class": { "$ref": "#/$defs/nonEmpty" },
+        "fingerprint": { "$ref": "#/$defs/nonEmpty" },
+        "cpu_model": { "$ref": "#/$defs/nonEmpty" },
+        "logical_cores": { "type": "integer", "minimum": 1 },
+        "ram_bytes": { "type": "integer", "minimum": 1 },
+        "os": { "$ref": "#/$defs/nonEmpty" },
+        "kernel": { "$ref": "#/$defs/nonEmpty" },
+        "cpu_affinity": { "$ref": "#/$defs/nonEmpty" },
+        "cgroup_cpu_quota": { "$ref": "#/$defs/nonEmpty" },
+        "governor": { "$ref": "#/$defs/nonEmpty" },
+        "turbo": { "$ref": "#/$defs/nonEmpty" },
+        "shared_hardware": { "type": "boolean" },
+        "calibration_score": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

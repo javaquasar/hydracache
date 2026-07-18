@@ -1,0 +1,280 @@
+schema_version = 1
+release = "0.67.0"
+profile = "ci-shared"
+enforcement = "non_enforcing_tripwire"
+bootstrap_status = "unbootstrapped"
+
+[[report]]
+id = "local"
+path = "target/test-evidence/0.67/local.json"
+format = "perf_report_v1"
+report_id = "local-tier-ci-shared"
+claim_scope = "embedded-cache-capacity"
+capacity_bearing = true
+
+[[report]]
+id = "client-surface"
+path = "target/test-evidence/0.67/client-surface.json"
+format = "perf_report_v1"
+report_id = "client-surface-tier-ci-shared"
+claim_scope = "in-process-client-surface-capacity"
+capacity_bearing = true
+
+[[report]]
+id = "node-resp-open-loop"
+path = "target/test-evidence/0.67/node-resp-open-loop.json"
+format = "perf_report_v1"
+report_id = "node-resp-open-loop-ci-shared"
+claim_scope = "selected-endpoint-capacity"
+capacity_bearing = true
+
+[[report]]
+id = "control-plane-3"
+path = "target/test-evidence/0.67/control-plane-3.json"
+format = "macro_receipt_v1"
+report_id = "control-plane-3-ci-shared"
+claim_scope = "w4a-real-daemon-control-plane"
+capacity_bearing = false
+
+[[report]]
+id = "control-plane-5"
+path = "target/test-evidence/0.67/control-plane-5.json"
+format = "macro_receipt_v1"
+report_id = "control-plane-5-ci-shared"
+claim_scope = "w4a-real-daemon-control-plane"
+capacity_bearing = false
+
+[[report]]
+id = "control-plane-7"
+path = "target/test-evidence/0.67/control-plane-7.json"
+format = "macro_receipt_v1"
+report_id = "control-plane-7-ci-shared"
+claim_scope = "w4a-real-daemon-control-plane"
+capacity_bearing = false
+
+[[report]]
+id = "grid-model"
+path = "target/test-evidence/0.67/grid-model.json"
+format = "macro_receipt_v1"
+report_id = "grid-model-ci-shared"
+claim_scope = "w4b-in-process-library-model"
+capacity_bearing = false
+
+[[report]]
+id = "brownout-control-plane"
+path = "target/test-evidence/0.67/brownout-control-plane.json"
+format = "macro_receipt_v1"
+report_id = "brownout-control-plane-ci-shared"
+claim_scope = "w5a-control-plane-metadata-brownout"
+capacity_bearing = false
+
+[[report]]
+id = "brownout-resp-endpoint"
+path = "target/test-evidence/0.67/brownout-resp-endpoint.json"
+format = "macro_receipt_v1"
+report_id = "brownout-resp-endpoint-ci-shared"
+claim_scope = "w5b-selected-node-local-resp-brownout"
+capacity_bearing = false
+
+[[report]]
+id = "brownout-grid-model"
+path = "target/test-evidence/0.67/brownout-grid-model.json"
+format = "macro_receipt_v1"
+report_id = "brownout-grid-model-ci-shared"
+claim_scope = "w5c-in-process-model-replica-fault"
+capacity_bearing = false
+
+[[report]]
+id = "overload-local"
+path = "target/test-evidence/0.67/overload-local.json"
+format = "macro_receipt_v1"
+report_id = "overload-local-v1"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+capacity_bearing = false
+
+[[report]]
+id = "overload-client-surface"
+path = "target/test-evidence/0.67/overload-client-surface.json"
+format = "macro_receipt_v1"
+report_id = "overload-client-surface-v1"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+capacity_bearing = false
+
+[[report]]
+id = "overload-node-resp"
+path = "target/test-evidence/0.67/overload-node-resp.json"
+format = "macro_receipt_v1"
+report_id = "overload-node-resp-v1"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+capacity_bearing = false
+
+[[budget]]
+id = "local-tripwire"
+report = "local"
+metric = "hot_key_contention_throughput_floor.throughput_at_slo"
+unit = "operations_per_second"
+claim_scope = "embedded-cache-capacity"
+direction = "floor"
+status = "unbootstrapped"
+
+[[budget]]
+id = "client-surface-tripwire"
+report = "client-surface"
+metric = "client_surface_in_process_knee_at_slo_for_a_b_c.throughput_at_slo"
+unit = "operations_per_second"
+claim_scope = "in-process-client-surface-capacity"
+direction = "floor"
+status = "unbootstrapped"
+
+[[budget]]
+id = "local-p99-tripwire"
+report = "local"
+metric = "hot_key_contention_throughput_floor.p99_microseconds_at_slo"
+unit = "microseconds"
+claim_scope = "embedded-cache-capacity"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "client-surface-p99-tripwire"
+report = "client-surface"
+metric = "client_surface_in_process_knee_at_slo_for_a_b_c.p99_microseconds_at_slo"
+unit = "microseconds"
+claim_scope = "in-process-client-surface-capacity"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "node-resp-tripwire"
+report = "node-resp-open-loop"
+metric = "resp_open_loop_get_set_knee_at_slo.throughput_at_slo"
+unit = "operations_per_second"
+claim_scope = "selected-endpoint-capacity"
+direction = "floor"
+status = "unbootstrapped"
+
+[[budget]]
+id = "node-resp-p99-tripwire"
+report = "node-resp-open-loop"
+metric = "resp_open_loop_get_set_knee_at_slo.p99_microseconds_at_slo"
+unit = "microseconds"
+claim_scope = "selected-endpoint-capacity"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "control-plane-3-tripwire"
+report = "control-plane-3"
+metric = "membership_add_drain_commit_and_convergence_latency.max_milliseconds"
+unit = "milliseconds"
+claim_scope = "w4a-real-daemon-control-plane"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "control-plane-5-tripwire"
+report = "control-plane-5"
+metric = "membership_add_drain_commit_and_convergence_latency.max_milliseconds"
+unit = "milliseconds"
+claim_scope = "w4a-real-daemon-control-plane"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "control-plane-7-tripwire"
+report = "control-plane-7"
+metric = "membership_add_drain_commit_and_convergence_latency.max_milliseconds"
+unit = "milliseconds"
+claim_scope = "w4a-real-daemon-control-plane"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "grid-model-tripwire"
+report = "grid-model"
+metric = "consistency_ack_requirement_cost_by_level_and_replica_shape.max_nanoseconds_per_operation"
+unit = "nanoseconds_per_operation"
+claim_scope = "w4b-in-process-library-model"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "brownout-control-plane-tripwire"
+report = "brownout-control-plane"
+metric = "control_plane_brownout.recovery_milliseconds"
+unit = "milliseconds"
+claim_scope = "w5a-control-plane-metadata-brownout"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "brownout-control-plane-depth-tripwire"
+report = "brownout-control-plane"
+metric = "control_plane_brownout.maximum_availability_dip_ppm"
+unit = "parts_per_million"
+claim_scope = "w5a-control-plane-metadata-brownout"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "brownout-resp-endpoint-tripwire"
+report = "brownout-resp-endpoint"
+metric = "resp_endpoint_brownout.recovery_milliseconds"
+unit = "milliseconds"
+claim_scope = "w5b-selected-node-local-resp-brownout"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "brownout-resp-endpoint-depth-tripwire"
+report = "brownout-resp-endpoint"
+metric = "resp_endpoint_brownout.availability_dip_ppm"
+unit = "parts_per_million"
+claim_scope = "w5b-selected-node-local-resp-brownout"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "brownout-grid-model-tripwire"
+report = "brownout-grid-model"
+metric = "grid_model_fault.maximum_recovery_cost_nanos"
+unit = "nanoseconds"
+claim_scope = "w5c-in-process-model-replica-fault"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "brownout-grid-model-depth-tripwire"
+report = "brownout-grid-model"
+metric = "grid_model_fault.maximum_decision_cost_increase_nanos"
+unit = "nanoseconds"
+claim_scope = "w5c-in-process-model-replica-fault"
+direction = "ceiling"
+status = "unbootstrapped"
+
+[[budget]]
+id = "overload-local-tripwire"
+report = "overload-local"
+metric = "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second"
+unit = "operations_per_second"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+direction = "floor"
+status = "unbootstrapped"
+
+[[budget]]
+id = "overload-client-surface-tripwire"
+report = "overload-client-surface"
+metric = "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second"
+unit = "operations_per_second"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+direction = "floor"
+status = "unbootstrapped"
+
+[[budget]]
+id = "overload-node-resp-tripwire"
+report = "overload-node-resp"
+metric = "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface.minimum_goodput_per_second"
+unit = "operations_per_second"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+direction = "floor"
+status = "unbootstrapped"
