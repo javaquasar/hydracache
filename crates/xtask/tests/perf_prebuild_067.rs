@@ -63,6 +63,7 @@ struct FakeHost {
     dirty: bool,
     rustc: String,
     cargo: String,
+    environment: Vec<String>,
     mutation: BuildMutation,
     calls: Vec<(String, Vec<String>)>,
 }
@@ -75,6 +76,7 @@ impl FakeHost {
             dirty: false,
             rustc: "rustc 1.94.0 (fixture 2026-01-01)".to_owned(),
             cargo: "cargo 1.94.0 (fixture 2026-01-01)".to_owned(),
+            environment: Vec::new(),
             mutation: BuildMutation::None,
             calls: Vec::new(),
         }
@@ -157,6 +159,10 @@ impl PrebuildHost for FakeHost {
 
     fn reference_platform_key(&self) -> String {
         "linux-x86_64".to_owned()
+    }
+
+    fn environment_variable_names(&self) -> Vec<String> {
+        self.environment.clone()
     }
 
     fn observe_runner(
@@ -256,6 +262,16 @@ fn prebuild_rejects_dirty_or_changed_source_without_artifacts() {
 
 #[test]
 fn exact_toolchain_and_target_set_are_fail_closed() {
+    let root = temp_root("build-environment");
+    let mut host = FakeHost::new(root.clone());
+    host.environment = vec!["RUSTFLAGS".to_owned(), "CARGO_TARGET_DIR".to_owned()];
+    let error = execute_prebuild_with(&root, "0.67", "reference-v1", &mut host)
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("CARGO_TARGET_DIR") && error.contains("RUSTFLAGS"));
+    assert!(host.cargo_calls().is_empty());
+    fs::remove_dir_all(root).unwrap();
+
     let root = temp_root("wrong-toolchain");
     let mut host = FakeHost::new(root.clone());
     host.rustc = "rustc 1.93.0 (fixture)".to_owned();

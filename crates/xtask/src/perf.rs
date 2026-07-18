@@ -95,6 +95,8 @@ pub trait PrebuildHost {
 
     fn reference_platform_key(&self) -> String;
 
+    fn environment_variable_names(&self) -> Vec<String>;
+
     fn observe_runner(&mut self, profile: &PerformanceProfile)
         -> Result<RunnerFingerprint, String>;
 
@@ -125,6 +127,12 @@ impl PrebuildHost for SystemPrebuildHost {
 
     fn reference_platform_key(&self) -> String {
         format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH)
+    }
+
+    fn environment_variable_names(&self) -> Vec<String> {
+        std::env::vars_os()
+            .filter_map(|(name, _)| name.into_string().ok())
+            .collect()
     }
 
     fn observe_runner(
@@ -228,7 +236,7 @@ pub fn execute_prebuild_with<H: PrebuildHost>(
 
     let profile = load_profile(&root)?;
     validate_profile_contract(&profile, profile_name, &host.reference_platform_key())?;
-    reject_build_affecting_environment()?;
+    reject_build_affecting_environment(host)?;
     let build_contract = reference_build_contract(&profile)?;
     let before = capture_source_snapshot(host, &root)?;
     if before.toolchain_identity != profile.prebuild.toolchain_identity
@@ -612,7 +620,7 @@ fn capture_source_snapshot<H: PrebuildHost>(
     })
 }
 
-fn reject_build_affecting_environment() -> Result<(), PerfPrebuildError> {
+fn reject_build_affecting_environment(host: &impl PrebuildHost) -> Result<(), PerfPrebuildError> {
     const EXACT: [&str; 8] = [
         "RUSTFLAGS",
         "CARGO_ENCODED_RUSTFLAGS",
@@ -623,8 +631,9 @@ fn reject_build_affecting_environment() -> Result<(), PerfPrebuildError> {
         "CARGO_BUILD_TARGET",
         "CARGO_TARGET_DIR",
     ];
-    let mut rejected = std::env::vars_os()
-        .filter_map(|(name, _)| name.into_string().ok())
+    let mut rejected = host
+        .environment_variable_names()
+        .into_iter()
         .filter(|name| {
             EXACT.contains(&name.as_str())
                 || name.starts_with("CARGO_PROFILE_RELEASE_")
