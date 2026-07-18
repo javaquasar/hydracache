@@ -6,6 +6,7 @@ pub mod allocation;
 pub mod cli;
 pub mod histogram;
 pub mod knee;
+pub mod overload;
 pub mod profile;
 pub mod rate;
 pub mod report;

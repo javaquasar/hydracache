@@ -124,6 +124,30 @@ platform = "any"
 [suite.command.env]
 
 [[suite]]
+id = "fast.performance-w6-067"
+work_items = ["W6"]
+timeout_seconds = 300
+budget_seconds = 120
+deterministic = false
+artifacts = []
+logical_digest_artifact = ""
+
+[suite.baseline]
+status = "unmeasured"
+commit = ""
+toolchain = ""
+linux_ci_median_seconds = 0
+noise_allowance_seconds = 0
+
+[suite.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-loadgen", "--test", "w6_overload_067", "--locked", "-j", "2"]
+cwd = "."
+platform = "any"
+
+[suite.command.env]
+
+[[suite]]
 id = "fast.raft-failpoints"
 work_items = ["W3", "W4", "W5", "W10", "W11"]
 timeout_seconds = 180

@@ -488,9 +488,13 @@ bypassed (test-only), goodput at 2x must collapse instead of plateauing; the reg
 
 **DoD.**
 ```powershell
+$env:HYDRACACHE_RUN_PERF_CORE='1'
 & target\release\hydracache-loadgen.exe overload local --profile reference-v1 --report target/test-evidence/0.67/overload-local.json
 & target\release\hydracache-loadgen.exe overload client-surface --profile reference-v1 --report target/test-evidence/0.67/overload-client-surface.json
+Remove-Item Env:\HYDRACACHE_RUN_PERF_CORE -ErrorAction SilentlyContinue
+$env:HYDRACACHE_RUN_PERF_RESP='1'
 & target\release\hydracache-loadgen.exe overload node-resp --profile reference-v1 --report target/test-evidence/0.67/overload-node-resp.json
+Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
 **CI.** Dedicated reference lane; shared-hosted output is a non-enforcing tripwire only.
 

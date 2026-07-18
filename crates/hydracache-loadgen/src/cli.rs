@@ -43,6 +43,11 @@ pub enum LoadgenCommand {
         profile: String,
         report: PathBuf,
     },
+    Overload {
+        target: OverloadTarget,
+        profile: String,
+        report: PathBuf,
+    },
 }
 
 /// Exact W5 fault profile selected by the public CLI.
@@ -51,6 +56,14 @@ pub enum BrownoutTarget {
     ControlPlaneLeader,
     RespEndpointKill,
     GridModelReplica,
+}
+
+/// Exact W6 capacity predecessor selected by the public CLI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OverloadTarget {
+    Local,
+    ClientSurface,
+    NodeResp,
 }
 
 impl LoadgenCommand {
@@ -65,7 +78,8 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteResp { .. }
             | Self::SuiteControlPlane { .. }
-            | Self::Brownout { .. } => None,
+            | Self::Brownout { .. }
+            | Self::Overload { .. } => None,
         }
     }
 
@@ -81,7 +95,8 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteResp { .. }
             | Self::SuiteControlPlane { .. }
-            | Self::Brownout { .. } => None,
+            | Self::Brownout { .. }
+            | Self::Overload { .. } => None,
         }
     }
 
@@ -95,7 +110,8 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteCore { .. }
             | Self::SuiteControlPlane { .. }
-            | Self::Brownout { .. } => None,
+            | Self::Brownout { .. }
+            | Self::Overload { .. } => None,
         }
     }
 
@@ -111,7 +127,8 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteCore { .. }
             | Self::SuiteControlPlane { .. }
-            | Self::Brownout { .. } => None,
+            | Self::Brownout { .. }
+            | Self::Overload { .. } => None,
         }
     }
 
@@ -166,6 +183,13 @@ impl LoadgenCommand {
         }
     }
 
+    pub fn overload_shape(&self) -> Option<(OverloadTarget, PathBuf)> {
+        match self {
+            Self::Overload { target, report, .. } => Some((*target, report.clone())),
+            _ => None,
+        }
+    }
+
     pub fn profile(&self) -> &str {
         match self {
             Self::TierLocal { profile, .. }
@@ -176,7 +200,8 @@ impl LoadgenCommand {
             | Self::SuiteCore { profile, .. }
             | Self::SuiteResp { profile, .. }
             | Self::SuiteControlPlane { profile, .. }
-            | Self::Brownout { profile, .. } => profile,
+            | Self::Brownout { profile, .. }
+            | Self::Overload { profile, .. } => profile,
         }
     }
 }
@@ -256,6 +281,11 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
             profile,
             report,
         }),
+        ("overload", name, Some(report), None) => Ok(LoadgenCommand::Overload {
+            target: parse_overload_target(name)?,
+            profile,
+            report,
+        }),
         ("tier", "local", _, _) => {
             Err("tier local requires --report and forbids --output-dir".to_owned())
         }
@@ -286,6 +316,9 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
                 "brownout {name} requires --report and forbids --output-dir"
             ))
         }
+        ("overload", name, _, _) if parse_overload_target(name).is_ok() => Err(format!(
+            "overload {name} requires --report and forbids --output-dir"
+        )),
         _ => Err(format!("unsupported command: {family} {name}")),
     }
 }
@@ -296,6 +329,15 @@ fn parse_brownout_target(value: &str) -> Result<BrownoutTarget, String> {
         "resp-endpoint-kill" => Ok(BrownoutTarget::RespEndpointKill),
         "grid-model-replica" => Ok(BrownoutTarget::GridModelReplica),
         _ => Err(format!("unsupported brownout target: {value}")),
+    }
+}
+
+fn parse_overload_target(value: &str) -> Result<OverloadTarget, String> {
+    match value {
+        "local" => Ok(OverloadTarget::Local),
+        "client-surface" => Ok(OverloadTarget::ClientSurface),
+        "node-resp" => Ok(OverloadTarget::NodeResp),
+        _ => Err(format!("unsupported overload target: {value}")),
     }
 }
 
@@ -490,6 +532,69 @@ mod tests {
         assert!(parse(args(&[
             "brownout",
             "control-plane-leader",
+            "--profile",
+            "reference-v1",
+            "--output-dir",
+            "target/test-evidence/0.67",
+        ]))
+        .is_err());
+    }
+
+    #[test]
+    fn w6_overload_cli_preserves_only_capacity_eligible_surfaces() {
+        let cases = [
+            ("local", OverloadTarget::Local, "overload-local.json"),
+            (
+                "client-surface",
+                OverloadTarget::ClientSurface,
+                "overload-client-surface.json",
+            ),
+            (
+                "node-resp",
+                OverloadTarget::NodeResp,
+                "overload-node-resp.json",
+            ),
+        ];
+        for (name, expected_target, report) in cases {
+            let command = parse(args(&[
+                "overload",
+                name,
+                "--profile",
+                "reference-v1",
+                "--report",
+                report,
+            ]))
+            .unwrap();
+            assert_eq!(
+                command.overload_shape(),
+                Some((expected_target, PathBuf::from(report)))
+            );
+            assert_eq!(command.profile(), "reference-v1");
+        }
+    }
+
+    #[test]
+    fn w6_overload_cli_rejects_removed_or_ineligible_tiers() {
+        for name in [
+            "node-native",
+            "cluster",
+            "generic-cluster",
+            "control-plane",
+            "grid-model",
+        ] {
+            assert!(parse(args(&[
+                "overload",
+                name,
+                "--profile",
+                "reference-v1",
+                "--report",
+                "report.json",
+            ]))
+            .is_err());
+        }
+        assert!(parse(args(&[
+            "overload",
+            "local",
             "--profile",
             "reference-v1",
             "--output-dir",

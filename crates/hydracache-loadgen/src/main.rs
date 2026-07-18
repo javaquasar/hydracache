@@ -1,7 +1,10 @@
 use std::path::{Path, PathBuf};
 
 use hydracache_loadgen::cli;
-use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand};
+use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand, OverloadTarget};
+use hydracache_loadgen::overload::{
+    write_reference_overload_report, EligibleOverloadSurface, ReferencePredecessorRequest,
+};
 use hydracache_loadgen::resp_external::{
     ExternalToolProvenanceRegistry, RedisBenchmarkContract,
     REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
@@ -25,6 +28,7 @@ use hydracache_loadgen::tiers::resp::{
 use hydracache_loadgen::tiers::resp_reference::{
     load_reference_context, start_reference_daemon, RespDaemonLaunch, RespReferencePorts,
 };
+use sha2::{Digest, Sha256};
 
 const RESP_EXTERNAL_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/resp-external-redis-benchmark-v1.toml";
@@ -37,6 +41,7 @@ const BROWNOUT_RESP_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/brownout-resp-endpoint-v1.toml";
 const BROWNOUT_GRID_MODEL_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/brownout-grid-model-v1.toml";
+const OVERLOAD_SCENARIO: &str = "docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml";
 
 #[tokio::main]
 async fn main() {
@@ -139,6 +144,21 @@ async fn run() -> Result<(), String> {
                     &brownout_path,
                 )
                 .await?;
+                let overload_local_path = local_path.with_file_name("overload-local.json");
+                write_reference_overload(
+                    command.profile(),
+                    OverloadTarget::Local,
+                    &overload_local_path,
+                )
+                .await?;
+                let overload_client_path =
+                    client_surface_path.with_file_name("overload-client-surface.json");
+                write_reference_overload(
+                    command.profile(),
+                    OverloadTarget::ClientSurface,
+                    &overload_client_path,
+                )
+                .await?;
             }
             eprintln!(
                 "hydracache-loadgen: wrote core suite reports to {}, {}, and {}",
@@ -173,6 +193,13 @@ async fn run() -> Result<(), String> {
                     command.profile(),
                     BrownoutTarget::RespEndpointKill,
                     &brownout_path,
+                )
+                .await?;
+                let overload_path = path.with_file_name("overload-node-resp.json");
+                write_reference_overload(
+                    command.profile(),
+                    OverloadTarget::NodeResp,
+                    &overload_path,
                 )
                 .await?;
             } else {
@@ -230,7 +257,80 @@ async fn run() -> Result<(), String> {
                 .ok_or_else(|| "brownout command lost its exact surface shape".to_owned())?;
             write_reference_brownout(command.profile(), target, &report).await?;
         }
+        LoadgenCommand::Overload { .. } => {
+            let (target, report) = command
+                .overload_shape()
+                .ok_or_else(|| "overload command lost its exact capacity surface".to_owned())?;
+            write_reference_overload(command.profile(), target, &report).await?;
+        }
     }
+    Ok(())
+}
+
+async fn write_reference_overload(
+    profile: &str,
+    target: OverloadTarget,
+    report_path: &Path,
+) -> Result<(), String> {
+    if profile != "reference-v1" {
+        return Err(
+            "W6 overload evidence has no promotable fixture mode; use reference-v1 with the exact predecessor surface gate"
+                .to_owned(),
+        );
+    }
+    let repo_root = repository_root()?;
+    let context = load_reference_context_for_run(&repo_root)?;
+    let report_path = absolute_output_path(&repo_root, report_path);
+    let output_dir = report_path
+        .parent()
+        .ok_or_else(|| format!("W6 report path has no parent: {}", report_path.display()))?;
+    let (surface, predecessor_name, lifecycle_name) = match target {
+        OverloadTarget::Local => (EligibleOverloadSurface::Local, "local.json", None),
+        OverloadTarget::ClientSurface => (
+            EligibleOverloadSurface::ClientSurface,
+            "client-surface.json",
+            None,
+        ),
+        OverloadTarget::NodeResp => (
+            EligibleOverloadSurface::NodeResp,
+            "node-resp-open-loop.json",
+            Some("node-resp-daemon-lifecycle.json"),
+        ),
+    };
+    let predecessor_path = output_dir.join(predecessor_name);
+    let predecessor_sha256 = sha256_file(&predecessor_path)?;
+    let (lifecycle_path, lifecycle_sha256) = match lifecycle_name {
+        Some(name) => {
+            let path = output_dir.join(name);
+            let digest = sha256_file(&path)?;
+            (Some(path), Some(digest))
+        }
+        None => (None, None),
+    };
+    let publication = write_reference_overload_report(
+        &repo_root,
+        &context,
+        &repo_root.join(OVERLOAD_SCENARIO),
+        ReferencePredecessorRequest {
+            surface,
+            report_path: predecessor_path,
+            expected_report_sha256: predecessor_sha256,
+            lifecycle_path,
+            expected_lifecycle_sha256: lifecycle_sha256,
+            prebuild_manifest_path: context.manifest_path.clone(),
+            expected_prebuild_manifest_sha256: context.manifest_sha256.clone(),
+        },
+        &output_dir.join("w6-run-artifacts"),
+        &report_path,
+    )
+    .await
+    .map_err(|error| error.to_string())?;
+    eprintln!(
+        "hydracache-loadgen: wrote receipt-bound W6 {:?} report {} ({})",
+        target,
+        publication.report_path.display(),
+        publication.report_sha256
+    );
     Ok(())
 }
 
@@ -459,6 +559,15 @@ fn pretty_json_bytes(path: &Path, value: &impl serde::Serialize) -> Result<Vec<u
     Ok(bytes)
 }
 
+fn sha256_file(path: &Path) -> Result<String, String> {
+    let bytes = std::fs::read(path)
+        .map_err(|error| format!("unable to read {} for SHA-256: {error}", path.display()))?;
+    Ok(Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect())
+}
+
 fn write_bytes(path: &Path, bytes: Vec<u8>) -> Result<(), String> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)
@@ -470,6 +579,6 @@ fn write_bytes(path: &Path, bytes: Vec<u8>) -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A and W5 have no fixture-capacity mode and directly launch only receipt-bound prebuilt daemons or in-process model primitives under their exact surface gates. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
+        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload local --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload client-surface --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload node-resp --profile reference-v1 --report <PATH>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A, W5, and W6 have no promotable fixture-capacity mode and use only receipt-bound predecessors under their exact surface gates. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
     );
 }

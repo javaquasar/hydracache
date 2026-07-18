@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -588,12 +588,89 @@ function = "canary_extended_leader_downtime_breaches_the_control_plane_budget"
 
 [[work_item]]
 id = "W6"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/overload.rs",
+    "crates/hydracache-loadgen/src/targets/client_surface.rs",
+    "crates/hydracache-loadgen/src/targets/local.rs",
+    "crates/hydracache-loadgen/src/targets/resp.rs",
+    "crates/hydracache-loadgen/src/tiers/resp_reference.rs",
+    "crates/hydracache-loadgen/tests/w6_overload_067.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml",
+]
+fast_gate_ids = [
+    "fast.performance-w6-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "env.hydracache-run-067-perf-resp",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w6_overload_cli_preserves_only_capacity_eligible_surfaces"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w6_overload_cli_rejects_removed_or_ineligible_tiers"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/overload.rs"
+function = "same_pid_in_process_executions_still_receive_distinct_fresh_receipts"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/overload.rs"
+function = "node_stable_capability_excludes_pid_ports_time_and_data_directory"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/overload.rs"
+function = "reference_writer_gate_rejects_missing_and_non_exact_values"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/overload.rs"
+function = "reference_writer_gate_is_surface_specific_and_ignores_generic_w6_env"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "committed_scenario_digest_seals_workload_spread_and_recovery_shape"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "rejection_ratio_latency_and_backlog_under_overload"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "recovery_time_to_baseline_after_burst"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "reset_and_preload_digests_are_equivalent_across_every_repeat_and_factor"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "reference_overload_fails_closed_without_valid_predecessor_receipt_and_profile"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "overload_rejects_removed_tiers_and_non_capacity_or_model_inputs"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w6_overload_067.rs"
+function = "canary_admission_disabled_fixture_shows_goodput_collapse"
 
 [[work_item]]
 id = "W7"

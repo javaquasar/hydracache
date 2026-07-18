@@ -189,6 +189,37 @@
       "red_evidence": "The composite W5 canary proves the validators reject extended control-plane leader downtime, a false node-local RESP neighbor-failover claim, and a no-op in-process model fault while keeping the three authorities separate."
     },
     {
+      "w_item": "W6",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w6_overload_067.rs",
+        "function": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w6_overload_067.rs",
+        "function": "canary_admission_disabled_fixture_shows_goodput_collapse"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w6_overload_067", "--locked", "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w6_overload_067", "--locked", "canary_admission_disabled_fixture_shows_goodput_collapse", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W6"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W6",
+      "expected_failure": "HC-CANARY-RED:W6",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W6.json"],
+      "red_evidence": "The W6 canary proves that bypassing the test-only admission controller causes overload goodput collapse instead of the declared plateau-and-recovery shape."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",
