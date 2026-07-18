@@ -7,7 +7,9 @@ use hydracache_loadgen::resp_external::{
     REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
 };
 use hydracache_loadgen::targets::control_plane::ControlPlaneScenario;
-use hydracache_loadgen::tiers::client_surface::write_client_surface_report;
+use hydracache_loadgen::tiers::client_surface::{
+    write_client_surface_report, write_client_surface_report_with_context,
+};
 use hydracache_loadgen::tiers::control_plane::run_control_plane_reference;
 use hydracache_loadgen::tiers::grid_model::write_grid_model_report;
 use hydracache_loadgen::tiers::local::{write_local_report, write_local_report_with_context};
@@ -72,9 +74,17 @@ async fn run() -> Result<(), String> {
             let path = command.client_surface_report_path().ok_or_else(|| {
                 "client-surface command lost its canonical report path".to_owned()
             })?;
-            write_client_surface_report(command.profile(), &path)
-                .await
-                .map_err(|error| error.to_string())?;
+            if command.profile() == "reference-v1" {
+                let repo_root = repository_root()?;
+                let context = load_reference_context_for_run(&repo_root)?;
+                write_client_surface_report_with_context(command.profile(), &path, Some(&context))
+                    .await
+                    .map_err(|error| error.to_string())?;
+            } else {
+                write_client_surface_report(command.profile(), &path)
+                    .await
+                    .map_err(|error| error.to_string())?;
+            }
         }
         LoadgenCommand::SuiteCore { .. } => {
             let repo_root = repository_root()?;
@@ -96,9 +106,13 @@ async fn run() -> Result<(), String> {
             let client_surface_path = command
                 .client_surface_report_path()
                 .ok_or_else(|| "core suite lost its client-surface report path".to_owned())?;
-            write_client_surface_report(command.profile(), &client_surface_path)
-                .await
-                .map_err(|error| error.to_string())?;
+            write_client_surface_report_with_context(
+                command.profile(),
+                &client_surface_path,
+                reference_context.as_ref(),
+            )
+            .await
+            .map_err(|error| error.to_string())?;
             let grid_model_path = command
                 .grid_model_report_path()
                 .ok_or_else(|| "core suite lost its grid-model report path".to_owned())?;

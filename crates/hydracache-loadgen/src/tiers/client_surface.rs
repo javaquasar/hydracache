@@ -1,10 +1,10 @@
 //! Release-0.67 W2 characterization of the in-process Axum client router.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache_cache_sim::{
     GeneratedKeySchedule, KeyDistribution, KeyScheduleSpec, KEY_SCHEDULE_GENERATOR_VERSION,
@@ -30,6 +30,7 @@ use crate::targets::client_surface::{
     ClientSurfaceOperation, ClientSurfaceOperationMix, ClientSurfaceTarget,
     ClientSurfaceTargetConfig,
 };
+use crate::tiers::resp_reference::ValidatedRespReferenceContext;
 use crate::{PerformanceProfile, RunnerFingerprint};
 
 const SMOKE_REPEATS: usize = 3;
@@ -37,6 +38,212 @@ const SMOKE_SPREAD_LIMIT: f64 = 1_000.0;
 const SMOKE_KEY_COUNT: u64 = 32;
 const SMOKE_PRELOAD_ENTRIES: u64 = 16;
 const SMOKE_STEADY_OPERATIONS: u64 = 100;
+const CLIENT_REFERENCE_CAPABILITY_VERSION: u32 = 1;
+const CLIENT_REFERENCE_INSTANCE_VERSION: u32 = 1;
+static CLIENT_REFERENCE_INSTANCE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+pub const CLIENT_W6_CAPACITY_MEASUREMENTS: [&str; 3] = [
+    "client_surface_in_process_knee_at_slo_workload_a",
+    "client_surface_in_process_knee_at_slo_workload_b",
+    "client_surface_in_process_knee_at_slo_workload_c",
+];
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ClientRunShape {
+    Smoke,
+    Reference,
+}
+
+impl ClientRunShape {
+    fn repeats(self, committed: usize) -> usize {
+        match self {
+            Self::Smoke => SMOKE_REPEATS,
+            Self::Reference => committed,
+        }
+    }
+
+    fn spread_limit(self, committed: f64) -> f64 {
+        match self {
+            Self::Smoke => SMOKE_SPREAD_LIMIT,
+            Self::Reference => committed,
+        }
+    }
+
+    fn effective_digest(
+        self,
+        source_digest: &str,
+        client: &ClientSurfaceInputs,
+        scenario: &Scenario,
+    ) -> String {
+        effective_digest(source_digest, client, scenario, self)
+    }
+
+    fn custom_digest(self, source: &[u8], effective: &serde_json::Value) -> String {
+        custom_effective_digest(source, effective, self)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClientSurfaceReferenceCapability {
+    pub schema_version: u32,
+    pub surface_kind: String,
+    pub execution_mode: String,
+    pub state_scope: String,
+    pub network_boundary: String,
+    pub capacity_measurements: Vec<String>,
+    pub capacity_scenario_sources: Vec<(String, String)>,
+    pub source_commit: String,
+    pub cargo_lock_sha256: String,
+    pub prebuild_contract_sha256: String,
+    pub prebuild_manifest_sha256: String,
+    pub loadgen_binary_sha256: String,
+}
+
+impl ClientSurfaceReferenceCapability {
+    pub fn validate(&self) -> Result<(), ClientSurfaceTierError> {
+        let expected_measurements = CLIENT_W6_CAPACITY_MEASUREMENTS
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        let expected_sources = [
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[0].to_owned(),
+                digest_bytes(WORKLOAD_A_SCENARIO),
+            ),
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[1].to_owned(),
+                digest_bytes(WORKLOAD_B_SCENARIO),
+            ),
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[2].to_owned(),
+                digest_bytes(WORKLOAD_C_SCENARIO),
+            ),
+        ]
+        .into_iter()
+        .collect::<Vec<_>>();
+        if self.schema_version != CLIENT_REFERENCE_CAPABILITY_VERSION
+            || self.surface_kind != "client-surface"
+            || self.execution_mode != "in-process-axum-router"
+            || self.state_scope != "process-local"
+            || self.network_boundary != "none"
+            || self.capacity_measurements != expected_measurements
+            || self.capacity_scenario_sources != expected_sources
+            || !is_git_commit(&self.source_commit)
+            || !is_sha256(&self.cargo_lock_sha256)
+            || !is_sha256(&self.prebuild_contract_sha256)
+            || !is_sha256(&self.prebuild_manifest_sha256)
+            || !is_sha256(&self.loadgen_binary_sha256)
+        {
+            return Err(ClientSurfaceTierError::Report(
+                "W2 stable in-process capability is incomplete or crosses its surface boundary"
+                    .to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn digest(&self) -> Result<String, ClientSurfaceTierError> {
+        self.validate()?;
+        canonical_digest(self)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClientSurfaceReferenceInstanceReceipt {
+    pub schema_version: u32,
+    pub instance_sequence: u64,
+    pub owning_pid: u32,
+    pub created_unix_nanos: u64,
+    pub direct_prebuilt_exec: bool,
+    pub loadgen_binary_path: String,
+    pub loadgen_binary_sha256: String,
+    pub stable_capability_sha256: String,
+    pub receipt_sha256: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClientSurfaceReferenceEvidenceBinding {
+    pub capability: ClientSurfaceReferenceCapability,
+    pub instance: ClientSurfaceReferenceInstanceReceipt,
+    pub capacity_measurements: Vec<(String, String, String)>,
+}
+
+impl ClientSurfaceReferenceInstanceReceipt {
+    fn seal(
+        context: &ValidatedRespReferenceContext,
+        stable_capability_sha256: String,
+    ) -> Result<Self, ClientSurfaceTierError> {
+        let created_unix_nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_err(|error| ClientSurfaceTierError::Report(error.to_string()))?
+            .as_nanos()
+            .try_into()
+            .map_err(|_| {
+                ClientSurfaceTierError::Report(
+                    "system time does not fit u64 nanoseconds".to_owned(),
+                )
+            })?;
+        let mut receipt = Self {
+            schema_version: CLIENT_REFERENCE_INSTANCE_VERSION,
+            instance_sequence: CLIENT_REFERENCE_INSTANCE_SEQUENCE
+                .fetch_add(1, Ordering::Relaxed)
+                .saturating_add(1),
+            owning_pid: std::process::id(),
+            created_unix_nanos,
+            direct_prebuilt_exec: true,
+            loadgen_binary_path: context.loadgen.canonical_path.display().to_string(),
+            loadgen_binary_sha256: context.loadgen.sha256.clone(),
+            stable_capability_sha256,
+            receipt_sha256: String::new(),
+        };
+        receipt.receipt_sha256 = receipt.computed_sha256()?;
+        receipt.validate(context)?;
+        Ok(receipt)
+    }
+
+    pub fn computed_sha256(&self) -> Result<String, ClientSurfaceTierError> {
+        let mut payload = self.clone();
+        payload.receipt_sha256.clear();
+        canonical_digest(&payload)
+    }
+
+    pub fn validate(
+        &self,
+        context: &ValidatedRespReferenceContext,
+    ) -> Result<(), ClientSurfaceTierError> {
+        self.validate_seal()?;
+        if self.owning_pid != std::process::id()
+            || self.loadgen_binary_path != context.loadgen.canonical_path.display().to_string()
+            || self.loadgen_binary_sha256 != context.loadgen.sha256
+        {
+            return Err(ClientSurfaceTierError::Report(
+                "W2 in-process instance receipt is not owned by the running receipt-bound loadgen"
+                    .to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn validate_seal(&self) -> Result<(), ClientSurfaceTierError> {
+        if self.schema_version != CLIENT_REFERENCE_INSTANCE_VERSION
+            || self.instance_sequence == 0
+            || self.owning_pid == 0
+            || self.created_unix_nanos == 0
+            || !self.direct_prebuilt_exec
+            || self.loadgen_binary_path.trim().is_empty()
+            || !is_sha256(&self.loadgen_binary_sha256)
+            || !is_sha256(&self.stable_capability_sha256)
+            || self.receipt_sha256 != self.computed_sha256()?
+        {
+            return Err(ClientSurfaceTierError::Report(
+                "W2 in-process instance receipt is unsealed".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+}
 
 const WORKLOAD_A_SCENARIO: &[u8] =
     include_bytes!("../../../../docs/testing/perf-scenarios/0.67/client-surface-a-v1.toml");
@@ -70,6 +277,129 @@ pub enum ClientSurfaceTierError {
     Report(String),
     #[error(transparent)]
     Io(#[from] std::io::Error),
+}
+
+#[derive(Debug, Clone)]
+struct ClientSurfaceReferenceRunBinding {
+    capability: ClientSurfaceReferenceCapability,
+    capability_sha256: String,
+    instance: ClientSurfaceReferenceInstanceReceipt,
+}
+
+impl ClientSurfaceReferenceRunBinding {
+    fn establish(context: &ValidatedRespReferenceContext) -> Result<Self, ClientSurfaceTierError> {
+        context
+            .verify_binaries_unchanged()
+            .map_err(|error| ClientSurfaceTierError::Report(error.to_string()))?;
+        let capability = client_surface_reference_capability(context);
+        let capability_sha256 = capability.digest()?;
+        let instance =
+            ClientSurfaceReferenceInstanceReceipt::seal(context, capability_sha256.clone())?;
+        Ok(Self {
+            capability,
+            capability_sha256,
+            instance,
+        })
+    }
+
+    fn capacity_dimensions(
+        &self,
+        measurement_id: &str,
+    ) -> Result<BTreeMap<String, DimensionValue>, ClientSurfaceTierError> {
+        let scenario_source = self
+            .capability
+            .capacity_scenario_sources
+            .iter()
+            .find_map(|(id, digest)| (id == measurement_id).then_some(digest.clone()))
+            .ok_or_else(|| {
+                ClientSurfaceTierError::Report(format!(
+                    "W2 reference capability has no scenario binding for {measurement_id}"
+                ))
+            })?;
+        Ok(BTreeMap::from([
+            (
+                "reference_instance_schema_version".to_owned(),
+                DimensionValue::U64(self.instance.schema_version as u64),
+            ),
+            (
+                "surface_capability_sha256".to_owned(),
+                DimensionValue::Text(self.capability_sha256.clone()),
+            ),
+            (
+                "reference_instance_receipt_sha256".to_owned(),
+                DimensionValue::Text(self.instance.receipt_sha256.clone()),
+            ),
+            (
+                "reference_instance_sequence".to_owned(),
+                DimensionValue::U64(self.instance.instance_sequence),
+            ),
+            (
+                "reference_owning_pid".to_owned(),
+                DimensionValue::U64(self.instance.owning_pid as u64),
+            ),
+            (
+                "reference_instance_created_unix_nanos".to_owned(),
+                DimensionValue::U64(self.instance.created_unix_nanos),
+            ),
+            (
+                "direct_prebuilt_exec".to_owned(),
+                DimensionValue::Bool(self.instance.direct_prebuilt_exec),
+            ),
+            (
+                "loadgen_binary_path".to_owned(),
+                DimensionValue::Text(self.instance.loadgen_binary_path.clone()),
+            ),
+            (
+                "loadgen_binary_sha256".to_owned(),
+                DimensionValue::Text(self.instance.loadgen_binary_sha256.clone()),
+            ),
+            (
+                "capacity_scenario_source_sha256".to_owned(),
+                DimensionValue::Text(scenario_source),
+            ),
+            (
+                "w6_capacity_eligible".to_owned(),
+                DimensionValue::Bool(true),
+            ),
+        ]))
+    }
+}
+
+fn client_surface_reference_capability(
+    context: &ValidatedRespReferenceContext,
+) -> ClientSurfaceReferenceCapability {
+    ClientSurfaceReferenceCapability {
+        schema_version: CLIENT_REFERENCE_CAPABILITY_VERSION,
+        surface_kind: "client-surface".to_owned(),
+        execution_mode: "in-process-axum-router".to_owned(),
+        state_scope: "process-local".to_owned(),
+        network_boundary: "none".to_owned(),
+        capacity_measurements: CLIENT_W6_CAPACITY_MEASUREMENTS
+            .into_iter()
+            .map(str::to_owned)
+            .collect(),
+        capacity_scenario_sources: [
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[0].to_owned(),
+                digest_bytes(WORKLOAD_A_SCENARIO),
+            ),
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[1].to_owned(),
+                digest_bytes(WORKLOAD_B_SCENARIO),
+            ),
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[2].to_owned(),
+                digest_bytes(WORKLOAD_C_SCENARIO),
+            ),
+        ]
+        .into_iter()
+        .collect(),
+        source_commit: context.source.git_commit.clone(),
+        cargo_lock_sha256: context.source.cargo_lock_sha256.clone(),
+        prebuild_contract_sha256: context.build.prebuild_contract_digest.clone(),
+        prebuild_manifest_sha256: context.build.prebuild_manifest_sha256.clone(),
+        loadgen_binary_sha256: context.loadgen.sha256.clone(),
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -153,15 +483,34 @@ struct PathCostInput {
 /// Execute every W2 smoke measurement against the real in-process router.
 pub async fn client_surface_smoke_measurements(
 ) -> Result<Vec<MeasurementEvidence>, ClientSurfaceTierError> {
-    let mut measurements = client_surface_knee_smoke_measurements().await?;
-    measurements.push(client_surface_concurrency_smoke_measurement().await?);
-    measurements.push(client_surface_payload_smoke_measurement().await?);
-    measurements.push(client_surface_path_cost_smoke_measurement().await?);
+    client_surface_measurements(ClientRunShape::Smoke, None).await
+}
+
+async fn client_surface_measurements(
+    shape: ClientRunShape,
+    reference: Option<&ClientSurfaceReferenceRunBinding>,
+) -> Result<Vec<MeasurementEvidence>, ClientSurfaceTierError> {
+    if (shape == ClientRunShape::Reference) != reference.is_some() {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 run shape and reference capability do not match".to_owned(),
+        ));
+    }
+    let mut measurements = client_surface_knee_measurements(shape, reference).await?;
+    measurements.push(client_surface_concurrency_measurement(shape).await?);
+    measurements.push(client_surface_payload_measurement(shape).await?);
+    measurements.push(client_surface_path_cost_measurement(shape).await?);
     Ok(measurements)
 }
 
 /// Construct all A/B/C raw knees plus the required aggregate result.
 pub async fn client_surface_knee_smoke_measurements(
+) -> Result<Vec<MeasurementEvidence>, ClientSurfaceTierError> {
+    client_surface_knee_measurements(ClientRunShape::Smoke, None).await
+}
+
+async fn client_surface_knee_measurements(
+    shape: ClientRunShape,
+    reference: Option<&ClientSurfaceReferenceRunBinding>,
 ) -> Result<Vec<MeasurementEvidence>, ClientSurfaceTierError> {
     let mut curves = Vec::new();
     let mut aggregate_points = Vec::new();
@@ -174,25 +523,37 @@ pub async fn client_surface_knee_smoke_measurements(
         WORKLOAD_C_SCENARIO,
     ] {
         let binding = parse_client_scenario(source)?;
-        let schedule = KeyScheduleSpec::uniform(
-            binding.scenario.seed,
-            SMOKE_KEY_COUNT,
-            SMOKE_STEADY_OPERATIONS,
-        )
-        .generate()
-        .map_err(ClientSurfaceTierError::Runtime)?;
+        let scenario = match shape {
+            ClientRunShape::Smoke => smoke_scenario(&binding)?,
+            ClientRunShape::Reference => binding.scenario.clone(),
+        };
+        let key_count = match shape {
+            ClientRunShape::Smoke => SMOKE_KEY_COUNT,
+            ClientRunShape::Reference => binding.client.key_count,
+        };
+        let schedule_operations = match shape {
+            ClientRunShape::Smoke => SMOKE_STEADY_OPERATIONS,
+            ClientRunShape::Reference => scenario
+                .preload_operations
+                .max(scenario.warmup_operations)
+                .max(scenario.steady_operations),
+        };
+        let schedule = KeyScheduleSpec::uniform(scenario.seed, key_count, schedule_operations)
+            .generate()
+            .map_err(ClientSurfaceTierError::Runtime)?;
         let target = Arc::new(ClientSurfaceTarget::new(target_config(
             &binding,
+            &scenario,
+            shape,
             Arc::new(schedule.keys.clone()),
             Duration::ZERO,
         )?)?);
-        let scenario = smoke_scenario(&binding)?;
         let criteria = scenario.sustainability_criteria();
         let knee = run_scenario(target, &scenario).await?;
         let sustainable_rate = knee.sustainable_rate_per_second.ok_or_else(|| {
             ClientSurfaceTierError::Runtime(format!(
-                "{} smoke knee had no sustainable point",
-                binding.client.workload
+                "{} {:?} knee had no sustainable point",
+                binding.client.workload, shape
             ))
         })?;
         let point = knee
@@ -220,26 +581,48 @@ pub async fn client_surface_knee_smoke_measurements(
         );
         dependencies.push(id.clone());
         let workload = workload_identity(&schedule, &binding.client);
-        let scenario_digest = effective_digest(&binding.source_digest, &binding.client, &scenario);
+        let scenario_digest =
+            shape.effective_digest(&binding.source_digest, &binding.client, &scenario);
         aggregate_scenario_inputs.push((id.clone(), scenario_digest.clone()));
         aggregate_workload_inputs.push((id.clone(), workload.digest.clone()));
+        let mut dimensions = BTreeMap::from([
+            (
+                "workload".to_owned(),
+                DimensionValue::Text(binding.client.workload.clone()),
+            ),
+            (
+                "execution_mode".to_owned(),
+                DimensionValue::Text("in-process-axum-router".to_owned()),
+            ),
+            (
+                "network_boundary".to_owned(),
+                DimensionValue::Text("none".to_owned()),
+            ),
+            (
+                "preload_operations".to_owned(),
+                DimensionValue::U64(scenario.preload_operations),
+            ),
+            (
+                "warmup_operations".to_owned(),
+                DimensionValue::U64(scenario.warmup_operations),
+            ),
+            (
+                "steady_operations".to_owned(),
+                DimensionValue::U64(scenario.steady_operations),
+            ),
+            (
+                "repeats".to_owned(),
+                DimensionValue::U64(scenario.repeats as u64),
+            ),
+            ("key_count".to_owned(), DimensionValue::U64(key_count)),
+        ]);
+        if let Some(reference) = reference {
+            dimensions.extend(reference.capacity_dimensions(&id)?);
+        }
         curves.push(MeasurementEvidence::LoadCurve(LoadCurveEvidence {
             id,
             scenario_digest,
-            dimensions: BTreeMap::from([
-                (
-                    "workload".to_owned(),
-                    DimensionValue::Text(binding.client.workload.clone()),
-                ),
-                (
-                    "execution_mode".to_owned(),
-                    DimensionValue::Text("in-process-axum-router".to_owned()),
-                ),
-                (
-                    "network_boundary".to_owned(),
-                    DimensionValue::Text("none".to_owned()),
-                ),
-            ]),
+            dimensions,
             workload,
             criteria: Some(criteria),
             knee: Some(knee),
@@ -254,7 +637,10 @@ pub async fn client_surface_knee_smoke_measurements(
             kind: "uniform".to_owned(),
             theta: None,
         }),
-        key_count: Some(SMOKE_KEY_COUNT),
+        key_count: Some(match shape {
+            ClientRunShape::Smoke => SMOKE_KEY_COUNT,
+            ClientRunShape::Reference => 10_000,
+        }),
         operation_mix: vec![
             WeightedOperation {
                 operation: "workload_a".to_owned(),
@@ -281,7 +667,11 @@ pub async fn client_surface_knee_smoke_measurements(
         workload: aggregate_workload,
         points: aggregate_points,
         derived_from: dependencies,
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(
+            parse_client_scenario(WORKLOAD_A_SCENARIO)?
+                .scenario
+                .robust_spread_tolerance,
+        ),
     }));
     Ok(curves)
 }
@@ -289,17 +679,27 @@ pub async fn client_surface_knee_smoke_measurements(
 /// Measure in-flight request scaling, never connection scaling.
 pub async fn client_surface_concurrency_smoke_measurement(
 ) -> Result<MeasurementEvidence, ClientSurfaceTierError> {
+    client_surface_concurrency_measurement(ClientRunShape::Smoke).await
+}
+
+async fn client_surface_concurrency_measurement(
+    shape: ClientRunShape,
+) -> Result<MeasurementEvidence, ClientSurfaceTierError> {
     let input: ConcurrencyInput = parse_toml(CONCURRENCY_SCENARIO)?;
     validate_concurrency_input(&input)?;
-    let operations = 1_000;
+    let operations = match shape {
+        ClientRunShape::Smoke => 1_000,
+        ClientRunShape::Reference => input.operations,
+    };
+    let repeats = shape.repeats(input.repeats);
     let schedule = KeyScheduleSpec::uniform(input.seed, input.key_count, operations)
         .generate()
         .map_err(ClientSurfaceTierError::Runtime)?;
     let mut points = Vec::new();
     for inflight in &input.inflight {
-        let mut samples = Vec::with_capacity(SMOKE_REPEATS);
-        let mut observed_high_water = Vec::with_capacity(SMOKE_REPEATS);
-        for _ in 0..SMOKE_REPEATS {
+        let mut samples = Vec::with_capacity(repeats);
+        let mut observed_high_water = Vec::with_capacity(repeats);
+        for _ in 0..repeats {
             let target = Arc::new(ClientSurfaceTarget::new(simple_target_config(
                 input.max_frame_bytes_or_default(),
                 input.preload_entries,
@@ -353,9 +753,9 @@ pub async fn client_surface_concurrency_smoke_measurement(
     }
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "concurrent_inflight_scaling_curve_1_10_100_1000".to_owned(),
-        scenario_digest: custom_effective_digest(
+        scenario_digest: shape.custom_digest(
             CONCURRENCY_SCENARIO,
-            &serde_json::json!({"operations": operations, "repeats": SMOKE_REPEATS}),
+            &serde_json::json!({"operations": operations, "repeats": repeats}),
         ),
         workload: workload_identity_from_parts(
             &schedule,
@@ -370,7 +770,7 @@ pub async fn client_surface_concurrency_smoke_measurement(
         ),
         points,
         derived_from: Vec::new(),
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(input.robust_spread_tolerance),
     }))
 }
 
@@ -378,16 +778,26 @@ pub async fn client_surface_concurrency_smoke_measurement(
 /// rejected with HTTP 413 before dispatch or mutation.
 pub async fn client_surface_payload_smoke_measurement(
 ) -> Result<MeasurementEvidence, ClientSurfaceTierError> {
+    client_surface_payload_measurement(ClientRunShape::Smoke).await
+}
+
+async fn client_surface_payload_measurement(
+    shape: ClientRunShape,
+) -> Result<MeasurementEvidence, ClientSurfaceTierError> {
     let input: PayloadInput = parse_toml(PAYLOAD_SCENARIO)?;
     validate_payload_input(&input)?;
-    let operations = input.operations_per_repeat.min(8);
+    let operations = match shape {
+        ClientRunShape::Smoke => input.operations_per_repeat.min(8),
+        ClientRunShape::Reference => input.operations_per_repeat,
+    };
+    let repeats = shape.repeats(input.repeats);
     let schedule = KeyScheduleSpec::uniform(input.seed, input.key_count, operations)
         .generate()
         .map_err(ClientSurfaceTierError::Runtime)?;
     let mut points = Vec::new();
     for payload_bytes in &input.payload_bytes {
-        let mut samples = Vec::with_capacity(SMOKE_REPEATS);
-        for _ in 0..SMOKE_REPEATS {
+        let mut samples = Vec::with_capacity(repeats);
+        for _ in 0..repeats {
             let target = ClientSurfaceTarget::new(simple_target_config(
                 input.max_frame_bytes,
                 0,
@@ -424,8 +834,8 @@ pub async fn client_surface_payload_smoke_measurement(
             samples,
         ));
     }
-    let mut rejection_samples = Vec::with_capacity(SMOKE_REPEATS);
-    for _ in 0..SMOKE_REPEATS {
+    let mut rejection_samples = Vec::with_capacity(repeats);
+    for _ in 0..repeats {
         let target = ClientSurfaceTarget::new(simple_target_config(
             input.max_frame_bytes,
             0,
@@ -485,9 +895,9 @@ pub async fn client_surface_payload_smoke_measurement(
     }
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "client_surface_payload_sweep_100b_1kb_64kb_1mb".to_owned(),
-        scenario_digest: custom_effective_digest(
+        scenario_digest: shape.custom_digest(
             PAYLOAD_SCENARIO,
-            &serde_json::json!({"operations_per_repeat": operations, "repeats": SMOKE_REPEATS}),
+            &serde_json::json!({"operations_per_repeat": operations, "repeats": repeats}),
         ),
         workload: workload_identity_from_parts(
             &schedule,
@@ -506,23 +916,33 @@ pub async fn client_surface_payload_smoke_measurement(
         ),
         points,
         derived_from: Vec::new(),
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(input.robust_spread_tolerance),
     }))
 }
 
 /// Price codec-only, real router dispatch, and pre-dispatch admission paths.
 pub async fn client_surface_path_cost_smoke_measurement(
 ) -> Result<MeasurementEvidence, ClientSurfaceTierError> {
+    client_surface_path_cost_measurement(ClientRunShape::Smoke).await
+}
+
+async fn client_surface_path_cost_measurement(
+    shape: ClientRunShape,
+) -> Result<MeasurementEvidence, ClientSurfaceTierError> {
     let input: PathCostInput = parse_toml(PATH_COST_SCENARIO)?;
     validate_path_cost_input(&input)?;
-    let operations = input.operations_per_repeat.min(8);
+    let operations = match shape {
+        ClientRunShape::Smoke => input.operations_per_repeat.min(8),
+        ClientRunShape::Reference => input.operations_per_repeat,
+    };
+    let repeats = shape.repeats(input.repeats);
     let schedule = KeyScheduleSpec::uniform(input.seed, input.key_count, operations)
         .generate()
         .map_err(ClientSurfaceTierError::Runtime)?;
     let mut codec_samples = Vec::new();
     let mut dispatch_samples = Vec::new();
     let mut admission_samples = Vec::new();
-    for _ in 0..SMOKE_REPEATS {
+    for _ in 0..repeats {
         codec_samples.push(codec_cost_sample(operations, input.payload_bytes)?);
         let target = ClientSurfaceTarget::new(simple_target_config(
             input.max_frame_bytes,
@@ -622,9 +1042,9 @@ pub async fn client_surface_path_cost_smoke_measurement(
     ];
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "client_surface_codec_dispatch_and_admission_rejection_cost".to_owned(),
-        scenario_digest: custom_effective_digest(
+        scenario_digest: shape.custom_digest(
             PATH_COST_SCENARIO,
-            &serde_json::json!({"operations_per_repeat": operations, "repeats": SMOKE_REPEATS}),
+            &serde_json::json!({"operations_per_repeat": operations, "repeats": repeats}),
         ),
         workload: workload_identity_from_parts(
             &schedule,
@@ -655,7 +1075,7 @@ pub async fn client_surface_path_cost_smoke_measurement(
         ),
         points,
         derived_from: Vec::new(),
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(input.robust_spread_tolerance),
     }))
 }
 
@@ -664,18 +1084,20 @@ pub async fn client_surface_dispatch_knee(
     injected_delay: Duration,
 ) -> Result<crate::KneeResult, ClientSurfaceTierError> {
     let binding = parse_client_scenario(WORKLOAD_C_SCENARIO)?;
+    let mut scenario = smoke_scenario(&binding)?;
+    scenario.offered_rates_per_second = vec![1_000];
+    scenario.p99_slo_us = 5_000;
+    scenario.robust_spread_tolerance = SMOKE_SPREAD_LIMIT;
     let schedule = KeyScheduleSpec::uniform(binding.scenario.seed, 16, SMOKE_STEADY_OPERATIONS)
         .generate()
         .map_err(ClientSurfaceTierError::Runtime)?;
     let target = Arc::new(ClientSurfaceTarget::new(target_config(
         &binding,
+        &scenario,
+        ClientRunShape::Smoke,
         Arc::new(schedule.keys),
         injected_delay,
     )?)?);
-    let mut scenario = smoke_scenario(&binding)?;
-    scenario.offered_rates_per_second = vec![1_000];
-    scenario.p99_slo_us = 5_000;
-    scenario.robust_spread_tolerance = SMOKE_SPREAD_LIMIT;
     Ok(run_scenario(target, &scenario).await?)
 }
 
@@ -737,6 +1159,218 @@ pub async fn client_surface_smoke_report(
     ))
 }
 
+/// Execute the exact committed W2 A/B/C, in-flight, payload, and path-cost
+/// shapes inside the receipt-bound prebuilt loadgen. This is explicitly an
+/// in-process library/client surface and makes no daemon or network claim.
+pub async fn client_surface_reference_report(
+    context: &ValidatedRespReferenceContext,
+) -> Result<PerfReport, ClientSurfaceTierError> {
+    let binding = ClientSurfaceReferenceRunBinding::establish(context)?;
+    let measurements =
+        client_surface_measurements(ClientRunShape::Reference, Some(&binding)).await?;
+    context
+        .verify_binaries_unchanged()
+        .map_err(|error| ClientSurfaceTierError::Report(error.to_string()))?;
+    binding.instance.validate(context)?;
+    let state_digest = first_state_digest(&measurements)?;
+    let report = PerfReport::new(
+        "client-surface-tier-reference-v1",
+        "client-surface-w2-suite-reference-v1",
+        state_digest,
+        EvidenceRunMode::ReferenceEvidence,
+        SurfaceIdentity {
+            surface_kind: "client-surface".to_owned(),
+            execution_mode: "in-process-axum-router".to_owned(),
+            state_scope: "process-local".to_owned(),
+            network_boundary: "none".to_owned(),
+            claim_scope: "in-process-client-surface-capacity".to_owned(),
+        },
+        context.profile.clone(),
+        context.runner.clone(),
+        context.source.clone(),
+        context.build.clone(),
+        None,
+        measurements,
+        Vec::new(),
+    );
+    let validated = validate_client_surface_reference_report(&report)?;
+    if validated.capability != binding.capability || validated.instance != binding.instance {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 report binding differs from the live in-process capability".to_owned(),
+        ));
+    }
+    Ok(report)
+}
+
+/// Strict disk-consumer validation for W2. This recomputes the stable
+/// capability and instance seal, and accepts only the complete committed A/B/C
+/// plus concurrency/payload/path shape.
+pub fn validate_client_surface_reference_report(
+    report: &PerfReport,
+) -> Result<ClientSurfaceReferenceEvidenceBinding, ClientSurfaceTierError> {
+    let problems = report.validation_problems();
+    if !problems.is_empty() || report.to_pretty_json().is_err() {
+        return Err(ClientSurfaceTierError::Report(format!(
+            "W2 reference report failed canonical validation: {problems:?}"
+        )));
+    }
+    let expected_surface = SurfaceIdentity {
+        surface_kind: "client-surface".to_owned(),
+        execution_mode: "in-process-axum-router".to_owned(),
+        state_scope: "process-local".to_owned(),
+        network_boundary: "none".to_owned(),
+        claim_scope: "in-process-client-surface-capacity".to_owned(),
+    };
+    if report.report_id != "client-surface-tier-reference-v1"
+        || report.scenario_id != "client-surface-w2-suite-reference-v1"
+        || report.run_mode != EvidenceRunMode::ReferenceEvidence
+        || report.surface != expected_surface
+        || report.runner_profile != "reference-v1"
+        || !report.stable
+        || !report.stability_reasons.is_empty()
+        || report.resp_endpoint_capability.is_some()
+    {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 reference report identity, stability, or in-process boundary is incorrect"
+                .to_owned(),
+        ));
+    }
+    let loadgen_binary_sha256 = exact_loadgen_digest(report)?;
+    let capability = ClientSurfaceReferenceCapability {
+        schema_version: CLIENT_REFERENCE_CAPABILITY_VERSION,
+        surface_kind: report.surface.surface_kind.clone(),
+        execution_mode: report.surface.execution_mode.clone(),
+        state_scope: report.surface.state_scope.clone(),
+        network_boundary: report.surface.network_boundary.clone(),
+        capacity_measurements: CLIENT_W6_CAPACITY_MEASUREMENTS
+            .into_iter()
+            .map(str::to_owned)
+            .collect(),
+        capacity_scenario_sources: [
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[0].to_owned(),
+                digest_bytes(WORKLOAD_A_SCENARIO),
+            ),
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[1].to_owned(),
+                digest_bytes(WORKLOAD_B_SCENARIO),
+            ),
+            (
+                CLIENT_W6_CAPACITY_MEASUREMENTS[2].to_owned(),
+                digest_bytes(WORKLOAD_C_SCENARIO),
+            ),
+        ]
+        .into_iter()
+        .collect(),
+        source_commit: report.source.git_commit.clone(),
+        cargo_lock_sha256: report.source.cargo_lock_sha256.clone(),
+        prebuild_contract_sha256: report.build.prebuild_contract_digest.clone(),
+        prebuild_manifest_sha256: report.build.prebuild_manifest_sha256.clone(),
+        loadgen_binary_sha256,
+    };
+    let capability_sha256 = capability.digest()?;
+    let expected_rates = [1_000_f64, 5_000_f64, 10_000_f64, 25_000_f64];
+    let mut capacity_measurements = Vec::new();
+    let mut observed_instance = None;
+    for (source, id) in [
+        (WORKLOAD_A_SCENARIO, CLIENT_W6_CAPACITY_MEASUREMENTS[0]),
+        (WORKLOAD_B_SCENARIO, CLIENT_W6_CAPACITY_MEASUREMENTS[1]),
+        (WORKLOAD_C_SCENARIO, CLIENT_W6_CAPACITY_MEASUREMENTS[2]),
+    ] {
+        let curve = report
+            .measurements
+            .iter()
+            .find_map(|measurement| match measurement {
+                MeasurementEvidence::LoadCurve(curve) if curve.id == id => Some(curve),
+                _ => None,
+            })
+            .ok_or_else(|| {
+                ClientSurfaceTierError::Report(format!("W2 capacity curve {id} is absent"))
+            })?;
+        let binding = parse_client_scenario(source)?;
+        let expected_source_digest = digest_bytes(source);
+        let expected_digest = ClientRunShape::Reference.effective_digest(
+            &binding.source_digest,
+            &binding.client,
+            &binding.scenario,
+        );
+        let schedule = KeyScheduleSpec::uniform(
+            binding.scenario.seed,
+            binding.client.key_count,
+            binding
+                .scenario
+                .preload_operations
+                .max(binding.scenario.warmup_operations)
+                .max(binding.scenario.steady_operations),
+        )
+        .generate()
+        .map_err(ClientSurfaceTierError::Runtime)?;
+        let expected_workload = workload_identity(&schedule, &binding.client);
+        let knee = curve.knee.as_ref().ok_or_else(|| {
+            ClientSurfaceTierError::Report(format!("W2 capacity curve {id} has no knee"))
+        })?;
+        let exact_knee = knee.evaluated.len() == expected_rates.len()
+            && knee
+                .evaluated
+                .iter()
+                .zip(expected_rates)
+                .all(|(point, rate)| {
+                    point.sample.offered_rate_per_second == rate
+                        && point.repeats.len() == binding.scenario.repeats as usize
+                        && point.repeats.iter().all(|repeat| {
+                            repeat.phase.reset_operations == 1
+                                && repeat.phase.preload_operations
+                                    == binding.scenario.preload_operations
+                                && repeat.phase.warmup_operations
+                                    == binding.scenario.warmup_operations
+                                && repeat.phase.steady_operations
+                                    == binding.scenario.steady_operations
+                                && repeat.phase.warmup_samples_in_steady_histogram == 0
+                        })
+                });
+        if curve.claim != LoadClaim::CapacityKnee
+            || curve.scenario_digest != expected_digest
+            || curve.workload != expected_workload
+            || curve.criteria.as_ref() != Some(&binding.scenario.sustainability_criteria())
+            || !exact_knee
+            || knee.sustainable_rate_per_second.is_none()
+            || text_dimension(&curve.dimensions, "surface_capability_sha256")
+                != Some(capability_sha256.as_str())
+            || text_dimension(&curve.dimensions, "capacity_scenario_source_sha256")
+                != Some(expected_source_digest.as_str())
+            || bool_dimension(&curve.dimensions, "w6_capacity_eligible") != Some(true)
+        {
+            return Err(ClientSurfaceTierError::Report(format!(
+                "W2 curve {id} does not retain its exact committed open-loop shape or stable capability"
+            )));
+        }
+        let instance = instance_from_dimensions(&curve.dimensions, capability_sha256.clone())?;
+        instance.validate_seal()?;
+        if observed_instance
+            .as_ref()
+            .is_some_and(|observed| observed != &instance)
+        {
+            return Err(ClientSurfaceTierError::Report(
+                "W2 A/B/C curves do not share one exact in-process instance receipt".to_owned(),
+            ));
+        }
+        observed_instance = Some(instance);
+        capacity_measurements.push((
+            id.to_owned(),
+            curve.scenario_digest.clone(),
+            curve.workload.digest.clone(),
+        ));
+    }
+    validate_client_surface_reference_scalar_shapes(report)?;
+    Ok(ClientSurfaceReferenceEvidenceBinding {
+        capability,
+        instance: observed_instance.ok_or_else(|| {
+            ClientSurfaceTierError::Report("W2 has no instance receipt".to_owned())
+        })?,
+        capacity_measurements,
+    })
+}
+
 /// Stable profile entry point shared by direct and aggregate CLI dispatch.
 pub async fn run_client_surface_profile(
     profile: &str,
@@ -746,6 +1380,29 @@ pub async fn run_client_surface_profile(
         "reference-v1" => Err(ClientSurfaceTierError::Report(
             "reference-v1 requires the W7 profile and receipt-bound prebuild context; refusing to emit smoke evidence"
                 .to_owned(),
+        )),
+        _ => Err(ClientSurfaceTierError::Report(format!(
+            "unknown client-surface performance profile {profile:?}"
+        ))),
+    }
+}
+
+pub async fn run_client_surface_profile_with_context(
+    profile: &str,
+    context: Option<&ValidatedRespReferenceContext>,
+) -> Result<PerfReport, ClientSurfaceTierError> {
+    match profile {
+        "smoke-v1" if context.is_none() => client_surface_smoke_report(profile).await,
+        "reference-v1" => {
+            let context = context.ok_or_else(|| {
+                ClientSurfaceTierError::Report(
+                    "reference-v1 requires a validated W7 reference context".to_owned(),
+                )
+            })?;
+            client_surface_reference_report(context).await
+        }
+        "smoke-v1" => Err(ClientSurfaceTierError::Report(
+            "smoke-v1 must not consume a reference capability".to_owned(),
         )),
         _ => Err(ClientSurfaceTierError::Report(format!(
             "unknown client-surface performance profile {profile:?}"
@@ -767,6 +1424,15 @@ pub async fn write_client_surface_report(
     }
     std::fs::write(path, bytes)?;
     Ok(())
+}
+
+pub async fn write_client_surface_report_with_context(
+    profile: &str,
+    path: &Path,
+    context: Option<&ValidatedRespReferenceContext>,
+) -> Result<(), ClientSurfaceTierError> {
+    let report = run_client_surface_profile_with_context(profile, context).await?;
+    write_report(&report, path)
 }
 
 async fn concurrent_sample(
@@ -864,13 +1530,19 @@ fn codec_cost_sample(operations: u64, payload_bytes: usize) -> Result<f64, Clien
 
 fn target_config(
     binding: &BoundClientScenario,
+    scenario: &Scenario,
+    shape: ClientRunShape,
     schedule: Arc<Vec<u64>>,
     delay: Duration,
 ) -> Result<ClientSurfaceTargetConfig, ClientSurfaceTierError> {
+    let (preload_entries, key_space) = match shape {
+        ClientRunShape::Smoke => (SMOKE_PRELOAD_ENTRIES, SMOKE_KEY_COUNT),
+        ClientRunShape::Reference => (scenario.preload_operations, binding.client.key_count),
+    };
     simple_target_config(
         binding.client.max_frame_bytes,
-        SMOKE_PRELOAD_ENTRIES,
-        SMOKE_KEY_COUNT,
+        preload_entries,
+        key_space,
         usize::try_from(binding.client.payload_bytes)
             .map_err(|_| ClientSurfaceTierError::Runtime("payload does not fit usize".into()))?,
         binding.client.batch_size,
@@ -1168,24 +1840,28 @@ fn effective_digest(
     source_digest: &str,
     client: &ClientSurfaceInputs,
     scenario: &Scenario,
+    shape: ClientRunShape,
 ) -> String {
     let client = serde_json::to_vec(client).expect("validated client inputs must serialize");
     let scenario = serde_json::to_vec(scenario).expect("validated scenario must serialize");
-    digest_parts(&[
-        source_digest.as_bytes(),
-        b"hydracache-client-surface-smoke-input-v1",
-        &client,
-        &scenario,
-    ])
+    let domain = match shape {
+        ClientRunShape::Smoke => b"hydracache-client-surface-smoke-input-v1".as_slice(),
+        ClientRunShape::Reference => b"hydracache-client-surface-reference-input-v1".as_slice(),
+    };
+    digest_parts(&[source_digest.as_bytes(), domain, &client, &scenario])
 }
 
-fn custom_effective_digest(source: &[u8], effective: &serde_json::Value) -> String {
+fn custom_effective_digest(
+    source: &[u8],
+    effective: &serde_json::Value,
+    shape: ClientRunShape,
+) -> String {
     let effective = serde_json::to_vec(effective).expect("effective inputs must serialize");
-    digest_parts(&[
-        digest_bytes(source).as_bytes(),
-        b"hydracache-client-surface-smoke-input-v1",
-        &effective,
-    ])
+    let domain = match shape {
+        ClientRunShape::Smoke => b"hydracache-client-surface-smoke-input-v1".as_slice(),
+        ClientRunShape::Reference => b"hydracache-client-surface-reference-input-v1".as_slice(),
+    };
+    digest_parts(&[digest_bytes(source).as_bytes(), domain, &effective])
 }
 
 fn scalar_point(
@@ -1235,6 +1911,302 @@ fn ensure_success(outcome: TargetOutcome, path: &str) -> Result<(), ClientSurfac
             "client-surface {path} returned {outcome:?}"
         )))
     }
+}
+
+fn validate_client_surface_reference_scalar_shapes(
+    report: &PerfReport,
+) -> Result<(), ClientSurfaceTierError> {
+    let ids = report
+        .measurements
+        .iter()
+        .map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(value) => value.id.as_str(),
+            MeasurementEvidence::Scalar(value) => value.id.as_str(),
+            MeasurementEvidence::TraceReplay(value) => value.id.as_str(),
+            MeasurementEvidence::Comparison(value) => value.id.as_str(),
+        })
+        .collect::<BTreeSet<_>>();
+    let expected_ids = BTreeSet::from([
+        "client_surface_in_process_knee_at_slo_workload_a",
+        "client_surface_in_process_knee_at_slo_workload_b",
+        "client_surface_in_process_knee_at_slo_workload_c",
+        "client_surface_in_process_knee_at_slo_for_a_b_c",
+        "concurrent_inflight_scaling_curve_1_10_100_1000",
+        "client_surface_payload_sweep_100b_1kb_64kb_1mb",
+        "client_surface_codec_dispatch_and_admission_rejection_cost",
+    ]);
+    if ids != expected_ids {
+        return Err(ClientSurfaceTierError::Report(format!(
+            "W2 reference report measurement set differs from the exact contract: {ids:?}"
+        )));
+    }
+    let aggregate = scalar_measurement(report, "client_surface_in_process_knee_at_slo_for_a_b_c")?;
+    if aggregate.points.len() != 3
+        || aggregate.max_robust_spread_ratio != 0.15
+        || aggregate
+            .points
+            .iter()
+            .any(|point| point.sample_count != 3 || point.samples.len() != 3)
+    {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 aggregate A/B/C shape lost its exact repeat/spread contract".to_owned(),
+        ));
+    }
+
+    let concurrency_input: ConcurrencyInput = parse_toml(CONCURRENCY_SCENARIO)?;
+    let concurrency =
+        scalar_measurement(report, "concurrent_inflight_scaling_curve_1_10_100_1000")?;
+    let concurrency_digest = ClientRunShape::Reference.custom_digest(
+        CONCURRENCY_SCENARIO,
+        &serde_json::json!({
+            "operations": concurrency_input.operations,
+            "repeats": concurrency_input.repeats,
+        }),
+    );
+    let inflight = concurrency
+        .points
+        .iter()
+        .filter_map(|point| match point.dimensions.get("concurrent_inflight") {
+            Some(DimensionValue::U64(value)) => Some(*value),
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+    if concurrency.scenario_digest != concurrency_digest
+        || concurrency.max_robust_spread_ratio != concurrency_input.robust_spread_tolerance
+        || concurrency.points.len() != 4
+        || inflight != BTreeSet::from([1, 10, 100, 1_000])
+        || concurrency
+            .points
+            .iter()
+            .any(|point| point.sample_count != 3 || point.samples.len() != 3)
+    {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 reference concurrency evidence differs from the exact 4000-op 1/10/100/1000 contract"
+                .to_owned(),
+        ));
+    }
+
+    let payload_input: PayloadInput = parse_toml(PAYLOAD_SCENARIO)?;
+    let payload = scalar_measurement(report, "client_surface_payload_sweep_100b_1kb_64kb_1mb")?;
+    let payload_digest = ClientRunShape::Reference.custom_digest(
+        PAYLOAD_SCENARIO,
+        &serde_json::json!({
+            "operations_per_repeat": payload_input.operations_per_repeat,
+            "repeats": payload_input.repeats,
+        }),
+    );
+    let payloads = payload
+        .points
+        .iter()
+        .filter_map(|point| match point.dimensions.get("payload_bytes") {
+            Some(DimensionValue::U64(value)) => Some(*value),
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+    if payload.scenario_digest != payload_digest
+        || payload.max_robust_spread_ratio != payload_input.robust_spread_tolerance
+        || payload.points.len() != 4
+        || payloads != BTreeSet::from([100, 1_000, 65_536, 1_000_000])
+        || payload
+            .points
+            .iter()
+            .any(|point| point.sample_count != 3 || point.samples.len() != 3)
+    {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 reference payload evidence differs from the exact committed sweep".to_owned(),
+        ));
+    }
+
+    let path_input: PathCostInput = parse_toml(PATH_COST_SCENARIO)?;
+    let path = scalar_measurement(
+        report,
+        "client_surface_codec_dispatch_and_admission_rejection_cost",
+    )?;
+    let path_digest = ClientRunShape::Reference.custom_digest(
+        PATH_COST_SCENARIO,
+        &serde_json::json!({
+            "operations_per_repeat": path_input.operations_per_repeat,
+            "repeats": path_input.repeats,
+        }),
+    );
+    let paths = path
+        .points
+        .iter()
+        .filter_map(|point| match point.dimensions.get("path") {
+            Some(DimensionValue::Text(value)) => Some(value.as_str()),
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+    if path.scenario_digest != path_digest
+        || path.max_robust_spread_ratio != path_input.robust_spread_tolerance
+        || path.points.len() != 3
+        || paths
+            != BTreeSet::from([
+                "codec_encode_decode",
+                "router_dispatch",
+                "oversized_admission_rejection",
+            ])
+        || path
+            .points
+            .iter()
+            .any(|point| point.sample_count != 3 || point.samples.len() != 3)
+    {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 reference path-cost evidence differs from the exact committed 64-op shape"
+                .to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+fn scalar_measurement<'a>(
+    report: &'a PerfReport,
+    id: &str,
+) -> Result<&'a ScalarEvidence, ClientSurfaceTierError> {
+    report
+        .measurements
+        .iter()
+        .find_map(|measurement| match measurement {
+            MeasurementEvidence::Scalar(value) if value.id == id => Some(value),
+            _ => None,
+        })
+        .ok_or_else(|| ClientSurfaceTierError::Report(format!("W2 scalar {id} is absent")))
+}
+
+fn exact_loadgen_digest(report: &PerfReport) -> Result<String, ClientSurfaceTierError> {
+    let matches = report
+        .build
+        .binary_sha256
+        .iter()
+        .filter(|(id, digest)| id == "hydracache-loadgen" && is_sha256(digest))
+        .map(|(_, digest)| digest.clone())
+        .collect::<Vec<_>>();
+    if matches.len() != 1 {
+        return Err(ClientSurfaceTierError::Report(
+            "W2 reference report does not bind exactly one loadgen binary".to_owned(),
+        ));
+    }
+    Ok(matches[0].clone())
+}
+
+fn instance_from_dimensions(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    stable_capability_sha256: String,
+) -> Result<ClientSurfaceReferenceInstanceReceipt, ClientSurfaceTierError> {
+    Ok(ClientSurfaceReferenceInstanceReceipt {
+        schema_version: u32_dimension(dimensions, "reference_instance_schema_version")?,
+        instance_sequence: required_u64_dimension(dimensions, "reference_instance_sequence")?,
+        owning_pid: u32_dimension(dimensions, "reference_owning_pid")?,
+        created_unix_nanos: required_u64_dimension(
+            dimensions,
+            "reference_instance_created_unix_nanos",
+        )?,
+        direct_prebuilt_exec: bool_dimension(dimensions, "direct_prebuilt_exec").ok_or_else(
+            || ClientSurfaceTierError::Report("missing direct-prebuild proof".to_owned()),
+        )?,
+        loadgen_binary_path: required_text_dimension(dimensions, "loadgen_binary_path")?,
+        loadgen_binary_sha256: required_text_dimension(dimensions, "loadgen_binary_sha256")?,
+        stable_capability_sha256,
+        receipt_sha256: required_text_dimension(dimensions, "reference_instance_receipt_sha256")?,
+    })
+}
+
+fn text_dimension<'a>(
+    dimensions: &'a BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Option<&'a str> {
+    match dimensions.get(name) {
+        Some(DimensionValue::Text(value)) => Some(value),
+        _ => None,
+    }
+}
+
+fn required_text_dimension(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Result<String, ClientSurfaceTierError> {
+    text_dimension(dimensions, name)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+        .ok_or_else(|| ClientSurfaceTierError::Report(format!("missing W2 text dimension {name}")))
+}
+
+fn bool_dimension(dimensions: &BTreeMap<String, DimensionValue>, name: &str) -> Option<bool> {
+    match dimensions.get(name) {
+        Some(DimensionValue::Bool(value)) => Some(*value),
+        _ => None,
+    }
+}
+
+fn required_u64_dimension(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Result<u64, ClientSurfaceTierError> {
+    match dimensions.get(name) {
+        Some(DimensionValue::U64(value)) => Ok(*value),
+        _ => Err(ClientSurfaceTierError::Report(format!(
+            "missing W2 integer dimension {name}"
+        ))),
+    }
+}
+
+fn u32_dimension(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Result<u32, ClientSurfaceTierError> {
+    required_u64_dimension(dimensions, name)?
+        .try_into()
+        .map_err(|_| {
+            ClientSurfaceTierError::Report(format!("W2 dimension {name} does not fit u32"))
+        })
+}
+
+fn first_state_digest(
+    measurements: &[MeasurementEvidence],
+) -> Result<String, ClientSurfaceTierError> {
+    measurements
+        .iter()
+        .find_map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(curve) => curve
+                .knee
+                .as_ref()
+                .and_then(|knee| knee.evaluated.first())
+                .and_then(|point| point.repeats.first())
+                .map(|repeat| repeat.state_digest.clone()),
+            _ => None,
+        })
+        .ok_or_else(|| ClientSurfaceTierError::Report("W2 report has no state digest".to_owned()))
+}
+
+fn write_report(report: &PerfReport, path: &Path) -> Result<(), ClientSurfaceTierError> {
+    let bytes = report
+        .to_pretty_json()
+        .map_err(|error| ClientSurfaceTierError::Report(error.to_string()))?;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(path, bytes)?;
+    Ok(())
+}
+
+fn canonical_digest<T: Serialize>(value: &T) -> Result<String, ClientSurfaceTierError> {
+    let bytes = serde_json::to_vec(value)
+        .map_err(|error| ClientSurfaceTierError::Report(error.to_string()))?;
+    Ok(digest_bytes(&bytes))
+}
+
+fn is_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+
+fn is_git_commit(value: &str) -> bool {
+    value.len() == 40
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
 }
 
 fn digest_bytes(bytes: &[u8]) -> String {
@@ -1291,6 +2263,69 @@ fn smoke_profile(name: &str, fingerprint: &RunnerFingerprint) -> PerformanceProf
 mod tests {
     use super::*;
 
+    fn mismatched_reference_context() -> ValidatedRespReferenceContext {
+        let missing = Path::new(env!("CARGO_MANIFEST_DIR")).join("missing-reference-binary");
+        let runner = RunnerFingerprint {
+            runner_class: "reference-v1".to_owned(),
+            fingerprint: "fixture".to_owned(),
+            cpu_model: "fixture".to_owned(),
+            logical_cores: 8,
+            ram_bytes: 1,
+            os: "fixture".to_owned(),
+            kernel: "fixture".to_owned(),
+            cpu_affinity: "dedicated-cpuset".to_owned(),
+            cgroup_cpu_quota: "unlimited".to_owned(),
+            governor: "fixture".to_owned(),
+            turbo: "fixture".to_owned(),
+            shared_hardware: false,
+            calibration_score: 0.0,
+        };
+        ValidatedRespReferenceContext {
+            repo_root: Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+            manifest_path: missing.clone(),
+            manifest_sha256: "1".repeat(64),
+            source: SourceIdentity {
+                git_commit: "a".repeat(40),
+                cargo_lock_sha256: "b".repeat(64),
+                toolchain: "rustc-fixture".to_owned(),
+                build_flags: vec!["--release".to_owned()],
+            },
+            build: BuildIdentity {
+                prebuild_contract_digest: "c".repeat(64),
+                prebuild_manifest_sha256: "1".repeat(64),
+                binary_sha256: vec![("hydracache-loadgen".to_owned(), "d".repeat(64))],
+            },
+            profile: PerformanceProfile {
+                name: "reference-v1".to_owned(),
+                required_runner_class: "reference-v1".to_owned(),
+                allowed_fingerprints: vec!["fixture".to_owned()],
+                minimum_logical_cores: 8,
+                required_cpu_affinity: "dedicated-cpuset".to_owned(),
+                required_cgroup_cpu_quota: "unlimited".to_owned(),
+                require_dedicated: true,
+                maximum_calibration_score: 0.05,
+            },
+            runner,
+            surface: SurfaceIdentity {
+                surface_kind: "node-resp".to_owned(),
+                execution_mode: "unused".to_owned(),
+                state_scope: "node-local".to_owned(),
+                network_boundary: "loopback-tcp".to_owned(),
+                claim_scope: "unused".to_owned(),
+            },
+            server: crate::tiers::resp_reference::VerifiedBinary {
+                id: "hydracache-server".to_owned(),
+                canonical_path: missing.clone(),
+                sha256: "e".repeat(64),
+            },
+            loadgen: crate::tiers::resp_reference::VerifiedBinary {
+                id: "hydracache-loadgen".to_owned(),
+                canonical_path: missing,
+                sha256: "d".repeat(64),
+            },
+        }
+    }
+
     #[test]
     fn committed_abc_taxonomy_is_exact_and_digest_bound() {
         for (source, expected) in [
@@ -1308,5 +2343,26 @@ mod tests {
     fn reference_profile_is_not_a_smoke_alias() {
         let fingerprint = smoke_fingerprint();
         assert_ne!(smoke_profile("smoke-v1", &fingerprint).name, "reference-v1");
+    }
+
+    #[tokio::test]
+    async fn reference_dispatch_rejects_missing_and_mismatched_context_without_downgrade() {
+        let missing = run_client_surface_profile_with_context("reference-v1", None)
+            .await
+            .unwrap_err();
+        assert!(missing
+            .to_string()
+            .contains("validated W7 reference context"));
+
+        let mismatched = client_surface_reference_report(&mismatched_reference_context())
+            .await
+            .unwrap_err();
+        assert!(mismatched.to_string().contains("receipt-bound binary"));
+    }
+
+    #[tokio::test]
+    async fn strict_reference_validator_rejects_smoke_evidence() {
+        let smoke = client_surface_smoke_report("smoke-v1").await.unwrap();
+        assert!(validate_client_surface_reference_report(&smoke).is_err());
     }
 }
