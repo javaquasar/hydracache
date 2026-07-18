@@ -1,0 +1,66 @@
+schema_version = 1
+scenario_id = "resp-external-redis-benchmark-v1"
+
+[tool]
+program = "redis-benchmark"
+version_args = ["--version"]
+expected_version = "redis-benchmark 7.2.5"
+identity_policy = "canonical-path-sha256-pinned-per-run"
+version_timeout_seconds = 10
+case_timeout_seconds = 300
+max_stdout_bytes = 262144
+max_stderr_bytes = 65536
+stderr_policy = "must-be-empty"
+repeats_per_case = 3
+max_robust_spread_ratio = 0.15
+required_runner_profile = "reference-v1"
+provenance_registry_path = "docs/testing/perf-scenarios/0.67/redis-benchmark-provenance-v1.toml"
+required_provenance_id = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1"
+execution_environment = ["LANG=C", "LC_ALL=C", "TZ=UTC"]
+repeat_isolation = "del-set-get-exact-redis-benchmark-key"
+deterministic_key = "key:__rand_int__"
+
+[endpoint]
+host = "127.0.0.1"
+port = 6379
+
+[identity]
+measurement_id = "redis_benchmark_get_set_mset_throughput_and_interop"
+methodology = "closed-loop"
+claim_scope = "supplemental-interop-throughput-no-slo-knee"
+state_scope = "node-local"
+network_boundary = "selected-daemon-resp-tcp"
+scheduled_send_latency = false
+capacity_knee_eligible = false
+
+[[cases]]
+id = "clients-1-pipeline-1"
+clients = 1
+pipeline = 1
+requests = 100000
+data_size_bytes = 256
+operations = ["get", "set", "mset"]
+
+[[cases]]
+id = "clients-10-pipeline-1"
+clients = 10
+pipeline = 1
+requests = 100000
+data_size_bytes = 256
+operations = ["get", "set", "mset"]
+
+[[cases]]
+id = "clients-50-pipeline-1"
+clients = 50
+pipeline = 1
+requests = 100000
+data_size_bytes = 256
+operations = ["get", "set", "mset"]
+
+[[cases]]
+id = "clients-50-pipeline-10"
+clients = 50
+pipeline = 10
+requests = 100000
+data_size_bytes = 256
+operations = ["get", "set", "mset"]

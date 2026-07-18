@@ -9,6 +9,7 @@ pub mod knee;
 pub mod profile;
 pub mod rate;
 pub mod report;
+pub mod resp_external;
 pub mod runner;
 pub mod scenario;
 pub mod target;

@@ -585,6 +585,7 @@ fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
             prebuild_manifest_sha256: "manifest-sha".to_owned(),
             binary_sha256: vec![("hydracache-loadgen".to_owned(), "binary-sha".to_owned())],
         },
+        None,
         measurements,
         vec![],
     )
@@ -615,6 +616,41 @@ fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_diges
     );
     assert_eq!(value["build"]["prebuild_contract_digest"], "contract-sha");
     assert_eq!(value["build"]["prebuild_manifest_sha256"], "manifest-sha");
+}
+
+#[test]
+fn multi_curve_report_binds_distinct_reproducible_steady_states() {
+    let first = foundation_measurement();
+    let mut second = foundation_measurement();
+    let MeasurementEvidence::LoadCurve(second_curve) = &mut second else {
+        unreachable!()
+    };
+    second_curve.id = "foundation-open-loop-second-state".to_owned();
+    second_curve.scenario_digest = "scenario-second-sha".to_owned();
+    second_curve.workload.digest = "workload-second-sha".to_owned();
+    for point in &mut second_curve.knee.as_mut().unwrap().evaluated {
+        for repeat in &mut point.repeats {
+            repeat.state_digest = "state-second-sha".to_owned();
+        }
+    }
+    let report = fixture_report(vec![first, second]);
+    assert_ne!(report.state_digest, "state-sha");
+    assert_ne!(report.state_digest, "state-second-sha");
+    assert!(report.to_pretty_json().is_ok());
+
+    let mut forged = report;
+    let MeasurementEvidence::LoadCurve(second_curve) = &mut forged.measurements[1] else {
+        unreachable!()
+    };
+    for point in &mut second_curve.knee.as_mut().unwrap().evaluated {
+        for repeat in &mut point.repeats {
+            repeat.state_digest = "forged-third-state".to_owned();
+        }
+    }
+    assert!(forged.validation_problems().iter().any(|problem| {
+        problem.contains("report state digest does not bind the per-measurement")
+    }));
+    assert!(forged.to_pretty_json().is_err());
 }
 
 #[test]
@@ -671,7 +707,11 @@ fn scalar_and_comparison_evidence_require_raw_spread_and_recomputed_dependencies
         comparison_measurement(1.0, true),
     ]);
     assert!(report.stable, "{:?}", report.stability_reasons);
-    assert!(report.to_pretty_json().is_ok());
+    assert!(
+        report.to_pretty_json().is_ok(),
+        "fixture report problems: {:?}",
+        report.validation_problems()
+    );
 
     let wrong_ratio = fixture_report(vec![
         foundation_measurement(),
@@ -1458,4 +1498,322 @@ async fn canary_injected_client_surface_dispatch_delay_breaches_the_in_process_b
         slow_path_is_red,
         "injected dispatch delay must make the client-surface knee unsustainable: {slow_knee:?}"
     );
+}
+
+async fn w3_smoke_report() -> PerfReport {
+    static REPORT: tokio::sync::OnceCell<PerfReport> = tokio::sync::OnceCell::const_new();
+    REPORT
+        .get_or_init(|| async {
+            hydracache_loadgen::tiers::resp::run_resp_profile("smoke-v1")
+                .await
+                .unwrap()
+        })
+        .await
+        .clone()
+}
+
+#[test]
+fn resp_operation_schedule_executes_exact_a_b_c_taxonomy() {
+    use hydracache_loadgen::targets::resp::{RespOperation, RespOperationMix};
+
+    for (mix, expected) in [
+        (
+            RespOperationMix::WORKLOAD_A,
+            BTreeMap::from([("get", 45), ("set", 45), ("mget", 5), ("mset", 5)]),
+        ),
+        (
+            RespOperationMix::WORKLOAD_B,
+            BTreeMap::from([("get", 90), ("set", 4), ("mget", 5), ("mset", 1)]),
+        ),
+        (
+            RespOperationMix::WORKLOAD_C,
+            BTreeMap::from([("get", 90), ("set", 0), ("mget", 10), ("mset", 0)]),
+        ),
+    ] {
+        let mut observed = BTreeMap::from([("get", 0), ("set", 0), ("mget", 0), ("mset", 0)]);
+        for sequence in 0..100 {
+            let name = match mix.operation_for(sequence) {
+                RespOperation::Get => "get",
+                RespOperation::Set => "set",
+                RespOperation::MGet => "mget",
+                RespOperation::MSet => "mset",
+            };
+            *observed.get_mut(name).unwrap() += 1;
+        }
+        assert_eq!(observed, expected);
+    }
+}
+
+#[test]
+fn resp2_parser_is_incremental_binary_safe_and_exact_about_pipeline_replies() {
+    use hydracache_loadgen::targets::resp::{
+        encode_resp2_command, parse_exact_resp2_replies, parse_resp2, Resp2Limits,
+        Resp2ParseStatus, Resp2Value,
+    };
+
+    let command = encode_resp2_command([
+        b"SET".as_slice(),
+        b"binary".as_slice(),
+        b"\0\r\n$".as_slice(),
+    ]);
+    assert_eq!(
+        command,
+        b"*3\r\n$3\r\nSET\r\n$6\r\nbinary\r\n$4\r\n\0\r\n$\r\n"
+    );
+    assert_eq!(
+        parse_resp2(b"$4\r\n\0\r", Resp2Limits::default()).unwrap(),
+        Resp2ParseStatus::Incomplete
+    );
+    let replies =
+        parse_exact_resp2_replies(b"+OK\r\n$4\r\n\0\r\n$\r\n", 2, Resp2Limits::default()).unwrap();
+    assert_eq!(
+        replies,
+        [
+            Resp2Value::Simple(b"OK".to_vec()),
+            Resp2Value::Bulk(Some(vec![0, b'\r', b'\n', b'$']))
+        ]
+    );
+    assert!(parse_exact_resp2_replies(b"+OK\r\n", 2, Resp2Limits::default()).is_err());
+    assert!(parse_exact_resp2_replies(b"+OK\r\n+PONG\r\n", 1, Resp2Limits::default()).is_err());
+}
+
+#[tokio::test]
+async fn resp_open_loop_get_set_knee_at_slo_carries_raw_a_b_c_evidence() {
+    let report = w3_smoke_report().await;
+    assert!(matches!(
+        measurement_named(&report, "resp_open_loop_get_set_knee_at_slo"),
+        MeasurementEvidence::Scalar(_)
+    ));
+    for workload in ["a", "b", "c"] {
+        let id = format!("resp_open_loop_get_set_knee_at_slo_workload_{workload}");
+        let MeasurementEvidence::LoadCurve(curve) = measurement_named(&report, &id) else {
+            panic!("raw RESP workload must be a load curve")
+        };
+        assert_eq!(curve.claim, LoadClaim::CapacityKnee);
+        assert_eq!(
+            curve.dimensions.get("methodology"),
+            Some(&DimensionValue::Text("open-loop-scheduled-send".to_owned()))
+        );
+        assert_eq!(
+            curve.dimensions.get("real_tcp"),
+            Some(&DimensionValue::Bool(true))
+        );
+    }
+}
+
+#[tokio::test]
+async fn resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based() {
+    let report = w3_smoke_report().await;
+    let MeasurementEvidence::Scalar(matrix) =
+        measurement_named(&report, "resp_open_loop_connection_and_pipeline_sweeps")
+    else {
+        panic!("RESP connection/pipeline matrix must be scalar evidence")
+    };
+    let pairs = matrix
+        .points
+        .iter()
+        .map(|point| {
+            let DimensionValue::U64(connections) = point.dimensions["connections"] else {
+                panic!("numeric connections required")
+            };
+            let DimensionValue::U64(pipeline) = point.dimensions["pipeline"] else {
+                panic!("numeric pipeline required")
+            };
+            assert_eq!(point.quantity.unit, "scheduled_send_p99_microseconds");
+            assert_eq!(point.dimensions["real_tcp"], DimensionValue::Bool(true));
+            (connections, pipeline)
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        pairs,
+        std::collections::BTreeSet::from(
+            [(1, 1), (1, 10), (10, 1), (10, 10), (100, 1), (100, 10),]
+        )
+    );
+}
+
+#[tokio::test]
+async fn w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries() {
+    use hydracache_loadgen::resp_external::{
+        RedisBenchmarkContract, CLOSED_LOOP_METHODOLOGY, SUPPLEMENTAL_CLAIM_SCOPE,
+    };
+
+    let report = w3_smoke_report().await;
+    assert_eq!(report.surface.surface_kind, "resp-loopback-fixture");
+    assert_eq!(
+        report.surface.execution_mode,
+        "in-process-product-resp-listener"
+    );
+    assert_eq!(report.surface.network_boundary, "loopback-tcp");
+    assert_eq!(report.surface.claim_scope, "plumbing-only");
+    assert!(
+        report.to_pretty_json().is_ok(),
+        "W3 report problems: {:?}",
+        report.validation_problems()
+    );
+    assert!(report.measurements.iter().all(|measurement| !matches!(
+        measurement,
+        MeasurementEvidence::Comparison(_)
+            | MeasurementEvidence::LoadCurve(LoadCurveEvidence {
+                claim: LoadClaim::SupplementalClosedLoop,
+                ..
+            })
+    )));
+
+    let contract = RedisBenchmarkContract::parse_toml(include_str!(
+        "../../../docs/testing/perf-scenarios/0.67/resp-external-redis-benchmark-v1.toml"
+    ))
+    .unwrap();
+    assert_eq!(contract.identity.methodology, CLOSED_LOOP_METHODOLOGY);
+    assert_eq!(contract.identity.claim_scope, SUPPLEMENTAL_CLAIM_SCOPE);
+    assert!(!contract.identity.scheduled_send_latency);
+    assert!(!contract.identity.capacity_knee_eligible);
+
+    let mut forged = report.clone();
+    forged.surface.execution_mode = "daemon-native-wire".to_owned();
+    assert!(forged.to_pretty_json().is_err());
+
+    let mut promoted_fixture = report;
+    promoted_fixture.run_mode = EvidenceRunMode::ReferenceEvidence;
+    promoted_fixture.surface = SurfaceIdentity {
+        surface_kind: "node-resp".to_owned(),
+        execution_mode: "real-daemon-tcp-resp-open-loop".to_owned(),
+        state_scope: "node-local".to_owned(),
+        network_boundary: "loopback-tcp".to_owned(),
+        claim_scope: "selected-endpoint-capacity".to_owned(),
+    };
+    let problems = promoted_fixture.validation_problems();
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("missing its typed daemon endpoint capability") }));
+    assert!(problems.iter().any(|problem| {
+        problem.contains("does not retain the exact committed 10k preload/warmup")
+    }));
+    assert!(problems
+        .iter()
+        .any(|problem| { problem.contains("aggregate key-count/spread contract") }));
+    assert!(promoted_fixture.to_pretty_json().is_err());
+}
+
+#[tokio::test]
+async fn resp_run_capability_changes_without_changing_stable_scenario_workload_or_state_identity() {
+    let (first, second) = tokio::join!(
+        hydracache_loadgen::tiers::resp::run_resp_profile("smoke-v1"),
+        hydracache_loadgen::tiers::resp::run_resp_profile("smoke-v1"),
+    );
+    let first = first.unwrap();
+    let second = second.unwrap();
+    assert_eq!(first.scenario_digest, second.scenario_digest);
+    assert_eq!(first.workload_digest, second.workload_digest);
+    assert_eq!(first.state_digest, second.state_digest);
+    let capability = |report: &PerfReport| {
+        report
+            .measurements
+            .iter()
+            .find_map(|measurement| match measurement {
+                MeasurementEvidence::LoadCurve(curve) => {
+                    curve.dimensions.get("endpoint_capability_digest")
+                }
+                _ => None,
+            })
+            .cloned()
+            .unwrap()
+    };
+    assert_ne!(capability(&first), capability(&second));
+}
+
+#[test]
+fn resp_cli_direct_and_suite_forms_share_the_open_loop_artifact_only() {
+    let direct = hydracache_loadgen::cli::parse(
+        [
+            "tier",
+            "node-resp",
+            "--profile",
+            "reference-v1",
+            "--report",
+            "target/test-evidence/0.67/node-resp-open-loop.json",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+    )
+    .unwrap();
+    let suite = hydracache_loadgen::cli::parse(
+        [
+            "suite",
+            "resp",
+            "--profile",
+            "reference-v1",
+            "--output-dir",
+            "target/test-evidence/0.67",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+    )
+    .unwrap();
+    assert_eq!(direct.profile(), suite.profile());
+    assert_eq!(
+        direct.resp_open_loop_report_path(),
+        suite.resp_open_loop_report_path()
+    );
+    assert_ne!(
+        suite.resp_open_loop_report_path(),
+        suite.resp_external_report_path()
+    );
+}
+
+#[tokio::test]
+async fn resp_reference_profile_requires_receipt_bound_prebuilt_daemon() {
+    let error = hydracache_loadgen::tiers::resp::run_resp_profile("reference-v1")
+        .await
+        .unwrap_err();
+    let message = error.to_string();
+    assert!(message.contains("receipt-bound prebuilt hydracache-server"));
+    assert!(message.contains("fresh data directory"));
+}
+
+#[tokio::test]
+async fn canary_resp_listener_slowdown_breaches_the_open_loop_resp_budget() {
+    struct ValidPrefixThenReadError(bool);
+    impl std::io::Read for ValidPrefixThenReadError {
+        fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+            if self.0 {
+                return Err(std::io::Error::other("injected stdout capture failure"));
+            }
+            self.0 = true;
+            let prefix = b"\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n";
+            buffer[..prefix.len()].copy_from_slice(prefix);
+            Ok(prefix.len())
+        }
+    }
+
+    let knee = hydracache_loadgen::tiers::resp::resp_listener_knee(Duration::from_millis(25))
+        .await
+        .unwrap();
+    let slow_path_is_red = knee.sustainable_rate_per_second.is_none()
+        && knee
+            .evaluated
+            .iter()
+            .all(|point| !point.verdict.sustainable);
+    let truncated_external_output_is_rejected =
+        hydracache_loadgen::resp_external::parse_redis_benchmark_csv(
+            b"\"test\",\"rps\",\"avg_latency_ms\",\"min_latency_ms\",\"p50_latency_ms\",\"p95_latency_ms\",\"p99_latency_ms\",\"max_latency_ms\"\n\"GET\",\"1000.00\",\"1.00\"",
+            &["GET".to_owned()],
+        )
+        .is_err();
+    let swallowed_capture_error_is_rejected =
+        hydracache_loadgen::resp_external::read_stream_bounded(
+            ValidPrefixThenReadError(false),
+            4 * 1024,
+        )
+        .is_err();
+    let w3_proof_is_red = slow_path_is_red
+        && truncated_external_output_is_rejected
+        && swallowed_capture_error_is_rejected;
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W3") {
+        assert!(
+            !w3_proof_is_red,
+            "HC-CANARY-RED:W3 loadgen-injected RESP delay breached the open-loop scheduled-send budget and external-tool truncation is rejected"
+        );
+    }
+    assert!(w3_proof_is_red, "both W3 falsifiability legs must be red");
 }

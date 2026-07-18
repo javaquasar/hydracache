@@ -194,6 +194,7 @@ pub async fn local_smoke_report(profile_name: &str) -> Result<PerfReport, LocalT
                 "smoke-unclaimed-binary".to_owned(),
             )],
         },
+        None,
         measurements,
         vec!["short smoke workload is not capacity evidence".to_owned()],
     ))

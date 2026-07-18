@@ -20,7 +20,7 @@
 >   versus Redis on the RESP surface, and regression protection so `1.0` performance cannot silently
 >   erode. A native-daemon or distributed-value-plane capacity claim remains blocked until those
 >   product surfaces are implemented in a separate release.
-> - **Status:** in-progress (W10 Phase A governance scaffold).
+> - **Status:** in-progress (W10 Phase A and W0-W3 implemented; W4-W10 Phase B pending).
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
@@ -58,6 +58,12 @@ extrapolations.
    preload and application warm-up, opens a fixed steady measurement window, then tears down. Run
    >= 3 repeats and report median with min/max and robust spread; warm-up samples never enter the
    histogram, and a spread above tolerance makes the run non-evidence rather than averaging it away.
+   W3 scenarios use the explicit `logical-keyspace-reset-and-counter-zero` exception: one fresh
+   receipt-bound daemon is retained so open-loop and external-tool artifacts share one process
+   capability, while every repeat deletes and verifies the complete declared operation keyspace,
+   preloads deterministic values, zeros loadgen counters, and records an endpoint-independent logical
+   state digest. Because W3 executes only GET/SET/MGET/MSET over that declared namespace, no hidden
+   lock/script/tag/TTL state is exercised by this exception.
 5. **Falsifiability.** Each measurement suite has a canary proving the instrument discriminates: a
    deliberately degraded build/fixture must fail its budget, and a synthetic stall must appear in the
    corrected histogram (and would be hidden by a naive closed-loop measure).
@@ -91,15 +97,13 @@ extrapolations.
 - Calibration detects an invalid/noisy environment but never rescales product measurements. Budget
   and baseline changes are explicit reviewed data changes under the W7 no-silent-rebaseline rule.
 
-### Planning-state audit (2026-07-18)
+### Planning-state audit (2026-07-18; resolved before implementation)
 
-Implementation has not started: `crates/hydracache-loadgen`,
-`docs/testing/release-evidence/0.67.toml`, and
-`docs/testing/canary-registry-0.67.json` are absent; the `0.67` release catalog row has no
-`work_items`, and the current INDEX summaries still contain the stale native-daemon/cluster claims.
-Consequently `release-governance-check`, `canary-check`, and `release-evidence` for `0.67` correctly
-cannot establish a release contract yet. W10 Phase A below is the mandatory first implementation
-change; this audit changes the plan, not the product.
+The initial audit found `crates/hydracache-loadgen`, release-scoped evidence/canary registries, and
+the `0.67` work-item catalog absent, while the INDEX still carried stale native-daemon/cluster
+claims. Commit `79bfb49` corrected the plan, and W10 Phase A then established the fail-closed release
+contract before W0. The implementation map below is the current source of truth; this paragraph is
+retained as provenance for the sequencing decision, not as a statement of current repository state.
 
 ## Wire-Surface Reality Corrections (`0.66` reconciliation carried forward)
 
@@ -196,6 +200,7 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | W0 | `crates/hydracache-loadgen::{rate,histogram,knee,scenario,profile,report,runner,target}`; `docs/testing/schemas/perf-report.schema.json` | `cargo test -p hydracache-loadgen --locked -j 2` | Development-only synthetic instrument contract; no product or daemon capacity claim |
 | W1 | `crates/hydracache-loadgen::{allocation,cli,targets::local,tiers::local}`; `crates/hydracache-cache-sim::{digest,trace_catalog,workload}`; `docs/testing/perf-scenarios/0.67/local-*-v1.toml` | `cargo test -p hydracache-cache-sim -p hydracache-loadgen --test performance_contract_067 --locked -j 2` | Real embedded/process-local cache; smoke is plumbing-only, while capacity evidence requires the receipt-bound `reference-v1` core lane and `target/test-evidence/0.67/local.json` |
 | W2 | `crates/hydracache-loadgen::{targets::client_surface,tiers::client_surface,cli,report}`; `docs/testing/perf-scenarios/0.67/client-surface-*-v1.toml` | `cargo test -p hydracache-loadgen --test performance_contract_067 --locked -j 2 client_surface` | Real `AxumClientSurface` through `Router::oneshot`; process-local state and no socket/daemon/wire claim; reference evidence remains receipt-bound to the core lane |
+| W3 | `crates/hydracache-loadgen::{targets::resp,tiers::{resp,resp_reference},resp_external,cli,report}`; `docs/testing/perf-scenarios/0.67/{resp-*-v1,redis-benchmark-provenance-v1}.toml` | `cargo test -p hydracache-loadgen --test performance_contract_067 --locked -j 2 resp`; `cargo test -p hydracache-loadgen --test resp_external_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 resp_reference` | Open-loop scheduled-send evidence crosses real loopback TCP to one selected endpoint; smoke is an explicit fixture, while reference launches the receipt-bound prebuilt daemon directly and binds the same endpoint capability into the separate closed-loop `redis-benchmark` artifact; neither external output nor fixture smoke can satisfy capacity |
 | _(populate during implementation; W0-W10 below define the targets)_ | | | |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
@@ -362,7 +367,7 @@ cannot satisfy the open-loop guard.
 **DoD.**
 ```powershell
 $env:HYDRACACHE_RUN_PERF_RESP='1'
-& target\release\hydracache-loadgen.exe tier node-resp --profile reference-v1 --report target/test-evidence/0.67/node-resp-open-loop.json
+& target\release\hydracache-loadgen.exe suite resp --profile reference-v1 --output-dir target/test-evidence/0.67
 Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
 **CI.** Open-loop leg on the dedicated reference runner. A local unclaimed external-tool run skips

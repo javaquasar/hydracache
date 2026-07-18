@@ -1,4 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::net::{Ipv4Addr, SocketAddr};
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -35,6 +37,42 @@ pub struct BuildIdentity {
     pub prebuild_contract_digest: String,
     pub prebuild_manifest_sha256: String,
     pub binary_sha256: Vec<(String, String)>,
+}
+
+/// Typed W3 proof of the exact directly launched daemon configuration. Its
+/// canonical digest is copied into every W3 measurement and cross-bound to the
+/// report's source/build identities.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RespDaemonConfigIdentity {
+    pub role: String,
+    pub listen_addr: SocketAddr,
+    pub cluster_addr: SocketAddr,
+    pub storage_dir: PathBuf,
+    pub admin_enabled: bool,
+    pub admin_addr: SocketAddr,
+    pub redis_enabled: bool,
+    pub redis_addr: SocketAddr,
+    pub redis_auth_required: bool,
+    pub rediss_enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RespEndpointCapability {
+    pub schema_version: u32,
+    pub pid: u32,
+    pub started_unix_nanos: u64,
+    pub repeat_index: u32,
+    pub direct_prebuilt_exec: bool,
+    pub fresh_data_dir: bool,
+    pub config: RespDaemonConfigIdentity,
+    pub selected_endpoint: String,
+    pub server_binary_sha256: String,
+    pub loadgen_binary_sha256: String,
+    pub prebuild_manifest_sha256: String,
+    pub prebuild_contract_digest: String,
+    pub source_commit: String,
 }
 
 /// Whether a report may be used as ship evidence or is only plumbing/noise feedback.
@@ -211,6 +249,8 @@ pub struct PerfReport {
     pub profile_validation: ProfileValidation,
     pub source: SourceIdentity,
     pub build: BuildIdentity,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resp_endpoint_capability: Option<RespEndpointCapability>,
     pub measurements: Vec<MeasurementEvidence>,
     pub stable: bool,
     pub stability_reasons: Vec<String>,
@@ -240,6 +280,7 @@ impl PerfReport {
         observed_runner: RunnerFingerprint,
         source: SourceIdentity,
         build: BuildIdentity,
+        resp_endpoint_capability: Option<RespEndpointCapability>,
         measurements: Vec<MeasurementEvidence>,
         mut stability_reasons: Vec<String>,
     ) -> Self {
@@ -248,6 +289,9 @@ impl PerfReport {
         let scenario_digest = suite_scenario_digest(&measurements);
         let workload_digest = suite_workload_digest(&measurements);
         let seed = suite_seed(&measurements);
+        let requested_state_digest = state_digest.into();
+        let state_digest =
+            canonical_suite_state_digest(&measurements).unwrap_or(requested_state_digest);
         let mut report = Self {
             schema_version: PERF_SCHEMA_VERSION,
             release: PERF_RELEASE.to_owned(),
@@ -255,7 +299,7 @@ impl PerfReport {
             scenario_id: scenario_id.into(),
             scenario_digest,
             workload_digest,
-            state_digest: state_digest.into(),
+            state_digest,
             seed,
             run_mode,
             surface,
@@ -266,6 +310,7 @@ impl PerfReport {
             profile_validation,
             source,
             build,
+            resp_endpoint_capability,
             measurements,
             stable: false,
             stability_reasons: Vec::new(),
@@ -341,6 +386,14 @@ impl PerfReport {
         {
             problems.push("suite seed or digests do not match typed measurement inputs".to_owned());
         }
+        if canonical_suite_state_digest(&self.measurements)
+            .is_some_and(|expected| expected != self.state_digest)
+        {
+            problems.push(
+                "report state digest does not bind the per-measurement steady-state digests"
+                    .to_owned(),
+            );
+        }
         if [
             &self.surface.surface_kind,
             &self.surface.execution_mode,
@@ -400,7 +453,7 @@ impl PerfReport {
             if !ids.insert(id.to_owned()) {
                 problems.push(format!("duplicate measurement id: {id}"));
             }
-            problems.extend(measurement.validation_problems(&self.state_digest));
+            problems.extend(measurement.validation_problems());
         }
         let client_surface_measurements = [
             "client_surface_in_process_knee_at_slo_for_a_b_c",
@@ -431,6 +484,91 @@ impl PerfReport {
                 }
             }
             problems.extend(client_surface_validation_problems(self));
+        }
+        let resp_open_loop_measurements = [
+            "resp_open_loop_get_set_knee_at_slo",
+            "resp_open_loop_connection_and_pipeline_sweeps",
+            "resp_open_loop_stall_is_visible_in_scheduled_latency",
+        ];
+        let is_resp_open_loop_report = self.report_id.contains("resp-loopback-fixture")
+            || self.report_id.contains("node-resp-open-loop")
+            || resp_open_loop_measurements
+                .iter()
+                .any(|measurement| ids.contains(*measurement));
+        if is_resp_open_loop_report {
+            let fixture_identity = self.run_mode == EvidenceRunMode::Smoke
+                && self.surface.surface_kind == "resp-loopback-fixture"
+                && self.surface.execution_mode == "in-process-product-resp-listener"
+                && self.surface.state_scope == "fixture-process-local"
+                && self.surface.network_boundary == "loopback-tcp"
+                && self.surface.claim_scope == "plumbing-only";
+            let reference_identity = self.run_mode == EvidenceRunMode::ReferenceEvidence
+                && self.surface.surface_kind == "node-resp"
+                && self.surface.execution_mode == "real-daemon-tcp-resp-open-loop"
+                && self.surface.state_scope == "node-local"
+                && self.surface.network_boundary == "loopback-tcp"
+                && self.surface.claim_scope == "selected-endpoint-capacity";
+            if !fixture_identity && !reference_identity {
+                problems.push(
+                    "W3 open-loop evidence must be either an explicit loopback fixture smoke or receipt-bound selected-daemon RESP evidence"
+                        .to_owned(),
+                );
+            }
+            match self.run_mode {
+                EvidenceRunMode::Smoke if self.resp_endpoint_capability.is_some() => problems.push(
+                    "W3 fixture smoke must not carry a daemon endpoint capability".to_owned(),
+                ),
+                EvidenceRunMode::ReferenceEvidence => {
+                    problems.extend(resp_endpoint_capability_problems(self));
+                }
+                EvidenceRunMode::CiTripwire => {}
+                EvidenceRunMode::Smoke => {}
+            }
+            for required in resp_open_loop_measurements {
+                if !ids.contains(required) {
+                    problems.push(format!(
+                        "RESP open-loop report is missing required W3 measurement {required}"
+                    ));
+                }
+            }
+            if ids.contains("redis_benchmark_get_set_mset_throughput_and_interop")
+                || self.measurements.iter().any(|measurement| {
+                    matches!(
+                        measurement,
+                        MeasurementEvidence::Comparison(_)
+                            | MeasurementEvidence::LoadCurve(LoadCurveEvidence {
+                                claim: LoadClaim::SupplementalClosedLoop,
+                                ..
+                            })
+                    )
+                })
+            {
+                problems.push(
+                    "W3 closed-loop external-tool data and comparisons must not appear in the open-loop RESP artifact"
+                        .to_owned(),
+                );
+            }
+            let forbidden_identity = [
+                &self.surface.surface_kind,
+                &self.surface.execution_mode,
+                &self.surface.state_scope,
+                &self.surface.claim_scope,
+            ]
+            .iter()
+            .any(|value| {
+                let value = value.to_ascii_lowercase();
+                value.contains("native")
+                    || value.contains("client-surface")
+                    || value.contains("cluster-capacity")
+                    || value.contains("distributed-value")
+            });
+            if forbidden_identity {
+                problems.push(
+                    "W3 RESP evidence cannot claim native wire, client-surface, cluster capacity, or distributed values"
+                        .to_owned(),
+                );
+            }
+            problems.extend(resp_open_loop_validation_problems(self));
         }
         for measurement in &self.measurements {
             match measurement {
@@ -487,6 +625,417 @@ impl PerfReport {
         }
         problems
     }
+}
+
+fn resp_endpoint_capability_problems(report: &PerfReport) -> Vec<String> {
+    let Some(capability) = &report.resp_endpoint_capability else {
+        return vec![
+            "W3 reference evidence is missing its typed daemon endpoint capability".to_owned(),
+        ];
+    };
+    let loopback_zero = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+    let server_matches = report.build.binary_sha256.iter().any(|(id, digest)| {
+        id == "hydracache-server" && digest == &capability.server_binary_sha256
+    });
+    let loadgen_matches = report.build.binary_sha256.iter().any(|(id, digest)| {
+        id == "hydracache-loadgen" && digest == &capability.loadgen_binary_sha256
+    });
+    let valid = capability.schema_version == 1
+        && capability.pid != 0
+        && capability.started_unix_nanos != 0
+        && capability.direct_prebuilt_exec
+        && capability.fresh_data_dir
+        && capability.config.role == "local"
+        && capability.config.listen_addr == loopback_zero
+        && capability.config.cluster_addr == loopback_zero
+        && capability.config.storage_dir.is_absolute()
+        && capability.config.admin_enabled
+        && capability.config.redis_enabled
+        && !capability.config.redis_auth_required
+        && !capability.config.rediss_enabled
+        && capability.config.redis_addr.ip().is_loopback()
+        && capability.config.redis_addr.port() != 0
+        && capability.config.admin_addr.ip().is_loopback()
+        && capability.config.admin_addr.port() != 0
+        && capability.config.redis_addr != capability.config.admin_addr
+        && capability.selected_endpoint
+            == format!("hydracache-server@{}", capability.config.redis_addr)
+        && is_lower_sha256(&capability.server_binary_sha256)
+        && is_lower_sha256(&capability.loadgen_binary_sha256)
+        && capability.prebuild_manifest_sha256 == report.build.prebuild_manifest_sha256
+        && capability.prebuild_contract_digest == report.build.prebuild_contract_digest
+        && capability.source_commit == report.source.git_commit
+        && server_matches
+        && loadgen_matches;
+    if valid {
+        Vec::new()
+    } else {
+        vec![
+            "W3 typed daemon capability is incomplete or does not cross-bind the exact source, prebuild, binaries, and direct listener configuration"
+                .to_owned(),
+        ]
+    }
+}
+
+fn resp_open_loop_validation_problems(report: &PerfReport) -> Vec<String> {
+    const RAW: [(&str, &str); 3] = [
+        ("resp_open_loop_get_set_knee_at_slo_workload_a", "A"),
+        ("resp_open_loop_get_set_knee_at_slo_workload_b", "B"),
+        ("resp_open_loop_get_set_knee_at_slo_workload_c", "C"),
+    ];
+    const REFERENCE_RATES: [u64; 5] = [1_000, 5_000, 10_000, 25_000, 50_000];
+    let mut problems = Vec::new();
+    let (expected_endpoint_kind, expected_state_scope, expected_selected_prefix) =
+        match report.run_mode {
+            EvidenceRunMode::Smoke => (
+                "resp-loopback-fixture",
+                "fixture-process-local",
+                "resp-loopback-fixture@",
+            ),
+            EvidenceRunMode::ReferenceEvidence => ("node-resp", "node-local", "hydracache-server@"),
+            EvidenceRunMode::CiTripwire => ("ci-resp-tripwire", "node-local", "ci-resp-tripwire@"),
+        };
+    if report.run_mode == EvidenceRunMode::ReferenceEvidence
+        && (!report
+            .build
+            .binary_sha256
+            .iter()
+            .any(|(name, digest)| name == "hydracache-server" && is_lower_sha256(digest))
+            || !report
+                .build
+                .binary_sha256
+                .iter()
+                .any(|(name, digest)| name == "hydracache-loadgen" && is_lower_sha256(digest))
+            || !is_lower_sha256(&report.build.prebuild_manifest_sha256)
+            || report.source.git_commit.starts_with("smoke-")
+            || report.build.prebuild_contract_digest.starts_with("smoke-"))
+    {
+        problems.push(
+            "W3 reference evidence must bind receipt-grade server/loadgen binaries, prebuild manifest, and source commit"
+                .to_owned(),
+        );
+    }
+    let Some(MeasurementEvidence::Scalar(aggregate)) = report
+        .measurements
+        .iter()
+        .find(|measurement| measurement.id() == "resp_open_loop_get_set_knee_at_slo")
+    else {
+        return vec!["W3 aggregate A/B/C RESP knee is missing or has the wrong type".to_owned()];
+    };
+    let expected_dependencies = RAW
+        .iter()
+        .map(|(id, _)| (*id).to_owned())
+        .collect::<Vec<_>>();
+    if aggregate.derived_from != expected_dependencies || aggregate.points.len() != RAW.len() {
+        problems.push("W3 aggregate must depend on exactly the raw A/B/C RESP knees".to_owned());
+    }
+    let expected_aggregate_contract = match report.run_mode {
+        EvidenceRunMode::ReferenceEvidence => (10_000, 0.15),
+        EvidenceRunMode::Smoke => (32, 1_000.0),
+        EvidenceRunMode::CiTripwire => (32, 1_000.0),
+    };
+    if aggregate.workload.key_count != Some(expected_aggregate_contract.0)
+        || aggregate.max_robust_spread_ratio != expected_aggregate_contract.1
+    {
+        problems.push(
+            "W3 aggregate key-count/spread contract does not match its evidence run mode"
+                .to_owned(),
+        );
+    }
+    let mut scenario_inputs = Vec::new();
+    let mut workload_inputs = Vec::new();
+    let mut selected_endpoints = BTreeSet::new();
+    let mut endpoint_capability_digests = BTreeSet::new();
+    for (raw_id, workload_name) in RAW {
+        let Some(MeasurementEvidence::LoadCurve(raw)) = report
+            .measurements
+            .iter()
+            .find(|measurement| measurement.id() == raw_id)
+        else {
+            problems.push(format!(
+                "W3 raw RESP knee {raw_id} is missing or has the wrong type"
+            ));
+            continue;
+        };
+        workload_inputs.push((raw_id.to_owned(), raw.workload.digest.clone()));
+        if let Some(DimensionValue::Text(endpoint)) = raw.dimensions.get("selected_endpoint") {
+            selected_endpoints.insert(endpoint.clone());
+        }
+        if let Some(DimensionValue::Text(digest)) = raw.dimensions.get("endpoint_capability_digest")
+        {
+            endpoint_capability_digests.insert(digest.clone());
+            scenario_inputs.push((raw_id.to_owned(), raw.scenario_digest.clone()));
+        }
+        if raw.claim != LoadClaim::CapacityKnee
+            || raw.dimensions.get("workload")
+                != Some(&DimensionValue::Text(workload_name.to_owned()))
+            || raw.dimensions.get("methodology")
+                != Some(&DimensionValue::Text("open-loop-scheduled-send".to_owned()))
+            || raw.dimensions.get("real_tcp") != Some(&DimensionValue::Bool(true))
+            || !matches!(
+                raw.dimensions.get("selected_endpoint"),
+                Some(DimensionValue::Text(endpoint)) if endpoint.starts_with(expected_selected_prefix)
+            )
+            || raw.dimensions.get("endpoint_kind")
+                != Some(&DimensionValue::Text(expected_endpoint_kind.to_owned()))
+            || raw.dimensions.get("state_scope")
+                != Some(&DimensionValue::Text(expected_state_scope.to_owned()))
+            || !matches!(
+                raw.dimensions.get("endpoint_capability_digest"),
+                Some(DimensionValue::Text(digest)) if is_lower_sha256(digest)
+            )
+        {
+            problems.push(format!(
+                "W3 raw RESP knee {raw_id} lost its selected-endpoint open-loop TCP identity"
+            ));
+        }
+        if report.run_mode == EvidenceRunMode::ReferenceEvidence {
+            let exact_dimensions = raw.dimensions.get("preload_operations")
+                == Some(&DimensionValue::U64(10_000))
+                && raw.dimensions.get("warmup_operations") == Some(&DimensionValue::U64(10_000))
+                && raw.dimensions.get("steady_operations") == Some(&DimensionValue::U64(100_000))
+                && raw.dimensions.get("repeats") == Some(&DimensionValue::U64(5))
+                && raw.dimensions.get("key_count") == Some(&DimensionValue::U64(10_000))
+                && raw.dimensions.get("repeat_isolation")
+                    == Some(&DimensionValue::Text(
+                        "logical-keyspace-reset-and-counter-zero".to_owned(),
+                    ))
+                && raw.dimensions.get("daemon_reused_across_repeats")
+                    == Some(&DimensionValue::Bool(true));
+            let exact_criteria = raw.criteria.as_ref().is_some_and(|criteria| {
+                criteria.p99_slo_us == 5_000
+                    && criteria.p999_slo_us == Some(20_000)
+                    && criteria.min_achieved_ratio == 0.95
+                    && criteria.max_error_ratio == 0.0
+                    && criteria.max_timeout_ratio == 0.0
+                    && criteria.max_rejection_ratio == 0.0
+                    && criteria.max_drain_ms == 10_000
+                    && criteria.max_robust_spread_ratio == 0.15
+            });
+            let exact_knee = raw.knee.as_ref().is_some_and(|knee| {
+                knee.evaluated.len() == REFERENCE_RATES.len()
+                    && knee
+                        .evaluated
+                        .iter()
+                        .zip(REFERENCE_RATES)
+                        .all(|(point, rate)| {
+                            point.sample.offered_rate_per_second == rate as f64
+                                && point.repeats.len() == 5
+                                && point.repeats.iter().all(|repeat| {
+                                    repeat.phase.reset_operations == 1
+                                        && repeat.phase.preload_operations == 10_000
+                                        && repeat.phase.warmup_operations == 10_000
+                                        && repeat.phase.steady_operations == 100_000
+                                        && repeat.phase.warmup_samples_in_steady_histogram == 0
+                                })
+                        })
+            });
+            if !exact_dimensions || !exact_criteria || !exact_knee {
+                problems.push(format!(
+                    "W3 reference knee {raw_id} does not retain the exact committed 10k preload/warmup, 100k steady, five-repeat, five-rate contract"
+                ));
+            }
+        }
+        let expected_samples = raw.knee.as_ref().and_then(|knee| {
+            let selected = knee.sustainable_rate_per_second?;
+            knee.evaluated
+                .iter()
+                .find(|point| point.sample.offered_rate_per_second == selected)
+                .map(|point| {
+                    point
+                        .repeats
+                        .iter()
+                        .map(|repeat| repeat.steady.achieved_rate_per_second)
+                        .collect::<Vec<_>>()
+                })
+        });
+        let aggregate_points = aggregate
+            .points
+            .iter()
+            .filter(|point| {
+                point.dimensions.get("workload")
+                    == Some(&DimensionValue::Text(workload_name.to_owned()))
+            })
+            .collect::<Vec<_>>();
+        if aggregate_points.len() != 1
+            || expected_samples.as_ref() != aggregate_points.first().map(|point| &point.samples)
+        {
+            problems.push(format!(
+                "W3 aggregate point {workload_name} does not recompute from raw RESP knee {raw_id}"
+            ));
+        }
+    }
+    if aggregate.scenario_digest != derived_identity_digest(&scenario_inputs)
+        || aggregate.workload.digest != derived_identity_digest(&workload_inputs)
+    {
+        problems
+            .push("W3 aggregate digests do not bind the effective A/B/C raw RESP knees".to_owned());
+    }
+    if selected_endpoints.len() != 1 {
+        problems
+            .push("W3 raw A/B/C curves must bind one identical selected RESP endpoint".to_owned());
+    }
+    if endpoint_capability_digests.len() != 1 {
+        problems.push(
+            "W3 raw A/B/C curves must bind one identical endpoint capability digest".to_owned(),
+        );
+    }
+    if report.run_mode == EvidenceRunMode::ReferenceEvidence {
+        let typed_capability_digest = report.resp_endpoint_capability.as_ref().map(digest_json);
+        let typed_selected_endpoint = report
+            .resp_endpoint_capability
+            .as_ref()
+            .map(|capability| capability.selected_endpoint.clone());
+        if typed_capability_digest
+            .as_ref()
+            .is_none_or(|digest| !endpoint_capability_digests.contains(digest))
+            || typed_selected_endpoint
+                .as_ref()
+                .is_none_or(|endpoint| !selected_endpoints.contains(endpoint))
+        {
+            problems.push(
+                "W3 measurement run binding does not match the typed daemon endpoint capability"
+                    .to_owned(),
+            );
+        }
+    }
+
+    let Some(MeasurementEvidence::Scalar(matrix)) = report
+        .measurements
+        .iter()
+        .find(|measurement| measurement.id() == "resp_open_loop_connection_and_pipeline_sweeps")
+    else {
+        problems.push("W3 RESP connection/pipeline sweep has the wrong type".to_owned());
+        return problems;
+    };
+    let matrix_pairs = matrix
+        .points
+        .iter()
+        .filter_map(|point| {
+            let Some(DimensionValue::U64(connections)) = point.dimensions.get("connections") else {
+                return None;
+            };
+            let Some(DimensionValue::U64(pipeline)) = point.dimensions.get("pipeline") else {
+                return None;
+            };
+            (point.dimensions.get("methodology")
+                == Some(&DimensionValue::Text("open-loop-scheduled-send".to_owned()))
+                && point.dimensions.get("real_tcp") == Some(&DimensionValue::Bool(true))
+                && point.dimensions.get("endpoint_kind")
+                    == Some(&DimensionValue::Text(expected_endpoint_kind.to_owned()))
+                && point.dimensions.get("state_scope")
+                    == Some(&DimensionValue::Text(expected_state_scope.to_owned()))
+                && matches!(
+                    point.dimensions.get("selected_endpoint"),
+                    Some(DimensionValue::Text(endpoint))
+                        if selected_endpoints.contains(endpoint)
+                            && endpoint.starts_with(expected_selected_prefix)
+                )
+                && matches!(
+                    point.dimensions.get("endpoint_capability_digest"),
+                    Some(DimensionValue::Text(digest))
+                        if endpoint_capability_digests.contains(digest) && is_lower_sha256(digest)
+                )
+                && matches!(
+                    point.dimensions.get("logical_operations_per_second"),
+                    Some(DimensionValue::F64(value)) if value.is_finite() && *value > 0.0
+                )
+                && point.quantity.unit == "scheduled_send_p99_microseconds")
+                .then_some((*connections, *pipeline))
+        })
+        .collect::<BTreeSet<_>>();
+    let expected_matrix = BTreeSet::from([(1, 1), (1, 10), (10, 1), (10, 10), (100, 1), (100, 10)]);
+    if matrix.points.len() != 6 || matrix_pairs != expected_matrix {
+        problems.push(
+            "W3 RESP sweep must contain the exact real-TCP 1/10/100 connection by 1/10 pipeline matrix"
+                .to_owned(),
+        );
+    }
+    if report.run_mode == EvidenceRunMode::ReferenceEvidence
+        && (matrix.max_robust_spread_ratio != 0.15
+            || matrix.points.iter().any(|point| {
+                point.dimensions.get("key_count") != Some(&DimensionValue::U64(10_000))
+                    || point.dimensions.get("preload_entries") != Some(&DimensionValue::U64(10_000))
+                    || point.dimensions.get("repeats") != Some(&DimensionValue::U64(5))
+                    || point.dimensions.get("repeat_isolation")
+                        != Some(&DimensionValue::Text(
+                            "logical-keyspace-reset-and-counter-zero".to_owned(),
+                        ))
+                    || point.dimensions.get("daemon_reused_across_repeats")
+                        != Some(&DimensionValue::Bool(true))
+                    || point
+                        .dimensions
+                        .get("verified_pipeline_exchanges_per_repeat")
+                        != Some(&DimensionValue::U64(10_000))
+                    || point.samples.len() != 5
+            }))
+    {
+        problems.push(
+            "W3 reference RESP sweep does not retain the committed 10k-operation, 10k-key, five-repeat matrix contract"
+                .to_owned(),
+        );
+    }
+
+    let Some(MeasurementEvidence::Scalar(stall)) = report.measurements.iter().find(|measurement| {
+        measurement.id() == "resp_open_loop_stall_is_visible_in_scheduled_latency"
+    }) else {
+        problems.push("W3 RESP stall-visibility proof has the wrong type".to_owned());
+        return problems;
+    };
+    let baseline = stall.points.iter().find(|point| {
+        point.dimensions.get("injected_loadgen_delay_us") == Some(&DimensionValue::U64(0))
+    });
+    let delayed = stall.points.iter().find(|point| {
+        matches!(
+            point.dimensions.get("injected_loadgen_delay_us"),
+            Some(DimensionValue::U64(value)) if *value > 0
+        )
+    });
+    if stall.points.len() != 2
+        || baseline.is_none()
+        || delayed.is_none()
+        || delayed
+            .zip(baseline)
+            .is_none_or(|(delayed, baseline)| delayed.quantity.value <= baseline.quantity.value)
+        || stall.points.iter().any(|point| {
+            point.dimensions.get("methodology")
+                != Some(&DimensionValue::Text("open-loop-scheduled-send".to_owned()))
+                || point.dimensions.get("real_tcp") != Some(&DimensionValue::Bool(true))
+                || point.dimensions.get("endpoint_kind")
+                    != Some(&DimensionValue::Text(expected_endpoint_kind.to_owned()))
+                || point.dimensions.get("state_scope")
+                    != Some(&DimensionValue::Text(expected_state_scope.to_owned()))
+                || !matches!(
+                    point.dimensions.get("selected_endpoint"),
+                    Some(DimensionValue::Text(endpoint))
+                        if selected_endpoints.contains(endpoint)
+                            && endpoint.starts_with(expected_selected_prefix)
+                )
+                || !matches!(
+                    point.dimensions.get("endpoint_capability_digest"),
+                    Some(DimensionValue::Text(digest))
+                        if endpoint_capability_digests.contains(digest) && is_lower_sha256(digest)
+                )
+                || point.quantity.unit != "scheduled_send_p99_microseconds"
+                || point.dimensions.get("instrument_scope")
+                    != Some(&DimensionValue::Text(
+                        "bounded-falsifiability-probe-not-capacity".to_owned(),
+                    ))
+        })
+    {
+        problems.push(
+            "W3 stall proof must show a loadgen-injected delay increasing scheduled-send latency over real TCP"
+                .to_owned(),
+        );
+    }
+    problems
+}
+
+fn is_lower_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
 }
 
 fn client_surface_validation_problems(report: &PerfReport) -> Vec<String> {
@@ -677,7 +1226,7 @@ impl MeasurementEvidence {
         }
     }
 
-    fn validation_problems(&self, state_digest: &str) -> Vec<String> {
+    fn validation_problems(&self) -> Vec<String> {
         let mut problems = Vec::new();
         if self.id().is_empty() {
             problems.push("measurement id must be non-empty".to_owned());
@@ -709,6 +1258,11 @@ impl MeasurementEvidence {
                             .first()
                             .and_then(|point| point.repeats.first())
                             .map(|repeat| &repeat.preloaded_state_digest);
+                        let steady_state_digest = knee
+                            .evaluated
+                            .first()
+                            .and_then(|point| point.repeats.first())
+                            .map(|repeat| &repeat.state_digest);
                         let phase_shape = knee
                             .evaluated
                             .first()
@@ -723,7 +1277,7 @@ impl MeasurementEvidence {
                             });
                         for point in &knee.evaluated {
                             if point.repeats.iter().any(|repeat| {
-                                repeat.state_digest != state_digest
+                                Some(&repeat.state_digest) != steady_state_digest
                                     || Some(&repeat.reset_state_digest) != reset_digest
                                     || Some(&repeat.preloaded_state_digest) != preloaded_digest
                                     || Some((
@@ -734,7 +1288,7 @@ impl MeasurementEvidence {
                                     )) != phase_shape
                             }) {
                                 problems.push(format!(
-                                    "measurement {} repeat state differs from report state",
+                                    "measurement {} repeat state or phase is not reproducible within the curve",
                                     value.id
                                 ));
                             }
@@ -910,6 +1464,30 @@ fn suite_workload_digest(measurements: &[MeasurementEvidence]) -> String {
         })
         .collect::<Vec<_>>();
     digest_json(&inputs)
+}
+
+fn canonical_suite_state_digest(measurements: &[MeasurementEvidence]) -> Option<String> {
+    let inputs = measurements
+        .iter()
+        .filter_map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(value) => value
+                .knee
+                .as_ref()
+                .and_then(|knee| knee.evaluated.first())
+                .and_then(|point| point.repeats.first())
+                .map(|repeat| (value.id.clone(), repeat.state_digest.clone())),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let distinct = inputs
+        .iter()
+        .map(|(_, digest)| digest)
+        .collect::<BTreeSet<_>>();
+    match distinct.len() {
+        0 => None,
+        1 => distinct.first().map(|digest| (*digest).clone()),
+        _ => Some(derived_identity_digest(&inputs)),
+    }
 }
 
 fn suite_seed(measurements: &[MeasurementEvidence]) -> u64 {

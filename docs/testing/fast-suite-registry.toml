@@ -29,9 +29,9 @@ platform = "any"
 
 [[suite]]
 id = "fast.performance-contract-067"
-work_items = ["W0", "W1", "W2", "W10"]
+work_items = ["W0", "W1", "W2", "W3", "W10"]
 timeout_seconds = 180
-budget_seconds = 60
+budget_seconds = 50
 deterministic = false
 artifacts = []
 logical_digest_artifact = ""
@@ -46,6 +46,30 @@ noise_allowance_seconds = 0
 [suite.command]
 program = "cargo"
 args = ["test", "-p", "hydracache-cache-sim", "-p", "hydracache-loadgen", "-p", "xtask", "--test", "performance_contract_067", "--locked", "-j", "2"]
+cwd = "."
+platform = "any"
+
+[suite.command.env]
+
+[[suite]]
+id = "fast.performance-resp-external-067"
+work_items = ["W3"]
+timeout_seconds = 120
+budget_seconds = 10
+deterministic = false
+artifacts = []
+logical_digest_artifact = ""
+
+[suite.baseline]
+status = "unmeasured"
+commit = ""
+toolchain = ""
+linux_ci_median_seconds = 0
+noise_allowance_seconds = 0
+
+[suite.command]
+program = "cargo"
+args = ["test", "-p", "hydracache-loadgen", "--test", "resp_external_067", "--locked", "-j", "2"]
 cwd = "."
 platform = "any"
 

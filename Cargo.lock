@@ -2233,6 +2233,7 @@ dependencies = [
  "hydracache-cache-sim",
  "hydracache-client-protocol",
  "hydracache-client-transport-axum",
+ "hydracache-redis-compat",
  "jsonschema",
  "serde",
  "serde_json",

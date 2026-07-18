@@ -5136,11 +5136,14 @@ reason = "The dedicated 0.67 lane prebuilds the exact server, loadgen, and test 
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_REFERENCE"]
-required_tools = ["git", "rustc", "cargo", "sha256"]
+required_tools = ["git", "rustc", "cargo", "sha256", "redis-benchmark"]
 timeout_seconds = 3600
 owner_release = "0.67.0"
 ship_mandatory = true
-artifacts = ["target/test-evidence/0.67/prebuild-manifest.json"]
+artifacts = [
+    "target/test-evidence/0.67/prebuild-manifest.json",
+    "target/test-evidence/0.67/resp-reference-run-inputs.json",
+]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -5215,8 +5218,10 @@ timeout_seconds = 7200
 owner_release = "0.67.0"
 ship_mandatory = true
 artifacts = [
-    "target/test-evidence/0.67/node-resp.json",
+    "target/test-evidence/0.67/node-resp-open-loop.json",
     "target/test-evidence/0.67/node-resp-redis-benchmark.json",
+    "target/test-evidence/0.67/node-resp-daemon-lifecycle.json",
+    "target/test-evidence/0.67/node-resp-suite-receipt.json",
     "target/test-evidence/0.67/brownout-resp-endpoint.json",
     "target/test-evidence/0.67/overload-node-resp.json",
     "target/test-evidence/0.67/compare-redis.json",

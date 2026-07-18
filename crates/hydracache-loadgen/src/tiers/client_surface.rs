@@ -731,6 +731,7 @@ pub async fn client_surface_smoke_report(
                 "smoke-unclaimed-binary".to_owned(),
             )],
         },
+        None,
         measurements,
         vec!["short in-process client-surface smoke is not capacity evidence".to_owned()],
     ))

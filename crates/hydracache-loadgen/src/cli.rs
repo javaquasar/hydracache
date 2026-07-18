@@ -12,7 +12,15 @@ pub enum LoadgenCommand {
         profile: String,
         report: PathBuf,
     },
+    TierNodeResp {
+        profile: String,
+        report: PathBuf,
+    },
     SuiteCore {
+        profile: String,
+        output_dir: PathBuf,
+    },
+    SuiteResp {
         profile: String,
         output_dir: PathBuf,
     },
@@ -20,21 +28,45 @@ pub enum LoadgenCommand {
 
 impl LoadgenCommand {
     /// The W1 local artifact path; both public command forms route to this exact file.
-    pub fn local_report_path(&self) -> PathBuf {
+    pub fn local_report_path(&self) -> Option<PathBuf> {
         match self {
-            Self::TierLocal { report, .. } => report.clone(),
-            Self::TierClientSurface { report, .. } => report.clone(),
-            Self::SuiteCore { output_dir, .. } => output_dir.join("local.json"),
+            Self::TierLocal { report, .. } => Some(report.clone()),
+            Self::SuiteCore { output_dir, .. } => Some(output_dir.join("local.json")),
+            Self::TierClientSurface { .. } | Self::TierNodeResp { .. } | Self::SuiteResp { .. } => {
+                None
+            }
         }
     }
 
     /// The W2 client-surface artifact path. A direct W2 command and the
     /// aggregate core suite resolve to the same canonical file name.
-    pub fn client_surface_report_path(&self) -> PathBuf {
+    pub fn client_surface_report_path(&self) -> Option<PathBuf> {
         match self {
-            Self::TierClientSurface { report, .. } => report.clone(),
-            Self::SuiteCore { output_dir, .. } => output_dir.join("client-surface.json"),
-            Self::TierLocal { report, .. } => report.clone(),
+            Self::TierClientSurface { report, .. } => Some(report.clone()),
+            Self::SuiteCore { output_dir, .. } => Some(output_dir.join("client-surface.json")),
+            Self::TierLocal { .. } | Self::TierNodeResp { .. } | Self::SuiteResp { .. } => None,
+        }
+    }
+
+    pub fn resp_open_loop_report_path(&self) -> Option<PathBuf> {
+        match self {
+            Self::TierNodeResp { report, .. } => Some(report.clone()),
+            Self::SuiteResp { output_dir, .. } => Some(output_dir.join("node-resp-open-loop.json")),
+            Self::TierLocal { .. } | Self::TierClientSurface { .. } | Self::SuiteCore { .. } => {
+                None
+            }
+        }
+    }
+
+    pub fn resp_external_report_path(&self) -> Option<PathBuf> {
+        match self {
+            Self::SuiteResp { output_dir, .. } => {
+                Some(output_dir.join("node-resp-redis-benchmark.json"))
+            }
+            Self::TierLocal { .. }
+            | Self::TierClientSurface { .. }
+            | Self::TierNodeResp { .. }
+            | Self::SuiteCore { .. } => None,
         }
     }
 
@@ -42,7 +74,9 @@ impl LoadgenCommand {
         match self {
             Self::TierLocal { profile, .. }
             | Self::TierClientSurface { profile, .. }
-            | Self::SuiteCore { profile, .. } => profile,
+            | Self::TierNodeResp { profile, .. }
+            | Self::SuiteCore { profile, .. }
+            | Self::SuiteResp { profile, .. } => profile,
         }
     }
 }
@@ -79,7 +113,14 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
         ("tier", "client-surface", Some(report), None) => {
             Ok(LoadgenCommand::TierClientSurface { profile, report })
         }
+        ("tier", "node-resp", Some(report), None) => {
+            Ok(LoadgenCommand::TierNodeResp { profile, report })
+        }
         ("suite", "core", None, Some(output_dir)) => Ok(LoadgenCommand::SuiteCore {
+            profile,
+            output_dir,
+        }),
+        ("suite", "resp", None, Some(output_dir)) => Ok(LoadgenCommand::SuiteResp {
             profile,
             output_dir,
         }),
@@ -89,8 +130,14 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
         ("tier", "client-surface", _, _) => {
             Err("tier client-surface requires --report and forbids --output-dir".to_owned())
         }
+        ("tier", "node-resp", _, _) => {
+            Err("tier node-resp requires --report and forbids --output-dir".to_owned())
+        }
         ("suite", "core", _, _) => {
             Err("suite core requires --output-dir and forbids --report".to_owned())
+        }
+        ("suite", "resp", _, _) => {
+            Err("suite resp requires --output-dir and forbids --report".to_owned())
         }
         _ => Err(format!("unsupported command: {family} {name}")),
     }

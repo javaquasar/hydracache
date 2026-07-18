@@ -96,6 +96,37 @@
       "red_evidence": "The W2 canary proves that scheduled latency through the real in-process Axum router exposes a loadgen-injected dispatch delay; the report validator separately forbids daemon, socket, and wire claims."
     },
     {
+      "w_item": "W3",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_resp_listener_slowdown_breaches_the_open_loop_resp_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_resp_listener_slowdown_breaches_the_open_loop_resp_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W3"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W3",
+      "expected_failure": "HC-CANARY-RED:W3",
+      "timeout_seconds": 240,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W3.json"],
+      "red_evidence": "The W3 canary proves scheduled-send latency detects a slowdown at a real loopback RESP boundary and that truncated external-tool output is rejected; closed-loop output cannot satisfy the open-loop capacity guard."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

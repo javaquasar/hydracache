@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W2", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -254,12 +254,177 @@ function = "client_surface_reference_profile_never_silently_downgrades_to_smoke"
 
 [[work_item]]
 id = "W3"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/report.rs",
+    "crates/hydracache-loadgen/src/resp_external.rs",
+    "crates/hydracache-loadgen/src/targets/mod.rs",
+    "crates/hydracache-loadgen/src/targets/resp.rs",
+    "crates/hydracache-loadgen/src/tiers/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/resp.rs",
+    "crates/hydracache-loadgen/src/tiers/resp_reference.rs",
+    "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+    "crates/hydracache-loadgen/tests/resp_external_067.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-scenarios/0.67/resp-connection-pipeline-v1.toml",
+    "docs/testing/perf-scenarios/0.67/resp-external-redis-benchmark-v1.toml",
+    "docs/testing/perf-scenarios/0.67/resp-open-loop-a-v1.toml",
+    "docs/testing/perf-scenarios/0.67/resp-open-loop-b-v1.toml",
+    "docs/testing/perf-scenarios/0.67/resp-open-loop-c-v1.toml",
+    "docs/testing/perf-scenarios/0.67/redis-benchmark-provenance-v1.toml",
+]
+fast_gate_ids = [
+    "fast.performance-contract-067",
+    "fast.performance-resp-external-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-resp",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp_operation_schedule_executes_exact_a_b_c_taxonomy"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp2_parser_is_incremental_binary_safe_and_exact_about_pipeline_replies"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp_open_loop_get_set_knee_at_slo_carries_raw_a_b_c_evidence"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp_connection_and_pipeline_sweep_is_exact_and_scheduled_send_based"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp_run_capability_changes_without_changing_stable_scenario_workload_or_state_identity"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp_cli_direct_and_suite_forms_share_the_open_loop_artifact_only"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "resp_reference_profile_requires_receipt_bound_prebuilt_daemon"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp_reference.rs"
+function = "valid_manifest_produces_exact_ship_identities_without_invented_hashes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp_reference.rs"
+function = "dirty_commit_and_mismatched_receipt_fields_fail_closed"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp_reference.rs"
+function = "missing_swapped_or_noncanonical_binaries_fail_closed"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp_reference.rs"
+function = "readiness_accepts_only_one_exact_pong_frame"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp_reference.rs"
+function = "one_endpoint_capability_digest_binds_process_config_and_prebuild_receipt"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp.rs"
+function = "suite_lifecycle_binding_rejects_failed_cleanup_and_identity_tampering"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/resp.rs"
+function = "suite_rejects_completed_but_unstable_external_evidence"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/resp.rs"
+function = "timed_out_connection_is_replaced_before_late_reply_can_be_reused"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/resp.rs"
+function = "cancelled_exchange_is_poisoned_before_the_next_request"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/resp.rs"
+function = "pipeline_total_may_exceed_the_per_reply_frame_limit"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/resp.rs"
+function = "reset_chunks_large_keyspaces_within_the_product_batch_limit"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_contract_builds_exact_argv_and_preserves_closed_loop_identity"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_csv_parser_accepts_only_the_exact_complete_row_set"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_csv_parser_rejects_truncated_duplicate_missing_unknown_and_swallowed_output"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "external_tool_pipe_capture_rejects_read_errors_and_bytes_beyond_the_committed_cap"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_evidence_binds_version_exact_argv_and_raw_stream_hashes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_missing_tool_skips_loud_locally_and_fails_closed_when_mandatory"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_rejects_nonzero_stderr_version_drift_and_truncated_csv"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_timeout_is_rejected_with_raw_stream_hashes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_rejects_canonical_path_or_binary_sha_drift_after_the_version_probe"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "redis_benchmark_provenance_pins_the_real_725_source_archive_and_recipe"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "external_report_recomputes_repeat_statistics_and_rejects_tampering"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "external_report_fails_closed_on_open_loop_endpoint_or_capability_mismatch"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "mandatory_run_cross_binds_actual_tool_sha_and_prebuild_receipt"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "committed_external_contract_digest_is_stable_when_the_selected_daemon_port_changes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/resp_external_067.rs"
+function = "completed_high_spread_external_run_is_not_suite_ship_evidence"
 
 [[work_item]]
 id = "W4"

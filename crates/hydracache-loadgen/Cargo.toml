@@ -19,6 +19,7 @@ hydracache.workspace = true
 hydracache-cache-sim.workspace = true
 hydracache-client-protocol.workspace = true
 hydracache-client-transport-axum.workspace = true
+hydracache-redis-compat.workspace = true
 jsonschema.workspace = true
 serde.workspace = true
 serde_json.workspace = true
