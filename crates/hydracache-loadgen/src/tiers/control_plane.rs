@@ -27,9 +27,9 @@ use crate::targets::control_plane::{
     ControlPlaneReport, ControlPlaneScenario, ControlPlaneTarget, DaemonAddActionPayload,
     DaemonAddInvocationReceipt, DaemonNodeConfigReceipt, DaemonNodeLaunchConfig,
     DaemonNodeLifecycleEvidence, DaemonNodeProcessReceipt, DaemonReceiptSource, NodeRole,
-    PrebuiltServerBinaryReceipt, ProcessLogReceipt, ReferenceCapabilityPolicy,
-    CONTROL_PLANE_EVIDENCE_CLASS, CONTROL_PLANE_EXECUTION_MODE, DAEMON_CAPABILITY_RECEIPT_KIND,
-    DAEMON_CLUSTER_PROVISIONER, NODE_CONFIG_RECEIPT_KIND,
+    PrebuiltServerBinaryReceipt, ProbedControlPlaneCapability, ProcessLogReceipt,
+    ReferenceCapabilityPolicy, CONTROL_PLANE_EVIDENCE_CLASS, CONTROL_PLANE_EXECUTION_MODE,
+    DAEMON_CAPABILITY_RECEIPT_KIND, DAEMON_CLUSTER_PROVISIONER, NODE_CONFIG_RECEIPT_KIND,
 };
 use crate::tiers::resp_reference::ValidatedRespReferenceContext;
 
@@ -148,6 +148,7 @@ pub async fn run_control_plane_reference(
         evidence_class: CONTROL_PLANE_EVIDENCE_CLASS.to_owned(),
         execution_mode: CONTROL_PLANE_EXECUTION_MODE.to_owned(),
         capability_receipt_sha256: probed.receipt_sha256().to_owned(),
+        capability: probed.attestation.receipt.clone(),
         node_count,
         capacity_scope: "per-selected-admin-endpoint-and-role-no-sum".to_owned(),
         aggregate_cluster_capacity: false,
@@ -161,6 +162,175 @@ pub async fn run_control_plane_reference(
     report.validate(scenario, &probed)?;
     write_new_report(report_path, &report)?;
     Ok(report)
+}
+
+/// Shared direct-process seam for fault-oriented tiers. It deliberately
+/// exposes process primitives and existing W4 receipts, not W5 report types,
+/// so the W4 reference producer and the W5 brownout producer cannot drift into
+/// independent daemon launch implementations.
+pub struct LiveControlPlaneProcessHarness {
+    context: ValidatedRespReferenceContext,
+    cluster: ReferenceControlPlaneCluster,
+    capability: ProbedControlPlaneCapability,
+    // Fields drop in declaration order: keep the global lane guard last so
+    // every child-owning cluster field is dropped/reaped before unlock.
+    _process_guard: tokio::sync::MutexGuard<'static, ()>,
+}
+
+impl LiveControlPlaneProcessHarness {
+    /// Stage one fresh, fully joined 3/5/7-node cluster and seal/probe the exact
+    /// same typed capability used by W4. No predecessor PID is reused.
+    pub async fn stage(
+        context: &ValidatedRespReferenceContext,
+        scenario: &ControlPlaneScenario,
+        node_count: u8,
+        evidence_root: &Path,
+    ) -> Result<Self, ControlPlaneReferenceError> {
+        let process_guard = CONTROL_PLANE_PROCESS_LOCK.lock().await;
+        require_mandatory_lane()?;
+        scenario.validate()?;
+        if !scenario.read_only.node_counts.contains(&node_count) {
+            return Err(ControlPlaneReferenceError::Contract(format!(
+                "live control-plane harness node_count must be one of 3/5/7, got {node_count}"
+            )));
+        }
+        context
+            .verify_binaries_unchanged()
+            .map_err(|error| ControlPlaneReferenceError::Contract(error.to_string()))?;
+        let mut cluster = ReferenceControlPlaneCluster::prepare(node_count, evidence_root)?;
+        cluster.spawn_initial(context)?;
+        wait_for_live_baseline(cluster.initial_endpoints(), STARTUP_TIMEOUT).await?;
+        cluster.spawn_joiner(context)?;
+        wait_for_live_baseline(cluster.full_endpoints(), STARTUP_TIMEOUT).await?;
+        let sealed = cluster.seal_capability(context)?;
+        let validated = sealed.require(scenario, ReferenceCapabilityPolicy::MandatoryFailClosed)?;
+        let ControlPlaneCapabilityOutcome::Ready(validated) = validated else {
+            return Err(ControlPlaneReferenceError::Contract(
+                "mandatory live control-plane harness unexpectedly skipped".to_owned(),
+            ));
+        };
+        let capability = probe_control_plane_capability(*validated, PER_PROBE_TIMEOUT).await?;
+        Ok(Self {
+            context: context.clone(),
+            cluster,
+            capability,
+            _process_guard: process_guard,
+        })
+    }
+
+    pub fn capability(&self) -> &ProbedControlPlaneCapability {
+        &self.capability
+    }
+
+    pub fn endpoints(&self) -> Vec<ControlPlaneEndpoint> {
+        self.cluster.full_endpoints()
+    }
+
+    pub fn endpoint(
+        &self,
+        node_id: &str,
+    ) -> Result<ControlPlaneEndpoint, ControlPlaneReferenceError> {
+        self.cluster
+            .nodes
+            .iter()
+            .find(|node| node.config.launch_config.node_id == node_id)
+            .map(ReferenceNode::endpoint)
+            .ok_or_else(|| {
+                ControlPlaneReferenceError::Contract(format!(
+                    "live control-plane harness has no node {node_id:?}"
+                ))
+            })
+    }
+
+    pub fn process_receipt(
+        &self,
+        node_id: &str,
+    ) -> Result<DaemonNodeProcessReceipt, ControlPlaneReferenceError> {
+        self.cluster
+            .nodes
+            .iter()
+            .find(|node| node.config.launch_config.node_id == node_id)
+            .ok_or_else(|| {
+                ControlPlaneReferenceError::Contract(format!(
+                    "live control-plane harness has no node {node_id:?}"
+                ))
+            })?
+            .process_receipt(&self.context)
+    }
+
+    /// Kill and wait the exact currently owned PID. The node cannot restart
+    /// until this method has returned an OS `ExitStatus`.
+    pub fn kill_and_wait(
+        &mut self,
+        node_id: &str,
+    ) -> Result<WaitedDaemonProcess, ControlPlaneReferenceError> {
+        let node = self
+            .cluster
+            .nodes
+            .iter_mut()
+            .find(|node| node.config.launch_config.node_id == node_id)
+            .ok_or_else(|| {
+                ControlPlaneReferenceError::Contract(format!(
+                    "live control-plane harness has no node {node_id:?}"
+                ))
+            })?;
+        node.kill_and_wait(&self.context)
+    }
+
+    /// Restart a previously waited node with byte-identical config and server
+    /// binary, under a fresh PID and separate log generation.
+    pub fn restart(
+        &mut self,
+        node_id: &str,
+    ) -> Result<DaemonNodeProcessReceipt, ControlPlaneReferenceError> {
+        let run_root = self.cluster.run_root.clone();
+        let node = self
+            .cluster
+            .nodes
+            .iter_mut()
+            .find(|node| node.config.launch_config.node_id == node_id)
+            .ok_or_else(|| {
+                ControlPlaneReferenceError::Contract(format!(
+                    "live control-plane harness has no node {node_id:?}"
+                ))
+            })?;
+        if node.child.is_some() || node.pid.is_some() {
+            return Err(ControlPlaneReferenceError::Contract(format!(
+                "node {node_id:?} must be killed and waited before restart"
+            )));
+        }
+        node.prepare_restart_logs(&run_root);
+        node.spawn(&self.context)?;
+        node.process_receipt(&self.context)
+    }
+
+    /// Spawn one additional joiner and write the same physical typed
+    /// add-action receipt format used by W4.
+    pub fn spawn_transient_member(
+        &mut self,
+        authority_node_id: &str,
+    ) -> Result<DaemonAddInvocationReceipt, ControlPlaneReferenceError> {
+        let index = self.cluster.prepare_transient_joiner()?;
+        let node = &mut self.cluster.nodes[index];
+        node.release_reservations();
+        node.spawn(&self.context)?;
+        let sequence = RUN_SEQUENCE.fetch_add(1, Ordering::SeqCst);
+        self.cluster.write_add_action_receipt_for(
+            index,
+            authority_node_id,
+            &self.context,
+            &format!("daemon-add-action-transient-{sequence}.json"),
+        )
+    }
+
+    /// Reap every still-live child (including restarted/transient nodes) and
+    /// verify the prebuilt server/loadgen bytes once more. Drop provides the
+    /// same reap guarantee on every early-return path.
+    pub fn shutdown(
+        mut self,
+    ) -> Result<Vec<DaemonNodeLifecycleEvidence>, ControlPlaneReferenceError> {
+        self.cluster.stop_all_unsealed(&self.context)
+    }
 }
 
 fn require_mandatory_lane() -> Result<(), ControlPlaneReferenceError> {
@@ -274,6 +444,15 @@ struct ReferenceNode {
     stderr_path: PathBuf,
 }
 
+/// One exact direct child that the shared process harness killed and reaped.
+/// The W5 tier converts this OS wait result into its own sealed event receipt;
+/// W4 remains unaware of W5 evidence types.
+#[derive(Debug)]
+pub struct WaitedDaemonProcess {
+    pub process: DaemonNodeProcessReceipt,
+    pub exit_status: ExitStatus,
+}
+
 impl ReferenceNode {
     fn endpoint(&self) -> ControlPlaneEndpoint {
         ControlPlaneEndpoint {
@@ -351,6 +530,48 @@ impl ReferenceNode {
         self.pid = Some(pid);
         self.child = Some(child);
         Ok(())
+    }
+
+    fn kill_and_wait(
+        &mut self,
+        context: &ValidatedRespReferenceContext,
+    ) -> Result<WaitedDaemonProcess, ControlPlaneReferenceError> {
+        let process = self.process_receipt(context)?;
+        let mut child = self.child.take().ok_or_else(|| {
+            ControlPlaneReferenceError::Lifecycle(format!(
+                "node {} has no owned child to kill",
+                process.node_id
+            ))
+        })?;
+        match child
+            .try_wait()
+            .map_err(system_io("inspect daemon before kill"))?
+        {
+            None => {}
+            Some(status) => {
+                self.pid = None;
+                return Err(ControlPlaneReferenceError::Lifecycle(format!(
+                    "node {} PID {} exited before requested kill: {}",
+                    process.node_id,
+                    process.pid,
+                    exit_status_text(&status)
+                )));
+            }
+        }
+        child.kill().map_err(system_io("kill exact daemon child"))?;
+        let exit_status = child.wait().map_err(system_io("wait exact daemon child"))?;
+        self.pid = None;
+        Ok(WaitedDaemonProcess {
+            process,
+            exit_status,
+        })
+    }
+
+    fn prepare_restart_logs(&mut self, run_root: &Path) {
+        let sequence = RUN_SEQUENCE.fetch_add(1, Ordering::SeqCst);
+        let node_id = &self.config.launch_config.node_id;
+        self.stdout_path = run_root.join(format!("{node_id}-restart-{sequence}.stdout.log"));
+        self.stderr_path = run_root.join(format!("{node_id}-restart-{sequence}.stderr.log"));
     }
 
     fn process_receipt(
@@ -589,7 +810,26 @@ impl ReferenceControlPlaneCluster {
         authority_node_id: &str,
         context: &ValidatedRespReferenceContext,
     ) -> Result<DaemonAddInvocationReceipt, ControlPlaneReferenceError> {
-        let target = &self.nodes[self.initial_count];
+        self.write_add_action_receipt_for(
+            self.initial_count,
+            authority_node_id,
+            context,
+            "daemon-add-action.json",
+        )
+    }
+
+    fn write_add_action_receipt_for(
+        &self,
+        target_index: usize,
+        authority_node_id: &str,
+        context: &ValidatedRespReferenceContext,
+        file_name: &str,
+    ) -> Result<DaemonAddInvocationReceipt, ControlPlaneReferenceError> {
+        let target = self.nodes.get(target_index).ok_or_else(|| {
+            ControlPlaneReferenceError::Contract(format!(
+                "add-action target index {target_index} is absent"
+            ))
+        })?;
         let payload = DaemonAddActionPayload {
             receipt_kind: ADD_ACTION_RECEIPT_KIND.to_owned(),
             provisioner: DAEMON_CLUSTER_PROVISIONER.to_owned(),
@@ -597,7 +837,7 @@ impl ReferenceControlPlaneCluster {
             target_node_id: target.config.launch_config.node_id.clone(),
             outcome: "process-started-and-admission-requested".to_owned(),
         };
-        let path = self.run_root.join("daemon-add-action.json");
+        let path = self.run_root.join(file_name);
         write_new_json(&path, &payload)?;
         let path =
             fs::canonicalize(path).map_err(system_io("canonicalize daemon add action receipt"))?;
@@ -607,6 +847,105 @@ impl ReferenceControlPlaneCluster {
             payload,
             target_process: target.process_receipt(context)?,
         })
+    }
+
+    fn prepare_transient_joiner(&mut self) -> Result<usize, ControlPlaneReferenceError> {
+        let index = self.nodes.len();
+        let reservations = vec![
+            DualProtocolReservation::reserve()?,
+            DualProtocolReservation::reserve()?,
+            DualProtocolReservation::reserve()?,
+        ];
+        let cluster_addr = reservations[1].address();
+        let node_id = member_node_id_for_addr(cluster_addr);
+        if self
+            .nodes
+            .iter()
+            .any(|node| node.config.launch_config.node_id == node_id)
+        {
+            return Err(ControlPlaneReferenceError::Contract(format!(
+                "transient member id {node_id} collides with an existing node"
+            )));
+        }
+        let storage_dir = self.run_root.join(format!("node-{index}-storage"));
+        fs::create_dir(&storage_dir).map_err(system_io("create transient node storage"))?;
+        let storage_dir = fs::canonicalize(&storage_dir)
+            .map_err(system_io("canonicalize transient node storage"))?;
+        let seed_cluster_addrs = self
+            .nodes
+            .iter()
+            .filter(|node| node.child.is_some())
+            .map(|node| node.config.launch_config.cluster_addr)
+            .collect::<Vec<_>>();
+        if seed_cluster_addrs.is_empty() {
+            return Err(ControlPlaneReferenceError::Contract(
+                "transient member requires at least one live seed".to_owned(),
+            ));
+        }
+        let launch_config = DaemonNodeLaunchConfig {
+            receipt_kind: NODE_CONFIG_RECEIPT_KIND.to_owned(),
+            node_id,
+            client_addr: reservations[0].address(),
+            cluster_addr,
+            admin_addr: reservations[2].address(),
+            redis_addr: None,
+            storage_dir,
+            cluster_start: "join".to_owned(),
+            seed_cluster_addrs,
+        };
+        let config_path = self
+            .run_root
+            .join(format!("node-{index}-launch-config.json"));
+        write_new_json(&config_path, &launch_config)?;
+        let config_path = fs::canonicalize(&config_path)
+            .map_err(system_io("canonicalize transient launch config"))?;
+        let config = DaemonNodeConfigReceipt {
+            sha256: sha256_file(&config_path)?,
+            canonical_path: config_path,
+            launch_config,
+        };
+        self.nodes.push(ReferenceNode {
+            config,
+            reservations: Some(reservations),
+            child: None,
+            pid: None,
+            stdout_path: self
+                .run_root
+                .join(format!("node-{index}-transient.stdout.log")),
+            stderr_path: self
+                .run_root
+                .join(format!("node-{index}-transient.stderr.log")),
+        });
+        Ok(index)
+    }
+
+    fn stop_all_unsealed(
+        &mut self,
+        context: &ValidatedRespReferenceContext,
+    ) -> Result<Vec<DaemonNodeLifecycleEvidence>, ControlPlaneReferenceError> {
+        let mut evidence = Vec::with_capacity(self.nodes.len());
+        let mut problems = Vec::new();
+        for node in &mut self.nodes {
+            if node.child.is_none() && node.pid.is_none() {
+                // A fault-oriented caller already retained the exact wait
+                // status for this node. W4 never takes this branch.
+                continue;
+            }
+            match node.stop(context) {
+                Ok(node_evidence) => evidence.push(node_evidence),
+                Err(error) => problems.push(error),
+            }
+        }
+        if let Err(error) = context.verify_binaries_unchanged() {
+            problems.push(format!(
+                "post-run prebuilt binary verification failed: {error}"
+            ));
+        }
+        if problems.is_empty() {
+            Ok(evidence)
+        } else {
+            Err(ControlPlaneReferenceError::Lifecycle(problems.join("; ")))
+        }
     }
 
     fn seal_capability(
@@ -650,22 +989,7 @@ impl ReferenceControlPlaneCluster {
         context: &ValidatedRespReferenceContext,
         capability_receipt_sha256: &str,
     ) -> Result<ControlPlaneLifecycleReceipt, ControlPlaneReferenceError> {
-        let mut evidence = Vec::with_capacity(self.nodes.len());
-        let mut problems = Vec::new();
-        for node in &mut self.nodes {
-            match node.stop(context) {
-                Ok(node_evidence) => evidence.push(node_evidence),
-                Err(error) => problems.push(error),
-            }
-        }
-        if let Err(error) = context.verify_binaries_unchanged() {
-            problems.push(format!(
-                "post-run prebuilt binary verification failed: {error}"
-            ));
-        }
-        if !problems.is_empty() {
-            return Err(ControlPlaneReferenceError::Lifecycle(problems.join("; ")));
-        }
+        let evidence = self.stop_all_unsealed(context)?;
         ControlPlaneLifecycleReceipt::seal(ControlPlaneLifecycleReceiptPayload {
             receipt_kind: LIFECYCLE_RECEIPT_KIND.to_owned(),
             receipt_source: DaemonReceiptSource::ObservedProcessHarness,

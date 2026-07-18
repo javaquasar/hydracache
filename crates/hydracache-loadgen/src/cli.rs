@@ -38,6 +38,19 @@ pub enum LoadgenCommand {
         profile: String,
         output_dir: PathBuf,
     },
+    Brownout {
+        target: BrownoutTarget,
+        profile: String,
+        report: PathBuf,
+    },
+}
+
+/// Exact W5 fault profile selected by the public CLI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BrownoutTarget {
+    ControlPlaneLeader,
+    RespEndpointKill,
+    GridModelReplica,
 }
 
 impl LoadgenCommand {
@@ -51,7 +64,8 @@ impl LoadgenCommand {
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
             | Self::SuiteResp { .. }
-            | Self::SuiteControlPlane { .. } => None,
+            | Self::SuiteControlPlane { .. }
+            | Self::Brownout { .. } => None,
         }
     }
 
@@ -66,7 +80,8 @@ impl LoadgenCommand {
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
             | Self::SuiteResp { .. }
-            | Self::SuiteControlPlane { .. } => None,
+            | Self::SuiteControlPlane { .. }
+            | Self::Brownout { .. } => None,
         }
     }
 
@@ -79,7 +94,8 @@ impl LoadgenCommand {
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
             | Self::SuiteCore { .. }
-            | Self::SuiteControlPlane { .. } => None,
+            | Self::SuiteControlPlane { .. }
+            | Self::Brownout { .. } => None,
         }
     }
 
@@ -94,7 +110,8 @@ impl LoadgenCommand {
             | Self::TierControlPlane { .. }
             | Self::TierGridModel { .. }
             | Self::SuiteCore { .. }
-            | Self::SuiteControlPlane { .. } => None,
+            | Self::SuiteControlPlane { .. }
+            | Self::Brownout { .. } => None,
         }
     }
 
@@ -142,6 +159,13 @@ impl LoadgenCommand {
         }
     }
 
+    pub fn brownout_shape(&self) -> Option<(BrownoutTarget, PathBuf)> {
+        match self {
+            Self::Brownout { target, report, .. } => Some((*target, report.clone())),
+            _ => None,
+        }
+    }
+
     pub fn profile(&self) -> &str {
         match self {
             Self::TierLocal { profile, .. }
@@ -151,7 +175,8 @@ impl LoadgenCommand {
             | Self::TierGridModel { profile, .. }
             | Self::SuiteCore { profile, .. }
             | Self::SuiteResp { profile, .. }
-            | Self::SuiteControlPlane { profile, .. } => profile,
+            | Self::SuiteControlPlane { profile, .. }
+            | Self::Brownout { profile, .. } => profile,
         }
     }
 }
@@ -226,6 +251,11 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
                 output_dir,
             })
         }
+        ("brownout", name, Some(report), None) => Ok(LoadgenCommand::Brownout {
+            target: parse_brownout_target(name)?,
+            profile,
+            report,
+        }),
         ("tier", "local", _, _) => {
             Err("tier local requires --report and forbids --output-dir".to_owned())
         }
@@ -251,7 +281,21 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
         ("suite", "control-plane", _, _) => {
             Err("suite control-plane requires --output-dir and forbids --report".to_owned())
         }
+        ("brownout", name, _, _) if parse_brownout_target(name).is_ok() => {
+            Err(format!(
+                "brownout {name} requires --report and forbids --output-dir"
+            ))
+        }
         _ => Err(format!("unsupported command: {family} {name}")),
+    }
+}
+
+fn parse_brownout_target(value: &str) -> Result<BrownoutTarget, String> {
+    match value {
+        "control-plane-leader" => Ok(BrownoutTarget::ControlPlaneLeader),
+        "resp-endpoint-kill" => Ok(BrownoutTarget::RespEndpointKill),
+        "grid-model-replica" => Ok(BrownoutTarget::GridModelReplica),
+        _ => Err(format!("unsupported brownout target: {value}")),
     }
 }
 
@@ -391,5 +435,66 @@ mod tests {
                 ),
             ]
         );
+    }
+
+    #[test]
+    fn w5_brownout_cli_preserves_the_three_surface_specific_commands() {
+        let cases = [
+            (
+                "control-plane-leader",
+                BrownoutTarget::ControlPlaneLeader,
+                "brownout-control-plane.json",
+            ),
+            (
+                "resp-endpoint-kill",
+                BrownoutTarget::RespEndpointKill,
+                "brownout-resp-endpoint.json",
+            ),
+            (
+                "grid-model-replica",
+                BrownoutTarget::GridModelReplica,
+                "brownout-grid-model.json",
+            ),
+        ];
+        for (name, expected_target, report) in cases {
+            let command = parse(args(&[
+                "brownout",
+                name,
+                "--profile",
+                "reference-v1",
+                "--report",
+                report,
+            ]))
+            .unwrap();
+            assert_eq!(
+                command.brownout_shape(),
+                Some((expected_target, PathBuf::from(report)))
+            );
+            assert_eq!(command.profile(), "reference-v1");
+        }
+    }
+
+    #[test]
+    fn w5_brownout_cli_rejects_generic_or_misrouted_shapes() {
+        for name in ["cluster", "node-native", "control-plane", "resp"] {
+            assert!(parse(args(&[
+                "brownout",
+                name,
+                "--profile",
+                "reference-v1",
+                "--report",
+                "report.json",
+            ]))
+            .is_err());
+        }
+        assert!(parse(args(&[
+            "brownout",
+            "control-plane-leader",
+            "--profile",
+            "reference-v1",
+            "--output-dir",
+            "target/test-evidence/0.67",
+        ]))
+        .is_err());
     }
 }

@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -517,12 +517,74 @@ function = "canary_w4_instruments_reject_control_plane_delay_and_grid_model_shor
 
 [[work_item]]
 id = "W5"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/targets/brownout.rs",
+    "crates/hydracache-loadgen/src/targets/control_plane.rs",
+    "crates/hydracache-loadgen/src/targets/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/brownout.rs",
+    "crates/hydracache-loadgen/src/tiers/control_plane.rs",
+    "crates/hydracache-loadgen/src/tiers/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/resp_reference.rs",
+    "crates/hydracache-loadgen/tests/w5_brownout_067.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-scenarios/0.67/brownout-control-plane-v1.toml",
+    "docs/testing/perf-scenarios/0.67/brownout-grid-model-v1.toml",
+    "docs/testing/perf-scenarios/0.67/brownout-resp-endpoint-v1.toml",
+]
+fast_gate_ids = [
+    "fast.performance-w5-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "env.hydracache-run-067-perf-resp",
+    "env.hydracache-run-067-perf-control-plane",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w5_brownout_cli_preserves_the_three_surface_specific_commands"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w5_brownout_cli_rejects_generic_or_misrouted_shapes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "w5_committed_scenarios_have_exact_digests_and_non_combinable_authorities"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "w5_reference_shape_rejects_every_material_contract_drift"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "w5_smoke_provenance_cannot_be_promoted_by_changing_mode"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "w5a_validates_leader_term_exact_membership_diffs_and_pid_lifecycle"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "w5b_binds_exact_socket_process_and_independent_control_without_data_recovery"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "w5c_uses_real_primitive_with_five_fresh_repeats_and_independent_checksums"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w5_brownout_067.rs"
+function = "canary_extended_leader_downtime_breaches_the_control_plane_budget"
 
 [[work_item]]
 id = "W6"

@@ -1,12 +1,17 @@
 use std::path::{Path, PathBuf};
 
 use hydracache_loadgen::cli;
-use hydracache_loadgen::cli::LoadgenCommand;
+use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand};
 use hydracache_loadgen::resp_external::{
     ExternalToolProvenanceRegistry, RedisBenchmarkContract,
     REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH,
 };
 use hydracache_loadgen::targets::control_plane::ControlPlaneScenario;
+use hydracache_loadgen::tiers::brownout::{
+    produce_control_plane_reference as produce_control_plane_brownout,
+    produce_grid_model_reference as produce_grid_model_brownout,
+    produce_resp_reference as produce_resp_brownout,
+};
 use hydracache_loadgen::tiers::client_surface::{
     write_client_surface_report, write_client_surface_report_with_context,
 };
@@ -25,6 +30,13 @@ const RESP_EXTERNAL_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/resp-external-redis-benchmark-v1.toml";
 const CONTROL_PLANE_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/control-plane-real-daemon-v1.toml";
+const GRID_MODEL_SCENARIO: &str = "docs/testing/perf-scenarios/0.67/grid-model-primitives-v1.toml";
+const BROWNOUT_CONTROL_PLANE_SCENARIO: &str =
+    "docs/testing/perf-scenarios/0.67/brownout-control-plane-v1.toml";
+const BROWNOUT_RESP_SCENARIO: &str =
+    "docs/testing/perf-scenarios/0.67/brownout-resp-endpoint-v1.toml";
+const BROWNOUT_GRID_MODEL_SCENARIO: &str =
+    "docs/testing/perf-scenarios/0.67/brownout-grid-model-v1.toml";
 
 #[tokio::main]
 async fn main() {
@@ -119,6 +131,15 @@ async fn run() -> Result<(), String> {
             write_grid_model_report(command.profile(), &grid_model_path)
                 .await
                 .map_err(|error| error.to_string())?;
+            if command.profile() == "reference-v1" {
+                let brownout_path = grid_model_path.with_file_name("brownout-grid-model.json");
+                write_reference_brownout(
+                    command.profile(),
+                    BrownoutTarget::GridModelReplica,
+                    &brownout_path,
+                )
+                .await?;
+            }
             eprintln!(
                 "hydracache-loadgen: wrote core suite reports to {}, {}, and {}",
                 local_path.display(),
@@ -147,6 +168,13 @@ async fn run() -> Result<(), String> {
                     "RESP suite lost its canonical external-tool report path".to_owned()
                 })?;
                 write_reference_resp_suite(&path, &external_path).await?;
+                let brownout_path = path.with_file_name("brownout-resp-endpoint.json");
+                write_reference_brownout(
+                    command.profile(),
+                    BrownoutTarget::RespEndpointKill,
+                    &brownout_path,
+                )
+                .await?;
             } else {
                 write_resp_report(command.profile(), &path)
                     .await
@@ -183,8 +211,94 @@ async fn run() -> Result<(), String> {
                 "control-plane suite lost its canonical 3/5/7 report set".to_owned()
             })?;
             write_reference_control_plane_reports(command.profile(), &paths).await?;
+            let predecessor = paths
+                .iter()
+                .find(|(nodes, _)| *nodes == 3)
+                .map(|(_, path)| path)
+                .ok_or_else(|| "control-plane suite lost its 3-node predecessor".to_owned())?;
+            let brownout_path = predecessor.with_file_name("brownout-control-plane.json");
+            write_reference_brownout(
+                command.profile(),
+                BrownoutTarget::ControlPlaneLeader,
+                &brownout_path,
+            )
+            .await?;
+        }
+        LoadgenCommand::Brownout { .. } => {
+            let (target, report) = command
+                .brownout_shape()
+                .ok_or_else(|| "brownout command lost its exact surface shape".to_owned())?;
+            write_reference_brownout(command.profile(), target, &report).await?;
         }
     }
+    Ok(())
+}
+
+async fn write_reference_brownout(
+    profile: &str,
+    target: BrownoutTarget,
+    report_path: &Path,
+) -> Result<(), String> {
+    if profile != "reference-v1" {
+        return Err(
+            "W5 brownout evidence has no fixture-capacity mode; use reference-v1 with the exact surface gate"
+                .to_owned(),
+        );
+    }
+    let repo_root = repository_root()?;
+    let context = load_reference_context_for_run(&repo_root)?;
+    let report_path = absolute_output_path(&repo_root, report_path);
+    let output_dir = report_path
+        .parent()
+        .ok_or_else(|| format!("W5 report path has no parent: {}", report_path.display()))?;
+    match target {
+        BrownoutTarget::ControlPlaneLeader => {
+            produce_control_plane_brownout(
+                &repo_root,
+                &context,
+                &repo_root.join(BROWNOUT_CONTROL_PLANE_SCENARIO),
+                &repo_root.join(CONTROL_PLANE_SCENARIO),
+                &output_dir.join("control-plane-3.json"),
+                &output_dir.join("w5a-run-artifacts"),
+                &report_path,
+            )
+            .await
+            .map_err(|error| error.to_string())?;
+        }
+        BrownoutTarget::RespEndpointKill => {
+            produce_resp_brownout(
+                &repo_root,
+                &context,
+                &repo_root.join(BROWNOUT_RESP_SCENARIO),
+                &output_dir.join("node-resp-open-loop.json"),
+                &output_dir.join("node-resp-daemon-lifecycle.json"),
+                &output_dir.join("w5b-run-artifacts"),
+                &report_path,
+            )
+            .await
+            .map_err(|error| error.to_string())?;
+        }
+        BrownoutTarget::GridModelReplica => {
+            produce_grid_model_brownout(
+                &repo_root,
+                &context,
+                &repo_root.join(BROWNOUT_GRID_MODEL_SCENARIO),
+                &repo_root.join(GRID_MODEL_SCENARIO),
+                &output_dir.join("grid-model.json"),
+                &report_path,
+            )
+            .await
+            .map_err(|error| error.to_string())?;
+        }
+    }
+    context
+        .verify_binaries_unchanged()
+        .map_err(|error| error.to_string())?;
+    eprintln!(
+        "hydracache-loadgen: wrote receipt-bound W5 {:?} report to {}",
+        target,
+        report_path.display()
+    );
     Ok(())
 }
 
@@ -356,6 +470,6 @@ fn write_bytes(path: &Path, bytes: Vec<u8>) -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A has no fixture-capacity mode and directly launches only receipt-bound prebuilt daemons. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
+        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A and W5 have no fixture-capacity mode and directly launch only receipt-bound prebuilt daemons or in-process model primitives under their exact surface gates. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
     );
 }

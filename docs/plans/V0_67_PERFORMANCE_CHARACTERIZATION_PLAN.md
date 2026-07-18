@@ -459,9 +459,13 @@ claims RESP neighbor failover, and a no-op model fault; the validator rejects al
 ```powershell
 $env:HYDRACACHE_RUN_PERF_CONTROL_PLANE='1'
 & target\release\hydracache-loadgen.exe brownout control-plane-leader --profile reference-v1 --report target/test-evidence/0.67/brownout-control-plane.json
-& target\release\hydracache-loadgen.exe brownout resp-endpoint-kill --profile reference-v1 --report target/test-evidence/0.67/brownout-resp-endpoint.json
-& target\release\hydracache-loadgen.exe brownout grid-model-replica --profile reference-v1 --report target/test-evidence/0.67/brownout-grid-model.json
 Remove-Item Env:\HYDRACACHE_RUN_PERF_CONTROL_PLANE -ErrorAction SilentlyContinue
+$env:HYDRACACHE_RUN_PERF_RESP='1'
+& target\release\hydracache-loadgen.exe brownout resp-endpoint-kill --profile reference-v1 --report target/test-evidence/0.67/brownout-resp-endpoint.json
+Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
+$env:HYDRACACHE_RUN_PERF_CORE='1'
+& target\release\hydracache-loadgen.exe brownout grid-model-replica --profile reference-v1 --report target/test-evidence/0.67/brownout-grid-model.json
+Remove-Item Env:\HYDRACACHE_RUN_PERF_CORE -ErrorAction SilentlyContinue
 ```
 **CI.** Dedicated scheduled/manual lane with separate artifacts and gate IDs per surface.
 

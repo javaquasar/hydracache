@@ -482,34 +482,80 @@ impl ControlPlaneCapabilityAttestation {
             ));
         }
         validate_capability_payload(&payload, scenario)?;
-        let endpoints = payload
-            .nodes
-            .iter()
-            .map(|node| ControlPlaneEndpoint {
-                node_id: node.node_id.clone(),
-                admin_addr: node.config.launch_config.admin_addr,
-            })
-            .collect::<Vec<_>>();
-        let endpoints = normalized_endpoints(&endpoints)?;
         Ok(ControlPlaneCapabilityOutcome::Ready(Box::new(
-            ValidatedControlPlaneCapability {
-                receipt: self,
-                profile: payload.profile.clone(),
-                source_commit: payload.source_commit.clone(),
-                runner_fingerprint_sha256: payload.runner_fingerprint_sha256.clone(),
-                prebuild_manifest_sha256: payload.prebuild_manifest_sha256.clone(),
-                prebuild_contract_sha256: payload.prebuild_contract_sha256.clone(),
-                provisioner: payload.provisioner.clone(),
-                server_binary: payload.server_binary.clone(),
-                node_count: payload.node_count,
-                nodes: payload.nodes.clone(),
-                endpoints,
-            },
+            validated_capability(self, &payload)?,
         )))
+    }
+
+    /// Revalidate a persisted W4A launch receipt after its mandatory lifecycle
+    /// has reaped every daemon. Static source/prebuild/binary/config/topology
+    /// bindings remain exact, while live OS process identity is deliberately
+    /// replaced by the report's kill/wait/PID-gone lifecycle proof.
+    pub fn require_archived(
+        self,
+        scenario: &ControlPlaneScenario,
+    ) -> Result<ValidatedControlPlaneCapability, ControlPlaneError> {
+        scenario.validate()?;
+        let payload = self.payload.clone().ok_or_else(|| {
+            ControlPlaneError::Capability(
+                "archived W4A capability requires a sealed real-daemon receipt".to_owned(),
+            )
+        })?;
+        if self.receipt_sha256 != canonical_digest(&payload)? {
+            return Err(ControlPlaneError::Capability(
+                "archived W4A capability receipt digest does not seal its typed payload".to_owned(),
+            ));
+        }
+        validate_capability_payload_static(&payload, scenario)?;
+        if payload.nodes.iter().any(|node| process_is_alive(node.pid)) {
+            return Err(ControlPlaneError::Capability(
+                "archived W4A capability still has a live daemon PID".to_owned(),
+            ));
+        }
+        validated_capability(self, &payload)
     }
 }
 
+fn validated_capability(
+    receipt: ControlPlaneCapabilityAttestation,
+    payload: &ControlPlaneCapabilityReceiptPayload,
+) -> Result<ValidatedControlPlaneCapability, ControlPlaneError> {
+    let endpoints = payload
+        .nodes
+        .iter()
+        .map(|node| ControlPlaneEndpoint {
+            node_id: node.node_id.clone(),
+            admin_addr: node.config.launch_config.admin_addr,
+        })
+        .collect::<Vec<_>>();
+    let endpoints = normalized_endpoints(&endpoints)?;
+    Ok(ValidatedControlPlaneCapability {
+        receipt,
+        profile: payload.profile.clone(),
+        source_commit: payload.source_commit.clone(),
+        runner_fingerprint_sha256: payload.runner_fingerprint_sha256.clone(),
+        prebuild_manifest_sha256: payload.prebuild_manifest_sha256.clone(),
+        prebuild_contract_sha256: payload.prebuild_contract_sha256.clone(),
+        provisioner: payload.provisioner.clone(),
+        server_binary: payload.server_binary.clone(),
+        node_count: payload.node_count,
+        nodes: payload.nodes.clone(),
+        endpoints,
+    })
+}
+
 fn validate_capability_payload(
+    payload: &ControlPlaneCapabilityReceiptPayload,
+    scenario: &ControlPlaneScenario,
+) -> Result<(), ControlPlaneError> {
+    validate_capability_payload_static(payload, scenario)?;
+    for node in &payload.nodes {
+        validate_live_node_process(node, &payload.server_binary)?;
+    }
+    Ok(())
+}
+
+fn validate_capability_payload_static(
     payload: &ControlPlaneCapabilityReceiptPayload,
     scenario: &ControlPlaneScenario,
 ) -> Result<(), ControlPlaneError> {
@@ -554,12 +600,7 @@ fn validate_capability_payload(
                 "each W4A node must have a unique non-zero PID and the exact prebuilt server executable".to_owned(),
             ));
         }
-        validate_node_config(
-            node,
-            &payload.server_binary,
-            &mut all_addrs,
-            &mut config_paths,
-        )?;
+        validate_node_config_artifacts(node, &mut all_addrs, &mut config_paths)?;
     }
     let initial_cluster_addrs = payload
         .nodes
@@ -707,9 +748,8 @@ fn validate_prebuilt_binary(binary: &PrebuiltServerBinaryReceipt) -> Result<(), 
     Ok(())
 }
 
-fn validate_node_config(
+fn validate_node_config_artifacts(
     node: &DaemonNodeProcessReceipt,
-    server: &PrebuiltServerBinaryReceipt,
     all_addrs: &mut BTreeSet<SocketAddr>,
     config_paths: &mut BTreeSet<PathBuf>,
 ) -> Result<(), ControlPlaneError> {
@@ -779,6 +819,13 @@ fn validate_node_config(
             "node storage path must be an existing canonical directory".to_owned(),
         ));
     }
+    Ok(())
+}
+
+fn validate_live_node_process(
+    node: &DaemonNodeProcessReceipt,
+    server: &PrebuiltServerBinaryReceipt,
+) -> Result<(), ControlPlaneError> {
     let observed = observed_process_executable(node.pid)?;
     if observed != server.canonical_path
         || observed != node.observed_executable_path
@@ -1135,6 +1182,7 @@ pub struct ControlPlaneReport {
     pub evidence_class: String,
     pub execution_mode: String,
     pub capability_receipt_sha256: String,
+    pub capability: ControlPlaneCapabilityAttestation,
     pub node_count: u8,
     pub capacity_scope: String,
     pub aggregate_cluster_capacity: bool,
@@ -1158,6 +1206,8 @@ impl ControlPlaneReport {
             || self.evidence_class != CONTROL_PLANE_EVIDENCE_CLASS
             || self.execution_mode != CONTROL_PLANE_EXECUTION_MODE
             || self.capability_receipt_sha256 != capability.receipt_sha256()
+            || self.capability.receipt_sha256 != self.capability_receipt_sha256
+            || self.capability != capability.attestation.receipt
             || self.node_count != capability.attestation.node_count
             || self.capacity_scope != "per-selected-admin-endpoint-and-role-no-sum"
             || self.aggregate_cluster_capacity
@@ -1207,6 +1257,22 @@ impl ControlPlaneReport {
         }
         validate_lifecycle_receipt(&self.lifecycle, capability)?;
         Ok(())
+    }
+
+    /// Validate a persisted W4A artifact after its launch processes have been
+    /// reaped. The embedded capability is the complete typed predecessor;
+    /// callers cannot reconstruct it from a digest or substitute a live run.
+    pub fn validate_archived(
+        &self,
+        scenario: &ControlPlaneScenario,
+    ) -> Result<ValidatedControlPlaneCapability, ControlPlaneError> {
+        let archived = self.capability.clone().require_archived(scenario)?;
+        let capability = ProbedControlPlaneCapability {
+            attestation: archived.clone(),
+            baseline: Vec::new(),
+        };
+        self.validate(scenario, &capability)?;
+        Ok(archived)
     }
 }
 

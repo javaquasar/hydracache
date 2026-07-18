@@ -158,6 +158,37 @@
       "red_evidence": "The composite W4 canary proves the shared W4A event-timing validator rejects an over-budget convergence delay and the W4B primitive validator rejects a short-circuited copy/fanout path before emitting one release-scoped red marker."
     },
     {
+      "w_item": "W5",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w5_brownout_067.rs",
+        "function": "w5_committed_scenarios_have_exact_digests_and_non_combinable_authorities"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w5_brownout_067.rs",
+        "function": "canary_extended_leader_downtime_breaches_the_control_plane_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w5_brownout_067", "--locked", "w5_committed_scenarios_have_exact_digests_and_non_combinable_authorities", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w5_brownout_067", "--locked", "canary_extended_leader_downtime_breaches_the_control_plane_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W5"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W5",
+      "expected_failure": "HC-CANARY-RED:W5",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W5.json"],
+      "red_evidence": "The composite W5 canary proves the validators reject extended control-plane leader downtime, a false node-local RESP neighbor-failover claim, and a no-op in-process model fault while keeping the three authorities separate."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",
