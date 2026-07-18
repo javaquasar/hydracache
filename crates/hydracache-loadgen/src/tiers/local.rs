@@ -1,8 +1,8 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hydracache::{CacheOptions, HydraCache};
 use hydracache_cache_sim::{
@@ -25,11 +25,207 @@ use crate::target::{Target, TargetError, TargetOutcome};
 use crate::targets::local::{
     LocalCacheTarget, LocalOperation, LocalOperationMix, LocalTargetConfig,
 };
+use crate::tiers::resp_reference::ValidatedRespReferenceContext;
 use crate::{PerformanceProfile, RunnerFingerprint};
 
 const SMOKE_REPEATS: usize = 3;
 const SMOKE_OPERATIONS: u64 = 240;
 const SMOKE_SPREAD_LIMIT: f64 = 1_000.0;
+const LOCAL_REFERENCE_CAPABILITY_VERSION: u32 = 1;
+const LOCAL_REFERENCE_INSTANCE_VERSION: u32 = 1;
+pub const LOCAL_W6_CAPACITY_MEASUREMENT: &str = "hot_key_contention_throughput_floor";
+static LOCAL_REFERENCE_INSTANCE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LocalRunShape {
+    Smoke,
+    Reference,
+}
+
+impl LocalRunShape {
+    fn repeats(self, committed: usize) -> usize {
+        match self {
+            Self::Smoke => SMOKE_REPEATS,
+            Self::Reference => committed,
+        }
+    }
+
+    fn operations(self, committed: u64) -> u64 {
+        match self {
+            Self::Smoke => SMOKE_OPERATIONS,
+            Self::Reference => committed,
+        }
+    }
+
+    fn spread_limit(self, committed: f64) -> f64 {
+        match self {
+            Self::Smoke => SMOKE_SPREAD_LIMIT,
+            Self::Reference => committed,
+        }
+    }
+
+    fn effective_digest(
+        self,
+        binding: &BoundLocalScenario,
+        effective: &serde_json::Value,
+    ) -> String {
+        match self {
+            Self::Smoke => smoke_input_digest(binding, effective),
+            Self::Reference => reference_input_digest(binding, effective),
+        }
+    }
+
+    fn custom_digest(self, source: &[u8], effective: &serde_json::Value) -> String {
+        match self {
+            Self::Smoke => custom_smoke_input_digest(source, effective),
+            Self::Reference => custom_reference_input_digest(source, effective),
+        }
+    }
+}
+
+/// Stable identity shared by the W1 capacity predecessor and a fresh W6
+/// in-process adapter. It deliberately excludes process-specific facts.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LocalReferenceCapability {
+    pub schema_version: u32,
+    pub surface_kind: String,
+    pub execution_mode: String,
+    pub state_scope: String,
+    pub network_boundary: String,
+    pub capacity_measurement_id: String,
+    pub capacity_scenario_source_sha256: String,
+    pub source_commit: String,
+    pub cargo_lock_sha256: String,
+    pub prebuild_contract_sha256: String,
+    pub prebuild_manifest_sha256: String,
+    pub loadgen_binary_sha256: String,
+}
+
+impl LocalReferenceCapability {
+    pub fn digest(&self) -> Result<String, LocalTierError> {
+        self.validate()?;
+        canonical_digest(self)
+    }
+
+    pub fn validate(&self) -> Result<(), LocalTierError> {
+        if self.schema_version != LOCAL_REFERENCE_CAPABILITY_VERSION
+            || self.surface_kind != "embedded-cache"
+            || self.execution_mode != "in-process-real-hydracache"
+            || self.state_scope != "process-local"
+            || self.network_boundary != "none"
+            || self.capacity_measurement_id != LOCAL_W6_CAPACITY_MEASUREMENT
+            || !is_sha256(&self.capacity_scenario_source_sha256)
+            || !is_git_commit(&self.source_commit)
+            || !is_sha256(&self.cargo_lock_sha256)
+            || !is_sha256(&self.prebuild_contract_sha256)
+            || !is_sha256(&self.prebuild_manifest_sha256)
+            || !is_sha256(&self.loadgen_binary_sha256)
+        {
+            return Err(LocalTierError::Report(
+                "W1 stable in-process capability is incomplete or crosses its surface boundary"
+                    .to_owned(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Per-process proof kept separate from the stable surface/workload contract.
+/// Its payload is embedded as dimensions on the selected capacity curve so a
+/// downstream consumer can recompute the seal rather than trust one hash.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LocalReferenceInstanceReceipt {
+    pub schema_version: u32,
+    pub instance_sequence: u64,
+    pub pid: u32,
+    pub created_unix_nanos: u64,
+    pub direct_prebuilt_exec: bool,
+    pub loadgen_binary_path: String,
+    pub loadgen_binary_sha256: String,
+    pub stable_capability_sha256: String,
+    pub receipt_sha256: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalReferenceEvidenceBinding {
+    pub capability: LocalReferenceCapability,
+    pub instance: LocalReferenceInstanceReceipt,
+    pub measurement_id: String,
+    pub scenario_sha256: String,
+    pub workload_sha256: String,
+}
+
+impl LocalReferenceInstanceReceipt {
+    fn seal(
+        context: &ValidatedRespReferenceContext,
+        stable_capability_sha256: String,
+    ) -> Result<Self, LocalTierError> {
+        let created_unix_nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_err(|error| LocalTierError::Report(error.to_string()))?
+            .as_nanos()
+            .try_into()
+            .map_err(|_| {
+                LocalTierError::Report("system time does not fit u64 nanoseconds".to_owned())
+            })?;
+        let mut receipt = Self {
+            schema_version: LOCAL_REFERENCE_INSTANCE_VERSION,
+            instance_sequence: LOCAL_REFERENCE_INSTANCE_SEQUENCE
+                .fetch_add(1, Ordering::Relaxed)
+                .saturating_add(1),
+            pid: std::process::id(),
+            created_unix_nanos,
+            direct_prebuilt_exec: true,
+            loadgen_binary_path: context.loadgen.canonical_path.display().to_string(),
+            loadgen_binary_sha256: context.loadgen.sha256.clone(),
+            stable_capability_sha256,
+            receipt_sha256: String::new(),
+        };
+        receipt.receipt_sha256 = receipt.computed_sha256()?;
+        receipt.validate(context)?;
+        Ok(receipt)
+    }
+
+    pub fn computed_sha256(&self) -> Result<String, LocalTierError> {
+        let mut payload = self.clone();
+        payload.receipt_sha256.clear();
+        canonical_digest(&payload)
+    }
+
+    pub fn validate(&self, context: &ValidatedRespReferenceContext) -> Result<(), LocalTierError> {
+        self.validate_seal()?;
+        if self.pid != std::process::id()
+            || self.loadgen_binary_path != context.loadgen.canonical_path.display().to_string()
+            || self.loadgen_binary_sha256 != context.loadgen.sha256
+        {
+            return Err(LocalTierError::Report(
+                "W1 in-process instance receipt is not owned by the running receipt-bound loadgen"
+                    .to_owned(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn validate_seal(&self) -> Result<(), LocalTierError> {
+        if self.schema_version != LOCAL_REFERENCE_INSTANCE_VERSION
+            || self.instance_sequence == 0
+            || self.pid == 0
+            || self.created_unix_nanos == 0
+            || !self.direct_prebuilt_exec
+            || self.loadgen_binary_path.trim().is_empty()
+            || !is_sha256(&self.loadgen_binary_sha256)
+            || !is_sha256(&self.stable_capability_sha256)
+            || self.receipt_sha256 != self.computed_sha256()?
+        {
+            return Err(LocalTierError::Report(
+                "W1 in-process instance receipt is unsealed".to_owned(),
+            ));
+        }
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -127,17 +323,118 @@ pub enum LocalTierError {
     Io(#[from] std::io::Error),
 }
 
+#[derive(Debug, Clone)]
+struct LocalReferenceRunBinding {
+    capability: LocalReferenceCapability,
+    capability_sha256: String,
+    instance: LocalReferenceInstanceReceipt,
+}
+
+impl LocalReferenceRunBinding {
+    fn establish(context: &ValidatedRespReferenceContext) -> Result<Self, LocalTierError> {
+        context
+            .verify_binaries_unchanged()
+            .map_err(|error| LocalTierError::Report(error.to_string()))?;
+        let capability = local_reference_capability(context);
+        let capability_sha256 = capability.digest()?;
+        let instance = LocalReferenceInstanceReceipt::seal(context, capability_sha256.clone())?;
+        Ok(Self {
+            capability,
+            capability_sha256,
+            instance,
+        })
+    }
+
+    fn capacity_dimensions(&self) -> BTreeMap<String, DimensionValue> {
+        BTreeMap::from([
+            (
+                "reference_instance_schema_version".to_owned(),
+                DimensionValue::U64(self.instance.schema_version as u64),
+            ),
+            (
+                "surface_capability_sha256".to_owned(),
+                DimensionValue::Text(self.capability_sha256.clone()),
+            ),
+            (
+                "reference_instance_receipt_sha256".to_owned(),
+                DimensionValue::Text(self.instance.receipt_sha256.clone()),
+            ),
+            (
+                "reference_process_pid".to_owned(),
+                DimensionValue::U64(self.instance.pid as u64),
+            ),
+            (
+                "reference_instance_sequence".to_owned(),
+                DimensionValue::U64(self.instance.instance_sequence),
+            ),
+            (
+                "reference_instance_created_unix_nanos".to_owned(),
+                DimensionValue::U64(self.instance.created_unix_nanos),
+            ),
+            (
+                "direct_prebuilt_exec".to_owned(),
+                DimensionValue::Bool(self.instance.direct_prebuilt_exec),
+            ),
+            (
+                "loadgen_binary_path".to_owned(),
+                DimensionValue::Text(self.instance.loadgen_binary_path.clone()),
+            ),
+            (
+                "loadgen_binary_sha256".to_owned(),
+                DimensionValue::Text(self.instance.loadgen_binary_sha256.clone()),
+            ),
+            (
+                "capacity_scenario_source_sha256".to_owned(),
+                DimensionValue::Text(self.capability.capacity_scenario_source_sha256.clone()),
+            ),
+            (
+                "w6_capacity_eligible".to_owned(),
+                DimensionValue::Bool(true),
+            ),
+        ])
+    }
+}
+
+fn local_reference_capability(context: &ValidatedRespReferenceContext) -> LocalReferenceCapability {
+    LocalReferenceCapability {
+        schema_version: LOCAL_REFERENCE_CAPABILITY_VERSION,
+        surface_kind: "embedded-cache".to_owned(),
+        execution_mode: "in-process-real-hydracache".to_owned(),
+        state_scope: "process-local".to_owned(),
+        network_boundary: "none".to_owned(),
+        capacity_measurement_id: LOCAL_W6_CAPACITY_MEASUREMENT.to_owned(),
+        capacity_scenario_source_sha256: digest_bytes(HOT_KEY_SCENARIO),
+        source_commit: context.source.git_commit.clone(),
+        cargo_lock_sha256: context.source.cargo_lock_sha256.clone(),
+        prebuild_contract_sha256: context.build.prebuild_contract_digest.clone(),
+        prebuild_manifest_sha256: context.build.prebuild_manifest_sha256.clone(),
+        loadgen_binary_sha256: context.loadgen.sha256.clone(),
+    }
+}
+
 /// Run the complete short W1 contract. These numbers only validate plumbing.
 pub async fn local_smoke_measurements() -> Result<Vec<MeasurementEvidence>, LocalTierError> {
-    let (scaling, scaling_efficiency) = local_scaling_smoke_measurements().await?;
+    local_measurements(LocalRunShape::Smoke, None).await
+}
+
+async fn local_measurements(
+    shape: LocalRunShape,
+    reference: Option<&LocalReferenceRunBinding>,
+) -> Result<Vec<MeasurementEvidence>, LocalTierError> {
+    if (shape == LocalRunShape::Reference) != reference.is_some() {
+        return Err(LocalTierError::Report(
+            "W1 run shape and reference capability do not match".to_owned(),
+        ));
+    }
+    let (scaling, scaling_efficiency) = local_scaling_measurements(shape).await?;
     Ok(vec![
         scaling,
         scaling_efficiency,
-        local_hot_key_smoke_measurement().await?,
-        local_hot_key_single_flight_smoke_measurement().await?,
-        local_capacity_smoke_measurement().await?,
-        local_path_cost_smoke_measurement().await?,
-        local_allocation_smoke_measurement().await?,
+        local_hot_key_measurement(shape, reference).await?,
+        local_hot_key_single_flight_measurement(shape).await?,
+        local_capacity_measurement(shape).await?,
+        local_path_cost_measurement(shape).await?,
+        local_allocation_measurement(shape).await?,
         local_trace_replay_smoke_measurement().await?,
     ])
 }
@@ -200,6 +497,196 @@ pub async fn local_smoke_report(profile_name: &str) -> Result<PerfReport, LocalT
     ))
 }
 
+/// Execute the complete committed W1 shapes on the exact receipt-bound
+/// `target/release/hydracache-loadgen` process. The selected W6 predecessor is
+/// the committed hot-key open-loop curve; other W1 measurements remain
+/// characterization evidence and cannot be mistaken for a capacity knee.
+pub async fn local_reference_report(
+    context: &ValidatedRespReferenceContext,
+) -> Result<PerfReport, LocalTierError> {
+    let binding = LocalReferenceRunBinding::establish(context)?;
+    let measurements = local_measurements(LocalRunShape::Reference, Some(&binding)).await?;
+    context
+        .verify_binaries_unchanged()
+        .map_err(|error| LocalTierError::Report(error.to_string()))?;
+    binding.instance.validate(context)?;
+    let state_digest = first_state_digest(&measurements)?;
+    let report = PerfReport::new(
+        "local-tier-reference-v1",
+        "local-w1-suite-reference-v1",
+        state_digest,
+        EvidenceRunMode::ReferenceEvidence,
+        SurfaceIdentity {
+            surface_kind: "embedded-cache".to_owned(),
+            execution_mode: "in-process-real-hydracache".to_owned(),
+            state_scope: "process-local".to_owned(),
+            network_boundary: "none".to_owned(),
+            claim_scope: "embedded-cache-capacity".to_owned(),
+        },
+        context.profile.clone(),
+        context.runner.clone(),
+        context.source.clone(),
+        context.build.clone(),
+        None,
+        measurements,
+        Vec::new(),
+    );
+    let validated = validate_local_reference_report(&report)?;
+    if validated.capability != binding.capability || validated.instance != binding.instance {
+        return Err(LocalTierError::Report(
+            "W1 report binding differs from the live in-process capability".to_owned(),
+        ));
+    }
+    Ok(report)
+}
+
+/// Recompute every security-sensitive W1 reference binding and the exact
+/// committed capacity curve shape from a deserialized report.
+pub fn validate_local_reference_report(
+    report: &PerfReport,
+) -> Result<LocalReferenceEvidenceBinding, LocalTierError> {
+    let problems = report.validation_problems();
+    if !problems.is_empty() || report.to_pretty_json().is_err() {
+        return Err(LocalTierError::Report(format!(
+            "W1 reference report failed canonical validation: {problems:?}"
+        )));
+    }
+    let expected_surface = SurfaceIdentity {
+        surface_kind: "embedded-cache".to_owned(),
+        execution_mode: "in-process-real-hydracache".to_owned(),
+        state_scope: "process-local".to_owned(),
+        network_boundary: "none".to_owned(),
+        claim_scope: "embedded-cache-capacity".to_owned(),
+    };
+    if report.report_id != "local-tier-reference-v1"
+        || report.scenario_id != "local-w1-suite-reference-v1"
+        || report.run_mode != EvidenceRunMode::ReferenceEvidence
+        || report.surface != expected_surface
+        || report.runner_profile != "reference-v1"
+        || !report.stable
+        || !report.stability_reasons.is_empty()
+        || report.resp_endpoint_capability.is_some()
+    {
+        return Err(LocalTierError::Report(
+            "W1 reference report identity, stability, or in-process boundary is incorrect"
+                .to_owned(),
+        ));
+    }
+    let loadgen_binary_sha256 = exact_loadgen_digest(report)?;
+    let capability = LocalReferenceCapability {
+        schema_version: LOCAL_REFERENCE_CAPABILITY_VERSION,
+        surface_kind: report.surface.surface_kind.clone(),
+        execution_mode: report.surface.execution_mode.clone(),
+        state_scope: report.surface.state_scope.clone(),
+        network_boundary: report.surface.network_boundary.clone(),
+        capacity_measurement_id: LOCAL_W6_CAPACITY_MEASUREMENT.to_owned(),
+        capacity_scenario_source_sha256: digest_bytes(HOT_KEY_SCENARIO),
+        source_commit: report.source.git_commit.clone(),
+        cargo_lock_sha256: report.source.cargo_lock_sha256.clone(),
+        prebuild_contract_sha256: report.build.prebuild_contract_digest.clone(),
+        prebuild_manifest_sha256: report.build.prebuild_manifest_sha256.clone(),
+        loadgen_binary_sha256,
+    };
+    let capability_sha256 = capability.digest()?;
+    let curve = report
+        .measurements
+        .iter()
+        .find_map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(curve) if curve.id == LOCAL_W6_CAPACITY_MEASUREMENT => {
+                Some(curve)
+            }
+            _ => None,
+        })
+        .ok_or_else(|| LocalTierError::Report("W1 selected capacity curve is absent".to_owned()))?;
+    let hot_key = parse_local_scenario(HOT_KEY_SCENARIO)?;
+    let expected_scenario_digest = reference_input_digest(
+        &hot_key,
+        &serde_json::to_value(&hot_key.scenario)
+            .map_err(|error| LocalTierError::Report(error.to_string()))?,
+    );
+    let expected_hot_schedule = KeyScheduleSpec::uniform(
+        hot_key.scenario.seed,
+        hot_key.local.key_count,
+        hot_key.scenario.steady_operations,
+    )
+    .generate()
+    .map_err(LocalTierError::Runtime)?;
+    let expected_hot_workload = workload_from_schedule(
+        &expected_hot_schedule,
+        operation_mix(&hot_key.local),
+        hot_key.local.payload_bytes,
+    );
+    let expected_rates = [2_500_f64, 5_000_f64, 10_000_f64, 20_000_f64];
+    let knee = curve
+        .knee
+        .as_ref()
+        .ok_or_else(|| LocalTierError::Report("W1 capacity curve has no knee".to_owned()))?;
+    let exact_knee = knee.evaluated.len() == expected_rates.len()
+        && knee
+            .evaluated
+            .iter()
+            .zip(expected_rates)
+            .all(|(point, rate)| {
+                point.sample.offered_rate_per_second == rate
+                    && point.repeats.len() == hot_key.scenario.repeats as usize
+                    && point.repeats.iter().all(|repeat| {
+                        repeat.phase.reset_operations == 1
+                            && repeat.phase.preload_operations
+                                == hot_key.scenario.preload_operations
+                            && repeat.phase.warmup_operations == hot_key.scenario.warmup_operations
+                            && repeat.phase.steady_operations == hot_key.scenario.steady_operations
+                            && repeat.phase.warmup_samples_in_steady_histogram == 0
+                    })
+            });
+    if curve.claim != LoadClaim::CapacityKnee
+        || curve.scenario_digest != expected_scenario_digest
+        || curve.criteria.as_ref() != Some(&hot_key.scenario.sustainability_criteria())
+        || !exact_knee
+        || knee.sustainable_rate_per_second.is_none()
+        || curve.workload != expected_hot_workload
+        || text_dimension(&curve.dimensions, "surface_capability_sha256")
+            != Some(capability_sha256.as_str())
+        || text_dimension(&curve.dimensions, "capacity_scenario_source_sha256")
+            != Some(capability.capacity_scenario_source_sha256.as_str())
+        || bool_dimension(&curve.dimensions, "w6_capacity_eligible") != Some(true)
+    {
+        return Err(LocalTierError::Report(
+            "W1 selected capacity curve does not retain the exact committed hot-key W0 contract or stable capability"
+                .to_owned(),
+        ));
+    }
+    let instance = LocalReferenceInstanceReceipt {
+        schema_version: u32_dimension(&curve.dimensions, "reference_instance_schema_version")?,
+        instance_sequence: required_u64_dimension(
+            &curve.dimensions,
+            "reference_instance_sequence",
+        )?,
+        pid: u32_dimension(&curve.dimensions, "reference_process_pid")?,
+        created_unix_nanos: required_u64_dimension(
+            &curve.dimensions,
+            "reference_instance_created_unix_nanos",
+        )?,
+        direct_prebuilt_exec: bool_dimension(&curve.dimensions, "direct_prebuilt_exec")
+            .ok_or_else(|| LocalTierError::Report("missing direct-prebuild proof".to_owned()))?,
+        loadgen_binary_path: required_text_dimension(&curve.dimensions, "loadgen_binary_path")?,
+        loadgen_binary_sha256: required_text_dimension(&curve.dimensions, "loadgen_binary_sha256")?,
+        stable_capability_sha256: capability_sha256,
+        receipt_sha256: required_text_dimension(
+            &curve.dimensions,
+            "reference_instance_receipt_sha256",
+        )?,
+    };
+    instance.validate_seal()?;
+    validate_local_reference_scalar_shapes(report)?;
+    Ok(LocalReferenceEvidenceBinding {
+        capability,
+        instance,
+        measurement_id: curve.id.clone(),
+        scenario_sha256: curve.scenario_digest.clone(),
+        workload_sha256: curve.workload.digest.clone(),
+    })
+}
+
 /// Both direct `tier local` and aggregate `suite core` forms call this writer.
 pub async fn write_local_smoke_report(
     profile_name: &str,
@@ -214,6 +701,40 @@ pub async fn write_local_smoke_report(
     }
     std::fs::write(path, bytes)?;
     Ok(())
+}
+
+pub async fn write_local_reference_report(
+    context: &ValidatedRespReferenceContext,
+    path: &Path,
+) -> Result<(), LocalTierError> {
+    let report = local_reference_report(context).await?;
+    write_report(&report, path)
+}
+
+/// Context-aware dispatch used by the reference CLI. `reference-v1` has no
+/// permissive default and cannot run without the already-validated W7 context.
+pub async fn write_local_report_with_context(
+    profile_name: &str,
+    path: &Path,
+    context: Option<&ValidatedRespReferenceContext>,
+) -> Result<(), LocalTierError> {
+    match profile_name {
+        "smoke-v1" if context.is_none() => write_local_smoke_report(profile_name, path).await,
+        "reference-v1" => {
+            let context = context.ok_or_else(|| {
+                LocalTierError::Report(
+                    "reference-v1 requires a validated W7 reference context".to_owned(),
+                )
+            })?;
+            write_local_reference_report(context, path).await
+        }
+        "smoke-v1" => Err(LocalTierError::Report(
+            "smoke-v1 must not consume a reference capability".to_owned(),
+        )),
+        _ => Err(LocalTierError::Report(format!(
+            "unknown local performance profile {profile_name:?}"
+        ))),
+    }
 }
 
 /// Select a local execution mode without ever downgrading a requested
@@ -273,43 +794,71 @@ pub async fn local_pressure_knee(
 
 pub async fn local_scaling_smoke_measurements(
 ) -> Result<(MeasurementEvidence, MeasurementEvidence), LocalTierError> {
+    local_scaling_measurements(LocalRunShape::Smoke).await
+}
+
+async fn local_scaling_measurements(
+    shape: LocalRunShape,
+) -> Result<(MeasurementEvidence, MeasurementEvidence), LocalTierError> {
     let binding = parse_local_scenario(SCALING_SCENARIO)?;
     let available = std::thread::available_parallelism()
         .map(|value| value.get())
         .unwrap_or(2)
         .max(1);
-    let mut worker_counts = vec![1_usize];
-    for candidate in binding
-        .local
-        .worker_counts
-        .iter()
-        .copied()
-        .filter(|value| *value > 1)
-    {
-        if candidate <= available && !worker_counts.contains(&candidate) {
-            worker_counts.push(candidate);
+    let worker_counts = match shape {
+        LocalRunShape::Smoke => {
+            let mut worker_counts = vec![1_usize];
+            for candidate in binding
+                .local
+                .worker_counts
+                .iter()
+                .copied()
+                .filter(|value| *value > 1)
+            {
+                if candidate <= available && !worker_counts.contains(&candidate) {
+                    worker_counts.push(candidate);
+                }
+            }
+            if worker_counts.len() == 1 {
+                worker_counts.push(2);
+            }
+            worker_counts
         }
-    }
-    if worker_counts.len() == 1 {
-        worker_counts.push(2);
-    }
+        LocalRunShape::Reference => {
+            if binding
+                .local
+                .worker_counts
+                .iter()
+                .any(|workers| *workers > available)
+            {
+                return Err(LocalTierError::Runtime(format!(
+                    "reference runner exposes {available} logical workers but committed W1 scaling requires {:?}",
+                    binding.local.worker_counts
+                )));
+            }
+            binding.local.worker_counts.clone()
+        }
+    };
 
-    let key_count = binding.local.key_count.clamp(1, 256);
-    let schedule = schedule_for(
-        binding.scenario.seed,
-        key_count,
-        SMOKE_OPERATIONS,
-        &binding.local,
-    )
-    .generate()
-    .map_err(LocalTierError::Runtime)?;
+    let key_count = match shape {
+        LocalRunShape::Smoke => binding.local.key_count.clamp(1, 256),
+        LocalRunShape::Reference => binding.local.key_count,
+    };
+    let operations = shape.operations(binding.scenario.steady_operations);
+    let repeats = shape.repeats(binding.scenario.repeats as usize);
+    let schedule = schedule_for(binding.scenario.seed, key_count, operations, &binding.local)
+        .generate()
+        .map_err(LocalTierError::Runtime)?;
     let workload = workload_from_schedule(
         &schedule,
         operation_mix(&binding.local),
         binding.local.payload_bytes,
     );
     let target_config = LocalTargetConfig {
-        preload_entries: key_count.min(64),
+        preload_entries: match shape {
+            LocalRunShape::Smoke => key_count.min(64),
+            LocalRunShape::Reference => binding.scenario.preload_operations.min(key_count),
+        },
         key_space: key_count,
         payload_bytes: usize::try_from(binding.local.payload_bytes)
             .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?,
@@ -318,8 +867,8 @@ pub async fn local_scaling_smoke_measurements(
     };
     let mut raw_by_workers = Vec::new();
     for workers in worker_counts {
-        let mut samples = Vec::with_capacity(SMOKE_REPEATS);
-        for _ in 0..SMOKE_REPEATS {
+        let mut samples = Vec::with_capacity(repeats);
+        for _ in 0..repeats {
             samples.push(
                 concurrent_throughput_sample(
                     workers,
@@ -363,15 +912,17 @@ pub async fn local_scaling_smoke_measurements(
             )
         })
         .collect();
-    let scenario_digest = smoke_input_digest(
+    let scenario_digest = shape.effective_digest(
         &binding,
         &serde_json::json!({
-            "operations": SMOKE_OPERATIONS,
-            "repeats": SMOKE_REPEATS,
+            "operations": operations,
+            "repeats": repeats,
             "worker_counts": raw_by_workers.iter().map(|(workers, _)| *workers).collect::<Vec<_>>(),
             "key_count": key_count,
+            "preload_operations": target_config.preload_entries,
         }),
     );
+    let spread_limit = shape.spread_limit(binding.scenario.robust_spread_tolerance);
     Ok((
         MeasurementEvidence::Scalar(ScalarEvidence {
             id: "local_cache_scaling_curve_1_to_n_threads".to_owned(),
@@ -379,7 +930,7 @@ pub async fn local_scaling_smoke_measurements(
             workload: workload.clone(),
             points: throughput_points,
             derived_from: vec![],
-            max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+            max_robust_spread_ratio: spread_limit,
         }),
         MeasurementEvidence::Scalar(ScalarEvidence {
             id: "local_cache_scaling_efficiency_vs_one_thread".to_owned(),
@@ -387,7 +938,7 @@ pub async fn local_scaling_smoke_measurements(
             workload,
             points: efficiency_points,
             derived_from: vec!["local_cache_scaling_curve_1_to_n_threads".to_owned()],
-            max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+            max_robust_spread_ratio: spread_limit,
         }),
     ))
 }
@@ -449,6 +1000,13 @@ async fn concurrent_throughput_sample(
 }
 
 pub async fn local_hot_key_smoke_measurement() -> Result<MeasurementEvidence, LocalTierError> {
+    local_hot_key_measurement(LocalRunShape::Smoke, None).await
+}
+
+async fn local_hot_key_measurement(
+    shape: LocalRunShape,
+    reference: Option<&LocalReferenceRunBinding>,
+) -> Result<MeasurementEvidence, LocalTierError> {
     let binding = parse_local_scenario(HOT_KEY_SCENARIO)?;
     let target = Arc::new(LocalCacheTarget::new(LocalTargetConfig {
         preload_entries: 0,
@@ -465,21 +1023,50 @@ pub async fn local_hot_key_smoke_measurement() -> Result<MeasurementEvidence, Lo
         loader_delay: Duration::from_micros(binding.local.loader_delay_us),
         ..LocalTargetConfig::default()
     })?);
-    let scenario = smoke_scenario(&binding, vec![500, 2_000], 60, 0, 500_000)?;
-    let scenario_digest = smoke_input_digest(
+    let scenario = match shape {
+        LocalRunShape::Smoke => smoke_scenario(&binding, vec![500, 2_000], 60, 0, 500_000)?,
+        LocalRunShape::Reference => binding.scenario.clone(),
+    };
+    let scenario_digest = shape.effective_digest(
         &binding,
         &serde_json::to_value(&scenario)
             .map_err(|error| LocalTierError::Runtime(error.to_string()))?,
     );
     let criteria = scenario.sustainability_criteria();
     let knee = run_scenario(target, &scenario).await?;
-    let schedule = KeyScheduleSpec::uniform(binding.scenario.seed, binding.local.key_count, 60)
-        .generate()
-        .map_err(LocalTierError::Runtime)?;
+    let schedule = KeyScheduleSpec::uniform(
+        binding.scenario.seed,
+        binding.local.key_count,
+        scenario.steady_operations,
+    )
+    .generate()
+    .map_err(LocalTierError::Runtime)?;
+    let mut dimensions = BTreeMap::from([
+        ("logical_key_count".to_owned(), DimensionValue::U64(1)),
+        (
+            "preload_operations".to_owned(),
+            DimensionValue::U64(scenario.preload_operations),
+        ),
+        (
+            "warmup_operations".to_owned(),
+            DimensionValue::U64(scenario.warmup_operations),
+        ),
+        (
+            "steady_operations".to_owned(),
+            DimensionValue::U64(scenario.steady_operations),
+        ),
+        (
+            "repeats".to_owned(),
+            DimensionValue::U64(scenario.repeats as u64),
+        ),
+    ]);
+    if let Some(reference) = reference {
+        dimensions.extend(reference.capacity_dimensions());
+    }
     Ok(MeasurementEvidence::LoadCurve(LoadCurveEvidence {
         id: "hot_key_contention_throughput_floor".to_owned(),
         scenario_digest,
-        dimensions: BTreeMap::from([("logical_key_count".to_owned(), DimensionValue::U64(1))]),
+        dimensions,
         workload: workload_from_schedule(
             &schedule,
             operation_mix(&binding.local),
@@ -495,6 +1082,12 @@ pub async fn local_hot_key_smoke_measurement() -> Result<MeasurementEvidence, Lo
 /// serves every concurrent request for the hot key.
 pub async fn local_hot_key_single_flight_smoke_measurement(
 ) -> Result<MeasurementEvidence, LocalTierError> {
+    local_hot_key_single_flight_measurement(LocalRunShape::Smoke).await
+}
+
+async fn local_hot_key_single_flight_measurement(
+    shape: LocalRunShape,
+) -> Result<MeasurementEvidence, LocalTierError> {
     let binding = parse_local_scenario(HOT_KEY_SCENARIO)?;
     let workers = binding
         .local
@@ -505,8 +1098,9 @@ pub async fn local_hot_key_single_flight_smoke_measurement(
         .max()
         .unwrap_or(2)
         .min(32);
-    let mut samples = Vec::with_capacity(SMOKE_REPEATS);
-    for _ in 0..SMOKE_REPEATS {
+    let repeats = shape.repeats(binding.scenario.repeats as usize);
+    let mut samples = Vec::with_capacity(repeats);
+    for _ in 0..repeats {
         let target = Arc::new(LocalCacheTarget::new(LocalTargetConfig {
             preload_entries: 0,
             key_space: 1,
@@ -561,13 +1155,13 @@ pub async fn local_hot_key_single_flight_smoke_measurement(
         .map_err(LocalTierError::Runtime)?;
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "hot_key_single_flight_miss_stampede_cost".to_owned(),
-        scenario_digest: smoke_input_digest(
+        scenario_digest: shape.effective_digest(
             &binding,
             &serde_json::json!({
                 "mode": "synchronized-cold-miss-burst",
                 "workers": workers,
                 "loader_delay_us": binding.local.loader_delay_us.max(1),
-                "repeats": SMOKE_REPEATS,
+                "repeats": repeats,
             }),
         ),
         workload: workload_from_schedule(
@@ -592,23 +1186,33 @@ pub async fn local_hot_key_single_flight_smoke_measurement(
             samples,
         )],
         derived_from: vec![],
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(binding.scenario.robust_spread_tolerance),
     }))
 }
 
 pub async fn local_capacity_smoke_measurement() -> Result<MeasurementEvidence, LocalTierError> {
+    local_capacity_measurement(LocalRunShape::Smoke).await
+}
+
+async fn local_capacity_measurement(
+    shape: LocalRunShape,
+) -> Result<MeasurementEvidence, LocalTierError> {
     let binding = parse_local_scenario(CAPACITY_SCENARIO)?;
-    let key_count = binding.local.key_count.clamp(1, 64);
-    let uniform = KeyScheduleSpec::uniform(binding.scenario.seed, key_count, SMOKE_OPERATIONS)
+    let key_count = match shape {
+        LocalRunShape::Smoke => binding.local.key_count.clamp(1, 64),
+        LocalRunShape::Reference => binding.local.key_count,
+    };
+    let operations = shape.operations(binding.scenario.steady_operations);
+    let repeats = shape.repeats(binding.scenario.repeats as usize);
+    let uniform = KeyScheduleSpec::uniform(binding.scenario.seed, key_count, operations)
         .generate()
         .map_err(LocalTierError::Runtime)?;
     let theta = binding.local.zipfian_theta.ok_or_else(|| {
         LocalTierError::Runtime("capacity scenario requires zipfian_theta".to_owned())
     })?;
-    let zipfian =
-        KeyScheduleSpec::zipfian(binding.scenario.seed, key_count, SMOKE_OPERATIONS, theta)
-            .generate()
-            .map_err(LocalTierError::Runtime)?;
+    let zipfian = KeyScheduleSpec::zipfian(binding.scenario.seed, key_count, operations, theta)
+        .generate()
+        .map_err(LocalTierError::Runtime)?;
     let payload_bytes = usize::try_from(binding.local.payload_bytes)
         .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?;
     let declared_full = binding.local.full_capacity_bytes.ok_or_else(|| {
@@ -622,16 +1226,22 @@ pub async fn local_capacity_smoke_measurement() -> Result<MeasurementEvidence, L
             "capacity scenario half/full byte contracts are inconsistent".to_owned(),
         ));
     }
-    // Smoke preserves the committed 2:1 matrix while bounding setup work. The
-    // effective capacities are part of the smoke input digest and dimensions.
-    let capacities = [("half", 2 * 1024_u64), ("full", 4 * 1024_u64)];
-    let max_probe = binding.scenario.preload_operations.clamp(32, 256);
+    // Smoke preserves the committed 2:1 matrix while bounding setup work;
+    // reference mode uses the exact half/full byte contract from the TOML.
+    let capacities = match shape {
+        LocalRunShape::Smoke => [("half", 2 * 1024_u64), ("full", 4 * 1024_u64)],
+        LocalRunShape::Reference => [("half", declared_half), ("full", declared_full)],
+    };
+    let max_probe = match shape {
+        LocalRunShape::Smoke => binding.scenario.preload_operations.clamp(32, 256),
+        LocalRunShape::Reference => binding.scenario.preload_operations,
+    };
     let mut points = Vec::new();
     for (distribution, schedule) in [("uniform", &uniform), ("zipfian", &zipfian)] {
         for (capacity_profile, capacity_bytes) in capacities {
             let preload_entries =
                 discover_full_preload_entries(capacity_bytes, payload_bytes, max_probe).await?;
-            for _ in 0..SMOKE_REPEATS {
+            for _ in 0..repeats {
                 verify_each_pressure_insert_evicts(
                     capacity_bytes,
                     payload_bytes,
@@ -640,8 +1250,8 @@ pub async fn local_capacity_smoke_measurement() -> Result<MeasurementEvidence, L
                 )
                 .await?;
             }
-            let mut samples = Vec::with_capacity(SMOKE_REPEATS);
-            for _ in 0..SMOKE_REPEATS {
+            let mut samples = Vec::with_capacity(repeats);
+            for _ in 0..repeats {
                 let target = LocalCacheTarget::new(capacity_target_config(
                     capacity_bytes,
                     payload_bytes,
@@ -691,7 +1301,7 @@ pub async fn local_capacity_smoke_measurement() -> Result<MeasurementEvidence, L
                     ),
                     (
                         "eviction_proof_repeats".to_owned(),
-                        DimensionValue::U64(SMOKE_REPEATS as u64),
+                        DimensionValue::U64(repeats as u64),
                     ),
                     (
                         "eviction_proof_scope".to_owned(),
@@ -705,11 +1315,11 @@ pub async fn local_capacity_smoke_measurement() -> Result<MeasurementEvidence, L
     }
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "throughput_at_full_capacity_vs_half_capacity".to_owned(),
-        scenario_digest: smoke_input_digest(
+        scenario_digest: shape.effective_digest(
             &binding,
             &serde_json::json!({
-                "operations": SMOKE_OPERATIONS,
-                "repeats": SMOKE_REPEATS,
+                "operations": operations,
+                "repeats": repeats,
                 "key_count": key_count,
                 "capacity_bytes": capacities,
                 "max_fullness_probe_entries": max_probe,
@@ -718,7 +1328,7 @@ pub async fn local_capacity_smoke_measurement() -> Result<MeasurementEvidence, L
         workload: matrix_workload(&uniform, &zipfian, &binding.local),
         points,
         derived_from: vec![],
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(binding.scenario.robust_spread_tolerance),
     }))
 }
 
@@ -849,16 +1459,22 @@ async fn verify_each_pressure_insert_evicts(
 }
 
 pub async fn local_path_cost_smoke_measurement() -> Result<MeasurementEvidence, LocalTierError> {
+    local_path_cost_measurement(LocalRunShape::Smoke).await
+}
+
+async fn local_path_cost_measurement(
+    shape: LocalRunShape,
+) -> Result<MeasurementEvidence, LocalTierError> {
     let binding = parse_local_scenario(PATH_SCENARIO)?;
-    let key_count = binding.local.key_count.clamp(1, 64);
-    let schedule = schedule_for(
-        binding.scenario.seed,
-        key_count,
-        SMOKE_OPERATIONS,
-        &binding.local,
-    )
-    .generate()
-    .map_err(LocalTierError::Runtime)?;
+    let key_count = match shape {
+        LocalRunShape::Smoke => binding.local.key_count.clamp(1, 64),
+        LocalRunShape::Reference => binding.local.key_count,
+    };
+    let operations = shape.operations(binding.scenario.steady_operations);
+    let repeats = shape.repeats(binding.scenario.repeats as usize);
+    let schedule = schedule_for(binding.scenario.seed, key_count, operations, &binding.local)
+        .generate()
+        .map_err(LocalTierError::Runtime)?;
     let payload_bytes = usize::try_from(binding.local.payload_bytes)
         .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?;
     let paths = [
@@ -868,8 +1484,8 @@ pub async fn local_path_cost_smoke_measurement() -> Result<MeasurementEvidence, 
     ];
     let mut points = Vec::new();
     for (name, operation) in paths {
-        let mut samples = Vec::with_capacity(SMOKE_REPEATS);
-        for _ in 0..SMOKE_REPEATS {
+        let mut samples = Vec::with_capacity(repeats);
+        for _ in 0..repeats {
             let target = LocalCacheTarget::new(LocalTargetConfig {
                 preload_entries: key_count,
                 key_space: key_count,
@@ -897,11 +1513,11 @@ pub async fn local_path_cost_smoke_measurement() -> Result<MeasurementEvidence, 
     }
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "hit_miss_and_loader_path_cost_breakdown".to_owned(),
-        scenario_digest: smoke_input_digest(
+        scenario_digest: shape.effective_digest(
             &binding,
             &serde_json::json!({
-                "operations": SMOKE_OPERATIONS,
-                "repeats": SMOKE_REPEATS,
+                "operations": operations,
+                "repeats": repeats,
                 "key_count": key_count,
             }),
         ),
@@ -912,15 +1528,27 @@ pub async fn local_path_cost_smoke_measurement() -> Result<MeasurementEvidence, 
         ),
         points,
         derived_from: vec![],
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(binding.scenario.robust_spread_tolerance),
     }))
 }
 
 pub async fn local_allocation_smoke_measurement() -> Result<MeasurementEvidence, LocalTierError> {
+    local_allocation_measurement(LocalRunShape::Smoke).await
+}
+
+async fn local_allocation_measurement(
+    shape: LocalRunShape,
+) -> Result<MeasurementEvidence, LocalTierError> {
     let input: AllocationScenarioInput = parse_toml(ALLOCATION_SCENARIO)?;
     validate_allocation_input(&input)?;
-    let operations = input.operations.min(100);
-    let repeats = input.repeats.min(SMOKE_REPEATS);
+    let operations = match shape {
+        LocalRunShape::Smoke => input.operations.min(100),
+        LocalRunShape::Reference => input.operations,
+    };
+    let repeats = match shape {
+        LocalRunShape::Smoke => input.repeats.min(SMOKE_REPEATS),
+        LocalRunShape::Reference => input.repeats,
+    };
     let input_payload_bytes = input.payload_bytes;
     let schedule = KeyScheduleSpec::uniform(input.seed, operations, operations)
         .generate()
@@ -968,7 +1596,7 @@ pub async fn local_allocation_smoke_measurement() -> Result<MeasurementEvidence,
     }
     Ok(MeasurementEvidence::Scalar(ScalarEvidence {
         id: "bytes_allocated_per_operation_by_feature".to_owned(),
-        scenario_digest: custom_smoke_input_digest(
+        scenario_digest: shape.custom_digest(
             ALLOCATION_SCENARIO,
             &serde_json::json!({
                 "operations": operations,
@@ -989,7 +1617,7 @@ pub async fn local_allocation_smoke_measurement() -> Result<MeasurementEvidence,
         ),
         points,
         derived_from: vec![],
-        max_robust_spread_ratio: SMOKE_SPREAD_LIMIT,
+        max_robust_spread_ratio: shape.spread_limit(input.robust_spread_tolerance),
     }))
 }
 
@@ -1257,6 +1885,29 @@ fn custom_smoke_input_digest(source: &[u8], effective: &serde_json::Value) -> St
     ])
 }
 
+fn reference_input_digest(binding: &BoundLocalScenario, effective: &serde_json::Value) -> String {
+    let local = serde_json::to_vec(&binding.local)
+        .expect("validated local scenario inputs must serialize to JSON");
+    let effective =
+        serde_json::to_vec(effective).expect("effective reference inputs must serialize to JSON");
+    digest_parts(&[
+        binding.source_digest.as_bytes(),
+        b"hydracache-local-reference-input-v1",
+        &local,
+        &effective,
+    ])
+}
+
+fn custom_reference_input_digest(source: &[u8], effective: &serde_json::Value) -> String {
+    let effective =
+        serde_json::to_vec(effective).expect("effective reference inputs must serialize to JSON");
+    digest_parts(&[
+        digest_bytes(source).as_bytes(),
+        b"hydracache-local-reference-input-v1",
+        &effective,
+    ])
+}
+
 fn workload_from_schedule(
     schedule: &GeneratedKeySchedule,
     operation_mix: Vec<WeightedOperation>,
@@ -1374,6 +2025,330 @@ fn ensure_success(outcome: TargetOutcome, path: &str) -> Result<(), LocalTierErr
     }
 }
 
+fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), LocalTierError> {
+    let ids = report
+        .measurements
+        .iter()
+        .map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(value) => value.id.as_str(),
+            MeasurementEvidence::Scalar(value) => value.id.as_str(),
+            MeasurementEvidence::TraceReplay(value) => value.id.as_str(),
+            MeasurementEvidence::Comparison(value) => value.id.as_str(),
+        })
+        .collect::<BTreeSet<_>>();
+    let expected_ids = BTreeSet::from([
+        "local_cache_scaling_curve_1_to_n_threads",
+        "local_cache_scaling_efficiency_vs_one_thread",
+        "hot_key_contention_throughput_floor",
+        "hot_key_single_flight_miss_stampede_cost",
+        "throughput_at_full_capacity_vs_half_capacity",
+        "hit_miss_and_loader_path_cost_breakdown",
+        "bytes_allocated_per_operation_by_feature",
+        "w22_trace_replay_preserves_order_and_records_trace_digest",
+    ]);
+    if ids != expected_ids {
+        return Err(LocalTierError::Report(format!(
+            "W1 reference report measurement set differs from the exact contract: {ids:?}"
+        )));
+    }
+    let scalar_contracts = [
+        ("local_cache_scaling_curve_1_to_n_threads", 4_usize),
+        ("local_cache_scaling_efficiency_vs_one_thread", 4),
+        ("hot_key_single_flight_miss_stampede_cost", 1),
+        ("throughput_at_full_capacity_vs_half_capacity", 4),
+        ("hit_miss_and_loader_path_cost_breakdown", 3),
+        ("bytes_allocated_per_operation_by_feature", 3),
+    ];
+    for (id, expected_points) in scalar_contracts {
+        let scalar = scalar_measurement(report, id)?;
+        if scalar.points.len() != expected_points
+            || scalar.max_robust_spread_ratio != 0.15
+            || scalar
+                .points
+                .iter()
+                .any(|point| point.sample_count != 3 || point.samples.len() != 3)
+        {
+            return Err(LocalTierError::Report(format!(
+                "W1 scalar {id} lost its exact point/repeat/spread shape"
+            )));
+        }
+    }
+
+    let scaling = parse_local_scenario(SCALING_SCENARIO)?;
+    let scaling_digest = reference_input_digest(
+        &scaling,
+        &serde_json::json!({
+            "operations": scaling.scenario.steady_operations,
+            "repeats": scaling.scenario.repeats,
+            "worker_counts": scaling.local.worker_counts,
+            "key_count": scaling.local.key_count,
+            "preload_operations": scaling.scenario.preload_operations,
+        }),
+    );
+    let scaling_workers = scalar_measurement(report, "local_cache_scaling_curve_1_to_n_threads")?
+        .points
+        .iter()
+        .filter_map(|point| match point.dimensions.get("worker_threads") {
+            Some(DimensionValue::U64(value)) => Some(*value),
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+    if scaling_workers != BTreeSet::from([1, 2, 4, 8])
+        || scalar_measurement(report, "local_cache_scaling_curve_1_to_n_threads")?.scenario_digest
+            != scaling_digest
+        || scalar_measurement(report, "local_cache_scaling_efficiency_vs_one_thread")?
+            .scenario_digest
+            != scaling_digest
+    {
+        return Err(LocalTierError::Report(
+            "W1 reference scaling matrix differs from committed 1/2/4/8 by 100k shape".to_owned(),
+        ));
+    }
+
+    let hot = parse_local_scenario(HOT_KEY_SCENARIO)?;
+    let hot_single_digest = reference_input_digest(
+        &hot,
+        &serde_json::json!({
+            "mode": "synchronized-cold-miss-burst",
+            "workers": 8,
+            "loader_delay_us": hot.local.loader_delay_us.max(1),
+            "repeats": hot.scenario.repeats,
+        }),
+    );
+    if scalar_measurement(report, "hot_key_single_flight_miss_stampede_cost")?.scenario_digest
+        != hot_single_digest
+    {
+        return Err(LocalTierError::Report(
+            "W1 reference single-flight shape differs from the committed hot-key contract"
+                .to_owned(),
+        ));
+    }
+
+    let capacity = parse_local_scenario(CAPACITY_SCENARIO)?;
+    let capacity_digest = reference_input_digest(
+        &capacity,
+        &serde_json::json!({
+            "operations": capacity.scenario.steady_operations,
+            "repeats": capacity.scenario.repeats,
+            "key_count": capacity.local.key_count,
+            "capacity_bytes": [
+                ("half", capacity.local.half_capacity_bytes.unwrap()),
+                ("full", capacity.local.full_capacity_bytes.unwrap()),
+            ],
+            "max_fullness_probe_entries": capacity.scenario.preload_operations,
+        }),
+    );
+    let capacity_measurement =
+        scalar_measurement(report, "throughput_at_full_capacity_vs_half_capacity")?;
+    let capacity_pairs = capacity_measurement
+        .points
+        .iter()
+        .filter_map(|point| {
+            let Some(DimensionValue::Text(distribution)) = point.dimensions.get("distribution")
+            else {
+                return None;
+            };
+            let Some(DimensionValue::U64(bytes)) = point.dimensions.get("capacity_bytes") else {
+                return None;
+            };
+            Some((distribution.clone(), *bytes))
+        })
+        .collect::<BTreeSet<_>>();
+    let expected_capacity_pairs = BTreeSet::from([
+        ("uniform".to_owned(), 524_288),
+        ("uniform".to_owned(), 1_048_576),
+        ("zipfian".to_owned(), 524_288),
+        ("zipfian".to_owned(), 1_048_576),
+    ]);
+    if capacity_measurement.scenario_digest != capacity_digest
+        || capacity_pairs != expected_capacity_pairs
+    {
+        return Err(LocalTierError::Report(
+            "W1 reference capacity matrix differs from the exact 8192-op half/full uniform/zipfian contract"
+                .to_owned(),
+        ));
+    }
+
+    let path = parse_local_scenario(PATH_SCENARIO)?;
+    let path_digest = reference_input_digest(
+        &path,
+        &serde_json::json!({
+            "operations": path.scenario.steady_operations,
+            "repeats": path.scenario.repeats,
+            "key_count": path.local.key_count,
+        }),
+    );
+    if scalar_measurement(report, "hit_miss_and_loader_path_cost_breakdown")?.scenario_digest
+        != path_digest
+    {
+        return Err(LocalTierError::Report(
+            "W1 reference path-cost shape differs from the committed scenario".to_owned(),
+        ));
+    }
+
+    let allocation: AllocationScenarioInput = parse_toml(ALLOCATION_SCENARIO)?;
+    let allocation_digest = custom_reference_input_digest(
+        ALLOCATION_SCENARIO,
+        &serde_json::json!({
+            "operations": allocation.operations,
+            "repeats": allocation.repeats,
+            "payload_bytes": allocation.payload_bytes,
+            "features": allocation.features,
+            "metric": allocation.metric,
+            "includes": allocation.includes,
+        }),
+    );
+    if scalar_measurement(report, "bytes_allocated_per_operation_by_feature")?.scenario_digest
+        != allocation_digest
+    {
+        return Err(LocalTierError::Report(
+            "W1 reference allocation shape differs from the committed scenario".to_owned(),
+        ));
+    }
+    let trace = report
+        .measurements
+        .iter()
+        .find_map(|measurement| match measurement {
+            MeasurementEvidence::TraceReplay(trace)
+                if trace.id == "w22_trace_replay_preserves_order_and_records_trace_digest" =>
+            {
+                Some(trace)
+            }
+            _ => None,
+        });
+    if trace.is_none_or(|trace| trace.scenario_digest != digest_bytes(TRACE_SCENARIO)) {
+        return Err(LocalTierError::Report(
+            "W1 W22 trace replay is absent or not bound to the committed catalog scenario"
+                .to_owned(),
+        ));
+    }
+    Ok(())
+}
+
+fn scalar_measurement<'a>(
+    report: &'a PerfReport,
+    id: &str,
+) -> Result<&'a ScalarEvidence, LocalTierError> {
+    report
+        .measurements
+        .iter()
+        .find_map(|measurement| match measurement {
+            MeasurementEvidence::Scalar(value) if value.id == id => Some(value),
+            _ => None,
+        })
+        .ok_or_else(|| LocalTierError::Report(format!("W1 scalar {id} is absent")))
+}
+
+fn exact_loadgen_digest(report: &PerfReport) -> Result<String, LocalTierError> {
+    let matches = report
+        .build
+        .binary_sha256
+        .iter()
+        .filter(|(id, digest)| id == "hydracache-loadgen" && is_sha256(digest))
+        .map(|(_, digest)| digest.clone())
+        .collect::<Vec<_>>();
+    if matches.len() != 1 {
+        return Err(LocalTierError::Report(
+            "W1 reference report does not bind exactly one loadgen binary".to_owned(),
+        ));
+    }
+    Ok(matches[0].clone())
+}
+
+fn text_dimension<'a>(
+    dimensions: &'a BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Option<&'a str> {
+    match dimensions.get(name) {
+        Some(DimensionValue::Text(value)) => Some(value),
+        _ => None,
+    }
+}
+
+fn required_text_dimension(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Result<String, LocalTierError> {
+    text_dimension(dimensions, name)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+        .ok_or_else(|| LocalTierError::Report(format!("missing W1 text dimension {name}")))
+}
+
+fn bool_dimension(dimensions: &BTreeMap<String, DimensionValue>, name: &str) -> Option<bool> {
+    match dimensions.get(name) {
+        Some(DimensionValue::Bool(value)) => Some(*value),
+        _ => None,
+    }
+}
+
+fn required_u64_dimension(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Result<u64, LocalTierError> {
+    match dimensions.get(name) {
+        Some(DimensionValue::U64(value)) => Ok(*value),
+        _ => Err(LocalTierError::Report(format!(
+            "missing W1 integer dimension {name}"
+        ))),
+    }
+}
+
+fn u32_dimension(
+    dimensions: &BTreeMap<String, DimensionValue>,
+    name: &str,
+) -> Result<u32, LocalTierError> {
+    required_u64_dimension(dimensions, name)?
+        .try_into()
+        .map_err(|_| LocalTierError::Report(format!("W1 dimension {name} does not fit u32")))
+}
+
+fn first_state_digest(measurements: &[MeasurementEvidence]) -> Result<String, LocalTierError> {
+    measurements
+        .iter()
+        .find_map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(curve) => curve
+                .knee
+                .as_ref()
+                .and_then(|knee| knee.evaluated.first())
+                .and_then(|point| point.repeats.first())
+                .map(|repeat| repeat.state_digest.clone()),
+            _ => None,
+        })
+        .ok_or_else(|| LocalTierError::Report("W1 report has no state digest".to_owned()))
+}
+
+fn write_report(report: &PerfReport, path: &Path) -> Result<(), LocalTierError> {
+    let bytes = report
+        .to_pretty_json()
+        .map_err(|error| LocalTierError::Report(error.to_string()))?;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(path, bytes)?;
+    Ok(())
+}
+
+fn canonical_digest<T: Serialize>(value: &T) -> Result<String, LocalTierError> {
+    let bytes =
+        serde_json::to_vec(value).map_err(|error| LocalTierError::Report(error.to_string()))?;
+    Ok(digest_bytes(&bytes))
+}
+
+fn is_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+
+fn is_git_commit(value: &str) -> bool {
+    value.len() == 40
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+
 fn digest_bytes(bytes: &[u8]) -> String {
     hex_digest(Sha256::digest(bytes).as_ref())
 }
@@ -1428,6 +2403,69 @@ fn smoke_profile(name: &str, fingerprint: &RunnerFingerprint) -> PerformanceProf
 mod tests {
     use super::*;
 
+    fn mismatched_reference_context() -> ValidatedRespReferenceContext {
+        let missing = Path::new(env!("CARGO_MANIFEST_DIR")).join("missing-reference-binary");
+        let runner = RunnerFingerprint {
+            runner_class: "reference-v1".to_owned(),
+            fingerprint: "fixture".to_owned(),
+            cpu_model: "fixture".to_owned(),
+            logical_cores: 8,
+            ram_bytes: 1,
+            os: "fixture".to_owned(),
+            kernel: "fixture".to_owned(),
+            cpu_affinity: "dedicated-cpuset".to_owned(),
+            cgroup_cpu_quota: "unlimited".to_owned(),
+            governor: "fixture".to_owned(),
+            turbo: "fixture".to_owned(),
+            shared_hardware: false,
+            calibration_score: 0.0,
+        };
+        ValidatedRespReferenceContext {
+            repo_root: Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+            manifest_path: missing.clone(),
+            manifest_sha256: "1".repeat(64),
+            source: SourceIdentity {
+                git_commit: "a".repeat(40),
+                cargo_lock_sha256: "b".repeat(64),
+                toolchain: "rustc-fixture".to_owned(),
+                build_flags: vec!["--release".to_owned()],
+            },
+            build: BuildIdentity {
+                prebuild_contract_digest: "c".repeat(64),
+                prebuild_manifest_sha256: "1".repeat(64),
+                binary_sha256: vec![("hydracache-loadgen".to_owned(), "d".repeat(64))],
+            },
+            profile: PerformanceProfile {
+                name: "reference-v1".to_owned(),
+                required_runner_class: "reference-v1".to_owned(),
+                allowed_fingerprints: vec!["fixture".to_owned()],
+                minimum_logical_cores: 8,
+                required_cpu_affinity: "dedicated-cpuset".to_owned(),
+                required_cgroup_cpu_quota: "unlimited".to_owned(),
+                require_dedicated: true,
+                maximum_calibration_score: 0.05,
+            },
+            runner,
+            surface: SurfaceIdentity {
+                surface_kind: "node-resp".to_owned(),
+                execution_mode: "unused".to_owned(),
+                state_scope: "node-local".to_owned(),
+                network_boundary: "loopback-tcp".to_owned(),
+                claim_scope: "unused".to_owned(),
+            },
+            server: crate::tiers::resp_reference::VerifiedBinary {
+                id: "hydracache-server".to_owned(),
+                canonical_path: missing.clone(),
+                sha256: "e".repeat(64),
+            },
+            loadgen: crate::tiers::resp_reference::VerifiedBinary {
+                id: "hydracache-loadgen".to_owned(),
+                canonical_path: missing,
+                sha256: "d".repeat(64),
+            },
+        }
+    }
+
     #[test]
     fn committed_local_fields_control_scenario_and_workload_identity() {
         let original = std::str::from_utf8(SCALING_SCENARIO).unwrap();
@@ -1464,5 +2502,30 @@ mod tests {
         let profile = smoke_profile("smoke-v1", &fingerprint);
         assert_eq!(profile.name, "smoke-v1");
         assert_ne!(profile.name, "reference-v1");
+    }
+
+    #[tokio::test]
+    async fn reference_dispatch_rejects_missing_and_mismatched_context_without_downgrade() {
+        let missing = write_local_report_with_context(
+            "reference-v1",
+            Path::new("unused-reference-report.json"),
+            None,
+        )
+        .await
+        .unwrap_err();
+        assert!(missing
+            .to_string()
+            .contains("validated W7 reference context"));
+
+        let mismatched = local_reference_report(&mismatched_reference_context())
+            .await
+            .unwrap_err();
+        assert!(mismatched.to_string().contains("receipt-bound binary"));
+    }
+
+    #[tokio::test]
+    async fn strict_reference_validator_rejects_smoke_evidence() {
+        let smoke = local_smoke_report("smoke-v1").await.unwrap();
+        assert!(validate_local_reference_report(&smoke).is_err());
     }
 }

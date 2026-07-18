@@ -10,7 +10,7 @@ use hydracache_loadgen::targets::control_plane::ControlPlaneScenario;
 use hydracache_loadgen::tiers::client_surface::write_client_surface_report;
 use hydracache_loadgen::tiers::control_plane::run_control_plane_reference;
 use hydracache_loadgen::tiers::grid_model::write_grid_model_report;
-use hydracache_loadgen::tiers::local::write_local_report;
+use hydracache_loadgen::tiers::local::{write_local_report, write_local_report_with_context};
 use hydracache_loadgen::tiers::resp::{
     resp_reference_report_on, run_resp_reference_suite, write_resp_report, RespReferenceRunInputs,
     RespReferenceSuiteReceipt,
@@ -48,13 +48,25 @@ async fn run() -> Result<(), String> {
             let path = command
                 .local_report_path()
                 .ok_or_else(|| "local command lost its canonical report path".to_owned())?;
-            write_local_report(command.profile(), &path)
-                .await
-                .map_err(|error| error.to_string())?;
-            eprintln!(
-                "hydracache-loadgen: wrote plumbing-only local smoke report to {}",
-                path.display()
-            );
+            if command.profile() == "reference-v1" {
+                let repo_root = repository_root()?;
+                let context = load_reference_context_for_run(&repo_root)?;
+                write_local_report_with_context(command.profile(), &path, Some(&context))
+                    .await
+                    .map_err(|error| error.to_string())?;
+                eprintln!(
+                    "hydracache-loadgen: wrote receipt-bound local reference report to {}",
+                    path.display()
+                );
+            } else {
+                write_local_report(command.profile(), &path)
+                    .await
+                    .map_err(|error| error.to_string())?;
+                eprintln!(
+                    "hydracache-loadgen: wrote plumbing-only local smoke report to {}",
+                    path.display()
+                );
+            }
         }
         LoadgenCommand::TierClientSurface { .. } => {
             let path = command.client_surface_report_path().ok_or_else(|| {
@@ -65,12 +77,22 @@ async fn run() -> Result<(), String> {
                 .map_err(|error| error.to_string())?;
         }
         LoadgenCommand::SuiteCore { .. } => {
+            let repo_root = repository_root()?;
+            let reference_context = if command.profile() == "reference-v1" {
+                Some(load_reference_context_for_run(&repo_root)?)
+            } else {
+                None
+            };
             let local_path = command
                 .local_report_path()
                 .ok_or_else(|| "core suite lost its local report path".to_owned())?;
-            write_local_report(command.profile(), &local_path)
-                .await
-                .map_err(|error| error.to_string())?;
+            write_local_report_with_context(
+                command.profile(),
+                &local_path,
+                reference_context.as_ref(),
+            )
+            .await
+            .map_err(|error| error.to_string())?;
             let client_surface_path = command
                 .client_surface_report_path()
                 .ok_or_else(|| "core suite lost its client-surface report path".to_owned())?;
@@ -288,6 +310,14 @@ fn repository_root() -> Result<PathBuf, String> {
         .map_err(|error| format!("unable to resolve repository root: {error}"))?
         .canonicalize()
         .map_err(|error| format!("unable to canonicalize repository root: {error}"))
+}
+
+fn load_reference_context_for_run(
+    repo_root: &Path,
+) -> Result<hydracache_loadgen::tiers::resp_reference::ValidatedRespReferenceContext, String> {
+    let inputs = RespReferenceRunInputs::load(repo_root).map_err(|error| error.to_string())?;
+    load_reference_context(repo_root, Some(&inputs.prerequisites))
+        .map_err(|error| error.to_string())
 }
 
 fn write_pretty_json(path: &Path, value: &impl serde::Serialize) -> Result<(), String> {
