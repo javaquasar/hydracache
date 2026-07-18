@@ -162,11 +162,13 @@ the committed tail, and converges after sender or receiver process failure.
 - On delivery error the server reports snapshot failure to Raft, bounds the request, releases sender
   work, retries, and converges after the receiver returns.
 
-**Required process tests.**
+**Required tests.**
 
 - `lagging_daemon_rejoins_via_snapshot_after_real_sled_compaction`.
 - `leader_killed_mid_snapshot_delivery_still_converges`.
 - `receiver_killed_mid_snapshot_request_releases_sender_and_retry_converges`.
+- `test_snapshot_handler_delay_is_inert_by_default_and_bounded`.
+- `snapshot_http_timeout_reports_failure_and_releases_inflight_feedback`.
 
 **Canary.** `canary_snapshot_send_failure_leaves_peer_progress_stuck`.
 
@@ -248,6 +250,7 @@ and durable commit.
 - `slow_disk_during_snapshot_save_has_bounded_backpressure`.
 - `slow_disk_during_snapshot_install_retries_without_partial_apply`.
 - `durable_commit_failure_fails_loud_and_recovers_consistent`.
+- `iochaos_fault_blocks_real_raft_persistence_then_recovers`.
 
 **Canary.** `canary_io_chaos_accepts_a_torn_commit`.
 
@@ -339,6 +342,7 @@ listener without conflating the two proof layers.
 
 **Required tests.**
 
+- `malformed_metadata_snapshot_is_rejected_before_sled_mutation_and_reopen`.
 - `raft_wire_frame_corpus_never_panics_or_mutates_on_reject`.
 - `raft_http_socket_corpus_rejects_before_unbounded_allocation`.
 - nightly `cargo +nightly fuzz run raft_wire_frame` with a bounded budget.
@@ -365,8 +369,12 @@ API or committed lease claim is introduced.
 
 **Required tests.**
 
-- `process_pause_and_uneven_ticks_never_create_two_leaders_per_term`.
-- `resumed_demoted_process_never_reports_authoritative_membership`.
+- `process_pause_and_uneven_ticks_never_create_two_leaders_per_term` in both the deterministic
+  `scheduler_tick` target and the real-process `scheduler_tick_process` target.
+- `resumed_demoted_process_never_reports_authoritative_membership` in both those targets.
+- `raft_authority_requires_recent_current_term_inbound_activity`.
+- `committed_but_unapplied_metadata_fences_live_authority`.
+- `non_authoritative_live_membership_hides_leader_epoch`.
 - `local_ttl_and_lock_contracts_survive_backward_wall_clock_step`.
 
 **Canary.** `canary_resumed_demoted_process_is_accepted_as_authoritative`.
@@ -384,6 +392,7 @@ execution without the required runtime.
 
 - `replica_churn_under_partition_keeps_voters_and_committed_metadata`.
 - `drained_pod_leaves_voters_but_crashed_pod_does_not_implicitly_shrink`.
+- `operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch`.
 
 **Canary.** `canary_scale_chaos_accepts_a_ghost_voter`.
 
@@ -426,6 +435,10 @@ budget after quiescence. Process-lifetime high-water marks are bounded, not expe
 - `snapshot_resource_artifact_validates_for_release_066`.
 - `snapshot_task_observation_uses_cluster_current_and_max_daemon_high_water`.
 - `snapshot_task_budget_rejects_overshoot_and_missing_metrics`.
+- `snapshot_single_flight_reservation_is_clone_shared_and_releases_on_error_or_cancel`.
+- `snapshot_release_frees_peer_before_report_can_trigger_reentrant_retry`.
+- `snapshot_send_authority_requires_same_term_leader_role`.
+- `term_mismatch_cancels_snapshot_send_and_releases_without_http_success`.
 - `snapshot_sender_task_metrics_track_blocked_valid_snapshot_until_release`.
 - `canceling_snapshot_send_releases_actual_sender_task_metric`.
 - `send_task_panic_is_reported_in_diagnostics`.
@@ -456,6 +469,18 @@ governance established by 0.65.
 - `docs/TESTING.md` records exact platform-appropriate reproduction commands for each gate; the
   operator receipt uses an exact clean-cluster Bash sequence because its live-PID/binary proof
   intentionally requires Linux `/proc` (PowerShell callers use that sequence through WSL/Linux).
+
+**Required tests.**
+
+- `requested_release_does_not_borrow_an_older_canary_registry`.
+- `requested_release_without_work_items_is_rejected_before_canary_evidence`.
+- `release_governance_check_accepts_the_explicit_0_66_fast_wiring`.
+- `ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands`.
+- `release_066_registered_heavy_gates_are_mandatory_and_fail_closed`.
+- `operator_release_evidence_rejects_empty_kubectl_output`.
+- `operator_release_evidence_requires_current_controller_runtime_output`.
+
+**Canary.** `canary_release_governance_accepts_a_missing_mandatory_gate`.
 
 **Required checks.**
 
