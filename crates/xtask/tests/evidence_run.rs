@@ -11,6 +11,32 @@ static NEXT_TEMP: AtomicU64 = AtomicU64::new(0);
 const CHILD_ENV: &str = "HYDRACACHE_EVIDENCE_CHILD";
 
 #[test]
+fn windows_nested_cargo_uses_an_unlocked_deterministic_target_dir() {
+    let root = Path::new("C:/repo");
+    let mut command = xtask::gated_tests::CommandSpec {
+        program: "cargo.exe".to_owned(),
+        args: vec!["test".to_owned()],
+        env: BTreeMap::new(),
+        cwd: ".".to_owned(),
+        platform: "any".to_owned(),
+    };
+    assert_eq!(
+        xtask::evidence_run::cargo_target_dir_override(root, &command, true),
+        Some(root.join("target/evidence-run-cargo"))
+    );
+    assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, false).is_none());
+
+    command.program = "target/release/hydracache-loadgen".to_owned();
+    assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, true).is_none());
+
+    command.program = "cargo".to_owned();
+    command
+        .env
+        .insert("CARGO_TARGET_DIR".to_owned(), "custom-target".to_owned());
+    assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, true).is_none());
+}
+
+#[test]
 fn evidence_child_helper() {
     match std::env::var(CHILD_ENV).as_deref() {
         Ok("pass") => println!("logical pass"),
