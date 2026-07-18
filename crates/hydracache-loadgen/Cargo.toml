@@ -14,6 +14,7 @@ publish = false
 async-trait.workspace = true
 futures-util.workspace = true
 hdrhistogram.workspace = true
+jsonschema.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
@@ -22,7 +23,6 @@ tokio.workspace = true
 toml.workspace = true
 
 [dev-dependencies]
-jsonschema.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
 
 [lints]

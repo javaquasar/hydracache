@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 use crate::knee::{KneeResult, SustainabilityCriteria};
 use crate::profile::{PerformanceProfile, ProfileValidation, RunnerFingerprint};
@@ -110,6 +111,7 @@ pub struct WorkloadIdentity {
 #[serde(deny_unknown_fields)]
 pub struct LoadCurveEvidence {
     pub id: String,
+    pub scenario_digest: String,
     pub dimensions: BTreeMap<String, DimensionValue>,
     pub workload: WorkloadIdentity,
     pub criteria: Option<SustainabilityCriteria>,
@@ -132,6 +134,10 @@ pub struct ScalarPoint {
     pub dimensions: BTreeMap<String, DimensionValue>,
     pub quantity: Quantity,
     pub sample_count: u64,
+    pub samples: Vec<f64>,
+    pub min: f64,
+    pub max: f64,
+    pub robust_spread_ratio: f64,
 }
 
 /// Non-knee numeric evidence, including allocation or scaling efficiency.
@@ -139,9 +145,11 @@ pub struct ScalarPoint {
 #[serde(deny_unknown_fields)]
 pub struct ScalarEvidence {
     pub id: String,
+    pub scenario_digest: String,
     pub workload: WorkloadIdentity,
     pub points: Vec<ScalarPoint>,
     pub derived_from: Vec<String>,
+    pub max_robust_spread_ratio: f64,
 }
 
 /// Deterministic trace replay proof that preserves input ordering and identity.
@@ -149,6 +157,7 @@ pub struct ScalarEvidence {
 #[serde(deny_unknown_fields)]
 pub struct TraceReplayEvidence {
     pub id: String,
+    pub scenario_digest: String,
     pub catalog_id: String,
     pub event_count: u64,
     pub input_digest: String,
@@ -163,6 +172,7 @@ pub struct TraceReplayEvidence {
 #[serde(deny_unknown_fields)]
 pub struct ComparisonEvidence {
     pub id: String,
+    pub scenario_digest: String,
     pub left_measurement_id: String,
     pub right_measurement_id: String,
     pub ratio: f64,
@@ -196,6 +206,7 @@ pub struct PerfReport {
     pub surface: SurfaceIdentity,
     pub runner_profile: String,
     pub runner_contract: PerformanceProfile,
+    pub runner_contract_digest: String,
     pub observed_runner: RunnerFingerprint,
     pub profile_validation: ProfileValidation,
     pub source: SourceIdentity,
@@ -205,14 +216,23 @@ pub struct PerfReport {
     pub stability_reasons: Vec<String>,
 }
 
+/// Fail-closed error returned by canonical report emission.
+#[derive(Debug, thiserror::Error)]
+pub enum ReportWriteError {
+    #[error("performance report failed semantic validation: {0:?}")]
+    Semantic(Vec<String>),
+    #[error("performance report JSON schema rejected the artifact: {0}")]
+    Schema(String),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+}
+
 impl PerfReport {
     /// Build a report, deriving runner eligibility and every semantic stability verdict.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         report_id: impl Into<String>,
         scenario_id: impl Into<String>,
-        scenario_digest: impl Into<String>,
-        workload_digest: impl Into<String>,
         state_digest: impl Into<String>,
         seed: u64,
         run_mode: EvidenceRunMode,
@@ -225,19 +245,23 @@ impl PerfReport {
         mut stability_reasons: Vec<String>,
     ) -> Self {
         let profile_validation = runner_contract.validate(&observed_runner);
+        let runner_contract_digest = digest_json(&runner_contract);
+        let scenario_digest = suite_scenario_digest(&measurements);
+        let workload_digest = suite_workload_digest(&measurements);
         let mut report = Self {
             schema_version: PERF_SCHEMA_VERSION,
             release: PERF_RELEASE.to_owned(),
             report_id: report_id.into(),
             scenario_id: scenario_id.into(),
-            scenario_digest: scenario_digest.into(),
-            workload_digest: workload_digest.into(),
+            scenario_digest,
+            workload_digest,
             state_digest: state_digest.into(),
             seed,
             run_mode,
             surface,
             runner_profile: runner_contract.name.clone(),
             runner_contract,
+            runner_contract_digest,
             observed_runner,
             profile_validation,
             source,
@@ -267,9 +291,31 @@ impl PerfReport {
         problems
     }
 
-    /// Serialize stable pretty JSON for a receipt-hashed artifact.
-    pub fn to_pretty_json(&self) -> Result<Vec<u8>, serde_json::Error> {
-        serde_json::to_vec_pretty(self)
+    /// Serialize canonical JSON only after semantic and Draft 2020-12 validation.
+    pub fn to_pretty_json(&self) -> Result<Vec<u8>, ReportWriteError> {
+        let structural = self.structural_problems();
+        let mut integrity = structural
+            .iter()
+            .filter(|problem| !self.stability_reasons.contains(problem))
+            .map(|problem| format!("unreported semantic problem: {problem}"))
+            .collect::<Vec<_>>();
+        let expected_stable = structural.is_empty() && self.stability_reasons.is_empty();
+        if self.stable != expected_stable {
+            integrity.push("stored stable flag does not match semantic validation".to_owned());
+        }
+        if !integrity.is_empty() {
+            return Err(ReportWriteError::Semantic(integrity));
+        }
+        let value = serde_json::to_value(self)?;
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../docs/testing/schemas/perf-report.schema.json"
+        ))?;
+        let validator = jsonschema::validator_for(&schema)
+            .map_err(|error| ReportWriteError::Schema(error.to_string()))?;
+        validator
+            .validate(&value)
+            .map_err(|error| ReportWriteError::Schema(error.to_string()))?;
+        Ok(serde_json::to_vec_pretty(&value)?)
     }
 
     fn structural_problems(&self) -> Vec<String> {
@@ -288,6 +334,11 @@ impl PerfReport {
         .any(|value| value.is_empty())
         {
             problems.push("report identities and digests must be non-empty".to_owned());
+        }
+        if self.scenario_digest != suite_scenario_digest(&self.measurements)
+            || self.workload_digest != suite_workload_digest(&self.measurements)
+        {
+            problems.push("suite digests do not match typed measurement inputs".to_owned());
         }
         if [
             &self.surface.surface_kind,
@@ -309,6 +360,7 @@ impl PerfReport {
         }
         let derived_validation = self.runner_contract.validate(&self.observed_runner);
         if self.runner_profile != self.runner_contract.name
+            || self.runner_contract_digest != digest_json(&self.runner_contract)
             || self.profile_validation != derived_validation
             || !derived_validation.eligible
             || derived_validation.eligible != derived_validation.reasons.is_empty()
@@ -347,7 +399,7 @@ impl PerfReport {
             if !ids.insert(id.to_owned()) {
                 problems.push(format!("duplicate measurement id: {id}"));
             }
-            problems.extend(measurement.validation_problems(&self.state_digest));
+            problems.extend(measurement.validation_problems(&self.state_digest, self.seed));
         }
         for measurement in &self.measurements {
             match measurement {
@@ -370,9 +422,37 @@ impl PerfReport {
                             ));
                         }
                     }
+                    let left = self
+                        .measurements
+                        .iter()
+                        .find(|measurement| measurement.id() == value.left_measurement_id)
+                        .and_then(MeasurementEvidence::headline_value);
+                    let right = self
+                        .measurements
+                        .iter()
+                        .find(|measurement| measurement.id() == value.right_measurement_id)
+                        .and_then(MeasurementEvidence::headline_value);
+                    match (left, right) {
+                        (Some(left), Some(right)) if right != 0.0 => {
+                            let expected = left / right;
+                            if relative_difference(expected, value.ratio) > f64::EPSILON * 8.0 {
+                                problems.push(format!(
+                                    "comparison {} ratio does not match its dependencies",
+                                    value.id
+                                ));
+                            }
+                        }
+                        _ => problems.push(format!(
+                            "comparison {} dependencies have no comparable headline",
+                            value.id
+                        )),
+                    }
                 }
                 _ => {}
             }
+        }
+        if dependency_cycle(&self.measurements) {
+            problems.push("measurement dependency graph contains a cycle".to_owned());
         }
         problems
     }
@@ -388,64 +468,91 @@ impl MeasurementEvidence {
         }
     }
 
-    fn validation_problems(&self, state_digest: &str) -> Vec<String> {
+    fn headline_value(&self) -> Option<f64> {
+        match self {
+            Self::LoadCurve(value) => value
+                .knee
+                .as_ref()
+                .and_then(|knee| knee.sustainable_rate_per_second),
+            Self::Scalar(value) if value.points.len() == 1 => Some(value.points[0].quantity.value),
+            Self::Comparison(value) => Some(value.ratio),
+            _ => None,
+        }
+    }
+
+    fn validation_problems(&self, state_digest: &str, report_seed: u64) -> Vec<String> {
         let mut problems = Vec::new();
         if self.id().is_empty() {
             problems.push("measurement id must be non-empty".to_owned());
         }
         match self {
             Self::LoadCurve(value) => {
+                if value.scenario_digest.is_empty() {
+                    problems.push(format!("measurement {} has no scenario digest", value.id));
+                }
                 problems.extend(workload_problems(&value.workload));
-                if value.claim == LoadClaim::CapacityKnee {
-                    match (&value.criteria, &value.knee) {
-                        (Some(criteria), Some(knee)) => {
-                            problems.extend(criteria.knee_validation_problems(knee));
-                            if knee.sustainable_rate_per_second.is_none() {
-                                problems.push(format!(
-                                    "capacity measurement {} has no sustainable rate",
-                                    value.id
-                                ));
-                            }
-                            let reset_digest = knee
-                                .evaluated
-                                .first()
-                                .and_then(|point| point.repeats.first())
-                                .map(|repeat| &repeat.reset_state_digest);
-                            let phase_shape = knee
-                                .evaluated
-                                .first()
-                                .and_then(|point| point.repeats.first())
-                                .map(|repeat| {
-                                    (
+                if value.workload.seed.is_some_and(|seed| seed != report_seed) {
+                    problems.push(format!(
+                        "measurement {} seed differs from report seed",
+                        value.id
+                    ));
+                }
+                match (&value.criteria, &value.knee) {
+                    (Some(criteria), Some(knee)) => {
+                        problems.extend(criteria.knee_validation_problems(knee));
+                        if value.claim == LoadClaim::CapacityKnee
+                            && knee.sustainable_rate_per_second.is_none()
+                        {
+                            problems.push(format!(
+                                "capacity measurement {} has no sustainable rate",
+                                value.id
+                            ));
+                        }
+                        let reset_digest = knee
+                            .evaluated
+                            .first()
+                            .and_then(|point| point.repeats.first())
+                            .map(|repeat| &repeat.reset_state_digest);
+                        let preloaded_digest = knee
+                            .evaluated
+                            .first()
+                            .and_then(|point| point.repeats.first())
+                            .map(|repeat| &repeat.preloaded_state_digest);
+                        let phase_shape = knee
+                            .evaluated
+                            .first()
+                            .and_then(|point| point.repeats.first())
+                            .map(|repeat| {
+                                (
+                                    repeat.phase.reset_operations,
+                                    repeat.phase.preload_operations,
+                                    repeat.phase.warmup_operations,
+                                    repeat.phase.steady_operations,
+                                )
+                            });
+                        for point in &knee.evaluated {
+                            if point.repeats.iter().any(|repeat| {
+                                repeat.state_digest != state_digest
+                                    || Some(&repeat.reset_state_digest) != reset_digest
+                                    || Some(&repeat.preloaded_state_digest) != preloaded_digest
+                                    || Some((
                                         repeat.phase.reset_operations,
                                         repeat.phase.preload_operations,
                                         repeat.phase.warmup_operations,
                                         repeat.phase.steady_operations,
-                                    )
-                                });
-                            for point in &knee.evaluated {
-                                if point.repeats.iter().any(|repeat| {
-                                    repeat.state_digest != state_digest
-                                        || Some(&repeat.reset_state_digest) != reset_digest
-                                        || Some((
-                                            repeat.phase.reset_operations,
-                                            repeat.phase.preload_operations,
-                                            repeat.phase.warmup_operations,
-                                            repeat.phase.steady_operations,
-                                        )) != phase_shape
-                                }) {
-                                    problems.push(format!(
-                                        "measurement {} repeat state differs from report state",
-                                        value.id
-                                    ));
-                                }
+                                    )) != phase_shape
+                            }) {
+                                problems.push(format!(
+                                    "measurement {} repeat state differs from report state",
+                                    value.id
+                                ));
                             }
                         }
-                        _ => problems.push(format!(
-                            "capacity measurement {} requires criteria and knee",
-                            value.id
-                        )),
                     }
+                    _ => problems.push(format!(
+                        "load-curve measurement {} requires criteria and knee",
+                        value.id
+                    )),
                 }
                 if value
                     .dimensions
@@ -456,12 +563,46 @@ impl MeasurementEvidence {
                 }
             }
             Self::Scalar(value) => {
+                if value.scenario_digest.is_empty()
+                    || !value.max_robust_spread_ratio.is_finite()
+                    || value.max_robust_spread_ratio < 0.0
+                {
+                    problems.push(format!(
+                        "scalar measurement {} contract is incomplete",
+                        value.id
+                    ));
+                }
                 problems.extend(workload_problems(&value.workload));
+                if value.workload.seed.is_some_and(|seed| seed != report_seed) {
+                    problems.push(format!(
+                        "measurement {} seed differs from report seed",
+                        value.id
+                    ));
+                }
                 if value.points.is_empty()
                     || value.points.iter().any(|point| {
-                        point.sample_count == 0
+                        point.sample_count < 3
+                            || point.sample_count as usize != point.samples.len()
+                            || point.samples.iter().any(|sample| !sample.is_finite())
                             || !point.quantity.value.is_finite()
                             || point.quantity.unit.is_empty()
+                            || point.quantity.value != median(&point.samples)
+                            || point.min
+                                != point
+                                    .samples
+                                    .iter()
+                                    .copied()
+                                    .min_by(f64::total_cmp)
+                                    .unwrap_or(f64::NAN)
+                            || point.max
+                                != point
+                                    .samples
+                                    .iter()
+                                    .copied()
+                                    .max_by(f64::total_cmp)
+                                    .unwrap_or(f64::NAN)
+                            || point.robust_spread_ratio != relative_range(&point.samples)
+                            || point.robust_spread_ratio > value.max_robust_spread_ratio
                             || point.dimensions.iter().any(|(name, dimension)| {
                                 name.is_empty() || !valid_dimension(dimension)
                             })
@@ -472,7 +613,8 @@ impl MeasurementEvidence {
             }
             Self::TraceReplay(value) => {
                 let accounted = value.hits.checked_add(value.misses);
-                if value.catalog_id.is_empty()
+                if value.scenario_digest.is_empty()
+                    || value.catalog_id.is_empty()
                     || value.input_digest.is_empty()
                     || value.replayed_digest.is_empty()
                     || value.event_count == 0
@@ -484,12 +626,14 @@ impl MeasurementEvidence {
                 }
             }
             Self::Comparison(value) => {
-                if value.left_measurement_id.is_empty()
+                if value.scenario_digest.is_empty()
+                    || value.left_measurement_id.is_empty()
                     || value.right_measurement_id.is_empty()
                     || value.left_measurement_id == value.right_measurement_id
                     || !value.ratio.is_finite()
                     || value.ratio < 0.0
                     || value.unit.is_empty()
+                    || !value.same_box
                 {
                     problems.push(format!("comparison {} is incomplete", value.id));
                 }
@@ -535,4 +679,114 @@ fn valid_dimension(value: &DimensionValue) -> bool {
         DimensionValue::F64(value) => value.is_finite(),
         _ => true,
     }
+}
+
+fn digest_json(value: &impl Serialize) -> String {
+    let bytes = serde_json::to_vec(value).unwrap_or_else(|_| b"invalid-json".to_vec());
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+fn suite_scenario_digest(measurements: &[MeasurementEvidence]) -> String {
+    let inputs = measurements
+        .iter()
+        .map(|measurement| {
+            let digest = match measurement {
+                MeasurementEvidence::LoadCurve(value) => &value.scenario_digest,
+                MeasurementEvidence::Scalar(value) => &value.scenario_digest,
+                MeasurementEvidence::TraceReplay(value) => &value.scenario_digest,
+                MeasurementEvidence::Comparison(value) => &value.scenario_digest,
+            };
+            (measurement.id(), digest)
+        })
+        .collect::<Vec<_>>();
+    digest_json(&inputs)
+}
+
+fn suite_workload_digest(measurements: &[MeasurementEvidence]) -> String {
+    let inputs = measurements
+        .iter()
+        .map(|measurement| {
+            let digest = match measurement {
+                MeasurementEvidence::LoadCurve(value) => value.workload.digest.as_str(),
+                MeasurementEvidence::Scalar(value) => value.workload.digest.as_str(),
+                MeasurementEvidence::TraceReplay(value) => value.input_digest.as_str(),
+                MeasurementEvidence::Comparison(value) => value.scenario_digest.as_str(),
+            };
+            (measurement.id(), digest)
+        })
+        .collect::<Vec<_>>();
+    digest_json(&inputs)
+}
+
+fn median(samples: &[f64]) -> f64 {
+    let mut values = samples.to_vec();
+    values.sort_by(f64::total_cmp);
+    values[values.len() / 2]
+}
+
+fn relative_range(samples: &[f64]) -> f64 {
+    if samples.is_empty() {
+        return f64::INFINITY;
+    }
+    let center = median(samples);
+    let minimum = samples.iter().copied().min_by(f64::total_cmp).unwrap();
+    let maximum = samples.iter().copied().max_by(f64::total_cmp).unwrap();
+    if center > 0.0 {
+        (maximum - minimum) / center
+    } else if maximum == minimum {
+        0.0
+    } else {
+        f64::INFINITY
+    }
+}
+
+fn relative_difference(left: f64, right: f64) -> f64 {
+    (left - right).abs() / left.abs().max(right.abs()).max(f64::EPSILON)
+}
+
+fn dependency_cycle(measurements: &[MeasurementEvidence]) -> bool {
+    let edges = measurements
+        .iter()
+        .map(|measurement| {
+            let dependencies = match measurement {
+                MeasurementEvidence::Scalar(value) => value.derived_from.clone(),
+                MeasurementEvidence::Comparison(value) => vec![
+                    value.left_measurement_id.clone(),
+                    value.right_measurement_id.clone(),
+                ],
+                _ => Vec::new(),
+            };
+            (measurement.id().to_owned(), dependencies)
+        })
+        .collect::<BTreeMap<_, _>>();
+    let mut visited = BTreeSet::new();
+    let mut active = BTreeSet::new();
+    edges
+        .keys()
+        .any(|id| visit_dependency(id, &edges, &mut active, &mut visited))
+}
+
+fn visit_dependency(
+    id: &str,
+    edges: &BTreeMap<String, Vec<String>>,
+    active: &mut BTreeSet<String>,
+    visited: &mut BTreeSet<String>,
+) -> bool {
+    if active.contains(id) {
+        return true;
+    }
+    if !visited.insert(id.to_owned()) {
+        return false;
+    }
+    active.insert(id.to_owned());
+    let cyclic = edges
+        .get(id)
+        .into_iter()
+        .flatten()
+        .any(|dependency| visit_dependency(dependency, edges, active, visited));
+    active.remove(id);
+    cyclic
 }

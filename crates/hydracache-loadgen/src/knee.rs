@@ -14,6 +14,10 @@ pub struct PhaseAccounting {
     pub reset_ms: u64,
     pub preload_ms: u64,
     pub warmup_ms: u64,
+    pub warmup_successes: u64,
+    pub warmup_errors: u64,
+    pub warmup_timeouts: u64,
+    pub warmup_rejections: u64,
     pub steady_ms: u64,
     pub warmup_samples_in_steady_histogram: u64,
 }
@@ -23,6 +27,7 @@ pub struct PhaseAccounting {
 #[serde(deny_unknown_fields)]
 pub struct RepeatEvidence {
     pub reset_state_digest: String,
+    pub preloaded_state_digest: String,
     pub state_digest: String,
     pub phase: PhaseAccounting,
     pub steady: OpenLoopObservation,
@@ -117,34 +122,32 @@ impl RateSample {
         } else {
             f64::INFINITY
         };
-        let observations = repeats
-            .iter()
-            .map(|repeat| &repeat.steady)
-            .collect::<Vec<_>>();
-        let summaries = observations
-            .iter()
-            .map(|observation| &observation.latency)
-            .collect::<Vec<_>>();
+        let mut repeat_order = (0..repeats.len()).collect::<Vec<_>>();
+        repeat_order.sort_by(|left, right| {
+            repeats[*left]
+                .steady
+                .achieved_rate_per_second
+                .total_cmp(&repeats[*right].steady.achieved_rate_per_second)
+        });
+        // Copy every correlated counter/percentile from the median-throughput repeat. Taking an
+        // independent median per field can synthesize an observation that never occurred.
+        let median_observation = &repeats[repeat_order[repeat_order.len() / 2]].steady;
         Ok(Self {
             offered_rate_per_second,
             achieved_rate_per_second: achieved_median,
             achieved_rate_min_per_second: achieved_min,
             achieved_rate_max_per_second: achieved_max,
-            offered: median_u64(observations.iter().map(|value| value.offered)),
-            started: median_u64(observations.iter().map(|value| value.started)),
-            completed: median_u64(observations.iter().map(|value| value.completed)),
-            successes: median_u64(observations.iter().map(|value| value.successes)),
-            errors: median_u64(observations.iter().map(|value| value.errors)),
-            timeouts: median_u64(observations.iter().map(|value| value.timeouts)),
-            rejections: median_u64(observations.iter().map(|value| value.rejections)),
-            backlog_drained: observations.iter().all(|value| value.backlog_drained),
-            drain_ms: observations
-                .iter()
-                .map(|value| value.drain_ms)
-                .max()
-                .unwrap(),
+            offered: median_observation.offered,
+            started: median_observation.started,
+            completed: median_observation.completed,
+            successes: median_observation.successes,
+            errors: median_observation.errors,
+            timeouts: median_observation.timeouts,
+            rejections: median_observation.rejections,
+            backlog_drained: median_observation.backlog_drained,
+            drain_ms: median_observation.drain_ms,
             robust_spread_ratio,
-            latency: aggregate_latency(&summaries),
+            latency: median_observation.latency.clone(),
         })
     }
 }
@@ -316,6 +319,10 @@ impl SustainabilityCriteria {
             }
             if repeat.phase.steady_operations != repeat.steady.offered
                 || repeat.phase.reset_operations != 1
+                || repeat.phase.warmup_successes != repeat.phase.warmup_operations
+                || repeat.phase.warmup_errors != 0
+                || repeat.phase.warmup_timeouts != 0
+                || repeat.phase.warmup_rejections != 0
                 || repeat.phase.warmup_samples_in_steady_histogram != 0
             {
                 reasons.push(format!(
@@ -437,41 +444,6 @@ fn latency_problems(summary: &LatencySummary) -> Vec<String> {
         reasons.push("maximum latency is unavailable".to_owned());
     }
     reasons
-}
-
-fn aggregate_latency(summaries: &[&LatencySummary]) -> LatencySummary {
-    let report_p999 = summaries.iter().all(|summary| summary.p999_reportable);
-    LatencySummary {
-        samples: median_u64(summaries.iter().map(|summary| summary.samples)),
-        p50_us: median_optional(summaries.iter().map(|summary| summary.p50_us)),
-        p90_us: median_optional(summaries.iter().map(|summary| summary.p90_us)),
-        p99_us: median_optional(summaries.iter().map(|summary| summary.p99_us)),
-        p999_us: report_p999
-            .then(|| median_optional(summaries.iter().map(|summary| summary.p999_us)))
-            .flatten(),
-        p999_min_samples: summaries
-            .iter()
-            .map(|summary| summary.p999_min_samples)
-            .max()
-            .unwrap_or(0),
-        p999_reportable: report_p999,
-        max_us: summaries.iter().filter_map(|summary| summary.max_us).max(),
-        overflow_count: summaries
-            .iter()
-            .map(|summary| summary.overflow_count)
-            .max()
-            .unwrap_or(0),
-    }
-}
-
-fn median_optional(values: impl Iterator<Item = Option<u64>>) -> Option<u64> {
-    values.collect::<Option<Vec<_>>>().map(median_u64)
-}
-
-fn median_u64(values: impl IntoIterator<Item = u64>) -> u64 {
-    let mut values = values.into_iter().collect::<Vec<_>>();
-    values.sort_unstable();
-    values[values.len() / 2]
 }
 
 fn median_f64(values: &[f64]) -> f64 {

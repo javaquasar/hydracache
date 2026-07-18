@@ -20,9 +20,9 @@ pub use profile::{PerformanceProfile, ProfileValidation, RunnerFingerprint};
 pub use rate::{run_open_loop, FixedRateSchedule, OpenLoopConfig, OpenLoopObservation};
 pub use report::{
     BuildIdentity, ComparisonEvidence, DimensionValue, EvidenceRunMode, KeyDistributionIdentity,
-    LoadClaim, LoadCurveEvidence, MeasurementEvidence, PerfReport, Quantity, ScalarEvidence,
-    ScalarPoint, SourceIdentity, SurfaceIdentity, TraceReplayEvidence, WeightedOperation,
-    WeightedPayload, WorkloadIdentity,
+    LoadClaim, LoadCurveEvidence, MeasurementEvidence, PerfReport, Quantity, ReportWriteError,
+    ScalarEvidence, ScalarPoint, SourceIdentity, SurfaceIdentity, TraceReplayEvidence,
+    WeightedOperation, WeightedPayload, WorkloadIdentity,
 };
 pub use runner::{run_phases, run_scenario, PhaseConfig, PhaseRun};
 pub use scenario::{ErrorBudgets, Scenario};

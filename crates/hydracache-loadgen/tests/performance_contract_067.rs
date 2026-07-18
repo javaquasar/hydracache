@@ -6,12 +6,13 @@ use std::time::Duration;
 use async_trait::async_trait;
 use hydracache_loadgen::histogram::LatencySummary;
 use hydracache_loadgen::{
-    run_open_loop, run_phases, run_scenario, BuildIdentity, ErrorBudgets, EvidenceRunMode,
-    FixedRateSchedule, LatencyHistogram, LoadClaim, LoadCurveEvidence, MeasurementEvidence,
-    OpenLoopConfig, OpenLoopObservation, PerfReport, PerformanceProfile, PhaseAccounting,
-    PhaseConfig, RatePointEvidence, RepeatEvidence, RunnerFingerprint, Scenario, SourceIdentity,
-    SurfaceIdentity, SustainabilityCriteria, Target, TargetError, TargetOutcome, TargetRequest,
-    WeightedOperation, WeightedPayload, WorkloadIdentity,
+    run_open_loop, run_phases, run_scenario, BuildIdentity, ComparisonEvidence, DimensionValue,
+    ErrorBudgets, EvidenceRunMode, FixedRateSchedule, LatencyHistogram, LoadClaim,
+    LoadCurveEvidence, MeasurementEvidence, OpenLoopConfig, OpenLoopObservation, PerfReport,
+    PerformanceProfile, PhaseAccounting, PhaseConfig, Quantity, RatePointEvidence, RepeatEvidence,
+    RunnerFingerprint, ScalarEvidence, ScalarPoint, Scenario, SourceIdentity, SurfaceIdentity,
+    SustainabilityCriteria, Target, TargetError, TargetOutcome, TargetRequest, WeightedOperation,
+    WeightedPayload, WorkloadIdentity,
 };
 
 fn latency(p99_us: u64) -> LatencySummary {
@@ -51,6 +52,7 @@ fn repeats(rate: f64, achieved: f64, p99_us: u64) -> Vec<RepeatEvidence> {
     (0..3)
         .map(|_| RepeatEvidence {
             reset_state_digest: "reset-sha".to_owned(),
+            preloaded_state_digest: "preload-sha".to_owned(),
             state_digest: "state-sha".to_owned(),
             phase: PhaseAccounting {
                 reset_operations: 1,
@@ -60,6 +62,10 @@ fn repeats(rate: f64, achieved: f64, p99_us: u64) -> Vec<RepeatEvidence> {
                 reset_ms: 1,
                 preload_ms: 0,
                 warmup_ms: 1,
+                warmup_successes: 5,
+                warmup_errors: 0,
+                warmup_timeouts: 0,
+                warmup_rejections: 0,
                 steady_ms: 100_000,
                 warmup_samples_in_steady_histogram: 0,
             },
@@ -240,6 +246,13 @@ impl Target for CountingTarget {
         self.calls.fetch_add(1, Ordering::SeqCst);
         TargetOutcome::Success
     }
+
+    async fn state_digest(&self) -> Result<String, TargetError> {
+        Ok(format!(
+            "state:calls:{}:v1",
+            self.calls.load(Ordering::SeqCst)
+        ))
+    }
 }
 
 fn phase_config() -> PhaseConfig {
@@ -265,7 +278,33 @@ async fn warmup_samples_never_enter_the_steady_histogram() {
         .unwrap();
     assert_eq!(run.steady.latency.samples, 20);
     assert_eq!(run.warmup_samples_in_steady_histogram, 0);
+    assert_eq!(run.steady_state_digest, "state:calls:5:v1");
     assert_eq!(target.calls.load(Ordering::SeqCst), 25);
+}
+
+struct RejectingWarmupTarget;
+
+#[async_trait]
+impl Target for RejectingWarmupTarget {
+    async fn reset(&self) -> Result<String, TargetError> {
+        Ok("state:empty:v1".to_owned())
+    }
+
+    async fn execute(&self, _request: TargetRequest) -> TargetOutcome {
+        TargetOutcome::Rejected
+    }
+
+    async fn state_digest(&self) -> Result<String, TargetError> {
+        Ok("state:rejected:v1".to_owned())
+    }
+}
+
+#[tokio::test]
+async fn unsuccessful_warmup_never_enters_the_steady_window() {
+    let error = run_phases(Arc::new(RejectingWarmupTarget), &phase_config())
+        .await
+        .unwrap_err();
+    assert!(matches!(error, TargetError::Warmup(_)));
 }
 
 #[tokio::test]
@@ -346,6 +385,10 @@ impl Target for NeverFinishingTarget {
         let _active = ActiveGuard(&self.active);
         tokio::time::sleep(Duration::from_secs(60)).await;
         TargetOutcome::Success
+    }
+
+    async fn state_digest(&self) -> Result<String, TargetError> {
+        Ok("state:never-finishing:v1".to_owned())
     }
 }
 
@@ -472,6 +515,7 @@ fn foundation_workload() -> WorkloadIdentity {
 fn foundation_measurement() -> MeasurementEvidence {
     MeasurementEvidence::LoadCurve(LoadCurveEvidence {
         id: "foundation-open-loop".to_owned(),
+        scenario_digest: "scenario-sha".to_owned(),
         dimensions: BTreeMap::new(),
         workload: foundation_workload(),
         criteria: Some(criteria()),
@@ -480,13 +524,45 @@ fn foundation_measurement() -> MeasurementEvidence {
     })
 }
 
+fn scalar_measurement() -> MeasurementEvidence {
+    MeasurementEvidence::Scalar(ScalarEvidence {
+        id: "foundation-efficiency".to_owned(),
+        scenario_digest: "scenario-sha".to_owned(),
+        workload: foundation_workload(),
+        points: vec![ScalarPoint {
+            dimensions: BTreeMap::from([("workers".to_owned(), DimensionValue::U64(1))]),
+            quantity: Quantity {
+                value: 100.0,
+                unit: "operations_per_second".to_owned(),
+            },
+            sample_count: 3,
+            samples: vec![100.0, 100.0, 100.0],
+            min: 100.0,
+            max: 100.0,
+            robust_spread_ratio: 0.0,
+        }],
+        derived_from: vec!["foundation-open-loop".to_owned()],
+        max_robust_spread_ratio: 0.10,
+    })
+}
+
+fn comparison_measurement(ratio: f64, same_box: bool) -> MeasurementEvidence {
+    MeasurementEvidence::Comparison(ComparisonEvidence {
+        id: "foundation-comparison".to_owned(),
+        scenario_digest: "scenario-sha".to_owned(),
+        left_measurement_id: "foundation-open-loop".to_owned(),
+        right_measurement_id: "foundation-efficiency".to_owned(),
+        ratio,
+        unit: "ratio".to_owned(),
+        same_box,
+    })
+}
+
 fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
     let observed = fingerprint(false, "approved");
     PerfReport::new(
         "foundation-fixture",
         "foundation",
-        "scenario-sha",
-        "workload-sha",
         "state-sha",
         67,
         EvidenceRunMode::ReferenceEvidence,
@@ -529,7 +605,11 @@ fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_diges
         value["source"]["git_commit"],
         "0123456789012345678901234567890123456789"
     );
-    assert_eq!(value["workload_digest"], "workload-sha");
+    assert_eq!(value["workload_digest"].as_str().unwrap().len(), 64);
+    assert_eq!(
+        value["measurements"][0]["evidence"]["workload"]["digest"],
+        "workload-sha"
+    );
     assert_eq!(
         value["measurements"][0]["evidence"]["knee"]["evaluated"][0]["repeats"][0]["state_digest"],
         "state-sha"
@@ -574,6 +654,7 @@ fn perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags() {
     report.profile_validation.reasons.clear();
     report.stable = true;
     assert!(!report.validation_problems().is_empty());
+    assert!(report.to_pretty_json().is_err());
 
     let MeasurementEvidence::LoadCurve(curve) = &mut report.measurements[0] else {
         panic!("fixture must contain a load curve");
@@ -581,6 +662,50 @@ fn perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags() {
     let knee = curve.knee.as_mut().unwrap();
     knee.evaluated[0].sample.completed -= 1;
     assert!(!report.validation_problems().is_empty());
+}
+
+#[test]
+fn scalar_and_comparison_evidence_require_raw_spread_and_recomputed_dependencies() {
+    let report = fixture_report(vec![
+        foundation_measurement(),
+        scalar_measurement(),
+        comparison_measurement(1.0, true),
+    ]);
+    assert!(report.stable, "{:?}", report.stability_reasons);
+    assert!(report.to_pretty_json().is_ok());
+
+    let wrong_ratio = fixture_report(vec![
+        foundation_measurement(),
+        scalar_measurement(),
+        comparison_measurement(2.0, true),
+    ]);
+    assert!(!wrong_ratio.stable);
+
+    let not_same_box = fixture_report(vec![
+        foundation_measurement(),
+        scalar_measurement(),
+        comparison_measurement(1.0, false),
+    ]);
+    assert!(!not_same_box.stable);
+
+    let mut short_scalar = scalar_measurement();
+    let MeasurementEvidence::Scalar(value) = &mut short_scalar else {
+        unreachable!()
+    };
+    value.points[0].samples.truncate(1);
+    value.points[0].sample_count = 1;
+    let short = fixture_report(vec![foundation_measurement(), short_scalar]);
+    assert!(!short.stable);
+}
+
+#[test]
+fn report_writer_rejects_measurement_input_digest_mutation() {
+    let mut report = fixture_report(vec![foundation_measurement()]);
+    let MeasurementEvidence::LoadCurve(value) = &mut report.measurements[0] else {
+        unreachable!()
+    };
+    value.workload.digest = "mutated-workload".to_owned();
+    assert!(report.to_pretty_json().is_err());
 }
 
 struct SerializedStallTarget {
@@ -602,6 +727,10 @@ impl Target for SerializedStallTarget {
             tokio::time::sleep(Duration::from_millis(1)).await;
         }
         TargetOutcome::Success
+    }
+
+    async fn state_digest(&self) -> Result<String, TargetError> {
+        Ok("state:synthetic-stall:v1".to_owned())
     }
 }
 

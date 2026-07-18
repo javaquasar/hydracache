@@ -57,6 +57,10 @@ function = "warmup_samples_never_enter_the_steady_histogram"
 
 [[work_item.required_tests]]
 source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "unsuccessful_warmup_never_enters_the_steady_window"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
 function = "repeat_reset_reproduces_the_initial_state_digest"
 
 [[work_item.required_tests]]
@@ -86,6 +90,14 @@ function = "perf_report_json_schema_accepts_valid_evidence_and_rejects_short_rep
 [[work_item.required_tests]]
 source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
 function = "perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "scalar_and_comparison_evidence_require_raw_spread_and_recomputed_dependencies"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "report_writer_rejects_measurement_input_digest_mutation"
 
 [[work_item]]
 id = "W1"

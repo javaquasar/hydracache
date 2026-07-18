@@ -38,6 +38,9 @@ pub enum TargetError {
     /// Preload could not establish the declared data set.
     #[error("target preload failed: {0}")]
     Preload(String),
+    /// Warm-up did not establish a successful, digestible steady-state boundary.
+    #[error("target warm-up failed: {0}")]
+    Warmup(String),
     /// The common measurement runner rejected an invalid execution contract.
     #[error("target measurement failed: {0}")]
     Measurement(String),
@@ -56,6 +59,9 @@ pub trait Target: Send + Sync + 'static {
             state_digest: "state:preload-none:v1".to_owned(),
         })
     }
+
+    /// Digest the exact target state after warm-up and before the steady window.
+    async fn state_digest(&self) -> Result<String, TargetError>;
 
     /// Execute one scheduled request.
     async fn execute(&self, request: TargetRequest) -> TargetOutcome;

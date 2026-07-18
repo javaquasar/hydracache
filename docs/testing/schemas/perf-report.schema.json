@@ -7,7 +7,7 @@
   "required": [
     "schema_version", "release", "report_id", "scenario_id", "scenario_digest",
     "workload_digest", "state_digest", "seed", "run_mode", "surface", "runner_profile",
-    "runner_contract", "observed_runner", "profile_validation", "source", "build",
+    "runner_contract", "runner_contract_digest", "observed_runner", "profile_validation", "source", "build",
     "measurements", "stable", "stability_reasons"
   ],
   "properties": {
@@ -23,6 +23,7 @@
     "surface": { "$ref": "#/$defs/surface" },
     "runner_profile": { "$ref": "#/$defs/nonEmpty" },
     "runner_contract": { "$ref": "#/$defs/runnerContract" },
+    "runner_contract_digest": { "$ref": "#/$defs/digest" },
     "observed_runner": { "$ref": "#/$defs/observedRunner" },
     "profile_validation": { "$ref": "#/$defs/profileValidation" },
     "source": { "$ref": "#/$defs/source" },
@@ -247,7 +248,7 @@
     },
     "phase": {
       "type": "object", "additionalProperties": false,
-      "required": ["reset_operations", "preload_operations", "warmup_operations", "steady_operations", "reset_ms", "preload_ms", "warmup_ms", "steady_ms", "warmup_samples_in_steady_histogram"],
+      "required": ["reset_operations", "preload_operations", "warmup_operations", "steady_operations", "reset_ms", "preload_ms", "warmup_ms", "warmup_successes", "warmup_errors", "warmup_timeouts", "warmup_rejections", "steady_ms", "warmup_samples_in_steady_histogram"],
       "properties": {
         "reset_operations": { "const": 1 },
         "preload_operations": { "type": "integer", "minimum": 0 },
@@ -256,15 +257,20 @@
         "reset_ms": { "type": "integer", "minimum": 0 },
         "preload_ms": { "type": "integer", "minimum": 0 },
         "warmup_ms": { "type": "integer", "minimum": 0 },
+        "warmup_successes": { "type": "integer", "minimum": 0 },
+        "warmup_errors": { "const": 0 },
+        "warmup_timeouts": { "const": 0 },
+        "warmup_rejections": { "const": 0 },
         "steady_ms": { "type": "integer", "minimum": 0 },
         "warmup_samples_in_steady_histogram": { "const": 0 }
       }
     },
     "repeat": {
       "type": "object", "additionalProperties": false,
-      "required": ["reset_state_digest", "state_digest", "phase", "steady"],
+      "required": ["reset_state_digest", "preloaded_state_digest", "state_digest", "phase", "steady"],
       "properties": {
         "reset_state_digest": { "$ref": "#/$defs/digest" },
+        "preloaded_state_digest": { "$ref": "#/$defs/digest" },
         "state_digest": { "$ref": "#/$defs/digest" },
         "phase": { "$ref": "#/$defs/phase" },
         "steady": { "$ref": "#/$defs/openLoop" }
@@ -318,13 +324,14 @@
     },
     "loadCurve": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "dimensions", "workload", "criteria", "knee", "claim"],
+      "required": ["id", "scenario_digest", "dimensions", "workload", "criteria", "knee", "claim"],
       "properties": {
         "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
         "dimensions": { "$ref": "#/$defs/dimensions" },
         "workload": { "$ref": "#/$defs/workload" },
-        "criteria": { "anyOf": [{ "$ref": "#/$defs/criteria" }, { "type": "null" }] },
-        "knee": { "anyOf": [{ "$ref": "#/$defs/knee" }, { "type": "null" }] },
+        "criteria": { "$ref": "#/$defs/criteria" },
+        "knee": { "$ref": "#/$defs/knee" },
         "claim": { "enum": ["capacity_knee", "overload_curve", "supplemental_closed_loop", "operational_cost", "model_cost"] }
       },
       "allOf": [
@@ -349,28 +356,35 @@
     },
     "scalarPoint": {
       "type": "object", "additionalProperties": false,
-      "required": ["dimensions", "quantity", "sample_count"],
+      "required": ["dimensions", "quantity", "sample_count", "samples", "min", "max", "robust_spread_ratio"],
       "properties": {
         "dimensions": { "$ref": "#/$defs/dimensions" },
         "quantity": { "$ref": "#/$defs/quantity" },
-        "sample_count": { "type": "integer", "minimum": 1 }
+        "sample_count": { "type": "integer", "minimum": 3 },
+        "samples": { "type": "array", "minItems": 3, "items": { "type": "number" } },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "robust_spread_ratio": { "type": "number", "minimum": 0 }
       }
     },
     "scalar": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "workload", "points", "derived_from"],
+      "required": ["id", "scenario_digest", "workload", "points", "derived_from", "max_robust_spread_ratio"],
       "properties": {
         "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
         "workload": { "$ref": "#/$defs/workload" },
         "points": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scalarPoint" } },
-        "derived_from": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } }
+        "derived_from": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
+        "max_robust_spread_ratio": { "type": "number", "minimum": 0 }
       }
     },
     "traceReplay": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "catalog_id", "event_count", "input_digest", "replayed_digest", "order_preserved", "hits", "misses"],
+      "required": ["id", "scenario_digest", "catalog_id", "event_count", "input_digest", "replayed_digest", "order_preserved", "hits", "misses"],
       "properties": {
         "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
         "catalog_id": { "$ref": "#/$defs/nonEmpty" },
         "event_count": { "type": "integer", "minimum": 1 },
         "input_digest": { "$ref": "#/$defs/digest" },
@@ -382,14 +396,15 @@
     },
     "comparison": {
       "type": "object", "additionalProperties": false,
-      "required": ["id", "left_measurement_id", "right_measurement_id", "ratio", "unit", "same_box"],
+      "required": ["id", "scenario_digest", "left_measurement_id", "right_measurement_id", "ratio", "unit", "same_box"],
       "properties": {
         "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
         "left_measurement_id": { "$ref": "#/$defs/nonEmpty" },
         "right_measurement_id": { "$ref": "#/$defs/nonEmpty" },
         "ratio": { "type": "number", "minimum": 0 },
         "unit": { "$ref": "#/$defs/nonEmpty" },
-        "same_box": { "type": "boolean" }
+        "same_box": { "const": true }
       }
     },
     "measurement": {

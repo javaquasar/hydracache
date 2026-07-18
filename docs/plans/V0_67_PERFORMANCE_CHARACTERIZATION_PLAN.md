@@ -225,8 +225,12 @@ durations/op counts, repeat/state/scenario/workload digests, surface identity fi
 and observed fingerprint, affinity/quota/governor/calibration facts, prebuilt binary hashes, seed,
 toolchain/build flags, stable `prebuild_contract_digest`, per-run `prebuild_manifest_sha`, git commit,
 and spread/stability verdict. Capacity evidence requires at least three reset-identical and
-preload-verified repeats. `smoke` and `ci_tripwire` are explicit run modes and can never serialize as
-stable ship evidence.
+preload-verified repeats; warm-up outcomes must all succeed and the measured state digest is taken
+after warm-up. Correlated aggregate fields come from one median-throughput repeat. Scalar evidence
+keeps its raw repeats/spread, comparisons are recomputed from same-box dependencies, and the
+fail-closed writer reruns semantic plus JSON Schema validation. `smoke` and `ci_tripwire` are
+explicit run modes and can never serialize as stable ship evidence. Scenario/profile files remain
+receipt-bound inputs and W7 compares their recorded digests to the committed contracts.
 
 **Required tests (fast, deterministic - the instrument itself is under test):**
 - `open_loop_scheduler_accounts_missed_ticks_as_latency_not_skips`;
@@ -236,6 +240,7 @@ stable ship evidence.
 - `knee_rejects_timeout_rejection_budget_or_undrained_backlog`;
 - `p999_is_unreportable_below_the_declared_sample_count`;
 - `warmup_samples_never_enter_the_steady_histogram`;
+- `unsuccessful_warmup_never_enters_the_steady_window`;
 - `repeat_reset_reproduces_the_initial_state_digest`;
 - `scenario_runner_executes_every_declared_rate_and_repeat`;
 - `declared_preload_count_must_match_target_evidence`;
@@ -243,7 +248,9 @@ stable ship evidence.
 - `reference_profile_rejects_a_spoofed_or_shared_runner`;
 - `perf_report_schema_records_surface_profile_commit_workload_and_prebuild_digests`;
 - `perf_report_json_schema_accepts_valid_evidence_and_rejects_short_repeat_sets`;
-- `perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags`.
+- `perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags`;
+- `scalar_and_comparison_evidence_require_raw_spread_and_recomputed_dependencies`;
+- `report_writer_rejects_measurement_input_digest_mutation`.
 
 **Canary.** `canary_closed_loop_measurement_hides_a_synthetic_stall` - drive a target with an
 injected 1s stall through (a) the open-loop recorder and (b) a naive closed-loop recorder; the stall

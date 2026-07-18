@@ -20,11 +20,16 @@ pub struct PhaseConfig {
 pub struct PhaseRun {
     pub initial_state_digest: String,
     pub preloaded_state_digest: String,
+    pub steady_state_digest: String,
     pub preload_operations: u64,
     pub warmup_operations: u64,
     pub reset_ms: u64,
     pub preload_ms: u64,
     pub warmup_ms: u64,
+    pub warmup_successes: u64,
+    pub warmup_errors: u64,
+    pub warmup_timeouts: u64,
+    pub warmup_rejections: u64,
     pub steady: OpenLoopObservation,
     pub warmup_samples_in_steady_histogram: u64,
 }
@@ -34,7 +39,8 @@ impl PhaseRun {
     pub fn into_evidence(self) -> RepeatEvidence {
         RepeatEvidence {
             reset_state_digest: self.initial_state_digest,
-            state_digest: self.preloaded_state_digest,
+            preloaded_state_digest: self.preloaded_state_digest,
+            state_digest: self.steady_state_digest,
             phase: PhaseAccounting {
                 reset_operations: 1,
                 preload_operations: self.preload_operations,
@@ -43,6 +49,10 @@ impl PhaseRun {
                 reset_ms: self.reset_ms,
                 preload_ms: self.preload_ms,
                 warmup_ms: self.warmup_ms,
+                warmup_successes: self.warmup_successes,
+                warmup_errors: self.warmup_errors,
+                warmup_timeouts: self.warmup_timeouts,
+                warmup_rejections: self.warmup_rejections,
                 steady_ms: self.steady.elapsed_ms,
                 warmup_samples_in_steady_histogram: self.warmup_samples_in_steady_histogram,
             },
@@ -74,21 +84,52 @@ pub async fn run_phases<T: Target>(
         ));
     }
     let warmup_started = Instant::now();
+    let mut warmup_successes = 0_u64;
+    let mut warmup_errors = 0_u64;
+    let mut warmup_timeouts = 0_u64;
+    let mut warmup_rejections = 0_u64;
     for sequence in 0..config.warmup_operations {
-        let _ = target.execute(TargetRequest { sequence }).await;
+        match target.execute(TargetRequest { sequence }).await {
+            crate::target::TargetOutcome::Success => {
+                warmup_successes = warmup_successes.saturating_add(1)
+            }
+            crate::target::TargetOutcome::Error => warmup_errors = warmup_errors.saturating_add(1),
+            crate::target::TargetOutcome::Timeout => {
+                warmup_timeouts = warmup_timeouts.saturating_add(1)
+            }
+            crate::target::TargetOutcome::Rejected => {
+                warmup_rejections = warmup_rejections.saturating_add(1)
+            }
+        }
     }
     let warmup_ms = millis(warmup_started.elapsed());
+    if warmup_errors > 0 || warmup_timeouts > 0 || warmup_rejections > 0 {
+        return Err(TargetError::Warmup(format!(
+            "warm-up outcomes: success={warmup_successes}, error={warmup_errors}, timeout={warmup_timeouts}, rejected={warmup_rejections}"
+        )));
+    }
+    let steady_state_digest = target.state_digest().await?;
+    if steady_state_digest.is_empty() {
+        return Err(TargetError::Warmup(
+            "post-warm-up state digest must be non-empty".to_owned(),
+        ));
+    }
     let steady = run_open_loop(Arc::clone(&target), &config.steady)
         .await
         .map_err(TargetError::Measurement)?;
     Ok(PhaseRun {
         initial_state_digest,
         preloaded_state_digest: preload.state_digest,
+        steady_state_digest,
         preload_operations: config.preload_operations,
         warmup_operations: config.warmup_operations,
         reset_ms,
         preload_ms,
         warmup_ms,
+        warmup_successes,
+        warmup_errors,
+        warmup_timeouts,
+        warmup_rejections,
         steady,
         warmup_samples_in_steady_histogram: 0,
     })
