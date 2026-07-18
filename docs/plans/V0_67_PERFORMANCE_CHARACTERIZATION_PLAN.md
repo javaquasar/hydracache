@@ -195,6 +195,7 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | --- | --- | --- | --- |
 | W0 | `crates/hydracache-loadgen::{rate,histogram,knee,scenario,profile,report,runner,target}`; `docs/testing/schemas/perf-report.schema.json` | `cargo test -p hydracache-loadgen --locked -j 2` | Development-only synthetic instrument contract; no product or daemon capacity claim |
 | W1 | `crates/hydracache-loadgen::{allocation,cli,targets::local,tiers::local}`; `crates/hydracache-cache-sim::{digest,trace_catalog,workload}`; `docs/testing/perf-scenarios/0.67/local-*-v1.toml` | `cargo test -p hydracache-cache-sim -p hydracache-loadgen --test performance_contract_067 --locked -j 2` | Real embedded/process-local cache; smoke is plumbing-only, while capacity evidence requires the receipt-bound `reference-v1` core lane and `target/test-evidence/0.67/local.json` |
+| W2 | `crates/hydracache-loadgen::{targets::client_surface,tiers::client_surface,cli,report}`; `docs/testing/perf-scenarios/0.67/client-surface-*-v1.toml` | `cargo test -p hydracache-loadgen --test performance_contract_067 --locked -j 2 client_surface` | Real `AxumClientSurface` through `Router::oneshot`; process-local state and no socket/daemon/wire claim; reference evidence remains receipt-bound to the core lane |
 | _(populate during implementation; W0-W10 below define the targets)_ | | | |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs

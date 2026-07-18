@@ -1,3 +1,4 @@
 //! Release-0.67 tier orchestration shared by direct and suite CLI forms.
 
+pub mod client_surface;
 pub mod local;

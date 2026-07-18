@@ -65,6 +65,37 @@
       "red_evidence": "The W1 canary proves that a loadgen-only delay on a diagnostics-verified eviction-bearing capacity-pressure operation pushes the embedded-cache knee below its local-tier budget; it does not claim an internal product eviction failpoint."
     },
     {
+      "w_item": "W2",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "client_surface_report_preserves_in_process_reality_boundary"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_injected_client_surface_dispatch_delay_breaches_the_in_process_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "client_surface_report_preserves_in_process_reality_boundary", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_injected_client_surface_dispatch_delay_breaches_the_in_process_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W2"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W2",
+      "expected_failure": "HC-CANARY-RED:W2",
+      "timeout_seconds": 180,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W2.json"],
+      "red_evidence": "The W2 canary proves that scheduled latency through the real in-process Axum router exposes a loadgen-injected dispatch delay; the report validator separately forbids daemon, socket, and wire claims."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

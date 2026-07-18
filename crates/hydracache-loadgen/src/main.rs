@@ -1,4 +1,6 @@
 use hydracache_loadgen::cli;
+use hydracache_loadgen::cli::LoadgenCommand;
+use hydracache_loadgen::tiers::client_surface::write_client_surface_report;
 use hydracache_loadgen::tiers::local::write_local_report;
 
 #[tokio::main]
@@ -20,19 +22,44 @@ async fn run() -> Result<(), String> {
         return Ok(());
     }
     let command = cli::parse(arguments)?;
-    let path = command.local_report_path();
-    write_local_report(command.profile(), &path)
-        .await
-        .map_err(|error| error.to_string())?;
-    eprintln!(
-        "hydracache-loadgen: wrote plumbing-only local smoke report to {}",
-        path.display()
-    );
+    match &command {
+        LoadgenCommand::TierLocal { .. } => {
+            let path = command.local_report_path();
+            write_local_report(command.profile(), &path)
+                .await
+                .map_err(|error| error.to_string())?;
+            eprintln!(
+                "hydracache-loadgen: wrote plumbing-only local smoke report to {}",
+                path.display()
+            );
+        }
+        LoadgenCommand::TierClientSurface { .. } => {
+            let path = command.client_surface_report_path();
+            write_client_surface_report(command.profile(), &path)
+                .await
+                .map_err(|error| error.to_string())?;
+        }
+        LoadgenCommand::SuiteCore { .. } => {
+            let local_path = command.local_report_path();
+            write_local_report(command.profile(), &local_path)
+                .await
+                .map_err(|error| error.to_string())?;
+            let client_surface_path = command.client_surface_report_path();
+            write_client_surface_report(command.profile(), &client_surface_path)
+                .await
+                .map_err(|error| error.to_string())?;
+            eprintln!(
+                "hydracache-loadgen: wrote plumbing-only core suite reports to {} and {}",
+                local_path.display(),
+                client_surface_path.display()
+            );
+        }
+    }
     Ok(())
 }
 
 fn print_help() {
     println!(
-        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n\nUse smoke-v1 for explicitly plumbing-only output. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
+        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n\nThe client-surface tier invokes the in-process Axum Router; it is not a daemon or wire measurement. Use smoke-v1 for explicitly plumbing-only output. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
     );
 }

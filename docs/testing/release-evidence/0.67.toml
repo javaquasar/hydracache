@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -188,12 +188,69 @@ function = "local_reference_profile_never_silently_downgrades_to_smoke"
 
 [[work_item]]
 id = "W2"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/report.rs",
+    "crates/hydracache-loadgen/src/targets/client_surface.rs",
+    "crates/hydracache-loadgen/src/targets/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/client_surface.rs",
+    "crates/hydracache-loadgen/src/tiers/mod.rs",
+    "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-scenarios/0.67/client-surface-a-v1.toml",
+    "docs/testing/perf-scenarios/0.67/client-surface-b-v1.toml",
+    "docs/testing/perf-scenarios/0.67/client-surface-c-v1.toml",
+    "docs/testing/perf-scenarios/0.67/client-surface-concurrency-v1.toml",
+    "docs/testing/perf-scenarios/0.67/client-surface-path-cost-v1.toml",
+    "docs/testing/perf-scenarios/0.67/client-surface-payload-v1.toml",
+]
+fast_gate_ids = ["fast.performance-contract-067"]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_target_routes_real_frames_without_a_daemon"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_in_process_knee_at_slo_for_a_b_c_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_operation_schedule_executes_declared_a_b_c_mix"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "concurrent_inflight_scaling_curve_1_10_100_1000_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_payload_sweep_enforces_documented_cap"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_codec_dispatch_and_admission_rejection_cost_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_report_preserves_in_process_reality_boundary"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_cli_plan_and_suite_forms_share_one_runner"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "client_surface_reference_profile_never_silently_downgrades_to_smoke"
 
 [[work_item]]
 id = "W3"

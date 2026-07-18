@@ -1,0 +1,13 @@
+schema_version = 1
+id = "client-surface-concurrency-v1"
+seed = 6724
+operations = 4000
+repeats = 3
+preload_entries = 256
+key_count = 256
+payload_bytes = 1000
+batch_size = 8
+inflight = [1, 10, 100, 1000]
+metric = "operations_per_second"
+robust_spread_tolerance = 0.15
+execution_mode = "in-process-axum-router"

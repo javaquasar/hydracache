@@ -1148,3 +1148,314 @@ async fn canary_injected_slow_eviction_breaches_the_local_budget() {
         "injected capacity-pressure delay must make the local knee unsustainable: {slow_knee:?}"
     );
 }
+
+#[tokio::test]
+async fn client_surface_target_routes_real_frames_without_a_daemon() {
+    use hydracache_loadgen::targets::client_surface::{
+        ClientSurfaceOperation, ClientSurfaceOperationMix, ClientSurfaceTarget,
+        ClientSurfaceTargetConfig,
+    };
+
+    let target = ClientSurfaceTarget::new(ClientSurfaceTargetConfig {
+        limits: hydracache_client_transport_axum::ClientSurfaceLimits::default(),
+        preload_entries: 2,
+        key_space: 4,
+        payload_bytes: 32,
+        batch_size: 2,
+        operation_mix: ClientSurfaceOperationMix::WORKLOAD_A,
+        key_schedule: Arc::new(vec![0, 1, 2, 3]),
+        injected_dispatch_delay: Duration::ZERO,
+    })
+    .unwrap();
+
+    let reset_digest = target.reset().await.unwrap();
+    let preload = target.preload().await.unwrap();
+    assert_ne!(reset_digest, preload.state_digest);
+    let put = target
+        .dispatch_operation(ClientSurfaceOperation::Put, 2)
+        .await
+        .unwrap();
+    let get = target
+        .dispatch_operation(ClientSurfaceOperation::Get, 2)
+        .await
+        .unwrap();
+    assert_eq!(put.outcome, TargetOutcome::Success);
+    assert_eq!(get.outcome, TargetOutcome::Success);
+    assert!(target.snapshot().await.dispatch_attempts >= 2);
+}
+
+async fn w2_smoke_report() -> PerfReport {
+    static REPORT: tokio::sync::OnceCell<PerfReport> = tokio::sync::OnceCell::const_new();
+    REPORT
+        .get_or_init(|| async {
+            hydracache_loadgen::tiers::client_surface::run_client_surface_profile("smoke-v1")
+                .await
+                .unwrap()
+        })
+        .await
+        .clone()
+}
+
+fn measurement_named<'a>(report: &'a PerfReport, id: &str) -> &'a MeasurementEvidence {
+    report
+        .measurements
+        .iter()
+        .find(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(value) => value.id == id,
+            MeasurementEvidence::Scalar(value) => value.id == id,
+            MeasurementEvidence::TraceReplay(value) => value.id == id,
+            MeasurementEvidence::Comparison(value) => value.id == id,
+        })
+        .unwrap_or_else(|| panic!("missing measurement {id}"))
+}
+
+#[tokio::test]
+async fn client_surface_in_process_knee_at_slo_for_a_b_c_smoke() {
+    let report = w2_smoke_report().await;
+    let measurement = measurement_named(&report, "client_surface_in_process_knee_at_slo_for_a_b_c");
+    assert!(matches!(measurement, MeasurementEvidence::Scalar(_)));
+    for workload in ["a", "b", "c"] {
+        let id = format!("client_surface_in_process_knee_at_slo_workload_{workload}");
+        assert!(matches!(
+            measurement_named(&report, &id),
+            MeasurementEvidence::LoadCurve(_)
+        ));
+    }
+
+    let mut forged = report;
+    let MeasurementEvidence::Scalar(aggregate) = forged
+        .measurements
+        .iter_mut()
+        .find(|measurement| {
+            matches!(measurement, MeasurementEvidence::Scalar(value) if value.id == "client_surface_in_process_knee_at_slo_for_a_b_c")
+        })
+        .expect("aggregate")
+    else {
+        unreachable!()
+    };
+    aggregate.derived_from.pop();
+    assert!(forged.to_pretty_json().is_err());
+}
+
+#[test]
+fn client_surface_operation_schedule_executes_declared_a_b_c_mix() {
+    use hydracache_loadgen::targets::client_surface::{
+        ClientSurfaceOperation, ClientSurfaceOperationMix,
+    };
+
+    for (mix, expected) in [
+        (
+            ClientSurfaceOperationMix::WORKLOAD_A,
+            BTreeMap::from([("get", 45), ("put", 45), ("batch_get", 5), ("batch_put", 5)]),
+        ),
+        (
+            ClientSurfaceOperationMix::WORKLOAD_B,
+            BTreeMap::from([("get", 90), ("put", 4), ("batch_get", 5), ("batch_put", 1)]),
+        ),
+        (
+            ClientSurfaceOperationMix::WORKLOAD_C,
+            BTreeMap::from([("get", 90), ("put", 0), ("batch_get", 10), ("batch_put", 0)]),
+        ),
+    ] {
+        let mut observed =
+            BTreeMap::from([("get", 0), ("put", 0), ("batch_get", 0), ("batch_put", 0)]);
+        for sequence in 0..100 {
+            let operation = match mix.operation_for(sequence) {
+                ClientSurfaceOperation::Get => "get",
+                ClientSurfaceOperation::Put => "put",
+                ClientSurfaceOperation::BatchGet => "batch_get",
+                ClientSurfaceOperation::BatchPut => "batch_put",
+            };
+            *observed.get_mut(operation).unwrap() += 1;
+        }
+        assert_eq!(observed, expected);
+    }
+}
+
+#[tokio::test]
+async fn concurrent_inflight_scaling_curve_1_10_100_1000_smoke() {
+    let report = w2_smoke_report().await;
+    let measurement = measurement_named(&report, "concurrent_inflight_scaling_curve_1_10_100_1000");
+    let MeasurementEvidence::Scalar(curve) = measurement else {
+        panic!("concurrent in-flight scaling must use typed scalar points");
+    };
+    let inflight = curve
+        .points
+        .iter()
+        .map(|point| {
+            let declared = point.dimensions.get("concurrent_inflight");
+            assert_eq!(
+                declared,
+                point.dimensions.get("observed_inflight_high_water")
+            );
+            assert_eq!(
+                point.dimensions.get("measurement_boundary"),
+                Some(&DimensionValue::Text(
+                    "framed-request-lifetime-at-router-oneshot".to_owned()
+                ))
+            );
+            declared.expect("declared in-flight")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(inflight.len(), 4);
+}
+
+#[tokio::test]
+async fn client_surface_payload_sweep_enforces_documented_cap() {
+    let report = w2_smoke_report().await;
+    let measurement = measurement_named(&report, "client_surface_payload_sweep_100b_1kb_64kb_1mb");
+    let MeasurementEvidence::Scalar(payloads) = measurement else {
+        panic!("payload sweep must use typed scalar points");
+    };
+    assert_eq!(payloads.points.len(), 4);
+    let accepted = payloads
+        .points
+        .iter()
+        .filter_map(|point| match point.dimensions.get("payload_bytes") {
+            Some(DimensionValue::U64(bytes)) => Some(*bytes),
+            _ => None,
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        accepted,
+        std::collections::BTreeSet::from([100, 1_000, 65_536, 1_000_000])
+    );
+    assert!(payloads.points.iter().all(|point| {
+        point.dimensions.get("beyond_cap_http_status") == Some(&DimensionValue::U64(413))
+            && point.dimensions.get("beyond_cap_rejected_before_dispatch")
+                == Some(&DimensionValue::Bool(true))
+    }));
+}
+
+#[tokio::test]
+async fn client_surface_codec_dispatch_and_admission_rejection_cost_smoke() {
+    let report = w2_smoke_report().await;
+    let measurement = measurement_named(
+        &report,
+        "client_surface_codec_dispatch_and_admission_rejection_cost",
+    );
+    let MeasurementEvidence::Scalar(costs) = measurement else {
+        panic!("client-surface path cost must use typed scalar points");
+    };
+    assert!(costs.points.len() >= 3);
+    assert!(costs
+        .points
+        .iter()
+        .all(|point| point.dimensions.contains_key("path")
+            && point.dimensions.contains_key("payload_bytes")));
+    let payloads = costs
+        .workload
+        .payload_mix
+        .iter()
+        .map(|payload| payload.bytes)
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        payloads,
+        std::collections::BTreeSet::from([1_000, 1_048_576])
+    );
+}
+
+#[tokio::test]
+async fn client_surface_report_preserves_in_process_reality_boundary() {
+    let report = w2_smoke_report().await;
+    assert_eq!(report.surface.surface_kind, "client-surface");
+    assert_eq!(report.surface.execution_mode, "in-process-axum-router");
+    assert_eq!(report.surface.state_scope, "process-local");
+    assert_eq!(report.surface.network_boundary, "none");
+    assert_eq!(report.surface.claim_scope, "plumbing-only");
+    assert!(report.to_pretty_json().is_ok());
+    let fast_registry = include_str!("../../../docs/testing/fast-suite-registry.toml")
+        .parse::<toml::Table>()
+        .unwrap();
+    let w2_is_declared = fast_registry
+        .get("suite")
+        .and_then(toml::Value::as_array)
+        .and_then(|suites| {
+            suites.iter().find(|suite| {
+                suite.get("id").and_then(toml::Value::as_str)
+                    == Some("fast.performance-contract-067")
+            })
+        })
+        .and_then(|suite| suite.get("work_items"))
+        .and_then(toml::Value::as_array)
+        .is_some_and(|items| items.iter().any(|item| item.as_str() == Some("W2")));
+    assert!(w2_is_declared, "W2 fast gate must declare W2 coverage");
+
+    let mut forged = report;
+    forged.surface.execution_mode = "daemon-native-wire".to_owned();
+    assert!(forged
+        .validation_problems()
+        .iter()
+        .any(|problem| problem.contains("daemon and wire claims are forbidden")));
+    assert!(forged.to_pretty_json().is_err());
+}
+
+#[test]
+fn client_surface_cli_plan_and_suite_forms_share_one_runner() {
+    let direct = hydracache_loadgen::cli::parse(
+        [
+            "tier",
+            "client-surface",
+            "--profile",
+            "reference-v1",
+            "--report",
+            "target/test-evidence/0.67/client-surface.json",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+    )
+    .unwrap();
+    let suite = hydracache_loadgen::cli::parse(
+        [
+            "suite",
+            "core",
+            "--profile",
+            "reference-v1",
+            "--output-dir",
+            "target/test-evidence/0.67",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+    )
+    .unwrap();
+
+    assert_eq!(direct.profile(), suite.profile());
+    assert_eq!(
+        direct.client_surface_report_path(),
+        suite.client_surface_report_path()
+    );
+}
+
+#[tokio::test]
+async fn client_surface_reference_profile_never_silently_downgrades_to_smoke() {
+    let error =
+        hydracache_loadgen::tiers::client_surface::run_client_surface_profile("reference-v1")
+            .await
+            .unwrap_err();
+    assert!(error.to_string().contains("receipt-bound prebuild"));
+}
+
+#[tokio::test]
+async fn canary_injected_client_surface_dispatch_delay_breaches_the_in_process_budget() {
+    let slow_knee = hydracache_loadgen::tiers::client_surface::client_surface_dispatch_knee(
+        Duration::from_millis(25),
+    )
+    .await
+    .unwrap();
+    let slow_path_is_red = slow_knee.sustainable_rate_per_second.is_none()
+        && slow_knee
+            .evaluated
+            .iter()
+            .all(|point| !point.verdict.sustainable);
+
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W2") {
+        assert!(
+            !slow_path_is_red,
+            "HC-CANARY-RED:W2 injected client-surface dispatch delay breached the in-process budget"
+        );
+    }
+    assert!(
+        slow_path_is_red,
+        "injected dispatch delay must make the client-surface knee unsustainable: {slow_knee:?}"
+    );
+}

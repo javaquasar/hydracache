@@ -402,6 +402,36 @@ impl PerfReport {
             }
             problems.extend(measurement.validation_problems(&self.state_digest));
         }
+        let client_surface_measurements = [
+            "client_surface_in_process_knee_at_slo_for_a_b_c",
+            "concurrent_inflight_scaling_curve_1_10_100_1000",
+            "client_surface_payload_sweep_100b_1kb_64kb_1mb",
+            "client_surface_codec_dispatch_and_admission_rejection_cost",
+        ];
+        let is_client_surface_report = self.report_id.contains("client-surface")
+            || client_surface_measurements
+                .iter()
+                .any(|measurement| ids.contains(*measurement));
+        if is_client_surface_report {
+            if self.surface.surface_kind != "client-surface"
+                || self.surface.execution_mode != "in-process-axum-router"
+                || self.surface.state_scope != "process-local"
+                || self.surface.network_boundary != "none"
+            {
+                problems.push(
+                    "W2 evidence must be labeled client-surface/in-process-axum-router/process-local/none; daemon and wire claims are forbidden"
+                        .to_owned(),
+                );
+            }
+            for required in client_surface_measurements {
+                if !ids.contains(required) {
+                    problems.push(format!(
+                        "client-surface report is missing required W2 measurement {required}"
+                    ));
+                }
+            }
+            problems.extend(client_surface_validation_problems(self));
+        }
         for measurement in &self.measurements {
             match measurement {
                 MeasurementEvidence::Scalar(value) => {
@@ -457,6 +487,172 @@ impl PerfReport {
         }
         problems
     }
+}
+
+fn client_surface_validation_problems(report: &PerfReport) -> Vec<String> {
+    const RAW: [(&str, &str); 3] = [
+        ("client_surface_in_process_knee_at_slo_workload_a", "A"),
+        ("client_surface_in_process_knee_at_slo_workload_b", "B"),
+        ("client_surface_in_process_knee_at_slo_workload_c", "C"),
+    ];
+    let mut problems = Vec::new();
+    let Some(MeasurementEvidence::Scalar(aggregate)) = report
+        .measurements
+        .iter()
+        .find(|measurement| measurement.id() == "client_surface_in_process_knee_at_slo_for_a_b_c")
+    else {
+        return vec!["W2 aggregate A/B/C measurement is missing or has the wrong type".to_owned()];
+    };
+
+    let expected_dependencies = RAW
+        .iter()
+        .map(|(id, _)| (*id).to_owned())
+        .collect::<Vec<_>>();
+    if aggregate.derived_from != expected_dependencies || aggregate.points.len() != RAW.len() {
+        problems.push("W2 aggregate must depend on exactly the A/B/C raw knees".to_owned());
+    }
+    let mut scenario_inputs = Vec::new();
+    let mut workload_inputs = Vec::new();
+    for (raw_id, workload_name) in RAW {
+        let Some(MeasurementEvidence::LoadCurve(raw)) = report
+            .measurements
+            .iter()
+            .find(|measurement| measurement.id() == raw_id)
+        else {
+            problems.push(format!(
+                "W2 raw knee {raw_id} is missing or has the wrong type"
+            ));
+            continue;
+        };
+        scenario_inputs.push((raw_id.to_owned(), raw.scenario_digest.clone()));
+        workload_inputs.push((raw_id.to_owned(), raw.workload.digest.clone()));
+        if raw.claim != LoadClaim::CapacityKnee
+            || raw.dimensions.get("workload")
+                != Some(&DimensionValue::Text(workload_name.to_owned()))
+        {
+            problems.push(format!(
+                "W2 raw knee {raw_id} has the wrong workload identity"
+            ));
+        }
+        let expected_samples = raw.knee.as_ref().and_then(|knee| {
+            let selected = knee.sustainable_rate_per_second?;
+            knee.evaluated
+                .iter()
+                .find(|point| point.sample.offered_rate_per_second == selected)
+                .map(|point| {
+                    point
+                        .repeats
+                        .iter()
+                        .map(|repeat| repeat.steady.achieved_rate_per_second)
+                        .collect::<Vec<_>>()
+                })
+        });
+        let aggregate_points = aggregate
+            .points
+            .iter()
+            .filter(|point| {
+                point.dimensions.get("workload")
+                    == Some(&DimensionValue::Text(workload_name.to_owned()))
+            })
+            .collect::<Vec<_>>();
+        if aggregate_points.len() != 1
+            || expected_samples.as_ref() != aggregate_points.first().map(|point| &point.samples)
+        {
+            problems.push(format!(
+                "W2 aggregate point {workload_name} does not recompute from raw knee {raw_id}"
+            ));
+        }
+    }
+    if aggregate.scenario_digest != derived_identity_digest(&scenario_inputs)
+        || aggregate.workload.digest != derived_identity_digest(&workload_inputs)
+    {
+        problems.push("W2 aggregate digests do not bind the effective A/B/C raw knees".to_owned());
+    }
+
+    let Some(MeasurementEvidence::Scalar(concurrency)) = report
+        .measurements
+        .iter()
+        .find(|measurement| measurement.id() == "concurrent_inflight_scaling_curve_1_10_100_1000")
+    else {
+        problems.push("W2 concurrent in-flight measurement has the wrong type".to_owned());
+        return problems;
+    };
+    let observed_inflight = concurrency
+        .points
+        .iter()
+        .filter_map(|point| {
+            let Some(DimensionValue::U64(declared)) = point.dimensions.get("concurrent_inflight")
+            else {
+                return None;
+            };
+            let Some(DimensionValue::U64(observed)) =
+                point.dimensions.get("observed_inflight_high_water")
+            else {
+                return None;
+            };
+            (*declared == *observed
+                && point.dimensions.get("measurement_boundary")
+                    == Some(&DimensionValue::Text(
+                        "framed-request-lifetime-at-router-oneshot".to_owned(),
+                    ))
+                && point.dimensions.get("not_connections") == Some(&DimensionValue::Bool(true)))
+            .then_some(*declared)
+        })
+        .collect::<BTreeSet<_>>();
+    if concurrency.points.len() != 4 || observed_inflight != BTreeSet::from([1, 10, 100, 1_000]) {
+        problems.push(
+            "W2 concurrency points must prove observed in-flight high-water 1/10/100/1000"
+                .to_owned(),
+        );
+    }
+
+    let Some(MeasurementEvidence::Scalar(path_cost)) =
+        report.measurements.iter().find(|measurement| {
+            measurement.id() == "client_surface_codec_dispatch_and_admission_rejection_cost"
+        })
+    else {
+        problems.push("W2 path-cost measurement has the wrong type".to_owned());
+        return problems;
+    };
+    let path_payloads = path_cost
+        .points
+        .iter()
+        .filter_map(|point| {
+            let Some(DimensionValue::Text(path)) = point.dimensions.get("path") else {
+                return None;
+            };
+            let Some(DimensionValue::U64(bytes)) = point.dimensions.get("payload_bytes") else {
+                return None;
+            };
+            Some((path.clone(), *bytes))
+        })
+        .collect::<BTreeMap<_, _>>();
+    let normal_payload = path_payloads.get("codec_encode_decode").copied();
+    let dispatch_payload = path_payloads.get("router_dispatch").copied();
+    let oversized_payload = path_payloads.get("oversized_admission_rejection").copied();
+    let workload_payloads = path_cost
+        .workload
+        .payload_mix
+        .iter()
+        .map(|payload| payload.bytes)
+        .collect::<BTreeSet<_>>();
+    if path_cost.points.len() != 3
+        || path_payloads.len() != 3
+        || normal_payload.is_none()
+        || normal_payload != dispatch_payload
+        || !matches!((normal_payload, oversized_payload), (Some(normal), Some(oversized)) if oversized > normal)
+        || workload_payloads
+            != normal_payload
+                .into_iter()
+                .chain(oversized_payload)
+                .collect::<BTreeSet<_>>()
+    {
+        problems.push(
+            "W2 path-cost dimensions and workload identity must bind normal and oversized payloads"
+                .to_owned(),
+        );
+    }
+    problems
 }
 
 impl MeasurementEvidence {
@@ -676,6 +872,12 @@ fn digest_json(value: &impl Serialize) -> String {
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect()
+}
+
+/// Canonical digest for a derived measurement's exact ordered inputs.
+/// Kept crate-visible so producers and the report validator use one algorithm.
+pub(crate) fn derived_identity_digest(inputs: &[(String, String)]) -> String {
+    digest_json(&inputs)
 }
 
 fn suite_scenario_digest(measurements: &[MeasurementEvidence]) -> String {

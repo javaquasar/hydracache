@@ -8,6 +8,10 @@ pub enum LoadgenCommand {
         profile: String,
         report: PathBuf,
     },
+    TierClientSurface {
+        profile: String,
+        report: PathBuf,
+    },
     SuiteCore {
         profile: String,
         output_dir: PathBuf,
@@ -19,13 +23,26 @@ impl LoadgenCommand {
     pub fn local_report_path(&self) -> PathBuf {
         match self {
             Self::TierLocal { report, .. } => report.clone(),
+            Self::TierClientSurface { report, .. } => report.clone(),
             Self::SuiteCore { output_dir, .. } => output_dir.join("local.json"),
+        }
+    }
+
+    /// The W2 client-surface artifact path. A direct W2 command and the
+    /// aggregate core suite resolve to the same canonical file name.
+    pub fn client_surface_report_path(&self) -> PathBuf {
+        match self {
+            Self::TierClientSurface { report, .. } => report.clone(),
+            Self::SuiteCore { output_dir, .. } => output_dir.join("client-surface.json"),
+            Self::TierLocal { report, .. } => report.clone(),
         }
     }
 
     pub fn profile(&self) -> &str {
         match self {
-            Self::TierLocal { profile, .. } | Self::SuiteCore { profile, .. } => profile,
+            Self::TierLocal { profile, .. }
+            | Self::TierClientSurface { profile, .. }
+            | Self::SuiteCore { profile, .. } => profile,
         }
     }
 }
@@ -59,12 +76,18 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
     let profile = profile.ok_or_else(|| "--profile is required".to_owned())?;
     match (family.as_str(), name.as_str(), report, output_dir) {
         ("tier", "local", Some(report), None) => Ok(LoadgenCommand::TierLocal { profile, report }),
+        ("tier", "client-surface", Some(report), None) => {
+            Ok(LoadgenCommand::TierClientSurface { profile, report })
+        }
         ("suite", "core", None, Some(output_dir)) => Ok(LoadgenCommand::SuiteCore {
             profile,
             output_dir,
         }),
         ("tier", "local", _, _) => {
             Err("tier local requires --report and forbids --output-dir".to_owned())
+        }
+        ("tier", "client-surface", _, _) => {
+            Err("tier client-surface requires --report and forbids --output-dir".to_owned())
         }
         ("suite", "core", _, _) => {
             Err("suite core requires --output-dir and forbids --report".to_owned())
