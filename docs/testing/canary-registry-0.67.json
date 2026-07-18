@@ -282,6 +282,37 @@
       "red_evidence": "The W8 canary proves that same-box evidence rejects a mismatched runner identity or an unpinned Redis image before any comparison report can become ship evidence."
     },
     {
+      "w_item": "W9",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w9_metrics_067.rs",
+        "function": "server_reported_ops_and_rejects_match_loadgen_within_tolerance"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w9_metrics_067.rs",
+        "function": "canary_metrics_undercount_fixture_is_detected"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w9_metrics_067", "--locked", "server_reported_ops_and_rejects_match_loadgen_within_tolerance", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w9_metrics_067", "--locked", "canary_metrics_undercount_fixture_is_detected", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W9"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W9",
+      "expected_failure": "HC-CANARY-RED:W9",
+      "timeout_seconds": 180,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W9.json"],
+      "red_evidence": "The W9 canary proves that an exported counter which drops every tenth independently observed operation is rejected with the exact release-scoped marker."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

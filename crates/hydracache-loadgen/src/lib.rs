@@ -8,6 +8,7 @@ pub mod cli;
 pub mod compare_redis;
 pub mod histogram;
 pub mod knee;
+pub mod metrics_honesty;
 pub mod overload;
 pub mod profile;
 pub mod rate;

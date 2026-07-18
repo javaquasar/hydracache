@@ -18,6 +18,11 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use thiserror::Error;
 
+use crate::metrics_honesty::{
+    LiveDaemonMetricsBinding, MetricsHonestyError, MetricsHonestyScenario, MetricsWindowEvidence,
+    MetricsWindowRecorder, ObserverIntervalClock, TopologySnapshotEvidence,
+};
+use crate::run_open_loop;
 use crate::targets::control_plane::{
     begin_admin_drain_transition, begin_daemon_add_transition,
     capture_membership_baseline_from_live, observe_membership_transition,
@@ -52,6 +57,8 @@ pub enum ControlPlaneReferenceError {
     Evidence(#[from] ControlPlaneError),
     #[error("W4A daemon lifecycle failed: {0}")]
     Lifecycle(String),
+    #[error(transparent)]
+    Metrics(#[from] MetricsHonestyError),
 }
 
 /// Run one complete 3/5/7-node reference artifact and write it only after all
@@ -63,6 +70,55 @@ pub async fn run_control_plane_reference(
     evidence_root: &Path,
     report_path: &Path,
 ) -> Result<ControlPlaneReport, ControlPlaneReferenceError> {
+    let (report, metrics_window) = run_control_plane_reference_inner(
+        context,
+        scenario,
+        node_count,
+        evidence_root,
+        report_path,
+        None,
+    )
+    .await?;
+    debug_assert!(metrics_window.is_none());
+    Ok(report)
+}
+
+/// W9-enabled W4A producer. It captures one bounded W0 metrics window from
+/// the exact selected leader PID and only returns it after the ordinary W4A
+/// lifecycle has killed/waited every process and landed the archived report.
+pub async fn run_control_plane_reference_with_metrics(
+    context: &ValidatedRespReferenceContext,
+    scenario: &ControlPlaneScenario,
+    node_count: u8,
+    evidence_root: &Path,
+    report_path: &Path,
+    metrics_scenario: &MetricsHonestyScenario,
+) -> Result<(ControlPlaneReport, MetricsWindowEvidence), ControlPlaneReferenceError> {
+    let (report, metrics_window) = run_control_plane_reference_inner(
+        context,
+        scenario,
+        node_count,
+        evidence_root,
+        report_path,
+        Some(metrics_scenario),
+    )
+    .await?;
+    let metrics_window = metrics_window.ok_or_else(|| {
+        ControlPlaneReferenceError::Contract(
+            "W9-enabled W4A run lost its metrics window".to_owned(),
+        )
+    })?;
+    Ok((report, metrics_window))
+}
+
+async fn run_control_plane_reference_inner(
+    context: &ValidatedRespReferenceContext,
+    scenario: &ControlPlaneScenario,
+    node_count: u8,
+    evidence_root: &Path,
+    report_path: &Path,
+    metrics_scenario: Option<&MetricsHonestyScenario>,
+) -> Result<(ControlPlaneReport, Option<MetricsWindowEvidence>), ControlPlaneReferenceError> {
     let _process_guard = CONTROL_PLANE_PROCESS_LOCK.lock().await;
     require_mandatory_lane()?;
     scenario.validate()?;
@@ -116,6 +172,18 @@ pub async fn run_control_plane_reference(
         NodeRole::Leader,
         timeout,
     )?);
+    let metrics_window = match metrics_scenario {
+        Some(metrics_scenario) => Some(
+            control_plane_metrics_window(
+                metrics_scenario,
+                &probed,
+                Arc::clone(&leader_target),
+                &leader,
+            )
+            .await?,
+        ),
+        None => None,
+    };
     let leader_evidence = run_control_plane_knee(leader_target, scenario).await?;
     let follower_target = Arc::new(ControlPlaneTarget::new(
         Arc::clone(&probed),
@@ -161,7 +229,34 @@ pub async fn run_control_plane_reference(
     };
     report.validate(scenario, &probed)?;
     write_new_report(report_path, &report)?;
-    Ok(report)
+    Ok((report, metrics_window))
+}
+
+async fn control_plane_metrics_window(
+    scenario: &MetricsHonestyScenario,
+    capability: &ProbedControlPlaneCapability,
+    target: Arc<ControlPlaneTarget>,
+    node_id: &str,
+) -> Result<MetricsWindowEvidence, ControlPlaneReferenceError> {
+    scenario.validate()?;
+    let binding = LiveDaemonMetricsBinding::from_w4a(scenario, &capability.attestation, node_id)?;
+    let window_id = format!("w4a-control-plane-{node_id}-pid-{}", binding.pid);
+    let recorder = MetricsWindowRecorder::begin(scenario, window_id, binding).await?;
+    let topology_before =
+        TopologySnapshotEvidence::from_public_snapshot(&target.public_snapshot().await?)?;
+    let clock = ObserverIntervalClock::start()?;
+    let observation = run_open_loop(target.clone(), &scenario.observer_probe.open_loop_config())
+        .await
+        .map_err(ControlPlaneReferenceError::System)?;
+    let topology_after =
+        TopologySnapshotEvidence::from_public_snapshot(&target.public_snapshot().await?)?;
+    let observer = clock.finish(
+        scenario,
+        &observation,
+        Some(topology_before),
+        Some(topology_after),
+    )?;
+    recorder.finish(observer).await.map_err(Into::into)
 }
 
 /// Shared direct-process seam for fault-oriented tiers. It deliberately

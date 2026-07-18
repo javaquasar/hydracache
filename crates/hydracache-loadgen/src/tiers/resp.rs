@@ -22,6 +22,10 @@ use tokio::net::TcpListener;
 use tokio::sync::watch;
 use tokio::task::{JoinHandle, JoinSet};
 
+use crate::metrics_honesty::{
+    LiveDaemonMetricsBinding, MetricsHonestyScenario, MetricsWindowEvidence, MetricsWindowRecorder,
+    ObserverIntervalClock,
+};
 use crate::report::{
     derived_identity_digest, BuildIdentity, DimensionValue, EvidenceRunMode,
     KeyDistributionIdentity, LoadClaim, LoadCurveEvidence, MeasurementEvidence, PerfReport,
@@ -95,6 +99,12 @@ pub struct RespReferenceSuiteEvidence {
     pub open_loop: PerfReport,
     pub external: RedisBenchmarkEvidence,
     pub daemon: RespDaemonEvidence,
+}
+
+#[derive(Debug)]
+pub struct RespReferenceSuiteWithMetricsEvidence {
+    pub suite: RespReferenceSuiteEvidence,
+    pub metrics_window: MetricsWindowEvidence,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -592,10 +602,60 @@ async fn resp_reference_report_for_endpoint(
 pub async fn run_resp_reference_suite(
     context: ValidatedRespReferenceContext,
     daemon: RespDaemonFixture,
-    mut external_contract: RedisBenchmarkContract,
+    external_contract: RedisBenchmarkContract,
     provenance_registry: ExternalToolProvenanceRegistry,
     external_tool_prebuild: ExternalToolPrebuildReceipt,
 ) -> Result<RespReferenceSuiteEvidence, RespTierError> {
+    let (suite, metrics_window) = run_resp_reference_suite_inner(
+        context,
+        daemon,
+        external_contract,
+        provenance_registry,
+        external_tool_prebuild,
+        None,
+    )
+    .await?;
+    debug_assert!(metrics_window.is_none());
+    Ok(suite)
+}
+
+/// W9-enabled W3 producer. The bounded observer window is captured on the
+/// exact suite daemon before W3 runs, and the returned suite lifecycle proves
+/// that this same PID was subsequently killed and waited.
+pub async fn run_resp_reference_suite_with_metrics(
+    context: ValidatedRespReferenceContext,
+    daemon: RespDaemonFixture,
+    external_contract: RedisBenchmarkContract,
+    provenance_registry: ExternalToolProvenanceRegistry,
+    external_tool_prebuild: ExternalToolPrebuildReceipt,
+    metrics_scenario: &MetricsHonestyScenario,
+) -> Result<RespReferenceSuiteWithMetricsEvidence, RespTierError> {
+    let (suite, metrics_window) = run_resp_reference_suite_inner(
+        context,
+        daemon,
+        external_contract,
+        provenance_registry,
+        external_tool_prebuild,
+        Some(metrics_scenario),
+    )
+    .await?;
+    let metrics_window = metrics_window.ok_or_else(|| {
+        RespTierError::Report("W9-enabled W3 suite lost its metrics window".to_owned())
+    })?;
+    Ok(RespReferenceSuiteWithMetricsEvidence {
+        suite,
+        metrics_window,
+    })
+}
+
+async fn run_resp_reference_suite_inner(
+    context: ValidatedRespReferenceContext,
+    daemon: RespDaemonFixture,
+    mut external_contract: RedisBenchmarkContract,
+    provenance_registry: ExternalToolProvenanceRegistry,
+    external_tool_prebuild: ExternalToolPrebuildReceipt,
+    metrics_scenario: Option<&MetricsHonestyScenario>,
+) -> Result<(RespReferenceSuiteEvidence, Option<MetricsWindowEvidence>), RespTierError> {
     let committed_contract_sha256 = external_contract.committed_digest();
     external_contract.endpoint = RedisBenchmarkEndpoint {
         host: "127.0.0.1".to_owned(),
@@ -638,6 +698,10 @@ pub async fn run_resp_reference_suite(
     };
 
     let measurement = async {
+        let metrics_window = match metrics_scenario {
+            Some(scenario) => Some(resp_metrics_window(&context, &daemon, scenario).await?),
+            None => None,
+        };
         let open_loop = resp_reference_report_on(&context, &daemon).await?;
         let external = tokio::task::spawn_blocking(move || {
             run_redis_benchmark(
@@ -663,7 +727,7 @@ pub async fn run_resp_reference_suite(
                 external.stability_reasons
             )));
         }
-        Ok::<_, RespTierError>((open_loop, *external))
+        Ok::<_, RespTierError>((open_loop, *external, metrics_window))
     }
     .await;
     let lifecycle = daemon
@@ -671,17 +735,91 @@ pub async fn run_resp_reference_suite(
         .await
         .map_err(|error| RespTierError::Runtime(error.to_string()));
     match (measurement, lifecycle) {
-        (Ok((open_loop, external)), Ok(daemon)) => Ok(RespReferenceSuiteEvidence {
-            open_loop,
-            external,
-            daemon,
-        }),
+        (Ok((open_loop, external, metrics_window)), Ok(daemon)) => Ok((
+            RespReferenceSuiteEvidence {
+                open_loop,
+                external,
+                daemon,
+            },
+            metrics_window,
+        )),
         (Err(error), Ok(_)) => Err(error),
         (Ok(_), Err(error)) => Err(error),
         (Err(measurement), Err(lifecycle)) => Err(RespTierError::Runtime(format!(
             "reference measurement failed ({measurement}); daemon cleanup also failed ({lifecycle})"
         ))),
     }
+}
+
+async fn resp_metrics_window(
+    context: &ValidatedRespReferenceContext,
+    daemon: &RespDaemonFixture,
+    scenario: &MetricsHonestyScenario,
+) -> Result<MetricsWindowEvidence, RespTierError> {
+    scenario
+        .validate()
+        .map_err(|error| RespTierError::Report(error.to_string()))?;
+    let binding_input = parse_resp_scenario(WORKLOAD_A_SCENARIO)?;
+    let schedule = KeyScheduleSpec::uniform(
+        binding_input.scenario.seed,
+        64,
+        scenario.observer_probe.operations,
+    )
+    .generate()
+    .map_err(RespTierError::Runtime)?;
+    let target = Arc::new(resp_target(
+        &RespRunEndpoint::reference(
+            daemon.endpoint_identity(),
+            daemon
+                .endpoint_capability_digest()
+                .map_err(|error| RespTierError::Report(error.to_string()))?,
+        )?,
+        &binding_input,
+        &schedule,
+        RespTargetShape {
+            preload_entries: 16,
+            key_space: 64,
+            connections: 1,
+            pipeline_depth: 1,
+            injected_dispatch_delay: Duration::ZERO,
+        },
+    )?);
+    Target::reset(target.as_ref()).await?;
+    Target::preload(target.as_ref()).await?;
+
+    let runner_identity_sha256 = digest_bytes(
+        &serde_json::to_vec(&context.runner)
+            .map_err(|error| RespTierError::Report(error.to_string()))?,
+    );
+    let binding = LiveDaemonMetricsBinding::from_w3(
+        scenario,
+        daemon.endpoint_capability(),
+        &context.source,
+        &context.build,
+        &context.profile.name,
+        &runner_identity_sha256,
+    )
+    .map_err(|error| RespTierError::Report(error.to_string()))?;
+    let window_id = format!(
+        "w3-node-resp-pid-{}-started-{}",
+        binding.pid,
+        daemon.endpoint_capability().started_unix_nanos
+    );
+    let recorder = MetricsWindowRecorder::begin(scenario, window_id, binding)
+        .await
+        .map_err(|error| RespTierError::Report(error.to_string()))?;
+    let clock =
+        ObserverIntervalClock::start().map_err(|error| RespTierError::Report(error.to_string()))?;
+    let observation = run_open_loop(target, &scenario.observer_probe.open_loop_config())
+        .await
+        .map_err(RespTierError::Runtime)?;
+    let observer = clock
+        .finish(scenario, &observation, None, None)
+        .map_err(|error| RespTierError::Report(error.to_string()))?;
+    recorder
+        .finish(observer)
+        .await
+        .map_err(|error| RespTierError::Report(error.to_string()))
 }
 
 async fn resp_smoke_report_on(

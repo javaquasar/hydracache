@@ -4,13 +4,17 @@ use hydracache_loadgen::budget_receipt::{
     build_control_plane_brownout_macro_envelope, build_control_plane_macro_envelope,
     build_grid_model_brownout_macro_envelope, build_grid_model_macro_envelope,
     build_overload_macro_envelope, build_resp_brownout_macro_envelope, prepare_macro_artifact,
-    publish_macro_batch, PreparedMacroArtifact,
+    publish_macro_batch, PreparedMacroArtifact, MACRO_RAW_DIR_RELATIVE,
 };
 use hydracache_loadgen::cli;
 use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand, OverloadTarget};
 use hydracache_loadgen::compare_redis::{
     run_and_write_same_box_redis_comparison, RedisComparisonOutcome, RedisComparisonRunMode,
     W3ReferenceArtifactSet,
+};
+use hydracache_loadgen::metrics_honesty::{
+    publish_control_plane_metrics_report, publish_resp_metrics_report, MetricsHonestyScenario,
+    MetricsWindowEvidence,
 };
 use hydracache_loadgen::overload::{
     write_reference_overload_report, EligibleOverloadSurface, OverloadReport, OverloadScenario,
@@ -34,12 +38,14 @@ use hydracache_loadgen::tiers::brownout::{
 use hydracache_loadgen::tiers::client_surface::{
     write_client_surface_report, write_client_surface_report_with_context,
 };
-use hydracache_loadgen::tiers::control_plane::run_control_plane_reference;
+use hydracache_loadgen::tiers::control_plane::{
+    run_control_plane_reference, run_control_plane_reference_with_metrics,
+};
 use hydracache_loadgen::tiers::grid_model::write_grid_model_report;
 use hydracache_loadgen::tiers::local::{write_local_report, write_local_report_with_context};
 use hydracache_loadgen::tiers::resp::{
-    resp_reference_report_on, run_resp_reference_suite, write_resp_report, RespReferenceRunInputs,
-    RespReferenceSuiteReceipt,
+    resp_reference_report_on, run_resp_reference_suite_with_metrics, write_resp_report,
+    RespReferenceRunInputs, RespReferenceSuiteReceipt,
 };
 use hydracache_loadgen::tiers::resp_reference::{
     load_reference_context, start_reference_daemon, RespDaemonLaunch, RespReferencePorts,
@@ -58,6 +64,8 @@ const BROWNOUT_RESP_SCENARIO: &str =
 const BROWNOUT_GRID_MODEL_SCENARIO: &str =
     "docs/testing/perf-scenarios/0.67/brownout-grid-model-v1.toml";
 const OVERLOAD_SCENARIO: &str = "docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml";
+const METRICS_HONESTY_SCENARIO: &str = "docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml";
+const W7_CONTROL_PLANE_3_RAW_REPORT: &str = "control-plane-3-reference-v1.raw.json";
 
 #[tokio::main]
 async fn main() {
@@ -211,8 +219,6 @@ async fn run() -> Result<(), String> {
                     "RESP suite lost its canonical external-tool report path".to_owned()
                 })?;
                 write_reference_resp_suite(&path, &external_path).await?;
-                // W9 publishes its metrics-honesty artifact at this reserved point,
-                // after the sealed W3 suite and before W8 consumes that archive.
                 let comparison_path = command.redis_comparison_report_path().ok_or_else(|| {
                     "RESP suite lost its canonical Redis-comparison report path".to_owned()
                 })?;
@@ -265,13 +271,31 @@ async fn run() -> Result<(), String> {
                     "control-plane target roles must remain exactly leader,follower".to_owned(),
                 );
             }
-            write_reference_control_plane_reports(command.profile(), &[(nodes, path)]).await?;
+            let metrics_window =
+                write_reference_control_plane_reports(command.profile(), &[(nodes, path)], None)
+                    .await?;
+            if metrics_window.is_some() {
+                return Err(
+                    "standalone control-plane tier unexpectedly captured suite-only W9 evidence"
+                        .to_owned(),
+                );
+            }
         }
         LoadgenCommand::SuiteControlPlane { .. } => {
             let paths = command.control_plane_suite_report_paths().ok_or_else(|| {
                 "control-plane suite lost its canonical 3/5/7 report set".to_owned()
             })?;
-            write_reference_control_plane_reports(command.profile(), &paths).await?;
+            let repo_root = repository_root()?;
+            let metrics_scenario =
+                MetricsHonestyScenario::load(&repo_root.join(METRICS_HONESTY_SCENARIO))
+                    .map_err(|error| error.to_string())?;
+            let metrics_window = write_reference_control_plane_reports(
+                command.profile(),
+                &paths,
+                Some(&metrics_scenario),
+            )
+            .await?
+            .ok_or_else(|| "control-plane suite lost its W9 metrics window".to_owned())?;
             let predecessor = paths
                 .iter()
                 .find(|(nodes, _)| *nodes == 3)
@@ -284,7 +308,27 @@ async fn run() -> Result<(), String> {
                 &brownout_path,
             )
             .await?;
-            publish_w7_macro_tail(&repository_root()?).await?;
+            publish_w7_macro_tail(&repo_root).await?;
+            let control_plane_scenario =
+                ControlPlaneScenario::load(&repo_root.join(CONTROL_PLANE_SCENARIO))
+                    .map_err(|error| error.to_string())?;
+            let raw_report_path = repo_root
+                .join(MACRO_RAW_DIR_RELATIVE)
+                .join(W7_CONTROL_PLANE_3_RAW_REPORT);
+            let metrics_report_path = absolute_output_path(&repo_root, predecessor)
+                .with_file_name("metrics-control-plane.json");
+            publish_control_plane_metrics_report(
+                &metrics_scenario,
+                &control_plane_scenario,
+                &raw_report_path,
+                metrics_window,
+                &metrics_report_path,
+            )
+            .map_err(|error| error.to_string())?;
+            eprintln!(
+                "hydracache-loadgen: wrote archived W9 control-plane metrics evidence to {}",
+                metrics_report_path.display()
+            );
         }
         LoadgenCommand::Brownout { .. } => {
             let (target, report) = command
@@ -555,7 +599,8 @@ async fn write_reference_brownout(
 async fn write_reference_control_plane_reports(
     profile: &str,
     reports: &[(u8, PathBuf)],
-) -> Result<(), String> {
+    metrics_scenario: Option<&MetricsHonestyScenario>,
+) -> Result<Option<MetricsWindowEvidence>, String> {
     if profile != "reference-v1" {
         return Err(
             "W4A has no fixture capacity mode; use reference-v1 with the mandatory real-daemon gate"
@@ -568,15 +613,51 @@ async fn write_reference_control_plane_reports(
         .map_err(|error| error.to_string())?;
     let scenario = ControlPlaneScenario::load(&repo_root.join(CONTROL_PLANE_SCENARIO))
         .map_err(|error| error.to_string())?;
+    if metrics_scenario.is_some() {
+        let mut node_counts = reports.iter().map(|(nodes, _)| *nodes).collect::<Vec<_>>();
+        node_counts.sort_unstable();
+        if node_counts != [3, 5, 7] {
+            return Err(
+                "W9 control-plane metrics require the exact 3/5/7 suite, not a standalone tier"
+                    .to_owned(),
+            );
+        }
+    }
+    let mut metrics_window = None;
     for (nodes, report) in reports {
         let report = absolute_output_path(&repo_root, report);
         let evidence_root = report
             .parent()
             .ok_or_else(|| format!("W4A report path has no parent: {}", report.display()))?
             .join("w4a-run-artifacts");
-        run_control_plane_reference(&context, &scenario, *nodes, &evidence_root, &report)
-            .await
-            .map_err(|error| error.to_string())?;
+        if *nodes == 3 {
+            if let Some(metrics_scenario) = metrics_scenario {
+                let (_, window) = run_control_plane_reference_with_metrics(
+                    &context,
+                    &scenario,
+                    *nodes,
+                    &evidence_root,
+                    &report,
+                    metrics_scenario,
+                )
+                .await
+                .map_err(|error| error.to_string())?;
+                if metrics_window.replace(window).is_some() {
+                    return Err(
+                        "W9 control-plane suite captured more than one 3-node metrics window"
+                            .to_owned(),
+                    );
+                }
+            } else {
+                run_control_plane_reference(&context, &scenario, *nodes, &evidence_root, &report)
+                    .await
+                    .map_err(|error| error.to_string())?;
+            }
+        } else {
+            run_control_plane_reference(&context, &scenario, *nodes, &evidence_root, &report)
+                .await
+                .map_err(|error| error.to_string())?;
+        }
         eprintln!(
             "hydracache-loadgen: wrote receipt-bound {nodes}-daemon control-plane report to {}",
             report.display()
@@ -585,7 +666,10 @@ async fn write_reference_control_plane_reports(
     context
         .verify_binaries_unchanged()
         .map_err(|error| error.to_string())?;
-    Ok(())
+    if metrics_scenario.is_some() && metrics_window.is_none() {
+        return Err("W9 control-plane suite did not capture its 3-node metrics window".to_owned());
+    }
+    Ok(metrics_window)
 }
 
 fn absolute_output_path(repo_root: &Path, path: &Path) -> PathBuf {
@@ -682,8 +766,12 @@ async fn write_reference_resp_suite(
 ) -> Result<(), String> {
     require_reference_resp_gate()?;
     let repo_root = repository_root()?;
+    let open_loop_path = absolute_output_path(&repo_root, open_loop_path);
+    let external_path = absolute_output_path(&repo_root, external_path);
     let inputs = RespReferenceRunInputs::load(&repo_root).map_err(|error| error.to_string())?;
     let context = load_reference_context(&repo_root, Some(&inputs.prerequisites))
+        .map_err(|error| error.to_string())?;
+    let metrics_scenario = MetricsHonestyScenario::load(&repo_root.join(METRICS_HONESTY_SCENARIO))
         .map_err(|error| error.to_string())?;
     let ports = RespReferencePorts::select_available().map_err(|error| error.to_string())?;
     let launch = RespDaemonLaunch::for_repeat(&repo_root, 0, ports);
@@ -696,20 +784,23 @@ async fn write_reference_resp_suite(
         &repo_root.join(REDIS_BENCHMARK_PROVENANCE_REGISTRY_PATH),
     )
     .map_err(|error| error.to_string())?;
-    let evidence = run_resp_reference_suite(
+    let evidence_with_metrics = run_resp_reference_suite_with_metrics(
         context,
         daemon,
         external_contract,
         provenance,
         inputs.external_tool_prebuild,
+        &metrics_scenario,
     )
     .await
     .map_err(|error| error.to_string())?;
+    let metrics_window = evidence_with_metrics.metrics_window;
+    let evidence = evidence_with_metrics.suite;
     let open_loop_bytes = evidence
         .open_loop
         .to_pretty_json()
         .map_err(|error| error.to_string())?;
-    let external_bytes = pretty_json_bytes(external_path, &evidence.external)?;
+    let external_bytes = pretty_json_bytes(&external_path, &evidence.external)?;
     let lifecycle_path = open_loop_path.with_file_name("node-resp-daemon-lifecycle.json");
     let lifecycle_bytes = pretty_json_bytes(&lifecycle_path, &evidence.daemon)?;
     let receipt = RespReferenceSuiteReceipt::seal(
@@ -721,11 +812,26 @@ async fn write_reference_resp_suite(
     .map_err(|error| error.to_string())?;
     let receipt_path = open_loop_path.with_file_name("node-resp-suite-receipt.json");
     let receipt_bytes = pretty_json_bytes(&receipt_path, &receipt)?;
-    write_bytes(open_loop_path, open_loop_bytes)?;
-    write_bytes(external_path, external_bytes)?;
+    write_bytes(&open_loop_path, open_loop_bytes)?;
+    write_bytes(&external_path, external_bytes)?;
     write_bytes(&lifecycle_path, lifecycle_bytes)?;
     // Written last: absence of this cross-artifact receipt makes a partial run non-evidence.
     write_bytes(&receipt_path, receipt_bytes)?;
+    let metrics_report_path = open_loop_path.with_file_name("metrics-resp.json");
+    publish_resp_metrics_report(
+        &metrics_scenario,
+        &open_loop_path,
+        &lifecycle_path,
+        &external_path,
+        &receipt_path,
+        metrics_window,
+        &metrics_report_path,
+    )
+    .map_err(|error| error.to_string())?;
+    eprintln!(
+        "hydracache-loadgen: wrote archived W9 RESP metrics evidence to {}",
+        metrics_report_path.display()
+    );
     Ok(())
 }
 
