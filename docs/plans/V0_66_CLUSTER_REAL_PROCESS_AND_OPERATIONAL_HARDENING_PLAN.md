@@ -450,8 +450,12 @@ governance established by 0.65.
 - Kind lane includes W5 operator proof and W11. Fuzz lane includes W9. W6 receives full Git history and
   the previous-daemon artifact.
 - Upload exact receipts, child logs, minimized/frozen schedules, compatibility provenance, resource
-  JSON, and fuzz reproducers.
-- `docs/TESTING.md` records exact PowerShell and bash reproduction commands for each gate.
+  JSON, and fuzz reproducers. The operator-kind command must create and declare its capability,
+  server-pod, controller, resource, and event artifacts before `evidence-run` hashes the receipt;
+  post-command diagnostics cannot substitute for missing fresh gate artifacts.
+- `docs/TESTING.md` records exact platform-appropriate reproduction commands for each gate; the
+  operator receipt uses an exact clean-cluster Bash sequence because its live-PID/binary proof
+  intentionally requires Linux `/proc` (PowerShell callers use that sequence through WSL/Linux).
 
 **Required checks.**
 

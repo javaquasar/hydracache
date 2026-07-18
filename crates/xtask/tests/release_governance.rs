@@ -60,6 +60,36 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
     assert!(problems.is_empty(), "{problems:#?}");
 
     for required in [
+        "operator-controller-live.log",
+        "cargo build -p hydracache-operator --locked",
+        "operator_binary=\"$(pwd)/target/debug/hydracache-operator\"",
+        "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+        "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
+        "operator_nonce=\"release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}\"",
+        "export HYDRACACHE_OPERATOR_EVIDENCE_NONCE=\"$operator_nonce\"",
+        "echo \"HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce\" >> \"$GITHUB_ENV\"",
+        "HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s",
+        "\"$operator_nonce\" \"$operator_binary\" > \"$operator_log\"",
+        "nohup \"$operator_binary\" >> \"$operator_log\" 2>&1 &",
+        "printf '%s\\n' \"$operator_pid\" > \"$operator_pid_file\"",
+        "kill -0 \"$operator_pid\"",
+        "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce",
+        "operator-kind-pod-logs-post.txt",
+    ] {
+        let broken = workflow.replace(required, "operator-evidence-was-removed");
+        assert_ne!(
+            broken, workflow,
+            "operator fixture marker was not found: {required}"
+        );
+        let problems =
+            xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
+        assert!(
+            problems.iter().any(|problem| problem.contains(required)),
+            "missing operator evidence wiring was accepted: {required}: {problems:#?}"
+        );
+    }
+
+    for required in [
         "canary-check --release 0.66",
         "canary-sweep --release 0.66 --tier fast",
         "canary-sweep --release 0.66 --tier all",
@@ -242,6 +272,34 @@ fn release_066_registered_heavy_gates_are_mandatory_and_fail_closed() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS")));
+
+    let mut missing_operator_logs = registry.gate.clone();
+    let operator = missing_operator_logs
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-operator-kind-066")
+        .unwrap();
+    operator
+        .artifacts
+        .retain(|artifact| !artifact.ends_with("operator-kind-pod-logs.txt"));
+    let problems =
+        xtask::release_governance::release_066_gate_contract_problems(&missing_operator_logs);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("operator-kind-pod-logs.txt")));
+
+    let mut missing_operator_nonce = registry.gate.clone();
+    let operator = missing_operator_nonce
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-operator-kind-066")
+        .unwrap();
+    operator
+        .required_env
+        .retain(|required| required != "HYDRACACHE_OPERATOR_EVIDENCE_NONCE");
+    let problems =
+        xtask::release_governance::release_066_gate_contract_problems(&missing_operator_nonce);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("HYDRACACHE_OPERATOR_EVIDENCE_NONCE")));
 
     let mut unbounded_fuzz = registry.gate.clone();
     let fuzz = unbounded_fuzz

@@ -5206,12 +5206,20 @@ required_env = [
     "HYDRACACHE_OPERATOR_IMAGE",
     "HYDRACACHE_OPERATOR_VERSION",
     "HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS",
+    "HYDRACACHE_OPERATOR_EVIDENCE_NONCE",
 ]
 required_tools = ["docker", "kind", "kubectl", "helm"]
 timeout_seconds = 7200
 owner_release = "0.66.0"
 ship_mandatory = true
-artifacts = []
+artifacts = [
+    "target/test-evidence/0.66/operator-kind-w5-iochaos-capability.txt",
+    "target/test-evidence/0.66/operator-kind-w11-network-policy-capability.txt",
+    "target/test-evidence/0.66/operator-kind-pod-logs.txt",
+    "target/test-evidence/0.66/operator-kind-resources.txt",
+    "target/test-evidence/0.66/operator-kind-events.txt",
+    "target/test-evidence/0.66/operator-controller.log",
+]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"

@@ -441,6 +441,8 @@ function = "send_task_panic_is_reported_in_diagnostics"
 id = "W13"
 required_sources = [
     ".github/workflows/ci.yml",
+    "crates/hydracache-operator/src/main.rs",
+    "crates/hydracache-operator/tests/soak_kind.rs",
     "crates/xtask/src/canary_check.rs",
     "crates/xtask/src/release_evidence.rs",
     "crates/xtask/src/release_governance.rs",
@@ -487,3 +489,11 @@ function = "release_066_registered_heavy_gates_are_mandatory_and_fail_closed"
 [[work_item.required_tests]]
 source = "crates/xtask/tests/release_governance.rs"
 function = "canary_release_governance_accepts_a_missing_mandatory_gate"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+function = "operator_release_evidence_rejects_empty_kubectl_output"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-operator/tests/soak_kind.rs"
+function = "operator_release_evidence_requires_current_controller_runtime_output"

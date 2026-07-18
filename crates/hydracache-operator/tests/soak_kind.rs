@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::fs;
 use std::panic::{resume_unwind, AssertUnwindSafe};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
@@ -36,6 +38,17 @@ const IMAGE_ENV: &str = "HYDRACACHE_OPERATOR_IMAGE";
 const VERSION_ENV: &str = "HYDRACACHE_OPERATOR_VERSION";
 const REQUIRE_IOCHAOS_ENV: &str = "HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS";
 const NETWORK_PROBE_IMAGE_ENV: &str = "HYDRACACHE_NETWORK_PROBE_IMAGE";
+const OPERATOR_EVIDENCE_DIRECTORY: &str = "target/test-evidence/0.66";
+const OPERATOR_EVIDENCE_NONCE_ENV: &str = "HYDRACACHE_OPERATOR_EVIDENCE_NONCE";
+const OPERATOR_CONTROLLER_LIVE_LOG: &str = "operator-controller-live.log";
+const OPERATOR_CONTROLLER_RECEIPT_LOG: &str = "operator-controller.log";
+#[cfg(target_os = "linux")]
+const OPERATOR_CONTROLLER_PID: &str = "operator-controller.pid";
+const OPERATOR_W5_CAPABILITY_ARTIFACT: &str = "operator-kind-w5-iochaos-capability.txt";
+const OPERATOR_W11_CAPABILITY_ARTIFACT: &str = "operator-kind-w11-network-policy-capability.txt";
+const OPERATOR_POD_LOG_ARTIFACT: &str = "operator-kind-pod-logs.txt";
+const OPERATOR_RESOURCES_ARTIFACT: &str = "operator-kind-resources.txt";
+const OPERATOR_EVENTS_ARTIFACT: &str = "operator-kind-events.txt";
 const STATEFULSET_REVISION_LABEL: &str = "controller-revision-hash";
 const KIND_WAIT_ATTEMPTS: usize = 90;
 static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -63,6 +76,269 @@ fn network_probe_image() -> String {
 
 fn iochaos_required() -> bool {
     std::env::var(REQUIRE_IOCHAOS_ENV).as_deref() == Ok("1")
+}
+
+fn operator_repository_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+fn operator_evidence_path(file_name: &str) -> PathBuf {
+    operator_repository_root()
+        .join(OPERATOR_EVIDENCE_DIRECTORY)
+        .join(file_name)
+}
+
+#[derive(Clone, Copy)]
+enum KubectlStdoutRequirement<'a> {
+    AllowEmpty,
+    NonEmpty,
+    Contains(&'a str),
+}
+
+fn validate_kubectl_stdout(
+    file_name: &str,
+    stdout: &str,
+    requirement: KubectlStdoutRequirement<'_>,
+) -> Result<(), String> {
+    let stdout = stdout.trim();
+    match requirement {
+        KubectlStdoutRequirement::AllowEmpty => Ok(()),
+        KubectlStdoutRequirement::NonEmpty if stdout.is_empty() => Err(format!(
+            "kubectl evidence capture for {file_name} returned empty stdout"
+        )),
+        KubectlStdoutRequirement::NonEmpty if stdout.contains("No resources found") => {
+            Err(format!(
+                "kubectl evidence capture for {file_name} selected no resources"
+            ))
+        }
+        KubectlStdoutRequirement::NonEmpty => Ok(()),
+        KubectlStdoutRequirement::Contains(expected) if stdout.contains(expected) => Ok(()),
+        KubectlStdoutRequirement::Contains(expected) => Err(format!(
+            "kubectl evidence capture for {file_name} did not contain expected identity {expected:?}"
+        )),
+    }
+}
+
+fn capture_kubectl_artifact(
+    file_name: &str,
+    args: &[String],
+    stdout_requirement: KubectlStdoutRequirement<'_>,
+) -> Result<(), String> {
+    let output = Command::new("kubectl")
+        .args(args)
+        .output()
+        .map_err(|error| format!("could not run kubectl for {file_name}: {error}"))?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let mut artifact = format!("$ kubectl {}\nstatus={}\n", args.join(" "), output.status);
+    artifact.push_str("--- stdout ---\n");
+    artifact.push_str(&stdout);
+    artifact.push_str("\n--- stderr ---\n");
+    artifact.push_str(&stderr);
+    fs::write(operator_evidence_path(file_name), artifact)
+        .map_err(|error| format!("could not write {file_name}: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "kubectl evidence capture for {file_name} failed with {}",
+            output.status
+        ));
+    }
+    validate_kubectl_stdout(file_name, &stdout, stdout_requirement)
+}
+
+fn operator_evidence_nonce() -> Result<String, String> {
+    let nonce = std::env::var(OPERATOR_EVIDENCE_NONCE_ENV)
+        .map_err(|_| format!("{OPERATOR_EVIDENCE_NONCE_ENV} is required"))?;
+    if nonce.is_empty()
+        || nonce.len() > 200
+        || !nonce
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+    {
+        return Err(format!(
+            "{OPERATOR_EVIDENCE_NONCE_ENV} must be 1..=200 ASCII letters, digits, '.', '_' or '-'"
+        ));
+    }
+    Ok(nonce)
+}
+
+fn validate_controller_runtime_log(controller_log: &str, nonce: &str) -> Result<(), String> {
+    let start_marker = format!("HC-OPERATOR-CONTROLLER-START nonce={nonce} ");
+    let runtime_marker = format!("HC-OPERATOR-CONTROLLER-RUNTIME nonce={nonce} ");
+    if !controller_log
+        .lines()
+        .any(|line| line.starts_with(&start_marker))
+    {
+        return Err(format!(
+            "live operator controller log is missing current-run start marker for nonce {nonce}"
+        ));
+    }
+    if !controller_log
+        .lines()
+        .any(|line| line.starts_with(&runtime_marker))
+    {
+        return Err(format!(
+            "live operator controller log has no controller runtime output for nonce {nonce}"
+        ));
+    }
+    Ok(())
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct OperatorControllerAttestation {
+    pid: u32,
+    binary: PathBuf,
+}
+
+#[cfg(target_os = "linux")]
+fn attest_live_operator_controller() -> Result<OperatorControllerAttestation, String> {
+    use std::os::unix::fs::MetadataExt;
+
+    let pid_path = operator_evidence_path(OPERATOR_CONTROLLER_PID);
+    let pid_text = fs::read_to_string(&pid_path)
+        .map_err(|error| format!("could not read {}: {error}", pid_path.display()))?;
+    let pid = pid_text
+        .trim()
+        .parse::<u32>()
+        .ok()
+        .filter(|pid| *pid > 0)
+        .ok_or_else(|| format!("{} does not contain a live PID", pid_path.display()))?;
+    let proc_directory = PathBuf::from(format!("/proc/{pid}"));
+    if !proc_directory.is_dir() {
+        return Err(format!("operator controller PID {pid} is not live"));
+    }
+
+    let expected_binary = operator_repository_root().join("target/debug/hydracache-operator");
+    let expected_binary = fs::canonicalize(&expected_binary).map_err(|error| {
+        format!(
+            "could not resolve expected candidate operator binary {}: {error}",
+            expected_binary.display()
+        )
+    })?;
+    let proc_exe = proc_directory.join("exe");
+    let running_binary = fs::canonicalize(&proc_exe).map_err(|error| {
+        format!("could not resolve live operator PID {pid} executable: {error}")
+    })?;
+    let expected_metadata = fs::metadata(&expected_binary).map_err(|error| {
+        format!(
+            "could not inspect candidate operator binary {}: {error}",
+            expected_binary.display()
+        )
+    })?;
+    let running_metadata = fs::metadata(&proc_exe)
+        .map_err(|error| format!("could not inspect live operator PID {pid}: {error}"))?;
+    if running_binary != expected_binary
+        || running_metadata.dev() != expected_metadata.dev()
+        || running_metadata.ino() != expected_metadata.ino()
+    {
+        return Err(format!(
+            "operator PID {pid} runs {}, expected exact candidate binary {}",
+            running_binary.display(),
+            expected_binary.display()
+        ));
+    }
+    Ok(OperatorControllerAttestation {
+        pid,
+        binary: expected_binary,
+    })
+}
+
+#[cfg(not(target_os = "linux"))]
+fn attest_live_operator_controller() -> Result<OperatorControllerAttestation, String> {
+    Err("operator release evidence requires Linux /proc process attestation".to_owned())
+}
+
+fn capture_operator_kind_release_evidence() -> Result<(), String> {
+    if !iochaos_required() {
+        return Err(format!(
+            "{REQUIRE_IOCHAOS_ENV}=1 is required before operator release evidence can be captured"
+        ));
+    }
+
+    let evidence_directory = operator_evidence_path("");
+    fs::create_dir_all(&evidence_directory).map_err(|error| {
+        format!(
+            "could not create operator evidence directory {}: {error}",
+            evidence_directory.display()
+        )
+    })?;
+    let namespace = namespace();
+    let cluster = cluster_name();
+    let selector = server_pod_selector(&cluster);
+    let nonce = operator_evidence_nonce()?;
+
+    capture_kubectl_artifact(
+        OPERATOR_POD_LOG_ARTIFACT,
+        &[
+            "logs".to_owned(),
+            "-n".to_owned(),
+            namespace.clone(),
+            "--selector".to_owned(),
+            selector,
+            "--all-containers=true".to_owned(),
+            "--prefix=true".to_owned(),
+            "--tail=-1".to_owned(),
+        ],
+        KubectlStdoutRequirement::NonEmpty,
+    )?;
+    capture_kubectl_artifact(
+        OPERATOR_RESOURCES_ARTIFACT,
+        &[
+            "get".to_owned(),
+            "pods,statefulsets,services,hydracacheclusters".to_owned(),
+            "-A".to_owned(),
+            "-o".to_owned(),
+            "wide".to_owned(),
+        ],
+        KubectlStdoutRequirement::Contains(&cluster),
+    )?;
+    capture_kubectl_artifact(
+        OPERATOR_EVENTS_ARTIFACT,
+        &[
+            "get".to_owned(),
+            "events".to_owned(),
+            "-A".to_owned(),
+            "--sort-by=.lastTimestamp".to_owned(),
+        ],
+        KubectlStdoutRequirement::AllowEmpty,
+    )?;
+
+    let attestation_before = attest_live_operator_controller()?;
+    let live_log = operator_evidence_path(OPERATOR_CONTROLLER_LIVE_LOG);
+    let controller_log = fs::read_to_string(&live_log).map_err(|error| {
+        format!(
+            "could not read live operator controller log {}: {error}",
+            live_log.display()
+        )
+    })?;
+    validate_controller_runtime_log(&controller_log, &nonce)?;
+    let attestation_after = attest_live_operator_controller()?;
+    if attestation_after != attestation_before {
+        return Err("operator controller identity changed while evidence was captured".to_owned());
+    }
+    let receipt_log = format!(
+        "release=0.66.0\nnonce={nonce}\npid={}\nbinary={}\n--- controller runtime ---\n{controller_log}",
+        attestation_after.pid,
+        attestation_after.binary.display()
+    );
+    fs::write(
+        operator_evidence_path(OPERATOR_CONTROLLER_RECEIPT_LOG),
+        receipt_log,
+    )
+    .map_err(|error| format!("could not snapshot operator controller log: {error}"))?;
+    Ok(())
+}
+
+fn write_operator_capability_artifact(file_name: &str, evidence: &str) -> Result<(), String> {
+    let evidence_directory = operator_evidence_path("");
+    fs::create_dir_all(&evidence_directory).map_err(|error| {
+        format!(
+            "could not create operator evidence directory {}: {error}",
+            evidence_directory.display()
+        )
+    })?;
+    fs::write(operator_evidence_path(file_name), evidence)
+        .map_err(|error| format!("could not write operator capability artifact: {error}"))
 }
 
 fn soak_kind_spec(replicas: u32) -> HydraCacheClusterSpec {
@@ -1572,6 +1848,59 @@ fn scale_chaos_capability_rejects_a_non_enforcing_cni() {
     assert!(error.contains("NetworkPolicy"));
 }
 
+#[test]
+fn operator_release_evidence_rejects_empty_kubectl_output() {
+    let empty_logs = validate_kubectl_stdout(
+        OPERATOR_POD_LOG_ARTIFACT,
+        " \n",
+        KubectlStdoutRequirement::NonEmpty,
+    )
+    .unwrap_err();
+    assert!(empty_logs.contains("empty stdout"));
+
+    let no_resources = validate_kubectl_stdout(
+        OPERATOR_POD_LOG_ARTIFACT,
+        "No resources found in default namespace.",
+        KubectlStdoutRequirement::NonEmpty,
+    )
+    .unwrap_err();
+    assert!(no_resources.contains("selected no resources"));
+
+    let missing_cluster = validate_kubectl_stdout(
+        OPERATOR_RESOURCES_ARTIFACT,
+        "NAMESPACE NAME READY",
+        KubectlStdoutRequirement::Contains("hydracache-066"),
+    )
+    .unwrap_err();
+    assert!(missing_cluster.contains("hydracache-066"));
+}
+
+#[test]
+fn operator_release_evidence_requires_current_controller_runtime_output() {
+    let nonce = "release-066-test-nonce";
+    let stale = validate_controller_runtime_log(
+        "HC-OPERATOR-CONTROLLER-START nonce=older-run binary=target/debug/hydracache-operator\n\
+         HC-OPERATOR-CONTROLLER-RUNTIME nonce=older-run identity=old namespace=default\n",
+        nonce,
+    )
+    .unwrap_err();
+    assert!(stale.contains("current-run start marker"));
+
+    let marker_only = validate_controller_runtime_log(
+        "HC-OPERATOR-CONTROLLER-START nonce=release-066-test-nonce binary=target/debug/hydracache-operator\n",
+        nonce,
+    )
+    .unwrap_err();
+    assert!(marker_only.contains("no controller runtime output"));
+
+    validate_controller_runtime_log(
+        "HC-OPERATOR-CONTROLLER-START nonce=release-066-test-nonce binary=target/debug/hydracache-operator\n\
+         HC-OPERATOR-CONTROLLER-RUNTIME nonce=release-066-test-nonce identity=current namespace=default\n",
+        nonce,
+    )
+    .unwrap();
+}
+
 #[tokio::test]
 #[ignore = "kind/Chaos-Mesh-gated W5 lane: set HYDRACACHE_OPERATOR_KIND=1 with IOChaos installed"]
 async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
@@ -1615,6 +1944,19 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
         receipt.target.pod,
         receipt.target.pod_uid
     );
+    if iochaos_required() {
+        write_operator_capability_artifact(
+            OPERATOR_W5_CAPABILITY_ARTIFACT,
+            &format!(
+                "release=0.66.0\nproof=W5\nruntime=kubernetes\niochaos=AllInjected\nuid={}\ntarget={}/{}\npod_uid={}\ncontainer={SERVER_CONTAINER}\nreceipt_marker=HC-W5-CAPABILITY\n",
+                receipt.chaos_uid,
+                receipt.target.namespace,
+                receipt.target.pod,
+                receipt.target.pod_uid
+            ),
+        )
+        .unwrap_or_else(|error| panic!("could not record W5 capability evidence: {error}"));
+    }
     let proof = AssertUnwindSafe(async {
         let injected_majority = kind
             .wait_raft_nodes(
@@ -1751,6 +2093,16 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
     eprintln!(
         "HC-W11-CAPABILITY runtime=kubernetes cni_network_policy=enforced injector={injector}"
     );
+    if iochaos_required() {
+        write_operator_capability_artifact(
+            OPERATOR_W11_CAPABILITY_ARTIFACT,
+            &format!(
+                "release=0.66.0\nproof=W11\nruntime=kubernetes\nnamespace={}\ncluster={}\ncni_network_policy=enforced\ninjector={injector}\nreceipt_marker=HC-W11-CAPABILITY\n",
+                kind.namespace, kind.cluster
+            ),
+        )
+        .unwrap_or_else(|error| panic!("could not record W11 capability evidence: {error}"));
+    }
 
     let proof = AssertUnwindSafe(async {
         let scaled_up = kind.apply_cluster(soak_kind_spec(4)).await;
@@ -1855,6 +2207,16 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
             failure = Some(cleanup_failure);
         } else {
             eprintln!("W11 cleanup also panicked after the primary failure");
+        }
+    }
+    if iochaos_required() {
+        if let Err(error) = capture_operator_kind_release_evidence() {
+            if failure.is_none() {
+                panic!("operator-kind release evidence capture failed: {error}");
+            }
+            eprintln!(
+                "operator-kind evidence capture also failed after the primary failure: {error}"
+            );
         }
     }
     if let Some(failure) = failure {

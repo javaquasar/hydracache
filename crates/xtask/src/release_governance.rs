@@ -506,6 +506,34 @@ fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
             &["--version 2.7.2", "kubectl get crd iochaos.chaos-mesh.org"][..],
         ),
         (
+            "release-066-operator-kind",
+            "Start current operator controller",
+            &[
+                "cargo build -p hydracache-operator --locked",
+                "operator_binary=\"$(pwd)/target/debug/hydracache-operator\"",
+                "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+                "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
+                "operator_nonce=\"release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}\"",
+                "export HYDRACACHE_OPERATOR_EVIDENCE_NONCE=\"$operator_nonce\"",
+                "echo \"HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce\" >> \"$GITHUB_ENV\"",
+                "HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s",
+                "\"$operator_nonce\" \"$operator_binary\" > \"$operator_log\"",
+                "nohup \"$operator_binary\" >> \"$operator_log\" 2>&1 &",
+                "printf '%s\\n' \"$operator_pid\" > \"$operator_pid_file\"",
+                "kill -0 \"$operator_pid\"",
+                "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Capture operator-kind diagnostics",
+            &[
+                "operator-kind-resources-post.txt",
+                "operator-kind-events-post.txt",
+                "operator-kind-pod-logs-post.txt",
+            ][..],
+        ),
+        (
             "fuzz-nightly",
             "Install nightly and cargo-fuzz",
             &[
@@ -552,6 +580,15 @@ pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
     const PROCESS_NEMESIS_ARTIFACT: &str =
         "target/test-evidence/0.66/process-control-plane-nemesis.json";
     const OPERATOR_ID: &str = "env.hydracache-operator-kind-066";
+    const OPERATOR_NONCE_ENV: &str = "HYDRACACHE_OPERATOR_EVIDENCE_NONCE";
+    const OPERATOR_ARTIFACTS: [&str; 6] = [
+        "target/test-evidence/0.66/operator-kind-w5-iochaos-capability.txt",
+        "target/test-evidence/0.66/operator-kind-w11-network-policy-capability.txt",
+        "target/test-evidence/0.66/operator-kind-pod-logs.txt",
+        "target/test-evidence/0.66/operator-kind-resources.txt",
+        "target/test-evidence/0.66/operator-kind-events.txt",
+        "target/test-evidence/0.66/operator-controller.log",
+    ];
     const FUZZ_ID: &str = "tool.cargo-fuzz.raft-wire-frame-066";
     let mut problems = Vec::new();
 
@@ -644,6 +681,26 @@ pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             problems.push(
                 "release 0.66 operator gate must execute the ignored live-kind tests".to_owned(),
             );
+        }
+        if !gate
+            .required_env
+            .iter()
+            .any(|required| required == OPERATOR_NONCE_ENV)
+        {
+            problems.push(format!(
+                "release 0.66 operator gate must require current-run nonce {OPERATOR_NONCE_ENV}"
+            ));
+        }
+        for artifact in OPERATOR_ARTIFACTS {
+            if !gate
+                .artifacts
+                .iter()
+                .any(|registered| registered == artifact)
+            {
+                problems.push(format!(
+                    "release 0.66 operator gate must declare fresh evidence artifact {artifact}"
+                ));
+            }
         }
     }
     if let Some(gate) = gates.iter().find(|gate| gate.id == FUZZ_ID) {

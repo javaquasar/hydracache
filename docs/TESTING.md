@@ -939,19 +939,96 @@ cargo run -p xtask --locked -- evidence-run --release 0.66 \
 
 The operator gate expects a prepared kind cluster, the CRD/controller/current
 server image, a NetworkPolicy-enforcing CNI for W11, and Chaos Mesh `IOChaos`
-for the W5 slow-disk claim. Missing required capability is not a ship receipt.
+for the W5 slow-disk claim. This receipt is Linux-only: it verifies the live
+controller PID through `/proc`, requires that PID to execute the exact
+`target/debug/hydracache-operator` inode, and binds the controller's own runtime
+output to a unique `HYDRACACHE_OPERATOR_EVIDENCE_NONCE`. During the command, the
+W11 proof snapshots that log along with receipt-bound capability markers,
+non-empty server-pod logs, resources for the expected cluster, and events.
+`evidence-run` removes the declared snapshots before execution; an empty,
+missing, stale, or wrong-process diagnostic artifact is not a ship receipt.
 
-```powershell
-$env:HYDRACACHE_OPERATOR_KIND='1'
-$env:HYDRACACHE_OPERATOR_IMAGE='hydracache-server:0.66-candidate'
-$env:HYDRACACHE_OPERATOR_VERSION='0.66.0'
-cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066
-```
+The following is the exact clean-cluster Bash reproduction from a clean checkout.
+It needs Docker, Go 1.23.4, Rust stable, `kubectl` 1.32.0, and Helm 3.17.0; all
+remaining cluster/runtime versions and the kind node digest are pinned below.
+PowerShell users must run this block inside a Linux/WSL checkout because a native
+Windows process cannot satisfy the `/proc` attestation.
 
 ```bash
+set -euo pipefail
+
+go install sigs.k8s.io/kind@v0.26.0
+export PATH="$(go env GOPATH)/bin:$PATH"
+
+kind create cluster \
+  --name hydracache-066 \
+  --image kindest/node:v1.32.0@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027 \
+  --config - <<'EOF'
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+nodes:
+  - role: control-plane
+  - role: worker
+  - role: worker
+EOF
+
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/calico.yaml
+kubectl rollout status deployment/calico-kube-controllers -n kube-system --timeout=5m
+kubectl rollout status daemonset/calico-node -n kube-system --timeout=5m
+
+helm repo add chaos-mesh https://charts.chaos-mesh.org
+helm repo update
+helm install chaos-mesh chaos-mesh/chaos-mesh \
+  --namespace chaos-mesh \
+  --create-namespace \
+  --version 2.7.2 \
+  --set chaosDaemon.runtime=containerd \
+  --set chaosDaemon.socketPath=/run/containerd/containerd.sock \
+  --wait \
+  --timeout 10m
+kubectl get crd iochaos.chaos-mesh.org
+
+docker build --tag hydracache-server:0.66-candidate .
+kind load docker-image --name hydracache-066 hydracache-server:0.66-candidate
+kubectl apply -f deploy/operator/hydracacheclusters.hydracache.io.crd.yaml
+kubectl wait --for=condition=Established \
+  crd/hydracacheclusters.hydracache.io --timeout=60s
+cargo build -p hydracache-operator --locked
+
+mkdir -p target/test-evidence/0.66
+operator_binary="$(pwd)/target/debug/hydracache-operator"
+operator_log="target/test-evidence/0.66/operator-controller-live.log"
+operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+operator_nonce="release-066-local-$(date +%s)-$(git rev-parse --short=12 HEAD)-$$"
+export HYDRACACHE_OPERATOR_EVIDENCE_NONCE="$operator_nonce"
+export HYDRACACHE_OPERATOR_NAMESPACE=default
+export HYDRACACHE_OPERATOR_IDENTITY=release-066-local
+printf 'HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s\n' \
+  "$operator_nonce" "$operator_binary" > "$operator_log"
+nohup "$operator_binary" >> "$operator_log" 2>&1 &
+operator_pid="$!"
+printf '%s\n' "$operator_pid" > "$operator_pid_file"
+trap 'kill "$operator_pid" 2>/dev/null || true' EXIT
+
+operator_ready=0
+for _ in $(seq 1 30); do
+  kill -0 "$operator_pid"
+  if grep -Fq "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"; then
+    operator_ready=1
+    break
+  fi
+  sleep 1
+done
+kill -0 "$operator_pid"
+test "$operator_ready" = 1
+
 HYDRACACHE_OPERATOR_KIND=1 \
+HYDRACACHE_OPERATOR_CLUSTER=hydracache-066 \
 HYDRACACHE_OPERATOR_IMAGE=hydracache-server:0.66-candidate \
 HYDRACACHE_OPERATOR_VERSION=0.66.0 \
+HYDRACACHE_OPERATOR_REQUIRE_IOCHAOS=1 \
 cargo run -p xtask --locked -- evidence-run --release 0.66 \
   --gate env.hydracache-operator-kind-066
 ```
