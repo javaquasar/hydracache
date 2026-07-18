@@ -20,7 +20,11 @@
 >   versus Redis on the RESP surface, and regression protection so `1.0` performance cannot silently
 >   erode. A native-daemon or distributed-value-plane capacity claim remains blocked until those
 >   product surfaces are implemented in a separate release.
-> - **Status:** in-progress (W10 Phase A and W0-W3 implemented; W4-W10 Phase B pending).
+> - **Status:** in-progress, implementation closure reached (W0-W10 source, tests, scenarios,
+>   governance, CI wiring, and documentation are present), but **not shipped**. The local checkout
+>   has no `v0.66.0` predecessor tag, and W7 remains deliberately unbootstrapped pending at least five
+>   eligible dedicated `main` runs plus independent anchor/budget review and a fresh frozen-candidate
+>   receipt set.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -
@@ -202,7 +206,12 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | W2 | `crates/hydracache-loadgen::{targets::client_surface,tiers::client_surface,cli,report}`; `docs/testing/perf-scenarios/0.67/client-surface-*-v1.toml` | `cargo test -p hydracache-loadgen --test performance_contract_067 --locked -j 2 client_surface` | Real `AxumClientSurface` through `Router::oneshot`; process-local state and no socket/daemon/wire claim; reference evidence remains receipt-bound to the core lane |
 | W3 | `crates/hydracache-loadgen::{targets::resp,tiers::{resp,resp_reference},resp_external,cli,report}`; `docs/testing/perf-scenarios/0.67/{resp-*-v1,redis-benchmark-provenance-v1}.toml` | `cargo test -p hydracache-loadgen --test performance_contract_067 --locked -j 2 resp`; `cargo test -p hydracache-loadgen --test resp_external_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 resp_reference` | Open-loop scheduled-send evidence crosses real loopback TCP to one selected endpoint; smoke is an explicit fixture, while reference launches the receipt-bound prebuilt daemon directly and binds the same endpoint capability into the separate closed-loop `redis-benchmark` artifact; neither external output nor fixture smoke can satisfy capacity |
 | W4 | `crates/hydracache-loadgen::{targets::{control_plane,grid_model},tiers::{control_plane,grid_model},cli}`; `docs/testing/perf-scenarios/0.67/{control-plane-real-daemon-v1,grid-model-primitives-v1}.toml` | `cargo test -p hydracache-loadgen --test w4_split_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 w4` | W4A directly launches the exact prebuilt 3/5/7-daemon candidate and records separate selected leader/follower admin-wire knees plus receipt-bound Add/Drain convergence; W4B runs exported consistency/session/replication primitives in a labeled in-process model. Their artifacts and claim scopes cannot be merged, summed, or relabeled as distributed value-grid capacity. |
-| _(populate during implementation; W0-W10 below define the targets)_ | | | |
+| W5 | `crates/hydracache-loadgen::{targets::brownout,tiers::brownout,cli,main}`; `crates/hydracache-loadgen/tests/w5_brownout_067.rs`; `docs/testing/perf-scenarios/0.67/brownout-*-v1.toml` | `cargo test -p hydracache-loadgen --test w5_brownout_067 --locked -j 2` | Three non-combinable authorities: committed-metadata control-plane recovery, killed node-local RESP endpoint availability with no neighbor failover, and labeled in-process grid-model fault cost. |
+| W6 | `crates/hydracache-loadgen::{overload,cli,main}`; `crates/hydracache-loadgen/tests/w6_overload_067.rs`; `docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml` | `cargo test -p hydracache-loadgen --test w6_overload_067 --locked -j 2` | Goodput/recovery at 1.2x/1.5x/2x is admitted only for local, in-process client-surface, and selected-endpoint RESP reports with valid predecessor knees. |
+| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible dedicated `main` runs and independent review. |
+| W8 | `crates/hydracache-loadgen::{compare_redis,cli,main}`; `crates/hydracache-loadgen/tests/w8_redis_compare_067.rs`; `docs/testing/perf-scenarios/0.67/compare-redis-v1.toml` | `cargo test -p hydracache-loadgen --test w8_redis_compare_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 compare_redis` | Same host, pinned tool/image, alternating order, canonical sealed W3 predecessor, and one selected node-local RESP endpoint. It is a method-bound artifact, not a Redis-replacement or superiority claim. |
+| W9 | `crates/hydracache-loadgen::{metrics_honesty,tiers::{resp,control_plane}}`; `crates/hydracache-loadgen/tests/w9_metrics_067.rs`; `docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml` | `cargo test -p hydracache-loadgen --test w9_metrics_067 --locked -j 2` | Same-process observer windows cross-check only metrics already exported by real RESP/control-plane daemons; absent fields are `not_available`, and service time is never relabeled as scheduled-send latency. |
+| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus shared-tripwire/dedicated-ship separation are implemented. Release aggregation remains red until the predecessor tag, W7 bootstrap/review, dedicated artifacts, canaries, and final receipts exist on one frozen candidate. |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
 the registered command only through
@@ -574,9 +583,10 @@ This bounds the honest "cost of the facade + engine" statement for POSITIONING.
 
 **DoD.**
 ```powershell
+$env:HYDRACACHE_RUN_PERF_REFERENCE='1'
 $env:HYDRACACHE_RUN_PERF_RESP='1'
 & target\release\hydracache-loadgen.exe compare redis --profile reference-v1 --report target/test-evidence/0.67/compare-redis.json
-Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
+Remove-Item Env:\HYDRACACHE_RUN_PERF_REFERENCE,Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
 **CI.** Mandatory Docker/pinned-Redis reference gate. A local unclaimed run may skip loud; the
 claimed CI gate fails closed if Docker, the exact tool, image digest, or reference runner is absent.
@@ -603,7 +613,7 @@ increment must fail the cross-check with `HC-CANARY-RED:W9`).
 
 **DoD.**
 ```powershell
-cargo test -p hydracache-loadgen metrics_cross_check --locked -j 2
+cargo test -p hydracache-loadgen --test w9_metrics_067 --locked -j 2
 ```
 **CI.** Runs inside the mandatory RESP and control-plane reference gates (same processes, separate
 validator artifact; no hosted-runner ship claim).
@@ -628,10 +638,12 @@ work in the release**, before W0 feature code, while Phase B closes the release 
   dynamic list, and add its real guard/canary entry. CLI measurements alone do not satisfy the AST
   contract. Phase B requires the full ordered W0-W10 dynamic list and exact-commit sweep receipts;
   `--require-ship` intentionally remains red until then.
-- Register `fast.performance-contract-067` with the actual fast-suite schema: `work_items`,
-  timeout/budget, deterministic flag, artifacts/logical digest, baseline, and command. Its mandatory
-  receipt comes from every W-item referencing it in `fast_gate_ids`; fast rows do not invent gated
-  fields such as `owner_release` or `ship_mandatory`.
+- Register `fast.performance-contract-067` with the actual fast-suite schema and exact W0-W10
+  ownership: `work_items`, timeout/budget, deterministic flag, artifacts/logical digest, baseline,
+  and command. Existing `fast.workspace-nextest` supplies the implementation-wide receipt, while
+  `fast.performance-resp-external-067` remains W3-only. There are no standalone W4/W5/W6/W7 fast
+  rows; the reconciled registry aggregate budget is exactly 1560 seconds. Fast rows do not invent
+  gated fields such as `owner_release` or `ship_mandatory`.
 - Register gated rows `tool.perf-prebuild-067`, `env.hydracache-run-067-perf-core`,
   `env.hydracache-run-067-perf-resp`, `env.hydracache-run-067-perf-control-plane`, and
   `tool.perf-budget-check-067` with exact command, tier/timeout/platform, required tools/env,
@@ -652,8 +664,8 @@ work in the release**, before W0 feature code, while Phase B closes the release 
 
 - The dedicated job uses `runs-on: [self-hosted, linux, x64, hydracache-perf-v1]` (or an atomically
   reviewed equivalent) with serialized `concurrency`. First run the mandatory
-  `tool.perf-prebuild-067` through `evidence-run`; it builds the exact release server/loadgen/test
-  targets and creates `target/test-evidence/0.67/prebuild-manifest.json` with commit, Cargo.lock,
+  `tool.perf-prebuild-067` through `evidence-run`; it builds the exact release server and loadgen
+  binaries and creates `target/test-evidence/0.67/prebuild-manifest.json` with commit, Cargo.lock,
   toolchain/flags, stable build-contract digest, and binary hashes. Consumer perf gates do **not**
   redeclare that file as their own artifact (which `evidence-run` would clear); they validate it,
   execute binaries directly, and embed its per-run SHA, build-contract digest, and binary SHAs in
@@ -696,6 +708,8 @@ cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
 cargo run -p xtask --locked -- quarantine-check --release 0.67
 cargo run -p xtask --locked -- verify-no-test-features
 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-resp-external-067
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.workspace-nextest
 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
@@ -705,6 +719,19 @@ cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir ta
 ```
 
 ## Gates (Definition of Done for the release)
+
+Implementation closure and release closure are separate states:
+
+| Layer | Implementation state | Ship state on 2026-07-18 |
+| --- | --- | --- |
+| W0-W6 measurement and operational contracts | Implemented in source, scenarios, tests, and CLI/suite wiring | Dedicated exact-candidate measurement artifacts and receipts still required |
+| W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible dedicated `main` runs and independent review |
+| W8 comparison | Pinned same-box Redis comparison and canonical W3 predecessor binding implemented | Final dedicated W8 report absent; no marketing or shipped comparative claim |
+| W9 metrics honesty | Same-process RESP/control-plane windows and exported-only validation implemented | Final dedicated metrics reports absent; unavailable fields remain non-claims |
+| W10 governance/docs | Release-scoped gates, canaries, exact-candidate prebuild/receipt contracts, CI separation, and docs implemented | **Blocked:** local `v0.66.0` tag is absent; final frozen-candidate gate/canary/artifact receipts have not made `--require-ship` green |
+
+The bullets below are target ship conditions, not a record that they have
+already passed:
 
 - The W0 instrument is itself proven: missed ticks count as latency, percentiles match reference
   distributions, the full sustainability predicate rejects dropped/queued work, and the closed-loop
@@ -735,6 +762,10 @@ cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir ta
   by a finding is narrow, separate, and regression-measured.
 
 ## Final Release Decision
+
+**Current decision (2026-07-18): NO-SHIP.** Keep `0.67.0` `in-progress` until the local checkout has
+the annotated `v0.66.0` predecessor, W7 is bootstrapped from at least five eligible dedicated `main`
+runs with independent review, and one frozen clean candidate satisfies every condition below.
 
 Ship `0.67.0` only when artifacts answer the narrower questions the product can honestly support:
 embedded-cache capacity, in-process client-surface cost, single-endpoint node-local RESP capacity,

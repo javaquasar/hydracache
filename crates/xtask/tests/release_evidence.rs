@@ -505,3 +505,117 @@ fn release_evidence_rejects_dirty_receipts_and_path_traversal() {
             .any(|problem| problem.contains("unsafe repository path"))
     );
 }
+
+#[test]
+fn final_aggregator_requires_exact_candidate_receipts_and_artifact_hashes() {
+    let root = root();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut gate = registry
+        .gate
+        .iter()
+        .find(|gate| gate.id == "tool.perf-prebuild-067")
+        .unwrap()
+        .clone();
+    gate.artifacts = vec!["Cargo.toml".to_owned()];
+    let bytes = fs::read(root.join("Cargo.toml")).unwrap();
+    let mut receipt = base_receipt(&gate, "candidate");
+    receipt.release = "0.67.0".to_owned();
+    receipt.artifacts = vec![ArtifactDigest {
+        path: "Cargo.toml".to_owned(),
+        sha256: xtask::perf::sha256_bytes(&bytes),
+        bytes: bytes.len() as u64,
+    }];
+    assert!(
+        xtask::release_evidence::receipt_problems(&root, "0.67", "candidate", &gate, &receipt,)
+            .is_empty()
+    );
+
+    let mut wrong_commit = receipt.clone();
+    wrong_commit.source_commit = "stale".to_owned();
+    assert!(xtask::release_evidence::receipt_problems(
+        &root,
+        "0.67",
+        "candidate",
+        &gate,
+        &wrong_commit,
+    )
+    .iter()
+    .any(|problem| problem.contains("wrong source commit")));
+
+    let mut tampered = receipt.clone();
+    tampered.artifacts[0].sha256 = "00".repeat(32);
+    assert!(xtask::release_evidence::receipt_problems(
+        &root,
+        "0.67",
+        "candidate",
+        &gate,
+        &tampered,
+    )
+    .iter()
+    .any(|problem| problem.contains("artifact hash mismatch")));
+
+    let mut extra = receipt;
+    extra.artifacts.push(ArtifactDigest {
+        path: "unexpected.json".to_owned(),
+        sha256: EMPTY_SHA256.to_owned(),
+        bytes: 0,
+    });
+    assert!(
+        xtask::release_evidence::receipt_problems(&root, "0.67", "candidate", &gate, &extra,)
+            .iter()
+            .any(|problem| problem.contains("exact declared gate artifact set"))
+    );
+
+    let fixture_dir = root
+        .join("target/test-evidence/0.67")
+        .join(format!("release-evidence-unit-{}", std::process::id()));
+    assert!(fixture_dir.starts_with(root.join("target/test-evidence/0.67")));
+    let _ = fs::remove_dir_all(&fixture_dir);
+    fs::create_dir_all(&fixture_dir).unwrap();
+    let raw_path = fixture_dir.join("daemon.stderr.log");
+    fs::write(&raw_path, b"original daemon log").unwrap();
+    let raw_bytes = fs::read(&raw_path).unwrap();
+    let report_path = fixture_dir.join("report.json");
+    let report = serde_json::json!({
+        "archived_log": {
+            "canonical_path": raw_path.canonicalize().unwrap(),
+            "bytes": raw_bytes.len(),
+            "sha256": xtask::perf::sha256_bytes(&raw_bytes),
+        }
+    });
+    fs::write(&report_path, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
+    let report_relative = report_path
+        .strip_prefix(&root)
+        .unwrap()
+        .to_string_lossy()
+        .replace('\\', "/");
+    gate.artifacts = vec![report_relative.clone()];
+    let report_bytes = fs::read(&report_path).unwrap();
+    let mut archived_receipt = base_receipt(&gate, "candidate");
+    archived_receipt.release = "0.67.0".to_owned();
+    archived_receipt.artifacts = vec![ArtifactDigest {
+        path: report_relative,
+        sha256: xtask::perf::sha256_bytes(&report_bytes),
+        bytes: report_bytes.len() as u64,
+    }];
+    assert!(xtask::release_evidence::receipt_problems(
+        &root,
+        "0.67",
+        "candidate",
+        &gate,
+        &archived_receipt,
+    )
+    .is_empty());
+
+    fs::write(&raw_path, b"tampered daemon log").unwrap();
+    assert!(xtask::release_evidence::receipt_problems(
+        &root,
+        "0.67",
+        "candidate",
+        &gate,
+        &archived_receipt,
+    )
+    .iter()
+    .any(|problem| problem.contains("archived-file receipt hash mismatch")));
+    fs::remove_dir_all(&fixture_dir).unwrap();
+}

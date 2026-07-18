@@ -46,6 +46,12 @@ simple local cache -> database result-cache adapter -> optional distributed sync
 For production usage guidance, see
 [`docs/PRODUCTION_GUIDE.md`](docs/PRODUCTION_GUIDE.md).
 
+For performance methodology, real-surface boundaries, and the distinction
+between shared CI tripwires and dedicated release evidence, see
+[`docs/PERFORMANCE.md`](docs/PERFORMANCE.md). Release `0.67.0` has implementation
+closure but is not shipped; no `0.67.0` capacity or Redis-comparison number is
+release-qualified yet.
+
 For a browser walkthrough of the real deterministic cluster simulator, see
 [`demo/README.md`](demo/README.md) or the GitHub Pages demo at
 [`javaquasar.github.io/hydracache`](https://javaquasar.github.io/hydracache/).
@@ -1953,6 +1959,8 @@ lines should be investigated before release.
 Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
+- [docs/releases/0.67.0.md](docs/releases/0.67.0.md) - performance characterization candidate notes (not shipped).
+- [docs/releases/0.66.0.md](docs/releases/0.66.0.md) - cluster operational hardening candidate notes (not shipped).
 - [docs/releases/0.65.0.md](docs/releases/0.65.0.md) - Redis debt safety net release.
 - [docs/releases/0.64.0.md](docs/releases/0.64.0.md) - Raft snapshot and test-evidence hardening release.
 - [docs/releases/0.63.0.md](docs/releases/0.63.0.md) - Redis RESP edge facade release.

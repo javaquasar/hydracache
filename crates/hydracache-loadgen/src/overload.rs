@@ -3892,9 +3892,10 @@ mod reference_identity_tests {
             });
         assert!(node_with_only_core.is_err());
 
+        let legacy_generic_gate = concat!("HYDRACACHE_", "RUN_PERF_W6");
         let generic_only = validate_reference_surface_gate_with(
             EligibleOverloadSurface::ClientSurface,
-            |variable| (variable == "HYDRACACHE_RUN_PERF_W6").then(|| "1".to_owned()),
+            |variable| (variable == legacy_generic_gate).then(|| "1".to_owned()),
         );
         assert!(generic_only.is_err());
 

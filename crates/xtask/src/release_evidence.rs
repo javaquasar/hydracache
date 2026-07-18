@@ -513,6 +513,22 @@ fn receipt_problems_for(
         .iter()
         .map(|artifact| (artifact.path.as_str(), artifact))
         .collect();
+    let expected_artifacts = gate
+        .artifacts()
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let observed_artifacts = receipt
+        .artifacts
+        .iter()
+        .map(|artifact| artifact.path.as_str())
+        .collect::<BTreeSet<_>>();
+    if receipt.artifacts.len() != receipt_artifacts.len()
+        || observed_artifacts != expected_artifacts
+    {
+        problems
+            .push("artifact receipt set is not the exact declared gate artifact set".to_owned());
+    }
     for expected in gate.artifacts() {
         let Some(recorded) = receipt_artifacts.get(expected.as_str()) else {
             problems.push(format!("missing artifact receipt for {expected}"));
@@ -522,7 +538,12 @@ fn receipt_problems_for(
             Ok(path) => match fs::read(path) {
                 Ok(bytes)
                     if sha256(&bytes) == recorded.sha256
-                        && bytes.len() as u64 == recorded.bytes => {}
+                        && bytes.len() as u64 == recorded.bytes =>
+                {
+                    problems.extend(referenced_runtime_artifact_problems(
+                        root, release, expected, &bytes,
+                    ));
+                }
                 Ok(_) => problems.push(format!("artifact hash mismatch for {expected}")),
                 Err(_) => problems.push(format!("artifact is missing: {expected}")),
             },
@@ -530,6 +551,93 @@ fn receipt_problems_for(
         }
     }
     problems
+}
+
+fn referenced_runtime_artifact_problems(
+    root: &Path,
+    release: &str,
+    artifact: &str,
+    bytes: &[u8],
+) -> Vec<String> {
+    const EVIDENCE_PREFIX: &str = "target/test-evidence/0.67/";
+
+    if normalize_release(release) != "0.67.0"
+        || !artifact.replace('\\', "/").starts_with(EVIDENCE_PREFIX)
+        || !artifact.ends_with(".json")
+    {
+        return Vec::new();
+    }
+
+    let value: serde_json::Value = match serde_json::from_slice(bytes) {
+        Ok(value) => value,
+        Err(error) => {
+            return vec![format!(
+                "declared 0.67 JSON artifact {artifact} cannot be parsed for archived-file receipts: {error}"
+            )];
+        }
+    };
+    let mut receipts = Vec::new();
+    collect_archived_file_receipts(&value, &mut receipts);
+    let mut problems = Vec::new();
+    for (reported_path, expected_bytes, expected_sha256) in receipts {
+        let normalized = reported_path.replace('\\', "/");
+        let relative = if let Some(relative) = normalized.strip_prefix(EVIDENCE_PREFIX) {
+            format!("{EVIDENCE_PREFIX}{relative}")
+        } else if let Some((_, relative)) = normalized.split_once(&format!("/{EVIDENCE_PREFIX}")) {
+            format!("{EVIDENCE_PREFIX}{relative}")
+        } else {
+            continue;
+        };
+        let path = match safe_repo_path(root, &relative) {
+            Ok(path) => path,
+            Err(error) => {
+                problems.push(format!(
+                    "archived-file receipt in {artifact} has an unsafe path: {error}"
+                ));
+                continue;
+            }
+        };
+        match fs::read(&path) {
+            Ok(observed)
+                if observed.len() as u64 == expected_bytes
+                    && sha256(&observed) == expected_sha256 => {}
+            Ok(_) => problems.push(format!(
+                "archived-file receipt hash mismatch for {relative} referenced by {artifact}"
+            )),
+            Err(error) => problems.push(format!(
+                "archived file {relative} referenced by {artifact} is missing: {error}"
+            )),
+        }
+    }
+    problems
+}
+
+fn collect_archived_file_receipts<'a>(
+    value: &'a serde_json::Value,
+    receipts: &mut Vec<(&'a str, u64, &'a str)>,
+) {
+    match value {
+        serde_json::Value::Array(values) => {
+            for value in values {
+                collect_archived_file_receipts(value, receipts);
+            }
+        }
+        serde_json::Value::Object(object) => {
+            if let (Some(path), Some(bytes), Some(sha256)) = (
+                object
+                    .get("canonical_path")
+                    .and_then(|value| value.as_str()),
+                object.get("bytes").and_then(serde_json::Value::as_u64),
+                object.get("sha256").and_then(|value| value.as_str()),
+            ) {
+                receipts.push((path, bytes, sha256));
+            }
+            for value in object.values() {
+                collect_archived_file_receipts(value, receipts);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn all_gates_green(

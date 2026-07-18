@@ -5124,6 +5124,167 @@ platform = "any"
 HYDRACACHE_REQUIRE_TLC = "1"
 
 [[gate]]
+id = "env.hydracache-run-perf-reference"
+kind = "env_gate"
+source = "crates/xtask/src/perf.rs"
+package = "xtask"
+target = "perf_prebuild_067"
+test = "exact_toolchain_and_target_set_are_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_REFERENCE"
+reason = "The 0.67 reference lane is inert unless the dedicated performance environment is explicitly selected"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_REFERENCE"]
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.67.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "xtask",
+    "--test",
+    "perf_prebuild_067",
+    "--locked",
+    "exact_toolchain_and_target_set_are_fail_closed",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_REFERENCE = "1"
+
+[[gate]]
+id = "env.hydracache-run-perf-core"
+kind = "env_gate"
+source = "crates/hydracache-loadgen/src/overload.rs"
+package = "hydracache-loadgen"
+target = "hydracache_loadgen"
+test = "overload::tests::reference_writer_gate_is_surface_specific_and_ignores_generic_w6_env"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_CORE"
+reason = "Core reference writers remain inert unless the dedicated 0.67 core lane explicitly enables them"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_CORE"]
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.67.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-loadgen",
+    "--lib",
+    "--locked",
+    "overload::tests::reference_writer_gate_is_surface_specific_and_ignores_generic_w6_env",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_CORE = "1"
+
+[[gate]]
+id = "env.hydracache-run-perf-resp"
+kind = "env_gate"
+source = "crates/hydracache-loadgen/src/main.rs"
+package = "hydracache-loadgen"
+target = "hydracache_loadgen"
+test = "overload::tests::reference_writer_gate_rejects_missing_and_non_exact_values"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_RESP"
+reason = "RESP reference writers remain inert unless the dedicated 0.67 RESP lane explicitly enables them"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_RESP"]
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.67.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-loadgen",
+    "--lib",
+    "--locked",
+    "overload::tests::reference_writer_gate_rejects_missing_and_non_exact_values",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_RESP = "1"
+
+[[gate]]
+id = "env.hydracache-run-perf-control-plane"
+kind = "env_gate"
+source = "crates/hydracache-loadgen/src/targets/control_plane.rs"
+package = "hydracache-loadgen"
+target = "hydracache_loadgen"
+test = "targets::control_plane::tests::absent_or_self_asserted_loopback_capability_never_passes_mandatory"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_CONTROL_PLANE"
+reason = "Control-plane reference writers remain inert unless the dedicated 0.67 control-plane lane explicitly enables them"
+tier = "nightly"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_CONTROL_PLANE"]
+required_tools = []
+timeout_seconds = 300
+owner_release = "0.67.0"
+ship_mandatory = false
+artifacts = []
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = [
+    "test",
+    "-p",
+    "hydracache-loadgen",
+    "--lib",
+    "--locked",
+    "targets::control_plane::tests::absent_or_self_asserted_loopback_capability_never_passes_mandatory",
+]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_CONTROL_PLANE = "1"
+
+[[gate]]
 id = "tool.perf-prebuild-067"
 kind = "external_tool"
 source = "crates/xtask/src/perf.rs"
@@ -5132,7 +5293,7 @@ target = "perf-prebuild"
 test = ""
 cfg = ""
 env = "HYDRACACHE_RUN_PERF_REFERENCE"
-reason = "The dedicated 0.67 lane prebuilds the exact server, loadgen, and test targets and binds their hashes before any measurement"
+reason = "The dedicated 0.67 lane prebuilds the exact release server and loadgen binaries and binds their hashes before any measurement"
 tier = "nightly"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_REFERENCE"]

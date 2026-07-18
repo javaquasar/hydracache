@@ -733,28 +733,59 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
     const JOB: &str = "release-067-performance";
     const PREBUILD_ID: &str = "tool.perf-prebuild-067";
     const PREBUILD_ARTIFACT: &str = "target/test-evidence/0.67/prebuild-manifest.json";
-    const SPECS: [(&str, &str); 5] = [
-        (PREBUILD_ID, "Prebuild 0.67 performance binaries"),
+    const PREBUILD_INPUTS: &str = "target/test-evidence/0.67/resp-reference-run-inputs.json";
+    const SPECS: [(&str, &str, &[&str]); 5] = [
+        (
+            PREBUILD_ID,
+            "Prebuild 0.67 performance binaries",
+            &[PREBUILD_ARTIFACT, PREBUILD_INPUTS],
+        ),
         (
             "env.hydracache-run-067-perf-core",
             "Run 0.67 core performance evidence",
+            &[
+                "target/test-evidence/0.67/local.json",
+                "target/test-evidence/0.67/client-surface.json",
+                "target/test-evidence/0.67/grid-model.json",
+                "target/test-evidence/0.67/brownout-grid-model.json",
+                "target/test-evidence/0.67/overload-local.json",
+                "target/test-evidence/0.67/overload-client-surface.json",
+            ],
         ),
         (
             "env.hydracache-run-067-perf-resp",
             "Run 0.67 RESP performance evidence",
+            &[
+                "target/test-evidence/0.67/node-resp-open-loop.json",
+                "target/test-evidence/0.67/node-resp-redis-benchmark.json",
+                "target/test-evidence/0.67/node-resp-daemon-lifecycle.json",
+                "target/test-evidence/0.67/node-resp-suite-receipt.json",
+                "target/test-evidence/0.67/brownout-resp-endpoint.json",
+                "target/test-evidence/0.67/overload-node-resp.json",
+                "target/test-evidence/0.67/compare-redis.json",
+                "target/test-evidence/0.67/metrics-resp.json",
+            ],
         ),
         (
             "env.hydracache-run-067-perf-control-plane",
             "Run 0.67 control-plane performance evidence",
+            &[
+                "target/test-evidence/0.67/control-plane-3.json",
+                "target/test-evidence/0.67/control-plane-5.json",
+                "target/test-evidence/0.67/control-plane-7.json",
+                "target/test-evidence/0.67/brownout-control-plane.json",
+                "target/test-evidence/0.67/metrics-control-plane.json",
+            ],
         ),
         (
             "tool.perf-budget-check-067",
             "Check 0.67 performance budgets",
+            &["target/test-evidence/0.67/perf-budget-verdict.json"],
         ),
     ];
     let mut problems = Vec::new();
 
-    for (id, step) in SPECS {
+    for (id, step, expected_artifacts) in SPECS {
         let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
             problems.push(format!("release 0.67 is missing mandatory gate {id}"));
             continue;
@@ -782,14 +813,14 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
                 "release 0.67 gate {id} must be a mandatory dedicated Linux reference-v1 gate with exact CI ownership"
             ));
         }
-        if gate.artifacts.is_empty()
-            || gate
-                .artifacts
-                .iter()
-                .any(|artifact| !artifact.starts_with("target/test-evidence/0.67/"))
+        if !gate
+            .artifacts
+            .iter()
+            .map(String::as_str)
+            .eq(expected_artifacts.iter().copied())
         {
             problems.push(format!(
-                "release 0.67 gate {id} must declare exact target/test-evidence/0.67 artifacts"
+                "release 0.67 gate {id} must declare its exact ordered target/test-evidence/0.67 artifact set"
             ));
         }
     }
@@ -809,10 +840,10 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
         ];
         if prebuild.command.program != "cargo"
             || prebuild.command.args != expected_args
-            || prebuild.artifacts != [PREBUILD_ARTIFACT]
+            || prebuild.artifacts != [PREBUILD_ARTIFACT, PREBUILD_INPUTS]
         {
             problems.push(
-                "release 0.67 prebuild gate must retain the exact receipt-bound build command and sole prebuild manifest artifact"
+                "release 0.67 prebuild gate must retain the exact receipt-bound build command and atomic manifest/run-input artifact pair"
                     .to_owned(),
             );
         }
@@ -842,10 +873,10 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             if gate
                 .artifacts
                 .iter()
-                .any(|artifact| artifact == PREBUILD_ARTIFACT)
+                .any(|artifact| artifact == PREBUILD_ARTIFACT || artifact == PREBUILD_INPUTS)
             {
                 problems.push(format!(
-                    "release 0.67 consumer gate {id} must not redeclare or delete the prebuild manifest"
+                    "release 0.67 consumer gate {id} must not redeclare or delete either prebuild artifact"
                 ));
             }
         }
@@ -876,10 +907,10 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
         if budget
             .artifacts
             .iter()
-            .any(|artifact| artifact == PREBUILD_ARTIFACT)
+            .any(|artifact| artifact == PREBUILD_ARTIFACT || artifact == PREBUILD_INPUTS)
         {
             problems.push(
-                "release 0.67 budget consumer must not redeclare or delete the prebuild manifest"
+                "release 0.67 budget consumer must not redeclare or delete either prebuild artifact"
                     .to_owned(),
             );
         }
@@ -890,6 +921,7 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 
 fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
     const JOB_ID: &str = "release-067-performance";
+    const SHARED_JOB_ID: &str = "performance-067-shared-tripwire";
     let workflow = parse_workflow(text)?;
     let root: Value = serde_yaml::from_str(text)?;
     let jobs = mapping_value(root.as_mapping(), "jobs")
@@ -901,6 +933,23 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         )]);
     };
     let mut problems = Vec::new();
+
+    let pinned_toolchain = mapping_value(job.as_mapping(), "steps")
+        .and_then(Value::as_sequence)
+        .and_then(|steps| {
+            steps.iter().find(|step| {
+                mapping_value(step.as_mapping(), "name").and_then(Value::as_str)
+                    == Some("Install pinned Rust 1.94.0")
+            })
+        })
+        .and_then(|step| mapping_value(step.as_mapping(), "uses"))
+        .and_then(Value::as_str);
+    if pinned_toolchain != Some("dtolnay/rust-toolchain@1.94.0") {
+        problems.push(
+            "release 0.67 performance lane must install the exact rustc 1.94.0 toolchain"
+                .to_owned(),
+        );
+    }
 
     let labels = mapping_value(job.as_mapping(), "runs-on")
         .and_then(Value::as_sequence)
@@ -940,11 +989,74 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         .get(JOB_ID)
         .map(String::as_str)
         .unwrap_or_default();
-    if !condition.contains("schedule") || !condition.contains("workflow_dispatch") {
+    if !condition.contains("schedule")
+        || !condition.contains("workflow_dispatch")
+        || !condition.contains("refs/tags/v0.67.0")
+        || !condition.contains("candidate_release == '0.67'")
+        || condition.contains("startsWith(github.ref, 'refs/tags/v')")
+    {
         problems.push(
-            "release 0.67 performance lane must be available on schedule and explicit manual dispatch"
+            "release 0.67 performance lane must be limited to schedule, exact v0.67.0 tag, or explicit 0.67 manual dispatch"
                 .to_owned(),
         );
+    }
+
+    let Some(shared_job) = jobs.get(Value::String(SHARED_JOB_ID.to_owned())) else {
+        problems.push(
+            "release 0.67 is missing the non-ship shared-runner regression tripwire job".to_owned(),
+        );
+        return Ok(problems);
+    };
+    if mapping_value(shared_job.as_mapping(), "runs-on").and_then(Value::as_str)
+        != Some("ubuntu-latest")
+    {
+        problems.push(
+            "release 0.67 shared tripwire must remain on the hosted ubuntu-latest runner class"
+                .to_owned(),
+        );
+    }
+    let shared_condition = workflow
+        .conditions
+        .get(SHARED_JOB_ID)
+        .map(String::as_str)
+        .unwrap_or_default();
+    if !shared_condition.contains("pull_request")
+        || !shared_condition.contains("refs/heads/main")
+        || !shared_condition.contains("refs/heads/master")
+    {
+        problems.push(
+            "release 0.67 shared tripwire must run on pull requests and main/master pushes"
+                .to_owned(),
+        );
+    }
+    for (step, command) in [
+        (
+            "Validate shared-runner tripwire policy",
+            "cargo test -p xtask --test perf_budget_067 --locked ci_shared_is_a_rolling_only_non_enforcing_tripwire",
+        ),
+        (
+            "Evaluate non-ship shared-runner tripwire",
+            "cargo run -p xtask --locked -- perf-budget-check --release 0.67 --profile ci-shared",
+        ),
+    ] {
+        let exact = workflow
+            .step_runs
+            .get(SHARED_JOB_ID)
+            .and_then(|steps| steps.get(step))
+            .is_some_and(|run| run.trim() == command);
+        if !exact {
+            problems.push(format!(
+                "release 0.67 shared tripwire step {step:?} must run exactly `{command}`"
+            ));
+        }
+    }
+    if !workflow
+        .jobs
+        .get(SHARED_JOB_ID)
+        .is_some_and(|steps| steps.contains("Upload 0.67 shared tripwire"))
+    {
+        problems
+            .push("release 0.67 shared tripwire is missing its non-ship verdict upload".to_owned());
     }
 
     let expected_runs = [

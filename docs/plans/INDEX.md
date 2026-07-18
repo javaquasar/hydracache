@@ -255,7 +255,11 @@ v0 foundations
                           dedicated-runner dual-baseline perf-budget-check; W8 same-box vs real
                           Redis (artifact, not marketing, R-7); W9 server-metrics honesty vs
                           independent observer; W10 governance receipts + Performance Nightly CI.
-                          No native-daemon/distributed-value claim, optimization, or product surface)
+                          No native-daemon/distributed-value claim, optimization, or product surface.
+                          Implementation closure is present, but the release remains in-progress:
+                          local v0.66.0 tag is absent and reference-v1 W7 anchor/budgets/baseline
+                          are unbootstrapped pending at least five eligible dedicated main runs and
+                          independent review.)
 
    0.67 ─┄ feeds ┄► 0.68 Migration Conformance & Borrowed Test Suites (prove the
                           compatibility claims with evidence we did not author: W1 run a curated
@@ -279,6 +283,11 @@ v0 foundations
 > fast-suite budgets, executable quarantine expiry, normalized determinism digests, and a measured
 > post-implementation coverage re-ratchet. These are mandatory ship mechanics, not additional W-items
 > beyond W39; W39 itself is split into three mandatory cancellation-safety contracts in the plan.
+
+> **0.67 status note (2026-07-18):** W0-W10 implementation closure is present, but the release
+> remains `in-progress` and is not shipped. The local `v0.66.0` predecessor tag is absent, and the
+> `reference-v1` W7 anchor/budgets/baseline remain unbootstrapped pending at least five eligible
+> dedicated `main` runs plus independent review and final exact-candidate receipts.
 
 <!-- release-work-items:0.64.0=W1,W2,W3,W4,W5,W5a,W6,W6b,W7,W8,W9,W10,W11,W12,W13,W14,W15,W16,W17,W18,W19,W20,W21,W22,W23,W24,W25,W26,W27,W28,W29,W30,W31,W32,W33,W34,W35,W36,W37,W38,W39 -->
 <!-- release-work-items:0.65.0=W1,W2,W3,W4,W5,W6,W7 -->

@@ -629,11 +629,39 @@ jobs:
             target/release-evidence/receipts/**
           if-no-files-found: error
 
+  performance-067-shared-tripwire:
+    name: 0.67 Shared Performance Tripwire
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Validate shared-runner tripwire policy
+        run: cargo test -p xtask --test perf_budget_067 --locked ci_shared_is_a_rolling_only_non_enforcing_tripwire
+
+      - name: Evaluate non-ship shared-runner tripwire
+        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67 --profile ci-shared
+
+      - name: Upload 0.67 shared tripwire
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-shared-tripwire-067-${{ github.sha }}"
+          path: target/test-evidence/0.67/perf-budget-verdict.json
+          if-no-files-found: error
+
   release-067-performance:
     name: 0.67 Dedicated Performance Evidence
     runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
     timeout-minutes: 480
-    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    if: github.event_name == 'schedule' || github.ref == 'refs/tags/v0.67.0' || (github.event_name == 'workflow_dispatch' && inputs.run_nightly && inputs.candidate_release == '0.67')
     concurrency:
       group: release-067-performance-reference-v1
       cancel-in-progress: false
@@ -646,8 +674,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
 
       - name: Verify shipped 0.66 provenance
         run: |

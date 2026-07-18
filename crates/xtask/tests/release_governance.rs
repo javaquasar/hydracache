@@ -418,6 +418,85 @@ fn performance_lane_requires_dedicated_label_and_serial_concurrency() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("serialize one reference-v1 run")));
+
+    let floating_toolchain = workflow.replace(
+        "uses: dtolnay/rust-toolchain@1.94.0",
+        "uses: dtolnay/rust-toolchain@stable",
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&floating_toolchain, "0.67")
+            .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact rustc 1.94.0")));
+
+    let broad_tag = workflow.replacen(
+        "github.ref == 'refs/tags/v0.67.0'",
+        "startsWith(github.ref, 'refs/tags/v')",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&broad_tag, "0.67").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact v0.67.0 tag")));
+
+    let missing_shared = workflow.replacen(
+        "performance-067-shared-tripwire:",
+        "performance-067-shared-tripwire-removed:",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&missing_shared, "0.67")
+            .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("shared-runner regression tripwire")));
+}
+
+#[test]
+fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let manifest_text =
+        std::fs::read_to_string(root.join("docs/testing/release-evidence/0.67.toml")).unwrap();
+    let manifest = xtask::release_evidence::parse_manifest_text(&manifest_text).unwrap();
+    assert!(manifest.work_item.iter().all(|item| item
+        .required_artifacts
+        .iter()
+        .all(|artifact| !artifact.replace('\\', "/").starts_with("target/"))));
+
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let runtime_gates = [
+        "tool.perf-prebuild-067",
+        "env.hydracache-run-067-perf-core",
+        "env.hydracache-run-067-perf-resp",
+        "env.hydracache-run-067-perf-control-plane",
+        "tool.perf-budget-check-067",
+    ];
+    for gate_id in runtime_gates {
+        let gate = registry
+            .gate
+            .iter()
+            .find(|gate| gate.id == gate_id)
+            .unwrap();
+        assert!(!gate.artifacts.is_empty(), "{gate_id}");
+        assert!(gate.artifacts.iter().all(|artifact| artifact
+            .replace('\\', "/")
+            .starts_with("target/test-evidence/0.67/")));
+    }
+
+    let mut missing_runtime_report = registry.gate.clone();
+    missing_runtime_report
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-run-067-perf-resp")
+        .unwrap()
+        .artifacts
+        .retain(|artifact| artifact != "target/test-evidence/0.67/metrics-resp.json");
+    let problems =
+        xtask::release_governance::release_067_gate_contract_problems(&missing_runtime_report);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact ordered") && problem.contains("perf-resp")));
 }
 
 #[test]

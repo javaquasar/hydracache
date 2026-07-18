@@ -628,6 +628,39 @@ fn perf_budget_rejects_missing_extra_or_mixed_report_set() {
 }
 
 #[test]
+fn prebuild_receipt_hash_matches_every_performance_report() {
+    let (bundle, reports) = bootstrapped_fixture();
+    let expected_manifest = reports[0].prebuild_manifest_sha256.clone();
+    assert_eq!(reports.len(), bundle.budget.reports.len());
+    assert!(reports
+        .iter()
+        .all(|report| report.prebuild_manifest_sha256 == expected_manifest));
+
+    let mut mixed = reports;
+    mixed[1].prebuild_manifest_sha256 = sha("different-candidate-prebuild");
+    let verdict = perf_budget::evaluate(&bundle, &mixed, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+    assert!(verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains("mixes commit/profile/fingerprint/prebuild receipts")));
+}
+
+#[test]
+fn prebuilt_binary_digest_is_bound_to_report() {
+    let (bundle, mut reports) = bootstrapped_fixture();
+    reports[0].binary_sha256[0].sha256 = sha("mutated-prebuilt-binary");
+    let verdict = perf_budget::evaluate(&bundle, &reports, now());
+    assert_eq!(verdict.payload.status, VerdictStatus::Failed);
+    assert!(verdict
+        .payload
+        .problems
+        .iter()
+        .any(|problem| problem.contains("binary")));
+}
+
+#[test]
 fn macro_receipt_revalidates_runner_facts_instead_of_trusting_a_profile_label() {
     let (bundle, _) = bootstrapped_fixture();
     let expected = bundle

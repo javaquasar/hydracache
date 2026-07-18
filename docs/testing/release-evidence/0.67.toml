@@ -23,7 +23,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/foundation.toml",
     "docs/testing/schemas/perf-report.schema.json",
 ]
-fast_gate_ids = ["fast.performance-contract-067"]
+fast_gate_ids = ["fast.performance-contract-067", "fast.workspace-nextest"]
 gated_gate_ids = []
 ship_required = true
 
@@ -130,7 +130,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/local-scaling-v1.toml",
     "docs/testing/perf-scenarios/0.67/local-trace-replay-v1.toml",
 ]
-fast_gate_ids = ["fast.performance-contract-067"]
+fast_gate_ids = ["fast.performance-contract-067", "fast.workspace-nextest"]
 gated_gate_ids = [
     "tool.perf-prebuild-067",
     "env.hydracache-run-067-perf-core",
@@ -208,7 +208,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/client-surface-path-cost-v1.toml",
     "docs/testing/perf-scenarios/0.67/client-surface-payload-v1.toml",
 ]
-fast_gate_ids = ["fast.performance-contract-067"]
+fast_gate_ids = ["fast.performance-contract-067", "fast.workspace-nextest"]
 gated_gate_ids = [
     "tool.perf-prebuild-067",
     "env.hydracache-run-067-perf-core",
@@ -448,7 +448,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/grid-model-primitives-v1.toml",
 ]
 fast_gate_ids = [
-    "fast.performance-w4-067",
+    "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
 gated_gate_ids = [
@@ -538,7 +538,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/brownout-resp-endpoint-v1.toml",
 ]
 fast_gate_ids = [
-    "fast.performance-w5-067",
+    "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
 gated_gate_ids = [
@@ -605,7 +605,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml",
 ]
 fast_gate_ids = [
-    "fast.performance-w6-067",
+    "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
 gated_gate_ids = [
@@ -698,7 +698,7 @@ required_artifacts = [
     "docs/testing/schemas/perf-rolling-baseline.schema.json",
 ]
 fast_gate_ids = [
-    "fast.performance-w7-067",
+    "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
 gated_gate_ids = [
@@ -817,7 +817,7 @@ required_artifacts = [
     "docs/testing/perf-scenarios/0.67/redis-benchmark-provenance-v1.toml",
 ]
 fast_gate_ids = [
-    "fast.performance-resp-external-067",
+    "fast.performance-contract-067",
     "fast.workspace-nextest",
 ]
 gated_gate_ids = [
@@ -976,21 +976,52 @@ function = "predecessor_capture_accepts_an_ordinary_absolute_path_and_persists_c
 id = "W10"
 required_sources = [
     ".github/workflows/ci.yml",
+    "crates/xtask/src/lib.rs",
+    "crates/xtask/src/main.rs",
+    "crates/xtask/src/perf.rs",
+    "crates/xtask/src/perf_budget.rs",
+    "crates/xtask/src/release_evidence.rs",
     "crates/xtask/src/release_governance.rs",
+    "crates/xtask/tests/perf_budget_067.rs",
+    "crates/xtask/tests/perf_prebuild_067.rs",
     "crates/xtask/tests/performance_contract_067.rs",
+    "crates/xtask/tests/release_evidence.rs",
     "crates/xtask/tests/release_governance.rs",
+    "docs/GATES.md",
+    "docs/PERFORMANCE.md",
+    "docs/POSITIONING.md",
+    "docs/TESTING.md",
     "docs/plans/INDEX.md",
     "docs/plans/releases.toml",
+    "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md",
+    "docs/releases/0.67.0.md",
     "docs/testing/canary-registry-0.67.json",
     "docs/testing/fast-suite-registry.toml",
     "docs/testing/gated-test-registry.toml",
 ]
 required_artifacts = [
     "docs/testing/canary-registry-0.67.json",
+    "docs/testing/fast-suite-registry.toml",
+    "docs/testing/gated-test-registry.toml",
+    "docs/testing/perf-baselines/0.67/ci-shared.toml",
+    "docs/testing/perf-baselines/0.67/reference-v1.toml",
+    "docs/testing/perf-budgets/0.67/ci-shared.toml",
+    "docs/testing/perf-budgets/0.67/reference-v1.toml",
+    "docs/testing/perf-profiles/ci-shared.toml",
+    "docs/testing/perf-profiles/reference-v1.toml",
     "docs/testing/release-evidence/0.67.toml",
 ]
-fast_gate_ids = ["fast.performance-contract-067"]
-gated_gate_ids = []
+fast_gate_ids = [
+    "fast.performance-contract-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "env.hydracache-run-067-perf-resp",
+    "env.hydracache-run-067-perf-control-plane",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
 
 [[work_item.required_tests]]
@@ -1000,6 +1031,34 @@ function = "release_067_registered_performance_gates_are_mandatory_and_fail_clos
 [[work_item.required_tests]]
 source = "crates/xtask/tests/release_governance.rs"
 function = "performance_lane_requires_dedicated_label_and_serial_concurrency"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_prebuild_067.rs"
+function = "measurement_refuses_missing_or_mismatched_prebuild_manifest"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "prebuilt_binary_digest_is_bound_to_report"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_prebuild_067.rs"
+function = "compile_time_is_excluded_from_measurement_window"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_budget_067.rs"
+function = "prebuild_receipt_hash_matches_every_performance_report"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/perf_prebuild_067.rs"
+function = "consumer_gate_does_not_delete_the_prebuild_manifest"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_evidence.rs"
+function = "final_aggregator_requires_exact_candidate_receipts_and_artifact_hashes"
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/performance_contract_067.rs"

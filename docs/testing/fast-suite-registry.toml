@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.64.0"
 nextest_version = "0.9.137"
-aggregate_budget_seconds = 1650
+aggregate_budget_seconds = 1560
 
 [[suite]]
 id = "fast.fuzz-corpus-regression"
@@ -29,7 +29,7 @@ platform = "any"
 
 [[suite]]
 id = "fast.performance-contract-067"
-work_items = ["W0", "W1", "W2", "W3", "W9", "W10"]
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"]
 timeout_seconds = 180
 budget_seconds = 50
 deterministic = false
@@ -52,32 +52,8 @@ platform = "any"
 [suite.command.env]
 
 [[suite]]
-id = "fast.performance-w4-067"
-work_items = ["W4"]
-timeout_seconds = 240
-budget_seconds = 90
-deterministic = false
-artifacts = []
-logical_digest_artifact = ""
-
-[suite.baseline]
-status = "unmeasured"
-commit = ""
-toolchain = ""
-linux_ci_median_seconds = 0
-noise_allowance_seconds = 0
-
-[suite.command]
-program = "cargo"
-args = ["test", "-p", "hydracache-loadgen", "--test", "w4_split_067", "--locked", "-j", "2"]
-cwd = "."
-platform = "any"
-
-[suite.command.env]
-
-[[suite]]
 id = "fast.performance-resp-external-067"
-work_items = ["W3", "W8"]
+work_items = ["W3"]
 timeout_seconds = 120
 budget_seconds = 10
 deterministic = false
@@ -94,78 +70,6 @@ noise_allowance_seconds = 0
 [suite.command]
 program = "cargo"
 args = ["test", "-p", "hydracache-loadgen", "--test", "resp_external_067", "--locked", "-j", "2"]
-cwd = "."
-platform = "any"
-
-[suite.command.env]
-
-[[suite]]
-id = "fast.performance-w5-067"
-work_items = ["W5"]
-timeout_seconds = 300
-budget_seconds = 120
-deterministic = false
-artifacts = []
-logical_digest_artifact = ""
-
-[suite.baseline]
-status = "unmeasured"
-commit = ""
-toolchain = ""
-linux_ci_median_seconds = 0
-noise_allowance_seconds = 0
-
-[suite.command]
-program = "cargo"
-args = ["test", "-p", "hydracache-loadgen", "--test", "w5_brownout_067", "--locked", "-j", "2"]
-cwd = "."
-platform = "any"
-
-[suite.command.env]
-
-[[suite]]
-id = "fast.performance-w6-067"
-work_items = ["W6"]
-timeout_seconds = 300
-budget_seconds = 120
-deterministic = false
-artifacts = []
-logical_digest_artifact = ""
-
-[suite.baseline]
-status = "unmeasured"
-commit = ""
-toolchain = ""
-linux_ci_median_seconds = 0
-noise_allowance_seconds = 0
-
-[suite.command]
-program = "cargo"
-args = ["test", "-p", "hydracache-loadgen", "--test", "w6_overload_067", "--locked", "-j", "2"]
-cwd = "."
-platform = "any"
-
-[suite.command.env]
-
-[[suite]]
-id = "fast.performance-w7-067"
-work_items = ["W7"]
-timeout_seconds = 300
-budget_seconds = 120
-deterministic = false
-artifacts = []
-logical_digest_artifact = ""
-
-[suite.baseline]
-status = "unmeasured"
-commit = ""
-toolchain = ""
-linux_ci_median_seconds = 0
-noise_allowance_seconds = 0
-
-[suite.command]
-program = "cargo"
-args = ["test", "-p", "xtask", "--test", "perf_budget_067", "--locked", "-j", "2"]
 cwd = "."
 platform = "any"
 
@@ -296,7 +200,7 @@ HYDRACACHE_CANCELLATION_CLIENT_EVIDENCE = "../../target/test-evidence/0.64/cance
 
 [[suite]]
 id = "fast.workspace-nextest"
-work_items = ["W1", "W2", "W3", "W4", "W5", "W5a", "W6", "W6b", "W7", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W25", "W27", "W28", "W29", "W30", "W32", "W33", "W34", "W35", "W36", "W37", "W39"]
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W5a", "W6", "W6b", "W7", "W8", "W9", "W10", "W11", "W12", "W13", "W14", "W15", "W17", "W18", "W19", "W20", "W21", "W22", "W23", "W25", "W27", "W28", "W29", "W30", "W32", "W33", "W34", "W35", "W36", "W37", "W39"]
 timeout_seconds = 1260
 budget_seconds = 1020
 deterministic = false
