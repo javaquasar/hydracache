@@ -18,7 +18,7 @@ on:
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
-        default: "0.66"
+        default: "0.67"
         type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
@@ -35,7 +35,7 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
-  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.66' }}
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67' }}
 
 jobs:
   rust:
@@ -104,6 +104,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.66
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.67
+          cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -121,6 +123,9 @@ jobs:
 
       - name: Release governance
         run: cargo run -p xtask --locked -- release-governance-check --release "$HYDRACACHE_CANDIDATE_RELEASE"
+
+      - name: 0.67 performance contract
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.performance-contract-067
 
       - name: SQL lint baseline drift
         run: |
@@ -624,6 +629,66 @@ jobs:
             target/release-evidence/receipts/**
           if-no-files-found: error
 
+  release-067-performance:
+    name: 0.67 Dedicated Performance Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 480
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Verify shipped 0.66 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.66.0
+          git merge-base --is-ancestor refs/tags/v0.66.0 HEAD
+
+      - name: Run 0.67 canary sweep
+        run: cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+
+      - name: Validate 0.67 performance contract
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
+
+      - name: Prebuild 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run 0.67 core performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Run 0.67 RESP performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Run 0.67 control-plane performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Check 0.67 performance budgets
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
+
+      - name: Aggregate exact 0.67 candidate evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload 0.67 performance evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-067-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/release-evidence/canaries/0.67-*.json
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest
@@ -901,6 +966,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep

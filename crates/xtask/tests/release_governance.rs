@@ -109,13 +109,13 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
 
     for (current, stale, expected_problem) in [
         (
+            "default: \"0.67\"",
             "default: \"0.66\"",
-            "default: \"0.65\"",
             "workflow_dispatch input candidate_release",
         ),
         (
+            "${{ inputs.candidate_release || '0.67' }}",
             "${{ inputs.candidate_release || '0.66' }}",
-            "${{ inputs.candidate_release || '0.65' }}",
             "global HYDRACACHE_CANDIDATE_RELEASE",
         ),
         (
@@ -339,6 +339,111 @@ fn canary_release_governance_accepts_a_missing_mandatory_gate() {
 }
 
 #[test]
+fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let problems = xtask::release_governance::release_067_gate_contract_problems(&registry.gate);
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    for id in [
+        "tool.perf-prebuild-067",
+        "env.hydracache-run-067-perf-core",
+        "env.hydracache-run-067-perf-resp",
+        "env.hydracache-run-067-perf-control-plane",
+        "tool.perf-budget-check-067",
+    ] {
+        let mut missing = registry.gate.clone();
+        missing.retain(|gate| gate.id != id);
+        let problems = xtask::release_governance::release_067_gate_contract_problems(&missing);
+        assert!(
+            problems
+                .iter()
+                .any(|problem| problem.contains("missing mandatory gate") && problem.contains(id)),
+            "missing gate {id} was accepted: {problems:#?}"
+        );
+    }
+
+    let mut optional = registry.gate.clone();
+    optional
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-run-067-perf-resp")
+        .unwrap()
+        .ship_mandatory = false;
+    let problems = xtask::release_governance::release_067_gate_contract_problems(&optional);
+    assert!(problems.iter().any(|problem| {
+        problem.contains("env.hydracache-run-067-perf-resp")
+            && problem.contains("mandatory dedicated Linux")
+    }));
+
+    let mut destructive_consumer = registry.gate.clone();
+    destructive_consumer
+        .iter_mut()
+        .find(|gate| gate.id == "env.hydracache-run-067-perf-core")
+        .unwrap()
+        .artifacts
+        .push("target/test-evidence/0.67/prebuild-manifest.json".to_owned());
+    let problems =
+        xtask::release_governance::release_067_gate_contract_problems(&destructive_consumer);
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("must not redeclare or delete")));
+}
+
+#[test]
+fn performance_lane_requires_dedicated_label_and_serial_concurrency() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
+    assert!(problems.is_empty(), "{problems:#?}");
+
+    let shared = workflow.replacen(
+        "runs-on: [self-hosted, linux, x64, hydracache-perf-v1]",
+        "runs-on: ubuntu-latest",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&shared, "0.67").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("exact dedicated labels")));
+
+    let parallel = workflow.replacen(
+        "group: release-067-performance-reference-v1",
+        "group: release-067-performance-${{ github.run_id }}",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&parallel, "0.67").unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("serialize one reference-v1 run")));
+}
+
+#[test]
+fn canary_release_governance_accepts_a_missing_mandatory_performance_gate() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut missing = registry.gate.clone();
+    missing.retain(|gate| gate.id != "tool.perf-budget-check-067");
+    let problems = xtask::release_governance::release_067_gate_contract_problems(&missing);
+    let rejected = problems
+        .iter()
+        .any(|problem| problem.contains("missing mandatory gate tool.perf-budget-check-067"));
+
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W10") {
+        assert!(
+            !rejected,
+            "HC-CANARY-RED:W10 release governance accepted a missing mandatory performance gate"
+        );
+    }
+    assert!(
+        rejected,
+        "release 0.67 governance did not reject a missing performance gate: {problems:#?}"
+    );
+}
+
+#[test]
 fn release_compatibility_jobs_fetch_the_baseline_tag_and_ancestry() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
@@ -369,7 +474,7 @@ jobs:
       - uses: actions/checkout@v5
 "#;
     let problems = xtask::release_governance::release_history_checkout_problems(shallow).unwrap();
-    assert_eq!(problems.len(), 6, "{problems:#?}");
+    assert_eq!(problems.len(), 7, "{problems:#?}");
     assert!(problems.iter().any(|problem| problem.contains("job rust")));
     assert!(problems
         .iter()
@@ -384,6 +489,9 @@ jobs:
     assert!(problems
         .iter()
         .any(|problem| problem.contains("job release-066-daemon-process")));
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("job release-067-performance")));
 }
 
 #[test]

@@ -1,7 +1,7 @@
 schema_version = 1
 release = "0.64.0"
 nextest_version = "0.9.137"
-aggregate_budget_seconds = 1500
+aggregate_budget_seconds = 1560
 
 [[suite]]
 id = "fast.fuzz-corpus-regression"
@@ -22,6 +22,30 @@ noise_allowance_seconds = 0
 [suite.command]
 program = "cargo"
 args = ["test", "-p", "hydracache-fuzz", "--test", "fuzz_corpus_regression", "--locked", "-j", "2"]
+cwd = "."
+platform = "any"
+
+[suite.command.env]
+
+[[suite]]
+id = "fast.performance-contract-067"
+work_items = ["W10"]
+timeout_seconds = 180
+budget_seconds = 60
+deterministic = false
+artifacts = []
+logical_digest_artifact = ""
+
+[suite.baseline]
+status = "unmeasured"
+commit = ""
+toolchain = ""
+linux_ci_median_seconds = 0
+noise_allowance_seconds = 0
+
+[suite.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_067_registered_performance_gates_are_mandatory_and_fail_closed"]
 cwd = "."
 platform = "any"
 

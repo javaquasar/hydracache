@@ -20,7 +20,7 @@
 >   versus Redis on the RESP surface, and regression protection so `1.0` performance cannot silently
 >   erode. A native-daemon or distributed-value-plane capacity claim remains blocked until those
 >   product surfaces are implemented in a separate release.
-> - **Status:** planned.
+> - **Status:** in-progress (W10 Phase A governance scaffold).
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -

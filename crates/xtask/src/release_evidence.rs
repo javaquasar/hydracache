@@ -97,6 +97,7 @@ struct ReleaseDefinition {
     version: String,
     plan: String,
     work_items: Vec<String>,
+    depends_on: Vec<String>,
 }
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
@@ -172,6 +173,18 @@ pub fn build_report(
     let mut global_reasons = Vec::new();
     if current_worktree_dirty {
         global_reasons.push("current worktree is dirty".to_owned());
+    }
+    for dependency in &definition.depends_on {
+        let tag = format!("v{dependency}");
+        if !git_ref_exists(root, &format!("refs/tags/{tag}")) {
+            global_reasons.push(format!(
+                "required compatibility baseline tag {tag} is missing"
+            ));
+        } else if !git_is_ancestor(root, &tag, &source_commit) {
+            global_reasons.push(format!(
+                "required compatibility baseline {tag} is not an ancestor of the candidate commit"
+            ));
+        }
     }
     let receipts = load_receipts(root, receipts_dir, &mut global_reasons)?;
     let quarantine_report = quarantine::check_at(root, release, time::OffsetDateTime::now_utc())?;
@@ -755,10 +768,27 @@ fn load_release_definition(
                 .ok_or("work_items must contain strings")
         })
         .collect::<Result<Vec<_>, _>>()?;
+    let depends_on = row
+        .get("depends_on")
+        .and_then(toml::Value::as_array)
+        .map(|dependencies| {
+            dependencies
+                .iter()
+                .map(|dependency| {
+                    dependency
+                        .as_str()
+                        .map(str::to_owned)
+                        .ok_or("depends_on must contain strings")
+                })
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .transpose()?
+        .unwrap_or_default();
     Ok(ReleaseDefinition {
         version: wanted,
         plan,
         work_items,
+        depends_on,
     })
 }
 
@@ -1063,6 +1093,14 @@ fn git_is_ancestor(root: &Path, ancestor: &str, descendant: &str) -> bool {
         .current_dir(root)
         .status()
         .is_ok_and(|status| status.success())
+}
+
+fn git_ref_exists(root: &Path, reference: &str) -> bool {
+    Command::new("git")
+        .args(["rev-parse", "--verify", reference])
+        .current_dir(root)
+        .output()
+        .is_ok_and(|output| output.status.success())
 }
 
 fn command_output(root: &Path, args: &[&str]) -> Result<String, Box<dyn Error>> {

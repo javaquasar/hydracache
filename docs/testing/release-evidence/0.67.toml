@@ -1,0 +1,123 @@
+schema_version = 1
+release = "0.67.0"
+plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
+canary_policy = "dynamic_registry"
+dynamic_canary_work_items = ["W10"]
+
+[[work_item]]
+id = "W0"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W1"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W2"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W3"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W4"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W5"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W6"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W7"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W8"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W9"
+required_sources = []
+required_tests = []
+required_artifacts = []
+fast_gate_ids = []
+gated_gate_ids = []
+ship_required = true
+
+[[work_item]]
+id = "W10"
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/release_governance.rs",
+    "crates/xtask/tests/release_governance.rs",
+    "docs/plans/INDEX.md",
+    "docs/plans/releases.toml",
+    "docs/testing/canary-registry-0.67.json",
+    "docs/testing/fast-suite-registry.toml",
+    "docs/testing/gated-test-registry.toml",
+]
+required_artifacts = [
+    "docs/testing/canary-registry-0.67.json",
+    "docs/testing/release-evidence/0.67.toml",
+]
+fast_gate_ids = ["fast.performance-contract-067"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_067_registered_performance_gates_are_mandatory_and_fail_closed"
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "performance_lane_requires_dedicated_label_and_serial_concurrency"
