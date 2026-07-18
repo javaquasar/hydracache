@@ -2020,6 +2020,9 @@ dependencies = [
 [[package]]
 name = "hydracache-cache-sim"
 version = "0.65.0"
+dependencies = [
+ "sha2 0.11.0",
+]
 
 [[package]]
 name = "hydracache-cdc-postgres"
@@ -2225,6 +2228,8 @@ dependencies = [
  "async-trait",
  "futures-util",
  "hdrhistogram",
+ "hydracache",
+ "hydracache-cache-sim",
  "jsonschema",
  "serde",
  "serde_json",

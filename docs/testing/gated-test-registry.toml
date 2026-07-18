@@ -5174,7 +5174,7 @@ timeout_seconds = 5400
 owner_release = "0.67.0"
 ship_mandatory = true
 artifacts = [
-    "target/test-evidence/0.67/local-cache.json",
+    "target/test-evidence/0.67/local.json",
     "target/test-evidence/0.67/client-surface.json",
     "target/test-evidence/0.67/grid-model.json",
     "target/test-evidence/0.67/brownout-grid-model.json",

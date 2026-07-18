@@ -66,6 +66,7 @@ jsonschema = { version = "0.48.1", default-features = false }
 http = "1"
 hydracache-core = { path = "crates/hydracache-core", version = "0.65.0" }
 hydracache = { path = "crates/hydracache", version = "0.65.0" }
+hydracache-cache-sim = { path = "crates/hydracache-cache-sim", version = "0.65.0" }
 hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.65.0" }
 hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.65.0" }
 hydracache-client = { path = "crates/hydracache-client", version = "0.65.0" }

@@ -2,6 +2,8 @@
 //!
 //! This crate is a development tool. Product crates must never depend on it.
 
+pub mod allocation;
+pub mod cli;
 pub mod histogram;
 pub mod knee;
 pub mod profile;
@@ -10,6 +12,8 @@ pub mod report;
 pub mod runner;
 pub mod scenario;
 pub mod target;
+pub mod targets;
+pub mod tiers;
 
 pub use histogram::{LatencyHistogram, LatencySummary};
 pub use knee::{

@@ -564,7 +564,6 @@ fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
         "foundation-fixture",
         "foundation",
         "state-sha",
-        67,
         EvidenceRunMode::ReferenceEvidence,
         SurfaceIdentity {
             surface_kind: "synthetic-instrument".to_owned(),
@@ -706,6 +705,17 @@ fn report_writer_rejects_measurement_input_digest_mutation() {
     };
     value.workload.digest = "mutated-workload".to_owned();
     assert!(report.to_pretty_json().is_err());
+
+    let mut seed_mutation = fixture_report(vec![foundation_measurement()]);
+    seed_mutation.seed = seed_mutation.seed.wrapping_add(1);
+    assert!(seed_mutation.to_pretty_json().is_err());
+
+    let mut workload_seed_mutation = fixture_report(vec![foundation_measurement()]);
+    let MeasurementEvidence::LoadCurve(value) = &mut workload_seed_mutation.measurements[0] else {
+        unreachable!()
+    };
+    value.workload.seed = Some(68);
+    assert!(workload_seed_mutation.to_pretty_json().is_err());
 }
 
 struct SerializedStallTarget {
@@ -771,4 +781,370 @@ async fn canary_closed_loop_measurement_hides_a_synthetic_stall() {
     }
     assert!(open_p99 > 500_000, "open-loop p99={open_p99}");
     assert!(closed_p99 < 10_000, "closed-loop p99={closed_p99}");
+}
+
+fn w1_measurement_id(measurement: &MeasurementEvidence) -> &str {
+    match measurement {
+        MeasurementEvidence::LoadCurve(value) => &value.id,
+        MeasurementEvidence::Scalar(value) => &value.id,
+        MeasurementEvidence::TraceReplay(value) => &value.id,
+        MeasurementEvidence::Comparison(value) => &value.id,
+    }
+}
+
+#[tokio::test]
+async fn local_cache_scaling_curve_1_to_n_threads_smoke() {
+    let (curve, efficiency) = hydracache_loadgen::tiers::local::local_scaling_smoke_measurements()
+        .await
+        .unwrap();
+
+    let MeasurementEvidence::Scalar(curve) = curve else {
+        panic!("local scaling curve must use scalar evidence");
+    };
+    assert_eq!(curve.id, "local_cache_scaling_curve_1_to_n_threads");
+    assert!(curve.points.len() >= 2);
+    assert!(curve
+        .points
+        .iter()
+        .any(|point| { point.dimensions.get("worker_threads") == Some(&DimensionValue::U64(1)) }));
+    assert!(curve.points.iter().all(|point| {
+        point.sample_count == 3
+            && point.samples.len() == 3
+            && point.quantity.unit == "operations_per_second"
+            && point.quantity.value.is_finite()
+            && point.quantity.value > 0.0
+    }));
+    assert_eq!(curve.workload.generator_version, "1");
+    assert_eq!(curve.workload.digest.len(), 64);
+
+    let MeasurementEvidence::Scalar(efficiency) = efficiency else {
+        panic!("local scaling efficiency must use scalar evidence");
+    };
+    assert_eq!(
+        efficiency.derived_from,
+        ["local_cache_scaling_curve_1_to_n_threads"]
+    );
+    assert_eq!(efficiency.points.len(), curve.points.len());
+}
+
+#[tokio::test]
+async fn hot_key_contention_throughput_floor_smoke() {
+    let measurement = hydracache_loadgen::tiers::local::local_hot_key_smoke_measurement()
+        .await
+        .unwrap();
+    let MeasurementEvidence::LoadCurve(curve) = measurement else {
+        panic!("hot-key contention must use load-curve evidence");
+    };
+
+    assert_eq!(curve.id, "hot_key_contention_throughput_floor");
+    assert_eq!(
+        curve.dimensions.get("logical_key_count"),
+        Some(&DimensionValue::U64(1))
+    );
+    assert_eq!(curve.claim, LoadClaim::CapacityKnee);
+    assert_eq!(curve.workload.key_count, Some(1));
+    let knee = curve
+        .knee
+        .expect("hot-key load curve must retain raw knee data");
+    assert_eq!(knee.evaluated.len(), 2);
+    assert!(knee.evaluated.iter().all(|point| point.repeats.len() == 3));
+    assert!(knee.sustainable_rate_per_second.is_some());
+
+    let single_flight =
+        hydracache_loadgen::tiers::local::local_hot_key_single_flight_smoke_measurement()
+            .await
+            .unwrap();
+    let MeasurementEvidence::Scalar(single_flight) = single_flight else {
+        panic!("cold hot-key burst must use scalar evidence");
+    };
+    assert_eq!(single_flight.id, "hot_key_single_flight_miss_stampede_cost");
+    assert_eq!(
+        single_flight.points[0].dimensions.get("loader_executions"),
+        Some(&DimensionValue::U64(1))
+    );
+    let concurrent_requests = single_flight.points[0]
+        .dimensions
+        .get("concurrent_requests")
+        .cloned();
+    assert_eq!(
+        single_flight.points[0]
+            .dimensions
+            .get("cache_misses_before_loader_release"),
+        concurrent_requests.as_ref()
+    );
+    assert_eq!(
+        single_flight.points[0].dimensions.get("cache_hits"),
+        Some(&DimensionValue::U64(0))
+    );
+}
+
+#[tokio::test]
+async fn throughput_at_full_capacity_vs_half_capacity_smoke() {
+    let measurement = hydracache_loadgen::tiers::local::local_capacity_smoke_measurement()
+        .await
+        .unwrap();
+    let MeasurementEvidence::Scalar(capacity) = measurement else {
+        panic!("capacity-pressure comparison must use scalar evidence");
+    };
+
+    assert_eq!(capacity.id, "throughput_at_full_capacity_vs_half_capacity");
+    assert_eq!(capacity.points.len(), 4);
+    let combinations = capacity
+        .points
+        .iter()
+        .map(|point| {
+            let distribution = match point.dimensions.get("distribution") {
+                Some(DimensionValue::Text(value)) => value.as_str(),
+                other => panic!("missing distribution dimension: {other:?}"),
+            };
+            let capacity_profile = match point.dimensions.get("capacity_profile") {
+                Some(DimensionValue::Text(value)) => value.as_str(),
+                other => panic!("missing capacity profile dimension: {other:?}"),
+            };
+            assert_eq!(
+                point.dimensions.get("every_insert_evicts_proof"),
+                Some(&DimensionValue::Bool(true))
+            );
+            assert!(matches!(
+                point.dimensions.get("verified_full_preload_entries"),
+                Some(DimensionValue::U64(entries)) if *entries > 0
+            ));
+            assert_eq!(
+                point.dimensions.get("eviction_proof_operations_per_repeat"),
+                Some(&DimensionValue::U64(240))
+            );
+            assert_eq!(
+                point.dimensions.get("eviction_proof_repeats"),
+                Some(&DimensionValue::U64(3))
+            );
+            assert_eq!(point.sample_count, 3);
+            assert_eq!(point.samples.len(), 3);
+            (distribution, capacity_profile)
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        combinations,
+        std::collections::BTreeSet::from([
+            ("uniform", "half"),
+            ("uniform", "full"),
+            ("zipfian", "half"),
+            ("zipfian", "full"),
+        ])
+    );
+    assert_eq!(capacity.workload.digest.len(), 64);
+}
+
+#[tokio::test]
+async fn hit_miss_and_loader_path_cost_breakdown_smoke() {
+    let measurement = hydracache_loadgen::tiers::local::local_path_cost_smoke_measurement()
+        .await
+        .unwrap();
+    let MeasurementEvidence::Scalar(paths) = measurement else {
+        panic!("path-cost breakdown must use scalar evidence");
+    };
+
+    assert_eq!(paths.id, "hit_miss_and_loader_path_cost_breakdown");
+    let names = paths
+        .points
+        .iter()
+        .map(|point| match point.dimensions.get("path") {
+            Some(DimensionValue::Text(value)) => value.as_str(),
+            other => panic!("missing path dimension: {other:?}"),
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        names,
+        std::collections::BTreeSet::from(["hit", "miss", "loader"])
+    );
+    assert!(paths.points.iter().all(|point| {
+        point.sample_count == 3
+            && point.samples.len() == 3
+            && point.quantity.unit == "operations_per_second"
+    }));
+}
+
+#[tokio::test]
+async fn bytes_allocated_per_operation_by_feature_smoke() {
+    let measurement = hydracache_loadgen::tiers::local::local_allocation_smoke_measurement()
+        .await
+        .unwrap();
+    let MeasurementEvidence::Scalar(allocations) = measurement else {
+        panic!("allocation breakdown must use scalar evidence");
+    };
+
+    assert_eq!(allocations.id, "bytes_allocated_per_operation_by_feature");
+    let features = allocations
+        .points
+        .iter()
+        .map(|point| match point.dimensions.get("feature") {
+            Some(DimensionValue::Text(value)) => value.as_str(),
+            other => panic!("missing feature dimension: {other:?}"),
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        features,
+        std::collections::BTreeSet::from(["baseline", "ttl", "tags"])
+    );
+    assert!(allocations.points.iter().all(|point| {
+        point.sample_count == 3
+            && point.samples.len() == 3
+            && point.quantity.unit == "gross_allocated_bytes_per_operation"
+            && point.quantity.value.is_finite()
+            && point.quantity.value > 0.0
+    }));
+}
+
+#[tokio::test]
+async fn w22_trace_replay_preserves_order_and_records_trace_digest() {
+    let measurement = hydracache_loadgen::tiers::local::local_trace_replay_smoke_measurement()
+        .await
+        .unwrap();
+    let MeasurementEvidence::TraceReplay(replay) = measurement else {
+        panic!("W22 replay must use trace-replay evidence");
+    };
+
+    assert_eq!(
+        replay.id,
+        "w22_trace_replay_preserves_order_and_records_trace_digest"
+    );
+    assert!(replay.order_preserved);
+    assert_eq!(replay.input_digest, replay.replayed_digest);
+    assert_eq!(replay.input_digest.len(), 64);
+    assert!(replay.event_count > 0);
+    assert_eq!(replay.hits + replay.misses, replay.event_count);
+    assert!(replay.catalog_id.contains("w22-v1"));
+}
+
+#[tokio::test]
+async fn local_report_contains_every_required_measurement_and_workload_identity() {
+    let report = hydracache_loadgen::tiers::local::local_smoke_report("smoke-v1")
+        .await
+        .unwrap();
+
+    assert_eq!(report.run_mode, EvidenceRunMode::Smoke);
+    assert_eq!(report.surface.claim_scope, "plumbing-only");
+    assert!(
+        !report.stable,
+        "smoke output must never become ship evidence"
+    );
+    assert!(report.to_pretty_json().is_ok());
+
+    let ids = report
+        .measurements
+        .iter()
+        .map(w1_measurement_id)
+        .collect::<std::collections::BTreeSet<_>>();
+    for required in hydracache_loadgen::tiers::local::REQUIRED_LOCAL_MEASUREMENTS {
+        assert!(
+            ids.contains(required),
+            "missing required W1 measurement {required}"
+        );
+    }
+    for measurement in &report.measurements {
+        match measurement {
+            MeasurementEvidence::LoadCurve(value) => {
+                assert_eq!(value.workload.digest.len(), 64);
+                assert!(!value.workload.generator.is_empty());
+                assert!(!value.workload.generator_version.is_empty());
+            }
+            MeasurementEvidence::Scalar(value) => {
+                assert_eq!(value.workload.digest.len(), 64);
+                assert!(!value.workload.generator.is_empty());
+                assert!(!value.workload.generator_version.is_empty());
+            }
+            MeasurementEvidence::TraceReplay(value) => {
+                assert_eq!(value.input_digest.len(), 64);
+                assert_eq!(value.replayed_digest.len(), 64);
+            }
+            MeasurementEvidence::Comparison(_) => {}
+        }
+    }
+    let seeds = report
+        .measurements
+        .iter()
+        .filter_map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(value) => value.workload.seed,
+            MeasurementEvidence::Scalar(value) => value.workload.seed,
+            _ => None,
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        seeds,
+        std::collections::BTreeSet::from([6701, 6702, 6703, 6704, 6705])
+    );
+}
+
+#[test]
+fn local_cli_plan_and_suite_forms_share_one_runner() {
+    let direct = hydracache_loadgen::cli::parse(
+        [
+            "tier",
+            "local",
+            "--profile",
+            "reference-v1",
+            "--report",
+            "target/test-evidence/0.67/local.json",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+    )
+    .unwrap();
+    let suite = hydracache_loadgen::cli::parse(
+        [
+            "suite",
+            "core",
+            "--profile",
+            "reference-v1",
+            "--output-dir",
+            "target/test-evidence/0.67",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+    )
+    .unwrap();
+
+    assert_eq!(direct.profile(), suite.profile());
+    assert_eq!(direct.local_report_path(), suite.local_report_path());
+}
+
+#[tokio::test]
+async fn local_reference_profile_never_silently_downgrades_to_smoke() {
+    let error = hydracache_loadgen::tiers::local::write_local_report(
+        "reference-v1",
+        std::path::Path::new("target/test-evidence/0.67/forbidden-reference-smoke.json"),
+    )
+    .await
+    .unwrap_err();
+    assert!(error
+        .to_string()
+        .contains("refusing to emit smoke evidence"));
+    assert!(
+        hydracache_loadgen::tiers::local::local_smoke_report("reference-v1")
+            .await
+            .is_err()
+    );
+}
+
+#[tokio::test]
+async fn canary_injected_slow_eviction_breaches_the_local_budget() {
+    let slow_knee =
+        hydracache_loadgen::tiers::local::local_pressure_knee(Duration::from_millis(25))
+            .await
+            .unwrap();
+    let slow_path_is_red = slow_knee.sustainable_rate_per_second.is_none()
+        && slow_knee
+            .evaluated
+            .iter()
+            .all(|point| !point.verdict.sustainable);
+
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W1") {
+        assert!(
+            !slow_path_is_red,
+            "HC-CANARY-RED:W1 injected capacity-pressure delay breached the local budget"
+        );
+    }
+    assert!(
+        slow_path_is_red,
+        "injected capacity-pressure delay must make the local knee unsustainable: {slow_knee:?}"
+    );
 }

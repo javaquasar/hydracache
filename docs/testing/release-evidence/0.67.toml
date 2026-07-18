@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -101,12 +101,90 @@ function = "report_writer_rejects_measurement_input_digest_mutation"
 
 [[work_item]]
 id = "W1"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "Cargo.toml",
+    "crates/hydracache-cache-sim/Cargo.toml",
+    "crates/hydracache-cache-sim/src/digest.rs",
+    "crates/hydracache-cache-sim/src/lib.rs",
+    "crates/hydracache-cache-sim/src/trace_catalog.rs",
+    "crates/hydracache-cache-sim/src/workload.rs",
+    "crates/hydracache-cache-sim/tests/performance_contract_067.rs",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/allocation.rs",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/report.rs",
+    "crates/hydracache-loadgen/src/targets/local.rs",
+    "crates/hydracache-loadgen/src/targets/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/local.rs",
+    "crates/hydracache-loadgen/src/tiers/mod.rs",
+    "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-scenarios/0.67/local-allocation-v1.toml",
+    "docs/testing/perf-scenarios/0.67/local-capacity-pressure-v1.toml",
+    "docs/testing/perf-scenarios/0.67/local-hot-key-v1.toml",
+    "docs/testing/perf-scenarios/0.67/local-path-cost-v1.toml",
+    "docs/testing/perf-scenarios/0.67/local-scaling-v1.toml",
+    "docs/testing/perf-scenarios/0.67/local-trace-replay-v1.toml",
+]
+fast_gate_ids = ["fast.performance-contract-067"]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cache-sim/tests/performance_contract_067.rs"
+function = "seeded_uniform_key_schedule_is_versioned_reproducible_and_digest_bound"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cache-sim/tests/performance_contract_067.rs"
+function = "seeded_zipfian_schedule_is_reproducible_skewed_and_records_theta"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-cache-sim/tests/performance_contract_067.rs"
+function = "w22_trace_catalog_reuses_exact_sources_and_records_order_sensitive_digests"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "local_cache_scaling_curve_1_to_n_threads_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "hot_key_contention_throughput_floor_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "throughput_at_full_capacity_vs_half_capacity_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "hit_miss_and_loader_path_cost_breakdown_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "bytes_allocated_per_operation_by_feature_smoke"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "w22_trace_replay_preserves_order_and_records_trace_digest"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "local_report_contains_every_required_measurement_and_workload_identity"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "local_cli_plan_and_suite_forms_share_one_runner"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "local_reference_profile_never_silently_downgrades_to_smoke"
 
 [[work_item]]
 id = "W2"

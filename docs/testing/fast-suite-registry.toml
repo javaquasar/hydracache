@@ -29,7 +29,7 @@ platform = "any"
 
 [[suite]]
 id = "fast.performance-contract-067"
-work_items = ["W0", "W10"]
+work_items = ["W0", "W1", "W10"]
 timeout_seconds = 180
 budget_seconds = 60
 deterministic = false
@@ -45,7 +45,7 @@ noise_allowance_seconds = 0
 
 [suite.command]
 program = "cargo"
-args = ["test", "-p", "hydracache-loadgen", "-p", "xtask", "--test", "performance_contract_067", "--locked", "-j", "2"]
+args = ["test", "-p", "hydracache-cache-sim", "-p", "hydracache-loadgen", "-p", "xtask", "--test", "performance_contract_067", "--locked", "-j", "2"]
 cwd = "."
 platform = "any"
 

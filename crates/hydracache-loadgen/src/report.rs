@@ -234,7 +234,6 @@ impl PerfReport {
         report_id: impl Into<String>,
         scenario_id: impl Into<String>,
         state_digest: impl Into<String>,
-        seed: u64,
         run_mode: EvidenceRunMode,
         surface: SurfaceIdentity,
         runner_contract: PerformanceProfile,
@@ -248,6 +247,7 @@ impl PerfReport {
         let runner_contract_digest = digest_json(&runner_contract);
         let scenario_digest = suite_scenario_digest(&measurements);
         let workload_digest = suite_workload_digest(&measurements);
+        let seed = suite_seed(&measurements);
         let mut report = Self {
             schema_version: PERF_SCHEMA_VERSION,
             release: PERF_RELEASE.to_owned(),
@@ -337,8 +337,9 @@ impl PerfReport {
         }
         if self.scenario_digest != suite_scenario_digest(&self.measurements)
             || self.workload_digest != suite_workload_digest(&self.measurements)
+            || self.seed != suite_seed(&self.measurements)
         {
-            problems.push("suite digests do not match typed measurement inputs".to_owned());
+            problems.push("suite seed or digests do not match typed measurement inputs".to_owned());
         }
         if [
             &self.surface.surface_kind,
@@ -399,7 +400,7 @@ impl PerfReport {
             if !ids.insert(id.to_owned()) {
                 problems.push(format!("duplicate measurement id: {id}"));
             }
-            problems.extend(measurement.validation_problems(&self.state_digest, self.seed));
+            problems.extend(measurement.validation_problems(&self.state_digest));
         }
         for measurement in &self.measurements {
             match measurement {
@@ -480,7 +481,7 @@ impl MeasurementEvidence {
         }
     }
 
-    fn validation_problems(&self, state_digest: &str, report_seed: u64) -> Vec<String> {
+    fn validation_problems(&self, state_digest: &str) -> Vec<String> {
         let mut problems = Vec::new();
         if self.id().is_empty() {
             problems.push("measurement id must be non-empty".to_owned());
@@ -491,12 +492,6 @@ impl MeasurementEvidence {
                     problems.push(format!("measurement {} has no scenario digest", value.id));
                 }
                 problems.extend(workload_problems(&value.workload));
-                if value.workload.seed.is_some_and(|seed| seed != report_seed) {
-                    problems.push(format!(
-                        "measurement {} seed differs from report seed",
-                        value.id
-                    ));
-                }
                 match (&value.criteria, &value.knee) {
                     (Some(criteria), Some(knee)) => {
                         problems.extend(criteria.knee_validation_problems(knee));
@@ -573,12 +568,6 @@ impl MeasurementEvidence {
                     ));
                 }
                 problems.extend(workload_problems(&value.workload));
-                if value.workload.seed.is_some_and(|seed| seed != report_seed) {
-                    problems.push(format!(
-                        "measurement {} seed differs from report seed",
-                        value.id
-                    ));
-                }
                 if value.points.is_empty()
                     || value.points.iter().any(|point| {
                         point.sample_count < 3
@@ -719,6 +708,38 @@ fn suite_workload_digest(measurements: &[MeasurementEvidence]) -> String {
         })
         .collect::<Vec<_>>();
     digest_json(&inputs)
+}
+
+fn suite_seed(measurements: &[MeasurementEvidence]) -> u64 {
+    let inputs = measurements
+        .iter()
+        .filter_map(|measurement| match measurement {
+            MeasurementEvidence::LoadCurve(value) => value
+                .workload
+                .seed
+                .map(|seed| (measurement.id().to_owned(), seed)),
+            MeasurementEvidence::Scalar(value) => value
+                .workload
+                .seed
+                .map(|seed| (measurement.id().to_owned(), seed)),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let distinct = inputs
+        .iter()
+        .map(|(_, seed)| *seed)
+        .collect::<BTreeSet<_>>();
+    if distinct.len() == 1 {
+        return *distinct.first().expect("one distinct seed exists");
+    }
+    let digest = Sha256::digest(
+        serde_json::to_vec(&inputs).unwrap_or_else(|_| b"invalid-suite-seed-input".to_vec()),
+    );
+    u64::from_le_bytes(
+        digest[..8]
+            .try_into()
+            .expect("SHA-256 always contains eight seed bytes"),
+    )
 }
 
 fn median(samples: &[f64]) -> f64 {

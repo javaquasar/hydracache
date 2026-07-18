@@ -194,6 +194,7 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | Item | Implemented where | Required command | Boundary |
 | --- | --- | --- | --- |
 | W0 | `crates/hydracache-loadgen::{rate,histogram,knee,scenario,profile,report,runner,target}`; `docs/testing/schemas/perf-report.schema.json` | `cargo test -p hydracache-loadgen --locked -j 2` | Development-only synthetic instrument contract; no product or daemon capacity claim |
+| W1 | `crates/hydracache-loadgen::{allocation,cli,targets::local,tiers::local}`; `crates/hydracache-cache-sim::{digest,trace_catalog,workload}`; `docs/testing/perf-scenarios/0.67/local-*-v1.toml` | `cargo test -p hydracache-cache-sim -p hydracache-loadgen --test performance_contract_067 --locked -j 2` | Real embedded/process-local cache; smoke is plumbing-only, while capacity evidence requires the receipt-bound `reference-v1` core lane and `target/test-evidence/0.67/local.json` |
 | _(populate during implementation; W0-W10 below define the targets)_ | | | |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
@@ -286,8 +287,11 @@ sustained workload.
 - `w22_trace_replay_preserves_order_and_records_trace_digest` and seeded workload reports record
   generator version, seed, theta, key count, operation mix, payload mix, and workload digest.
 
-**Canary.** `canary_injected_slow_eviction_breaches_the_local_budget` - a test-only latency
-failpoint in the eviction path must push the knee below budget and emit `HC-CANARY-RED:W1`.
+**Canary.** `canary_injected_slow_eviction_breaches_the_local_budget` - first prove through real
+cache diagnostics that every unique capacity-pressure put evicts from a full cache, then add a
+loadgen-only post-put delay to that verified eviction-bearing operation. The delay must push the
+knee below budget and emit `HC-CANARY-RED:W1`; this proves budget sensitivity without adding a
+product failpoint or claiming the delay is inside HydraCache's eviction implementation.
 
 **DoD.**
 ```powershell
