@@ -127,6 +127,37 @@
       "red_evidence": "The W3 canary proves scheduled-send latency detects a slowdown at a real loopback RESP boundary and that truncated external-tool output is rejected; closed-loop output cannot satisfy the open-loop capacity guard."
     },
     {
+      "w_item": "W4",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w4_split_067.rs",
+        "function": "w4_scenarios_are_strict_and_reject_surface_overclaims"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w4_split_067.rs",
+        "function": "canary_w4_instruments_reject_control_plane_delay_and_grid_model_short_circuit"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w4_split_067", "--locked", "w4_scenarios_are_strict_and_reject_surface_overclaims", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w4_split_067", "--locked", "canary_w4_instruments_reject_control_plane_delay_and_grid_model_short_circuit", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W4"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W4",
+      "expected_failure": "HC-CANARY-RED:W4",
+      "timeout_seconds": 240,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W4.json"],
+      "red_evidence": "The composite W4 canary proves the shared W4A event-timing validator rejects an over-budget convergence delay and the W4B primitive validator rejects a short-circuited copy/fanout path before emitting one release-scoped red marker."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

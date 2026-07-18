@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -428,12 +428,92 @@ function = "completed_high_spread_external_run_is_not_suite_ship_evidence"
 
 [[work_item]]
 id = "W4"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/targets/control_plane.rs",
+    "crates/hydracache-loadgen/src/targets/grid_model.rs",
+    "crates/hydracache-loadgen/src/targets/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/control_plane.rs",
+    "crates/hydracache-loadgen/src/tiers/grid_model.rs",
+    "crates/hydracache-loadgen/src/tiers/mod.rs",
+    "crates/hydracache-loadgen/src/tiers/resp_reference.rs",
+    "crates/hydracache-loadgen/tests/w4_split_067.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-scenarios/0.67/control-plane-real-daemon-v1.toml",
+    "docs/testing/perf-scenarios/0.67/grid-model-primitives-v1.toml",
+]
+fast_gate_ids = [
+    "fast.performance-w4-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-core",
+    "env.hydracache-run-067-perf-control-plane",
+    "tool.perf-budget-check-067",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w4_direct_commands_preserve_exact_surface_shapes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w4_control_plane_cli_rejects_partial_or_relabelled_shapes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w4_control_plane_suite_has_exact_three_canonical_reports"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/control_plane.rs"
+function = "committed_scenario_retains_exact_w0_and_narrow_capacity_contract"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/control_plane.rs"
+function = "absent_or_self_asserted_loopback_capability_never_passes_mandatory"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/control_plane.rs"
+function = "w4a_runner_derives_all_five_by_five_wire_rows_before_counter_reset"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/grid_model.rs"
+function = "committed_reference_shape_and_digest_are_exact"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/targets/grid_model.rs"
+function = "smoke_repeats_are_warm_fresh_and_checksum_validated"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/tiers/grid_model.rs"
+function = "reduced_smoke_shape_cannot_become_reference"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w4_split_067.rs"
+function = "w4_scenarios_are_strict_and_reject_surface_overclaims"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w4_split_067.rs"
+function = "w4a_reference_capability_fails_closed_and_local_absence_skips_loud"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w4_split_067.rs"
+function = "w4b_executes_exported_primitives_with_exact_copy_and_fanout_accounting"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w4_split_067.rs"
+function = "w4b_reduced_smoke_shape_cannot_be_promoted_to_reference"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w4_split_067.rs"
+function = "canary_w4_instruments_reject_control_plane_delay_and_grid_model_short_circuit"
 
 [[work_item]]
 id = "W5"

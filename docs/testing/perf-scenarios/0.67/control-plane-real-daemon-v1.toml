@@ -1,0 +1,53 @@
+schema_version = 1
+scenario_id = "control-plane-real-daemon-v1"
+
+[identity]
+evidence_class = "w4a-real-daemon-control-plane"
+execution_mode = "real-daemon-admin-http"
+state_scope = "consensus-backed-metadata"
+network_boundary = "real-admin-http"
+daemon_processes = true
+product_data_plane = false
+aggregate_cluster_capacity = false
+live_reshard_measured = false
+capacity_claim = "selected-admin-endpoint-read-only"
+
+[read_only]
+measurement_id = "admin_status_and_overview_knee_at_slo_for_3_5_7_daemons"
+node_counts = [3, 5, 7]
+target_roles = ["leader", "follower"]
+paths = ["/admin/status", "/cluster/overview"]
+timeout_millis = 5000
+offered_rates_per_second = [250, 500, 1000, 2000, 4000]
+preload_operations = 2
+warmup_operations = 1000
+steady_operations = 5000
+repeats = 5
+latency_slo_micros = 50000
+p999_slo_micros = 100000
+p999_min_samples = 1000
+highest_trackable_latency_micros = 10000000
+histogram_significant_figures = 3
+min_achieved_ratio = 0.95
+max_error_ratio = 0.0
+max_timeout_ratio = 0.0
+max_rejection_ratio = 0.0
+backlog_drain_millis = 10000
+max_robust_spread_ratio = 0.15
+
+[membership_event]
+measurement_id = "membership_add_drain_commit_and_convergence_latency_3_5_7"
+actions = ["add", "drain"]
+metric_kind = "event-latency"
+event_timeout_millis = 60000
+live_reshard_deferred = true
+
+[reference]
+capability_env = "HYDRACACHE_RUN_PERF_CONTROL_PLANE"
+required_profile = "reference-v1"
+required_receipt_kind = "hydracache-real-daemon-cluster-v1"
+require_live_source = true
+require_complete_endpoint_set = true
+require_os_process_identity = true
+require_direct_prebuilt_exec = true
+role_change_invalidates_steady_window = true

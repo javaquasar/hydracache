@@ -5261,7 +5261,9 @@ timeout_seconds = 7200
 owner_release = "0.67.0"
 ship_mandatory = true
 artifacts = [
-    "target/test-evidence/0.67/control-plane.json",
+    "target/test-evidence/0.67/control-plane-3.json",
+    "target/test-evidence/0.67/control-plane-5.json",
+    "target/test-evidence/0.67/control-plane-7.json",
     "target/test-evidence/0.67/brownout-control-plane.json",
     "target/test-evidence/0.67/metrics-control-plane.json",
 ]

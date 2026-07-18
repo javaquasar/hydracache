@@ -240,7 +240,10 @@ impl ValidatedRespReferenceContext {
         })
     }
 
-    fn verify_binaries_unchanged(&self) -> Result<(), RespReferenceError> {
+    /// Re-read both exact prebuilt executables and reject any mutation after
+    /// the reference context was established. Other real-process tiers reuse
+    /// this check before launch and again before sealing lifecycle evidence.
+    pub fn verify_binaries_unchanged(&self) -> Result<(), RespReferenceError> {
         verify_recorded_binary(&self.server)?;
         verify_recorded_binary(&self.loadgen)
     }

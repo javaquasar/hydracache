@@ -1,0 +1,53 @@
+schema_version = 1
+scenario_id = "grid-model-primitives-v1"
+
+[identity]
+evidence_class = "w4b-in-process-library-model"
+execution_mode = "constructed-in-process-model"
+state_scope = "library-model-primitives"
+network_boundary = "none-in-process"
+daemon_processes = false
+product_data_plane = false
+end_to_end_cluster_capacity = false
+value_replication_separate_from_invalidation = true
+byte_metric_name = "modeled_replica_copy_bytes_per_input_byte"
+
+[dimensions]
+iterations = 10000
+replica_shapes = [1, 3, 5, 7]
+region_shapes = [1, 2, 3]
+replication_peer_shapes = [1, 2, 4, 6]
+payload_bytes = [64, 256, 1024, 4096]
+invalidation_subscribers = [1, 3, 5, 7]
+watermark_entries = 64
+
+[measurement]
+warmup_iterations = 1000
+raw_repeats = 5
+maximum_robust_spread_ratio_millionths = 150000
+fresh_model_per_repeat = true
+
+[reference]
+required_profile = "reference-v1"
+require_prebuild_receipt = true
+require_runner_fingerprint = true
+required_platform_key = "linux-x86_64"
+committed_scenario_sha256 = "17640f4983d2260ca4191585a4c7f4ebaab52a69b8a2d2fccb39f3e7234f108e"
+
+[reference.runner]
+required_runner_class = "reference-v1"
+minimum_logical_cores = 8
+required_cpu_affinity = "dedicated-cpuset"
+required_cgroup_cpu_quota = "unlimited"
+require_dedicated = true
+maximum_calibration_score_millionths = 50000
+
+[reference.prebuild]
+schema_version = 1
+toolchain_identity = "rustc-1.94.0"
+target_set = ["hydracache-loadgen", "hydracache-server"]
+features = []
+cargo_profile = "release"
+flags = ["--locked", "--release"]
+build_recipe = ["cargo build -p hydracache-loadgen -p hydracache-server --release --locked"]
+digest = "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"
