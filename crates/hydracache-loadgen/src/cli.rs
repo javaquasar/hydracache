@@ -38,6 +38,10 @@ pub enum LoadgenCommand {
         profile: String,
         output_dir: PathBuf,
     },
+    CompareRedis {
+        profile: String,
+        report: PathBuf,
+    },
     Brownout {
         target: BrownoutTarget,
         profile: String,
@@ -78,6 +82,7 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteResp { .. }
             | Self::SuiteControlPlane { .. }
+            | Self::CompareRedis { .. }
             | Self::Brownout { .. }
             | Self::Overload { .. } => None,
         }
@@ -95,6 +100,7 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteResp { .. }
             | Self::SuiteControlPlane { .. }
+            | Self::CompareRedis { .. }
             | Self::Brownout { .. }
             | Self::Overload { .. } => None,
         }
@@ -110,6 +116,7 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteCore { .. }
             | Self::SuiteControlPlane { .. }
+            | Self::CompareRedis { .. }
             | Self::Brownout { .. }
             | Self::Overload { .. } => None,
         }
@@ -127,8 +134,19 @@ impl LoadgenCommand {
             | Self::TierGridModel { .. }
             | Self::SuiteCore { .. }
             | Self::SuiteControlPlane { .. }
+            | Self::CompareRedis { .. }
             | Self::Brownout { .. }
             | Self::Overload { .. } => None,
+        }
+    }
+
+    /// The W8 same-box comparison artifact. Direct and aggregate RESP forms
+    /// intentionally converge on the one canonical release file name.
+    pub fn redis_comparison_report_path(&self) -> Option<PathBuf> {
+        match self {
+            Self::CompareRedis { report, .. } => Some(report.clone()),
+            Self::SuiteResp { output_dir, .. } => Some(output_dir.join("compare-redis.json")),
+            _ => None,
         }
     }
 
@@ -200,6 +218,7 @@ impl LoadgenCommand {
             | Self::SuiteCore { profile, .. }
             | Self::SuiteResp { profile, .. }
             | Self::SuiteControlPlane { profile, .. }
+            | Self::CompareRedis { profile, .. }
             | Self::Brownout { profile, .. }
             | Self::Overload { profile, .. } => profile,
         }
@@ -209,9 +228,9 @@ impl LoadgenCommand {
 /// Parse the intentionally small release-0.67 CLI without adding a product dependency.
 pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenCommand, String> {
     let mut arguments = arguments.into_iter().collect::<VecDeque<_>>();
-    let family = arguments
-        .pop_front()
-        .ok_or_else(|| "missing command family (tier or suite)".to_owned())?;
+    let family = arguments.pop_front().ok_or_else(|| {
+        "missing command family (tier, suite, compare, brownout, or overload)".to_owned()
+    })?;
     let name = arguments
         .pop_front()
         .ok_or_else(|| format!("missing {family} name"))?;
@@ -276,6 +295,9 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
                 output_dir,
             })
         }
+        ("compare", "redis", Some(report), None) => {
+            Ok(LoadgenCommand::CompareRedis { profile, report })
+        }
         ("brownout", name, Some(report), None) => Ok(LoadgenCommand::Brownout {
             target: parse_brownout_target(name)?,
             profile,
@@ -310,6 +332,9 @@ pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<LoadgenComma
         }
         ("suite", "control-plane", _, _) => {
             Err("suite control-plane requires --output-dir and forbids --report".to_owned())
+        }
+        ("compare", "redis", _, _) => {
+            Err("compare redis requires --report and forbids --output-dir".to_owned())
         }
         ("brownout", name, _, _) if parse_brownout_target(name).is_ok() => {
             Err(format!(
@@ -601,5 +626,82 @@ mod tests {
             "target/test-evidence/0.67",
         ]))
         .is_err());
+    }
+
+    #[test]
+    fn w8_compare_redis_cli_preserves_direct_and_suite_paths() {
+        let direct = parse(args(&[
+            "compare",
+            "redis",
+            "--profile",
+            "reference-v1",
+            "--report",
+            "target/test-evidence/0.67/compare-redis.json",
+        ]))
+        .unwrap();
+        assert_eq!(direct.profile(), "reference-v1");
+        assert_eq!(
+            direct.redis_comparison_report_path().unwrap(),
+            Path::new("target/test-evidence/0.67/compare-redis.json")
+        );
+
+        let suite = parse(args(&[
+            "suite",
+            "resp",
+            "--profile",
+            "reference-v1",
+            "--output-dir",
+            "target/test-evidence/0.67",
+        ]))
+        .unwrap();
+        assert_eq!(
+            suite.redis_comparison_report_path().unwrap(),
+            Path::new("target/test-evidence/0.67/compare-redis.json")
+        );
+    }
+
+    #[test]
+    fn w8_compare_redis_cli_rejects_non_redis_or_misrouted_shapes() {
+        for invalid in [
+            args(&[
+                "compare",
+                "redis",
+                "--profile",
+                "reference-v1",
+                "--output-dir",
+                "target/test-evidence/0.67",
+            ]),
+            args(&["compare", "redis", "--profile", "reference-v1"]),
+            args(&[
+                "compare",
+                "memcached",
+                "--profile",
+                "reference-v1",
+                "--report",
+                "report.json",
+            ]),
+            args(&[
+                "compare",
+                "redis",
+                "--nodes",
+                "3",
+                "--profile",
+                "reference-v1",
+                "--report",
+                "report.json",
+            ]),
+            args(&[
+                "compare",
+                "redis",
+                "--target-roles",
+                "leader,follower",
+                "--profile",
+                "reference-v1",
+                "--report",
+                "report.json",
+            ]),
+        ] {
+            assert!(parse(invalid).is_err());
+        }
     }
 }

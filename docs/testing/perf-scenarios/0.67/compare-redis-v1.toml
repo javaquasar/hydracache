@@ -1,0 +1,41 @@
+schema_version = 1
+scenario_id = "same-box-redis-vs-hydracache-resp-v1"
+measurement_id = "same_box_redis_vs_hydracache_resp_get_set_ratio"
+methodology = "same-box-same-tool-alternating-ab-ba-closed-loop"
+claim_scope = "selected-node-local-resp-endpoint-comparison-only"
+interpretation = "Measured on one eligible reference runner with one exact redis-benchmark binary; this is not a universal superiority or aggregate-cluster-capacity claim."
+required_runner_profile = "reference-v1"
+repeats = 5
+connections = 50
+requests_per_system_case = 100000
+payload_bytes = 256
+pipelines = [1, 10]
+operations = ["get", "set"]
+key = "key:__rand_int__"
+max_robust_spread_ratio = 0.20
+version_timeout_seconds = 10
+case_timeout_seconds = 300
+container_start_timeout_seconds = 60
+max_stdout_bytes = 262144
+max_stderr_bytes = 65536
+execution_environment = ["LANG=C", "LC_ALL=C", "TZ=UTC"]
+
+[tool]
+program = "redis-benchmark"
+version_args = ["--version"]
+expected_version = "redis-benchmark 7.2.5"
+identity_policy = "w3-external-prebuild-receipt-canonical-path-sha256"
+required_provenance_id = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1"
+
+[docker]
+program = "docker"
+version_args = ["--version"]
+version_prefix = "Docker version "
+identity_policy = "canonical-path-sha256-plus-exact-version-output"
+platform = "linux/amd64"
+image_name = "redis"
+image_version = "7.2.5"
+image_index_digest = "sha256:3aaec283e6e593bde528077d60280ac1589887067a39273348860837c9346d7e"
+image_platform_manifest_digest = "sha256:301f993bbc91d0b50b0737a97962905657d9f595e9935282b7db16a563b53d1b"
+container_port = 6379
+server_argv = ["redis-server", "--save", "", "--appendonly", "no"]

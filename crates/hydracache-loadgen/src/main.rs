@@ -8,6 +8,10 @@ use hydracache_loadgen::budget_receipt::{
 };
 use hydracache_loadgen::cli;
 use hydracache_loadgen::cli::{BrownoutTarget, LoadgenCommand, OverloadTarget};
+use hydracache_loadgen::compare_redis::{
+    run_and_write_same_box_redis_comparison, RedisComparisonOutcome, RedisComparisonRunMode,
+    W3ReferenceArtifactSet,
+};
 use hydracache_loadgen::overload::{
     write_reference_overload_report, EligibleOverloadSurface, OverloadReport, OverloadScenario,
     ReferencePredecessorRequest,
@@ -191,6 +195,13 @@ async fn run() -> Result<(), String> {
                     .map_err(|error| error.to_string())?;
             }
         }
+        LoadgenCommand::CompareRedis { .. } => {
+            let path = command.redis_comparison_report_path().ok_or_else(|| {
+                "Redis comparison command lost its canonical report path".to_owned()
+            })?;
+            let run_mode = direct_redis_comparison_run_mode()?;
+            write_reference_redis_comparison(command.profile(), &path, run_mode).await?;
+        }
         LoadgenCommand::SuiteResp { .. } => {
             let path = command
                 .resp_open_loop_report_path()
@@ -200,6 +211,17 @@ async fn run() -> Result<(), String> {
                     "RESP suite lost its canonical external-tool report path".to_owned()
                 })?;
                 write_reference_resp_suite(&path, &external_path).await?;
+                // W9 publishes its metrics-honesty artifact at this reserved point,
+                // after the sealed W3 suite and before W8 consumes that archive.
+                let comparison_path = command.redis_comparison_report_path().ok_or_else(|| {
+                    "RESP suite lost its canonical Redis-comparison report path".to_owned()
+                })?;
+                write_reference_redis_comparison(
+                    command.profile(),
+                    &comparison_path,
+                    RedisComparisonRunMode::MandatoryReference,
+                )
+                .await?;
                 let brownout_path = path.with_file_name("brownout-resp-endpoint.json");
                 write_reference_brownout(
                     command.profile(),
@@ -219,7 +241,7 @@ async fn run() -> Result<(), String> {
                     .await
                     .map_err(|error| error.to_string())?;
                 eprintln!(
-                    "hydracache-loadgen: supplemental redis-benchmark evidence skipped loudly for fixture smoke; it requires the selected receipt-bound daemon endpoint"
+                    "hydracache-loadgen: supplemental redis-benchmark and W8 comparison evidence skipped loudly for fixture smoke; they require the selected receipt-bound daemon endpoint"
                 );
             }
         }
@@ -574,6 +596,62 @@ fn absolute_output_path(repo_root: &Path, path: &Path) -> PathBuf {
     }
 }
 
+fn direct_redis_comparison_run_mode() -> Result<RedisComparisonRunMode, String> {
+    let reference = std::env::var_os("HYDRACACHE_RUN_PERF_REFERENCE");
+    let resp = std::env::var_os("HYDRACACHE_RUN_PERF_RESP");
+    match (reference, resp) {
+        (None, None) => Ok(RedisComparisonRunMode::LocalInformational),
+        (Some(reference), Some(resp))
+            if reference.to_str() == Some("1") && resp.to_str() == Some("1") =>
+        {
+            Ok(RedisComparisonRunMode::MandatoryReference)
+        }
+        _ => Err(
+            "direct W8 execution requires HYDRACACHE_RUN_PERF_REFERENCE=1 and HYDRACACHE_RUN_PERF_RESP=1 together for mandatory evidence, or both variables unset for a local informational run"
+                .to_owned(),
+        ),
+    }
+}
+
+async fn write_reference_redis_comparison(
+    profile: &str,
+    report_path: &Path,
+    run_mode: RedisComparisonRunMode,
+) -> Result<(), String> {
+    if profile != "reference-v1" {
+        return Err(
+            "W8 comparison accepts only reference-v1; local informational mode changes eligibility, not the pinned workload or identity contract"
+                .to_owned(),
+        );
+    }
+    let repo_root = repository_root()?;
+    let inputs = RespReferenceRunInputs::load(&repo_root).map_err(|error| error.to_string())?;
+    let context = load_reference_context(&repo_root, Some(&inputs.prerequisites))
+        .map_err(|error| error.to_string())?;
+    let w3_artifacts =
+        W3ReferenceArtifactSet::canonical(&repo_root).map_err(|error| error.to_string())?;
+    let report_path = absolute_output_path(&repo_root, report_path);
+    let outcome = run_and_write_same_box_redis_comparison(
+        &repo_root,
+        &w3_artifacts,
+        &context,
+        &inputs.external_tool_prebuild,
+        run_mode,
+        &report_path,
+    )
+    .await
+    .map_err(|error| error.to_string())?;
+    if let RedisComparisonOutcome::Completed(report) = outcome {
+        eprintln!(
+            "hydracache-loadgen: wrote receipt-bound W8 same-box comparison to {} (stable={}, ship-eligible={})",
+            report_path.display(),
+            report.measurements_stable,
+            report.ship_evidence_eligible
+        );
+    }
+    Ok(())
+}
+
 async fn write_reference_resp_open_loop(report_path: &Path) -> Result<(), String> {
     require_reference_resp_gate()?;
     let repo_root = repository_root()?;
@@ -707,6 +785,6 @@ fn write_bytes(path: &Path, bytes: Vec<u8>) -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload local --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload client-surface --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload node-resp --profile reference-v1 --report <PATH>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A, W5, and W6 have no promotable fixture-capacity mode and use only receipt-bound predecessors under their exact surface gates. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
+        "HydraCache release-0.67 development load generator\n\nUSAGE:\n    hydracache-loadgen tier local --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier client-surface --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier node-resp --profile <PROFILE> --report <PATH>\n    hydracache-loadgen tier control-plane --nodes <3|5|7> --target-roles leader,follower --profile reference-v1 --report <PATH>\n    hydracache-loadgen tier grid-model --profile <PROFILE> --report <PATH>\n    hydracache-loadgen suite core --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite resp --profile <PROFILE> --output-dir <DIR>\n    hydracache-loadgen suite control-plane --profile reference-v1 --output-dir <DIR>\n    hydracache-loadgen compare redis --profile reference-v1 --report target/test-evidence/0.67/compare-redis.json\n    hydracache-loadgen brownout control-plane-leader --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout resp-endpoint-kill --profile reference-v1 --report <PATH>\n    hydracache-loadgen brownout grid-model-replica --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload local --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload client-surface --profile reference-v1 --report <PATH>\n    hydracache-loadgen overload node-resp --profile reference-v1 --report <PATH>\n\nSmoke output is explicitly plumbing-only. The client-surface tier is an in-process Router; RESP smoke uses a product-facade loopback fixture, not a daemon. W4A, W5, W6, and mandatory W8 have no promotable fixture-capacity mode and use only receipt-bound predecessors under their exact surface gates. W4B remains an explicitly in-process library/model artifact. reference-v1 fails closed until the W7 profile and receipt-bound prebuild context are present."
     );
 }

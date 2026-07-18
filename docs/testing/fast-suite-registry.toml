@@ -77,7 +77,7 @@ platform = "any"
 
 [[suite]]
 id = "fast.performance-resp-external-067"
-work_items = ["W3"]
+work_items = ["W3", "W8"]
 timeout_seconds = 120
 budget_seconds = 10
 deterministic = false

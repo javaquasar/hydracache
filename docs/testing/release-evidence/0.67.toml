@@ -2,7 +2,7 @@ schema_version = 1
 release = "0.67.0"
 plan = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
 canary_policy = "dynamic_registry"
-dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W10"]
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W10"]
 
 [[work_item]]
 id = "W0"
@@ -796,12 +796,111 @@ function = "canary_perf_budget_accepts_a_silent_rebaseline_or_candidate_self_bas
 
 [[work_item]]
 id = "W8"
-required_sources = []
-required_tests = []
-required_artifacts = []
-fast_gate_ids = []
-gated_gate_ids = []
+required_sources = [
+    "Cargo.lock",
+    "crates/hydracache-loadgen/Cargo.toml",
+    "crates/hydracache-loadgen/src/cli.rs",
+    "crates/hydracache-loadgen/src/compare_redis.rs",
+    "crates/hydracache-loadgen/src/lib.rs",
+    "crates/hydracache-loadgen/src/main.rs",
+    "crates/hydracache-loadgen/src/report.rs",
+    "crates/hydracache-loadgen/src/resp_external.rs",
+    "crates/hydracache-loadgen/src/targets/resp.rs",
+    "crates/hydracache-loadgen/src/tiers/resp.rs",
+    "crates/hydracache-loadgen/src/tiers/resp_reference.rs",
+    "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs",
+]
+required_artifacts = [
+    "docs/integrations/redis_compat_conformance.json",
+    "docs/testing/perf-scenarios/0.67/compare-redis-v1.toml",
+    "docs/testing/perf-scenarios/0.67/resp-external-redis-benchmark-v1.toml",
+    "docs/testing/perf-scenarios/0.67/redis-benchmark-provenance-v1.toml",
+]
+fast_gate_ids = [
+    "fast.performance-resp-external-067",
+    "fast.workspace-nextest",
+]
+gated_gate_ids = [
+    "tool.perf-prebuild-067",
+    "env.hydracache-run-067-perf-resp",
+]
 ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w8_compare_redis_cli_preserves_direct_and_suite_paths"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/cli.rs"
+function = "w8_compare_redis_cli_rejects_non_redis_or_misrouted_shapes"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "w8_contract_is_same_box_same_tool_and_immutable"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "both_targets_receive_identical_workload_dimensions"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "mutable_image_or_relaxed_method_is_rejected"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "unknown_contract_fields_fail_closed"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "local_absence_is_loud_and_mandatory_path_is_system_owned"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "w8_requires_the_canonical_four_artifact_w3_predecessor"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "docker_cleanup_is_armed_before_run_and_report_publication_is_atomic_last"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs"
+function = "canary_same_box_comparison_accepts_a_mismatched_host_or_unpinned_redis"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "committed_contract_pins_tool_image_and_method"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "aggregation_is_paired_and_preserves_both_orders"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "aggregation_rejects_incomplete_or_unpaired_runs"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "docker_inspect_requires_exact_index_and_platform"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "boundary_canary_is_discriminating"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "canonical_w3_set_rejects_missing_lifecycle_or_suite_receipt"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "suite_seal_rejects_stale_lifecycle_and_tampered_receipt"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "archived_lifecycle_rejects_stale_logs_missing_files_and_live_pid_reuse"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/src/compare_redis.rs"
+function = "atomic_report_publication_is_create_new_and_never_leaves_partial_output"
 
 [[work_item]]
 id = "W9"

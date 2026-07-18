@@ -251,6 +251,37 @@
       "red_evidence": "The W7 canary proves that candidate self-baselining and an unreviewed baseline or budget rebaseline remain rejected before a performance verdict can pass."
     },
     {
+      "w_item": "W8",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs",
+        "function": "w8_requires_the_canonical_four_artifact_w3_predecessor"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs",
+        "function": "canary_same_box_comparison_accepts_a_mismatched_host_or_unpinned_redis"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w8_redis_compare_067", "--locked", "w8_requires_the_canonical_four_artifact_w3_predecessor", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w8_redis_compare_067", "--locked", "canary_same_box_comparison_accepts_a_mismatched_host_or_unpinned_redis", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W8"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W8",
+      "expected_failure": "HC-CANARY-RED:W8",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W8.json"],
+      "red_evidence": "The W8 canary proves that same-box evidence rejects a mismatched runner identity or an unpinned Redis image before any comparison report can become ship evidence."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

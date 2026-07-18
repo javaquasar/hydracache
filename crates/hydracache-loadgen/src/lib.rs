@@ -5,6 +5,7 @@
 pub mod allocation;
 pub mod budget_receipt;
 pub mod cli;
+pub mod compare_redis;
 pub mod histogram;
 pub mod knee;
 pub mod overload;
