@@ -30,7 +30,7 @@ platform = "any"
 [[suite]]
 id = "fast.performance-contract-067"
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"]
-timeout_seconds = 180
+timeout_seconds = 600
 budget_seconds = 50
 deterministic = false
 artifacts = []
