@@ -209,7 +209,9 @@ W1-W6 -> W7; and all W0-W9 evidence -> W10 Phase B. W3 has no W2 dependency.
 
 **Goal.** One reusable measurement core every other W-item consumes: a fixed-rate open-loop driver,
 an HdrHistogram-style recorder (bounded memory, configurable precision), stepped-rate knee search,
-reset/preload/warm-up/steady-window/repeat orchestration, and a canonical `PERF_REPORT` JSON schema.
+reset/preload/warm-up/steady-window/repeat orchestration, and a canonical typed multi-measurement
+`PERF_REPORT` JSON schema. Raw repeats stay receipt-bound to each rate point; aggregate, full
+predicate, knee, and runner eligibility are always recomputed rather than trusted as caller flags.
 Each scenario TOML declares numeric SLO, steady window, minimum sample counts, achieved/offered
 threshold, error/timeout/rejection budgets, backlog-drain bound, and spread tolerance.
 
@@ -222,7 +224,9 @@ p50/p90/p99/p999 or a loud insufficient-sample marker, error/timeout/rejection c
 durations/op counts, repeat/state/scenario/workload digests, surface identity fields, runner profile
 and observed fingerprint, affinity/quota/governor/calibration facts, prebuilt binary hashes, seed,
 toolchain/build flags, stable `prebuild_contract_digest`, per-run `prebuild_manifest_sha`, git commit,
-and spread/stability verdict.
+and spread/stability verdict. Capacity evidence requires at least three reset-identical and
+preload-verified repeats. `smoke` and `ci_tripwire` are explicit run modes and can never serialize as
+stable ship evidence.
 
 **Required tests (fast, deterministic - the instrument itself is under test):**
 - `open_loop_scheduler_accounts_missed_ticks_as_latency_not_skips`;
@@ -233,8 +237,13 @@ and spread/stability verdict.
 - `p999_is_unreportable_below_the_declared_sample_count`;
 - `warmup_samples_never_enter_the_steady_histogram`;
 - `repeat_reset_reproduces_the_initial_state_digest`;
+- `scenario_runner_executes_every_declared_rate_and_repeat`;
+- `declared_preload_count_must_match_target_evidence`;
+- `cancelling_the_driver_cancels_every_owned_request`;
 - `reference_profile_rejects_a_spoofed_or_shared_runner`;
-- `perf_report_schema_records_surface_profile_commit_workload_and_prebuild_digests`.
+- `perf_report_schema_records_surface_profile_commit_workload_and_prebuild_digests`;
+- `perf_report_json_schema_accepts_valid_evidence_and_rejects_short_repeat_sets`;
+- `perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags`.
 
 **Canary.** `canary_closed_loop_measurement_hides_a_synthetic_stall` - drive a target with an
 injected 1s stall through (a) the open-loop recorder and (b) a naive closed-loop recorder; the stall

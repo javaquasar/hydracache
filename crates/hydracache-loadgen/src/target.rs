@@ -8,6 +8,13 @@ pub struct TargetRequest {
     pub sequence: u64,
 }
 
+/// Auditable result of establishing a target's declared preloaded state.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PreloadOutcome {
+    pub operations: u64,
+    pub state_digest: String,
+}
+
 /// Normalized target outcome used by every surface adapter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -43,8 +50,11 @@ pub trait Target: Send + Sync + 'static {
     async fn reset(&self) -> Result<String, TargetError>;
 
     /// Deterministically preload the target for the scenario.
-    async fn preload(&self) -> Result<(), TargetError> {
-        Ok(())
+    async fn preload(&self) -> Result<PreloadOutcome, TargetError> {
+        Ok(PreloadOutcome {
+            operations: 0,
+            state_digest: "state:preload-none:v1".to_owned(),
+        })
     }
 
     /// Execute one scheduled request.

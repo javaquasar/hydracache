@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
+use tokio::task::JoinSet;
 use tokio::time::Instant;
 
 use crate::histogram::{LatencyHistogram, LatencySummary};
@@ -112,8 +113,7 @@ pub async fn run_open_loop<T: Target>(
     if config.offered_rate_per_second == 0 || config.operations == 0 {
         return Err("open-loop rate and operation count must be positive".to_owned());
     }
-    let interval_ns = (1_000_000_000 / config.offered_rate_per_second).max(1);
-    let interval = Duration::from_nanos(interval_ns);
+    let schedule = FixedRateSchedule::new(0, config.offered_rate_per_second)?;
     let origin = Instant::now();
     let (sender, mut receiver) = mpsc::unbounded_channel::<Completion>();
     let mut histogram =
@@ -125,9 +125,11 @@ pub async fn run_open_loop<T: Target>(
     let mut timeouts = 0_u64;
     let mut rejections = 0_u64;
     let mut backlog_high_water = 0_u64;
+    // JoinSet aborts every owned request future if this driver itself is cancelled.
+    let mut tasks = JoinSet::new();
 
     for sequence in 0..config.operations {
-        let scheduled = origin + multiply_duration(interval, sequence);
+        let scheduled = origin + Duration::from_nanos(schedule.scheduled_ns(sequence));
         tokio::time::sleep_until(scheduled).await;
         while let Ok(completion) = receiver.try_recv() {
             account_completion(
@@ -140,11 +142,12 @@ pub async fn run_open_loop<T: Target>(
                 &mut rejections,
             );
         }
+        while tasks.try_join_next().is_some() {}
         started = started.saturating_add(1);
         backlog_high_water = backlog_high_water.max(started.saturating_sub(completed));
         let target = Arc::clone(&target);
         let sender = sender.clone();
-        tokio::spawn(async move {
+        tasks.spawn(async move {
             let outcome = target.execute(TargetRequest { sequence }).await;
             let _ = sender.send(Completion {
                 scheduled,
@@ -173,6 +176,12 @@ pub async fn run_open_loop<T: Target>(
             ),
             Ok(None) | Err(_) => break,
         }
+    }
+    if completed < started {
+        tasks.abort_all();
+    }
+    while tasks.join_next().await.is_some() {
+        // Join failures are reflected by incomplete accounting and cannot outlive this run.
     }
     let elapsed = origin.elapsed();
     let elapsed_seconds = elapsed.as_secs_f64().max(f64::EPSILON);
@@ -216,11 +225,6 @@ fn account_completion(
         TargetOutcome::Error => *errors = errors.saturating_add(1),
         TargetOutcome::Timeout => *timeouts = timeouts.saturating_add(1),
     }
-}
-
-fn multiply_duration(duration: Duration, multiplier: u64) -> Duration {
-    let nanos = duration.as_nanos().saturating_mul(u128::from(multiplier));
-    Duration::from_nanos(u64::try_from(nanos).unwrap_or(u64::MAX))
 }
 
 fn millis(duration: Duration) -> u64 {

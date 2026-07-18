@@ -61,11 +61,31 @@ function = "repeat_reset_reproduces_the_initial_state_digest"
 
 [[work_item.required_tests]]
 source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "scenario_runner_executes_every_declared_rate_and_repeat"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "declared_preload_count_must_match_target_evidence"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "cancelling_the_driver_cancels_every_owned_request"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
 function = "reference_profile_rejects_a_spoofed_or_shared_runner"
 
 [[work_item.required_tests]]
 source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
 function = "perf_report_schema_records_surface_profile_commit_workload_and_prebuild_digests"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "perf_report_json_schema_accepts_valid_evidence_and_rejects_short_repeat_sets"
+
+[[work_item.required_tests]]
+source = "crates/hydracache-loadgen/tests/performance_contract_067.rs"
+function = "perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags"
 
 [[work_item]]
 id = "W1"

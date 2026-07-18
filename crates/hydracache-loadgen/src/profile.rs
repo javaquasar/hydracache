@@ -42,9 +42,39 @@ pub struct ProfileValidation {
 }
 
 impl PerformanceProfile {
+    /// Validate the profile contract before it is allowed to validate a runner.
+    pub fn contract_problems(&self) -> Vec<String> {
+        let mut reasons = Vec::new();
+        if self.name.is_empty()
+            || self.required_runner_class.is_empty()
+            || self.minimum_logical_cores == 0
+            || self.required_cpu_affinity.is_empty()
+            || self.required_cgroup_cpu_quota.is_empty()
+        {
+            reasons.push("performance profile identity is incomplete".to_owned());
+        }
+        if !self.maximum_calibration_score.is_finite() || self.maximum_calibration_score < 0.0 {
+            reasons.push("profile calibration threshold is invalid".to_owned());
+        }
+        if self.allowed_fingerprints.iter().any(String::is_empty) {
+            reasons.push("profile contains an empty runner fingerprint".to_owned());
+        }
+        reasons
+    }
+
     /// Validate observed facts; a caller-supplied profile name is never sufficient.
     pub fn validate(&self, observed: &RunnerFingerprint) -> ProfileValidation {
-        let mut reasons = Vec::new();
+        let mut reasons = self.contract_problems();
+        if observed.fingerprint.is_empty()
+            || observed.cpu_model.is_empty()
+            || observed.ram_bytes == 0
+            || observed.os.is_empty()
+            || observed.kernel.is_empty()
+            || observed.governor.is_empty()
+            || observed.turbo.is_empty()
+        {
+            reasons.push("observed runner identity is incomplete".to_owned());
+        }
         if observed.runner_class != self.required_runner_class {
             reasons.push("runner class does not match the committed profile".to_owned());
         }
@@ -69,6 +99,7 @@ impl PerformanceProfile {
             reasons.push("reference runner reports shared hardware".to_owned());
         }
         if !observed.calibration_score.is_finite()
+            || observed.calibration_score < 0.0
             || observed.calibration_score > self.maximum_calibration_score
         {
             reasons.push("runner calibration is outside the committed tolerance".to_owned());

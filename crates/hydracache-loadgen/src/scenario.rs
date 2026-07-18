@@ -27,6 +27,8 @@ pub struct Scenario {
     pub p99_slo_us: u64,
     pub p999_slo_us: Option<u64>,
     pub p999_min_samples: u64,
+    pub highest_trackable_latency_us: u64,
+    pub histogram_significant_figures: u8,
     pub min_achieved_ratio: f64,
     pub error_budgets: ErrorBudgets,
     pub backlog_drain_ms: u64,
@@ -46,14 +48,23 @@ impl Scenario {
         if self.schema_version != 1 {
             return Err("scenario schema_version must be 1".to_owned());
         }
+        let rates_are_strictly_increasing = self
+            .offered_rates_per_second
+            .windows(2)
+            .all(|pair| pair[0] < pair[1]);
         if self.id.trim().is_empty()
             || self.offered_rates_per_second.is_empty()
             || self.offered_rates_per_second.contains(&0)
+            || !rates_are_strictly_increasing
             || self.steady_operations == 0
             || self.repeats < 3
             || self.p99_slo_us == 0
+            || self.p999_slo_us == Some(0)
             || self.p999_min_samples == 0
+            || self.highest_trackable_latency_us == 0
+            || !(1..=5).contains(&self.histogram_significant_figures)
             || !(0.0..=1.0).contains(&self.min_achieved_ratio)
+            || self.min_achieved_ratio == 0.0
             || self.backlog_drain_ms == 0
             || !self.robust_spread_tolerance.is_finite()
             || self.robust_spread_tolerance < 0.0

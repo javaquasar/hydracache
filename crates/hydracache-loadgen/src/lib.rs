@@ -12,13 +12,21 @@ pub mod scenario;
 pub mod target;
 
 pub use histogram::{LatencyHistogram, LatencySummary};
-pub use knee::{KneeResult, RateSample, SustainabilityCriteria, SustainabilityVerdict};
+pub use knee::{
+    KneeResult, PhaseAccounting, RatePointEvidence, RateSample, RepeatEvidence,
+    SustainabilityCriteria, SustainabilityVerdict,
+};
 pub use profile::{PerformanceProfile, ProfileValidation, RunnerFingerprint};
 pub use rate::{run_open_loop, FixedRateSchedule, OpenLoopConfig, OpenLoopObservation};
-pub use report::{BuildIdentity, PerfReport, SourceIdentity, SurfaceIdentity};
-pub use runner::{run_phases, PhaseConfig, PhaseRun};
+pub use report::{
+    BuildIdentity, ComparisonEvidence, DimensionValue, EvidenceRunMode, KeyDistributionIdentity,
+    LoadClaim, LoadCurveEvidence, MeasurementEvidence, PerfReport, Quantity, ScalarEvidence,
+    ScalarPoint, SourceIdentity, SurfaceIdentity, TraceReplayEvidence, WeightedOperation,
+    WeightedPayload, WorkloadIdentity,
+};
+pub use runner::{run_phases, run_scenario, PhaseConfig, PhaseRun};
 pub use scenario::{ErrorBudgets, Scenario};
-pub use target::{Target, TargetError, TargetOutcome, TargetRequest};
+pub use target::{PreloadOutcome, Target, TargetError, TargetOutcome, TargetRequest};
 
 /// Schema version shared by committed scenario/report contracts.
 pub const PERF_SCHEMA_VERSION: u32 = 1;

@@ -62,6 +62,7 @@ criterion = { version = "0.8", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
 futures-util = "0.3.32"
 hdrhistogram = { version = "7.5.4", default-features = false }
+jsonschema = { version = "0.48.1", default-features = false }
 http = "1"
 hydracache-core = { path = "crates/hydracache-core", version = "0.65.0" }
 hydracache = { path = "crates/hydracache", version = "0.65.0" }

@@ -1,15 +1,17 @@
+use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
 use hydracache_loadgen::histogram::LatencySummary;
-use hydracache_loadgen::report::PhaseAccounting;
 use hydracache_loadgen::{
-    run_phases, BuildIdentity, FixedRateSchedule, KneeResult, LatencyHistogram, OpenLoopConfig,
-    PerfReport, PerformanceProfile, PhaseConfig, ProfileValidation, RateSample, RunnerFingerprint,
-    SourceIdentity, SurfaceIdentity, SustainabilityCriteria, Target, TargetError, TargetOutcome,
-    TargetRequest,
+    run_open_loop, run_phases, run_scenario, BuildIdentity, ErrorBudgets, EvidenceRunMode,
+    FixedRateSchedule, LatencyHistogram, LoadClaim, LoadCurveEvidence, MeasurementEvidence,
+    OpenLoopConfig, OpenLoopObservation, PerfReport, PerformanceProfile, PhaseAccounting,
+    PhaseConfig, RatePointEvidence, RepeatEvidence, RunnerFingerprint, Scenario, SourceIdentity,
+    SurfaceIdentity, SustainabilityCriteria, Target, TargetError, TargetOutcome, TargetRequest,
+    WeightedOperation, WeightedPayload, WorkloadIdentity,
 };
 
 fn latency(p99_us: u64) -> LatencySummary {
@@ -26,20 +28,48 @@ fn latency(p99_us: u64) -> LatencySummary {
     }
 }
 
-fn sample(rate: f64, achieved: f64, p99_us: u64) -> RateSample {
-    RateSample {
-        offered_rate_per_second: rate,
-        achieved_rate_per_second: achieved,
+fn observation(rate: f64, achieved: f64, p99_us: u64) -> OpenLoopObservation {
+    OpenLoopObservation {
+        offered: 10_000,
         started: 10_000,
         completed: 10_000,
+        successes: 10_000,
         errors: 0,
         timeouts: 0,
         rejections: 0,
+        backlog_high_water: 1,
         backlog_drained: true,
         drain_ms: 10,
-        robust_spread_ratio: 0.01,
+        elapsed_ms: 100_000,
+        offered_rate_per_second: rate,
+        achieved_rate_per_second: achieved,
         latency: latency(p99_us),
     }
+}
+
+fn repeats(rate: f64, achieved: f64, p99_us: u64) -> Vec<RepeatEvidence> {
+    (0..3)
+        .map(|_| RepeatEvidence {
+            reset_state_digest: "reset-sha".to_owned(),
+            state_digest: "state-sha".to_owned(),
+            phase: PhaseAccounting {
+                reset_operations: 1,
+                preload_operations: 0,
+                warmup_operations: 5,
+                steady_operations: 10_000,
+                reset_ms: 1,
+                preload_ms: 0,
+                warmup_ms: 1,
+                steady_ms: 100_000,
+                warmup_samples_in_steady_histogram: 0,
+            },
+            steady: observation(rate, achieved, p99_us),
+        })
+        .collect()
+}
+
+fn point(rate: f64, achieved: f64, p99_us: u64) -> RatePointEvidence {
+    criteria().evaluate_repeats(rate, repeats(rate, achieved, p99_us))
 }
 
 fn criteria() -> SustainabilityCriteria {
@@ -82,17 +112,17 @@ fn histogram_percentiles_match_reference_values_on_known_distributions() {
 
 #[test]
 fn knee_search_finds_the_stated_knee_on_a_synthetic_latency_model() {
-    let result = criteria().find_knee(&[
-        sample(100.0, 100.0, 5),
-        sample(200.0, 198.0, 8),
-        sample(300.0, 299.0, 20),
+    let result = criteria().find_knee(vec![
+        point(100.0, 100.0, 5),
+        point(200.0, 198.0, 8),
+        point(300.0, 299.0, 20),
     ]);
     assert_eq!(result.sustainable_rate_per_second, Some(200.0));
 }
 
 #[test]
 fn knee_rejects_rate_when_latency_passes_but_achieved_rate_lags() {
-    let verdict = criteria().evaluate(&sample(1_000.0, 500.0, 5));
+    let verdict = point(1_000.0, 500.0, 5).verdict;
     assert!(!verdict.sustainable);
     assert!(verdict
         .reasons
@@ -102,17 +132,82 @@ fn knee_rejects_rate_when_latency_passes_but_achieved_rate_lags() {
 
 #[test]
 fn knee_rejects_timeout_rejection_budget_or_undrained_backlog() {
-    let mut timeout = sample(1_000.0, 1_000.0, 5);
-    timeout.timeouts = 20;
-    assert!(!criteria().evaluate(&timeout).sustainable);
+    let mut timeout = repeats(1_000.0, 1_000.0, 5);
+    timeout[0].steady.timeouts = 20;
+    timeout[0].steady.successes -= 20;
+    assert!(
+        !criteria()
+            .evaluate_repeats(1_000.0, timeout)
+            .verdict
+            .sustainable
+    );
 
-    let mut rejected = sample(1_000.0, 1_000.0, 5);
-    rejected.rejections = 200;
-    assert!(!criteria().evaluate(&rejected).sustainable);
+    let mut rejected = repeats(1_000.0, 1_000.0, 5);
+    rejected[0].steady.rejections = 200;
+    rejected[0].steady.successes -= 200;
+    assert!(
+        !criteria()
+            .evaluate_repeats(1_000.0, rejected)
+            .verdict
+            .sustainable
+    );
 
-    let mut queued = sample(1_000.0, 1_000.0, 5);
-    queued.backlog_drained = false;
-    assert!(!criteria().evaluate(&queued).sustainable);
+    let mut queued = repeats(1_000.0, 1_000.0, 5);
+    queued[0].steady.backlog_drained = false;
+    assert!(
+        !criteria()
+            .evaluate_repeats(1_000.0, queued)
+            .verdict
+            .sustainable
+    );
+}
+
+#[test]
+fn knee_rejects_corrupt_counts_overflow_and_missing_required_p999() {
+    let mut corrupt = repeats(1_000.0, 1_000.0, 5);
+    corrupt[0].steady.completed -= 1;
+    assert!(
+        !criteria()
+            .evaluate_repeats(1_000.0, corrupt)
+            .verdict
+            .sustainable
+    );
+
+    let mut overflowed = repeats(1_000.0, 1_000.0, 5);
+    overflowed[0].steady.latency.overflow_count = 1;
+    assert!(
+        !criteria()
+            .evaluate_repeats(1_000.0, overflowed)
+            .verdict
+            .sustainable
+    );
+
+    let mut insufficient = repeats(1_000.0, 1_000.0, 5);
+    insufficient[0].steady.latency.p999_reportable = false;
+    insufficient[0].steady.latency.p999_us = None;
+    assert!(
+        !criteria()
+            .evaluate_repeats(1_000.0, insufficient)
+            .verdict
+            .sustainable
+    );
+}
+
+#[test]
+fn knee_rejects_invalid_direct_criteria_and_forged_verdicts() {
+    let mut invalid = criteria();
+    invalid.max_error_ratio = f64::NAN;
+    assert!(
+        !invalid
+            .evaluate_repeats(100.0, repeats(100.0, 100.0, 5))
+            .verdict
+            .sustainable
+    );
+
+    let mut knee = criteria().find_knee(vec![point(100.0, 100.0, 5)]);
+    knee.evaluated[0].verdict.sustainable = false;
+    knee.evaluated[0].verdict.reasons = vec!["forged".to_owned()];
+    assert!(!criteria().knee_validation_problems(&knee).is_empty());
 }
 
 #[test]
@@ -174,6 +269,15 @@ async fn warmup_samples_never_enter_the_steady_histogram() {
 }
 
 #[tokio::test]
+async fn declared_preload_count_must_match_target_evidence() {
+    let target = Arc::new(CountingTarget::default());
+    let mut config = phase_config();
+    config.preload_operations = 1;
+    let error = run_phases(target, &config).await.unwrap_err();
+    assert!(matches!(error, TargetError::Preload(_)));
+}
+
+#[tokio::test]
 async fn repeat_reset_reproduces_the_initial_state_digest() {
     let target = Arc::new(CountingTarget::default());
     let first = run_phases(Arc::clone(&target), &phase_config())
@@ -184,6 +288,118 @@ async fn repeat_reset_reproduces_the_initial_state_digest() {
         .unwrap();
     assert_eq!(first.initial_state_digest, second.initial_state_digest);
     assert_eq!(target.resets.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test(start_paused = true)]
+async fn scenario_runner_executes_every_declared_rate_and_repeat() {
+    let target = Arc::new(CountingTarget::default());
+    let scenario = Scenario {
+        schema_version: 1,
+        id: "runner-fixture".to_owned(),
+        seed: 67,
+        offered_rates_per_second: vec![100, 200],
+        preload_operations: 0,
+        warmup_operations: 0,
+        steady_operations: 30,
+        repeats: 3,
+        p99_slo_us: 10_000,
+        p999_slo_us: Some(10_000),
+        p999_min_samples: 1,
+        highest_trackable_latency_us: 1_000_000,
+        histogram_significant_figures: 3,
+        min_achieved_ratio: 0.5,
+        error_budgets: ErrorBudgets {
+            max_error_ratio: 0.0,
+            max_timeout_ratio: 0.0,
+            max_rejection_ratio: 0.0,
+        },
+        backlog_drain_ms: 1_000,
+        robust_spread_tolerance: 0.10,
+    };
+    let knee = run_scenario(Arc::clone(&target), &scenario).await.unwrap();
+    assert_eq!(knee.evaluated.len(), 2);
+    assert!(knee.evaluated.iter().all(|point| point.repeats.len() == 3));
+    assert_eq!(target.resets.load(Ordering::SeqCst), 6);
+}
+
+struct ActiveGuard<'a>(&'a AtomicU64);
+
+impl Drop for ActiveGuard<'_> {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::SeqCst);
+    }
+}
+
+#[derive(Default)]
+struct NeverFinishingTarget {
+    active: AtomicU64,
+}
+
+#[async_trait]
+impl Target for NeverFinishingTarget {
+    async fn reset(&self) -> Result<String, TargetError> {
+        Ok("state:empty:v1".to_owned())
+    }
+
+    async fn execute(&self, _request: TargetRequest) -> TargetOutcome {
+        self.active.fetch_add(1, Ordering::SeqCst);
+        let _active = ActiveGuard(&self.active);
+        tokio::time::sleep(Duration::from_secs(60)).await;
+        TargetOutcome::Success
+    }
+}
+
+#[tokio::test]
+async fn drain_timeout_cancels_inflight_requests_before_returning() {
+    let target = Arc::new(NeverFinishingTarget::default());
+    let result = run_open_loop(
+        Arc::clone(&target),
+        &OpenLoopConfig {
+            offered_rate_per_second: 1_000,
+            operations: 3,
+            highest_trackable_latency: Duration::from_secs(1),
+            significant_figures: 3,
+            p999_min_samples: 100,
+            drain_timeout: Duration::from_millis(5),
+        },
+    )
+    .await
+    .unwrap();
+    assert!(!result.backlog_drained);
+    assert_eq!(result.completed, 0);
+    assert_eq!(target.active.load(Ordering::SeqCst), 0);
+}
+
+#[tokio::test]
+async fn cancelling_the_driver_cancels_every_owned_request() {
+    let target = Arc::new(NeverFinishingTarget::default());
+    let run_target = Arc::clone(&target);
+    let driver = tokio::spawn(async move {
+        run_open_loop(
+            run_target,
+            &OpenLoopConfig {
+                offered_rate_per_second: 1_000,
+                operations: 100,
+                highest_trackable_latency: Duration::from_secs(1),
+                significant_figures: 3,
+                p999_min_samples: 100,
+                drain_timeout: Duration::from_secs(60),
+            },
+        )
+        .await
+    });
+    while target.active.load(Ordering::SeqCst) == 0 {
+        tokio::task::yield_now().await;
+    }
+    driver.abort();
+    let _ = driver.await;
+    tokio::time::timeout(Duration::from_secs(1), async {
+        while target.active.load(Ordering::SeqCst) != 0 {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .expect("owned target futures must be cancelled with their driver");
 }
 
 fn fingerprint(shared_hardware: bool, fingerprint: &str) -> RunnerFingerprint {
@@ -234,16 +450,46 @@ fn reference_profile_rejects_a_spoofed_or_shared_runner() {
         .any(|reason| reason.contains("shared hardware")));
 }
 
-#[test]
-fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_digests() {
+fn foundation_workload() -> WorkloadIdentity {
+    WorkloadIdentity {
+        generator: "synthetic-foundation".to_owned(),
+        generator_version: "1".to_owned(),
+        seed: Some(67),
+        key_distribution: None,
+        key_count: None,
+        operation_mix: vec![WeightedOperation {
+            operation: "noop".to_owned(),
+            weight: 1.0,
+        }],
+        payload_mix: vec![WeightedPayload {
+            bytes: 1,
+            weight: 1.0,
+        }],
+        digest: "workload-sha".to_owned(),
+    }
+}
+
+fn foundation_measurement() -> MeasurementEvidence {
+    MeasurementEvidence::LoadCurve(LoadCurveEvidence {
+        id: "foundation-open-loop".to_owned(),
+        dimensions: BTreeMap::new(),
+        workload: foundation_workload(),
+        criteria: Some(criteria()),
+        knee: Some(criteria().find_knee(vec![point(100.0, 100.0, 5)])),
+        claim: LoadClaim::CapacityKnee,
+    })
+}
+
+fn fixture_report(measurements: Vec<MeasurementEvidence>) -> PerfReport {
     let observed = fingerprint(false, "approved");
-    let report = PerfReport::new(
+    PerfReport::new(
         "foundation-fixture",
         "foundation",
         "scenario-sha",
         "workload-sha",
         "state-sha",
         67,
+        EvidenceRunMode::ReferenceEvidence,
         SurfaceIdentity {
             surface_kind: "synthetic-instrument".to_owned(),
             execution_mode: "deterministic-model".to_owned(),
@@ -251,12 +497,8 @@ fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_diges
             network_boundary: "none".to_owned(),
             claim_scope: "instrument-contract".to_owned(),
         },
-        "reference-v1",
+        reference_profile(),
         observed,
-        ProfileValidation {
-            eligible: true,
-            reasons: vec![],
-        },
         SourceIdentity {
             git_commit: "0123456789012345678901234567890123456789".to_owned(),
             cargo_lock_sha256: "lock-sha".to_owned(),
@@ -268,25 +510,16 @@ fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_diges
             prebuild_manifest_sha256: "manifest-sha".to_owned(),
             binary_sha256: vec![("hydracache-loadgen".to_owned(), "binary-sha".to_owned())],
         },
-        PhaseAccounting {
-            reset_operations: 1,
-            preload_operations: 0,
-            warmup_operations: 5,
-            steady_operations: 20,
-            reset_ms: 1,
-            preload_ms: 0,
-            warmup_ms: 1,
-            steady_ms: 1,
-            warmup_samples_in_steady_histogram: 0,
-        },
-        vec!["state-sha".to_owned()],
+        measurements,
         vec![],
-        KneeResult {
-            sustainable_rate_per_second: Some(100.0),
-            evaluated: vec![],
-        },
-        vec![],
-    );
+    )
+}
+
+#[test]
+fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_digests() {
+    let report = fixture_report(vec![foundation_measurement()]);
+    assert!(report.stable, "{:?}", report.stability_reasons);
+    assert!(report.validation_problems().is_empty());
     let value: serde_json::Value =
         serde_json::from_slice(&report.to_pretty_json().unwrap()).unwrap();
     assert_eq!(value["release"], "0.67.0");
@@ -297,44 +530,108 @@ fn perf_report_schema_records_surface_profile_commit_workload_and_prebuild_diges
         "0123456789012345678901234567890123456789"
     );
     assert_eq!(value["workload_digest"], "workload-sha");
-    assert_eq!(value["repeat_state_digests"][0], "state-sha");
+    assert_eq!(
+        value["measurements"][0]["evidence"]["knee"]["evaluated"][0]["repeats"][0]["state_digest"],
+        "state-sha"
+    );
     assert_eq!(value["build"]["prebuild_contract_digest"], "contract-sha");
     assert_eq!(value["build"]["prebuild_manifest_sha256"], "manifest-sha");
 }
 
 #[test]
-fn canary_closed_loop_measurement_hides_a_synthetic_stall() {
-    let operations = 200_u64;
-    let interval_us = 10_000_u64;
-    let stall_at = 50_u64;
-    let stall_us = 1_000_000_u64;
-    let normal_us = 1_000_u64;
+fn perf_report_json_schema_accepts_valid_evidence_and_rejects_short_repeat_sets() {
+    let schema: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../docs/testing/schemas/perf-report.schema.json"
+    ))
+    .unwrap();
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    let mut instance =
+        serde_json::to_value(fixture_report(vec![foundation_measurement()])).unwrap();
+    assert!(validator.is_valid(&instance));
 
-    let mut server_available_us = 0_u64;
-    let mut open_loop = LatencyHistogram::new(Duration::from_secs(5), 3).unwrap();
-    for sequence in 0..operations {
-        let scheduled_us = sequence * interval_us;
-        let service_us = if sequence == stall_at {
-            stall_us
-        } else {
-            normal_us
-        };
-        let started_us = scheduled_us.max(server_available_us);
-        let finished_us = started_us + service_us;
-        server_available_us = finished_us;
-        open_loop.record_us(finished_us - scheduled_us);
+    instance["measurements"][0]["evidence"]["knee"]["evaluated"][0]["repeats"]
+        .as_array_mut()
+        .unwrap()
+        .truncate(1);
+    assert!(!validator.is_valid(&instance));
+}
+
+#[test]
+fn perf_report_without_measurements_is_never_stable() {
+    let report = fixture_report(vec![]);
+    assert!(!report.stable);
+    assert!(report
+        .stability_reasons
+        .iter()
+        .any(|reason| reason.contains("typed measurement")));
+}
+
+#[test]
+fn perf_report_revalidates_profile_and_knee_instead_of_trusting_stored_flags() {
+    let mut report = fixture_report(vec![foundation_measurement()]);
+    report.observed_runner.shared_hardware = true;
+    report.profile_validation.eligible = true;
+    report.profile_validation.reasons.clear();
+    report.stable = true;
+    assert!(!report.validation_problems().is_empty());
+
+    let MeasurementEvidence::LoadCurve(curve) = &mut report.measurements[0] else {
+        panic!("fixture must contain a load curve");
+    };
+    let knee = curve.knee.as_mut().unwrap();
+    knee.evaluated[0].sample.completed -= 1;
+    assert!(!report.validation_problems().is_empty());
+}
+
+struct SerializedStallTarget {
+    lane: tokio::sync::Mutex<()>,
+    stall_at: u64,
+}
+
+#[async_trait]
+impl Target for SerializedStallTarget {
+    async fn reset(&self) -> Result<String, TargetError> {
+        Ok("state:synthetic-stall:v1".to_owned())
     }
 
+    async fn execute(&self, request: TargetRequest) -> TargetOutcome {
+        let _guard = self.lane.lock().await;
+        if request.sequence == self.stall_at {
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        } else {
+            tokio::time::sleep(Duration::from_millis(1)).await;
+        }
+        TargetOutcome::Success
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn canary_closed_loop_measurement_hides_a_synthetic_stall() {
+    let operations = 200_u64;
+    let target = Arc::new(SerializedStallTarget {
+        lane: tokio::sync::Mutex::new(()),
+        stall_at: 50,
+    });
+    let open_loop = run_open_loop(
+        Arc::clone(&target),
+        &OpenLoopConfig {
+            offered_rate_per_second: 100,
+            operations,
+            highest_trackable_latency: Duration::from_secs(5),
+            significant_figures: 3,
+            p999_min_samples: 100,
+            drain_timeout: Duration::from_secs(2),
+        },
+    )
+    .await
+    .unwrap();
     let mut closed_loop = LatencyHistogram::new(Duration::from_secs(5), 3).unwrap();
     for sequence in 0..operations {
-        let service_us = if sequence == stall_at {
-            stall_us
-        } else {
-            normal_us
-        };
-        closed_loop.record_us(service_us);
+        let started = tokio::time::Instant::now();
+        let _ = target.execute(TargetRequest { sequence }).await;
+        closed_loop.record(started.elapsed());
     }
-    let open_p99 = open_loop.summary(100).p99_us.unwrap();
+    let open_p99 = open_loop.latency.p99_us.unwrap();
     let closed_p99 = closed_loop.summary(100).p99_us.unwrap();
 
     if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W0") {
