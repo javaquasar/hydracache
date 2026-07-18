@@ -2992,6 +2992,47 @@ fn hex_digest(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
+#[cfg(target_os = "windows")]
+fn observed_process_executable(pid: u32) -> Result<PathBuf, ControlPlaneError> {
+    let script = format!("(Get-Process -Id {pid} -ErrorAction Stop).Path");
+    let output = Command::new("powershell.exe")
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            &script,
+        ])
+        .output()
+        .map_err(|error| {
+            ControlPlaneError::Capability(format!(
+                "unable to execute OS process identity probe for PID {pid}: {error}"
+            ))
+        })?;
+    if !output.status.success() {
+        return Err(ControlPlaneError::Capability(format!(
+            "OS process identity probe rejected PID {pid}: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        )));
+    }
+    let path = String::from_utf8(output.stdout)
+        .map_err(|error| ControlPlaneError::Capability(format!("PID path is non-UTF8: {error}")))?;
+    fs::canonicalize(path.trim()).map_err(|error| {
+        ControlPlaneError::Capability(format!(
+            "unable to canonicalize executable observed for PID {pid}: {error}"
+        ))
+    })
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+fn observed_process_executable(pid: u32) -> Result<PathBuf, ControlPlaneError> {
+    let _ = pid;
+    Err(ControlPlaneError::Capability(
+        "mandatory W4A capability has no supported OS process-identity probe on this platform"
+            .to_owned(),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3214,45 +3255,4 @@ mod tests {
             },
         }
     }
-}
-
-#[cfg(target_os = "windows")]
-fn observed_process_executable(pid: u32) -> Result<PathBuf, ControlPlaneError> {
-    let script = format!("(Get-Process -Id {pid} -ErrorAction Stop).Path");
-    let output = Command::new("powershell.exe")
-        .args([
-            "-NoLogo",
-            "-NoProfile",
-            "-NonInteractive",
-            "-Command",
-            &script,
-        ])
-        .output()
-        .map_err(|error| {
-            ControlPlaneError::Capability(format!(
-                "unable to execute OS process identity probe for PID {pid}: {error}"
-            ))
-        })?;
-    if !output.status.success() {
-        return Err(ControlPlaneError::Capability(format!(
-            "OS process identity probe rejected PID {pid}: {}",
-            String::from_utf8_lossy(&output.stderr).trim()
-        )));
-    }
-    let path = String::from_utf8(output.stdout)
-        .map_err(|error| ControlPlaneError::Capability(format!("PID path is non-UTF8: {error}")))?;
-    fs::canonicalize(path.trim()).map_err(|error| {
-        ControlPlaneError::Capability(format!(
-            "unable to canonicalize executable observed for PID {pid}: {error}"
-        ))
-    })
-}
-
-#[cfg(not(any(target_os = "linux", target_os = "windows")))]
-fn observed_process_executable(pid: u32) -> Result<PathBuf, ControlPlaneError> {
-    let _ = pid;
-    Err(ControlPlaneError::Capability(
-        "mandatory W4A capability has no supported OS process-identity probe on this platform"
-            .to_owned(),
-    ))
 }
