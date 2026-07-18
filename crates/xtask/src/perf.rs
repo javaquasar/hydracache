@@ -355,9 +355,8 @@ pub fn execute_prebuild_with<H: PrebuildHost>(
         &run_inputs_bytes,
     )?;
 
-    let verified = verify_published_bundle(&root).map_err(|error| {
+    let verified = verify_published_bundle(&root).inspect_err(|_| {
         let _ = remove_published_pair(&manifest_path, &run_inputs_path);
-        error
     })?;
     if verified.manifest_sha256 != manifest_sha256 {
         let _ = remove_published_pair(&manifest_path, &run_inputs_path);
@@ -888,7 +887,7 @@ fn canonical_output_path(bytes: &[u8], label: &str) -> Result<PathBuf, PerfPrebu
 }
 
 fn canonical_toolchain_identity(raw: &str) -> Result<String, PerfPrebuildError> {
-    let mut fields = raw.trim().split_whitespace();
+    let mut fields = raw.split_whitespace();
     if fields.next() != Some("rustc") {
         return Err(PerfPrebuildError::new("rustc version probe is malformed"));
     }
@@ -909,7 +908,7 @@ fn canonical_toolchain_identity(raw: &str) -> Result<String, PerfPrebuildError> 
 }
 
 fn canonical_cargo_identity(raw: &str) -> Result<String, PerfPrebuildError> {
-    let mut fields = raw.trim().split_whitespace();
+    let mut fields = raw.split_whitespace();
     if fields.next() != Some("cargo") {
         return Err(PerfPrebuildError::new("cargo version probe is malformed"));
     }
