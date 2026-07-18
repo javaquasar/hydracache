@@ -24,16 +24,27 @@ fn windows_nested_cargo_uses_an_unlocked_deterministic_target_dir() {
         xtask::evidence_run::cargo_target_dir_override(root, &command, true),
         Some(root.join("target/evidence-run-cargo"))
     );
+    assert_eq!(
+        xtask::evidence_run::cargo_build_jobs_override(&command, true),
+        Some("1")
+    );
     assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, false).is_none());
 
     command.program = "target/release/hydracache-loadgen".to_owned();
     assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, true).is_none());
+    assert!(xtask::evidence_run::cargo_build_jobs_override(&command, true).is_none());
 
     command.program = "cargo".to_owned();
     command
         .env
         .insert("CARGO_TARGET_DIR".to_owned(), "custom-target".to_owned());
     assert!(xtask::evidence_run::cargo_target_dir_override(root, &command, true).is_none());
+
+    command.env.remove("CARGO_TARGET_DIR");
+    command
+        .env
+        .insert("CARGO_BUILD_JOBS".to_owned(), "2".to_owned());
+    assert!(xtask::evidence_run::cargo_build_jobs_override(&command, true).is_none());
 }
 
 #[test]

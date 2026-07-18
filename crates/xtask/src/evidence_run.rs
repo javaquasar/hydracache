@@ -283,6 +283,9 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
         .stderr(Stdio::piped());
     if let Some(target_dir) = cargo_target_dir_override(root, command_spec, cfg!(windows)) {
         command.env("CARGO_TARGET_DIR", target_dir);
+        if let Some(jobs) = cargo_build_jobs_override(command_spec, cfg!(windows)) {
+            command.env("CARGO_BUILD_JOBS", jobs);
+        }
     }
     configure_process_group(&mut command);
 
@@ -480,6 +483,16 @@ pub fn cargo_target_dir_override(
         .to_ascii_lowercase();
     matches!(program.as_str(), "cargo" | "cargo.exe")
         .then(|| root.join("target/evidence-run-cargo"))
+}
+
+pub fn cargo_build_jobs_override(
+    command_spec: &CommandSpec,
+    windows: bool,
+) -> Option<&'static str> {
+    (windows
+        && cargo_target_dir_override(Path::new("."), command_spec, windows).is_some()
+        && !command_spec.env.contains_key("CARGO_BUILD_JOBS"))
+    .then_some("1")
 }
 
 fn remove_stale_declared_artifacts(
