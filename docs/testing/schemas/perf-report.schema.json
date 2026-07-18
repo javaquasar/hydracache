@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/testing/perf-report-v1.json",
+  "title": "HydraCache release 0.67 performance report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "release",
+    "report_id",
+    "scenario_id",
+    "scenario_digest",
+    "workload_digest",
+    "state_digest",
+    "seed",
+    "surface",
+    "runner_profile",
+    "observed_runner",
+    "profile_validation",
+    "source",
+    "build",
+    "phase_accounting",
+    "repeat_state_digests",
+    "repeats",
+    "knee",
+    "stable",
+    "stability_reasons"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.67.0" },
+    "report_id": { "$ref": "#/$defs/nonEmpty" },
+    "scenario_id": { "$ref": "#/$defs/nonEmpty" },
+    "scenario_digest": { "$ref": "#/$defs/digest" },
+    "workload_digest": { "$ref": "#/$defs/digest" },
+    "state_digest": { "$ref": "#/$defs/digest" },
+    "seed": { "type": "integer", "minimum": 0 },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface_kind", "execution_mode", "state_scope", "network_boundary", "claim_scope"],
+      "properties": {
+        "surface_kind": { "$ref": "#/$defs/nonEmpty" },
+        "execution_mode": { "$ref": "#/$defs/nonEmpty" },
+        "state_scope": { "$ref": "#/$defs/nonEmpty" },
+        "network_boundary": { "$ref": "#/$defs/nonEmpty" },
+        "claim_scope": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "runner_profile": { "$ref": "#/$defs/nonEmpty" },
+    "observed_runner": { "type": "object" },
+    "profile_validation": { "type": "object" },
+    "source": {
+      "type": "object",
+      "required": ["git_commit", "cargo_lock_sha256", "toolchain", "build_flags"]
+    },
+    "build": {
+      "type": "object",
+      "required": ["prebuild_contract_digest", "prebuild_manifest_sha256", "binary_sha256"]
+    },
+    "phase_accounting": {
+      "type": "object",
+      "required": ["reset_operations", "preload_operations", "warmup_operations", "steady_operations", "reset_ms", "preload_ms", "warmup_ms", "steady_ms", "warmup_samples_in_steady_histogram"]
+    },
+    "repeat_state_digests": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
+    "repeats": { "type": "array" },
+    "knee": { "type": "object" },
+    "stable": { "type": "boolean" },
+    "stability_reasons": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "digest": { "type": "string", "minLength": 1 }
+  }
+}

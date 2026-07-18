@@ -1796,6 +1796,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "hdrhistogram"
+version = "7.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "765c9198f173dd59ce26ff9f95ef0aafd0a0fe01fb9d72841bc5066a4c06511d"
+dependencies = [
+ "byteorder",
+ "num-traits",
+]
+
+[[package]]
 name = "heapless"
 version = "0.7.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2152,6 +2162,21 @@ dependencies = [
  "protobuf",
  "raft",
  "serde_json",
+]
+
+[[package]]
+name = "hydracache-loadgen"
+version = "0.65.0"
+dependencies = [
+ "async-trait",
+ "futures-util",
+ "hdrhistogram",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
+ "tokio",
+ "toml",
 ]
 
 [[package]]

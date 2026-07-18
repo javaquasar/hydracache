@@ -3,6 +3,37 @@
   "release": "0.67.0",
   "entries": [
     {
+      "w_item": "W0",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "open_loop_scheduler_accounts_missed_ticks_as_latency_not_skips"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_closed_loop_measurement_hides_a_synthetic_stall"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "open_loop_scheduler_accounts_missed_ticks_as_latency_not_skips", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_closed_loop_measurement_hides_a_synthetic_stall", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W0"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W0",
+      "expected_failure": "HC-CANARY-RED:W0",
+      "timeout_seconds": 120,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W0.json"],
+      "red_evidence": "The W0 canary proves scheduled-send latency exposes a synthetic stall that a naive closed-loop p99 hides."
+    },
+    {
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",

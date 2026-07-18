@@ -1,0 +1,19 @@
+schema_version = 1
+id = "foundation-open-loop-v1"
+seed = 67
+offered_rates_per_second = [1000, 2000, 4000]
+preload_operations = 0
+warmup_operations = 1000
+steady_operations = 10000
+repeats = 3
+p99_slo_us = 10000
+p999_slo_us = 25000
+p999_min_samples = 1000
+min_achieved_ratio = 0.95
+backlog_drain_ms = 2000
+robust_spread_tolerance = 0.10
+
+[error_budgets]
+max_error_ratio = 0.0
+max_timeout_ratio = 0.0
+max_rejection_ratio = 0.01

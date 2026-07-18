@@ -193,6 +193,7 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 
 | Item | Implemented where | Required command | Boundary |
 | --- | --- | --- | --- |
+| W0 | `crates/hydracache-loadgen::{rate,histogram,knee,scenario,profile,report,runner,target}`; `docs/testing/schemas/perf-report.schema.json` | `cargo test -p hydracache-loadgen --locked -j 2` | Development-only synthetic instrument contract; no product or daemon capacity claim |
 | _(populate during implementation; W0-W10 below define the targets)_ | | | |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
