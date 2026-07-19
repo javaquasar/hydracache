@@ -1751,14 +1751,22 @@ mod tests {
             RaftStorageFaultMode::FailImmediately,
         );
 
+        // Keep the mismatch probe bounded even if the operation-match guard is
+        // inverted: the mutant must return, allowing the call-count assertion
+        // below to kill it without leaving a blocked worker behind.
+        controller
+            .inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .released = true;
         assert!(controller
             .before(RaftStorageFaultOperation::SaveSnapshot)
             .is_ok());
         assert_eq!(controller.observation().calls, 0);
 
-        // Keep this call bounded even if the FailImmediately branch is mutated
-        // into the blocking branch: the original branch ignores `released`, while
-        // the mutant can advance without parking the test thread.
+        // Keep the matching call bounded even if the FailImmediately branch is
+        // mutated into the blocking branch.
         controller
             .inner
             .0
