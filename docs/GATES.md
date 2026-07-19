@@ -114,6 +114,15 @@ tier. The operator kind chaos suite uses the same opt-in boundary: partition
 requires a NetworkPolicy-enforcing CNI, slow disk requires the chaos-mesh
 `IOChaos` CRD, and unsupported legs skip loud rather than passing wrong:
 
+The live W5 IOChaos test reads the target pod UID twice with a short stability
+gap before applying the name-based selector. This prevents a StatefulSet
+replacement from binding Chaos Mesh to a terminating pod. The receipt is
+accepted only when that UID is still current and Chaos Mesh reports
+`Selected=True` and `AllInjected=True` for exactly one pod/container record.
+Readiness polling remains bounded (150 two-second attempts) and requires the
+desired replica count, quorum, and a reported leader; the longer bounded window
+covers normal Raft election/reconciliation without weakening safety assertions.
+
 ```powershell
 $env:HYDRACACHE_OPERATOR_KIND='1'
 $env:HYDRACACHE_OPERATOR_NAMESPACE='default'

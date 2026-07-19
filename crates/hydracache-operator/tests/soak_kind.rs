@@ -50,7 +50,11 @@ const OPERATOR_POD_LOG_ARTIFACT: &str = "operator-kind-pod-logs.txt";
 const OPERATOR_RESOURCES_ARTIFACT: &str = "operator-kind-resources.txt";
 const OPERATOR_EVENTS_ARTIFACT: &str = "operator-kind-events.txt";
 const STATEFULSET_REVISION_LABEL: &str = "controller-revision-hash";
-const KIND_WAIT_ATTEMPTS: usize = 90;
+// Kind nodes can spend several reconciliation periods electing a leader after
+// Chaos Mesh starts/stops an injection. Keep the wait bounded, but allow three
+// minutes so the assertion observes a settled quorum rather than a transient
+// `leader=None` status.
+const KIND_WAIT_ATTEMPTS: usize = 150;
 static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const NETWORK_POLICY_SKIP: &str =
     "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
@@ -1328,6 +1332,27 @@ impl KindHarness {
             .ok_or_else(|| format!("target pod {pod} has no Kubernetes UID"))
     }
 
+    /// Return a pod identity that remained unchanged across two API reads.
+    ///
+    /// StatefulSet replacement is asynchronous: a name can briefly resolve to
+    /// the terminating pod while the controller is already creating its
+    /// replacement. Chaos Mesh selectors are name-based, so accepting that
+    /// transient identity can inject the old UID and make a valid receipt
+    /// impossible. The double-read is a small, deterministic stability gate.
+    async fn stable_pod_uid(&self, ordinal: u32) -> Result<String, String> {
+        let first = self.pod_uid(ordinal).await?;
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        let second = self.pod_uid(ordinal).await?;
+        if first == second {
+            Ok(second)
+        } else {
+            Err(format!(
+                "target pod {} changed UID while preparing IOChaos: {first} -> {second}",
+                pod_name(&self.cluster, ordinal)
+            ))
+        }
+    }
+
     async fn delete_pod_with_uid(&self, ordinal: u32, expected_uid: &str) {
         let name = pod_name(&self.cluster, ordinal);
         let current_uid = self
@@ -1539,7 +1564,7 @@ impl KindHarness {
             namespace: self.namespace.clone(),
             pod: pod_name(&self.cluster, ordinal),
             pod_uid: self
-                .pod_uid(ordinal)
+                .stable_pod_uid(ordinal)
                 .await
                 .unwrap_or_else(|error| panic!("kind slow-disk target is invalid: {error}")),
             ordinal,
