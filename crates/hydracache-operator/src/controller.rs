@@ -27,7 +27,7 @@ use crate::resources::{
 };
 use crate::scale::{
     plan_scale, pod_name, scale_condition, ScaleAdminClient, ScaleObservation,
-    SCALE_ACTION_FAILED_CONDITION,
+    SCALE_ACTION_FAILED_CONDITION, SCALE_ADMIN_STATUS_UNAVAILABLE_CONDITION,
 };
 use crate::tls::{
     plan_tls_rotation, plan_tls_secret, tls_deferred_for_lifecycle, TlsPodObservation,
@@ -56,10 +56,10 @@ pub struct Ctx {
 impl Ctx {
     pub fn new(client: Client, identity: impl Into<String>, namespace: Option<String>) -> Self {
         Self {
+            scale_admin: ScaleAdminClient::new(client.clone()),
             client,
             identity: identity.into(),
             namespace,
-            scale_admin: ScaleAdminClient::default(),
         }
     }
 }
@@ -149,12 +149,16 @@ pub async fn apply_cluster(
     let statefulsets: Api<StatefulSet> = Api::namespaced(ctx.client.clone(), &namespace);
     let existing = get_optional(&statefulsets, &cluster.name_any()).await?;
     let mut scale_observation = ScaleObservation::from_statefulset(&cluster, existing.as_ref());
+    let mut scale_admin_status_error = None;
     if scale_observation.current_replicas > 0 {
-        scale_observation.admin_status = ctx
+        match ctx
             .scale_admin
             .status(&namespace, &cluster.name_any(), 0)
             .await
-            .ok();
+        {
+            Ok(admin_status) => scale_observation.admin_status = Some(admin_status),
+            Err(error) => scale_admin_status_error = Some(error.to_string()),
+        }
     }
     let scale_plan = plan_scale(&cluster, &scale_observation);
 
@@ -241,6 +245,16 @@ pub async fn apply_cluster(
         status.leader = admin_status.leader.clone();
     }
     status.conditions.extend(scale_plan.conditions.clone());
+    if let Some(error) = scale_admin_status_error {
+        status.health = DEGRADED_HEALTH.to_owned();
+        status.conditions.push(scale_condition(
+            SCALE_ADMIN_STATUS_UNAVAILABLE_CONDITION,
+            "True",
+            "AdminStatusUnavailable",
+            &error,
+            cluster.metadata.generation,
+        ));
+    }
     if !scale_plan.admin_actions.is_empty() {
         match ctx
             .scale_admin

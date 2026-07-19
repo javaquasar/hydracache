@@ -571,6 +571,8 @@ jobs:
         run: |
           mkdir -p target/test-evidence/0.66
           kubectl apply -f deploy/operator/hydracacheclusters.hydracache.io.crd.yaml
+          kubectl auth can-i get pods --subresource=proxy --namespace default
+          kubectl auth can-i create pods --subresource=proxy --namespace default
           cargo build -p hydracache-operator --locked
           operator_binary="$(pwd)/target/debug/hydracache-operator"
           operator_log="target/test-evidence/0.66/operator-controller-live.log"

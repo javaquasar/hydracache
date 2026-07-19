@@ -244,7 +244,8 @@ fn canary_external_checker_accepts_a_known_invalid_membership_history() {
 fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHistoryRecorder> {
     let mut cluster =
         DaemonCluster::start_bootstrap_with_raft_compaction(3, "external-control-history")?;
-    cluster.wait_for_shape(3, 3)?;
+    let mut live_nodes = 3;
+    cluster.wait_for_responsive_shape(live_nodes, 3, 3)?;
     let mut scheduler = ExternalHistoryScheduler::new(schedule);
     let mut recorder = ExternalHistoryRecorder::default();
     let mut last_killed = None;
@@ -254,13 +255,13 @@ fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHist
         match action {
             ExternalHistoryAction::Observe => {}
             ExternalHistoryAction::CompactFollower => {
-                let follower = follower_index(&mut cluster, members, members)?;
+                let follower = follower_index(&mut cluster, live_nodes, members, members)?;
                 let compacted = cluster.compact_raft_log(follower)?;
                 assert_eq!(compacted["enabled"], true);
-                cluster.wait_for_shape(members, members)?;
+                cluster.wait_for_responsive_shape(live_nodes, members, members)?;
             }
             ExternalHistoryAction::KillLeader => {
-                let statuses = cluster.wait_for_shape(members, members)?;
+                let statuses = cluster.wait_for_responsive_shape(live_nodes, members, members)?;
                 let old_leader = statuses[0]
                     .leader
                     .clone()
@@ -271,6 +272,9 @@ fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHist
                     .position(|node_id| node_id == &old_leader)
                     .ok_or("external schedule leader did not belong to DaemonCluster")?;
                 cluster.kill(index)?;
+                live_nodes -= 1;
+                // The killed voter remains in membership, so only the surviving responders
+                // can participate in this convergence check.
                 cluster.wait_for_leader_not(&old_leader, members, members)?;
                 last_killed = Some(index);
             }
@@ -279,10 +283,11 @@ fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHist
                     .take()
                     .ok_or("external generated schedule restarted before kill")?;
                 cluster.restart(index)?;
-                cluster.wait_for_shape(members, members)?;
+                live_nodes += 1;
+                cluster.wait_for_responsive_shape(live_nodes, members, members)?;
             }
             ExternalHistoryAction::DrainFollower => {
-                let follower = follower_index(&mut cluster, members, members)?;
+                let follower = follower_index(&mut cluster, live_nodes, members, members)?;
                 let accepted = cluster.drain(follower)?;
                 assert_eq!(accepted["outcome"], "accepted");
                 members -= 1;
@@ -307,8 +312,13 @@ fn replay_process(schedule: &ExternalHistorySchedule) -> TestResult<ExternalHist
     Ok(recorder)
 }
 
-fn follower_index(cluster: &mut DaemonCluster, members: u32, voters: u32) -> TestResult<usize> {
-    let statuses = cluster.wait_for_shape(members, voters)?;
+fn follower_index(
+    cluster: &mut DaemonCluster,
+    live_nodes: usize,
+    members: u32,
+    voters: u32,
+) -> TestResult<usize> {
+    let statuses = cluster.wait_for_responsive_shape(live_nodes, members, voters)?;
     let leader = statuses[0]
         .leader
         .as_deref()

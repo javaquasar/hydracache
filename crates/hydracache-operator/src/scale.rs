@@ -2,9 +2,10 @@
 
 use std::time::Duration;
 
+use http::{Method, Request};
 use k8s_openapi::api::apps::v1::StatefulSet;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::{Condition, Time};
-use kube::ResourceExt;
+use kube::{Client, ResourceExt};
 use serde::Deserialize;
 use thiserror::Error;
 
@@ -16,6 +17,7 @@ pub const REBALANCING_PHASE: &str = "Rebalancing";
 pub const SCALE_BLOCKED_CONDITION: &str = "ScaleBlocked";
 pub const SCALE_PROGRESSING_CONDITION: &str = "ScaleProgressing";
 pub const SCALE_ACTION_FAILED_CONDITION: &str = "ScaleActionFailed";
+pub const SCALE_ADMIN_STATUS_UNAVAILABLE_CONDITION: &str = "ScaleAdminStatusUnavailable";
 
 const ADMIN_STATUS_PATH: &str = "/admin/status";
 const ADMIN_DRAIN_PATH: &str = "/admin/drain";
@@ -415,43 +417,41 @@ pub fn scale_condition(
     }
 }
 
-/// Thin W0 admin HTTP client used by the controller inside the cluster.
-#[derive(Clone, Debug)]
+/// Thin W0 admin client routed through the Kubernetes pod proxy.
+///
+/// The proxy keeps the same transport working both in-cluster and for a
+/// controller process using an external kubeconfig, without relying on the
+/// latter being able to resolve or route to cluster-only pod DNS names.
+#[derive(Clone)]
 pub struct ScaleAdminClient {
-    http: reqwest::Client,
+    client: Client,
     timeout: Duration,
 }
 
-impl Default for ScaleAdminClient {
-    fn default() -> Self {
+impl ScaleAdminClient {
+    pub fn new(client: Client) -> Self {
         Self {
-            http: reqwest::Client::new(),
+            client,
             timeout: Duration::from_secs(2),
         }
     }
-}
 
-impl ScaleAdminClient {
     pub async fn status(
         &self,
         namespace: &str,
         cluster_name: &str,
         ordinal: u32,
     ) -> Result<AdminStatus, ScaleAdminError> {
-        let url = format!(
-            "{}{}",
-            admin_base_url(namespace, cluster_name, ordinal),
-            ADMIN_STATUS_PATH
-        );
-        let response = self
-            .admin_headers(self.http.get(url))
-            .timeout(self.timeout)
-            .send()
-            .await?;
-        if !response.status().is_success() {
-            return Err(ScaleAdminError::Rejected(response.status().as_u16()));
-        }
-        Ok(response.json::<AdminStatus>().await?)
+        let uri = admin_proxy_uri(namespace, cluster_name, ordinal, ADMIN_STATUS_PATH);
+        let request = admin_proxy_request(Method::GET, &uri)?;
+        let response =
+            tokio::time::timeout(self.timeout, self.client.request::<AdminStatus>(request))
+                .await
+                .map_err(|_| ScaleAdminError::Timeout { uri: uri.clone() })?;
+        response.map_err(|source| ScaleAdminError::KubernetesProxy {
+            uri,
+            source: Box::new(source),
+        })
     }
 
     pub async fn perform(
@@ -461,35 +461,55 @@ impl ScaleAdminClient {
         actions: &[AdminAction],
     ) -> Result<(), ScaleAdminError> {
         for action in actions {
-            let url = format!(
-                "{}{}",
-                admin_base_url(namespace, cluster_name, action.ordinal()),
-                action.path()
-            );
-            let response = self
-                .admin_headers(self.http.post(url))
-                .timeout(self.timeout)
-                .send()
-                .await?;
-            if !response.status().is_success() {
-                return Err(ScaleAdminError::Rejected(response.status().as_u16()));
-            }
+            let uri = admin_proxy_uri(namespace, cluster_name, action.ordinal(), action.path());
+            let request = admin_proxy_request(Method::POST, &uri)?;
+            let response = tokio::time::timeout(self.timeout, self.client.request_text(request))
+                .await
+                .map_err(|_| ScaleAdminError::Timeout { uri: uri.clone() })?;
+            response.map_err(|source| ScaleAdminError::KubernetesProxy {
+                uri,
+                source: Box::new(source),
+            })?;
         }
         Ok(())
     }
+}
 
-    fn admin_headers(&self, request: reqwest::RequestBuilder) -> reqwest::RequestBuilder {
-        request
-            .header(HYDRACACHE_CLIENT_ID_HEADER, "operator")
-            .header(HYDRACACHE_TENANT_HEADER, "system")
-            .header(HYDRACACHE_ADMIN_HEADER, "true")
-    }
+fn admin_proxy_uri(namespace: &str, cluster_name: &str, ordinal: u32, admin_path: &str) -> String {
+    format!(
+        "/api/v1/namespaces/{namespace}/pods/{}:{ADMIN_PORT}/proxy{admin_path}",
+        pod_name(cluster_name, ordinal)
+    )
+}
+
+fn admin_proxy_request(method: Method, uri: &str) -> Result<Request<Vec<u8>>, ScaleAdminError> {
+    Request::builder()
+        .method(method)
+        .uri(uri)
+        .header(HYDRACACHE_CLIENT_ID_HEADER, "operator")
+        .header(HYDRACACHE_TENANT_HEADER, "system")
+        .header(HYDRACACHE_ADMIN_HEADER, "true")
+        .body(Vec::new())
+        .map_err(|source| ScaleAdminError::RequestBuild {
+            uri: uri.to_owned(),
+            source,
+        })
 }
 
 #[derive(Debug, Error)]
 pub enum ScaleAdminError {
-    #[error("admin HTTP request failed: {0}")]
-    Http(#[from] reqwest::Error),
-    #[error("admin HTTP action rejected with status {0}")]
-    Rejected(u16),
+    #[error("could not build admin Kubernetes pod-proxy request {uri}: {source}")]
+    RequestBuild {
+        uri: String,
+        #[source]
+        source: http::Error,
+    },
+    #[error("admin Kubernetes pod-proxy request {uri} timed out")]
+    Timeout { uri: String },
+    #[error("admin Kubernetes pod-proxy request {uri} failed: {source}")]
+    KubernetesProxy {
+        uri: String,
+        #[source]
+        source: Box<kube::Error>,
+    },
 }

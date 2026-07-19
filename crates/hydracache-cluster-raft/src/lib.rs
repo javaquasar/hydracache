@@ -2404,6 +2404,98 @@ mod tests {
     }
 
     #[test]
+    fn snapshot_wire_size_includes_the_maximal_routing_header() {
+        let snapshot = Snapshot::default();
+        let mut message = RaftMessage {
+            from: u64::MAX,
+            to: u64::MAX,
+            term: u64::MAX,
+            ..RaftMessage::default()
+        };
+        message.set_msg_type(MessageType::MsgSnapshot);
+        message.set_snapshot(snapshot.clone());
+        let expected = u64::try_from(message.write_to_bytes().unwrap().len()).unwrap();
+
+        assert_eq!(encoded_snapshot_wire_bytes(&snapshot).unwrap(), expected);
+    }
+
+    #[test]
+    fn restore_ignores_normal_entries_past_the_persisted_applied_boundary() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let snapshot = protobuf_snapshot_from_export(&metadata_export_from_commands(
+            "orders",
+            1,
+            1,
+            Vec::new(),
+        ));
+        let command = RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from("unapplied-member"),
+            generation: ClusterGeneration::new(1),
+            epoch: hydracache::ClusterEpoch::new(1),
+        };
+        let envelope = RaftMetadataCommandEnvelope {
+            command_id: command_id_for(&command),
+            command,
+        };
+        let mut unapplied_entry = Entry {
+            index: 2,
+            term: 1,
+            data: encode_envelope(&envelope).into(),
+            ..Entry::default()
+        };
+        unapplied_entry.set_entry_type(EntryType::EntryNormal);
+
+        runtime
+            .restore_committed_state(snapshot, vec![unapplied_entry], 1)
+            .unwrap();
+
+        assert!(!runtime.command_applied(&envelope.command_id));
+        assert!(runtime.members().is_empty());
+        assert_eq!(runtime.snapshot().applied_index, 1);
+    }
+
+    #[test]
+    fn applied_snapshot_rejects_progress_past_the_commit_index() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+        let commit_index = state.raw_node.raft.hard_state().commit;
+        state.applied_index = commit_index + 1;
+
+        let error = state.build_applied_snapshot(1).unwrap_err();
+
+        assert!(
+            error.to_string().contains("past committed index"),
+            "{error}"
+        );
+    }
+
+    #[tokio::test]
+    async fn snapshot_compaction_accepts_a_candidate_exactly_at_the_wire_limit() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("wire-boundary-member")
+                    .generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+        let candidate = state.build_applied_snapshot(1).unwrap();
+        let encoded_wire_bytes = encoded_snapshot_wire_bytes(&candidate).unwrap();
+        state.max_wire_bytes = encoded_wire_bytes;
+
+        let observation = state.snapshot_size_observation(1).unwrap();
+        assert_eq!(observation.encoded_wire_bytes, encoded_wire_bytes);
+        assert_eq!(observation.max_wire_bytes, encoded_wire_bytes);
+        assert!(observation.transportable);
+        let applied_index = state.applied_index;
+        assert_eq!(
+            state.compact_applied_log_to_snapshot(1).unwrap(),
+            applied_index
+        );
+    }
+
+    #[test]
     fn runtime_campaigns_single_node_to_leader() {
         let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
         let snapshot = runtime.snapshot();

@@ -1647,6 +1647,27 @@ fn snapshot_payload_checksum(bytes: &[u8]) -> u64 {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "test-failpoints")]
+    fn wait_for_fault_active(controller: &RaftStorageFaultController) {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
+        loop {
+            if controller
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned")
+                .active
+            {
+                return;
+            }
+            assert!(
+                std::time::Instant::now() < deadline,
+                "storage fault never entered the active state"
+            );
+            std::thread::yield_now();
+        }
+    }
+
     fn entry(index: u64, term: u64, data: &[u8]) -> Entry {
         Entry {
             index,
@@ -1669,6 +1690,234 @@ mod tests {
         assert!(debug.contains("first_index"));
         assert!(debug.contains("last_index"));
         assert!(!<InMemoryRaftLogStore as RaftLogStore>::must_sync(&store));
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn storage_fault_controller_contracts_are_directly_observable() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+
+        let debug = format!("{controller:?}");
+        assert!(debug.contains("RaftStorageFaultController"));
+        assert!(debug.contains("observation"));
+
+        {
+            let state = controller
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned");
+            assert_eq!(
+                state.tracked_operation,
+                Some(RaftStorageFaultOperation::DurableCommit)
+            );
+            assert_eq!(state.mode, Some(RaftStorageFaultMode::FailImmediately));
+            assert!(!state.active);
+            assert!(!state.released);
+            assert_eq!(state.observation, RaftStorageFaultObservation::default());
+        }
+
+        let release_probe = RaftStorageFaultController::default();
+        {
+            let mut state = release_probe
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned");
+            state.active = true;
+        }
+        release_probe.release_blocked();
+        assert!(
+            release_probe
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned")
+                .released,
+            "release must publish the explicit wake-up state"
+        );
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn fail_immediately_targets_only_the_armed_storage_operation() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+
+        assert!(controller
+            .before(RaftStorageFaultOperation::SaveSnapshot)
+            .is_ok());
+        assert_eq!(controller.observation().calls, 0);
+
+        // Keep this call bounded even if the FailImmediately branch is mutated
+        // into the blocking branch: the original branch ignores `released`, while
+        // the mutant can advance without parking the test thread.
+        controller
+            .inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .released = true;
+        assert!(controller
+            .before(RaftStorageFaultOperation::DurableCommit)
+            .is_err());
+        let observation = controller.observation();
+        assert_eq!(observation.calls, 1);
+        assert_eq!(observation.injected_failures, 1);
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn block_then_continue_waits_for_release_and_completes() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::SaveSnapshot,
+            RaftStorageFaultMode::BlockThenContinue,
+        );
+        let worker_controller = controller.clone();
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let result = worker_controller.before(RaftStorageFaultOperation::SaveSnapshot);
+            let _ = sender.send(result);
+        });
+
+        assert!(matches!(
+            receiver.recv_timeout(std::time::Duration::from_millis(50)),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ));
+        wait_for_fault_active(&controller);
+        controller.release_blocked();
+        assert!(receiver
+            .recv_timeout(std::time::Duration::from_secs(1))
+            .expect("released storage operation must complete")
+            .is_ok());
+        worker.join().expect("storage fault worker joins");
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn block_then_fail_reports_the_injected_failure_after_release() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::MarkApplied,
+            RaftStorageFaultMode::BlockThenFail,
+        );
+        let worker_controller = controller.clone();
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let result = worker_controller.before(RaftStorageFaultOperation::MarkApplied);
+            let _ = sender.send(result);
+        });
+
+        assert!(matches!(
+            receiver.recv_timeout(std::time::Duration::from_millis(50)),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ));
+        wait_for_fault_active(&controller);
+        controller.release_blocked();
+        assert!(receiver
+            .recv_timeout(std::time::Duration::from_secs(1))
+            .expect("released storage operation must complete")
+            .is_err());
+        worker.join().expect("storage fault worker joins");
+        assert_eq!(controller.observation().injected_failures, 1);
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn sled_fault_begin_matches_only_the_armed_operation() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::SaveSnapshot,
+            RaftStorageFaultMode::FailImmediately,
+        );
+
+        let unrelated = controller
+            .begin_sled_io(RaftStorageFaultOperation::MarkApplied)
+            .unwrap();
+        if unrelated.is_some() {
+            controller.abort_sled_io(unrelated);
+        }
+        assert_eq!(unrelated, None);
+
+        let armed = controller
+            .begin_sled_io(RaftStorageFaultOperation::SaveSnapshot)
+            .unwrap();
+        controller.abort_sled_io(armed);
+        assert_eq!(armed, Some(RaftStorageFaultMode::FailImmediately));
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn storage_fault_accessors_preserve_controller_identity() {
+        let in_memory = InMemoryRaftLogStore::new();
+        assert!(Arc::ptr_eq(
+            &in_memory.storage_faults.inner,
+            &in_memory.storage_faults().inner
+        ));
+
+        #[cfg(feature = "durable-log")]
+        {
+            let durable = DurableRaftLogDirectory::new().open().unwrap();
+            assert!(Arc::ptr_eq(
+                &durable.inner.storage_faults.inner,
+                &durable.storage_faults().inner
+            ));
+        }
+
+        #[cfg(feature = "sled-log-store")]
+        {
+            let sled = SledRaftLogStore::new_for_tests();
+            assert!(Arc::ptr_eq(
+                &sled.inner.storage_faults.inner,
+                &sled.storage_faults().inner
+            ));
+        }
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn durable_commit_fault_targets_only_strict_commit_advances() {
+        let advancing = InMemoryRaftLogStore::new();
+        advancing.storage_faults().arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+        assert!(advancing
+            .save_hard_state(&HardState {
+                commit: 1,
+                ..HardState::default()
+            })
+            .is_err());
+
+        let equal = InMemoryRaftLogStore::new();
+        equal.storage_faults().arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+        assert!(equal.save_hard_state(&HardState::default()).is_ok());
+        assert_eq!(equal.storage_faults().observation().calls, 0);
+
+        let decreasing = InMemoryRaftLogStore::new();
+        decreasing.set_commit(2);
+        decreasing.storage_faults().arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+        assert!(decreasing
+            .save_hard_state(&HardState {
+                commit: 1,
+                ..HardState::default()
+            })
+            .is_ok());
+        assert_eq!(decreasing.storage_faults().observation().calls, 0);
     }
 
     #[test]
