@@ -42,6 +42,10 @@ const OPERATOR_EVIDENCE_DIRECTORY: &str = "target/test-evidence/0.66";
 const OPERATOR_EVIDENCE_NONCE_ENV: &str = "HYDRACACHE_OPERATOR_EVIDENCE_NONCE";
 const OPERATOR_CONTROLLER_LIVE_LOG: &str = "operator-controller-live.log";
 const OPERATOR_CONTROLLER_RECEIPT_LOG: &str = "operator-controller.log";
+// All live Kind tests operate on the same release cluster and Chaos Mesh
+// objects. The Rust test harness may otherwise run them concurrently and let
+// one proof replace the pods or IOChaos object observed by another proof.
+static LIVE_KIND_PROOF_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 #[cfg(target_os = "linux")]
 const OPERATOR_CONTROLLER_PID: &str = "operator-controller.pid";
 const OPERATOR_W5_CAPABILITY_ARTIFACT: &str = "operator-kind-w5-iochaos-capability.txt";
@@ -890,7 +894,9 @@ fn iochaos_injection_receipt(
         );
     }
 
-    let instance_id = format!("{}/{}", target.namespace, target.pod);
+    // Chaos Mesh identifies an IOChaos instance at container granularity even
+    // though the selector is intentionally exact at pod granularity.
+    let instance_id = format!("{}/{}/{}", target.namespace, target.pod, SERVER_CONTAINER);
     let instances = object
         .pointer("/status/instances")
         .and_then(Value::as_object)
@@ -1929,6 +1935,7 @@ fn operator_release_evidence_requires_current_controller_runtime_output() {
 #[tokio::test]
 #[ignore = "kind/Chaos-Mesh-gated W5 lane: set HYDRACACHE_OPERATOR_KIND=1 with IOChaos installed"]
 async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) =
         KindHarness::try_start("iochaos_fault_blocks_real_raft_persistence_then_recovers").await
     else {
@@ -2098,6 +2105,7 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
 #[tokio::test]
 #[ignore = "kind/CNI-gated W11 lane: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
 async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) =
         KindHarness::try_start("operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch")
             .await
@@ -2252,6 +2260,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
 #[tokio::test]
 #[ignore = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"]
 async fn multi_node_chaos_soak_preserves_quorum_and_leadership() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) =
         KindHarness::try_start("multi_node_chaos_soak_preserves_quorum_and_leadership").await
     else {
@@ -2282,6 +2291,7 @@ async fn multi_node_chaos_soak_preserves_quorum_and_leadership() {
 #[tokio::test]
 #[ignore = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"]
 async fn leader_is_always_reestablished_after_pod_crash() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) = KindHarness::try_start("leader_is_always_reestablished_after_pod_crash").await
     else {
         return;
@@ -2305,6 +2315,7 @@ async fn leader_is_always_reestablished_after_pod_crash() {
 #[tokio::test]
 #[ignore = "kind/calico-gated: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
 async fn kind_partition_injection_isolates_and_heals() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) = KindHarness::try_start("kind_partition_injection_isolates_and_heals").await
     else {
         return;
@@ -2609,12 +2620,12 @@ fn iochaos_receipt_requires_controller_injection_and_exact_target() {
         ],
         "experiment": {
             "containerRecords": [{
-                "id": "testing/chaos-1",
+                "id": "testing/chaos-1/hydracache",
                 "selectorKey": ".",
                 "phase": "Injected"
             }]
         },
-        "instances": { "testing/chaos-1": 1 }
+        "instances": { "testing/chaos-1/hydracache": 1 }
     });
 
     let receipt = iochaos_injection_receipt(&object, &target, "pod-uid-1")

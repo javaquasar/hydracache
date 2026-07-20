@@ -118,10 +118,16 @@ The live W5 IOChaos test reads the target pod UID twice with a short stability
 gap before applying the name-based selector. This prevents a StatefulSet
 replacement from binding Chaos Mesh to a terminating pod. The receipt is
 accepted only when that UID is still current and Chaos Mesh reports
-`Selected=True` and `AllInjected=True` for exactly one pod/container record.
+`Selected=True` and `AllInjected=True` for exactly one container instance. The
+selector is checked as the exact `namespace/pod`, while the controller receipt
+uses Chaos Mesh's actual `namespace/pod/container` instance identifier.
 Readiness polling remains bounded (150 two-second attempts) and requires the
 desired replica count, quorum, and a reported leader; the longer bounded window
 covers normal Raft election/reconciliation without weakening safety assertions.
+All live Kind/Chaos tests are serialized inside the test binary because they
+intentionally operate on the same release cluster and named Chaos objects. This
+prevents one proof from replacing pods, network policies, or IOChaos state while
+another proof is collecting its commit-bound receipt.
 
 ```powershell
 $env:HYDRACACHE_OPERATOR_KIND='1'
