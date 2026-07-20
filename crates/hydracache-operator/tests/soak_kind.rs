@@ -2038,11 +2038,10 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
         // state catches up from the healthy majority.
         kind.delete_pod_with_uid(target_ordinal, &receipt.target.pod_uid)
             .await;
-        kind.wait_ready(4, "w5-iochaos-recovered").await;
         let recovered_uid = kind
-            .pod_uid(target_ordinal)
-            .await
-            .expect("restarted IOChaos target must become observable");
+            .wait_for_replacement_pod_uid(target_ordinal, &receipt.target.pod_uid)
+            .await;
+        kind.wait_ready(4, "w5-iochaos-recovered").await;
         assert_ne!(
             recovered_uid, receipt.target.pod_uid,
             "IOChaos recovery must observe a newly created target pod"
@@ -2091,8 +2090,12 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
         // serialized Kind test.
         if proof_failed {
             if let Ok(uid) = kind.pod_uid(target_ordinal).await {
-                kind.delete_pod_with_uid(target_ordinal, &uid).await;
+                if uid == receipt.target.pod_uid {
+                    kind.delete_pod_with_uid(target_ordinal, &uid).await;
+                }
             }
+            kind.wait_for_replacement_pod_uid(target_ordinal, &receipt.target.pod_uid)
+                .await;
         }
     })
     .catch_unwind()

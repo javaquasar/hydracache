@@ -132,11 +132,14 @@ another proof is collecting its commit-bound receipt.
 W5 treats an injected Raft-log `EIO` as process-fatal for recovery purposes.
 After proving that the targeted follower cannot persist the scale-up while the
 healthy majority commits it, the harness removes IOChaos, deletes that exact pod
-by UID, and requires the StatefulSet replacement to recover the durable log and
-join the committed membership. The receipt therefore proves operational
-restart-and-catch-up, not unsupported in-process recovery of a Sled instance
-after filesystem I/O errors. Failed proofs perform the same targeted cleanup so
-the next serialized Kind test cannot inherit an EIO-poisoned pod.
+by UID, waits until the same pod name has a different non-terminating Ready UID,
+and only then accepts cluster readiness and durable catch-up. Kubernetes pod
+deletion is asynchronous, so observing the old Ready object after the delete
+response is explicitly not replacement evidence. The receipt therefore proves
+operational restart-and-catch-up, not unsupported in-process recovery of a Sled
+instance after filesystem I/O errors. Failed proofs perform the same targeted
+replacement wait before final scale cleanup, so the next serialized Kind test
+cannot inherit an EIO-poisoned pod.
 
 ```powershell
 $env:HYDRACACHE_OPERATOR_KIND='1'
