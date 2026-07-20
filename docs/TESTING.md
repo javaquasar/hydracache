@@ -904,7 +904,10 @@ authoritative membership observation. Immediately after `SIGCONT`, a daemon or
 majority peer may briefly expose a bootstrap overview with `epoch=0` while its
 committed view is being materialized. That sample remains in the diagnostic
 timeline but is not appended to the monotonic authoritative history. A
-current-term vote response or arbitrary peer traffic is also insufficient to
+membership-shape change in `/admin/status` is not sufficient on its own: the
+process proof waits for `quorum_ok`, a leader, the expected member/voter shape,
+and a non-zero matching overview epoch before recording the post-commit sample.
+A current-term vote response or arbitrary peer traffic is also insufficient to
 renew metadata authority. A follower requires a successfully stepped `Append`,
 `Heartbeat`, or `Snapshot` from the Raft runtime's current leader. The leader
 requires a current-term append or heartbeat acknowledgement from a member of

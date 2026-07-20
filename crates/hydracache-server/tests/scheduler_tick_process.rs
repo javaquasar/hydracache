@@ -308,11 +308,24 @@ fn run_resumed_demoted_process() -> TestResult {
     let drained_node_id = node_ids[drain_index].clone();
     let accepted = cluster.drain(drain_index)?;
     assert_eq!(accepted["outcome"], "accepted");
-    let committed_while_paused = cluster.wait_for(
-        "membership change committed while former leader is suspended".to_owned(),
+    let (committed_while_paused, committed_membership) = cluster.wait_for(
+        "authoritative membership change committed while former leader is suspended".to_owned(),
         |cluster| {
             let status = cluster.admin_status(replacement_index).ok()?;
-            (status.members == 2 && status.voters == 2).then_some(status)
+            if status.members != 2
+                || status.voters != 2
+                || !status.quorum_ok
+                || status.leader.is_none()
+            {
+                return None;
+            }
+            let membership = MembershipObservation::from_cluster_overview(
+                &cluster.cluster_overview(replacement_index).ok()?,
+            );
+            (membership.epoch > 0
+                && membership.members.len() == 2
+                && !membership.members.contains(&drained_node_id))
+            .then_some((status, membership))
         },
     )?;
     evidence.record_admin(
@@ -320,8 +333,6 @@ fn run_resumed_demoted_process() -> TestResult {
         replacement_index,
         committed_while_paused,
     );
-    let committed_membership =
-        MembershipObservation::from_cluster_overview(&cluster.cluster_overview(replacement_index)?);
     assert_eq!(committed_membership.members.len(), 2);
     assert!(
         !committed_membership.members.contains(&drained_node_id),
