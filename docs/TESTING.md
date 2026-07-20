@@ -899,6 +899,15 @@ The daemon receipt is a Linux release lane because W10 uses real
 requires `/proc` RSS/VmHWM/FD samples. Ship mode also requires full Git history and
 the real `v0.65.0` tag; it never silently uses the pinned development fallback.
 
+The W10 resume/demotion proof distinguishes a reachable public endpoint from an
+authoritative membership observation. Immediately after `SIGCONT`, a daemon or
+majority peer may briefly expose a bootstrap overview with `epoch=0` while its
+committed view is being materialized. That sample remains in the diagnostic
+timeline but is not appended to the monotonic authoritative history. The proof
+still requires a non-zero committed epoch, the expected member/voter shape, and
+leader/term agreement with the live majority before the resumed process can be
+accepted as authoritative.
+
 For W12, `tracked_connections` remains the 0.64-compatible maximum per-daemon
 request gauge at retained event checkpoints; it is not a sender/peer identity or
 a continuous maximum. `held_snapshot_messages` remains the cluster sum observed

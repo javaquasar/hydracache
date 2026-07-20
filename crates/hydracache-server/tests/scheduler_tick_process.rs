@@ -353,6 +353,15 @@ fn run_resumed_demoted_process() -> TestResult {
         };
         let peer_membership =
             MembershipObservation::from_cluster_overview(&cluster.cluster_overview(peer_index)?);
+        // `/admin/status` can become reachable a few scheduler ticks before the
+        // public overview has materialized its committed epoch. Epoch zero is a
+        // bootstrap/uninitialized view, not an authoritative membership
+        // regression, so wait for the majority peer's committed shape before
+        // adding it to the monotonic history.
+        if peer_membership.epoch == 0 || peer_membership.members.len() != 2 {
+            std::thread::sleep(Duration::from_millis(20));
+            continue;
+        }
         evidence.record_authoritative_membership(peer_membership.clone());
 
         if resumed_status.quorum_ok && resumed_status.leader.is_some() {
