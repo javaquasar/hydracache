@@ -45,6 +45,14 @@ to the loop head, which either observes an explicit release or performs timeout
 cleanup. There is intentionally no second `timed_out && !released` predicate;
 that redundant predicate produced semantically equivalent mutation survivors.
 
+The compaction-seam recovery test performs real close/reopen cycles against a
+temporary Sled directory. Dropping the final `sled::Db` handle can race the
+background flusher's filesystem-lock release, so the harness retries only the
+specific `could not acquire lock` error for at most two seconds. Every other
+open error remains an immediate failure. This keeps the unmutated mutation
+baseline deterministic while still proving recovery from the same durable
+directory after the simulated crash boundary.
+
 ## Allowed Survivors
 
 No allowed survivors.
