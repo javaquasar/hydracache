@@ -904,9 +904,16 @@ authoritative membership observation. Immediately after `SIGCONT`, a daemon or
 majority peer may briefly expose a bootstrap overview with `epoch=0` while its
 committed view is being materialized. That sample remains in the diagnostic
 timeline but is not appended to the monotonic authoritative history. A
-membership-shape change in `/admin/status` is not sufficient on its own: the
-process proof waits for `quorum_ok`, a leader, the expected member/voter shape,
-and a non-zero matching overview epoch before recording the post-commit sample.
+membership-shape change in `/admin/status` is not sufficient on its own. While
+the former leader is suspended, draining the third voter commits a two-voter
+set containing the replacement and that suspended process; the live voter then
+necessarily loses quorum and its leader view. The pre-resume checkpoint therefore
+requires the expected member/voter shape and exact projected member set, but
+deliberately allows the authority-fenced `epoch=0` overview. That snapshot is
+kept only in diagnostic evidence and is not appended to the monotonic
+authoritative history. After `SIGCONT`, quorum, leader/term agreement, and the
+matching non-zero overview are required before the resumed sample is accepted
+as authoritative.
 A current-term vote response or arbitrary peer traffic is also insufficient to
 renew metadata authority. A follower requires a successfully stepped `Append`,
 `Heartbeat`, or `Snapshot` from the Raft runtime's current leader. The leader

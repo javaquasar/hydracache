@@ -309,23 +309,23 @@ fn run_resumed_demoted_process() -> TestResult {
     let accepted = cluster.drain(drain_index)?;
     assert_eq!(accepted["outcome"], "accepted");
     let (committed_while_paused, committed_membership) = cluster.wait_for(
-        "authoritative membership change committed while former leader is suspended".to_owned(),
+        "committed membership projected while former leader is suspended".to_owned(),
         |cluster| {
             let status = cluster.admin_status(replacement_index).ok()?;
-            if status.members != 2
-                || status.voters != 2
-                || !status.quorum_ok
-                || status.leader.is_none()
-            {
+            if status.members != 2 || status.voters != 2 {
                 return None;
             }
             let membership = MembershipObservation::from_cluster_overview(
                 &cluster.cluster_overview(replacement_index).ok()?,
             );
-            (membership.epoch > 0
-                && membership.members.len() == 2
-                && !membership.members.contains(&drained_node_id))
-            .then_some((status, membership))
+            // Committing the drain leaves exactly the replacement and the
+            // suspended former leader as voters. The live process therefore
+            // loses quorum immediately after the commit and cannot advertise
+            // a leader or non-zero authoritative epoch until SIGCONT. Preserve
+            // this exact projection as diagnostics only; quorum/leader
+            // authority is required again after resume below.
+            (membership.members.len() == 2 && !membership.members.contains(&drained_node_id))
+                .then_some((status, membership))
         },
     )?;
     evidence.record_admin(
@@ -338,7 +338,7 @@ fn run_resumed_demoted_process() -> TestResult {
         !committed_membership.members.contains(&drained_node_id),
         "committed membership still contained drained node {drained_node_id}: {committed_membership:?}"
     );
-    evidence.record_authoritative_membership(committed_membership);
+    evidence.overview_samples.push(committed_membership);
 
     cluster.resume(old_leader_index)?;
     let deadline = Instant::now() + Duration::from_secs(5);
