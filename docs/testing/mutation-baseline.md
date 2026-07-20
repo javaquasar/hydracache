@@ -40,6 +40,10 @@ prevents a malformed implementation or mutation (for example, treating
 The focused tests still prove all three semantics independently: immediate
 failure, block-then-continue, and block-then-fail. They also assert that only the
 armed storage operation is affected and that in-flight counters return to zero.
+The wait loop makes one decision at its deadline boundary: every wake-up returns
+to the loop head, which either observes an explicit release or performs timeout
+cleanup. There is intentionally no second `timed_out && !released` predicate;
+that redundant predicate produced semantically equivalent mutation survivors.
 
 ## Allowed Survivors
 

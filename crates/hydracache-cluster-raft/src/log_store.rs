@@ -224,19 +224,14 @@ impl RaftStorageFaultController {
                     "timed out waiting to release injected storage fault during {operation}"
                 )));
             }
-            let (next, wait) = changed
+            let (next, _) = changed
                 .wait_timeout(state, remaining)
                 .expect("raft storage fault state poisoned while blocked");
             state = next;
-            if wait.timed_out() && !state.released {
-                state.active = false;
-                state.mode = None;
-                state.observation.in_flight = 0;
-                changed.notify_all();
-                return Err(RaftStoreError::new(format!(
-                    "timed out waiting to release injected storage fault during {operation}"
-                )));
-            }
+            // The deadline is evaluated at the top of the loop. A notification,
+            // spurious wake-up, and an elapsed wait all take the same path, so
+            // there is no second boolean condition whose mutation could change
+            // the release contract.
         }
 
         state.active = false;
