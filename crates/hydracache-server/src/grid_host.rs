@@ -1217,6 +1217,7 @@ struct TestRaftOutboundFaultRule {
 enum TestRaftOutboundFaultAction {
     Drop,
     Delay { millis: u64 },
+    SnapshotDelay { millis: u64 },
 }
 
 #[derive(Debug, Clone)]
@@ -1276,11 +1277,18 @@ impl TestRaftOutboundFaultController {
         Ok(document)
     }
 
-    async fn apply(&self, to: &ClusterNodeId) -> CacheResult<()> {
+    async fn apply(&self, to: &ClusterNodeId, is_snapshot: bool) -> CacheResult<()> {
         let document = self.load_document()?;
         let Some(rule) = document.rules.iter().find(|rule| rule.to == to.as_str()) else {
             return Ok(());
         };
+        if matches!(
+            rule.action,
+            TestRaftOutboundFaultAction::SnapshotDelay { .. }
+        ) && !is_snapshot
+        {
+            return Ok(());
+        }
         let hit = (document.generation, rule.to.clone());
         if self
             .logged_hits
@@ -1298,7 +1306,8 @@ impl TestRaftOutboundFaultController {
                 "test raft outbound fault generation {} dropped message {} -> {}",
                 document.generation, rule.from, rule.to
             ))),
-            TestRaftOutboundFaultAction::Delay { millis } => {
+            TestRaftOutboundFaultAction::Delay { millis }
+            | TestRaftOutboundFaultAction::SnapshotDelay { millis } => {
                 let expected_generation = document.generation;
                 let expected_rule = rule.clone();
                 tokio::time::sleep(Duration::from_millis(millis)).await;
@@ -1341,7 +1350,9 @@ fn validate_test_raft_outbound_fault_document(
                 rule.from, rule.to
             )));
         }
-        if let TestRaftOutboundFaultAction::Delay { millis } = rule.action {
+        if let TestRaftOutboundFaultAction::Delay { millis }
+        | TestRaftOutboundFaultAction::SnapshotDelay { millis } = rule.action
+        {
             if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
                 return Err(CacheError::Backend(format!(
                     "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} delay must be in 1..={MAX_TEST_RAFT_OUTBOUND_DELAY_MS}ms, got {millis}"
@@ -1529,7 +1540,7 @@ impl HttpRaftMessageSink {
         Ok(headers)
     }
 
-    async fn send_http(&self, message: RaftWireMessage) -> CacheResult<()> {
+    async fn send_http(&self, message: RaftWireMessage, is_snapshot: bool) -> CacheResult<()> {
         let peer = self
             .peers
             .read()
@@ -1543,7 +1554,7 @@ impl HttpRaftMessageSink {
                 ))
             })?;
         if let Some(faults) = &self.test_outbound_faults {
-            faults.apply(&peer.node_id).await?;
+            faults.apply(&peer.node_id, is_snapshot).await?;
         }
         let request = ClusterOpaqueMessage::new(
             self.node_id_for(message.from),
@@ -1595,11 +1606,12 @@ impl RaftMessageSink for HttpRaftMessageSink {
         if message.to == self.local_raft_node_id {
             return Ok(());
         }
-        let snapshot_peer = if self.snapshot_feedback.is_some() && message.is_snapshot()? {
-            Some(message.to)
+        let is_snapshot = if self.snapshot_feedback.is_some() {
+            message.is_snapshot()?
         } else {
-            None
+            false
         };
+        let snapshot_peer = if is_snapshot { Some(message.to) } else { None };
         if let (Some(peer_id), Some(feedback)) = (snapshot_peer, &self.snapshot_feedback) {
             let expected_term = message.term;
             let reservation = feedback.try_reserve(peer_id)?;
@@ -1608,13 +1620,13 @@ impl RaftMessageSink for HttpRaftMessageSink {
                 reason = wait_for_snapshot_authority_loss(feedback.clone(), expected_term) => {
                     Err(CacheError::Backend(reason))
                 }
-                result = self.send_http(message) => result,
+                result = self.send_http(message, true) => result,
             };
             let delivered = result.is_ok();
             reservation.finish(delivered);
             return result;
         }
-        self.send_http(message).await
+        self.send_http(message, false).await
     }
 }
 
@@ -2714,7 +2726,10 @@ mod tests {
         )
         .unwrap();
         fs::remove_file(missing_control_file).unwrap();
-        assert!(missing.apply(&ClusterNodeId::from("node-b")).await.is_err());
+        assert!(missing
+            .apply(&ClusterNodeId::from("node-b"), false)
+            .await
+            .is_err());
 
         let malformed_storage = FaultTestDir::new("malformed");
         let malformed_control_file = malformed_storage.control_file();
@@ -2726,7 +2741,7 @@ mod tests {
         .unwrap();
         fs::write(malformed_control_file, b"{not-json").unwrap();
         assert!(malformed
-            .apply(&ClusterNodeId::from("node-b"))
+            .apply(&ClusterNodeId::from("node-b"), false)
             .await
             .is_err());
     }
@@ -2749,11 +2764,11 @@ mod tests {
         )
         .unwrap();
         assert!(controller
-            .apply(&ClusterNodeId::from("node-b-suffix"))
+            .apply(&ClusterNodeId::from("node-b-suffix"), false)
             .await
             .is_ok());
         assert!(controller
-            .apply(&ClusterNodeId::from("node-b"))
+            .apply(&ClusterNodeId::from("node-b"), false)
             .await
             .is_err());
 
@@ -2766,13 +2781,43 @@ mod tests {
             )],
         );
         assert!(controller
-            .apply(&ClusterNodeId::from("node-c"))
+            .apply(&ClusterNodeId::from("node-c"), false)
             .await
             .is_ok());
         assert!(controller
-            .apply(&ClusterNodeId::from("node-c-suffix"))
+            .apply(&ClusterNodeId::from("node-c-suffix"), false)
             .await
             .is_ok());
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn snapshot_scoped_delay_is_inert_for_non_snapshot_traffic() {
+        let storage = FaultTestDir::new("snapshot-delay");
+        let control_file = storage.control_file();
+        write_outbound_fault_document(
+            &control_file,
+            3,
+            vec![outbound_fault_rule(
+                "node-b",
+                TestRaftOutboundFaultAction::SnapshotDelay { millis: 100 },
+            )],
+        );
+        let controller =
+            TestRaftOutboundFaultController::new(control_file, &ClusterNodeId::from("node-a"))
+                .unwrap();
+
+        controller
+            .apply(&ClusterNodeId::from("node-b"), false)
+            .await
+            .unwrap();
+        let delayed =
+            tokio::spawn(
+                async move { controller.apply(&ClusterNodeId::from("node-b"), true).await },
+            );
+        tokio::task::yield_now().await;
+        assert!(!delayed.is_finished());
+        tokio::time::advance(Duration::from_millis(100)).await;
+        delayed.await.unwrap().unwrap();
     }
 
     #[tokio::test(start_paused = true)]
@@ -2793,8 +2838,11 @@ mod tests {
         )
         .unwrap();
 
-        let delayed =
-            tokio::spawn(async move { controller.apply(&ClusterNodeId::from("node-b")).await });
+        let delayed = tokio::spawn(async move {
+            controller
+                .apply(&ClusterNodeId::from("node-b"), false)
+                .await
+        });
         tokio::task::yield_now().await;
         write_outbound_fault_document(&control_file, 8, Vec::new());
         tokio::time::advance(Duration::from_millis(100)).await;

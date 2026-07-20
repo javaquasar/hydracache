@@ -22,7 +22,8 @@ const SEED: u64 = 0x0D66_0012;
 const PORTABLE_ARTIFACT: &str = "snapshot-resource-budget-portable.json";
 const RECEIVER_KILL_ARTIFACT: &str = "snapshot-resource-budget-receiver-kill-linux.json";
 const SLOW_RECEIVER_ARTIFACT: &str = "snapshot-resource-budget-slow-receiver-linux.json";
-const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 30_000;
+const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 5_000;
+const SNAPSHOT_SENDER_ACTIVATION_DELAY_MS: u64 = 500;
 
 #[cfg(target_os = "linux")]
 static SNAPSHOT_RESOURCE_PROOF_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
@@ -362,18 +363,26 @@ struct PreparedSnapshotTransfer {
 
 #[cfg(target_os = "linux")]
 fn run_receiver_kill_resource_proof() -> TestResult {
-    let mut cluster =
-        DaemonCluster::start_bootstrap_with_raft_compaction(3, "w12-snapshot-receiver-kill")?;
-    cluster.wait_for_shape(3, 3)?;
+    let mut cluster = DaemonCluster::start_bootstrap_with_raft_compaction_and_outbound_faults(
+        3,
+        "w12-snapshot-receiver-kill",
+    )?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     let all_indices = (0..cluster.node_ids().len()).collect::<Vec<_>>();
     let baseline_totals = snapshot_totals(&cluster, &all_indices)?;
     let mut samples = vec![linux_snapshot_sample(&mut cluster, baseline_totals)?];
     let prepared = prepare_delayed_snapshot_receiver(&mut cluster)?;
+    cluster
+        .install_snapshot_raft_delay(prepared.lagger_index, SNAPSHOT_SENDER_ACTIVATION_DELAY_MS)?;
     cluster.restart_with_snapshot_handler_delay(
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let in_flight = wait_for_snapshot_in_flight(&mut cluster, prepared.before_snapshot)?;
+    let in_flight = wait_for_snapshot_in_flight(
+        &mut cluster,
+        &prepared.active_indices,
+        prepared.before_snapshot,
+    )?;
     assert_eq!(
         in_flight.total.snapshot_sends_in_flight, 1,
         "one lagging peer must reserve exactly one bounded snapshot sender: {in_flight:?}"
@@ -393,6 +402,7 @@ fn run_receiver_kill_resource_proof() -> TestResult {
     )?;
     samples.push(linux_snapshot_sample(&mut cluster, released)?);
 
+    cluster.clear_raft_outbound_faults()?;
     cluster.restart_with_snapshot_handler_delay(prepared.lagger_index, None)?;
     wait_for_snapshot_install_and_convergence(
         &mut cluster,
@@ -423,18 +433,26 @@ fn run_receiver_kill_resource_proof() -> TestResult {
 
 #[cfg(target_os = "linux")]
 fn run_slow_receiver_resource_proof() -> TestResult {
-    let mut cluster =
-        DaemonCluster::start_bootstrap_with_raft_compaction(3, "w12-snapshot-slow-receiver")?;
-    cluster.wait_for_shape(3, 3)?;
+    let mut cluster = DaemonCluster::start_bootstrap_with_raft_compaction_and_outbound_faults(
+        3,
+        "w12-snapshot-slow-receiver",
+    )?;
+    cluster.wait_for_responsive_shape(3, 3, 3)?;
     let all_indices = (0..cluster.node_ids().len()).collect::<Vec<_>>();
     let baseline_totals = snapshot_totals(&cluster, &all_indices)?;
     let mut samples = vec![linux_snapshot_sample(&mut cluster, baseline_totals)?];
     let prepared = prepare_delayed_snapshot_receiver(&mut cluster)?;
+    cluster
+        .install_snapshot_raft_delay(prepared.lagger_index, SNAPSHOT_SENDER_ACTIVATION_DELAY_MS)?;
     cluster.restart_with_snapshot_handler_delay(
         prepared.lagger_index,
         Some(SNAPSHOT_HANDLER_TEST_DELAY_MS),
     )?;
-    let first_in_flight = wait_for_snapshot_in_flight(&mut cluster, prepared.before_snapshot)?;
+    let first_in_flight = wait_for_snapshot_in_flight(
+        &mut cluster,
+        &prepared.active_indices,
+        prepared.before_snapshot,
+    )?;
     assert_eq!(first_in_flight.total.snapshot_sends_in_flight, 1);
     samples.push(linux_snapshot_sample(&mut cluster, first_in_flight)?);
 
@@ -442,6 +460,7 @@ fn run_slow_receiver_resource_proof() -> TestResult {
     for failure_delta in 1..=3 {
         let observed = wait_for_failure_with_sender_bound(
             &mut cluster,
+            &prepared.active_indices,
             failures_before.saturating_add(failure_delta),
         )?;
         samples.push(linux_snapshot_sample(&mut cluster, observed)?);
@@ -458,6 +477,7 @@ fn run_slow_receiver_resource_proof() -> TestResult {
         },
     )?;
     samples.push(linux_snapshot_sample(&mut cluster, released)?);
+    cluster.clear_raft_outbound_faults()?;
     cluster.restart_with_snapshot_handler_delay(prepared.lagger_index, None)?;
     wait_for_snapshot_install_and_convergence(
         &mut cluster,
@@ -578,7 +598,7 @@ fn assert_snapshot_resources_quiescent(artifact: &ResourceBudgetArtifact) -> Tes
 fn prepare_delayed_snapshot_receiver(
     cluster: &mut DaemonCluster,
 ) -> TestResult<PreparedSnapshotTransfer> {
-    let statuses = cluster.wait_for_shape(3, 3)?;
+    let statuses = cluster.wait_for_responsive_shape(3, 3, 3)?;
     let initial_leader_index = leader_index(cluster, &statuses)?;
     let lagger_index = (0..cluster.node_ids().len())
         .find(|index| *index != initial_leader_index)
@@ -646,9 +666,11 @@ fn prepare_delayed_snapshot_receiver(
 #[cfg(target_os = "linux")]
 fn wait_for_snapshot_in_flight(
     cluster: &mut DaemonCluster,
+    sender_indices: &[usize],
     before: SnapshotSenderSetObservation,
 ) -> TestResult<SnapshotSenderSetObservation> {
     let mut last_observation = before;
+    let mut last_leader_observation = None;
     let result = cluster.wait_for(
         "real snapshot sender reservation becomes in-flight".to_owned(),
         |cluster| {
@@ -656,17 +678,19 @@ fn wait_for_snapshot_in_flight(
             // several sequential admin requests and can miss the intentionally
             // short sender reservation even though the monotonic high-water
             // counter proves that it existed.
-            let statuses = cluster.statuses();
+            let statuses = sender_indices
+                .iter()
+                .filter_map(|index| cluster.admin_status(*index).ok())
+                .collect::<Vec<_>>();
             let leader = leader_index(cluster, &statuses).ok()?;
             let leader_snapshot = snapshot_observation(cluster, leader).ok()?;
-            if leader_snapshot.snapshot_send_attempts <= before.total.snapshot_send_attempts
-                || leader_snapshot.snapshot_sends_in_flight == 0
+            last_leader_observation = Some((leader, leader_snapshot));
+            if leader_snapshot.snapshot_sends_in_flight == 0
                 || leader_snapshot.snapshot_sender_tasks_current == 0
             {
                 return None;
             }
-            let indices = cluster.running_indices();
-            let totals = snapshot_totals(cluster, &indices).ok()?;
+            let totals = snapshot_totals(cluster, sender_indices).ok()?;
             last_observation = totals;
             (totals.total.snapshot_send_attempts > before.total.snapshot_send_attempts
                 && totals.total.snapshot_sends_in_flight > 0
@@ -676,7 +700,7 @@ fn wait_for_snapshot_in_flight(
     );
     result.map_err(|error| {
         format!(
-            "{error}; before_snapshot={before:?}; last_snapshot_observation={last_observation:?}"
+            "{error}; before_snapshot={before:?}; last_leader_observation={last_leader_observation:?}; last_snapshot_observation={last_observation:?}"
         )
         .into()
     })
@@ -685,14 +709,14 @@ fn wait_for_snapshot_in_flight(
 #[cfg(target_os = "linux")]
 fn wait_for_failure_with_sender_bound(
     cluster: &mut DaemonCluster,
+    sender_indices: &[usize],
     minimum_failures: u64,
 ) -> TestResult<SnapshotSenderSetObservation> {
     let mut bound_violation = None;
     let observed = cluster.wait_for(
         format!("snapshot sender records failure {minimum_failures} under backpressure"),
         |cluster| {
-            let indices = cluster.running_indices();
-            let totals = snapshot_totals(cluster, &indices).ok()?;
+            let totals = snapshot_totals(cluster, sender_indices).ok()?;
             if totals.max_in_flight_per_daemon > 1
                 || totals.total.snapshot_sends_in_flight > 2
                 || totals.total.snapshot_sender_tasks_current > 2
@@ -705,8 +729,7 @@ fn wait_for_failure_with_sender_bound(
         },
     )?;
     if let Some(violation) = bound_violation {
-        let per_daemon = cluster
-            .running_indices()
+        let per_daemon = sender_indices
             .iter()
             .map(|index| (*index, snapshot_observation(cluster, *index)))
             .collect::<Vec<_>>();

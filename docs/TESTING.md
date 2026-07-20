@@ -904,6 +904,7 @@ behavior, and Kubernetes reconciliation at the same time.
 | --- | --- | --- | --- |
 | `hydracache-server --all-targets` | Every server library, binary, unit-test, and integration-test target compiles against the current private API. | Rust, MSRV, coverage, and dynamic-canary lanes all depend on this shared compile surface; a stale test-only call must fail immediately instead of being hidden by a narrower test selection. | Compiling only the production binary, or leaving a unit assertion coupled to a removed private helper. |
 | W10 real-daemon scheduling | Real `SIGSTOP`/`SIGCONT`, leader replacement, a committed drain, loss of quorum, and convergence after the former leader resumes. | An OS-level suspension tests scheduler and process behavior that an in-process message filter cannot reproduce. | A reachable HTTP endpoint, a two-member projection by itself, or an `epoch=0` bootstrap overview. |
+| W1/W12 snapshot process proofs | Real Sled compaction, HTTP snapshot delivery, receiver loss/slowdown, sender request/task gauges, and Linux process resources. | W1 proves catch-up and retry semantics; W12 retains event checkpoints while the same real sender work is live and then proves quiescence. | A model-only send, a monotonic HWM without a live-current checkpoint, or polling the unavailable receiver as if it were a sender. |
 | W5/W11 operator-kind | Real controller reconciliation, Chaos Mesh `IOChaos`, NetworkPolicy isolation, pod replacement, stable Raft identity, generation fencing, and retained-PVC rejoin. | These claims depend on Kubernetes controllers, CNI enforcement, storage identity, and a live operator process, so the fast deterministic lifecycle driver is necessary but insufficient. | A fake reconciler, a kind cluster without the required CNI/IOChaos capability, or artifacts produced by an old/different controller process. |
 | Release governance | Exact job/step wiring, mandatory heavy lanes, evidence commands, controller background ownership, and explicit cancellation. | The meta-gate makes the test plan falsifiable: deleting or bypassing a proof must turn CI red before release aggregation. | A raw successful `cargo test`, a skipped optional lane, or a receipt from another commit/release registry. |
 
@@ -975,12 +976,34 @@ kills the receiver; it is not an all-process-lifetimes cluster maximum.
 The two Linux W12 resource proofs are serialized inside their test binary. Each
 proof owns a three-daemon cluster and intentionally holds one snapshot HTTP
 request open, so concurrent execution would make scheduler pressure part of the
-measurement. To observe that short reservation reliably, the harness polls the
-current leader's sender gauges first and only then collects the slower
-cluster-wide checkpoint. The receiver-kill case tests that a live reservation
-is released after the receiver disappears; the slow-receiver case tests bounded
-backpressure across repeated failures. Both require current sender tasks and
-in-flight requests to return to zero before the evidence artifact is accepted.
+measurement. Before the baseline is sampled, the barrier requires three
+responsive admin APIs as well as `members=3`, `voters=3`, and quorum; membership
+shape alone is not readiness and could otherwise race a `ConnectionRefused`.
+
+After compaction the lagger process starts before its admin API becomes
+available, so activation and failure checkpoints query only the two known live
+sender indices. Polling the starting receiver would spend the observation
+window on an unavailable admin socket and is not evidence about sender
+resources. Receiver behavior is instead proved later by its snapshot-install
+counter, applied index, and three-daemon convergence. The current leader is
+polled first and only then are both senders aggregated. Attempt deltas compare
+the sender-set aggregate before and after; an individual leader counter is
+never compared with a cluster-wide baseline because leadership may move.
+
+The harness adds a 500 ms `snapshot_delay` at the outbound snapshot boundary
+before the real HTTP request, followed by a 5 s receiver-handler delay. The
+first delay exists only to make the live reservation observable; unlike the
+generic transport delay it ignores heartbeats, votes, appends, and other
+non-snapshot traffic, so the measurement does not manufacture an election.
+The scoped behavior has a paused-time unit test proving that ordinary Raft
+traffic remains undelayed. Both fault controls are inert unless the existing
+loopback daemon-process test boundary and its generation-checked control file
+are enabled. The receiver-kill case tests that a live reservation is released
+after the receiver disappears; the slow-receiver case crosses the real bounded
+HTTP timeout repeatedly and tests backpressure across three failures. Both
+clear the scoped fault before the final retry and require current sender tasks
+and in-flight requests to return to zero before the evidence artifact is
+accepted.
 
 Linux samples also contain current RSS, open FDs, and a conservative sum of the
 currently live daemons' process-lifetime `VmHWM`. The HWM sum is bounded from

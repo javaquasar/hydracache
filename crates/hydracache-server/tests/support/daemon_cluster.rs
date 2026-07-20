@@ -101,6 +101,7 @@ struct TestRaftOutboundFaultRule {
 enum TestRaftOutboundFaultAction {
     Drop,
     Delay { millis: u64 },
+    SnapshotDelay { millis: u64 },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -640,6 +641,67 @@ impl DaemonCluster {
             TestRaftOutboundFaultAction::Delay { millis },
             "delay",
         )
+    }
+
+    pub fn install_snapshot_raft_delay(
+        &mut self,
+        target_index: usize,
+        millis: u64,
+    ) -> TestResult<DaemonRaftFaultProof> {
+        if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
+            return Err(format!(
+                "raft snapshot outbound delay must be in 1..={MAX_TEST_RAFT_OUTBOUND_DELAY_MS}ms"
+            )
+            .into());
+        }
+        let target_node_id = self
+            .nodes
+            .get(target_index)
+            .ok_or("raft snapshot fault target is out of bounds")?
+            .spec
+            .node_id
+            .clone();
+        self.raft_fault_generation = self
+            .raft_fault_generation
+            .checked_add(1)
+            .ok_or("raft fault generation overflow")?;
+        let generation = self.raft_fault_generation;
+        let node_ids = self.node_ids();
+        let mut configured_rules = 0;
+        for (from_index, node) in self.nodes.iter().enumerate() {
+            let rules = if from_index == target_index {
+                Vec::new()
+            } else {
+                configured_rules += 1;
+                vec![TestRaftOutboundFaultRule {
+                    from: node_ids[from_index].clone(),
+                    to: target_node_id.clone(),
+                    action: TestRaftOutboundFaultAction::SnapshotDelay { millis },
+                }]
+            };
+            let path = node
+                .spec
+                .test_raft_outbound_fault_file
+                .as_deref()
+                .ok_or("daemon cluster was not started with raft outbound faults")?;
+            atomic_write_raft_fault_document(
+                path,
+                &TestRaftOutboundFaultDocument {
+                    schema_version: TEST_RAFT_OUTBOUND_FAULT_SCHEMA_VERSION,
+                    generation,
+                    rules,
+                },
+            )?;
+        }
+        Ok(DaemonRaftFaultProof {
+            generation,
+            action: "snapshot-delay".to_owned(),
+            target_node_id: Some(target_node_id),
+            configured_rules,
+            observed_hit: false,
+            healed: false,
+            cleared_generation: None,
+        })
     }
 
     fn install_symmetric_raft_fault(
