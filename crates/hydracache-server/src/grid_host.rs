@@ -144,7 +144,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_log_dir.display()
         ))
     })?;
-    let start_mode = resolved_start_mode(config, &raft_log_dir)?;
+    let start_mode = resolved_start_mode(config);
 
     let raft_config = match start_mode {
         ResolvedClusterStartMode::Bootstrap => RaftMetadataRuntimeConfig::multi_voter(
@@ -1069,39 +1069,11 @@ enum ResolvedClusterStartMode {
     Join,
 }
 
-fn resolved_start_mode(
-    config: &ServerConfig,
-    raft_log_dir: &Path,
-) -> CacheResult<ResolvedClusterStartMode> {
-    if !matches!(config.cluster_start, ClusterStartMode::Join) {
-        return Ok(ResolvedClusterStartMode::Bootstrap);
+fn resolved_start_mode(config: &ServerConfig) -> ResolvedClusterStartMode {
+    match config.cluster_start {
+        ClusterStartMode::Bootstrap => ResolvedClusterStartMode::Bootstrap,
+        ClusterStartMode::Join => ResolvedClusterStartMode::Join,
     }
-    if raft_log_dir_has_state(raft_log_dir)? {
-        return Ok(ResolvedClusterStartMode::Bootstrap);
-    }
-    Ok(ResolvedClusterStartMode::Join)
-}
-
-fn raft_log_dir_has_state(path: &Path) -> CacheResult<bool> {
-    if !path.exists() {
-        return Ok(false);
-    }
-    let mut entries = fs::read_dir(path).map_err(|error| {
-        CacheError::Backend(format!(
-            "failed to inspect raft log directory {}: {error}",
-            path.display()
-        ))
-    })?;
-    Ok(entries
-        .next()
-        .transpose()
-        .map_err(|error| {
-            CacheError::Backend(format!(
-                "failed to inspect raft log directory {}: {error}",
-                path.display()
-            ))
-        })?
-        .is_some())
 }
 
 fn raft_topology(
@@ -2884,32 +2856,15 @@ mod tests {
     }
 
     #[test]
-    fn resolved_start_mode_joins_only_when_configured_and_log_is_empty() {
+    fn resolved_start_mode_honors_explicit_join_with_retained_state() {
         let mut config = test_member_config("127.0.0.1:7000");
-        let dir = PathBuf::from(format!(
-            "target/test-hydracache-grid-host/start-mode-{}",
-            std::process::id()
-        ));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap();
-
         assert_eq!(
-            resolved_start_mode(&config, &dir).unwrap(),
+            resolved_start_mode(&config),
             ResolvedClusterStartMode::Bootstrap
         );
 
         config.cluster_start = ClusterStartMode::Join;
-        assert_eq!(
-            resolved_start_mode(&config, &dir).unwrap(),
-            ResolvedClusterStartMode::Join
-        );
-
-        std::fs::write(dir.join("conf-state"), b"present").unwrap();
-        assert_eq!(
-            resolved_start_mode(&config, &dir).unwrap(),
-            ResolvedClusterStartMode::Bootstrap
-        );
-        let _ = std::fs::remove_dir_all(&dir);
+        assert_eq!(resolved_start_mode(&config), ResolvedClusterStartMode::Join);
     }
 
     #[test]

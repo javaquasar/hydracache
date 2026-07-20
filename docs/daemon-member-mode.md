@@ -50,6 +50,13 @@ cohort. `join_timeout_ms` bounds an explicit late join; a joiner that cannot
 reach or be admitted by an existing cluster fails loud instead of
 self-bootstrapping.
 
+The configured mode remains authoritative across restarts. In particular, an
+operator scale-down can retain a late ordinal's PVC after that voter has been
+removed. Scaling the ordinal up again keeps `cluster_start = "join"`: the daemon
+reuses its durable identity and log, announces its new generation, and waits for
+the live cluster to re-admit it. It must not bootstrap from the retained stale
+ConfState or form a second cluster.
+
 In `0.60.0`, `tls.enabled = true` means the cluster listener terminates rustls
 with the configured cert/key, outbound raft messages use `https://` with the
 configured CA, and `[cluster_auth]` credentials are required on the raft route.
