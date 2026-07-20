@@ -20,15 +20,15 @@ use hydracache::{
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
-    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftMetadataRuntimeSnapshot,
-    RaftRuntimeRole, RaftWireMessage, SledRaftLogStore,
+    RaftLeaderAuthorityObservation, RaftMessageSink, RaftMetadataRuntime,
+    RaftMetadataRuntimeConfig, RaftMetadataRuntimeSnapshot, RaftRuntimeRole, RaftWireMessage,
+    SledRaftLogStore,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
     ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
     StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH, MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
 };
-use raft::eraftpb::MessageType;
 use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
 
@@ -1026,16 +1026,13 @@ fn raft_authority_observation_is_fresh(
     })
 }
 
-fn raft_message_confirms_leader_authority(
-    message_type: MessageType,
-    from: u64,
+fn confirmed_raft_authority_term(
+    observation: Option<RaftLeaderAuthorityObservation>,
     current_leader: Option<u64>,
-) -> bool {
-    current_leader == Some(from)
-        && matches!(
-            message_type,
-            MessageType::MsgAppend | MessageType::MsgHeartbeat | MessageType::MsgSnapshot
-        )
+) -> Option<u64> {
+    observation
+        .filter(|observation| current_leader == Some(observation.source_raft_node_id))
+        .map(|observation| observation.term)
 }
 
 #[derive(Debug, Clone)]
@@ -2550,9 +2547,8 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             term: message.term,
             payload: payload.to_vec(),
         };
-        let decoded_message = wire_message.decode()?;
-        let inbound_type = decoded_message.get_msg_type();
-        if inbound_type == MessageType::MsgSnapshot {
+        let authority_observation = wire_message.leader_authority_observation()?;
+        if authority_observation.is_some_and(|observation| observation.is_snapshot) {
             if let Some(delay) = self.test_snapshot_handler_delay {
                 // This opt-in process-test seam runs only after Axum received
                 // and decoded the real HTTP body. Holding before raft.step/ack
@@ -2560,12 +2556,11 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 tokio::time::sleep(delay).await;
             }
         }
-        let inbound_from = decoded_message.from;
-        let inbound_term = decoded_message.term;
         let outbound = self.raft.step(wire_message)?;
-        if raft_message_confirms_leader_authority(inbound_type, inbound_from, self.raft.leader_id())
+        if let Some(term) =
+            confirmed_raft_authority_term(authority_observation, self.raft.leader_id())
         {
-            self.drive_diagnostics.record_raft_inbound(inbound_term);
+            self.drive_diagnostics.record_raft_inbound(term);
         }
         send_raft_messages_with_diagnostics(
             &self.message_sink,
@@ -3484,34 +3479,20 @@ mod tests {
 
     #[test]
     fn raft_authority_is_refreshed_only_by_the_current_leader_commit_stream() {
-        for message_type in [
-            MessageType::MsgAppend,
-            MessageType::MsgHeartbeat,
-            MessageType::MsgSnapshot,
-        ] {
-            assert!(raft_message_confirms_leader_authority(
-                message_type,
-                11,
-                Some(11)
-            ));
-        }
-
-        assert!(!raft_message_confirms_leader_authority(
-            MessageType::MsgAppend,
-            12,
-            Some(11)
-        ));
-        for message_type in [
-            MessageType::MsgAppendResponse,
-            MessageType::MsgRequestVote,
-            MessageType::MsgTimeoutNow,
-        ] {
-            assert!(!raft_message_confirms_leader_authority(
-                message_type,
-                11,
-                Some(11)
-            ));
-        }
+        let observation = RaftLeaderAuthorityObservation {
+            source_raft_node_id: 11,
+            term: 7,
+            is_snapshot: false,
+        };
+        assert_eq!(
+            confirmed_raft_authority_term(Some(observation), Some(11)),
+            Some(7)
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(Some(observation), Some(12)),
+            None
+        );
+        assert_eq!(confirmed_raft_authority_term(None, Some(11)), None);
     }
 
     #[derive(Debug)]

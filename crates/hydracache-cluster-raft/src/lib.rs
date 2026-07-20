@@ -404,6 +404,17 @@ pub struct RaftWireMessage {
     pub payload: Vec<u8>,
 }
 
+/// Leader-originated wire traffic that can renew a follower's metadata-authority fence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RaftLeaderAuthorityObservation {
+    /// Raft node id that sent the leader commit-stream message.
+    pub source_raft_node_id: u64,
+    /// Term carried by the leader commit-stream message.
+    pub term: u64,
+    /// Whether this observation carries a Raft snapshot.
+    pub is_snapshot: bool,
+}
+
 impl RaftWireMessage {
     /// Serialize a raft-rs message for transport.
     pub fn encode(message: &RaftMessage) -> CacheResult<Self> {
@@ -436,6 +447,27 @@ impl RaftWireMessage {
     /// message enum.
     pub fn is_snapshot(&self) -> CacheResult<bool> {
         Ok(self.decode()?.get_msg_type() == MessageType::MsgSnapshot)
+    }
+
+    /// Inspect whether this envelope belongs to the leader commit stream.
+    ///
+    /// Append, heartbeat, and snapshot messages carry the leader's commit
+    /// watermark. Responses, votes, and timeout messages do not establish that
+    /// a follower has observed the current leader's committed metadata.
+    pub fn leader_authority_observation(
+        &self,
+    ) -> CacheResult<Option<RaftLeaderAuthorityObservation>> {
+        let message = self.decode()?;
+        let message_type = message.get_msg_type();
+        Ok(matches!(
+            message_type,
+            MessageType::MsgAppend | MessageType::MsgHeartbeat | MessageType::MsgSnapshot
+        )
+        .then_some(RaftLeaderAuthorityObservation {
+            source_raft_node_id: message.from,
+            term: message.term,
+            is_snapshot: message_type == MessageType::MsgSnapshot,
+        }))
     }
 }
 
@@ -2437,6 +2469,47 @@ mod tests {
                     .to_string()
                     .contains("must carry exactly one request-context entry"),
                 "unexpected rejection for {message_type:?}: {error}"
+            );
+        }
+    }
+
+    #[test]
+    fn wire_authority_observation_accepts_only_the_leader_commit_stream() {
+        for (message_type, is_snapshot) in [
+            (MessageType::MsgAppend, false),
+            (MessageType::MsgHeartbeat, false),
+            (MessageType::MsgSnapshot, true),
+        ] {
+            let mut message = RaftMessage {
+                from: 11,
+                to: 12,
+                term: 7,
+                ..RaftMessage::default()
+            };
+            message.set_msg_type(message_type);
+            let observation = RaftWireMessage::encode(&message)
+                .unwrap()
+                .leader_authority_observation()
+                .unwrap()
+                .expect("leader commit-stream message should be observable");
+            assert_eq!(observation.source_raft_node_id, 11);
+            assert_eq!(observation.term, 7);
+            assert_eq!(observation.is_snapshot, is_snapshot);
+        }
+
+        for message_type in [
+            MessageType::MsgAppendResponse,
+            MessageType::MsgRequestVote,
+            MessageType::MsgTimeoutNow,
+        ] {
+            let mut message = RaftMessage::default();
+            message.set_msg_type(message_type);
+            assert_eq!(
+                RaftWireMessage::encode(&message)
+                    .unwrap()
+                    .leader_authority_observation()
+                    .unwrap(),
+                None
             );
         }
     }
