@@ -28,6 +28,7 @@ use hydracache_cluster_transport_axum::{
     ClusterMessageHandler, ClusterOpaqueMessage, ClusterRoute, ClusterRouteAuth,
     StaticNodeIdentityProvider, DEFAULT_RAFT_APPEND_PATH, MAX_CLUSTER_MESSAGE_HTTP_BODY_BYTES,
 };
+use raft::eraftpb::MessageType;
 use serde::{Deserialize, Serialize};
 use tokio::sync::watch;
 
@@ -1023,6 +1024,18 @@ fn raft_authority_observation_is_fresh(
         observed_term >= current_term
             && now.saturating_duration_since(observed_at) <= GRID_RAFT_AUTHORITY_FRESHNESS
     })
+}
+
+fn raft_message_confirms_leader_authority(
+    message_type: MessageType,
+    from: u64,
+    current_leader: Option<u64>,
+) -> bool {
+    current_leader == Some(from)
+        && matches!(
+            message_type,
+            MessageType::MsgAppend | MessageType::MsgHeartbeat | MessageType::MsgSnapshot
+        )
 }
 
 #[derive(Debug, Clone)]
@@ -2537,7 +2550,9 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             term: message.term,
             payload: payload.to_vec(),
         };
-        if wire_message.is_snapshot()? {
+        let decoded_message = wire_message.decode()?;
+        let inbound_type = decoded_message.get_msg_type();
+        if inbound_type == MessageType::MsgSnapshot {
             if let Some(delay) = self.test_snapshot_handler_delay {
                 // This opt-in process-test seam runs only after Axum received
                 // and decoded the real HTTP body. Holding before raft.step/ack
@@ -2545,9 +2560,13 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 tokio::time::sleep(delay).await;
             }
         }
-        let inbound_term = wire_message.term;
+        let inbound_from = decoded_message.from;
+        let inbound_term = decoded_message.term;
         let outbound = self.raft.step(wire_message)?;
-        self.drive_diagnostics.record_raft_inbound(inbound_term);
+        if raft_message_confirms_leader_authority(inbound_type, inbound_from, self.raft.leader_id())
+        {
+            self.drive_diagnostics.record_raft_inbound(inbound_term);
+        }
         send_raft_messages_with_diagnostics(
             &self.message_sink,
             outbound,
@@ -3461,6 +3480,38 @@ mod tests {
             now,
             7
         ));
+    }
+
+    #[test]
+    fn raft_authority_is_refreshed_only_by_the_current_leader_commit_stream() {
+        for message_type in [
+            MessageType::MsgAppend,
+            MessageType::MsgHeartbeat,
+            MessageType::MsgSnapshot,
+        ] {
+            assert!(raft_message_confirms_leader_authority(
+                message_type,
+                11,
+                Some(11)
+            ));
+        }
+
+        assert!(!raft_message_confirms_leader_authority(
+            MessageType::MsgAppend,
+            12,
+            Some(11)
+        ));
+        for message_type in [
+            MessageType::MsgAppendResponse,
+            MessageType::MsgRequestVote,
+            MessageType::MsgTimeoutNow,
+        ] {
+            assert!(!raft_message_confirms_leader_authority(
+                message_type,
+                11,
+                Some(11)
+            ));
+        }
     }
 
     #[derive(Debug)]
