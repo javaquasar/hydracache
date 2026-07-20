@@ -160,3 +160,21 @@ two-pods-down falsifiability check. With a kind cluster that has the
 HydraCacheCluster CRD and operator installed, the E2E applies a cluster, scales
 it, patches a rolling upgrade, rotates TLS material, waits for backup status, and
 asserts quorum plus one-pod-at-a-time invariants at each transition.
+
+The 0.66 release proof is stricter than this opt-in smoke path. W5 requires a
+real Chaos Mesh `IOChaos` capability for slow-disk reconciliation, and W11
+requires an enforcing CNI for network partition plus retained-PVC rejoin. These
+dependencies are intentional: the deterministic driver proves reconciliation
+decisions, while kind proves that those decisions survive real Kubernetes
+resource ownership, pod generations, network isolation, and storage identity.
+Neither layer substitutes for the other.
+
+Release CI builds the current operator in a finite preparation step and then
+runs only that binary as a supervised background step. The process writes its
+PID before replacing the step shell with `exec`; the proof verifies the exact
+`/proc/<pid>/exe` inode and a run-unique runtime nonce before accepting any
+controller logs. This design prevents a detached, prematurely reaped, stale, or
+wrong operator process from satisfying W11. CI cancels the supervised process
+only after the receipt-bound logs, resources, events, and capability markers
+have been captured. See [Testing and Coverage](TESTING.md#066-proof-design-and-interpretation)
+for the full oracle and non-evidence rules.

@@ -894,6 +894,39 @@ cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.workspace
 cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
 ```
 
+#### 0.66 proof design and interpretation
+
+The 0.66 gates deliberately use different test boundaries because no single
+harness can prove compile integrity, Raft authority, operating-system process
+behavior, and Kubernetes reconciliation at the same time.
+
+| Layer | What the test exercises | Why this oracle is used | What is not equivalent evidence |
+| --- | --- | --- | --- |
+| `hydracache-server --all-targets` | Every server library, binary, unit-test, and integration-test target compiles against the current private API. | Rust, MSRV, coverage, and dynamic-canary lanes all depend on this shared compile surface; a stale test-only call must fail immediately instead of being hidden by a narrower test selection. | Compiling only the production binary, or leaving a unit assertion coupled to a removed private helper. |
+| W10 real-daemon scheduling | Real `SIGSTOP`/`SIGCONT`, leader replacement, a committed drain, loss of quorum, and convergence after the former leader resumes. | An OS-level suspension tests scheduler and process behavior that an in-process message filter cannot reproduce. | A reachable HTTP endpoint, a two-member projection by itself, or an `epoch=0` bootstrap overview. |
+| W5/W11 operator-kind | Real controller reconciliation, Chaos Mesh `IOChaos`, NetworkPolicy isolation, pod replacement, stable Raft identity, generation fencing, and retained-PVC rejoin. | These claims depend on Kubernetes controllers, CNI enforcement, storage identity, and a live operator process, so the fast deterministic lifecycle driver is necessary but insufficient. | A fake reconciler, a kind cluster without the required CNI/IOChaos capability, or artifacts produced by an old/different controller process. |
+| Release governance | Exact job/step wiring, mandatory heavy lanes, evidence commands, controller background ownership, and explicit cancellation. | The meta-gate makes the test plan falsifiable: deleting or bypassing a proof must turn CI red before release aggregation. | A raw successful `cargo test`, a skipped optional lane, or a receipt from another commit/release registry. |
+
+The server unit named
+`topology_and_identity_paths_fail_loud_on_invalid_inputs` covers the stable
+topology and create-once identity error contracts only. It does not inspect a
+private "Raft log directory has state" helper. Directory existence and file
+layout are storage implementation details and can give false confidence about
+recoverability. Durable Raft state is instead proved through the public
+behavioral boundaries in `compaction_seam`, `rejoin_after_compaction_process`,
+`rolling_upgrade_process`, and the daemon restart proofs. This keeps the unit
+test narrow while making persistence failures observable where users depend on
+them: compaction, reopen, replay, and cluster convergence.
+
+The W10 evidence keeps two histories. The diagnostic timeline retains every
+parseable sample, including the expected quorumless two-voter projection and
+temporary `epoch=0` views, so a failure can be reconstructed without censoring
+intermediate state. The monotonic authoritative history accepts only samples
+with quorum, a leader, leader/term agreement, the expected member set, and a
+matching non-zero committed epoch. The split avoids both failure modes of a
+single history: treating a safe authority fence as a membership regression, or
+weakening the oracle until a reachable but stale process is called healthy.
+
 The daemon receipt is a Linux release lane because W10 uses real
 `SIGSTOP`/`SIGCONT`, W1/W12 exercise real snapshot HTTP delivery, and W12
 requires `/proc` RSS/VmHWM/FD samples. Ship mode also requires full Git history and
@@ -993,6 +1026,17 @@ to a wrapper shell. A following step waits for both the live PID and the
 nonce-bound runtime marker. The controller is explicitly canceled only after
 the W11 receipt has been captured. A detached `nohup` child, a stale PID, or a
 zombie process is not accepted as controller evidence.
+
+Preparation is a separate foreground step so checkout, CRD installation,
+authentication setup, and compilation fail as ordinary finite operations. The
+background step then has one responsibility: own the long-lived controller for
+the proof window. Writing `BASHPID` before `exec` removes the shell/child PID
+ambiguity, while the test's `/proc/<pid>/exe` inode check and runtime nonce prove
+both binary identity and freshness. Explicit cancellation after evidence
+capture prevents the controller from disappearing between the functional
+assertions and the final receipt. If setup, liveness, identity, nonce, or
+artifact capture fails, the gate fails closed; runner cleanup is not treated as
+a successful receipt.
 
 W5 and W11 distinguish logical membership from a physical pod generation. A
 replacement keeps the stable Raft member ID, but announces a new
