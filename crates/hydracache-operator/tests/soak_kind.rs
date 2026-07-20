@@ -2032,13 +2032,20 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
         .await;
 
         kind.delete_slow_disk(target_ordinal).await;
+        // An EIO fault may leave the embedded Sled process unable to resume
+        // writes safely in place. The supported operational recovery is to
+        // remove the fault, replace that exact pod, and prove the durable Raft
+        // state catches up from the healthy majority.
+        kind.delete_pod_with_uid(target_ordinal, &receipt.target.pod_uid)
+            .await;
         kind.wait_ready(4, "w5-iochaos-recovered").await;
-        assert_eq!(
-            kind.pod_uid(target_ordinal)
-                .await
-                .expect("healed IOChaos target must remain observable"),
-            receipt.target.pod_uid,
-            "IOChaos target pod was replaced instead of recovering in place"
+        let recovered_uid = kind
+            .pod_uid(target_ordinal)
+            .await
+            .expect("restarted IOChaos target must become observable");
+        assert_ne!(
+            recovered_uid, receipt.target.pod_uid,
+            "IOChaos recovery must observe a newly created target pod"
         );
         let recovered = kind
             .wait_raft_nodes(
@@ -2077,9 +2084,19 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
     .catch_unwind()
     .await;
 
-    let heal_cleanup = AssertUnwindSafe(kind.delete_slow_disk(target_ordinal))
-        .catch_unwind()
-        .await;
+    let proof_failed = proof.is_err();
+    let heal_cleanup = AssertUnwindSafe(async {
+        kind.delete_slow_disk(target_ordinal).await;
+        // A failed proof must not leak an EIO-poisoned pod into the next
+        // serialized Kind test.
+        if proof_failed {
+            if let Ok(uid) = kind.pod_uid(target_ordinal).await {
+                kind.delete_pod_with_uid(target_ordinal, &uid).await;
+            }
+        }
+    })
+    .catch_unwind()
+    .await;
     let scale_cleanup = AssertUnwindSafe(async {
         kind.apply_cluster(soak_kind_spec(3)).await;
         kind.wait_ready(3, "w5-final-cleanup").await;

@@ -129,6 +129,15 @@ intentionally operate on the same release cluster and named Chaos objects. This
 prevents one proof from replacing pods, network policies, or IOChaos state while
 another proof is collecting its commit-bound receipt.
 
+W5 treats an injected Raft-log `EIO` as process-fatal for recovery purposes.
+After proving that the targeted follower cannot persist the scale-up while the
+healthy majority commits it, the harness removes IOChaos, deletes that exact pod
+by UID, and requires the StatefulSet replacement to recover the durable log and
+join the committed membership. The receipt therefore proves operational
+restart-and-catch-up, not unsupported in-process recovery of a Sled instance
+after filesystem I/O errors. Failed proofs perform the same targeted cleanup so
+the next serialized Kind test cannot inherit an EIO-poisoned pod.
+
 ```powershell
 $env:HYDRACACHE_OPERATOR_KIND='1'
 $env:HYDRACACHE_OPERATOR_NAMESPACE='default'
