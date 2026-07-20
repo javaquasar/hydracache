@@ -24,6 +24,9 @@ const RECEIVER_KILL_ARTIFACT: &str = "snapshot-resource-budget-receiver-kill-lin
 const SLOW_RECEIVER_ARTIFACT: &str = "snapshot-resource-budget-slow-receiver-linux.json";
 const SNAPSHOT_HANDLER_TEST_DELAY_MS: u64 = 30_000;
 
+#[cfg(target_os = "linux")]
+static SNAPSHOT_RESOURCE_PROOF_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 fn snapshot_budget() -> ResourceBudget {
     ResourceBudget {
         max_child_delta: 0,
@@ -73,6 +76,12 @@ fn receiver_kill_releases_snapshot_sender_resources_after_quiescence() -> TestRe
 
     #[cfg(target_os = "linux")]
     {
+        // These proofs each own three real daemon processes and deliberately
+        // hold a snapshot request open. Serializing them keeps the observation
+        // window attributable to one cluster rather than runner contention.
+        let _proof = SNAPSHOT_RESOURCE_PROOF_LOCK
+            .lock()
+            .expect("snapshot resource proof lock poisoned");
         run_receiver_kill_resource_proof()
     }
 }
@@ -96,6 +105,9 @@ fn slow_receiver_applies_bounded_backpressure_without_unbounded_tasks_or_rss() -
 
     #[cfg(target_os = "linux")]
     {
+        let _proof = SNAPSHOT_RESOURCE_PROOF_LOCK
+            .lock()
+            .expect("snapshot resource proof lock poisoned");
         run_slow_receiver_resource_proof()
     }
 }
@@ -640,6 +652,19 @@ fn wait_for_snapshot_in_flight(
     let result = cluster.wait_for(
         "real snapshot sender reservation becomes in-flight".to_owned(),
         |cluster| {
+            // Poll the current leader first. Aggregating every daemon requires
+            // several sequential admin requests and can miss the intentionally
+            // short sender reservation even though the monotonic high-water
+            // counter proves that it existed.
+            let statuses = cluster.statuses();
+            let leader = leader_index(cluster, &statuses).ok()?;
+            let leader_snapshot = snapshot_observation(cluster, leader).ok()?;
+            if leader_snapshot.snapshot_send_attempts <= before.total.snapshot_send_attempts
+                || leader_snapshot.snapshot_sends_in_flight == 0
+                || leader_snapshot.snapshot_sender_tasks_current == 0
+            {
+                return None;
+            }
             let indices = cluster.running_indices();
             let totals = snapshot_totals(cluster, &indices).ok()?;
             last_observation = totals;

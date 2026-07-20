@@ -911,6 +911,16 @@ is proven separately by the sink unit tests. The task HWM is process-local and
 resets when a daemon restarts, so W12 retains the in-flight checkpoint before it
 kills the receiver; it is not an all-process-lifetimes cluster maximum.
 
+The two Linux W12 resource proofs are serialized inside their test binary. Each
+proof owns a three-daemon cluster and intentionally holds one snapshot HTTP
+request open, so concurrent execution would make scheduler pressure part of the
+measurement. To observe that short reservation reliably, the harness polls the
+current leader's sender gauges first and only then collects the slower
+cluster-wide checkpoint. The receiver-kill case tests that a live reservation
+is released after the receiver disappears; the slow-receiver case tests bounded
+backpressure across repeated failures. Both require current sender tasks and
+in-flight requests to return to zero before the evidence artifact is accepted.
+
 Linux samples also contain current RSS, open FDs, and a conservative sum of the
 currently live daemons' process-lifetime `VmHWM`. The HWM sum is bounded from
 baseline to peak, is not simultaneous cluster RSS, may change across process
