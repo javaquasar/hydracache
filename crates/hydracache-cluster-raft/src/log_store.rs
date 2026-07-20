@@ -6,6 +6,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 #[cfg(feature = "test-failpoints")]
 use std::sync::{Condvar, Mutex};
+#[cfg(feature = "test-failpoints")]
+use std::time::{Duration, Instant};
 
 #[cfg(feature = "sled-log-store")]
 use protobuf::Message as ProtobufMessage;
@@ -15,6 +17,9 @@ use raft::{Error as RaftError, Result as RaftResult, StorageError};
 
 /// Supported durable raft log format version for the 0.42 control-plane seam.
 pub const RAFT_LOG_FORMAT_VERSION: u32 = 1;
+
+#[cfg(feature = "test-failpoints")]
+const STORAGE_FAULT_BLOCK_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Result type used by [`RaftLogStore`].
 pub type RaftStoreResult<T> = std::result::Result<T, RaftStoreError>;
@@ -207,10 +212,31 @@ impl RaftStorageFaultController {
         state.observation.in_flight = 1;
         state.observation.max_in_flight = state.observation.max_in_flight.max(1);
         changed.notify_all();
+        let deadline = Instant::now() + STORAGE_FAULT_BLOCK_TIMEOUT;
         while !state.released {
-            state = changed
-                .wait(state)
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                state.active = false;
+                state.mode = None;
+                state.observation.in_flight = 0;
+                changed.notify_all();
+                return Err(RaftStoreError::new(format!(
+                    "timed out waiting to release injected storage fault during {operation}"
+                )));
+            }
+            let (next, wait) = changed
+                .wait_timeout(state, remaining)
                 .expect("raft storage fault state poisoned while blocked");
+            state = next;
+            if wait.timed_out() && !state.released {
+                state.active = false;
+                state.mode = None;
+                state.observation.in_flight = 0;
+                changed.notify_all();
+                return Err(RaftStoreError::new(format!(
+                    "timed out waiting to release injected storage fault during {operation}"
+                )));
+            }
         }
 
         state.active = false;

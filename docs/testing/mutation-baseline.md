@@ -30,6 +30,17 @@ copied mutation workspace excludes it; this also avoids a second multi-gigabyte
 Cargo target tree on the CI runner. Each shard has its own ephemeral checkout,
 so no two in-place mutation processes share a source tree.
 
+### Bounded fault-injection contract
+
+The `test-failpoints` storage controller deliberately blocks an armed Raft
+operation until the test releases it. That wait is capped at five seconds. The
+cap is not a production retry policy: it is a test-harness safety boundary that
+prevents a malformed implementation or mutation (for example, treating
+`FailImmediately` as a blocking mode) from hanging an entire mutation shard.
+The focused tests still prove all three semantics independently: immediate
+failure, block-then-continue, and block-then-fail. They also assert that only the
+armed storage operation is affected and that in-flight counters return to zero.
+
 ## Allowed Survivors
 
 No allowed survivors.
