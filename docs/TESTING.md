@@ -986,6 +986,14 @@ non-empty server-pod logs, resources for the expected cluster, and events.
 `evidence-run` removes the declared snapshots before execution; an empty,
 missing, stale, or wrong-process diagnostic artifact is not a ship receipt.
 
+In GitHub Actions the release job prepares the binary first, then runs the
+controller as a supervised `background` step. That step records `BASHPID` and
+uses `exec` so the recorded PID belongs to the exact operator binary rather than
+to a wrapper shell. A following step waits for both the live PID and the
+nonce-bound runtime marker. The controller is explicitly canceled only after
+the W11 receipt has been captured. A detached `nohup` child, a stale PID, or a
+zombie process is not accepted as controller evidence.
+
 W5 and W11 distinguish logical membership from a physical pod generation. A
 replacement keeps the stable Raft member ID, but announces a new
 `ClusterGeneration`; committing that fencing update must advance the membership

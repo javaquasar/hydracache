@@ -280,8 +280,11 @@ pub fn release_execution_wiring_problems(
                 "Create kind cluster with enforcing CNI",
                 "Install required Chaos Mesh IOChaos runtime",
                 "Build and load current server image",
+                "Prepare current operator controller",
                 "Start current operator controller",
+                "Verify current operator controller",
                 "Run 0.66 operator-kind release proof",
+                "Stop current operator controller",
                 "Upload 0.66 operator-kind evidence",
             ][..],
         ),
@@ -507,19 +510,36 @@ fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
         ),
         (
             "release-066-operator-kind",
-            "Start current operator controller",
+            "Prepare current operator controller",
             &[
                 "cargo build -p hydracache-operator --locked",
                 "operator_binary=\"$(pwd)/target/debug/hydracache-operator\"",
                 "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
-                "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
                 "operator_nonce=\"release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}\"",
                 "export HYDRACACHE_OPERATOR_EVIDENCE_NONCE=\"$operator_nonce\"",
                 "echo \"HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce\" >> \"$GITHUB_ENV\"",
                 "HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s",
                 "\"$operator_nonce\" \"$operator_binary\" > \"$operator_log\"",
-                "nohup \"$operator_binary\" >> \"$operator_log\" 2>&1 &",
-                "printf '%s\\n' \"$operator_pid\" > \"$operator_pid_file\"",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Start current operator controller",
+            &[
+                "operator_binary=\"$(pwd)/target/debug/hydracache-operator\"",
+                "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+                "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
+                "printf '%s\\n' \"$BASHPID\" > \"$operator_pid_file\"",
+                "exec \"$operator_binary\" >> \"$operator_log\" 2>&1",
+            ][..],
+        ),
+        (
+            "release-066-operator-kind",
+            "Verify current operator controller",
+            &[
+                "operator_log=\"target/test-evidence/0.66/operator-controller-live.log\"",
+                "operator_pid_file=\"target/test-evidence/0.66/operator-controller.pid\"",
+                "operator_nonce=\"$HYDRACACHE_OPERATOR_EVIDENCE_NONCE\"",
                 "kill -0 \"$operator_pid\"",
                 "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce",
             ][..],
@@ -569,6 +589,27 @@ fn release_066_execution_wiring_problems(workflow: &WorkflowShape) -> Vec<String
     if fuzz_install.contains("available=false") || fuzz_install.contains("set +e") {
         problems.push(
             "release 0.66 cargo-fuzz installation must fail loud instead of producing a skip-green lane"
+                .to_owned(),
+        );
+    }
+
+    let operator_background = workflow
+        .background_step_ids
+        .get("release-066-operator-kind")
+        .is_some_and(|ids| ids.contains("operator-controller"));
+    if !operator_background {
+        problems.push(
+            "release-066 operator controller must use background step id operator-controller"
+                .to_owned(),
+        );
+    }
+    let operator_cancel = workflow
+        .cancel_targets
+        .get("release-066-operator-kind")
+        .is_some_and(|targets| targets.contains("operator-controller"));
+    if !operator_cancel {
+        problems.push(
+            "release-066 operator controller background step must be explicitly canceled"
                 .to_owned(),
         );
     }
@@ -902,6 +943,8 @@ struct WorkflowShape {
     jobs: BTreeMap<String, BTreeSet<String>>,
     conditions: BTreeMap<String, String>,
     step_runs: BTreeMap<String, BTreeMap<String, String>>,
+    background_step_ids: BTreeMap<String, BTreeSet<String>>,
+    cancel_targets: BTreeMap<String, BTreeSet<String>>,
     candidate_release_default: Option<String>,
     candidate_release_env: Option<String>,
 }
@@ -936,23 +979,37 @@ fn parse_workflow(text: &str) -> Result<WorkflowShape, Box<dyn Error>> {
         };
         let mut steps = BTreeSet::new();
         let mut step_runs = BTreeMap::new();
+        let mut background_step_ids = BTreeSet::new();
+        let mut cancel_targets = BTreeSet::new();
         if let Some(sequence) =
             mapping_value(job.as_mapping(), "steps").and_then(Value::as_sequence)
         {
             for step in sequence {
-                if let Some(name) = mapping_value(step.as_mapping(), "name").and_then(Value::as_str)
-                {
+                let mapping = step.as_mapping();
+                if let Some(name) = mapping_value(mapping, "name").and_then(Value::as_str) {
                     steps.insert(name.to_owned());
-                    if let Some(run) =
-                        mapping_value(step.as_mapping(), "run").and_then(Value::as_str)
-                    {
+                    if let Some(run) = mapping_value(mapping, "run").and_then(Value::as_str) {
                         step_runs.insert(name.to_owned(), run.to_owned());
                     }
+                }
+                if mapping_value(mapping, "background").and_then(Value::as_bool) == Some(true) {
+                    if let Some(id) = mapping_value(mapping, "id").and_then(Value::as_str) {
+                        background_step_ids.insert(id.to_owned());
+                    }
+                }
+                if let Some(target) = mapping_value(mapping, "cancel").and_then(Value::as_str) {
+                    cancel_targets.insert(target.to_owned());
                 }
             }
         }
         shape.jobs.insert(job_id.to_owned(), steps);
         shape.step_runs.insert(job_id.to_owned(), step_runs);
+        shape
+            .background_step_ids
+            .insert(job_id.to_owned(), background_step_ids);
+        shape
+            .cancel_targets
+            .insert(job_id.to_owned(), cancel_targets);
         if let Some(condition) = mapping_value(job.as_mapping(), "if").and_then(Value::as_str) {
             shape
                 .conditions

@@ -70,8 +70,8 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
         "echo \"HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce\" >> \"$GITHUB_ENV\"",
         "HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s",
         "\"$operator_nonce\" \"$operator_binary\" > \"$operator_log\"",
-        "nohup \"$operator_binary\" >> \"$operator_log\" 2>&1 &",
-        "printf '%s\\n' \"$operator_pid\" > \"$operator_pid_file\"",
+        "printf '%s\\n' \"$BASHPID\" > \"$operator_pid_file\"",
+        "exec \"$operator_binary\" >> \"$operator_log\" 2>&1",
         "kill -0 \"$operator_pid\"",
         "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce",
         "operator-kind-pod-logs-post.txt",
@@ -86,6 +86,38 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
         assert!(
             problems.iter().any(|problem| problem.contains(required)),
             "missing operator evidence wiring was accepted: {required}: {problems:#?}"
+        );
+    }
+
+    for (current, replacement, expected_problem) in [
+        (
+            "id: operator-controller",
+            "id: unsupervised-operator-controller",
+            "background step id operator-controller",
+        ),
+        (
+            "background: true",
+            "background: false",
+            "background step id operator-controller",
+        ),
+        (
+            "cancel: operator-controller",
+            "cancel: unsupervised-operator-controller",
+            "must be explicitly canceled",
+        ),
+    ] {
+        let broken = workflow.replacen(current, replacement, 1);
+        assert_ne!(
+            broken, workflow,
+            "operator lifecycle marker was not found: {current}"
+        );
+        let problems =
+            xtask::release_governance::release_execution_wiring_problems(&broken, "0.66").unwrap();
+        assert!(
+            problems
+                .iter()
+                .any(|problem| problem.contains(expected_problem)),
+            "broken operator lifecycle was accepted: {current}: {problems:#?}"
         );
     }
 
