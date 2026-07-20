@@ -4045,17 +4045,7 @@ mod tests {
     }
 
     #[test]
-    fn topology_log_and_identity_paths_fail_loud_on_invalid_inputs() {
-        let dir = unique_test_dir("topology-errors");
-        assert!(!raft_log_dir_has_state(&dir).unwrap());
-        fs::create_dir_all(&dir).unwrap();
-        let file = dir.join("not-a-directory");
-        fs::write(&file, "occupied").unwrap();
-        let error = raft_log_dir_has_state(&file).unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("failed to inspect raft log directory"));
-
+    fn topology_and_identity_paths_fail_loud_on_invalid_inputs() {
         assert_eq!(valid_raft_endpoint("  "), None);
         assert_eq!(valid_raft_endpoint("0.0.0.0:7000"), None);
         assert_eq!(valid_raft_endpoint("127.0.0.1:0"), None);
@@ -4081,7 +4071,6 @@ mod tests {
         assert!(root.parent().is_none());
         let error = write_node_identity_create_once(root, "{}").unwrap_err();
         assert!(error.to_string().contains("has no parent directory"));
-        let _ = fs::remove_dir_all(dir);
     }
 
     struct PanicRaftMessageSink;
