@@ -425,6 +425,7 @@ impl RaftWireMessage {
         validate_wire_header("from", self.from, message.from)?;
         validate_wire_header("to", self.to, message.to)?;
         validate_wire_header("term", self.term, message.term)?;
+        validate_wire_structure(&message)?;
         Ok(message)
     }
 
@@ -445,6 +446,21 @@ fn validate_wire_header(field: &str, envelope: u64, protobuf: u64) -> CacheResul
     Err(CacheError::Decode(format!(
         "raft wire {field} mismatch: envelope={envelope}, protobuf={protobuf}"
     )))
+}
+
+fn validate_wire_structure(message: &RaftMessage) -> CacheResult<()> {
+    if matches!(
+        message.get_msg_type(),
+        MessageType::MsgReadIndex | MessageType::MsgReadIndexResp
+    ) && message.entries.len() != 1
+    {
+        return Err(CacheError::Decode(format!(
+            "raft {:?} must carry exactly one request-context entry, got {}",
+            message.get_msg_type(),
+            message.entries.len()
+        )));
+    }
+    Ok(())
 }
 
 impl RaftMetadataCommandEnvelope {
@@ -2401,6 +2417,28 @@ mod tests {
             payload: vec![0xff],
         };
         assert!(malformed.is_snapshot().is_err());
+    }
+
+    #[test]
+    fn wire_decode_rejects_read_index_without_request_context_entry() {
+        for message_type in [MessageType::MsgReadIndex, MessageType::MsgReadIndexResp] {
+            let mut message = RaftMessage {
+                from: 1,
+                to: 1,
+                term: 1,
+                ..RaftMessage::default()
+            };
+            message.set_msg_type(message_type);
+            let wire = RaftWireMessage::encode(&message).unwrap();
+
+            let error = wire.decode().unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("must carry exactly one request-context entry"),
+                "unexpected rejection for {message_type:?}: {error}"
+            );
+        }
     }
 
     #[test]

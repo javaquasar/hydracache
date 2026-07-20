@@ -119,6 +119,7 @@ fn raft_wire_frame_corpus_never_panics_or_mutates_on_reject() {
         "malformed-metadata-snapshot.json",
         "snapshot-source-mismatch.json",
         "snapshot-index-mismatch.json",
+        "read-index-without-context.json",
     ];
     let missing = required
         .into_iter()
