@@ -2046,20 +2046,22 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
             recovered_uid, receipt.target.pod_uid,
             "IOChaos recovery must observe a newly created target pod"
         );
+        let expected_recovered_epoch = committed_epoch.saturating_add(1);
         let recovered = kind
             .wait_raft_nodes(
                 4,
                 4,
-                committed_epoch,
+                expected_recovered_epoch,
                 committed_applied,
                 None,
                 "w5-iochaos-recovered",
             )
             .await;
         assert_eq!(
-            recovered[0].status.epoch, committed_epoch,
-            "healing IOChaos must catch up to the committed membership, not create another epoch"
+            recovered[0].status.epoch, expected_recovered_epoch,
+            "replacing the IOChaos target must fence its old process generation with exactly one epoch"
         );
+        let recovered_epoch = recovered[0].status.epoch;
         let recovered_target = recovered
             .iter()
             .find(|observation| observation.ordinal == target_ordinal)
@@ -2072,7 +2074,7 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
             .wait_raft_nodes(
                 3,
                 3,
-                committed_epoch.saturating_add(1),
+                recovered_epoch.saturating_add(1),
                 committed_applied.saturating_add(1),
                 None,
                 "w5-scale-down-restored",
@@ -2224,19 +2226,20 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
         assert_ne!(replacement_uid, crashed_uid);
         let recovered = kind.wait_ready(3, "w11-crash-recovered").await;
         recovered.assert_quorum();
+        let expected_crash_epoch = after_scale_down_epoch.saturating_add(1);
         let after_crash = kind
             .wait_raft_nodes(
                 3,
                 3,
-                after_scale_down_epoch,
+                expected_crash_epoch,
                 healed_applied,
                 None,
                 "w11-crash-recovered",
             )
             .await;
         assert_eq!(
-            after_crash[0].status.epoch, after_scale_down_epoch,
-            "pod crash/replacement must not implicitly change committed membership"
+            after_crash[0].status.epoch, expected_crash_epoch,
+            "pod replacement must fence its old process generation with exactly one epoch"
         );
     })
     .catch_unwind()

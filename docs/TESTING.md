@@ -979,6 +979,16 @@ non-empty server-pod logs, resources for the expected cluster, and events.
 `evidence-run` removes the declared snapshots before execution; an empty,
 missing, stale, or wrong-process diagnostic artifact is not a ship receipt.
 
+W5 and W11 distinguish logical membership from a physical pod generation. A
+replacement keeps the stable Raft member ID, but announces a new
+`ClusterGeneration`; committing that fencing update must advance the membership
+epoch exactly once while preserving the exact voter set. Any later scale-down
+is therefore checked relative to the recovered epoch, not the pre-replacement
+epoch. W11 also exercises a retained late-ordinal PVC: after scale-down removes
+that voter, scale-up must reuse the durable identity but follow the configured
+`join` path so the live cluster re-admits it instead of bootstrapping the stale
+stored ConfState.
+
 The following is the exact clean-cluster Bash reproduction from a clean checkout.
 It needs Docker, Go 1.23.4, Rust stable, `kubectl` 1.32.0, and Helm 3.17.0; all
 remaining cluster/runtime versions and the kind node digest are pinned below.
