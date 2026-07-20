@@ -1050,6 +1050,19 @@ nonce-bound runtime marker. The controller is explicitly canceled only after
 the W11 receipt has been captured. A detached `nohup` child, a stale PID, or a
 zombie process is not accepted as controller evidence.
 
+`Controller::run` is itself supervised inside the attested binary. If its watch
+stream ends unexpectedly, the same process emits
+`HC-OPERATOR-CONTROLLER-STREAM-RESTART` and starts a fresh stream after bounded
+exponential delays of 1, 2, 4, 8, 16, then 30 seconds. A stream lifetime of at
+least 60 seconds resets that backoff. This boundary is intentionally different
+from `error_policy`: an item-level reconcile error is logged and requeued by the
+controller, while end-of-stream means there is no controller left to reconcile
+future changes. The same-PID restart preserves the `/proc/<pid>/exe` attestation;
+the delay cap prevents a dead API/watch path from becoming a hot loop. Unit
+tests inject immediately completed streams to prove restart sequencing and
+separately prove the exact backoff cap. The kind proof remains responsible for
+showing that the long-lived process actually reconciles Kubernetes resources.
+
 Preparation is a separate foreground step so checkout, CRD installation,
 authentication setup, and compilation fail as ordinary finite operations. The
 background step then has one responsibility: own the long-lived controller for

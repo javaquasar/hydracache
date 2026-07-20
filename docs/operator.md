@@ -178,3 +178,13 @@ wrong operator process from satisfying W11. CI cancels the supervised process
 only after the receipt-bound logs, resources, events, and capability markers
 have been captured. See [Testing and Coverage](TESTING.md#066-proof-design-and-interpretation)
 for the full oracle and non-evidence rules.
+
+The binary also supervises the Kubernetes `Controller::run` stream inside that
+same process. An unexpected end-of-stream is not treated as successful operator
+completion: it emits `HC-OPERATOR-CONTROLLER-STREAM-RESTART` and creates a new
+watch/controller stream without replacing the attested PID. Repeated short
+completions use bounded backoff of 1, 2, 4, 8, 16, then 30 seconds; a stream that
+runs for at least 60 seconds resets the sequence. Keeping restart ownership in
+the binary preserves `/proc` identity and avoids both a silent green exit and a
+tight reconnect loop. Individual reconcile errors still use the normal
+`error_policy` requeue path and do not restart the whole stream.

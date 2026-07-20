@@ -44,6 +44,9 @@ pub const READY_PHASE: &str = "Ready";
 pub const FORMING_HEALTH: &str = "Forming";
 pub const HEALTHY_HEALTH: &str = "Healthy";
 pub const DEGRADED_HEALTH: &str = "Degraded";
+const CONTROLLER_RESTART_BASE_DELAY: Duration = Duration::from_secs(1);
+const CONTROLLER_RESTART_MAX_DELAY: Duration = Duration::from_secs(30);
+const CONTROLLER_STABLE_WINDOW: Duration = Duration::from_secs(60);
 
 #[derive(Clone)]
 pub struct Ctx {
@@ -77,6 +80,42 @@ pub enum Error {
 }
 
 pub async fn run(ctx: Ctx) {
+    supervise_controller_stream(|| run_controller_once(ctx.clone())).await;
+}
+
+async fn supervise_controller_stream<Start, Stream>(mut start: Start)
+where
+    Start: FnMut() -> Stream,
+    Stream: std::future::Future<Output = ()>,
+{
+    let mut consecutive_completions = 0_u32;
+    loop {
+        let started = tokio::time::Instant::now();
+        start().await;
+        if started.elapsed() >= CONTROLLER_STABLE_WINDOW {
+            consecutive_completions = 0;
+        }
+        consecutive_completions = consecutive_completions.saturating_add(1);
+        let delay = controller_restart_delay(consecutive_completions);
+        eprintln!(
+            "HC-OPERATOR-CONTROLLER-STREAM-RESTART completion={consecutive_completions} delay_ms={}",
+            delay.as_millis()
+        );
+        tokio::time::sleep(delay).await;
+    }
+}
+
+fn controller_restart_delay(consecutive_completions: u32) -> Duration {
+    let exponent = consecutive_completions.saturating_sub(1).min(5);
+    let multiplier = 1_u64 << exponent;
+    let seconds = CONTROLLER_RESTART_BASE_DELAY
+        .as_secs()
+        .saturating_mul(multiplier)
+        .min(CONTROLLER_RESTART_MAX_DELAY.as_secs());
+    Duration::from_secs(seconds)
+}
+
+async fn run_controller_once(ctx: Ctx) {
     let client = ctx.client.clone();
     let clusters: Api<HydraCacheCluster> = match &ctx.namespace {
         Some(namespace) => Api::namespaced(client.clone(), namespace),
@@ -757,4 +796,44 @@ async fn observe_tls_secret(
         &tls.secret_name,
         secret.as_ref(),
     ))
+}
+
+#[cfg(test)]
+mod lifecycle_tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use super::*;
+
+    #[test]
+    fn controller_restart_delay_is_bounded_exponential_backoff() {
+        let delays = (1..=8)
+            .map(|completion| controller_restart_delay(completion).as_secs())
+            .collect::<Vec<_>>();
+
+        assert_eq!(delays, vec![1, 2, 4, 8, 16, 30, 30, 30]);
+    }
+
+    #[tokio::test]
+    async fn completed_controller_stream_restarts_without_replacing_process() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let observed = Arc::clone(&starts);
+        let supervisor = tokio::spawn(supervise_controller_stream(move || {
+            observed.fetch_add(1, Ordering::SeqCst);
+            std::future::ready(())
+        }));
+
+        tokio::task::yield_now().await;
+        assert_eq!(starts.load(Ordering::SeqCst), 1);
+
+        tokio::time::sleep(Duration::from_millis(1_100)).await;
+        tokio::task::yield_now().await;
+        assert_eq!(starts.load(Ordering::SeqCst), 2);
+
+        tokio::time::sleep(Duration::from_millis(2_100)).await;
+        tokio::task::yield_now().await;
+        assert_eq!(starts.load(Ordering::SeqCst), 3);
+
+        supervisor.abort();
+        assert!(supervisor.await.unwrap_err().is_cancelled());
+    }
 }
