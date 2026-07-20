@@ -404,15 +404,25 @@ pub struct RaftWireMessage {
     pub payload: Vec<u8>,
 }
 
-/// Leader-originated wire traffic that can renew a follower's metadata-authority fence.
+/// Validated wire traffic that can renew a node's metadata-authority fence.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct RaftLeaderAuthorityObservation {
-    /// Raft node id that sent the leader commit-stream message.
-    pub source_raft_node_id: u64,
-    /// Term carried by the leader commit-stream message.
-    pub term: u64,
-    /// Whether this observation carries a Raft snapshot.
-    pub is_snapshot: bool,
+pub enum RaftAuthorityObservation {
+    /// Leader commit-stream traffic observed by a follower.
+    LeaderCommit {
+        /// Raft node id that sent the commit-stream message.
+        source_raft_node_id: u64,
+        /// Term carried by the commit-stream message.
+        term: u64,
+        /// Whether this observation carries a Raft snapshot.
+        is_snapshot: bool,
+    },
+    /// Replication acknowledgement observed by the current leader.
+    VoterAcknowledgement {
+        /// Raft voter that acknowledged append or heartbeat traffic.
+        source_raft_node_id: u64,
+        /// Term carried by the acknowledgement.
+        term: u64,
+    },
 }
 
 impl RaftWireMessage {
@@ -449,25 +459,31 @@ impl RaftWireMessage {
         Ok(self.decode()?.get_msg_type() == MessageType::MsgSnapshot)
     }
 
-    /// Inspect whether this envelope belongs to the leader commit stream.
+    /// Inspect whether this envelope can contribute to an authority fence.
     ///
     /// Append, heartbeat, and snapshot messages carry the leader's commit
-    /// watermark. Responses, votes, and timeout messages do not establish that
-    /// a follower has observed the current leader's committed metadata.
-    pub fn leader_authority_observation(
-        &self,
-    ) -> CacheResult<Option<RaftLeaderAuthorityObservation>> {
+    /// watermark to followers. Append and heartbeat responses let a leader
+    /// prove that a current voter still acknowledges its term. Callers must
+    /// still match the source against the runtime's current leader or voter set.
+    pub fn authority_observation(&self) -> CacheResult<Option<RaftAuthorityObservation>> {
         let message = self.decode()?;
         let message_type = message.get_msg_type();
-        Ok(matches!(
-            message_type,
-            MessageType::MsgAppend | MessageType::MsgHeartbeat | MessageType::MsgSnapshot
-        )
-        .then_some(RaftLeaderAuthorityObservation {
-            source_raft_node_id: message.from,
-            term: message.term,
-            is_snapshot: message_type == MessageType::MsgSnapshot,
-        }))
+        Ok(match message_type {
+            MessageType::MsgAppend | MessageType::MsgHeartbeat | MessageType::MsgSnapshot => {
+                Some(RaftAuthorityObservation::LeaderCommit {
+                    source_raft_node_id: message.from,
+                    term: message.term,
+                    is_snapshot: message_type == MessageType::MsgSnapshot,
+                })
+            }
+            MessageType::MsgAppendResponse | MessageType::MsgHeartbeatResponse => {
+                Some(RaftAuthorityObservation::VoterAcknowledgement {
+                    source_raft_node_id: message.from,
+                    term: message.term,
+                })
+            }
+            _ => None,
+        })
     }
 }
 
@@ -2474,7 +2490,7 @@ mod tests {
     }
 
     #[test]
-    fn wire_authority_observation_accepts_only_the_leader_commit_stream() {
+    fn wire_authority_observation_classifies_commit_stream_and_voter_acknowledgements() {
         for (message_type, is_snapshot) in [
             (MessageType::MsgAppend, false),
             (MessageType::MsgHeartbeat, false),
@@ -2489,25 +2505,49 @@ mod tests {
             message.set_msg_type(message_type);
             let observation = RaftWireMessage::encode(&message)
                 .unwrap()
-                .leader_authority_observation()
+                .authority_observation()
                 .unwrap()
                 .expect("leader commit-stream message should be observable");
-            assert_eq!(observation.source_raft_node_id, 11);
-            assert_eq!(observation.term, 7);
-            assert_eq!(observation.is_snapshot, is_snapshot);
+            assert_eq!(
+                observation,
+                RaftAuthorityObservation::LeaderCommit {
+                    source_raft_node_id: 11,
+                    term: 7,
+                    is_snapshot,
+                }
+            );
         }
 
         for message_type in [
             MessageType::MsgAppendResponse,
-            MessageType::MsgRequestVote,
-            MessageType::MsgTimeoutNow,
+            MessageType::MsgHeartbeatResponse,
         ] {
+            let mut message = RaftMessage {
+                from: 12,
+                to: 11,
+                term: 7,
+                ..RaftMessage::default()
+            };
+            message.set_msg_type(message_type);
+            assert_eq!(
+                RaftWireMessage::encode(&message)
+                    .unwrap()
+                    .authority_observation()
+                    .unwrap(),
+                Some(RaftAuthorityObservation::VoterAcknowledgement {
+                    source_raft_node_id: 12,
+                    term: 7,
+                })
+            );
+        }
+
+        for message_type in [MessageType::MsgRequestVote, MessageType::MsgTimeoutNow] {
             let mut message = RaftMessage::default();
             message.set_msg_type(message_type);
             assert_eq!(
                 RaftWireMessage::encode(&message)
                     .unwrap()
-                    .leader_authority_observation()
+                    .authority_observation()
                     .unwrap(),
                 None
             );

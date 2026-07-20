@@ -904,14 +904,18 @@ authoritative membership observation. Immediately after `SIGCONT`, a daemon or
 majority peer may briefly expose a bootstrap overview with `epoch=0` while its
 committed view is being materialized. That sample remains in the diagnostic
 timeline but is not appended to the monotonic authoritative history. A
-current-term vote response or other peer traffic is also insufficient to renew
-metadata authority: only a successfully stepped `Append`, `Heartbeat`, or
-`Snapshot` from the Raft runtime's current leader refreshes the fence. The local
-applied and committed indexes must then match and the metadata projection must
-remain unchanged across the authority check. The proof still requires a
-non-zero committed epoch, the expected member/voter shape, and leader/term
-agreement with the live majority before the resumed process can be accepted as
-authoritative.
+current-term vote response or arbitrary peer traffic is also insufficient to
+renew metadata authority. A follower requires a successfully stepped `Append`,
+`Heartbeat`, or `Snapshot` from the Raft runtime's current leader. The leader
+requires a current-term append or heartbeat acknowledgement from a member of
+its current voter set; this keeps the leader observable without accepting an
+unrelated vote, timeout, removed peer, or non-leader message as authority. The
+local applied and committed indexes must then match and the metadata projection
+must remain unchanged across the authority check. The 200 ms wall-clock TTL is
+an observability fence, not a Raft read lease, and remains shorter than the
+minimum election timeout. The proof still requires a non-zero committed epoch,
+the expected member/voter shape, and leader/term agreement with the live
+majority before the resumed process can be accepted as authoritative.
 
 For W12, `tracked_connections` remains the 0.64-compatible maximum per-daemon
 request gauge at retained event checkpoints; it is not a sender/peer identity or

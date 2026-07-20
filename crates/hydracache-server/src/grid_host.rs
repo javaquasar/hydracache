@@ -20,9 +20,8 @@ use hydracache::{
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
-    RaftLeaderAuthorityObservation, RaftMessageSink, RaftMetadataRuntime,
-    RaftMetadataRuntimeConfig, RaftMetadataRuntimeSnapshot, RaftRuntimeRole, RaftWireMessage,
-    SledRaftLogStore,
+    RaftAuthorityObservation, RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
+    RaftMetadataRuntimeSnapshot, RaftRuntimeRole, RaftWireMessage, SledRaftLogStore,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
@@ -40,9 +39,9 @@ use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
-// Strictly shorter than the minimum five-tick election timeout. A node that
-// misses this window must hear current-term Raft traffic again before its
-// local metadata projection can be advertised as authoritative.
+// Strictly shorter than the minimum five-tick election timeout. A follower
+// needs current-leader commit traffic and a leader needs a current-voter
+// acknowledgement before its local metadata can be advertised as authoritative.
 const GRID_RAFT_AUTHORITY_FRESHNESS: Duration = Duration::from_millis(200);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
@@ -1027,12 +1026,27 @@ fn raft_authority_observation_is_fresh(
 }
 
 fn confirmed_raft_authority_term(
-    observation: Option<RaftLeaderAuthorityObservation>,
+    observation: Option<RaftAuthorityObservation>,
     current_leader: Option<u64>,
+    local_role: RaftRuntimeRole,
+    current_voters: &[u64],
 ) -> Option<u64> {
-    observation
-        .filter(|observation| current_leader == Some(observation.source_raft_node_id))
-        .map(|observation| observation.term)
+    match observation? {
+        RaftAuthorityObservation::LeaderCommit {
+            source_raft_node_id,
+            term,
+            ..
+        } if current_leader == Some(source_raft_node_id) => Some(term),
+        RaftAuthorityObservation::VoterAcknowledgement {
+            source_raft_node_id,
+            term,
+        } if local_role == RaftRuntimeRole::Leader
+            && current_voters.contains(&source_raft_node_id) =>
+        {
+            Some(term)
+        }
+        _ => None,
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -2547,8 +2561,14 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             term: message.term,
             payload: payload.to_vec(),
         };
-        let authority_observation = wire_message.leader_authority_observation()?;
-        if authority_observation.is_some_and(|observation| observation.is_snapshot) {
+        let authority_observation = wire_message.authority_observation()?;
+        if matches!(
+            authority_observation,
+            Some(RaftAuthorityObservation::LeaderCommit {
+                is_snapshot: true,
+                ..
+            })
+        ) {
             if let Some(delay) = self.test_snapshot_handler_delay {
                 // This opt-in process-test seam runs only after Axum received
                 // and decoded the real HTTP body. Holding before raft.step/ack
@@ -2557,9 +2577,14 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             }
         }
         let outbound = self.raft.step(wire_message)?;
-        if let Some(term) =
-            confirmed_raft_authority_term(authority_observation, self.raft.leader_id())
-        {
+        let progress = self.raft.snapshot();
+        let voters = self.raft.voter_ids()?;
+        if let Some(term) = confirmed_raft_authority_term(
+            authority_observation,
+            self.raft.leader_id(),
+            progress.role,
+            &voters,
+        ) {
             self.drive_diagnostics.record_raft_inbound(term);
         }
         send_raft_messages_with_diagnostics(
@@ -3478,21 +3503,66 @@ mod tests {
     }
 
     #[test]
-    fn raft_authority_is_refreshed_only_by_the_current_leader_commit_stream() {
-        let observation = RaftLeaderAuthorityObservation {
+    fn raft_authority_requires_current_leader_commit_or_current_voter_acknowledgement() {
+        let leader_commit = RaftAuthorityObservation::LeaderCommit {
             source_raft_node_id: 11,
             term: 7,
             is_snapshot: false,
         };
         assert_eq!(
-            confirmed_raft_authority_term(Some(observation), Some(11)),
+            confirmed_raft_authority_term(
+                Some(leader_commit),
+                Some(11),
+                RaftRuntimeRole::Follower,
+                &[11, 12, 13]
+            ),
             Some(7)
         );
         assert_eq!(
-            confirmed_raft_authority_term(Some(observation), Some(12)),
+            confirmed_raft_authority_term(
+                Some(leader_commit),
+                Some(12),
+                RaftRuntimeRole::Follower,
+                &[11, 12, 13]
+            ),
             None
         );
-        assert_eq!(confirmed_raft_authority_term(None, Some(11)), None);
+
+        let voter_ack = RaftAuthorityObservation::VoterAcknowledgement {
+            source_raft_node_id: 12,
+            term: 7,
+        };
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(voter_ack),
+                Some(11),
+                RaftRuntimeRole::Leader,
+                &[11, 12, 13]
+            ),
+            Some(7)
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(voter_ack),
+                Some(11),
+                RaftRuntimeRole::Follower,
+                &[11, 12, 13]
+            ),
+            None
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(voter_ack),
+                Some(11),
+                RaftRuntimeRole::Leader,
+                &[11, 13]
+            ),
+            None
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(None, Some(11), RaftRuntimeRole::Leader, &[11, 12, 13]),
+            None
+        );
     }
 
     #[derive(Debug)]
