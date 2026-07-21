@@ -275,7 +275,7 @@ async fn compaction_seam_recovery_applies_committed_confchange_past_persisted_ap
     let snapshot_index = runtime.compact_applied_log_to_snapshot().unwrap();
     drop(runtime);
 
-    let store = SledRaftLogStore::open(&path).unwrap();
+    let store = retry_sled_reopen(|| SledRaftLogStore::open(&path)).unwrap();
     assert_eq!(RaftLogStore::applied_index(&store).unwrap(), snapshot_index);
     assert_eq!(store.initial_state().unwrap().conf_state.voters, vec![1]);
     let tail_index = snapshot_index + 1;
