@@ -48,6 +48,10 @@ const OPERATOR_CONTROLLER_RECEIPT_LOG: &str = "operator-controller.log";
 static LIVE_KIND_PROOF_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 #[cfg(target_os = "linux")]
 const OPERATOR_CONTROLLER_PID: &str = "operator-controller.pid";
+#[cfg(target_os = "linux")]
+const OPERATOR_CONTROLLER_BINARY_ENV: &str = "HYDRACACHE_OPERATOR_BINARY";
+#[cfg(target_os = "linux")]
+const OPERATOR_CONTROLLER_RUNTIME_DIRECTORY: &str = ".ci-runtime/0.66";
 const OPERATOR_W5_CAPABILITY_ARTIFACT: &str = "operator-kind-w5-iochaos-capability.txt";
 const OPERATOR_W11_CAPABILITY_ARTIFACT: &str = "operator-kind-w11-network-policy-capability.txt";
 const OPERATOR_POD_LOG_ARTIFACT: &str = "operator-kind-pod-logs.txt";
@@ -216,16 +220,50 @@ fn attest_live_operator_controller() -> Result<OperatorControllerAttestation, St
         return Err(format!("operator controller PID {pid} is not live"));
     }
 
-    let expected_binary = operator_repository_root().join("target/debug/hydracache-operator");
+    let configured_binary = std::env::var(OPERATOR_CONTROLLER_BINARY_ENV)
+        .map_err(|_| format!("{OPERATOR_CONTROLLER_BINARY_ENV} is required"))?;
+    if configured_binary.trim().is_empty() {
+        return Err(format!(
+            "{OPERATOR_CONTROLLER_BINARY_ENV} must not be empty"
+        ));
+    }
+    let configured_binary = PathBuf::from(configured_binary);
+    if !configured_binary.is_absolute() {
+        return Err(format!(
+            "{OPERATOR_CONTROLLER_BINARY_ENV} must name an absolute candidate path, got {}",
+            configured_binary.display()
+        ));
+    }
+    let runtime_directory = operator_repository_root().join(OPERATOR_CONTROLLER_RUNTIME_DIRECTORY);
+    let runtime_directory = fs::canonicalize(&runtime_directory).map_err(|error| {
+        format!(
+            "could not resolve operator candidate directory {}: {error}",
+            runtime_directory.display()
+        )
+    })?;
+    let expected_binary = configured_binary;
     let expected_binary = fs::canonicalize(&expected_binary).map_err(|error| {
         format!(
             "could not resolve expected candidate operator binary {}: {error}",
             expected_binary.display()
         )
     })?;
+    if !expected_binary.starts_with(&runtime_directory) {
+        return Err(format!(
+            "{OPERATOR_CONTROLLER_BINARY_ENV} resolved outside the dedicated candidate directory {}: {}",
+            runtime_directory.display(),
+            expected_binary.display()
+        ));
+    }
     let proc_exe = proc_directory.join("exe");
+    let proc_exe_target = fs::read_link(&proc_exe).map_err(|error| {
+        format!("could not read live operator PID {pid} executable link: {error}")
+    })?;
     let running_binary = fs::canonicalize(&proc_exe).map_err(|error| {
-        format!("could not resolve live operator PID {pid} executable: {error}")
+        format!(
+            "could not resolve live operator PID {pid} executable target {}: {error}",
+            proc_exe_target.display()
+        )
     })?;
     let expected_metadata = fs::metadata(&expected_binary).map_err(|error| {
         format!(

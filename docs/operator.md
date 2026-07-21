@@ -169,14 +169,19 @@ decisions, while kind proves that those decisions survive real Kubernetes
 resource ownership, pod generations, network isolation, and storage identity.
 Neither layer substitutes for the other.
 
-Release CI builds the current operator in a finite preparation step and then
-runs only that binary as a supervised background step. The process writes its
-PID before replacing the step shell with `exec`; the proof verifies the exact
-`/proc/<pid>/exe` inode and a run-unique runtime nonce before accepting any
-controller logs. This design prevents a detached, prematurely reaped, stale, or
-wrong operator process from satisfying W11. CI cancels the supervised process
-only after the receipt-bound logs, resources, events, and capability markers
-have been captured. See [Testing and Coverage](TESTING.md#066-proof-design-and-interpretation)
+Release CI builds the current operator in a finite preparation step, copies it
+to a SHA-named path under `.ci-runtime/0.66`, and runs only that immutable
+candidate as a supervised background step. The copy is necessary because the
+proof invokes Cargo again: relinking `target/debug/hydracache-operator` can
+unlink that pathname while the old process remains alive, making its
+`/proc/<pid>/exe` target appear deleted. The process writes its PID before
+replacing the step shell with `exec`; the proof requires the configured absolute
+candidate path to stay inside the dedicated runtime directory, then verifies
+the exact inode and a run-unique runtime nonce before accepting controller logs.
+This design prevents a detached, prematurely reaped, stale, replaced, or wrong
+operator process from satisfying W11. CI cancels the supervised process only
+after the receipt-bound logs, resources, events, and capability markers have
+been captured. See [Testing and Coverage](TESTING.md#066-proof-design-and-interpretation)
 for the full oracle and non-evidence rules.
 
 The binary also supervises the Kubernetes `Controller::run` stream inside that
