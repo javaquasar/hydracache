@@ -571,29 +571,55 @@ jobs:
           docker build --tag hydracache-server:0.66-candidate .
           kind load docker-image --name hydracache-066 hydracache-server:0.66-candidate
 
-      - name: Start current operator controller
+      - name: Prepare current operator controller
         shell: bash
         run: |
           mkdir -p target/test-evidence/0.66
           kubectl apply -f deploy/operator/hydracacheclusters.hydracache.io.crd.yaml
+          kubectl auth can-i get pods --subresource=proxy --namespace default
+          kubectl auth can-i create pods --subresource=proxy --namespace default
           cargo build -p hydracache-operator --locked
-          operator_binary="$(pwd)/target/debug/hydracache-operator"
+          operator_candidate_directory="$(pwd)/target/ci-runtime/0.66"
+          operator_binary="$operator_candidate_directory/hydracache-operator-${GITHUB_SHA}"
+          mkdir -p "$operator_candidate_directory"
+          install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
           operator_log="target/test-evidence/0.66/operator-controller-live.log"
-          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
           operator_nonce="release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}"
           export HYDRACACHE_OPERATOR_EVIDENCE_NONCE="$operator_nonce"
           echo "HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce" >> "$GITHUB_ENV"
+          echo "HYDRACACHE_OPERATOR_BINARY=$operator_binary" >> "$GITHUB_ENV"
           printf 'HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s\n' \
             "$operator_nonce" "$operator_binary" > "$operator_log"
-          HYDRACACHE_OPERATOR_NAMESPACE=default \
-            HYDRACACHE_OPERATOR_IDENTITY=release-066-ci \
-            nohup "$operator_binary" >> "$operator_log" 2>&1 &
-          operator_pid="$!"
-          printf '%s\n' "$operator_pid" > "$operator_pid_file"
+
+      - name: Start current operator controller
+        id: operator-controller
+        shell: bash
+        background: true
+        env:
+          HYDRACACHE_OPERATOR_NAMESPACE: default
+          HYDRACACHE_OPERATOR_IDENTITY: release-066-ci
+        run: |
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+          printf '%s\n' "$BASHPID" > "$operator_pid_file"
+          exec "$HYDRACACHE_OPERATOR_BINARY" >> "$operator_log" 2>&1
+
+      - name: Verify current operator controller
+        shell: bash
+        run: |
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+          operator_nonce="$HYDRACACHE_OPERATOR_EVIDENCE_NONCE"
           operator_ready=0
           for _ in $(seq 1 30); do
-            kill -0 "$operator_pid"
-            if grep -Fq "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"; then
+            if [[ -s "$operator_pid_file" ]]; then
+              operator_pid="$(cat "$operator_pid_file")"
+            else
+              sleep 1
+              continue
+            fi
+            if kill -0 "$operator_pid" \
+              && grep -Fq "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"; then
               operator_ready=1
               break
             fi
@@ -605,6 +631,9 @@ jobs:
 
       - name: Run 0.66 operator-kind release proof
         run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066
+
+      - name: Stop current operator controller
+        cancel: operator-controller
 
       - name: Capture operator-kind diagnostics
         if: always()

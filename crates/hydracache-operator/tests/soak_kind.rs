@@ -42,15 +42,27 @@ const OPERATOR_EVIDENCE_DIRECTORY: &str = "target/test-evidence/0.66";
 const OPERATOR_EVIDENCE_NONCE_ENV: &str = "HYDRACACHE_OPERATOR_EVIDENCE_NONCE";
 const OPERATOR_CONTROLLER_LIVE_LOG: &str = "operator-controller-live.log";
 const OPERATOR_CONTROLLER_RECEIPT_LOG: &str = "operator-controller.log";
+// All live Kind tests operate on the same release cluster and Chaos Mesh
+// objects. The Rust test harness may otherwise run them concurrently and let
+// one proof replace the pods or IOChaos object observed by another proof.
+static LIVE_KIND_PROOF_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 #[cfg(target_os = "linux")]
 const OPERATOR_CONTROLLER_PID: &str = "operator-controller.pid";
+#[cfg(target_os = "linux")]
+const OPERATOR_CONTROLLER_BINARY_ENV: &str = "HYDRACACHE_OPERATOR_BINARY";
+#[cfg(target_os = "linux")]
+const OPERATOR_CONTROLLER_RUNTIME_DIRECTORY: &str = "target/ci-runtime/0.66";
 const OPERATOR_W5_CAPABILITY_ARTIFACT: &str = "operator-kind-w5-iochaos-capability.txt";
 const OPERATOR_W11_CAPABILITY_ARTIFACT: &str = "operator-kind-w11-network-policy-capability.txt";
 const OPERATOR_POD_LOG_ARTIFACT: &str = "operator-kind-pod-logs.txt";
 const OPERATOR_RESOURCES_ARTIFACT: &str = "operator-kind-resources.txt";
 const OPERATOR_EVENTS_ARTIFACT: &str = "operator-kind-events.txt";
 const STATEFULSET_REVISION_LABEL: &str = "controller-revision-hash";
-const KIND_WAIT_ATTEMPTS: usize = 90;
+// Kind nodes can spend several reconciliation periods electing a leader after
+// Chaos Mesh starts/stops an injection. Keep the wait bounded, but allow three
+// minutes so the assertion observes a settled quorum rather than a transient
+// `leader=None` status.
+const KIND_WAIT_ATTEMPTS: usize = 150;
 static SCALE_ADMIN_PROBE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 const NETWORK_POLICY_SKIP: &str =
     "CNI does not enforce NetworkPolicy; install calico/cilium in the kind config";
@@ -208,16 +220,50 @@ fn attest_live_operator_controller() -> Result<OperatorControllerAttestation, St
         return Err(format!("operator controller PID {pid} is not live"));
     }
 
-    let expected_binary = operator_repository_root().join("target/debug/hydracache-operator");
+    let configured_binary = std::env::var(OPERATOR_CONTROLLER_BINARY_ENV)
+        .map_err(|_| format!("{OPERATOR_CONTROLLER_BINARY_ENV} is required"))?;
+    if configured_binary.trim().is_empty() {
+        return Err(format!(
+            "{OPERATOR_CONTROLLER_BINARY_ENV} must not be empty"
+        ));
+    }
+    let configured_binary = PathBuf::from(configured_binary);
+    if !configured_binary.is_absolute() {
+        return Err(format!(
+            "{OPERATOR_CONTROLLER_BINARY_ENV} must name an absolute candidate path, got {}",
+            configured_binary.display()
+        ));
+    }
+    let runtime_directory = operator_repository_root().join(OPERATOR_CONTROLLER_RUNTIME_DIRECTORY);
+    let runtime_directory = fs::canonicalize(&runtime_directory).map_err(|error| {
+        format!(
+            "could not resolve operator candidate directory {}: {error}",
+            runtime_directory.display()
+        )
+    })?;
+    let expected_binary = configured_binary;
     let expected_binary = fs::canonicalize(&expected_binary).map_err(|error| {
         format!(
             "could not resolve expected candidate operator binary {}: {error}",
             expected_binary.display()
         )
     })?;
+    if !expected_binary.starts_with(&runtime_directory) {
+        return Err(format!(
+            "{OPERATOR_CONTROLLER_BINARY_ENV} resolved outside the dedicated candidate directory {}: {}",
+            runtime_directory.display(),
+            expected_binary.display()
+        ));
+    }
     let proc_exe = proc_directory.join("exe");
+    let proc_exe_target = fs::read_link(&proc_exe).map_err(|error| {
+        format!("could not read live operator PID {pid} executable link: {error}")
+    })?;
     let running_binary = fs::canonicalize(&proc_exe).map_err(|error| {
-        format!("could not resolve live operator PID {pid} executable: {error}")
+        format!(
+            "could not resolve live operator PID {pid} executable target {}: {error}",
+            proc_exe_target.display()
+        )
     })?;
     let expected_metadata = fs::metadata(&expected_binary).map_err(|error| {
         format!(
@@ -886,7 +932,9 @@ fn iochaos_injection_receipt(
         );
     }
 
-    let instance_id = format!("{}/{}", target.namespace, target.pod);
+    // Chaos Mesh identifies an IOChaos instance at container granularity even
+    // though the selector is intentionally exact at pod granularity.
+    let instance_id = format!("{}/{}/{}", target.namespace, target.pod, SERVER_CONTAINER);
     let instances = object
         .pointer("/status/instances")
         .and_then(Value::as_object)
@@ -1328,6 +1376,27 @@ impl KindHarness {
             .ok_or_else(|| format!("target pod {pod} has no Kubernetes UID"))
     }
 
+    /// Return a pod identity that remained unchanged across two API reads.
+    ///
+    /// StatefulSet replacement is asynchronous: a name can briefly resolve to
+    /// the terminating pod while the controller is already creating its
+    /// replacement. Chaos Mesh selectors are name-based, so accepting that
+    /// transient identity can inject the old UID and make a valid receipt
+    /// impossible. The double-read is a small, deterministic stability gate.
+    async fn stable_pod_uid(&self, ordinal: u32) -> Result<String, String> {
+        let first = self.pod_uid(ordinal).await?;
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        let second = self.pod_uid(ordinal).await?;
+        if first == second {
+            Ok(second)
+        } else {
+            Err(format!(
+                "target pod {} changed UID while preparing IOChaos: {first} -> {second}",
+                pod_name(&self.cluster, ordinal)
+            ))
+        }
+    }
+
     async fn delete_pod_with_uid(&self, ordinal: u32, expected_uid: &str) {
         let name = pod_name(&self.cluster, ordinal);
         let current_uid = self
@@ -1539,7 +1608,7 @@ impl KindHarness {
             namespace: self.namespace.clone(),
             pod: pod_name(&self.cluster, ordinal),
             pod_uid: self
-                .pod_uid(ordinal)
+                .stable_pod_uid(ordinal)
                 .await
                 .unwrap_or_else(|error| panic!("kind slow-disk target is invalid: {error}")),
             ordinal,
@@ -1904,6 +1973,7 @@ fn operator_release_evidence_requires_current_controller_runtime_output() {
 #[tokio::test]
 #[ignore = "kind/Chaos-Mesh-gated W5 lane: set HYDRACACHE_OPERATOR_KIND=1 with IOChaos installed"]
 async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) =
         KindHarness::try_start("iochaos_fault_blocks_real_raft_persistence_then_recovers").await
     else {
@@ -2000,28 +2070,36 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
         .await;
 
         kind.delete_slow_disk(target_ordinal).await;
+        // An EIO fault may leave the embedded Sled process unable to resume
+        // writes safely in place. The supported operational recovery is to
+        // remove the fault, replace that exact pod, and prove the durable Raft
+        // state catches up from the healthy majority.
+        kind.delete_pod_with_uid(target_ordinal, &receipt.target.pod_uid)
+            .await;
+        let recovered_uid = kind
+            .wait_for_replacement_pod_uid(target_ordinal, &receipt.target.pod_uid)
+            .await;
         kind.wait_ready(4, "w5-iochaos-recovered").await;
-        assert_eq!(
-            kind.pod_uid(target_ordinal)
-                .await
-                .expect("healed IOChaos target must remain observable"),
-            receipt.target.pod_uid,
-            "IOChaos target pod was replaced instead of recovering in place"
+        assert_ne!(
+            recovered_uid, receipt.target.pod_uid,
+            "IOChaos recovery must observe a newly created target pod"
         );
+        let expected_recovered_epoch = committed_epoch.saturating_add(1);
         let recovered = kind
             .wait_raft_nodes(
                 4,
                 4,
-                committed_epoch,
+                expected_recovered_epoch,
                 committed_applied,
                 None,
                 "w5-iochaos-recovered",
             )
             .await;
         assert_eq!(
-            recovered[0].status.epoch, committed_epoch,
-            "healing IOChaos must catch up to the committed membership, not create another epoch"
+            recovered[0].status.epoch, expected_recovered_epoch,
+            "replacing the IOChaos target must fence its old process generation with exactly one epoch"
         );
+        let recovered_epoch = recovered[0].status.epoch;
         let recovered_target = recovered
             .iter()
             .find(|observation| observation.ordinal == target_ordinal)
@@ -2034,7 +2112,7 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
             .wait_raft_nodes(
                 3,
                 3,
-                committed_epoch.saturating_add(1),
+                recovered_epoch.saturating_add(1),
                 committed_applied.saturating_add(1),
                 None,
                 "w5-scale-down-restored",
@@ -2045,9 +2123,23 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
     .catch_unwind()
     .await;
 
-    let heal_cleanup = AssertUnwindSafe(kind.delete_slow_disk(target_ordinal))
-        .catch_unwind()
-        .await;
+    let proof_failed = proof.is_err();
+    let heal_cleanup = AssertUnwindSafe(async {
+        kind.delete_slow_disk(target_ordinal).await;
+        // A failed proof must not leak an EIO-poisoned pod into the next
+        // serialized Kind test.
+        if proof_failed {
+            if let Ok(uid) = kind.pod_uid(target_ordinal).await {
+                if uid == receipt.target.pod_uid {
+                    kind.delete_pod_with_uid(target_ordinal, &uid).await;
+                }
+            }
+            kind.wait_for_replacement_pod_uid(target_ordinal, &receipt.target.pod_uid)
+                .await;
+        }
+    })
+    .catch_unwind()
+    .await;
     let scale_cleanup = AssertUnwindSafe(async {
         kind.apply_cluster(soak_kind_spec(3)).await;
         kind.wait_ready(3, "w5-final-cleanup").await;
@@ -2073,6 +2165,7 @@ async fn iochaos_fault_blocks_real_raft_persistence_then_recovers() {
 #[tokio::test]
 #[ignore = "kind/CNI-gated W11 lane: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
 async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) =
         KindHarness::try_start("operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch")
             .await
@@ -2171,19 +2264,20 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
         assert_ne!(replacement_uid, crashed_uid);
         let recovered = kind.wait_ready(3, "w11-crash-recovered").await;
         recovered.assert_quorum();
+        let expected_crash_epoch = after_scale_down_epoch.saturating_add(1);
         let after_crash = kind
             .wait_raft_nodes(
                 3,
                 3,
-                after_scale_down_epoch,
+                expected_crash_epoch,
                 healed_applied,
                 None,
                 "w11-crash-recovered",
             )
             .await;
         assert_eq!(
-            after_crash[0].status.epoch, after_scale_down_epoch,
-            "pod crash/replacement must not implicitly change committed membership"
+            after_crash[0].status.epoch, expected_crash_epoch,
+            "pod replacement must fence its old process generation with exactly one epoch"
         );
     })
     .catch_unwind()
@@ -2227,6 +2321,7 @@ async fn operator_scale_chaos_kind_lane_records_voters_and_metadata_epoch() {
 #[tokio::test]
 #[ignore = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"]
 async fn multi_node_chaos_soak_preserves_quorum_and_leadership() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) =
         KindHarness::try_start("multi_node_chaos_soak_preserves_quorum_and_leadership").await
     else {
@@ -2257,6 +2352,7 @@ async fn multi_node_chaos_soak_preserves_quorum_and_leadership() {
 #[tokio::test]
 #[ignore = "kind/nightly soak: set HYDRACACHE_OPERATOR_KIND=1"]
 async fn leader_is_always_reestablished_after_pod_crash() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) = KindHarness::try_start("leader_is_always_reestablished_after_pod_crash").await
     else {
         return;
@@ -2280,6 +2376,7 @@ async fn leader_is_always_reestablished_after_pod_crash() {
 #[tokio::test]
 #[ignore = "kind/calico-gated: set HYDRACACHE_OPERATOR_KIND=1 with a NetworkPolicy-enforcing CNI"]
 async fn kind_partition_injection_isolates_and_heals() {
+    let _proof = LIVE_KIND_PROOF_LOCK.lock().await;
     let Some(kind) = KindHarness::try_start("kind_partition_injection_isolates_and_heals").await
     else {
         return;
@@ -2584,12 +2681,12 @@ fn iochaos_receipt_requires_controller_injection_and_exact_target() {
         ],
         "experiment": {
             "containerRecords": [{
-                "id": "testing/chaos-1",
+                "id": "testing/chaos-1/hydracache",
                 "selectorKey": ".",
                 "phase": "Injected"
             }]
         },
-        "instances": { "testing/chaos-1": 1 }
+        "instances": { "testing/chaos-1/hydracache": 1 }
     });
 
     let receipt = iochaos_injection_receipt(&object, &target, "pod-uid-1")

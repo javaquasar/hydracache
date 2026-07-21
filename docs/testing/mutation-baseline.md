@@ -30,6 +30,29 @@ copied mutation workspace excludes it; this also avoids a second multi-gigabyte
 Cargo target tree on the CI runner. Each shard has its own ephemeral checkout,
 so no two in-place mutation processes share a source tree.
 
+### Bounded fault-injection contract
+
+The `test-failpoints` storage controller deliberately blocks an armed Raft
+operation until the test releases it. That wait is capped at five seconds. The
+cap is not a production retry policy: it is a test-harness safety boundary that
+prevents a malformed implementation or mutation (for example, treating
+`FailImmediately` as a blocking mode) from hanging an entire mutation shard.
+The focused tests still prove all three semantics independently: immediate
+failure, block-then-continue, and block-then-fail. They also assert that only the
+armed storage operation is affected and that in-flight counters return to zero.
+The wait loop makes one decision at its deadline boundary: every wake-up returns
+to the loop head, which either observes an explicit release or performs timeout
+cleanup. There is intentionally no second `timed_out && !released` predicate;
+that redundant predicate produced semantically equivalent mutation survivors.
+
+The compaction-seam recovery test performs real close/reopen cycles against a
+temporary Sled directory. Dropping the final `sled::Db` handle can race the
+background flusher's filesystem-lock release, so the harness retries only the
+specific `could not acquire lock` error for at most two seconds. Every other
+open error remains an immediate failure. This keeps the unmutated mutation
+baseline deterministic while still proving recovery from the same durable
+directory after the simulated crash boundary.
+
 ## Allowed Survivors
 
 No allowed survivors.

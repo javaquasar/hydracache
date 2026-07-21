@@ -54,19 +54,26 @@ async fn concurrent_loader_errors_are_shared_and_retry_is_possible() {
 async fn stress_concurrent_single_flight_same_key() {
     let cache = HydraCache::local().build();
     let calls = Arc::new(AtomicUsize::new(0));
+    // Release every caller together so this test exercises one in-flight
+    // generation, rather than measuring how many callers happen to overlap
+    // on a busy CI executor. The loader delay below keeps that generation
+    // observable while the remaining callers enter `get_or_load`.
+    let start = Arc::new(tokio::sync::Barrier::new(64));
     let mut tasks = Vec::new();
 
     for _ in 0..64 {
         let cache = cache.clone();
         let calls = calls.clone();
+        let start = start.clone();
         tasks.push(tokio::spawn(async move {
+            start.wait().await;
             for _ in 0..8 {
                 let value = cache
                     .get_or_load("user:stress", CacheOptions::new().tag("users"), {
                         let calls = calls.clone();
                         move || async move {
                             calls.fetch_add(1, Ordering::SeqCst);
-                            tokio::time::sleep(Duration::from_millis(1)).await;
+                            tokio::time::sleep(Duration::from_millis(10)).await;
                             Ok::<_, LoaderError>(user(42))
                         }
                     })

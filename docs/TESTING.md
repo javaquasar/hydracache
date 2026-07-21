@@ -894,10 +894,94 @@ cargo run -p xtask --locked -- evidence-run --release 0.66 --gate fast.workspace
 cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
 ```
 
+#### 0.66 proof design and interpretation
+
+The 0.66 gates deliberately use different test boundaries because no single
+harness can prove compile integrity, Raft authority, operating-system process
+behavior, and Kubernetes reconciliation at the same time.
+
+| Layer | What the test exercises | Why this oracle is used | What is not equivalent evidence |
+| --- | --- | --- | --- |
+| `hydracache-server --all-targets` | Every server library, binary, unit-test, and integration-test target compiles against the current private API. | Rust, MSRV, coverage, and dynamic-canary lanes all depend on this shared compile surface; a stale test-only call must fail immediately instead of being hidden by a narrower test selection. | Compiling only the production binary, or leaving a unit assertion coupled to a removed private helper. |
+| W10 real-daemon scheduling | Real `SIGSTOP`/`SIGCONT`, leader replacement, a committed drain, loss of quorum, and convergence after the former leader resumes. | An OS-level suspension tests scheduler and process behavior that an in-process message filter cannot reproduce. | A reachable HTTP endpoint, a two-member projection by itself, or an `epoch=0` bootstrap overview. |
+| W1/W12 snapshot process proofs | Real Sled compaction, HTTP snapshot delivery, receiver loss/slowdown, sender request/task gauges, and Linux process resources. | W1 proves catch-up and retry semantics; W12 retains event checkpoints while the same real sender work is live and then proves quiescence. | A model-only send, a monotonic HWM without a live-current checkpoint, or polling the unavailable receiver as if it were a sender. |
+| W5/W11 operator-kind | Real controller reconciliation, Chaos Mesh `IOChaos`, NetworkPolicy isolation, pod replacement, stable Raft identity, generation fencing, and retained-PVC rejoin. | These claims depend on Kubernetes controllers, CNI enforcement, storage identity, and a live operator process, so the fast deterministic lifecycle driver is necessary but insufficient. | A fake reconciler, a kind cluster without the required CNI/IOChaos capability, or artifacts produced by an old/different controller process. |
+| Release governance | Exact job/step wiring, mandatory heavy lanes, evidence commands, controller background ownership, and explicit cancellation. | The meta-gate makes the test plan falsifiable: deleting or bypassing a proof must turn CI red before release aggregation. | A raw successful `cargo test`, a skipped optional lane, or a receipt from another commit/release registry. |
+
+The deterministic W5 `io_chaos_boundaries` cases reopen the same Sled directory
+to prove persisted snapshot, applied-index, and commit state rather than merely
+checking the still-open in-memory view. Sled can briefly retain its filesystem
+lock while the last database handle shuts down, especially when cargo-mutants
+runs the full baseline at high concurrency. Reopen therefore retries only the
+specific `could not acquire lock` condition for at most 500 ms. Every other
+open error remains immediate, and exhausting the bound still fails the test;
+the retry cannot turn corrupt or missing durable state green.
+
+The server unit named
+`topology_and_identity_paths_fail_loud_on_invalid_inputs` covers the stable
+topology and create-once identity error contracts only. It does not inspect a
+private "Raft log directory has state" helper. Directory existence and file
+layout are storage implementation details and can give false confidence about
+recoverability. Durable Raft state is instead proved through the public
+behavioral boundaries in `compaction_seam`, `rejoin_after_compaction_process`,
+`rolling_upgrade_process`, and the daemon restart proofs. This keeps the unit
+test narrow while making persistence failures observable where users depend on
+them: compaction, reopen, replay, and cluster convergence.
+
+The `daemon_process_cluster` drain/restart proof distinguishes committed shape
+from endpoint readiness. Before choosing an arbitrary follower for a direct
+drain request it requires all three admin APIs to respond with the three-member,
+three-voter quorum; `wait_for_shape` alone may legitimately succeed from one
+responsive member and is not a safe precondition for addressing another node.
+The drain response must be `accepted`, and the two surviving voters must both
+be responsive after the drained process is killed. After its retained storage
+is restarted, the proof observes authoritative (`quorum_ok` plus leader)
+statuses for two seconds and rejects any committed member/voter shape other
+than `2/2`. A transient non-authoritative bootstrap view from the removed
+process is diagnostic only. This test proves non-resurrection safety; other
+restart/rejoin tests own the separate availability claim.
+
+The W10 evidence keeps two histories. The diagnostic timeline retains every
+parseable sample, including the expected quorumless two-voter projection and
+temporary `epoch=0` views, so a failure can be reconstructed without censoring
+intermediate state. The monotonic authoritative history accepts only samples
+with quorum, a leader, leader/term agreement, the expected member set, and a
+matching non-zero committed epoch. The split avoids both failure modes of a
+single history: treating a safe authority fence as a membership regression, or
+weakening the oracle until a reachable but stale process is called healthy.
+
 The daemon receipt is a Linux release lane because W10 uses real
 `SIGSTOP`/`SIGCONT`, W1/W12 exercise real snapshot HTTP delivery, and W12
 requires `/proc` RSS/VmHWM/FD samples. Ship mode also requires full Git history and
 the real `v0.65.0` tag; it never silently uses the pinned development fallback.
+
+The W10 resume/demotion proof distinguishes a reachable public endpoint from an
+authoritative membership observation. Immediately after `SIGCONT`, a daemon or
+majority peer may briefly expose a bootstrap overview with `epoch=0` while its
+committed view is being materialized. That sample remains in the diagnostic
+timeline but is not appended to the monotonic authoritative history. A
+membership-shape change in `/admin/status` is not sufficient on its own. While
+the former leader is suspended, draining the third voter commits a two-voter
+set containing the replacement and that suspended process; the live voter then
+necessarily loses quorum and its leader view. The pre-resume checkpoint therefore
+requires the expected member/voter shape and exact projected member set, but
+deliberately allows the authority-fenced `epoch=0` overview. That snapshot is
+kept only in diagnostic evidence and is not appended to the monotonic
+authoritative history. After `SIGCONT`, quorum, leader/term agreement, and the
+matching non-zero overview are required before the resumed sample is accepted
+as authoritative.
+A current-term vote response or arbitrary peer traffic is also insufficient to
+renew metadata authority. A follower requires a successfully stepped `Append`,
+`Heartbeat`, or `Snapshot` from the Raft runtime's current leader. The leader
+requires a current-term append or heartbeat acknowledgement from a member of
+its current voter set; this keeps the leader observable without accepting an
+unrelated vote, timeout, removed peer, or non-leader message as authority. The
+local applied and committed indexes must then match and the metadata projection
+must remain unchanged across the authority check. The 200 ms wall-clock TTL is
+an observability fence, not a Raft read lease, and remains shorter than the
+minimum election timeout. The proof still requires a non-zero committed epoch,
+the expected member/voter shape, and leader/term agreement with the live
+majority before the resumed process can be accepted as authoritative.
 
 For W12, `tracked_connections` remains the 0.64-compatible maximum per-daemon
 request gauge at retained event checkpoints; it is not a sender/peer identity or
@@ -910,6 +994,38 @@ polls. Request/task current must finish at `0`; the exact sender/peer reservatio
 is proven separately by the sink unit tests. The task HWM is process-local and
 resets when a daemon restarts, so W12 retains the in-flight checkpoint before it
 kills the receiver; it is not an all-process-lifetimes cluster maximum.
+
+The two Linux W12 resource proofs are serialized inside their test binary. Each
+proof owns a three-daemon cluster and intentionally holds one snapshot HTTP
+request open, so concurrent execution would make scheduler pressure part of the
+measurement. Before the baseline is sampled, the barrier requires three
+responsive admin APIs as well as `members=3`, `voters=3`, and quorum; membership
+shape alone is not readiness and could otherwise race a `ConnectionRefused`.
+
+After compaction the lagger process starts before its admin API becomes
+available, so activation and failure checkpoints query only the two known live
+sender indices. Polling the starting receiver would spend the observation
+window on an unavailable admin socket and is not evidence about sender
+resources. Receiver behavior is instead proved later by its snapshot-install
+counter, applied index, and three-daemon convergence. The current leader is
+polled first and only then are both senders aggregated. Attempt deltas compare
+the sender-set aggregate before and after; an individual leader counter is
+never compared with a cluster-wide baseline because leadership may move.
+
+The harness adds a 500 ms `snapshot_delay` at the outbound snapshot boundary
+before the real HTTP request, followed by a 5 s receiver-handler delay. The
+first delay exists only to make the live reservation observable; unlike the
+generic transport delay it ignores heartbeats, votes, appends, and other
+non-snapshot traffic, so the measurement does not manufacture an election.
+The scoped behavior has a paused-time unit test proving that ordinary Raft
+traffic remains undelayed. Both fault controls are inert unless the existing
+loopback daemon-process test boundary and its generation-checked control file
+are enabled. The receiver-kill case tests that a live reservation is released
+after the receiver disappears; the slow-receiver case crosses the real bounded
+HTTP timeout repeatedly and tests backpressure across three failures. Both
+clear the scoped fault before the final retry and require current sender tasks
+and in-flight requests to return to zero before the evidence artifact is
+accepted.
 
 Linux samples also contain current RSS, open FDs, and a conservative sum of the
 currently live daemons' process-lifetime `VmHWM`. The HWM sum is bounded from
@@ -941,12 +1057,61 @@ The operator gate expects a prepared kind cluster, the CRD/controller/current
 server image, a NetworkPolicy-enforcing CNI for W11, and Chaos Mesh `IOChaos`
 for the W5 slow-disk claim. This receipt is Linux-only: it verifies the live
 controller PID through `/proc`, requires that PID to execute the exact
-`target/debug/hydracache-operator` inode, and binds the controller's own runtime
-output to a unique `HYDRACACHE_OPERATOR_EVIDENCE_NONCE`. During the command, the
-W11 proof snapshots that log along with receipt-bound capability markers,
-non-empty server-pod logs, resources for the expected cluster, and events.
+SHA-named candidate inode copied into `target/ci-runtime/0.66`, and binds both that
+absolute path (`HYDRACACHE_OPERATOR_BINARY`) and the controller's own runtime
+output to the current run. The copy is made after the foreground `cargo build`
+because the proof's later `cargo run` may relink `target/debug/hydracache-operator`;
+on Linux that leaves an already-running process alive but `/proc/<pid>/exe`
+points to a deleted inode. An immutable candidate copy separates compilation
+from process identity without weakening the inode check. The candidate must
+resolve inside the dedicated runtime directory; an arbitrary environment path
+is rejected. During the command, the W11 proof snapshots that log along with
+receipt-bound capability markers, non-empty server-pod logs, resources for the
+expected cluster, and events.
 `evidence-run` removes the declared snapshots before execution; an empty,
 missing, stale, or wrong-process diagnostic artifact is not a ship receipt.
+
+In GitHub Actions the release job prepares the binary first, then runs the
+controller as a supervised `background` step. That step records `BASHPID` and
+uses `exec` so the recorded PID belongs to the exact operator binary rather than
+to a wrapper shell. A following step waits for both the live PID and the
+nonce-bound runtime marker. The controller is explicitly canceled only after
+the W11 receipt has been captured. A detached `nohup` child, a stale PID, or a
+zombie process is not accepted as controller evidence.
+
+`Controller::run` is itself supervised inside the attested binary. If its watch
+stream ends unexpectedly, the same process emits
+`HC-OPERATOR-CONTROLLER-STREAM-RESTART` and starts a fresh stream after bounded
+exponential delays of 1, 2, 4, 8, 16, then 30 seconds. A stream lifetime of at
+least 60 seconds resets that backoff. This boundary is intentionally different
+from `error_policy`: an item-level reconcile error is logged and requeued by the
+controller, while end-of-stream means there is no controller left to reconcile
+future changes. The same-PID restart preserves the `/proc/<pid>/exe` attestation;
+the delay cap prevents a dead API/watch path from becoming a hot loop. Unit
+tests inject immediately completed streams to prove restart sequencing and
+separately prove the exact backoff cap. The kind proof remains responsible for
+showing that the long-lived process actually reconciles Kubernetes resources.
+
+Preparation is a separate foreground step so checkout, CRD installation,
+authentication setup, and compilation fail as ordinary finite operations. The
+background step then has one responsibility: own the long-lived controller for
+the proof window. Writing `BASHPID` before `exec` removes the shell/child PID
+ambiguity, while the test's `/proc/<pid>/exe` inode check and runtime nonce prove
+both binary identity and freshness. Explicit cancellation after evidence
+capture prevents the controller from disappearing between the functional
+assertions and the final receipt. If setup, liveness, identity, nonce, or
+artifact capture fails, the gate fails closed; runner cleanup is not treated as
+a successful receipt.
+
+W5 and W11 distinguish logical membership from a physical pod generation. A
+replacement keeps the stable Raft member ID, but announces a new
+`ClusterGeneration`; committing that fencing update must advance the membership
+epoch exactly once while preserving the exact voter set. Any later scale-down
+is therefore checked relative to the recovered epoch, not the pre-replacement
+epoch. W11 also exercises a retained late-ordinal PVC: after scale-down removes
+that voter, scale-up must reuse the durable identity but follow the configured
+`join` path so the live cluster re-admits it instead of bootstrapping the stale
+stored ConfState.
 
 The following is the exact clean-cluster Bash reproduction from a clean checkout.
 It needs Docker, Go 1.23.4, Rust stable, `kubectl` 1.32.0, and Helm 3.17.0; all
@@ -997,11 +1162,13 @@ kubectl wait --for=condition=Established \
   crd/hydracacheclusters.hydracache.io --timeout=60s
 cargo build -p hydracache-operator --locked
 
-mkdir -p target/test-evidence/0.66
-operator_binary="$(pwd)/target/debug/hydracache-operator"
+mkdir -p target/test-evidence/0.66 target/ci-runtime/0.66
+operator_binary="$(pwd)/target/ci-runtime/0.66/hydracache-operator-$(git rev-parse HEAD)"
+install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
 operator_log="target/test-evidence/0.66/operator-controller-live.log"
 operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
 operator_nonce="release-066-local-$(date +%s)-$(git rev-parse --short=12 HEAD)-$$"
+export HYDRACACHE_OPERATOR_BINARY="$operator_binary"
 export HYDRACACHE_OPERATOR_EVIDENCE_NONCE="$operator_nonce"
 export HYDRACACHE_OPERATOR_NAMESPACE=default
 export HYDRACACHE_OPERATOR_IDENTITY=release-066-local
@@ -1219,8 +1386,8 @@ RESP suite belongs only to W3. There are no standalone W4-W7 fast suites; the
 reconciled fast-suite registry aggregate budget is exactly 1560 seconds.
 
 These commands describe the release workflow; they are not currently expected
-to produce a ship receipt. The local checkout has no annotated `v0.66.0`
-predecessor tag.
+to produce a ship receipt. The annotated `v0.66.0` predecessor is present and
+ancestral.
 The committed `reference-v1` baseline and budget are also intentionally
 `unbootstrapped`: bootstrap requires at least five eligible, stable, successful
 dedicated `main` runs from one qualified fingerprint/contract family and an

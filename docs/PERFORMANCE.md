@@ -4,10 +4,10 @@ This document defines what HydraCache performance results mean, which execution
 surfaces release `0.67.0` actually measures, and when a result is eligible to
 support a release statement.
 
-> **Current status (2026-07-18): implementation closure reached, release not shipped.**
+> **Current status (2026-07-21): implementation closure reached, release not shipped.**
 > The W0-W10 measurement and governance implementation is present, but no
-> `0.67.0` performance number is release-qualified yet. The local checkout has
-> no `v0.66.0` predecessor tag, and the W7 `reference-v1` anchor and rolling
+> `0.67.0` performance number is release-qualified yet. The annotated `v0.66.0`
+> predecessor is present and ancestral; the W7 `reference-v1` anchor and rolling
 > baseline remain `unbootstrapped`. Shipping requires at least five eligible dedicated
 > `main` runs from the same qualified runner family, an independently reviewed
 > anchor/budget payload, and a fresh exact-candidate receipt set.
@@ -95,10 +95,10 @@ in [`TESTING.md`](TESTING.md); the gate-to-CI map is in [`GATES.md`](GATES.md).
 
 ## Current no-ship decision
 
-Implementation closure is not release closure. As of 2026-07-18:
+Implementation closure is not release closure. As of 2026-07-21:
 
-- the local checkout has no `v0.66.0` tag, so the declared predecessor/ancestry
-  contract cannot be satisfied;
+- the annotated `v0.66.0` predecessor is present and satisfies the ancestry
+  prerequisite;
 - the W7 anchor, rolling baseline, and all numerical budgets remain
   unbootstrapped pending at least five eligible dedicated `main` runs and
   independent review;

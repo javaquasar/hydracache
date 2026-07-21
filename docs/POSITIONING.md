@@ -115,9 +115,9 @@ operability surface, and soak mileage), not missing core capability.
 ## Performance positioning while 0.67 is in progress
 
 Release `0.67.0` has implementation closure but is **not shipped**, so it does not yet support an
-official capacity, sizing, Redis-comparison, or metrics-agreement statement. The local checkout
-has no `v0.66.0` predecessor tag, and the dedicated W7 anchor/rolling baseline is unbootstrapped
-pending at least five eligible `main` runs and independent review.
+official capacity, sizing, Redis-comparison, or metrics-agreement statement. The annotated
+`v0.66.0` predecessor is present and ancestral; the dedicated W7 anchor/rolling baseline is
+unbootstrapped pending at least five eligible `main` runs and independent review.
 
 When that evidence exists, statements must remain surface-scoped:
 

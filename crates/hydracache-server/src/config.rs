@@ -22,10 +22,11 @@ pub enum ServerRole {
     Client,
 }
 
-/// Cluster startup mode for the first boot of a durable member.
+/// Cluster startup mode for a durable member.
 ///
-/// Restarting members keep their stored raft identity and configuration; this
-/// mode is only consulted before any durable raft log exists.
+/// Restarting members keep their stored raft identity and log. The configured
+/// mode remains authoritative so a retained late-join volume is re-admitted by
+/// the live cluster instead of bootstrapping from a stale removed ConfState.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ClusterStartMode {

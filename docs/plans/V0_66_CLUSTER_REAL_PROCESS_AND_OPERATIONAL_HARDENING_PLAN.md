@@ -15,7 +15,7 @@
 >   claim boundary; W5 IO chaos; W6 mixed-daemon upgrade harness; W7 external control-plane history;
 >   W8 differential metadata model; W9 fuzz/socket corpus; W10 scheduler/tick perturbation; W11 kind
 >   scale chaos; W12 snapshot-transfer resource budget; W13 release governance and CI.
-> - **Status:** in-progress.
+> - **Status:** shipped.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
 > gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md) -

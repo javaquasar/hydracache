@@ -877,15 +877,15 @@ impl ExternalNemesisChecker {
                         );
                     }
                 }
-                (Some(before_epoch), Some(after_epoch), Some(before), Some(after)) => {
-                    if after_epoch < before_epoch || before != after {
-                        report.record_violation(
-                            "nemesis_non_membership_fault_preserves_commit",
-                            format!(
-                                "operation {operation_id} changed committed membership during non-membership faults: epoch {before_epoch}->{after_epoch}, members {before:?}->{after:?}"
-                            ),
-                        );
-                    }
+                (Some(before_epoch), Some(after_epoch), Some(before), Some(after))
+                    if after_epoch < before_epoch || before != after =>
+                {
+                    report.record_violation(
+                        "nemesis_non_membership_fault_preserves_commit",
+                        format!(
+                            "operation {operation_id} changed committed membership during non-membership faults: epoch {before_epoch}->{after_epoch}, members {before:?}->{after:?}"
+                        ),
+                    );
                 }
                 _ => {}
             }

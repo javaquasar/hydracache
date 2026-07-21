@@ -21,8 +21,8 @@
 >   erode. A native-daemon or distributed-value-plane capacity claim remains blocked until those
 >   product surfaces are implemented in a separate release.
 > - **Status:** in-progress, implementation closure reached (W0-W10 source, tests, scenarios,
->   governance, CI wiring, and documentation are present), but **not shipped**. The local checkout
->   has no `v0.66.0` predecessor tag, and W7 remains deliberately unbootstrapped pending at least five
+>   governance, CI wiring, and documentation are present), but **not shipped**. The annotated
+>   `v0.66.0` predecessor is present and ancestral; W7 remains deliberately unbootstrapped pending at least five
 >   eligible dedicated `main` runs plus independent anchor/budget review and a fresh frozen-candidate
 >   receipt set.
 >
@@ -211,7 +211,7 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible dedicated `main` runs and independent review. |
 | W8 | `crates/hydracache-loadgen::{compare_redis,cli,main}`; `crates/hydracache-loadgen/tests/w8_redis_compare_067.rs`; `docs/testing/perf-scenarios/0.67/compare-redis-v1.toml` | `cargo test -p hydracache-loadgen --test w8_redis_compare_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 compare_redis` | Same host, pinned tool/image, alternating order, canonical sealed W3 predecessor, and one selected node-local RESP endpoint. It is a method-bound artifact, not a Redis-replacement or superiority claim. |
 | W9 | `crates/hydracache-loadgen::{metrics_honesty,tiers::{resp,control_plane}}`; `crates/hydracache-loadgen/tests/w9_metrics_067.rs`; `docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml` | `cargo test -p hydracache-loadgen --test w9_metrics_067 --locked -j 2` | Same-process observer windows cross-check only metrics already exported by real RESP/control-plane daemons; absent fields are `not_available`, and service time is never relabeled as scheduled-send latency. |
-| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus shared-tripwire/dedicated-ship separation are implemented. Release aggregation remains red until the predecessor tag, W7 bootstrap/review, dedicated artifacts, canaries, and final receipts exist on one frozen candidate. |
+| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus shared-tripwire/dedicated-ship separation are implemented. The predecessor tag is present and ancestral; release aggregation remains red until W7 bootstrap/review, dedicated artifacts, canaries, and final receipts exist on one frozen candidate. |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
 the registered command only through
@@ -728,7 +728,7 @@ Implementation closure and release closure are separate states:
 | W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible dedicated `main` runs and independent review |
 | W8 comparison | Pinned same-box Redis comparison and canonical W3 predecessor binding implemented | Final dedicated W8 report absent; no marketing or shipped comparative claim |
 | W9 metrics honesty | Same-process RESP/control-plane windows and exported-only validation implemented | Final dedicated metrics reports absent; unavailable fields remain non-claims |
-| W10 governance/docs | Release-scoped gates, canaries, exact-candidate prebuild/receipt contracts, CI separation, and docs implemented | **Blocked:** local `v0.66.0` tag is absent; final frozen-candidate gate/canary/artifact receipts have not made `--require-ship` green |
+| W10 governance/docs | Release-scoped gates, canaries, exact-candidate prebuild/receipt contracts, CI separation, and docs implemented | The annotated `v0.66.0` tag is present and ancestral; **blocked:** final frozen-candidate gate/canary/artifact receipts have not made `--require-ship` green |
 
 The bullets below are target ship conditions, not a record that they have
 already passed:
@@ -763,8 +763,8 @@ already passed:
 
 ## Final Release Decision
 
-**Current decision (2026-07-18): NO-SHIP.** Keep `0.67.0` `in-progress` until the local checkout has
-the annotated `v0.66.0` predecessor, W7 is bootstrapped from at least five eligible dedicated `main`
+**Current decision (2026-07-21): NO-SHIP.** The annotated `v0.66.0` predecessor is present and
+ancestral. Keep `0.67.0` `in-progress` until W7 is bootstrapped from at least five eligible dedicated `main`
 runs with independent review, and one frozen clean candidate satisfies every condition below.
 
 Ship `0.67.0` only when artifacts answer the narrower questions the product can honestly support:

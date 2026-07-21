@@ -308,11 +308,24 @@ fn run_resumed_demoted_process() -> TestResult {
     let drained_node_id = node_ids[drain_index].clone();
     let accepted = cluster.drain(drain_index)?;
     assert_eq!(accepted["outcome"], "accepted");
-    let committed_while_paused = cluster.wait_for(
-        "membership change committed while former leader is suspended".to_owned(),
+    let (committed_while_paused, committed_membership) = cluster.wait_for(
+        "committed membership projected while former leader is suspended".to_owned(),
         |cluster| {
             let status = cluster.admin_status(replacement_index).ok()?;
-            (status.members == 2 && status.voters == 2).then_some(status)
+            if status.members != 2 || status.voters != 2 {
+                return None;
+            }
+            let membership = MembershipObservation::from_cluster_overview(
+                &cluster.cluster_overview(replacement_index).ok()?,
+            );
+            // Committing the drain leaves exactly the replacement and the
+            // suspended former leader as voters. The live process therefore
+            // loses quorum immediately after the commit and cannot advertise
+            // a leader or non-zero authoritative epoch until SIGCONT. Preserve
+            // this exact projection as diagnostics only; quorum/leader
+            // authority is required again after resume below.
+            (membership.members.len() == 2 && !membership.members.contains(&drained_node_id))
+                .then_some((status, membership))
         },
     )?;
     evidence.record_admin(
@@ -320,14 +333,12 @@ fn run_resumed_demoted_process() -> TestResult {
         replacement_index,
         committed_while_paused,
     );
-    let committed_membership =
-        MembershipObservation::from_cluster_overview(&cluster.cluster_overview(replacement_index)?);
     assert_eq!(committed_membership.members.len(), 2);
     assert!(
         !committed_membership.members.contains(&drained_node_id),
         "committed membership still contained drained node {drained_node_id}: {committed_membership:?}"
     );
-    evidence.record_authoritative_membership(committed_membership);
+    evidence.overview_samples.push(committed_membership);
 
     cluster.resume(old_leader_index)?;
     let deadline = Instant::now() + Duration::from_secs(5);
@@ -353,6 +364,15 @@ fn run_resumed_demoted_process() -> TestResult {
         };
         let peer_membership =
             MembershipObservation::from_cluster_overview(&cluster.cluster_overview(peer_index)?);
+        // `/admin/status` can become reachable a few scheduler ticks before the
+        // public overview has materialized its committed epoch. Epoch zero is a
+        // bootstrap/uninitialized view, not an authoritative membership
+        // regression, so wait for the majority peer's committed shape before
+        // adding it to the monotonic history.
+        if peer_membership.epoch == 0 || peer_membership.members.len() != 2 {
+            std::thread::sleep(Duration::from_millis(20));
+            continue;
+        }
         evidence.record_authoritative_membership(peer_membership.clone());
 
         if resumed_status.quorum_ok && resumed_status.leader.is_some() {

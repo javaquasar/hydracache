@@ -20,8 +20,8 @@ use hydracache::{
 };
 use hydracache_cluster_chitchat::{ChitchatDiscovery, ChitchatDiscoveryConfig};
 use hydracache_cluster_raft::{
-    RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig, RaftMetadataRuntimeSnapshot,
-    RaftRuntimeRole, RaftWireMessage, SledRaftLogStore,
+    RaftAuthorityObservation, RaftMessageSink, RaftMetadataRuntime, RaftMetadataRuntimeConfig,
+    RaftMetadataRuntimeSnapshot, RaftRuntimeRole, RaftWireMessage, SledRaftLogStore,
 };
 use hydracache_cluster_transport_axum::{
     tls::TlsStartupPolicy, AllowAllAuthorizer, AxumClusterMessageService, ClusterMessageAck,
@@ -39,9 +39,9 @@ use crate::config::{ClusterStartMode, ServerConfig, ServerConfigError};
 const DEFAULT_CLUSTER_NAME: &str = "hydracache";
 const GRID_INPROC_ENV: &str = "HYDRACACHE_GRID_INPROC";
 const GRID_DRIVE_INTERVAL: Duration = Duration::from_millis(50);
-// Strictly shorter than the minimum five-tick election timeout. A node that
-// misses this window must hear current-term Raft traffic again before its
-// local metadata projection can be advertised as authoritative.
+// Strictly shorter than the minimum five-tick election timeout. A follower
+// needs current-leader commit traffic and a leader needs a current-voter
+// acknowledgement before its local metadata can be advertised as authoritative.
 const GRID_RAFT_AUTHORITY_FRESHNESS: Duration = Duration::from_millis(200);
 const GRID_LEADER_WAIT_TIMEOUT: Duration = Duration::from_secs(5);
 const GRID_RUNTIME_SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(1);
@@ -144,7 +144,7 @@ async fn networked_member_stack(config: &ServerConfig) -> CacheResult<NetworkedM
             raft_log_dir.display()
         ))
     })?;
-    let start_mode = resolved_start_mode(config, &raft_log_dir)?;
+    let start_mode = resolved_start_mode(config);
 
     let raft_config = match start_mode {
         ResolvedClusterStartMode::Bootstrap => RaftMetadataRuntimeConfig::multi_voter(
@@ -1025,6 +1025,30 @@ fn raft_authority_observation_is_fresh(
     })
 }
 
+fn confirmed_raft_authority_term(
+    observation: Option<RaftAuthorityObservation>,
+    current_leader: Option<u64>,
+    local_role: RaftRuntimeRole,
+    current_voters: &[u64],
+) -> Option<u64> {
+    match observation? {
+        RaftAuthorityObservation::LeaderCommit {
+            source_raft_node_id,
+            term,
+            ..
+        } if current_leader == Some(source_raft_node_id) => Some(term),
+        RaftAuthorityObservation::VoterAcknowledgement {
+            source_raft_node_id,
+            term,
+        } if local_role == RaftRuntimeRole::Leader
+            && current_voters.contains(&source_raft_node_id) =>
+        {
+            Some(term)
+        }
+        _ => None,
+    }
+}
+
 #[derive(Debug, Clone)]
 struct RaftPeer {
     node_id: ClusterNodeId,
@@ -1045,39 +1069,11 @@ enum ResolvedClusterStartMode {
     Join,
 }
 
-fn resolved_start_mode(
-    config: &ServerConfig,
-    raft_log_dir: &Path,
-) -> CacheResult<ResolvedClusterStartMode> {
-    if !matches!(config.cluster_start, ClusterStartMode::Join) {
-        return Ok(ResolvedClusterStartMode::Bootstrap);
+fn resolved_start_mode(config: &ServerConfig) -> ResolvedClusterStartMode {
+    match config.cluster_start {
+        ClusterStartMode::Bootstrap => ResolvedClusterStartMode::Bootstrap,
+        ClusterStartMode::Join => ResolvedClusterStartMode::Join,
     }
-    if raft_log_dir_has_state(raft_log_dir)? {
-        return Ok(ResolvedClusterStartMode::Bootstrap);
-    }
-    Ok(ResolvedClusterStartMode::Join)
-}
-
-fn raft_log_dir_has_state(path: &Path) -> CacheResult<bool> {
-    if !path.exists() {
-        return Ok(false);
-    }
-    let mut entries = fs::read_dir(path).map_err(|error| {
-        CacheError::Backend(format!(
-            "failed to inspect raft log directory {}: {error}",
-            path.display()
-        ))
-    })?;
-    Ok(entries
-        .next()
-        .transpose()
-        .map_err(|error| {
-            CacheError::Backend(format!(
-                "failed to inspect raft log directory {}: {error}",
-                path.display()
-            ))
-        })?
-        .is_some())
 }
 
 fn raft_topology(
@@ -1221,6 +1217,7 @@ struct TestRaftOutboundFaultRule {
 enum TestRaftOutboundFaultAction {
     Drop,
     Delay { millis: u64 },
+    SnapshotDelay { millis: u64 },
 }
 
 #[derive(Debug, Clone)]
@@ -1280,11 +1277,18 @@ impl TestRaftOutboundFaultController {
         Ok(document)
     }
 
-    async fn apply(&self, to: &ClusterNodeId) -> CacheResult<()> {
+    async fn apply(&self, to: &ClusterNodeId, is_snapshot: bool) -> CacheResult<()> {
         let document = self.load_document()?;
         let Some(rule) = document.rules.iter().find(|rule| rule.to == to.as_str()) else {
             return Ok(());
         };
+        if matches!(
+            rule.action,
+            TestRaftOutboundFaultAction::SnapshotDelay { .. }
+        ) && !is_snapshot
+        {
+            return Ok(());
+        }
         let hit = (document.generation, rule.to.clone());
         if self
             .logged_hits
@@ -1302,7 +1306,8 @@ impl TestRaftOutboundFaultController {
                 "test raft outbound fault generation {} dropped message {} -> {}",
                 document.generation, rule.from, rule.to
             ))),
-            TestRaftOutboundFaultAction::Delay { millis } => {
+            TestRaftOutboundFaultAction::Delay { millis }
+            | TestRaftOutboundFaultAction::SnapshotDelay { millis } => {
                 let expected_generation = document.generation;
                 let expected_rule = rule.clone();
                 tokio::time::sleep(Duration::from_millis(millis)).await;
@@ -1345,7 +1350,9 @@ fn validate_test_raft_outbound_fault_document(
                 rule.from, rule.to
             )));
         }
-        if let TestRaftOutboundFaultAction::Delay { millis } = rule.action {
+        if let TestRaftOutboundFaultAction::Delay { millis }
+        | TestRaftOutboundFaultAction::SnapshotDelay { millis } = rule.action
+        {
             if !(1..=MAX_TEST_RAFT_OUTBOUND_DELAY_MS).contains(&millis) {
                 return Err(CacheError::Backend(format!(
                     "configured {TEST_RAFT_OUTBOUND_FAULT_FILE_ENV} delay must be in 1..={MAX_TEST_RAFT_OUTBOUND_DELAY_MS}ms, got {millis}"
@@ -1533,7 +1540,7 @@ impl HttpRaftMessageSink {
         Ok(headers)
     }
 
-    async fn send_http(&self, message: RaftWireMessage) -> CacheResult<()> {
+    async fn send_http(&self, message: RaftWireMessage, is_snapshot: bool) -> CacheResult<()> {
         let peer = self
             .peers
             .read()
@@ -1547,7 +1554,7 @@ impl HttpRaftMessageSink {
                 ))
             })?;
         if let Some(faults) = &self.test_outbound_faults {
-            faults.apply(&peer.node_id).await?;
+            faults.apply(&peer.node_id, is_snapshot).await?;
         }
         let request = ClusterOpaqueMessage::new(
             self.node_id_for(message.from),
@@ -1599,11 +1606,12 @@ impl RaftMessageSink for HttpRaftMessageSink {
         if message.to == self.local_raft_node_id {
             return Ok(());
         }
-        let snapshot_peer = if self.snapshot_feedback.is_some() && message.is_snapshot()? {
-            Some(message.to)
+        let is_snapshot = if self.snapshot_feedback.is_some() {
+            message.is_snapshot()?
         } else {
-            None
+            false
         };
+        let snapshot_peer = if is_snapshot { Some(message.to) } else { None };
         if let (Some(peer_id), Some(feedback)) = (snapshot_peer, &self.snapshot_feedback) {
             let expected_term = message.term;
             let reservation = feedback.try_reserve(peer_id)?;
@@ -1612,13 +1620,13 @@ impl RaftMessageSink for HttpRaftMessageSink {
                 reason = wait_for_snapshot_authority_loss(feedback.clone(), expected_term) => {
                     Err(CacheError::Backend(reason))
                 }
-                result = self.send_http(message) => result,
+                result = self.send_http(message, true) => result,
             };
             let delivered = result.is_ok();
             reservation.finish(delivered);
             return result;
         }
-        self.send_http(message).await
+        self.send_http(message, false).await
     }
 }
 
@@ -2537,7 +2545,14 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
             term: message.term,
             payload: payload.to_vec(),
         };
-        if wire_message.is_snapshot()? {
+        let authority_observation = wire_message.authority_observation()?;
+        if matches!(
+            authority_observation,
+            Some(RaftAuthorityObservation::LeaderCommit {
+                is_snapshot: true,
+                ..
+            })
+        ) {
             if let Some(delay) = self.test_snapshot_handler_delay {
                 // This opt-in process-test seam runs only after Axum received
                 // and decoded the real HTTP body. Holding before raft.step/ack
@@ -2545,9 +2560,17 @@ impl ClusterMessageHandler for RaftClusterMessageHandler {
                 tokio::time::sleep(delay).await;
             }
         }
-        let inbound_term = wire_message.term;
         let outbound = self.raft.step(wire_message)?;
-        self.drive_diagnostics.record_raft_inbound(inbound_term);
+        let progress = self.raft.snapshot();
+        let voters = self.raft.voter_ids()?;
+        if let Some(term) = confirmed_raft_authority_term(
+            authority_observation,
+            self.raft.leader_id(),
+            progress.role,
+            &voters,
+        ) {
+            self.drive_diagnostics.record_raft_inbound(term);
+        }
         send_raft_messages_with_diagnostics(
             &self.message_sink,
             outbound,
@@ -2703,7 +2726,10 @@ mod tests {
         )
         .unwrap();
         fs::remove_file(missing_control_file).unwrap();
-        assert!(missing.apply(&ClusterNodeId::from("node-b")).await.is_err());
+        assert!(missing
+            .apply(&ClusterNodeId::from("node-b"), false)
+            .await
+            .is_err());
 
         let malformed_storage = FaultTestDir::new("malformed");
         let malformed_control_file = malformed_storage.control_file();
@@ -2715,7 +2741,7 @@ mod tests {
         .unwrap();
         fs::write(malformed_control_file, b"{not-json").unwrap();
         assert!(malformed
-            .apply(&ClusterNodeId::from("node-b"))
+            .apply(&ClusterNodeId::from("node-b"), false)
             .await
             .is_err());
     }
@@ -2738,11 +2764,11 @@ mod tests {
         )
         .unwrap();
         assert!(controller
-            .apply(&ClusterNodeId::from("node-b-suffix"))
+            .apply(&ClusterNodeId::from("node-b-suffix"), false)
             .await
             .is_ok());
         assert!(controller
-            .apply(&ClusterNodeId::from("node-b"))
+            .apply(&ClusterNodeId::from("node-b"), false)
             .await
             .is_err());
 
@@ -2755,13 +2781,43 @@ mod tests {
             )],
         );
         assert!(controller
-            .apply(&ClusterNodeId::from("node-c"))
+            .apply(&ClusterNodeId::from("node-c"), false)
             .await
             .is_ok());
         assert!(controller
-            .apply(&ClusterNodeId::from("node-c-suffix"))
+            .apply(&ClusterNodeId::from("node-c-suffix"), false)
             .await
             .is_ok());
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn snapshot_scoped_delay_is_inert_for_non_snapshot_traffic() {
+        let storage = FaultTestDir::new("snapshot-delay");
+        let control_file = storage.control_file();
+        write_outbound_fault_document(
+            &control_file,
+            3,
+            vec![outbound_fault_rule(
+                "node-b",
+                TestRaftOutboundFaultAction::SnapshotDelay { millis: 100 },
+            )],
+        );
+        let controller =
+            TestRaftOutboundFaultController::new(control_file, &ClusterNodeId::from("node-a"))
+                .unwrap();
+
+        controller
+            .apply(&ClusterNodeId::from("node-b"), false)
+            .await
+            .unwrap();
+        let delayed =
+            tokio::spawn(
+                async move { controller.apply(&ClusterNodeId::from("node-b"), true).await },
+            );
+        tokio::task::yield_now().await;
+        assert!(!delayed.is_finished());
+        tokio::time::advance(Duration::from_millis(100)).await;
+        delayed.await.unwrap().unwrap();
     }
 
     #[tokio::test(start_paused = true)]
@@ -2782,8 +2838,11 @@ mod tests {
         )
         .unwrap();
 
-        let delayed =
-            tokio::spawn(async move { controller.apply(&ClusterNodeId::from("node-b")).await });
+        let delayed = tokio::spawn(async move {
+            controller
+                .apply(&ClusterNodeId::from("node-b"), false)
+                .await
+        });
         tokio::task::yield_now().await;
         write_outbound_fault_document(&control_file, 8, Vec::new());
         tokio::time::advance(Duration::from_millis(100)).await;
@@ -2845,32 +2904,15 @@ mod tests {
     }
 
     #[test]
-    fn resolved_start_mode_joins_only_when_configured_and_log_is_empty() {
+    fn resolved_start_mode_honors_explicit_join_with_retained_state() {
         let mut config = test_member_config("127.0.0.1:7000");
-        let dir = PathBuf::from(format!(
-            "target/test-hydracache-grid-host/start-mode-{}",
-            std::process::id()
-        ));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap();
-
         assert_eq!(
-            resolved_start_mode(&config, &dir).unwrap(),
+            resolved_start_mode(&config),
             ResolvedClusterStartMode::Bootstrap
         );
 
         config.cluster_start = ClusterStartMode::Join;
-        assert_eq!(
-            resolved_start_mode(&config, &dir).unwrap(),
-            ResolvedClusterStartMode::Join
-        );
-
-        std::fs::write(dir.join("conf-state"), b"present").unwrap();
-        assert_eq!(
-            resolved_start_mode(&config, &dir).unwrap(),
-            ResolvedClusterStartMode::Bootstrap
-        );
-        let _ = std::fs::remove_dir_all(&dir);
+        assert_eq!(resolved_start_mode(&config), ResolvedClusterStartMode::Join);
     }
 
     #[test]
@@ -3463,6 +3505,69 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn raft_authority_requires_current_leader_commit_or_current_voter_acknowledgement() {
+        let leader_commit = RaftAuthorityObservation::LeaderCommit {
+            source_raft_node_id: 11,
+            term: 7,
+            is_snapshot: false,
+        };
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(leader_commit),
+                Some(11),
+                RaftRuntimeRole::Follower,
+                &[11, 12, 13]
+            ),
+            Some(7)
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(leader_commit),
+                Some(12),
+                RaftRuntimeRole::Follower,
+                &[11, 12, 13]
+            ),
+            None
+        );
+
+        let voter_ack = RaftAuthorityObservation::VoterAcknowledgement {
+            source_raft_node_id: 12,
+            term: 7,
+        };
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(voter_ack),
+                Some(11),
+                RaftRuntimeRole::Leader,
+                &[11, 12, 13]
+            ),
+            Some(7)
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(voter_ack),
+                Some(11),
+                RaftRuntimeRole::Follower,
+                &[11, 12, 13]
+            ),
+            None
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(
+                Some(voter_ack),
+                Some(11),
+                RaftRuntimeRole::Leader,
+                &[11, 13]
+            ),
+            None
+        );
+        assert_eq!(
+            confirmed_raft_authority_term(None, Some(11), RaftRuntimeRole::Leader, &[11, 12, 13]),
+            None
+        );
+    }
+
     #[derive(Debug)]
     struct FailingRaftMessageSink;
 
@@ -3988,17 +4093,7 @@ mod tests {
     }
 
     #[test]
-    fn topology_log_and_identity_paths_fail_loud_on_invalid_inputs() {
-        let dir = unique_test_dir("topology-errors");
-        assert!(!raft_log_dir_has_state(&dir).unwrap());
-        fs::create_dir_all(&dir).unwrap();
-        let file = dir.join("not-a-directory");
-        fs::write(&file, "occupied").unwrap();
-        let error = raft_log_dir_has_state(&file).unwrap_err();
-        assert!(error
-            .to_string()
-            .contains("failed to inspect raft log directory"));
-
+    fn topology_and_identity_paths_fail_loud_on_invalid_inputs() {
         assert_eq!(valid_raft_endpoint("  "), None);
         assert_eq!(valid_raft_endpoint("0.0.0.0:7000"), None);
         assert_eq!(valid_raft_endpoint("127.0.0.1:0"), None);
@@ -4024,7 +4119,6 @@ mod tests {
         assert!(root.parent().is_none());
         let error = write_node_identity_create_once(root, "{}").unwrap_err();
         assert!(error.to_string().contains("has no parent directory"));
-        let _ = fs::remove_dir_all(dir);
     }
 
     struct PanicRaftMessageSink;

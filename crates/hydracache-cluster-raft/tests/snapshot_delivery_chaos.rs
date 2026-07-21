@@ -118,6 +118,30 @@ async fn duplicated_snapshot_is_idempotent_and_abort_releases_for_retry() {
 }
 
 #[tokio::test]
+async fn deferred_snapshot_failure_is_retried_by_the_normal_drive_loop() {
+    let mut cluster = RuntimeRaftCluster::three_node();
+    cluster.campaign(1);
+    lag_and_compact(&mut cluster, 3, "deferred-retry-prefix").await;
+    cluster.filters().recover();
+    hold_snapshots(&cluster, 1, 3);
+    cluster.tick_all(8);
+    assert!(!held_snapshots(&cluster).is_empty());
+
+    let discarded = cluster.filters().release_held();
+    assert!(discarded
+        .iter()
+        .any(|message| message.is_snapshot().unwrap()));
+    drop(discarded);
+    cluster.filters().recover();
+    cluster.node(1).report_snapshot_delivery_deferred(3, false);
+    cluster.tick_all(16);
+
+    assert!(cluster
+        .node(3)
+        .command_applied("member-upsert:deferred-retry-prefix:1"));
+}
+
+#[tokio::test]
 async fn held_snapshot_receiver_does_not_freeze_majority_progress() {
     let mut cluster = RuntimeRaftCluster::three_node();
     cluster.campaign(1);

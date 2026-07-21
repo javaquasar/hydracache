@@ -643,6 +643,7 @@ fn multi_node_drained_joiner_leaves_voter_set() {
 
     let mut joiner = joiner_config("late-join-drained-fourth", addrs[3], bootstrap_addrs);
     joiner.join_timeout_ms = 10_000;
+    let retained_joiner = joiner.clone();
     runtimes.push(Some(ServerRuntime::new(joiner).unwrap().start()));
     assert_cluster_shape(&runtimes, 4, 4, "joiner before drain");
 
@@ -652,6 +653,14 @@ fn multi_node_drained_joiner_leaves_voter_set() {
     drop(joiner_runtime);
 
     assert_cluster_shape(&runtimes, 3, 3, "joined daemon after graceful drain");
+
+    runtimes[3] = Some(ServerRuntime::new(retained_joiner).unwrap().start());
+    assert_cluster_shape(
+        &runtimes,
+        4,
+        4,
+        "drained joiner re-admitted from retained storage",
+    );
     shutdown_all(&mut runtimes);
 }
 

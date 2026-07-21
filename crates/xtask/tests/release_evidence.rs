@@ -171,7 +171,8 @@ fn explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_regist
     ));
 
     let registry = xtask::canary_check::load_registry_for_release(&root, "0.65").unwrap();
-    let canary_receipts = xtask::canary_sweep::load_receipts(&root).unwrap();
+    let canary_receipts =
+        xtask::canary_sweep::load_receipts_for_release(&root, &registry.release).unwrap();
     let source_commit = String::from_utf8(
         Command::new("git")
             .args(["rev-parse", "HEAD"])

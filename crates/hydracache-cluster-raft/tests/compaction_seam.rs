@@ -301,12 +301,13 @@ async fn compaction_seam_recovery_applies_committed_confchange_past_persisted_ap
     assert_eq!(store.initial_state().unwrap().conf_state.voters, vec![1]);
     drop(store);
 
-    let recovered = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let recovered =
+        retry_sled_reopen(|| RaftMetadataRuntime::sled_with_config(config.clone(), &path)).unwrap();
     assert_eq!(recovered.voter_ids().unwrap(), vec![1, 2]);
     assert!(recovered.snapshot().applied_index >= tail_index);
     drop(recovered);
 
-    let persisted = SledRaftLogStore::open(&path).unwrap();
+    let persisted = retry_sled_reopen(|| SledRaftLogStore::open(&path)).unwrap();
     assert_eq!(
         persisted.initial_state().unwrap().conf_state.voters,
         vec![1, 2]
@@ -314,6 +315,30 @@ async fn compaction_seam_recovery_applies_committed_confchange_past_persisted_ap
     assert!(RaftLogStore::applied_index(&persisted).unwrap() >= tail_index);
     drop(persisted);
     let _ = std::fs::remove_dir_all(path);
+}
+
+#[cfg(feature = "sled-log-store")]
+fn retry_sled_reopen<T, E>(mut open: impl FnMut() -> Result<T, E>) -> Result<T, E>
+where
+    E: std::fmt::Display,
+{
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+    loop {
+        match open() {
+            Ok(value) => return Ok(value),
+            Err(error)
+                if error.to_string().contains("could not acquire lock")
+                    && std::time::Instant::now() < deadline =>
+            {
+                // Sled releases its filesystem lock after the last Db handle is
+                // dropped, but the background flusher may finish asynchronously.
+                // A crash/reopen proof must wait for that close boundary rather
+                // than racing it or accepting any other open error.
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+            Err(error) => return Err(error),
+        }
+    }
 }
 
 #[test]

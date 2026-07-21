@@ -1960,7 +1960,7 @@ Keep the README focused on the current product surface. Detailed release
 history and old implementation plans live under `docs/`:
 
 - [docs/releases/0.67.0.md](docs/releases/0.67.0.md) - performance characterization candidate notes (not shipped).
-- [docs/releases/0.66.0.md](docs/releases/0.66.0.md) - cluster operational hardening candidate notes (not shipped).
+- [docs/releases/0.66.0.md](docs/releases/0.66.0.md) - cluster operational hardening release.
 - [docs/releases/0.65.0.md](docs/releases/0.65.0.md) - Redis debt safety net release.
 - [docs/releases/0.64.0.md](docs/releases/0.64.0.md) - Raft snapshot and test-evidence hardening release.
 - [docs/releases/0.63.0.md](docs/releases/0.63.0.md) - Redis RESP edge facade release.
