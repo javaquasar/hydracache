@@ -1324,6 +1324,14 @@ dedicated Linux runner whose observed identity satisfies the committed profile.
 The dedicated sequence prebuilds once, then runs the exact binaries without
 putting Cargo compilation or image pulls inside a measurement window.
 
+Manual full hosted CI sets `run_nightly=true` and leaves
+`run_dedicated_performance=false`; this runs the non-ship `ci-shared` tripwire
+without reserving an unavailable self-hosted runner. The `reference-v1` lane is
+started only by an explicit manual dispatch with
+`run_dedicated_performance=true`. It requires an online runner labeled
+`self-hosted`, `linux`, `x64`, and `hydracache-perf-v1`; GitHub will otherwise
+leave that job queued, and hosted results must not be substituted for it.
+
 PowerShell reproduction of the registered sequence:
 
 ```powershell

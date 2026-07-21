@@ -1033,14 +1033,14 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         .get(JOB_ID)
         .map(String::as_str)
         .unwrap_or_default();
-    if !condition.contains("schedule")
-        || !condition.contains("workflow_dispatch")
-        || !condition.contains("refs/tags/v0.67.0")
+    if !condition.contains("workflow_dispatch")
+        || !condition.contains("inputs.run_dedicated_performance")
         || !condition.contains("candidate_release == '0.67'")
-        || condition.contains("startsWith(github.ref, 'refs/tags/v')")
+        || condition.contains("schedule")
+        || condition.contains("refs/tags/")
     {
         problems.push(
-            "release 0.67 performance lane must be limited to schedule, exact v0.67.0 tag, or explicit 0.67 manual dispatch"
+            "release 0.67 performance lane must require the dedicated-performance opt-in on an explicit 0.67 manual dispatch"
                 .to_owned(),
         );
     }
@@ -1067,9 +1067,12 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
     if !shared_condition.contains("pull_request")
         || !shared_condition.contains("refs/heads/main")
         || !shared_condition.contains("refs/heads/master")
+        || !shared_condition.contains("schedule")
+        || !shared_condition.contains("inputs.run_nightly")
+        || !shared_condition.contains("!inputs.run_dedicated_performance")
     {
         problems.push(
-            "release 0.67 shared tripwire must run on pull requests and main/master pushes"
+            "release 0.67 shared tripwire must run on pull requests, main/master pushes, schedules, and ordinary hosted nightly dispatches"
                 .to_owned(),
         );
     }

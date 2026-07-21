@@ -466,16 +466,17 @@ fn performance_lane_requires_dedicated_label_and_serial_concurrency() {
         .iter()
         .any(|problem| problem.contains("exact rustc 1.94.0")));
 
-    let broad_tag = workflow.replacen(
-        "github.ref == 'refs/tags/v0.67.0'",
-        "startsWith(github.ref, 'refs/tags/v')",
+    let missing_opt_in = workflow.replacen(
+        "github.event_name == 'workflow_dispatch' && inputs.run_dedicated_performance && inputs.candidate_release == '0.67'",
+        "github.event_name == 'workflow_dispatch' && inputs.candidate_release == '0.67'",
         1,
     );
     let problems =
-        xtask::release_governance::release_execution_wiring_problems(&broad_tag, "0.67").unwrap();
+        xtask::release_governance::release_execution_wiring_problems(&missing_opt_in, "0.67")
+            .unwrap();
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("exact v0.67.0 tag")));
+        .any(|problem| problem.contains("dedicated-performance opt-in")));
 
     let missing_shared = workflow.replacen(
         "performance-067-shared-tripwire:",
