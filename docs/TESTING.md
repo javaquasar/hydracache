@@ -919,6 +919,19 @@ behavioral boundaries in `compaction_seam`, `rejoin_after_compaction_process`,
 test narrow while making persistence failures observable where users depend on
 them: compaction, reopen, replay, and cluster convergence.
 
+The `daemon_process_cluster` drain/restart proof distinguishes committed shape
+from endpoint readiness. Before choosing an arbitrary follower for a direct
+drain request it requires all three admin APIs to respond with the three-member,
+three-voter quorum; `wait_for_shape` alone may legitimately succeed from one
+responsive member and is not a safe precondition for addressing another node.
+The drain response must be `accepted`, and the two surviving voters must both
+be responsive after the drained process is killed. After its retained storage
+is restarted, the proof observes authoritative (`quorum_ok` plus leader)
+statuses for two seconds and rejects any committed member/voter shape other
+than `2/2`. A transient non-authoritative bootstrap view from the removed
+process is diagnostic only. This test proves non-resurrection safety; other
+restart/rejoin tests own the separate availability claim.
+
 The W10 evidence keeps two histories. The diagnostic timeline retains every
 parseable sample, including the expected quorumless two-voter projection and
 temporary `epoch=0` views, so a failure can be reconstructed without censoring
