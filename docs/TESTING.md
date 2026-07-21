@@ -613,7 +613,7 @@ gated-proof jobs check out full Git history. This is required because the W32
 compatibility gate resolves `v0.63.0` and proves that it is an ancestor of the
 candidate. MSRV reaches the gate through `cargo test --workspace`; coverage
 reaches it through `cargo llvm-cov --workspace --all-targets` while excluding
-only `crates/xtask` source from the numeric product metric; and the generic
+`crates/xtask` and `crates/hydracache-loadgen` sources from the numeric product metric; and the generic
 proof runner can execute coverage or the v0.63 compatibility gate. A shallow
 checkout or missing baseline tag is an infrastructure failure, not a
 compatibility skip. The release-governance test parses the workflow and rejects
@@ -1674,13 +1674,13 @@ under `crates/hydracache/tests/cacheable/`,
 Run product-source coverage while still executing the full workspace test suite:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --summary-only
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --summary-only
 ```
 
 The scheduled CI ratchet enforces the current product-source line floor:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --summary-only --fail-under-lines 88
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --summary-only --fail-under-lines 88
 ```
 
 That ratchet is a mechanical regression gate. It is not a numeric self-score or
@@ -1689,14 +1689,14 @@ release-quality claim under `docs/RULES.md` R-7.
 Show uncovered source lines:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --show-missing-lines --summary-only
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --show-missing-lines --summary-only
 ```
 
 Generate HTML and LCOV reports:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --html --output-dir target\llvm-cov-html
-cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --lcov --output-path target\llvm-cov.lcov
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --html --output-dir target\llvm-cov-html
+cargo llvm-cov report --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --lcov --output-path target\llvm-cov.lcov
 ```
 
 Open the HTML report at:
@@ -1712,12 +1712,15 @@ The current practical target is split by surface area:
 - Reusable library crates should stay above `95%` line coverage.
 - Product-source coverage, including the non-published sandbox, should trend toward
   `95%+` line coverage.
+- Development-only proof/performance harnesses (`xtask` and `hydracache-loadgen`) stay
+  outside that product denominator while their complete workspace tests still execute.
 - Visible uncovered source lines should be investigated before release.
 
 The 0.64 ratchet contract lives in `docs/testing/coverage-ratchet.toml`. The reviewed
-`(^|/)crates/xtask/` exclusion changes only the reported product-source denominator:
-the full workspace suite still executes, and `xtask` proof code remains checked by its
-own canary, mutation, and governance gates. Validate the floor, exact exclusion,
+`(^|/)crates/(xtask|hydracache-loadgen)/` exclusion changes only the reported product-source denominator:
+the full workspace suite still executes. `xtask` proof code remains checked by its
+canary, mutation, and governance gates, while the non-published `hydracache-loadgen`
+harness remains checked by its complete W0-W10 contract, canary, and evidence suites. Validate the floor, exact exclusion,
 provenance state, pinned `cargo-llvm-cov` version, artifact paths, and CI wiring without
 running the workspace suite:
 

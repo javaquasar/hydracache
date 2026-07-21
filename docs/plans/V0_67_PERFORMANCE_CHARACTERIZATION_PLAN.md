@@ -109,6 +109,15 @@ claims. Commit `79bfb49` corrected the plan, and W10 Phase A then established th
 contract before W0. The implementation map below is the current source of truth; this paragraph is
 retained as provenance for the sequencing decision, not as a statement of current repository state.
 
+**CI coverage reconciliation (2026-07-21).** Run `#355` showed that the existing product-source
+ratchet counted the new non-published `hydracache-loadgen` development harness: it contributed
+20,553 of 26,474 uncovered lines and reduced the aggregate from approximately 91.45% without the
+harness to 74.23% with it. The reviewed scope now excludes exactly `crates/xtask` and
+`crates/hydracache-loadgen` sources from the numeric product denominator. The 88% floor is
+unchanged, `cargo llvm-cov --workspace --all-targets` still executes both crates' complete tests,
+and `hydracache-loadgen` may remain excluded only while `package.publish = false` and its W0-W10
+contract, canary, and evidence gates remain executable.
+
 ## Wire-Surface Reality Corrections (`0.66` reconciliation carried forward)
 
 The pre-implementation audit confirmed that the original W2-W5 tier map was stale. These corrections
