@@ -1304,12 +1304,9 @@ mod tests {
                 let read = stream.read(&mut chunk).await.unwrap();
                 assert_ne!(read, 0);
                 buffer.extend_from_slice(&chunk[..read]);
-                loop {
-                    let Resp2ParseStatus::Complete { value, consumed } =
-                        parse_resp2(&buffer, Resp2Limits::default()).unwrap()
-                    else {
-                        break;
-                    };
+                while let Resp2ParseStatus::Complete { value, consumed } =
+                    parse_resp2(&buffer, Resp2Limits::default()).unwrap()
+                {
                     buffer.drain(..consumed);
                     let Resp2Value::Array(Some(arguments)) = value else {
                         panic!("command must be a RESP array")
