@@ -24,6 +24,39 @@ repository = "https://github.com/javaquasar/hydracache"
 homepage = "https://github.com/javaquasar/hydracache"
 ```
 
+## Automated release gate
+
+The preferred release path is the `Publish Crates` GitHub Actions workflow.
+It runs after a successful `CI` workflow and publishes only when the exact CI
+commit has one release tag. Before creating that tag, the release commit must
+contain all of the following:
+
+- the final workspace version matching the tag;
+- `status = "shipped"` for that version in `docs/plans/releases.toml`;
+- `docs/releases/X.Y.Z.md` release notes;
+- a successful full CI run for the same commit.
+
+The `shipped` check is intentional: it prevents an implementation still marked
+as in progress from becoming an immutable crates.io release. Set the status in
+the release commit, merge that commit to `main`, wait for full CI to pass, and
+only then create the annotated tag on that exact `main` commit:
+
+```powershell
+.\scripts\verify-release-readiness.ps1 -Version X.Y.Z
+git switch main
+git pull --ff-only origin main
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+The workflow validates files from the tagged commit, not from a later `main`
+commit. Changing `releases.toml` after tagging therefore cannot repair the
+existing candidate. If the gate fails before any crate or GitHub Release is
+published, correct and merge the release commit first; replacing the unpublished
+remote tag is then a coordinated recovery action and must be explicit. If any
+artifact has already been published, do not move the tag or overwrite the
+version: prepare a new patch release instead.
+
 ## First publish
 
 Publish workspace crates in dependency order. `hydracache` depends on
