@@ -1,6 +1,7 @@
 mod support;
 
 use std::collections::BTreeSet;
+use std::time::{Duration, Instant};
 
 use hydracache_sim::{BoundedGrowthChecker, InvariantReport, ResourceBudget};
 use support::daemon_cluster::{skip_unless_daemon_process_e2e, DaemonCluster, TestResult};
@@ -78,7 +79,7 @@ fn drained_node_restart_does_not_silently_resurrect_voter() -> TestResult {
     }
 
     let mut cluster = DaemonCluster::start_bootstrap(3, "drained-restart")?;
-    let statuses = cluster.wait_for_shape(3, 3)?;
+    let statuses = cluster.wait_for_responsive_shape(3, 3, 3)?;
     let leader = statuses[0].leader.clone().expect("leader before drain");
     let drain_index = cluster
         .node_ids()
@@ -86,17 +87,57 @@ fn drained_node_restart_does_not_silently_resurrect_voter() -> TestResult {
         .position(|node_id| node_id != &leader)
         .expect("cluster has a follower to drain");
 
-    let _ = cluster.drain(drain_index)?;
+    let drain = cluster.drain(drain_index).map_err(|error| {
+        format!("responsive follower {drain_index} rejected the drain request: {error}")
+    })?;
+    if drain["outcome"] != "accepted" {
+        return Err(format!("follower drain was not accepted: {drain}").into());
+    }
     cluster.wait_for_non_draining_shape("drain removal committed before follower kill", 2, 2)?;
     cluster.kill(drain_index)?;
-    cluster.wait_for_shape(2, 2)?;
+    cluster.wait_for_responsive_shape(2, 2, 2)?;
     cluster.restart(drain_index)?;
 
-    let statuses = cluster.wait_for_shape(2, 2)?;
-    assert!(
-        statuses.iter().all(|status| status.voters == 2),
-        "drained node restart must not silently restore a removed voter: {statuses:?}"
-    );
+    observe_authoritative_shape_for(&mut cluster, 2, 2, Duration::from_secs(2))?;
+    Ok(())
+}
+
+fn observe_authoritative_shape_for(
+    cluster: &mut DaemonCluster,
+    members: u32,
+    voters: u32,
+    duration: Duration,
+) -> TestResult {
+    let deadline = Instant::now() + duration;
+    let mut authoritative_samples = 0_u32;
+    let mut last_statuses = Vec::new();
+    while Instant::now() < deadline {
+        let statuses = cluster.statuses();
+        let authoritative = statuses
+            .iter()
+            .filter(|status| status.quorum_ok && status.leader.is_some())
+            .collect::<Vec<_>>();
+        if authoritative
+            .iter()
+            .any(|status| status.members != members || status.voters != voters)
+        {
+            return Err(format!(
+                "authoritative membership changed during the restart observation window: expected members={members} voters={voters}, statuses={statuses:?}"
+            )
+            .into());
+        }
+        if authoritative.len() >= voters as usize {
+            authoritative_samples = authoritative_samples.saturating_add(1);
+        }
+        last_statuses = statuses;
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    if authoritative_samples == 0 {
+        return Err(format!(
+            "restart observation window had no complete authoritative samples for members={members} voters={voters}; last_statuses={last_statuses:?}"
+        )
+        .into());
+    }
     Ok(())
 }
 

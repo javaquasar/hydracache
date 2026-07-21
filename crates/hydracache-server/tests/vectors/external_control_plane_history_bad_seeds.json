@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "name": "same-term-two-leaders",
+      "seed": 7391701,
+      "steps": [
+        {
+          "action": { "kind": "observe" },
+          "membership_observations": [
+            {
+              "epoch": 3,
+              "term": 7,
+              "leader": "node-a",
+              "members": ["node-a", "node-b", "node-c"]
+            },
+            {
+              "epoch": 3,
+              "term": 7,
+              "leader": "node-b",
+              "members": ["node-a", "node-b", "node-c"]
+            }
+          ]
+        }
+      ],
+      "expected_violations": ["election_safety"]
+    },
+    {
+      "name": "membership-epoch-regression",
+      "seed": 7391702,
+      "steps": [
+        {
+          "action": { "kind": "observe" },
+          "membership_observations": [
+            {
+              "epoch": 9,
+              "term": 4,
+              "leader": "node-a",
+              "members": ["node-a", "node-b", "node-c"]
+            }
+          ]
+        },
+        {
+          "action": { "kind": "observe" },
+          "membership_observations": [
+            {
+              "epoch": 8,
+              "term": 4,
+              "leader": "node-a",
+              "members": ["node-a", "node-b", "node-c"]
+            }
+          ]
+        }
+      ],
+      "expected_violations": ["membership_epoch_monotonicity"]
+    },
+    {
+      "name": "same-epoch-conflicting-member-sets",
+      "seed": 7391703,
+      "steps": [
+        {
+          "action": { "kind": "observe" },
+          "membership_observations": [
+            {
+              "epoch": 11,
+              "term": 6,
+              "leader": "node-a",
+              "members": ["node-a", "node-b", "node-c"]
+            },
+            {
+              "epoch": 11,
+              "term": 6,
+              "leader": "node-a",
+              "members": ["node-a", "node-b"]
+            }
+          ]
+        }
+      ],
+      "expected_violations": ["membership_set_stability_per_epoch"]
+    }
+  ]
+}

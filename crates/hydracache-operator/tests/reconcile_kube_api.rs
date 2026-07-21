@@ -24,6 +24,7 @@ struct ExpectedRequest {
     path: String,
     status: StatusCode,
     body: Value,
+    request_headers: Vec<(String, String)>,
     request_body_contains: Vec<String>,
 }
 
@@ -34,6 +35,7 @@ impl ExpectedRequest {
             path: path.into(),
             status: StatusCode::OK,
             body: serde_json::to_value(body).unwrap(),
+            request_headers: Vec::new(),
             request_body_contains: Vec::new(),
         }
     }
@@ -54,8 +56,14 @@ impl ExpectedRequest {
                 "reason": reason.replace(' ', ""),
                 "code": status.as_u16(),
             }),
+            request_headers: Vec::new(),
             request_body_contains: Vec::new(),
         }
+    }
+
+    fn requiring_header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
+        self.request_headers.push((name.into(), value.into()));
+        self
     }
 
     fn requiring_body(mut self, expected: impl Into<String>) -> Self {
@@ -86,6 +94,16 @@ impl ScriptedApi {
                     .expect("unexpected Kubernetes API request");
                 assert_eq!(request.method(), expected.method);
                 assert_eq!(request.uri().path(), expected.path);
+                for (name, value) in &expected.request_headers {
+                    assert_eq!(
+                        request
+                            .headers()
+                            .get(name)
+                            .and_then(|value| value.to_str().ok()),
+                        Some(value.as_str()),
+                        "request header {name:?} did not match"
+                    );
+                }
                 if !expected.request_body_contains.is_empty() {
                     let body = request.into_body().collect_bytes().await.unwrap();
                     let body = String::from_utf8(body.to_vec()).unwrap();
@@ -215,6 +233,11 @@ async fn unavailable_admin_endpoint_is_recorded_in_status_without_undoing_worklo
     let resource_root = "/apis/apps/v1/namespaces/default/statefulsets/admin-unavailable";
     let (client, script) = ScriptedApi::client(vec![
         ExpectedRequest::json(Method::GET, resource_root, &existing),
+        ExpectedRequest::status(
+            Method::GET,
+            "/api/v1/namespaces/default/pods/admin-unavailable-0:9091/proxy/admin/status",
+            StatusCode::BAD_GATEWAY,
+        ),
         ExpectedRequest::json(Method::PATCH, resource_root, &desired.stateful_set),
         ExpectedRequest::json(
             Method::PATCH,
@@ -236,13 +259,98 @@ async fn unavailable_admin_endpoint_is_recorded_in_status_without_undoing_worklo
             "/apis/policy/v1/namespaces/default/poddisruptionbudgets/admin-unavailable",
             &desired.pod_disruption_budget,
         ),
+        ExpectedRequest::status(
+            Method::POST,
+            "/api/v1/namespaces/default/pods/admin-unavailable-0:9091/proxy/admin/reshard",
+            StatusCode::BAD_GATEWAY,
+        ),
         ExpectedRequest::json(
             Method::PATCH,
             "/apis/hydracache.io/v1alpha1/namespaces/default/hydracacheclusters/admin-unavailable/status",
             &cluster,
         )
+        .requiring_body("ScaleAdminStatusUnavailable")
+        .requiring_body("AdminStatusUnavailable")
+        .requiring_body("pods/admin-unavailable-0:9091/proxy/admin/status")
         .requiring_body("ScaleActionFailed")
         .requiring_body("AdminActionFailed"),
+    ]);
+
+    let action = apply_cluster(
+        Arc::new(cluster),
+        Arc::new(Ctx::new(client, "operator-a", Some("default".to_owned()))),
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(action, Action::requeue(Duration::from_secs(30)));
+    script.assert_exhausted();
+}
+
+#[tokio::test]
+async fn admin_calls_use_kubernetes_pod_proxy_and_publish_observed_leader() {
+    let cluster = cluster("admin-proxy");
+    let desired = OwnedResources::build(&cluster);
+    let mut existing = desired.stateful_set.clone();
+    existing.status = Some(k8s_openapi::api::apps::v1::StatefulSetStatus {
+        replicas: 1,
+        ready_replicas: Some(1),
+        ..Default::default()
+    });
+    let resource_root = "/apis/apps/v1/namespaces/default/statefulsets/admin-proxy";
+    let admin_status = json!({
+        "leader": "admin-proxy-0",
+        "quorum_ok": true,
+        "members": 1,
+        "voters": 1,
+        "reshard_phase": "idle",
+        "draining": false,
+    });
+    let (client, script) = ScriptedApi::client(vec![
+        ExpectedRequest::json(Method::GET, resource_root, &existing),
+        ExpectedRequest::json(
+            Method::GET,
+            "/api/v1/namespaces/default/pods/admin-proxy-0:9091/proxy/admin/status",
+            &admin_status,
+        )
+        .requiring_header("x-hydracache-client-id", "operator")
+        .requiring_header("x-hydracache-tenant", "system")
+        .requiring_header("x-hydracache-admin", "true"),
+        ExpectedRequest::json(Method::PATCH, resource_root, &desired.stateful_set),
+        ExpectedRequest::json(
+            Method::PATCH,
+            "/api/v1/namespaces/default/services/admin-proxy-headless",
+            &desired.headless_service,
+        ),
+        ExpectedRequest::json(
+            Method::PATCH,
+            "/api/v1/namespaces/default/services/admin-proxy",
+            &desired.client_service,
+        ),
+        ExpectedRequest::json(
+            Method::PATCH,
+            "/api/v1/namespaces/default/secrets/admin-proxy-operator-admin",
+            &desired.admin_secret,
+        ),
+        ExpectedRequest::json(
+            Method::PATCH,
+            "/apis/policy/v1/namespaces/default/poddisruptionbudgets/admin-proxy",
+            &desired.pod_disruption_budget,
+        ),
+        ExpectedRequest::json(
+            Method::POST,
+            "/api/v1/namespaces/default/pods/admin-proxy-0:9091/proxy/admin/reshard",
+            &json!({}),
+        )
+        .requiring_header("x-hydracache-client-id", "operator")
+        .requiring_header("x-hydracache-tenant", "system")
+        .requiring_header("x-hydracache-admin", "true"),
+        ExpectedRequest::json(
+            Method::PATCH,
+            "/apis/hydracache.io/v1alpha1/namespaces/default/hydracacheclusters/admin-proxy/status",
+            &cluster,
+        )
+        .requiring_body("admin-proxy-0"),
     ]);
 
     let action = apply_cluster(

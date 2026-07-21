@@ -1,5 +1,7 @@
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use xtask::evidence_run::{ArtifactDigest, EvidenceOutcome, EvidenceReceipt, NormalizedResult};
 
@@ -7,6 +9,72 @@ const EMPTY_SHA256: &str = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495
 
 fn root() -> std::path::PathBuf {
     xtask::doc_check::find_repo_root().unwrap()
+}
+
+struct ScratchRepo {
+    root: PathBuf,
+}
+
+impl ScratchRepo {
+    fn new() -> Self {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!(
+            "hydracache-release-evidence-template-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&root).unwrap();
+        Self { root }
+    }
+
+    fn path(&self) -> &Path {
+        &self.root
+    }
+
+    fn write(&self, relative: &str, contents: impl AsRef<[u8]>) {
+        let path = self.root.join(relative);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, contents).unwrap();
+    }
+}
+
+impl Drop for ScratchRepo {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.root);
+    }
+}
+
+fn canary_registry(release: &str, source: &str, function: &str) -> String {
+    serde_json::to_string_pretty(&serde_json::json!({
+        "version": 2,
+        "release": release,
+        "entries": [{
+            "w_item": "W0",
+            "guard": { "file": source, "function": function },
+            "canary": { "file": source, "function": format!("{function}_red") },
+            "guard_command": {
+                "program": "cargo",
+                "args": ["test", "-p", "fixture", "--", function],
+                "cwd": ".",
+                "platform": "any"
+            },
+            "canary_command": {
+                "program": "cargo",
+                "args": ["test", "-p", "fixture", "--", format!("{function}_red")],
+                "cwd": ".",
+                "platform": "any"
+            },
+            "defect_id": format!("{release}-W0"),
+            "expected_failure": "seeded defect remains observable",
+            "timeout_seconds": 30,
+            "tier": "fast",
+            "artifacts": ["target/release-evidence/canaries/W0.json"],
+            "red_evidence": "target/release-evidence/canaries/W0.json"
+        }]
+    }))
+    .unwrap()
 }
 
 fn base_receipt(gate: &xtask::gated_tests::GateEntry, source_commit: &str) -> EvidenceReceipt {
@@ -103,7 +171,8 @@ fn explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_regist
     ));
 
     let registry = xtask::canary_check::load_registry_for_release(&root, "0.65").unwrap();
-    let canary_receipts = xtask::canary_sweep::load_receipts(&root).unwrap();
+    let canary_receipts =
+        xtask::canary_sweep::load_receipts_for_release(&root, &registry.release).unwrap();
     let source_commit = String::from_utf8(
         Command::new("git")
             .args(["rev-parse", "HEAD"])
@@ -160,6 +229,190 @@ fn explicit_flip_sentinel_policy_can_advance_without_an_unrelated_dynamic_regist
             );
         }
     }
+}
+
+#[test]
+fn release_evidence_template_cannot_borrow_equal_w_ids_from_the_0_64_registry() {
+    let repo = ScratchRepo::new();
+    repo.write(
+        "docs/plans/releases.toml",
+        r#"
+[[release]]
+version = "0.66.0"
+file = "docs/plans/0.66.md"
+work_items = ["W0", "W1"]
+"#,
+    );
+    repo.write(
+        "docs/testing/fast-suite-registry.toml",
+        r#"
+schema_version = 1
+release = "0.66.0"
+nextest_version = "0.9.137"
+aggregate_budget_seconds = 1500
+suite = []
+"#,
+    );
+    repo.write(
+        "docs/testing/canary-registry.json",
+        canary_registry(
+            "0.64.0",
+            "tests/guards/release_0_64_w0.rs",
+            "release_0_64_w0_guard",
+        ),
+    );
+    repo.write(
+        "docs/testing/canary-registry-0.66.json",
+        canary_registry(
+            "0.66.0",
+            "tests/guards/release_0_66_w0.rs",
+            "release_0_66_w0_guard",
+        ),
+    );
+
+    xtask::release_evidence::run(vec![
+        "--root".to_owned(),
+        repo.path().display().to_string(),
+        "--release".to_owned(),
+        "0.66".to_owned(),
+        "--emit-template".to_owned(),
+    ])
+    .unwrap();
+
+    let manifest = xtask::release_evidence::parse_manifest_text(
+        &fs::read_to_string(repo.path().join("docs/testing/release-evidence/0.66.toml")).unwrap(),
+    )
+    .unwrap();
+    let w0 = manifest
+        .work_item
+        .iter()
+        .find(|item| item.id == "W0")
+        .unwrap();
+    assert_eq!(w0.required_sources, ["tests/guards/release_0_66_w0.rs"]);
+    assert_eq!(w0.required_tests.len(), 1);
+    assert_eq!(w0.required_tests[0].function, "release_0_66_w0_guard");
+    assert_eq!(manifest.dynamic_canary_work_items, vec!["W0".to_owned()]);
+    assert!(!w0
+        .required_sources
+        .iter()
+        .any(|source| source.contains("release_0_64")));
+}
+
+#[test]
+fn release_evidence_template_preserves_dynamic_canary_selection() {
+    let repo = ScratchRepo::new();
+    repo.write(
+        "docs/plans/releases.toml",
+        r#"
+[[release]]
+version = "0.66.0"
+file = "docs/plans/0.66.md"
+work_items = ["W0"]
+"#,
+    );
+    repo.write(
+        "docs/testing/fast-suite-registry.toml",
+        r#"
+schema_version = 1
+release = "0.66.0"
+nextest_version = "0.9.137"
+aggregate_budget_seconds = 1500
+suite = []
+"#,
+    );
+    repo.write(
+        "docs/testing/canary-registry-0.66.json",
+        canary_registry(
+            "0.66.0",
+            "tests/guards/release_0_66_w0.rs",
+            "release_0_66_w0_guard",
+        ),
+    );
+    repo.write(
+        "docs/testing/release-evidence/0.66.toml",
+        r#"
+schema_version = 1
+release = "0.66.0"
+plan = "docs/plans/0.66.md"
+canary_policy = "dynamic_registry"
+dynamic_canary_work_items = ["W0"]
+
+[[work_item]]
+id = "W0"
+required_sources = ["tests/guards/release_0_66_w0.rs"]
+required_tests = []
+required_artifacts = []
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+"#,
+    );
+
+    xtask::release_evidence::run(vec![
+        "--root".to_owned(),
+        repo.path().display().to_string(),
+        "--release".to_owned(),
+        "0.66".to_owned(),
+        "--emit-template".to_owned(),
+    ])
+    .unwrap();
+
+    let manifest = xtask::release_evidence::parse_manifest_text(
+        &fs::read_to_string(repo.path().join("docs/testing/release-evidence/0.66.toml")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(manifest.dynamic_canary_work_items, vec!["W0".to_owned()]);
+    assert_eq!(
+        manifest.work_item[0].fast_gate_ids,
+        vec!["fast.workspace-nextest".to_owned()]
+    );
+}
+
+#[test]
+fn release_evidence_template_rejects_a_mislabeled_release_registry() {
+    let repo = ScratchRepo::new();
+    repo.write(
+        "docs/plans/releases.toml",
+        r#"
+[[release]]
+version = "0.66.0"
+file = "docs/plans/0.66.md"
+work_items = ["W0"]
+"#,
+    );
+    repo.write(
+        "docs/testing/fast-suite-registry.toml",
+        r#"
+schema_version = 1
+release = "0.66.0"
+nextest_version = "0.9.137"
+aggregate_budget_seconds = 1500
+suite = []
+"#,
+    );
+    repo.write(
+        "docs/testing/canary-registry-0.66.json",
+        canary_registry(
+            "0.64.0",
+            "tests/guards/release_0_64_w0.rs",
+            "release_0_64_w0_guard",
+        ),
+    );
+
+    let error = xtask::release_evidence::run(vec![
+        "--root".to_owned(),
+        repo.path().display().to_string(),
+        "--release".to_owned(),
+        "0.66".to_owned(),
+        "--emit-template".to_owned(),
+    ])
+    .unwrap_err()
+    .to_string();
+
+    assert!(
+        error.contains("registry release 0.64.0 does not match template release 0.66.0"),
+        "mislabeled registry unexpectedly generated a template: {error}"
+    );
 }
 
 #[test]

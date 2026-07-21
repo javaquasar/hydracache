@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use hydracache::{ClusterMember, ClusterNodeId, ClusterRole, RaftMetadataSnapshot};
 use serde::Serialize;
+use thiserror::Error;
 
 /// Runtime state supplied by the server around the cluster-status provider.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -122,10 +123,78 @@ pub struct ClusterStatus {
     pub members: Vec<MemberStatus>,
     /// Current raft voter count, if known.
     pub voters: u32,
+    /// Sorted current Raft voter ids, when the live runtime exposes them.
+    pub voter_ids: Vec<u64>,
     /// Current reshard phase.
     pub reshard_phase: ReshardPhase,
     /// Whether the runtime is draining.
     pub draining: bool,
+}
+
+/// Read-only state of the disk-backed Raft compaction control.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub struct RaftCompactionStatus {
+    /// Whether the current runtime owns a disk-backed Raft log.
+    pub available: bool,
+    /// Whether explicit compaction requests are enabled by configuration.
+    pub enabled: bool,
+    /// Last locally applied Raft index, when available.
+    pub applied_index: Option<u64>,
+    /// Durable snapshot index, when available.
+    pub snapshot_index: Option<u64>,
+    /// First retained durable log index, when available.
+    pub first_log_index: Option<u64>,
+    /// Last durable log index, when available.
+    pub last_log_index: Option<u64>,
+    /// Real HTTP snapshot send attempts since this daemon started.
+    pub snapshot_send_attempts: Option<u64>,
+    /// Successful real HTTP snapshot sends since this daemon started.
+    pub snapshot_send_successes: Option<u64>,
+    /// Failed or timed-out real HTTP snapshot sends since this daemon started.
+    pub snapshot_send_failures: Option<u64>,
+    /// Real HTTP snapshot requests currently awaiting an outcome.
+    pub snapshot_sends_in_flight: Option<u64>,
+    /// Actual per-peer sender tasks currently carrying a valid Raft snapshot.
+    pub snapshot_sender_tasks_current: Option<u64>,
+    /// Per-daemon high-water mark of concurrent snapshot sender tasks since
+    /// this process started; it resets when the daemon restarts.
+    pub snapshot_sender_tasks_high_water: Option<u64>,
+    /// Snapshots installed into the local Raft state machine this process run.
+    pub snapshot_installs: Option<u64>,
+}
+
+impl RaftCompactionStatus {
+    pub(crate) fn unavailable() -> Self {
+        Self {
+            available: false,
+            enabled: false,
+            applied_index: None,
+            snapshot_index: None,
+            first_log_index: None,
+            last_log_index: None,
+            snapshot_send_attempts: None,
+            snapshot_send_successes: None,
+            snapshot_send_failures: None,
+            snapshot_sends_in_flight: None,
+            snapshot_sender_tasks_current: None,
+            snapshot_sender_tasks_high_water: None,
+            snapshot_installs: None,
+        }
+    }
+}
+
+/// Fail-loud rejection from the narrow Raft compaction control.
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+pub enum RaftCompactionError {
+    /// The current role/runtime has no disk-backed Raft log.
+    #[error("raft compaction control is unavailable for this runtime")]
+    Unavailable,
+    /// The control exists but was not explicitly enabled.
+    #[error("raft compaction control is disabled; set HYDRACACHE_RAFT_COMPACTION=true explicitly")]
+    Disabled,
+    /// The Raft runtime or durable store rejected the operation.
+    #[error("raft compaction failed: {0}")]
+    Runtime(String),
 }
 
 /// Read-only provider of cluster status.
@@ -151,6 +220,7 @@ impl ClusterStatusProvider for ModeledClusterStatus {
             quorum_ok: runtime.ready && !runtime.draining,
             members: Vec::new(),
             voters: 0,
+            voter_ids: Vec::new(),
             reshard_phase: ReshardPhase::Idle,
             draining: runtime.draining,
         }
@@ -170,14 +240,36 @@ pub trait GridControlPlaneHandle: fmt::Debug + Send + Sync {
     fn raft_leader_id(&self) -> Option<String>;
     /// Return whether the live grid currently has quorum.
     fn has_quorum(&self) -> bool;
+    /// Return whether `observed` is still the fully applied local metadata view.
+    ///
+    /// Networked followers must fence authority while their committed index is
+    /// ahead of the locally applied metadata state. The observed-snapshot
+    /// argument also prevents a projection assembled across an apply boundary
+    /// from being published as authoritative.
+    fn metadata_authority_matches(&self, observed: &RaftMetadataSnapshot) -> bool {
+        let _ = observed;
+        true
+    }
     /// Return current raft voter count.
     fn voter_count(&self) -> u32;
+    /// Return sorted current Raft voter ids.
+    fn voter_ids(&self) -> Vec<u64>;
     /// Return reachability for one known node.
     fn reachability(&self, node: &ClusterNodeId) -> Reachability;
     /// Return the current reshard phase.
     fn reshard_phase(&self) -> ReshardPhase;
     /// Return whether the grid itself is draining.
     fn is_draining(&self) -> bool;
+
+    /// Return disk-backed Raft compaction progress and enablement.
+    fn raft_compaction_status(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        Ok(RaftCompactionStatus::unavailable())
+    }
+
+    /// Compact the durable Raft log exactly at current applied progress.
+    fn compact_raft_log_at_applied(&self) -> Result<RaftCompactionStatus, RaftCompactionError> {
+        Err(RaftCompactionError::Unavailable)
+    }
 }
 
 /// Live status backed by a grid/control-plane handle.
@@ -212,15 +304,22 @@ impl ClusterStatusProvider for LiveClusterStatus {
                 generation: member.generation.value(),
             })
             .collect();
+        let metadata_authoritative = self.grid.metadata_authority_matches(&snapshot);
 
         ClusterStatus {
             source: StatusSource::Live,
-            leader: self.grid.raft_leader_id(),
+            leader: metadata_authoritative
+                .then(|| self.grid.raft_leader_id())
+                .flatten(),
             term: snapshot.term,
             epoch: snapshot.epoch.value(),
-            quorum_ok: runtime.ready && self.grid.has_quorum() && !draining,
+            quorum_ok: runtime.ready
+                && metadata_authoritative
+                && self.grid.has_quorum()
+                && !draining,
             members,
             voters: self.grid.voter_count(),
+            voter_ids: self.grid.voter_ids(),
             reshard_phase: self.grid.reshard_phase(),
             draining,
         }

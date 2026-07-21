@@ -4,6 +4,10 @@ use std::fmt;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
+#[cfg(feature = "test-failpoints")]
+use std::sync::{Condvar, Mutex};
+#[cfg(feature = "test-failpoints")]
+use std::time::{Duration, Instant};
 
 #[cfg(feature = "sled-log-store")]
 use protobuf::Message as ProtobufMessage;
@@ -13,6 +17,9 @@ use raft::{Error as RaftError, Result as RaftResult, StorageError};
 
 /// Supported durable raft log format version for the 0.42 control-plane seam.
 pub const RAFT_LOG_FORMAT_VERSION: u32 = 1;
+
+#[cfg(feature = "test-failpoints")]
+const STORAGE_FAULT_BLOCK_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Result type used by [`RaftLogStore`].
 pub type RaftStoreResult<T> = std::result::Result<T, RaftStoreError>;
@@ -43,6 +50,294 @@ impl std::error::Error for RaftStoreError {}
 impl From<RaftError> for RaftStoreError {
     fn from(error: RaftError) -> Self {
         Self::new(error.to_string())
+    }
+}
+
+/// Storage boundary controlled by the deterministic W5 fault seam.
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftStorageFaultOperation {
+    /// Persisting either a locally generated or incoming Raft snapshot.
+    SaveSnapshot,
+    /// Persisting the commit index exposed by raft-rs `LightReady`.
+    DurableCommit,
+    /// Persisting the applied index after state-machine materialization.
+    MarkApplied,
+}
+
+#[cfg(feature = "test-failpoints")]
+impl fmt::Display for RaftStorageFaultOperation {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::SaveSnapshot => "snapshot save",
+            Self::DurableCommit => "durable commit",
+            Self::MarkApplied => "applied-index save",
+        })
+    }
+}
+
+/// Deterministic behavior armed for exactly one storage operation.
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftStorageFaultMode {
+    /// Hold one operation until explicitly released, then let it continue.
+    BlockThenContinue,
+    /// Hold one operation until explicitly released, then fail it.
+    BlockThenFail,
+    /// Fail one operation immediately without blocking a thread.
+    FailImmediately,
+}
+
+/// Logical counters from the W5 storage fault seam.
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RaftStorageFaultObservation {
+    /// Calls observed for the currently tracked operation.
+    pub calls: u64,
+    /// Calls that entered the explicit blocked state.
+    pub blocked_calls: u64,
+    /// Calls rejected while the single allowed operation was blocked.
+    pub backpressure_rejections: u64,
+    /// Injected failures returned by the seam.
+    pub injected_failures: u64,
+    /// Operations currently held by the seam.
+    pub in_flight: u64,
+    /// Maximum concurrently held operations observed since arming.
+    pub max_in_flight: u64,
+}
+
+#[cfg(feature = "test-failpoints")]
+#[derive(Debug, Default)]
+struct RaftStorageFaultState {
+    tracked_operation: Option<RaftStorageFaultOperation>,
+    mode: Option<RaftStorageFaultMode>,
+    active: bool,
+    released: bool,
+    observation: RaftStorageFaultObservation,
+}
+
+/// Cloneable deterministic controller for the narrow W5 storage fault seam.
+///
+/// The controller is compiled only with `test-failpoints`. It uses explicit
+/// release signals and logical counters, so tests never infer backpressure from
+/// elapsed wall-clock time.
+#[cfg(feature = "test-failpoints")]
+#[derive(Clone, Default)]
+pub struct RaftStorageFaultController {
+    inner: Arc<(Mutex<RaftStorageFaultState>, Condvar)>,
+}
+
+#[cfg(feature = "test-failpoints")]
+impl fmt::Debug for RaftStorageFaultController {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("RaftStorageFaultController")
+            .field("observation", &self.observation())
+            .finish_non_exhaustive()
+    }
+}
+
+#[cfg(feature = "test-failpoints")]
+impl RaftStorageFaultController {
+    /// Arm exactly one operation and reset its logical counters.
+    pub fn arm(&self, operation: RaftStorageFaultOperation, mode: RaftStorageFaultMode) {
+        let (state, _) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        assert!(!state.active, "cannot re-arm an active storage fault");
+        state.tracked_operation = Some(operation);
+        state.mode = Some(mode);
+        state.released = false;
+        state.observation = RaftStorageFaultObservation::default();
+    }
+
+    /// Wait until the armed operation is logically blocked.
+    pub fn wait_until_blocked(&self) -> RaftStorageFaultObservation {
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        while state.observation.blocked_calls == 0 {
+            state = changed
+                .wait(state)
+                .expect("raft storage fault state poisoned while waiting");
+        }
+        state.observation
+    }
+
+    /// Release the currently blocked operation.
+    pub fn release_blocked(&self) {
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        assert!(state.active, "no blocked storage operation to release");
+        state.released = true;
+        changed.notify_all();
+    }
+
+    /// Return current logical seam counters.
+    pub fn observation(&self) -> RaftStorageFaultObservation {
+        self.inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .observation
+    }
+
+    fn before(&self, operation: RaftStorageFaultOperation) -> RaftStoreResult<()> {
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        if state.tracked_operation != Some(operation) {
+            return Ok(());
+        }
+        state.observation.calls = state.observation.calls.saturating_add(1);
+
+        let Some(mode) = state.mode else {
+            return Ok(());
+        };
+        if mode == RaftStorageFaultMode::FailImmediately {
+            state.mode = None;
+            state.observation.injected_failures =
+                state.observation.injected_failures.saturating_add(1);
+            return Err(RaftStoreError::new(format!(
+                "injected storage fault during {operation}"
+            )));
+        }
+        if state.active {
+            state.observation.backpressure_rejections =
+                state.observation.backpressure_rejections.saturating_add(1);
+            return Err(RaftStoreError::new(format!(
+                "storage backpressure: one {operation} is already in flight"
+            )));
+        }
+
+        state.active = true;
+        state.observation.blocked_calls = state.observation.blocked_calls.saturating_add(1);
+        state.observation.in_flight = 1;
+        state.observation.max_in_flight = state.observation.max_in_flight.max(1);
+        changed.notify_all();
+        let deadline = Instant::now() + STORAGE_FAULT_BLOCK_TIMEOUT;
+        while !state.released {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                state.active = false;
+                state.mode = None;
+                state.observation.in_flight = 0;
+                changed.notify_all();
+                return Err(RaftStoreError::new(format!(
+                    "timed out waiting to release injected storage fault during {operation}"
+                )));
+            }
+            let (next, _) = changed
+                .wait_timeout(state, remaining)
+                .expect("raft storage fault state poisoned while blocked");
+            state = next;
+            // The deadline is evaluated at the top of the loop. A notification,
+            // spurious wake-up, and an elapsed wait all take the same path, so
+            // there is no second boolean condition whose mutation could change
+            // the release contract.
+        }
+
+        state.active = false;
+        state.released = false;
+        state.mode = None;
+        state.observation.in_flight = 0;
+        let fail = mode == RaftStorageFaultMode::BlockThenFail;
+        if fail {
+            state.observation.injected_failures =
+                state.observation.injected_failures.saturating_add(1);
+        }
+        changed.notify_all();
+        if fail {
+            Err(RaftStoreError::new(format!(
+                "injected storage fault during {operation}"
+            )))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn begin_sled_io(
+        &self,
+        operation: RaftStorageFaultOperation,
+    ) -> RaftStoreResult<Option<RaftStorageFaultMode>> {
+        let (state, _) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        if state.tracked_operation != Some(operation) {
+            return Ok(None);
+        }
+        state.observation.calls = state.observation.calls.saturating_add(1);
+        let Some(mode) = state.mode else {
+            return Ok(None);
+        };
+        if state.active {
+            state.observation.backpressure_rejections =
+                state.observation.backpressure_rejections.saturating_add(1);
+            return Err(RaftStoreError::new(format!(
+                "storage backpressure: one {operation} is already in flight"
+            )));
+        }
+        state.active = true;
+        state.observation.in_flight = 1;
+        state.observation.max_in_flight = state.observation.max_in_flight.max(1);
+        Ok(Some(mode))
+    }
+
+    fn finish_sled_io(
+        &self,
+        operation: RaftStorageFaultOperation,
+        mode: Option<RaftStorageFaultMode>,
+    ) -> RaftStoreResult<()> {
+        let Some(mode) = mode else {
+            return Ok(());
+        };
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        if matches!(
+            mode,
+            RaftStorageFaultMode::BlockThenContinue | RaftStorageFaultMode::BlockThenFail
+        ) {
+            state.observation.blocked_calls = state.observation.blocked_calls.saturating_add(1);
+            changed.notify_all();
+            while !state.released {
+                state = changed
+                    .wait(state)
+                    .expect("raft storage fault state poisoned while blocked after sled I/O");
+            }
+        }
+        let fail = matches!(
+            mode,
+            RaftStorageFaultMode::FailImmediately | RaftStorageFaultMode::BlockThenFail
+        );
+        if fail {
+            state.active = false;
+            state.released = false;
+            state.mode = None;
+            state.observation.in_flight = 0;
+            state.observation.injected_failures =
+                state.observation.injected_failures.saturating_add(1);
+            changed.notify_all();
+        }
+        drop(state);
+        if fail {
+            return Err(RaftStoreError::new(format!(
+                "injected storage fault during {operation} after sled batch"
+            )));
+        }
+        Ok(())
+    }
+
+    fn complete_sled_io(&self, mode: Option<RaftStorageFaultMode>) {
+        self.abort_sled_io(mode);
+    }
+
+    fn abort_sled_io(&self, mode: Option<RaftStorageFaultMode>) {
+        if mode.is_none() {
+            return;
+        }
+        let (state, changed) = &*self.inner;
+        let mut state = state.lock().expect("raft storage fault state poisoned");
+        state.active = false;
+        state.released = false;
+        state.mode = None;
+        state.observation.in_flight = 0;
+        changed.notify_all();
     }
 }
 
@@ -79,7 +374,10 @@ pub trait RaftLogStore: Storage + Clone + Send + Sync + 'static {
     fn retained_entries(&self) -> RaftStoreResult<Vec<Entry>>;
 
     /// Mark entries through `index` as applied.
-    fn mark_applied(&self, index: u64);
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()>;
+
+    /// Return the last durably applied index used for restart recovery.
+    fn applied_index(&self) -> RaftStoreResult<u64>;
 
     /// Update the persisted commit index after raft light-ready advance.
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
@@ -103,15 +401,19 @@ struct InMemoryRaftLogState {
 #[derive(Clone, Default)]
 pub struct InMemoryRaftLogStore {
     state: Arc<RwLock<InMemoryRaftLogState>>,
+    #[cfg(feature = "test-failpoints")]
+    storage_faults: RaftStorageFaultController,
 }
 
 impl fmt::Debug for InMemoryRaftLogStore {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("InMemoryRaftLogStore")
+        let mut debug = formatter.debug_struct("InMemoryRaftLogStore");
+        debug
             .field("first_index", &self.first_index().ok())
-            .field("last_index", &self.last_index().ok())
-            .finish_non_exhaustive()
+            .field("last_index", &self.last_index().ok());
+        #[cfg(feature = "test-failpoints")]
+        debug.field("storage_faults", &self.storage_faults);
+        debug.finish_non_exhaustive()
     }
 }
 
@@ -174,10 +476,42 @@ impl InMemoryRaftLogStore {
             .snapshot_unavailable_once = true;
     }
 
+    /// Return the feature-gated deterministic storage fault controller.
+    #[cfg(feature = "test-failpoints")]
+    pub fn storage_faults(&self) -> RaftStorageFaultController {
+        self.storage_faults.clone()
+    }
+
     /// Update the hard-state commit index after raft light-ready advance.
     pub fn set_commit(&self, commit: u64) {
         let mut state = self.state.write().expect("raft log store poisoned");
         state.raft_state.hard_state.commit = commit;
+    }
+
+    fn retained_entries_after_snapshot(
+        &self,
+        snapshot_index: u64,
+        preserve_log_entries: usize,
+    ) -> Vec<Entry> {
+        let mut entries = self.all_entries();
+        entries.retain(|entry| entry.index > snapshot_index);
+        let drop_count = entries.len().saturating_sub(preserve_log_entries);
+        entries.drain(..drop_count);
+        entries
+    }
+
+    fn install_snapshot_after_persist(&self, snapshot: &Snapshot, retained_entries: Vec<Entry>) {
+        let mut state = self.state.write().expect("raft log store poisoned");
+        let snapshot_index = snapshot.get_metadata().index;
+        state.snapshot = snapshot.clone();
+        state.raft_state.conf_state = snapshot.get_metadata().get_conf_state().clone();
+        state.raft_state.hard_state.term = state
+            .raft_state
+            .hard_state
+            .term
+            .max(snapshot.get_metadata().term);
+        state.raft_state.hard_state.commit = state.raft_state.hard_state.commit.max(snapshot_index);
+        state.entries = retained_entries;
     }
 }
 
@@ -278,6 +612,19 @@ impl Storage for InMemoryRaftLogStore {
 impl RaftLogStore for InMemoryRaftLogStore {
     fn save_hard_state(&self, hard_state: &HardState) -> RaftStoreResult<()> {
         #[cfg(feature = "test-failpoints")]
+        if hard_state.commit
+            > self
+                .state
+                .read()
+                .expect("raft log store poisoned")
+                .raft_state
+                .hard_state
+                .commit
+        {
+            self.storage_faults
+                .before(RaftStorageFaultOperation::DurableCommit)?;
+        }
+        #[cfg(feature = "test-failpoints")]
         fail::fail_point!("raft_before_save_hard_state", |_| {
             Err(RaftStoreError::new(
                 "injected crash before raft hard state save",
@@ -348,24 +695,18 @@ impl RaftLogStore for InMemoryRaftLogStore {
         preserve_log_entries: usize,
     ) -> RaftStoreResult<()> {
         #[cfg(feature = "test-failpoints")]
+        self.storage_faults
+            .before(RaftStorageFaultOperation::SaveSnapshot)?;
+        #[cfg(feature = "test-failpoints")]
         fail::fail_point!("raft_save_snapshot_disk_full", |_| {
             Err(RaftStoreError::new(
                 "injected disk full during raft snapshot save",
             ))
         });
-        let mut state = self.state.write().expect("raft log store poisoned");
         let snapshot_index = snapshot.get_metadata().index;
-        state.snapshot = snapshot.clone();
-        state.raft_state.conf_state = snapshot.get_metadata().get_conf_state().clone();
-        state.raft_state.hard_state.term = state
-            .raft_state
-            .hard_state
-            .term
-            .max(snapshot.get_metadata().term);
-        state.raft_state.hard_state.commit = state.raft_state.hard_state.commit.max(snapshot_index);
-        state.entries.retain(|entry| entry.index > snapshot_index);
-        let drop_count = state.entries.len().saturating_sub(preserve_log_entries);
-        state.entries.drain(..drop_count);
+        let retained_entries =
+            self.retained_entries_after_snapshot(snapshot_index, preserve_log_entries);
+        self.install_snapshot_after_persist(snapshot, retained_entries);
         Ok(())
     }
 
@@ -385,11 +726,19 @@ impl RaftLogStore for InMemoryRaftLogStore {
         Ok(self.all_entries())
     }
 
-    fn mark_applied(&self, index: u64) {
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
         Self::mark_applied(self, index);
+        Ok(())
+    }
+
+    fn applied_index(&self) -> RaftStoreResult<u64> {
+        Ok(Self::applied_index(self))
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        self.storage_faults
+            .before(RaftStorageFaultOperation::DurableCommit)?;
         Self::set_commit(self, commit);
         Ok(())
     }
@@ -477,8 +826,9 @@ impl DurableRaftLogStore {
     }
 
     /// Mark entries through `index` as applied.
-    pub fn mark_applied(&self, index: u64) {
+    pub fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
         self.inner.mark_applied(index);
+        Ok(())
     }
 
     /// Return retained entries in index order.
@@ -492,6 +842,12 @@ impl DurableRaftLogStore {
         ConfState: From<T>,
     {
         self.inner.initialize_with_conf_state(conf_state);
+    }
+
+    /// Return the feature-gated deterministic storage fault controller.
+    #[cfg(feature = "test-failpoints")]
+    pub fn storage_faults(&self) -> RaftStorageFaultController {
+        self.inner.storage_faults()
     }
 
     fn record_sync(&self) {
@@ -592,11 +948,19 @@ impl RaftLogStore for DurableRaftLogStore {
         Ok(self.retained_entries())
     }
 
-    fn mark_applied(&self, index: u64) {
-        Self::mark_applied(self, index);
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
+        Self::mark_applied(self, index)
+    }
+
+    fn applied_index(&self) -> RaftStoreResult<u64> {
+        Ok(self.inner.applied_index())
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .before(RaftStorageFaultOperation::DurableCommit)?;
         self.inner.set_commit(commit);
         Ok(())
     }
@@ -681,7 +1045,7 @@ impl DurableControlPlaneCluster {
                 .open()?;
             store.append(std::slice::from_ref(&entry))?;
             store.save_hard_state(&hard_state)?;
-            store.mark_applied(index);
+            store.mark_applied(index)?;
         }
         self.committed.push(payload);
         Ok(index)
@@ -792,6 +1156,45 @@ impl SledRaftLogStore {
         self.inner.initialize_with_conf_state(conf_state);
     }
 
+    /// Return the feature-gated deterministic storage fault controller.
+    #[cfg(feature = "test-failpoints")]
+    pub fn storage_faults(&self) -> RaftStorageFaultController {
+        self.inner.storage_faults()
+    }
+
+    /// Return the snapshot index staged in Sled before the in-memory view is
+    /// published. Exposed only to deterministic storage-fault tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn staged_sled_snapshot_index(&self) -> RaftStoreResult<Option<u64>> {
+        self.db
+            .get(SLED_SNAPSHOT_KEY)
+            .map_err(sled_error)?
+            .map(|bytes| decode_snapshot(&bytes).map(|snapshot| snapshot.get_metadata().index))
+            .transpose()
+    }
+
+    /// Return the applied index staged in Sled before the in-memory view is
+    /// published. Exposed only to deterministic storage-fault tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn staged_sled_applied_index(&self) -> RaftStoreResult<Option<u64>> {
+        self.db
+            .get(SLED_APPLIED_KEY)
+            .map_err(sled_error)?
+            .map(|bytes| decode_u64(&bytes))
+            .transpose()
+    }
+
+    /// Return the commit index staged in Sled before the in-memory view is
+    /// published. Exposed only to deterministic storage-fault tests.
+    #[cfg(feature = "test-failpoints")]
+    pub fn staged_sled_commit_index(&self) -> RaftStoreResult<Option<u64>> {
+        self.db
+            .get(SLED_HARD_STATE_KEY)
+            .map_err(sled_error)?
+            .map(|bytes| decode_hard_state(&bytes).map(|state| state.commit))
+            .transpose()
+    }
+
     fn replay_from_sled(&self) -> RaftStoreResult<()> {
         if let Some(bytes) = self.db.get(SLED_HARD_STATE_KEY).map_err(sled_error)? {
             self.inner.save_hard_state(&decode_hard_state(&bytes)?)?;
@@ -825,6 +1228,40 @@ impl SledRaftLogStore {
             .flush()
             .map(|_| ())
             .map_err(|error| RaftStoreError::new(format!("failed to flush sled raft log: {error}")))
+    }
+
+    fn apply_snapshot_batch(
+        &self,
+        snapshot: &Snapshot,
+        retained_entries: &[Entry],
+    ) -> RaftStoreResult<()> {
+        let mut batch = sled::Batch::default();
+        batch.insert(SLED_SNAPSHOT_KEY, encode_snapshot(snapshot)?);
+        batch.insert(
+            SLED_CONF_STATE_KEY,
+            encode_conf_state(snapshot.get_metadata().get_conf_state())?,
+        );
+        let mut hard_state = self
+            .inner
+            .initial_state()
+            .map_err(RaftStoreError::from)?
+            .hard_state;
+        hard_state.term = hard_state.term.max(snapshot.get_metadata().term);
+        hard_state.commit = hard_state.commit.max(snapshot.get_metadata().index);
+        batch.insert(SLED_HARD_STATE_KEY, encode_hard_state(&hard_state)?);
+        let keys = self
+            .db
+            .scan_prefix(SLED_ENTRY_PREFIX)
+            .keys()
+            .map(|key| key.map_err(sled_error))
+            .collect::<RaftStoreResult<Vec<_>>>()?;
+        for key in keys {
+            batch.remove(key);
+        }
+        for entry in retained_entries {
+            batch.insert(entry_key(entry.index), encode_entry(entry)?);
+        }
+        self.db.apply_batch(batch).map_err(sled_error)
     }
 }
 
@@ -941,12 +1378,38 @@ impl RaftLogStore for SledRaftLogStore {
         snapshot: &Snapshot,
         preserve_log_entries: usize,
     ) -> RaftStoreResult<()> {
-        self.inner.save_snapshot(snapshot, preserve_log_entries)?;
-        self.db
-            .insert(SLED_SNAPSHOT_KEY, encode_snapshot(snapshot)?)
-            .map_err(sled_error)?;
-        self.rewrite_entries_from_inner()?;
-        self.sync()
+        #[cfg(feature = "test-failpoints")]
+        fail::fail_point!("raft_save_snapshot_disk_full", |_| {
+            Err(RaftStoreError::new(
+                "injected disk full during raft snapshot save",
+            ))
+        });
+        let retained_entries = self
+            .inner
+            .retained_entries_after_snapshot(snapshot.get_metadata().index, preserve_log_entries);
+        #[cfg(feature = "test-failpoints")]
+        let fault_mode = self
+            .inner
+            .storage_faults
+            .begin_sled_io(RaftStorageFaultOperation::SaveSnapshot)?;
+        self.apply_snapshot_batch(snapshot, &retained_entries)
+            .inspect_err(|_| {
+                #[cfg(feature = "test-failpoints")]
+                self.inner.storage_faults.abort_sled_io(fault_mode);
+            })?;
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .finish_sled_io(RaftStorageFaultOperation::SaveSnapshot, fault_mode)?;
+        self.sync().inspect_err(|_| {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+        })?;
+        self.inner
+            .install_snapshot_after_persist(snapshot, retained_entries);
+        #[cfg(feature = "test-failpoints")]
+        self.inner.storage_faults.complete_sled_io(fault_mode);
+        Ok(())
     }
 
     fn compact_to(&self, index: u64) -> RaftStoreResult<()> {
@@ -973,40 +1436,64 @@ impl RaftLogStore for SledRaftLogStore {
         Ok(self.inner.all_entries())
     }
 
-    fn mark_applied(&self, index: u64) {
+    fn mark_applied(&self, index: u64) -> RaftStoreResult<()> {
+        #[cfg(feature = "test-failpoints")]
+        let fault_mode = self
+            .inner
+            .storage_faults
+            .begin_sled_io(RaftStorageFaultOperation::MarkApplied)?;
+        self.db
+            .insert(SLED_APPLIED_KEY, encode_u64(index).to_vec())
+            .map_err(sled_error)
+            .inspect_err(|_| {
+                #[cfg(feature = "test-failpoints")]
+                self.inner.storage_faults.abort_sled_io(fault_mode);
+            })?;
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .finish_sled_io(RaftStorageFaultOperation::MarkApplied, fault_mode)?;
+        self.sync().inspect_err(|_| {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+        })?;
         self.inner.mark_applied(index);
-        let _ = self.db.insert(SLED_APPLIED_KEY, encode_u64(index).to_vec());
-        let _ = self.db.flush();
+        #[cfg(feature = "test-failpoints")]
+        self.inner.storage_faults.complete_sled_io(fault_mode);
+        Ok(())
+    }
+
+    fn applied_index(&self) -> RaftStoreResult<u64> {
+        Ok(self.inner.applied_index())
     }
 
     fn set_commit(&self, commit: u64) -> RaftStoreResult<()> {
-        self.inner.set_commit(commit);
         let mut state = self.initial_state().map_err(RaftStoreError::from)?;
         state.hard_state.commit = commit;
+        let encoded_hard_state = encode_hard_state(&state.hard_state)?;
+        #[cfg(feature = "test-failpoints")]
+        let fault_mode = self
+            .inner
+            .storage_faults
+            .begin_sled_io(RaftStorageFaultOperation::DurableCommit)?;
         self.db
-            .insert(SLED_HARD_STATE_KEY, encode_hard_state(&state.hard_state)?)
-            .map_err(sled_error)?;
-        self.sync()
-    }
-}
-
-#[cfg(feature = "sled-log-store")]
-impl SledRaftLogStore {
-    fn rewrite_entries_from_inner(&self) -> RaftStoreResult<()> {
-        let keys = self
-            .db
-            .scan_prefix(SLED_ENTRY_PREFIX)
-            .keys()
-            .map(|key| key.map_err(sled_error))
-            .collect::<RaftStoreResult<Vec<_>>>()?;
-        for key in keys {
-            self.db.remove(key).map_err(sled_error)?;
-        }
-        for entry in self.inner.all_entries() {
-            self.db
-                .insert(entry_key(entry.index), encode_entry(&entry)?)
-                .map_err(sled_error)?;
-        }
+            .insert(SLED_HARD_STATE_KEY, encoded_hard_state)
+            .map_err(sled_error)
+            .inspect_err(|_| {
+                #[cfg(feature = "test-failpoints")]
+                self.inner.storage_faults.abort_sled_io(fault_mode);
+            })?;
+        #[cfg(feature = "test-failpoints")]
+        self.inner
+            .storage_faults
+            .finish_sled_io(RaftStorageFaultOperation::DurableCommit, fault_mode)?;
+        self.sync().inspect_err(|_| {
+            #[cfg(feature = "test-failpoints")]
+            self.inner.storage_faults.abort_sled_io(fault_mode);
+        })?;
+        self.inner.set_commit(commit);
+        #[cfg(feature = "test-failpoints")]
+        self.inner.storage_faults.complete_sled_io(fault_mode);
         Ok(())
     }
 }
@@ -1181,6 +1668,27 @@ fn snapshot_payload_checksum(bytes: &[u8]) -> u64 {
 mod tests {
     use super::*;
 
+    #[cfg(feature = "test-failpoints")]
+    fn wait_for_fault_active(controller: &RaftStorageFaultController) {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(1);
+        loop {
+            if controller
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned")
+                .active
+            {
+                return;
+            }
+            assert!(
+                std::time::Instant::now() < deadline,
+                "storage fault never entered the active state"
+            );
+            std::thread::yield_now();
+        }
+    }
+
     fn entry(index: u64, term: u64, data: &[u8]) -> Entry {
         Entry {
             index,
@@ -1203,6 +1711,242 @@ mod tests {
         assert!(debug.contains("first_index"));
         assert!(debug.contains("last_index"));
         assert!(!<InMemoryRaftLogStore as RaftLogStore>::must_sync(&store));
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn storage_fault_controller_contracts_are_directly_observable() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+
+        let debug = format!("{controller:?}");
+        assert!(debug.contains("RaftStorageFaultController"));
+        assert!(debug.contains("observation"));
+
+        {
+            let state = controller
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned");
+            assert_eq!(
+                state.tracked_operation,
+                Some(RaftStorageFaultOperation::DurableCommit)
+            );
+            assert_eq!(state.mode, Some(RaftStorageFaultMode::FailImmediately));
+            assert!(!state.active);
+            assert!(!state.released);
+            assert_eq!(state.observation, RaftStorageFaultObservation::default());
+        }
+
+        let release_probe = RaftStorageFaultController::default();
+        {
+            let mut state = release_probe
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned");
+            state.active = true;
+        }
+        release_probe.release_blocked();
+        assert!(
+            release_probe
+                .inner
+                .0
+                .lock()
+                .expect("raft storage fault state poisoned")
+                .released,
+            "release must publish the explicit wake-up state"
+        );
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn fail_immediately_targets_only_the_armed_storage_operation() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+
+        // Keep the mismatch probe bounded even if the operation-match guard is
+        // inverted: the mutant must return, allowing the call-count assertion
+        // below to kill it without leaving a blocked worker behind.
+        controller
+            .inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .released = true;
+        assert!(controller
+            .before(RaftStorageFaultOperation::SaveSnapshot)
+            .is_ok());
+        assert_eq!(controller.observation().calls, 0);
+
+        // Keep the matching call bounded even if the FailImmediately branch is
+        // mutated into the blocking branch.
+        controller
+            .inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .released = true;
+        assert!(controller
+            .before(RaftStorageFaultOperation::DurableCommit)
+            .is_err());
+        let observation = controller.observation();
+        assert_eq!(observation.calls, 1);
+        assert_eq!(observation.injected_failures, 1);
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn block_then_continue_waits_for_release_and_completes() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::SaveSnapshot,
+            RaftStorageFaultMode::BlockThenContinue,
+        );
+        let worker_controller = controller.clone();
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let result = worker_controller.before(RaftStorageFaultOperation::SaveSnapshot);
+            let _ = sender.send(result);
+        });
+
+        assert!(matches!(
+            receiver.recv_timeout(std::time::Duration::from_millis(50)),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ));
+        wait_for_fault_active(&controller);
+        controller.release_blocked();
+        assert!(receiver
+            .recv_timeout(std::time::Duration::from_secs(1))
+            .expect("released storage operation must complete")
+            .is_ok());
+        worker.join().expect("storage fault worker joins");
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn block_then_fail_reports_the_injected_failure_after_release() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::MarkApplied,
+            RaftStorageFaultMode::BlockThenFail,
+        );
+        let worker_controller = controller.clone();
+        let (sender, receiver) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let result = worker_controller.before(RaftStorageFaultOperation::MarkApplied);
+            let _ = sender.send(result);
+        });
+
+        assert!(matches!(
+            receiver.recv_timeout(std::time::Duration::from_millis(50)),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ));
+        wait_for_fault_active(&controller);
+        controller.release_blocked();
+        assert!(receiver
+            .recv_timeout(std::time::Duration::from_secs(1))
+            .expect("released storage operation must complete")
+            .is_err());
+        worker.join().expect("storage fault worker joins");
+        assert_eq!(controller.observation().injected_failures, 1);
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn sled_fault_begin_matches_only_the_armed_operation() {
+        let controller = RaftStorageFaultController::default();
+        controller.arm(
+            RaftStorageFaultOperation::SaveSnapshot,
+            RaftStorageFaultMode::FailImmediately,
+        );
+
+        let unrelated = controller
+            .begin_sled_io(RaftStorageFaultOperation::MarkApplied)
+            .unwrap();
+        if unrelated.is_some() {
+            controller.abort_sled_io(unrelated);
+        }
+        assert_eq!(unrelated, None);
+
+        let armed = controller
+            .begin_sled_io(RaftStorageFaultOperation::SaveSnapshot)
+            .unwrap();
+        controller.abort_sled_io(armed);
+        assert_eq!(armed, Some(RaftStorageFaultMode::FailImmediately));
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn storage_fault_accessors_preserve_controller_identity() {
+        let in_memory = InMemoryRaftLogStore::new();
+        assert!(Arc::ptr_eq(
+            &in_memory.storage_faults.inner,
+            &in_memory.storage_faults().inner
+        ));
+
+        #[cfg(feature = "durable-log")]
+        {
+            let durable = DurableRaftLogDirectory::new().open().unwrap();
+            assert!(Arc::ptr_eq(
+                &durable.inner.storage_faults.inner,
+                &durable.storage_faults().inner
+            ));
+        }
+
+        #[cfg(feature = "sled-log-store")]
+        {
+            let sled = SledRaftLogStore::new_for_tests();
+            assert!(Arc::ptr_eq(
+                &sled.inner.storage_faults.inner,
+                &sled.storage_faults().inner
+            ));
+        }
+    }
+
+    #[cfg(feature = "test-failpoints")]
+    #[test]
+    fn durable_commit_fault_targets_only_strict_commit_advances() {
+        let advancing = InMemoryRaftLogStore::new();
+        advancing.storage_faults().arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+        assert!(advancing
+            .save_hard_state(&HardState {
+                commit: 1,
+                ..HardState::default()
+            })
+            .is_err());
+
+        let equal = InMemoryRaftLogStore::new();
+        equal.storage_faults().arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+        assert!(equal.save_hard_state(&HardState::default()).is_ok());
+        assert_eq!(equal.storage_faults().observation().calls, 0);
+
+        let decreasing = InMemoryRaftLogStore::new();
+        decreasing.set_commit(2);
+        decreasing.storage_faults().arm(
+            RaftStorageFaultOperation::DurableCommit,
+            RaftStorageFaultMode::FailImmediately,
+        );
+        assert!(decreasing
+            .save_hard_state(&HardState {
+                commit: 1,
+                ..HardState::default()
+            })
+            .is_ok());
+        assert_eq!(decreasing.storage_faults().observation().calls, 0);
     }
 
     #[test]
@@ -1272,7 +2016,7 @@ mod tests {
     #[test]
     fn in_memory_progress_updates_through_the_trait_contract() {
         let store = InMemoryRaftLogStore::new();
-        <InMemoryRaftLogStore as RaftLogStore>::mark_applied(&store, 7);
+        <InMemoryRaftLogStore as RaftLogStore>::mark_applied(&store, 7).unwrap();
         <InMemoryRaftLogStore as RaftLogStore>::set_commit(&store, 6).unwrap();
 
         assert_eq!(store.applied_index(), 7);
@@ -1377,7 +2121,7 @@ mod tests {
         store
             .save_conf_state(&ConfState::from((vec![1, 2, 3], vec![])))
             .unwrap();
-        <DurableRaftLogStore as RaftLogStore>::mark_applied(&store, 1);
+        <DurableRaftLogStore as RaftLogStore>::mark_applied(&store, 1).unwrap();
 
         assert_eq!(directory.fsync_count(), 2);
         assert_eq!(store.inner.applied_index(), 1);
@@ -1429,7 +2173,7 @@ mod tests {
         snapshot.mut_metadata().index = 1;
         snapshot.mut_metadata().term = 1;
         store.save_snapshot(&snapshot, usize::MAX).unwrap();
-        <SledRaftLogStore as RaftLogStore>::mark_applied(&store, 3);
+        <SledRaftLogStore as RaftLogStore>::mark_applied(&store, 3).unwrap();
         store.compact_to(2).unwrap();
         drop(store);
 

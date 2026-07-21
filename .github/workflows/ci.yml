@@ -15,6 +15,11 @@ on:
         required: false
         default: false
         type: boolean
+      candidate_release:
+        description: "Release that owns candidate fast and manually dispatched gate receipts"
+        required: false
+        default: "0.66"
+        type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
         required: false
@@ -30,6 +35,7 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.66' }}
 
 jobs:
   rust:
@@ -92,10 +98,12 @@ jobs:
       - name: Canary completeness
         run: |
           cargo test -p xtask --test canary_check --locked
-          cargo run -p xtask --locked -- canary-check
+          cargo run -p xtask --locked -- canary-check --release 0.64
           cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.65
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.66
+          cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -106,15 +114,13 @@ jobs:
           if-no-files-found: error
 
       - name: Fuzz corpus regression
-        run: cargo test -p hydracache-fuzz --test fuzz_corpus_regression --locked
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.fuzz-corpus-regression
 
       - name: Release feature leak
         run: cargo run -p xtask --locked -- verify-no-test-features
 
       - name: Release governance
-        run: |
-          cargo run -p xtask --locked -- release-governance-check --release 0.64
-          cargo run -p xtask --locked -- release-governance-check --release 0.65
+        run: cargo run -p xtask --locked -- release-governance-check --release "$HYDRACACHE_CANDIDATE_RELEASE"
 
       - name: SQL lint baseline drift
         run: |
@@ -133,7 +139,30 @@ jobs:
         run: cargo test -p hydracache-sim --test soak_budget --locked
 
       - name: Raft failpoint crash-safety
-        run: cargo test -p hydracache-cluster-raft --features test-failpoints --test failpoints_crash_safety --locked -- --test-threads=1
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.raft-failpoints
+
+      - name: Raft compaction control 0.66
+        run: |
+          cargo test -p hydracache-cluster-raft --test compaction_seam --locked
+          cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.raft-sled-snapshot
+          cargo test -p hydracache-server compaction --locked
+
+      - name: 0.66 operational proofs
+        run: |
+          cargo test -p hydracache-cluster-raft --test membership_load --locked
+          cargo test -p hydracache-cluster-raft --test differential_model --locked
+          cargo test -p hydracache-cluster-raft --test scheduler_tick --locked
+          cargo test -p hydracache-server --test backup_authority_boundary --locked
+          cargo test -p hydracache-server --test raft_wire_socket_corpus --locked
+          cargo test -p hydracache-server --test rejoin_after_compaction_process --locked
+          cargo test -p hydracache-server --test process_control_plane_nemesis --locked
+          cargo test -p hydracache-server --test rolling_upgrade_process --locked
+          cargo test -p hydracache-server --test external_control_plane_history --locked
+          cargo test -p hydracache-server --test differential_model_process --locked
+          cargo test -p hydracache-server --test scheduler_tick_process --locked
+          cargo test -p hydracache-server --test snapshot_resource_budget --locked
+          cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked local_ttl_and_lock_contracts_survive_backward_wall_clock_step
+          cargo test -p hydracache-operator --test soak_kind --locked
 
       - name: Raft snapshot and transport proof
         run: |
@@ -177,7 +206,7 @@ jobs:
           npm --prefix console test
 
       - name: Test
-        run: cargo run -p xtask --locked -- evidence-run --release 0.65 --gate fast.workspace-nextest
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.workspace-nextest
 
       - name: Upload fast release evidence receipt
         if: always()
@@ -417,6 +446,213 @@ jobs:
             target/release-evidence/receipts/**
           if-no-files-found: ignore
 
+  release-066-daemon-process:
+    name: 0.66 Daemon Process Release Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v2-rust-with-target
+          cache-targets: true
+          shared-key: release-066-daemon-process
+
+      - name: Verify shipped 0.65 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.65.0
+          git merge-base --is-ancestor refs/tags/v0.65.0 HEAD
+
+      - name: Run 0.66 daemon-process release proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-run-066-daemon-process-e2e
+
+      - name: Upload 0.66 daemon-process evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "daemon-process-066-${{ github.sha }}"
+          path: |
+            target/test-hydracache-daemon-process/**
+            target/test-evidence/0.66/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  release-066-operator-kind:
+    name: 0.66 Operator Kind Release Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.23.4"
+          cache: false
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v5.1.0
+        with:
+          version: v1.32.0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4.3.1
+        with:
+          version: v3.17.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v2-rust-with-target
+          cache-targets: true
+          shared-key: release-066-operator-kind
+
+      - name: Create kind cluster with enforcing CNI
+        shell: bash
+        run: |
+          go install sigs.k8s.io/kind@v0.26.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          "$(go env GOPATH)/bin/kind" create cluster \
+            --name hydracache-066 \
+            --image kindest/node:v1.32.0@sha256:c48c62eac5da28cdadcf560d1d8616cfa6783b58f0d94cf63ad1bf49600cb027 \
+            --config - <<'EOF'
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          networking:
+            disableDefaultCNI: true
+          nodes:
+            - role: control-plane
+            - role: worker
+            - role: worker
+          EOF
+          kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/calico.yaml
+          kubectl rollout status deployment/calico-kube-controllers -n kube-system --timeout=5m
+          kubectl rollout status daemonset/calico-node -n kube-system --timeout=5m
+
+      - name: Install required Chaos Mesh IOChaos runtime
+        run: |
+          helm repo add chaos-mesh https://charts.chaos-mesh.org
+          helm repo update
+          helm install chaos-mesh chaos-mesh/chaos-mesh \
+            --namespace chaos-mesh \
+            --create-namespace \
+            --version 2.7.2 \
+            --set chaosDaemon.runtime=containerd \
+            --set chaosDaemon.socketPath=/run/containerd/containerd.sock \
+            --wait \
+            --timeout 10m
+          kubectl get crd iochaos.chaos-mesh.org
+
+      - name: Build and load current server image
+        run: |
+          docker build --tag hydracache-server:0.66-candidate .
+          kind load docker-image --name hydracache-066 hydracache-server:0.66-candidate
+
+      - name: Prepare current operator controller
+        shell: bash
+        run: |
+          mkdir -p target/test-evidence/0.66
+          kubectl apply -f deploy/operator/hydracacheclusters.hydracache.io.crd.yaml
+          kubectl auth can-i get pods --subresource=proxy --namespace default
+          kubectl auth can-i create pods --subresource=proxy --namespace default
+          cargo build -p hydracache-operator --locked
+          operator_candidate_directory="$(pwd)/.ci-runtime/0.66"
+          operator_binary="$operator_candidate_directory/hydracache-operator-${GITHUB_SHA}"
+          mkdir -p "$operator_candidate_directory"
+          install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_nonce="release-066-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}"
+          export HYDRACACHE_OPERATOR_EVIDENCE_NONCE="$operator_nonce"
+          echo "HYDRACACHE_OPERATOR_EVIDENCE_NONCE=$operator_nonce" >> "$GITHUB_ENV"
+          echo "HYDRACACHE_OPERATOR_BINARY=$operator_binary" >> "$GITHUB_ENV"
+          printf 'HC-OPERATOR-CONTROLLER-START nonce=%s binary=%s\n' \
+            "$operator_nonce" "$operator_binary" > "$operator_log"
+
+      - name: Start current operator controller
+        id: operator-controller
+        shell: bash
+        background: true
+        env:
+          HYDRACACHE_OPERATOR_NAMESPACE: default
+          HYDRACACHE_OPERATOR_IDENTITY: release-066-ci
+        run: |
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+          printf '%s\n' "$BASHPID" > "$operator_pid_file"
+          exec "$HYDRACACHE_OPERATOR_BINARY" >> "$operator_log" 2>&1
+
+      - name: Verify current operator controller
+        shell: bash
+        run: |
+          operator_log="target/test-evidence/0.66/operator-controller-live.log"
+          operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
+          operator_nonce="$HYDRACACHE_OPERATOR_EVIDENCE_NONCE"
+          operator_ready=0
+          for _ in $(seq 1 30); do
+            if [[ -s "$operator_pid_file" ]]; then
+              operator_pid="$(cat "$operator_pid_file")"
+            else
+              sleep 1
+              continue
+            fi
+            if kill -0 "$operator_pid" \
+              && grep -Fq "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"; then
+              operator_ready=1
+              break
+            fi
+            sleep 1
+          done
+          kill -0 "$operator_pid"
+          test "$operator_ready" = 1
+          grep -F "HC-OPERATOR-CONTROLLER-RUNTIME nonce=$operator_nonce " "$operator_log"
+
+      - name: Run 0.66 operator-kind release proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate env.hydracache-operator-kind-066
+
+      - name: Stop current operator controller
+        cancel: operator-controller
+
+      - name: Capture operator-kind diagnostics
+        if: always()
+        continue-on-error: true
+        run: |
+          kubectl get pods,statefulsets,services,hydracacheclusters -A -o wide > target/test-evidence/0.66/operator-kind-resources-post.txt || true
+          kubectl get events -A --sort-by=.lastTimestamp > target/test-evidence/0.66/operator-kind-events-post.txt || true
+          kubectl logs -n default \
+            --selector 'app.kubernetes.io/name=hydracache,app.kubernetes.io/instance=hydracache-066,app.kubernetes.io/component=server' \
+            --all-containers=true \
+            --prefix=true \
+            --tail=-1 \
+            > target/test-evidence/0.66/operator-kind-pod-logs-post.txt || true
+
+      - name: Upload 0.66 operator-kind evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "operator-kind-066-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.66/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest
@@ -461,32 +697,31 @@ jobs:
           shared-key: fuzz-nightly
 
       - name: Install nightly and cargo-fuzz
-        id: fuzz-runtime
-        shell: bash
         run: |
-          set +e
           rustup toolchain install nightly
-          if [ "$?" -ne 0 ]; then
-            echo "::warning::nightly toolchain unavailable; skipping fuzz-nightly"
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
           cargo install cargo-fuzz --version 0.13.2 --locked
-          if [ "$?" -ne 0 ]; then
-            echo "::warning::cargo-fuzz unavailable; skipping fuzz-nightly"
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "available=true" >> "$GITHUB_OUTPUT"
 
       - name: Run time-boxed fuzz targets
-        if: steps.fuzz-runtime.outputs.available == 'true'
         working-directory: fuzz
         run: |
           cargo +nightly fuzz run fuzz_config_parse -- -max_total_time=60
           cargo +nightly fuzz run fuzz_kv_codec -- -max_total_time=60
           cargo +nightly fuzz run fuzz_resp_command -- -max_total_time=60
           cargo +nightly fuzz run fuzz_snapshot_decode -- -max_total_time=60
+
+      - name: Run 0.66 Raft wire fuzz release proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.66 --gate tool.cargo-fuzz.raft-wire-frame-066
+
+      - name: Upload 0.66 fuzz evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "raft-wire-fuzz-066-${{ github.sha }}"
+          path: |
+            fuzz/artifacts/raft_wire_frame/**
+            fuzz/corpus/raft_wire_frame/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
 
   raft-mutation-testing:
     name: Raft Mutation Testing (${{ matrix.label }})
@@ -691,7 +926,10 @@ jobs:
           echo "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  target/tools/tla2tools/1.7.4/tla2tools.jar" | sha256sum --check
 
       - name: Execute complete dynamic expected-red sweep
-        run: cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
+        run: |
+          cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
@@ -861,7 +1099,7 @@ jobs:
         run: rustup toolchain install nightly-2026-07-01 --component rust-src
 
       - name: Run registered gated proofs
-        run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate "${{ inputs.gated_gate_id }}"
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate "${{ inputs.gated_gate_id }}"
 
       - name: Upload registered gated proof receipt
         if: always()

@@ -1,6 +1,7 @@
+use std::collections::BTreeMap;
 use std::error::Error;
 use std::fs::{self, File};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -176,7 +177,7 @@ pub fn execute_entry(
         outcome,
         output_sha256: sha256(output.as_bytes()),
     };
-    write_receipt(root, &receipt)?;
+    write_receipt(root, entry, &receipt)?;
     Ok(receipt)
 }
 
@@ -247,6 +248,13 @@ pub fn receipt_problems(
 }
 
 pub fn load_receipts(root: &Path) -> Result<Vec<CanaryReceipt>, Box<dyn Error>> {
+    Ok(read_receipt_files(root)?
+        .into_iter()
+        .map(|(_, receipt)| receipt)
+        .collect())
+}
+
+fn read_receipt_files(root: &Path) -> Result<Vec<(PathBuf, CanaryReceipt)>, Box<dyn Error>> {
     let directory = root.join(RECEIPTS_DIR);
     if !directory.is_dir() {
         return Ok(Vec::new());
@@ -257,9 +265,32 @@ pub fn load_receipts(root: &Path) -> Result<Vec<CanaryReceipt>, Box<dyn Error>> 
         .map(|entry| entry.path())
         .filter(|path| path.extension().and_then(|value| value.to_str()) == Some("json"))
     {
-        receipts.push(serde_json::from_slice(&fs::read(path)?)?);
+        let receipt = serde_json::from_slice(&fs::read(&path)?)?;
+        receipts.push((path, receipt));
     }
     Ok(receipts)
+}
+
+pub fn load_receipts_for_release(
+    root: &Path,
+    release: &str,
+) -> Result<Vec<CanaryReceipt>, Box<dyn Error>> {
+    let normalized_release = normalize_release(release);
+    let mut selected: BTreeMap<String, (bool, CanaryReceipt)> = BTreeMap::new();
+    for (path, receipt) in read_receipt_files(root)? {
+        if normalize_release(&receipt.release) != normalized_release {
+            continue;
+        }
+        let canonical_name = format!("{normalized_release}-{}.json", receipt.w_item);
+        let canonical = path.file_name().and_then(|name| name.to_str()) == Some(&canonical_name);
+        match selected.get(&receipt.w_item) {
+            Some((true, _)) if !canonical => {}
+            _ => {
+                selected.insert(receipt.w_item.clone(), (canonical, receipt));
+            }
+        }
+    }
+    Ok(selected.into_values().map(|(_, receipt)| receipt).collect())
 }
 
 fn execute_command(
@@ -328,13 +359,57 @@ fn no_tests_ran(result: &ProcessResult) -> bool {
     output.contains("running 0 tests") || output.contains("0 passed; 0 failed")
 }
 
-fn write_receipt(root: &Path, receipt: &CanaryReceipt) -> Result<(), Box<dyn Error>> {
+fn write_receipt(
+    root: &Path,
+    entry: &CanaryEntry,
+    receipt: &CanaryReceipt,
+) -> Result<(), Box<dyn Error>> {
+    for component in [normalize_release(&receipt.release), receipt.w_item.as_str()] {
+        if component.is_empty()
+            || !component.chars().all(|character| {
+                character.is_ascii_alphanumeric() || matches!(character, '.' | '-' | '_')
+            })
+        {
+            return Err(format!("unsafe canary receipt identity component {component:?}").into());
+        }
+    }
     let directory = root.join(RECEIPTS_DIR);
     fs::create_dir_all(&directory)?;
-    fs::write(
-        directory.join(format!("{}.json", receipt.w_item)),
-        serde_json::to_vec_pretty(receipt)?,
-    )?;
+    let canonical = directory.join(format!(
+        "{}-{}.json",
+        normalize_release(&receipt.release),
+        receipt.w_item
+    ));
+    let mut paths = vec![canonical];
+    for artifact in &entry.artifacts {
+        let relative = Path::new(artifact);
+        if relative.is_absolute()
+            || relative.components().any(|component| {
+                matches!(
+                    component,
+                    Component::ParentDir | Component::RootDir | Component::Prefix(_)
+                )
+            })
+            || !relative.starts_with(RECEIPTS_DIR)
+            || relative
+                .extension()
+                .and_then(|extension| extension.to_str())
+                != Some("json")
+        {
+            return Err(format!("unsafe canary receipt artifact path {artifact}").into());
+        }
+        let path = root.join(relative);
+        if !paths.contains(&path) {
+            paths.push(path);
+        }
+    }
+    let bytes = serde_json::to_vec_pretty(receipt)?;
+    for path in paths {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(path, &bytes)?;
+    }
     Ok(())
 }
 

@@ -6,7 +6,7 @@ aggregate_budget_seconds = 1500
 [[suite]]
 id = "fast.fuzz-corpus-regression"
 work_items = ["W24"]
-timeout_seconds = 90
+timeout_seconds = 300
 budget_seconds = 60
 deterministic = false
 artifacts = []
@@ -29,7 +29,7 @@ platform = "any"
 
 [[suite]]
 id = "fast.raft-failpoints"
-work_items = ["W3", "W4", "W10", "W11"]
+work_items = ["W3", "W4", "W5", "W10", "W11"]
 timeout_seconds = 180
 budget_seconds = 120
 deterministic = false
@@ -45,7 +45,7 @@ noise_allowance_seconds = 0
 
 [suite.command]
 program = "cargo"
-args = ["test", "-p", "hydracache-cluster-raft", "--features", "test-failpoints", "--locked", "-j", "2", "--", "--test-threads=1"]
+args = ["test", "-p", "hydracache-cluster-raft", "--features", "test-failpoints,sled-log-store", "--locked", "-j", "2", "--", "--test-threads=1"]
 cwd = "."
 platform = "any"
 
@@ -78,7 +78,7 @@ HYDRACACHE_DETERMINISM_EVIDENCE = "target/test-evidence/0.64/nemesis-determinism
 
 [[suite]]
 id = "fast.raft-sled-snapshot"
-work_items = ["W9", "W31"]
+work_items = ["W0", "W9", "W31"]
 timeout_seconds = 180
 budget_seconds = 120
 deterministic = false

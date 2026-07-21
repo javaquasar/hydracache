@@ -1,15 +1,15 @@
+#[path = "support/resource_budget.rs"]
+mod resource_budget;
 mod support;
 
-use std::fs;
 use std::io::{Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpStream};
-use std::path::Path;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use hydracache_cluster_testkit::{RaftFilterAction, RaftPacketFilter, RuntimeRaftCluster};
 use raft::eraftpb::MessageType;
-use serde::{Deserialize, Serialize};
+use resource_budget::{ResourceBudget, ResourceBudgetArtifact, ResourceSample};
 use support::daemon_cluster::{
     leaders, resolve_server_binary, DaemonCluster, DaemonStatus, TestResult,
 };
@@ -21,93 +21,6 @@ const LINUX_ARTIFACT: &str = "daemon-resource-budget-linux.json";
 #[cfg(target_os = "linux")]
 const LINUX_GATE_ENV: &str = "HYDRACACHE_RUN_DAEMON_RESOURCE_LINUX";
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-struct ResourceSample {
-    running_children: u64,
-    tracked_connections: u64,
-    held_snapshot_messages: u64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    rss_kib: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    open_fds: Option<u64>,
-}
-
-impl ResourceSample {
-    fn peak(samples: &[Self]) -> Self {
-        Self {
-            running_children: samples
-                .iter()
-                .map(|sample| sample.running_children)
-                .max()
-                .unwrap_or(0),
-            tracked_connections: samples
-                .iter()
-                .map(|sample| sample.tracked_connections)
-                .max()
-                .unwrap_or(0),
-            held_snapshot_messages: samples
-                .iter()
-                .map(|sample| sample.held_snapshot_messages)
-                .max()
-                .unwrap_or(0),
-            rss_kib: samples.iter().filter_map(|sample| sample.rss_kib).max(),
-            open_fds: samples.iter().filter_map(|sample| sample.open_fds).max(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct ResourceBudget {
-    max_child_delta: u64,
-    max_connection_delta: u64,
-    max_held_snapshot_messages: u64,
-    max_rss_growth_kib: u64,
-    max_fd_growth: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct ResourceBudgetArtifact {
-    schema_version: u32,
-    release: String,
-    seed: u64,
-    platform: String,
-    budget: ResourceBudget,
-    baseline: ResourceSample,
-    peak: ResourceSample,
-    final_sample: ResourceSample,
-    samples: Vec<ResourceSample>,
-}
-
-impl ResourceBudgetArtifact {
-    fn new(samples: Vec<ResourceSample>, budget: ResourceBudget) -> Self {
-        let baseline = samples.first().copied().unwrap_or_default();
-        let final_sample = samples.last().copied().unwrap_or_default();
-        Self {
-            schema_version: 1,
-            release: "0.64.0".to_owned(),
-            seed: SEED,
-            platform: std::env::consts::OS.to_owned(),
-            budget,
-            baseline,
-            peak: ResourceSample::peak(&samples),
-            final_sample,
-            samples,
-        }
-    }
-
-    fn write(&self, path: impl AsRef<Path>) -> TestResult {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join("target/test-evidence/0.64")
-            .join(path);
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::write(path, serde_json::to_vec_pretty(self)?)?;
-        Ok(())
-    }
-}
-
 fn portable_sample(
     cluster: &mut DaemonCluster,
     tracked_connections: u64,
@@ -117,22 +30,28 @@ fn portable_sample(
         running_children: cluster.running_child_count() as u64,
         tracked_connections,
         held_snapshot_messages,
+        snapshot_sender_tasks_current: None,
+        snapshot_sender_tasks_high_water_per_daemon: None,
         rss_kib: None,
+        rss_hwm_kib: None,
         open_fds: None,
     }
 }
 
 #[cfg(target_os = "linux")]
 fn linux_sample(cluster: &mut DaemonCluster) -> TestResult<ResourceSample> {
-    let (rss_kib, open_fds) = cluster
+    let totals = cluster
         .os_resource_totals()
         .ok_or("Linux /proc resource sampling is unavailable")?;
     Ok(ResourceSample {
         running_children: cluster.running_child_count() as u64,
         tracked_connections: 0,
         held_snapshot_messages: 0,
-        rss_kib: Some(rss_kib),
-        open_fds: Some(open_fds),
+        snapshot_sender_tasks_current: None,
+        snapshot_sender_tasks_high_water_per_daemon: None,
+        rss_kib: Some(totals.rss_kib),
+        rss_hwm_kib: Some(totals.rss_hwm_kib),
+        open_fds: Some(totals.open_fds),
     })
 }
 
@@ -263,10 +182,12 @@ async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestRe
         max_child_delta: 0,
         max_connection_delta: 1,
         max_held_snapshot_messages: 8,
+        max_snapshot_sender_tasks_current: None,
+        max_snapshot_sender_tasks_high_water_per_daemon: None,
         max_rss_growth_kib: 64 * 1024,
         max_fd_growth: 24,
     };
-    let artifact = ResourceBudgetArtifact::new(samples, budget);
+    let artifact = ResourceBudgetArtifact::new("0.64.0", SEED, samples, budget);
     assert_eq!(artifact.baseline.running_children, 3);
     assert_eq!(artifact.final_sample.running_children, 3);
     assert_eq!(artifact.final_sample.tracked_connections, 0);
@@ -277,13 +198,13 @@ async fn daemon_cluster_churn_returns_portable_resources_to_baseline() -> TestRe
         artifact.peak.held_snapshot_messages <= artifact.budget.max_held_snapshot_messages,
         "held snapshot queue exceeded the portable budget: {artifact:?}"
     );
-    artifact.write(PORTABLE_ARTIFACT)?;
+    artifact.write_workspace_evidence("0.64", PORTABLE_ARTIFACT)?;
     Ok(())
 }
 
 #[cfg(target_os = "linux")]
 #[test]
-#[ignore = "manual/nightly Linux /proc FD and RSS budget"]
+#[ignore = "manual/nightly Linux /proc FD, RSS, and VmHWM budget"]
 fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
     if std::env::var(LINUX_GATE_ENV).as_deref() != Ok("1") {
         return Err(format!("set {LINUX_GATE_ENV}=1 to claim the Linux resource proof").into());
@@ -301,10 +222,12 @@ fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
         max_child_delta: 0,
         max_connection_delta: 0,
         max_held_snapshot_messages: 8,
+        max_snapshot_sender_tasks_current: None,
+        max_snapshot_sender_tasks_high_water_per_daemon: None,
         max_rss_growth_kib: 64 * 1024,
         max_fd_growth: 24,
     };
-    let artifact = ResourceBudgetArtifact::new(samples, budget);
+    let artifact = ResourceBudgetArtifact::new("0.64.0", SEED, samples, budget);
     let baseline_rss = artifact.baseline.rss_kib.unwrap();
     let final_rss = artifact.final_sample.rss_kib.unwrap();
     let baseline_fds = artifact.baseline.open_fds.unwrap();
@@ -328,7 +251,7 @@ fn linux_fd_and_rss_budget_is_bounded_after_quiescence() -> TestResult {
         "every post-quiescence sample still grew monotonically: {artifact:?}"
     );
     cluster.wait_for_responsive_shape(3, 3, 3)?;
-    artifact.write(LINUX_ARTIFACT)?;
+    artifact.write_workspace_evidence("0.64", LINUX_ARTIFACT)?;
     Ok(())
 }
 
@@ -338,15 +261,22 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
         running_children: 3,
         tracked_connections: 0,
         held_snapshot_messages: 0,
+        snapshot_sender_tasks_current: None,
+        snapshot_sender_tasks_high_water_per_daemon: None,
         rss_kib: Some(1024),
+        rss_hwm_kib: Some(2048),
         open_fds: Some(12),
     };
     let artifact = ResourceBudgetArtifact::new(
+        "0.64.0",
+        SEED,
         vec![sample],
         ResourceBudget {
             max_child_delta: 0,
             max_connection_delta: 0,
             max_held_snapshot_messages: 8,
+            max_snapshot_sender_tasks_current: None,
+            max_snapshot_sender_tasks_high_water_per_daemon: None,
             max_rss_growth_kib: 64 * 1024,
             max_fd_growth: 24,
         },
@@ -363,9 +293,107 @@ fn resource_budget_artifact_contains_baseline_peak_final_and_platform() {
         assert!(value.get(field).is_some(), "artifact is missing {field}");
     }
     let schema = include_str!("../../../docs/testing/schemas/daemon-resource-budget.schema.json");
-    for field in ["baseline", "peak", "final_sample", "platform", "samples"] {
+    for field in [
+        "baseline",
+        "peak",
+        "final_sample",
+        "platform",
+        "samples",
+        "rss_hwm_kib",
+    ] {
         assert!(schema.contains(&format!("\"{field}\"")));
     }
+    assert!(
+        schema.contains("\"release\"")
+            && schema.contains("\"type\": \"string\"")
+            && schema.contains("\"pattern\""),
+        "the shared resource schema must require a semver-shaped release"
+    );
+    assert!(
+        !schema.contains("\"release\": { \"const\": \"0.64.0\" }"),
+        "the shared resource schema must not be pinned to the W37 release"
+    );
+}
+
+#[test]
+fn rss_high_water_budget_catches_transient_growth_without_requiring_a_drop() {
+    let baseline = ResourceSample {
+        running_children: 3,
+        rss_kib: Some(1_000),
+        rss_hwm_kib: Some(1_200),
+        open_fds: Some(12),
+        ..ResourceSample::default()
+    };
+    let final_sample = ResourceSample {
+        rss_kib: Some(1_010),
+        rss_hwm_kib: Some(1_250),
+        ..baseline
+    };
+    let budget = ResourceBudget {
+        max_child_delta: 0,
+        max_connection_delta: 0,
+        max_held_snapshot_messages: 0,
+        max_snapshot_sender_tasks_current: None,
+        max_snapshot_sender_tasks_high_water_per_daemon: None,
+        max_rss_growth_kib: 64,
+        max_fd_growth: 0,
+    };
+    let artifact =
+        ResourceBudgetArtifact::new("0.64.0", SEED, vec![baseline, final_sample], budget.clone());
+
+    artifact
+        .validate_budget()
+        .expect("VmHWM may remain elevated after quiescence when growth stays within budget");
+    assert_eq!(artifact.peak.rss_hwm_kib, Some(1_250));
+    assert_eq!(artifact.final_sample.rss_hwm_kib, Some(1_250));
+
+    let excessive_high_water = ResourceSample {
+        rss_hwm_kib: Some(1_265),
+        ..final_sample
+    };
+    let artifact =
+        ResourceBudgetArtifact::new("0.64.0", SEED, vec![baseline, excessive_high_water], budget);
+    let error = artifact
+        .validate_budget()
+        .expect_err("VmHWM growth above the declared budget must fail closed");
+    assert!(
+        error.to_string().contains("high-water"),
+        "unexpected VmHWM budget error: {error}"
+    );
+}
+
+#[test]
+fn linux_resource_proof_requires_rss_high_water_in_every_sample() {
+    let sample = ResourceSample {
+        running_children: 3,
+        rss_kib: Some(1_024),
+        rss_hwm_kib: None,
+        open_fds: Some(12),
+        ..ResourceSample::default()
+    };
+    let mut artifact = ResourceBudgetArtifact::new(
+        "0.64.0",
+        SEED,
+        vec![sample],
+        ResourceBudget {
+            max_child_delta: 0,
+            max_connection_delta: 0,
+            max_held_snapshot_messages: 0,
+            max_snapshot_sender_tasks_current: None,
+            max_snapshot_sender_tasks_high_water_per_daemon: None,
+            max_rss_growth_kib: 0,
+            max_fd_growth: 0,
+        },
+    );
+    artifact.platform = "linux".to_owned();
+
+    let error = artifact
+        .validate_linux_proof()
+        .expect_err("a Linux proof without VmHWM must fail closed");
+    assert!(
+        error.to_string().contains("rss_hwm_kib"),
+        "unexpected Linux proof error: {error}"
+    );
 }
 
 #[test]

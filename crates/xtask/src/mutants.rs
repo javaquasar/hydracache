@@ -33,12 +33,14 @@ const REQUIRED_TESTS: &[&str] = &[
 const PROOF_REQUIRED_SCOPES: &[&str] = &[
     "crates/hydracache-sim/src/linearizability.rs",
     "crates/hydracache-cluster-testkit/src/invariants.rs",
+    "crates/hydracache-cluster-testkit/src/client_surface_conformance.rs",
 ];
 
 const PROOF_REQUIRED_TESTS: &[&str] = &[
     "cargo test -p hydracache-sim --test linearizability_oracle --locked",
     "cargo test -p hydracache-cluster-testkit --test invariants --locked",
     "cargo test -p hydracache-cluster-testkit --test client_surface_conformance_oracle --locked",
+    "cargo test -p hydracache-client-transport-axum --test client_surface_conformance --locked",
 ];
 
 pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {

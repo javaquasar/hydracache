@@ -108,10 +108,16 @@ pub use log_store::{
     RAFT_LOG_FORMAT_VERSION,
 };
 pub use log_store::{InMemoryRaftLogStore, RaftLogStore, RaftStoreError, RaftStoreResult};
+#[cfg(feature = "test-failpoints")]
+pub use log_store::{
+    RaftStorageFaultController, RaftStorageFaultMode, RaftStorageFaultObservation,
+    RaftStorageFaultOperation,
+};
 
 use protobuf::Message as ProtobufMessage;
 use raft::eraftpb::{
-    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage, Snapshot,
+    ConfChange, ConfChangeType, ConfChangeV2, Entry, EntryType, Message as RaftMessage,
+    MessageType, Snapshot,
 };
 use raft::storage::Storage;
 use raft::{Config, RawNode, SnapshotStatus, StateRole};
@@ -325,6 +331,35 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub last_result: Option<RaftCommandResult>,
 }
 
+/// Read-only durable-log progress around the server compaction seam.
+///
+/// A valid observation always has `snapshot_index <= applied_index`. The
+/// server uses this boundary to prove that an explicitly requested test/ops
+/// compaction never truncates unapplied Raft entries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RaftLogCompactionObservation {
+    /// Last metadata-log index applied to the local state machine.
+    pub applied_index: u64,
+    /// Index carried by the durable Raft snapshot, or zero before compaction.
+    pub snapshot_index: u64,
+    /// First log index still readable from the durable store.
+    pub first_log_index: u64,
+    /// Last log index known to the durable store.
+    pub last_log_index: u64,
+}
+
+/// Exact encoded-size check for the snapshot candidate at applied progress.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RaftSnapshotSizeObservation {
+    /// Worst-case protobuf `MsgSnapshot` bytes for the current candidate.
+    pub encoded_wire_bytes: u64,
+    /// Configured Raft message budget applied to snapshot candidates.
+    pub max_wire_bytes: u64,
+    /// Whether compaction can publish this candidate without exceeding the
+    /// transport-compatible Raft message budget.
+    pub transportable: bool,
+}
+
 /// Metadata command plus a stable idempotency key.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RaftMetadataCommandEnvelope {
@@ -369,6 +404,27 @@ pub struct RaftWireMessage {
     pub payload: Vec<u8>,
 }
 
+/// Validated wire traffic that can renew a node's metadata-authority fence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RaftAuthorityObservation {
+    /// Leader commit-stream traffic observed by a follower.
+    LeaderCommit {
+        /// Raft node id that sent the commit-stream message.
+        source_raft_node_id: u64,
+        /// Term carried by the commit-stream message.
+        term: u64,
+        /// Whether this observation carries a Raft snapshot.
+        is_snapshot: bool,
+    },
+    /// Replication acknowledgement observed by the current leader.
+    VoterAcknowledgement {
+        /// Raft voter that acknowledged append or heartbeat traffic.
+        source_raft_node_id: u64,
+        /// Term carried by the acknowledgement.
+        term: u64,
+    },
+}
+
 impl RaftWireMessage {
     /// Serialize a raft-rs message for transport.
     pub fn encode(message: &RaftMessage) -> CacheResult<Self> {
@@ -382,11 +438,77 @@ impl RaftWireMessage {
         })
     }
 
-    /// Decode the protobuf payload back into a raft-rs message.
+    /// Decode the protobuf payload and verify its duplicated transport header.
     pub fn decode(&self) -> CacheResult<RaftMessage> {
-        RaftMessage::parse_from_bytes(&self.payload)
-            .map_err(|error| CacheError::Decode(format!("failed to decode raft message: {error}")))
+        let message = RaftMessage::parse_from_bytes(&self.payload).map_err(|error| {
+            CacheError::Decode(format!("failed to decode raft message: {error}"))
+        })?;
+        validate_wire_header("from", self.from, message.from)?;
+        validate_wire_header("to", self.to, message.to)?;
+        validate_wire_header("term", self.term, message.term)?;
+        validate_wire_structure(&message)?;
+        Ok(message)
     }
+
+    /// Return whether this envelope carries a raft snapshot.
+    ///
+    /// Transports use this narrow query to report the real delivery outcome
+    /// back to raft-rs without taking a direct dependency on its protobuf
+    /// message enum.
+    pub fn is_snapshot(&self) -> CacheResult<bool> {
+        Ok(self.decode()?.get_msg_type() == MessageType::MsgSnapshot)
+    }
+
+    /// Inspect whether this envelope can contribute to an authority fence.
+    ///
+    /// Append, heartbeat, and snapshot messages carry the leader's commit
+    /// watermark to followers. Append and heartbeat responses let a leader
+    /// prove that a current voter still acknowledges its term. Callers must
+    /// still match the source against the runtime's current leader or voter set.
+    pub fn authority_observation(&self) -> CacheResult<Option<RaftAuthorityObservation>> {
+        let message = self.decode()?;
+        let message_type = message.get_msg_type();
+        Ok(match message_type {
+            MessageType::MsgAppend | MessageType::MsgHeartbeat | MessageType::MsgSnapshot => {
+                Some(RaftAuthorityObservation::LeaderCommit {
+                    source_raft_node_id: message.from,
+                    term: message.term,
+                    is_snapshot: message_type == MessageType::MsgSnapshot,
+                })
+            }
+            MessageType::MsgAppendResponse | MessageType::MsgHeartbeatResponse => {
+                Some(RaftAuthorityObservation::VoterAcknowledgement {
+                    source_raft_node_id: message.from,
+                    term: message.term,
+                })
+            }
+            _ => None,
+        })
+    }
+}
+
+fn validate_wire_header(field: &str, envelope: u64, protobuf: u64) -> CacheResult<()> {
+    if envelope == protobuf {
+        return Ok(());
+    }
+    Err(CacheError::Decode(format!(
+        "raft wire {field} mismatch: envelope={envelope}, protobuf={protobuf}"
+    )))
+}
+
+fn validate_wire_structure(message: &RaftMessage) -> CacheResult<()> {
+    if matches!(
+        message.get_msg_type(),
+        MessageType::MsgReadIndex | MessageType::MsgReadIndexResp
+    ) && message.entries.len() != 1
+    {
+        return Err(CacheError::Decode(format!(
+            "raft {:?} must carry exactly one request-context entry, got {}",
+            message.get_msg_type(),
+            message.entries.len()
+        )));
+    }
+    Ok(())
 }
 
 impl RaftMetadataCommandEnvelope {
@@ -452,6 +574,14 @@ pub struct RaftMetadataRuntimeExport {
     pub commands: Vec<RaftMetadataCommandEnvelope>,
 }
 
+#[derive(Debug)]
+struct StagedMetadataSnapshot {
+    cluster: InMemoryCluster,
+    applied_index: u64,
+    commands: Vec<RaftMetadataCommandEnvelope>,
+    applied_command_ids: BTreeSet<String>,
+}
+
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_MAGIC: &[u8; 8] = b"HCMETA01";
 const RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION: u32 = 1;
 
@@ -464,7 +594,6 @@ struct RaftMetadataSnapshotPayload {
     commands: Vec<RaftMetadataCommandEnvelope>,
 }
 
-#[cfg(feature = "test-failpoints")]
 fn encode_metadata_snapshot_payload(snapshot: &RaftMetadataRuntimeExport) -> CacheResult<Vec<u8>> {
     let payload = RaftMetadataSnapshotPayload {
         format_version: RAFT_METADATA_SNAPSHOT_PAYLOAD_VERSION,
@@ -502,6 +631,24 @@ fn decode_metadata_snapshot_payload(bytes: &[u8]) -> CacheResult<RaftMetadataRun
         applied_index: payload.applied_index,
         commands: payload.commands,
     })
+}
+
+fn encoded_snapshot_wire_bytes(snapshot: &Snapshot) -> CacheResult<u64> {
+    let mut message = RaftMessage {
+        from: u64::MAX,
+        to: u64::MAX,
+        term: u64::MAX,
+        ..RaftMessage::default()
+    };
+    message.set_msg_type(MessageType::MsgSnapshot);
+    message.set_snapshot(snapshot.clone());
+    let encoded = message.write_to_bytes().map_err(|error| {
+        CacheError::Encode(format!(
+            "failed to encode raft snapshot size candidate: {error}"
+        ))
+    })?;
+    u64::try_from(encoded.len())
+        .map_err(|_| CacheError::Backend("encoded raft snapshot size does not fit u64".to_owned()))
 }
 
 /// Storage seam for exported raft metadata snapshots.
@@ -622,6 +769,7 @@ where
     outbound_messages: Vec<RaftWireMessage>,
     applied_index: u64,
     snapshot_installs: u64,
+    max_wire_bytes: u64,
     #[cfg(test)]
     fail_next_proposal: bool,
 }
@@ -795,17 +943,31 @@ where
     ) -> CacheResult<Self> {
         let cluster_name = config.cluster_name.clone();
         let raft_node_id = config.raft_node_id;
+        let max_wire_bytes = config.max_size_per_msg;
         let initial_state = storage.initial_state().map_err(to_cache_error)?;
+        let persisted_applied_index = storage.applied_index().map_err(to_cache_error)?;
         let retained_entries = storage.retained_entries().map_err(to_cache_error)?;
-        let logger = Logger::root(slog::Discard, o!());
-        let mut raw_node =
-            RawNode::new(&config.raft_config(), storage, &logger).map_err(to_cache_error)?;
-        if config.auto_campaign {
-            raw_node.campaign().map_err(to_cache_error)?;
+        let durable_snapshot = storage.snapshot(0, raft_node_id).map_err(to_cache_error)?;
+        let snapshot_index = durable_snapshot.get_metadata().index;
+        let recovered_applied_index = persisted_applied_index.max(snapshot_index);
+        if recovered_applied_index > initial_state.hard_state.commit {
+            return Err(CacheError::Backend(format!(
+                "durable raft applied index {recovered_applied_index} is past committed index {}",
+                initial_state.hard_state.commit
+            )));
         }
+        let logger = Logger::root(slog::Discard, o!());
+        let mut raft_config = config.raft_config();
+        // Recovery below materializes the durable snapshot and only the normal
+        // entries known to have been applied before the crash. A committed tail
+        // beyond this persisted boundary must be returned by exactly one Ready
+        // so ConfChange entries are never skipped.
+        raft_config.applied = recovered_applied_index;
+        let raw_node = RawNode::new(&raft_config, storage, &logger).map_err(to_cache_error)?;
+        let auto_campaign = config.auto_campaign;
 
         let cluster = Arc::new(InMemoryCluster::new(cluster_name));
-        let mut state = RaftRuntimeState {
+        let state = RaftRuntimeState {
             cluster: cluster.clone(),
             raw_node,
             commands: Vec::new(),
@@ -814,10 +976,10 @@ where
             outbound_messages: Vec::new(),
             applied_index: 0,
             snapshot_installs: 0,
+            max_wire_bytes,
             #[cfg(test)]
             fail_next_proposal: false,
         };
-        let _ = state.drain_ready()?;
 
         let runtime = Self {
             cluster,
@@ -825,7 +987,21 @@ where
             raft: Mutex::new(state),
             metadata_store,
         };
-        runtime.restore_committed_entries(retained_entries, initial_state.hard_state.commit)?;
+        runtime.restore_committed_state(
+            durable_snapshot,
+            retained_entries,
+            recovered_applied_index,
+        )?;
+        {
+            let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+            // Apply a committed-but-not-applied recovery tail before a new
+            // election can observe stale persisted configuration state.
+            let _ = state.drain_ready()?;
+            if auto_campaign {
+                state.raw_node.campaign().map_err(to_cache_error)?;
+                let _ = state.drain_ready()?;
+            }
+        }
         Ok(runtime)
     }
 
@@ -901,11 +1077,16 @@ where
 
     /// Step one inbound raft message and return outbound peer messages.
     pub fn step(&self, message: RaftWireMessage) -> CacheResult<Vec<RaftWireMessage>> {
+        let message = message.decode()?;
+        if message.to != self.raft_node_id {
+            return Err(CacheError::Decode(format!(
+                "raft message destination {} does not match runtime node {}",
+                message.to, self.raft_node_id
+            )));
+        }
+        validate_inbound_metadata_snapshot(self.cluster.name(), &message)?;
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        state
-            .raw_node
-            .step(message.decode()?)
-            .map_err(to_cache_error)?;
+        state.raw_node.step(message).map_err(to_cache_error)?;
         state.drain_ready()
     }
 
@@ -927,23 +1108,59 @@ where
         delivered: bool,
     ) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        let status = if delivered {
-            SnapshotStatus::Finish
-        } else {
-            SnapshotStatus::Failure
-        };
-        state.raw_node.report_snapshot(peer_id, status);
+        report_snapshot_delivery_outcome(&mut state, peer_id, delivered);
         state.drain_ready()
     }
 
-    /// Force a metadata snapshot at the current applied index for compaction
-    /// proof tests.
-    #[cfg(feature = "test-failpoints")]
-    pub fn compact_applied_log_to_snapshot_for_tests(&self) -> CacheResult<u64> {
+    /// Report a snapshot transport outcome without draining new ready state.
+    ///
+    /// The server HTTP sender uses this form from inside its outbound task.
+    /// Any work made ready by the report remains owned by the normal bounded
+    /// drive loop instead of being drained and accidentally discarded.
+    pub fn report_snapshot_delivery_deferred(&self, peer_id: u64, delivered: bool) {
+        let mut state = self.raft.lock().expect("raft metadata state poisoned");
+        report_snapshot_delivery_outcome(&mut state, peer_id, delivered);
+    }
+
+    /// Persist a metadata snapshot and compact the durable log at the current
+    /// applied index.
+    ///
+    /// This method deliberately does not accept an arbitrary index: the
+    /// runtime only owns a materialized state-machine image for its current
+    /// applied progress. Server callers must additionally guard this narrow
+    /// seam behind an explicit off-by-default operator/test control.
+    pub fn compact_applied_log_to_snapshot(&self) -> CacheResult<u64> {
         self.raft
             .lock()
             .expect("raft metadata state poisoned")
-            .compact_applied_log_to_snapshot_for_tests(self.raft_node_id)
+            .compact_applied_log_to_snapshot(self.raft_node_id)
+    }
+
+    /// Return durable-log progress used to observe compaction boundaries.
+    pub fn log_compaction_observation(&self) -> CacheResult<RaftLogCompactionObservation> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .log_compaction_observation(self.raft_node_id)
+    }
+
+    /// Measure the exact protobuf `MsgSnapshot` candidate before compaction.
+    ///
+    /// The observation is read-only. A false `transportable` result means the
+    /// current snapshot must not replace the last deliverable snapshot or
+    /// truncate its retained Raft tail.
+    pub fn snapshot_size_observation(&self) -> CacheResult<RaftSnapshotSizeObservation> {
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .snapshot_size_observation(self.raft_node_id)
+    }
+
+    /// Backward-compatible failpoint-test alias for the production-neutral
+    /// compaction primitive.
+    #[cfg(feature = "test-failpoints")]
+    pub fn compact_applied_log_to_snapshot_for_tests(&self) -> CacheResult<u64> {
+        self.compact_applied_log_to_snapshot()
     }
 
     /// Return outbound messages captured while committing metadata commands.
@@ -1064,35 +1281,33 @@ where
     }
 
     fn restore_export(&self, snapshot: RaftMetadataRuntimeExport) -> CacheResult<()> {
-        validate_snapshot_apply_contract(&snapshot)?;
-        let snapshot_index = snapshot.applied_index;
-        {
-            let mut state = self.raft.lock().expect("raft metadata state poisoned");
-            state.commands.clear();
-            state.applied_command_ids.clear();
-            state.results.clear();
-            state.applied_index = snapshot.applied_index;
-        }
-        for (offset, envelope) in snapshot.commands.into_iter().enumerate() {
-            let tail_index = offset + 1;
-            let command_id = envelope.command_id.clone();
-            self.apply_snapshot_envelope(envelope).map_err(|error| {
-                snapshot_apply_error(snapshot_index, tail_index, &command_id, error)
-            })?;
-        }
-        Ok(())
+        let staged = stage_metadata_snapshot(snapshot)?;
+        self.raft
+            .lock()
+            .expect("raft metadata state poisoned")
+            .publish_staged_metadata_snapshot(staged, false)
     }
 
-    fn restore_committed_entries(&self, entries: Vec<Entry>, commit_index: u64) -> CacheResult<()> {
+    fn restore_committed_state(
+        &self,
+        durable_snapshot: Snapshot,
+        entries: Vec<Entry>,
+        recovered_applied_index: u64,
+    ) -> CacheResult<()> {
         {
             let mut state = self.raft.lock().expect("raft metadata state poisoned");
             state.commands.clear();
             state.applied_command_ids.clear();
             state.results.clear();
             state.applied_index = 0;
+            if !durable_snapshot.data.is_empty() {
+                state.install_metadata_snapshot(&durable_snapshot)?;
+            }
         }
+        let snapshot_index = durable_snapshot.get_metadata().index;
         for entry in entries {
-            if entry.index > commit_index
+            if entry.index <= snapshot_index
+                || entry.index > recovered_applied_index
                 || entry.data.is_empty()
                 || entry.get_entry_type() != EntryType::EntryNormal
             {
@@ -1101,7 +1316,14 @@ where
             self.apply_recovered_envelope_at(decode_envelope(entry.data.as_ref())?, entry.index)?;
         }
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        state.applied_index = state.applied_index.max(commit_index);
+        state.applied_index = state.applied_index.max(recovered_applied_index);
+        state
+            .raw_node
+            .raft
+            .raft_log
+            .store
+            .mark_applied(state.applied_index)
+            .map_err(to_cache_error)?;
         Ok(())
     }
 
@@ -1142,22 +1364,6 @@ where
     ) -> CacheResult<Vec<RaftWireMessage>> {
         let mut state = self.raft.lock().expect("raft metadata state poisoned");
         state.propose_voter_change(raft_node_id, change_type)
-    }
-
-    fn apply_snapshot_envelope(&self, envelope: RaftMetadataCommandEnvelope) -> CacheResult<()> {
-        materialize_snapshot_command(&self.cluster, &envelope.command)?;
-        let mut state = self.raft.lock().expect("raft metadata state poisoned");
-        if !state
-            .applied_command_ids
-            .insert(envelope.command_id.clone())
-        {
-            return Err(CacheError::Backend(format!(
-                "duplicate raft snapshot command id '{}'",
-                envelope.command_id
-            )));
-        }
-        state.commands.push(envelope);
-        Ok(())
     }
 
     fn apply_recovered_envelope_at(
@@ -1289,6 +1495,81 @@ fn validate_snapshot_apply_contract(snapshot: &RaftMetadataRuntimeExport) -> Cac
         }
     }
     Ok(())
+}
+
+fn stage_metadata_snapshot(
+    snapshot: RaftMetadataRuntimeExport,
+) -> CacheResult<StagedMetadataSnapshot> {
+    validate_snapshot_apply_contract(&snapshot)?;
+    let staged_cluster = InMemoryCluster::new(snapshot.cluster_name.clone());
+    let mut applied_command_ids = BTreeSet::new();
+    for (offset, envelope) in snapshot.commands.iter().enumerate() {
+        let tail_index = offset + 1;
+        materialize_snapshot_command(&staged_cluster, &envelope.command).map_err(|error| {
+            snapshot_apply_error(
+                snapshot.applied_index,
+                tail_index,
+                &envelope.command_id,
+                error,
+            )
+        })?;
+        if !applied_command_ids.insert(envelope.command_id.clone()) {
+            return Err(snapshot_apply_error(
+                snapshot.applied_index,
+                tail_index,
+                &envelope.command_id,
+                CacheError::Backend("duplicate raft snapshot command id".to_owned()),
+            ));
+        }
+    }
+    Ok(StagedMetadataSnapshot {
+        cluster: staged_cluster,
+        applied_index: snapshot.applied_index,
+        commands: snapshot.commands,
+        applied_command_ids,
+    })
+}
+
+fn validate_inbound_metadata_snapshot(
+    cluster_name: &str,
+    message: &RaftMessage,
+) -> CacheResult<()> {
+    if message.get_msg_type() != MessageType::MsgSnapshot {
+        return Ok(());
+    }
+    if !message.has_snapshot() {
+        return Err(CacheError::Decode(
+            "raft MsgSnapshot is missing its snapshot field".to_owned(),
+        ));
+    }
+    let snapshot = message.get_snapshot();
+    // Empty snapshot data is the existing raft-only compatibility path. It
+    // carries log/configuration progress but no HydraCache metadata image.
+    if snapshot.data.is_empty() {
+        return Ok(());
+    }
+
+    let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
+    if export.applied_index != snapshot.get_metadata().index {
+        return Err(CacheError::Decode(format!(
+            "raft metadata snapshot payload index {} does not match raft snapshot index {}",
+            export.applied_index,
+            snapshot.get_metadata().index
+        )));
+    }
+    if export.cluster_name != cluster_name {
+        return Err(CacheError::Decode(format!(
+            "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
+            export.cluster_name, cluster_name
+        )));
+    }
+    if export.raft_node_id != message.from {
+        return Err(CacheError::Decode(format!(
+            "raft metadata snapshot source {} does not match protobuf sender {}",
+            export.raft_node_id, message.from
+        )));
+    }
+    stage_metadata_snapshot(export).map(|_| ())
 }
 
 fn command_id_node(node_id: &ClusterNodeId) -> String {
@@ -1481,6 +1762,32 @@ impl<S> RaftRuntimeState<S>
 where
     S: RaftLogStore,
 {
+    fn publish_staged_metadata_snapshot(
+        &mut self,
+        staged: StagedMetadataSnapshot,
+        count_install: bool,
+    ) -> CacheResult<()> {
+        if staged.cluster.name() != self.cluster.name() {
+            return Err(CacheError::Backend(format!(
+                "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
+                staged.cluster.name(),
+                self.cluster.name()
+            )));
+        }
+
+        self.commands = staged.commands;
+        self.applied_command_ids = staged.applied_command_ids;
+        self.results.clear();
+        self.applied_index = staged.applied_index;
+        // The cluster names were checked above, so replacement has no
+        // recoverable failure after the runtime metadata has been staged.
+        self.cluster.replace_membership_from(staged.cluster)?;
+        if count_install {
+            self.snapshot_installs = self.snapshot_installs.saturating_add(1);
+        }
+        Ok(())
+    }
+
     fn propose_voter_change(
         &mut self,
         raft_node_id: u64,
@@ -1572,17 +1879,21 @@ where
         Ok(result)
     }
 
-    #[cfg(feature = "test-failpoints")]
-    fn compact_applied_log_to_snapshot_for_tests(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+    fn build_applied_snapshot(&self, raft_node_id: u64) -> CacheResult<Snapshot> {
         if self.applied_index == 0 {
             return Err(CacheError::Backend(
                 "cannot compact raft metadata log before any entry is applied".to_owned(),
             ));
         }
+        let commit_index = self.raw_node.raft.hard_state().commit;
+        if self.applied_index > commit_index {
+            return Err(CacheError::Backend(format!(
+                "cannot compact raft metadata log at applied index {} past committed index {commit_index}",
+                self.applied_index
+            )));
+        }
         let store = self.raw_node.raft.raft_log.store.clone();
-        let term = store
-            .term(self.applied_index)
-            .unwrap_or(self.raw_node.raft.term);
+        let term = store.term(self.applied_index).map_err(to_cache_error)?;
         let conf_state = store
             .initial_state()
             .map_err(to_cache_error)?
@@ -1599,10 +1910,61 @@ where
         snapshot.mut_metadata().term = term;
         snapshot.mut_metadata().set_conf_state(conf_state);
         snapshot.data = encode_metadata_snapshot_payload(&export)?.into();
+        Ok(snapshot)
+    }
+
+    fn snapshot_size_observation(
+        &self,
+        raft_node_id: u64,
+    ) -> CacheResult<RaftSnapshotSizeObservation> {
+        let snapshot = self.build_applied_snapshot(raft_node_id)?;
+        let encoded_wire_bytes = encoded_snapshot_wire_bytes(&snapshot)?;
+        Ok(RaftSnapshotSizeObservation {
+            encoded_wire_bytes,
+            max_wire_bytes: self.max_wire_bytes,
+            transportable: encoded_wire_bytes <= self.max_wire_bytes,
+        })
+    }
+
+    fn compact_applied_log_to_snapshot(&mut self, raft_node_id: u64) -> CacheResult<u64> {
+        let snapshot = self.build_applied_snapshot(raft_node_id)?;
+        let encoded_wire_bytes = encoded_snapshot_wire_bytes(&snapshot)?;
+        if encoded_wire_bytes > self.max_wire_bytes {
+            return Err(CacheError::Backend(format!(
+                "raft snapshot compaction rejected: encoded MsgSnapshot is {} bytes, exceeding configured transport limit {} bytes; previous snapshot and retained log are unchanged",
+                encoded_wire_bytes, self.max_wire_bytes
+            )));
+        }
+        let store = self.raw_node.raft.raft_log.store.clone();
         store
             .save_snapshot(&snapshot, usize::MAX)
             .map_err(to_cache_error)?;
         Ok(self.applied_index)
+    }
+
+    fn log_compaction_observation(
+        &self,
+        raft_node_id: u64,
+    ) -> CacheResult<RaftLogCompactionObservation> {
+        let store = self.raw_node.raft.raft_log.store.clone();
+        let snapshot_index = store
+            .snapshot(0, raft_node_id)
+            .map_err(to_cache_error)?
+            .get_metadata()
+            .index;
+        let observation = RaftLogCompactionObservation {
+            applied_index: self.applied_index,
+            snapshot_index,
+            first_log_index: store.first_index().map_err(to_cache_error)?,
+            last_log_index: store.last_index().map_err(to_cache_error)?,
+        };
+        if observation.snapshot_index > observation.applied_index {
+            return Err(CacheError::Backend(format!(
+                "durable raft snapshot index {} is past applied index {}",
+                observation.snapshot_index, observation.applied_index
+            )));
+        }
+        Ok(observation)
     }
 
     fn drain_ready(&mut self) -> CacheResult<Vec<RaftWireMessage>> {
@@ -1648,15 +2010,19 @@ where
                 });
             }
 
-            self.apply_committed_entries(committed_entries)?;
-
             let mut light_ready = self.raw_node.advance(ready);
             if let Some(commit) = light_ready.commit_index() {
                 store.set_commit(commit).map_err(to_cache_error)?;
             }
+            // Materialization follows durable commit. A commit persistence
+            // failure must fail loud before externally visible membership is
+            // changed; restart recovery then follows the durable boundary.
+            self.apply_committed_entries(committed_entries)?;
             self.apply_committed_entries(light_ready.take_committed_entries())?;
             outbound.extend(light_ready.take_messages());
-            store.mark_applied(self.applied_index);
+            store
+                .mark_applied(self.applied_index)
+                .map_err(to_cache_error)?;
             self.raw_node.advance_apply();
         }
         outbound
@@ -1748,6 +2114,13 @@ where
             ))
         });
         let export = decode_metadata_snapshot_payload(snapshot.data.as_ref())?;
+        if export.applied_index != snapshot.get_metadata().index {
+            return Err(CacheError::Backend(format!(
+                "raft metadata snapshot payload index {} does not match raft snapshot index {}",
+                export.applied_index,
+                snapshot.get_metadata().index
+            )));
+        }
         if export.cluster_name != self.cluster.name() {
             return Err(CacheError::Backend(format!(
                 "raft metadata snapshot cluster '{}' does not match runtime cluster '{}'",
@@ -1755,23 +2128,8 @@ where
                 self.cluster.name()
             )));
         }
-        validate_snapshot_apply_contract(&export)?;
-        self.commands.clear();
-        self.applied_command_ids.clear();
-        self.results.clear();
-        self.applied_index = export.applied_index;
-        for envelope in export.commands {
-            materialize_snapshot_command(&self.cluster, &envelope.command)?;
-            if !self.applied_command_ids.insert(envelope.command_id.clone()) {
-                return Err(CacheError::Backend(format!(
-                    "duplicate raft snapshot command id '{}'",
-                    envelope.command_id
-                )));
-            }
-            self.commands.push(envelope);
-        }
-        self.snapshot_installs = self.snapshot_installs.saturating_add(1);
-        Ok(())
+        let staged = stage_metadata_snapshot(export)?;
+        self.publish_staged_metadata_snapshot(staged, true)
     }
 }
 
@@ -2032,6 +2390,21 @@ fn known_leader_id(leader_id: u64) -> Option<u64> {
     }
 }
 
+fn report_snapshot_delivery_outcome<S>(
+    state: &mut RaftRuntimeState<S>,
+    peer_id: u64,
+    delivered: bool,
+) where
+    S: RaftLogStore,
+{
+    let status = if delivered {
+        SnapshotStatus::Finish
+    } else {
+        SnapshotStatus::Failure
+    };
+    state.raw_node.report_snapshot(peer_id, status);
+}
+
 fn to_cache_error(error: impl fmt::Display) -> CacheError {
     CacheError::Backend(format!("raft metadata runtime failed: {error}"))
 }
@@ -2043,6 +2416,235 @@ mod tests {
     use hydracache::{ClusterControlPlane, HydraCache, InMemoryCluster};
 
     use super::*;
+
+    fn metadata_export_from_commands(
+        cluster_name: &str,
+        source_raft_node_id: u64,
+        applied_index: u64,
+        commands: Vec<RaftMetadataCommand>,
+    ) -> RaftMetadataRuntimeExport {
+        RaftMetadataRuntimeExport {
+            cluster_name: cluster_name.to_owned(),
+            raft_node_id: source_raft_node_id,
+            applied_index,
+            commands: commands
+                .into_iter()
+                .map(|command| RaftMetadataCommandEnvelope {
+                    command_id: command_id_for(&command),
+                    command,
+                })
+                .collect(),
+        }
+    }
+
+    fn protobuf_snapshot_from_export(export: &RaftMetadataRuntimeExport) -> Snapshot {
+        let mut snapshot = Snapshot::default();
+        snapshot.mut_metadata().index = export.applied_index;
+        snapshot.data = encode_metadata_snapshot_payload(export).unwrap().into();
+        snapshot
+    }
+
+    #[test]
+    fn wire_envelope_identifies_snapshot_without_transport_raft_dependency() {
+        let mut snapshot = RaftMessage::default();
+        snapshot.set_msg_type(MessageType::MsgSnapshot);
+        snapshot.from = 1;
+        snapshot.to = 2;
+        let snapshot = RaftWireMessage::encode(&snapshot).unwrap();
+        assert!(snapshot.is_snapshot().unwrap());
+
+        let mut heartbeat = RaftMessage::default();
+        heartbeat.set_msg_type(MessageType::MsgHeartbeat);
+        let heartbeat = RaftWireMessage::encode(&heartbeat).unwrap();
+        assert!(!heartbeat.is_snapshot().unwrap());
+
+        let malformed = RaftWireMessage {
+            from: 1,
+            to: 2,
+            term: 1,
+            payload: vec![0xff],
+        };
+        assert!(malformed.is_snapshot().is_err());
+    }
+
+    #[test]
+    fn wire_decode_rejects_read_index_without_request_context_entry() {
+        for message_type in [MessageType::MsgReadIndex, MessageType::MsgReadIndexResp] {
+            let mut message = RaftMessage {
+                from: 1,
+                to: 1,
+                term: 1,
+                ..RaftMessage::default()
+            };
+            message.set_msg_type(message_type);
+            let wire = RaftWireMessage::encode(&message).unwrap();
+
+            let error = wire.decode().unwrap_err();
+            assert!(
+                error
+                    .to_string()
+                    .contains("must carry exactly one request-context entry"),
+                "unexpected rejection for {message_type:?}: {error}"
+            );
+        }
+    }
+
+    #[test]
+    fn wire_authority_observation_classifies_commit_stream_and_voter_acknowledgements() {
+        for (message_type, is_snapshot) in [
+            (MessageType::MsgAppend, false),
+            (MessageType::MsgHeartbeat, false),
+            (MessageType::MsgSnapshot, true),
+        ] {
+            let mut message = RaftMessage {
+                from: 11,
+                to: 12,
+                term: 7,
+                ..RaftMessage::default()
+            };
+            message.set_msg_type(message_type);
+            let observation = RaftWireMessage::encode(&message)
+                .unwrap()
+                .authority_observation()
+                .unwrap()
+                .expect("leader commit-stream message should be observable");
+            assert_eq!(
+                observation,
+                RaftAuthorityObservation::LeaderCommit {
+                    source_raft_node_id: 11,
+                    term: 7,
+                    is_snapshot,
+                }
+            );
+        }
+
+        for message_type in [
+            MessageType::MsgAppendResponse,
+            MessageType::MsgHeartbeatResponse,
+        ] {
+            let mut message = RaftMessage {
+                from: 12,
+                to: 11,
+                term: 7,
+                ..RaftMessage::default()
+            };
+            message.set_msg_type(message_type);
+            assert_eq!(
+                RaftWireMessage::encode(&message)
+                    .unwrap()
+                    .authority_observation()
+                    .unwrap(),
+                Some(RaftAuthorityObservation::VoterAcknowledgement {
+                    source_raft_node_id: 12,
+                    term: 7,
+                })
+            );
+        }
+
+        for message_type in [MessageType::MsgRequestVote, MessageType::MsgTimeoutNow] {
+            let mut message = RaftMessage::default();
+            message.set_msg_type(message_type);
+            assert_eq!(
+                RaftWireMessage::encode(&message)
+                    .unwrap()
+                    .authority_observation()
+                    .unwrap(),
+                None
+            );
+        }
+    }
+
+    #[test]
+    fn snapshot_wire_size_includes_the_maximal_routing_header() {
+        let snapshot = Snapshot::default();
+        let mut message = RaftMessage {
+            from: u64::MAX,
+            to: u64::MAX,
+            term: u64::MAX,
+            ..RaftMessage::default()
+        };
+        message.set_msg_type(MessageType::MsgSnapshot);
+        message.set_snapshot(snapshot.clone());
+        let expected = u64::try_from(message.write_to_bytes().unwrap().len()).unwrap();
+
+        assert_eq!(encoded_snapshot_wire_bytes(&snapshot).unwrap(), expected);
+    }
+
+    #[test]
+    fn restore_ignores_normal_entries_past_the_persisted_applied_boundary() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let snapshot = protobuf_snapshot_from_export(&metadata_export_from_commands(
+            "orders",
+            1,
+            1,
+            Vec::new(),
+        ));
+        let command = RaftMetadataCommand::MemberUpsert {
+            node_id: ClusterNodeId::from("unapplied-member"),
+            generation: ClusterGeneration::new(1),
+            epoch: hydracache::ClusterEpoch::new(1),
+        };
+        let envelope = RaftMetadataCommandEnvelope {
+            command_id: command_id_for(&command),
+            command,
+        };
+        let mut unapplied_entry = Entry {
+            index: 2,
+            term: 1,
+            data: encode_envelope(&envelope).into(),
+            ..Entry::default()
+        };
+        unapplied_entry.set_entry_type(EntryType::EntryNormal);
+
+        runtime
+            .restore_committed_state(snapshot, vec![unapplied_entry], 1)
+            .unwrap();
+
+        assert!(!runtime.command_applied(&envelope.command_id));
+        assert!(runtime.members().is_empty());
+        assert_eq!(runtime.snapshot().applied_index, 1);
+    }
+
+    #[test]
+    fn applied_snapshot_rejects_progress_past_the_commit_index() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+        let commit_index = state.raw_node.raft.hard_state().commit;
+        state.applied_index = commit_index + 1;
+
+        let error = state.build_applied_snapshot(1).unwrap_err();
+
+        assert!(
+            error.to_string().contains("past committed index"),
+            "{error}"
+        );
+    }
+
+    #[tokio::test]
+    async fn snapshot_compaction_accepts_a_candidate_exactly_at_the_wire_limit() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("wire-boundary-member")
+                    .generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let mut state = runtime.raft.lock().expect("raft metadata state poisoned");
+        let candidate = state.build_applied_snapshot(1).unwrap();
+        let encoded_wire_bytes = encoded_snapshot_wire_bytes(&candidate).unwrap();
+        state.max_wire_bytes = encoded_wire_bytes;
+
+        let observation = state.snapshot_size_observation(1).unwrap();
+        assert_eq!(observation.encoded_wire_bytes, encoded_wire_bytes);
+        assert_eq!(observation.max_wire_bytes, encoded_wire_bytes);
+        assert!(observation.transportable);
+        let applied_index = state.applied_index;
+        assert_eq!(
+            state.compact_applied_log_to_snapshot(1).unwrap(),
+            applied_index
+        );
+    }
 
     #[test]
     fn runtime_campaigns_single_node_to_leader() {
@@ -2154,6 +2756,158 @@ mod tests {
         assert_eq!(
             recovered.snapshot().applied_index,
             runtime.snapshot().applied_index
+        );
+    }
+
+    #[tokio::test]
+    async fn restore_export_rejects_late_error_without_partial_membership_publish() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("stable-member").generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let export_before = runtime.export_snapshot();
+        let members_before = runtime.members();
+        let events_before = runtime.cluster.events();
+        let results_before = runtime.command_results();
+        let snapshot_before = runtime.snapshot();
+        let malformed = metadata_export_from_commands(
+            "orders",
+            2,
+            2,
+            vec![
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: ClusterNodeId::from("partial-prefix"),
+                    generation: ClusterGeneration::new(1),
+                    epoch: ClusterEpoch::new(1),
+                },
+                RaftMetadataCommand::NodeLeft {
+                    node_id: ClusterNodeId::from("missing-member"),
+                    role: ClusterRole::Member,
+                    epoch: ClusterEpoch::new(2),
+                },
+            ],
+        );
+
+        let error = runtime.restore_export(malformed).unwrap_err();
+
+        assert!(error.to_string().contains("tail_index=2"));
+        assert!(error.to_string().contains("missing-member"));
+        assert_eq!(runtime.export_snapshot(), export_before);
+        assert_eq!(runtime.members(), members_before);
+        assert_eq!(runtime.cluster.events(), events_before);
+        assert_eq!(runtime.command_results(), results_before);
+        assert_eq!(runtime.snapshot(), snapshot_before);
+    }
+
+    #[tokio::test]
+    async fn raft_snapshot_install_rejects_late_error_without_partial_publish() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("stable-member").generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let export_before = runtime.export_snapshot();
+        let members_before = runtime.members();
+        let events_before = runtime.cluster.events();
+        let snapshot_before = runtime.snapshot();
+        let malformed = metadata_export_from_commands(
+            "orders",
+            2,
+            2,
+            vec![
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: ClusterNodeId::from("partial-prefix"),
+                    generation: ClusterGeneration::new(1),
+                    epoch: ClusterEpoch::new(1),
+                },
+                RaftMetadataCommand::NodeLeft {
+                    node_id: ClusterNodeId::from("missing-member"),
+                    role: ClusterRole::Member,
+                    epoch: ClusterEpoch::new(2),
+                },
+            ],
+        );
+        let snapshot = protobuf_snapshot_from_export(&malformed);
+
+        let error = runtime
+            .raft
+            .lock()
+            .unwrap()
+            .install_metadata_snapshot(&snapshot)
+            .unwrap_err();
+
+        assert!(error.to_string().contains("tail_index=2"));
+        assert_eq!(runtime.export_snapshot(), export_before);
+        assert_eq!(runtime.members(), members_before);
+        assert_eq!(runtime.cluster.events(), events_before);
+        assert_eq!(runtime.snapshot(), snapshot_before);
+    }
+
+    #[tokio::test]
+    async fn raft_snapshot_install_replaces_membership_instead_of_layering_it() {
+        let runtime = RaftMetadataRuntime::single_node("orders", 1).unwrap();
+        runtime
+            .join_member(
+                ClusterCandidate::member("stale-local-member")
+                    .generation(ClusterGeneration::new(1)),
+            )
+            .await
+            .unwrap();
+        let snapshot_before = runtime.snapshot();
+        let replacement = metadata_export_from_commands(
+            "orders",
+            2,
+            2,
+            vec![
+                RaftMetadataCommand::MemberUpsert {
+                    node_id: ClusterNodeId::from("authoritative-member"),
+                    generation: ClusterGeneration::new(2),
+                    epoch: ClusterEpoch::new(1),
+                },
+                RaftMetadataCommand::ClientUpsert {
+                    node_id: ClusterNodeId::from("authoritative-client"),
+                    generation: ClusterGeneration::new(3),
+                    epoch: ClusterEpoch::new(1),
+                },
+            ],
+        );
+        let snapshot = protobuf_snapshot_from_export(&replacement);
+
+        runtime
+            .raft
+            .lock()
+            .unwrap()
+            .install_metadata_snapshot(&snapshot)
+            .unwrap();
+
+        assert_eq!(
+            runtime
+                .members()
+                .into_iter()
+                .map(|member| member.node_id.as_str().to_owned())
+                .collect::<Vec<_>>(),
+            vec!["authoritative-member".to_owned()]
+        );
+        assert_eq!(
+            runtime
+                .clients()
+                .into_iter()
+                .map(|client| client.node_id.as_str().to_owned())
+                .collect::<Vec<_>>(),
+            vec!["authoritative-client".to_owned()]
+        );
+        let installed = runtime.export_snapshot();
+        assert_eq!(installed.applied_index, replacement.applied_index);
+        assert_eq!(installed.commands, replacement.commands);
+        assert!(runtime.command_results().is_empty());
+        assert_eq!(
+            runtime.snapshot().snapshot_installs,
+            snapshot_before.snapshot_installs + 1
         );
     }
 

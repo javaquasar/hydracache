@@ -543,6 +543,59 @@ impl InMemoryCluster {
             .clone()
     }
 
+    /// Replace the materialized membership image with a fully staged cluster.
+    ///
+    /// This narrow state-machine hook is used by the Raft snapshot installer.
+    /// The replacement is published under one state lock while the live
+    /// invalidation bus, membership subscribers, event history, and ownership
+    /// counters remain attached to this cluster instance.
+    #[doc(hidden)]
+    pub fn replace_membership_from(&self, staged: Self) -> Result<()> {
+        if self.name != staged.name {
+            return Err(CacheError::Backend(format!(
+                "staged cluster '{}' does not match live cluster '{}'",
+                staged.name, self.name
+            )));
+        }
+
+        let staged = staged
+            .state
+            .into_inner()
+            .expect("staged cluster state poisoned");
+        let InMemoryClusterState {
+            epoch,
+            topology_stamp: staged_topology_stamp,
+            members,
+            clients,
+            ..
+        } = staged;
+        let mut state = self.state.lock().expect("cluster state poisoned");
+        let replacement_events = membership_replacement_events(
+            &state.members,
+            &state.clients,
+            &members,
+            &clients,
+            epoch,
+        );
+        let members_changed = state.members != members;
+        let mut topology_stamp = state.topology_stamp.max(staged_topology_stamp);
+        if members_changed && topology_stamp == state.topology_stamp {
+            topology_stamp = topology_stamp.saturating_add(1);
+        }
+
+        state.epoch = epoch;
+        state.topology_stamp = topology_stamp;
+        state.members = members;
+        state.clients = clients;
+        state.events.extend(replacement_events.iter().cloned());
+        drop(state);
+
+        for event in replacement_events {
+            self.membership_events.publish(event);
+        }
+        Ok(())
+    }
+
     /// Subscribe to membership events emitted after subscription.
     pub fn subscribe_membership(&self) -> ClusterMembershipSubscriber {
         self.membership_events.subscribe()
@@ -571,6 +624,45 @@ impl InMemoryCluster {
             lifecycle: ClusterLifecycleDiagnostics::running("cluster-runtime"),
         }
     }
+}
+
+fn membership_replacement_events(
+    current_members: &BTreeMap<ClusterNodeId, ClusterMember>,
+    current_clients: &BTreeMap<ClusterNodeId, ClusterMember>,
+    replacement_members: &BTreeMap<ClusterNodeId, ClusterMember>,
+    replacement_clients: &BTreeMap<ClusterNodeId, ClusterMember>,
+    replacement_epoch: ClusterEpoch,
+) -> Vec<ClusterMembershipEvent> {
+    let mut events = Vec::new();
+    for (node_id, member) in current_members {
+        if replacement_members.get(node_id) != Some(member) {
+            events.push(ClusterMembershipEvent::NodeLeft {
+                node_id: node_id.clone(),
+                role: ClusterRole::Member,
+                epoch: replacement_epoch,
+            });
+        }
+    }
+    for (node_id, client) in current_clients {
+        if replacement_clients.get(node_id) != Some(client) {
+            events.push(ClusterMembershipEvent::NodeLeft {
+                node_id: node_id.clone(),
+                role: ClusterRole::Client,
+                epoch: replacement_epoch,
+            });
+        }
+    }
+    for (node_id, member) in replacement_members {
+        if current_members.get(node_id) != Some(member) {
+            events.push(ClusterMembershipEvent::MemberJoined(member.clone()));
+        }
+    }
+    for (node_id, client) in replacement_clients {
+        if current_clients.get(node_id) != Some(client) {
+            events.push(ClusterMembershipEvent::ClientConnected(client.clone()));
+        }
+    }
+    events
 }
 
 #[async_trait::async_trait]

@@ -17,7 +17,10 @@
   ],
   "properties": {
     "schema_version": { "const": 1 },
-    "release": { "const": "0.64.0" },
+    "release": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
     "seed": { "type": "integer", "minimum": 0 },
     "platform": { "type": "string", "minLength": 1 },
     "budget": { "$ref": "#/$defs/budget" },
@@ -28,7 +31,8 @@
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/$defs/sample" }
-    }
+    },
+    "sampling": { "$ref": "#/$defs/sampling" }
   },
   "$defs": {
     "budget": {
@@ -45,6 +49,16 @@
         "max_child_delta": { "type": "integer", "minimum": 0 },
         "max_connection_delta": { "type": "integer", "minimum": 0 },
         "max_held_snapshot_messages": { "type": "integer", "minimum": 0 },
+        "max_snapshot_sender_tasks_current": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Absolute bound on the cluster-summed task-current gauge at retained event checkpoints"
+        },
+        "max_snapshot_sender_tasks_high_water_per_daemon": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Absolute bound on the maximum daemon-local monotonic sender-task HWM"
+        },
         "max_rss_growth_kib": { "type": "integer", "minimum": 0 },
         "max_fd_growth": { "type": "integer", "minimum": 0 }
       }
@@ -59,10 +73,59 @@
       ],
       "properties": {
         "running_children": { "type": "integer", "minimum": 0 },
-        "tracked_connections": { "type": "integer", "minimum": 0 },
-        "held_snapshot_messages": { "type": "integer", "minimum": 0 },
+        "tracked_connections": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Compatibility gauge: maximum per-daemon request current observed at this retained checkpoint; artifact peak is not a continuous maximum"
+        },
+        "held_snapshot_messages": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Compatibility gauge: cluster-summed request current at this retained checkpoint; artifact peak is not a continuous distributed maximum"
+        },
+        "snapshot_sender_tasks_current": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Cluster sum of daemon-local snapshot sender task current gauges at this checkpoint"
+        },
+        "snapshot_sender_tasks_high_water_per_daemon": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum of daemon-local monotonic snapshot sender task high-water marks since each current process started, never their sum"
+        },
         "rss_kib": { "type": "integer", "minimum": 0 },
+        "rss_hwm_kib": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Conservative sum of the live daemons' process-lifetime VmHWM values"
+        },
         "open_fds": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sampling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admin_endpoint",
+        "observation_mode",
+        "poll_interval_ms",
+        "sampled_current_fields",
+        "monotonic_high_water_fields"
+      ],
+      "properties": {
+        "admin_endpoint": { "const": "/admin/raft/compaction" },
+        "observation_mode": { "const": "event-checkpoint" },
+        "poll_interval_ms": { "const": 200 },
+        "sampled_current_fields": {
+          "const": [
+            "tracked_connections",
+            "held_snapshot_messages",
+            "snapshot_sender_tasks_current"
+          ]
+        },
+        "monotonic_high_water_fields": {
+          "const": ["snapshot_sender_tasks_high_water_per_daemon"]
+        }
       }
     }
   }

@@ -27,7 +27,7 @@ use crate::resources::{
 };
 use crate::scale::{
     plan_scale, pod_name, scale_condition, ScaleAdminClient, ScaleObservation,
-    SCALE_ACTION_FAILED_CONDITION,
+    SCALE_ACTION_FAILED_CONDITION, SCALE_ADMIN_STATUS_UNAVAILABLE_CONDITION,
 };
 use crate::tls::{
     plan_tls_rotation, plan_tls_secret, tls_deferred_for_lifecycle, TlsPodObservation,
@@ -44,6 +44,9 @@ pub const READY_PHASE: &str = "Ready";
 pub const FORMING_HEALTH: &str = "Forming";
 pub const HEALTHY_HEALTH: &str = "Healthy";
 pub const DEGRADED_HEALTH: &str = "Degraded";
+const CONTROLLER_RESTART_BASE_DELAY: Duration = Duration::from_secs(1);
+const CONTROLLER_RESTART_MAX_DELAY: Duration = Duration::from_secs(30);
+const CONTROLLER_STABLE_WINDOW: Duration = Duration::from_secs(60);
 
 #[derive(Clone)]
 pub struct Ctx {
@@ -56,10 +59,10 @@ pub struct Ctx {
 impl Ctx {
     pub fn new(client: Client, identity: impl Into<String>, namespace: Option<String>) -> Self {
         Self {
+            scale_admin: ScaleAdminClient::new(client.clone()),
             client,
             identity: identity.into(),
             namespace,
-            scale_admin: ScaleAdminClient::default(),
         }
     }
 }
@@ -77,6 +80,42 @@ pub enum Error {
 }
 
 pub async fn run(ctx: Ctx) {
+    supervise_controller_stream(|| run_controller_once(ctx.clone())).await;
+}
+
+async fn supervise_controller_stream<Start, Stream>(mut start: Start)
+where
+    Start: FnMut() -> Stream,
+    Stream: std::future::Future<Output = ()>,
+{
+    let mut consecutive_completions = 0_u32;
+    loop {
+        let started = tokio::time::Instant::now();
+        start().await;
+        if started.elapsed() >= CONTROLLER_STABLE_WINDOW {
+            consecutive_completions = 0;
+        }
+        consecutive_completions = consecutive_completions.saturating_add(1);
+        let delay = controller_restart_delay(consecutive_completions);
+        eprintln!(
+            "HC-OPERATOR-CONTROLLER-STREAM-RESTART completion={consecutive_completions} delay_ms={}",
+            delay.as_millis()
+        );
+        tokio::time::sleep(delay).await;
+    }
+}
+
+fn controller_restart_delay(consecutive_completions: u32) -> Duration {
+    let exponent = consecutive_completions.saturating_sub(1).min(5);
+    let multiplier = 1_u64 << exponent;
+    let seconds = CONTROLLER_RESTART_BASE_DELAY
+        .as_secs()
+        .saturating_mul(multiplier)
+        .min(CONTROLLER_RESTART_MAX_DELAY.as_secs());
+    Duration::from_secs(seconds)
+}
+
+async fn run_controller_once(ctx: Ctx) {
     let client = ctx.client.clone();
     let clusters: Api<HydraCacheCluster> = match &ctx.namespace {
         Some(namespace) => Api::namespaced(client.clone(), namespace),
@@ -149,12 +188,16 @@ pub async fn apply_cluster(
     let statefulsets: Api<StatefulSet> = Api::namespaced(ctx.client.clone(), &namespace);
     let existing = get_optional(&statefulsets, &cluster.name_any()).await?;
     let mut scale_observation = ScaleObservation::from_statefulset(&cluster, existing.as_ref());
+    let mut scale_admin_status_error = None;
     if scale_observation.current_replicas > 0 {
-        scale_observation.admin_status = ctx
+        match ctx
             .scale_admin
             .status(&namespace, &cluster.name_any(), 0)
             .await
-            .ok();
+        {
+            Ok(admin_status) => scale_observation.admin_status = Some(admin_status),
+            Err(error) => scale_admin_status_error = Some(error.to_string()),
+        }
     }
     let scale_plan = plan_scale(&cluster, &scale_observation);
 
@@ -241,6 +284,16 @@ pub async fn apply_cluster(
         status.leader = admin_status.leader.clone();
     }
     status.conditions.extend(scale_plan.conditions.clone());
+    if let Some(error) = scale_admin_status_error {
+        status.health = DEGRADED_HEALTH.to_owned();
+        status.conditions.push(scale_condition(
+            SCALE_ADMIN_STATUS_UNAVAILABLE_CONDITION,
+            "True",
+            "AdminStatusUnavailable",
+            &error,
+            cluster.metadata.generation,
+        ));
+    }
     if !scale_plan.admin_actions.is_empty() {
         match ctx
             .scale_admin
@@ -743,4 +796,44 @@ async fn observe_tls_secret(
         &tls.secret_name,
         secret.as_ref(),
     ))
+}
+
+#[cfg(test)]
+mod lifecycle_tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use super::*;
+
+    #[test]
+    fn controller_restart_delay_is_bounded_exponential_backoff() {
+        let delays = (1..=8)
+            .map(|completion| controller_restart_delay(completion).as_secs())
+            .collect::<Vec<_>>();
+
+        assert_eq!(delays, vec![1, 2, 4, 8, 16, 30, 30, 30]);
+    }
+
+    #[tokio::test]
+    async fn completed_controller_stream_restarts_without_replacing_process() {
+        let starts = Arc::new(AtomicUsize::new(0));
+        let observed = Arc::clone(&starts);
+        let supervisor = tokio::spawn(supervise_controller_stream(move || {
+            observed.fetch_add(1, Ordering::SeqCst);
+            std::future::ready(())
+        }));
+
+        tokio::task::yield_now().await;
+        assert_eq!(starts.load(Ordering::SeqCst), 1);
+
+        tokio::time::sleep(Duration::from_millis(1_100)).await;
+        tokio::task::yield_now().await;
+        assert_eq!(starts.load(Ordering::SeqCst), 2);
+
+        tokio::time::sleep(Duration::from_millis(2_100)).await;
+        tokio::task::yield_now().await;
+        assert_eq!(starts.load(Ordering::SeqCst), 3);
+
+        supervisor.abort();
+        assert!(supervisor.await.unwrap_err().is_cancelled());
+    }
 }

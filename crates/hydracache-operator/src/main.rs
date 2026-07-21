@@ -19,6 +19,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .or_else(|_| std::env::var("HOSTNAME"))
             .unwrap_or_else(|_| "hydracache-operator".to_owned());
         let namespace = std::env::var("HYDRACACHE_OPERATOR_NAMESPACE").ok();
+        if let Ok(nonce) = std::env::var("HYDRACACHE_OPERATOR_EVIDENCE_NONCE") {
+            eprintln!(
+                "HC-OPERATOR-CONTROLLER-RUNTIME nonce={nonce} identity={identity} namespace={}",
+                namespace.as_deref().unwrap_or("all")
+            );
+        }
         run(Ctx::new(client, identity, namespace)).await;
     }
     Ok(())

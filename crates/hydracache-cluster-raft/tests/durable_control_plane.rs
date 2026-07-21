@@ -68,7 +68,7 @@ fn durable_control_plane_snapshot_then_compact_preserves_applied_state() {
     snapshot.mut_metadata().index = 3;
     snapshot.mut_metadata().term = 1;
     store.save_snapshot(&snapshot, 1).unwrap();
-    store.mark_applied(3);
+    store.mark_applied(3).unwrap();
     store.compact_to(3).unwrap();
     drop(store);
 

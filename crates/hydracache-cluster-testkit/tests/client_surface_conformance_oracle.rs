@@ -69,6 +69,11 @@ async fn every_conformance_oracle_executes_and_preserves_boundary_configuration(
             .is_err()
     );
     assert!(
+        conformance::assert_local_ttl_and_lock_contracts_survive_backward_wall_clock_step(&factory)
+            .await
+            .is_err()
+    );
+    assert!(
         conformance::assert_expired_key_absent_for_get_and_batch_get(&factory)
             .await
             .is_err()
@@ -107,8 +112,8 @@ async fn every_conformance_oracle_executes_and_preserves_boundary_configuration(
     );
 
     let configs = factory.configs();
-    assert_eq!(configs.len(), 13, "every oracle must construct its backend");
+    assert_eq!(configs.len(), 14, "every oracle must construct its backend");
     assert_eq!(configs[4].limits.max_value_bytes, 4);
-    assert_eq!(configs[8].limits.max_value_bytes, 6);
-    assert_eq!(configs[10].limits.max_value_bytes, 4);
+    assert_eq!(configs[9].limits.max_value_bytes, 6);
+    assert_eq!(configs[11].limits.max_value_bytes, 4);
 }

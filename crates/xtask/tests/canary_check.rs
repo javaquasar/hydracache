@@ -5,10 +5,12 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use xtask::canary_check::{
-    check_canary_registry, CanaryCommand, CanaryEntry, CanaryRegistry, CanaryTier, FunctionRef,
+    check_canary_registry, check_canary_registry_for_release, CanaryCommand, CanaryEntry,
+    CanaryRegistry, CanaryTier, FunctionRef,
 };
 use xtask::canary_sweep::{
-    classify_canary_result, execute_entry, receipt_problems, CanaryOutcome, ProcessResult,
+    classify_canary_result, execute_entry, load_receipts_for_release, receipt_problems,
+    CanaryOutcome, ProcessResult,
 };
 
 static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -132,6 +134,58 @@ fn dynamic_canary_receipt_is_bound_to_command_defect_and_source_commit() {
 }
 
 #[test]
+fn equal_work_item_receipts_from_different_releases_do_not_shadow_each_other() {
+    let root = scratch_root();
+    fs::create_dir_all(&root).unwrap();
+    let executable = std::env::current_exe().unwrap().display().to_string();
+    let guard = CanaryCommand {
+        program: executable.clone(),
+        args: vec![
+            "--exact".to_owned(),
+            "dynamic_canary_fixture_process".to_owned(),
+            "--nocapture".to_owned(),
+        ],
+        env: BTreeMap::new(),
+        cwd: ".".to_owned(),
+        platform: "any".to_owned(),
+    };
+    let mut canary = guard.clone();
+    canary
+        .env
+        .insert("HYDRACACHE_CANARY_FIXTURE".to_owned(), "red".to_owned());
+    let entry = fixture_entry(guard, canary);
+    let registry_064 = CanaryRegistry {
+        version: 2,
+        release: "0.64.0".to_owned(),
+        entries: vec![entry.clone()],
+    };
+    let registry_065 = CanaryRegistry {
+        version: 2,
+        release: "0.65.0".to_owned(),
+        entries: vec![entry.clone()],
+    };
+
+    execute_entry(&root, &registry_064, &entry).unwrap();
+    execute_entry(&root, &registry_065, &entry).unwrap();
+
+    let receipts_064 = load_receipts_for_release(&root, "0.64").unwrap();
+    let receipts_065 = load_receipts_for_release(&root, "0.65").unwrap();
+    assert!(receipts_064
+        .iter()
+        .any(|receipt| receipt.release == "0.64.0" && receipt.w_item == "W1"));
+    assert!(receipts_065
+        .iter()
+        .any(|receipt| receipt.release == "0.65.0" && receipt.w_item == "W1"));
+    assert!(root
+        .join("target/release-evidence/canaries/0.64-W1.json")
+        .is_file());
+    assert!(root
+        .join("target/release-evidence/canaries/0.65-W1.json")
+        .is_file());
+    cleanup(&root);
+}
+
+#[test]
 fn canary_registry_lists_a_canary_that_does_not_fail_its_guard() {
     let root = scratch_root();
     write_scratch_contract(&root);
@@ -170,6 +224,98 @@ fn canary_registry_lists_a_canary_that_does_not_fail_its_guard() {
     assert!(problems
         .iter()
         .any(|problem| problem.contains("commands are identical")));
+}
+
+#[test]
+fn canary_receipt_artifact_cannot_escape_the_evidence_directory() {
+    let root = scratch_root();
+    write_scratch_contract(&root);
+    let command = CanaryCommand {
+        program: "cargo".to_owned(),
+        args: vec!["test".to_owned()],
+        env: BTreeMap::new(),
+        cwd: ".".to_owned(),
+        platform: "any".to_owned(),
+    };
+    let mut entry = fixture_entry(command.clone(), command);
+    entry.guard = FunctionRef {
+        file: "crates/demo/tests/proof.rs".to_owned(),
+        function: "guard_test".to_owned(),
+    };
+    entry.canary = FunctionRef {
+        file: "crates/demo/tests/proof.rs".to_owned(),
+        function: "canary_test".to_owned(),
+    };
+    entry.artifacts = vec!["Cargo.toml".to_owned()];
+    let registry = CanaryRegistry {
+        version: 2,
+        release: "0.64.0".to_owned(),
+        entries: vec![entry],
+    };
+    fs::write(
+        root.join("docs/testing/canary-registry.json"),
+        serde_json::to_vec_pretty(&registry).unwrap(),
+    )
+    .unwrap();
+
+    let problems = check_canary_registry(&root).unwrap();
+    cleanup(&root);
+    assert!(problems.iter().any(|problem| problem
+        .contains("receipt artifact must be a JSON file under target/release-evidence/canaries")));
+}
+
+#[test]
+fn requested_release_does_not_borrow_an_older_canary_registry() {
+    let root = scratch_root();
+    fs::create_dir_all(root.join("docs/plans")).unwrap();
+    fs::create_dir_all(root.join("docs/testing")).unwrap();
+    fs::write(
+        root.join("docs/plans/releases.toml"),
+        "[[release]]\nversion = \"0.66.0\"\nfile = \"docs/plans/custom-0.66.md\"\nstatus = \"planned\"\nwork_items = [\"W0\"]\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/testing/canary-registry.json"),
+        r#"{"version":2,"release":"0.64.0","entries":[]}"#,
+    )
+    .unwrap();
+
+    let error = check_canary_registry_for_release(&root, "0.66")
+        .unwrap_err()
+        .to_string();
+    cleanup(&root);
+
+    assert!(
+        error.contains("canary-registry-0.66.json"),
+        "requested release silently borrowed legacy evidence: {error}"
+    );
+}
+
+#[test]
+fn requested_release_without_work_items_is_rejected_before_canary_evidence() {
+    let root = scratch_root();
+    fs::create_dir_all(root.join("docs/plans")).unwrap();
+    fs::create_dir_all(root.join("docs/testing")).unwrap();
+    fs::write(
+        root.join("docs/plans/releases.toml"),
+        "[[release]]\nversion = \"0.66.0\"\nfile = \"docs/plans/custom-0.66.md\"\nstatus = \"planned\"\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("docs/testing/canary-registry-0.66.json"),
+        r#"{"version":2,"release":"0.66.0","entries":[]}"#,
+    )
+    .unwrap();
+
+    let error = check_canary_registry_for_release(&root, "0.66")
+        .unwrap_err()
+        .to_string();
+    cleanup(&root);
+
+    assert!(
+        error.contains("release 0.66 has no work_items in releases.toml"),
+        "candidate without an explicit work-item contract was accepted: {error}"
+    );
 }
 
 #[test]

@@ -43,6 +43,7 @@ const CONFIG_ENV_VARS: &[&str] = &[
     "HYDRACACHE_REDIS_AUTH_USERNAME",
     "HYDRACACHE_REDIS_AUTH_TOKEN_FILE",
     "HYDRACACHE_REDIS_REDISS_ENABLED",
+    "HYDRACACHE_RAFT_COMPACTION",
     "HOSTNAME",
 ];
 
@@ -199,6 +200,7 @@ fn generated_server_configs_preserve_precedence_validation_and_secure_defaults()
         ("HYDRACACHE_STORAGE_DIR", "target/config-properties/member"),
         ("HYDRACACHE_SEEDS", "matrix-0.matrix-headless:7000"),
         ("HYDRACACHE_ADMIN_API_ENABLED", "false"),
+        ("HYDRACACHE_RAFT_COMPACTION", "true"),
         ("HOSTNAME", "matrix-4"),
     ]);
     let env_config = ServerConfig::from_env().unwrap();
@@ -207,6 +209,7 @@ fn generated_server_configs_preserve_precedence_validation_and_secure_defaults()
     assert_eq!(env_config.cluster_start, ClusterStartMode::Bootstrap);
     assert_eq!(env_config.node_id.as_deref(), Some("matrix-4"));
     assert!(!env_config.admin_api.enabled);
+    assert!(env_config.raft_compaction_enabled);
 
     let insecure = ServerConfig {
         listen_addr: "192.0.2.20:8080".parse().unwrap(),

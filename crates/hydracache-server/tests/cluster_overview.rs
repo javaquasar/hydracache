@@ -93,6 +93,7 @@ fn live_status() -> ClusterStatus {
             member("node-3", Reachability::Reachable, 3),
         ],
         voters: 3,
+        voter_ids: vec![1, 2, 3],
         reshard_phase: ReshardPhase::Moving,
         draining: false,
     }
@@ -189,6 +190,22 @@ mod cluster_overview {
 
         assert!(body["leader"].is_null());
         assert_eq!(body["source"], "live");
+    }
+
+    #[tokio::test]
+    async fn non_authoritative_live_membership_hides_leader_epoch() {
+        let mut status = live_status();
+        status.quorum_ok = false;
+        let surface = surface_with(status, ServerObservabilityModel::default());
+
+        let body = get_overview(&surface).await;
+
+        assert_eq!(body["source"], "live");
+        assert_eq!(body["members"].as_array().unwrap().len(), 3);
+        assert!(
+            body["leader"].is_null(),
+            "a non-authoritative member view must not pair a leader with stale term/epoch"
+        );
     }
 
     #[tokio::test]
