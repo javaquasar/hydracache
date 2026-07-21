@@ -315,6 +315,8 @@ pub struct RaftMetadataRuntimeSnapshot {
     pub term: u64,
     /// Current committed index.
     pub commit_index: u64,
+    /// Last index present in the local Raft log, including unstable entries.
+    pub last_log_index: u64,
     /// Last applied index tracked by the metadata state machine.
     pub applied_index: u64,
     /// Current raft role.
@@ -1229,6 +1231,7 @@ where
             raft_node_id: self.raft_node_id,
             term: state.raw_node.raft.term,
             commit_index: hard_state.commit,
+            last_log_index: state.raw_node.raft.raft_log.last_index(),
             applied_index: state.applied_index,
             role: state.raw_node.raft.state.into(),
             commands_committed: state.commands.len(),
