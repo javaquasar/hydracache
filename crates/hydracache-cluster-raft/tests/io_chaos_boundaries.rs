@@ -5,6 +5,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 use hydracache::{
     ClusterCandidate, ClusterControlPlane, ClusterEpoch, ClusterGeneration, ClusterNodeId,
@@ -20,6 +22,8 @@ use raft::storage::Storage;
 type TestResult<T = ()> = Result<T, Box<dyn Error>>;
 
 static TEST_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+const SLED_REOPEN_ATTEMPTS: usize = 50;
+const SLED_REOPEN_DELAY: Duration = Duration::from_millis(10);
 
 struct SledTestDirectory {
     path: PathBuf,
@@ -53,6 +57,21 @@ fn open_store(path: &Path, voters: Vec<u64>) -> TestResult<SledRaftLogStore> {
     store.initialize_with_conf_state(conf_state.clone());
     store.save_conf_state(&conf_state)?;
     Ok(store)
+}
+
+fn reopen_store(path: &Path) -> TestResult<SledRaftLogStore> {
+    for attempt in 0..SLED_REOPEN_ATTEMPTS {
+        match SledRaftLogStore::open(path) {
+            Err(error)
+                if error.to_string().contains("could not acquire lock")
+                    && attempt + 1 < SLED_REOPEN_ATTEMPTS =>
+            {
+                thread::sleep(SLED_REOPEN_DELAY);
+            }
+            result => return result.map_err(Into::into),
+        }
+    }
+    unreachable!("bounded Sled reopen loop always returns")
 }
 
 fn metadata_snapshot_message(index: u64, receiver: u64) -> RaftWireMessage {
@@ -243,7 +262,7 @@ fn applied_index_io_failure_is_returned_and_retry_publishes_after_flush() -> Tes
     assert_eq!(store.applied_index()?, 7);
     drop(store);
 
-    let reopened = SledRaftLogStore::open(directory.path())?;
+    let reopened = reopen_store(directory.path())?;
     assert_eq!(reopened.applied_index()?, 7);
     drop(reopened);
     drop(directory);
@@ -306,7 +325,7 @@ async fn durable_commit_failure_fails_loud_and_recovers_consistent() -> TestResu
 
     drop(runtime);
     drop(store);
-    let reopened = SledRaftLogStore::open(directory.path())?;
+    let reopened = reopen_store(directory.path())?;
     let recovered =
         RaftMetadataRuntime::with_storage(config.clone().auto_campaign(false), reopened.clone())?;
     assert_eq!(
@@ -362,7 +381,7 @@ fn durable_commit_io_failure_stages_sled_before_publishing_store_state() -> Test
     assert_eq!(store.initial_state()?.hard_state.commit, 7);
     drop(store);
 
-    let reopened = SledRaftLogStore::open(directory.path())?;
+    let reopened = reopen_store(directory.path())?;
     assert_eq!(reopened.initial_state()?.hard_state.commit, 7);
     drop(reopened);
     drop(directory);

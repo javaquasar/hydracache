@@ -908,6 +908,15 @@ behavior, and Kubernetes reconciliation at the same time.
 | W5/W11 operator-kind | Real controller reconciliation, Chaos Mesh `IOChaos`, NetworkPolicy isolation, pod replacement, stable Raft identity, generation fencing, and retained-PVC rejoin. | These claims depend on Kubernetes controllers, CNI enforcement, storage identity, and a live operator process, so the fast deterministic lifecycle driver is necessary but insufficient. | A fake reconciler, a kind cluster without the required CNI/IOChaos capability, or artifacts produced by an old/different controller process. |
 | Release governance | Exact job/step wiring, mandatory heavy lanes, evidence commands, controller background ownership, and explicit cancellation. | The meta-gate makes the test plan falsifiable: deleting or bypassing a proof must turn CI red before release aggregation. | A raw successful `cargo test`, a skipped optional lane, or a receipt from another commit/release registry. |
 
+The deterministic W5 `io_chaos_boundaries` cases reopen the same Sled directory
+to prove persisted snapshot, applied-index, and commit state rather than merely
+checking the still-open in-memory view. Sled can briefly retain its filesystem
+lock while the last database handle shuts down, especially when cargo-mutants
+runs the full baseline at high concurrency. Reopen therefore retries only the
+specific `could not acquire lock` condition for at most 500 ms. Every other
+open error remains immediate, and exhausting the bound still fails the test;
+the retry cannot turn corrupt or missing durable state green.
+
 The server unit named
 `topology_and_identity_paths_fail_loud_on_invalid_inputs` covers the stable
 topology and create-once identity error contracts only. It does not inspect a
@@ -1048,10 +1057,17 @@ The operator gate expects a prepared kind cluster, the CRD/controller/current
 server image, a NetworkPolicy-enforcing CNI for W11, and Chaos Mesh `IOChaos`
 for the W5 slow-disk claim. This receipt is Linux-only: it verifies the live
 controller PID through `/proc`, requires that PID to execute the exact
-`target/debug/hydracache-operator` inode, and binds the controller's own runtime
-output to a unique `HYDRACACHE_OPERATOR_EVIDENCE_NONCE`. During the command, the
-W11 proof snapshots that log along with receipt-bound capability markers,
-non-empty server-pod logs, resources for the expected cluster, and events.
+SHA-named candidate inode copied into `.ci-runtime/0.66`, and binds both that
+absolute path (`HYDRACACHE_OPERATOR_BINARY`) and the controller's own runtime
+output to the current run. The copy is made after the foreground `cargo build`
+because the proof's later `cargo run` may relink `target/debug/hydracache-operator`;
+on Linux that leaves an already-running process alive but `/proc/<pid>/exe`
+points to a deleted inode. An immutable candidate copy separates compilation
+from process identity without weakening the inode check. The candidate must
+resolve inside the dedicated runtime directory; an arbitrary environment path
+is rejected. During the command, the W11 proof snapshots that log along with
+receipt-bound capability markers, non-empty server-pod logs, resources for the
+expected cluster, and events.
 `evidence-run` removes the declared snapshots before execution; an empty,
 missing, stale, or wrong-process diagnostic artifact is not a ship receipt.
 
@@ -1146,11 +1162,13 @@ kubectl wait --for=condition=Established \
   crd/hydracacheclusters.hydracache.io --timeout=60s
 cargo build -p hydracache-operator --locked
 
-mkdir -p target/test-evidence/0.66
-operator_binary="$(pwd)/target/debug/hydracache-operator"
+mkdir -p target/test-evidence/0.66 .ci-runtime/0.66
+operator_binary="$(pwd)/.ci-runtime/0.66/hydracache-operator-$(git rev-parse HEAD)"
+install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
 operator_log="target/test-evidence/0.66/operator-controller-live.log"
 operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
 operator_nonce="release-066-local-$(date +%s)-$(git rev-parse --short=12 HEAD)-$$"
+export HYDRACACHE_OPERATOR_BINARY="$operator_binary"
 export HYDRACACHE_OPERATOR_EVIDENCE_NONCE="$operator_nonce"
 export HYDRACACHE_OPERATOR_NAMESPACE=default
 export HYDRACACHE_OPERATOR_IDENTITY=release-066-local
