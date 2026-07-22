@@ -3285,8 +3285,9 @@ fn metrics_from_observation(
     observation: &OpenLoopObservation,
 ) -> Result<OverloadMetrics, OverloadError> {
     let denominator = observation.started.max(1) as f64;
-    let elapsed_seconds = observation.elapsed_ms.max(1) as f64 / 1_000.0;
-    let successful_goodput_per_second = observation.successes as f64 / elapsed_seconds;
+    let successful_goodput_per_second = observation.achieved_rate_per_second
+        * observation.successes as f64
+        / observation.completed.max(1) as f64;
     let error_timeout = observation
         .errors
         .checked_add(observation.timeouts)
@@ -3787,6 +3788,51 @@ mod reference_identity_tests {
             cargo_lock_sha256: "44".repeat(32),
             prebuild_manifest_sha256: "55".repeat(32),
         }
+    }
+
+    fn short_window(elapsed_ms: u64, achieved_rate_per_second: f64) -> OpenLoopObservation {
+        OpenLoopObservation {
+            offered: 48,
+            started: 48,
+            completed: 48,
+            successes: 24,
+            errors: 0,
+            timeouts: 0,
+            rejections: 24,
+            backlog_high_water: 1,
+            backlog_drained: true,
+            drain_ms: 0,
+            elapsed_ms,
+            offered_rate_per_second: 48_000.0,
+            achieved_rate_per_second,
+            latency: crate::histogram::LatencySummary {
+                samples: 48,
+                p50_us: Some(1),
+                p90_us: Some(1),
+                p99_us: Some(1),
+                p999_us: Some(1),
+                p999_min_samples: 1,
+                p999_reportable: true,
+                max_us: Some(1),
+                overflow_count: 0,
+            },
+        }
+    }
+
+    #[test]
+    fn w6_goodput_retains_sub_millisecond_precision_across_short_windows() {
+        let before_boundary = metrics_from_observation(&short_window(1, 24_120.6)).unwrap();
+        let after_boundary = metrics_from_observation(&short_window(2, 23_880.6)).unwrap();
+
+        assert!((before_boundary.successful_goodput_per_second - 12_060.3).abs() < 0.001);
+        assert!((after_boundary.successful_goodput_per_second - 11_940.3).abs() < 0.001);
+        let spread = (before_boundary.successful_goodput_per_second
+            - after_boundary.successful_goodput_per_second)
+            / after_boundary.successful_goodput_per_second;
+        assert!(
+            spread < 0.02,
+            "integer-millisecond quantization reappeared: {spread}"
+        );
     }
 
     #[test]
