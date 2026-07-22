@@ -3829,7 +3829,10 @@ mod reference_identity_tests {
         let spread = (before_boundary.successful_goodput_per_second
             - after_boundary.successful_goodput_per_second)
             / after_boundary.successful_goodput_per_second;
-        assert!(spread < 0.02, "integer-millisecond quantization reappeared: {spread}");
+        assert!(
+            spread < 0.02,
+            "integer-millisecond quantization reappeared: {spread}"
+        );
     }
 
     #[test]
