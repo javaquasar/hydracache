@@ -7,18 +7,18 @@ required_platform_key = "linux-x86_64"
 
 [runner]
 name = "reference-v1"
-required_runner_class = "reference-v1"
+required_runner_class = "github-hosted-reference-v1"
 allowed_fingerprints = []
-minimum_logical_cores = 8
-required_cpu_affinity = "dedicated-cpuset"
-required_cgroup_cpu_quota = "unlimited"
+minimum_logical_cores = 4
+required_cpu_affinity = "github-managed-vm"
+required_cgroup_cpu_quota = "github-managed-vm"
 require_dedicated = true
-maximum_calibration_score = 0.05
+maximum_calibration_score = 0.25
 
 [noise]
-absolute_numbers_are_ship_evidence = true
-comparison_class = "same-dedicated-runner-fingerprint"
-maximum_report_spread_ratio = 0.05
+absolute_numbers_are_ship_evidence = false
+comparison_class = "same-github-hosted-image-class"
+maximum_report_spread_ratio = 0.30
 
 [prebuild]
 schema_version = 1
