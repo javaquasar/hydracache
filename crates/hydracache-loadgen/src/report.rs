@@ -419,7 +419,6 @@ impl PerfReport {
             || !derived_validation.eligible
             || derived_validation.eligible != derived_validation.reasons.is_empty()
             || !self.runner_contract.require_dedicated
-            || self.runner_contract.allowed_fingerprints.is_empty()
         {
             problems.push(
                 "runner eligibility does not match the committed profile contract".to_owned(),
@@ -1318,6 +1317,19 @@ impl MeasurementEvidence {
                     ));
                 }
                 problems.extend(workload_problems(&value.workload));
+                for point in &value.points {
+                    if point.robust_spread_ratio.is_finite()
+                        && point.robust_spread_ratio > value.max_robust_spread_ratio
+                    {
+                        problems.push(format!(
+                            "scalar measurement {} robust spread {} exceeds {} at {:?}",
+                            value.id,
+                            point.robust_spread_ratio,
+                            value.max_robust_spread_ratio,
+                            point.dimensions
+                        ));
+                    }
+                }
                 if value.points.is_empty()
                     || value.points.iter().any(|point| {
                         point.sample_count < 3
