@@ -2467,6 +2467,15 @@ mod tests {
     }
 
     #[test]
+    fn committed_hosted_worker_shapes_fit_four_core_reference() {
+        let scaling = parse_local_scenario(SCALING_SCENARIO).unwrap();
+        let hot_key = parse_local_scenario(HOT_KEY_SCENARIO).unwrap();
+
+        assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
+        assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
+    }
+
+    #[test]
     fn committed_local_fields_control_scenario_and_workload_identity() {
         let original = std::str::from_utf8(SCALING_SCENARIO).unwrap();
         let changed = original
