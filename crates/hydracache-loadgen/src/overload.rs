@@ -54,6 +54,7 @@ pub const OVERLOAD_FACTORS_MILLIONTHS: [u32; 3] = [1_200_000, 1_500_000, 2_000_0
 pub const W6_CORE_REFERENCE_ENV: &str = "HYDRACACHE_RUN_PERF_CORE";
 pub const W6_RESP_REFERENCE_ENV: &str = "HYDRACACHE_RUN_PERF_RESP";
 
+const DETERMINISTIC_SMOKE_WINDOW_OPERATIONS: u64 = 48;
 const LOCAL_PREDECESSOR: &str = "w1-local-cache-capacity";
 const CLIENT_SURFACE_PREDECESSOR: &str = "w2-client-surface-in-process-capacity";
 const RESP_PREDECESSOR: &str = "w3-node-local-resp-open-loop";
@@ -371,6 +372,19 @@ impl OverloadScenario {
         let mut payload = self.clone();
         payload.reference.committed_scenario_sha256.clear();
         canonical_digest(&payload)
+    }
+
+    fn window_operations(&self, run_mode: OverloadRunMode) -> (u64, u64) {
+        match run_mode {
+            OverloadRunMode::DeterministicSmoke => (
+                DETERMINISTIC_SMOKE_WINDOW_OPERATIONS,
+                DETERMINISTIC_SMOKE_WINDOW_OPERATIONS,
+            ),
+            OverloadRunMode::Reference => (
+                self.work.burst_operations,
+                self.work.recovery_operations_per_window,
+            ),
+        }
     }
 }
 
@@ -2794,6 +2808,8 @@ impl OverloadReport {
         let knee_rate = self.predecessor.knee_rate_per_second()?;
         let expected_preload_operations =
             scenario.expected_preload_operations(self.surface, self.run_mode);
+        let (overload_operations, recovery_operations) =
+            scenario.window_operations(self.run_mode);
         for (point, factor) in self.points.iter().zip(OVERLOAD_FACTORS_MILLIONTHS) {
             validate_point(
                 point,
@@ -2802,6 +2818,8 @@ impl OverloadReport {
                 expected_goodput,
                 expected_p99,
                 expected_preload_operations,
+                overload_operations,
+                recovery_operations,
                 scenario,
             )?;
             if point
@@ -2904,6 +2922,7 @@ where
     let knee_rate = predecessor.knee_rate_per_second()?;
     let expected_preload_operations =
         scenario.expected_preload_operations(predecessor.surface, run_mode);
+    let (overload_operations, recovery_operations) = scenario.window_operations(run_mode);
     let mut points = Vec::with_capacity(OVERLOAD_FACTORS_MILLIONTHS.len());
     for factor_millionths in OVERLOAD_FACTORS_MILLIONTHS {
         let offered_rate_per_second = factored_rate(knee_rate, factor_millionths)?;
@@ -2920,6 +2939,8 @@ where
                     baseline_goodput_per_second,
                     baseline_scheduled_p99_us,
                     expected_preload_operations,
+                    overload_operations,
+                    recovery_operations,
                 )
                 .await?,
             );
@@ -2988,6 +3009,8 @@ async fn run_overload_repeat<T, C>(
     baseline_goodput_per_second: f64,
     baseline_scheduled_p99_us: u64,
     expected_preload_operations: u64,
+    overload_operations: u64,
+    recovery_operations: u64,
 ) -> Result<OverloadRepeatEvidence, OverloadError>
 where
     T: Target,
@@ -3028,7 +3051,7 @@ where
         Arc::clone(&target),
         &open_loop_config(
             offered_rate_per_second,
-            scenario.work.burst_operations,
+            overload_operations,
             scenario,
         ),
     )
@@ -3046,7 +3069,7 @@ where
             Arc::clone(&target),
             &open_loop_config(
                 knee_rate_per_second,
-                scenario.work.recovery_operations_per_window,
+                recovery_operations,
                 scenario,
             ),
         )
@@ -3127,6 +3150,8 @@ fn validate_point(
     baseline_goodput: f64,
     baseline_p99: u64,
     expected_preload_operations: u64,
+    overload_operations: u64,
+    recovery_operations: u64,
     scenario: &OverloadScenario,
 ) -> Result<(), OverloadError> {
     if point.factor_millionths != expected_factor
@@ -3147,6 +3172,8 @@ fn validate_point(
             baseline_goodput,
             baseline_p99,
             expected_preload_operations,
+            overload_operations,
+            recovery_operations,
             scenario,
         )?;
     }
@@ -3171,6 +3198,8 @@ fn validate_repeat(
     baseline_goodput: f64,
     baseline_p99: u64,
     expected_preload_operations: u64,
+    overload_operations: u64,
+    recovery_operations: u64,
     scenario: &OverloadScenario,
 ) -> Result<(), OverloadError> {
     if repeat.reset_state_digest.is_empty()
@@ -3189,7 +3218,7 @@ fn validate_repeat(
     validate_observation(
         &repeat.overload,
         offered_rate,
-        scenario.work.burst_operations,
+        overload_operations,
     )?;
     let expected_metrics = metrics_from_observation(&repeat.overload)?;
     if expected_metrics != repeat.metrics {
@@ -3212,7 +3241,7 @@ fn validate_repeat(
         validate_observation(
             window,
             knee_rate,
-            scenario.work.recovery_operations_per_window,
+            recovery_operations,
         )?;
         expected_elapsed = expected_elapsed
             .checked_add(window.elapsed_ms)
