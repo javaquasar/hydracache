@@ -966,6 +966,19 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<dyn Error>> {
     const JOB_ID: &str = "release-067-performance";
     const SHARED_JOB_ID: &str = "performance-067-shared-tripwire";
+    const PINNED_REDIS_BOOTSTRAP: &str = r#"tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+mkdir --parents "$tools_dir"
+cd "$tools_dir"
+curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+  --output redis-7.2.5.tar.gz \
+  https://download.redis.io/releases/redis-7.2.5.tar.gz
+printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+  | sha256sum --check --strict -
+tar --extract --gzip --file redis-7.2.5.tar.gz
+env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+  make -C redis-7.2.5 -j1 redis-benchmark
+test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
     let workflow = parse_workflow(text)?;
     let root: Value = serde_yaml::from_str(text)?;
     let jobs = mapping_value(root.as_mapping(), "jobs")
@@ -991,6 +1004,18 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
     if pinned_toolchain != Some("dtolnay/rust-toolchain@1.94.0") {
         problems.push(
             "release 0.67 performance lane must install the exact rustc 1.94.0 toolchain"
+                .to_owned(),
+        );
+    }
+
+    let pinned_redis_bootstrap = workflow
+        .step_runs
+        .get(JOB_ID)
+        .and_then(|steps| steps.get("Build pinned redis-benchmark 7.2.5"))
+        .is_some_and(|run| run.trim() == PINNED_REDIS_BOOTSTRAP);
+    if !pinned_redis_bootstrap {
+        problems.push(
+            "release 0.67 performance lane must build redis-benchmark 7.2.5 from the checksum-pinned source recipe"
                 .to_owned(),
         );
     }
