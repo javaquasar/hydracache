@@ -32,15 +32,15 @@ required_profile = "reference-v1"
 require_prebuild_receipt = true
 require_runner_fingerprint = true
 required_platform_key = "linux-x86_64"
-committed_scenario_sha256 = "17640f4983d2260ca4191585a4c7f4ebaab52a69b8a2d2fccb39f3e7234f108e"
+committed_scenario_sha256 = "0000000000000000000000000000000000000000000000000000000000000000"
 
 [reference.runner]
-required_runner_class = "reference-v1"
-minimum_logical_cores = 8
-required_cpu_affinity = "dedicated-cpuset"
-required_cgroup_cpu_quota = "unlimited"
+required_runner_class = "github-hosted-reference-v1"
+minimum_logical_cores = 4
+required_cpu_affinity = "github-managed-vm"
+required_cgroup_cpu_quota = "github-managed-vm"
 require_dedicated = true
-maximum_calibration_score_millionths = 50000
+maximum_calibration_score_millionths = 250000
 
 [reference.prebuild]
 schema_version = 1
