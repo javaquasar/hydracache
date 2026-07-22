@@ -8,8 +8,8 @@ support a release statement.
 > The W0-W10 measurement and governance implementation is present, but no
 > `0.67.0` performance number is release-qualified yet. The annotated `v0.66.0`
 > predecessor is present and ancestral; the W7 `reference-v1` anchor and rolling
-> baseline remain `unbootstrapped`. Shipping requires at least five eligible dedicated
-> `main` runs from the same qualified runner family, an independently reviewed
+> baseline remain `unbootstrapped`. Shipping requires at least five eligible serialized
+> GitHub-hosted `main` runs from the same pinned Ubuntu image family, an independently reviewed
 > anchor/budget payload, and a fresh exact-candidate receipt set.
 
 ## Measured surfaces and claim boundaries
@@ -50,16 +50,17 @@ The committed scenarios live under
 budget, and baseline contracts live under `docs/testing/perf-profiles`,
 `docs/testing/perf-budgets/0.67`, and `docs/testing/perf-baselines/0.67`.
 
-## Shared CI versus dedicated release evidence
+## Shared tripwire versus serialized reference evidence
 
 | Lane | Purpose | May satisfy a performance ship gate? |
 | --- | --- | --- |
 | `ci-shared` | Broad-tolerance regression tripwire on a declared hosted-runner class; structural/unit receipts remain useful | No |
-| `reference-v1` | Serialized scheduled/manual execution on a dedicated `hydracache-perf-v1` runner with exact prebuild, affinity/quota/governor and fingerprint checks | Yes, after bootstrap and only through registered gates |
+| `reference-v1` | Serialized manual execution on pinned `ubuntu-24.04`; the runner-class fingerprint binds `ImageOS` and `ImageVersion`, while reports retain observed CPU/RAM/kernel facts | Yes, after bootstrap and only as relative same-image regression evidence |
 
-Shared CI variability is expected. A shared result may warn about a regression,
-but it cannot establish a capacity floor, create the release anchor, or satisfy
-`--require-ship`.
+GitHub-hosted variability is expected. The automatic `ci-shared` lane may only warn
+about a regression. The manual `reference-v1` lane may create and enforce a reviewed
+same-image rolling anchor, but neither lane establishes a portable capacity floor or
+sizing guarantee.
 
 The enforcing W7 decision requires both:
 
@@ -69,7 +70,7 @@ The enforcing W7 decision requires both:
 
 The current committed `reference-v1` budget and baseline are intentionally
 `unbootstrapped`. Bootstrap is allowed only after at least five eligible,
-successful, stable, clean-commit dedicated `main` runs are available. The exact
+successful, stable, clean-commit GitHub-hosted `main` runs from one pinned image family are available. The exact
 anchor/window payload and budget change require an independent approver; the
 candidate cannot baseline or approve itself.
 
@@ -100,14 +101,16 @@ Implementation closure is not release closure. As of 2026-07-21:
 - the annotated `v0.66.0` predecessor is present and satisfies the ancestry
   prerequisite;
 - the W7 anchor, rolling baseline, and all numerical budgets remain
-  unbootstrapped pending at least five eligible dedicated `main` runs and
+  unbootstrapped pending at least five eligible serialized GitHub-hosted `main` runs and
   independent review;
-- final dedicated core, RESP/Redis, and control-plane artifacts have not been
+- final serialized reference core, RESP/Redis, and control-plane artifacts have not been
   accepted as one frozen exact-candidate set; and
 - the complete canary/gate receipts have not made
   `release-evidence --release 0.67 --require-ship` green.
 
-Therefore this repository makes no shipped `0.67.0` capacity, Redis-comparison,
-or metrics-agreement claim yet. Any quoted number must identify its report,
+Therefore this repository makes no shipped `0.67.0` portable capacity floor, sizing,
+Redis-comparison, or metrics-agreement claim yet. Even after ship, raw throughput is
+report-local characterization; the enforcing hosted profile supports relative regression
+claims only. Any quoted number must identify its report,
 scenario, runner fingerprint, profile, source commit, method, and claim scope;
 otherwise it is an exploratory measurement, not a HydraCache release result.
