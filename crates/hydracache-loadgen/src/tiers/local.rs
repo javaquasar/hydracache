@@ -899,11 +899,7 @@ async fn local_scaling_measurements(
     let efficiency_points = raw_by_workers
         .iter()
         .map(|(workers, samples)| {
-            let ratios = samples
-                .iter()
-                .zip(&baseline)
-                .map(|(sample, base)| sample / (base * *workers as f64))
-                .collect();
+            let ratios = scaling_efficiency_samples(samples, &baseline, *workers);
             scalar_point(
                 BTreeMap::from([(
                     "worker_threads".to_owned(),
@@ -1994,6 +1990,23 @@ fn matrix_workload(
     }
 }
 
+/// Normalize an unpaired worker series against the stable one-worker
+/// median. Repeats are executed sequentially by worker count, so zipping them
+/// would invent pairing and compound independent denominator noise.
+fn scaling_efficiency_samples(
+    samples: &[f64],
+    baseline_samples: &[f64],
+    workers: usize,
+) -> Vec<f64> {
+    let mut ordered_baseline = baseline_samples.to_vec();
+    ordered_baseline.sort_by(f64::total_cmp);
+    let baseline_median = ordered_baseline[ordered_baseline.len() / 2];
+    samples
+        .iter()
+        .map(|sample| sample / (baseline_median * workers as f64))
+        .collect()
+}
+
 fn scalar_point(
     dimensions: BTreeMap<String, DimensionValue>,
     unit: &str,
@@ -2066,8 +2079,8 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
         )));
     }
     let scalar_contracts = [
-        ("local_cache_scaling_curve_1_to_n_threads", 4_usize),
-        ("local_cache_scaling_efficiency_vs_one_thread", 4),
+        ("local_cache_scaling_curve_1_to_n_threads", 3_usize),
+        ("local_cache_scaling_efficiency_vs_one_thread", 3),
         ("hot_key_single_flight_miss_stampede_cost", 1),
         ("throughput_at_full_capacity_vs_half_capacity", 4),
         ("hit_miss_and_loader_path_cost_breakdown", 3),
@@ -2488,6 +2501,24 @@ mod tests {
 
         assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
+    }
+
+    #[test]
+    fn scaling_efficiency_uses_unpaired_baseline_median_without_compounding_spread() {
+        let baseline = [100.0, 115.0, 105.0];
+        let workers_four = [420.0, 483.0, 441.0];
+        let ratios = scaling_efficiency_samples(&workers_four, &baseline, 4);
+
+        assert_eq!(ratios, [1.0, 1.15, 1.05]);
+        let raw_point = scalar_point(
+            BTreeMap::new(),
+            "operations_per_second",
+            workers_four.to_vec(),
+        );
+        let ratio_point = scalar_point(BTreeMap::new(), "ratio", ratios);
+        assert!(
+            (ratio_point.robust_spread_ratio - raw_point.robust_spread_ratio).abs() < f64::EPSILON
+        );
     }
 
     #[tokio::test]
