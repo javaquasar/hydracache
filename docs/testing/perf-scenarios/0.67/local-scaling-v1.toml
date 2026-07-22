@@ -24,7 +24,7 @@ max_rejection_ratio = 0.0
 key_count = 10000
 payload_bytes = 128
 distribution = "uniform"
-worker_counts = [1, 2, 4, 8]
+worker_counts = [1, 2, 4]
 
 [[local.operation_mix]]
 operation = "get-hit"
