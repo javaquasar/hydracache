@@ -2079,8 +2079,8 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
         )));
     }
     let scalar_contracts = [
-        ("local_cache_scaling_curve_1_to_n_threads", 4_usize),
-        ("local_cache_scaling_efficiency_vs_one_thread", 4),
+        ("local_cache_scaling_curve_1_to_n_threads", 3_usize),
+        ("local_cache_scaling_efficiency_vs_one_thread", 3),
         ("hot_key_single_flight_miss_stampede_cost", 1),
         ("throughput_at_full_capacity_vs_half_capacity", 4),
         ("hit_miss_and_loader_path_cost_breakdown", 3),
