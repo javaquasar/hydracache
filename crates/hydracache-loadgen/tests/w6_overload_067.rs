@@ -129,6 +129,14 @@ async fn overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface() {
         );
         assert!(report.points.iter().all(|point| {
             point.repeats.len() == 3
+                && point.repeats.iter().all(|repeat| {
+                    repeat.overload.offered == 48
+                        && repeat
+                            .recovery
+                            .windows
+                            .iter()
+                            .all(|window| window.offered == 48)
+                })
                 && point.aggregate.successful_goodput_per_second > 0.0
                 && point.aggregate.scheduled_p99_us > 0
                 && point.aggregate.robust_goodput_spread_ratio
