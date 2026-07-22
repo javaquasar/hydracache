@@ -1,5 +1,5 @@
 pub use hydracache_loadgen::{
-    knee, rate, report, runner, scenario, target, targets, tiers, PERF_RELEASE,
+    histogram, knee, rate, report, runner, scenario, target, targets, tiers, PERF_RELEASE,
 };
 
 #[path = "../src/overload.rs"]
