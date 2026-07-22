@@ -3134,6 +3134,7 @@ fn open_loop_config(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn validate_point(
     point: &OverloadPointEvidence,
     expected_factor: u32,
@@ -3182,6 +3183,7 @@ fn validate_point(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn validate_repeat(
     repeat: &OverloadRepeatEvidence,
     offered_rate: u64,
