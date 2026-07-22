@@ -1030,7 +1030,7 @@ function = "release_067_registered_performance_gates_are_mandatory_and_fail_clos
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/release_governance.rs"
-function = "performance_lane_requires_dedicated_label_and_serial_concurrency"
+function = "performance_lane_requires_pinned_github_image_and_serial_concurrency"
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/perf_prebuild_067.rs"
