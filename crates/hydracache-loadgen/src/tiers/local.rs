@@ -854,14 +854,16 @@ async fn local_scaling_measurements(
         operation_mix(&binding.local),
         binding.local.payload_bytes,
     );
+    let payload_bytes = usize::try_from(binding.local.payload_bytes)
+        .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?;
     let target_config = LocalTargetConfig {
+        max_capacity: resident_capacity_bytes(key_count, payload_bytes),
         preload_entries: match shape {
             LocalRunShape::Smoke => key_count.min(64),
             LocalRunShape::Reference => binding.scenario.preload_operations.min(key_count),
         },
         key_space: key_count,
-        payload_bytes: usize::try_from(binding.local.payload_bytes)
-            .map_err(|_| LocalTierError::Runtime("payload size does not fit usize".to_owned()))?,
+        payload_bytes,
         operation_mix: local_operation_mix(&binding.local)?,
         ..LocalTargetConfig::default()
     };
@@ -1332,6 +1334,17 @@ async fn local_capacity_measurement(
     }))
 }
 
+/// Size non-capacity W1 targets for three disjoint resident namespaces:
+/// preload hits, loader results, and reusable puts. The fourth raw-payload
+/// share covers codec framing without turning these paths into eviction tests.
+fn resident_capacity_bytes(key_count: u64, payload_bytes: usize) -> u64 {
+    let payload_bytes = u64::try_from(payload_bytes).unwrap_or(u64::MAX);
+    key_count
+        .saturating_mul(payload_bytes)
+        .saturating_mul(4)
+        .max(LocalTargetConfig::default().max_capacity)
+}
+
 fn capacity_target_config(
     capacity_bytes: u64,
     payload_bytes: usize,
@@ -1487,6 +1500,7 @@ async fn local_path_cost_measurement(
         let mut samples = Vec::with_capacity(repeats);
         for _ in 0..repeats {
             let target = LocalCacheTarget::new(LocalTargetConfig {
+                max_capacity: resident_capacity_bytes(key_count, payload_bytes),
                 preload_entries: key_count,
                 key_space: key_count,
                 payload_bytes,
@@ -2474,6 +2488,32 @@ mod tests {
 
         assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
+    }
+
+    #[tokio::test]
+    async fn committed_scaling_preload_fits_the_resident_working_set() {
+        let binding = parse_local_scenario(SCALING_SCENARIO).unwrap();
+        let payload_bytes = usize::try_from(binding.local.payload_bytes).unwrap();
+        let target = LocalCacheTarget::new(LocalTargetConfig {
+            max_capacity: resident_capacity_bytes(binding.local.key_count, payload_bytes),
+            preload_entries: binding.scenario.preload_operations,
+            key_space: binding.local.key_count,
+            payload_bytes,
+            operation_mix: local_operation_mix(&binding.local).unwrap(),
+            ..LocalTargetConfig::default()
+        })
+        .unwrap();
+
+        target.reset().await.unwrap();
+        target.preload().await.unwrap();
+        for logical_key in 0..binding.scenario.preload_operations {
+            assert_eq!(
+                target
+                    .execute_operation(LocalOperation::Hit, logical_key)
+                    .await,
+                TargetOutcome::Success
+            );
+        }
     }
 
     #[test]
