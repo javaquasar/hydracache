@@ -777,7 +777,7 @@ already passed:
 ## Final Release Decision
 
 **Current decision (2026-07-21): NO-SHIP.** The annotated `v0.66.0` predecessor is present and
-ancestral. Keep `0.67.0` `in-progress` until W7 is bootstrapped from at least five eligible dedicated `main`
+ancestral. Keep `0.67.0` `in-progress` until W7 is bootstrapped from at least five eligible serialized GitHub-hosted `main`
 runs with independent review, and one frozen clean candidate satisfies every condition below.
 
 Ship `0.67.0` only when artifacts answer the narrower questions the product can honestly support:
