@@ -3285,8 +3285,9 @@ fn metrics_from_observation(
     observation: &OpenLoopObservation,
 ) -> Result<OverloadMetrics, OverloadError> {
     let denominator = observation.started.max(1) as f64;
-    let elapsed_seconds = observation.elapsed_ms.max(1) as f64 / 1_000.0;
-    let successful_goodput_per_second = observation.successes as f64 / elapsed_seconds;
+    let successful_goodput_per_second = observation.achieved_rate_per_second
+        * observation.successes as f64
+        / observation.completed.max(1) as f64;
     let error_timeout = observation
         .errors
         .checked_add(observation.timeouts)
