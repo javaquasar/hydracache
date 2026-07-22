@@ -2808,8 +2808,7 @@ impl OverloadReport {
         let knee_rate = self.predecessor.knee_rate_per_second()?;
         let expected_preload_operations =
             scenario.expected_preload_operations(self.surface, self.run_mode);
-        let (overload_operations, recovery_operations) =
-            scenario.window_operations(self.run_mode);
+        let (overload_operations, recovery_operations) = scenario.window_operations(self.run_mode);
         for (point, factor) in self.points.iter().zip(OVERLOAD_FACTORS_MILLIONTHS) {
             validate_point(
                 point,
@@ -3049,11 +3048,7 @@ where
     admission_control.validate(factor_millionths)?;
     let overload = run_open_loop(
         Arc::clone(&target),
-        &open_loop_config(
-            offered_rate_per_second,
-            overload_operations,
-            scenario,
-        ),
+        &open_loop_config(offered_rate_per_second, overload_operations, scenario),
     )
     .await
     .map_err(OverloadError::Measurement)?;
@@ -3067,11 +3062,7 @@ where
     for index in 0..scenario.work.max_recovery_windows {
         let window = run_open_loop(
             Arc::clone(&target),
-            &open_loop_config(
-                knee_rate_per_second,
-                recovery_operations,
-                scenario,
-            ),
+            &open_loop_config(knee_rate_per_second, recovery_operations, scenario),
         )
         .await
         .map_err(OverloadError::Measurement)?;
@@ -3215,11 +3206,7 @@ fn validate_repeat(
             "overload repeat has incomplete lifecycle/state evidence".to_owned(),
         ));
     }
-    validate_observation(
-        &repeat.overload,
-        offered_rate,
-        overload_operations,
-    )?;
+    validate_observation(&repeat.overload, offered_rate, overload_operations)?;
     let expected_metrics = metrics_from_observation(&repeat.overload)?;
     if expected_metrics != repeat.metrics {
         return Err(OverloadError::Evidence(
@@ -3238,11 +3225,7 @@ fn validate_repeat(
     let mut expected_consecutive = 0_u32;
     let mut expected_elapsed = repeat.recovery.transition_duration_ms;
     for (index, window) in repeat.recovery.windows.iter().enumerate() {
-        validate_observation(
-            window,
-            knee_rate,
-            recovery_operations,
-        )?;
+        validate_observation(window, knee_rate, recovery_operations)?;
         expected_elapsed = expected_elapsed
             .checked_add(window.elapsed_ms)
             .ok_or_else(|| OverloadError::Evidence("recovery duration overflow".to_owned()))?;
