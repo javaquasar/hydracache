@@ -1319,18 +1319,19 @@ is not shipped. In particular, an ordinary workspace test, a direct
 capacity receipt.
 
 `ci-shared` is a broad-tolerance, non-enforcing regression tripwire.
-`reference-v1` is the only ship-eligible profile and must run serially on a
-dedicated Linux runner whose observed identity satisfies the committed profile.
-The dedicated sequence prebuilds once, then runs the exact binaries without
-putting Cargo compilation or image pulls inside a measurement window.
+`reference-v1` is the only ship-eligible profile and runs serially on the pinned
+GitHub-hosted `ubuntu-24.04` image. The runner-class fingerprint binds `ImageOS`
+and `ImageVersion`; every report separately retains the observed CPU, RAM, kernel,
+calibration, affinity, and quota facts. The sequence prebuilds once, then runs the
+exact binaries without putting Cargo compilation or image pulls inside a measurement
+window. Because the hardware class is GitHub-managed, this profile permits relative
+same-image regression claims only, never portable capacity floors or sizing guidance.
 
 Manual full hosted CI sets `run_nightly=true` and leaves
-`run_dedicated_performance=false`; this runs the non-ship `ci-shared` tripwire
-without reserving an unavailable self-hosted runner. The `reference-v1` lane is
-started only by an explicit manual dispatch with
-`run_dedicated_performance=true`. It requires an online runner labeled
-`self-hosted`, `linux`, `x64`, and `hydracache-perf-v1`; GitHub will otherwise
-leave that job queued, and hosted results must not be substituted for it.
+`run_reference_performance=false`; this runs the non-ship `ci-shared` tripwire.
+The `reference-v1` lane starts only by an explicit manual dispatch with
+`run_reference_performance=true`. Runs serialize through
+`release-067-performance-reference-v1`; they do not require a self-hosted runner.
 
 PowerShell reproduction of the registered sequence:
 
@@ -1398,7 +1399,7 @@ to produce a ship receipt. The annotated `v0.66.0` predecessor is present and
 ancestral.
 The committed `reference-v1` baseline and budget are also intentionally
 `unbootstrapped`: bootstrap requires at least five eligible, stable, successful
-dedicated `main` runs from one qualified fingerprint/contract family and an
+serialized GitHub-hosted `main` runs from one pinned image/contract family and an
 independent review binding the exact anchor, selected rolling window, and budget
 payload. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or
 self-baselining runs are ineligible.
