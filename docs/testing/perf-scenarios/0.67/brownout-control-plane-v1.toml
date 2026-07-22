@@ -1,0 +1,35 @@
+schema_version = 1
+scenario_id = "brownout-control-plane-v1"
+
+[identity]
+evidence_class = "w5a-control-plane-metadata-brownout"
+authority = "consensus-backed-committed-metadata"
+execution_mode = "real-daemon-admin-observation"
+network_boundary = "public-admin-http"
+headline_metric = "committed_metadata_transition_recovery_millis"
+generic_client_write_invariant = false
+distributed_value_invariant = false
+live_reshard_measured = false
+aggregate_goodput = false
+
+[load]
+predecessor_evidence_class = "w4a-real-daemon-control-plane"
+requires_valid_predecessor = true
+fixed_rate_fraction_millionths = 600000
+observation_window_millis = 10000
+
+[events]
+actions = ["leader_failover", "member_add", "member_drain", "node_kill_rejoin"]
+max_leader_unavailable_millis = 5000
+max_transition_recovery_millis = 15000
+require_no_lost_committed_metadata_transition = true
+require_converged_public_membership_views = true
+
+[reference]
+capability_env = "HYDRACACHE_RUN_PERF_CONTROL_PLANE"
+required_profile = "reference-v1"
+predecessor_node_count = 3
+require_real_daemons = true
+require_process_fault_control = true
+require_complete_public_endpoint_set = true
+committed_scenario_sha256 = "7c7eeab8137a62fb70fc8ac23309d9168bbc7d00084a4b1f94b958e262de71f0"

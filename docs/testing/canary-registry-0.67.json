@@ -1,0 +1,347 @@
+{
+  "version": 2,
+  "release": "0.67.0",
+  "entries": [
+    {
+      "w_item": "W0",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "open_loop_scheduler_accounts_missed_ticks_as_latency_not_skips"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_closed_loop_measurement_hides_a_synthetic_stall"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "open_loop_scheduler_accounts_missed_ticks_as_latency_not_skips", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_closed_loop_measurement_hides_a_synthetic_stall", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W0"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W0",
+      "expected_failure": "HC-CANARY-RED:W0",
+      "timeout_seconds": 120,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W0.json"],
+      "red_evidence": "The W0 canary proves scheduled-send latency exposes a synthetic stall that a naive closed-loop p99 hides."
+    },
+    {
+      "w_item": "W1",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "throughput_at_full_capacity_vs_half_capacity_smoke"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_injected_slow_eviction_breaches_the_local_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "throughput_at_full_capacity_vs_half_capacity_smoke", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_injected_slow_eviction_breaches_the_local_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W1"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W1",
+      "expected_failure": "HC-CANARY-RED:W1",
+      "timeout_seconds": 180,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W1.json"],
+      "red_evidence": "The W1 canary proves that a loadgen-only delay on a diagnostics-verified eviction-bearing capacity-pressure operation pushes the embedded-cache knee below its local-tier budget; it does not claim an internal product eviction failpoint."
+    },
+    {
+      "w_item": "W2",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "client_surface_report_preserves_in_process_reality_boundary"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_injected_client_surface_dispatch_delay_breaches_the_in_process_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "client_surface_report_preserves_in_process_reality_boundary", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_injected_client_surface_dispatch_delay_breaches_the_in_process_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W2"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W2",
+      "expected_failure": "HC-CANARY-RED:W2",
+      "timeout_seconds": 180,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W2.json"],
+      "red_evidence": "The W2 canary proves that scheduled latency through the real in-process Axum router exposes a loadgen-injected dispatch delay; the report validator separately forbids daemon, socket, and wire claims."
+    },
+    {
+      "w_item": "W3",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/performance_contract_067.rs",
+        "function": "canary_resp_listener_slowdown_breaches_the_open_loop_resp_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "w3_reports_preserve_open_loop_node_local_and_external_tool_boundaries", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "performance_contract_067", "--locked", "canary_resp_listener_slowdown_breaches_the_open_loop_resp_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W3"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W3",
+      "expected_failure": "HC-CANARY-RED:W3",
+      "timeout_seconds": 240,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W3.json"],
+      "red_evidence": "The W3 canary proves scheduled-send latency detects a slowdown at a real loopback RESP boundary and that truncated external-tool output is rejected; closed-loop output cannot satisfy the open-loop capacity guard."
+    },
+    {
+      "w_item": "W4",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w4_split_067.rs",
+        "function": "w4_scenarios_are_strict_and_reject_surface_overclaims"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w4_split_067.rs",
+        "function": "canary_w4_instruments_reject_control_plane_delay_and_grid_model_short_circuit"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w4_split_067", "--locked", "w4_scenarios_are_strict_and_reject_surface_overclaims", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w4_split_067", "--locked", "canary_w4_instruments_reject_control_plane_delay_and_grid_model_short_circuit", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W4"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W4",
+      "expected_failure": "HC-CANARY-RED:W4",
+      "timeout_seconds": 240,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W4.json"],
+      "red_evidence": "The composite W4 canary proves the shared W4A event-timing validator rejects an over-budget convergence delay and the W4B primitive validator rejects a short-circuited copy/fanout path before emitting one release-scoped red marker."
+    },
+    {
+      "w_item": "W5",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w5_brownout_067.rs",
+        "function": "w5_committed_scenarios_have_exact_digests_and_non_combinable_authorities"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w5_brownout_067.rs",
+        "function": "canary_extended_leader_downtime_breaches_the_control_plane_budget"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w5_brownout_067", "--locked", "w5_committed_scenarios_have_exact_digests_and_non_combinable_authorities", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w5_brownout_067", "--locked", "canary_extended_leader_downtime_breaches_the_control_plane_budget", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W5"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W5",
+      "expected_failure": "HC-CANARY-RED:W5",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W5.json"],
+      "red_evidence": "The composite W5 canary proves the validators reject extended control-plane leader downtime, a false node-local RESP neighbor-failover claim, and a no-op in-process model fault while keeping the three authorities separate."
+    },
+    {
+      "w_item": "W6",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w6_overload_067.rs",
+        "function": "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w6_overload_067.rs",
+        "function": "canary_admission_disabled_fixture_shows_goodput_collapse"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w6_overload_067", "--locked", "overload_goodput_curve_1_2x_1_5x_2x_knee_per_eligible_surface", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w6_overload_067", "--locked", "canary_admission_disabled_fixture_shows_goodput_collapse", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W6"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W6",
+      "expected_failure": "HC-CANARY-RED:W6",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W6.json"],
+      "red_evidence": "The W6 canary proves that bypassing the test-only admission controller causes overload goodput collapse instead of the declared plateau-and-recovery shape."
+    },
+    {
+      "w_item": "W7",
+      "guard": {
+        "file": "crates/xtask/tests/perf_budget_067.rs",
+        "function": "baseline_change_requires_payload_bound_independent_approval"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/perf_budget_067.rs",
+        "function": "canary_perf_budget_accepts_a_silent_rebaseline_or_candidate_self_baseline"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_budget_067", "--locked", "baseline_change_requires_payload_bound_independent_approval", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "perf_budget_067", "--locked", "canary_perf_budget_accepts_a_silent_rebaseline_or_candidate_self_baseline", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W7"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W7",
+      "expected_failure": "HC-CANARY-RED:W7",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W7.json"],
+      "red_evidence": "The W7 canary proves that candidate self-baselining and an unreviewed baseline or budget rebaseline remain rejected before a performance verdict can pass."
+    },
+    {
+      "w_item": "W8",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs",
+        "function": "w8_requires_the_canonical_four_artifact_w3_predecessor"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w8_redis_compare_067.rs",
+        "function": "canary_same_box_comparison_accepts_a_mismatched_host_or_unpinned_redis"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w8_redis_compare_067", "--locked", "w8_requires_the_canonical_four_artifact_w3_predecessor", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w8_redis_compare_067", "--locked", "canary_same_box_comparison_accepts_a_mismatched_host_or_unpinned_redis", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W8"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W8",
+      "expected_failure": "HC-CANARY-RED:W8",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W8.json"],
+      "red_evidence": "The W8 canary proves that same-box evidence rejects a mismatched runner identity or an unpinned Redis image before any comparison report can become ship evidence."
+    },
+    {
+      "w_item": "W9",
+      "guard": {
+        "file": "crates/hydracache-loadgen/tests/w9_metrics_067.rs",
+        "function": "server_reported_ops_and_rejects_match_loadgen_within_tolerance"
+      },
+      "canary": {
+        "file": "crates/hydracache-loadgen/tests/w9_metrics_067.rs",
+        "function": "canary_metrics_undercount_fixture_is_detected"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w9_metrics_067", "--locked", "server_reported_ops_and_rejects_match_loadgen_within_tolerance", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "hydracache-loadgen", "--test", "w9_metrics_067", "--locked", "canary_metrics_undercount_fixture_is_detected", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W9"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W9",
+      "expected_failure": "HC-CANARY-RED:W9",
+      "timeout_seconds": 180,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W9.json"],
+      "red_evidence": "The W9 canary proves that an exported counter which drops every tenth independently observed operation is rejected with the exact release-scoped marker."
+    },
+    {
+      "w_item": "W10",
+      "guard": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "release_067_registered_performance_gates_are_mandatory_and_fail_closed"
+      },
+      "canary": {
+        "file": "crates/xtask/tests/release_governance.rs",
+        "function": "canary_release_governance_accepts_a_missing_mandatory_performance_gate"
+      },
+      "guard_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_067_registered_performance_gates_are_mandatory_and_fail_closed", "--", "--nocapture"],
+        "env": {},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "canary_command": {
+        "program": "cargo",
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_governance_accepts_a_missing_mandatory_performance_gate", "--", "--nocapture"],
+        "env": {"HYDRACACHE_CANARY_DEFECT": "W10"},
+        "cwd": ".",
+        "platform": "any"
+      },
+      "defect_id": "hydracache-0.67-W10",
+      "expected_failure": "HC-CANARY-RED:W10",
+      "timeout_seconds": 300,
+      "tier": "fast",
+      "artifacts": ["target/release-evidence/canaries/0.67-W10.json"],
+      "red_evidence": "The W10 canary proves that release governance rejects removal of any mandatory 0.67 performance gate."
+    }
+  ]
+}

@@ -154,10 +154,17 @@ impl RaftStorageFaultController {
     pub fn wait_until_blocked(&self) -> RaftStorageFaultObservation {
         let (state, changed) = &*self.inner;
         let mut state = state.lock().expect("raft storage fault state poisoned");
+        let deadline = Instant::now() + STORAGE_FAULT_BLOCK_TIMEOUT;
         while state.observation.blocked_calls == 0 {
-            state = changed
-                .wait(state)
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            assert!(
+                !remaining.is_zero(),
+                "timed out waiting for an injected storage operation to block"
+            );
+            let (next, _) = changed
+                .wait_timeout(state, remaining)
                 .expect("raft storage fault state poisoned while waiting");
+            state = next;
         }
         state.observation
     }
@@ -1741,6 +1748,16 @@ mod tests {
             assert!(!state.released);
             assert_eq!(state.observation, RaftStorageFaultObservation::default());
         }
+
+        let blocked_probe = RaftStorageFaultController::default();
+        blocked_probe
+            .inner
+            .0
+            .lock()
+            .expect("raft storage fault state poisoned")
+            .observation
+            .blocked_calls = 1;
+        assert_eq!(blocked_probe.wait_until_blocked().blocked_calls, 1);
 
         let release_probe = RaftStorageFaultController::default();
         {

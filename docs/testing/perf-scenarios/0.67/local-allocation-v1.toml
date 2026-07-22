@@ -1,0 +1,10 @@
+schema_version = 1
+id = "local-allocation-v1"
+seed = 6705
+operations = 10000
+payload_bytes = 128
+repeats = 3
+features = ["baseline", "ttl", "tags"]
+metric = "gross_allocated_bytes_per_operation"
+robust_spread_tolerance = 0.15
+includes = ["real_api", "diagnostics", "runtime_overhead"]

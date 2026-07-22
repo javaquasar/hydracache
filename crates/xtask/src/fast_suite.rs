@@ -11,7 +11,7 @@ use crate::gated_tests::CommandSpec;
 
 pub const REGISTRY_PATH: &str = "docs/testing/fast-suite-registry.toml";
 pub const NEXTTEST_CONFIG_PATH: &str = ".config/nextest.toml";
-pub const PR_BUDGET_SECONDS: u64 = 1_500;
+pub const PR_BUDGET_SECONDS: u64 = 1_560;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]

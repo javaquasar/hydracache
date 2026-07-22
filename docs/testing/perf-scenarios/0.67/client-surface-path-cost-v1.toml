@@ -1,0 +1,13 @@
+schema_version = 1
+id = "client-surface-path-cost-v1"
+seed = 6726
+operations_per_repeat = 64
+repeats = 3
+key_count = 64
+payload_bytes = 1000
+max_frame_bytes = 1048576
+beyond_cap_value_bytes = 1048576
+paths = ["codec_encode_decode", "router_dispatch", "oversized_admission_rejection"]
+metric = "nanoseconds_per_operation"
+require_rejection_before_dispatch = true
+robust_spread_tolerance = 1.00

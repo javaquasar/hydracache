@@ -1,0 +1,35 @@
+schema_version = 1
+id = "resp-open-loop-workload-c-v1"
+seed = 670303
+offered_rates_per_second = [1000, 5000, 10000, 25000, 50000]
+preload_operations = 10000
+warmup_operations = 10000
+steady_operations = 100000
+repeats = 5
+p99_slo_us = 5000
+p999_slo_us = 20000
+p999_min_samples = 10000
+highest_trackable_latency_us = 10000000
+histogram_significant_figures = 3
+min_achieved_ratio = 0.95
+backlog_drain_ms = 10000
+robust_spread_tolerance = 0.15
+
+[error_budgets]
+max_error_ratio = 0.0
+max_timeout_ratio = 0.0
+max_rejection_ratio = 0.0
+
+[resp]
+workload = "C"
+key_count = 10000
+payload_bytes = 256
+batch_size = 10
+connections = 10
+pipeline = 1
+repeat_isolation = "logical-keyspace-reset-and-counter-zero"
+daemon_reused_across_repeats = true
+operation_mix = [
+  { operation = "get", weight = 0.90 },
+  { operation = "mget", weight = 0.10 },
+]

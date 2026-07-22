@@ -43,6 +43,26 @@ fn coverage_contract_rejects_floor_below_88_or_mismatched_measured_baseline() {
 }
 
 #[test]
+fn loadgen_exclusion_requires_a_non_published_development_harness() {
+    assert!(
+        xtask::coverage_ratchet::loadgen_manifest_is_development_only(
+            "[package]\npublish = false\n"
+        )
+    );
+    assert!(
+        !xtask::coverage_ratchet::loadgen_manifest_is_development_only(
+            "[package]\npublish = true\n"
+        )
+    );
+    assert!(
+        !xtask::coverage_ratchet::loadgen_manifest_is_development_only(
+            "[package]\nname = \"loadgen\"\n"
+        )
+    );
+    assert!(!xtask::coverage_ratchet::loadgen_manifest_is_development_only("not valid toml = ["));
+}
+
+#[test]
 fn measured_coverage_is_checked_by_the_ratchet_with_an_actionable_error() {
     assert!(xtask::coverage_ratchet::enforce_floor(88.0, 88.0).is_ok());
     assert!(xtask::coverage_ratchet::enforce_floor(91.25, 88.0).is_ok());
@@ -92,7 +112,10 @@ fn coverage_plan_runs_default_before_additive_tiers_and_reports_once() {
         .find(|window| window[0] == "--ignore-filename-regex")
         .expect("coverage report must declare its reviewed source exclusion");
     assert_eq!(ignore[1], config.ignored_source_regex);
-    assert_eq!(config.ignored_source_regex, "(^|/)crates/xtask/");
+    assert_eq!(
+        config.ignored_source_regex,
+        "(^|/)crates/(xtask|hydracache-loadgen)/"
+    );
     assert!(!report.args.iter().any(|arg| arg == "--fail-under-lines"));
     let networked = plan
         .iter()

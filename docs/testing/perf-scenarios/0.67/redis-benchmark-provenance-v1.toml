@@ -1,0 +1,26 @@
+schema_version = 1
+registry_id = "redis-benchmark-provenance-v1"
+
+[[entries]]
+provenance_id = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1"
+platform_key = "linux-x86_64-gnu"
+tool = "redis-benchmark"
+version = "redis-benchmark 7.2.5"
+approved_for_mandatory = true
+
+[entries.provenance]
+kind = "source_archive_recipe"
+archive_url = "https://download.redis.io/releases/redis-7.2.5.tar.gz"
+archive_sha256 = "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d"
+archive_size_bytes = 3386454
+build_toolchain = "gcc-12.2.0_gnu-make-4.3_glibc-2.36"
+recipe_version = 1
+recipe_steps = [
+  "test \"$(uname -s)-$(uname -m)\" = \"Linux-x86_64\"",
+  "printf '%s  redis-7.2.5.tar.gz\\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' | sha256sum --check --strict -",
+  "tar --extract --gzip --file redis-7.2.5.tar.gz",
+  "env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no make -C redis-7.2.5 -j1 redis-benchmark",
+  "test \"$(redis-7.2.5/src/redis-benchmark --version)\" = \"redis-benchmark 7.2.5\"",
+]
+output_path = "src/redis-benchmark"
+expected_version = "redis-benchmark 7.2.5"

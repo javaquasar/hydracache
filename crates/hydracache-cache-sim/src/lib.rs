@@ -1,5 +1,14 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+mod digest;
+mod trace_catalog;
+mod workload;
+
+pub use trace_catalog::{trace_digest, CommittedTrace, TraceCatalogId};
+pub use workload::{
+    GeneratedKeySchedule, KeyDistribution, KeyScheduleSpec, KEY_SCHEDULE_GENERATOR_VERSION,
+};
+
 /// One cache access from a committed trace.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TraceEvent {

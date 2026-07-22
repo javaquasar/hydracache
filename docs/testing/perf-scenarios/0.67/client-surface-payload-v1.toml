@@ -1,0 +1,12 @@
+schema_version = 1
+id = "client-surface-payload-v1"
+seed = 6725
+operations_per_repeat = 8
+repeats = 3
+key_count = 64
+payload_bytes = [100, 1000, 65536, 1000000]
+max_frame_bytes = 1048576
+beyond_cap_value_bytes = 1048576
+metric = "operations_per_second"
+require_http_413_beyond_cap = true
+robust_spread_tolerance = 0.50

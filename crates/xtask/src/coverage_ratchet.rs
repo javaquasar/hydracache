@@ -10,7 +10,7 @@ use crate::doc_check;
 
 pub const CONFIG_PATH: &str = "docs/testing/coverage-ratchet.toml";
 pub const MINIMUM_FLOOR_PERCENT: f64 = 88.0;
-const REVIEWED_IGNORED_SOURCE_REGEX: &str = "(^|/)crates/xtask/";
+const REVIEWED_IGNORED_SOURCE_REGEX: &str = "(^|/)crates/(xtask|hydracache-loadgen)/";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -105,6 +105,18 @@ pub fn load_config(root: &Path) -> Result<CoverageRatchet, Box<dyn Error>> {
     toml::from_str(&text).map_err(|error| format!("parsing {CONFIG_PATH}: {error}").into())
 }
 
+pub fn loadgen_manifest_is_development_only(text: &str) -> bool {
+    let Ok(manifest) = toml::from_str::<toml::Value>(text) else {
+        return false;
+    };
+    manifest
+        .get("package")
+        .and_then(toml::Value::as_table)
+        .and_then(|package| package.get("publish"))
+        .and_then(toml::Value::as_bool)
+        == Some(false)
+}
+
 pub fn validate_contract(
     root: &Path,
     config: &CoverageRatchet,
@@ -129,6 +141,13 @@ pub fn validate_contract(
             "coverage exclusion must remain exactly {REVIEWED_IGNORED_SOURCE_REGEX:?}"
         ));
     }
+    let loadgen_manifest = fs::read_to_string(root.join("crates/hydracache-loadgen/Cargo.toml"))?;
+    if !loadgen_manifest_is_development_only(&loadgen_manifest) {
+        problems.push(
+            "hydracache-loadgen may be excluded only while package.publish is false".to_owned(),
+        );
+    }
+
     match config.baseline_status {
         BaselineStatus::Unmeasured => {
             if !config.baseline_commit.is_empty()
@@ -168,7 +187,7 @@ pub fn validate_contract(
     for required in [
         "tool: cargo-llvm-cov@0.8.7",
         "evidence-run --release 0.64 --gate tool.coverage-ratchet",
-        "--ignore-filename-regex '(^|/)crates/xtask/'",
+        "--ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/'",
         "target/test-evidence/0.64/coverage-*.json",
         "postgres:16.4-alpine",
         "HYDRACACHE_TEST_POSTGRES_URL",
@@ -413,7 +432,7 @@ pub fn validate_measurement_plan(plan: &[CoverageStep], config: &CoverageRatchet
                     .map(|window| window[1].as_str());
                 if exclusion != Some(config.ignored_source_regex.as_str()) {
                     problems.push(
-                        "coverage report must use the reviewed xtask-only source exclusion"
+                        "coverage report must use the reviewed development-harness source exclusion"
                             .to_owned(),
                     );
                 }

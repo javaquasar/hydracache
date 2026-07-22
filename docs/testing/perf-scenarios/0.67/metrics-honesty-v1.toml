@@ -1,0 +1,39 @@
+schema_version = 1
+release = "0.67.0"
+scenario_id = "metrics-honesty-daemon-v1"
+exporter_path = "/metrics"
+maximum_scrape_bytes = 1048576
+connect_timeout_millis = 5000
+read_timeout_millis = 10000
+counter_absolute_tolerance = 1
+counter_relative_tolerance_millionths = 10000
+topology_gauge_absolute_tolerance = 0
+required_surfaces = ["w3_node_resp", "w4a_control_plane_admin"]
+
+[observer_probe]
+probe_id = "w9-w0-open-loop-observer-v1"
+offered_rate_per_second = 1000
+operations = 64
+highest_trackable_latency_micros = 5000000
+histogram_significant_figures = 3
+p999_min_samples = 1
+drain_timeout_millis = 5000
+
+[latency_boundary]
+observer_metric = "scheduled-send-to-completion-latency"
+observer_includes_scheduler_queue_delay = true
+server_metric = "not_available"
+server_metric_scope = "internal-service-time-if-ever-exported"
+equality_claim = false
+
+[coverage.w3_node_resp]
+operations = "not_available:no-exported-generic-resp-command-counter"
+rejections = "not_available:no-exported-resp-surface-rejection-counter"
+internal_service_latency = "not_available:no-exported-resp-service-latency-summary"
+topology = "not_applicable:resp-capacity-is-node-local-and-not-a-topology-claim"
+
+[coverage.w4a_control_plane_admin]
+operations = "not_available:no-exported-admin-request-counter"
+rejections = "not_available:no-exported-admin-request-rejection-counter"
+internal_service_latency = "not_available:no-exported-admin-service-latency-summary"
+topology = "available:hydracache_cluster_members,hydracache_cluster_leader,hydracache_cluster_epoch"

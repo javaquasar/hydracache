@@ -1,0 +1,38 @@
+schema_version = 1
+scenario_id = "brownout-grid-model-v1"
+
+[identity]
+evidence_class = "w5c-in-process-model-replica-fault"
+authority = "constructed-in-process-replica-model"
+execution_mode = "in-process-model-fault-injection"
+network_boundary = "none-in-process"
+headline_metric = "modeled_replica_decision_backpressure_recovery_nanos"
+daemon_brownout_evidence = false
+product_data_plane = false
+live_rebalance_measured = false
+live_reshard_measured = false
+aggregate_goodput = false
+
+[work]
+predecessor_evidence_class = "w4b-in-process-library-model"
+requires_valid_predecessor_report = true
+no_synthetic_capacity_knee = true
+fixed_iterations = 1000
+warmup_iterations = 100
+raw_repeats = 5
+maximum_robust_spread_ratio_millionths = 1000000
+fresh_model_per_repeat = true
+
+[faults]
+faults = ["slow_replica", "unavailable_replica"]
+iterations = 1000
+slow_replica_delay_micros = 25
+unavailable_backpressure_per_iteration = 1
+max_recovery_cost_nanos = 1000000
+
+[reference]
+required_profile = "reference-v1"
+require_prebuild_receipt = true
+require_constructed_model = true
+require_observed_fault_injection = true
+committed_scenario_sha256 = "15d8dcb41d9062f223bd425bde9651fca47ed8f2deb507b080966eb661e4c871"

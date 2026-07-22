@@ -1,0 +1,42 @@
+schema_version = 1
+scenario_id = "overload-capacity-v1"
+
+[identity]
+evidence_class = "w6-capacity-bound-overload-goodput-recovery"
+claim_scope = "capacity-bound-overload-goodput-recovery"
+eligible_surfaces = ["local", "client-surface", "node-resp"]
+forbidden_tier_names = ["cluster", "generic-cluster", "node-native"]
+require_capacity_knee = true
+reject_model_cost_as_capacity = true
+reject_operational_event_as_capacity = true
+
+[work]
+factors_millionths = [1200000, 1500000, 2000000]
+repeats = 3
+warmup_operations = 4
+burst_operations = 48
+recovery_operations_per_window = 48
+max_recovery_windows = 3
+required_consecutive_recovery_windows = 2
+p999_min_samples = 1
+highest_trackable_latency_us = 1000000
+histogram_significant_figures = 3
+drain_timeout_ms = 1000
+recovery_goodput_floor_ratio = 0.85
+recovery_p99_ceiling_ratio = 1.50
+maximum_goodput_spread_ratio = 0.25
+
+[work.reference_preload_operations]
+local = 0
+client_surface = 10000
+node_resp = 10000
+
+[reference]
+required_profile = "reference-v1"
+require_stable_predecessor = true
+require_predecessor_report_receipt = true
+require_runner_fingerprint = true
+require_prebuild_receipt = true
+require_surface_capability_receipt = true
+require_target_workload_binding = true
+committed_scenario_sha256 = "64e9413f73b92b286a9326dc87bb5f2fb7f50b2ee969a0167c10dda11f0f84d0"

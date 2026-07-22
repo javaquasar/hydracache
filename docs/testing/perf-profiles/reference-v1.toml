@@ -1,0 +1,31 @@
+schema_version = 1
+release = "0.67.0"
+name = "reference-v1"
+enforcement = "ship"
+bootstrap_status = "unbootstrapped"
+required_platform_key = "linux-x86_64"
+
+[runner]
+name = "reference-v1"
+required_runner_class = "reference-v1"
+allowed_fingerprints = []
+minimum_logical_cores = 8
+required_cpu_affinity = "dedicated-cpuset"
+required_cgroup_cpu_quota = "unlimited"
+require_dedicated = true
+maximum_calibration_score = 0.05
+
+[noise]
+absolute_numbers_are_ship_evidence = true
+comparison_class = "same-dedicated-runner-fingerprint"
+maximum_report_spread_ratio = 0.05
+
+[prebuild]
+schema_version = 1
+toolchain_identity = "rustc-1.94.0"
+target_set = ["hydracache-loadgen", "hydracache-server"]
+features = []
+cargo_profile = "release"
+flags = ["--locked", "--release"]
+build_recipe = ["cargo build -p hydracache-loadgen -p hydracache-server --release --locked"]
+digest = "f2caae0689d8b075d2a6d59d6090466365f9a6824c6996d6b92830956831cc55"

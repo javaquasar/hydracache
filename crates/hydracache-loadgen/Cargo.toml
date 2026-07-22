@@ -1,0 +1,36 @@
+[package]
+name = "hydracache-loadgen"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Development-only open-loop performance characterization tool for HydraCache."
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
+
+[dependencies]
+async-trait.workspace = true
+axum.workspace = true
+futures-util.workspace = true
+hdrhistogram.workspace = true
+hydracache.workspace = true
+hydracache-cache-sim.workspace = true
+hydracache-client-protocol.workspace = true
+hydracache-client-transport-axum.workspace = true
+hydracache-redis-compat.workspace = true
+jsonschema.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+toml.workspace = true
+tower.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+
+[lints]
+workspace = true

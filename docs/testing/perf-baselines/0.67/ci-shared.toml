@@ -1,0 +1,28 @@
+schema_version = 1
+release = "0.67.0"
+profile = "ci-shared"
+bootstrap_status = "unbootstrapped"
+profile_sha256 = "577585b435e10c9792ec803417ed3d41867590cc572b846998578524aac9c74c"
+budget_sha256 = "b293a3e09dc37b40f2139531dbccb893c834c714382e5195393910bf80b7fd9d"
+selection_reason = "most-recent-eligible-successful-main-medians"
+candidate_member = []
+member = []
+rolling_metric = []
+receipt_sha256 = "unbootstrapped"
+
+[change_control]
+status = "pending_bootstrap"
+
+[policy]
+branch = "main"
+minimum_members = 5
+maximum_members = 10
+maximum_age_days = 30
+
+[anchor]
+status = "unbootstrapped"
+frozen_at = ""
+contract_commit = ""
+source_run_ids = []
+source_member = []
+metric = []

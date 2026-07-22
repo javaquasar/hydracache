@@ -170,7 +170,7 @@ resource ownership, pod generations, network isolation, and storage identity.
 Neither layer substitutes for the other.
 
 Release CI builds the current operator in a finite preparation step, copies it
-to a SHA-named path under `.ci-runtime/0.66`, and runs only that immutable
+to a SHA-named path under `target/ci-runtime/0.66`, and runs only that immutable
 candidate as a supervised background step. The copy is necessary because the
 proof invokes Cargo again: relinking `target/debug/hydracache-operator` can
 unlink that pathname while the old process remains alive, making its

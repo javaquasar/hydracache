@@ -1,0 +1,44 @@
+schema_version = 1
+id = "client-surface-a-v1"
+seed = 6721
+offered_rates_per_second = [1000, 5000, 10000, 25000]
+preload_operations = 10000
+warmup_operations = 10000
+steady_operations = 100000
+repeats = 3
+p99_slo_us = 10000
+p999_slo_us = 25000
+p999_min_samples = 10000
+highest_trackable_latency_us = 5000000
+histogram_significant_figures = 3
+min_achieved_ratio = 0.95
+backlog_drain_ms = 2000
+robust_spread_tolerance = 0.15
+
+[error_budgets]
+max_error_ratio = 0.0
+max_timeout_ratio = 0.0
+max_rejection_ratio = 0.0
+
+[client_surface]
+workload = "A"
+key_count = 10000
+payload_bytes = 1000
+batch_size = 8
+max_frame_bytes = 1048576
+
+[[client_surface.operation_mix]]
+operation = "get"
+weight = 0.45
+
+[[client_surface.operation_mix]]
+operation = "put"
+weight = 0.45
+
+[[client_surface.operation_mix]]
+operation = "batch_get"
+weight = 0.05
+
+[[client_surface.operation_mix]]
+operation = "batch_put"
+weight = 0.05

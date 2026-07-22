@@ -1,0 +1,8 @@
+schema_version = 1
+id = "local-trace-replay-v1"
+seed = 6706
+catalog = "w22-v1"
+traces = ["standard", "skewed_zipfian", "recency_ttl"]
+mode = "quality_fixture_not_capacity"
+require_order_preserved = true
+require_input_replay_digest_match = true

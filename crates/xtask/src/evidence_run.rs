@@ -281,6 +281,12 @@ fn execute_command(root: &Path, command_spec: &CommandSpec, timeout_seconds: u64
         .current_dir(cwd)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    if let Some(target_dir) = cargo_target_dir_override(root, command_spec, cfg!(windows)) {
+        command.env("CARGO_TARGET_DIR", target_dir);
+        if let Some(jobs) = cargo_build_jobs_override(command_spec, cfg!(windows)) {
+            command.env("CARGO_BUILD_JOBS", jobs);
+        }
+    }
     configure_process_group(&mut command);
 
     let mut child = match command.spawn() {
@@ -455,6 +461,38 @@ fn validate_artifact_paths(
             Ok((declared.replace('\\', "/"), root.join(relative)))
         })
         .collect()
+}
+
+/// Windows cannot replace the currently running `target/debug/xtask.exe` when
+/// an evidence gate recursively invokes Cargo. Keep nested Cargo outputs in a
+/// deterministic sibling target directory; Linux/macOS retain the registered
+/// command's ordinary target directory and dedicated performance lanes are
+/// Linux-only.
+pub fn cargo_target_dir_override(
+    root: &Path,
+    command_spec: &CommandSpec,
+    windows: bool,
+) -> Option<PathBuf> {
+    if !windows || command_spec.env.contains_key("CARGO_TARGET_DIR") {
+        return None;
+    }
+    let program = Path::new(&command_spec.program)
+        .file_name()
+        .and_then(OsStr::to_str)
+        .unwrap_or(&command_spec.program)
+        .to_ascii_lowercase();
+    matches!(program.as_str(), "cargo" | "cargo.exe")
+        .then(|| root.join("target/evidence-run-cargo"))
+}
+
+pub fn cargo_build_jobs_override(
+    command_spec: &CommandSpec,
+    windows: bool,
+) -> Option<&'static str> {
+    (windows
+        && cargo_target_dir_override(Path::new("."), command_spec, windows).is_some()
+        && !command_spec.env.contains_key("CARGO_BUILD_JOBS"))
+    .then_some("1")
 }
 
 fn remove_stale_declared_artifacts(

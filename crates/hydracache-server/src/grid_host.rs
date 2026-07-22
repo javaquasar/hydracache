@@ -1025,6 +1025,11 @@ fn raft_authority_observation_is_fresh(
     })
 }
 
+fn raft_metadata_progress_is_fully_applied(progress: &RaftMetadataRuntimeSnapshot) -> bool {
+    progress.applied_index == progress.commit_index
+        && progress.commit_index == progress.last_log_index
+}
+
 fn confirmed_raft_authority_term(
     observation: Option<RaftAuthorityObservation>,
     current_leader: Option<u64>,
@@ -2249,7 +2254,7 @@ impl GridControlPlaneHandle for NetworkedGridHandle {
         let raft_authority_fresh =
             voters.len() <= 1 || self.drive_diagnostics.raft_authority_fresh(progress.term);
         raft_authority_fresh
-            && progress.applied_index == progress.commit_index
+            && raft_metadata_progress_is_fully_applied(&progress)
             && self.raft.metadata_snapshot() == *observed
     }
 
@@ -3503,6 +3508,21 @@ mod tests {
             now,
             7
         ));
+    }
+
+    #[test]
+    fn metadata_authority_rejects_uncommitted_or_unapplied_log_entries() {
+        let mut progress = test_raft_runtime().snapshot();
+        assert!(raft_metadata_progress_is_fully_applied(&progress));
+
+        progress.last_log_index += 1;
+        assert!(!raft_metadata_progress_is_fully_applied(&progress));
+
+        progress.commit_index = progress.last_log_index;
+        assert!(!raft_metadata_progress_is_fully_applied(&progress));
+
+        progress.applied_index = progress.commit_index;
+        assert!(raft_metadata_progress_is_fully_applied(&progress));
     }
 
     #[test]

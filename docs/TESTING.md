@@ -613,7 +613,7 @@ gated-proof jobs check out full Git history. This is required because the W32
 compatibility gate resolves `v0.63.0` and proves that it is an ancestor of the
 candidate. MSRV reaches the gate through `cargo test --workspace`; coverage
 reaches it through `cargo llvm-cov --workspace --all-targets` while excluding
-only `crates/xtask` source from the numeric product metric; and the generic
+`crates/xtask` and `crates/hydracache-loadgen` sources from the numeric product metric; and the generic
 proof runner can execute coverage or the v0.63 compatibility gate. A shallow
 checkout or missing baseline tag is an infrastructure failure, not a
 compatibility skip. The release-governance test parses the workflow and rejects
@@ -1057,7 +1057,7 @@ The operator gate expects a prepared kind cluster, the CRD/controller/current
 server image, a NetworkPolicy-enforcing CNI for W11, and Chaos Mesh `IOChaos`
 for the W5 slow-disk claim. This receipt is Linux-only: it verifies the live
 controller PID through `/proc`, requires that PID to execute the exact
-SHA-named candidate inode copied into `.ci-runtime/0.66`, and binds both that
+SHA-named candidate inode copied into `target/ci-runtime/0.66`, and binds both that
 absolute path (`HYDRACACHE_OPERATOR_BINARY`) and the controller's own runtime
 output to the current run. The copy is made after the foreground `cargo build`
 because the proof's later `cargo run` may relink `target/debug/hydracache-operator`;
@@ -1162,8 +1162,8 @@ kubectl wait --for=condition=Established \
   crd/hydracacheclusters.hydracache.io --timeout=60s
 cargo build -p hydracache-operator --locked
 
-mkdir -p target/test-evidence/0.66 .ci-runtime/0.66
-operator_binary="$(pwd)/.ci-runtime/0.66/hydracache-operator-$(git rev-parse HEAD)"
+mkdir -p target/test-evidence/0.66 target/ci-runtime/0.66
+operator_binary="$(pwd)/target/ci-runtime/0.66/hydracache-operator-$(git rev-parse HEAD)"
 install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
 operator_log="target/test-evidence/0.66/operator-controller-live.log"
 operator_pid_file="target/test-evidence/0.66/operator-controller.pid"
@@ -1309,6 +1309,107 @@ typed-cache delegation, single-flight join events, stale-load discard events,
 loader failure events, and bounded-buffer lag. The lag behavior is intentional:
 HydraCache uses a bounded event bus so cache operations never wait for slow
 listeners.
+
+## Release 0.67 performance characterization
+
+The canonical methodology and surface boundaries are documented in
+[`PERFORMANCE.md`](PERFORMANCE.md). Release 0.67 has implementation closure but
+is not shipped. In particular, an ordinary workspace test, a direct
+`hydracache-loadgen` invocation, or a shared GitHub-hosted result is not a
+capacity receipt.
+
+`ci-shared` is a broad-tolerance, non-enforcing regression tripwire.
+`reference-v1` is the only ship-eligible profile and must run serially on a
+dedicated Linux runner whose observed identity satisfies the committed profile.
+The dedicated sequence prebuilds once, then runs the exact binaries without
+putting Cargo compilation or image pulls inside a measurement window.
+
+Manual full hosted CI sets `run_nightly=true` and leaves
+`run_dedicated_performance=false`; this runs the non-ship `ci-shared` tripwire
+without reserving an unavailable self-hosted runner. The `reference-v1` lane is
+started only by an explicit manual dispatch with
+`run_dedicated_performance=true`. It requires an online runner labeled
+`self-hosted`, `linux`, `x64`, and `hydracache-perf-v1`; GitHub will otherwise
+leave that job queued, and hosted results must not be substituted for it.
+
+PowerShell reproduction of the registered sequence:
+
+```powershell
+$env:HYDRACACHE_RUN_PERF_REFERENCE='1'
+$env:HYDRACACHE_RUN_PERF_CORE='1'
+$env:HYDRACACHE_RUN_PERF_RESP='1'
+$env:HYDRACACHE_RUN_PERF_CONTROL_PLANE='1'
+
+$fastGates = @(
+  'fast.performance-contract-067',
+  'fast.performance-resp-external-067',
+  'fast.workspace-nextest'
+)
+foreach ($gate in $fastGates) {
+  cargo run -p xtask --locked -- evidence-run --release 0.67 --gate $gate
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
+cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
+
+Remove-Item Env:\HYDRACACHE_RUN_PERF_REFERENCE,Env:\HYDRACACHE_RUN_PERF_CORE,Env:\HYDRACACHE_RUN_PERF_RESP,Env:\HYDRACACHE_RUN_PERF_CONTROL_PLANE -ErrorAction SilentlyContinue
+```
+
+Bash reproduction:
+
+```bash
+export HYDRACACHE_RUN_PERF_REFERENCE=1
+export HYDRACACHE_RUN_PERF_CORE=1
+export HYDRACACHE_RUN_PERF_RESP=1
+export HYDRACACHE_RUN_PERF_CONTROL_PLANE=1
+
+for gate in \
+  fast.performance-contract-067 \
+  fast.performance-resp-external-067 \
+  fast.workspace-nextest
+do
+  cargo run -p xtask --locked -- evidence-run --release 0.67 --gate "$gate" || exit $?
+done
+
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
+cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
+
+unset HYDRACACHE_RUN_PERF_REFERENCE HYDRACACHE_RUN_PERF_CORE HYDRACACHE_RUN_PERF_RESP HYDRACACHE_RUN_PERF_CONTROL_PLANE
+```
+
+Those are the complete 0.67 fast-gate IDs: the performance contract owns
+W0-W10, workspace-nextest supplies implementation coverage, and the external
+RESP suite belongs only to W3. There are no standalone W4-W7 fast suites; the
+reconciled fast-suite registry aggregate budget is exactly 1560 seconds.
+
+These commands describe the release workflow; they are not currently expected
+to produce a ship receipt. The annotated `v0.66.0` predecessor is present and
+ancestral.
+The committed `reference-v1` baseline and budget are also intentionally
+`unbootstrapped`: bootstrap requires at least five eligible, stable, successful
+dedicated `main` runs from one qualified fingerprint/contract family and an
+independent review binding the exact anchor, selected rolling window, and budget
+payload. Candidate, failed, quarantined, unstable, stale, mixed-fingerprint, or
+self-baselining runs are ineligible.
+
+The RESP gate owns one selected node-local endpoint, the sealed W3 artifacts,
+W8 same-box Redis comparison, and RESP metrics-honesty report. W8 uses the same
+pinned tool, host, workload, and alternating execution order for both systems;
+it is not a general Redis-replacement benchmark. The control-plane gate owns
+separate real 3/5/7-daemon metadata/admin artifacts. W9 compares only fields
+already exported by those daemons; absent fields remain `not_available`, and
+internal service-time metrics are never substituted for scheduled-send latency.
 
 ## Performance Smoke Tests
 
@@ -1581,13 +1682,13 @@ under `crates/hydracache/tests/cacheable/`,
 Run product-source coverage while still executing the full workspace test suite:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --summary-only
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --summary-only
 ```
 
 The scheduled CI ratchet enforces the current product-source line floor:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --summary-only --fail-under-lines 88
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --summary-only --fail-under-lines 88
 ```
 
 That ratchet is a mechanical regression gate. It is not a numeric self-score or
@@ -1596,14 +1697,14 @@ release-quality claim under `docs/RULES.md` R-7.
 Show uncovered source lines:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --show-missing-lines --summary-only
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --show-missing-lines --summary-only
 ```
 
 Generate HTML and LCOV reports:
 
 ```powershell
-cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/xtask/' --html --output-dir target\llvm-cov-html
-cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --lcov --output-path target\llvm-cov.lcov
+cargo llvm-cov --workspace --all-targets --locked --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --html --output-dir target\llvm-cov-html
+cargo llvm-cov report --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --lcov --output-path target\llvm-cov.lcov
 ```
 
 Open the HTML report at:
@@ -1619,12 +1720,15 @@ The current practical target is split by surface area:
 - Reusable library crates should stay above `95%` line coverage.
 - Product-source coverage, including the non-published sandbox, should trend toward
   `95%+` line coverage.
+- Development-only proof/performance harnesses (`xtask` and `hydracache-loadgen`) stay
+  outside that product denominator while their complete workspace tests still execute.
 - Visible uncovered source lines should be investigated before release.
 
 The 0.64 ratchet contract lives in `docs/testing/coverage-ratchet.toml`. The reviewed
-`(^|/)crates/xtask/` exclusion changes only the reported product-source denominator:
-the full workspace suite still executes, and `xtask` proof code remains checked by its
-own canary, mutation, and governance gates. Validate the floor, exact exclusion,
+`(^|/)crates/(xtask|hydracache-loadgen)/` exclusion changes only the reported product-source denominator:
+the full workspace suite still executes. `xtask` proof code remains checked by its
+canary, mutation, and governance gates, while the non-published `hydracache-loadgen`
+harness remains checked by its complete W0-W10 contract, canary, and evidence suites. Validate the floor, exact exclusion,
 provenance state, pinned `cargo-llvm-cov` version, artifact paths, and CI wiring without
 running the workspace suite:
 

@@ -1,0 +1,480 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hydracache.dev/schemas/testing/perf-report-v1.json",
+  "title": "HydraCache release 0.67 performance report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "release", "report_id", "scenario_id", "scenario_digest",
+    "workload_digest", "state_digest", "seed", "run_mode", "surface", "runner_profile",
+    "runner_contract", "runner_contract_digest", "observed_runner", "profile_validation", "source", "build",
+    "measurements", "stable", "stability_reasons"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "release": { "const": "0.67.0" },
+    "report_id": { "$ref": "#/$defs/nonEmpty" },
+    "scenario_id": { "$ref": "#/$defs/nonEmpty" },
+    "scenario_digest": { "$ref": "#/$defs/digest" },
+    "workload_digest": { "$ref": "#/$defs/digest" },
+    "state_digest": { "$ref": "#/$defs/digest" },
+    "seed": { "type": "integer", "minimum": 0 },
+    "run_mode": { "enum": ["reference_evidence", "ci_tripwire", "smoke"] },
+    "surface": { "$ref": "#/$defs/surface" },
+    "runner_profile": { "$ref": "#/$defs/nonEmpty" },
+    "runner_contract": { "$ref": "#/$defs/runnerContract" },
+    "runner_contract_digest": { "$ref": "#/$defs/digest" },
+    "observed_runner": { "$ref": "#/$defs/observedRunner" },
+    "profile_validation": { "$ref": "#/$defs/profileValidation" },
+    "source": { "$ref": "#/$defs/source" },
+    "build": { "$ref": "#/$defs/build" },
+    "resp_endpoint_capability": { "$ref": "#/$defs/respEndpointCapability" },
+    "measurements": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/measurement" }
+    },
+    "stable": { "type": "boolean" },
+    "stability_reasons": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "stable": { "const": true } }, "required": ["stable"] },
+      "then": {
+        "properties": {
+          "run_mode": { "const": "reference_evidence" },
+          "profile_validation": {
+            "properties": { "eligible": { "const": true } },
+            "required": ["eligible"]
+          },
+          "stability_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "run_mode": { "enum": ["ci_tripwire", "smoke"] } },
+        "required": ["run_mode"]
+      },
+      "then": { "properties": { "stable": { "const": false } } }
+    }
+  ],
+  "$defs": {
+    "nonEmpty": { "type": "string", "minLength": 1 },
+    "digest": { "type": "string", "minLength": 1 },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface_kind", "execution_mode", "state_scope", "network_boundary", "claim_scope"],
+      "properties": {
+        "surface_kind": { "$ref": "#/$defs/nonEmpty" },
+        "execution_mode": { "$ref": "#/$defs/nonEmpty" },
+        "state_scope": { "$ref": "#/$defs/nonEmpty" },
+        "network_boundary": { "$ref": "#/$defs/nonEmpty" },
+        "claim_scope": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "runnerContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "required_runner_class", "allowed_fingerprints", "minimum_logical_cores", "required_cpu_affinity", "required_cgroup_cpu_quota", "require_dedicated", "maximum_calibration_score"],
+      "properties": {
+        "name": { "$ref": "#/$defs/nonEmpty" },
+        "required_runner_class": { "$ref": "#/$defs/nonEmpty" },
+        "allowed_fingerprints": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonEmpty" } },
+        "minimum_logical_cores": { "type": "integer", "minimum": 1 },
+        "required_cpu_affinity": { "$ref": "#/$defs/nonEmpty" },
+        "required_cgroup_cpu_quota": { "$ref": "#/$defs/nonEmpty" },
+        "require_dedicated": { "const": true },
+        "maximum_calibration_score": { "type": "number", "minimum": 0 }
+      }
+    },
+    "observedRunner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runner_class", "fingerprint", "cpu_model", "logical_cores", "ram_bytes", "os", "kernel", "cpu_affinity", "cgroup_cpu_quota", "governor", "turbo", "shared_hardware", "calibration_score"],
+      "properties": {
+        "runner_class": { "$ref": "#/$defs/nonEmpty" },
+        "fingerprint": { "$ref": "#/$defs/nonEmpty" },
+        "cpu_model": { "$ref": "#/$defs/nonEmpty" },
+        "logical_cores": { "type": "integer", "minimum": 1 },
+        "ram_bytes": { "type": "integer", "minimum": 1 },
+        "os": { "$ref": "#/$defs/nonEmpty" },
+        "kernel": { "$ref": "#/$defs/nonEmpty" },
+        "cpu_affinity": { "$ref": "#/$defs/nonEmpty" },
+        "cgroup_cpu_quota": { "$ref": "#/$defs/nonEmpty" },
+        "governor": { "$ref": "#/$defs/nonEmpty" },
+        "turbo": { "$ref": "#/$defs/nonEmpty" },
+        "shared_hardware": { "type": "boolean" },
+        "calibration_score": { "type": "number", "minimum": 0 }
+      }
+    },
+    "profileValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eligible", "reasons"],
+      "properties": {
+        "eligible": { "type": "boolean" },
+        "reasons": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["git_commit", "cargo_lock_sha256", "toolchain", "build_flags"],
+      "properties": {
+        "git_commit": { "$ref": "#/$defs/nonEmpty" },
+        "cargo_lock_sha256": { "$ref": "#/$defs/digest" },
+        "toolchain": { "$ref": "#/$defs/nonEmpty" },
+        "build_flags": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonEmpty" } }
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prebuild_contract_digest", "prebuild_manifest_sha256", "binary_sha256"],
+      "properties": {
+        "prebuild_contract_digest": { "$ref": "#/$defs/digest" },
+        "prebuild_manifest_sha256": { "$ref": "#/$defs/digest" },
+        "binary_sha256": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array", "minItems": 2, "maxItems": 2,
+            "prefixItems": [{ "$ref": "#/$defs/nonEmpty" }, { "$ref": "#/$defs/digest" }],
+            "items": false
+          }
+        }
+      }
+    },
+    "respEndpointCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "pid", "started_unix_nanos", "repeat_index",
+        "direct_prebuilt_exec", "fresh_data_dir", "config", "selected_endpoint",
+        "server_binary_sha256", "loadgen_binary_sha256", "prebuild_manifest_sha256",
+        "prebuild_contract_digest", "source_commit"
+      ],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "pid": { "type": "integer", "minimum": 1 },
+        "started_unix_nanos": { "type": "integer", "minimum": 1 },
+        "repeat_index": { "type": "integer", "minimum": 0 },
+        "direct_prebuilt_exec": { "const": true },
+        "fresh_data_dir": { "const": true },
+        "selected_endpoint": { "$ref": "#/$defs/nonEmpty" },
+        "server_binary_sha256": { "$ref": "#/$defs/digest" },
+        "loadgen_binary_sha256": { "$ref": "#/$defs/digest" },
+        "prebuild_manifest_sha256": { "$ref": "#/$defs/digest" },
+        "prebuild_contract_digest": { "$ref": "#/$defs/digest" },
+        "source_commit": { "$ref": "#/$defs/nonEmpty" },
+        "config": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "role", "listen_addr", "cluster_addr", "storage_dir", "admin_enabled",
+            "admin_addr", "redis_enabled", "redis_addr", "redis_auth_required", "rediss_enabled"
+          ],
+          "properties": {
+            "role": { "const": "local" },
+            "listen_addr": { "$ref": "#/$defs/nonEmpty" },
+            "cluster_addr": { "$ref": "#/$defs/nonEmpty" },
+            "storage_dir": { "$ref": "#/$defs/nonEmpty" },
+            "admin_enabled": { "const": true },
+            "admin_addr": { "$ref": "#/$defs/nonEmpty" },
+            "redis_enabled": { "const": true },
+            "redis_addr": { "$ref": "#/$defs/nonEmpty" },
+            "redis_auth_required": { "const": false },
+            "rediss_enabled": { "const": false }
+          }
+        }
+      }
+    },
+    "dimension": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "integer" },
+        { "type": "number" },
+        { "type": "boolean" }
+      ]
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/dimension" }
+    },
+    "weightedOperation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["operation", "weight"],
+      "properties": {
+        "operation": { "$ref": "#/$defs/nonEmpty" },
+        "weight": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "weightedPayload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["bytes", "weight"],
+      "properties": {
+        "bytes": { "type": "integer", "minimum": 1 },
+        "weight": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "keyDistribution": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["kind", "theta"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/nonEmpty" },
+        "theta": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "workload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["generator", "generator_version", "seed", "key_distribution", "key_count", "operation_mix", "payload_mix", "digest"],
+      "properties": {
+        "generator": { "$ref": "#/$defs/nonEmpty" },
+        "generator_version": { "$ref": "#/$defs/nonEmpty" },
+        "seed": { "type": ["integer", "null"], "minimum": 0 },
+        "key_distribution": { "$ref": "#/$defs/keyDistribution" },
+        "key_count": { "type": ["integer", "null"], "minimum": 1 },
+        "operation_mix": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/weightedOperation" } },
+        "payload_mix": { "type": "array", "items": { "$ref": "#/$defs/weightedPayload" } },
+        "digest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "criteria": {
+      "type": "object", "additionalProperties": false,
+      "required": ["p99_slo_us", "p999_slo_us", "min_achieved_ratio", "max_error_ratio", "max_timeout_ratio", "max_rejection_ratio", "max_drain_ms", "max_robust_spread_ratio"],
+      "properties": {
+        "p99_slo_us": { "type": "integer", "minimum": 1 },
+        "p999_slo_us": { "type": ["integer", "null"], "minimum": 1 },
+        "min_achieved_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "max_error_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max_timeout_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max_rejection_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max_drain_ms": { "type": "integer", "minimum": 1 },
+        "max_robust_spread_ratio": { "type": "number", "minimum": 0 }
+      }
+    },
+    "latency": {
+      "type": "object", "additionalProperties": false,
+      "required": ["samples", "p50_us", "p90_us", "p99_us", "p999_us", "p999_min_samples", "p999_reportable", "max_us", "overflow_count"],
+      "properties": {
+        "samples": { "type": "integer", "minimum": 1 },
+        "p50_us": { "type": "integer", "minimum": 0 },
+        "p90_us": { "type": "integer", "minimum": 0 },
+        "p99_us": { "type": "integer", "minimum": 0 },
+        "p999_us": { "type": ["integer", "null"], "minimum": 0 },
+        "p999_min_samples": { "type": "integer", "minimum": 1 },
+        "p999_reportable": { "type": "boolean" },
+        "max_us": { "type": "integer", "minimum": 0 },
+        "overflow_count": { "const": 0 }
+      }
+    },
+    "openLoop": {
+      "type": "object", "additionalProperties": false,
+      "required": ["offered", "started", "completed", "successes", "errors", "timeouts", "rejections", "backlog_high_water", "backlog_drained", "drain_ms", "elapsed_ms", "offered_rate_per_second", "achieved_rate_per_second", "latency"],
+      "properties": {
+        "offered": { "type": "integer", "minimum": 1 },
+        "started": { "type": "integer", "minimum": 1 },
+        "completed": { "type": "integer", "minimum": 1 },
+        "successes": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "integer", "minimum": 0 },
+        "timeouts": { "type": "integer", "minimum": 0 },
+        "rejections": { "type": "integer", "minimum": 0 },
+        "backlog_high_water": { "type": "integer", "minimum": 0 },
+        "backlog_drained": { "const": true },
+        "drain_ms": { "type": "integer", "minimum": 0 },
+        "elapsed_ms": { "type": "integer", "minimum": 0 },
+        "offered_rate_per_second": { "type": "number", "exclusiveMinimum": 0 },
+        "achieved_rate_per_second": { "type": "number", "minimum": 0 },
+        "latency": { "$ref": "#/$defs/latency" }
+      }
+    },
+    "phase": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reset_operations", "preload_operations", "warmup_operations", "steady_operations", "reset_ms", "preload_ms", "warmup_ms", "warmup_successes", "warmup_errors", "warmup_timeouts", "warmup_rejections", "steady_ms", "warmup_samples_in_steady_histogram"],
+      "properties": {
+        "reset_operations": { "const": 1 },
+        "preload_operations": { "type": "integer", "minimum": 0 },
+        "warmup_operations": { "type": "integer", "minimum": 0 },
+        "steady_operations": { "type": "integer", "minimum": 1 },
+        "reset_ms": { "type": "integer", "minimum": 0 },
+        "preload_ms": { "type": "integer", "minimum": 0 },
+        "warmup_ms": { "type": "integer", "minimum": 0 },
+        "warmup_successes": { "type": "integer", "minimum": 0 },
+        "warmup_errors": { "const": 0 },
+        "warmup_timeouts": { "const": 0 },
+        "warmup_rejections": { "const": 0 },
+        "steady_ms": { "type": "integer", "minimum": 0 },
+        "warmup_samples_in_steady_histogram": { "const": 0 }
+      }
+    },
+    "repeat": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reset_state_digest", "preloaded_state_digest", "state_digest", "phase", "steady"],
+      "properties": {
+        "reset_state_digest": { "$ref": "#/$defs/digest" },
+        "preloaded_state_digest": { "$ref": "#/$defs/digest" },
+        "state_digest": { "$ref": "#/$defs/digest" },
+        "phase": { "$ref": "#/$defs/phase" },
+        "steady": { "$ref": "#/$defs/openLoop" }
+      }
+    },
+    "rateSample": {
+      "type": "object", "additionalProperties": false,
+      "required": ["offered_rate_per_second", "achieved_rate_per_second", "achieved_rate_min_per_second", "achieved_rate_max_per_second", "offered", "started", "completed", "successes", "errors", "timeouts", "rejections", "backlog_drained", "drain_ms", "robust_spread_ratio", "latency"],
+      "properties": {
+        "offered_rate_per_second": { "type": "number", "exclusiveMinimum": 0 },
+        "achieved_rate_per_second": { "type": "number", "minimum": 0 },
+        "achieved_rate_min_per_second": { "type": "number", "minimum": 0 },
+        "achieved_rate_max_per_second": { "type": "number", "minimum": 0 },
+        "offered": { "type": "integer", "minimum": 1 },
+        "started": { "type": "integer", "minimum": 1 },
+        "completed": { "type": "integer", "minimum": 1 },
+        "successes": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "integer", "minimum": 0 },
+        "timeouts": { "type": "integer", "minimum": 0 },
+        "rejections": { "type": "integer", "minimum": 0 },
+        "backlog_drained": { "const": true },
+        "drain_ms": { "type": "integer", "minimum": 0 },
+        "robust_spread_ratio": { "type": "number", "minimum": 0 },
+        "latency": { "$ref": "#/$defs/latency" }
+      }
+    },
+    "verdict": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sustainable", "reasons"],
+      "properties": {
+        "sustainable": { "type": "boolean" },
+        "reasons": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } }
+      }
+    },
+    "ratePoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sample", "repeats", "verdict"],
+      "properties": {
+        "sample": { "$ref": "#/$defs/rateSample" },
+        "repeats": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/repeat" } },
+        "verdict": { "$ref": "#/$defs/verdict" }
+      }
+    },
+    "knee": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sustainable_rate_per_second", "evaluated"],
+      "properties": {
+        "sustainable_rate_per_second": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "evaluated": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/ratePoint" } }
+      }
+    },
+    "loadCurve": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "scenario_digest", "dimensions", "workload", "criteria", "knee", "claim"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
+        "dimensions": { "$ref": "#/$defs/dimensions" },
+        "workload": { "$ref": "#/$defs/workload" },
+        "criteria": { "$ref": "#/$defs/criteria" },
+        "knee": { "$ref": "#/$defs/knee" },
+        "claim": { "enum": ["capacity_knee", "overload_curve", "supplemental_closed_loop", "operational_cost", "model_cost"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "claim": { "const": "capacity_knee" } }, "required": ["claim"] },
+          "then": {
+            "properties": {
+              "criteria": { "$ref": "#/$defs/criteria" },
+              "knee": { "$ref": "#/$defs/knee" }
+            }
+          }
+        }
+      ]
+    },
+    "quantity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "$ref": "#/$defs/nonEmpty" }
+      }
+    },
+    "scalarPoint": {
+      "type": "object", "additionalProperties": false,
+      "required": ["dimensions", "quantity", "sample_count", "samples", "min", "max", "robust_spread_ratio"],
+      "properties": {
+        "dimensions": { "$ref": "#/$defs/dimensions" },
+        "quantity": { "$ref": "#/$defs/quantity" },
+        "sample_count": { "type": "integer", "minimum": 3 },
+        "samples": { "type": "array", "minItems": 3, "items": { "type": "number" } },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "robust_spread_ratio": { "type": "number", "minimum": 0 }
+      }
+    },
+    "scalar": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "scenario_digest", "workload", "points", "derived_from", "max_robust_spread_ratio"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
+        "workload": { "$ref": "#/$defs/workload" },
+        "points": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scalarPoint" } },
+        "derived_from": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
+        "max_robust_spread_ratio": { "type": "number", "minimum": 0 }
+      }
+    },
+    "traceReplay": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "scenario_digest", "catalog_id", "event_count", "input_digest", "replayed_digest", "order_preserved", "hits", "misses"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
+        "catalog_id": { "$ref": "#/$defs/nonEmpty" },
+        "event_count": { "type": "integer", "minimum": 1 },
+        "input_digest": { "$ref": "#/$defs/digest" },
+        "replayed_digest": { "$ref": "#/$defs/digest" },
+        "order_preserved": { "const": true },
+        "hits": { "type": "integer", "minimum": 0 },
+        "misses": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "comparison": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "scenario_digest", "left_measurement_id", "right_measurement_id", "ratio", "unit", "same_box"],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmpty" },
+        "scenario_digest": { "$ref": "#/$defs/digest" },
+        "left_measurement_id": { "$ref": "#/$defs/nonEmpty" },
+        "right_measurement_id": { "$ref": "#/$defs/nonEmpty" },
+        "ratio": { "type": "number", "minimum": 0 },
+        "unit": { "$ref": "#/$defs/nonEmpty" },
+        "same_box": { "const": true }
+      }
+    },
+    "measurement": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "evidence"],
+          "properties": { "kind": { "const": "load_curve" }, "evidence": { "$ref": "#/$defs/loadCurve" } }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "evidence"],
+          "properties": { "kind": { "const": "scalar" }, "evidence": { "$ref": "#/$defs/scalar" } }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "evidence"],
+          "properties": { "kind": { "const": "trace_replay" }, "evidence": { "$ref": "#/$defs/traceReplay" } }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "evidence"],
+          "properties": { "kind": { "const": "comparison" }, "evidence": { "$ref": "#/$defs/comparison" } }
+        }
+      ]
+    }
+  }
+}

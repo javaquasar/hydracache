@@ -14,6 +14,7 @@ members = [
     "crates/hydracache-cluster-transport-axum",
     "crates/hydracache-core",
     "crates/hydracache-db",
+    "crates/hydracache-loadgen",
     "crates/hydracache-diesel",
     "crates/hydracache-macros",
     "crates/hydracache-observability",
@@ -60,9 +61,12 @@ chitchat = "0.11.0"
 criterion = { version = "0.8", features = ["async_tokio"] }
 diesel = { version = "2.3.10", default-features = false }
 futures-util = "0.3.32"
+hdrhistogram = { version = "7.5.4", default-features = false }
+jsonschema = { version = "0.48.1", default-features = false }
 http = "1"
 hydracache-core = { path = "crates/hydracache-core", version = "0.66.0" }
 hydracache = { path = "crates/hydracache", version = "0.66.0" }
+hydracache-cache-sim = { path = "crates/hydracache-cache-sim", version = "0.66.0" }
 hydracache-actuator-axum = { path = "crates/hydracache-actuator-axum", version = "0.66.0" }
 hydracache-cdc-postgres = { path = "crates/hydracache-cdc-postgres", version = "0.66.0" }
 hydracache-client = { path = "crates/hydracache-client", version = "0.66.0" }
@@ -75,6 +79,7 @@ hydracache-cluster-testkit = { path = "crates/hydracache-cluster-testkit" }
 hydracache-cluster-transport-axum = { path = "crates/hydracache-cluster-transport-axum", version = "0.66.0" }
 hydracache-db = { path = "crates/hydracache-db", version = "0.66.0" }
 hydracache-diesel = { path = "crates/hydracache-diesel", version = "0.66.0" }
+hydracache-loadgen = { path = "crates/hydracache-loadgen", version = "0.66.0" }
 hydracache-macros = { path = "crates/hydracache-macros", version = "0.66.0" }
 hydracache-observability = { path = "crates/hydracache-observability", version = "0.66.0" }
 hydracache-operator = { path = "crates/hydracache-operator", version = "0.66.0" }

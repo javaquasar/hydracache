@@ -15,10 +15,15 @@ on:
         required: false
         default: false
         type: boolean
+      run_dedicated_performance:
+        description: "Run 0.67 reference evidence on the dedicated hydracache-perf-v1 runner"
+        required: false
+        default: false
+        type: boolean
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
-        default: "0.66"
+        default: "0.67"
         type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
@@ -35,7 +40,7 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
-  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.66' }}
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67' }}
 
 jobs:
   rust:
@@ -104,6 +109,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.66
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.67
+          cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -121,6 +128,9 @@ jobs:
 
       - name: Release governance
         run: cargo run -p xtask --locked -- release-governance-check --release "$HYDRACACHE_CANDIDATE_RELEASE"
+
+      - name: 0.67 performance contract
+        run: cargo run -p xtask --locked -- evidence-run --release "$HYDRACACHE_CANDIDATE_RELEASE" --gate fast.performance-contract-067
 
       - name: SQL lint baseline drift
         run: |
@@ -574,7 +584,7 @@ jobs:
           kubectl auth can-i get pods --subresource=proxy --namespace default
           kubectl auth can-i create pods --subresource=proxy --namespace default
           cargo build -p hydracache-operator --locked
-          operator_candidate_directory="$(pwd)/.ci-runtime/0.66"
+          operator_candidate_directory="$(pwd)/target/ci-runtime/0.66"
           operator_binary="$operator_candidate_directory/hydracache-operator-${GITHUB_SHA}"
           mkdir -p "$operator_candidate_directory"
           install -m 0755 "$(pwd)/target/debug/hydracache-operator" "$operator_binary"
@@ -650,6 +660,94 @@ jobs:
           name: "operator-kind-066-${{ github.sha }}"
           path: |
             target/test-evidence/0.66/**
+            target/release-evidence/receipts/**
+          if-no-files-found: error
+
+  performance-067-shared-tripwire:
+    name: 0.67 Shared Performance Tripwire
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly && !inputs.run_dedicated_performance && inputs.candidate_release == '0.67')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Validate shared-runner tripwire policy
+        run: cargo test -p xtask --test perf_budget_067 --locked ci_shared_is_a_rolling_only_non_enforcing_tripwire
+
+      - name: Evaluate non-ship shared-runner tripwire
+        run: cargo run -p xtask --locked -- perf-budget-check --release 0.67 --profile ci-shared
+
+      - name: Upload 0.67 shared tripwire
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-shared-tripwire-067-${{ github.sha }}"
+          path: target/test-evidence/0.67/perf-budget-verdict.json
+          if-no-files-found: error
+
+  release-067-performance:
+    name: 0.67 Dedicated Performance Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 480
+    if: github.event_name == 'workflow_dispatch' && inputs.run_dedicated_performance && inputs.candidate_release == '0.67'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify shipped 0.66 provenance
+        run: |
+          git rev-parse --verify refs/tags/v0.66.0
+          git merge-base --is-ancestor refs/tags/v0.66.0 HEAD
+
+      - name: Run 0.67 canary sweep
+        run: cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+
+      - name: Validate 0.67 performance contract
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
+
+      - name: Prebuild 0.67 performance binaries
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run 0.67 core performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Run 0.67 RESP performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Run 0.67 control-plane performance evidence
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Check 0.67 performance budgets
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067
+
+      - name: Aggregate exact 0.67 candidate evidence
+        run: cargo run -p xtask --locked -- release-evidence --release 0.67 --receipts-dir target/release-evidence/receipts --require-ship
+
+      - name: Upload 0.67 performance evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-067-${{ github.sha }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/release-evidence/canaries/0.67-*.json
             target/release-evidence/receipts/**
           if-no-files-found: error
 
@@ -930,6 +1028,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.64 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep
@@ -1000,8 +1099,8 @@ jobs:
         if: failure()
         continue-on-error: true
         run: |
-          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --html --output-dir target/llvm-cov-html
-          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/xtask/' --lcov --output-path target/llvm-cov.lcov
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --html --output-dir target/llvm-cov-html
+          cargo llvm-cov report --ignore-filename-regex '(^|/)crates/(xtask|hydracache-loadgen)/' --lcov --output-path target/llvm-cov.lcov
 
       - name: Upload coverage evidence
         if: always()

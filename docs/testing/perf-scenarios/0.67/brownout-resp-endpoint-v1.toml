@@ -1,0 +1,38 @@
+schema_version = 1
+scenario_id = "brownout-resp-endpoint-v1"
+
+[identity]
+evidence_class = "w5b-selected-node-local-resp-brownout"
+authority = "one-selected-node-local-resp-endpoint"
+execution_mode = "real-daemon-selected-resp-process-kill-restart"
+network_boundary = "real-resp-tcp"
+headline_metric = "selected_endpoint_socket_and_throughput_recovery_millis"
+node_local_state = true
+automatic_failover = false
+neighbor_visibility_claim = false
+value_survival_claim = false
+cross_node_failover_claim = false
+data_recovery_claim = false
+aggregate_goodput = false
+
+[load]
+predecessor_evidence_class = "w3-node-local-resp-open-loop"
+requires_valid_predecessor = true
+fixed_rate_fraction_millionths = 600000
+observation_window_millis = 10000
+
+[event]
+action = "selected_endpoint_kill_restart"
+recovery_definition = "socket_available_and_post_restart_steady_throughput"
+require_socket_unavailability_observed = true
+require_post_restart_steady_throughput = true
+max_recovery_millis = 15000
+independent_control_endpoints = 1
+min_independent_control_availability_ppm = 990000
+
+[reference]
+required_profile = "reference-v1"
+require_real_daemon_resp = true
+require_selected_process_control = true
+require_prebuild_receipt = true
+committed_scenario_sha256 = "244b6870d07ea2454bbe87f6e34119c02e879b87d5abaa9cd073952f0289876f"
