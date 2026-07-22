@@ -463,6 +463,18 @@ fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
         .iter()
         .any(|problem| problem.contains("exact rustc 1.94.0")));
 
+    let unpinned_redis = workflow.replacen(
+        "5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d",
+        "unverified-source-archive",
+        1,
+    );
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&unpinned_redis, "0.67")
+            .unwrap();
+    assert!(problems
+        .iter()
+        .any(|problem| problem.contains("checksum-pinned source recipe")));
+
     let missing_opt_in = workflow.replacen(
         "github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
         "github.event_name == 'workflow_dispatch' && inputs.candidate_release == '0.67'",
