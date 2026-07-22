@@ -32,7 +32,7 @@ required_profile = "reference-v1"
 require_prebuild_receipt = true
 require_runner_fingerprint = true
 required_platform_key = "linux-x86_64"
-committed_scenario_sha256 = "0000000000000000000000000000000000000000000000000000000000000000"
+committed_scenario_sha256 = "9962547e694b340e8db536382b37540b5154ed0b25af73002019dd81ea75ccb2"
 
 [reference.runner]
 required_runner_class = "github-hosted-reference-v1"
