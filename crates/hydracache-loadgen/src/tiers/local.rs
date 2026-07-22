@@ -2101,7 +2101,8 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             != scaling_digest
     {
         return Err(LocalTierError::Report(
-            "W1 reference scaling matrix differs from committed hosted 1/2/4 by 100k shape".to_owned(),
+            "W1 reference scaling matrix differs from committed hosted 1/2/4 by 100k shape"
+                .to_owned(),
         ));
     }
 
