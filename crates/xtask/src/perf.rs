@@ -1018,7 +1018,6 @@ fn observe_linux_reference_runner(
     if logical_cores < profile.minimum_logical_cores {
         return Err("GitHub-hosted VM core count is below the profile minimum".to_owned());
     }
-    let quota_raw = read_cpu_quota()?;
     let ram_kib = proc_value("/proc/meminfo", "MemTotal")?
         .split_whitespace()
         .next()
@@ -1102,27 +1101,6 @@ fn count_cpu_list(value: &str) -> Result<u32, String> {
             .ok_or_else(|| "CPU list count overflow".to_owned())?;
     }
     Ok(count)
-}
-
-fn read_cpu_quota() -> Result<String, String> {
-    if let Ok(value) = fs::read_to_string("/sys/fs/cgroup/cpu.max") {
-        return value
-            .split_whitespace()
-            .next()
-            .map(str::to_owned)
-            .ok_or_else(|| "cgroup v2 cpu.max is empty".to_owned());
-    }
-    read_required_trimmed("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "cgroup v1 CPU quota")
-}
-
-fn read_required_trimmed(path: &str, label: &str) -> Result<String, String> {
-    let value = fs::read_to_string(path)
-        .map_err(|error| format!("{label} probe failed at {path}: {error}"))?;
-    let value = value.trim();
-    if value.is_empty() {
-        return Err(format!("{label} probe is empty"));
-    }
-    Ok(value.to_owned())
 }
 
 fn calibration_score() -> f64 {
