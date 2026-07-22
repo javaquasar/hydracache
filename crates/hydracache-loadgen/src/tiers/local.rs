@@ -2510,9 +2510,16 @@ mod tests {
         let ratios = scaling_efficiency_samples(&workers_four, &baseline, 4);
 
         assert_eq!(ratios, [1.0, 1.15, 1.05]);
-        let raw_point = scalar_point(BTreeMap::new(), "operations_per_second", workers_four.to_vec());
+        let raw_point = scalar_point(
+            BTreeMap::new(),
+            "operations_per_second",
+            workers_four.to_vec(),
+        );
         let ratio_point = scalar_point(BTreeMap::new(), "ratio", ratios);
-        assert_eq!(ratio_point.robust_spread_ratio, raw_point.robust_spread_ratio);
+        assert!(
+            (ratio_point.robust_spread_ratio - raw_point.robust_spread_ratio).abs()
+                < f64::EPSILON
+        );
     }
 
     #[tokio::test]
