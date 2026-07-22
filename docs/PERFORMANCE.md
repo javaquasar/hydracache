@@ -62,6 +62,12 @@ about a regression. The manual `reference-v1` lane may create and enforce a revi
 same-image rolling anchor, but neither lane establishes a portable capacity floor or
 sizing guarantee.
 
+The standard `ubuntu-24.04` runner currently exposes four logical workers. Accordingly,
+the hosted W1 scaling curve is the exact `1/2/4` series, the hot-key shape uses four
+workers, and W4B uses the same four-core runner attestation. Eight-worker results are
+absent, not estimated: adding them requires a separately reviewed larger-runner profile,
+fingerprint family, baseline, and budget.
+
 The enforcing W7 decision requires both:
 
 1. an immutable reviewed release anchor, preventing gradual ratcheting; and
