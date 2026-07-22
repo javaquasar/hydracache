@@ -2093,7 +2093,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             _ => None,
         })
         .collect::<BTreeSet<_>>();
-    if scaling_workers != BTreeSet::from([1, 2, 4, 8])
+    if scaling_workers != BTreeSet::from([1, 2, 4])
         || scalar_measurement(report, "local_cache_scaling_curve_1_to_n_threads")?.scenario_digest
             != scaling_digest
         || scalar_measurement(report, "local_cache_scaling_efficiency_vs_one_thread")?
@@ -2101,7 +2101,8 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             != scaling_digest
     {
         return Err(LocalTierError::Report(
-            "W1 reference scaling matrix differs from committed 1/2/4/8 by 100k shape".to_owned(),
+            "W1 reference scaling matrix differs from committed hosted 1/2/4 by 100k shape"
+                .to_owned(),
         ));
     }
 
@@ -2110,7 +2111,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
         &hot,
         &serde_json::json!({
             "mode": "synchronized-cold-miss-burst",
-            "workers": 8,
+            "workers": 4,
             "loader_delay_us": hot.local.loader_delay_us.max(1),
             "repeats": hot.scenario.repeats,
         }),
@@ -2464,6 +2465,15 @@ mod tests {
                 sha256: "d".repeat(64),
             },
         }
+    }
+
+    #[test]
+    fn committed_hosted_worker_shapes_fit_four_core_reference() {
+        let scaling = parse_local_scenario(SCALING_SCENARIO).unwrap();
+        let hot_key = parse_local_scenario(HOT_KEY_SCENARIO).unwrap();
+
+        assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
+        assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
     }
 
     #[test]

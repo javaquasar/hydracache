@@ -2333,7 +2333,7 @@ fn validate_local_adapter_input(
         || input.key_count != 1
         || input.payload_bytes != 128
         || input.distribution != "single-key"
-        || input.worker_counts.as_slice() != [1, 2, 4, 8].as_slice()
+        || input.worker_counts.as_slice() != [1, 2, 4].as_slice()
         || input.loader_delay_us != 1_000
         || input.operation_mix.len() != 1
         || input.operation_mix[0].operation != "hot-key-get-or-insert"

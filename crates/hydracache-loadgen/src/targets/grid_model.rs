@@ -278,12 +278,12 @@ impl GridModelReferenceContract {
             || !self.require_runner_fingerprint
             || self.required_platform_key != "linux-x86_64"
             || !is_sha256(&self.committed_scenario_sha256)
-            || self.runner.required_runner_class != "reference-v1"
-            || self.runner.minimum_logical_cores != 8
-            || self.runner.required_cpu_affinity != "dedicated-cpuset"
-            || self.runner.required_cgroup_cpu_quota != "unlimited"
+            || self.runner.required_runner_class != "github-hosted-reference-v1"
+            || self.runner.minimum_logical_cores != 4
+            || self.runner.required_cpu_affinity != "github-managed-vm"
+            || self.runner.required_cgroup_cpu_quota != "github-managed-vm"
             || !self.runner.require_dedicated
-            || self.runner.maximum_calibration_score_millionths != 50_000
+            || self.runner.maximum_calibration_score_millionths != 250_000
         {
             return Err(GridModelError::Contract(
                 "W4B reference contract must exactly match reference-v1 runner policy".to_owned(),
@@ -461,7 +461,7 @@ impl GridModelRunnerAttestation {
             || !self.observed_before_measurement
         {
             return Err(GridModelError::Capability(
-                "W4B runner receipt is unsealed or differs from the committed dedicated-runner contract"
+                "W4B runner receipt is unsealed or differs from the committed hosted-reference contract"
                     .to_owned(),
             ));
         }

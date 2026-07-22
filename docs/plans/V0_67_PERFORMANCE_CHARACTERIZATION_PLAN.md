@@ -95,6 +95,11 @@ extrapolations.
   runner-class fingerprint binds `ImageOS` and `ImageVersion`, while each report retains observed
   CPU/RAM/kernel/calibration facts. Image drift, calibration failure, or profile mismatch makes the
   run non-evidence; the profile supports relative same-image regression claims, not portable floors.
+- Standard GitHub-hosted `ubuntu-24.04` exposes four logical workers. The enforcing hosted
+  contract therefore measures W1 scaling at `1/2/4`, uses four workers for the W1 hot-key shape,
+  and admits W4B on the same four-core runner policy. An `8`-worker or eight-core point is outside
+  this profile: it requires a separately reviewed larger-runner profile and baseline and may not be
+  oversubscribed, inferred, or merged into the hosted series.
 - The enforcing decision is dual: the candidate must pass a reviewed immutable release anchor
   (prevents gradual ratcheting) and an eligible rolling `main` baseline (detects recent regressions).
   Candidate, failed, quarantined, mixed-fingerprint, stale, unstable, or current-commit reports are
