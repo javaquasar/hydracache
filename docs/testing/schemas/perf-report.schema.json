@@ -81,7 +81,7 @@
       "properties": {
         "name": { "$ref": "#/$defs/nonEmpty" },
         "required_runner_class": { "$ref": "#/$defs/nonEmpty" },
-        "allowed_fingerprints": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonEmpty" } },
+        "allowed_fingerprints": { "type": "array", "items": { "$ref": "#/$defs/nonEmpty" } },
         "minimum_logical_cores": { "type": "integer", "minimum": 1 },
         "required_cpu_affinity": { "$ref": "#/$defs/nonEmpty" },
         "required_cgroup_cpu_quota": { "$ref": "#/$defs/nonEmpty" },
