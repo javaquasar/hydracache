@@ -23,7 +23,7 @@
 > - **Status:** in-progress, implementation closure reached (W0-W10 source, tests, scenarios,
 >   governance, CI wiring, and documentation are present), but **not shipped**. The annotated
 >   `v0.66.0` predecessor is present and ancestral; W7 remains deliberately unbootstrapped pending at least five
->   eligible dedicated `main` runs plus independent anchor/budget review and a fresh frozen-candidate
+>   eligible serialized GitHub-hosted `main` runs plus independent anchor/budget review and a fresh frozen-candidate
 >   receipt set.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
@@ -75,7 +75,7 @@ extrapolations.
    `state_scope`, `network_boundary`, and `claim_scope`. Cross-surface results may be shown side by
    side but never divided into a protocol-overhead or capacity ratio unless the same request path,
    state semantics, load model, and timing boundary make that ratio valid.
-7. **Build time is outside measurement.** Dedicated lanes visibly prebuild the exact release binaries
+7. **Build time is outside measurement.** Reference lanes visibly prebuild the exact release binaries
    and bind their hashes to a prebuild manifest before any receipt-bound run. Measurements execute
    those binaries directly; dependency compilation, image pulls, and Cargo rebuilds cannot enter the
    warm-up or steady window. Application/OS-cache warm-up remains a separate recorded phase.
@@ -91,9 +91,10 @@ extrapolations.
   fingerprint family, toolchain/build/scenario digest, and its numerical output never produces a
   capacity claim or satisfies a performance ship gate. Hosted structural/unit-test receipts remain
   valid for their non-performance contracts.
-- `reference-v1` is the enforcing scheduled/manual lane on a serialized dedicated runner whose
-  observed fingerprint matches a committed profile. Missing/mismatched affinity, quota, governor,
-  calibration, dedicated label, or `shared_hardware = false` makes the run non-evidence.
+- `reference-v1` is the enforcing manual lane serialized on pinned `ubuntu-24.04`. Its stable
+  runner-class fingerprint binds `ImageOS` and `ImageVersion`, while each report retains observed
+  CPU/RAM/kernel/calibration facts. Image drift, calibration failure, or profile mismatch makes the
+  run non-evidence; the profile supports relative same-image regression claims, not portable floors.
 - The enforcing decision is dual: the candidate must pass a reviewed immutable release anchor
   (prevents gradual ratcheting) and an eligible rolling `main` baseline (detects recent regressions).
   Candidate, failed, quarantined, mixed-fingerprint, stale, unstable, or current-commit reports are
@@ -217,10 +218,10 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | W4 | `crates/hydracache-loadgen::{targets::{control_plane,grid_model},tiers::{control_plane,grid_model},cli}`; `docs/testing/perf-scenarios/0.67/{control-plane-real-daemon-v1,grid-model-primitives-v1}.toml` | `cargo test -p hydracache-loadgen --test w4_split_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 w4` | W4A directly launches the exact prebuilt 3/5/7-daemon candidate and records separate selected leader/follower admin-wire knees plus receipt-bound Add/Drain convergence; W4B runs exported consistency/session/replication primitives in a labeled in-process model. Their artifacts and claim scopes cannot be merged, summed, or relabeled as distributed value-grid capacity. |
 | W5 | `crates/hydracache-loadgen::{targets::brownout,tiers::brownout,cli,main}`; `crates/hydracache-loadgen/tests/w5_brownout_067.rs`; `docs/testing/perf-scenarios/0.67/brownout-*-v1.toml` | `cargo test -p hydracache-loadgen --test w5_brownout_067 --locked -j 2` | Three non-combinable authorities: committed-metadata control-plane recovery, killed node-local RESP endpoint availability with no neighbor failover, and labeled in-process grid-model fault cost. |
 | W6 | `crates/hydracache-loadgen::{overload,cli,main}`; `crates/hydracache-loadgen/tests/w6_overload_067.rs`; `docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml` | `cargo test -p hydracache-loadgen --test w6_overload_067 --locked -j 2` | Goodput/recovery at 1.2x/1.5x/2x is admitted only for local, in-process client-surface, and selected-endpoint RESP reports with valid predecessor knees. |
-| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible dedicated `main` runs and independent review. |
+| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible serialized GitHub-hosted `main` runs and independent review. |
 | W8 | `crates/hydracache-loadgen::{compare_redis,cli,main}`; `crates/hydracache-loadgen/tests/w8_redis_compare_067.rs`; `docs/testing/perf-scenarios/0.67/compare-redis-v1.toml` | `cargo test -p hydracache-loadgen --test w8_redis_compare_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 compare_redis` | Same host, pinned tool/image, alternating order, canonical sealed W3 predecessor, and one selected node-local RESP endpoint. It is a method-bound artifact, not a Redis-replacement or superiority claim. |
 | W9 | `crates/hydracache-loadgen::{metrics_honesty,tiers::{resp,control_plane}}`; `crates/hydracache-loadgen/tests/w9_metrics_067.rs`; `docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml` | `cargo test -p hydracache-loadgen --test w9_metrics_067 --locked -j 2` | Same-process observer windows cross-check only metrics already exported by real RESP/control-plane daemons; absent fields are `not_available`, and service time is never relabeled as scheduled-send latency. |
-| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus shared-tripwire/dedicated-ship separation are implemented. The predecessor tag is present and ancestral; release aggregation remains red until W7 bootstrap/review, dedicated artifacts, canaries, and final receipts exist on one frozen candidate. |
+| W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus automatic-tripwire/manual-reference separation are implemented. The predecessor tag is present and ancestral; release aggregation remains red until W7 bootstrap/review, serialized reference artifacts, canaries, and final receipts exist on one frozen candidate. |
 
 Direct commands inside W0-W9 are developer reproduction commands. A ship-eligible invocation runs
 the registered command only through
@@ -389,7 +390,7 @@ $env:HYDRACACHE_RUN_PERF_RESP='1'
 & target\release\hydracache-loadgen.exe suite resp --profile reference-v1 --output-dir target/test-evidence/0.67
 Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
-**CI.** Open-loop leg on the dedicated reference runner. A local unclaimed external-tool run skips
+**CI.** Open-loop leg on the serialized GitHub-hosted reference runner. A local unclaimed external-tool run skips
 loud when the tool is absent; the scheduled/manual mandatory evidence gate fails closed on a missing
 tool, image, or capability. W3 depends on W0, not W2.
 
@@ -439,7 +440,7 @@ $env:HYDRACACHE_RUN_PERF_CONTROL_PLANE='1'
 & target\release\hydracache-loadgen.exe tier grid-model --profile reference-v1 --report target/test-evidence/0.67/grid-model.json
 Remove-Item Env:\HYDRACACHE_RUN_PERF_CONTROL_PLANE -ErrorAction SilentlyContinue
 ```
-**CI.** W4B fast smoke plus dedicated reference run; W4A 3-node is scheduled and required 5/7-node
+**CI.** W4B fast smoke plus serialized GitHub-hosted reference run; W4A 3-node is scheduled and required 5/7-node
 points run manual on the same eligible profile, all with mandatory receipts. The kind variant is an
 optional informational observation unless governance is atomically widened to make it mandatory.
 
@@ -514,15 +515,16 @@ $env:HYDRACACHE_RUN_PERF_RESP='1'
 & target\release\hydracache-loadgen.exe overload node-resp --profile reference-v1 --report target/test-evidence/0.67/overload-node-resp.json
 Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
-**CI.** Dedicated reference lane; shared-hosted output is a non-enforcing tripwire only.
+**CI.** Serialized manual reference lane; automatic shared-hosted output is a non-enforcing tripwire only.
 
 ## W7. Macro Perf Budgets And Regression Gate (blueprint: `0.37` bench-budget extended; TigerBeetle budget discipline; principle: a measured floor, keyed by hardware profile, that CI defends)
 
 **Goal.** Freeze the W1-W6 results as **macro budgets** (ops/s floors at SLO, p99 ceilings, brownout
 depth/recovery ceilings, overload goodput floors) without trusting shared-runner noise or allowing a
 slow rolling ratchet. `ci-shared` is a wide-tolerance tripwire; `reference-v1` is the enforcing
-dedicated profile and must pass both its reviewed release anchor and an eligible rolling `main`
-baseline. Budget rows preserve `claim_scope`: capacity, operational event, and library/model
+serialized GitHub-hosted profile and must pass both its reviewed release anchor and an eligible
+same-image rolling `main` baseline. It gates relative regressions only; its raw rates are not portable
+capacity floors or sizing guidance. Budget rows preserve `claim_scope`: capacity, operational event, and library/model
 primitive costs are different types and cannot satisfy one another.
 
 **Files to change.** `docs/testing/perf-profiles/{ci-shared,reference-v1}.toml`,
@@ -546,7 +548,7 @@ input report, baseline member, profile, and budget. Runtime reports are gate art
 
 The default rolling selection is the ten most recent eligible successful `main` run medians, with a
 minimum of five and maximum age of 30 days; the committed contract may tighten these values only by
-review. Every member must match runner fingerprint, toolchain identity, `prebuild_contract_digest`,
+review. Every member must match the pinned GitHub image-class fingerprint, toolchain identity, `prebuild_contract_digest`,
 and scenario/workload digests and pass its own calibration/spread verdict. The stable prebuild
 `prebuild_contract_digest` is computed over toolchain, target set, features, profile, flags, and
 build recipe.
@@ -571,7 +573,7 @@ with `HC-CANARY-RED:W7`.
 cargo run -p xtask --locked -- perf-budget-check --release 0.67 --profile reference-v1
 ```
 **CI.** Fast job validates schema/coverage. Hosted CI produces only `ci-shared` tripwires. The
-receipt-bound `tool.perf-budget-check-067` verdict is created on the dedicated profile after all
+receipt-bound `tool.perf-budget-check-067` verdict is created on the serialized reference profile after all
 mandatory reports are restored at their exact declared paths.
 
 ## W8. Same-Box Comparative Baseline Versus Redis (blueprint: `redis-benchmark` both ways; principle: comparative honesty - one box, one method, both systems, methodology attached)
@@ -671,8 +673,9 @@ work in the release**, before W0 feature code, while Phase B closes the release 
 
 **Phase B - execution and candidate freeze.**
 
-- The dedicated job uses `runs-on: [self-hosted, linux, x64, hydracache-perf-v1]` (or an atomically
-  reviewed equivalent) with serialized `concurrency`. First run the mandatory
+- The manual reference job uses pinned `runs-on: ubuntu-24.04` with serialized `concurrency`.
+  GitHub provisions a fresh job VM, and the evidence binds the runner image identity rather than
+  pretending that the underlying physical host is stable. First run the mandatory
   `tool.perf-prebuild-067` through `evidence-run`; it builds the exact release server and loadgen
   binaries and creates `target/test-evidence/0.67/prebuild-manifest.json` with commit, Cargo.lock,
   toolchain/flags, stable build-contract digest, and binary hashes. Consumer perf gates do **not**
@@ -681,7 +684,7 @@ work in the release**, before W0 feature code, while Phase B closes the release 
   their own receipt-hashed reports. The final budget verdict cross-checks those hashes against the
   prebuild-gate receipt while comparing baseline eligibility only on the stable contract digest.
   Missing/mismatched manifests, changed binaries, or a Cargo rebuild during a measurement gate is red.
-- `ci-shared` hosted runs are non-ship tripwires. Dedicated core, RESP/Redis, and control-plane gates
+- `ci-shared` hosted runs are non-ship tripwires. Serialized reference core, RESP/Redis, and control-plane gates
   fail closed on missing capabilities and upload exact artifacts plus receipts. Fast canary sweep
   runs on PRs; `canary-sweep --release 0.67 --tier all` is mandatory scheduled/dispatch evidence.
 - Finalize budgets and docs **before** the frozen run, then rerun every perf and canary gate on that
@@ -695,7 +698,7 @@ work in the release**, before W0 feature code, while Phase B closes the release 
   methodology are not quotable.
 
 **Required governance tests.** `release_067_registered_performance_gates_are_mandatory_and_fail_closed`,
-`performance_lane_requires_dedicated_label_and_serial_concurrency`,
+`performance_lane_requires_pinned_github_image_and_serial_concurrency`,
 `measurement_refuses_missing_or_mismatched_prebuild_manifest`,
 `prebuilt_binary_digest_is_bound_to_report`, `compile_time_is_excluded_from_measurement_window`,
 `prebuild_receipt_hash_matches_every_performance_report`,
@@ -733,10 +736,10 @@ Implementation closure and release closure are separate states:
 
 | Layer | Implementation state | Ship state on 2026-07-18 |
 | --- | --- | --- |
-| W0-W6 measurement and operational contracts | Implemented in source, scenarios, tests, and CLI/suite wiring | Dedicated exact-candidate measurement artifacts and receipts still required |
-| W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible dedicated `main` runs and independent review |
-| W8 comparison | Pinned same-box Redis comparison and canonical W3 predecessor binding implemented | Final dedicated W8 report absent; no marketing or shipped comparative claim |
-| W9 metrics honesty | Same-process RESP/control-plane windows and exported-only validation implemented | Final dedicated metrics reports absent; unavailable fields remain non-claims |
+| W0-W6 measurement and operational contracts | Implemented in source, scenarios, tests, and CLI/suite wiring | Serialized GitHub-hosted exact-candidate measurement artifacts and receipts still required |
+| W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible serialized GitHub-hosted `main` runs and independent review |
+| W8 comparison | Pinned same-box Redis comparison and canonical W3 predecessor binding implemented | Final serialized reference W8 report absent; no marketing or shipped comparative claim |
+| W9 metrics honesty | Same-process RESP/control-plane windows and exported-only validation implemented | Final serialized reference metrics reports absent; unavailable fields remain non-claims |
 | W10 governance/docs | Release-scoped gates, canaries, exact-candidate prebuild/receipt contracts, CI separation, and docs implemented | The annotated `v0.66.0` tag is present and ancestral; **blocked:** final frozen-candidate gate/canary/artifact receipts have not made `--require-ship` green |
 
 The bullets below are target ship conditions, not a record that they have
@@ -756,8 +759,9 @@ already passed:
   live-reshard claims are absent.
 - Overload curves at 1.2x/1.5x/2x a valid knee are recorded per eligible surface; the canary shows
   collapse, proving the curve reflects the mechanism.
-- Dedicated `reference-v1` budgets pass both immutable anchors and eligible rolling-main baselines;
-  shared hosted runs are tripwires only. Floor/ceiling breach, unstable environment/spread,
+- Serialized `reference-v1` budgets pass both immutable anchors and eligible same-image rolling-main
+  baselines; automatic shared hosted runs are tripwires only, and no hosted raw rate becomes a
+  portable capacity floor. Floor/ceiling breach, unstable environment/spread,
   insufficient baseline, profile mismatch, or silent rebaseline is red.
 - The same-box Redis comparative artifact exists with methodology and versions; no prose claim
   exceeds the artifact (`R-7`).
@@ -779,7 +783,7 @@ runs with independent review, and one frozen clean candidate satisfies every con
 Ship `0.67.0` only when artifacts answer the narrower questions the product can honestly support:
 embedded-cache capacity, in-process client-surface cost, single-endpoint node-local RESP capacity,
 real control-plane read/event cost, and explicitly labeled library/model primitive cost. Every
-capacity number must pass the open-loop sustainability predicate on the dedicated reference profile;
+report-local rate must pass the open-loop sustainability predicate on the serialized reference profile;
 every operational profile must name the authority it perturbs; overload must be tied to a valid knee;
 the same-box Redis comparison must preserve one tool/host/method; and dual budgets plus exact-candidate
 receipts must defend the results. Native-daemon and distributed-value-cluster capacity remain named
