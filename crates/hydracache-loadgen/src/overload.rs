@@ -325,8 +325,8 @@ impl OverloadScenario {
             || self.work.reference_preload_operations.client_surface != 10_000
             || self.work.reference_preload_operations.node_resp != 10_000
             || self.work.warmup_operations != 4
-            || self.work.burst_operations != 48
-            || self.work.recovery_operations_per_window != 48
+            || self.work.burst_operations != 50_000
+            || self.work.recovery_operations_per_window != 50_000
             || self.work.max_recovery_windows != 3
             || self.work.required_consecutive_recovery_windows != 2
             || self.work.p999_min_samples != 1
