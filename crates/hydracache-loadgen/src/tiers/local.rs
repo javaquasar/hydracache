@@ -2517,8 +2517,7 @@ mod tests {
         );
         let ratio_point = scalar_point(BTreeMap::new(), "ratio", ratios);
         assert!(
-            (ratio_point.robust_spread_ratio - raw_point.robust_spread_ratio).abs()
-                < f64::EPSILON
+            (ratio_point.robust_spread_ratio - raw_point.robust_spread_ratio).abs() < f64::EPSILON
         );
     }
 
