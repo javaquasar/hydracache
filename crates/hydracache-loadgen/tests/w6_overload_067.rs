@@ -34,6 +34,8 @@ fn committed_scenario_digest_seals_workload_spread_and_recovery_shape() {
         contract.reference.committed_scenario_sha256
     );
     assert_eq!(contract.work.reference_preload_operations.local, 0);
+    assert_eq!(contract.work.burst_operations, 50_000);
+    assert_eq!(contract.work.recovery_operations_per_window, 50_000);
     assert_eq!(
         contract.work.reference_preload_operations.client_surface,
         10_000
