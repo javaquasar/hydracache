@@ -2128,7 +2128,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             != scaling_digest
     {
         return Err(LocalTierError::Report(
-            "W1 reference scaling matrix differs from committed hosted 1/2/4 by 100k shape"
+            "W1 reference scaling matrix differs from committed hosted 1/2/4 by one-million-operation shape"
                 .to_owned(),
         ));
     }
@@ -2500,6 +2500,9 @@ mod tests {
         let hot_key = parse_local_scenario(HOT_KEY_SCENARIO).unwrap();
 
         assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
+        assert_eq!(scaling.scenario.steady_operations, 1_000_000);
+        assert_eq!(scaling.scenario.repeats, 3);
+        assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
     }
 
