@@ -127,7 +127,8 @@ async fn compaction_seam_sled_restart_restores_snapshot_before_retained_tail() {
     let compacted_index = runtime.compact_applied_log_to_snapshot().unwrap();
     drop(runtime);
 
-    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let reopened =
+        retry_sled_reopen(|| RaftMetadataRuntime::sled_with_config(config.clone(), &path)).unwrap();
     let observation = reopened.log_compaction_observation().unwrap();
     assert_eq!(observation.snapshot_index, compacted_index);
     assert!(observation.applied_index >= compacted_index);
@@ -183,7 +184,8 @@ async fn sled_restart_replays_last_snapshot_plus_tail_after_oversized_rejection(
     assert_eq!(runtime.log_compaction_observation().unwrap(), before);
     drop(runtime);
 
-    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let reopened =
+        retry_sled_reopen(|| RaftMetadataRuntime::sled_with_config(config.clone(), &path)).unwrap();
     let recovered = reopened
         .members()
         .into_iter()
@@ -234,7 +236,8 @@ async fn compaction_seam_sled_restart_applies_newer_retained_tail_after_snapshot
     assert!(runtime.snapshot().applied_index > snapshot_index);
     drop(runtime);
 
-    let reopened = RaftMetadataRuntime::sled_with_config(config, &path).unwrap();
+    let reopened =
+        retry_sled_reopen(|| RaftMetadataRuntime::sled_with_config(config.clone(), &path)).unwrap();
     let recovered = reopened
         .members()
         .into_iter()
