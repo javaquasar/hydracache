@@ -918,7 +918,7 @@ fn baseline_eligibility_is_derived_from_receipts_not_caller_booleans() {
         .any(|problem| problem.contains("clean-checkout")));
 
     let (mut noisy, _) = bootstrapped_fixture();
-    noisy.baseline.members[0].reports[0].maximum_spread_ratio = 0.20;
+    noisy.baseline.members[0].reports[0].maximum_spread_ratio = 0.31;
     noisy.baseline.members[0].reports[0].stable = true;
     noisy.baseline.candidate_members = noisy.baseline.members.clone();
     approve_baseline_change(&mut noisy);
