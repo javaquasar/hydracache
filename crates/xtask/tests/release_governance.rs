@@ -426,23 +426,26 @@ fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
 }
 
 #[test]
-fn performance_lane_requires_dedicated_label_and_serial_concurrency() {
+fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
     let problems =
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
 
-    let shared = workflow.replacen(
-        "runs-on: [self-hosted, linux, x64, hydracache-perf-v1]",
+    let floating_image = workflow.replacen(
+        "runs-on: ubuntu-24.04",
         "runs-on: ubuntu-latest",
         1,
     );
-    let problems =
-        xtask::release_governance::release_execution_wiring_problems(&shared, "0.67").unwrap();
+    let problems = xtask::release_governance::release_execution_wiring_problems(
+        &floating_image,
+        "0.67",
+    )
+    .unwrap();
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("exact dedicated labels")));
+        .any(|problem| problem.contains("pinned GitHub-hosted ubuntu-24.04")));
 
     let parallel = workflow.replacen(
         "group: release-067-performance-reference-v1",
@@ -467,7 +470,7 @@ fn performance_lane_requires_dedicated_label_and_serial_concurrency() {
         .any(|problem| problem.contains("exact rustc 1.94.0")));
 
     let missing_opt_in = workflow.replacen(
-        "github.event_name == 'workflow_dispatch' && inputs.run_dedicated_performance && inputs.candidate_release == '0.67'",
+        "github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
         "github.event_name == 'workflow_dispatch' && inputs.candidate_release == '0.67'",
         1,
     );
@@ -476,7 +479,7 @@ fn performance_lane_requires_dedicated_label_and_serial_concurrency() {
             .unwrap();
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("dedicated-performance opt-in")));
+        .any(|problem| problem.contains("reference-performance opt-in")));
 
     let missing_shared = workflow.replacen(
         "performance-067-shared-tripwire:",
