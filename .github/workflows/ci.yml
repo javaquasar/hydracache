@@ -711,6 +711,23 @@ jobs:
       - name: Install pinned Rust 1.94.0
         uses: dtolnay/rust-toolchain@1.94.0
 
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
       - name: Verify shipped 0.66 provenance
         run: |
           git rev-parse --verify refs/tags/v0.66.0
