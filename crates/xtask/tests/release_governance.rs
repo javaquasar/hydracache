@@ -433,16 +433,10 @@ fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
 
-    let floating_image = workflow.replacen(
-        "runs-on: ubuntu-24.04",
-        "runs-on: ubuntu-latest",
-        1,
-    );
-    let problems = xtask::release_governance::release_execution_wiring_problems(
-        &floating_image,
-        "0.67",
-    )
-    .unwrap();
+    let floating_image = workflow.replacen("runs-on: ubuntu-24.04", "runs-on: ubuntu-latest", 1);
+    let problems =
+        xtask::release_governance::release_execution_wiring_problems(&floating_image, "0.67")
+            .unwrap();
     assert!(problems
         .iter()
         .any(|problem| problem.contains("pinned GitHub-hosted ubuntu-24.04")));
