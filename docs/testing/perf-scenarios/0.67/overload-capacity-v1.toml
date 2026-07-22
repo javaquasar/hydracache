@@ -39,4 +39,4 @@ require_runner_fingerprint = true
 require_prebuild_receipt = true
 require_surface_capability_receipt = true
 require_target_workload_binding = true
-committed_scenario_sha256 = "64e9413f73b92b286a9326dc87bb5f2fb7f50b2ee969a0167c10dda11f0f84d0"
+committed_scenario_sha256 = "543e3340f6771e4c85cdc2912b507182ba20490124052a93823a71c6bb79ce2f"
