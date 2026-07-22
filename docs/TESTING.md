@@ -1322,7 +1322,7 @@ capacity receipt.
 `reference-v1` is the only ship-eligible profile and runs serially on the pinned
 GitHub-hosted `ubuntu-24.04` image. The runner-class fingerprint binds `ImageOS`
 and `ImageVersion`; every report separately retains the observed CPU, RAM, kernel,
-calibration, affinity, and quota facts. The sequence prebuilds once, then runs the
+calibration facts, and runner-managed affinity/quota posture. The sequence prebuilds once, then runs the
 exact binaries without putting Cargo compilation or image pulls inside a measurement
 window. Because the hardware class is GitHub-managed, this profile permits relative
 same-image regression claims only, never portable capacity floors or sizing guidance.
