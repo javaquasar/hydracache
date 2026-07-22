@@ -15,8 +15,8 @@ on:
         required: false
         default: false
         type: boolean
-      run_dedicated_performance:
-        description: "Run 0.67 reference evidence on the dedicated hydracache-perf-v1 runner"
+      run_reference_performance:
+        description: "Run 0.67 reference evidence on a serialized GitHub-hosted Ubuntu 24.04 VM"
         required: false
         default: false
         type: boolean
@@ -666,7 +666,7 @@ jobs:
   performance-067-shared-tripwire:
     name: 0.67 Shared Performance Tripwire
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly && !inputs.run_dedicated_performance && inputs.candidate_release == '0.67')
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) || github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.run_nightly && !inputs.run_reference_performance && inputs.candidate_release == '0.67')
 
     steps:
       - name: Checkout
@@ -692,10 +692,10 @@ jobs:
           if-no-files-found: error
 
   release-067-performance:
-    name: 0.67 Dedicated Performance Evidence
-    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
-    timeout-minutes: 480
-    if: github.event_name == 'workflow_dispatch' && inputs.run_dedicated_performance && inputs.candidate_release == '0.67'
+    name: 0.67 GitHub-hosted Reference Evidence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'
     concurrency:
       group: release-067-performance-reference-v1
       cancel-in-progress: false

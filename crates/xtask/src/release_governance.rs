@@ -995,21 +995,10 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         );
     }
 
-    let labels = mapping_value(job.as_mapping(), "runs-on")
-        .and_then(Value::as_sequence)
-        .map(|labels| {
-            labels
-                .iter()
-                .filter_map(Value::as_str)
-                .collect::<BTreeSet<_>>()
-        })
-        .unwrap_or_default();
-    let expected_labels = ["self-hosted", "linux", "x64", "hydracache-perf-v1"]
-        .into_iter()
-        .collect::<BTreeSet<_>>();
-    if labels != expected_labels {
+    let runner = mapping_value(job.as_mapping(), "runs-on").and_then(Value::as_str);
+    if runner != Some("ubuntu-24.04") {
         problems.push(
-            "release 0.67 performance lane requires exact dedicated labels [self-hosted, linux, x64, hydracache-perf-v1]"
+            "release 0.67 performance lane requires the pinned GitHub-hosted ubuntu-24.04 image"
                 .to_owned(),
         );
     }
@@ -1034,13 +1023,13 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         .map(String::as_str)
         .unwrap_or_default();
     if !condition.contains("workflow_dispatch")
-        || !condition.contains("inputs.run_dedicated_performance")
+        || !condition.contains("inputs.run_reference_performance")
         || !condition.contains("candidate_release == '0.67'")
         || condition.contains("schedule")
         || condition.contains("refs/tags/")
     {
         problems.push(
-            "release 0.67 performance lane must require the dedicated-performance opt-in on an explicit 0.67 manual dispatch"
+            "release 0.67 performance lane must require the reference-performance opt-in on an explicit 0.67 manual dispatch"
                 .to_owned(),
         );
     }
@@ -1069,7 +1058,7 @@ fn release_067_execution_wiring_problems(text: &str) -> Result<Vec<String>, Box<
         || !shared_condition.contains("refs/heads/master")
         || !shared_condition.contains("schedule")
         || !shared_condition.contains("inputs.run_nightly")
-        || !shared_condition.contains("!inputs.run_dedicated_performance")
+        || !shared_condition.contains("!inputs.run_reference_performance")
     {
         problems.push(
             "release 0.67 shared tripwire must run on pull requests, main/master pushes, schedules, and ordinary hosted nightly dispatches"

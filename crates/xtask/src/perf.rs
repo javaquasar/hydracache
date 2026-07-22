@@ -200,7 +200,7 @@ pub fn run(args: Vec<String>) -> Result<(), PerfPrebuildError> {
     let (release, profile) = parse_args(args)?;
     if std::env::var(REFERENCE_AUTHORIZATION_ENV).as_deref() != Ok("1") {
         return Err(PerfPrebuildError::new(format!(
-            "{REFERENCE_AUTHORIZATION_ENV}=1 is required; reference prebuilds are dedicated-lane only"
+            "{REFERENCE_AUTHORIZATION_ENV}=1 is required; reference prebuilds are manual-lane only"
         )));
     }
     let root = crate::doc_check::find_repo_root()
@@ -519,12 +519,12 @@ fn validate_profile_contract(
         && profile.required_platform_key == REQUIRED_PLATFORM
         && platform == REQUIRED_PLATFORM
         && profile.runner.name == REFERENCE_PROFILE
-        && profile.runner.required_runner_class == REFERENCE_PROFILE
-        && profile.runner.minimum_logical_cores == 8
-        && profile.runner.required_cpu_affinity == "dedicated-cpuset"
-        && profile.runner.required_cgroup_cpu_quota == "unlimited"
+        && profile.runner.required_runner_class == "github-hosted-reference-v1"
+        && profile.runner.minimum_logical_cores == 4
+        && profile.runner.required_cpu_affinity == "github-managed-vm"
+        && profile.runner.required_cgroup_cpu_quota == "github-managed-vm"
         && profile.runner.require_dedicated
-        && (profile.runner.maximum_calibration_score - 0.05).abs() < f64::EPSILON
+        && (profile.runner.maximum_calibration_score - 0.25).abs() < f64::EPSILON
         && profile.prebuild.schema_version == 1
         && profile.prebuild.toolchain_identity == "rustc-1.94.0"
         && profile.prebuild.target_set == [LOADGEN_BINARY_ID, SERVER_BINARY_ID]
@@ -999,17 +999,24 @@ fn observe_linux_reference_runner(
     if std::env::var(REFERENCE_AUTHORIZATION_ENV).as_deref() != Ok("1") {
         return Err("reference lane authorization is absent".to_owned());
     }
+    if std::env::var("GITHUB_ACTIONS").as_deref() != Ok("true")
+        || std::env::var("RUNNER_OS").as_deref() != Ok("Linux")
+        || std::env::var("RUNNER_ARCH").as_deref() != Ok("X64")
+    {
+        return Err("reference-v1 requires a GitHub-hosted Linux x64 job VM".to_owned());
+    }
+    let image_os = std::env::var("ImageOS")
+        .map_err(|_| "GitHub runner ImageOS identity is absent".to_owned())?;
+    let image_version = std::env::var("ImageVersion")
+        .map_err(|_| "GitHub runner ImageVersion identity is absent".to_owned())?;
+    if image_os != "ubuntu24" || image_version.trim().is_empty() {
+        return Err("reference-v1 requires the pinned ubuntu-24.04 runner image".to_owned());
+    }
     let cpu_model = proc_value("/proc/cpuinfo", "model name")?;
     let cpu_affinity_raw = proc_value("/proc/self/status", "Cpus_allowed_list")?;
     let logical_cores = count_cpu_list(&cpu_affinity_raw)?;
     if logical_cores < profile.minimum_logical_cores {
-        return Err("dedicated cpuset is below the profile minimum".to_owned());
-    }
-    let quota_raw = read_cpu_quota()?;
-    if quota_raw != "max" && quota_raw != "-1" {
-        return Err(format!(
-            "reference cgroup CPU quota is limited: {quota_raw}"
-        ));
+        return Err("GitHub-hosted VM core count is below the profile minimum".to_owned());
     }
     let ram_kib = proc_value("/proc/meminfo", "MemTotal")?
         .split_whitespace()
@@ -1024,40 +1031,25 @@ fn observe_linux_reference_runner(
         .map_err(|error| format!("kernel probe failed: {error}"))?
         .trim()
         .to_owned();
-    let governor = read_required_trimmed(
-        "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor",
-        "CPU governor",
-    )?;
-    let turbo = read_turbo_state()?;
+    let governor = "github-managed".to_owned();
+    let turbo = "github-managed".to_owned();
     let calibration_score = calibration_score();
     #[derive(Serialize)]
     struct StableFingerprint<'a> {
         schema_version: u32,
         runner_class: &'a str,
-        cpu_model: &'a str,
-        logical_cores: u32,
-        ram_bytes: u64,
-        os: &'a str,
-        kernel: &'a str,
-        cpu_affinity_raw: &'a str,
-        cgroup_cpu_quota_raw: &'a str,
-        governor: &'a str,
-        turbo: &'a str,
-        shared_hardware: bool,
+        image_os: &'a str,
+        image_version: &'a str,
+        runner_os: &'a str,
+        runner_arch: &'a str,
     }
     let stable = StableFingerprint {
         schema_version: 1,
         runner_class: &profile.required_runner_class,
-        cpu_model: &cpu_model,
-        logical_cores,
-        ram_bytes,
-        os: "linux",
-        kernel: &kernel,
-        cpu_affinity_raw: &cpu_affinity_raw,
-        cgroup_cpu_quota_raw: &quota_raw,
-        governor: &governor,
-        turbo: &turbo,
-        shared_hardware: false,
+        image_os: &image_os,
+        image_version: &image_version,
+        runner_os: "Linux",
+        runner_arch: "X64",
     };
     let stable_bytes = serde_json::to_vec(&stable).map_err(|error| error.to_string())?;
     Ok(RunnerFingerprint {
@@ -1109,45 +1101,6 @@ fn count_cpu_list(value: &str) -> Result<u32, String> {
             .ok_or_else(|| "CPU list count overflow".to_owned())?;
     }
     Ok(count)
-}
-
-fn read_cpu_quota() -> Result<String, String> {
-    if let Ok(value) = fs::read_to_string("/sys/fs/cgroup/cpu.max") {
-        return value
-            .split_whitespace()
-            .next()
-            .map(str::to_owned)
-            .ok_or_else(|| "cgroup v2 cpu.max is empty".to_owned());
-    }
-    read_required_trimmed("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "cgroup v1 CPU quota")
-}
-
-fn read_turbo_state() -> Result<String, String> {
-    for (path, prefix) in [
-        (
-            "/sys/devices/system/cpu/intel_pstate/no_turbo",
-            "intel-no-turbo",
-        ),
-        ("/sys/devices/system/cpu/cpufreq/boost", "cpufreq-boost"),
-    ] {
-        if let Ok(value) = fs::read_to_string(path) {
-            let value = value.trim();
-            if !value.is_empty() {
-                return Ok(format!("{prefix}:{value}"));
-            }
-        }
-    }
-    Err("CPU turbo/boost state is unavailable".to_owned())
-}
-
-fn read_required_trimmed(path: &str, label: &str) -> Result<String, String> {
-    let value = fs::read_to_string(path)
-        .map_err(|error| format!("{label} probe failed at {path}: {error}"))?;
-    let value = value.trim();
-    if value.is_empty() {
-        return Err(format!("{label} probe is empty"));
-    }
-    Ok(value.to_owned())
 }
 
 fn calibration_score() -> f64 {

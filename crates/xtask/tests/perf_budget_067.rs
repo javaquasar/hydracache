@@ -450,6 +450,11 @@ fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
         BootstrapStatus::Unbootstrapped
     );
     assert!(reference.profile.runner.allowed_fingerprints.is_empty());
+    assert_eq!(
+        reference.profile.runner.required_runner_class,
+        "github-hosted-reference-v1"
+    );
+    assert!(!reference.profile.noise.absolute_numbers_are_ship_evidence);
     assert!(reference.baseline.members.is_empty());
     assert!(reference.baseline.anchor.metrics.is_empty());
     let verdict = perf_budget::evaluate(&reference, &[], now());
@@ -504,7 +509,7 @@ fn exact_w7_profiles_cannot_be_weakened_by_relabeling() {
     let problems = perf_budget::validate_contract_bundle(&reference);
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("dedicated enforcing profile")));
+        .any(|problem| problem.contains("GitHub-hosted, relative-only enforcing profile")));
 
     let mut shared =
         perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "ci-shared").unwrap();
@@ -913,7 +918,7 @@ fn baseline_eligibility_is_derived_from_receipts_not_caller_booleans() {
         .any(|problem| problem.contains("clean-checkout")));
 
     let (mut noisy, _) = bootstrapped_fixture();
-    noisy.baseline.members[0].reports[0].maximum_spread_ratio = 0.20;
+    noisy.baseline.members[0].reports[0].maximum_spread_ratio = 0.31;
     noisy.baseline.members[0].reports[0].stable = true;
     noisy.baseline.candidate_members = noisy.baseline.members.clone();
     approve_baseline_change(&mut noisy);
