@@ -1115,24 +1115,6 @@ fn read_cpu_quota() -> Result<String, String> {
     read_required_trimmed("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "cgroup v1 CPU quota")
 }
 
-fn read_turbo_state() -> Result<String, String> {
-    for (path, prefix) in [
-        (
-            "/sys/devices/system/cpu/intel_pstate/no_turbo",
-            "intel-no-turbo",
-        ),
-        ("/sys/devices/system/cpu/cpufreq/boost", "cpufreq-boost"),
-    ] {
-        if let Ok(value) = fs::read_to_string(path) {
-            let value = value.trim();
-            if !value.is_empty() {
-                return Ok(format!("{prefix}:{value}"));
-            }
-        }
-    }
-    Err("CPU turbo/boost state is unavailable".to_owned())
-}
-
 fn read_required_trimmed(path: &str, label: &str) -> Result<String, String> {
     let value = fs::read_to_string(path)
         .map_err(|error| format!("{label} probe failed at {path}: {error}"))?;
