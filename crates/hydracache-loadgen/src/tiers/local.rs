@@ -876,6 +876,7 @@ async fn local_scaling_measurements(
                     workers,
                     Arc::new(schedule.keys.clone()),
                     target_config.clone(),
+                    binding.scenario.warmup_operations,
                 )
                 .await?,
             );
@@ -918,6 +919,7 @@ async fn local_scaling_measurements(
             "worker_counts": raw_by_workers.iter().map(|(workers, _)| *workers).collect::<Vec<_>>(),
             "key_count": key_count,
             "preload_operations": target_config.preload_entries,
+            "warmup_operations": binding.scenario.warmup_operations,
         }),
     );
     let spread_limit = shape.spread_limit(binding.scenario.robust_spread_tolerance);
@@ -945,6 +947,7 @@ async fn concurrent_throughput_sample(
     workers: usize,
     schedule: Arc<Vec<u64>>,
     target_config: LocalTargetConfig,
+    warmup_operations: u64,
 ) -> Result<f64, LocalTierError> {
     let operations = schedule.len() as u64;
     tokio::task::spawn_blocking(move || {
@@ -957,44 +960,61 @@ async fn concurrent_throughput_sample(
             let target = Arc::new(LocalCacheTarget::new(target_config)?);
             target.reset().await?;
             target.preload().await?;
-            let next = Arc::new(AtomicU64::new(0));
-            let errors = Arc::new(AtomicU64::new(0));
+            run_concurrent_scaling_phase(
+                workers,
+                Arc::clone(&schedule),
+                Arc::clone(&target),
+                warmup_operations.min(operations),
+            )
+            .await?;
+            target.reset().await?;
+            target.preload().await?;
             let started = Instant::now();
-            let mut tasks = tokio::task::JoinSet::new();
-            for _ in 0..workers {
-                let target = Arc::clone(&target);
-                let next = Arc::clone(&next);
-                let errors = Arc::clone(&errors);
-                let schedule = Arc::clone(&schedule);
-                tasks.spawn(async move {
-                    loop {
-                        let sequence = next.fetch_add(1, Ordering::Relaxed);
-                        if sequence >= operations {
-                            break;
-                        }
-                        let logical_key = schedule[sequence as usize];
-                        let operation = target.operation_for(sequence);
-                        if target.execute_operation(operation, logical_key).await
-                            != TargetOutcome::Success
-                        {
-                            errors.fetch_add(1, Ordering::Relaxed);
-                        }
-                    }
-                });
-            }
-            while let Some(joined) = tasks.join_next().await {
-                joined.map_err(|error| LocalTierError::Runtime(error.to_string()))?;
-            }
-            if errors.load(Ordering::Relaxed) != 0 {
-                return Err(LocalTierError::Runtime(
-                    "real local target returned an unsuccessful scaling operation".to_owned(),
-                ));
-            }
+            run_concurrent_scaling_phase(workers, schedule, target, operations).await?;
             Ok(throughput(operations, started.elapsed()))
         })
     })
     .await
     .map_err(|error| LocalTierError::Runtime(error.to_string()))?
+}
+
+async fn run_concurrent_scaling_phase(
+    workers: usize,
+    schedule: Arc<Vec<u64>>,
+    target: Arc<LocalCacheTarget>,
+    operations: u64,
+) -> Result<(), LocalTierError> {
+    let next = Arc::new(AtomicU64::new(0));
+    let errors = Arc::new(AtomicU64::new(0));
+    let mut tasks = tokio::task::JoinSet::new();
+    for _ in 0..workers {
+        let target = Arc::clone(&target);
+        let next = Arc::clone(&next);
+        let errors = Arc::clone(&errors);
+        let schedule = Arc::clone(&schedule);
+        tasks.spawn(async move {
+            loop {
+                let sequence = next.fetch_add(1, Ordering::Relaxed);
+                if sequence >= operations {
+                    break;
+                }
+                let logical_key = schedule[sequence as usize];
+                let operation = target.operation_for(sequence);
+                if target.execute_operation(operation, logical_key).await != TargetOutcome::Success {
+                    errors.fetch_add(1, Ordering::Relaxed);
+                }
+            }
+        });
+    }
+    while let Some(joined) = tasks.join_next().await {
+        joined.map_err(|error| LocalTierError::Runtime(error.to_string()))?;
+    }
+    if errors.load(Ordering::Relaxed) != 0 {
+        return Err(LocalTierError::Runtime(
+            "real local target returned an unsuccessful scaling operation".to_owned(),
+        ));
+    }
+    Ok(())
 }
 
 pub async fn local_hot_key_smoke_measurement() -> Result<MeasurementEvidence, LocalTierError> {
@@ -2110,6 +2130,7 @@ fn validate_local_reference_scalar_shapes(report: &PerfReport) -> Result<(), Loc
             "worker_counts": scaling.local.worker_counts,
             "key_count": scaling.local.key_count,
             "preload_operations": scaling.scenario.preload_operations,
+            "warmup_operations": scaling.scenario.warmup_operations,
         }),
     );
     let scaling_workers = scalar_measurement(report, "local_cache_scaling_curve_1_to_n_threads")?
@@ -2501,6 +2522,7 @@ mod tests {
 
         assert_eq!(scaling.local.worker_counts, [1, 2, 4]);
         assert_eq!(scaling.scenario.steady_operations, 1_000_000);
+        assert_eq!(scaling.scenario.warmup_operations, 10_000);
         assert_eq!(scaling.scenario.repeats, 3);
         assert_eq!(scaling.scenario.robust_spread_tolerance, 0.15);
         assert_eq!(hot_key.local.worker_counts, [1, 2, 4]);
