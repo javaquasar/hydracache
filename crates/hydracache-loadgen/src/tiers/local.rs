@@ -1000,7 +1000,8 @@ async fn run_concurrent_scaling_phase(
                 }
                 let logical_key = schedule[sequence as usize];
                 let operation = target.operation_for(sequence);
-                if target.execute_operation(operation, logical_key).await != TargetOutcome::Success {
+                if target.execute_operation(operation, logical_key).await != TargetOutcome::Success
+                {
                     errors.fetch_add(1, Ordering::Relaxed);
                 }
             }
