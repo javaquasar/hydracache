@@ -242,7 +242,6 @@ impl Drop for RedisConnectionGuard {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
