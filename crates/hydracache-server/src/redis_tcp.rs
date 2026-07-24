@@ -148,6 +148,7 @@ pub async fn serve_redis_listener(
             }
             accepted = listener.accept() => {
                 let (stream, _) = accepted?;
+                configure_redis_stream(&stream)?;
                 if !runtime
                     .lock()
                     .expect("server runtime mutex")
@@ -174,6 +175,10 @@ pub async fn serve_redis_listener(
             }
         }
     }
+}
+
+fn configure_redis_stream(stream: &tokio::net::TcpStream) -> std::io::Result<()> {
+    stream.set_nodelay(true)
 }
 
 fn read_certs(path: &Path) -> Result<Vec<CertificateDer<'static>>, RedisTlsError> {
@@ -234,5 +239,22 @@ impl Drop for RedisConnectionGuard {
             .lock()
             .expect("server runtime mutex")
             .finish_redis_connection();
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn accepted_redis_socket_disables_nagle_before_serving() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let client = tokio::spawn(tokio::net::TcpStream::connect(address));
+        let (server_stream, _) = listener.accept().await.unwrap();
+        configure_redis_stream(&server_stream).unwrap();
+        assert!(server_stream.nodelay().unwrap());
+        client.await.unwrap().unwrap();
     }
 }
