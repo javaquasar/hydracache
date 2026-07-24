@@ -32,6 +32,7 @@ const VALID_CSV: &[u8] = concat!(
     "\"MSET (10 keys)\",\"5432.10\",\"0.184\",\"0.071\",\"0.175\",\"0.247\",\"0.279\",\"0.615\"\n",
 )
 .as_bytes();
+const UNSUPPORTED_CONFIG_WARNING: &[u8] = b"WARNING: Could not fetch server CONFIG\n";
 type CsvErrorPredicate = fn(&RedisBenchmarkCsvError) -> bool;
 
 fn contract() -> RedisBenchmarkContract {
@@ -292,11 +293,10 @@ fn successful_script(
 ) -> Vec<Result<ProcessCapture, LaunchError>> {
     let version = format!("{PINNED_REDIS_BENCHMARK_VERSION}\n");
     let mut results = vec![Ok(capture(0, version.as_bytes(), b""))];
-    results.extend(
-        contract.cases.iter().flat_map(|_| {
-            (0..contract.tool.repeats_per_case).map(|_| Ok(capture(0, VALID_CSV, b"")))
-        }),
-    );
+    results.extend(contract.cases.iter().flat_map(|_| {
+        (0..contract.tool.repeats_per_case)
+            .map(|_| Ok(capture(0, VALID_CSV, UNSUPPORTED_CONFIG_WARNING)))
+    }));
     results
 }
 
@@ -314,7 +314,10 @@ fn redis_benchmark_contract_builds_exact_argv_and_preserves_closed_loop_identity
     assert_eq!(contract.tool.case_timeout_seconds, 300);
     assert_eq!(contract.tool.max_stdout_bytes, 262_144);
     assert_eq!(contract.tool.max_stderr_bytes, 65_536);
-    assert_eq!(contract.tool.stderr_policy, "must-be-empty");
+    assert_eq!(
+        contract.tool.stderr_policy,
+        "must-be-empty-except-exact-redis-725-config-warning"
+    );
     assert_eq!(contract.tool.repeats_per_case, 3);
     assert_eq!(contract.tool.max_robust_spread_ratio, 0.15);
     assert_eq!(contract.tool.required_runner_profile, "reference-v1");
@@ -391,7 +394,7 @@ fn redis_benchmark_process_limits_and_identity_policy_are_bounded_and_digest_bou
             "identity_policy = \"version-string-only\"",
         ),
         CONTRACT.replace(
-            "stderr_policy = \"must-be-empty\"",
+            "stderr_policy = \"must-be-empty-except-exact-redis-725-config-warning\"",
             "stderr_policy = \"ignore\"",
         ),
     ] {
@@ -588,11 +591,10 @@ fn redis_benchmark_evidence_binds_version_exact_argv_and_raw_stream_hashes() {
     let contract = contract();
     let version_stdout = format!("{PINNED_REDIS_BENCHMARK_VERSION}\n");
     let mut results = vec![Ok(capture(0, version_stdout.as_bytes(), b""))];
-    results.extend(
-        contract.cases.iter().flat_map(|_| {
-            (0..contract.tool.repeats_per_case).map(|_| Ok(capture(0, VALID_CSV, b"")))
-        }),
-    );
+    results.extend(contract.cases.iter().flat_map(|_| {
+        (0..contract.tool.repeats_per_case)
+            .map(|_| Ok(capture(0, VALID_CSV, UNSUPPORTED_CONFIG_WARNING)))
+    }));
     let executor = ScriptedExecutor::new(results);
     let outcome =
         run_scripted(&contract, MissingToolPolicy::MandatoryFailClosed, &executor).unwrap();
@@ -623,6 +625,10 @@ fn redis_benchmark_evidence_binds_version_exact_argv_and_raw_stream_hashes() {
     assert_eq!(
         evidence.cases[0].repeats[0].process.stdout_sha256,
         sha256(VALID_CSV)
+    );
+    assert_eq!(
+        evidence.cases[0].repeats[0].process.stderr,
+        String::from_utf8(UNSUPPORTED_CONFIG_WARNING.to_vec()).unwrap()
     );
     assert_eq!(
         evidence.cases[0].repeats[0].process.argv,
@@ -722,6 +728,10 @@ fn redis_benchmark_rejects_nonzero_stderr_version_drift_and_truncated_csv() {
     let scripts = [
         vec![Ok(capture(2, b"partial", b"failed"))],
         vec![Ok(capture(0, valid_version.as_bytes(), b"warning"))],
+        vec![
+            Ok(capture(0, valid_version.as_bytes(), b"")),
+            Ok(capture(0, VALID_CSV, b"WARNING: unexpected\n")),
+        ],
         vec![Ok(capture(0, b"redis-benchmark 7.2.4\n", b""))],
         vec![
             Ok(capture(0, valid_version.as_bytes(), b"")),
