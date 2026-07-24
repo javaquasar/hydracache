@@ -1188,7 +1188,7 @@ async fn resp_matrix_measurement(
         for pipeline in &input.pipelines {
             let mut samples = Vec::new();
             let mut logical_rates = Vec::new();
-            for _ in 0..repeats {
+            for repeat_index in 0..repeats {
                 let target = Arc::new(resp_target(
                     endpoint,
                     &binding,
@@ -1221,9 +1221,18 @@ async fn resp_matrix_measurement(
                     || observation.rejections != 0
                     || !observation.backlog_drained
                 {
-                    return Err(RespTierError::Runtime(
-                        "RESP connection/pipeline sweep returned unsuccessful work".to_owned(),
-                    ));
+                    return Err(RespTierError::Runtime(format!(
+                        "RESP connection/pipeline sweep returned unsuccessful work at connections={connections}, pipeline={pipeline}, repeat={}/{}: errors={}, timeouts={}, rejections={}, backlog_drained={}, started={}, completed={}, target={:?}",
+                        repeat_index + 1,
+                        repeats,
+                        observation.errors,
+                        observation.timeouts,
+                        observation.rejections,
+                        observation.backlog_drained,
+                        observation.started,
+                        observation.completed,
+                        target.snapshot(),
+                    )));
                 }
                 let tcp = target
                     .tcp_evidence()
