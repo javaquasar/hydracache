@@ -27,6 +27,7 @@ use crate::targets::resp::{
 
 pub const REDIS_BENCHMARK_CONTRACT_VERSION: u32 = 1;
 pub const PINNED_REDIS_BENCHMARK_VERSION: &str = "redis-benchmark 7.2.5";
+const UNSUPPORTED_CONFIG_WARNING: &str = "WARNING: Could not fetch server CONFIG\n";
 pub const REDIS_BENCHMARK_MEASUREMENT_ID: &str =
     "redis_benchmark_get_set_mset_throughput_and_interop";
 pub const CLOSED_LOOP_METHODOLOGY: &str = "closed-loop";
@@ -186,9 +187,9 @@ impl RedisBenchmarkContract {
                     .to_owned(),
             ));
         }
-        if self.tool.stderr_policy != "must-be-empty" {
+        if self.tool.stderr_policy != "must-be-empty-except-exact-redis-725-config-warning" {
             return Err(ExternalToolError::Contract(
-                "redis-benchmark stderr policy must remain fail-closed (`must-be-empty`)"
+                "redis-benchmark stderr policy must remain fail-closed (`must-be-empty-except-exact-redis-725-config-warning`)"
                     .to_owned(),
             ));
         }
@@ -1305,6 +1306,7 @@ pub fn run_redis_benchmark<E: ExternalToolExecutor>(
         &contract.tool.execution_environment,
         "version-probe",
         version_capture,
+        None,
     )?;
     let tool_version = exact_single_line(&version_probe.stdout).ok_or_else(|| {
         rejected_output(
@@ -1365,6 +1367,7 @@ pub fn run_redis_benchmark<E: ExternalToolExecutor>(
                 &contract.tool.execution_environment,
                 &phase,
                 capture,
+                Some(UNSUPPORTED_CONFIG_WARNING),
             )?;
             let rows =
                 parse_redis_benchmark_csv(process.stdout.as_bytes(), &contract.expected_rows(case))
@@ -1837,6 +1840,7 @@ fn validate_successful_capture(
     execution_environment: &[String],
     phase: &str,
     capture: ProcessCapture,
+    allowed_stderr: Option<&str>,
 ) -> Result<RawProcessEvidence, ExternalToolError> {
     let stdout_sha256 = sha256(&capture.stdout);
     let stderr_sha256 = sha256(&capture.stderr);
@@ -1885,7 +1889,7 @@ fn validate_successful_capture(
             &evidence,
         ));
     }
-    if !evidence.stderr.is_empty() {
+    if !evidence.stderr.is_empty() && Some(evidence.stderr.as_str()) != allowed_stderr {
         return Err(rejected_output(
             phase,
             "external tool emitted unexpected stderr",
