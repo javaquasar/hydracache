@@ -64,6 +64,8 @@ const SMOKE_PRELOAD: u64 = 16;
 const SMOKE_OPERATIONS: u64 = 100;
 const SMOKE_REPEATS: u32 = 3;
 const SMOKE_SPREAD_LIMIT: f64 = 1_000.0;
+const RESP_CONNECT_TIMEOUT: Duration = Duration::from_secs(2);
+const RESP_IO_TIMEOUT: Duration = Duration::from_secs(5);
 
 const WORKLOAD_A_SCENARIO: &[u8] =
     include_bytes!("../../../../docs/testing/perf-scenarios/0.67/resp-open-loop-a-v1.toml");
@@ -1188,7 +1190,7 @@ async fn resp_matrix_measurement(
         for pipeline in &input.pipelines {
             let mut samples = Vec::new();
             let mut logical_rates = Vec::new();
-            for _ in 0..repeats {
+            for repeat_index in 0..repeats {
                 let target = Arc::new(resp_target(
                     endpoint,
                     &binding,
@@ -1221,9 +1223,18 @@ async fn resp_matrix_measurement(
                     || observation.rejections != 0
                     || !observation.backlog_drained
                 {
-                    return Err(RespTierError::Runtime(
-                        "RESP connection/pipeline sweep returned unsuccessful work".to_owned(),
-                    ));
+                    return Err(RespTierError::Runtime(format!(
+                        "RESP connection/pipeline sweep returned unsuccessful work at connections={connections}, pipeline={pipeline}, repeat={}/{}: errors={}, timeouts={}, rejections={}, backlog_drained={}, started={}, completed={}, target={:?}",
+                        repeat_index + 1,
+                        repeats,
+                        observation.errors,
+                        observation.timeouts,
+                        observation.rejections,
+                        observation.backlog_drained,
+                        observation.started,
+                        observation.completed,
+                        target.snapshot(),
+                    )));
                 }
                 let tcp = target
                     .tcp_evidence()
@@ -1439,8 +1450,8 @@ fn resp_target(
         reset_batch_entries: 128,
         operation_mix: parsed_operation_mix(&binding.resp)?,
         key_schedule: Arc::new(schedule.keys.clone()),
-        connect_timeout: Duration::from_secs(2),
-        io_timeout: Duration::from_secs(2),
+        connect_timeout: RESP_CONNECT_TIMEOUT,
+        io_timeout: RESP_IO_TIMEOUT,
         parser_limits: Resp2Limits::default(),
         injected_dispatch_delay: shape.injected_dispatch_delay,
     };
@@ -1960,6 +1971,12 @@ mod tests {
             stderr_log: log,
         };
         (capability, daemon, capability_digest)
+    }
+
+    #[test]
+    fn hosted_resp_io_timeout_covers_the_committed_measurement_window() {
+        assert_eq!(RESP_CONNECT_TIMEOUT, Duration::from_secs(2));
+        assert_eq!(RESP_IO_TIMEOUT, Duration::from_secs(5));
     }
 
     #[test]
