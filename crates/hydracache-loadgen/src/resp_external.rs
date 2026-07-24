@@ -1675,6 +1675,7 @@ impl RedisBenchmarkEvidence {
             &self.tool_identity,
             &contract.version_argv(),
             &contract.tool.execution_environment,
+            None,
         )?;
         if exact_single_line(&self.version_probe.stdout).as_deref()
             != Some(contract.tool.expected_version.as_str())
@@ -1716,6 +1717,7 @@ impl RedisBenchmarkEvidence {
                     &self.tool_identity,
                     &contract.benchmark_argv(expected_case),
                     &contract.tool.execution_environment,
+                    Some(UNSUPPORTED_CONFIG_WARNING),
                 )?;
                 let reparsed = parse_redis_benchmark_csv(
                     repeat.process.stdout.as_bytes(),
@@ -1769,13 +1771,14 @@ fn validate_raw_process(
     tool: &ResolvedExternalTool,
     expected_argv: &[String],
     expected_environment: &[String],
+    allowed_stderr: Option<&str>,
 ) -> Result<(), ExternalToolError> {
     if process.program != tool.canonical_path.to_string_lossy()
         || process.argv != expected_argv
         || process.execution_environment != expected_environment
         || process.exit_code != 0
         || process.timed_out
-        || !process.stderr.is_empty()
+        || (!process.stderr.is_empty() && Some(process.stderr.as_str()) != allowed_stderr)
         || process.stdout_bytes != process.stdout.len() as u64
         || process.stderr_bytes != process.stderr.len() as u64
         || process.stdout_sha256 != sha256(process.stdout.as_bytes())
