@@ -293,11 +293,10 @@ fn successful_script(
 ) -> Vec<Result<ProcessCapture, LaunchError>> {
     let version = format!("{PINNED_REDIS_BENCHMARK_VERSION}\n");
     let mut results = vec![Ok(capture(0, version.as_bytes(), b""))];
-    results.extend(
-        contract.cases.iter().flat_map(|_| {
-            (0..contract.tool.repeats_per_case).map(|_| Ok(capture(0, VALID_CSV, UNSUPPORTED_CONFIG_WARNING)))
-        }),
-    );
+    results.extend(contract.cases.iter().flat_map(|_| {
+        (0..contract.tool.repeats_per_case)
+            .map(|_| Ok(capture(0, VALID_CSV, UNSUPPORTED_CONFIG_WARNING)))
+    }));
     results
 }
 
@@ -315,7 +314,10 @@ fn redis_benchmark_contract_builds_exact_argv_and_preserves_closed_loop_identity
     assert_eq!(contract.tool.case_timeout_seconds, 300);
     assert_eq!(contract.tool.max_stdout_bytes, 262_144);
     assert_eq!(contract.tool.max_stderr_bytes, 65_536);
-    assert_eq!(contract.tool.stderr_policy, "must-be-empty-except-exact-redis-725-config-warning");
+    assert_eq!(
+        contract.tool.stderr_policy,
+        "must-be-empty-except-exact-redis-725-config-warning"
+    );
     assert_eq!(contract.tool.repeats_per_case, 3);
     assert_eq!(contract.tool.max_robust_spread_ratio, 0.15);
     assert_eq!(contract.tool.required_runner_profile, "reference-v1");
@@ -589,11 +591,10 @@ fn redis_benchmark_evidence_binds_version_exact_argv_and_raw_stream_hashes() {
     let contract = contract();
     let version_stdout = format!("{PINNED_REDIS_BENCHMARK_VERSION}\n");
     let mut results = vec![Ok(capture(0, version_stdout.as_bytes(), b""))];
-    results.extend(
-        contract.cases.iter().flat_map(|_| {
-            (0..contract.tool.repeats_per_case).map(|_| Ok(capture(0, VALID_CSV, UNSUPPORTED_CONFIG_WARNING)))
-        }),
-    );
+    results.extend(contract.cases.iter().flat_map(|_| {
+        (0..contract.tool.repeats_per_case)
+            .map(|_| Ok(capture(0, VALID_CSV, UNSUPPORTED_CONFIG_WARNING)))
+    }));
     let executor = ScriptedExecutor::new(results);
     let outcome =
         run_scripted(&contract, MissingToolPolicy::MandatoryFailClosed, &executor).unwrap();
