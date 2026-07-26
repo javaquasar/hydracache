@@ -504,6 +504,14 @@ pub async fn local_smoke_report(profile_name: &str) -> Result<PerfReport, LocalT
 pub async fn local_reference_report(
     context: &ValidatedRespReferenceContext,
 ) -> Result<PerfReport, LocalTierError> {
+    let (report, binding) = local_reference_report_unvalidated(context).await?;
+    validate_local_reference_report_binding(&report, &binding)?;
+    Ok(report)
+}
+
+async fn local_reference_report_unvalidated(
+    context: &ValidatedRespReferenceContext,
+) -> Result<(PerfReport, LocalReferenceRunBinding), LocalTierError> {
     let binding = LocalReferenceRunBinding::establish(context)?;
     let measurements = local_measurements(LocalRunShape::Reference, Some(&binding)).await?;
     context
@@ -531,13 +539,20 @@ pub async fn local_reference_report(
         measurements,
         Vec::new(),
     );
-    let validated = validate_local_reference_report(&report)?;
+    Ok((report, binding))
+}
+
+fn validate_local_reference_report_binding(
+    report: &PerfReport,
+    binding: &LocalReferenceRunBinding,
+) -> Result<(), LocalTierError> {
+    let validated = validate_local_reference_report(report)?;
     if validated.capability != binding.capability || validated.instance != binding.instance {
         return Err(LocalTierError::Report(
             "W1 report binding differs from the live in-process capability".to_owned(),
         ));
     }
-    Ok(report)
+    Ok(())
 }
 
 /// Recompute every security-sensitive W1 reference binding and the exact
@@ -707,8 +722,56 @@ pub async fn write_local_reference_report(
     context: &ValidatedRespReferenceContext,
     path: &Path,
 ) -> Result<(), LocalTierError> {
-    let report = local_reference_report(context).await?;
+    let (report, binding) = local_reference_report_unvalidated(context).await?;
+    if let Err(error) = validate_local_reference_report_binding(&report, &binding) {
+        write_failed_local_reference_evidence(&report, path, &error)?;
+        return Err(error);
+    }
     write_report(&report, path)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FailedLocalReferenceEvidence {
+    schema_version: u32,
+    status: String,
+    ship_evidence_eligible: bool,
+    canonical_output: String,
+    failure: String,
+    report: PerfReport,
+}
+
+fn failed_local_reference_path(path: &Path) -> Result<std::path::PathBuf, LocalTierError> {
+    let stem = path
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .ok_or_else(|| {
+            LocalTierError::Report("W1 output path has no UTF-8 file stem".to_owned())
+        })?;
+    Ok(path.with_file_name(format!("{stem}.failed.json")))
+}
+
+fn write_failed_local_reference_evidence(
+    report: &PerfReport,
+    path: &Path,
+    error: &LocalTierError,
+) -> Result<(), LocalTierError> {
+    let failed_path = failed_local_reference_path(path)?;
+    let evidence = FailedLocalReferenceEvidence {
+        schema_version: 1,
+        status: "failed-canonical-validation".to_owned(),
+        ship_evidence_eligible: false,
+        canonical_output: path.display().to_string(),
+        failure: error.to_string(),
+        report: report.clone(),
+    };
+    let bytes = serde_json::to_vec_pretty(&evidence)
+        .map_err(|error| LocalTierError::Report(error.to_string()))?;
+    if let Some(parent) = failed_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(failed_path, bytes)?;
+    Ok(())
 }
 
 /// Context-aware dispatch used by the reference CLI. `reference-v1` has no
@@ -2634,5 +2697,33 @@ mod tests {
     async fn strict_reference_validator_rejects_smoke_evidence() {
         let smoke = local_smoke_report("smoke-v1").await.unwrap();
         assert!(validate_local_reference_report(&smoke).is_err());
+    }
+
+    #[tokio::test]
+    async fn failed_reference_evidence_is_preserved_but_never_promotable() {
+        let smoke = local_smoke_report("smoke-v1").await.unwrap();
+        let directory = std::env::temp_dir().join(format!(
+            "hydracache-failed-local-reference-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let canonical = directory.join("local.json");
+        let error = validate_local_reference_report(&smoke).unwrap_err();
+
+        write_failed_local_reference_evidence(&smoke, &canonical, &error).unwrap();
+
+        assert!(!canonical.exists());
+        let failed = failed_local_reference_path(&canonical).unwrap();
+        let evidence: FailedLocalReferenceEvidence =
+            serde_json::from_slice(&std::fs::read(failed).unwrap()).unwrap();
+        assert_eq!(evidence.schema_version, 1);
+        assert_eq!(evidence.status, "failed-canonical-validation");
+        assert!(!evidence.ship_evidence_eligible);
+        assert!(evidence.failure.contains("reference report"));
+        assert_eq!(evidence.report.report_id, smoke.report_id);
+        std::fs::remove_dir_all(directory).unwrap();
     }
 }
