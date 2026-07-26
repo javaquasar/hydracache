@@ -27,7 +27,7 @@ use hydracache_loadgen::tiers::resp_reference::{
     ReferencePrerequisites, LOADGEN_BINARY_ID, PREBUILD_MANIFEST_RELATIVE_PATH,
     PREBUILD_MANIFEST_SCHEMA_VERSION, REFERENCE_PROFILE, SERVER_BINARY_ID,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::perf_budget::{Enforcement, ProfileContract, RELEASE};
@@ -39,6 +39,9 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
+pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
+pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
+pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
 const MAX_CONTRACT_BYTES: u64 = 1024 * 1024;
 const BUILD_ARGS: [&str; 7] = [
@@ -194,6 +197,98 @@ pub struct VerifiedPrebuildBundle {
     pub manifest: PerfPrebuildManifest,
     pub manifest_sha256: String,
     pub run_inputs: RespReferenceRunInputs,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RunnerPreflightReport {
+    pub schema_version: u32,
+    pub release: String,
+    pub profile: String,
+    pub samples_nanos: Vec<u64>,
+    pub median_nanos: u64,
+    pub spread_ratio: f64,
+    pub maximum_spread_ratio: f64,
+    pub passed: bool,
+    pub observed_runner: RunnerFingerprint,
+}
+
+pub fn evaluate_runner_preflight(
+    samples_nanos: Vec<u64>,
+    observed_runner: RunnerFingerprint,
+) -> RunnerPreflightReport {
+    let mut ordered = samples_nanos.clone();
+    ordered.sort_unstable();
+    let median_nanos = ordered.get(ordered.len() / 2).copied().unwrap_or(0);
+    let spread_ratio = match (ordered.first(), ordered.last(), median_nanos) {
+        (Some(minimum), Some(maximum), median) if median > 0 => {
+            (*maximum - *minimum) as f64 / median as f64
+        }
+        _ => f64::INFINITY,
+    };
+    RunnerPreflightReport {
+        schema_version: 1,
+        release: RELEASE.to_owned(),
+        profile: REFERENCE_PROFILE.to_owned(),
+        passed: samples_nanos.len() == RUNNER_PREFLIGHT_REPEATS
+            && spread_ratio <= RUNNER_PREFLIGHT_MAX_SPREAD_RATIO,
+        samples_nanos,
+        median_nanos,
+        spread_ratio,
+        maximum_spread_ratio: RUNNER_PREFLIGHT_MAX_SPREAD_RATIO,
+        observed_runner,
+    }
+}
+
+pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
+    let (release, profile_name) = parse_args(args)?;
+    validate_request(&release, &profile_name)?;
+    if std::env::var(REFERENCE_AUTHORIZATION_ENV).as_deref() != Ok("1") {
+        return Err(PerfPrebuildError::new(format!(
+            "{REFERENCE_AUTHORIZATION_ENV}=1 is required; runner preflight is manual-lane only"
+        )));
+    }
+    let root = crate::doc_check::find_repo_root()
+        .map_err(|error| PerfPrebuildError::new(error.to_string()))?;
+    let profile = load_profile(&root)?;
+    let mut host = SystemPrebuildHost;
+    validate_profile_contract(&profile, &profile_name, &host.reference_platform_key())?;
+    let observed_runner = host
+        .observe_runner(&profile.runner)
+        .map_err(|error| PerfPrebuildError::new(format!("runner observation failed: {error}")))?;
+    let validation = profile.runner.validate(&observed_runner);
+    if !validation.eligible || !is_sha256(&observed_runner.fingerprint) {
+        return Err(PerfPrebuildError::new(format!(
+            "reference runner is ineligible before measurement: {:?}",
+            validation.reasons
+        )));
+    }
+
+    let report = evaluate_runner_preflight(calibration_samples(), observed_runner);
+    let output = root.join(RUNNER_PREFLIGHT_RELATIVE_PATH);
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent).map_err(|error| {
+            PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
+        })?;
+    }
+    let bytes = json_bytes(&report, "runner preflight")?;
+    write_create_new(&output, &bytes)?;
+    if !report.passed {
+        return Err(PerfPrebuildError::new(format!(
+            "runner preflight spread {:.4} exceeds fixed {:.4}; all {} samples are retained in {}",
+            report.spread_ratio,
+            report.maximum_spread_ratio,
+            report.samples_nanos.len(),
+            output.display()
+        )));
+    }
+    println!(
+        "0.67 runner preflight passed: spread={:.4} samples={} output={}",
+        report.spread_ratio,
+        report.samples_nanos.len(),
+        output.display()
+    );
+    Ok(())
 }
 
 pub fn run(args: Vec<String>) -> Result<(), PerfPrebuildError> {
@@ -519,10 +614,10 @@ fn validate_profile_contract(
         && profile.required_platform_key == REQUIRED_PLATFORM
         && platform == REQUIRED_PLATFORM
         && profile.runner.name == REFERENCE_PROFILE
-        && profile.runner.required_runner_class == "github-hosted-reference-v1"
+        && profile.runner.required_runner_class == "self-hosted-bare-metal-v1"
         && profile.runner.minimum_logical_cores == 4
-        && profile.runner.required_cpu_affinity == "github-managed-vm"
-        && profile.runner.required_cgroup_cpu_quota == "github-managed-vm"
+        && profile.runner.required_cpu_affinity == "1-4"
+        && profile.runner.required_cgroup_cpu_quota == "unlimited"
         && profile.runner.require_dedicated
         && (profile.runner.maximum_calibration_score - 0.25).abs() < f64::EPSILON
         && profile.prebuild.schema_version == 1
@@ -1002,21 +1097,32 @@ fn observe_linux_reference_runner(
     if std::env::var("GITHUB_ACTIONS").as_deref() != Ok("true")
         || std::env::var("RUNNER_OS").as_deref() != Ok("Linux")
         || std::env::var("RUNNER_ARCH").as_deref() != Ok("X64")
+        || std::env::var("RUNNER_ENVIRONMENT").as_deref() != Ok("self-hosted")
+        || std::env::var("HYDRACACHE_PERF_RUNNER_CLASS").as_deref()
+            != Ok(profile.required_runner_class.as_str())
     {
-        return Err("reference-v1 requires a GitHub-hosted Linux x64 job VM".to_owned());
-    }
-    let image_os = std::env::var("ImageOS")
-        .map_err(|_| "GitHub runner ImageOS identity is absent".to_owned())?;
-    let image_version = std::env::var("ImageVersion")
-        .map_err(|_| "GitHub runner ImageVersion identity is absent".to_owned())?;
-    if image_os != "ubuntu24" || image_version.trim().is_empty() {
-        return Err("reference-v1 requires the pinned ubuntu-24.04 runner image".to_owned());
+        return Err(
+            "reference-v1 requires the authorized self-hosted Linux x64 bare-metal lane".to_owned(),
+        );
     }
     let cpu_model = proc_value("/proc/cpuinfo", "model name")?;
-    let cpu_affinity_raw = proc_value("/proc/self/status", "Cpus_allowed_list")?;
-    let logical_cores = count_cpu_list(&cpu_affinity_raw)?;
+    let cpu_affinity = proc_value("/proc/self/status", "Cpus_allowed_list")?;
+    if cpu_affinity != profile.required_cpu_affinity {
+        return Err(format!(
+            "reference CPU affinity {cpu_affinity:?} differs from required {:?}",
+            profile.required_cpu_affinity
+        ));
+    }
+    let logical_cores = count_cpu_list(&cpu_affinity)?;
     if logical_cores < profile.minimum_logical_cores {
-        return Err("GitHub-hosted VM core count is below the profile minimum".to_owned());
+        return Err("self-hosted runner core count is below the profile minimum".to_owned());
+    }
+    let cgroup_cpu_quota = cgroup_cpu_quota()?;
+    if cgroup_cpu_quota != profile.required_cgroup_cpu_quota {
+        return Err(format!(
+            "reference cgroup CPU quota {cgroup_cpu_quota:?} differs from required {:?}",
+            profile.required_cgroup_cpu_quota
+        ));
     }
     let ram_kib = proc_value("/proc/meminfo", "MemTotal")?
         .split_whitespace()
@@ -1031,25 +1137,41 @@ fn observe_linux_reference_runner(
         .map_err(|error| format!("kernel probe failed: {error}"))?
         .trim()
         .to_owned();
-    let governor = "github-managed".to_owned();
-    let turbo = "github-managed".to_owned();
+    let governor = fs::read_to_string("/sys/devices/system/cpu/cpu1/cpufreq/scaling_governor")
+        .map(|value| value.trim().to_owned())
+        .unwrap_or_else(|_| "unavailable".to_owned());
+    let turbo = fs::read_to_string("/sys/devices/system/cpu/intel_pstate/no_turbo")
+        .map(|value| match value.trim() {
+            "1" => "disabled".to_owned(),
+            "0" => "enabled".to_owned(),
+            other => format!("unknown:{other}"),
+        })
+        .unwrap_or_else(|_| "unavailable".to_owned());
     let calibration_score = calibration_score();
     #[derive(Serialize)]
     struct StableFingerprint<'a> {
         schema_version: u32,
         runner_class: &'a str,
-        image_os: &'a str,
-        image_version: &'a str,
-        runner_os: &'a str,
-        runner_arch: &'a str,
+        cpu_model: &'a str,
+        logical_cores: u32,
+        ram_bytes: u64,
+        kernel: &'a str,
+        cpu_affinity: &'a str,
+        cgroup_cpu_quota: &'a str,
+        governor: &'a str,
+        turbo: &'a str,
     }
     let stable = StableFingerprint {
         schema_version: 1,
         runner_class: &profile.required_runner_class,
-        image_os: &image_os,
-        image_version: &image_version,
-        runner_os: "Linux",
-        runner_arch: "X64",
+        cpu_model: &cpu_model,
+        logical_cores,
+        ram_bytes,
+        kernel: &kernel,
+        cpu_affinity: &cpu_affinity,
+        cgroup_cpu_quota: &cgroup_cpu_quota,
+        governor: &governor,
+        turbo: &turbo,
     };
     let stable_bytes = serde_json::to_vec(&stable).map_err(|error| error.to_string())?;
     Ok(RunnerFingerprint {
@@ -1060,8 +1182,8 @@ fn observe_linux_reference_runner(
         ram_bytes,
         os: "linux".to_owned(),
         kernel,
-        cpu_affinity: profile.required_cpu_affinity.clone(),
-        cgroup_cpu_quota: profile.required_cgroup_cpu_quota.clone(),
+        cpu_affinity,
+        cgroup_cpu_quota,
         governor,
         turbo,
         shared_hardware: false,
@@ -1069,6 +1191,28 @@ fn observe_linux_reference_runner(
     })
 }
 
+fn cgroup_cpu_quota() -> Result<String, String> {
+    let value = fs::read_to_string("/sys/fs/cgroup/cpu.max")
+        .map_err(|error| format!("cgroup v2 cpu.max probe failed: {error}"))?;
+    let mut fields = value.split_whitespace();
+    let quota = fields
+        .next()
+        .ok_or_else(|| "cgroup v2 cpu.max is empty".to_owned())?;
+    let period = fields
+        .next()
+        .ok_or_else(|| "cgroup v2 cpu.max period is absent".to_owned())?;
+    if fields.next().is_some() || period.parse::<u64>().is_err() {
+        return Err("cgroup v2 cpu.max is malformed".to_owned());
+    }
+    if quota == "max" {
+        Ok("unlimited".to_owned())
+    } else {
+        let quota = quota
+            .parse::<u64>()
+            .map_err(|error| format!("cgroup v2 cpu.max quota is malformed: {error}"))?;
+        Ok(format!("{quota}/{period}"))
+    }
+}
 fn proc_value(path: &str, key: &str) -> Result<String, String> {
     let text = fs::read_to_string(path).map_err(|error| format!("reading {path}: {error}"))?;
     text.lines()
@@ -1103,9 +1247,9 @@ fn count_cpu_list(value: &str) -> Result<u32, String> {
     Ok(count)
 }
 
-fn calibration_score() -> f64 {
-    let mut samples = Vec::with_capacity(7);
-    for repeat in 0_u64..7 {
+fn calibration_samples() -> Vec<u64> {
+    let mut samples = Vec::with_capacity(RUNNER_PREFLIGHT_REPEATS);
+    for repeat in 0_u64..RUNNER_PREFLIGHT_REPEATS as u64 {
         let started = Instant::now();
         let mut state = 0x9e37_79b9_7f4a_7c15_u64 ^ repeat;
         for index in 0_u64..1_000_000 {
@@ -1115,8 +1259,16 @@ fn calibration_score() -> f64 {
                 .wrapping_mul(0xe703_7ed1_a0b4_28db);
         }
         std::hint::black_box(state);
-        samples.push(started.elapsed().as_nanos() as f64);
+        samples.push(started.elapsed().as_nanos().try_into().unwrap_or(u64::MAX));
     }
+    samples
+}
+
+fn calibration_score() -> f64 {
+    let mut samples = calibration_samples()
+        .into_iter()
+        .map(|sample| sample as f64)
+        .collect::<Vec<_>>();
     samples.sort_by(f64::total_cmp);
     let median = samples[samples.len() / 2];
     let mut deviations = samples
@@ -1128,5 +1280,50 @@ fn calibration_score() -> f64 {
         f64::INFINITY
     } else {
         deviations[deviations.len() / 2] / median
+    }
+}
+#[cfg(test)]
+mod preflight_tests {
+    use super::*;
+
+    fn runner() -> RunnerFingerprint {
+        RunnerFingerprint {
+            runner_class: "fixture".to_owned(),
+            fingerprint: "a".repeat(64),
+            cpu_model: "fixture".to_owned(),
+            logical_cores: 8,
+            ram_bytes: 1,
+            os: "linux".to_owned(),
+            kernel: "fixture".to_owned(),
+            cpu_affinity: "1-4".to_owned(),
+            cgroup_cpu_quota: "unlimited".to_owned(),
+            governor: "performance".to_owned(),
+            turbo: "disabled".to_owned(),
+            shared_hardware: false,
+            calibration_score: 0.01,
+        }
+    }
+
+    #[test]
+    fn preflight_retains_all_fixed_samples_and_accepts_stable_runner() {
+        let samples = vec![100, 102, 98, 101, 99, 103, 100];
+        let report = evaluate_runner_preflight(samples.clone(), runner());
+
+        assert!(report.passed);
+        assert_eq!(report.samples_nanos, samples);
+        assert_eq!(report.median_nanos, 100);
+        assert!((report.spread_ratio - 0.05).abs() < f64::EPSILON);
+        assert_eq!(report.maximum_spread_ratio, 0.15);
+    }
+
+    #[test]
+    fn preflight_rejects_noise_or_any_attempt_to_shorten_the_sample_set() {
+        let noisy = evaluate_runner_preflight(vec![100, 102, 98, 101, 99, 130, 100], runner());
+        assert!(!noisy.passed);
+        assert!((noisy.spread_ratio - 0.32).abs() < f64::EPSILON);
+
+        let shortened = evaluate_runner_preflight(vec![100, 101, 99, 100, 102, 98], runner());
+        assert!(!shortened.passed);
+        assert_eq!(shortened.samples_nanos.len(), 6);
     }
 }

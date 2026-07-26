@@ -443,6 +443,10 @@ fn bootstrapped_fixture() -> (ContractBundle, Vec<CandidateReport>) {
 fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
     let reference =
         perf_budget::load_bundle(&repo_root(), perf_budget::RELEASE, "reference-v1").unwrap();
+    assert_eq!(
+        reference.baseline.profile_sha256,
+        perf_budget::digest_json(&reference.profile)
+    );
     let reference_problems = perf_budget::validate_contract_bundle(&reference);
     assert!(reference_problems.is_empty(), "{reference_problems:#?}");
     assert_eq!(
@@ -452,7 +456,7 @@ fn committed_w7_contract_is_explicitly_unbootstrapped_and_fail_closed() {
     assert!(reference.profile.runner.allowed_fingerprints.is_empty());
     assert_eq!(
         reference.profile.runner.required_runner_class,
-        "github-hosted-reference-v1"
+        "self-hosted-bare-metal-v1"
     );
     assert!(!reference.profile.noise.absolute_numbers_are_ship_evidence);
     assert!(reference.baseline.members.is_empty());

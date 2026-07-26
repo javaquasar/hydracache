@@ -1020,10 +1020,12 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
         );
     }
 
-    let runner = mapping_value(job.as_mapping(), "runs-on").and_then(Value::as_str);
-    if runner != Some("ubuntu-24.04") {
+    let runner_labels = mapping_value(job.as_mapping(), "runs-on")
+        .and_then(Value::as_sequence)
+        .map(|labels| labels.iter().filter_map(Value::as_str).collect::<Vec<_>>());
+    if runner_labels != Some(vec!["self-hosted", "linux", "x64", "hydracache-perf-v1"]) {
         problems.push(
-            "release 0.67 performance lane requires the pinned GitHub-hosted ubuntu-24.04 image"
+            "release 0.67 performance lane requires the exact protected self-hosted bare-metal labels"
                 .to_owned(),
         );
     }
@@ -1048,6 +1050,7 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
         .map(String::as_str)
         .unwrap_or_default();
     if !condition.contains("workflow_dispatch")
+        || !condition.contains("github.ref == 'refs/heads/main'")
         || !condition.contains("inputs.run_reference_performance")
         || !condition.contains("candidate_release == '0.67'")
         || condition.contains("schedule")
@@ -1130,20 +1133,24 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
             "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067",
         ),
         (
+            "Preflight 0.67 reference runner stability",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1",
+        ),
+        (
             "Prebuild 0.67 performance binaries",
-            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
         ),
         (
             "Run 0.67 core performance evidence",
-            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
         ),
         (
             "Run 0.67 RESP performance evidence",
-            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
         ),
         (
             "Run 0.67 control-plane performance evidence",
-            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
         ),
         (
             "Check 0.67 performance budgets",

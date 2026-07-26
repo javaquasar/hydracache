@@ -29,20 +29,18 @@ fn w4_scenarios_are_strict_and_reject_surface_overclaims() {
     assert!(no_knee_scope.validate().is_err());
 
     let grid = GridModelScenario::parse_toml(GRID_SCENARIO).unwrap();
+    assert_eq!(
+        grid.reference.committed_scenario_sha256,
+        grid.contract_sha256()
+    );
     grid.validate_exact_reference_shape().unwrap();
     assert_eq!(
         grid.reference.runner.required_runner_class,
-        "github-hosted-reference-v1"
+        "self-hosted-bare-metal-v1"
     );
     assert_eq!(grid.reference.runner.minimum_logical_cores, 4);
-    assert_eq!(
-        grid.reference.runner.required_cpu_affinity,
-        "github-managed-vm"
-    );
-    assert_eq!(
-        grid.reference.runner.required_cgroup_cpu_quota,
-        "github-managed-vm"
-    );
+    assert_eq!(grid.reference.runner.required_cpu_affinity, "1-4");
+    assert_eq!(grid.reference.runner.required_cgroup_cpu_quota, "unlimited");
     assert_eq!(
         grid.reference.runner.maximum_calibration_score_millionths,
         250_000
