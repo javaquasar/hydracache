@@ -375,7 +375,7 @@ fn canary_release_governance_accepts_a_missing_mandatory_gate() {
 }
 
 #[test]
-fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
+fn release_067_deferred_performance_gates_remain_registered_and_fail_closed() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
     let problems = xtask::release_governance::release_067_gate_contract_problems(&registry.gate);
@@ -392,23 +392,24 @@ fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
         missing.retain(|gate| gate.id != id);
         let problems = xtask::release_governance::release_067_gate_contract_problems(&missing);
         assert!(
-            problems
-                .iter()
-                .any(|problem| problem.contains("missing mandatory gate") && problem.contains(id)),
+            problems.iter().any(|problem| {
+                problem.contains("missing deferred reference gate") && problem.contains(id)
+            }),
             "missing gate {id} was accepted: {problems:#?}"
         );
     }
 
-    let mut optional = registry.gate.clone();
-    optional
+    let mut wrongly_mandatory = registry.gate.clone();
+    wrongly_mandatory
         .iter_mut()
         .find(|gate| gate.id == "env.hydracache-run-067-perf-resp")
         .unwrap()
-        .ship_mandatory = false;
-    let problems = xtask::release_governance::release_067_gate_contract_problems(&optional);
+        .ship_mandatory = true;
+    let problems =
+        xtask::release_governance::release_067_gate_contract_problems(&wrongly_mandatory);
     assert!(problems.iter().any(|problem| {
         problem.contains("env.hydracache-run-067-perf-resp")
-            && problem.contains("mandatory dedicated Linux")
+            && problem.contains("deferred, non-ship, dedicated Linux")
     }));
 
     let mut destructive_consumer = registry.gate.clone();
@@ -550,20 +551,20 @@ fn runtime_reports_are_gate_artifacts_not_committed_manifest_artifacts() {
 }
 
 #[test]
-fn canary_release_governance_accepts_a_missing_mandatory_performance_gate() {
+fn canary_release_governance_accepts_a_missing_deferred_performance_gate() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let registry = xtask::gated_tests::load_registry(&root).unwrap();
     let mut missing = registry.gate.clone();
     missing.retain(|gate| gate.id != "tool.perf-budget-check-067");
     let problems = xtask::release_governance::release_067_gate_contract_problems(&missing);
-    let rejected = problems
-        .iter()
-        .any(|problem| problem.contains("missing mandatory gate tool.perf-budget-check-067"));
+    let rejected = problems.iter().any(|problem| {
+        problem.contains("missing deferred reference gate tool.perf-budget-check-067")
+    });
 
     if std::env::var("HYDRACACHE_CANARY_DEFECT").as_deref() == Ok("W10") {
         assert!(
             !rejected,
-            "HC-CANARY-RED:W10 release governance accepted a missing mandatory performance gate"
+            "HC-CANARY-RED:W10 release governance accepted a missing deferred performance gate"
         );
     }
     assert!(
