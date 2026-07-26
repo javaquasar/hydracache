@@ -614,10 +614,10 @@ fn validate_profile_contract(
         && profile.required_platform_key == REQUIRED_PLATFORM
         && platform == REQUIRED_PLATFORM
         && profile.runner.name == REFERENCE_PROFILE
-        && profile.runner.required_runner_class == "github-hosted-reference-v1"
+        && profile.runner.required_runner_class == "self-hosted-bare-metal-v1"
         && profile.runner.minimum_logical_cores == 4
-        && profile.runner.required_cpu_affinity == "github-managed-vm"
-        && profile.runner.required_cgroup_cpu_quota == "github-managed-vm"
+        && profile.runner.required_cpu_affinity == "1-4"
+        && profile.runner.required_cgroup_cpu_quota == "unlimited"
         && profile.runner.require_dedicated
         && (profile.runner.maximum_calibration_score - 0.25).abs() < f64::EPSILON
         && profile.prebuild.schema_version == 1
@@ -1097,21 +1097,32 @@ fn observe_linux_reference_runner(
     if std::env::var("GITHUB_ACTIONS").as_deref() != Ok("true")
         || std::env::var("RUNNER_OS").as_deref() != Ok("Linux")
         || std::env::var("RUNNER_ARCH").as_deref() != Ok("X64")
+        || std::env::var("RUNNER_ENVIRONMENT").as_deref() != Ok("self-hosted")
+        || std::env::var("HYDRACACHE_PERF_RUNNER_CLASS").as_deref()
+            != Ok(profile.required_runner_class.as_str())
     {
-        return Err("reference-v1 requires a GitHub-hosted Linux x64 job VM".to_owned());
-    }
-    let image_os = std::env::var("ImageOS")
-        .map_err(|_| "GitHub runner ImageOS identity is absent".to_owned())?;
-    let image_version = std::env::var("ImageVersion")
-        .map_err(|_| "GitHub runner ImageVersion identity is absent".to_owned())?;
-    if image_os != "ubuntu24" || image_version.trim().is_empty() {
-        return Err("reference-v1 requires the pinned ubuntu-24.04 runner image".to_owned());
+        return Err(
+            "reference-v1 requires the authorized self-hosted Linux x64 bare-metal lane".to_owned(),
+        );
     }
     let cpu_model = proc_value("/proc/cpuinfo", "model name")?;
-    let cpu_affinity_raw = proc_value("/proc/self/status", "Cpus_allowed_list")?;
-    let logical_cores = count_cpu_list(&cpu_affinity_raw)?;
+    let cpu_affinity = proc_value("/proc/self/status", "Cpus_allowed_list")?;
+    if cpu_affinity != profile.required_cpu_affinity {
+        return Err(format!(
+            "reference CPU affinity {cpu_affinity:?} differs from required {:?}",
+            profile.required_cpu_affinity
+        ));
+    }
+    let logical_cores = count_cpu_list(&cpu_affinity)?;
     if logical_cores < profile.minimum_logical_cores {
-        return Err("GitHub-hosted VM core count is below the profile minimum".to_owned());
+        return Err("self-hosted runner core count is below the profile minimum".to_owned());
+    }
+    let cgroup_cpu_quota = cgroup_cpu_quota()?;
+    if cgroup_cpu_quota != profile.required_cgroup_cpu_quota {
+        return Err(format!(
+            "reference cgroup CPU quota {cgroup_cpu_quota:?} differs from required {:?}",
+            profile.required_cgroup_cpu_quota
+        ));
     }
     let ram_kib = proc_value("/proc/meminfo", "MemTotal")?
         .split_whitespace()
@@ -1126,25 +1137,41 @@ fn observe_linux_reference_runner(
         .map_err(|error| format!("kernel probe failed: {error}"))?
         .trim()
         .to_owned();
-    let governor = "github-managed".to_owned();
-    let turbo = "github-managed".to_owned();
+    let governor = fs::read_to_string("/sys/devices/system/cpu/cpu1/cpufreq/scaling_governor")
+        .map(|value| value.trim().to_owned())
+        .unwrap_or_else(|_| "unavailable".to_owned());
+    let turbo = fs::read_to_string("/sys/devices/system/cpu/intel_pstate/no_turbo")
+        .map(|value| match value.trim() {
+            "1" => "disabled".to_owned(),
+            "0" => "enabled".to_owned(),
+            other => format!("unknown:{other}"),
+        })
+        .unwrap_or_else(|_| "unavailable".to_owned());
     let calibration_score = calibration_score();
     #[derive(Serialize)]
     struct StableFingerprint<'a> {
         schema_version: u32,
         runner_class: &'a str,
-        image_os: &'a str,
-        image_version: &'a str,
-        runner_os: &'a str,
-        runner_arch: &'a str,
+        cpu_model: &'a str,
+        logical_cores: u32,
+        ram_bytes: u64,
+        kernel: &'a str,
+        cpu_affinity: &'a str,
+        cgroup_cpu_quota: &'a str,
+        governor: &'a str,
+        turbo: &'a str,
     }
     let stable = StableFingerprint {
         schema_version: 1,
         runner_class: &profile.required_runner_class,
-        image_os: &image_os,
-        image_version: &image_version,
-        runner_os: "Linux",
-        runner_arch: "X64",
+        cpu_model: &cpu_model,
+        logical_cores,
+        ram_bytes,
+        kernel: &kernel,
+        cpu_affinity: &cpu_affinity,
+        cgroup_cpu_quota: &cgroup_cpu_quota,
+        governor: &governor,
+        turbo: &turbo,
     };
     let stable_bytes = serde_json::to_vec(&stable).map_err(|error| error.to_string())?;
     Ok(RunnerFingerprint {
@@ -1155,8 +1182,8 @@ fn observe_linux_reference_runner(
         ram_bytes,
         os: "linux".to_owned(),
         kernel,
-        cpu_affinity: profile.required_cpu_affinity.clone(),
-        cgroup_cpu_quota: profile.required_cgroup_cpu_quota.clone(),
+        cpu_affinity,
+        cgroup_cpu_quota,
         governor,
         turbo,
         shared_hardware: false,
@@ -1164,6 +1191,28 @@ fn observe_linux_reference_runner(
     })
 }
 
+fn cgroup_cpu_quota() -> Result<String, String> {
+    let value = fs::read_to_string("/sys/fs/cgroup/cpu.max")
+        .map_err(|error| format!("cgroup v2 cpu.max probe failed: {error}"))?;
+    let mut fields = value.split_whitespace();
+    let quota = fields
+        .next()
+        .ok_or_else(|| "cgroup v2 cpu.max is empty".to_owned())?;
+    let period = fields
+        .next()
+        .ok_or_else(|| "cgroup v2 cpu.max period is absent".to_owned())?;
+    if fields.next().is_some() || period.parse::<u64>().is_err() {
+        return Err("cgroup v2 cpu.max is malformed".to_owned());
+    }
+    if quota == "max" {
+        Ok("unlimited".to_owned())
+    } else {
+        let quota = quota
+            .parse::<u64>()
+            .map_err(|error| format!("cgroup v2 cpu.max quota is malformed: {error}"))?;
+        Ok(format!("{quota}/{period}"))
+    }
+}
 fn proc_value(path: &str, key: &str) -> Result<String, String> {
     let text = fs::read_to_string(path).map_err(|error| format!("reading {path}: {error}"))?;
     text.lines()

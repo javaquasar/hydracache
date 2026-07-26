@@ -9,7 +9,7 @@ support a release statement.
 > `0.67.0` performance number is release-qualified yet. The annotated `v0.66.0`
 > predecessor is present and ancestral; the W7 `reference-v1` anchor and rolling
 > baseline remain `unbootstrapped`. Shipping requires at least five eligible serialized
-> GitHub-hosted `main` runs from the same pinned Ubuntu image family, an independently reviewed
+> self-hosted bare-metal `main` runs from the same reviewed runner fingerprint family, an independently reviewed
 > anchor/budget payload, and a fresh exact-candidate receipt set.
 
 ## Measured surfaces and claim boundaries
@@ -55,18 +55,19 @@ budget, and baseline contracts live under `docs/testing/perf-profiles`,
 | Lane | Purpose | May satisfy a performance ship gate? |
 | --- | --- | --- |
 | `ci-shared` | Broad-tolerance regression tripwire on a declared hosted-runner class; structural/unit receipts remain useful | No |
-| `reference-v1` | Serialized manual execution on pinned `ubuntu-24.04`; the runner-class fingerprint binds `ImageOS` and `ImageVersion`, while reports retain observed CPU/RAM/kernel facts | Yes, after bootstrap and only as relative same-image regression evidence |
+| `reference-v1` | Serialized manual execution on the protected `hydracache-perf-v1` bare-metal runner; the fingerprint binds observed hardware/kernel/affinity/quota facts | Yes, after bootstrap and only as relative same-fingerprint regression evidence |
 
-GitHub-hosted variability is expected. The automatic `ci-shared` lane may only warn
-about a regression. The manual `reference-v1` lane may create and enforce a reviewed
-same-image rolling anchor, but neither lane establishes a portable capacity floor or
-sizing guarantee.
+GitHub-hosted variability is expected, so the automatic `ci-shared` lane may only warn
+about a regression. The manual `reference-v1` lane is reserved for a protected,
+non-oversubscribed bare-metal host and may create and enforce a reviewed same-fingerprint
+rolling anchor. Neither lane establishes a portable capacity floor or sizing guarantee.
 
-The standard `ubuntu-24.04` runner currently exposes four logical workers. Accordingly,
-the hosted W1 scaling curve is the exact `1/2/4` series, the hot-key shape uses four
-workers, and W4B uses the same four-core runner attestation. Eight-worker results are
-absent, not estimated: adding them requires a separately reviewed larger-runner profile,
-fingerprint family, baseline, and budget.
+The workflow pins the measurement process to CPUs `1-4`. Accordingly, the reference W1
+scaling curve is the exact `1/2/4` series, the hot-key shape uses four workers, and W4B
+uses the same four-core runner attestation. Eight-worker results are absent, not estimated:
+adding them requires a separately reviewed larger-runner profile, fingerprint family,
+baseline, and budget. Provisioning and security requirements are in
+[`testing/PERF_RUNNER_0_67.md`](testing/PERF_RUNNER_0_67.md).
 
 The enforcing W7 decision requires both:
 
@@ -76,7 +77,7 @@ The enforcing W7 decision requires both:
 
 The current committed `reference-v1` budget and baseline are intentionally
 `unbootstrapped`. Bootstrap is allowed only after at least five eligible,
-successful, stable, clean-commit GitHub-hosted `main` runs from one pinned image family are available. The exact
+successful, stable, clean-commit self-hosted bare-metal `main` runs from one runner fingerprint family are available. The exact
 anchor/window payload and budget change require an independent approver; the
 candidate cannot baseline or approve itself.
 
@@ -107,7 +108,7 @@ Implementation closure is not release closure. As of 2026-07-21:
 - the annotated `v0.66.0` predecessor is present and satisfies the ancestry
   prerequisite;
 - the W7 anchor, rolling baseline, and all numerical budgets remain
-  unbootstrapped pending at least five eligible serialized GitHub-hosted `main` runs and
+  unbootstrapped pending at least five eligible serialized self-hosted bare-metal `main` runs and
   independent review;
 - final serialized reference core, RESP/Redis, and control-plane artifacts have not been
   accepted as one frozen exact-candidate set; and
@@ -116,7 +117,7 @@ Implementation closure is not release closure. As of 2026-07-21:
 
 Therefore this repository makes no shipped `0.67.0` portable capacity floor, sizing,
 Redis-comparison, or metrics-agreement claim yet. Even after ship, raw throughput is
-report-local characterization; the enforcing hosted profile supports relative regression
+report-local characterization; the enforcing reference profile supports relative regression
 claims only. Any quoted number must identify its report,
 scenario, runner fingerprint, profile, source commit, method, and claim scope;
 otherwise it is an exploratory measurement, not a HydraCache release result.

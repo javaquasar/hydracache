@@ -16,7 +16,7 @@ on:
         default: false
         type: boolean
       run_reference_performance:
-        description: "Run 0.67 reference evidence on a serialized GitHub-hosted Ubuntu 24.04 VM"
+        description: "Run 0.67 ship evidence on the authorized self-hosted bare-metal runner"
         required: false
         default: false
         type: boolean
@@ -692,15 +692,16 @@ jobs:
           if-no-files-found: error
 
   release-067-performance:
-    name: 0.67 GitHub-hosted Reference Evidence
-    runs-on: ubuntu-24.04
+    name: 0.67 Self-hosted Reference Evidence
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
     timeout-minutes: 360
-    if: github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.run_reference_performance && inputs.candidate_release == '0.67'
     concurrency:
       group: release-067-performance-reference-v1
       cancel-in-progress: false
     env:
       HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
 
     steps:
       - name: Checkout
@@ -740,19 +741,19 @@ jobs:
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
 
       - name: Preflight 0.67 reference runner stability
-        run: cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1
 
       - name: Prebuild 0.67 performance binaries
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
       - name: Run 0.67 core performance evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
 
       - name: Run 0.67 RESP performance evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
 
       - name: Run 0.67 control-plane performance evidence
-        run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
 
       - name: Check 0.67 performance budgets
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-budget-check-067

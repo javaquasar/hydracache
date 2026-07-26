@@ -23,7 +23,7 @@
 > - **Status:** in-progress, implementation closure reached (W0-W10 source, tests, scenarios,
 >   governance, CI wiring, and documentation are present), but **not shipped**. The annotated
 >   `v0.66.0` predecessor is present and ancestral; W7 remains deliberately unbootstrapped pending at least five
->   eligible serialized GitHub-hosted `main` runs plus independent anchor/budget review and a fresh frozen-candidate
+>   eligible serialized self-hosted bare-metal `main` runs plus independent anchor/budget review and a fresh frozen-candidate
 >   receipt set.
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - rules: [`../RULES.md`](../RULES.md) -
@@ -91,15 +91,16 @@ extrapolations.
   fingerprint family, toolchain/build/scenario digest, and its numerical output never produces a
   capacity claim or satisfies a performance ship gate. Hosted structural/unit-test receipts remain
   valid for their non-performance contracts.
-- `reference-v1` is the enforcing manual lane serialized on pinned `ubuntu-24.04`. Its stable
-  runner-class fingerprint binds `ImageOS` and `ImageVersion`, while each report retains observed
-  CPU/RAM/kernel/calibration facts. Image drift, calibration failure, or profile mismatch makes the
-  run non-evidence; the profile supports relative same-image regression claims, not portable floors.
-- Standard GitHub-hosted `ubuntu-24.04` exposes four logical workers. The enforcing hosted
-  contract therefore measures W1 scaling at `1/2/4`, uses four workers for the W1 hot-key shape,
-  and admits W4B on the same four-core runner policy. An `8`-worker or eight-core point is outside
-  this profile: it requires a separately reviewed larger-runner profile and baseline and may not be
-  oversubscribed, inferred, or merged into the hosted series.
+- `reference-v1` is the enforcing manual lane serialized on the protected
+  `hydracache-perf-v1` bare-metal runner. Its stable fingerprint binds observed
+  CPU/RAM/kernel/affinity/quota/governor/turbo facts. Fingerprint drift, preflight failure, or profile
+  mismatch makes the run non-evidence; the profile supports relative same-fingerprint regression
+  claims, not portable floors.
+- The workflow pins the reference process to CPUs `1-4`. The enforcing contract therefore measures
+  W1 scaling at `1/2/4`, uses four workers for the W1 hot-key shape, and admits W4B on the same
+  four-core runner policy. An `8`-worker or eight-core point is outside this profile: it requires a
+  separately reviewed larger-runner profile and baseline and may not be oversubscribed, inferred,
+  or merged into the reference series.
 - The enforcing decision is dual: the candidate must pass a reviewed immutable release anchor
   (prevents gradual ratcheting) and an eligible rolling `main` baseline (detects recent regressions).
   Candidate, failed, quarantined, mixed-fingerprint, stale, unstable, or current-commit reports are
@@ -223,7 +224,7 @@ Populate as W-items land (same discipline as `0.64`): item -> where implemented 
 | W4 | `crates/hydracache-loadgen::{targets::{control_plane,grid_model},tiers::{control_plane,grid_model},cli}`; `docs/testing/perf-scenarios/0.67/{control-plane-real-daemon-v1,grid-model-primitives-v1}.toml` | `cargo test -p hydracache-loadgen --test w4_split_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 w4` | W4A directly launches the exact prebuilt 3/5/7-daemon candidate and records separate selected leader/follower admin-wire knees plus receipt-bound Add/Drain convergence; W4B runs exported consistency/session/replication primitives in a labeled in-process model. Their artifacts and claim scopes cannot be merged, summed, or relabeled as distributed value-grid capacity. |
 | W5 | `crates/hydracache-loadgen::{targets::brownout,tiers::brownout,cli,main}`; `crates/hydracache-loadgen/tests/w5_brownout_067.rs`; `docs/testing/perf-scenarios/0.67/brownout-*-v1.toml` | `cargo test -p hydracache-loadgen --test w5_brownout_067 --locked -j 2` | Three non-combinable authorities: committed-metadata control-plane recovery, killed node-local RESP endpoint availability with no neighbor failover, and labeled in-process grid-model fault cost. |
 | W6 | `crates/hydracache-loadgen::{overload,cli,main}`; `crates/hydracache-loadgen/tests/w6_overload_067.rs`; `docs/testing/perf-scenarios/0.67/overload-capacity-v1.toml` | `cargo test -p hydracache-loadgen --test w6_overload_067 --locked -j 2` | Goodput/recovery at 1.2x/1.5x/2x is admitted only for local, in-process client-surface, and selected-endpoint RESP reports with valid predecessor knees. |
-| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible serialized GitHub-hosted `main` runs and independent review. |
+| W7 | `crates/hydracache-loadgen::budget_receipt`; `crates/xtask::{perf_budget,main}`; `crates/xtask/tests/perf_budget_067.rs`; `docs/testing/{perf-profiles,perf-budgets/0.67,perf-baselines/0.67}` | `cargo test -p xtask --test perf_budget_067 --locked -j 2` | Dual immutable-anchor plus rolling-`main` policy is implemented and fail-closed, but the committed anchor/baseline is intentionally `unbootstrapped`; no ship budget exists before five eligible serialized self-hosted bare-metal `main` runs and independent review. |
 | W8 | `crates/hydracache-loadgen::{compare_redis,cli,main}`; `crates/hydracache-loadgen/tests/w8_redis_compare_067.rs`; `docs/testing/perf-scenarios/0.67/compare-redis-v1.toml` | `cargo test -p hydracache-loadgen --test w8_redis_compare_067 --locked -j 2`; `cargo test -p hydracache-loadgen --lib --locked -j 2 compare_redis` | Same host, pinned tool/image, alternating order, canonical sealed W3 predecessor, and one selected node-local RESP endpoint. It is a method-bound artifact, not a Redis-replacement or superiority claim. |
 | W9 | `crates/hydracache-loadgen::{metrics_honesty,tiers::{resp,control_plane}}`; `crates/hydracache-loadgen/tests/w9_metrics_067.rs`; `docs/testing/perf-scenarios/0.67/metrics-honesty-v1.toml` | `cargo test -p hydracache-loadgen --test w9_metrics_067 --locked -j 2` | Same-process observer windows cross-check only metrics already exported by real RESP/control-plane daemons; absent fields are `not_available`, and service time is never relabeled as scheduled-send latency. |
 | W10 | `.github/workflows/ci.yml`; `crates/xtask::{perf,release_governance,release_evidence,evidence_run}`; release-scoped manifests/registries; `docs/{PERFORMANCE,TESTING,GATES,POSITIONING}.md`; `docs/releases/0.67.0.md` | `cargo test -p xtask --test release_governance --locked -j 2`; registered `evidence-run` and `release-evidence --require-ship` commands below | Exact-candidate prebuild and receipt machinery plus automatic-tripwire/manual-reference separation are implemented. The predecessor tag is present and ancestral; release aggregation remains red until W7 bootstrap/review, serialized reference artifacts, canaries, and final receipts exist on one frozen candidate. |
@@ -395,7 +396,7 @@ $env:HYDRACACHE_RUN_PERF_RESP='1'
 & target\release\hydracache-loadgen.exe suite resp --profile reference-v1 --output-dir target/test-evidence/0.67
 Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 ```
-**CI.** Open-loop leg on the serialized GitHub-hosted reference runner. A local unclaimed external-tool run skips
+**CI.** Open-loop leg on the serialized self-hosted bare-metal reference runner. A local unclaimed external-tool run skips
 loud when the tool is absent; the scheduled/manual mandatory evidence gate fails closed on a missing
 tool, image, or capability. W3 depends on W0, not W2.
 
@@ -445,7 +446,7 @@ $env:HYDRACACHE_RUN_PERF_CONTROL_PLANE='1'
 & target\release\hydracache-loadgen.exe tier grid-model --profile reference-v1 --report target/test-evidence/0.67/grid-model.json
 Remove-Item Env:\HYDRACACHE_RUN_PERF_CONTROL_PLANE -ErrorAction SilentlyContinue
 ```
-**CI.** W4B fast smoke plus serialized GitHub-hosted reference run; W4A 3-node is scheduled and required 5/7-node
+**CI.** W4B fast smoke plus serialized self-hosted bare-metal reference run; W4A 3-node is scheduled and required 5/7-node
 points run manual on the same eligible profile, all with mandatory receipts. The kind variant is an
 optional informational observation unless governance is atomically widened to make it mandatory.
 
@@ -527,8 +528,8 @@ Remove-Item Env:\HYDRACACHE_RUN_PERF_RESP -ErrorAction SilentlyContinue
 **Goal.** Freeze the W1-W6 results as **macro budgets** (ops/s floors at SLO, p99 ceilings, brownout
 depth/recovery ceilings, overload goodput floors) without trusting shared-runner noise or allowing a
 slow rolling ratchet. `ci-shared` is a wide-tolerance tripwire; `reference-v1` is the enforcing
-serialized GitHub-hosted profile and must pass both its reviewed release anchor and an eligible
-same-image rolling `main` baseline. It gates relative regressions only; its raw rates are not portable
+serialized self-hosted bare-metal profile and must pass both its reviewed release anchor and an eligible
+same-fingerprint rolling `main` baseline. It gates relative regressions only; its raw rates are not portable
 capacity floors or sizing guidance. Budget rows preserve `claim_scope`: capacity, operational event, and library/model
 primitive costs are different types and cannot satisfy one another.
 
@@ -678,9 +679,11 @@ work in the release**, before W0 feature code, while Phase B closes the release 
 
 **Phase B - execution and candidate freeze.**
 
-- The manual reference job uses pinned `runs-on: ubuntu-24.04` with serialized `concurrency`.
-  GitHub provisions a fresh job VM, and the evidence binds the runner image identity rather than
-  pretending that the underlying physical host is stable. First run the mandatory
+- The manual reference job uses exact protected labels
+  `runs-on: [self-hosted, linux, x64, hydracache-perf-v1]` with serialized `concurrency` and a
+  trusted-`main` dispatch condition. The host is kept offline outside authorized runs; the evidence
+  binds its observed hardware/kernel/affinity/quota fingerprint. First run the independent fixed
+  seven-sample runner preflight, then the mandatory
   `tool.perf-prebuild-067` through `evidence-run`; it builds the exact release server and loadgen
   binaries and creates `target/test-evidence/0.67/prebuild-manifest.json` with commit, Cargo.lock,
   toolchain/flags, stable build-contract digest, and binary hashes. Consumer perf gates do **not**
@@ -741,8 +744,8 @@ Implementation closure and release closure are separate states:
 
 | Layer | Implementation state | Ship state on 2026-07-18 |
 | --- | --- | --- |
-| W0-W6 measurement and operational contracts | Implemented in source, scenarios, tests, and CLI/suite wiring | Serialized GitHub-hosted exact-candidate measurement artifacts and receipts still required |
-| W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible serialized GitHub-hosted `main` runs and independent review |
+| W0-W6 measurement and operational contracts | Implemented in source, scenarios, tests, and CLI/suite wiring | Serialized self-hosted bare-metal exact-candidate measurement artifacts and receipts still required |
+| W7 budgets | Dual-anchor/rolling-baseline validation and no-silent-rebaseline governance implemented | **Blocked:** `reference-v1` anchor, budgets, and baseline are `unbootstrapped` pending at least five eligible serialized self-hosted bare-metal `main` runs and independent review |
 | W8 comparison | Pinned same-box Redis comparison and canonical W3 predecessor binding implemented | Final serialized reference W8 report absent; no marketing or shipped comparative claim |
 | W9 metrics honesty | Same-process RESP/control-plane windows and exported-only validation implemented | Final serialized reference metrics reports absent; unavailable fields remain non-claims |
 | W10 governance/docs | Release-scoped gates, canaries, exact-candidate prebuild/receipt contracts, CI separation, and docs implemented | The annotated `v0.66.0` tag is present and ancestral; **blocked:** final frozen-candidate gate/canary/artifact receipts have not made `--require-ship` green |
@@ -764,7 +767,7 @@ already passed:
   live-reshard claims are absent.
 - Overload curves at 1.2x/1.5x/2x a valid knee are recorded per eligible surface; the canary shows
   collapse, proving the curve reflects the mechanism.
-- Serialized `reference-v1` budgets pass both immutable anchors and eligible same-image rolling-main
+- Serialized `reference-v1` budgets pass both immutable anchors and eligible same-fingerprint rolling-main
   baselines; automatic shared hosted runs are tripwires only, and no hosted raw rate becomes a
   portable capacity floor. Floor/ceiling breach, unstable environment/spread,
   insufficient baseline, profile mismatch, or silent rebaseline is red.
@@ -782,7 +785,7 @@ already passed:
 ## Final Release Decision
 
 **Current decision (2026-07-21): NO-SHIP.** The annotated `v0.66.0` predecessor is present and
-ancestral. Keep `0.67.0` `in-progress` until W7 is bootstrapped from at least five eligible serialized GitHub-hosted `main`
+ancestral. Keep `0.67.0` `in-progress` until W7 is bootstrapped from at least five eligible serialized self-hosted bare-metal `main`
 runs with independent review, and one frozen clean candidate satisfies every condition below.
 
 Ship `0.67.0` only when artifacts answer the narrower questions the product can honestly support:

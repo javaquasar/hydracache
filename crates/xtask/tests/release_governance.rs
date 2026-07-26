@@ -426,20 +426,24 @@ fn release_067_registered_performance_gates_are_mandatory_and_fail_closed() {
 }
 
 #[test]
-fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
+fn performance_lane_requires_protected_self_hosted_labels_and_serial_concurrency() {
     let root = xtask::doc_check::find_repo_root().unwrap();
     let workflow = std::fs::read_to_string(root.join(".github/workflows/ci.yml")).unwrap();
     let problems =
         xtask::release_governance::release_execution_wiring_problems(&workflow, "0.67").unwrap();
     assert!(problems.is_empty(), "{problems:#?}");
 
-    let floating_image = workflow.replacen("runs-on: ubuntu-24.04", "runs-on: ubuntu-latest", 1);
+    let floating_image = workflow.replacen(
+        "runs-on: [self-hosted, linux, x64, hydracache-perf-v1]",
+        "runs-on: [self-hosted, linux, x64]",
+        1,
+    );
     let problems =
         xtask::release_governance::release_execution_wiring_problems(&floating_image, "0.67")
             .unwrap();
     assert!(problems
         .iter()
-        .any(|problem| problem.contains("pinned GitHub-hosted ubuntu-24.04")));
+        .any(|problem| problem.contains("exact protected self-hosted bare-metal labels")));
 
     let parallel = workflow.replacen(
         "group: release-067-performance-reference-v1",
@@ -476,8 +480,8 @@ fn performance_lane_requires_pinned_github_image_and_serial_concurrency() {
         .any(|problem| problem.contains("checksum-pinned source recipe")));
 
     let missing_opt_in = workflow.replacen(
-        "github.event_name == 'workflow_dispatch' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
-        "github.event_name == 'workflow_dispatch' && inputs.candidate_release == '0.67'",
+        "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.run_reference_performance && inputs.candidate_release == '0.67'",
+        "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.candidate_release == '0.67'",
         1,
     );
     let problems =
