@@ -27,7 +27,7 @@ use hydracache_loadgen::tiers::resp_reference::{
     ReferencePrerequisites, LOADGEN_BINARY_ID, PREBUILD_MANIFEST_RELATIVE_PATH,
     PREBUILD_MANIFEST_SCHEMA_VERSION, REFERENCE_PROFILE, SERVER_BINARY_ID,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::perf_budget::{Enforcement, ProfileContract, RELEASE};
@@ -39,6 +39,9 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
+pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
+pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
+pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
 const MAX_CONTRACT_BYTES: u64 = 1024 * 1024;
 const BUILD_ARGS: [&str; 7] = [
@@ -194,6 +197,98 @@ pub struct VerifiedPrebuildBundle {
     pub manifest: PerfPrebuildManifest,
     pub manifest_sha256: String,
     pub run_inputs: RespReferenceRunInputs,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RunnerPreflightReport {
+    pub schema_version: u32,
+    pub release: String,
+    pub profile: String,
+    pub samples_nanos: Vec<u64>,
+    pub median_nanos: u64,
+    pub spread_ratio: f64,
+    pub maximum_spread_ratio: f64,
+    pub passed: bool,
+    pub observed_runner: RunnerFingerprint,
+}
+
+pub fn evaluate_runner_preflight(
+    samples_nanos: Vec<u64>,
+    observed_runner: RunnerFingerprint,
+) -> RunnerPreflightReport {
+    let mut ordered = samples_nanos.clone();
+    ordered.sort_unstable();
+    let median_nanos = ordered.get(ordered.len() / 2).copied().unwrap_or(0);
+    let spread_ratio = match (ordered.first(), ordered.last(), median_nanos) {
+        (Some(minimum), Some(maximum), median) if median > 0 => {
+            (*maximum - *minimum) as f64 / median as f64
+        }
+        _ => f64::INFINITY,
+    };
+    RunnerPreflightReport {
+        schema_version: 1,
+        release: RELEASE.to_owned(),
+        profile: REFERENCE_PROFILE.to_owned(),
+        passed: samples_nanos.len() == RUNNER_PREFLIGHT_REPEATS
+            && spread_ratio <= RUNNER_PREFLIGHT_MAX_SPREAD_RATIO,
+        samples_nanos,
+        median_nanos,
+        spread_ratio,
+        maximum_spread_ratio: RUNNER_PREFLIGHT_MAX_SPREAD_RATIO,
+        observed_runner,
+    }
+}
+
+pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
+    let (release, profile_name) = parse_args(args)?;
+    validate_request(&release, &profile_name)?;
+    if std::env::var(REFERENCE_AUTHORIZATION_ENV).as_deref() != Ok("1") {
+        return Err(PerfPrebuildError::new(format!(
+            "{REFERENCE_AUTHORIZATION_ENV}=1 is required; runner preflight is manual-lane only"
+        )));
+    }
+    let root = crate::doc_check::find_repo_root()
+        .map_err(|error| PerfPrebuildError::new(error.to_string()))?;
+    let profile = load_profile(&root)?;
+    let mut host = SystemPrebuildHost;
+    validate_profile_contract(&profile, &profile_name, &host.reference_platform_key())?;
+    let observed_runner = host
+        .observe_runner(&profile.runner)
+        .map_err(|error| PerfPrebuildError::new(format!("runner observation failed: {error}")))?;
+    let validation = profile.runner.validate(&observed_runner);
+    if !validation.eligible || !is_sha256(&observed_runner.fingerprint) {
+        return Err(PerfPrebuildError::new(format!(
+            "reference runner is ineligible before measurement: {:?}",
+            validation.reasons
+        )));
+    }
+
+    let report = evaluate_runner_preflight(calibration_samples(), observed_runner);
+    let output = root.join(RUNNER_PREFLIGHT_RELATIVE_PATH);
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent).map_err(|error| {
+            PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
+        })?;
+    }
+    let bytes = json_bytes(&report, "runner preflight")?;
+    write_create_new(&output, &bytes)?;
+    if !report.passed {
+        return Err(PerfPrebuildError::new(format!(
+            "runner preflight spread {:.4} exceeds fixed {:.4}; all {} samples are retained in {}",
+            report.spread_ratio,
+            report.maximum_spread_ratio,
+            report.samples_nanos.len(),
+            output.display()
+        )));
+    }
+    println!(
+        "0.67 runner preflight passed: spread={:.4} samples={} output={}",
+        report.spread_ratio,
+        report.samples_nanos.len(),
+        output.display()
+    );
+    Ok(())
 }
 
 pub fn run(args: Vec<String>) -> Result<(), PerfPrebuildError> {
@@ -1103,9 +1198,9 @@ fn count_cpu_list(value: &str) -> Result<u32, String> {
     Ok(count)
 }
 
-fn calibration_score() -> f64 {
-    let mut samples = Vec::with_capacity(7);
-    for repeat in 0_u64..7 {
+fn calibration_samples() -> Vec<u64> {
+    let mut samples = Vec::with_capacity(RUNNER_PREFLIGHT_REPEATS);
+    for repeat in 0_u64..RUNNER_PREFLIGHT_REPEATS as u64 {
         let started = Instant::now();
         let mut state = 0x9e37_79b9_7f4a_7c15_u64 ^ repeat;
         for index in 0_u64..1_000_000 {
@@ -1115,8 +1210,16 @@ fn calibration_score() -> f64 {
                 .wrapping_mul(0xe703_7ed1_a0b4_28db);
         }
         std::hint::black_box(state);
-        samples.push(started.elapsed().as_nanos() as f64);
+        samples.push(started.elapsed().as_nanos().try_into().unwrap_or(u64::MAX));
     }
+    samples
+}
+
+fn calibration_score() -> f64 {
+    let mut samples = calibration_samples()
+        .into_iter()
+        .map(|sample| sample as f64)
+        .collect::<Vec<_>>();
     samples.sort_by(f64::total_cmp);
     let median = samples[samples.len() / 2];
     let mut deviations = samples
@@ -1128,5 +1231,50 @@ fn calibration_score() -> f64 {
         f64::INFINITY
     } else {
         deviations[deviations.len() / 2] / median
+    }
+}
+#[cfg(test)]
+mod preflight_tests {
+    use super::*;
+
+    fn runner() -> RunnerFingerprint {
+        RunnerFingerprint {
+            runner_class: "fixture".to_owned(),
+            fingerprint: "a".repeat(64),
+            cpu_model: "fixture".to_owned(),
+            logical_cores: 8,
+            ram_bytes: 1,
+            os: "linux".to_owned(),
+            kernel: "fixture".to_owned(),
+            cpu_affinity: "1-4".to_owned(),
+            cgroup_cpu_quota: "unlimited".to_owned(),
+            governor: "performance".to_owned(),
+            turbo: "disabled".to_owned(),
+            shared_hardware: false,
+            calibration_score: 0.01,
+        }
+    }
+
+    #[test]
+    fn preflight_retains_all_fixed_samples_and_accepts_stable_runner() {
+        let samples = vec![100, 102, 98, 101, 99, 103, 100];
+        let report = evaluate_runner_preflight(samples.clone(), runner());
+
+        assert!(report.passed);
+        assert_eq!(report.samples_nanos, samples);
+        assert_eq!(report.median_nanos, 100);
+        assert!((report.spread_ratio - 0.05).abs() < f64::EPSILON);
+        assert_eq!(report.maximum_spread_ratio, 0.15);
+    }
+
+    #[test]
+    fn preflight_rejects_noise_or_any_attempt_to_shorten_the_sample_set() {
+        let noisy = evaluate_runner_preflight(vec![100, 102, 98, 101, 99, 130, 100], runner());
+        assert!(!noisy.passed);
+        assert!((noisy.spread_ratio - 0.32).abs() < f64::EPSILON);
+
+        let shortened = evaluate_runner_preflight(vec![100, 101, 99, 100, 102, 98], runner());
+        assert!(!shortened.passed);
+        assert_eq!(shortened.samples_nanos.len(), 6);
     }
 }

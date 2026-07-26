@@ -739,6 +739,9 @@ jobs:
       - name: Validate 0.67 performance contract
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate fast.performance-contract-067
 
+      - name: Preflight 0.67 reference runner stability
+        run: cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1
+
       - name: Prebuild 0.67 performance binaries
         run: cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
 
