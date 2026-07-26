@@ -831,13 +831,15 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 
     for (id, step, expected_artifacts) in SPECS {
         let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
-            problems.push(format!("release 0.67 is missing mandatory gate {id}"));
+            problems.push(format!(
+                "release 0.67 is missing deferred reference gate {id}"
+            ));
             continue;
         };
         let common = gate.kind == gated_tests::GateKind::ExternalTool
             && gate.tier == gated_tests::GateTier::Nightly
             && gate.owner_release == "0.67.0"
-            && gate.ship_mandatory
+            && !gate.ship_mandatory
             && gate.ci.workflow == ".github/workflows/ci.yml"
             && gate.ci.job == JOB
             && gate.ci.step == step
@@ -854,7 +856,7 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
                 .any(|(name, value)| name.ends_with("RUN_PERF_REFERENCE") && value == "1");
         if !common {
             problems.push(format!(
-                "release 0.67 gate {id} must be a mandatory dedicated Linux reference-v1 gate with exact CI ownership"
+                "release 0.67 gate {id} must remain a deferred, non-ship, dedicated Linux reference-v1 gate with exact CI ownership"
             ));
         }
         if !gate

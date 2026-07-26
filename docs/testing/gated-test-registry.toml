@@ -5300,7 +5300,7 @@ required_env = ["HYDRACACHE_RUN_PERF_REFERENCE"]
 required_tools = ["git", "rustc", "cargo", "sha256", "redis-benchmark"]
 timeout_seconds = 3600
 owner_release = "0.67.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = [
     "target/test-evidence/0.67/prebuild-manifest.json",
     "target/test-evidence/0.67/resp-reference-run-inputs.json",
@@ -5336,7 +5336,7 @@ required_env = ["HYDRACACHE_RUN_PERF_CORE", "HYDRACACHE_RUN_PERF_REFERENCE"]
 required_tools = ["git", "sha256", "hydracache-perf-v1"]
 timeout_seconds = 5400
 owner_release = "0.67.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = [
     "target/test-evidence/0.67/local.json",
     "target/test-evidence/0.67/client-surface.json",
@@ -5377,7 +5377,7 @@ required_env = ["HYDRACACHE_RUN_PERF_REFERENCE", "HYDRACACHE_RUN_PERF_RESP"]
 required_tools = ["docker", "redis-benchmark", "git", "sha256", "hydracache-perf-v1"]
 timeout_seconds = 7200
 owner_release = "0.67.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = [
     "target/test-evidence/0.67/node-resp-open-loop.json",
     "target/test-evidence/0.67/node-resp-redis-benchmark.json",
@@ -5420,7 +5420,7 @@ required_env = ["HYDRACACHE_RUN_PERF_CONTROL_PLANE", "HYDRACACHE_RUN_PERF_REFERE
 required_tools = ["git", "sha256", "hydracache-perf-v1"]
 timeout_seconds = 7200
 owner_release = "0.67.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = [
     "target/test-evidence/0.67/control-plane-3.json",
     "target/test-evidence/0.67/control-plane-5.json",
@@ -5460,7 +5460,7 @@ required_env = ["HYDRACACHE_RUN_PERF_REFERENCE"]
 required_tools = ["git", "sha256", "hydracache-perf-v1"]
 timeout_seconds = 600
 owner_release = "0.67.0"
-ship_mandatory = true
+ship_mandatory = false
 artifacts = ["target/test-evidence/0.67/perf-budget-verdict.json"]
 
 [gate.ci]

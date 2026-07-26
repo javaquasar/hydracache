@@ -112,29 +112,13 @@ operability surface, and soak mileage), not missing core capability.
 | ReadySet | A DB proxy doing incremental view maintenance. HydraCache is a library, not a proxy: no extra network hop, assisted (not transparent) correctness, opt-in. |
 | TiKV / ScyllaDB / qdrant | Full databases (KV / wide-column / vector). HydraCache is a *cache* with DB integration, not a system of record; it borrows their distributed/storage patterns (see analysis docs) without becoming a DB. |
 
-## Performance positioning while 0.67 is in progress
+## Performance positioning for 0.67
 
-Release `0.67.0` has implementation closure but is **not shipped**, so it does not yet support an
-official capacity, sizing, Redis-comparison, or metrics-agreement statement. The annotated
-`v0.66.0` predecessor is present and ancestral; the dedicated W7 anchor/rolling baseline is
-unbootstrapped pending at least five eligible `main` runs and independent review.
+Release `0.67.0` delivers performance measurement infrastructure, not official performance numbers. It must not be presented as capacity validation, sizing guidance, a Redis comparison result, or a bootstrapped numerical baseline.
 
-When that evidence exists, statements must remain surface-scoped:
+The methodology preserves strict surface labels: embedded-cache, in-process client router, one selected node-local RESP endpoint, daemon control-plane, and library/model primitives are separate. GitHub-hosted results are tripwires only. Dedicated `reference-v1` evidence is deferred by [`TD-0013`](technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) and remains unbootstrapped.
 
-- embedded-cache results describe the real process-local cache;
-- client-surface results describe an in-process Axum router, not a daemon wire;
-- RESP results describe one selected node-local endpoint, not distributed Redis semantics or
-  aggregate cluster capacity;
-- control-plane results describe metadata/admin reads and events, while grid/model primitive
-  costs remain explicitly in-process; and
-- W8 may report the pinned same-box result and method, but may not be generalized into "faster
-  than Redis" marketing.
-
-W9 is exported-only observability evidence. It cross-checks fields the daemon already exports,
-records absent fields as `not_available`, and never presents internal service time as the
-queue-inclusive latency observed by the open-loop client. Shared CI results are regression
-tripwires; only the reviewed dedicated `reference-v1` lane can support a release statement. See
-[`PERFORMANCE.md`](PERFORMANCE.md) for the full contract.
+The existing statement still applies: HydraCache is not marketed as a Redis throughput replacement. The W8 harness is tooling for a future pinned same-box observation, not a released superiority claim.
 
 ## Maintaining the position
 

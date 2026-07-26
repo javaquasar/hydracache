@@ -316,22 +316,22 @@
       "w_item": "W10",
       "guard": {
         "file": "crates/xtask/tests/release_governance.rs",
-        "function": "release_067_registered_performance_gates_are_mandatory_and_fail_closed"
+        "function": "release_067_deferred_performance_gates_remain_registered_and_fail_closed"
       },
       "canary": {
         "file": "crates/xtask/tests/release_governance.rs",
-        "function": "canary_release_governance_accepts_a_missing_mandatory_performance_gate"
+        "function": "canary_release_governance_accepts_a_missing_deferred_performance_gate"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_067_registered_performance_gates_are_mandatory_and_fail_closed", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_067_deferred_performance_gates_remain_registered_and_fail_closed", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_governance_accepts_a_missing_mandatory_performance_gate", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_governance_accepts_a_missing_deferred_performance_gate", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W10"},
         "cwd": ".",
         "platform": "any"

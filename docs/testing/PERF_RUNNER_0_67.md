@@ -1,6 +1,6 @@
 # Release 0.67 reference runner runbook
 
-`reference-v1` ship evidence is intentionally inactive until an authorized bare-metal runner exists. Ordinary pull requests, pushes, schedules, and `run_nightly` dispatches use GitHub-hosted lanes only; they never execute repository code on this runner.
+`reference-v1` numerical evidence is intentionally inactive until an authorized bare-metal runner exists. Bootstrap is tracked by [`TD-0013`](../technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md) and does not block shipping the 0.67 measurement framework without performance claims. Ordinary pull requests, pushes, schedules, and `run_nightly` dispatches use GitHub-hosted lanes only; they never execute repository code on this runner.
 
 ## Host contract
 
@@ -45,4 +45,4 @@ The workflow pins every preflight, prebuild, and measurement process with `tasks
 3. Archive the complete Actions artifact even when a stage fails. Failed W1 canonical validation produces `local.failed.json`, explicitly marked `ship_evidence_eligible=false`.
 4. Take the runner offline after the job finishes.
 
-Do not populate the fingerprint allowlist or activate budgets from a single run. Bootstrap still requires at least five eligible, stable, successful `main` runs from the same fingerprint family and independent review of the immutable anchor, rolling window, and budget payload. Until then, GitHub-hosted `ci-shared` results are regression tripwires only and release 0.67 remains no-ship.
+Do not populate the fingerprint allowlist or activate budgets from a single run. Bootstrap still requires at least five eligible, stable, successful `main` runs from the same fingerprint family and independent review of the immutable anchor, rolling window, and budget payload. Until then, GitHub-hosted `ci-shared` results are regression tripwires only, `reference-v1` remains unbootstrapped, and every numerical release claim remains prohibited. The reference gates stay fail-closed but are deferred from the 0.67 ship manifest.
