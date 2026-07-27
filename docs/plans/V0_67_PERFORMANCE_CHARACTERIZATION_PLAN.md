@@ -20,8 +20,8 @@
 >   versus Redis on the RESP surface, and regression protection so `1.0` performance cannot silently
 >   erode. A native-daemon or distributed-value-plane capacity claim remains blocked until those
 >   product surfaces are implemented in a separate release.
-> - **Status:** in-progress, implementation closure reached. The 0.67 ship scope is the W0-W10
->   measurement infrastructure, methodology, scenario contracts, fail-closed governance, and CI wiring.
+> - **Status:** shipped on 2026-07-27. The 0.67 scope is the W0-W10 measurement infrastructure,
+>   methodology, scenario contracts, fail-closed governance, and CI wiring.
 >   Official capacity, sizing, Redis-comparison, metrics-agreement, and numerical baseline evidence is
 >   explicitly deferred to [`TD-0013`](../technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md).
 >   `reference-v1` remains unbootstrapped; the protected workflow remains fail-closed but its five
@@ -759,6 +759,6 @@ The normal 0.67 ship aggregation proves the implementation and governance scope.
 
 ## Final Release Decision
 
-**Current decision (2026-07-26): RESCOPED FOR CLAIM-FREE SHIP.** W0-W10 implementation may ship as performance measurement infrastructure after the ordinary release PR makes its exact-candidate implementation receipts, canaries, docs, version, and publication gates green. The absence of a dedicated runner does not block that narrower release.
+**Final decision (2026-07-27): SHIPPED WITHOUT NUMERICAL CLAIMS.** W0-W10 ship as performance measurement infrastructure after the ordinary release gates passed on the exact release commit. The absence of a dedicated runner does not block this narrower release.
 
 Official reference bootstrap and every numerical capacity, sizing, Redis-comparison, metrics-agreement, or baseline claim are deferred to TD-0013. Shipping 0.67 must leave `reference-v1` unbootstrapped, keep the protected workflow and its five gates fail-closed, and publish no number derived from shared or exploratory runs.
