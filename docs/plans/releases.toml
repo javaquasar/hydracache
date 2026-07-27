@@ -277,7 +277,7 @@ depends_on = ["0.65.0"]
 [[release]]
 version = "0.67.0"
 file = "docs/plans/V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md"
-status = "in-progress"
+status = "shipped"
 networked_control_plane = true
 work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10"]
 theme = "Performance Measurement Infrastructure - W0-W10 deliver coordinated-omission-safe open-loop load generation, surface-scoped scenarios, typed reports, runner attestation, exact prebuild/receipt binding, immutable-anchor and rolling-baseline validation, canaries, hosted tripwires, and a protected fail-closed reference workflow. Release 0.67 ships tooling and methodology without official capacity, sizing, Redis-comparison, metrics-agreement, or numerical baseline claims. Dedicated reference-v1 bootstrap is deferred to TD-0013; the profile remains unbootstrapped and its five manual reference gates remain registered and fail-closed but are not 0.67 ship-mandatory receipts. No native-daemon listener, distributed RESP value plane, aggregate cluster-capacity claim, live-reshard performance claim, optimization work, or new product surface is introduced."
