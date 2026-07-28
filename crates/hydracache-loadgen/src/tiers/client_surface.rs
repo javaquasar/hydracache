@@ -2243,6 +2243,7 @@ fn smoke_fingerprint() -> RunnerFingerprint {
         turbo: "unclaimed".to_owned(),
         shared_hardware: true,
         calibration_score: 0.0,
+        attestation: Default::default(),
     }
 }
 
@@ -2279,6 +2280,7 @@ mod tests {
             turbo: "fixture".to_owned(),
             shared_hardware: false,
             calibration_score: 0.0,
+            attestation: Default::default(),
         };
         ValidatedRespReferenceContext {
             repo_root: Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),

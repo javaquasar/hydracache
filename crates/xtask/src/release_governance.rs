@@ -836,11 +836,10 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             ));
         }
         if gate.required_env.as_slice() != ["HYDRACACHE_RUN_PERF_0671_STAGE"]
-            || gate
+            || !gate
                 .command
                 .env
-                .get("HYDRACACHE_RUN_PERF_0671_STAGE")
-                .is_none()
+                .contains_key("HYDRACACHE_RUN_PERF_0671_STAGE")
         {
             problems.push(format!(
                 "0.67.1 stage gate {id} must require an explicit stage capability"

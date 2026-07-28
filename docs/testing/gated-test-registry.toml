@@ -6456,7 +6456,7 @@ reason = "Release 0.67.1 requires machine attestation v2 and rejects VM, sibling
 tier = "manual"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
-required_tools = ["cargo"]
+required_tools = ["cargo", "findmnt", "lsblk", "systemd-detect-virt"]
 timeout_seconds = 300
 owner_release = "0.67.1"
 ship_mandatory = true
@@ -6469,12 +6469,13 @@ step = "Run registered gated proofs"
 
 [gate.command]
 program = "cargo"
-args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+args = ["run", "-p", "xtask", "--locked", "--", "perf-runner-preflight", "--release", "0.67", "--profile", "reference-v1"]
 cwd = "."
 platform = "any"
 
 [gate.command.env]
 HYDRACACHE_RUN_PERF_0671_STAGE = "attestation-v2"
+HYDRACACHE_RUN_PERF_REFERENCE = "1"
 
 [[gate]]
 id = "tool.perf-qualification-0671"

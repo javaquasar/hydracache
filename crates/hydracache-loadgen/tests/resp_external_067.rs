@@ -186,6 +186,7 @@ fn run_context(
         turbo: "disabled".to_owned(),
         shared_hardware: false,
         calibration_score: 0.5,
+        attestation: Default::default(),
     };
     let prebuild_manifest_sha256 = sha256(b"fixture prebuild manifest");
     let daemon_binary_sha256 = sha256(b"fixture hydracache-server binary");

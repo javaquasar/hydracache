@@ -67,23 +67,23 @@
     {
       "w_item": "W2",
       "guard": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "release_0671_governance_contract_is_fail_closed"
+        "file": "crates/xtask/tests/perf_attestation_0671.rs",
+        "function": "reference_attestation_v2_rejects_vm_siblings_non_nvme_and_missing_identity"
       },
       "canary": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+        "file": "crates/xtask/tests/perf_attestation_0671.rs",
+        "function": "canary_attestation_accepts_a_virtualized_reference_host"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_attestation_0671", "--locked", "reference_attestation_v2_rejects_vm_siblings_non_nvme_and_missing_identity", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_attestation_0671", "--locked", "canary_attestation_accepts_a_virtualized_reference_host", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W2"},
         "cwd": ".",
         "platform": "any"
@@ -93,7 +93,7 @@
       "timeout_seconds": 300,
       "tier": "fast",
       "artifacts": ["target/release-evidence/canaries/0.67.1-W2.json"],
-      "red_evidence": "The W2 canary proves attestation-v2 evidence cannot be omitted."
+      "red_evidence": "The W2 canary proves a virtualized host cannot spoof the bare-metal fingerprint-v2 attestation."
     },
     {
       "w_item": "W3",

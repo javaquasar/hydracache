@@ -1845,6 +1845,7 @@ fn smoke_fingerprint() -> RunnerFingerprint {
         turbo: "smoke-unclaimed".to_owned(),
         shared_hardware: true,
         calibration_score: 0.0,
+        attestation: Default::default(),
     }
 }
 

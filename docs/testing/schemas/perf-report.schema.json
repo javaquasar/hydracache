@@ -92,7 +92,7 @@
     "observedRunner": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["runner_class", "fingerprint", "cpu_model", "logical_cores", "ram_bytes", "os", "kernel", "cpu_affinity", "cgroup_cpu_quota", "governor", "turbo", "shared_hardware", "calibration_score"],
+      "required": ["runner_class", "fingerprint", "cpu_model", "logical_cores", "ram_bytes", "os", "kernel", "cpu_affinity", "cgroup_cpu_quota", "governor", "turbo", "shared_hardware", "calibration_score", "attestation"],
       "properties": {
         "runner_class": { "$ref": "#/$defs/nonEmpty" },
         "fingerprint": { "$ref": "#/$defs/nonEmpty" },
@@ -106,7 +106,38 @@
         "governor": { "$ref": "#/$defs/nonEmpty" },
         "turbo": { "$ref": "#/$defs/nonEmpty" },
         "shared_hardware": { "type": "boolean" },
-        "calibration_score": { "type": "number", "minimum": 0 }
+        "calibration_score": { "type": "number", "minimum": 0 },
+        "attestation": { "$ref": "#/$defs/runnerAttestationV2" }
+      }
+    },
+    "runnerAttestationV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "contract_version", "virtualization", "physical_cores", "measurement_cores", "host_digest", "storage_class", "storage_identity_digest", "os_image", "toolchain_identity", "prebuild_contract_digest"],
+      "properties": {
+        "schema_version": { "type": "integer", "minimum": 0 },
+        "contract_version": { "type": "string" },
+        "virtualization": { "type": "string" },
+        "physical_cores": { "type": "integer", "minimum": 0 },
+        "measurement_cores": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["logical_cpu", "package_id", "core_id"],
+            "properties": {
+              "logical_cpu": { "type": "integer", "minimum": 0 },
+              "package_id": { "type": "integer", "minimum": 0 },
+              "core_id": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "host_digest": { "type": "string" },
+        "storage_class": { "type": "string" },
+        "storage_identity_digest": { "type": "string" },
+        "os_image": { "type": "string" },
+        "toolchain_identity": { "type": "string" },
+        "prebuild_contract_digest": { "type": "string" }
       }
     },
     "profileValidation": {

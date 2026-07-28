@@ -40,6 +40,7 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
 pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
+pub const ATTESTATION_V2_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v2.json";
 pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
 pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
@@ -100,8 +101,12 @@ pub trait PrebuildHost {
 
     fn environment_variable_names(&self) -> Vec<String>;
 
-    fn observe_runner(&mut self, profile: &PerformanceProfile)
-        -> Result<RunnerFingerprint, String>;
+    fn observe_runner(
+        &mut self,
+        profile: &PerformanceProfile,
+        toolchain_identity: &str,
+        prebuild_contract_digest: &str,
+    ) -> Result<RunnerFingerprint, String>;
 
     fn observe_external_tool(&mut self, program: &str) -> Result<ObservedExternalTool, String>;
 }
@@ -141,8 +146,10 @@ impl PrebuildHost for SystemPrebuildHost {
     fn observe_runner(
         &mut self,
         profile: &PerformanceProfile,
+        toolchain_identity: &str,
+        prebuild_contract_digest: &str,
     ) -> Result<RunnerFingerprint, String> {
-        observe_linux_reference_runner(profile)
+        observe_linux_reference_runner(profile, toolchain_identity, prebuild_contract_digest)
     }
 
     fn observe_external_tool(&mut self, program: &str) -> Result<ObservedExternalTool, String> {
@@ -213,6 +220,16 @@ pub struct RunnerPreflightReport {
     pub observed_runner: RunnerFingerprint,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MachineAttestationReceipt {
+    pub schema_version: u32,
+    pub release: String,
+    pub profile: String,
+    pub ship_evidence_eligible: bool,
+    pub passed: bool,
+    pub observed_runner: RunnerFingerprint,
+}
 pub fn evaluate_runner_preflight(
     samples_nanos: Vec<u64>,
     observed_runner: RunnerFingerprint,
@@ -254,7 +271,11 @@ pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
     let mut host = SystemPrebuildHost;
     validate_profile_contract(&profile, &profile_name, &host.reference_platform_key())?;
     let observed_runner = host
-        .observe_runner(&profile.runner)
+        .observe_runner(
+            &profile.runner,
+            &profile.prebuild.toolchain_identity,
+            &profile.prebuild.digest,
+        )
         .map_err(|error| PerfPrebuildError::new(format!("runner observation failed: {error}")))?;
     let validation = profile.runner.validate(&observed_runner);
     if !validation.eligible || !is_sha256(&observed_runner.fingerprint) {
@@ -263,6 +284,23 @@ pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
             validation.reasons
         )));
     }
+
+    let attestation_receipt = MachineAttestationReceipt {
+        schema_version: 2,
+        release: "0.67.1".to_owned(),
+        profile: profile_name.clone(),
+        ship_evidence_eligible: false,
+        passed: true,
+        observed_runner: observed_runner.clone(),
+    };
+    let attestation_output = root.join(ATTESTATION_V2_RELATIVE_PATH);
+    if let Some(parent) = attestation_output.parent() {
+        fs::create_dir_all(parent).map_err(|error| {
+            PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
+        })?;
+    }
+    let attestation_bytes = json_bytes(&attestation_receipt, "machine attestation v2")?;
+    write_create_new(&attestation_output, &attestation_bytes)?;
 
     let report = evaluate_runner_preflight(calibration_samples(), observed_runner);
     let output = root.join(RUNNER_PREFLIGHT_RELATIVE_PATH);
@@ -354,7 +392,11 @@ pub fn execute_prebuild_with<H: PrebuildHost>(
     let after_build = capture_source_snapshot(host, &root)?;
     ensure_unchanged_source(&before, &after_build, "during the release build")?;
     let runner = host
-        .observe_runner(&profile.runner)
+        .observe_runner(
+            &profile.runner,
+            &profile.prebuild.toolchain_identity,
+            &profile.prebuild.digest,
+        )
         .map_err(|error| PerfPrebuildError::new(format!("runner observation failed: {error}")))?;
     let validation = profile.runner.validate(&runner);
     if !validation.eligible || !is_sha256(&runner.fingerprint) {
@@ -1087,6 +1129,8 @@ fn is_git_commit(value: &str) -> bool {
 
 fn observe_linux_reference_runner(
     profile: &PerformanceProfile,
+    toolchain_identity: &str,
+    prebuild_contract_digest: &str,
 ) -> Result<RunnerFingerprint, String> {
     if std::env::consts::OS != "linux" || std::env::consts::ARCH != "x86_64" {
         return Err("reference-v1 requires Linux x86_64".to_owned());
@@ -1137,16 +1181,45 @@ fn observe_linux_reference_runner(
         .map_err(|error| format!("kernel probe failed: {error}"))?
         .trim()
         .to_owned();
-    let governor = fs::read_to_string("/sys/devices/system/cpu/cpu1/cpufreq/scaling_governor")
-        .map(|value| value.trim().to_owned())
-        .unwrap_or_else(|_| "unavailable".to_owned());
-    let turbo = fs::read_to_string("/sys/devices/system/cpu/intel_pstate/no_turbo")
-        .map(|value| match value.trim() {
+
+    let mut observed_governors = Vec::new();
+    for cpu in [1_u32, 2, 3, 4] {
+        let path = format!("/sys/devices/system/cpu/cpu{cpu}/cpufreq/scaling_governor");
+        observed_governors.push(
+            fs::read_to_string(&path)
+                .map_err(|error| format!("governor probe {path} failed: {error}"))?
+                .trim()
+                .to_owned(),
+        );
+    }
+    observed_governors.sort();
+    observed_governors.dedup();
+    if observed_governors.len() != 1 || observed_governors[0] != "performance" {
+        return Err(format!(
+            "measurement CPUs do not share exact performance governor: {observed_governors:?}"
+        ));
+    }
+    let governor = observed_governors.remove(0);
+
+    let turbo = if let Ok(value) = fs::read_to_string("/sys/devices/system/cpu/cpufreq/boost") {
+        match value.trim() {
+            "1" => "enabled".to_owned(),
+            "0" => "disabled".to_owned(),
+            other => return Err(format!("unknown cpufreq boost value {other:?}")),
+        }
+    } else {
+        let value = fs::read_to_string("/sys/devices/system/cpu/intel_pstate/no_turbo")
+            .map_err(|error| format!("turbo policy probe failed: {error}"))?;
+        match value.trim() {
             "1" => "disabled".to_owned(),
             "0" => "enabled".to_owned(),
-            other => format!("unknown:{other}"),
-        })
-        .unwrap_or_else(|_| "unavailable".to_owned());
+            other => return Err(format!("unknown intel_pstate no_turbo value {other:?}")),
+        }
+    };
+    let attestation = crate::host_attestation::observe_reference_attestation(
+        toolchain_identity,
+        prebuild_contract_digest,
+    )?;
     let calibration_score = calibration_score();
     #[derive(Serialize)]
     struct StableFingerprint<'a> {
@@ -1160,9 +1233,10 @@ fn observe_linux_reference_runner(
         cgroup_cpu_quota: &'a str,
         governor: &'a str,
         turbo: &'a str,
+        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV2,
     }
     let stable = StableFingerprint {
-        schema_version: 1,
+        schema_version: 2,
         runner_class: &profile.required_runner_class,
         cpu_model: &cpu_model,
         logical_cores,
@@ -1172,6 +1246,7 @@ fn observe_linux_reference_runner(
         cgroup_cpu_quota: &cgroup_cpu_quota,
         governor: &governor,
         turbo: &turbo,
+        attestation: &attestation,
     };
     let stable_bytes = serde_json::to_vec(&stable).map_err(|error| error.to_string())?;
     Ok(RunnerFingerprint {
@@ -1188,6 +1263,7 @@ fn observe_linux_reference_runner(
         turbo,
         shared_hardware: false,
         calibration_score,
+        attestation,
     })
 }
 
@@ -1301,6 +1377,7 @@ mod preflight_tests {
             turbo: "disabled".to_owned(),
             shared_hardware: false,
             calibration_score: 0.01,
+            attestation: Default::default(),
         }
     }
 

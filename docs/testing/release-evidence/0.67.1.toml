@@ -44,7 +44,9 @@ function = "runner_runbook_and_helpers_are_fail_closed_and_secret_free"
 [[work_item]]
 id = "W2"
 required_sources = [
+    "crates/xtask/src/host_attestation.rs",
     "crates/xtask/src/perf.rs",
+    "crates/xtask/tests/perf_attestation_0671.rs",
     "crates/hydracache-loadgen/src/profile.rs",
 ]
 required_artifacts = [
@@ -56,8 +58,8 @@ gated_gate_ids = ["tool.perf-attestation-v2-0671"]
 ship_required = true
 
 [[work_item.required_tests]]
-source = "crates/xtask/tests/release_governance.rs"
-function = "release_0671_governance_contract_is_fail_closed"
+source = "crates/xtask/tests/perf_attestation_0671.rs"
+function = "reference_attestation_v2_rejects_vm_siblings_non_nvme_and_missing_identity"
 
 [[work_item]]
 id = "W3"

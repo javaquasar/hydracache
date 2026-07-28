@@ -10,6 +10,7 @@ pub mod evidence_run;
 pub mod fast_suite;
 pub mod feature_leak;
 pub mod gated_tests;
+pub mod host_attestation;
 pub mod miri_check;
 pub mod mutants;
 pub mod perf;
