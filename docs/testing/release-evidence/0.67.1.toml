@@ -25,8 +25,12 @@ function = "release_0671_governance_contract_is_fail_closed"
 [[work_item]]
 id = "W1"
 required_sources = [
+    "crates/xtask/tests/perf_runner_0671.rs",
     "docs/testing/PERF_RUNNER_0_67_1.md",
     "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
+    "scripts/perf/audit-reference-host.sh",
+    "scripts/perf/runner-service.sh",
+    "scripts/perf/verify-runner-service.sh",
 ]
 required_artifacts = ["docs/testing/PERF_RUNNER_0_67_1.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
@@ -34,8 +38,8 @@ gated_gate_ids = ["tool.perf-runner-provisioned-0671"]
 ship_required = true
 
 [[work_item.required_tests]]
-source = "crates/xtask/tests/release_governance.rs"
-function = "release_0671_governance_contract_is_fail_closed"
+source = "crates/xtask/tests/perf_runner_0671.rs"
+function = "runner_runbook_and_helpers_are_fail_closed_and_secret_free"
 
 [[work_item]]
 id = "W2"
