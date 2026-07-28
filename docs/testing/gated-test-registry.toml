@@ -6409,3 +6409,234 @@ platform = "any"
 
 [gate.command.env]
 HYDRACACHE_REQUIRE_TLC = "1"
+
+[[gate]]
+id = "tool.perf-runner-provisioned-0671"
+kind = "env_gate"
+source = "crates/xtask/src/release_governance.rs"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Release 0.67.1 requires a protected runner provisioning receipt before any host output can become evidence"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/runner-provisioned.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "runner-provisioned"
+
+[[gate]]
+id = "tool.perf-attestation-v2-0671"
+kind = "external_tool"
+source = "crates/xtask/src/perf.rs"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Release 0.67.1 requires machine attestation v2 and rejects VM, sibling-core, non-NVMe, and anonymous-host inputs"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/attestation-v2.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "attestation-v2"
+
+[[gate]]
+id = "tool.perf-qualification-0671"
+kind = "external_tool"
+source = ".github/workflows/ci.yml"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Qualification uploads bounded diagnostics while remaining explicitly ineligible for ship evidence"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 21600
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/qualification.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "qualification"
+
+[[gate]]
+id = "tool.perf-bootstrap-sample-set-0671"
+kind = "external_tool"
+source = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Five stable pre-candidate main runs from one attested fingerprint must be committed as a digest-bound sample set"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/bootstrap-sample-set.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "bootstrap-sample-set"
+
+[[gate]]
+id = "tool.perf-baseline-review-0671"
+kind = "external_tool"
+source = "crates/xtask/src/perf_budget.rs"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Anchor, rolling baseline, and budgets require deterministic derivation and independent payload-bound review"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/baseline-review.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "baseline-review"
+
+[[gate]]
+id = "tool.perf-reference-activation-0671"
+kind = "external_tool"
+source = "docs/testing/perf-profiles/reference-v1.toml"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "Reference-v1 activation and TD-0013 closure require the exact reviewed fingerprint, anchor, baseline, and budgets"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 300
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/reference-activation.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "reference-activation"
+
+[[gate]]
+id = "tool.perf-frozen-candidate-0671"
+kind = "external_tool"
+source = ".github/workflows/ci.yml"
+package = "xtask"
+target = "release_governance"
+test = "release_0671_governance_contract_is_fail_closed"
+cfg = ""
+env = "HYDRACACHE_RUN_PERF_0671_STAGE"
+reason = "The frozen candidate must pass the complete attestation, prebuild, core, RESP, control-plane, budget, canary, and aggregate pipeline"
+tier = "manual"
+required_features = []
+required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
+required_tools = ["cargo"]
+timeout_seconds = 21600
+owner_release = "0.67.1"
+ship_mandatory = true
+artifacts = ["target/test-evidence/0.67.1/frozen-candidate.json"]
+
+[gate.ci]
+workflow = ".github/workflows/ci.yml"
+job = "gated-proof-registry"
+step = "Run registered gated proofs"
+
+[gate.command]
+program = "cargo"
+args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+cwd = "."
+platform = "any"
+
+[gate.command.env]
+HYDRACACHE_RUN_PERF_0671_STAGE = "frozen-candidate"

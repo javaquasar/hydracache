@@ -145,13 +145,13 @@ fn ci_wires_fast_and_raft_corner_case_tiers_to_declared_commands() {
 
     for (current, stale, expected_problem) in [
         (
+            "default: \"0.67.1\"",
             "default: \"0.67\"",
-            "default: \"0.66\"",
             "workflow_dispatch input candidate_release",
         ),
         (
+            "${{ inputs.candidate_release || '0.67.1' }}",
             "${{ inputs.candidate_release || '0.67' }}",
-            "${{ inputs.candidate_release || '0.66' }}",
             "global HYDRACACHE_CANDIDATE_RELEASE",
         ),
         (
@@ -570,6 +570,49 @@ fn canary_release_governance_accepts_a_missing_deferred_performance_gate() {
     assert!(
         rejected,
         "release 0.67 governance did not reject a missing performance gate: {problems:#?}"
+    );
+}
+
+#[test]
+fn release_0671_governance_contract_is_fail_closed() {
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let problems = xtask::release_governance::release_0671_gate_contract_problems(&registry.gate);
+    assert!(problems.is_empty(), "{problems:#?}");
+}
+
+#[test]
+fn canary_release_0671_governance_accepts_a_missing_stage_gate() {
+    let work_item = std::env::var("HYDRACACHE_CANARY_DEFECT").unwrap_or_else(|_| "W0".to_owned());
+    let gate_id = match work_item.as_str() {
+        "W0" | "W7" => "tool.perf-frozen-candidate-0671",
+        "W1" => "tool.perf-runner-provisioned-0671",
+        "W2" => "tool.perf-attestation-v2-0671",
+        "W3" => "tool.perf-qualification-0671",
+        "W4" => "tool.perf-bootstrap-sample-set-0671",
+        "W5" => "tool.perf-baseline-review-0671",
+        "W6" => "tool.perf-reference-activation-0671",
+        other => panic!("unexpected 0.67.1 canary work item {other}"),
+    };
+
+    let root = xtask::doc_check::find_repo_root().unwrap();
+    let registry = xtask::gated_tests::load_registry(&root).unwrap();
+    let mut missing = registry.gate;
+    missing.retain(|gate| gate.id != gate_id);
+    let problems = xtask::release_governance::release_0671_gate_contract_problems(&missing);
+    let rejected = problems
+        .iter()
+        .any(|problem| problem.contains("missing mandatory 0.67.1 stage gate"));
+
+    if std::env::var("HYDRACACHE_CANARY_DEFECT").is_ok() {
+        assert!(
+            !rejected,
+            "HC-CANARY-RED:{work_item} release governance accepted missing stage gate {gate_id}"
+        );
+    }
+    assert!(
+        rejected,
+        "release 0.67.1 governance did not reject missing stage gate {gate_id}: {problems:#?}"
     );
 }
 

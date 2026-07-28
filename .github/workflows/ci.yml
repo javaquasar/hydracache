@@ -23,7 +23,7 @@ on:
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
-        default: "0.67"
+        default: "0.67.1"
         type: string
       gated_gate_id:
         description: "Exact gate id from docs/testing/gated-test-registry.toml"
@@ -40,7 +40,7 @@ env:
   CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
-  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67' }}
+  HYDRACACHE_CANDIDATE_RELEASE: ${{ inputs.candidate_release || '0.67.1' }}
 
 jobs:
   rust:
@@ -111,6 +111,8 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier fast
           cargo run -p xtask --locked -- canary-check --release 0.67
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier fast
+          cargo run -p xtask --locked -- canary-check --release 0.67.1
+          cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier fast
 
       - name: Upload fast canary evidence
         if: always()
@@ -1050,6 +1052,7 @@ jobs:
           cargo run -p xtask --locked -- canary-sweep --release 0.65 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.66 --tier all
           cargo run -p xtask --locked -- canary-sweep --release 0.67 --tier all
+          cargo run -p xtask --locked -- canary-sweep --release 0.67.1 --tier all
 
       - name: Run deterministic suite sweep
         run: cargo run -p xtask --locked -- evidence-run --release 0.64 --gate tool.determinism-sweep

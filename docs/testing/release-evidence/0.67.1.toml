@@ -1,0 +1,128 @@
+schema_version = 1
+release = "0.67.1"
+plan = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
+canary_policy = "dynamic_registry"
+dynamic_canary_work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
+
+[[work_item]]
+id = "W0"
+required_sources = [
+    "crates/xtask/src/release_governance.rs",
+    "crates/xtask/tests/release_governance.rs",
+]
+required_artifacts = [
+    "docs/testing/canary-registry-0.67.1.json",
+    "docs/testing/release-evidence/0.67.1.toml",
+]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = []
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W1"
+required_sources = [
+    "docs/testing/PERF_RUNNER_0_67_1.md",
+    "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
+]
+required_artifacts = ["docs/testing/PERF_RUNNER_0_67_1.md"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-runner-provisioned-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W2"
+required_sources = [
+    "crates/xtask/src/perf.rs",
+    "crates/hydracache-loadgen/src/profile.rs",
+]
+required_artifacts = [
+    "docs/testing/perf-profiles/reference-v1.toml",
+    "docs/testing/schemas/perf-report.schema.json",
+]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-attestation-v2-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W3"
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/perf.rs",
+]
+required_artifacts = ["docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-qualification-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W4"
+required_sources = ["docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"]
+required_artifacts = ["docs/testing/perf-baselines/0.67/reference-v1.toml"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-bootstrap-sample-set-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W5"
+required_sources = [
+    "crates/xtask/src/perf_budget.rs",
+    "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
+]
+required_artifacts = ["docs/testing/perf-budgets/0.67/reference-v1.toml"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-baseline-review-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W6"
+required_sources = [
+    "docs/technical-debt/TD-0013-dedicated-performance-runner-and-baseline-bootstrap.md",
+    "docs/testing/perf-profiles/reference-v1.toml",
+]
+required_artifacts = ["docs/testing/perf-profiles/reference-v1.toml"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-reference-activation-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
+
+[[work_item]]
+id = "W7"
+required_sources = [
+    ".github/workflows/ci.yml",
+    "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
+]
+required_artifacts = ["docs/testing/release-evidence/0.67.1.toml"]
+fast_gate_ids = ["fast.workspace-nextest"]
+gated_gate_ids = ["tool.perf-frozen-candidate-0671"]
+ship_required = true
+
+[[work_item.required_tests]]
+source = "crates/xtask/tests/release_governance.rs"
+function = "release_0671_governance_contract_is_fail_closed"
