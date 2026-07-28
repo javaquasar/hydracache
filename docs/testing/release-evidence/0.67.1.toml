@@ -30,6 +30,7 @@ required_sources = [
     "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
     "scripts/perf/audit-reference-host.sh",
     "scripts/perf/import-provisioning-receipt.sh",
+    "scripts/perf/rootless-docker.sh",
     "scripts/perf/runner-service.sh",
     "scripts/perf/verify-runner-service.sh",
 ]
@@ -80,15 +81,21 @@ function = "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_
 
 [[work_item]]
 id = "W4"
-required_sources = ["docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"]
-required_artifacts = ["docs/testing/perf-baselines/0.67/reference-v1.toml"]
+required_sources = [
+    ".github/workflows/ci.yml",
+    "crates/xtask/src/perf_bootstrap.rs",
+    "crates/xtask/tests/perf_bootstrap_0671.rs",
+    "scripts/perf/rootless-docker.sh",
+    "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
+]
+required_artifacts = ["docs/testing/perf-bootstrap/0.67.1/sample-set.toml"]
 fast_gate_ids = ["fast.workspace-nextest"]
 gated_gate_ids = ["tool.perf-bootstrap-sample-set-0671"]
 ship_required = true
 
 [[work_item.required_tests]]
-source = "crates/xtask/tests/release_governance.rs"
-function = "release_0671_governance_contract_is_fail_closed"
+source = "crates/xtask/tests/perf_bootstrap_0671.rs"
+function = "sample_set_requires_five_unique_same_fingerprint_and_contract_receipts"
 
 [[work_item]]
 id = "W5"

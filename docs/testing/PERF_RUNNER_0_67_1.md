@@ -207,6 +207,10 @@ apt-get install --yes \
   nvme-cli \
   pkg-config \
   sysstat \
+  uidmap \
+  dbus-user-session \
+  slirp4netns \
+  fuse-overlayfs \
   unzip \
   util-linux \
   ufw
@@ -353,6 +357,82 @@ jq --exit-status '.runner_name == "hydracache-perf-v1"' \
 
 
 
+### 6.1 Install pinned rootless Docker for the mandatory Redis comparison
+
+The W4 RESP family includes the existing same-box Redis comparison, whose frozen 0.67 contract
+uses Docker. Granting access to a rootful Docker socket would be equivalent to granting root and is
+forbidden. Install the official rootless packages instead, following Docker's
+[rootless-mode contract](https://docs.docker.com/engine/security/rootless/) and Ubuntu package
+instructions. The pinned version below is part of the host fingerprint; if the repository no longer
+serves it, stop and update the plan through review instead of silently selecting another version.
+
+As `hydracache-admin`:
+
+```bash
+set -euo pipefail
+DOCKER_VERSION='5:29.6.1-1~ubuntu.24.04~noble'
+
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl --fail --location --silent --show-error \
+  https://download.docker.com/linux/ubuntu/gpg \
+  -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null <<'EOF'
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: noble
+Components: stable
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+sudo apt-get update
+apt-cache madison docker-ce | grep --fixed-strings "$DOCKER_VERSION"
+sudo apt-get install --yes \
+  docker-ce="$DOCKER_VERSION" \
+  docker-ce-cli="$DOCKER_VERSION" \
+  containerd.io \
+  docker-buildx-plugin \
+  docker-ce-rootless-extras="$DOCKER_VERSION"
+
+sudo systemctl disable --now docker.service docker.socket containerd.service
+for unit in docker.service docker.socket containerd.service; do
+  test "$(systemctl is-active "$unit" || true)" = "inactive"
+done
+
+grep --quiet '^github-runner:' /etc/subuid
+grep --quiet '^github-runner:' /etc/subgid
+sudo loginctl enable-linger github-runner
+runner_uid="$(id --user github-runner)"
+sudo -iu github-runner env \
+  XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
+  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${runner_uid}/bus" \
+  dockerd-rootless-setuptool.sh install
+sudo -iu github-runner env \
+  XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
+  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${runner_uid}/bus" \
+  systemctl --user disable --now docker.service
+```
+
+Verify once, then leave the rootless daemon stopped:
+
+```bash
+set -euo pipefail
+runner_uid="$(id --user github-runner)"
+sudo -iu github-runner env \
+  XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
+  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${runner_uid}/bus" \
+  DOCKER_HOST="unix:///run/user/${runner_uid}/docker.sock" \
+  bash -c '
+    systemctl --user start docker.service
+    docker info --format "{{json .SecurityOptions}}" | grep --quiet rootless
+    systemctl --user stop docker.service
+  '
+test ! -S /var/run/docker.sock
+```
+
+The committed `scripts/perf/rootless-docker.sh` helper and workflow start this rootless daemon only
+around the RESP/Redis comparison and stop it with an `always()` cleanup step. The service must remain disabled and stopped during W1 offline
+audit, qualification, core measurements, and control-plane measurements.
 ## 7. Disable background package activity for the measurement window
 
 Apply this only to a short-lived host that will be deleted after evidence collection:
@@ -366,8 +446,8 @@ systemctl is-enabled apt-daily.timer apt-daily-upgrade.timer || true
 systemctl list-timers --all
 ```
 
-Keep time synchronization and SSH enabled. Do not install Docker, Kubernetes, monitoring agents, or
-unrelated workloads on this host.
+Keep time synchronization and SSH enabled. Apart from the pinned, normally stopped rootless Docker
+required by W4, do not install Kubernetes, monitoring agents, or unrelated workloads.
 
 ## 8. Set and persist the CPU policy
 
@@ -657,6 +737,25 @@ sudo ./svc.sh status
 Do **not** dispatch the currently shipped job with `candidate_release=0.67` as a substitute for
 0.67.1 qualification. Qualification does not count among the five W4 bootstrap samples, and a
 bootstrap sample is still `ship_evidence_eligible=false` until reviewed activation.
+
+After qualification is green, keep the exact same host and commit. Dispatch five serialized runs
+with `candidate_release=0.67.1` and `performance_0671_mode=bootstrap`. Do not select the old
+`run_reference_performance` input. Each successful run uploads a distinct
+`bootstrap-sample.json`; a failed or unstable run is retained for diagnosis but does not count.
+
+Download the five successful artifacts before stopping the server, copy only their original
+`bootstrap-sample.json` files under unique names, and validate the set locally:
+
+```bash
+mkdir -p target/bootstrap-samples
+# Copy downloaded receipts as target/bootstrap-samples/<github-run-id>.json.
+cargo xtask perf-bootstrap --release 0.67.1 --profile reference-v1 \
+  --phase sample-set --samples-dir target/bootstrap-samples
+```
+
+Do not delete the host until `bootstrap-sample-set.json` is produced successfully and all five
+artifact archives are independently retained. This check rejects mixed fingerprints, contracts,
+scenario sets, duplicate run ids, failed runs, and any sample marked as ship evidence.
 
 ## 13. Emergency stop
 

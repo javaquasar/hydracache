@@ -14,6 +14,7 @@ pub mod host_attestation;
 pub mod miri_check;
 pub mod mutants;
 pub mod perf;
+pub mod perf_bootstrap;
 pub mod perf_budget;
 pub mod perf_qualification;
 pub mod quarantine;

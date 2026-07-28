@@ -28,6 +28,7 @@ on:
         options:
           - "off"
           - "qualify"
+          - "bootstrap"
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
@@ -863,6 +864,97 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: "performance-0671-qualification-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
+  release-0671-performance-bootstrap:
+    name: 0.67.1 Bootstrap Sample Acquisition
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'bootstrap' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: bootstrap
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted bootstrap context
+        run: cargo run -p xtask --locked -- perf-bootstrap --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v2-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run bootstrap core reference evidence
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core
+
+      - name: Start isolated rootless Docker for Redis comparison
+        run: scripts/perf/rootless-docker.sh start
+
+      - name: Run bootstrap RESP reference evidence
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp
+
+      - name: Stop isolated rootless Docker after Redis comparison
+        if: always()
+        run: scripts/perf/rootless-docker.sh stop
+
+      - name: Run bootstrap control-plane reference evidence
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane
+
+      - name: Retain non-ship bootstrap sample
+        run: cargo run -p xtask --locked -- perf-bootstrap --release 0.67.1 --profile reference-v1 --phase sample
+
+      - name: Upload 0.67.1 bootstrap sample
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-bootstrap-${{ github.sha }}-${{ github.run_id }}"
           path: |
             target/test-evidence/0.67/**
             target/test-evidence/0.67.1/**

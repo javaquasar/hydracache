@@ -78,6 +78,13 @@ pub struct QualificationReceipt {
 }
 
 pub fn qualification_context_problems(context: &QualificationContext) -> Vec<String> {
+    trusted_performance_context_problems(context, "qualify")
+}
+
+pub fn trusted_performance_context_problems(
+    context: &QualificationContext,
+    expected_mode: &str,
+) -> Vec<String> {
     let mut problems = Vec::new();
     if context.github_actions != "true" {
         problems.push("qualification is restricted to GitHub Actions".to_owned());
@@ -100,8 +107,10 @@ pub fn qualification_context_problems(context: &QualificationContext) -> Vec<Str
         problems
             .push("qualification requires the workflow definition from trusted main".to_owned());
     }
-    if context.performance_mode != "qualify" {
-        problems.push("qualification requires the explicit qualify mode".to_owned());
+    if context.performance_mode != expected_mode {
+        problems.push(format!(
+            "performance stage requires explicit {expected_mode} mode"
+        ));
     }
     if context.candidate_release != RELEASE {
         problems.push("qualification candidate release is not 0.67.1".to_owned());
@@ -169,7 +178,7 @@ fn parse_options(args: Vec<String>) -> Result<String, Box<dyn Error>> {
     Ok(phase.expect("phase was checked"))
 }
 
-fn observe_context(root: &Path) -> Result<QualificationContext, Box<dyn Error>> {
+pub fn observe_context(root: &Path) -> Result<QualificationContext, Box<dyn Error>> {
     let git_head = git_text(root, &["rev-parse", "HEAD"])?;
     let status = Command::new("git")
         .args([

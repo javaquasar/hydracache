@@ -30,7 +30,7 @@ test "$mode" = "provisioned" || {
   exit 2
 }
 
-for tool in awk git grep jq lscpu lsblk sort stat systemctl systemd-detect-virt taskset wc; do
+for tool in awk git grep jq loginctl lscpu lsblk sort stat systemctl systemd-detect-virt taskset wc; do
   command -v "$tool" >/dev/null || {
     echo "missing required host-audit tool: $tool" >&2
     exit 1
@@ -136,6 +136,19 @@ for forbidden_group in sudo docker lxd; do
     exit 1
   fi
 done
+
+for rootful_unit in docker.service docker.socket containerd.service; do
+  if systemctl is-active --quiet "$rootful_unit"; then
+    echo "rootful container service must remain inactive: $rootful_unit" >&2
+    exit 1
+  fi
+done
+test "$(loginctl show-user github-runner --property=Linger --value)" = "yes"
+grep --quiet '^github-runner:' /etc/subuid
+grep --quiet '^github-runner:' /etc/subgid
+rootless_unit="/home/github-runner/.config/systemd/user/docker.service"
+test -f "$rootless_unit"
+test "$(stat --format=%U "$rootless_unit")" = "github-runner"
 
 contract_path="/etc/hydracache-perf/runner-contract.json"
 test -r "$contract_path"

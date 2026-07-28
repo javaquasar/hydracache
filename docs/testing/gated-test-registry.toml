@@ -6514,10 +6514,10 @@ HYDRACACHE_PERFORMANCE_0671_MODE = "qualify"
 [[gate]]
 id = "tool.perf-bootstrap-sample-set-0671"
 kind = "external_tool"
-source = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
+source = "crates/xtask/src/perf_bootstrap.rs"
 package = "xtask"
-target = "release_governance"
-test = "release_0671_governance_contract_is_fail_closed"
+target = "perf_bootstrap_0671"
+test = "sample_set_requires_five_unique_same_fingerprint_and_contract_receipts"
 cfg = ""
 env = "HYDRACACHE_RUN_PERF_0671_STAGE"
 reason = "Five stable pre-candidate main runs from one attested fingerprint must be committed as a digest-bound sample set"
@@ -6537,7 +6537,7 @@ step = "Run registered gated proofs"
 
 [gate.command]
 program = "cargo"
-args = ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"]
+args = ["run", "-p", "xtask", "--locked", "--", "perf-bootstrap", "--release", "0.67.1", "--profile", "reference-v1", "--phase", "sample-set", "--samples-dir", "target/bootstrap-samples"]
 cwd = "."
 platform = "any"
 

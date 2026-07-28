@@ -12,8 +12,15 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let service = read("scripts/perf/verify-runner-service.sh");
     let lifecycle = read("scripts/perf/runner-service.sh");
     let receipt_import = read("scripts/perf/import-provisioning-receipt.sh");
+    let rootless_docker = read("scripts/perf/rootless-docker.sh");
 
-    for script in [&audit, &service, &lifecycle, &receipt_import] {
+    for script in [
+        &audit,
+        &service,
+        &lifecycle,
+        &receipt_import,
+        &rootless_docker,
+    ] {
         assert!(script.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(!script.contains('\r'));
         assert!(!script.contains("PRIVATE KEY"));
@@ -42,6 +49,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(receipt_import.contains("stat --format=%U"));
     assert!(receipt_import.contains(".source_commit == $commit"));
     assert!(receipt_import.contains(".runner_online == false"));
+    assert!(rootless_docker.contains("rootless Docker lifecycle must run as github-runner"));
+    assert!(rootless_docker.contains("test ! -S /var/run/docker.sock"));
+    assert!(rootless_docker.contains("grep --quiet rootless"));
+    assert!(rootless_docker.contains("systemctl --user stop docker.service"));
 
     for required in [
         "cloud-init",
@@ -49,6 +60,8 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         "hydracache-perf-v1",
         "scripts/perf/audit-reference-host.sh --mode provisioned",
         "scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1",
+        "docker-ce-rootless-extras",
+        "scripts/perf/rootless-docker.sh",
         "Do **not** dispatch",
     ] {
         assert!(
@@ -68,5 +81,7 @@ fn runner_contract_has_exact_offline_lifecycle_and_public_labels() {
     assert!(audit.contains(expected_labels));
     assert!(service.contains(".labels == [\"self-hosted\", \"linux\", \"x64\", $expected]"));
     assert!(audit.contains("runner_online: false"));
+    assert!(audit.contains("rootful container service must remain inactive"));
+    assert!(audit.contains("/home/github-runner/.config/systemd/user/docker.service"));
     assert!(audit.contains("runner service must be offline"));
 }

@@ -21,7 +21,7 @@ Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md),
 [`docs/PERFORMANCE.md`](../PERFORMANCE.md), and [`docs/GATES.md`](../GATES.md) first.
 This is an evidence/bootstrap patch, not an optimization or product-surface release.
 
-**Preparation state:** W0-W3 implementation and runbook machinery are prepared on the release
+**Preparation state:** W0-W3 and W4 acquisition/aggregation machinery are prepared on the release
 branch; live qualification remains blocked on creation of the dedicated host. This does not advance
 the release manifest beyond `planned` or satisfy any runtime stage receipt.
 
@@ -220,8 +220,10 @@ does not count as one of the five retained baseline runs.
 
 Files:
 
+- `.github/workflows/ci.yml`
+- `crates/xtask/src/perf_bootstrap.rs`
+- `crates/xtask/tests/perf_bootstrap_0671.rs`
 - `docs/testing/perf-bootstrap/0.67.1/sample-set.toml`
-- artifact ingestion/validation in `crates/xtask`
 - GitHub workflow artifact metadata
 
 Requirements:
