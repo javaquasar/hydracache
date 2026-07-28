@@ -15,6 +15,7 @@ pub mod miri_check;
 pub mod mutants;
 pub mod perf;
 pub mod perf_budget;
+pub mod perf_qualification;
 pub mod quarantine;
 pub mod raft_spec_check;
 pub mod release_evidence;

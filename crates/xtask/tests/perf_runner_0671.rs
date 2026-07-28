@@ -11,8 +11,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let audit = read("scripts/perf/audit-reference-host.sh");
     let service = read("scripts/perf/verify-runner-service.sh");
     let lifecycle = read("scripts/perf/runner-service.sh");
+    let receipt_import = read("scripts/perf/import-provisioning-receipt.sh");
 
-    for script in [&audit, &service, &lifecycle] {
+    for script in [&audit, &service, &lifecycle, &receipt_import] {
         assert!(script.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(!script.contains('\r'));
         assert!(!script.contains("PRIVATE KEY"));
@@ -37,6 +38,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(service.contains(".service_user == \"github-runner\""));
     assert!(lifecycle.contains("online|offline|status"));
     assert!(!lifecycle.contains("enable "));
+    assert!(receipt_import.contains("/var/lib/hydracache-perf/runner-provisioned.json"));
+    assert!(receipt_import.contains("stat --format=%U"));
+    assert!(receipt_import.contains(".source_commit == $commit"));
+    assert!(receipt_import.contains(".runner_online == false"));
 
     for required in [
         "cloud-init",

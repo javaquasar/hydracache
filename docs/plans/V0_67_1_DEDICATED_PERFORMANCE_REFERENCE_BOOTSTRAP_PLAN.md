@@ -14,12 +14,16 @@
 >
 > Roadmap: [`INDEX.md`](INDEX.md) - parent plan:
 > [`V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md`](V0_67_PERFORMANCE_CHARACTERIZATION_PLAN.md)
-> - runner runbook: [`../testing/PERF_RUNNER_0_67.md`](../testing/PERF_RUNNER_0_67.md)
+> - runner runbook: [`../testing/PERF_RUNNER_0_67_1.md`](../testing/PERF_RUNNER_0_67_1.md)
 > - gates: [`../GATES.md`](../GATES.md) - testing: [`../TESTING.md`](../TESTING.md)
 
 Read [`CLAUDE.md`](../../CLAUDE.md), [`docs/RULES.md`](../RULES.md),
 [`docs/PERFORMANCE.md`](../PERFORMANCE.md), and [`docs/GATES.md`](../GATES.md) first.
 This is an evidence/bootstrap patch, not an optimization or product-surface release.
+
+**Preparation state:** W0-W3 implementation and runbook machinery are prepared on the release
+branch; live qualification remains blocked on creation of the dedicated host. This does not advance
+the release manifest beyond `planned` or satisfy any runtime stage receipt.
 
 ## Release Boundary
 
@@ -193,8 +197,9 @@ cargo test -p hydracache-loadgen --test performance_contract_067 --locked
 Files:
 
 - `.github/workflows/ci.yml`
-- `crates/xtask/src/perf.rs`
-- release registry/evidence tests
+- `crates/xtask/src/perf_qualification.rs`
+- `crates/xtask/tests/perf_qualification_0671.rs`
+- release registry/evidence contracts
 
 Requirements:
 

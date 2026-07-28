@@ -98,23 +98,23 @@
     {
       "w_item": "W3",
       "guard": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "release_0671_governance_contract_is_fail_closed"
+        "file": "crates/xtask/tests/perf_qualification_0671.rs",
+        "function": "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_mismatched_sha"
       },
       "canary": {
-        "file": "crates/xtask/tests/release_governance.rs",
-        "function": "canary_release_0671_governance_accepts_a_missing_stage_gate"
+        "file": "crates/xtask/tests/perf_qualification_0671.rs",
+        "function": "canary_qualification_accepts_a_vm_with_the_custom_label"
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "release_0671_governance_contract_is_fail_closed", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_qualification_0671", "--locked", "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_mismatched_sha", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"
       },
       "canary_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "release_governance", "--locked", "canary_release_0671_governance_accepts_a_missing_stage_gate", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_qualification_0671", "--locked", "canary_qualification_accepts_a_vm_with_the_custom_label", "--", "--nocapture"],
         "env": {"HYDRACACHE_CANARY_DEFECT": "W3"},
         "cwd": ".",
         "platform": "any"
@@ -124,7 +124,7 @@
       "timeout_seconds": 300,
       "tier": "fast",
       "artifacts": ["target/release-evidence/canaries/0.67.1-W3.json"],
-      "red_evidence": "The W3 canary proves qualification evidence cannot be renamed into ship evidence or omitted."
+      "red_evidence": "The W3 canary proves the custom GitHub label cannot make a virtualized host qualification-eligible."
     },
     {
       "w_item": "W4",

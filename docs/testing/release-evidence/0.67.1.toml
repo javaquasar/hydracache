@@ -29,6 +29,7 @@ required_sources = [
     "docs/testing/PERF_RUNNER_0_67_1.md",
     "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md",
     "scripts/perf/audit-reference-host.sh",
+    "scripts/perf/import-provisioning-receipt.sh",
     "scripts/perf/runner-service.sh",
     "scripts/perf/verify-runner-service.sh",
 ]
@@ -65,7 +66,8 @@ function = "reference_attestation_v2_rejects_vm_siblings_non_nvme_and_missing_id
 id = "W3"
 required_sources = [
     ".github/workflows/ci.yml",
-    "crates/xtask/src/perf.rs",
+    "crates/xtask/src/perf_qualification.rs",
+    "crates/xtask/tests/perf_qualification_0671.rs",
 ]
 required_artifacts = ["docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"]
 fast_gate_ids = ["fast.workspace-nextest"]
@@ -73,8 +75,8 @@ gated_gate_ids = ["tool.perf-qualification-0671"]
 ship_required = true
 
 [[work_item.required_tests]]
-source = "crates/xtask/tests/release_governance.rs"
-function = "release_0671_governance_contract_is_fail_closed"
+source = "crates/xtask/tests/perf_qualification_0671.rs"
+function = "qualification_context_rejects_untrusted_events_refs_forks_dirty_and_mismatched_sha"
 
 [[work_item]]
 id = "W4"

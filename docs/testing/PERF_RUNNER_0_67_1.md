@@ -531,23 +531,29 @@ sudo ./svc.sh stop
 
 Confirm in GitHub that the runner exists and is `Offline`. An offline runner does not stop Scaleway
 billing; it only prevents Actions jobs from being accepted.
-From a clean HydraCache checkout, verify the registered service and deliberately leave it offline:
+From a clean trusted-`main` HydraCache checkout, verify the registered service and deliberately
+leave it offline. The offline audit must be made for the exact commit that will be dispatched:
 
 ```bash
 scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1
 scripts/perf/runner-service.sh offline
 scripts/perf/audit-reference-host.sh --mode provisioned
+sudo install -d -o root -g root -m 0755 /var/lib/hydracache-perf
+sudo install -o root -g root -m 0444 \
+  target/test-evidence/0.67.1/runner-provisioned.json \
+  /var/lib/hydracache-perf/runner-provisioned.json
 ```
 
-The audit writes `target/test-evidence/0.67.1/runner-provisioned.json`. It intentionally records
-`ship_evidence_eligible=false`; provisioning is not performance evidence.
+The audit intentionally records `runner_online=false` and `ship_evidence_eligible=false`.
+Qualification imports this root-owned receipt and rejects it if its commit differs from the
+workflow checkout. Any new `main` commit therefore requires a fresh offline audit before dispatch.
 
 
 
 ## 11. Provisioned-state audit
 
-Run as `hydracache-admin`. This is a manual W1 audit until
-`scripts/perf/audit-reference-host.sh` lands:
+Run as `hydracache-admin` while the Actions service is offline. The committed W1 helper performs
+the authoritative audit; the commands below are additional human-readable checks:
 
 ```bash
 set -euo pipefail
@@ -618,15 +624,19 @@ Do not turn a mismatch into a bypass; update the audit with the observed exact u
 
 This section is intentionally blocked until W2 and W3 are merged to trusted `main`.
 
-Before every authorized run:
+Before every authorized qualification run:
 
-1. Confirm the selected GitHub ref is clean trusted `main`.
+1. Update the administrative checkout to the exact clean trusted `main` commit to dispatch.
 2. Confirm no apt activity, maintenance, or other workload is running.
-3. Run the committed W2 host audit and W3 qualification command.
+3. Keep the runner offline, run `audit-reference-host.sh`, and install the root-owned receipt as
+   shown above.
 4. Start the runner service.
-5. Manually dispatch only the explicit 0.67.1 qualification/bootstrap/reference mode.
-6. Monitor the job and archive its complete artifact even on failure.
-7. Stop the service immediately after the job reaches a terminal state.
+5. Dispatch `CI` with `candidate_release=0.67.1` and `performance_0671_mode=qualify`; leave
+   `run_reference_performance=false` and `gated_gate_id` empty.
+6. The job imports W1, runs W2 attestation/preflight, exact prebuild, bounded smoke diagnostics,
+   and W3 finalization. It cannot activate an anchor or emit bootstrap/ship-eligible evidence.
+7. Monitor the job and archive its complete artifact even on failure.
+8. Stop the service immediately after the job reaches a terminal state.
 
 Service lifecycle:
 

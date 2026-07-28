@@ -780,39 +780,52 @@ pub fn release_066_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
 }
 
 pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
-    const REQUIRED: [(&str, &str); 7] = [
+    const REQUIRED: [(&str, &str, &str, &str); 7] = [
         (
             "tool.perf-runner-provisioned-0671",
             "target/test-evidence/0.67.1/runner-provisioned.json",
+            "release-0671-performance-qualification",
+            "Import offline runner provisioning proof",
         ),
         (
             "tool.perf-attestation-v2-0671",
             "target/test-evidence/0.67.1/attestation-v2.json",
+            "release-0671-performance-qualification",
+            "Attest and preflight the 0.67.1 host",
         ),
         (
             "tool.perf-qualification-0671",
             "target/test-evidence/0.67.1/qualification.json",
+            "release-0671-performance-qualification",
+            "Run 0.67.1 qualification gate",
         ),
         (
             "tool.perf-bootstrap-sample-set-0671",
             "target/test-evidence/0.67.1/bootstrap-sample-set.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
         ),
         (
             "tool.perf-baseline-review-0671",
             "target/test-evidence/0.67.1/baseline-review.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
         ),
         (
             "tool.perf-reference-activation-0671",
             "target/test-evidence/0.67.1/reference-activation.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
         ),
         (
             "tool.perf-frozen-candidate-0671",
             "target/test-evidence/0.67.1/frozen-candidate.json",
+            "gated-proof-registry",
+            "Run registered gated proofs",
         ),
     ];
-
     let mut problems = Vec::new();
-    for (id, artifact) in REQUIRED {
+    for (id, artifact, job, step) in REQUIRED {
         let Some(gate) = gates.iter().find(|gate| gate.id == id) else {
             problems.push(format!("missing mandatory 0.67.1 stage gate {id}"));
             continue;
@@ -828,11 +841,11 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             ));
         }
         if gate.ci.workflow != ".github/workflows/ci.yml"
-            || gate.ci.job != "gated-proof-registry"
-            || gate.ci.step != "Run registered gated proofs"
+            || gate.ci.job != job
+            || gate.ci.step != step
         {
             problems.push(format!(
-                "0.67.1 stage gate {id} must retain registered gated-proof CI wiring"
+                "0.67.1 stage gate {id} must bind CI job/step {job}/{step}"
             ));
         }
         if gate.required_env.as_slice() != ["HYDRACACHE_RUN_PERF_0671_STAGE"]

@@ -20,6 +20,14 @@ on:
         required: false
         default: false
         type: boolean
+      performance_0671_mode:
+        description: "Explicit 0.67.1 dedicated-runner stage (qualification is never ship evidence)"
+        required: true
+        default: "off"
+        type: choice
+        options:
+          - "off"
+          - "qualify"
       candidate_release:
         description: "Release that owns candidate fast and manually dispatched gate receipts"
         required: false
@@ -774,6 +782,92 @@ jobs:
             target/release-evidence/receipts/**
           if-no-files-found: error
 
+  release-0671-performance-qualification:
+    name: 0.67.1 Dedicated Runner Qualification
+    runs-on: [self-hosted, linux, x64, hydracache-perf-v1]
+    timeout-minutes: 360
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.performance_0671_mode == 'qualify' && inputs.candidate_release == '0.67.1'
+    concurrency:
+      group: release-067-performance-reference-v1
+      cancel-in-progress: false
+    env:
+      HYDRACACHE_RUN_PERF_REFERENCE: 1
+      HYDRACACHE_PERF_RUNNER_CLASS: self-hosted-bare-metal-v1
+      HYDRACACHE_PERFORMANCE_0671_MODE: qualify
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - name: Install pinned Rust 1.94.0
+        uses: dtolnay/rust-toolchain@1.94.0
+
+      - name: Verify trusted qualification context
+        run: cargo run -p xtask --locked -- perf-qualification --release 0.67.1 --profile reference-v1 --phase context
+
+      - name: Clear only prior performance evidence scratch
+        shell: bash
+        run: |
+          rm -rf -- \
+            target/test-evidence/0.67 \
+            target/test-evidence/0.67.1 \
+            target/release-evidence/receipts
+
+      - name: Import offline runner provisioning proof
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-runner-provisioned-0671
+
+      - name: Build pinned redis-benchmark 7.2.5
+        shell: bash
+        run: |
+          tools_dir="$RUNNER_TEMP/hydracache-perf-tools"
+          mkdir --parents "$tools_dir"
+          cd "$tools_dir"
+          curl --proto '=https' --tlsv1.2 --fail --location --silent --show-error \
+            --output redis-7.2.5.tar.gz \
+            https://download.redis.io/releases/redis-7.2.5.tar.gz
+          printf '%s  redis-7.2.5.tar.gz\n' '5981179706f8391f03be91d951acafaeda91af7fac56beffb2701963103e423d' \
+            | sha256sum --check --strict -
+          rm -rf -- redis-7.2.5
+          tar --extract --gzip --file redis-7.2.5.tar.gz
+          env -i PATH=/usr/bin:/bin HOME=/tmp CC=gcc MALLOC=libc BUILD_TLS=no \
+            make -C redis-7.2.5 -j1 redis-benchmark
+          test "$(redis-7.2.5/src/redis-benchmark --version)" = "redis-benchmark 7.2.5"
+          echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
+
+      - name: Attest and preflight the 0.67.1 host
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v2-0671
+
+      - name: Prebuild exact 0.67 performance binaries
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
+
+      - name: Run bounded non-ship diagnostics
+        shell: bash
+        run: |
+          mkdir --parents target/test-evidence/0.67.1/qualification
+          taskset --cpu-list 1-4 target/release/hydracache-loadgen \
+            tier local --profile smoke-v1 \
+            --report target/test-evidence/0.67.1/qualification/local-smoke.json
+          taskset --cpu-list 1-4 target/release/hydracache-loadgen \
+            tier client-surface --profile smoke-v1 \
+            --report target/test-evidence/0.67.1/qualification/client-surface-smoke.json
+
+      - name: Run 0.67.1 qualification gate
+        run: cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-qualification-0671
+
+      - name: Upload 0.67.1 qualification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: "performance-0671-qualification-${{ github.sha }}-${{ github.run_id }}"
+          path: |
+            target/test-evidence/0.67/**
+            target/test-evidence/0.67.1/**
+            target/release-evidence/receipts/**
+          if-no-files-found: warn
   raft-loom:
     name: Raft Loom
     runs-on: ubuntu-latest
