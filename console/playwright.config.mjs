@@ -1,3 +1,6 @@
+const port = process.env.HYDRACACHE_CONSOLE_PORT ?? "5174";
+const baseURL = `http://127.0.0.1:${port}/console/`;
+
 export default {
   testDir: "./tests",
   timeout: 45_000,
@@ -6,13 +9,13 @@ export default {
   },
   reporter: [["list"]],
   use: {
-    baseURL: "http://127.0.0.1:5174/console/",
+    baseURL,
     screenshot: "only-on-failure",
     trace: "retain-on-failure"
   },
   webServer: {
     command: "npm run serve",
-    url: "http://127.0.0.1:5174/console/",
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
   },
