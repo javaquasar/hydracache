@@ -284,9 +284,18 @@ theme = "Performance Measurement Infrastructure - W0-W10 deliver coordinated-omi
 depends_on = ["0.66.0"]
 
 [[release]]
+version = "0.67.1"
+file = "docs/plans/V0_67_1_DEDICATED_PERFORMANCE_REFERENCE_BOOTSTRAP_PLAN.md"
+status = "planned"
+networked_control_plane = true
+work_items = ["W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7"]
+theme = "Dedicated Performance Reference Bootstrap - qualify one protected non-shared bare-metal runner, harden machine attestation and fingerprinting so a VM or SMT-sibling cpuset cannot impersonate the reference host, collect at least five stable pre-candidate main runs from one fingerprint/contract family, independently review immutable anchor/rolling baseline/budgets, activate reference-v1 without candidate self-baselining, close TD-0013, and pass the full frozen-candidate core/RESP-plus-Redis/control-plane/budget/aggregate reference pipeline. Evidence/bootstrap only: no product optimization or surface change; 0.67.0 remains historically shipped without numerical claims, and 0.67.1 numbers remain narrowly scoped to their runner/scenario/method."
+depends_on = ["0.67.0"]
+
+[[release]]
 version = "0.68.0"
 file = "docs/plans/V0_68_MIGRATION_CONFORMANCE_PLAN.md"
 status = "planned"
 networked_control_plane = true
 theme = "Migration Conformance & Borrowed Test Suites - prove compatibility claims with evidence we did not author. W1 executes a curated subset of Hazelcast's OWN IMap/FencedLock test suite against the shipped 0.52 Java facade (the borrowed-conformance pattern of caffeine/guava compatibilityTest and scylladb/test/alternator): pinned Hazelcast version, exact-outcome manifest where an unexpected PASS is as red as an unexpected failure (no silent claim widening), every divergence/unsupported row reasoned, swallow-canary proving the runner cannot hide outcomes. W2 embedded-cache semantics conformance set ported from moka/caffeine expectations into a manifest-driven Rust suite for the in-process API (each row cites its source test; intentionally-lacking semantics are unsupported-documented). W3 live previous-client binaries: build real v0.62.x/v0.63.0 clients from the shipped tags and run them against the current server - handshake/surface completion, v2/v3 clients never receive v4 shapes, loud failure beyond their surface, unbuildable tag stays visibly non-green (extends 0.64 W32 beyond byte fixtures; Hazelcast old-client/new-member practice). W4 DB-track differential (readyset/noria discipline): seeded concurrent writes with cached-read vs direct-query comparison per named consistency mode, exact equality after quiescence, dropped-invalidation canary - retrofitting 0.64-era falsifiability onto the 0.37/0.38 track. W5 governance: release-evidence/0.68 receipts + require-ship, registry/canary rows for JVM/legacy-tag/Postgres gated lanes, hazelcast-migration-evidence.md divergence ledger. Conformance-evidence only: no product surface widened to satisfy a borrowed test; red results become narrow fixes with regression, reasoned divergence rows, or named future work (R-11); no Hazelcast wire-protocol claim, no full-Hazelcast claim, no DB feature work."
-depends_on = ["0.67.0"]
+depends_on = ["0.67.1"]
