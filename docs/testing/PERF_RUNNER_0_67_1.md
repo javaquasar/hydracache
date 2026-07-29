@@ -626,6 +626,7 @@ From a clean trusted-`main` HydraCache checkout, verify the registered service a
 leave it offline. The offline audit must be made for the exact commit that will be dispatched:
 
 ```bash
+sudo -v
 scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1
 scripts/perf/runner-service.sh offline
 scripts/perf/audit-reference-host.sh --mode provisioned
@@ -648,6 +649,7 @@ the authoritative audit; the commands below are additional human-readable checks
 
 ```bash
 set -euo pipefail
+sudo -v
 
 test "$(uname -m)" = "x86_64"
 . /etc/os-release
