@@ -27,11 +27,6 @@ runner_uid="$(id --user "$runner_user")"
 docker_dropin="/etc/systemd/user/docker.service.d/20-hydracache-housekeeping.conf"
 grub_dropin="/etc/default/grub.d/60-hydracache-perf-isolation.cfg"
 
-for cpu in 1 2 3 4; do
-  sibling=$((cpu + 8))
-  test "$(cat "/sys/devices/system/cpu/cpu${cpu}/topology/thread_siblings_list")" = "${cpu},${sibling}"
-done
-
 write_root_file() {
   local path="$1"
   local mode="$2"
@@ -43,6 +38,13 @@ write_root_file() {
 }
 
 if test "$action" = install; then
+  # Before `nosmt` takes effect, prove the host-specific sibling topology that
+  # this policy is about to remove from the online CPU set.
+  for cpu in 1 2 3 4; do
+    sibling=$((cpu + 8))
+    test "$(cat "/sys/devices/system/cpu/cpu${cpu}/topology/thread_siblings_list")" = "${cpu},${sibling}"
+  done
+
   test "$(systemctl is-active "$runner_unit" || true)" = inactive
   test "$(runuser --user "$runner_user" -- env \
     XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
@@ -98,8 +100,14 @@ test "$(cat /sys/devices/system/cpu/smt/control)" = off
 test "$(cat /sys/devices/system/cpu/online)" = 0-7
 test "$(cat /sys/devices/system/cpu/isolated)" = "$measurement_cpus"
 test "$(cat /sys/devices/system/cpu/nohz_full)" = "$measurement_cpus"
+for cpu in 1 2 3 4; do
+  test "$(cat "/sys/devices/system/cpu/cpu${cpu}/topology/thread_siblings_list")" = "$cpu"
+done
 for sibling in 9 10 11 12; do
-  test "$(cat "/sys/devices/system/cpu/cpu${sibling}/online")" = 0
+  if test -d "/sys/devices/system/cpu/cpu${sibling}"; then
+    test -f "/sys/devices/system/cpu/cpu${sibling}/online"
+    test "$(cat "/sys/devices/system/cpu/cpu${sibling}/online")" = 0
+  fi
 done
 
 test -f "$runner_dropin"

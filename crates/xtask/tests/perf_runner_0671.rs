@@ -68,6 +68,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(isolation.contains("rcu_nocbs=${measurement_cpus}"));
     assert!(isolation.contains("irqaffinity=${housekeeping_cpus}"));
     assert!(isolation.contains("CPUAffinity=0 5 6 7"));
+    assert!(isolation.contains("Before `nosmt` takes effect"));
+    assert!(isolation.contains("= \"${cpu},${sibling}\""));
+    assert!(isolation.contains("= \"$cpu\""));
+    assert!(isolation.contains("if test -d \"/sys/devices/system/cpu/cpu${sibling}\"; then"));
     assert!(isolation.contains("IRQ affinity reaches measurement CPUs"));
     assert!(rootless_docker.contains("rootless Docker lifecycle must run as github-runner"));
     assert!(rootless_docker.contains("test ! -S /var/run/docker.sock"));

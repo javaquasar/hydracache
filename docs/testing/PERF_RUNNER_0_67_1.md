@@ -554,7 +554,8 @@ sudo scripts/perf/provision-reference-isolation.sh verify
 
 The committed policy is intentionally host-specific and fail-closed:
 
-- SMT is disabled, leaving logical CPUs `0-7` online and siblings `9-12` offline;
+- SMT is disabled, leaving logical CPUs `0-7` online; depending on the kernel, siblings `9-12`
+  are absent from topology sysfs or remain enumerated with `online=0`;
 - measurement CPUs `1-4` are isolated with `isolcpus`, `nohz_full`, and `rcu_nocbs`;
 - CPUs `0,5-7` are the only housekeeping set for the Actions service and rootless Docker daemon;
 - default and effective IRQ affinity must not reach CPUs `1-4`;
