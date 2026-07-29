@@ -36,6 +36,8 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         "cgroup_cpu_quota: \"unlimited\"",
         "/proc/self/cgroup",
         "ship_evidence_eligible: false",
+        "host_identity_digest",
+        "sha256sum",
         "target/test-evidence/0.67.1/runner-provisioned.json",
     ] {
         assert!(audit.contains(required), "host audit is missing {required}");
@@ -49,6 +51,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(receipt_import.contains("/var/lib/hydracache-perf/runner-provisioned.json"));
     assert!(receipt_import.contains("stat --format=%U"));
     assert!(receipt_import.contains(".source_commit == $commit"));
+    assert!(receipt_import.contains(".host_identity_digest"));
     assert!(receipt_import.contains(".runner_online == false"));
     assert!(rootless_docker.contains("rootless Docker lifecycle must run as github-runner"));
     assert!(rootless_docker.contains("test ! -S /var/run/docker.sock"));

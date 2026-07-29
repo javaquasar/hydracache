@@ -10,11 +10,14 @@ use hydracache_loadgen::profile::{
 };
 use sha2::{Digest, Sha256};
 
+const PROVISIONING_RECEIPT_PATH: &str = "/var/lib/hydracache-perf/runner-provisioned.json";
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HostAttestationInput {
     pub virtualization: String,
     pub physical_cores: u32,
     pub measurement_cores: Vec<MeasurementCore>,
+    pub provisioned_host_digest: Option<String>,
     pub raw_host_identity: Vec<String>,
     pub storage_class: String,
     pub raw_storage_identity: Vec<String>,
@@ -24,7 +27,10 @@ pub struct HostAttestationInput {
 }
 
 pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestationV2, String> {
-    let host_digest = privacy_digest("hydracache-host-identity-v2", &input.raw_host_identity)?;
+    let host_digest = match input.provisioned_host_digest {
+        Some(digest) => validate_provisioned_host_digest(&digest)?,
+        None => privacy_digest("hydracache-host-identity-v2", &input.raw_host_identity)?,
+    };
     let storage_identity_digest = privacy_digest(
         "hydracache-storage-identity-v2",
         &input.raw_storage_identity,
@@ -56,11 +62,7 @@ pub fn observe_reference_attestation(
 ) -> Result<RunnerAttestationV2, String> {
     let virtualization = detect_virtualization()?;
     let (physical_cores, measurement_cores) = observe_cpu_topology()?;
-    let raw_host_identity = read_identity_values(&[
-        "/sys/class/dmi/id/product_uuid",
-        "/sys/class/dmi/id/board_serial",
-        "/sys/class/dmi/id/product_serial",
-    ]);
+    let provisioned_host_digest = read_provisioned_host_digest()?;
     let (storage_class, raw_storage_identity) = observe_root_storage()?;
     let os_image = observe_os_image()?;
 
@@ -68,13 +70,87 @@ pub fn observe_reference_attestation(
         virtualization,
         physical_cores,
         measurement_cores,
-        raw_host_identity,
+        provisioned_host_digest: Some(provisioned_host_digest),
+        raw_host_identity: Vec::new(),
         storage_class,
         raw_storage_identity,
         os_image,
         toolchain_identity: toolchain_identity.to_owned(),
         prebuild_contract_digest: prebuild_contract_digest.to_owned(),
     })
+}
+
+#[derive(serde::Deserialize)]
+struct ProvisioningReceipt {
+    schema_version: u32,
+    release: String,
+    stage: String,
+    source_commit: String,
+    host_identity_digest: String,
+    runner_online: bool,
+    ship_evidence_eligible: bool,
+}
+
+fn read_provisioned_host_digest() -> Result<String, String> {
+    let path = Path::new(PROVISIONING_RECEIPT_PATH);
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|error| format!("reading provisioning receipt metadata: {error}"))?;
+    if !metadata.file_type().is_file() {
+        return Err("provisioning receipt is not a regular file".to_owned());
+    }
+    validate_receipt_metadata(&metadata)?;
+    if metadata.len() > 65_536 {
+        return Err("provisioning receipt exceeds 64 KiB".to_owned());
+    }
+    let receipt: ProvisioningReceipt = serde_json::from_slice(
+        &fs::read(path).map_err(|error| format!("reading provisioning receipt: {error}"))?,
+    )
+    .map_err(|error| format!("parsing provisioning receipt: {error}"))?;
+    let commit = stdout_trimmed(
+        &command_output("git", &["rev-parse", "HEAD"])?,
+        "git rev-parse HEAD",
+    )?
+    .to_owned();
+    if receipt.schema_version != 1
+        || receipt.release != "0.67.1"
+        || receipt.stage != "runner-provisioned"
+        || receipt.source_commit != commit
+        || receipt.runner_online
+        || receipt.ship_evidence_eligible
+    {
+        return Err(
+            "provisioning receipt does not match the current qualified host state".to_owned(),
+        );
+    }
+    validate_provisioned_host_digest(&receipt.host_identity_digest)
+}
+
+fn validate_receipt_metadata(metadata: &fs::Metadata) -> Result<(), String> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if metadata.uid() != 0 || metadata.mode() & 0o777 != 0o444 {
+            return Err("provisioning receipt must be root-owned with mode 0444".to_owned());
+        }
+        Ok(())
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = metadata;
+        Err("provisioning receipt attestation requires Unix metadata".to_owned())
+    }
+}
+
+fn validate_provisioned_host_digest(digest: &str) -> Result<String, String> {
+    if digest.len() == 64
+        && digest
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        Ok(digest.to_owned())
+    } else {
+        Err("provisioned host identity digest must be lowercase SHA-256".to_owned())
+    }
 }
 
 fn detect_virtualization() -> Result<String, String> {
@@ -205,15 +281,6 @@ fn observe_os_image() -> Result<String, String> {
     Ok(image)
 }
 
-fn read_identity_values(paths: &[&str]) -> Vec<String> {
-    paths
-        .iter()
-        .filter_map(|path| fs::read_to_string(path).ok())
-        .map(|value| value.trim().to_owned())
-        .filter(|value| !is_placeholder_identity(value))
-        .collect()
-}
-
 fn privacy_digest(domain: &str, values: &[String]) -> Result<String, String> {
     let mut normalized = values
         .iter()
@@ -299,6 +366,7 @@ mod tests {
                     core_id: logical_cpu,
                 })
                 .collect(),
+            provisioned_host_digest: None,
             raw_host_identity: vec!["physical-host-a".to_owned()],
             storage_class: REFERENCE_STORAGE_CLASS.to_owned(),
             raw_storage_identity: vec!["nvme-device-a".to_owned()],
@@ -331,6 +399,23 @@ mod tests {
         assert!(build_attestation(placeholder)
             .unwrap_err()
             .contains("no usable"));
+    }
+
+    #[test]
+    fn protected_provisioning_digest_replaces_raw_host_identity() {
+        let mut provisioned = input();
+        provisioned.provisioned_host_digest = Some("b".repeat(64));
+        provisioned.raw_host_identity.clear();
+        assert_eq!(
+            build_attestation(provisioned).unwrap().host_digest,
+            "b".repeat(64)
+        );
+
+        let mut malformed = input();
+        malformed.provisioned_host_digest = Some("B".repeat(64));
+        assert!(build_attestation(malformed)
+            .unwrap_err()
+            .contains("lowercase SHA-256"));
     }
 
     #[test]

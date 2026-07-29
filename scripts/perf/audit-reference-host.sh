@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
+export LC_ALL=C
 
 usage() {
   echo "usage: scripts/perf/audit-reference-host.sh --mode provisioned" >&2
@@ -30,7 +31,7 @@ test "$mode" = "provisioned" || {
   exit 2
 }
 
-for tool in awk git grep jq loginctl lscpu lsblk sort stat systemctl systemd-detect-virt taskset wc; do
+for tool in awk git grep jq loginctl lscpu lsblk sha256sum sort stat systemctl systemd-detect-virt taskset wc; do
   command -v "$tool" >/dev/null || {
     echo "missing required host-audit tool: $tool" >&2
     exit 1
@@ -86,6 +87,36 @@ while :; do
   esac
 done
 test "$cpu_controller_observed" = true
+
+mapfile -t host_identity_values < <(
+  for identity_path in \
+    /sys/class/dmi/id/product_uuid \
+    /sys/class/dmi/id/board_serial \
+    /sys/class/dmi/id/product_serial; do
+    if sudo test -r "$identity_path"; then
+      identity_value="$(sudo cat -- "$identity_path")"
+      identity_value="${identity_value#"${identity_value%%[![:space:]]*}"}"
+      identity_value="${identity_value%"${identity_value##*[![:space:]]}"}"
+      case "${identity_value,,}" in
+        ""|none|unknown|"not specified"|"to be filled by o.e.m.") ;;
+        *) printf '%s\n' "$identity_value" ;;
+      esac
+    fi
+  done | sort --unique
+)
+test "${#host_identity_values[@]}" -gt 0 || {
+  echo "no usable root-readable DMI identity inputs" >&2
+  exit 1
+}
+host_identity_digest="$(
+  {
+    printf '%s' 'hydracache-host-identity-v2'
+    for identity_value in "${host_identity_values[@]}"; do
+      printf '\0%s' "$identity_value"
+    done
+  } | sha256sum | awk '{print $1}'
+)"
+[[ "$host_identity_digest" =~ ^[0-9a-f]{64}$ ]]
 
 physical_cores="$(
   lscpu --parse=SOCKET,CORE |
@@ -220,6 +251,7 @@ jq --null-input \
   --arg governor "$governors" \
   --arg turbo "$turbo_policy" \
   --arg runner_unit "$runner_unit" \
+  --arg host_identity_digest "$host_identity_digest" \
   --argjson physical_cores "$physical_cores" \
   --argjson memory_bytes "$memory_bytes" \
   --argjson measurement_topology "$topology_json" \
@@ -233,6 +265,7 @@ jq --null-input \
     os_image: $os_image,
     kernel: $kernel,
     virtualization: "none",
+    host_identity_digest: $host_identity_digest,
     physical_cores: $physical_cores,
     memory_bytes: $memory_bytes,
     measurement_cpuset: "1-4",

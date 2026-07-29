@@ -27,6 +27,7 @@ jq --exit-status \
     .platform == "linux-x86_64" and
     .os_image == "ubuntu-24.04" and
     .virtualization == "none" and
+    (.host_identity_digest | type == "string" and test("^[0-9a-f]{64}$")) and
     .measurement_cpuset == "1-4" and
     .storage_transport == "nvme" and
     .cgroup_version == 2 and
