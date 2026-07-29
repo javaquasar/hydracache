@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::perf::{
     sha256_file, verify_published_bundle, MachineAttestationReceipt, RunnerPreflightReport,
-    ATTESTATION_V2_RELATIVE_PATH, RUNNER_PREFLIGHT_RELATIVE_PATH,
+    ATTESTATION_V3_RELATIVE_PATH, RUNNER_PREFLIGHT_RELATIVE_PATH,
 };
 
 pub const QUALIFICATION_RECEIPT_RELATIVE_PATH: &str =
@@ -211,7 +211,7 @@ fn build_receipt(
     root: &Path,
     context: &QualificationContext,
 ) -> Result<QualificationReceipt, Box<dyn Error>> {
-    let attestation_path = root.join(ATTESTATION_V2_RELATIVE_PATH);
+    let attestation_path = root.join(ATTESTATION_V3_RELATIVE_PATH);
     let preflight_path = root.join(RUNNER_PREFLIGHT_RELATIVE_PATH);
     let attestation: MachineAttestationReceipt = read_json(&attestation_path)?;
     let preflight: RunnerPreflightReport = read_json(&preflight_path)?;

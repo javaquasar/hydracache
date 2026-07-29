@@ -13,6 +13,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let lifecycle = read("scripts/perf/runner-service.sh");
     let receipt_import = read("scripts/perf/import-provisioning-receipt.sh");
     let rootless_docker = read("scripts/perf/rootless-docker.sh");
+    let isolation = read("scripts/perf/provision-reference-isolation.sh");
 
     for script in [
         &audit,
@@ -20,6 +21,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         &lifecycle,
         &receipt_import,
         &rootless_docker,
+        &isolation,
     ] {
         assert!(script.starts_with("#!/usr/bin/env bash\nset -euo pipefail\n"));
         assert!(!script.contains('\r'));
@@ -38,6 +40,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         "ship_evidence_eligible: false",
         "host_identity_digest",
         "sha256sum",
+        "cpu_isolation",
+        "housekeeping-only-v1",
+        "provision-reference-isolation.sh verify",
         "target/test-evidence/0.67.1/runner-provisioned.json",
     ] {
         assert!(audit.contains(required), "host audit is missing {required}");
@@ -53,6 +58,17 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(receipt_import.contains(".source_commit == $commit"));
     assert!(receipt_import.contains(".host_identity_digest"));
     assert!(receipt_import.contains(".runner_online == false"));
+    assert!(receipt_import.contains(".schema_version == 2"));
+    assert!(receipt_import.contains(".cpu_isolation.smt_control == \"off\""));
+    assert!(
+        isolation.contains("isolcpus_argument=\"domain,managed_irq,nohz,1-4\"")
+            && isolation.contains("isolcpus=${isolcpus_argument}")
+    );
+    assert!(isolation.contains("nohz_full=${measurement_cpus}"));
+    assert!(isolation.contains("rcu_nocbs=${measurement_cpus}"));
+    assert!(isolation.contains("irqaffinity=${housekeeping_cpus}"));
+    assert!(isolation.contains("CPUAffinity=0 5 6 7"));
+    assert!(isolation.contains("IRQ affinity reaches measurement CPUs"));
     assert!(rootless_docker.contains("rootless Docker lifecycle must run as github-runner"));
     assert!(rootless_docker.contains("test ! -S /var/run/docker.sock"));
     assert!(rootless_docker.contains("grep --quiet rootless"));
@@ -68,6 +84,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         "scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1",
         "docker-ce-rootless-extras",
         "scripts/perf/rootless-docker.sh",
+        "scripts/perf/provision-reference-isolation.sh install",
         "Do **not** dispatch",
     ] {
         assert!(

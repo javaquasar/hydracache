@@ -3,9 +3,10 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hydracache_loadgen::profile::{
-    MeasurementCore, RunnerAttestationV2, RunnerFingerprint, REFERENCE_FINGERPRINT_SCHEMA_VERSION,
-    REFERENCE_HOST_CONTRACT_VERSION, REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE,
-    REFERENCE_RUNNER_CLASS, REFERENCE_STORAGE_CLASS,
+    reference_cpu_isolation, MeasurementCore, RunnerAttestationV3, RunnerFingerprint,
+    REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
+    REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_RUNNER_CLASS,
+    REFERENCE_STORAGE_CLASS,
 };
 use xtask::perf_bootstrap::{
     bootstrap_context_problems, build_sample_set, BootstrapArtifactDigest, BootstrapSampleReceipt,
@@ -67,7 +68,7 @@ fn sample(run: u64, fingerprint: &str) -> BootstrapSampleReceipt {
             turbo: "disabled".to_owned(),
             shared_hardware: false,
             calibration_score: 0.01,
-            attestation: RunnerAttestationV2 {
+            attestation: RunnerAttestationV3 {
                 schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
                 contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
                 virtualization: "none".to_owned(),
@@ -80,6 +81,7 @@ fn sample(run: u64, fingerprint: &str) -> BootstrapSampleReceipt {
                         core_id: logical_cpu,
                     })
                     .collect(),
+                cpu_isolation: reference_cpu_isolation(),
                 host_digest: "d".repeat(64),
                 storage_class: REFERENCE_STORAGE_CLASS.to_owned(),
                 storage_identity_digest: "e".repeat(64),

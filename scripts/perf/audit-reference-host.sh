@@ -31,7 +31,7 @@ test "$mode" = "provisioned" || {
   exit 2
 }
 
-for tool in awk git grep jq loginctl lscpu lsblk sha256sum sort stat systemctl systemd-detect-virt taskset wc; do
+for tool in awk git grep jq loginctl lscpu lsblk sha256sum sort stat sudo systemctl systemd-detect-virt taskset wc; do
   command -v "$tool" >/dev/null || {
     echo "missing required host-audit tool: $tool" >&2
     exit 1
@@ -136,6 +136,8 @@ measurement_topology="$(
 )"
 distinct_measurement_cores="$(printf '%s\n' "$measurement_topology" | sort --unique | wc --lines)"
 test "$distinct_measurement_cores" -eq 4
+
+sudo scripts/perf/provision-reference-isolation.sh verify
 
 taskset --cpu-list 1-4 sh -eu -c '
   affinity="$(awk "/^Cpus_allowed_list:/ {print \$2}" /proc/self/status)"
@@ -257,7 +259,7 @@ jq --null-input \
   --argjson measurement_topology "$topology_json" \
   --argjson nvme_devices "$nvme_json" \
   '{
-    schema_version: 1,
+    schema_version: 2,
     release: "0.67.1",
     stage: "runner-provisioned",
     source_commit: $commit,
@@ -270,6 +272,15 @@ jq --null-input \
     memory_bytes: $memory_bytes,
     measurement_cpuset: "1-4",
     measurement_topology: $measurement_topology,
+    cpu_isolation: {
+      smt_control: "off",
+      online_cpus: "0-7",
+      isolated_cpus: "1-4",
+      nohz_full_cpus: "1-4",
+      rcu_nocbs_cpus: "1-4",
+      housekeeping_cpus: "0,5-7",
+      irq_affinity_policy: "housekeeping-only-v1"
+    },
     storage_transport: "nvme",
     storage_devices: $nvme_devices,
     cgroup_version: 2,

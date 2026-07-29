@@ -20,7 +20,7 @@ commit="$(git rev-parse HEAD)"
 
 jq --exit-status \
   --arg commit "$commit" '
-    .schema_version == 1 and
+    .schema_version == 2 and
     .release == "0.67.1" and
     .stage == "runner-provisioned" and
     .source_commit == $commit and
@@ -29,6 +29,13 @@ jq --exit-status \
     .virtualization == "none" and
     (.host_identity_digest | type == "string" and test("^[0-9a-f]{64}$")) and
     .measurement_cpuset == "1-4" and
+    .cpu_isolation.smt_control == "off" and
+    .cpu_isolation.online_cpus == "0-7" and
+    .cpu_isolation.isolated_cpus == "1-4" and
+    .cpu_isolation.nohz_full_cpus == "1-4" and
+    .cpu_isolation.rcu_nocbs_cpus == "1-4" and
+    .cpu_isolation.housekeeping_cpus == "0,5-7" and
+    .cpu_isolation.irq_affinity_policy == "housekeeping-only-v1" and
     .storage_transport == "nvme" and
     .cgroup_version == 2 and
     .cgroup_cpu_quota == "unlimited" and

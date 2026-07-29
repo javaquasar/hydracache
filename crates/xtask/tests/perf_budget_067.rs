@@ -8,9 +8,9 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hydracache_loadgen::profile::{
-    MeasurementCore, RunnerAttestationV2, REFERENCE_FINGERPRINT_SCHEMA_VERSION,
-    REFERENCE_HOST_CONTRACT_VERSION, REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE,
-    REFERENCE_STORAGE_CLASS,
+    reference_cpu_isolation, MeasurementCore, RunnerAttestationV3,
+    REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
+    REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
 };
 use perf_budget::{
     AnchorMetric, BaselineChangeApproval, BaselineChangeProposal, BaselineMember,
@@ -190,7 +190,7 @@ fn observed_runner(bundle: &ContractBundle, fingerprint: &str) -> ObservedRunner
         turbo: "disabled".to_owned(),
         shared_hardware: false,
         calibration_score: 0.01,
-        attestation: RunnerAttestationV2 {
+        attestation: RunnerAttestationV3 {
             schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
             contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
             virtualization: "none".to_owned(),
@@ -203,6 +203,7 @@ fn observed_runner(bundle: &ContractBundle, fingerprint: &str) -> ObservedRunner
                     core_id: logical_cpu,
                 })
                 .collect(),
+            cpu_isolation: reference_cpu_isolation(),
             host_digest: "a".repeat(64),
             storage_class: REFERENCE_STORAGE_CLASS.to_owned(),
             storage_identity_digest: "b".repeat(64),

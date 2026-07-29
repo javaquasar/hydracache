@@ -587,7 +587,7 @@ fn canary_release_0671_governance_accepts_a_missing_stage_gate() {
     let gate_id = match work_item.as_str() {
         "W0" | "W7" => "tool.perf-frozen-candidate-0671",
         "W1" => "tool.perf-runner-provisioned-0671",
-        "W2" => "tool.perf-attestation-v2-0671",
+        "W2" => "tool.perf-attestation-v3-0671",
         "W3" => "tool.perf-qualification-0671",
         "W4" => "tool.perf-bootstrap-sample-set-0671",
         "W5" => "tool.perf-baseline-review-0671",

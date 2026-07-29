@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use hydracache_loadgen::profile::{
-    reference_attestation_problems, RunnerAttestationV2, REFERENCE_RUNNER_CLASS,
+    reference_attestation_problems, RunnerAttestationV3, REFERENCE_RUNNER_CLASS,
 };
 use xtask::perf_qualification::{qualification_context_problems, QualificationContext};
 
@@ -88,9 +88,9 @@ fn qualification_workflow_is_manual_bounded_serialized_and_non_promotable() {
 #[test]
 fn canary_qualification_accepts_a_vm_with_the_custom_label() {
     let trusted_context = qualification_context_problems(&context()).is_empty();
-    let virtualized = RunnerAttestationV2 {
+    let virtualized = RunnerAttestationV3 {
         virtualization: "kvm".to_owned(),
-        ..RunnerAttestationV2::default()
+        ..RunnerAttestationV3::default()
     };
     let accepted = trusted_context && reference_attestation_problems(&virtualized).is_empty();
 
