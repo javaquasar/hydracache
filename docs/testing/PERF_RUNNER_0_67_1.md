@@ -645,6 +645,10 @@ sudo install -o root -g root -m 0444 \
 The audit intentionally records `runner_online=false` and `ship_evidence_eligible=false`.
 Qualification imports this root-owned receipt and rejects it if its commit differs from the
 workflow checkout. Any new `main` commit therefore requires a fresh offline audit before dispatch.
+The DMI UUID and serial inputs remain root-readable only. The audit writes only their
+domain-separated SHA-256 digest as `host_identity_digest`; it never prints or copies the raw
+identifiers. The unprivileged Actions runner consumes that protected, commit-bound digest when
+building the reference host fingerprint.
 
 
 
