@@ -54,6 +54,8 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(rootless_docker.contains("test ! -S /var/run/docker.sock"));
     assert!(rootless_docker.contains("grep --quiet rootless"));
     assert!(rootless_docker.contains("systemctl --user stop docker.service"));
+    assert!(runbook.contains("systemctl start \"user@${runner_uid}.service\""));
+    assert!(runbook.contains("rm --force /var/run/docker.sock"));
 
     for required in [
         "cloud-init",

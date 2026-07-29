@@ -406,11 +406,14 @@ sudo systemctl disable --now docker.service docker.socket containerd.service
 for unit in docker.service docker.socket containerd.service; do
   test "$(systemctl is-active "$unit" || true)" = "inactive"
 done
+sudo rm --force /var/run/docker.sock
 
 grep --quiet '^github-runner:' /etc/subuid
 grep --quiet '^github-runner:' /etc/subgid
 sudo loginctl enable-linger github-runner
 runner_uid="$(id --user github-runner)"
+sudo systemctl start "user@${runner_uid}.service"
+test "$(systemctl is-active "user@${runner_uid}.service")" = "active"
 sudo -iu github-runner env \
   XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
   DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${runner_uid}/bus" \
