@@ -1,6 +1,7 @@
 #![cfg(feature = "durable-value-store")]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use hydracache::{
@@ -37,7 +38,7 @@ fn durability_write_path_sync_durability_acks_after_fsync() {
     assert_eq!(write_path.metrics().sync_write_total, 1);
     drop(write_path);
 
-    let reopened = DurableValueStore::open_with_budget(&path, 1024).unwrap();
+    let reopened = reopen_after_store_drop(&path);
     assert_eq!(reopened.get("jwt:42").unwrap(), Some(record));
 }
 
@@ -159,6 +160,19 @@ fn record(partition: u32, version: u64, epoch: u64, bytes: &[u8]) -> ReplicatedV
         ClusterEpoch::new(epoch),
         bytes.to_vec(),
     )
+}
+
+fn reopen_after_store_drop(path: &Path) -> DurableValueStore {
+    (0..100)
+        .find_map(|_| match DurableValueStore::open_with_budget(path, 1024) {
+            Ok(store) => Some(store),
+            Err(error) if error.to_string().contains("could not acquire lock") => {
+                thread::sleep(Duration::from_millis(10));
+                None
+            }
+            Err(error) => panic!("reopening durable value store failed: {error}"),
+        })
+        .expect("durable value store lock was not released within one second")
 }
 
 fn temp_store_path(name: &str) -> PathBuf {
