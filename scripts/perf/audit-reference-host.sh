@@ -70,7 +70,7 @@ if test "$cgroup_path" = "/"; then
   cpu_period="100000"
   extra=""
 else
-  read -r cpu_quota cpu_period extra <"/sys/fs/cgroup${cgroup_path}/cpu.max"
+  IFS=' ' read -r cpu_quota cpu_period extra <"/sys/fs/cgroup${cgroup_path}/cpu.max"
 fi
 test -z "${extra:-}"
 test "$cpu_quota" = "max"
@@ -162,8 +162,8 @@ test "$(loginctl show-user github-runner --property=Linger --value)" = "yes"
 grep --quiet '^github-runner:' /etc/subuid
 grep --quiet '^github-runner:' /etc/subgid
 rootless_unit="/home/github-runner/.config/systemd/user/docker.service"
-test -f "$rootless_unit"
-test "$(stat --format=%U "$rootless_unit")" = "github-runner"
+sudo test -f "$rootless_unit"
+test "$(sudo stat --format=%U "$rootless_unit")" = "github-runner"
 
 contract_path="/etc/hydracache-perf/runner-contract.json"
 test -r "$contract_path"
