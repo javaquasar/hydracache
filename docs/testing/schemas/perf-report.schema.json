@@ -107,13 +107,13 @@
         "turbo": { "$ref": "#/$defs/nonEmpty" },
         "shared_hardware": { "type": "boolean" },
         "calibration_score": { "type": "number", "minimum": 0 },
-        "attestation": { "$ref": "#/$defs/runnerAttestationV2" }
+        "attestation": { "$ref": "#/$defs/runnerAttestationV3" }
       }
     },
-    "runnerAttestationV2": {
+    "runnerAttestationV3": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_version", "contract_version", "virtualization", "physical_cores", "measurement_cores", "host_digest", "storage_class", "storage_identity_digest", "os_image", "toolchain_identity", "prebuild_contract_digest"],
+      "required": ["schema_version", "contract_version", "virtualization", "physical_cores", "measurement_cores", "cpu_isolation", "host_digest", "storage_class", "storage_identity_digest", "os_image", "toolchain_identity", "prebuild_contract_digest"],
       "properties": {
         "schema_version": { "type": "integer", "minimum": 0 },
         "contract_version": { "type": "string" },
@@ -130,6 +130,20 @@
               "package_id": { "type": "integer", "minimum": 0 },
               "core_id": { "type": "integer", "minimum": 0 }
             }
+          }
+        },
+        "cpu_isolation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["smt_control", "online_cpus", "isolated_cpus", "nohz_full_cpus", "rcu_nocbs_cpus", "housekeeping_cpus", "irq_affinity_policy"],
+          "properties": {
+            "smt_control": { "type": "string" },
+            "online_cpus": { "type": "string" },
+            "isolated_cpus": { "type": "string" },
+            "nohz_full_cpus": { "type": "string" },
+            "rcu_nocbs_cpus": { "type": "string" },
+            "housekeeping_cpus": { "type": "string" },
+            "irq_affinity_policy": { "type": "string" }
           }
         },
         "host_digest": { "type": "string" },
