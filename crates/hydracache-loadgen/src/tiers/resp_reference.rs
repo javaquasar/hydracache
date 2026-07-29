@@ -1467,6 +1467,7 @@ mod tests {
                 turbo: "disabled".to_owned(),
                 shared_hardware: false,
                 calibration_score: 0.01,
+                attestation: Default::default(),
             };
             let profile = PerformanceProfile {
                 name: REFERENCE_PROFILE.to_owned(),

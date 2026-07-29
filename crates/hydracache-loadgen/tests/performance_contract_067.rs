@@ -460,6 +460,7 @@ fn fingerprint(shared_hardware: bool, fingerprint: &str) -> RunnerFingerprint {
         turbo: "disabled".to_owned(),
         shared_hardware,
         calibration_score: 0.01,
+        attestation: Default::default(),
     }
 }
 

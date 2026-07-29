@@ -1,0 +1,19 @@
+schema_version = 1
+release = "0.67.1"
+profile = "reference-v1"
+status = "awaiting-dedicated-host"
+minimum_samples = 5
+runner_fingerprint = ""
+prebuild_contract_digest = ""
+scenario_contract_set_digest = ""
+sample_receipts = []
+bootstrap_eligible = false
+ship_evidence_eligible = false
+
+# This acquisition manifest is intentionally empty before the dedicated host
+# exists. It may be populated only from the digest-bound output of:
+#
+# cargo xtask perf-bootstrap --release 0.67.1 --profile reference-v1 \
+#   --phase sample-set --samples-dir <downloaded-bootstrap-receipts>
+#
+# No manually copied performance number belongs in this file.
