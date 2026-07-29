@@ -178,18 +178,24 @@ test "$(stat --file-system --format=%T /sys/fs/cgroup)" = "cgroup2fs"
 cgroup_path="$(awk -F: '$1 == "0" && $2 == "" {print $3}' /proc/self/cgroup)"
 test -n "$cgroup_path"
 case "$cgroup_path" in /*) ;; *) exit 1 ;; esac
-if test "$cgroup_path" = "/"; then
-  cgroup_cpu_max="max 100000"
-else
-  cgroup_cpu_max="$(cat "/sys/fs/cgroup${cgroup_path}/cpu.max")"
-fi
-printf 'effective_cpu_max=%s\n' "$cgroup_cpu_max"
-test "$(printf '%s\n' "$cgroup_cpu_max" | awk '{print $1}')" = "max"
+cgroup_cursor="/sys/fs/cgroup${cgroup_path%/}"
+cpu_controller_observed=false
+while :; do
+  if test -f "$cgroup_cursor/cpu.max"; then
+    cgroup_cpu_max="$(cat "$cgroup_cursor/cpu.max")"
+    printf 'effective_cpu_max[%s]=%s\n' "$cgroup_cursor" "$cgroup_cpu_max"
+    test "$(printf '%s\n' "$cgroup_cpu_max" | awk '{print $1}')" = "max"
+    cpu_controller_observed=true
+  fi
+  test "$cgroup_cursor" != "/sys/fs/cgroup" || break
+  cgroup_cursor="${cgroup_cursor%/*}"
+done
+test "$cpu_controller_observed" = true
 ```
 
 If the host reports a hypervisor, fewer than six physical cores, fewer than four distinct cores for
-CPUs `1-4`, less than 16 GiB RAM, non-NVMe storage, cgroup v1, or a CPU quota, stop. Do not register
-it as `hydracache-perf-v1`.
+CPUs `1-4`, less than 16 GiB RAM, non-NVMe storage, cgroup v1, an unavailable CPU controller, or a
+CPU quota at any effective cgroup ancestor, stop. Do not register it as `hydracache-perf-v1`.
 
 ## 3. Patch once and install host dependencies
 
@@ -666,12 +672,18 @@ test "$(stat --file-system --format=%T /sys/fs/cgroup)" = "cgroup2fs"
 cgroup_path="$(awk -F: '$1 == "0" && $2 == "" {print $3}' /proc/self/cgroup)"
 test -n "$cgroup_path"
 case "$cgroup_path" in /*) ;; *) exit 1 ;; esac
-if test "$cgroup_path" = "/"; then
-  cgroup_cpu_max="max 100000"
-else
-  cgroup_cpu_max="$(cat "/sys/fs/cgroup${cgroup_path}/cpu.max")"
-fi
-test "$(printf '%s\n' "$cgroup_cpu_max" | awk '{print $1}')" = "max"
+cgroup_cursor="/sys/fs/cgroup${cgroup_path%/}"
+cpu_controller_observed=false
+while :; do
+  if test -f "$cgroup_cursor/cpu.max"; then
+    cgroup_cpu_max="$(cat "$cgroup_cursor/cpu.max")"
+    test "$(printf '%s\n' "$cgroup_cpu_max" | awk '{print $1}')" = "max"
+    cpu_controller_observed=true
+  fi
+  test "$cgroup_cursor" != "/sys/fs/cgroup" || break
+  cgroup_cursor="${cgroup_cursor%/*}"
+done
+test "$cpu_controller_observed" = true
 
 physical_cores="$(
   lscpu --parse=SOCKET,CORE |
