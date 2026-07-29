@@ -3,11 +3,16 @@ use std::collections::BTreeSet;
 use serde::{Deserialize, Serialize};
 
 pub const REFERENCE_RUNNER_CLASS: &str = "self-hosted-bare-metal-v1";
-pub const REFERENCE_FINGERPRINT_SCHEMA_VERSION: u32 = 2;
-pub const REFERENCE_HOST_CONTRACT_VERSION: &str = "hydracache-reference-host-v2";
+pub const REFERENCE_FINGERPRINT_SCHEMA_VERSION: u32 = 3;
+pub const REFERENCE_HOST_CONTRACT_VERSION: &str = "hydracache-reference-host-v3";
 pub const REFERENCE_STORAGE_CLASS: &str = "local-nvme";
 pub const REFERENCE_OS_IMAGE: &str = "ubuntu-24.04";
 pub const REFERENCE_MEASUREMENT_CPUS: [u32; 4] = [1, 2, 3, 4];
+pub const REFERENCE_SMT_CONTROL: &str = "off";
+pub const REFERENCE_ONLINE_CPUS: &str = "0-7";
+pub const REFERENCE_ISOLATED_CPUS: &str = "1-4";
+pub const REFERENCE_HOUSEKEEPING_CPUS: &str = "0,5-7";
+pub const REFERENCE_IRQ_AFFINITY_POLICY: &str = "housekeeping-only-v1";
 
 /// One logical measurement CPU bound to its physical package/core identity.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -18,18 +23,32 @@ pub struct MeasurementCore {
     pub core_id: u32,
 }
 
-/// Independently probed facts required by reference fingerprint schema v2.
+/// CPU-isolation facts independently probed at measurement time.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(deny_unknown_fields)]
+pub struct CpuIsolationAttestation {
+    pub smt_control: String,
+    pub online_cpus: String,
+    pub isolated_cpus: String,
+    pub nohz_full_cpus: String,
+    pub rcu_nocbs_cpus: String,
+    pub housekeeping_cpus: String,
+    pub irq_affinity_policy: String,
+}
+
+/// Independently probed facts required by reference fingerprint schema v3.
 ///
 /// Raw DMI UUIDs, disk serials, provider ids, and account metadata are never
 /// serialized. Only domain-separated SHA-256 digests may enter this structure.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
-pub struct RunnerAttestationV2 {
+pub struct RunnerAttestationV3 {
     pub schema_version: u32,
     pub contract_version: String,
     pub virtualization: String,
     pub physical_cores: u32,
     pub measurement_cores: Vec<MeasurementCore>,
+    pub cpu_isolation: CpuIsolationAttestation,
     pub host_digest: String,
     pub storage_class: String,
     pub storage_identity_digest: String,
@@ -56,7 +75,7 @@ pub struct RunnerFingerprint {
     pub shared_hardware: bool,
     pub calibration_score: f64,
     #[serde(default)]
-    pub attestation: RunnerAttestationV2,
+    pub attestation: RunnerAttestationV3,
 }
 
 /// Committed requirements for a named performance runner profile.
@@ -154,10 +173,10 @@ impl PerformanceProfile {
     }
 }
 
-pub fn reference_attestation_problems(attestation: &RunnerAttestationV2) -> Vec<String> {
+pub fn reference_attestation_problems(attestation: &RunnerAttestationV3) -> Vec<String> {
     let mut reasons = Vec::new();
     if attestation.schema_version != REFERENCE_FINGERPRINT_SCHEMA_VERSION {
-        reasons.push("reference runner fingerprint schema is not v2".to_owned());
+        reasons.push("reference runner fingerprint schema is not v3".to_owned());
     }
     if attestation.contract_version != REFERENCE_HOST_CONTRACT_VERSION {
         reasons.push("reference host contract version is not approved".to_owned());
@@ -187,6 +206,27 @@ pub fn reference_attestation_problems(attestation: &RunnerAttestationV2) -> Vec<
             "measurement cpuset contains SMT siblings or duplicate physical cores".to_owned(),
         );
     }
+    let isolation = &attestation.cpu_isolation;
+    if isolation.smt_control != REFERENCE_SMT_CONTROL {
+        reasons.push("reference host SMT is not disabled".to_owned());
+    }
+    if isolation.online_cpus != REFERENCE_ONLINE_CPUS {
+        reasons.push("reference host online CPU set is not the committed 0-7 set".to_owned());
+    }
+    if isolation.isolated_cpus != REFERENCE_ISOLATED_CPUS
+        || isolation.nohz_full_cpus != REFERENCE_ISOLATED_CPUS
+        || isolation.rcu_nocbs_cpus != REFERENCE_ISOLATED_CPUS
+    {
+        reasons.push(
+            "measurement CPUs are not isolated from scheduling ticks and RCU callbacks".to_owned(),
+        );
+    }
+    if isolation.housekeeping_cpus != REFERENCE_HOUSEKEEPING_CPUS {
+        reasons.push("housekeeping CPU set does not match the committed profile".to_owned());
+    }
+    if isolation.irq_affinity_policy != REFERENCE_IRQ_AFFINITY_POLICY {
+        reasons.push("IRQ affinity is not proven housekeeping-only".to_owned());
+    }
     if !is_sha256(&attestation.host_digest) {
         reasons.push("privacy-safe physical host digest is missing or malformed".to_owned());
     }
@@ -206,6 +246,18 @@ pub fn reference_attestation_problems(attestation: &RunnerAttestationV2) -> Vec<
         reasons.push("reference prebuild contract digest is missing or malformed".to_owned());
     }
     reasons
+}
+
+pub fn reference_cpu_isolation() -> CpuIsolationAttestation {
+    CpuIsolationAttestation {
+        smt_control: REFERENCE_SMT_CONTROL.to_owned(),
+        online_cpus: REFERENCE_ONLINE_CPUS.to_owned(),
+        isolated_cpus: REFERENCE_ISOLATED_CPUS.to_owned(),
+        nohz_full_cpus: REFERENCE_ISOLATED_CPUS.to_owned(),
+        rcu_nocbs_cpus: REFERENCE_ISOLATED_CPUS.to_owned(),
+        housekeeping_cpus: REFERENCE_HOUSEKEEPING_CPUS.to_owned(),
+        irq_affinity_policy: REFERENCE_IRQ_AFFINITY_POLICY.to_owned(),
+    }
 }
 
 fn is_sha256(value: &str) -> bool {

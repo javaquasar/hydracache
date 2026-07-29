@@ -40,7 +40,7 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
 pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
-pub const ATTESTATION_V2_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v2.json";
+pub const ATTESTATION_V3_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v3.json";
 pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
 pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
@@ -293,7 +293,7 @@ pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
         passed: true,
         observed_runner: observed_runner.clone(),
     };
-    let attestation_output = root.join(ATTESTATION_V2_RELATIVE_PATH);
+    let attestation_output = root.join(ATTESTATION_V3_RELATIVE_PATH);
     if let Some(parent) = attestation_output.parent() {
         fs::create_dir_all(parent).map_err(|error| {
             PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
@@ -1233,7 +1233,7 @@ fn observe_linux_reference_runner(
         cgroup_cpu_quota: &'a str,
         governor: &'a str,
         turbo: &'a str,
-        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV2,
+        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV3,
     }
     let stable = StableFingerprint {
         schema_version: 2,

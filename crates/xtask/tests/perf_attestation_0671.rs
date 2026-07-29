@@ -1,12 +1,12 @@
 use hydracache_loadgen::profile::{
-    MeasurementCore, PerformanceProfile, RunnerAttestationV2, RunnerFingerprint,
-    REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
+    reference_cpu_isolation, MeasurementCore, PerformanceProfile, RunnerAttestationV3,
+    RunnerFingerprint, REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
     REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_RUNNER_CLASS,
     REFERENCE_STORAGE_CLASS,
 };
 
-fn attestation() -> RunnerAttestationV2 {
-    RunnerAttestationV2 {
+fn attestation() -> RunnerAttestationV3 {
+    RunnerAttestationV3 {
         schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
         contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
         virtualization: "none".to_owned(),
@@ -19,6 +19,7 @@ fn attestation() -> RunnerAttestationV2 {
                 core_id: logical_cpu,
             })
             .collect(),
+        cpu_isolation: reference_cpu_isolation(),
         host_digest: "a".repeat(64),
         storage_class: REFERENCE_STORAGE_CLASS.to_owned(),
         storage_identity_digest: "b".repeat(64),
@@ -28,7 +29,7 @@ fn attestation() -> RunnerAttestationV2 {
     }
 }
 
-fn fingerprint(attestation: RunnerAttestationV2) -> RunnerFingerprint {
+fn fingerprint(attestation: RunnerAttestationV3) -> RunnerFingerprint {
     RunnerFingerprint {
         runner_class: REFERENCE_RUNNER_CLASS.to_owned(),
         fingerprint: "d".repeat(64),
@@ -60,19 +61,32 @@ fn profile() -> PerformanceProfile {
     }
 }
 
-fn rejected(mutator: impl FnOnce(&mut RunnerAttestationV2)) -> bool {
+fn rejected(mutator: impl FnOnce(&mut RunnerAttestationV3)) -> bool {
     let mut observed = attestation();
     mutator(&mut observed);
     !profile().validate(&fingerprint(observed)).eligible
 }
 
 #[test]
-fn reference_attestation_v2_rejects_vm_siblings_non_nvme_and_missing_identity() {
+fn reference_attestation_v3_rejects_vm_siblings_non_nvme_and_missing_identity() {
     assert!(profile().validate(&fingerprint(attestation())).eligible);
     assert!(rejected(|value| value.virtualization = "kvm".to_owned()));
     assert!(rejected(|value| {
         value.measurement_cores[3].core_id = value.measurement_cores[2].core_id;
     }));
+    assert!(rejected(|value| {
+        value.cpu_isolation.smt_control = "on".to_owned();
+    }));
+    assert!(rejected(|value| {
+        value.cpu_isolation.isolated_cpus.clear();
+    }));
+    assert!(rejected(|value| {
+        value.cpu_isolation.irq_affinity_policy = "shared".to_owned();
+    }));
+    assert!(rejected(|value| value.schema_version = 2));
+    assert!(rejected(
+        |value| value.contract_version = "hydracache-reference-host-v2".to_owned()
+    ));
     assert!(rejected(|value| {
         value.storage_class = "network-block".to_owned();
     }));
@@ -84,7 +98,7 @@ fn reference_attestation_v2_rejects_vm_siblings_non_nvme_and_missing_identity() 
 }
 
 #[test]
-fn fingerprint_v2_serializes_only_privacy_safe_bound_attestation() {
+fn fingerprint_v3_serializes_only_privacy_safe_bound_attestation() {
     let observed = fingerprint(attestation());
     let json = serde_json::to_string(&observed).unwrap();
     assert!(json.contains(REFERENCE_HOST_CONTRACT_VERSION));

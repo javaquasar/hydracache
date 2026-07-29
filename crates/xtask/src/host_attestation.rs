@@ -4,9 +4,9 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 use hydracache_loadgen::profile::{
-    MeasurementCore, RunnerAttestationV2, REFERENCE_FINGERPRINT_SCHEMA_VERSION,
-    REFERENCE_HOST_CONTRACT_VERSION, REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE,
-    REFERENCE_STORAGE_CLASS,
+    CpuIsolationAttestation, MeasurementCore, RunnerAttestationV3,
+    REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
+    REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
 };
 use sha2::{Digest, Sha256};
 
@@ -17,6 +17,7 @@ pub struct HostAttestationInput {
     pub virtualization: String,
     pub physical_cores: u32,
     pub measurement_cores: Vec<MeasurementCore>,
+    pub cpu_isolation: CpuIsolationAttestation,
     pub provisioned_host_digest: Option<String>,
     pub raw_host_identity: Vec<String>,
     pub storage_class: String,
@@ -26,7 +27,7 @@ pub struct HostAttestationInput {
     pub prebuild_contract_digest: String,
 }
 
-pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestationV2, String> {
+pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestationV3, String> {
     let host_digest = match input.provisioned_host_digest {
         Some(digest) => validate_provisioned_host_digest(&digest)?,
         None => privacy_digest("hydracache-host-identity-v2", &input.raw_host_identity)?,
@@ -35,12 +36,13 @@ pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestatio
         "hydracache-storage-identity-v2",
         &input.raw_storage_identity,
     )?;
-    let attestation = RunnerAttestationV2 {
+    let attestation = RunnerAttestationV3 {
         schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
         contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
         virtualization: input.virtualization,
         physical_cores: input.physical_cores,
         measurement_cores: input.measurement_cores,
+        cpu_isolation: input.cpu_isolation,
         host_digest,
         storage_class: input.storage_class,
         storage_identity_digest,
@@ -59,10 +61,11 @@ pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestatio
 pub fn observe_reference_attestation(
     toolchain_identity: &str,
     prebuild_contract_digest: &str,
-) -> Result<RunnerAttestationV2, String> {
+) -> Result<RunnerAttestationV3, String> {
     let virtualization = detect_virtualization()?;
     let (physical_cores, measurement_cores) = observe_cpu_topology()?;
-    let provisioned_host_digest = read_provisioned_host_digest()?;
+    let (provisioned_host_digest, provisioned_cpu_isolation) = read_provisioning_contract()?;
+    let cpu_isolation = observe_cpu_isolation(&provisioned_cpu_isolation)?;
     let (storage_class, raw_storage_identity) = observe_root_storage()?;
     let os_image = observe_os_image()?;
 
@@ -70,6 +73,7 @@ pub fn observe_reference_attestation(
         virtualization,
         physical_cores,
         measurement_cores,
+        cpu_isolation,
         provisioned_host_digest: Some(provisioned_host_digest),
         raw_host_identity: Vec::new(),
         storage_class,
@@ -82,6 +86,7 @@ pub fn observe_reference_attestation(
 
 #[derive(serde::Deserialize)]
 struct ProvisioningReceipt {
+    cpu_isolation: CpuIsolationAttestation,
     schema_version: u32,
     release: String,
     stage: String,
@@ -91,7 +96,7 @@ struct ProvisioningReceipt {
     ship_evidence_eligible: bool,
 }
 
-fn read_provisioned_host_digest() -> Result<String, String> {
+fn read_provisioning_contract() -> Result<(String, CpuIsolationAttestation), String> {
     let path = Path::new(PROVISIONING_RECEIPT_PATH);
     let metadata = fs::symlink_metadata(path)
         .map_err(|error| format!("reading provisioning receipt metadata: {error}"))?;
@@ -111,7 +116,7 @@ fn read_provisioned_host_digest() -> Result<String, String> {
         "git rev-parse HEAD",
     )?
     .to_owned();
-    if receipt.schema_version != 1
+    if receipt.schema_version != 2
         || receipt.release != "0.67.1"
         || receipt.stage != "runner-provisioned"
         || receipt.source_commit != commit
@@ -122,7 +127,46 @@ fn read_provisioned_host_digest() -> Result<String, String> {
             "provisioning receipt does not match the current qualified host state".to_owned(),
         );
     }
-    validate_provisioned_host_digest(&receipt.host_identity_digest)
+    Ok((
+        validate_provisioned_host_digest(&receipt.host_identity_digest)?,
+        receipt.cpu_isolation,
+    ))
+}
+
+fn observe_cpu_isolation(
+    provisioned: &CpuIsolationAttestation,
+) -> Result<CpuIsolationAttestation, String> {
+    let observed = CpuIsolationAttestation {
+        smt_control: read_trimmed(Path::new("/sys/devices/system/cpu/smt/control"))?,
+        online_cpus: read_trimmed(Path::new("/sys/devices/system/cpu/online"))?,
+        isolated_cpus: read_trimmed(Path::new("/sys/devices/system/cpu/isolated"))?,
+        nohz_full_cpus: read_trimmed(Path::new("/sys/devices/system/cpu/nohz_full"))?,
+        rcu_nocbs_cpus: kernel_cpu_argument("rcu_nocbs")?,
+        housekeeping_cpus: provisioned.housekeeping_cpus.clone(),
+        irq_affinity_policy: provisioned.irq_affinity_policy.clone(),
+    };
+    if &observed != provisioned {
+        return Err(format!(
+            "runtime CPU isolation differs from the root-owned provisioning receipt: observed={observed:?} provisioned={provisioned:?}"
+        ));
+    }
+    Ok(observed)
+}
+
+fn kernel_cpu_argument(name: &str) -> Result<String, String> {
+    let cmdline = fs::read_to_string("/proc/cmdline")
+        .map_err(|error| format!("reading /proc/cmdline: {error}"))?;
+    let prefix = format!("{name}=");
+    let matches = cmdline
+        .split_whitespace()
+        .filter_map(|argument| argument.strip_prefix(&prefix))
+        .collect::<Vec<_>>();
+    match matches.as_slice() {
+        [value] if !value.is_empty() => Ok((*value).to_owned()),
+        _ => Err(format!(
+            "kernel command line must contain exactly one non-empty {name}= argument"
+        )),
+    }
 }
 
 fn validate_receipt_metadata(metadata: &fs::Metadata) -> Result<(), String> {
@@ -317,6 +361,17 @@ fn read_u32(path: &Path) -> Result<u32, String> {
         .map_err(|error| format!("parsing {}: {error}", path.display()))
 }
 
+fn read_trimmed(path: &Path) -> Result<String, String> {
+    let value =
+        fs::read_to_string(path).map_err(|error| format!("reading {}: {error}", path.display()))?;
+    let value = value.trim();
+    if value.is_empty() {
+        Err(format!("{} returned empty output", path.display()))
+    } else {
+        Ok(value.to_owned())
+    }
+}
+
 fn command_output(program: &str, args: &[&str]) -> Result<Output, String> {
     let output = Command::new(program)
         .args(args)
@@ -366,6 +421,15 @@ mod tests {
                     core_id: logical_cpu,
                 })
                 .collect(),
+            cpu_isolation: CpuIsolationAttestation {
+                smt_control: "off".to_owned(),
+                online_cpus: "0-7".to_owned(),
+                isolated_cpus: "1-4".to_owned(),
+                nohz_full_cpus: "1-4".to_owned(),
+                rcu_nocbs_cpus: "1-4".to_owned(),
+                housekeeping_cpus: "0,5-7".to_owned(),
+                irq_affinity_policy: "housekeeping-only-v1".to_owned(),
+            },
             provisioned_host_digest: None,
             raw_host_identity: vec!["physical-host-a".to_owned()],
             storage_class: REFERENCE_STORAGE_CLASS.to_owned(),

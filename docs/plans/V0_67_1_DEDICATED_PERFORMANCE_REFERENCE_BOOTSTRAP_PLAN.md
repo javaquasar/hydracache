@@ -157,7 +157,7 @@ scripts/perf/audit-reference-host.sh --mode provisioned
 scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1
 ```
 
-### W2. Harden machine attestation and fingerprint v2
+### W2. Harden machine attestation and fingerprint v3
 
 Files:
 
@@ -183,6 +183,18 @@ Requirements:
   acceptance, and host-identity omission.
 
 Changing the fingerprint schema invalidates earlier exploratory fingerprints by design.
+
+**Evidence-driven W2 correction (2026-07-29).** W2 observed an 8-core/16-thread host where
+measurement CPUs `1-4` share physical cores with siblings `9-12`. Qualification passed, but three
+independent W4 bootstrap attempts failed the unchanged 15% robust-spread gate in changing core and
+RESP families while calibration remained stable. Blind retries are therefore prohibited. The
+fingerprint v3 contract additionally requires SMT off, CPUs `1-4` isolated with `isolcpus`,
+`nohz_full`, and `rcu_nocbs`, housekeeping and IRQ work confined to `0,5-7`, and the Redis data
+plane pinned to `1-4`. These facts are root-audited, commit-bound in the provisioning receipt, and
+re-probed at measurement time. All v2 qualification/bootstrap artifacts remain diagnostic-only and
+cannot enter a v3 five-sample set. This correction changes host noise control and evidence identity;
+it does not change SLOs, repeats, zero-error rules, the 15% spread limit, affinity, quota, or
+fail-closed behavior.
 
 Definition of Done:
 
@@ -228,7 +240,7 @@ Files:
 
 Requirements:
 
-- collect at least five successful runs while keeping the same physical host, fingerprint v2,
+- collect at least five successful runs while keeping the same physical host, fingerprint v3,
   kernel, governor/turbo policy, cpuset, toolchain, prebuild digest, scenario digest, and SLO
   contract;
 - run only clean, pre-activation `main` commits; no candidate may baseline itself;
@@ -278,7 +290,7 @@ Files:
 
 Requirements:
 
-- add exactly the reviewed fingerprint v2 to the allowlist;
+- add exactly the reviewed fingerprint v3 to the allowlist;
 - change bootstrap state only in the same commit as the reviewed anchor/baseline/budgets;
 - move TD-0013 to resolved only when W1-W5 receipts are present and valid;
 - keep `0.67.0` release notes historically unchanged;
@@ -366,7 +378,7 @@ Every dedicated stage is manual, serialized, trusted-`main` only, artifact-bound
 Ship `0.67.1` only when:
 
 - W0-W7 are complete with exact receipts;
-- one true bare-metal fingerprint v2 is approved;
+- one true bare-metal fingerprint v3 is approved;
 - at least five stable pre-candidate `main` runs from that fingerprint are retained;
 - anchor, rolling baseline, and budgets are independently reviewed;
 - `reference-v1` is bootstrapped without candidate self-baselining;
