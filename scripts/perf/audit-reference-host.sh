@@ -65,16 +65,27 @@ esac
 case "/$cgroup_path/" in
   */../*) echo "cgroup v2 process path contains parent traversal" >&2; exit 1 ;;
 esac
-if test "$cgroup_path" = "/"; then
-  cpu_quota="max"
-  cpu_period="100000"
-  extra=""
-else
-  IFS=' ' read -r cpu_quota cpu_period extra <"/sys/fs/cgroup${cgroup_path}/cpu.max"
-fi
-test -z "${extra:-}"
-test "$cpu_quota" = "max"
-test "$cpu_period" -gt 0
+cgroup_cursor="/sys/fs/cgroup${cgroup_path%/}"
+cpu_controller_observed=false
+while :; do
+  if test -f "$cgroup_cursor/cpu.max"; then
+    IFS=' ' read -r cpu_quota cpu_period extra <"$cgroup_cursor/cpu.max"
+    test -z "${extra:-}"
+    test "$cpu_period" -gt 0
+    test "$cpu_quota" = "max" || {
+      echo "cgroup CPU quota detected at $cgroup_cursor: $cpu_quota/$cpu_period" >&2
+      exit 1
+    }
+    cpu_controller_observed=true
+  fi
+  test "$cgroup_cursor" != "/sys/fs/cgroup" || break
+  cgroup_cursor="${cgroup_cursor%/*}"
+  case "$cgroup_cursor" in
+    /sys/fs/cgroup|/sys/fs/cgroup/*) ;;
+    *) echo "cgroup v2 ancestor escaped the unified hierarchy" >&2; exit 1 ;;
+  esac
+done
+test "$cpu_controller_observed" = true
 
 physical_cores="$(
   lscpu --parse=SOCKET,CORE |

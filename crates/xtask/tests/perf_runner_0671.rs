@@ -85,9 +85,10 @@ fn runner_contract_has_exact_offline_lifecycle_and_public_labels() {
     assert!(service.contains(".labels == [\"self-hosted\", \"linux\", \"x64\", $expected]"));
     assert!(audit.contains("runner_online: false"));
     assert!(!audit.contains("read -r cpu_quota cpu_period extra </sys/fs/cgroup/cpu.max"));
-    assert!(audit.contains(
-        "IFS=' ' read -r cpu_quota cpu_period extra <\"/sys/fs/cgroup${cgroup_path}/cpu.max\""
-    ));
+    assert!(audit.contains("cgroup_cursor=\"/sys/fs/cgroup${cgroup_path%/}\""));
+    assert!(audit.contains("if test -f \"$cgroup_cursor/cpu.max\"; then"));
+    assert!(audit.contains("cgroup CPU quota detected at $cgroup_cursor"));
+    assert!(audit.contains("test \"$cpu_controller_observed\" = true"));
     assert!(audit.contains("rootful container service must remain inactive"));
     assert!(audit.contains("sudo test -f \"$rootless_unit\""));
     assert!(audit.contains("sudo stat --format=%U \"$rootless_unit\""));

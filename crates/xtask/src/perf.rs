@@ -1271,19 +1271,49 @@ fn cgroup_cpu_quota() -> Result<String, String> {
     let membership = fs::read_to_string("/proc/self/cgroup")
         .map_err(|error| format!("cgroup v2 membership probe failed: {error}"))?;
     let relative = cgroup_v2_relative_path(&membership)?;
-    if relative == "/" {
-        return Ok("unlimited".to_owned());
+    cgroup_cpu_quota_for_path(relative, |path| fs::read_to_string(path))
+}
+
+fn cgroup_cpu_quota_for_path(
+    relative: &str,
+    mut read_cpu_max: impl FnMut(&Path) -> std::io::Result<String>,
+) -> Result<String, String> {
+    let root = Path::new("/sys/fs/cgroup");
+    let mut current = root.join(relative.trim_start_matches('/'));
+    let mut observed_cpu_controller = false;
+
+    loop {
+        let path = current.join("cpu.max");
+        match read_cpu_max(&path) {
+            Ok(value) => {
+                observed_cpu_controller = true;
+                let quota = parse_cgroup_cpu_max(&value)?;
+                if quota != "unlimited" {
+                    return Ok(quota);
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(format!(
+                    "cgroup v2 cpu.max probe at {} failed: {error}",
+                    path.display()
+                ));
+            }
+        }
+
+        if current == root {
+            break;
+        }
+        if !current.pop() || !current.starts_with(root) {
+            return Err("cgroup v2 process path escaped the unified hierarchy".to_owned());
+        }
     }
-    let path = Path::new("/sys/fs/cgroup")
-        .join(relative.trim_start_matches('/'))
-        .join("cpu.max");
-    let value = fs::read_to_string(&path).map_err(|error| {
-        format!(
-            "cgroup v2 cpu.max probe at {} failed: {error}",
-            path.display()
-        )
-    })?;
-    parse_cgroup_cpu_max(&value)
+
+    if observed_cpu_controller {
+        Ok("unlimited".to_owned())
+    } else {
+        Err("cgroup v2 CPU controller is unavailable on the effective hierarchy".to_owned())
+    }
 }
 
 fn cgroup_v2_relative_path(membership: &str) -> Result<&str, String> {
@@ -1454,5 +1484,38 @@ mod preflight_tests {
         );
         assert!(cgroup_v2_relative_path("0::../../escape\n").is_err());
         assert!(cgroup_v2_relative_path("1:cpu:/legacy\n").is_err());
+    }
+
+    #[test]
+    fn cgroup_quota_walks_ancestors_when_the_leaf_controller_is_not_enabled() {
+        let unlimited = cgroup_cpu_quota_for_path("/system.slice/actions.runner.service", |path| {
+            match path.to_string_lossy().replace('\\', "/").as_str() {
+                "/sys/fs/cgroup/cpu.max" | "/sys/fs/cgroup/system.slice/cpu.max" => {
+                    Ok("max 100000\n".to_owned())
+                }
+                _ => Err(std::io::Error::from(std::io::ErrorKind::NotFound)),
+            }
+        })
+        .unwrap();
+        assert_eq!(unlimited, "unlimited");
+
+        let limited = cgroup_cpu_quota_for_path("/system.slice/actions.runner.service", |path| {
+            match path.to_string_lossy().replace('\\', "/").as_str() {
+                "/sys/fs/cgroup/cpu.max" => Ok("max 100000\n".to_owned()),
+                "/sys/fs/cgroup/system.slice/cpu.max" => Ok("50000 100000\n".to_owned()),
+                _ => Err(std::io::Error::from(std::io::ErrorKind::NotFound)),
+            }
+        })
+        .unwrap();
+        assert_eq!(limited, "50000/100000");
+    }
+
+    #[test]
+    fn cgroup_quota_rejects_a_hierarchy_without_the_cpu_controller() {
+        let error = cgroup_cpu_quota_for_path("/system.slice/actions.runner.service", |_| {
+            Err(std::io::Error::from(std::io::ErrorKind::NotFound))
+        })
+        .unwrap_err();
+        assert!(error.contains("CPU controller is unavailable"));
     }
 }
