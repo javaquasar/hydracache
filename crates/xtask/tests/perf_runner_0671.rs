@@ -94,3 +94,20 @@ fn runner_contract_has_exact_offline_lifecycle_and_public_labels() {
     assert!(audit.contains("/home/github-runner/.config/systemd/user/docker.service"));
     assert!(audit.contains("runner service must be offline"));
 }
+
+#[test]
+fn provisioning_gate_executes_the_reviewed_script_without_shell_indirection() {
+    let registry: xtask::gated_tests::GatedTestRegistry =
+        toml::from_str(&read(xtask::gated_tests::REGISTRY_PATH)).unwrap();
+    let gate = registry
+        .gate
+        .iter()
+        .find(|gate| gate.id == "tool.perf-runner-provisioned-0671")
+        .unwrap();
+
+    assert_eq!(
+        gate.command.program,
+        "scripts/perf/import-provisioning-receipt.sh"
+    );
+    assert!(gate.command.args.is_empty());
+}

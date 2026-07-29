@@ -6435,8 +6435,8 @@ job = "release-0671-performance-qualification"
 step = "Import offline runner provisioning proof"
 
 [gate.command]
-program = "bash"
-args = ["scripts/perf/import-provisioning-receipt.sh"]
+program = "scripts/perf/import-provisioning-receipt.sh"
+args = []
 cwd = "."
 platform = "any"
 
