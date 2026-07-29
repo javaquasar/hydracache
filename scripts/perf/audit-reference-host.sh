@@ -70,7 +70,7 @@ if test "$cgroup_path" = "/"; then
   cpu_period="100000"
   extra=""
 else
-  read -r cpu_quota cpu_period extra <"/sys/fs/cgroup${cgroup_path}/cpu.max"
+  IFS=' ' read -r cpu_quota cpu_period extra <"/sys/fs/cgroup${cgroup_path}/cpu.max"
 fi
 test -z "${extra:-}"
 test "$cpu_quota" = "max"

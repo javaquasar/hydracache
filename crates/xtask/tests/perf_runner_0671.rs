@@ -85,6 +85,9 @@ fn runner_contract_has_exact_offline_lifecycle_and_public_labels() {
     assert!(service.contains(".labels == [\"self-hosted\", \"linux\", \"x64\", $expected]"));
     assert!(audit.contains("runner_online: false"));
     assert!(!audit.contains("read -r cpu_quota cpu_period extra </sys/fs/cgroup/cpu.max"));
+    assert!(audit.contains(
+        "IFS=' ' read -r cpu_quota cpu_period extra <\"/sys/fs/cgroup${cgroup_path}/cpu.max\""
+    ));
     assert!(audit.contains("rootful container service must remain inactive"));
     assert!(audit.contains("/home/github-runner/.config/systemd/user/docker.service"));
     assert!(audit.contains("runner service must be offline"));
