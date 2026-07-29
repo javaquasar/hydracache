@@ -1268,8 +1268,45 @@ fn observe_linux_reference_runner(
 }
 
 fn cgroup_cpu_quota() -> Result<String, String> {
-    let value = fs::read_to_string("/sys/fs/cgroup/cpu.max")
-        .map_err(|error| format!("cgroup v2 cpu.max probe failed: {error}"))?;
+    let membership = fs::read_to_string("/proc/self/cgroup")
+        .map_err(|error| format!("cgroup v2 membership probe failed: {error}"))?;
+    let relative = cgroup_v2_relative_path(&membership)?;
+    if relative == "/" {
+        return Ok("unlimited".to_owned());
+    }
+    let path = Path::new("/sys/fs/cgroup")
+        .join(relative.trim_start_matches('/'))
+        .join("cpu.max");
+    let value = fs::read_to_string(&path).map_err(|error| {
+        format!(
+            "cgroup v2 cpu.max probe at {} failed: {error}",
+            path.display()
+        )
+    })?;
+    parse_cgroup_cpu_max(&value)
+}
+
+fn cgroup_v2_relative_path(membership: &str) -> Result<&str, String> {
+    let relative = membership
+        .lines()
+        .find_map(|line| {
+            let mut fields = line.splitn(3, ':');
+            match (fields.next(), fields.next(), fields.next()) {
+                (Some("0"), Some(""), Some(path)) => Some(path),
+                _ => None,
+            }
+        })
+        .filter(|path| !path.is_empty())
+        .ok_or_else(|| {
+            "unified cgroup v2 membership is absent from /proc/self/cgroup".to_owned()
+        })?;
+    if !relative.starts_with('/') || relative.split('/').any(|component| component == "..") {
+        return Err("cgroup v2 process path is not a safe absolute path".to_owned());
+    }
+    Ok(relative)
+}
+
+fn parse_cgroup_cpu_max(value: &str) -> Result<String, String> {
     let mut fields = value.split_whitespace();
     let quota = fields
         .next()
@@ -1402,5 +1439,20 @@ mod preflight_tests {
         let shortened = evaluate_runner_preflight(vec![100, 101, 99, 100, 102, 98], runner());
         assert!(!shortened.passed);
         assert_eq!(shortened.samples_nanos.len(), 6);
+    }
+
+    #[test]
+    fn cgroup_quota_parser_uses_the_effective_v2_membership() {
+        assert_eq!(
+            cgroup_v2_relative_path("0::/system.slice/actions.runner.service\n").unwrap(),
+            "/system.slice/actions.runner.service"
+        );
+        assert_eq!(parse_cgroup_cpu_max("max 100000\n").unwrap(), "unlimited");
+        assert_eq!(
+            parse_cgroup_cpu_max("50000 100000\n").unwrap(),
+            "50000/100000"
+        );
+        assert!(cgroup_v2_relative_path("0::../../escape\n").is_err());
+        assert!(cgroup_v2_relative_path("1:cpu:/legacy\n").is_err());
     }
 }

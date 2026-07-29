@@ -34,6 +34,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
         "taskset --cpu-list 1-4",
         "storage_transport: \"nvme\"",
         "cgroup_cpu_quota: \"unlimited\"",
+        "/proc/self/cgroup",
         "ship_evidence_eligible: false",
         "target/test-evidence/0.67.1/runner-provisioned.json",
     ] {
@@ -81,6 +82,7 @@ fn runner_contract_has_exact_offline_lifecycle_and_public_labels() {
     assert!(audit.contains(expected_labels));
     assert!(service.contains(".labels == [\"self-hosted\", \"linux\", \"x64\", $expected]"));
     assert!(audit.contains("runner_online: false"));
+    assert!(!audit.contains("read -r cpu_quota cpu_period extra </sys/fs/cgroup/cpu.max"));
     assert!(audit.contains("rootful container service must remain inactive"));
     assert!(audit.contains("/home/github-runner/.config/systemd/user/docker.service"));
     assert!(audit.contains("runner service must be offline"));

@@ -175,8 +175,16 @@ test -n "$(lsblk --nodeps --noheadings --output NAME,TRAN | awk '$2 == "nvme" {p
 
 printf '%s\n' '=== cgroup ==='
 test "$(stat --file-system --format=%T /sys/fs/cgroup)" = "cgroup2fs"
-cat /sys/fs/cgroup/cpu.max
-test "$(awk '{print $1}' /sys/fs/cgroup/cpu.max)" = "max"
+cgroup_path="$(awk -F: '$1 == "0" && $2 == "" {print $3}' /proc/self/cgroup)"
+test -n "$cgroup_path"
+case "$cgroup_path" in /*) ;; *) exit 1 ;; esac
+if test "$cgroup_path" = "/"; then
+  cgroup_cpu_max="max 100000"
+else
+  cgroup_cpu_max="$(cat "/sys/fs/cgroup${cgroup_path}/cpu.max")"
+fi
+printf 'effective_cpu_max=%s\n' "$cgroup_cpu_max"
+test "$(printf '%s\n' "$cgroup_cpu_max" | awk '{print $1}')" = "max"
 ```
 
 If the host reports a hypervisor, fewer than six physical cores, fewer than four distinct cores for
@@ -650,7 +658,15 @@ if systemd-detect-virt --quiet; then
 fi
 
 test "$(stat --file-system --format=%T /sys/fs/cgroup)" = "cgroup2fs"
-test "$(awk '{print $1}' /sys/fs/cgroup/cpu.max)" = "max"
+cgroup_path="$(awk -F: '$1 == "0" && $2 == "" {print $3}' /proc/self/cgroup)"
+test -n "$cgroup_path"
+case "$cgroup_path" in /*) ;; *) exit 1 ;; esac
+if test "$cgroup_path" = "/"; then
+  cgroup_cpu_max="max 100000"
+else
+  cgroup_cpu_max="$(cat "/sys/fs/cgroup${cgroup_path}/cpu.max")"
+fi
+test "$(printf '%s\n' "$cgroup_cpu_max" | awk '{print $1}')" = "max"
 
 physical_cores="$(
   lscpu --parse=SOCKET,CORE |

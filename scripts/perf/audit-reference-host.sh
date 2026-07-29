@@ -56,7 +56,22 @@ if systemd-detect-virt --quiet; then
 fi
 
 test "$(stat --file-system --format=%T /sys/fs/cgroup)" = "cgroup2fs"
-read -r cpu_quota cpu_period extra </sys/fs/cgroup/cpu.max
+cgroup_path="$(awk -F: '$1 == "0" && $2 == "" {print $3}' /proc/self/cgroup)"
+test -n "$cgroup_path"
+case "$cgroup_path" in
+  /*) ;;
+  *) echo "cgroup v2 process path is not absolute: $cgroup_path" >&2; exit 1 ;;
+esac
+case "/$cgroup_path/" in
+  */../*) echo "cgroup v2 process path contains parent traversal" >&2; exit 1 ;;
+esac
+if test "$cgroup_path" = "/"; then
+  cpu_quota="max"
+  cpu_period="100000"
+  extra=""
+else
+  read -r cpu_quota cpu_period extra <"/sys/fs/cgroup${cgroup_path}/cpu.max"
+fi
 test -z "${extra:-}"
 test "$cpu_quota" = "max"
 test "$cpu_period" -gt 0
