@@ -4,6 +4,8 @@ use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use hydracache::{
     ClusterEpoch, ClusterGeneration, ClusterNodeId, ClusterRole, RaftMetadataCommand,
@@ -51,6 +53,22 @@ fn open_store(path: &Path) -> TestResult<SledRaftLogStore> {
     store.initialize_with_conf_state(conf_state.clone());
     store.save_conf_state(&conf_state)?;
     Ok(store)
+}
+
+fn reopen_store_after_drop(path: &Path) -> TestResult<SledRaftLogStore> {
+    let deadline = Instant::now() + Duration::from_secs(1);
+    loop {
+        match SledRaftLogStore::open(path) {
+            Ok(store) => return Ok(store),
+            Err(error)
+                if error.to_string().contains("could not acquire lock")
+                    && Instant::now() < deadline =>
+            {
+                thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => return Err(error.into()),
+        }
+    }
 }
 
 fn metadata_payload(
@@ -200,7 +218,7 @@ fn malformed_metadata_snapshot_is_rejected_before_sled_mutation_and_reopen() -> 
 
     drop(runtime);
     drop(store);
-    let reopened = SledRaftLogStore::open(directory.path())?;
+    let reopened = reopen_store_after_drop(directory.path())?;
     let reopened_initial_state = reopened.initial_state()?;
     assert_eq!(
         reopened_initial_state.hard_state,
