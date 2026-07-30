@@ -4,10 +4,12 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 use hydracache_loadgen::profile::{
-    CpuIsolationAttestation, MeasurementCore, RunnerAttestationV4,
+    CpuIsolationAttestation, MeasurementCore, RunnerAttestationV5,
     REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
-    REFERENCE_MEASUREMENT_CPUS, REFERENCE_MEASUREMENT_IDLE_POLICY,
-    REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US, REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
+    REFERENCE_HOUSEKEEPING_CPU_IDS, REFERENCE_HOUSEKEEPING_IDLE_POLICY,
+    REFERENCE_HOUSEKEEPING_MAX_IDLE_LATENCY_US, REFERENCE_MEASUREMENT_CPUS,
+    REFERENCE_MEASUREMENT_IDLE_POLICY, REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US,
+    REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
 };
 use sha2::{Digest, Sha256};
 
@@ -28,7 +30,7 @@ pub struct HostAttestationInput {
     pub prebuild_contract_digest: String,
 }
 
-pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestationV4, String> {
+pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestationV5, String> {
     let host_digest = match input.provisioned_host_digest {
         Some(digest) => validate_provisioned_host_digest(&digest)?,
         None => privacy_digest("hydracache-host-identity-v2", &input.raw_host_identity)?,
@@ -37,7 +39,7 @@ pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestatio
         "hydracache-storage-identity-v2",
         &input.raw_storage_identity,
     )?;
-    let attestation = RunnerAttestationV4 {
+    let attestation = RunnerAttestationV5 {
         schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
         contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
         virtualization: input.virtualization,
@@ -62,7 +64,7 @@ pub fn build_attestation(input: HostAttestationInput) -> Result<RunnerAttestatio
 pub fn observe_reference_attestation(
     toolchain_identity: &str,
     prebuild_contract_digest: &str,
-) -> Result<RunnerAttestationV4, String> {
+) -> Result<RunnerAttestationV5, String> {
     let virtualization = detect_virtualization()?;
     let (physical_cores, measurement_cores) = observe_cpu_topology()?;
     let (provisioned_host_digest, provisioned_cpu_isolation) = read_provisioning_contract()?;
@@ -117,7 +119,7 @@ fn read_provisioning_contract() -> Result<(String, CpuIsolationAttestation), Str
         "git rev-parse HEAD",
     )?
     .to_owned();
-    if receipt.schema_version != 3
+    if receipt.schema_version != 4
         || receipt.release != "0.67.1"
         || receipt.stage != "runner-provisioned"
         || receipt.source_commit != commit
@@ -137,8 +139,18 @@ fn read_provisioning_contract() -> Result<(String, CpuIsolationAttestation), Str
 fn observe_cpu_isolation(
     provisioned: &CpuIsolationAttestation,
 ) -> Result<CpuIsolationAttestation, String> {
-    let (measurement_idle_policy, measurement_max_idle_latency_us) =
-        observe_measurement_idle_policy()?;
+    let (measurement_idle_policy, measurement_max_idle_latency_us) = observe_idle_policy(
+        "measurement",
+        &REFERENCE_MEASUREMENT_CPUS,
+        REFERENCE_MEASUREMENT_IDLE_POLICY,
+        REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US,
+    )?;
+    let (housekeeping_idle_policy, housekeeping_max_idle_latency_us) = observe_idle_policy(
+        "housekeeping",
+        &REFERENCE_HOUSEKEEPING_CPU_IDS,
+        REFERENCE_HOUSEKEEPING_IDLE_POLICY,
+        REFERENCE_HOUSEKEEPING_MAX_IDLE_LATENCY_US,
+    )?;
     let observed = CpuIsolationAttestation {
         smt_control: read_trimmed(Path::new("/sys/devices/system/cpu/smt/control"))?,
         online_cpus: read_trimmed(Path::new("/sys/devices/system/cpu/online"))?,
@@ -149,6 +161,8 @@ fn observe_cpu_isolation(
         irq_affinity_policy: provisioned.irq_affinity_policy.clone(),
         measurement_idle_policy,
         measurement_max_idle_latency_us,
+        housekeeping_idle_policy,
+        housekeeping_max_idle_latency_us,
     };
     if &observed != provisioned {
         return Err(format!(
@@ -158,18 +172,23 @@ fn observe_cpu_isolation(
     Ok(observed)
 }
 
-fn observe_measurement_idle_policy() -> Result<(String, u32), String> {
-    for cpu in REFERENCE_MEASUREMENT_CPUS {
+fn observe_idle_policy(
+    role: &str,
+    cpus: &[u32],
+    policy: &str,
+    maximum_latency_us: u32,
+) -> Result<(String, u32), String> {
+    for cpu in cpus {
         let root = Path::new("/sys/devices/system/cpu")
             .join(format!("cpu{cpu}"))
             .join("cpuidle");
         let mut enabled_shallow = 0_u32;
         let mut disabled_deep = 0_u32;
         for entry in fs::read_dir(&root)
-            .map_err(|error| format!("reading measurement CPU {cpu} idle states: {error}"))?
+            .map_err(|error| format!("reading {role} CPU {cpu} idle states: {error}"))?
         {
             let state = entry
-                .map_err(|error| format!("reading measurement CPU {cpu} idle state: {error}"))?
+                .map_err(|error| format!("reading {role} CPU {cpu} idle state: {error}"))?
                 .path();
             if !state.is_dir()
                 || !state
@@ -180,34 +199,28 @@ fn observe_measurement_idle_policy() -> Result<(String, u32), String> {
             }
             let latency = read_u32(&state.join("latency"))?;
             let disabled = read_u32(&state.join("disable"))?;
-            match (
-                latency <= REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US,
-                disabled,
-            ) {
+            match (latency <= maximum_latency_us, disabled) {
                 (true, 0) => enabled_shallow += 1,
                 (false, 1) => disabled_deep += 1,
                 (true, _) => {
                     return Err(format!(
-                        "measurement CPU {cpu} shallow idle state is disabled: {state:?}"
+                        "{role} CPU {cpu} shallow idle state is disabled: {state:?}"
                     ))
                 }
                 (false, _) => {
                     return Err(format!(
-                        "measurement CPU {cpu} deep idle state is enabled: {state:?}"
+                        "{role} CPU {cpu} deep idle state is enabled: {state:?}"
                     ))
                 }
             }
         }
         if enabled_shallow == 0 || disabled_deep == 0 {
             return Err(format!(
-                "measurement CPU {cpu} idle policy did not prove both enabled shallow and disabled deep states"
+                "{role} CPU {cpu} idle policy did not prove both enabled shallow and disabled deep states"
             ));
         }
     }
-    Ok((
-        REFERENCE_MEASUREMENT_IDLE_POLICY.to_owned(),
-        REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US,
-    ))
+    Ok((policy.to_owned(), maximum_latency_us))
 }
 fn kernel_cpu_argument(name: &str) -> Result<String, String> {
     let cmdline = fs::read_to_string("/proc/cmdline")
@@ -487,6 +500,8 @@ mod tests {
                 irq_affinity_policy: "housekeeping-only-v1".to_owned(),
                 measurement_idle_policy: "latency-cap-us-v1".to_owned(),
                 measurement_max_idle_latency_us: 1,
+                housekeeping_idle_policy: "latency-cap-us-v1".to_owned(),
+                housekeeping_max_idle_latency_us: 1,
             },
             provisioned_host_digest: None,
             raw_host_identity: vec!["physical-host-a".to_owned()],

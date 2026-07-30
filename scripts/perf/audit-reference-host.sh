@@ -259,7 +259,7 @@ jq --null-input \
   --argjson measurement_topology "$topology_json" \
   --argjson nvme_devices "$nvme_json" \
   '{
-    schema_version: 3,
+    schema_version: 4,
     release: "0.67.1",
     stage: "runner-provisioned",
     source_commit: $commit,
@@ -281,7 +281,9 @@ jq --null-input \
       housekeeping_cpus: "0,5-7",
       irq_affinity_policy: "housekeeping-only-v1",
       measurement_idle_policy: "latency-cap-us-v1",
-      measurement_max_idle_latency_us: 1
+      measurement_max_idle_latency_us: 1,
+      housekeeping_idle_policy: "latency-cap-us-v1",
+      housekeeping_max_idle_latency_us: 1
     },
     storage_transport: "nvme",
     storage_devices: $nvme_devices,

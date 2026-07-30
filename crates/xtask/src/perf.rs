@@ -40,7 +40,7 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
 pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
-pub const ATTESTATION_V4_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v4.json";
+pub const ATTESTATION_V5_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v5.json";
 pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
 pub const RUNNER_PREFLIGHT_MAX_SPREAD_RATIO: f64 = 0.15;
 const REDIS_PROVENANCE_ID: &str = "redis-benchmark-7.2.5-linux-x86_64-gnu-source-v1";
@@ -286,20 +286,20 @@ pub fn run_preflight(args: Vec<String>) -> Result<(), PerfPrebuildError> {
     }
 
     let attestation_receipt = MachineAttestationReceipt {
-        schema_version: 3,
+        schema_version: 4,
         release: "0.67.1".to_owned(),
         profile: profile_name.clone(),
         ship_evidence_eligible: false,
         passed: true,
         observed_runner: observed_runner.clone(),
     };
-    let attestation_output = root.join(ATTESTATION_V4_RELATIVE_PATH);
+    let attestation_output = root.join(ATTESTATION_V5_RELATIVE_PATH);
     if let Some(parent) = attestation_output.parent() {
         fs::create_dir_all(parent).map_err(|error| {
             PerfPrebuildError::new(format!("creating {}: {error}", parent.display()))
         })?;
     }
-    let attestation_bytes = json_bytes(&attestation_receipt, "machine attestation v3")?;
+    let attestation_bytes = json_bytes(&attestation_receipt, "machine attestation v4")?;
     write_create_new(&attestation_output, &attestation_bytes)?;
 
     let report = evaluate_runner_preflight(calibration_samples(), observed_runner);
@@ -1233,10 +1233,10 @@ fn observe_linux_reference_runner(
         cgroup_cpu_quota: &'a str,
         governor: &'a str,
         turbo: &'a str,
-        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV4,
+        attestation: &'a hydracache_loadgen::profile::RunnerAttestationV5,
     }
     let stable = StableFingerprint {
-        schema_version: 3,
+        schema_version: 4,
         runner_class: &profile.required_runner_class,
         cpu_model: &cpu_model,
         logical_cores,

@@ -6444,7 +6444,7 @@ platform = "any"
 HYDRACACHE_RUN_PERF_0671_STAGE = "runner-provisioned"
 
 [[gate]]
-id = "tool.perf-attestation-v4-0671"
+id = "tool.perf-attestation-v5-0671"
 kind = "external_tool"
 source = "crates/xtask/src/perf.rs"
 package = "xtask"
@@ -6452,7 +6452,7 @@ target = "release_governance"
 test = "release_0671_governance_contract_is_fail_closed"
 cfg = ""
 env = "HYDRACACHE_RUN_PERF_0671_STAGE"
-reason = "Release 0.67.1 requires machine attestation v4 and rejects VM, sibling-core, non-NVMe, and anonymous-host inputs"
+reason = "Release 0.67.1 requires machine attestation v5 and rejects VM, sibling-core, deep-idle measurement/housekeeping, non-NVMe, and anonymous-host inputs"
 tier = "manual"
 required_features = []
 required_env = ["HYDRACACHE_RUN_PERF_0671_STAGE"]
@@ -6460,7 +6460,7 @@ required_tools = ["cargo", "findmnt", "lsblk", "systemd-detect-virt"]
 timeout_seconds = 300
 owner_release = "0.67.1"
 ship_mandatory = true
-artifacts = ["target/test-evidence/0.67.1/attestation-v4.json"]
+artifacts = ["target/test-evidence/0.67.1/attestation-v5.json"]
 
 [gate.ci]
 workflow = ".github/workflows/ci.yml"
@@ -6474,7 +6474,7 @@ cwd = "."
 platform = "any"
 
 [gate.command.env]
-HYDRACACHE_RUN_PERF_0671_STAGE = "attestation-v4"
+HYDRACACHE_RUN_PERF_0671_STAGE = "attestation-v5"
 HYDRACACHE_RUN_PERF_REFERENCE = "1"
 
 [[gate]]
