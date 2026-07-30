@@ -39,6 +39,8 @@ pub const REFERENCE_AUTHORIZATION_ENV: &str = "HYDRACACHE_RUN_PERF_REFERENCE";
 
 const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
+const PERFORMANCE_0671_MODE_ENV: &str = "HYDRACACHE_PERFORMANCE_0671_MODE";
+const REFERENCE_HOUSEKEEPING_AFFINITY: &str = "0,5-7";
 pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
 pub const ATTESTATION_V5_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v5.json";
 pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
@@ -1150,17 +1152,7 @@ fn observe_linux_reference_runner(
         );
     }
     let cpu_model = proc_value("/proc/cpuinfo", "model name")?;
-    let cpu_affinity = proc_value("/proc/self/status", "Cpus_allowed_list")?;
-    if cpu_affinity != profile.required_cpu_affinity {
-        return Err(format!(
-            "reference CPU affinity {cpu_affinity:?} differs from required {:?}",
-            profile.required_cpu_affinity
-        ));
-    }
-    let logical_cores = count_cpu_list(&cpu_affinity)?;
-    if logical_cores < profile.minimum_logical_cores {
-        return Err("self-hosted runner core count is below the profile minimum".to_owned());
-    }
+    let process_cpu_affinity = proc_value("/proc/self/status", "Cpus_allowed_list")?;
     let cgroup_cpu_quota = cgroup_cpu_quota()?;
     if cgroup_cpu_quota != profile.required_cgroup_cpu_quota {
         return Err(format!(
@@ -1220,6 +1212,16 @@ fn observe_linux_reference_runner(
         toolchain_identity,
         prebuild_contract_digest,
     )?;
+    let cpu_affinity = resolve_reference_cpu_affinity(
+        &process_cpu_affinity,
+        profile,
+        &attestation,
+        std::env::var(PERFORMANCE_0671_MODE_ENV).ok().as_deref(),
+    )?;
+    let logical_cores = count_cpu_list(&cpu_affinity)?;
+    if logical_cores < profile.minimum_logical_cores {
+        return Err("self-hosted runner core count is below the profile minimum".to_owned());
+    }
     let calibration_score = calibration_score();
     #[derive(Serialize)]
     struct StableFingerprint<'a> {
@@ -1265,6 +1267,38 @@ fn observe_linux_reference_runner(
         calibration_score,
         attestation,
     })
+}
+
+fn resolve_reference_cpu_affinity(
+    process_cpu_affinity: &str,
+    profile: &PerformanceProfile,
+    attestation: &hydracache_loadgen::profile::RunnerAttestationV5,
+    performance_0671_mode: Option<&str>,
+) -> Result<String, String> {
+    if process_cpu_affinity == profile.required_cpu_affinity {
+        return Ok(process_cpu_affinity.to_owned());
+    }
+
+    if matches!(performance_0671_mode, Some("qualify" | "bootstrap")) {
+        let isolation = &attestation.cpu_isolation;
+        if process_cpu_affinity != REFERENCE_HOUSEKEEPING_AFFINITY
+            || isolation.housekeeping_cpus != REFERENCE_HOUSEKEEPING_AFFINITY
+            || isolation.isolated_cpus != profile.required_cpu_affinity
+        {
+            return Err(format!(
+                "0.67.1 prebuild controller affinity is not bound to the attested measurement contract: process={process_cpu_affinity:?} housekeeping={:?} isolated={:?} required={:?}",
+                isolation.housekeeping_cpus,
+                isolation.isolated_cpus,
+                profile.required_cpu_affinity
+            ));
+        }
+        return Ok(profile.required_cpu_affinity.clone());
+    }
+
+    Err(format!(
+        "reference CPU affinity {process_cpu_affinity:?} differs from required {:?}",
+        profile.required_cpu_affinity
+    ))
 }
 
 fn cgroup_cpu_quota() -> Result<String, String> {
@@ -1484,6 +1518,83 @@ mod preflight_tests {
         );
         assert!(cgroup_v2_relative_path("0::../../escape\n").is_err());
         assert!(cgroup_v2_relative_path("1:cpu:/legacy\n").is_err());
+    }
+
+    fn profile() -> PerformanceProfile {
+        PerformanceProfile {
+            name: "reference-v1".to_owned(),
+            required_runner_class: "self-hosted-bare-metal-v1".to_owned(),
+            allowed_fingerprints: Vec::new(),
+            minimum_logical_cores: 4,
+            required_cpu_affinity: "1-4".to_owned(),
+            required_cgroup_cpu_quota: "unlimited".to_owned(),
+            require_dedicated: true,
+            maximum_calibration_score: 0.15,
+        }
+    }
+
+    fn isolated_attestation() -> hydracache_loadgen::profile::RunnerAttestationV5 {
+        let mut attestation = hydracache_loadgen::profile::RunnerAttestationV5::default();
+        attestation.cpu_isolation.housekeeping_cpus = "0,5-7".to_owned();
+        attestation.cpu_isolation.isolated_cpus = "1-4".to_owned();
+        attestation
+    }
+
+    #[test]
+    fn reference_affinity_accepts_measurement_child_and_exact_housekeeping_controller() {
+        let profile = profile();
+        let attestation = isolated_attestation();
+
+        assert_eq!(
+            resolve_reference_cpu_affinity("1-4", &profile, &attestation, None).unwrap(),
+            "1-4"
+        );
+        for mode in ["qualify", "bootstrap"] {
+            assert_eq!(
+                resolve_reference_cpu_affinity("0,5-7", &profile, &attestation, Some(mode))
+                    .unwrap(),
+                "1-4"
+            );
+        }
+    }
+
+    #[test]
+    fn reference_affinity_rejects_untrusted_mode_or_cpuset_drift() {
+        let profile = profile();
+        let attestation = isolated_attestation();
+
+        assert!(resolve_reference_cpu_affinity("0,5-7", &profile, &attestation, None).is_err());
+        assert!(resolve_reference_cpu_affinity(
+            "0,5-7",
+            &profile,
+            &attestation,
+            Some("sample-set")
+        )
+        .is_err());
+        assert!(
+            resolve_reference_cpu_affinity("0,5-6", &profile, &attestation, Some("qualify"))
+                .is_err()
+        );
+
+        let mut wrong_housekeeping = attestation.clone();
+        wrong_housekeeping.cpu_isolation.housekeeping_cpus = "0,6-7".to_owned();
+        assert!(resolve_reference_cpu_affinity(
+            "0,5-7",
+            &profile,
+            &wrong_housekeeping,
+            Some("qualify")
+        )
+        .is_err());
+
+        let mut wrong_isolation = attestation;
+        wrong_isolation.cpu_isolation.isolated_cpus = "1-3".to_owned();
+        assert!(resolve_reference_cpu_affinity(
+            "0,5-7",
+            &profile,
+            &wrong_isolation,
+            Some("bootstrap")
+        )
+        .is_err());
     }
 
     #[test]
