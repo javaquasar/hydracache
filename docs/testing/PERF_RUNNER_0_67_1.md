@@ -89,6 +89,17 @@ mode is `qualify` or `bootstrap`, GitHub Actions and `GITHUB_SHA` match the sour
 link target and `source-commit` marker are exact, and `findmnt` independently reports `tmpfs`.
 Every other path, mode, commit, marker, link, or filesystem fails closed.
 
+Qualification `30585767852` passed attestation, the seven-probe preflight at
+`0.0014360058485199713` spread, prebuild, and both bounded diagnostics. Finalization then rejected
+the bundle because the attestation and prebuild storage fingerprints differed. Exact retained
+payload comparison proved that every stable field matched except `storage_identity_digest`:
+plain `lsblk --inverse` tree decoration caused the parser to omit the indented RAID1 leaf and hash
+whichever NVMe device happened to be rendered as the final branch. The storage probe now requests
+`lsblk --raw`, parses both normalized NVMe disk rows, collapses padding before hashing, and keeps the
+existing order-independent privacy digest. A regression covers both RAID1 leaves and reversed
+enumeration order. Raw model, serial, and WWN values remain confined to the in-process digest input
+and are never serialized.
+
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
 
