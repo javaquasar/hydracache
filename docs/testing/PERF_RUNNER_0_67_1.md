@@ -18,6 +18,36 @@ block at a time, inspect its output, and stop on any failed assertion.
 > output is not release evidence and must not be quoted as a capacity, sizing, baseline, or Redis
 > comparison claim.
 
+## Measurement I/O isolation contract
+
+The runner service is root-owned and restricted to housekeeping CPUs `0,5-7`. Build, Git,
+artifact, Docker-control, and other orchestration I/O must remain inside that inherited affinity;
+only the already-prewarmed measurement child may run on CPUs `1-4`.
+
+The contract is:
+
+- `scripts/perf/reference-evidence-tmpfs.sh prepare` creates the commit-bound evidence tree at
+  `/dev/shm/hydracache-reference-evidence-v1` and links the normal evidence paths to it;
+- `scripts/perf/run-reference-measurement.sh` warms exact binaries, libraries, and inputs on
+  housekeeping CPUs before applying `taskset --cpu-list 1-4` to the measurement child only;
+- `scripts/perf/reference-runtime-irq-guard.sh` rejects any active IRQ reaching CPUs `1-4`
+  immediately before or after a measurement;
+- the RESP wrapper pulls and prewarms the pinned Redis image on housekeeping CPU `0`;
+- `scripts/perf/reference-evidence-tmpfs.sh materialize` copies completed evidence back to durable
+  storage on housekeeping CPUs after the final measurement stage.
+
+The runtime IRQ guard retains the same narrow exception as host provisioning: a managed NVMe
+vector may point at a measurement CPU only while its queue is unmapped and its interrupt count is
+exactly zero. Any active, mapped, or historically fired vector fails closed and requires a clean
+host recovery before another sample.
+
+Run these helpers only through the reviewed `0.67`/`0.67.1` GitHub workflow. A direct
+`taskset --cpu-list 1-4 cargo ...` command is forbidden because compiler and artifact I/O can
+activate immutable managed NVMe queues on a measurement CPU.
+
+This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
+frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
+
 ## Placeholders
 
 Replace these values only where explicitly instructed:

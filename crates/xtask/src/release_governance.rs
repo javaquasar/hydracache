@@ -859,6 +859,20 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             ));
         }
     }
+    if let Some(attestation) = gates
+        .iter()
+        .find(|gate| gate.id == "tool.perf-attestation-v5-0671")
+    {
+        if attestation.source != "scripts/perf/run-reference-measurement.sh"
+            || attestation.command.program != "scripts/perf/run-reference-measurement.sh"
+            || attestation.command.args != ["attestation"]
+        {
+            problems.push(
+                "0.67.1 attestation must use the reviewed housekeeping/tmpfs measurement wrapper"
+                    .to_owned(),
+            );
+        }
+    }
     problems
 }
 
@@ -990,19 +1004,12 @@ pub fn release_067_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
         ("env.hydracache-run-067-perf-control-plane", "control-plane"),
     ] {
         if let Some(gate) = gates.iter().find(|gate| gate.id == id) {
-            let expected_args = [
-                "suite",
-                suite,
-                "--profile",
-                "reference-v1",
-                "--output-dir",
-                "target/test-evidence/0.67",
-            ];
-            if gate.command.program != "target/release/hydracache-loadgen"
-                || gate.command.args != expected_args
+            if gate.source != "scripts/perf/run-reference-measurement.sh"
+                || gate.command.program != "scripts/perf/run-reference-measurement.sh"
+                || gate.command.args != [suite]
             {
                 problems.push(format!(
-                    "release 0.67 consumer gate {id} must execute the exact prebuilt loadgen binary without Cargo"
+                    "release 0.67 consumer gate {id} must execute the exact prebuilt loadgen through the reviewed housekeeping/tmpfs measurement wrapper"
                 ));
             }
             if gate
@@ -1225,23 +1232,31 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
         ),
         (
             "Preflight 0.67 reference runner stability",
-            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- perf-runner-preflight --release 0.67 --profile reference-v1",
+            "scripts/perf/run-reference-measurement.sh attestation",
+        ),
+        (
+            "Prepare tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh prepare",
         ),
         (
             "Prebuild 0.67 performance binaries",
-            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
         ),
         (
             "Run 0.67 core performance evidence",
-            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
         ),
         (
             "Run 0.67 RESP performance evidence",
-            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
         ),
         (
             "Run 0.67 control-plane performance evidence",
-            "taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+            "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+        ),
+        (
+            "Materialize tmpfs reference evidence",
+            "scripts/perf/reference-evidence-tmpfs.sh materialize",
         ),
         (
             "Check 0.67 performance budgets",
@@ -1261,6 +1276,89 @@ echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH""#;
         if !exact {
             problems.push(format!(
                 "release 0.67 performance step {step:?} must run exactly `{command}`"
+            ));
+        }
+    }
+    let expected_0671_runs = [
+        (
+            "release-0671-performance-qualification",
+            vec![
+                (
+                    "Prepare tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh prepare",
+                ),
+                (
+                    "Attest and preflight the 0.67.1 host",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671",
+                ),
+                (
+                    "Prebuild exact 0.67 performance binaries",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+                ),
+                (
+                    "Run bounded non-ship diagnostics",
+                    "scripts/perf/run-reference-measurement.sh qualification-local\nscripts/perf/run-reference-measurement.sh qualification-client-surface",
+                ),
+                (
+                    "Materialize tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh materialize",
+                ),
+            ],
+        ),
+        (
+            "release-0671-performance-bootstrap",
+            vec![
+                (
+                    "Prepare tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh prepare",
+                ),
+                (
+                    "Attest and preflight the 0.67.1 host",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v5-0671",
+                ),
+                (
+                    "Prebuild exact 0.67 performance binaries",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067",
+                ),
+                (
+                    "Run bootstrap core reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-core",
+                ),
+                (
+                    "Run bootstrap RESP reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-resp",
+                ),
+                (
+                    "Run bootstrap control-plane reference evidence",
+                    "cargo run -p xtask --locked -- evidence-run --release 0.67 --gate env.hydracache-run-067-perf-control-plane",
+                ),
+                (
+                    "Materialize tmpfs reference evidence",
+                    "scripts/perf/reference-evidence-tmpfs.sh materialize",
+                ),
+            ],
+        ),
+    ];
+    for (job, expected) in expected_0671_runs {
+        for (step, command) in expected {
+            let exact = workflow
+                .step_runs
+                .get(job)
+                .and_then(|steps| steps.get(step))
+                .is_some_and(|run| run.trim() == command);
+            if !exact {
+                problems.push(format!(
+                    "release 0.67.1 performance step {job}/{step:?} must run exactly `{command}`"
+                ));
+            }
+        }
+        if workflow.step_runs.get(job).is_some_and(|steps| {
+            steps
+                .values()
+                .any(|run| run.contains("taskset --cpu-list 1-4 cargo run"))
+        }) {
+            problems.push(format!(
+                "release 0.67.1 performance job {job} must keep Cargo and orchestration on housekeeping CPUs"
             ));
         }
     }

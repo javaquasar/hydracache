@@ -409,20 +409,22 @@ fn compile_time_is_excluded_from_measurement_window() {
         .args
         .iter()
         .any(|arg| arg == "perf-prebuild"));
-    for gate_id in [
-        "env.hydracache-run-067-perf-core",
-        "env.hydracache-run-067-perf-resp",
-        "env.hydracache-run-067-perf-control-plane",
+    for (gate_id, suite) in [
+        ("env.hydracache-run-067-perf-core", "core"),
+        ("env.hydracache-run-067-perf-resp", "resp"),
+        ("env.hydracache-run-067-perf-control-plane", "control-plane"),
     ] {
         let consumer = registry
             .gate
             .iter()
             .find(|gate| gate.id == gate_id)
             .unwrap();
+        assert_eq!(consumer.source, "scripts/perf/run-reference-measurement.sh");
         assert_eq!(
             consumer.command.program,
-            "target/release/hydracache-loadgen"
+            "scripts/perf/run-reference-measurement.sh"
         );
+        assert_eq!(consumer.command.args, [suite]);
         assert!(!consumer.command.args.iter().any(|arg| arg == "cargo"));
     }
 }
