@@ -52,6 +52,14 @@ The in-scope correction is therefore fail-closed:
 - pre/post runtime IRQ guards reject active or historically fired vectors on measurement CPUs;
 - materialization back to durable artifact paths happens after measurements on housekeeping.
 
+The first post-correction qualification then exposed one remaining nested path: the
+measurement-pinned attestation child launched `git`/storage/virtualization probes itself. Its seven
+calibration samples were stable (`0.0011` spread), but managed NVMe IRQ `128` (`nvme0q2`, immutable
+effective affinity CPU `1`) recorded one interrupt between the unchanged pre/post guards. The
+wrapper now prefaults those probe binaries, libraries, and regular-file inputs, and the attestation
+code dispatches every external host probe through the exact housekeeping set `0,5-7`. Fingerprint
+affinity and calibration remain on `1-4`; an unknown I/O policy fails closed.
+
 The rejected run is retained for diagnosis but is not eligible and does not count toward the
 five-sample set. SLOs, schedules, repetitions, zero-error rules, the `0.15` spread gate, affinity,
 quota, privacy, and all non-ship/bootstrap boundaries remain unchanged.

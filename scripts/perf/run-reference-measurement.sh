@@ -58,6 +58,8 @@ warm_command() {
 
 warm_file Cargo.lock
 warm_file .git/index
+warm_file /etc/os-release
+warm_file /var/lib/hydracache-perf/runner-provisioned.json
 while IFS= read -r tracked_input; do
   test -z "$tracked_input" || warm_file "$tracked_input"
 done < <(
@@ -69,6 +71,9 @@ done < <(
 test -z "$(git status --porcelain=v1 --untracked-files=no)"
 warm_command git
 warm_command taskset
+warm_command findmnt
+warm_command lsblk
+warm_command systemd-detect-virt
 if [[ "$mode" == qualification-* ]]; then
   mkdir --parents target/test-evidence/0.67.1/qualification
 fi

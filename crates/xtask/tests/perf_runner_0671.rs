@@ -129,6 +129,14 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(measurement
         .contains("HYDRACACHE_MEASUREMENT_IO_POLICY=\"tmpfs-housekeeping-orchestration-v1\""));
     assert!(measurement.contains("taskset --cpu-list 1-4 \"${command_argv[@]}\""));
+    assert!(measurement.contains("warm_file /etc/os-release"));
+    assert!(measurement.contains("warm_file /var/lib/hydracache-perf/runner-provisioned.json"));
+    for command in ["findmnt", "lsblk", "systemd-detect-virt"] {
+        assert!(
+            measurement.contains(&format!("warm_command {command}")),
+            "measurement wrapper does not warm {command}"
+        );
+    }
     assert!(measurement.contains("docker pull --platform linux/amd64"));
     assert!(measurement.contains("--cpuset-cpus 0"));
     assert!(!measurement.contains("taskset --cpu-list 1-4 cargo"));
