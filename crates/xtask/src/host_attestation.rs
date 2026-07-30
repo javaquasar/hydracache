@@ -269,10 +269,7 @@ fn validate_provisioned_host_digest(digest: &str) -> Result<String, String> {
 }
 
 fn detect_virtualization() -> Result<String, String> {
-    let quiet = Command::new("systemd-detect-virt")
-        .arg("--quiet")
-        .output()
-        .map_err(|error| format!("systemd-detect-virt probe failed: {error}"))?;
+    let quiet = probe_output("systemd-detect-virt", &["--quiet"])?;
     match quiet.status.code() {
         Some(1) if quiet.stdout.is_empty() && quiet.stderr.is_empty() => Ok("none".to_owned()),
         Some(0) => {
@@ -444,12 +441,7 @@ fn read_trimmed(path: &Path) -> Result<String, String> {
 }
 
 fn command_output(program: &str, args: &[&str]) -> Result<Output, String> {
-    let policy = std::env::var(MEASUREMENT_IO_POLICY_ENV).ok();
-    let (launcher, launcher_args) = probe_command(program, args, policy.as_deref())?;
-    let output = Command::new(&launcher)
-        .args(&launcher_args)
-        .output()
-        .map_err(|error| format!("unable to execute {program}: {error}"))?;
+    let output = probe_output(program, args)?;
     if output.status.success() && output.stderr.is_empty() {
         Ok(output)
     } else {
@@ -459,6 +451,15 @@ fn command_output(program: &str, args: &[&str]) -> Result<Output, String> {
             String::from_utf8_lossy(&output.stderr).trim()
         ))
     }
+}
+
+fn probe_output(program: &str, args: &[&str]) -> Result<Output, String> {
+    let policy = std::env::var(MEASUREMENT_IO_POLICY_ENV).ok();
+    let (launcher, launcher_args) = probe_command(program, args, policy.as_deref())?;
+    Command::new(&launcher)
+        .args(&launcher_args)
+        .output()
+        .map_err(|error| format!("unable to execute {program}: {error}"))
 }
 
 fn probe_command(
@@ -610,6 +611,22 @@ mod tests {
             ["--cpu-list", REFERENCE_HOUSEKEEPING_CPUS, "lsblk", "--json"]
         );
 
+        let (program, args) = probe_command(
+            "systemd-detect-virt",
+            &["--quiet"],
+            Some(MEASUREMENT_IO_POLICY),
+        )
+        .unwrap();
+        assert_eq!(program, "taskset");
+        assert_eq!(
+            args,
+            [
+                "--cpu-list",
+                REFERENCE_HOUSEKEEPING_CPUS,
+                "systemd-detect-virt",
+                "--quiet"
+            ]
+        );
         let direct = probe_command("lsblk", &["--json"], None).unwrap();
         assert_eq!(direct, ("lsblk".to_owned(), vec!["--json".to_owned()]));
         assert!(probe_command("lsblk", &[], Some("unreviewed-policy"))

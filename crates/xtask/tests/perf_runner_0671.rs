@@ -17,6 +17,7 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     let runtime_irq_guard = read("scripts/perf/reference-runtime-irq-guard.sh");
     let evidence_tmpfs = read("scripts/perf/reference-evidence-tmpfs.sh");
     let measurement = read("scripts/perf/run-reference-measurement.sh");
+    let host_attestation = read("crates/xtask/src/host_attestation.rs");
 
     for script in [
         &audit,
@@ -137,6 +138,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
             "measurement wrapper does not warm {command}"
         );
     }
+    assert!(host_attestation
+        .contains("let quiet = probe_output(\"systemd-detect-virt\", &[\"--quiet\"])?;"));
+    assert!(!host_attestation.contains("Command::new(\"systemd-detect-virt\")"));
     assert!(measurement.contains("docker pull --platform linux/amd64"));
     assert!(measurement.contains("--cpuset-cpus 0"));
     assert!(!measurement.contains("taskset --cpu-list 1-4 cargo"));

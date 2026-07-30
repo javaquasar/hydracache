@@ -57,6 +57,13 @@ correctly rejected the run. External attestation probes now execute on housekeep
 same process remains measurement-pinned for fingerprint affinity and calibration. The rejected run
 is diagnostic-only and does not count toward bootstrap.
 
+A follow-up qualification (`30560237096`) passed the same seven-probe preflight at `0.0011` spread
+but exposed a narrower implementation gap: the bare-metal `systemd-detect-virt --quiet` branch
+still used a direct process launch instead of the reviewed housekeeping dispatcher. Managed NVMe
+IRQ `106` (`nvme0q2`, immutable effective affinity `1`) consequently recorded one interrupt. Both
+the quiet and named virtualization probes now share the dispatcher, and governance rejects any
+direct `Command::new("systemd-detect-virt")` path.
+
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
 

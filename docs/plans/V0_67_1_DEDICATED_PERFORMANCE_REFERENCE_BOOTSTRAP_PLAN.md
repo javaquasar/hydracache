@@ -60,6 +60,13 @@ wrapper now prefaults those probe binaries, libraries, and regular-file inputs, 
 code dispatches every external host probe through the exact housekeeping set `0,5-7`. Fingerprint
 affinity and calibration remain on `1-4`; an unknown I/O policy fails closed.
 
+The next qualification (`30560237096`) proved that the bare-metal
+`systemd-detect-virt --quiet` status probe was the one external launch still bypassing that
+dispatcher. Preflight again passed at `0.0011` spread, but immutable managed NVMe IRQ `106`
+recorded one CPU `1` interrupt. The quiet status probe and the named virtualization probe now use
+the same fail-closed housekeeping dispatcher, with a regression assertion forbidding a direct
+`Command::new("systemd-detect-virt")` path.
+
 The rejected run is retained for diagnosis but is not eligible and does not count toward the
 five-sample set. SLOs, schedules, repetitions, zero-error rules, the `0.15` spread gate, affinity,
 quota, privacy, and all non-ship/bootstrap boundaries remain unchanged.
