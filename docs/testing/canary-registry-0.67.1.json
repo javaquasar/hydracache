@@ -68,7 +68,7 @@
       "w_item": "W2",
       "guard": {
         "file": "crates/xtask/tests/perf_attestation_0671.rs",
-        "function": "reference_attestation_v3_rejects_vm_siblings_non_nvme_and_missing_identity"
+        "function": "reference_attestation_v4_rejects_vm_siblings_non_nvme_and_missing_identity"
       },
       "canary": {
         "file": "crates/xtask/tests/perf_attestation_0671.rs",
@@ -76,7 +76,7 @@
       },
       "guard_command": {
         "program": "cargo",
-        "args": ["test", "-p", "xtask", "--test", "perf_attestation_0671", "--locked", "reference_attestation_v3_rejects_vm_siblings_non_nvme_and_missing_identity", "--", "--nocapture"],
+        "args": ["test", "-p", "xtask", "--test", "perf_attestation_0671", "--locked", "reference_attestation_v4_rejects_vm_siblings_non_nvme_and_missing_identity", "--", "--nocapture"],
         "env": {},
         "cwd": ".",
         "platform": "any"

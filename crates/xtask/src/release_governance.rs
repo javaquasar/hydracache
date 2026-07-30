@@ -788,8 +788,8 @@ pub fn release_0671_gate_contract_problems(gates: &[GateEntry]) -> Vec<String> {
             "Import offline runner provisioning proof",
         ),
         (
-            "tool.perf-attestation-v3-0671",
-            "target/test-evidence/0.67.1/attestation-v3.json",
+            "tool.perf-attestation-v4-0671",
+            "target/test-evidence/0.67.1/attestation-v4.json",
             "release-0671-performance-qualification",
             "Attest and preflight the 0.67.1 host",
         ),
