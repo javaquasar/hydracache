@@ -56,12 +56,12 @@ required_artifacts = [
     "docs/testing/schemas/perf-report.schema.json",
 ]
 fast_gate_ids = ["fast.workspace-nextest"]
-gated_gate_ids = ["tool.perf-attestation-v4-0671"]
+gated_gate_ids = ["tool.perf-attestation-v5-0671"]
 ship_required = true
 
 [[work_item.required_tests]]
 source = "crates/xtask/tests/perf_attestation_0671.rs"
-function = "reference_attestation_v4_rejects_vm_siblings_non_nvme_and_missing_identity"
+function = "reference_attestation_v5_rejects_vm_siblings_non_nvme_and_missing_identity"
 
 [[work_item]]
 id = "W3"

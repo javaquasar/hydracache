@@ -157,7 +157,7 @@ scripts/perf/audit-reference-host.sh --mode provisioned
 scripts/perf/verify-runner-service.sh --expected-label hydracache-perf-v1
 ```
 
-### W2. Harden machine attestation and fingerprint v4
+### W2. Harden machine attestation and fingerprint v5
 
 Files:
 
@@ -196,6 +196,18 @@ re-probed at measurement time. All v3 qualification/bootstrap artifacts remain d
 cannot enter a v4 five-sample set. This correction changes host noise control and evidence identity;
 it does not change SLOs, repeats, zero-error rules, the 15% spread limit, affinity, quota, or
 fail-closed behavior.
+
+**Evidence-driven W2 correction (2026-07-30).** The first v4 bootstrap acquisition passed the
+host preflight with spread `0.002829` and produced stable core and pinned `redis-benchmark`
+evidence, but all six low-duty open-loop RESP scheduled-send p99 points exceeded the unchanged
+15% spread gate (`0.238662` through `0.481121`; the bounded falsifiability probe was `0.602819`).
+Every operation still completed with zero errors, timeouts, and rejections. A live post-run audit
+proved that measurement CPUs `1-4` had the 1 microsecond cap while housekeeping CPUs `0,5-7`,
+which own timer/IRQ/control work, still admitted C2 with 400 microseconds exit latency. Fingerprint
+v5 therefore extends the same root-owned 1 microsecond cap and independent runtime probe to the
+housekeeping set. All v4 artifacts remain diagnostic-only and cannot enter the five-sample set.
+This is a host-noise contract correction, not a wider tolerance or an optimization: SLOs, five
+repeats, zero-error rules, spread `0.15`, cpuset, quota, and fail-closed behavior remain unchanged.
 
 Definition of Done:
 
@@ -241,7 +253,7 @@ Files:
 
 Requirements:
 
-- collect at least five successful runs while keeping the same physical host, fingerprint v4,
+- collect at least five successful runs while keeping the same physical host, fingerprint v5,
   kernel, governor/turbo policy, cpuset, toolchain, prebuild digest, scenario digest, and SLO
   contract;
 - run only clean, pre-activation `main` commits; no candidate may baseline itself;
@@ -291,7 +303,7 @@ Files:
 
 Requirements:
 
-- add exactly the reviewed fingerprint v4 to the allowlist;
+- add exactly the reviewed fingerprint v5 to the allowlist;
 - change bootstrap state only in the same commit as the reviewed anchor/baseline/budgets;
 - move TD-0013 to resolved only when W1-W5 receipts are present and valid;
 - keep `0.67.0` release notes historically unchanged;
@@ -379,7 +391,7 @@ Every dedicated stage is manual, serialized, trusted-`main` only, artifact-bound
 Ship `0.67.1` only when:
 
 - W0-W7 are complete with exact receipts;
-- one true bare-metal fingerprint v4 is approved;
+- one true bare-metal fingerprint v5 is approved;
 - at least five stable pre-candidate `main` runs from that fingerprint are retained;
 - anchor, rolling baseline, and budgets are independently reviewed;
 - `reference-v1` is bootstrapped without candidate self-baselining;

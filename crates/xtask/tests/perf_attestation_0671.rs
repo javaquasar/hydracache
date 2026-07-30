@@ -1,12 +1,12 @@
 use hydracache_loadgen::profile::{
-    reference_cpu_isolation, MeasurementCore, PerformanceProfile, RunnerAttestationV4,
+    reference_cpu_isolation, MeasurementCore, PerformanceProfile, RunnerAttestationV5,
     RunnerFingerprint, REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
     REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_RUNNER_CLASS,
     REFERENCE_STORAGE_CLASS,
 };
 
-fn attestation() -> RunnerAttestationV4 {
-    RunnerAttestationV4 {
+fn attestation() -> RunnerAttestationV5 {
+    RunnerAttestationV5 {
         schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
         contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
         virtualization: "none".to_owned(),
@@ -29,7 +29,7 @@ fn attestation() -> RunnerAttestationV4 {
     }
 }
 
-fn fingerprint(attestation: RunnerAttestationV4) -> RunnerFingerprint {
+fn fingerprint(attestation: RunnerAttestationV5) -> RunnerFingerprint {
     RunnerFingerprint {
         runner_class: REFERENCE_RUNNER_CLASS.to_owned(),
         fingerprint: "d".repeat(64),
@@ -61,14 +61,14 @@ fn profile() -> PerformanceProfile {
     }
 }
 
-fn rejected(mutator: impl FnOnce(&mut RunnerAttestationV4)) -> bool {
+fn rejected(mutator: impl FnOnce(&mut RunnerAttestationV5)) -> bool {
     let mut observed = attestation();
     mutator(&mut observed);
     !profile().validate(&fingerprint(observed)).eligible
 }
 
 #[test]
-fn reference_attestation_v4_rejects_vm_siblings_non_nvme_and_missing_identity() {
+fn reference_attestation_v5_rejects_vm_siblings_non_nvme_and_missing_identity() {
     assert!(profile().validate(&fingerprint(attestation())).eligible);
     assert!(rejected(|value| value.virtualization = "kvm".to_owned()));
     assert!(rejected(|value| {
@@ -89,9 +89,15 @@ fn reference_attestation_v4_rejects_vm_siblings_non_nvme_and_missing_identity() 
     assert!(rejected(|value| {
         value.cpu_isolation.measurement_max_idle_latency_us = 400;
     }));
-    assert!(rejected(|value| value.schema_version = 3));
+    assert!(rejected(|value| {
+        value.cpu_isolation.housekeeping_idle_policy = "unrestricted".to_owned();
+    }));
+    assert!(rejected(|value| {
+        value.cpu_isolation.housekeeping_max_idle_latency_us = 400;
+    }));
+    assert!(rejected(|value| value.schema_version = 4));
     assert!(rejected(
-        |value| value.contract_version = "hydracache-reference-host-v3".to_owned()
+        |value| value.contract_version = "hydracache-reference-host-v4".to_owned()
     ));
     assert!(rejected(|value| {
         value.storage_class = "network-block".to_owned();
@@ -104,7 +110,7 @@ fn reference_attestation_v4_rejects_vm_siblings_non_nvme_and_missing_identity() 
 }
 
 #[test]
-fn fingerprint_v4_serializes_only_privacy_safe_bound_attestation() {
+fn fingerprint_v5_serializes_only_privacy_safe_bound_attestation() {
     let observed = fingerprint(attestation());
     let json = serde_json::to_string(&observed).unwrap();
     assert!(json.contains(REFERENCE_HOST_CONTRACT_VERSION));

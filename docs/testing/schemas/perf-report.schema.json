@@ -107,10 +107,10 @@
         "turbo": { "$ref": "#/$defs/nonEmpty" },
         "shared_hardware": { "type": "boolean" },
         "calibration_score": { "type": "number", "minimum": 0 },
-        "attestation": { "$ref": "#/$defs/runnerAttestationV4" }
+        "attestation": { "$ref": "#/$defs/runnerAttestationV5" }
       }
     },
-    "runnerAttestationV4": {
+    "runnerAttestationV5": {
       "type": "object",
       "additionalProperties": false,
       "required": ["schema_version", "contract_version", "virtualization", "physical_cores", "measurement_cores", "cpu_isolation", "host_digest", "storage_class", "storage_identity_digest", "os_image", "toolchain_identity", "prebuild_contract_digest"],
@@ -135,7 +135,7 @@
         "cpu_isolation": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["smt_control", "online_cpus", "isolated_cpus", "nohz_full_cpus", "rcu_nocbs_cpus", "housekeeping_cpus", "irq_affinity_policy", "measurement_idle_policy", "measurement_max_idle_latency_us"],
+          "required": ["smt_control", "online_cpus", "isolated_cpus", "nohz_full_cpus", "rcu_nocbs_cpus", "housekeeping_cpus", "irq_affinity_policy", "measurement_idle_policy", "measurement_max_idle_latency_us", "housekeeping_idle_policy", "housekeeping_max_idle_latency_us"],
           "properties": {
             "smt_control": { "type": "string" },
             "online_cpus": { "type": "string" },
@@ -145,7 +145,9 @@
             "housekeeping_cpus": { "type": "string" },
             "irq_affinity_policy": { "type": "string" },
             "measurement_idle_policy": { "type": "string" },
-            "measurement_max_idle_latency_us": { "type": "integer", "minimum": 0 }
+            "measurement_max_idle_latency_us": { "type": "integer", "minimum": 0 },
+            "housekeeping_idle_policy": { "type": "string" },
+            "housekeeping_max_idle_latency_us": { "type": "integer", "minimum": 0 }
           }
         },
         "host_digest": { "type": "string" },

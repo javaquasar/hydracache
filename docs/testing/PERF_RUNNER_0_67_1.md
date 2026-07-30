@@ -535,7 +535,7 @@ fi
 W2 confirmed one 8-core/16-thread package with measurement CPUs `1-4` paired with SMT siblings
 `9-12`. Three independent bootstrap acquisitions then failed the unchanged 15% spread gate in
 different workload families while preflight remained stable. Before any further qualification or
-bootstrap run, install the reviewed v4 isolation policy from a clean trusted-`main` checkout while
+bootstrap run, install the reviewed v5 isolation policy from a clean trusted-`main` checkout while
 the Actions runner and rootless Docker are offline:
 
 ```bash
@@ -559,7 +559,8 @@ The committed policy is intentionally host-specific and fail-closed:
 - SMT is disabled, leaving logical CPUs `0-7` online; depending on the kernel, siblings `9-12`
   are absent from topology sysfs or remain enumerated with `online=0`;
 - measurement CPUs `1-4` are isolated with `isolcpus`, `nohz_full`, and `rcu_nocbs`;
-- those CPUs may use only idle states with exit latency at most `1` microsecond; the root-owned
+- every online CPU `0-7`, including measurement CPUs `1-4` and housekeeping CPUs `0,5-7`, may use
+  only idle states with exit latency at most `1` microsecond; the root-owned
   `hydracache-perf-idle-policy.service` disables every deeper state before the runner starts;
 - CPUs `0,5-7` are the only housekeeping set for the Actions service and rootless Docker daemon;
 - active IRQ work must not reach CPUs `1-4`; a managed NVMe vector whose immutable effective mask
@@ -575,9 +576,15 @@ kernel applies the idle policy immediately. It never reboots the host itself. Th
 rejects missing or duplicate kernel arguments, online SMT siblings, unexpected systemd affinity,
 or any observed IRQ that reaches the measurement set.
 
-This changes the reference fingerprint schema from v3 to v4. The earlier qualification and three
-rejected bootstrap artifacts remain diagnostic history only; none may be combined with v4 samples.
-Re-run the offline audit, qualification, and bootstrap acquisition from the exact post-merge commit.
+The SMT/IRQ isolation correction changed the reference fingerprint from v3 to v4. The next v4
+bootstrap passed preflight (`0.002829`) and core/redis-benchmark stability but rejected all six
+low-duty RESP scheduled-send p99 points at spreads `0.238662`-`0.481121` (plus the bounded probe at
+`0.602819`). The run had zero errors, timeouts, and rejections. A live audit then proved C2 remained
+enabled with 400 microseconds exit latency on housekeeping CPUs `0,5-7`, which own timer/IRQ/control
+work. The current v5 policy applies and independently probes the same 1 microsecond cap on both CPU
+roles. Every v3/v4 qualification or bootstrap artifact remains diagnostic history only; none may be
+combined with v5 samples. Re-run the offline audit, qualification, and bootstrap acquisition from
+the exact post-merge commit.
 
 ## 9. Prepare the Actions runner download
 

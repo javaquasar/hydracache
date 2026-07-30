@@ -22,6 +22,8 @@ housekeeping_cpus="0,5-7"
 isolcpus_argument="domain,managed_irq,nohz,1-4"
 measurement_idle_policy="latency-cap-us-v1"
 measurement_max_idle_latency_us=1
+housekeeping_idle_policy="latency-cap-us-v1"
+housekeeping_max_idle_latency_us=1
 runner_unit="actions.runner.javaquasar-hydracache.hydracache-perf-v1.service"
 runner_dropin="/etc/systemd/system/${runner_unit}.d/20-hydracache-housekeeping.conf"
 runner_user="github-runner"
@@ -106,16 +108,22 @@ IFS=\$'\\n\\t'
 export LC_ALL=C
 
 measurement_max_idle_latency_us=${measurement_max_idle_latency_us}
+housekeeping_max_idle_latency_us=${housekeeping_max_idle_latency_us}
 enabled_shallow_states=0
 disabled_deep_states=0
-for cpu in 1 2 3 4; do
+for cpu in 0 1 2 3 4 5 6 7; do
+  if ((cpu >= 1 && cpu <= 4)); then
+    maximum_idle_latency_us="$measurement_max_idle_latency_us"
+  else
+    maximum_idle_latency_us="$housekeeping_max_idle_latency_us"
+  fi
   cpu_states=0
   for state in /sys/devices/system/cpu/cpu\${cpu}/cpuidle/state*; do
     test -d "\$state"
     latency="\$(cat "\$state/latency")"
     [[ "\$latency" =~ ^[0-9]+\$ ]]
     test -w "\$state/disable"
-    if ((latency > measurement_max_idle_latency_us)); then
+    if ((latency > maximum_idle_latency_us)); then
       printf '1' >"\$state/disable"
       disabled_deep_states=\$((disabled_deep_states + 1))
     else
@@ -132,7 +140,7 @@ EOF
 
   write_root_file "$idle_policy_unit_path" 0644 <<EOF
 [Unit]
-Description=HydraCache reference measurement CPU idle-state policy
+Description=HydraCache reference CPU idle-state policy
 After=local-fs.target
 Before=${runner_unit}
 
@@ -245,7 +253,12 @@ test "$(systemctl is-enabled "$idle_policy_unit")" = enabled
 test "$(systemctl is-active "$idle_policy_unit")" = active
 enabled_shallow_states=0
 disabled_deep_states=0
-for cpu in 1 2 3 4; do
+for cpu in 0 1 2 3 4 5 6 7; do
+  if ((cpu >= 1 && cpu <= 4)); then
+    maximum_idle_latency_us="$measurement_max_idle_latency_us"
+  else
+    maximum_idle_latency_us="$housekeeping_max_idle_latency_us"
+  fi
   cpu_enabled_shallow_states=0
   cpu_disabled_deep_states=0
   for state in /sys/devices/system/cpu/cpu${cpu}/cpuidle/state*; do
@@ -254,7 +267,7 @@ for cpu in 1 2 3 4; do
     disabled="$(cat "$state/disable")"
     [[ "$latency" =~ ^[0-9]+$ ]]
     [[ "$disabled" =~ ^[01]$ ]]
-    if ((latency > measurement_max_idle_latency_us)); then
+    if ((latency > maximum_idle_latency_us)); then
       test "$disabled" = 1
       cpu_disabled_deep_states=$((cpu_disabled_deep_states + 1))
       disabled_deep_states=$((disabled_deep_states + 1))
@@ -346,4 +359,4 @@ for affinity_path in /proc/irq/[0-9]*/effective_affinity_list; do
 done
 test "$irq_files" -gt 0
 
-echo "reference CPU isolation verified: measurement=${measurement_cpus} housekeeping=${housekeeping_cpus} smt=off irq=housekeeping-only idle=${measurement_idle_policy}:${measurement_max_idle_latency_us}us dormant-unmapped-nvme=${dormant_nvme_irqs}"
+echo "reference CPU isolation verified: measurement=${measurement_cpus} housekeeping=${housekeeping_cpus} smt=off irq=housekeeping-only measurement-idle=${measurement_idle_policy}:${measurement_max_idle_latency_us}us housekeeping-idle=${housekeeping_idle_policy}:${housekeeping_max_idle_latency_us}us dormant-unmapped-nvme=${dormant_nvme_irqs}"
