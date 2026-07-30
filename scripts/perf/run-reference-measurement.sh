@@ -58,6 +58,8 @@ warm_command() {
 
 warm_file Cargo.lock
 warm_file .git/index
+warm_file docs/plans/releases.toml
+warm_file docs/testing/perf-profiles/reference-v1.toml
 warm_file /etc/os-release
 warm_file /var/lib/hydracache-perf/runner-provisioned.json
 while IFS= read -r tracked_input; do
@@ -65,7 +67,6 @@ while IFS= read -r tracked_input; do
 done < <(
   git ls-files \
     docs/testing/perf-scenarios/0.67 \
-    docs/testing/perf-profiles/0.67 \
     docs/testing/gated-test-registry.toml
 )
 test -z "$(git status --porcelain=v1 --untracked-files=no)"

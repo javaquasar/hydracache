@@ -64,6 +64,14 @@ IRQ `106` (`nvme0q2`, immutable effective affinity `1`) consequently recorded on
 the quiet and named virtualization probes now share the dispatcher, and governance rejects any
 direct `Command::new("systemd-detect-virt")` path.
 
+The next qualification (`30566810245`) passed attestation and the seven-probe preflight at `0.0016`
+spread, then the post-guard observed one interrupt on managed NVMe IRQ `118` (`nvme0q2`, immutable
+effective affinity `1`). The measurement wrapper warmed a nonexistent
+`docs/testing/perf-profiles/0.67` subtree, while the pinned preflight actually reads
+`docs/testing/perf-profiles/reference-v1.toml`; repository-root discovery also probes
+`docs/plans/releases.toml`. Both exact regular-file inputs are now prefaulted on housekeeping CPUs
+before the measurement child starts, and the stale subtree selector is removed.
+
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
 
