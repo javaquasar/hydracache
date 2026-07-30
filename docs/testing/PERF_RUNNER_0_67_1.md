@@ -572,7 +572,8 @@ The committed policy is intentionally host-specific and fail-closed:
 The helper writes a GRUB drop-in, root-owned system/user service drop-ins, and a root-owned
 oneshot idle-policy service, then runs `update-grub`.
 A first install requires an operator-controlled reboot; an upgrade on an already exact isolated
-kernel applies the idle policy immediately. It never reboots the host itself. The verify action
+kernel enables and restarts the root-owned oneshot so the updated idle policy is applied immediately
+even when that unit was already active. It never reboots the host itself. The verify action
 rejects missing or duplicate kernel arguments, online SMT siblings, unexpected systemd affinity,
 or any observed IRQ that reaches the measurement set.
 
