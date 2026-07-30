@@ -30,6 +30,10 @@ The contract is:
   `/dev/shm/hydracache-reference-evidence-v1` and links the normal evidence paths to it;
 - `scripts/perf/run-reference-measurement.sh` warms exact binaries, libraries, and inputs on
   housekeeping CPUs before applying `taskset --cpu-list 1-4` to the measurement child only;
+- when the measurement child attests the host, its `git`, `findmnt`, `lsblk`, and
+  `systemd-detect-virt` probes are launched through `taskset --cpu-list 0,5-7`; their executables,
+  libraries, `/etc/os-release`, and the root-owned provisioning receipt are prefaulted before the
+  pre-measurement IRQ guard;
 - `scripts/perf/reference-runtime-irq-guard.sh` rejects any active IRQ reaching CPUs `1-4`
   immediately before or after a measurement;
 - the RESP wrapper pulls and prewarms the pinned Redis image on housekeeping CPU `0`;
@@ -44,6 +48,14 @@ host recovery before another sample.
 Run these helpers only through the reviewed `0.67`/`0.67.1` GitHub workflow. A direct
 `taskset --cpu-list 1-4 cargo ...` command is forbidden because compiler and artifact I/O can
 activate immutable managed NVMe queues on a measurement CPU.
+
+The first qualification after introducing the tmpfs wrapper proved why this distinction is
+load-bearing: the seven calibration probes themselves were stable (`0.0011` spread), but a host
+probe launched by the measurement-pinned child submitted one root-filesystem read on CPU `1`.
+Managed NVMe IRQ `128` (`nvme0q2`, immutable effective affinity `1`) fired once, so the post-guard
+correctly rejected the run. External attestation probes now execute on housekeeping CPUs while the
+same process remains measurement-pinned for fingerprint affinity and calibration. The rejected run
+is diagnostic-only and does not count toward bootstrap.
 
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.

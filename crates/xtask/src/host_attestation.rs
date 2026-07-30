@@ -6,14 +6,16 @@ use std::process::{Command, Output};
 use hydracache_loadgen::profile::{
     CpuIsolationAttestation, MeasurementCore, RunnerAttestationV5,
     REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
-    REFERENCE_HOUSEKEEPING_CPU_IDS, REFERENCE_HOUSEKEEPING_IDLE_POLICY,
-    REFERENCE_HOUSEKEEPING_MAX_IDLE_LATENCY_US, REFERENCE_MEASUREMENT_CPUS,
-    REFERENCE_MEASUREMENT_IDLE_POLICY, REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US,
-    REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
+    REFERENCE_HOUSEKEEPING_CPUS, REFERENCE_HOUSEKEEPING_CPU_IDS,
+    REFERENCE_HOUSEKEEPING_IDLE_POLICY, REFERENCE_HOUSEKEEPING_MAX_IDLE_LATENCY_US,
+    REFERENCE_MEASUREMENT_CPUS, REFERENCE_MEASUREMENT_IDLE_POLICY,
+    REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US, REFERENCE_OS_IMAGE, REFERENCE_STORAGE_CLASS,
 };
 use sha2::{Digest, Sha256};
 
 const PROVISIONING_RECEIPT_PATH: &str = "/var/lib/hydracache-perf/runner-provisioned.json";
+const MEASUREMENT_IO_POLICY_ENV: &str = "HYDRACACHE_MEASUREMENT_IO_POLICY";
+const MEASUREMENT_IO_POLICY: &str = "tmpfs-housekeeping-orchestration-v1";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HostAttestationInput {
@@ -442,8 +444,10 @@ fn read_trimmed(path: &Path) -> Result<String, String> {
 }
 
 fn command_output(program: &str, args: &[&str]) -> Result<Output, String> {
-    let output = Command::new(program)
-        .args(args)
+    let policy = std::env::var(MEASUREMENT_IO_POLICY_ENV).ok();
+    let (launcher, launcher_args) = probe_command(program, args, policy.as_deref())?;
+    let output = Command::new(&launcher)
+        .args(&launcher_args)
         .output()
         .map_err(|error| format!("unable to execute {program}: {error}"))?;
     if output.status.success() && output.stderr.is_empty() {
@@ -454,6 +458,31 @@ fn command_output(program: &str, args: &[&str]) -> Result<Output, String> {
             output.status.code(),
             String::from_utf8_lossy(&output.stderr).trim()
         ))
+    }
+}
+
+fn probe_command(
+    program: &str,
+    args: &[&str],
+    measurement_io_policy: Option<&str>,
+) -> Result<(String, Vec<String>), String> {
+    match measurement_io_policy {
+        None => Ok((
+            program.to_owned(),
+            args.iter().map(|argument| (*argument).to_owned()).collect(),
+        )),
+        Some(MEASUREMENT_IO_POLICY) => {
+            let mut launcher_args = vec![
+                "--cpu-list".to_owned(),
+                REFERENCE_HOUSEKEEPING_CPUS.to_owned(),
+                program.to_owned(),
+            ];
+            launcher_args.extend(args.iter().map(|argument| (*argument).to_owned()));
+            Ok(("taskset".to_owned(), launcher_args))
+        }
+        Some(other) => Err(format!(
+            "{MEASUREMENT_IO_POLICY_ENV}={other:?} is not the reviewed reference I/O policy"
+        )),
     }
 }
 
@@ -570,5 +599,21 @@ mod tests {
         let mut storage = input();
         storage.storage_class = "network-block".to_owned();
         assert!(build_attestation(storage).unwrap_err().contains("NVMe"));
+    }
+    #[test]
+    fn measurement_host_probes_are_dispatched_on_housekeeping_cpus() {
+        let (program, args) =
+            probe_command("lsblk", &["--json"], Some(MEASUREMENT_IO_POLICY)).unwrap();
+        assert_eq!(program, "taskset");
+        assert_eq!(
+            args,
+            ["--cpu-list", REFERENCE_HOUSEKEEPING_CPUS, "lsblk", "--json"]
+        );
+
+        let direct = probe_command("lsblk", &["--json"], None).unwrap();
+        assert_eq!(direct, ("lsblk".to_owned(), vec!["--json".to_owned()]));
+        assert!(probe_command("lsblk", &[], Some("unreviewed-policy"))
+            .unwrap_err()
+            .contains("is not the reviewed reference I/O policy"));
     }
 }
