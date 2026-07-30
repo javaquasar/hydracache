@@ -158,7 +158,8 @@ EOF
     XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
     DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${runner_uid}/bus" \
     systemctl --user daemon-reload
-  systemctl enable --now "$idle_policy_unit"
+  systemctl enable "$idle_policy_unit"
+  systemctl restart "$idle_policy_unit"
   update-grub
   if test "$isolation_already_active" = true; then
     echo "reference CPU isolation and idle policy installed; current kernel isolation is already active"

@@ -77,6 +77,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(isolation.contains("irqaffinity=${housekeeping_cpus}"));
     assert!(isolation.contains("CPUAffinity=0 5 6 7"));
     assert!(isolation.contains("hydracache-perf-idle-policy.service"));
+    assert!(isolation.contains("systemctl enable \"$idle_policy_unit\""));
+    assert!(isolation.contains("systemctl restart \"$idle_policy_unit\""));
+    assert!(!isolation.contains("systemctl enable --now \"$idle_policy_unit\""));
     assert!(isolation.contains("measurement_max_idle_latency_us=1"));
     assert!(isolation.contains("housekeeping_max_idle_latency_us=1"));
     assert!(isolation.contains("for cpu in 0 1 2 3 4 5 6 7"));
