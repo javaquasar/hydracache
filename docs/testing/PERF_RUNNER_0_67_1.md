@@ -558,7 +558,9 @@ The committed policy is intentionally host-specific and fail-closed:
   are absent from topology sysfs or remain enumerated with `online=0`;
 - measurement CPUs `1-4` are isolated with `isolcpus`, `nohz_full`, and `rcu_nocbs`;
 - CPUs `0,5-7` are the only housekeeping set for the Actions service and rootless Docker daemon;
-- default and effective IRQ affinity must not reach CPUs `1-4`;
+- active IRQ work must not reach CPUs `1-4`; a managed NVMe vector whose immutable effective mask
+  intersects the measurement set is accepted only when every matching blk-mq `cpu_list` is empty
+  and its cumulative interrupt count is exactly zero;
 - the Redis container is explicitly pinned to CPUs `1-4`, while Docker control work stays on the
   housekeeping set.
 

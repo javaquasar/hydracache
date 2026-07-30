@@ -78,11 +78,40 @@ EOF
   exit 0
 fi
 
+normalize_cpu_list() {
+  local raw="${1// /,}"
+  local segment first last cpu
+  local old_ifs="$IFS"
+  local -a segments
+  IFS=',' read -r -a segments <<<"$raw"
+  IFS="$old_ifs"
+  for segment in "${segments[@]}"; do
+    test -n "$segment"
+    if [[ "$segment" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+      first="${BASH_REMATCH[1]}"
+      last="${BASH_REMATCH[2]}"
+    elif [[ "$segment" =~ ^[0-9]+$ ]]; then
+      first="$segment"
+      last="$segment"
+    else
+      return 1
+    fi
+    test "$first" -le "$last"
+    for ((cpu = first; cpu <= last; cpu++)); do
+      printf '%s\n' "$cpu"
+    done
+  done |
+    sort --numeric-sort --unique |
+    awk 'BEGIN { separator = "" } { printf "%s%s", separator, $1; separator = "," } END { print "" }'
+}
+
 has_exact_kernel_argument() {
   local expected="$1"
   local count=0
   local argument
-  for argument in $(cat /proc/cmdline); do
+  local -a kernel_arguments
+  IFS=' ' read -r -a kernel_arguments </proc/cmdline
+  for argument in "${kernel_arguments[@]}"; do
     if test "$argument" = "$expected"; then
       count=$((count + 1))
     fi
@@ -110,15 +139,18 @@ for sibling in 9 10 11 12; do
   fi
 done
 
+expected_housekeeping_cpus="$(normalize_cpu_list "$housekeeping_cpus")"
+test "$expected_housekeeping_cpus" = 0,5,6,7
 test -f "$runner_dropin"
 test "$(stat --format=%U:%G:%a "$runner_dropin")" = root:root:644
-test "$(systemctl show "$runner_unit" --property=CPUAffinity --value)" = "0 5 6 7"
+test "$(normalize_cpu_list "$(systemctl show "$runner_unit" --property=CPUAffinity --value)")" = "$expected_housekeeping_cpus"
 test -f "$docker_dropin"
 test "$(stat --format=%U:%G:%a "$docker_dropin")" = root:root:644
-test "$(runuser --user "$runner_user" -- env \
+docker_cpu_affinity="$(runuser --user "$runner_user" -- env \
   XDG_RUNTIME_DIR="/run/user/${runner_uid}" \
   DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/${runner_uid}/bus" \
-  systemctl --user show docker.service --property=CPUAffinity --value)" = "0 5 6 7"
+  systemctl --user show docker.service --property=CPUAffinity --value)"
+test "$(normalize_cpu_list "$docker_cpu_affinity")" = "$expected_housekeeping_cpus"
 
 cpu_list_intersects_measurement() {
   local cpu_list="$1"
@@ -139,17 +171,61 @@ cpu_list_intersects_measurement() {
   return 1
 }
 
+dormant_unmapped_nvme_irq() {
+  local irq="$1"
+  local action controller queue mq_index interrupt_total cpu_list_path
+  local -a mq_cpu_lists
+  action="$(
+    awk -v irq="${irq}:" '
+      $1 == irq { print $NF; found = 1 }
+      END { if (!found) exit 1 }
+    ' /proc/interrupts
+  )"
+  [[ "$action" =~ ^nvme([0-9]+)q([1-9][0-9]*)$ ]] || return 1
+  controller="${BASH_REMATCH[1]}"
+  queue="${BASH_REMATCH[2]}"
+  mq_index=$((queue - 1))
+  mq_cpu_lists=(/sys/block/nvme${controller}n*/mq/${mq_index}/cpu_list)
+  test "${#mq_cpu_lists[@]}" -gt 0
+  test -e "${mq_cpu_lists[0]}"
+  for cpu_list_path in "${mq_cpu_lists[@]}"; do
+    test -z "$(cat "$cpu_list_path")"
+  done
+  interrupt_total="$(
+    awk -v irq="${irq}:" '
+      $1 == irq {
+        total = 0
+        for (field = 2; field <= NF && $field ~ /^[0-9]+$/; field++) {
+          total += $field
+        }
+        print total
+        found = 1
+      }
+      END { if (!found) exit 1 }
+    ' /proc/interrupts
+  )"
+  test "$interrupt_total" = 0
+}
+
 irq_files=0
+dormant_nvme_irqs=0
 for affinity_path in /proc/irq/[0-9]*/effective_affinity_list; do
   test -f "$affinity_path" || continue
   affinity="$(cat "$affinity_path")"
-  test -n "$affinity"
+  test -n "$affinity" || continue
   irq_files=$((irq_files + 1))
   if cpu_list_intersects_measurement "$affinity"; then
+    irq="${affinity_path#/proc/irq/}"
+    irq="${irq%%/*}"
+    [[ "$irq" =~ ^[0-9]+$ ]]
+    if dormant_unmapped_nvme_irq "$irq"; then
+      dormant_nvme_irqs=$((dormant_nvme_irqs + 1))
+      continue
+    fi
     echo "IRQ affinity reaches measurement CPUs: $affinity_path=$affinity" >&2
     exit 1
   fi
 done
 test "$irq_files" -gt 0
 
-echo "reference CPU isolation verified: measurement=${measurement_cpus} housekeeping=${housekeeping_cpus} smt=off irq=housekeeping-only"
+echo "reference CPU isolation verified: measurement=${measurement_cpus} housekeeping=${housekeeping_cpus} smt=off irq=housekeeping-only dormant-unmapped-nvme=${dormant_nvme_irqs}"

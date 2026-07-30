@@ -72,6 +72,15 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(isolation.contains("= \"${cpu},${sibling}\""));
     assert!(isolation.contains("= \"$cpu\""));
     assert!(isolation.contains("if test -d \"/sys/devices/system/cpu/cpu${sibling}\"; then"));
+    assert!(isolation.contains("IFS=' ' read -r -a kernel_arguments </proc/cmdline"));
+    assert!(isolation.contains("normalize_cpu_list"));
+    assert!(isolation.contains("expected_housekeeping_cpus"));
+    assert!(isolation.contains("docker_cpu_affinity"));
+    assert!(isolation.contains("dormant_unmapped_nvme_irq"));
+    assert!(isolation.contains("test -z \"$(cat \"$cpu_list_path\")\""));
+    assert!(isolation.contains("test \"$interrupt_total\" = 0"));
+    assert!(isolation.contains("dormant-unmapped-nvme="));
+    assert!(isolation.contains("test -n \"$affinity\" || continue"));
     assert!(isolation.contains("IRQ affinity reaches measurement CPUs"));
     assert!(rootless_docker.contains("rootless Docker lifecycle must run as github-runner"));
     assert!(rootless_docker.contains("test ! -S /var/run/docker.sock"));
