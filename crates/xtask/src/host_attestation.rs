@@ -500,6 +500,8 @@ mod tests {
                 irq_affinity_policy: "housekeeping-only-v1".to_owned(),
                 measurement_idle_policy: "latency-cap-us-v1".to_owned(),
                 measurement_max_idle_latency_us: 1,
+                housekeeping_idle_policy: "latency-cap-us-v1".to_owned(),
+                housekeeping_max_idle_latency_us: 1,
             },
             provisioned_host_digest: None,
             raw_host_identity: vec!["physical-host-a".to_owned()],
