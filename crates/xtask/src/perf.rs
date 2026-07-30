@@ -41,6 +41,10 @@ const RELEASE_ARGUMENT: &str = "0.67";
 const REQUIRED_PLATFORM: &str = "linux-x86_64";
 const PERFORMANCE_0671_MODE_ENV: &str = "HYDRACACHE_PERFORMANCE_0671_MODE";
 const REFERENCE_HOUSEKEEPING_AFFINITY: &str = "0,5-7";
+const REFERENCE_EVIDENCE_TMPFS_ROOT: &str = "/dev/shm/hydracache-reference-evidence-v1";
+const REFERENCE_EVIDENCE_067_TMPFS: &str = "/dev/shm/hydracache-reference-evidence-v1/0.67";
+const REFERENCE_EVIDENCE_SOURCE_COMMIT: &str =
+    "/dev/shm/hydracache-reference-evidence-v1/source-commit";
 pub const RUNNER_PREFLIGHT_RELATIVE_PATH: &str = "target/test-evidence/0.67/runner-preflight.json";
 pub const ATTESTATION_V5_RELATIVE_PATH: &str = "target/test-evidence/0.67.1/attestation-v5.json";
 pub const RUNNER_PREFLIGHT_REPEATS: usize = 7;
@@ -488,6 +492,7 @@ pub fn execute_prebuild_with<H: PrebuildHost>(
     verify_binary_entries(&root, &manifest.binaries)?;
     publish_pair_commit_marker(
         &root,
+        &before.git_commit,
         &manifest_path,
         &manifest_bytes,
         &run_inputs_path,
@@ -852,8 +857,122 @@ fn verify_binary_entries(
     Ok(())
 }
 
+struct TmpfsPublicationObservation<'a> {
+    performance_mode: Option<&'a str>,
+    github_actions: Option<&'a str>,
+    github_sha: Option<&'a str>,
+    parent: &'a Path,
+    canonical_parent: &'a Path,
+    link_target: &'a Path,
+    marker_commit: &'a str,
+    filesystem_type: &'a str,
+}
+
+fn exact_tmpfs_publication_contract(
+    root: &Path,
+    source_commit: &str,
+    observation: &TmpfsPublicationObservation<'_>,
+) -> bool {
+    matches!(observation.performance_mode, Some("qualify" | "bootstrap"))
+        && observation.github_actions == Some("true")
+        && observation.github_sha == Some(source_commit)
+        && observation.parent == root.join("target/test-evidence/0.67")
+        && observation.canonical_parent == Path::new(REFERENCE_EVIDENCE_067_TMPFS)
+        && observation.link_target == Path::new(REFERENCE_EVIDENCE_067_TMPFS)
+        && observation.marker_commit == source_commit
+        && observation.filesystem_type == "tmpfs"
+}
+
+fn validate_prebuild_publication_directory(
+    root: &Path,
+    source_commit: &str,
+    parent: &Path,
+    canonical_parent: &Path,
+) -> Result<(), PerfPrebuildError> {
+    if canonical_parent == parent && canonical_parent.starts_with(root) {
+        return Ok(());
+    }
+
+    let link_metadata = fs::symlink_metadata(parent).map_err(|error| {
+        PerfPrebuildError::new(format!("reading evidence link metadata failed: {error}"))
+    })?;
+    let link_target = fs::read_link(parent).map_err(|error| {
+        PerfPrebuildError::new(format!("reading evidence link target failed: {error}"))
+    })?;
+    let tmpfs_root_metadata = fs::metadata(REFERENCE_EVIDENCE_TMPFS_ROOT).map_err(|error| {
+        PerfPrebuildError::new(format!("reading tmpfs evidence root failed: {error}"))
+    })?;
+    let target_metadata = fs::metadata(canonical_parent).map_err(|error| {
+        PerfPrebuildError::new(format!("reading tmpfs evidence target failed: {error}"))
+    })?;
+    let marker_path = Path::new(REFERENCE_EVIDENCE_SOURCE_COMMIT);
+    let marker_metadata = fs::symlink_metadata(marker_path).map_err(|error| {
+        PerfPrebuildError::new(format!(
+            "reading tmpfs source marker metadata failed: {error}"
+        ))
+    })?;
+    if !link_metadata.file_type().is_symlink()
+        || !tmpfs_root_metadata.is_dir()
+        || !target_metadata.is_dir()
+        || !marker_metadata.is_file()
+        || marker_metadata.file_type().is_symlink()
+        || marker_metadata.len() == 0
+        || marker_metadata.len() > 128
+    {
+        return Err(PerfPrebuildError::new(
+            "prebuild tmpfs publication objects are not exact directories/link/marker",
+        ));
+    }
+    let marker_commit = fs::read_to_string(marker_path).map_err(|error| {
+        PerfPrebuildError::new(format!("reading tmpfs source marker failed: {error}"))
+    })?;
+    let findmnt_path = Path::new("/usr/bin/findmnt");
+    if fs::canonicalize(findmnt_path).ok().as_deref() != Some(findmnt_path)
+        || !fs::metadata(findmnt_path)
+            .map(|metadata| metadata.is_file())
+            .unwrap_or(false)
+    {
+        return Err(PerfPrebuildError::new(
+            "exact /usr/bin/findmnt is unavailable for tmpfs verification",
+        ));
+    }
+    let findmnt = Command::new(findmnt_path)
+        .arg("--noheadings")
+        .arg("--output")
+        .arg("FSTYPE")
+        .arg("--target")
+        .arg(canonical_parent)
+        .output()
+        .map_err(|error| PerfPrebuildError::new(format!("findmnt probe failed: {error}")))?;
+    let filesystem_type = String::from_utf8(findmnt.stdout)
+        .map_err(|error| PerfPrebuildError::new(format!("findmnt output is not UTF-8: {error}")))?;
+    let performance_mode = std::env::var(PERFORMANCE_0671_MODE_ENV).ok();
+    let github_actions = std::env::var("GITHUB_ACTIONS").ok();
+    let github_sha = std::env::var("GITHUB_SHA").ok();
+    let observation = TmpfsPublicationObservation {
+        performance_mode: performance_mode.as_deref(),
+        github_actions: github_actions.as_deref(),
+        github_sha: github_sha.as_deref(),
+        parent,
+        canonical_parent,
+        link_target: &link_target,
+        marker_commit: marker_commit.trim(),
+        filesystem_type: filesystem_type.trim(),
+    };
+    if !findmnt.status.success()
+        || !String::from_utf8_lossy(&findmnt.stderr).trim().is_empty()
+        || !exact_tmpfs_publication_contract(root, source_commit, &observation)
+    {
+        return Err(PerfPrebuildError::new(
+            "prebuild artifact directory is neither canonical in-repository nor exact commit-bound tmpfs publication",
+        ));
+    }
+    Ok(())
+}
+
 fn publish_pair_commit_marker(
     root: &Path,
+    source_commit: &str,
     manifest_path: &Path,
     manifest_bytes: &[u8],
     inputs_path: &Path,
@@ -876,11 +995,7 @@ fn publish_pair_commit_marker(
             "unable to canonicalize evidence directory: {error}"
         ))
     })?;
-    if canonical_parent != parent || !canonical_parent.starts_with(root) {
-        return Err(PerfPrebuildError::new(
-            "prebuild artifact directory is a symlink or escapes the canonical repository root",
-        ));
-    }
+    validate_prebuild_publication_directory(root, source_commit, parent, &canonical_parent)?;
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|error| PerfPrebuildError::new(error.to_string()))?
@@ -1595,6 +1710,140 @@ mod preflight_tests {
             Some("bootstrap")
         )
         .is_err());
+    }
+
+    #[test]
+    fn tmpfs_prebuild_publication_requires_the_exact_commit_bound_contract() {
+        let root = Path::new("/repo");
+        let parent = root.join("target/test-evidence/0.67");
+        let canonical_parent = Path::new(REFERENCE_EVIDENCE_067_TMPFS);
+        let source_commit = "a".repeat(40);
+        let matches = |mode: Option<&str>,
+                       actions: Option<&str>,
+                       github_sha: Option<&str>,
+                       observed_parent: &Path,
+                       canonical: &Path,
+                       target: &Path,
+                       marker: &str,
+                       filesystem: &str| {
+            exact_tmpfs_publication_contract(
+                root,
+                &source_commit,
+                &TmpfsPublicationObservation {
+                    performance_mode: mode,
+                    github_actions: actions,
+                    github_sha,
+                    parent: observed_parent,
+                    canonical_parent: canonical,
+                    link_target: target,
+                    marker_commit: marker,
+                    filesystem_type: filesystem,
+                },
+            )
+        };
+
+        for mode in ["qualify", "bootstrap"] {
+            assert!(matches(
+                Some(mode),
+                Some("true"),
+                Some(&source_commit),
+                &parent,
+                canonical_parent,
+                canonical_parent,
+                &source_commit,
+                "tmpfs",
+            ));
+        }
+        assert!(!matches(
+            None,
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("sample-set"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("false"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some("b"),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            Path::new("/repo/target/test-evidence/0.67.1"),
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            Path::new("/dev/shm/other/0.67"),
+            canonical_parent,
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            Path::new("/dev/shm/other/0.67"),
+            &source_commit,
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            "b",
+            "tmpfs"
+        ));
+        assert!(!matches(
+            Some("qualify"),
+            Some("true"),
+            Some(&source_commit),
+            &parent,
+            canonical_parent,
+            canonical_parent,
+            &source_commit,
+            "ext4"
+        ));
     }
 
     #[test]
