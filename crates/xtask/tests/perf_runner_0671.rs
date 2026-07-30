@@ -130,6 +130,9 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(measurement
         .contains("HYDRACACHE_MEASUREMENT_IO_POLICY=\"tmpfs-housekeeping-orchestration-v1\""));
     assert!(measurement.contains("taskset --cpu-list 1-4 \"${command_argv[@]}\""));
+    assert!(measurement.contains("warm_file docs/plans/releases.toml"));
+    assert!(measurement.contains("warm_file docs/testing/perf-profiles/reference-v1.toml"));
+    assert!(!measurement.contains("docs/testing/perf-profiles/0.67"));
     assert!(measurement.contains("warm_file /etc/os-release"));
     assert!(measurement.contains("warm_file /var/lib/hydracache-perf/runner-provisioned.json"));
     for command in ["findmnt", "lsblk", "systemd-detect-virt"] {
