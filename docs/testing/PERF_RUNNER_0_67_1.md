@@ -72,6 +72,14 @@ effective affinity `1`). The measurement wrapper warmed a nonexistent
 `docs/plans/releases.toml`. Both exact regular-file inputs are now prefaulted on housekeeping CPUs
 before the measurement child starts, and the stale subtree selector is removed.
 
+Qualification `30572949833` then passed the v5 attestation and seven-probe preflight at `0.0012`
+spread, but the prebuild gate correctly rejected controller affinity `0,5-7` because the legacy
+runner observation still expected measurement affinity `1-4` on the Cargo process itself. The
+0.67.1 prebuild now keeps Cargo on housekeeping CPUs and reports measurement affinity `1-4` only
+when the exact `qualify` or `bootstrap` mode, current housekeeping affinity, attested housekeeping
+set, and attested isolated set all agree. Any mode or cpuset drift still fails closed; the build is
+never moved onto a measurement CPU.
+
 This correction does **not** change the SLOs, request schedules, repetitions, zero-error rule,
 frozen `0.15` spread limit, affinity set, quota rule, or non-ship bootstrap boundary.
 
