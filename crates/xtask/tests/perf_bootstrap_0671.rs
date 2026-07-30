@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use hydracache_loadgen::profile::{
-    reference_cpu_isolation, MeasurementCore, RunnerAttestationV3, RunnerFingerprint,
+    reference_cpu_isolation, MeasurementCore, RunnerAttestationV4, RunnerFingerprint,
     REFERENCE_FINGERPRINT_SCHEMA_VERSION, REFERENCE_HOST_CONTRACT_VERSION,
     REFERENCE_MEASUREMENT_CPUS, REFERENCE_OS_IMAGE, REFERENCE_RUNNER_CLASS,
     REFERENCE_STORAGE_CLASS,
@@ -68,7 +68,7 @@ fn sample(run: u64, fingerprint: &str) -> BootstrapSampleReceipt {
             turbo: "disabled".to_owned(),
             shared_hardware: false,
             calibration_score: 0.01,
-            attestation: RunnerAttestationV3 {
+            attestation: RunnerAttestationV4 {
                 schema_version: REFERENCE_FINGERPRINT_SCHEMA_VERSION,
                 contract_version: REFERENCE_HOST_CONTRACT_VERSION.to_owned(),
                 virtualization: "none".to_owned(),

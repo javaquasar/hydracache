@@ -20,7 +20,7 @@ commit="$(git rev-parse HEAD)"
 
 jq --exit-status \
   --arg commit "$commit" '
-    .schema_version == 2 and
+    .schema_version == 3 and
     .release == "0.67.1" and
     .stage == "runner-provisioned" and
     .source_commit == $commit and
@@ -36,6 +36,8 @@ jq --exit-status \
     .cpu_isolation.rcu_nocbs_cpus == "1-4" and
     .cpu_isolation.housekeeping_cpus == "0,5-7" and
     .cpu_isolation.irq_affinity_policy == "housekeeping-only-v1" and
+    .cpu_isolation.measurement_idle_policy == "latency-cap-us-v1" and
+    .cpu_isolation.measurement_max_idle_latency_us == 1 and
     .storage_transport == "nvme" and
     .cgroup_version == 2 and
     .cgroup_cpu_quota == "unlimited" and

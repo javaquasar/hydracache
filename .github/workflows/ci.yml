@@ -840,7 +840,7 @@ jobs:
           echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
 
       - name: Attest and preflight the 0.67.1 host
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v3-0671
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v4-0671
 
       - name: Prebuild exact 0.67 performance binaries
         run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067
@@ -926,7 +926,7 @@ jobs:
           echo "$tools_dir/redis-7.2.5/src" >> "$GITHUB_PATH"
 
       - name: Attest and preflight the 0.67.1 host
-        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v3-0671
+        run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67.1 --gate tool.perf-attestation-v4-0671
 
       - name: Prebuild exact 0.67 performance binaries
         run: taskset --cpu-list 1-4 cargo run -p xtask --locked -- evidence-run --release 0.67 --gate tool.perf-prebuild-067

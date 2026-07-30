@@ -58,8 +58,12 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(receipt_import.contains(".source_commit == $commit"));
     assert!(receipt_import.contains(".host_identity_digest"));
     assert!(receipt_import.contains(".runner_online == false"));
-    assert!(receipt_import.contains(".schema_version == 2"));
+    assert!(receipt_import.contains(".schema_version == 3"));
     assert!(receipt_import.contains(".cpu_isolation.smt_control == \"off\""));
+    assert!(
+        receipt_import.contains(".cpu_isolation.measurement_idle_policy == \"latency-cap-us-v1\"")
+    );
+    assert!(receipt_import.contains(".cpu_isolation.measurement_max_idle_latency_us == 1"));
     assert!(
         isolation.contains("isolcpus_argument=\"domain,managed_irq,nohz,1-4\"")
             && isolation.contains("isolcpus=${isolcpus_argument}")
@@ -68,6 +72,10 @@ fn runner_runbook_and_helpers_are_fail_closed_and_secret_free() {
     assert!(isolation.contains("rcu_nocbs=${measurement_cpus}"));
     assert!(isolation.contains("irqaffinity=${housekeeping_cpus}"));
     assert!(isolation.contains("CPUAffinity=0 5 6 7"));
+    assert!(isolation.contains("hydracache-perf-idle-policy.service"));
+    assert!(isolation.contains("measurement_max_idle_latency_us=1"));
+    assert!(isolation.contains("latency > measurement_max_idle_latency_us"));
+    assert!(isolation.contains("printf '1' >\"\\$state/disable\""));
     assert!(isolation.contains("Before `nosmt` takes effect"));
     assert!(isolation.contains("= \"${cpu},${sibling}\""));
     assert!(isolation.contains("= \"$cpu\""));

@@ -535,17 +535,19 @@ fi
 W2 confirmed one 8-core/16-thread package with measurement CPUs `1-4` paired with SMT siblings
 `9-12`. Three independent bootstrap acquisitions then failed the unchanged 15% spread gate in
 different workload families while preflight remained stable. Before any further qualification or
-bootstrap run, install the reviewed v3 isolation policy from a clean trusted-`main` checkout while
+bootstrap run, install the reviewed v4 isolation policy from a clean trusted-`main` checkout while
 the Actions runner and rootless Docker are offline:
 
 ```bash
 set -euo pipefail
 scripts/perf/runner-service.sh offline
 sudo scripts/perf/provision-reference-isolation.sh install
-sudo reboot
+# If the helper reports that a reboot is required, run:
+# sudo reboot
 ```
 
-Reconnect after the reboot and verify the exact policy before generating the root-owned receipt:
+If the helper requested a reboot, reconnect afterward. Then verify the exact policy before generating
+the root-owned receipt:
 
 ```bash
 set -euo pipefail
@@ -557,6 +559,8 @@ The committed policy is intentionally host-specific and fail-closed:
 - SMT is disabled, leaving logical CPUs `0-7` online; depending on the kernel, siblings `9-12`
   are absent from topology sysfs or remain enumerated with `online=0`;
 - measurement CPUs `1-4` are isolated with `isolcpus`, `nohz_full`, and `rcu_nocbs`;
+- those CPUs may use only idle states with exit latency at most `1` microsecond; the root-owned
+  `hydracache-perf-idle-policy.service` disables every deeper state before the runner starts;
 - CPUs `0,5-7` are the only housekeeping set for the Actions service and rootless Docker daemon;
 - active IRQ work must not reach CPUs `1-4`; a managed NVMe vector whose immutable effective mask
   intersects the measurement set is accepted only when every matching blk-mq `cpu_list` is empty
@@ -564,13 +568,15 @@ The committed policy is intentionally host-specific and fail-closed:
 - the Redis container is explicitly pinned to CPUs `1-4`, while Docker control work stays on the
   housekeeping set.
 
-The helper writes a GRUB drop-in and root-owned system/user service drop-ins, runs `update-grub`,
-and requires an operator-controlled reboot. It does not reboot the host itself. The verify action
+The helper writes a GRUB drop-in, root-owned system/user service drop-ins, and a root-owned
+oneshot idle-policy service, then runs `update-grub`.
+A first install requires an operator-controlled reboot; an upgrade on an already exact isolated
+kernel applies the idle policy immediately. It never reboots the host itself. The verify action
 rejects missing or duplicate kernel arguments, online SMT siblings, unexpected systemd affinity,
 or any observed IRQ that reaches the measurement set.
 
-This changes the reference fingerprint schema from v2 to v3. The earlier qualification and three
-rejected bootstrap artifacts remain diagnostic history only; none may be combined with v3 samples.
+This changes the reference fingerprint schema from v3 to v4. The earlier qualification and three
+rejected bootstrap artifacts remain diagnostic history only; none may be combined with v4 samples.
 Re-run the offline audit, qualification, and bootstrap acquisition from the exact post-merge commit.
 
 ## 9. Prepare the Actions runner download

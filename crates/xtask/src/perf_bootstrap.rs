@@ -14,7 +14,7 @@ use sha2::{Digest, Sha256};
 
 use crate::perf::{
     verify_published_bundle, MachineAttestationReceipt, RunnerPreflightReport,
-    ATTESTATION_V3_RELATIVE_PATH, RUNNER_PREFLIGHT_RELATIVE_PATH,
+    ATTESTATION_V4_RELATIVE_PATH, RUNNER_PREFLIGHT_RELATIVE_PATH,
 };
 use crate::perf_qualification::{
     observe_context, trusted_performance_context_problems, QualificationContext,
@@ -136,11 +136,11 @@ fn build_sample(
     context: &QualificationContext,
 ) -> Result<BootstrapSampleReceipt, Box<dyn Error>> {
     let attestation: MachineAttestationReceipt =
-        read_json(&root.join(ATTESTATION_V3_RELATIVE_PATH))?;
+        read_json(&root.join(ATTESTATION_V4_RELATIVE_PATH))?;
     let preflight: RunnerPreflightReport = read_json(&root.join(RUNNER_PREFLIGHT_RELATIVE_PATH))?;
     let attestation_problems =
         reference_attestation_problems(&attestation.observed_runner.attestation);
-    if attestation.schema_version != 2
+    if attestation.schema_version != 3
         || attestation.release != RELEASE
         || attestation.profile != PROFILE
         || !attestation.passed

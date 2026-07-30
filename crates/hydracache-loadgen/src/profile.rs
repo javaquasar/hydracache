@@ -3,8 +3,8 @@ use std::collections::BTreeSet;
 use serde::{Deserialize, Serialize};
 
 pub const REFERENCE_RUNNER_CLASS: &str = "self-hosted-bare-metal-v1";
-pub const REFERENCE_FINGERPRINT_SCHEMA_VERSION: u32 = 3;
-pub const REFERENCE_HOST_CONTRACT_VERSION: &str = "hydracache-reference-host-v3";
+pub const REFERENCE_FINGERPRINT_SCHEMA_VERSION: u32 = 4;
+pub const REFERENCE_HOST_CONTRACT_VERSION: &str = "hydracache-reference-host-v4";
 pub const REFERENCE_STORAGE_CLASS: &str = "local-nvme";
 pub const REFERENCE_OS_IMAGE: &str = "ubuntu-24.04";
 pub const REFERENCE_MEASUREMENT_CPUS: [u32; 4] = [1, 2, 3, 4];
@@ -13,6 +13,8 @@ pub const REFERENCE_ONLINE_CPUS: &str = "0-7";
 pub const REFERENCE_ISOLATED_CPUS: &str = "1-4";
 pub const REFERENCE_HOUSEKEEPING_CPUS: &str = "0,5-7";
 pub const REFERENCE_IRQ_AFFINITY_POLICY: &str = "housekeeping-only-v1";
+pub const REFERENCE_MEASUREMENT_IDLE_POLICY: &str = "latency-cap-us-v1";
+pub const REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US: u32 = 1;
 
 /// One logical measurement CPU bound to its physical package/core identity.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -34,15 +36,17 @@ pub struct CpuIsolationAttestation {
     pub rcu_nocbs_cpus: String,
     pub housekeeping_cpus: String,
     pub irq_affinity_policy: String,
+    pub measurement_idle_policy: String,
+    pub measurement_max_idle_latency_us: u32,
 }
 
-/// Independently probed facts required by reference fingerprint schema v3.
+/// Independently probed facts required by reference fingerprint schema v4.
 ///
 /// Raw DMI UUIDs, disk serials, provider ids, and account metadata are never
 /// serialized. Only domain-separated SHA-256 digests may enter this structure.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
-pub struct RunnerAttestationV3 {
+pub struct RunnerAttestationV4 {
     pub schema_version: u32,
     pub contract_version: String,
     pub virtualization: String,
@@ -75,7 +79,7 @@ pub struct RunnerFingerprint {
     pub shared_hardware: bool,
     pub calibration_score: f64,
     #[serde(default)]
-    pub attestation: RunnerAttestationV3,
+    pub attestation: RunnerAttestationV4,
 }
 
 /// Committed requirements for a named performance runner profile.
@@ -173,10 +177,10 @@ impl PerformanceProfile {
     }
 }
 
-pub fn reference_attestation_problems(attestation: &RunnerAttestationV3) -> Vec<String> {
+pub fn reference_attestation_problems(attestation: &RunnerAttestationV4) -> Vec<String> {
     let mut reasons = Vec::new();
     if attestation.schema_version != REFERENCE_FINGERPRINT_SCHEMA_VERSION {
-        reasons.push("reference runner fingerprint schema is not v3".to_owned());
+        reasons.push("reference runner fingerprint schema is not v4".to_owned());
     }
     if attestation.contract_version != REFERENCE_HOST_CONTRACT_VERSION {
         reasons.push("reference host contract version is not approved".to_owned());
@@ -227,6 +231,13 @@ pub fn reference_attestation_problems(attestation: &RunnerAttestationV3) -> Vec<
     if isolation.irq_affinity_policy != REFERENCE_IRQ_AFFINITY_POLICY {
         reasons.push("IRQ affinity is not proven housekeeping-only".to_owned());
     }
+    if isolation.measurement_idle_policy != REFERENCE_MEASUREMENT_IDLE_POLICY
+        || isolation.measurement_max_idle_latency_us != REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US
+    {
+        reasons.push(
+            "measurement CPU idle-state latency cap does not match the committed policy".to_owned(),
+        );
+    }
     if !is_sha256(&attestation.host_digest) {
         reasons.push("privacy-safe physical host digest is missing or malformed".to_owned());
     }
@@ -257,6 +268,8 @@ pub fn reference_cpu_isolation() -> CpuIsolationAttestation {
         rcu_nocbs_cpus: REFERENCE_ISOLATED_CPUS.to_owned(),
         housekeeping_cpus: REFERENCE_HOUSEKEEPING_CPUS.to_owned(),
         irq_affinity_policy: REFERENCE_IRQ_AFFINITY_POLICY.to_owned(),
+        measurement_idle_policy: REFERENCE_MEASUREMENT_IDLE_POLICY.to_owned(),
+        measurement_max_idle_latency_us: REFERENCE_MEASUREMENT_MAX_IDLE_LATENCY_US,
     }
 }
 
